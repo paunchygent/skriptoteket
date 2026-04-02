@@ -1,11 +1,12 @@
 ---
 type: adr
 id: ADR-0073
-title: "Competitive browser games as bespoke curated apps with official high-score validation"
+title: "Competitive browser games as bespoke curated apps with lightweight global high-score support"
 status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-03-22
+updated: 2026-04-01
 links: ["ADR-0023", "ADR-0027", "EPIC-25", "REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code"]
 ---
 
@@ -25,11 +26,11 @@ The existing curated-app platform contracts are a strong base, but browser games
 introduce a new tension:
 
 - live simulation wants a local browser-owned loop
-- competition features want durable backend-owned validation and persistence
+- competition features want durable backend-owned persistence and leaderboard state
 
 We need an explicit architecture that keeps those concerns separate from the
 start so the first game can ship locally without later rewriting the app family
-to add official score support.
+to add lightweight global high-score support.
 
 ## Decision
 
@@ -69,9 +70,8 @@ The backend SHALL own:
 
 - app bootstrap metadata
 - identity and authorization checks
-- pending score submissions
-- replay metadata and storage references
-- official score promotion
+- score submissions
+- lightweight server-side score acceptance rules
 - leaderboard queries
 
 This logic SHALL live in a shared backend subsystem for competitive play rather
@@ -81,14 +81,14 @@ than being embedded ad hoc inside one game's web router.
 
 Skriptoteket SHALL add a reusable backend subsystem responsible for:
 
-- score submission lifecycle (`pending`, `official`, `rejected`)
-- replay-backed validation workflows
+- score submission handling
+- lightweight score-acceptance policies
 - leaderboard scoping
 - player-facing leaderboard read models
 
 This subsystem SHALL be reusable across future curated game apps.
 
-### 5. Scope official scores by app and ruleset
+### 5. Scope leaderboard entries by app and ruleset
 
 Score records SHALL include at minimum:
 
@@ -97,33 +97,33 @@ Score records SHALL include at minimum:
 - `ruleset_id`
 - owner user id
 - score value
-- replay asset reference or equivalent replay metadata
+- compact score summary metadata
 
 The design MAY also include `season_id` when needed.
 
-Official leaderboard queries SHALL scope by app and ruleset, and SHALL NOT
-merge incompatible runs across rule changes.
+Leaderboard queries SHALL scope by app and ruleset, and SHALL NOT merge
+incompatible runs across rule changes.
 
-### 6. Use a pending-to-official promotion pipeline
+### 6. Use a lightweight server-owned submission flow
 
 The competition flow SHALL be:
 
 1. the browser completes a local run
-2. the client submits a score summary plus replay payload/reference
-3. the backend stores a **pending** submission
-4. replay validation promotes valid submissions to **official**
-5. official leaderboards show only promoted scores
+2. the client submits a compact score summary
+3. the backend stores the submission
+4. the backend applies lightweight acceptance rules and writes eligible scores
+   into leaderboard state
+5. personal and global leaderboards read backend-owned entries
 
-Rejected submissions SHALL retain a reason for auditability and user-facing
-error handling.
+Failed or rejected submissions SHALL return clear app-level errors without
+requiring detached review workflows.
 
 ### 7. Storage choice
 
 PostgreSQL SHALL be the source of truth for:
 
 - score submissions
-- official scores
-- replay metadata
+- accepted leaderboard entries
 - leaderboard indexes and queries
 
 Redis SHALL be optional and used only as an optimization for:
@@ -132,7 +132,7 @@ Redis SHALL be optional and used only as an optimization for:
 - rate limiting
 - live fan-out, if later required
 
-Redis is not a prerequisite for the first local slice or the first trustworthy
+Redis is not a prerequisite for the first local slice or the first lightweight
 leaderboard slice.
 
 ### 8. Identity and public display
@@ -150,19 +150,19 @@ alias remains a future enhancement if needed.
 
 - Keeps game feel strong by avoiding server-owned live simulation.
 - Preserves curated-app architecture instead of inventing a parallel product.
-- Makes official high scores trustworthy without forcing high-latency gameplay.
+- Makes global high scores fun and lightweight without forcing high-latency gameplay.
 - Creates a reusable competitive-play backend for future game apps.
 
 ### Tradeoffs
 
 - Introduces a new shared bounded context that needs clear ownership.
-- Requires explicit replay-format and validation-policy decisions.
+- Requires explicit score-shape and leaderboard-scoping decisions.
 - Adds product complexity around ruleset/version scope and score lifecycle.
 
 ### Risks
 
-- If we let the first game persist too little metadata, later officialization
-  may require migration or invalidating early runs.
+- If we let the first game persist too little metadata, later leaderboard
+  tightening may require migration or invalidating early runs.
 - If we overfit the shared subsystem to Flunk-Out Frenzy, future games may not
   fit cleanly.
 - If we prematurely require Redis/WebSockets, the first slice may become heavier
@@ -171,5 +171,5 @@ alias remains a future enhancement if needed.
 ### Mitigations
 
 - Reserve `ruleset_id` from the first score-capable slice.
-- Keep replay validation and leaderboard logic app-agnostic.
-- Ship local play first, then layer pending submission and promotion on top.
+- Keep score-acceptance and leaderboard logic app-agnostic.
+- Ship local play first, then layer score submission and leaderboards on top.

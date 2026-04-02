@@ -249,8 +249,6 @@ export class GameRuntime {
     const effects: GameEffectEvent[] = [];
 
     for (const command of pendingCommands) {
-      const previousLaunchPressed = this.inputState.launchPressed;
-
       if (command.type === "left-flip") {
         this.inputState.leftFlipPressed = command.pressed;
         if (command.pressed) {
@@ -263,9 +261,6 @@ export class GameRuntime {
         }
       } else {
         this.inputState.launchPressed = command.pressed;
-        if (!command.pressed && previousLaunchPressed) {
-          effects.push({ type: "launch-released", chargeActive: true });
-        }
       }
 
       this.inputState.lastCommandLabel = describeRuntimeCommand(command);

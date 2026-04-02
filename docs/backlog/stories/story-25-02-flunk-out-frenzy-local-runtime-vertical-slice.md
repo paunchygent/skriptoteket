@@ -33,7 +33,7 @@ platform shell.
 
 - Keep the runtime narrow: one table, one active ball, keyboard controls, and
   deterministic rules.
-- Replay capture is out of scope for this slice.
+- Lightweight leaderboard support is out of scope for this slice.
 - Prefer a local runtime architecture that future score submission can observe
   after a run finishes, rather than calling backend endpoints during live play.
 - Keep bootstrap metadata and settings out of the main play surface; if shown

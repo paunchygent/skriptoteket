@@ -39,10 +39,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
 - Flunk-Out Frenzy mechanics-port foundation story:
   `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`
+- Flunk-Out Frenzy donor-topology corrective story:
+  `docs/backlog/stories/story-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md`
 - Flunk-Out Frenzy mechanics-port PR backlog starts here:
   `docs/backlog/prs/pr-0188-flunk-out-frenzy-machine-event-contract-expansion-and-physicsworld-decomposition.md`
 - Flunk-Out Frenzy mechanics reassessment gate:
   `docs/backlog/prs/pr-0191-flunk-out-frenzy-mechanics-foundation-reassessment-and-go-no-go.md`
+- Flunk-Out Frenzy donor-topology corrective task:
+  `docs/backlog/prs/pr-0198-flunk-out-frenzy-vpw-donor-topology-and-spec-cutover.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -189,6 +193,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 - Approved same-shell transition continuity review:
   `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
+- Proposed Flappy Birds curated-app epic:
+  `docs/backlog/epics/epic-31-flappy-birds-curated-app.md`
+- Proposed Flappy Birds curated-app review:
+  `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`
 - Same-shell transition continuity planning slice:
   `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
 - Same-shell transition continuity implementation slice:
@@ -358,6 +366,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
+- `docs/backlog/epics/epic-31-flappy-birds-curated-app.md`
 
 ### Backlog Stories
 
@@ -379,7 +388,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md`
 - `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`
 - `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
-- `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md`
+- `docs/backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md`
 - `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`
 - `docs/backlog/stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md`
 - `docs/backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md`
@@ -440,6 +449,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
+- `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`
 
 ### Backlog Sprints
 

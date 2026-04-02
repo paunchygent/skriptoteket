@@ -31,13 +31,6 @@ const props = withDefaults(defineProps<{
   runtimeFactory: undefined,
 });
 
-// These are intentionally temporary reference-art crops until the dedicated
-// Flunk-Out Frenzy art pass replaces them.
-const referencePlayfieldUrl = new URL(
-  "../../../assets/flunk-out-frenzy/reference-playfield-crop.jpg",
-  import.meta.url,
-).href;
-
 const emit = defineEmits<{
   hudChange: [hud: GameHudSnapshot];
   bootError: [message: string | null];
@@ -229,11 +222,7 @@ defineExpose<GameHostApi>({
       :data-runtime-load-state="runtimeLoadState"
       class="fof-host__playfield"
     >
-      <img
-        class="fof-host__image"
-        :src="referencePlayfieldUrl"
-        alt="Illustrerad referens för Flunk-Out Frenzys pinball-playfield"
-      >
+      <div class="fof-host__backdrop" />
       <div class="fof-host__glass" />
       <div class="fof-host__scanline" />
 
@@ -269,10 +258,10 @@ defineExpose<GameHostApi>({
 
       <div
         v-else-if="runtimeLoadState === 'idle'"
-        class="fof-host__message fof-host__message--subtle"
+        class="fof-host__message fof-host__message--subtle fof-host__message--idle"
       >
         <p>Tryck Start</p>
-        <span>Spelskalet är klart. Själva spelmotorn laddas först när du börjar spela.</span>
+        <span>Spelplanen är redo. Motorn laddas när rundan startar.</span>
       </div>
     </div>
   </section>
@@ -295,14 +284,14 @@ defineExpose<GameHostApi>({
     0 18px 34px rgba(12, 8, 5, 0.3);
 }
 
-.fof-host__image {
+.fof-host__backdrop {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  filter: saturate(0.98) contrast(1.05) brightness(0.78);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(102, 181, 130, 0.18), transparent 24%),
+    radial-gradient(circle at 22% 78%, rgba(255, 126, 174, 0.14), transparent 20%),
+    radial-gradient(circle at 78% 72%, rgba(108, 170, 255, 0.16), transparent 22%),
+    linear-gradient(180deg, rgba(18, 28, 24, 0.94), rgba(8, 11, 10, 0.98));
 }
 
 .fof-host__glass,
@@ -368,6 +357,13 @@ defineExpose<GameHostApi>({
   background: rgba(20, 27, 22, 0.58);
 }
 
+.fof-host__message--idle {
+  bottom: 4.8%;
+  padding: 0.5rem 0.8rem 0.56rem;
+  background: rgba(20, 27, 22, 0.42);
+  border-color: rgba(255, 243, 221, 0.1);
+}
+
 .fof-host__message--error {
   background:
     linear-gradient(180deg, rgba(76, 17, 26, 0.9), rgba(38, 11, 16, 0.92));
@@ -390,5 +386,15 @@ defineExpose<GameHostApi>({
 .fof-host__message span {
   font-size: 0.84rem;
   color: rgba(246, 239, 225, 0.8);
+}
+
+.fof-host__message--idle p {
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+}
+
+.fof-host__message--idle span {
+  font-size: 0.74rem;
+  color: rgba(246, 239, 225, 0.72);
 }
 </style>

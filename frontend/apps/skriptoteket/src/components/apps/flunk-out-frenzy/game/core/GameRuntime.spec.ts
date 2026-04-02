@@ -423,4 +423,27 @@ describe("GameRuntime", () => {
       ]),
     );
   });
+
+  it("does not synthesize a launch-release effect from raw input alone", () => {
+    const scheduler = new ManualAnimationScheduler();
+    const engine = new FakeRuntimeEngine();
+    const renderer = new FakeRenderer();
+    const audio = new FakeAudioDirector();
+    const runtime = new GameRuntime({ scheduler, engine, renderer, audio });
+
+    runtime.start();
+    runtime.enqueueCommand({ type: "launch", pressed: true });
+    runtime.enqueueCommand({ type: "launch", pressed: false });
+
+    scheduler.runFrame(0);
+
+    const consumedEffects = audio.consumeEffects.mock.calls.flatMap(
+      ([effects]) => effects as GameEffectEvent[],
+    );
+
+    expect(consumedEffects).not.toContainEqual({
+      type: "launch-released",
+      chargeActive: true,
+    });
+  });
 });

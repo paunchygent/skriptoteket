@@ -4,7 +4,7 @@ id: REV-EPIC-25
 title: "Review: Competitive games foundations and Flunk-Out Frenzy"
 status: approved
 owners: "agents"
-updated: 2026-03-22
+updated: 2026-04-01
 reviewer: "lead-developer"
 epic: "EPIC-25"
 created: 2026-03-22
@@ -22,8 +22,7 @@ stories:
 This review approves introducing competitive browser games as a new curated-app
 family inside Skriptoteket, with Flunk-Out Frenzy as the first app. The key
 architectural move is to keep live gameplay browser-owned while moving score
-submission, replay validation, and official leaderboard promotion into a shared
-backend subsystem.
+submission and lightweight leaderboard support into a shared backend subsystem.
 
 ## Scope of this review
 
@@ -51,8 +50,8 @@ Adopt `ui_mode=bespoke_required` for competitive game apps, add a shared
 `competitive_play` backend subsystem, and build Flunk-Out Frenzy as the first
 consumer. The first implementation slice covers app registration, typed
 bootstrap, and a local runtime vertical slice. The follow-on stories add pending
-score submission, typed leaderboards, replay validation, and official score
-promotion.
+score submission, typed leaderboards, and lightweight leaderboard hardening with
+ruleset scoping.
 
 ## Artifacts to Review
 
@@ -64,7 +63,7 @@ promotion.
 | `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md` | Curated-app entry seam | 5 min |
 | `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md` | Local runtime boundary | 5 min |
 | `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md` | Submission + leaderboard contract | 5 min |
-| `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md` | Officialization policy | 5 min |
+| `docs/backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md` | Lightweight leaderboard hardening policy | 5 min |
 
 **Total estimated time:** ~40 minutes
 
@@ -74,7 +73,7 @@ promotion.
 |----------|-----------|----------|
 | Browser-owned live simulation | Protect game feel and keep network latency out of active play | [x] |
 | Shared `competitive_play` backend | Avoid one-off Flunk-Out Frenzy persistence logic and prepare for future games | [x] |
-| Pending-to-official score lifecycle | Keep global leaderboards trustworthy and auditable | [x] |
+| Lightweight server-owned leaderboard lifecycle | Keep global leaderboards fun, consistent, and proportionate to the product | [x] |
 | `ruleset_id` from the start | Prevent future scoring/balance changes from corrupting one shared board | [x] |
 
 ## Review Checklist
@@ -103,7 +102,7 @@ None. The proposal is thorough and aligns with the project's architectural princ
 
 - [x] Browser-owned live simulation
 - [x] Shared `competitive_play` backend
-- [x] Pending-to-official score lifecycle
+- [x] Lightweight server-owned leaderboard lifecycle
 - [x] `ruleset_id` from the start
 
 ## Changes Made

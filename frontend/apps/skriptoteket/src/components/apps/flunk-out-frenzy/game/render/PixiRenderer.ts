@@ -18,6 +18,7 @@ import type { GameHudSnapshot, GameViewSnapshot } from "../core/runtimeTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
 import { PROTOTYPE_ALPHA_TABLE } from "../table/prototypeAlphaTable";
 import type { RuntimeRenderer } from "./renderTypes";
+import { buildStaticBoardUnderlay } from "./staticBoardUnderlay";
 
 interface RolloverNode {
   container: Container;
@@ -112,13 +113,7 @@ export class PixiRenderer implements RuntimeRenderer {
   }
 
   private drawStaticUnderlay(): void {
-    for (const bumper of PROTOTYPE_ALPHA_TABLE.bumpers) {
-      const glow = new Graphics();
-      glow.position.set(bumper.x, bumper.y);
-      glow.circle(0, 0, bumper.radius * 1.38).fill({ color: 0x61ff7d, alpha: 0.09 });
-      glow.filters = [new BlurFilter({ strength: 8 })];
-      this.underlay.addChild(glow);
-    }
+    buildStaticBoardUnderlay(this.underlay);
   }
 
   private buildRolloverNodes(): void {

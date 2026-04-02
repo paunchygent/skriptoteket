@@ -95,6 +95,9 @@ export class RuleEngine {
         case "popup-target-hit":
         case "gate-passed":
         case "launch-lane-enter":
+        case "launcher-fed":
+        case "launcher-charged":
+        case "launcher-released":
         case "ball-captured":
         case "ball-ejected":
         case "ball-saved":

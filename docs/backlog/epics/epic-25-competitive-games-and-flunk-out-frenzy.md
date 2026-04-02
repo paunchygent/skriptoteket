@@ -5,8 +5,8 @@ title: "Curated app family: competitive games foundations and Flunk-Out Frenzy"
 status: active
 owners: "agents"
 created: 2026-03-22
-updated: 2026-04-01
-outcome: "Signed-in users can open Flunk-Out Frenzy as a bespoke curated app, play a polished local browser-based experience inside the existing Skriptoteket SPA, deepen the local runtime with richer pinball-like mechanics without collapsing architecture boundaries, and retain the backend seams required to add official high scores without rewriting the app contract."
+updated: 2026-04-02
+outcome: "Signed-in users can open Flunk-Out Frenzy as a bespoke curated app, play a polished local browser-based experience inside the existing Skriptoteket SPA, deepen the local runtime with richer pinball-like mechanics without collapsing architecture boundaries, and retain the backend seams required to add lightweight global high scores without rewriting the app contract."
 dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 ---
 
@@ -22,8 +22,7 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
   table-authoring, and rule seams that can absorb richer device semantics
   without copying a donor engine architecture.
 - **Backend substrate**: reserve the models and API contracts needed for pending
-  score submission, official score promotion, replay metadata, and leaderboard
-  queries.
+  score submission, lightweight leaderboard acceptance, and leaderboard queries.
 
 ## Out of scope
 
@@ -38,7 +37,7 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 ## Risks
 
 - The first game could accidentally couple itself to one-off persistence paths.
-- A weak replay/score contract could make later official score support expensive
+- A weak score/ruleset contract could make later leaderboard support expensive
   to add safely.
 - The frontend could drift into Vue-owned simulation state if the shell/runtime
   boundary is not enforced.
@@ -47,9 +46,10 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 
 - [x] [ST-25-01: Competitive games substrate and Flunk-Out Frenzy bootstrap contract](../stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md)
 - [x] [ST-25-02: Flunk-Out Frenzy local runtime vertical slice](../stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md)
-- [ ] [ST-25-03: Competitive play pending score submission and typed leaderboards](../stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md)
-- [ ] [ST-25-04: Competitive play replay validation and official score promotion](../stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md)
+- [ ] [ST-25-03: Competitive play lightweight score submission and typed leaderboards](../stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md)
+- [ ] [ST-25-04: Competitive play lightweight leaderboard hardening and ruleset scoping](../stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md)
 - [ ] [ST-25-05: Flunk-Out Frenzy mechanics-port foundation](../stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md)
+- [ ] [ST-25-06: Flunk-Out Frenzy VPW donor topology and table-spec rebuild](../stories/story-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md)
 
 ## Notes
 
@@ -61,6 +61,9 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 - **ST-25-05 execution gate**: `PR-0188` through `PR-0190` form the first
   foundation tranche, `PR-0191` is a formal reassessment and go/no-go
   checkpoint, and only then do the higher-risk mechanics slices begin.
+- **Board corrective gate**: `ST-25-06` / `PR-0198` track the donor-topology
+  rebuild needed before the higher-risk mechanics slices can continue safely on
+  the new compiled table seam.
 - Cross-cutting sequencing beyond this epic is tracked in
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`.
 

@@ -38,7 +38,6 @@ const sceneReferenceUrl = new URL(
 const CABINET_FRAME_ASPECT_RATIO = 0.76;
 const DESKTOP_BREAKPOINT_PX = 940;
 const DESKTOP_SIDE_RAIL_RESERVE_PX = 336;
-const DESKTOP_TOP_MARQUEE_RESERVE_PX = 184;
 const DESKTOP_BOTTOM_RESERVE_PX = 20;
 
 const gameHost = ref<GameHostApi | null>(null);
@@ -215,7 +214,7 @@ function updateBoardFrame(): void {
     320,
   );
   const availableHeight = Math.max(
-    scene.clientHeight - paddingY - DESKTOP_TOP_MARQUEE_RESERVE_PX - DESKTOP_BOTTOM_RESERVE_PX,
+    scene.clientHeight - paddingY - DESKTOP_BOTTOM_RESERVE_PX,
     420,
   );
 
@@ -286,6 +285,18 @@ onBeforeUnmount(() => {
       data-test="bootstrap-ready"
       class="fof-ready"
     >
+      <header class="fof-ready__intro">
+        <p class="fof-marquee__eyebrow">
+          Prototype alpha
+        </p>
+        <h1 class="fof-marquee__title">
+          {{ bootstrap.title }}
+        </h1>
+        <p class="fof-marquee__summary">
+          {{ bootstrap.summary }}
+        </p>
+      </header>
+
       <div
         ref="sceneElement"
         class="fof-machine-scene"
@@ -294,18 +305,6 @@ onBeforeUnmount(() => {
           '--fof-cabinet-aspect-ratio': String(CABINET_FRAME_ASPECT_RATIO),
         }"
       >
-        <header class="fof-marquee">
-          <p class="fof-marquee__eyebrow">
-            Prototype alpha
-          </p>
-          <h1 class="fof-marquee__title">
-            {{ bootstrap.title }}
-          </h1>
-          <p class="fof-marquee__summary">
-            {{ bootstrap.summary }}
-          </p>
-        </header>
-
         <aside class="fof-status-cluster">
           <div class="fof-plaque">
             <span>Status</span>
@@ -553,8 +552,18 @@ onBeforeUnmount(() => {
 .fof-ready {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1rem;
   min-height: 0;
   height: 100%;
+}
+
+.fof-ready__intro {
+  display: grid;
+  gap: 0.35rem;
+  width: min(38rem, 100%);
+  padding: 0.9rem 1rem 0;
 }
 
 .fof-runtime-error {
@@ -936,24 +945,22 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1180px) {
-  .fof-machine-scene__host {
-    width: min(
-      calc((100dvh - 8.5rem) * var(--fof-cabinet-aspect-ratio, 0.76)),
-      calc(100% - 1.5rem)
-    );
-  }
-
   .fof-status-cluster,
   .fof-service-cluster {
     width: min(9rem, 20vw);
   }
-
-  .fof-marquee {
-    width: min(21rem, calc(100% - 20rem));
-  }
 }
 
 @media (max-width: 940px) {
+  .fof-ready {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .fof-ready__intro {
+    width: 100%;
+    padding: 0;
+  }
+
   .fof-machine-scene {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -963,7 +970,6 @@ onBeforeUnmount(() => {
     gap: 1rem;
   }
 
-  .fof-marquee,
   .fof-status-cluster,
   .fof-service-cluster {
     position: relative;
@@ -993,10 +999,6 @@ onBeforeUnmount(() => {
   .fof-machine-scene {
     min-height: 0;
     height: 100%;
-  }
-
-  .fof-marquee {
-    width: 100%;
   }
 
   .fof-keycaps {

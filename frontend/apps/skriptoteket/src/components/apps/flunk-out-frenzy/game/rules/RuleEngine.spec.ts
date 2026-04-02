@@ -150,4 +150,24 @@ describe("RuleEngine", () => {
     expect(thirdDrain.snapshot.ballLifecycle.roundFinished).toBe(true);
     expect(thirdDrain.shouldRespawnBall).toBe(false);
   });
+
+  it("treats explicit launcher lifecycle events as semantic no-ops in the current rule slice", () => {
+    const rules = new RuleEngine();
+
+    rules.startGame();
+
+    const step = rules.handleMachineEvents([
+      { type: "launcher-fed", tag: "launcher/main" },
+      { type: "launcher-charged", tag: "launcher/main" },
+      { type: "launcher-released", tag: "launcher/main" },
+    ]);
+
+    expect(step.snapshot.score).toBe(0);
+    expect(step.snapshot.bonus).toEqual({
+      points: 0,
+      collectReady: false,
+    });
+    expect(step.shouldRespawnBall).toBe(false);
+    expect(step.ruleEvents).toEqual([]);
+  });
 });

@@ -11,9 +11,16 @@ export interface TablePoint {
   y: number;
 }
 
-export interface TableWallDefinition {
-  from: TablePoint;
-  to: TablePoint;
+export interface TableBoardDefinition {
+  width: number;
+  height: number;
+  displayAspectRatio: number;
+}
+
+export interface TableBallDefinition {
+  radius: number;
+  spawn: TablePoint;
+  mass: number;
 }
 
 export interface TableBumperDefinition {
@@ -79,6 +86,16 @@ export interface TablePopupTargetDefinition {
   bankTag?: string;
 }
 
+export interface TableFlipperContactModelDefinition {
+  minImpulse: number;
+  maxImpulse: number;
+  maxContactDistance: number;
+  minContactRatio: number;
+  maxContactRatio: number;
+  liftBias: number;
+  lateralBias: number;
+}
+
 export interface TableFlipperDefinition {
   side: "left" | "right";
   pivot: TablePoint;
@@ -86,5 +103,32 @@ export interface TableFlipperDefinition {
   thickness: number;
   restAngleDeg: number;
   activeAngleDeg: number;
-  assistImpulse: TablePoint;
+  contactModel: TableFlipperContactModelDefinition;
+}
+
+export interface TableLauncherLaneBoundsDefinition {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+export interface TableLauncherDefinition {
+  tag: string;
+  laneBounds: TableLauncherLaneBoundsDefinition;
+  feedSettledSpeedMax: number;
+  chargeMsMin: number;
+  chargeMsMax: number;
+  relaunchCooldownMs: number;
+  launchImpulseMin: number;
+  launchImpulseMax: number;
+  launchAssistX: number;
+}
+
+export interface TableDrainDefinition {
+  tag: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }

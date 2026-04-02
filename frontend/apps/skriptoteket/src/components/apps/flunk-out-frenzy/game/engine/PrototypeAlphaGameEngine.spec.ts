@@ -262,4 +262,19 @@ describe("PrototypeAlphaGameEngine", () => {
       { type: "jackpot-lit", points: 17500 },
     ]);
   });
+
+  it("maps explicit launcher release events onto the existing launch presentation effect", () => {
+    const physics = new FakePhysicsMachine();
+    const engine = new PrototypeAlphaGameEngine(physics, new RuleEngine());
+    engine.startGame();
+
+    physics.enqueueEvents([
+      { type: "launcher-fed", tag: "launcher/main" },
+      { type: "launcher-charged", tag: "launcher/main" },
+      { type: "launcher-released", tag: "launcher/main" },
+    ]);
+    const state = engine.step(16);
+
+    expect(state.effects).toEqual([{ type: "launch-released", chargeActive: true }]);
+  });
 });

@@ -167,6 +167,9 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
         case "gate-passed":
           effects.push({ type: "gate-passed", tag: event.tag });
           break;
+        case "launcher-released":
+          effects.push({ type: "launch-released", chargeActive: true });
+          break;
         case "drain-enter":
           effects.push({
             type: "ball-drained",
@@ -174,6 +177,8 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
           });
           break;
         case "launch-lane-enter":
+        case "launcher-fed":
+        case "launcher-charged":
         case "ball-captured":
         case "ball-ejected":
         case "ball-saved":

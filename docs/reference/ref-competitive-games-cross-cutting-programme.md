@@ -23,7 +23,7 @@ stories, and implementation tasks that cut across:
 - curated-app family seams
 - frontend runtime foundations
 - shared competition infrastructure
-- official high-score validation
+- lightweight global high-score support
 - testing and operational hardening
 
 ## How to use this document
@@ -32,7 +32,7 @@ Use this reference when:
 
 - decomposing competitive-games work into epics and stories
 - deciding whether a task belongs in shared infrastructure or one game app
-- sequencing delivery so local gameplay can ship before official score support
+- sequencing delivery so local gameplay can ship before lightweight leaderboard support
 - checking that cross-cutting work is not being hidden inside a single app story
 
 Do not use this document as a replacement for the app architecture reference or
@@ -41,11 +41,11 @@ for the ADR.
 ## Programme goals
 
 - Keep live play browser-owned and responsive.
-- Keep official competition backend-owned and reviewable.
+- Keep leaderboard state backend-owned and proportionate to a fun teacher-competition feature.
 - Reuse shared competition infrastructure across future games.
 - Preserve Skriptoteket's curated-app model instead of inventing a parallel
   product architecture.
-- Let the first game ship without blocking on the entire official-score system.
+- Let the first game ship without blocking on heavyweight leaderboard machinery.
 
 ## Workstreams
 
@@ -95,21 +95,20 @@ Typical output:
 - shared `competitive_play` domain/application/infrastructure stories
 - typed leaderboard and submission API stories
 
-### 4. Official-score validation and promotion
+### 4. Leaderboard acceptance and lightweight competition hardening
 
 Focus:
 
-- replay storage references
-- validation workflows
-- promotion from `pending` to `official`
-- rejection reasons and auditability
+- lightweight score-acceptance checks
+- duplicate/spam protection when needed
+- clean failure handling
 - ruleset and season scoping
 
 Typical output:
 
-- replay validation stories
-- official score promotion stories
-- operations/support visibility stories
+- leaderboard hardening stories
+- ruleset/season scoping stories
+- release-safe failure-state stories
 
 ### 5. Quality, observability, and operability
 
@@ -148,8 +147,8 @@ Typical output:
 
 - `ST-25-01`: curated-app substrate + bootstrap seam
 - `ST-25-02`: local runtime vertical slice
-- `ST-25-03`: pending score submissions + typed leaderboards
-- `ST-25-04`: replay validation + official score promotion
+- `ST-25-03`: lightweight score submissions + typed leaderboards
+- `ST-25-04`: lightweight leaderboard hardening + ruleset scoping
 
 ## Recommended next backlog evolution
 
@@ -160,7 +159,7 @@ epic indefinitely.
 Good split candidates:
 
 - an epic for shared competition infrastructure
-- an epic for official-score validation and moderation policy
+- an epic for lightweight leaderboard hardening across multiple games
 - an epic for runtime hardening and second-game readiness
 
 ## Notes

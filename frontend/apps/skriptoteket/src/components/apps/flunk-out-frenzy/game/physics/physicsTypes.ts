@@ -18,6 +18,9 @@ export type MachineEvent =
   | { type: "popup-target-hit"; tag: string }
   | { type: "gate-passed"; tag: string }
   | { type: "launch-lane-enter"; tag: string }
+  | { type: "launcher-fed"; tag: string }
+  | { type: "launcher-charged"; tag: string }
+  | { type: "launcher-released"; tag: string }
   | { type: "ball-captured"; tag: string; deviceKind: CaptureMachineEventKind }
   | { type: "ball-ejected"; tag: string; deviceKind: CaptureMachineEventKind }
   | { type: "ball-saved"; tag: string; deviceKind: SaveMachineEventKind };

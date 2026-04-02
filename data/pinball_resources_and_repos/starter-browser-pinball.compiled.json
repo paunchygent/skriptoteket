@@ -1,0 +1,2474 @@
+{
+  "id": "starter-browser-pinball",
+  "name": "Starter Browser Pinball",
+  "version": 1,
+  "space": {
+    "width": 1000,
+    "height": 1800,
+    "gravity": {
+      "x": 0,
+      "y": 2200
+    },
+    "metersPerUnit": 0.0015
+  },
+  "surfaces": {
+    "wall": {
+      "id": "wall",
+      "friction": 0.04,
+      "restitution": 0.08
+    },
+    "post": {
+      "id": "post",
+      "friction": 0.03,
+      "restitution": 0.18
+    },
+    "bumper": {
+      "id": "bumper",
+      "friction": 0.02,
+      "restitution": 0.85
+    },
+    "flipper": {
+      "id": "flipper",
+      "friction": 0.06,
+      "restitution": 0.18,
+      "density": 1,
+      "angularDamping": 2
+    },
+    "sensor": {
+      "id": "sensor",
+      "friction": 0,
+      "restitution": 0
+    },
+    "rubber": {
+      "id": "rubber",
+      "friction": 0.03,
+      "restitution": 0.3
+    },
+    "metal-rail": {
+      "id": "metal-rail",
+      "friction": 0.02,
+      "restitution": 0.1
+    }
+  },
+  "ball": {
+    "radius": 13,
+    "density": 1,
+    "friction": 0.01,
+    "restitution": 0.22,
+    "ccd": true,
+    "linearDamping": 0.02,
+    "angularDamping": 0.02,
+    "maxBalls": 3,
+    "defaultSpawnId": "spawn-shooter-lane"
+  },
+  "physics": {
+    "bodies": [
+      {
+        "id": "starter-browser-pinball:static",
+        "type": "fixed",
+        "transform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "tags": [
+          "table",
+          "static"
+        ]
+      },
+      {
+        "id": "left-flipper:body",
+        "type": "dynamic",
+        "transform": {
+          "translation": {
+            "x": 441.1446234658609,
+            "y": 1633.1521698381646
+          },
+          "rotation": -0.5
+        },
+        "angularDamping": 2,
+        "canSleep": false,
+        "tags": [
+          "flipper",
+          "left"
+        ]
+      },
+      {
+        "id": "right-flipper:body",
+        "type": "dynamic",
+        "transform": {
+          "translation": {
+            "x": 558.8553765341392,
+            "y": 1633.1521698381646
+          },
+          "rotation": 3.641592653589793
+        },
+        "angularDamping": 2,
+        "canSleep": false,
+        "tags": [
+          "flipper",
+          "right"
+        ]
+      }
+    ],
+    "colliders": [
+      {
+        "id": "left-outer:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 84,
+            "y": 752
+          },
+          "rotation": 1.5707963267948966
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 668,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-outer:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 101,
+            "y": 1479
+          },
+          "rotation": 1.2902595350565746
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 61.40032573203501,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-outer:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 147,
+            "y": 1593
+          },
+          "rotation": 1.0855693342275603
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 62.177166226839255,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-outer:segment:3",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 237,
+            "y": 1678
+          },
+          "rotation": 0.4570687565477896
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 67.97793759742936,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-outer:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 916,
+            "y": 752
+          },
+          "rotation": 1.5707963267948966
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 668,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-outer:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 899,
+            "y": 1479
+          },
+          "rotation": 1.8513331185332187
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 61.40032573203501,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-outer:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 853,
+            "y": 1593
+          },
+          "rotation": 2.0560233193622333
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 62.177166226839255,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-outer:segment:3",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 763,
+            "y": 1678
+          },
+          "rotation": 2.684523897042004
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 67.97793759742936,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "top-arch:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 245,
+            "y": 52
+          },
+          "rotation": -0.2086817623350266
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 86.88498144098322,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "top-arch:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 415,
+            "y": 28
+          },
+          "rotation": -0.07047134457879563
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 85.21150157109074,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "top-arch:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 585,
+            "y": 28
+          },
+          "rotation": 0.07047134457879563
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 85.21150157109074,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "top-arch:segment:3",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 755,
+            "y": 52
+          },
+          "rotation": 0.2086817623350266
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 86.88498144098322,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-upper-lane:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 237,
+            "y": 180
+          },
+          "rotation": 1.7879076415298019
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 69.63476143421474,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-upper-lane:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 211,
+            "y": 319
+          },
+          "rotation": 1.7245038558533758
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 71.84705978674423,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-upper-lane:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 205,
+            "y": 475
+          },
+          "rotation": 1.512040504079174
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 85.14693182963201,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-upper-lane:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 763,
+            "y": 180
+          },
+          "rotation": 1.3536850120599915
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 69.63476143421474,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-upper-lane:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 789,
+            "y": 319
+          },
+          "rotation": 1.4170887977364175
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 71.84705978674423,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-upper-lane:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 795,
+            "y": 475
+          },
+          "rotation": 1.6295521495106193
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 85.14693182963201,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-return:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 293,
+            "y": 1023
+          },
+          "rotation": 1.727398203776912
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 96.17692030835673,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-return:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 265,
+            "y": 1221
+          },
+          "rotation": 1.6963460639034225
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 103.81714694596457,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-return:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 254,
+            "y": 1408
+          },
+          "rotation": 1.5469913006098266
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 84.02380615040002,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-return:segment:3",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 294,
+            "y": 1590
+          },
+          "rotation": 1.200890259338339
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 105.1094667477673,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-return:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 707,
+            "y": 1023
+          },
+          "rotation": 1.4141944498128813
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 96.17692030835673,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-return:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 735,
+            "y": 1221
+          },
+          "rotation": 1.4452465896863709
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 103.81714694596457,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-return:segment:2",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 746,
+            "y": 1408
+          },
+          "rotation": 1.5946013529799667
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 84.02380615040002,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-return:segment:3",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 706,
+            "y": 1590
+          },
+          "rotation": 1.9407023942514543
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 105.1094667477673,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-outlane:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 153,
+            "y": 1446
+          },
+          "rotation": 1.6856729322117958
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 78.5175139698144,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "left-outlane:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 149,
+            "y": 1611
+          },
+          "rotation": 1.513388212158097
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 87.14355971613737,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-outlane:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 847,
+            "y": 1446
+          },
+          "rotation": 1.4559197213779975
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 78.5175139698144,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "right-outlane:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 851,
+            "y": 1611
+          },
+          "rotation": 1.6282044414316963
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 87.14355971613737,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "shooter-lane:segment:0",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 906,
+            "y": 781
+          },
+          "rotation": 1.5678067990791829
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 669.0029895299423,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "shooter-lane:segment:1",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 893,
+            "y": 1548
+          },
+          "rotation": 1.7226787841748477
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 99.14131328563285,
+          "radius": 8
+        },
+        "sensor": false,
+        "surface": {
+          "id": "metal-rail",
+          "friction": 0.02,
+          "restitution": 0.1
+        },
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "id": "drain-wall-left:segment",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 362,
+            "y": 1712
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 70,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "wall",
+          "friction": 0.04,
+          "restitution": 0.08
+        },
+        "tags": [
+          "wall"
+        ]
+      },
+      {
+        "id": "drain-wall-right:segment",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 638,
+            "y": 1712
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 70,
+          "radius": 10
+        },
+        "sensor": false,
+        "surface": {
+          "id": "wall",
+          "friction": 0.04,
+          "restitution": 0.08
+        },
+        "tags": [
+          "wall"
+        ]
+      },
+      {
+        "id": "post-a:collider",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 324,
+            "y": 740
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "rubber",
+          "friction": 0.03,
+          "restitution": 0.3
+        },
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "id": "post-b:collider",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 676,
+            "y": 740
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "rubber",
+          "friction": 0.03,
+          "restitution": 0.3
+        },
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "id": "post-c:collider",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 500,
+            "y": 1160
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "rubber",
+          "friction": 0.03,
+          "restitution": 0.3
+        },
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "id": "left-sling-post:collider",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 306,
+            "y": 1598
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "rubber",
+          "friction": 0.03,
+          "restitution": 0.3
+        },
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "id": "right-sling-post:collider",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 694,
+            "y": 1598
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "rubber",
+          "friction": 0.03,
+          "restitution": 0.3
+        },
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "id": "bumper-top-left:body",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 392,
+            "y": 514
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 34
+        },
+        "sensor": false,
+        "surface": {
+          "id": "bumper",
+          "friction": 0.02,
+          "restitution": 0.85
+        },
+        "tags": [
+          "bumper",
+          "solid"
+        ]
+      },
+      {
+        "id": "bumper-top-left:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 392,
+            "y": 514
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 44
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "bumper",
+          "sensor"
+        ]
+      },
+      {
+        "id": "bumper-top-right:body",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 608,
+            "y": 514
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 34
+        },
+        "sensor": false,
+        "surface": {
+          "id": "bumper",
+          "friction": 0.02,
+          "restitution": 0.85
+        },
+        "tags": [
+          "bumper",
+          "solid"
+        ]
+      },
+      {
+        "id": "bumper-top-right:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 608,
+            "y": 514
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 44
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "bumper",
+          "sensor"
+        ]
+      },
+      {
+        "id": "bumper-center:body",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 500,
+            "y": 668
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 38
+        },
+        "sensor": false,
+        "surface": {
+          "id": "bumper",
+          "friction": 0.02,
+          "restitution": 0.85
+        },
+        "tags": [
+          "bumper",
+          "solid"
+        ]
+      },
+      {
+        "id": "bumper-center:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 500,
+            "y": 668
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "circle",
+          "radius": 50
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "bumper",
+          "sensor"
+        ]
+      },
+      {
+        "id": "left-sling:body",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "convex-polygon",
+          "vertices": [
+            {
+              "x": 334,
+              "y": 1500
+            },
+            {
+              "x": 404,
+              "y": 1572
+            },
+            {
+              "x": 292,
+              "y": 1616
+            }
+          ]
+        },
+        "sensor": false,
+        "surface": {
+          "id": "wall",
+          "friction": 0.04,
+          "restitution": 0.08
+        },
+        "tags": [
+          "slingshot",
+          "solid"
+        ]
+      },
+      {
+        "id": "left-sling:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "convex-polygon",
+          "vertices": [
+            {
+              "x": 334,
+              "y": 1500
+            },
+            {
+              "x": 404,
+              "y": 1572
+            },
+            {
+              "x": 292,
+              "y": 1616
+            }
+          ]
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "slingshot",
+          "sensor"
+        ]
+      },
+      {
+        "id": "right-sling:body",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "convex-polygon",
+          "vertices": [
+            {
+              "x": 666,
+              "y": 1500
+            },
+            {
+              "x": 708,
+              "y": 1616
+            },
+            {
+              "x": 596,
+              "y": 1572
+            }
+          ]
+        },
+        "sensor": false,
+        "surface": {
+          "id": "wall",
+          "friction": 0.04,
+          "restitution": 0.08
+        },
+        "tags": [
+          "slingshot",
+          "solid"
+        ]
+      },
+      {
+        "id": "right-sling:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "convex-polygon",
+          "vertices": [
+            {
+              "x": 666,
+              "y": 1500
+            },
+            {
+              "x": 708,
+              "y": 1616
+            },
+            {
+              "x": 596,
+              "y": 1572
+            }
+          ]
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "slingshot",
+          "sensor"
+        ]
+      },
+      {
+        "id": "left-flipper:collider",
+        "bodyId": "left-flipper:body",
+        "localTransform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 56,
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "flipper",
+          "friction": 0.06,
+          "restitution": 0.18,
+          "density": 1,
+          "angularDamping": 2
+        },
+        "tags": [
+          "flipper",
+          "left"
+        ]
+      },
+      {
+        "id": "right-flipper:collider",
+        "bodyId": "right-flipper:body",
+        "localTransform": {
+          "translation": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "capsule-x",
+          "halfSegmentLength": 56,
+          "radius": 14
+        },
+        "sensor": false,
+        "surface": {
+          "id": "flipper",
+          "friction": 0.06,
+          "restitution": 0.18,
+          "density": 1,
+          "angularDamping": 2
+        },
+        "tags": [
+          "flipper",
+          "right"
+        ]
+      },
+      {
+        "id": "drain:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 500,
+            "y": 1762
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "cuboid",
+          "halfExtents": {
+            "x": 160,
+            "y": 22
+          }
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "drain"
+        ]
+      },
+      {
+        "id": "left-inlane:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 346,
+            "y": 1578
+          },
+          "rotation": -0.2
+        },
+        "shape": {
+          "kind": "cuboid",
+          "halfExtents": {
+            "x": 24,
+            "y": 86
+          }
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "inlane",
+          "left"
+        ]
+      },
+      {
+        "id": "right-inlane:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 654,
+            "y": 1578
+          },
+          "rotation": 0.2
+        },
+        "shape": {
+          "kind": "cuboid",
+          "halfExtents": {
+            "x": 24,
+            "y": 86
+          }
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "inlane",
+          "right"
+        ]
+      },
+      {
+        "id": "left-outlane-zone:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 166,
+            "y": 1556
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "cuboid",
+          "halfExtents": {
+            "x": 22,
+            "y": 92
+          }
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "outlane",
+          "left"
+        ]
+      },
+      {
+        "id": "right-outlane-zone:sensor",
+        "bodyId": "starter-browser-pinball:static",
+        "localTransform": {
+          "translation": {
+            "x": 834,
+            "y": 1556
+          },
+          "rotation": 0
+        },
+        "shape": {
+          "kind": "cuboid",
+          "halfExtents": {
+            "x": 22,
+            "y": 92
+          }
+        },
+        "sensor": true,
+        "surface": {
+          "id": "sensor",
+          "friction": 0,
+          "restitution": 0
+        },
+        "activeEvents": [
+          "intersection"
+        ],
+        "tags": [
+          "outlane",
+          "right"
+        ]
+      }
+    ],
+    "joints": [
+      {
+        "kind": "revolute",
+        "id": "left-flipper:joint",
+        "bodyAId": "starter-browser-pinball:static",
+        "bodyBId": "left-flipper:body",
+        "localAnchorA": {
+          "x": 392,
+          "y": 1660
+        },
+        "localAnchorB": {
+          "x": -56,
+          "y": 0
+        },
+        "contactsEnabled": true,
+        "limits": {
+          "min": -0.5,
+          "max": 0.28
+        },
+        "motor": {
+          "targetPos": -0.5,
+          "targetVel": 0,
+          "stiffness": 280,
+          "damping": 24,
+          "maxImpulse": 2400
+        }
+      },
+      {
+        "kind": "revolute",
+        "id": "right-flipper:joint",
+        "bodyAId": "starter-browser-pinball:static",
+        "bodyBId": "right-flipper:body",
+        "localAnchorA": {
+          "x": 608,
+          "y": 1660
+        },
+        "localAnchorB": {
+          "x": -56,
+          "y": 0
+        },
+        "contactsEnabled": true,
+        "limits": {
+          "min": 2.861592653589793,
+          "max": 3.641592653589793
+        },
+        "motor": {
+          "targetPos": 3.641592653589793,
+          "targetVel": 0,
+          "stiffness": 280,
+          "damping": 24,
+          "maxImpulse": 2400
+        }
+      }
+    ],
+    "triggers": [
+      {
+        "id": "bumper-top-left:trigger",
+        "sensorColliderId": "bumper-top-left:sensor",
+        "cooldownMs": 80,
+        "impulse": {
+          "kind": "away-from-point",
+          "point": {
+            "x": 392,
+            "y": 514
+          },
+          "impulse": 720
+        },
+        "onHit": [
+          {
+            "kind": "score",
+            "points": 1000
+          },
+          {
+            "kind": "play-sfx",
+            "key": "bumper"
+          }
+        ],
+        "tags": [
+          "bumper"
+        ]
+      },
+      {
+        "id": "bumper-top-right:trigger",
+        "sensorColliderId": "bumper-top-right:sensor",
+        "cooldownMs": 80,
+        "impulse": {
+          "kind": "away-from-point",
+          "point": {
+            "x": 608,
+            "y": 514
+          },
+          "impulse": 720
+        },
+        "onHit": [
+          {
+            "kind": "score",
+            "points": 1000
+          },
+          {
+            "kind": "play-sfx",
+            "key": "bumper"
+          }
+        ],
+        "tags": [
+          "bumper"
+        ]
+      },
+      {
+        "id": "bumper-center:trigger",
+        "sensorColliderId": "bumper-center:sensor",
+        "cooldownMs": 80,
+        "impulse": {
+          "kind": "away-from-point",
+          "point": {
+            "x": 500,
+            "y": 668
+          },
+          "impulse": 780
+        },
+        "onHit": [
+          {
+            "kind": "score",
+            "points": 1500
+          },
+          {
+            "kind": "play-sfx",
+            "key": "bumper"
+          }
+        ],
+        "tags": [
+          "bumper"
+        ]
+      },
+      {
+        "id": "left-sling:trigger",
+        "sensorColliderId": "left-sling:sensor",
+        "cooldownMs": 50,
+        "impulse": {
+          "kind": "fixed-vector",
+          "vector": {
+            "x": 0.7474093186836597,
+            "y": -0.6643638388299198
+          },
+          "impulse": 680
+        },
+        "onHit": [
+          {
+            "kind": "score",
+            "points": 500
+          },
+          {
+            "kind": "play-sfx",
+            "key": "sling"
+          }
+        ],
+        "tags": [
+          "slingshot"
+        ]
+      },
+      {
+        "id": "right-sling:trigger",
+        "sensorColliderId": "right-sling:sensor",
+        "cooldownMs": 50,
+        "impulse": {
+          "kind": "fixed-vector",
+          "vector": {
+            "x": -0.7474093186836597,
+            "y": -0.6643638388299198
+          },
+          "impulse": 680
+        },
+        "onHit": [
+          {
+            "kind": "score",
+            "points": 500
+          },
+          {
+            "kind": "play-sfx",
+            "key": "sling"
+          }
+        ],
+        "tags": [
+          "slingshot"
+        ]
+      },
+      {
+        "id": "drain:trigger",
+        "sensorColliderId": "drain:sensor",
+        "onBallEnter": [
+          {
+            "kind": "destroy-ball"
+          },
+          {
+            "kind": "emit",
+            "event": "life-lost"
+          }
+        ],
+        "tags": [
+          "drain"
+        ]
+      },
+      {
+        "id": "left-inlane:trigger",
+        "sensorColliderId": "left-inlane:sensor",
+        "onBallEnter": [
+          {
+            "kind": "score",
+            "points": 5000
+          }
+        ],
+        "tags": [
+          "inlane",
+          "left"
+        ]
+      },
+      {
+        "id": "right-inlane:trigger",
+        "sensorColliderId": "right-inlane:sensor",
+        "onBallEnter": [
+          {
+            "kind": "score",
+            "points": 5000
+          }
+        ],
+        "tags": [
+          "inlane",
+          "right"
+        ]
+      },
+      {
+        "id": "left-outlane-zone:trigger",
+        "sensorColliderId": "left-outlane-zone:sensor",
+        "onBallEnter": [
+          {
+            "kind": "score",
+            "points": 1000
+          }
+        ],
+        "tags": [
+          "outlane",
+          "left"
+        ]
+      },
+      {
+        "id": "right-outlane-zone:trigger",
+        "sensorColliderId": "right-outlane-zone:sensor",
+        "onBallEnter": [
+          {
+            "kind": "score",
+            "points": 1000
+          }
+        ],
+        "tags": [
+          "outlane",
+          "right"
+        ]
+      }
+    ],
+    "spawns": [
+      {
+        "id": "spawn-shooter-lane",
+        "position": {
+          "x": 892,
+          "y": 1568
+        },
+        "launchVelocity": {
+          "x": 0,
+          "y": -1600
+        },
+        "tags": [
+          "serve"
+        ]
+      },
+      {
+        "id": "multiball-center",
+        "position": {
+          "x": 500,
+          "y": 980
+        },
+        "launchVelocity": {
+          "x": 0,
+          "y": -400
+        },
+        "tags": [
+          "multiball"
+        ]
+      }
+    ]
+  },
+  "controls": [
+    {
+      "input": "flipper-left",
+      "whenPressed": [
+        {
+          "kind": "joint-motor-position",
+          "jointId": "left-flipper:joint",
+          "targetPos": 0.28,
+          "stiffness": 280,
+          "damping": 24,
+          "maxImpulse": 2400
+        }
+      ],
+      "whenReleased": [
+        {
+          "kind": "joint-motor-position",
+          "jointId": "left-flipper:joint",
+          "targetPos": -0.5,
+          "stiffness": 280,
+          "damping": 24,
+          "maxImpulse": 2400
+        }
+      ]
+    },
+    {
+      "input": "flipper-right",
+      "whenPressed": [
+        {
+          "kind": "joint-motor-position",
+          "jointId": "right-flipper:joint",
+          "targetPos": 2.861592653589793,
+          "stiffness": 280,
+          "damping": 24,
+          "maxImpulse": 2400
+        }
+      ],
+      "whenReleased": [
+        {
+          "kind": "joint-motor-position",
+          "jointId": "right-flipper:joint",
+          "targetPos": 3.641592653589793,
+          "stiffness": 280,
+          "damping": 24,
+          "maxImpulse": 2400
+        }
+      ]
+    }
+  ],
+  "render": {
+    "nodes": [
+      {
+        "kind": "polyline",
+        "id": "left-outer:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 84,
+            "y": 84
+          },
+          {
+            "x": 84,
+            "y": 1420
+          },
+          {
+            "x": 118,
+            "y": 1538
+          },
+          {
+            "x": 176,
+            "y": 1648
+          },
+          {
+            "x": 298,
+            "y": 1708
+          }
+        ],
+        "thickness": 20,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "right-outer:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 916,
+            "y": 84
+          },
+          {
+            "x": 916,
+            "y": 1420
+          },
+          {
+            "x": 882,
+            "y": 1538
+          },
+          {
+            "x": 824,
+            "y": 1648
+          },
+          {
+            "x": 702,
+            "y": 1708
+          }
+        ],
+        "thickness": 20,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "top-arch:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 160,
+            "y": 70
+          },
+          {
+            "x": 330,
+            "y": 34
+          },
+          {
+            "x": 500,
+            "y": 22
+          },
+          {
+            "x": 670,
+            "y": 34
+          },
+          {
+            "x": 840,
+            "y": 70
+          }
+        ],
+        "thickness": 20,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "left-upper-lane:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 252,
+            "y": 112
+          },
+          {
+            "x": 222,
+            "y": 248
+          },
+          {
+            "x": 200,
+            "y": 390
+          },
+          {
+            "x": 210,
+            "y": 560
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "right-upper-lane:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 748,
+            "y": 112
+          },
+          {
+            "x": 778,
+            "y": 248
+          },
+          {
+            "x": 800,
+            "y": 390
+          },
+          {
+            "x": 790,
+            "y": 560
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "left-return:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 308,
+            "y": 928
+          },
+          {
+            "x": 278,
+            "y": 1118
+          },
+          {
+            "x": 252,
+            "y": 1324
+          },
+          {
+            "x": 256,
+            "y": 1492
+          },
+          {
+            "x": 332,
+            "y": 1688
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "right-return:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 692,
+            "y": 928
+          },
+          {
+            "x": 722,
+            "y": 1118
+          },
+          {
+            "x": 748,
+            "y": 1324
+          },
+          {
+            "x": 744,
+            "y": 1492
+          },
+          {
+            "x": 668,
+            "y": 1688
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "left-outlane:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 162,
+            "y": 1368
+          },
+          {
+            "x": 144,
+            "y": 1524
+          },
+          {
+            "x": 154,
+            "y": 1698
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "right-outlane:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 838,
+            "y": 1368
+          },
+          {
+            "x": 856,
+            "y": 1524
+          },
+          {
+            "x": 846,
+            "y": 1698
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "shooter-lane:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 904,
+            "y": 112
+          },
+          {
+            "x": 908,
+            "y": 1450
+          },
+          {
+            "x": 878,
+            "y": 1646
+          }
+        ],
+        "thickness": 16,
+        "tags": [
+          "rail"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "drain-wall-left:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 292,
+            "y": 1712
+          },
+          {
+            "x": 432,
+            "y": 1712
+          }
+        ],
+        "thickness": 20,
+        "tags": [
+          "wall"
+        ]
+      },
+      {
+        "kind": "polyline",
+        "id": "drain-wall-right:render",
+        "layer": "walls",
+        "points": [
+          {
+            "x": 568,
+            "y": 1712
+          },
+          {
+            "x": 708,
+            "y": 1712
+          }
+        ],
+        "thickness": 20,
+        "tags": [
+          "wall"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "post-a:render",
+        "layer": "posts",
+        "center": {
+          "x": 324,
+          "y": 740
+        },
+        "radius": 14,
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "post-b:render",
+        "layer": "posts",
+        "center": {
+          "x": 676,
+          "y": 740
+        },
+        "radius": 14,
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "post-c:render",
+        "layer": "posts",
+        "center": {
+          "x": 500,
+          "y": 1160
+        },
+        "radius": 14,
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "left-sling-post:render",
+        "layer": "posts",
+        "center": {
+          "x": 306,
+          "y": 1598
+        },
+        "radius": 14,
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "right-sling-post:render",
+        "layer": "posts",
+        "center": {
+          "x": 694,
+          "y": 1598
+        },
+        "radius": 14,
+        "tags": [
+          "post"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "bumper-top-left:render",
+        "layer": "bumpers",
+        "center": {
+          "x": 392,
+          "y": 514
+        },
+        "radius": 34,
+        "tags": [
+          "bumper"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "bumper-top-right:render",
+        "layer": "bumpers",
+        "center": {
+          "x": 608,
+          "y": 514
+        },
+        "radius": 34,
+        "tags": [
+          "bumper"
+        ]
+      },
+      {
+        "kind": "circle",
+        "id": "bumper-center:render",
+        "layer": "bumpers",
+        "center": {
+          "x": 500,
+          "y": 668
+        },
+        "radius": 38,
+        "tags": [
+          "bumper"
+        ]
+      },
+      {
+        "kind": "polygon",
+        "id": "left-sling:render",
+        "layer": "slingshots",
+        "vertices": [
+          {
+            "x": 334,
+            "y": 1500
+          },
+          {
+            "x": 404,
+            "y": 1572
+          },
+          {
+            "x": 292,
+            "y": 1616
+          }
+        ],
+        "tags": [
+          "slingshot"
+        ]
+      },
+      {
+        "kind": "polygon",
+        "id": "right-sling:render",
+        "layer": "slingshots",
+        "vertices": [
+          {
+            "x": 666,
+            "y": 1500
+          },
+          {
+            "x": 708,
+            "y": 1616
+          },
+          {
+            "x": 596,
+            "y": 1572
+          }
+        ],
+        "tags": [
+          "slingshot"
+        ]
+      },
+      {
+        "kind": "body-capsule-x",
+        "id": "left-flipper:render",
+        "layer": "flippers",
+        "bodyId": "left-flipper:body",
+        "localCenter": {
+          "x": 0,
+          "y": 0
+        },
+        "localRotation": 0,
+        "halfSegmentLength": 56,
+        "radius": 14,
+        "tags": [
+          "flipper",
+          "left"
+        ]
+      },
+      {
+        "kind": "body-capsule-x",
+        "id": "right-flipper:render",
+        "layer": "flippers",
+        "bodyId": "right-flipper:body",
+        "localCenter": {
+          "x": 0,
+          "y": 0
+        },
+        "localRotation": 0,
+        "halfSegmentLength": 56,
+        "radius": 14,
+        "tags": [
+          "flipper",
+          "right"
+        ]
+      },
+      {
+        "kind": "rect",
+        "id": "drain:debug",
+        "layer": "debug",
+        "center": {
+          "x": 500,
+          "y": 1762
+        },
+        "halfExtents": {
+          "x": 160,
+          "y": 22
+        },
+        "rotation": 0,
+        "tags": [
+          "drain"
+        ]
+      }
+    ]
+  },
+  "refs": {
+    "staticBodyId": "starter-browser-pinball:static"
+  }
+}

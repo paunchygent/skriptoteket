@@ -5,7 +5,7 @@ title: "Reference: Competitive games curated apps and Flunk-Out Frenzy"
 status: active
 owners: "agents"
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-04-01
 topic: "curated-apps"
 links:
   - ADR-0023
@@ -37,9 +37,9 @@ Use these canonical terms when searching the codebase or linking future docs:
 - `Flunk-Out Frenzy`
 - `curated app`
 - `bespoke_required`
-- `official high score`
+- `global high score`
 - `pending score submission`
-- `replay validation`
+- `ruleset_id`
 - `leaderboard`
 
 ## Product position
@@ -50,8 +50,8 @@ Use these canonical terms when searching the codebase or linking future docs:
   or tool-editor scripts.
 - Users should be able to enjoy a short game session locally in the browser
   without network roundtrips during play.
-- Competitive features such as global high scores must remain trustworthy,
-  reviewable, and compatible with the platform's identity and persistence model.
+- Competitive features such as global high scores must remain lightweight,
+  fun, and compatible with the platform's identity and persistence model.
 
 ## Architectural position
 
@@ -59,8 +59,8 @@ Competitive games should use the **bespoke curated-app path**:
 
 - The SPA renders a dedicated app-specific view under `/apps/:appId`.
 - The backend exposes app-specific endpoints under `/api/v1/apps/{app_id}/...`.
-- Shared platform concerns such as auth, role checks, persistence, observability,
-  and auditability remain inside Skriptoteket.
+- Shared platform concerns such as auth, role checks, persistence, and
+  observability remain inside Skriptoteket.
 - Shared competitive-play concerns should live in a reusable backend subsystem,
   not inside one game's frontend runtime.
 
@@ -75,8 +75,8 @@ That means:
 
 - Live physics, frame stepping, collision handling, rendering, and local audio
   belong in the frontend runtime.
-- Identity, app boot metadata, pending score submissions, official score
-  promotion, replay persistence, and leaderboard queries belong in the backend.
+- Identity, app boot metadata, score submissions, lightweight leaderboard
+  acceptance, and leaderboard queries belong in the backend.
 
 ### Do not use as the primary runtime model
 
@@ -103,10 +103,9 @@ This layer should be reusable across future game apps.
 Recommended responsibilities:
 
 - `ruleset_id` / `season_id` scoping
-- pending score submission records
-- replay asset references and metadata
-- replay validation and promotion to official scores
-- official leaderboard queries
+- score submission records
+- lightweight server-side score-acceptance policy
+- global leaderboard queries
 - personal-history queries for the signed-in user
 
 ### 2. App-specific game implementation
@@ -139,14 +138,12 @@ src/skriptoteket/
     competitive_play/
       get_leaderboard.py
       submit_score.py
-      validate_submission.py
     curated_apps/
       flunk_out_frenzy/
         get_bootstrap.py
   infrastructure/
     competitive_play/
       repositories.py
-      replay_storage.py
     curated_apps/
       apps/
         flunk_out_frenzy/
@@ -212,7 +209,7 @@ own:
 - rendering
 - audio
 - deterministic rule evaluation
-- replay capture for validation
+- completed-run summary generation for post-run score handoff
 
 ### Non-negotiable rule
 
@@ -253,7 +250,7 @@ Flunk-Out Frenzy should prefer typed app endpoints such as:
 - `GET /api/v1/apps/games.flunk_out_frenzy/leaderboards/me`
 
 If the app uses internal run/execution machinery for exports or background
-validation, those details must stay server-side behind the app-specific API.
+work, those details must stay server-side behind the app-specific API.
 
 ## High-score support planned from day one
 
@@ -264,8 +261,7 @@ should reserve these concepts immediately:
 - `app_version`
 - `ruleset_id`
 - optional `season_id`
-- `pending` versus `official` score lifecycle
-- replay asset reference plus summary metadata
+- compact score summary metadata
 
 This prevents balance changes or scoring tweaks from corrupting one shared
 leaderboard.
@@ -286,8 +282,7 @@ leaderboard.
 Required from the first competition-capable slice:
 
 - score submissions
-- official scores
-- replay metadata
+- accepted leaderboard entries
 - leaderboard query indexes
 - app/ruleset/season scoping
 
@@ -313,22 +308,21 @@ for the first trustworthy leaderboard slice.
 
 ### Slice 2: competitive-play plumbing
 
-- pending score submissions
-- replay storage
+- score submissions
 - typed leaderboard endpoints
 - personal best and global board views
 
-### Slice 3: officialization
+### Slice 3: lightweight leaderboard hardening
 
-- replay validation worker
-- official score promotion
-- rejection reasons and moderation-safe failure states
+- ruleset and season scoping hardening
+- lightweight duplicate/spam protection if needed
+- user-facing failure states that do not break local play
 
 ## Testing shape
 
 - Unit tests for pure rules and scoring logic
 - Frontend tests around runtime-to-HUD bridging and route lifecycle cleanup
-- Backend tests for score submission, promotion policy, and leaderboard scoping
+- Backend tests for score submission, acceptance policy, and leaderboard scoping
 - Live functional UI checks whenever the app route or view changes
 
 ## Explicit non-goals for this reference
@@ -337,6 +331,7 @@ for the first trustworthy leaderboard slice.
 - Replacing the repo's existing SPA host or curated app registry
 - Driving the game primarily through generic `AppDetailView`
 - Storing live machine state in `tool_sessions`
+- Heavyweight score-forensics or moderation tooling
 - Treating Redis or WebSockets as mandatory on day one
 
 ## Notes

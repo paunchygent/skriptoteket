@@ -3559,96 +3559,7 @@ None. The proposal is thorough and aligns with the project&apos;s architectural 
 | Change | Artifact | Description |
 |--------|----------|-------------|
 | 1 | ADR-0073 | Initial proposal created |
-| 2 | EPIC-25 / ST-25-01..04 | Initial scope and stories created |</file><file path="docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md">---
-type: story
-id: ST-25-05
-title: &quot;Flunk-Out Frenzy mechanics-port foundation&quot;
-status: in_progress
-owners: &quot;agents&quot;
-created: 2026-04-01
-epic: &quot;EPIC-25&quot;
-dependencies: [&quot;ST-25-02&quot;, &quot;ADR-0073&quot;]
-acceptance_criteria:
-  - &quot;Given the local runtime needs richer table behavior, when this story is complete, then the physics boundary can emit semantic events for targets, lanes, capture/eject devices, ramps, gates, and launcher/feed lifecycle without leaking Rapier internals.&quot;
-  - &quot;Given the rule engine must grow beyond bumper and `L-A-T-E` rollover scoring, when this story is complete, then score, bonus, jackpot, ball-save or shoot-again, and objective progression are decomposed into small rule modules instead of one monolithic controller.&quot;
-  - &quot;Given the prototype-alpha table expands, when new devices are authored, then their geometry, tags, and authored parameters remain in typed TypeScript table modules rather than an external JSON content system.&quot;
-  - &quot;Given official score submission and replay validation still matter later, when these mechanics slices land, then the browser-owned runtime plus the app/version/ruleset seams from `ST-25-02` remain intact and replay-friendly.&quot;
-  - &quot;Given the work is reviewed incrementally, when the mechanics backlog is executed, then each PR remains narrow, testable, and aligned with the repo size budget instead of introducing a new engine monolith.&quot;
-ui_impact: &quot;Yes (richer local gameplay feedback and HUD states)&quot;
-data_impact: &quot;No (browser-local mechanics expansion only)&quot;
----
-
-## Context
-
-`ST-25-02` proved that Flunk-Out Frenzy can run as a browser-owned local game
-inside Skriptoteket, but its current mechanics surface is intentionally narrow:
-bumper, sling, rollover, drain, simple launcher, and a single multiplier loop.
-That is enough for a vertical slice, but not enough for the richer device and
-rules semantics we want from a real pinball-like curated app.
-
-This story uses the local clone of `SpaceCadetPinball` under
-`.artifacts/SpaceCadetPinball/` as a behavioral donor for device semantics,
-lane progression, bonus and jackpot loops, and ball-lifecycle choreography. It
-does **not** copy that codebase wholesale. SDL rendering, native broadphase
-code, and the monolithic `control.cpp` architecture remain out of scope.
-
-## What this story is really about
-
-- Broaden the event vocabulary between Rapier-backed physics and the pure
-  rules layer.
-- Refactor oversized gameplay files before adding more devices and rules.
-- Add typed table-authoring seams for targets, capture devices, ramps, gates,
-  and launcher or feed zones.
-- Keep the runtime compatible with future `ST-25-03` and `ST-25-04`
-  competition work instead of creating a local-only dead end.
-
-## Planned PR slices
-
-### Tranche 1: Foundation gate
-
-1. [PR-0188: Flunk-Out Frenzy: machine-event contract expansion and PhysicsWorld decomposition](../prs/pr-0188-flunk-out-frenzy-machine-event-contract-expansion-and-physicsworld-decomposition.md)
-2. [PR-0189: Flunk-Out Frenzy: lanes, targets, and tripwire devices](../prs/pr-0189-flunk-out-frenzy-lanes-targets-and-tripwire-devices.md)
-3. [PR-0190: Flunk-Out Frenzy: bonus, jackpot, and ball-lifecycle rule state](../prs/pr-0190-flunk-out-frenzy-bonus-jackpot-and-ball-lifecycle-rule-state.md)
-
-### Formal reassessment gate
-
-4. [PR-0191: Flunk-Out Frenzy: mechanics foundation reassessment and go/no-go](../prs/pr-0191-flunk-out-frenzy-mechanics-foundation-reassessment-and-go-no-go.md)
-
-### Tranche 2: Higher-risk mechanics
-
-5. [PR-0192: Flunk-Out Frenzy: flipper contact model and explicit launcher state](../prs/pr-0192-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md)
-6. [PR-0193: Flunk-Out Frenzy: capture, eject, and save devices](../prs/pr-0193-flunk-out-frenzy-capture-eject-and-save-devices.md)
-7. [PR-0194: Flunk-Out Frenzy: ramps, gates, and field-zone semantics](../prs/pr-0194-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md)
-8. [PR-0195: Flunk-Out Frenzy: objective controllers and bank progression](../prs/pr-0195-flunk-out-frenzy-objective-controllers-and-bank-progression.md)
-
-Dependency chain: `PR-0188 -&gt; PR-0189 -&gt; PR-0190 -&gt; PR-0191 -&gt; PR-0192 -&gt;
-PR-0193 -&gt; PR-0194 -&gt; PR-0195`.
-
-## Execution strategy
-
-- `PR-0188` through `PR-0190` are one gated foundation tranche.
-- `PR-0191` is mandatory before any physical-fidelity or advanced-device work
-  starts.
-- `PR-0192` through `PR-0195` stay blocked until the reassessment explicitly
-  confirms the tranche-one seams are stable enough to deepen mechanics.
-
-## Non-goals
-
-- Reimplement the original Space Cadet engine or asset pipeline.
-- Port `TEdgeManager`, SDL rendering, or native loader code.
-- Introduce backend competition, replay validation, or leaderboard work in this
-  story.
-- Replace the browser-owned runtime with a native or emulated engine core.
-- Externalize table content to JSON or add a general-purpose table editor.
-
-## Notes
-
-- Port semantics, not implementation details: preserve Rapier, Pixi, Howler,
-  and the existing browser-owned runtime shell.
-- Keep files under the repo size budget by splitting device factories and rule
-  controllers before the new mechanics land.
-- Treat the donor repo as a design reference for targets, lanes, capture,
-  launcher, and drain behavior, not as a source tree to transliterate.</file><file path="docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md">---
+| 2 | EPIC-25 / ST-25-01..04 | Initial scope and stories created |</file><file path="docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md">---
 type: reference
 id: REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code
 title: &quot;Reference: Competitive games curated apps and Flunk-Out Frenzy&quot;
@@ -4010,145 +3921,7 @@ export const loadGameRuntime: GameRuntimeFactory = async (
 ) =&gt; {
   const { GameRuntime } = await import(&quot;./GameRuntime&quot;);
   return GameRuntime.create(options);
-};</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts">/**
- * Runtime core shared contracts for Flunk-Out Frenzy.
- *
- * These types define the command-driven seam between the runtime spine, input
- * adapters, and the Vue host component. They intentionally stay minimal in
- * `PR-0098` so later physics and rules slices can extend them without
- * rewriting the shell boundary.
- */
-
-export type GameSessionStatus = &quot;ready&quot; | &quot;running&quot; | &quot;paused&quot; | &quot;game-over&quot;;
-
-export interface GameHudBonusSnapshot {
-  points: number;
-  collectReady: boolean;
-}
-
-export interface GameHudJackpotSnapshot {
-  points: number;
-  lit: boolean;
-}
-
-export interface GameHudBallLifecycleSnapshot {
-  shootAgainLit: boolean;
-}
-
-export interface GameHudSnapshot {
-  score: number;
-  ballsRemaining: number;
-  multiplier: number;
-  bonus: GameHudBonusSnapshot;
-  jackpot: GameHudJackpotSnapshot;
-  ballLifecycle: GameHudBallLifecycleSnapshot;
-  status: GameSessionStatus;
-  muted: boolean;
-}
-
-export interface GameBoardSnapshot {
-  width: number;
-  height: number;
-}
-
-export interface GameBallSnapshot {
-  x: number;
-  y: number;
-  radius: number;
-}
-
-export interface GameFlipperSnapshot {
-  side: &quot;left&quot; | &quot;right&quot;;
-  pivotX: number;
-  pivotY: number;
-  length: number;
-  thickness: number;
-  angleDeg: number;
-}
-
-export interface GameRolloverSnapshot {
-  tag: string;
-  label: string;
-  x: number;
-  y: number;
-  lit: boolean;
-}
-
-export interface GameViewSnapshot {
-  board: GameBoardSnapshot;
-  ball: GameBallSnapshot | null;
-  flippers: {
-    left: GameFlipperSnapshot;
-    right: GameFlipperSnapshot;
-  };
-  rollovers: GameRolloverSnapshot[];
-}
-
-export type RuntimeCommand =
-  | { type: &quot;left-flip&quot;; pressed: boolean }
-  | { type: &quot;right-flip&quot;; pressed: boolean }
-  | { type: &quot;launch&quot;; pressed: boolean };
-
-export interface RuntimeInputState {
-  leftFlipPressed: boolean;
-  rightFlipPressed: boolean;
-  launchPressed: boolean;
-  lastCommandLabel: string;
-}
-
-export interface AnimationScheduler {
-  now(): number;
-  requestFrame(callback: FrameRequestCallback): number;
-  cancelFrame(handle: number): void;
-}
-
-export function createInitialHudSnapshot(): GameHudSnapshot {
-  return {
-    score: 0,
-    ballsRemaining: 3,
-    multiplier: 1,
-    bonus: {
-      points: 0,
-      collectReady: false,
-    },
-    jackpot: {
-      points: 10_000,
-      lit: false,
-    },
-    ballLifecycle: {
-      shootAgainLit: false,
-    },
-    status: &quot;ready&quot;,
-    muted: false,
-  };
-}
-
-export function createInitialInputState(): RuntimeInputState {
-  return {
-    leftFlipPressed: false,
-    rightFlipPressed: false,
-    launchPressed: false,
-    lastCommandLabel: &quot;Awaiting input&quot;,
-  };
-}
-
-export function createBrowserAnimationScheduler(): AnimationScheduler {
-  return {
-    now: () =&gt; performance.now(),
-    requestFrame: (callback) =&gt; window.requestAnimationFrame(callback),
-    cancelFrame: (handle) =&gt; window.cancelAnimationFrame(handle),
-  };
-}
-
-export function describeRuntimeCommand(command: RuntimeCommand): string {
-  if (command.type === &quot;left-flip&quot;) {
-    return command.pressed ? &quot;Vänster flipper ned&quot; : &quot;Vänster flipper upp&quot;;
-  }
-  if (command.type === &quot;right-flip&quot;) {
-    return command.pressed ? &quot;Höger flipper ned&quot; : &quot;Höger flipper upp&quot;;
-  }
-  return command.pressed ? &quot;Launch laddas&quot; : &quot;Launch släpps&quot;;
-}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.ts">/**
+};</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.ts">/**
  * Keyboard-to-command adapter for Flunk-Out Frenzy.
  *
  * The host attaches this adapter to the browser window so input stays outside
@@ -4237,818 +4010,6 @@ function mapKeyboardEventToCommand(
     return { type: &quot;launch&quot;, pressed };
   }
   return null;
-}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts">/**
- * Rapier-backed physics world for Flunk-Out Frenzy prototype alpha.
- *
- * This module owns Rapier rigid bodies, colliders, sensor events, and
- * authored impulses. It emits stable semantic machine events so rules never
- * touch raw collider handles or engine-specific details.
- */
-
-import RAPIER from &quot;@dimforge/rapier2d-compat&quot;;
-
-import type { RuntimeCommand } from &quot;../core/runtimeTypes&quot;;
-import {
-  PROTOTYPE_ALPHA_TABLE,
-  type PrototypeAlphaTable,
-} from &quot;../table/prototypeAlphaTable&quot;;
-import type {
-  TableBumperDefinition,
-  TableFlipperDefinition,
-  TablePoint,
-  TableSlingDefinition,
-} from &quot;../table/tableDefinitionTypes&quot;;
-import type { ColliderMeta } from &quot;./colliderMeta&quot;;
-import { createLaneDevices } from &quot;./createLaneDevices&quot;;
-import { createTargetDevices } from &quot;./createTargetDevices&quot;;
-import { collectMachineEvents } from &quot;./machineEventEmitter&quot;;
-import type { MachineEvent, PhysicsSnapshot } from &quot;./physicsTypes&quot;;
-
-export class PhysicsWorld {
-  private world!: RAPIER.World;
-  private eventQueue!: RAPIER.EventQueue;
-  private ballBody: RAPIER.RigidBody | null = null;
-  private ballColliderHandle: number | null = null;
-  private leftFlipper!: RAPIER.RigidBody;
-  private rightFlipper!: RAPIER.RigidBody;
-  private leftFlipperAngleRad = 0;
-  private rightFlipperAngleRad = 0;
-  private leftPressed = false;
-  private rightPressed = false;
-  private launchPressed = false;
-  private launchChargeMs = 0;
-  private wasLaunchPressed = false;
-  private wasLeftPressed = false;
-  private wasRightPressed = false;
-  private readonly cooldowns = new Map&lt;string, number&gt;();
-  private readonly colliderMetaByHandle = new Map&lt;number, ColliderMeta&gt;();
-
-  static async create(table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE): Promise&lt;PhysicsWorld&gt; {
-    await RAPIER.init();
-    return new PhysicsWorld(table);
-  }
-
-  private constructor(private readonly table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE) {
-    this.reset();
-  }
-
-  reset(): void {
-    this.disposeWorld();
-
-    this.world = new RAPIER.World(this.table.gravity);
-    this.eventQueue = new RAPIER.EventQueue(true);
-    this.world.lengthUnit = 100;
-
-    this.leftPressed = false;
-    this.rightPressed = false;
-    this.launchPressed = false;
-    this.launchChargeMs = 0;
-    this.wasLaunchPressed = false;
-    this.wasLeftPressed = false;
-    this.wasRightPressed = false;
-    this.cooldowns.clear();
-    this.colliderMetaByHandle.clear();
-    this.ballBody = null;
-    this.ballColliderHandle = null;
-    this.leftFlipperAngleRad = degreesToRadians(this.table.flippers.left.restAngleDeg);
-    this.rightFlipperAngleRad = degreesToRadians(this.table.flippers.right.restAngleDeg);
-
-    this.buildStaticWorld();
-    this.leftFlipper = this.createFlipper(this.table.flippers.left);
-    this.rightFlipper = this.createFlipper(this.table.flippers.right);
-  }
-
-  dispose(): void {
-    this.disposeWorld();
-  }
-
-  applyCommand(command: RuntimeCommand): void {
-    if (command.type === &quot;left-flip&quot;) {
-      this.leftPressed = command.pressed;
-      return;
-    }
-
-    if (command.type === &quot;right-flip&quot;) {
-      this.rightPressed = command.pressed;
-      return;
-    }
-
-    this.launchPressed = command.pressed;
-  }
-
-  spawnBall(position: TablePoint = this.table.ball.spawn): void {
-    if (this.ballBody) {
-      this.world.removeRigidBody(this.ballBody);
-    }
-
-    const bodyDesc = RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(position.x, position.y)
-      .setLinearDamping(0.06)
-      .setAngularDamping(0.14)
-      .setCanSleep(false)
-      .setCcdEnabled(true)
-      .setAdditionalMass(this.table.ball.mass);
-
-    this.ballBody = this.world.createRigidBody(bodyDesc);
-    const ballCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.ball(this.table.ball.radius)
-        .setMass(this.table.ball.mass)
-        .setRestitution(0.55)
-        .setFriction(0.18)
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-      this.ballBody,
-    );
-
-    this.ballColliderHandle = ballCollider.handle;
-    this.colliderMetaByHandle.set(ballCollider.handle, {
-      kind: &quot;ball&quot;,
-      tag: &quot;ball/main&quot;,
-    });
-    this.launchChargeMs = 0;
-    this.wasLaunchPressed = false;
-  }
-
-  removeBall(): void {
-    if (!this.ballBody) {
-      return;
-    }
-
-    this.world.removeRigidBody(this.ballBody);
-    this.ballBody = null;
-    this.ballColliderHandle = null;
-    this.launchChargeMs = 0;
-  }
-
-  step(dtMs: number): MachineEvent[] {
-    const dtSeconds = dtMs / 1000;
-    this.tickCooldowns(dtMs);
-    this.updateFlippers(dtSeconds);
-    this.updateLauncher(dtMs);
-    this.world.timestep = dtSeconds;
-    this.world.step(this.eventQueue);
-
-    const stepResult = collectMachineEvents({
-      eventQueue: this.eventQueue,
-      colliderMetaByHandle: this.colliderMetaByHandle,
-      cooldowns: this.cooldowns,
-      ballBody: this.ballBody,
-      table: this.table,
-    });
-    if (stepResult.shouldRemoveBall) {
-      this.removeBall();
-    }
-    this.wasLaunchPressed = this.launchPressed;
-    this.wasLeftPressed = this.leftPressed;
-    this.wasRightPressed = this.rightPressed;
-    return stepResult.events;
-  }
-
-  currentSnapshot(): PhysicsSnapshot {
-    const leftDef = this.table.flippers.left;
-    const rightDef = this.table.flippers.right;
-
-    return {
-      ball: this.ballBody
-        ? {
-            x: this.ballBody.translation().x,
-            y: this.ballBody.translation().y,
-            radius: this.table.ball.radius,
-          }
-        : null,
-      flippers: {
-        left: {
-          side: &quot;left&quot;,
-          pivotX: leftDef.pivot.x,
-          pivotY: leftDef.pivot.y,
-          length: leftDef.length,
-          thickness: leftDef.thickness,
-          angleDeg: radiansToDegrees(this.leftFlipperAngleRad),
-        },
-        right: {
-          side: &quot;right&quot;,
-          pivotX: rightDef.pivot.x,
-          pivotY: rightDef.pivot.y,
-          length: rightDef.length,
-          thickness: rightDef.thickness,
-          angleDeg: radiansToDegrees(this.rightFlipperAngleRad),
-        },
-      },
-    };
-  }
-
-  private buildStaticWorld(): void {
-    for (const wall of this.table.walls) {
-      this.world.createCollider(
-        RAPIER.ColliderDesc.segment(wall.from, wall.to)
-          .setRestitution(0.34)
-          .setFriction(0.16),
-      );
-    }
-
-    for (const bumper of this.table.bumpers) {
-      this.buildBumper(bumper);
-    }
-
-    for (const sling of this.table.slings) {
-      this.buildSling(sling);
-    }
-
-    createLaneDevices({
-      world: this.world,
-      colliderMetaByHandle: this.colliderMetaByHandle,
-      rollovers: this.table.rollovers,
-      tripwires: this.table.tripwires,
-      gates: this.table.gates,
-    });
-
-    createTargetDevices({
-      world: this.world,
-      colliderMetaByHandle: this.colliderMetaByHandle,
-      standupTargets: this.table.standupTargets,
-      popupTargets: this.table.popupTargets,
-    });
-
-    const drain = this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(this.table.drain.width / 2, this.table.drain.height / 2)
-        .setTranslation(this.table.drain.x, this.table.drain.y)
-        .setSensor(true)
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-    );
-    this.colliderMetaByHandle.set(drain.handle, {
-      kind: &quot;drain&quot;,
-      tag: this.table.drain.tag,
-    });
-  }
-
-  private buildBumper(bumper: TableBumperDefinition): void {
-    this.world.createCollider(
-      RAPIER.ColliderDesc.ball(bumper.radius)
-        .setTranslation(bumper.x, bumper.y)
-        .setRestitution(0.92)
-        .setFriction(0.08),
-    );
-
-    const sensor = this.world.createCollider(
-      RAPIER.ColliderDesc.ball(bumper.sensorRadius)
-        .setTranslation(bumper.x, bumper.y)
-        .setSensor(true)
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-    );
-    this.colliderMetaByHandle.set(sensor.handle, {
-      kind: &quot;bumper&quot;,
-      tag: bumper.tag,
-      center: { x: bumper.x, y: bumper.y },
-      impulse: bumper.impulse,
-    });
-  }
-
-  private buildSling(sling: TableSlingDefinition): void {
-    this.world.createCollider(
-      RAPIER.ColliderDesc.triangle(...sling.vertices)
-        .setRestitution(0.72)
-        .setFriction(0.14),
-    );
-
-    const sensor = this.world.createCollider(
-      RAPIER.ColliderDesc.triangle(...sling.vertices)
-        .setSensor(true)
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-    );
-    this.colliderMetaByHandle.set(sensor.handle, {
-      kind: &quot;sling&quot;,
-      tag: sling.tag,
-      side: sling.side,
-      impulse: sling.impulse,
-    });
-  }
-
-  private createFlipper(flipper: TableFlipperDefinition): RAPIER.RigidBody {
-    const body = this.world.createRigidBody(
-      RAPIER.RigidBodyDesc.kinematicPositionBased()
-        .setTranslation(flipper.pivot.x, flipper.pivot.y)
-        .setRotation(degreesToRadians(flipper.restAngleDeg)),
-    );
-
-    const xOffset = flipper.side === &quot;left&quot; ? flipper.length / 2 : -flipper.length / 2;
-    this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(flipper.length / 2, flipper.thickness / 2)
-        .setTranslation(xOffset, 0)
-        .setRestitution(0.28)
-        .setFriction(0.68),
-      body,
-    );
-
-    return body;
-  }
-
-  private updateFlippers(dtSeconds: number): void {
-    this.leftFlipperAngleRad = this.driveFlipper(
-      this.leftFlipper,
-      this.table.flippers.left,
-      this.leftPressed,
-      dtSeconds,
-      this.leftFlipperAngleRad,
-    );
-    this.rightFlipperAngleRad = this.driveFlipper(
-      this.rightFlipper,
-      this.table.flippers.right,
-      this.rightPressed,
-      dtSeconds,
-      this.rightFlipperAngleRad,
-    );
-
-    if (this.leftPressed &amp;&amp; !this.wasLeftPressed) {
-      this.assistFlipper(this.table.flippers.left);
-    }
-    if (this.rightPressed &amp;&amp; !this.wasRightPressed) {
-      this.assistFlipper(this.table.flippers.right);
-    }
-  }
-
-  private driveFlipper(
-    body: RAPIER.RigidBody,
-    flipper: TableFlipperDefinition,
-    pressed: boolean,
-    dtSeconds: number,
-    currentAngle: number,
-  ): number {
-    const targetAngle = degreesToRadians(
-      pressed ? flipper.activeAngleDeg : flipper.restAngleDeg,
-    );
-    const maxDelta = dtSeconds * 18;
-    const nextAngle = approachAngle(currentAngle, targetAngle, maxDelta);
-    body.setNextKinematicRotation(nextAngle);
-    return nextAngle;
-  }
-
-  private assistFlipper(flipper: TableFlipperDefinition): void {
-    if (!this.ballBody) {
-      return;
-    }
-
-    const ballPosition = this.ballBody.translation();
-    const distance = Math.hypot(ballPosition.x - flipper.pivot.x, ballPosition.y - flipper.pivot.y);
-    if (distance &gt; flipper.length * 1.25 || ballPosition.y &gt; flipper.pivot.y + 36) {
-      return;
-    }
-
-    this.ballBody.applyImpulse(flipper.assistImpulse, true);
-  }
-
-  private updateLauncher(dtMs: number): void {
-    if (!this.ballBody) {
-      this.launchChargeMs = 0;
-      return;
-    }
-
-    if (this.launchPressed) {
-      this.launchChargeMs = Math.min(this.launchChargeMs + dtMs, 900);
-      return;
-    }
-
-    if (this.wasLaunchPressed &amp;&amp; this.launchChargeMs &gt; 0 &amp;&amp; this.ballIsInLaunchLane()) {
-      const chargeRatio = this.launchChargeMs / 900;
-      const impulse = this.table.ball.launchImpulseMin +
-        (this.table.ball.launchImpulseMax - this.table.ball.launchImpulseMin) * chargeRatio;
-
-      this.ballBody.applyImpulse(
-        {
-          x: this.table.ball.launchAssistX,
-          y: -impulse,
-        },
-        true,
-      );
-    }
-
-    this.launchChargeMs = 0;
-  }
-
-  private ballIsInLaunchLane(): boolean {
-    if (!this.ballBody) {
-      return false;
-    }
-
-    const position = this.ballBody.translation();
-    return position.x &gt; 485 &amp;&amp; position.y &gt; 860;
-  }
-
-  private tickCooldowns(dtMs: number): void {
-    for (const [tag, remainingMs] of [...this.cooldowns.entries()]) {
-      const nextRemaining = remainingMs - dtMs;
-      if (nextRemaining &lt;= 0) {
-        this.cooldowns.delete(tag);
-        continue;
-      }
-      this.cooldowns.set(tag, nextRemaining);
-    }
-  }
-
-  private disposeWorld(): void {
-    this.eventQueue?.free();
-    this.world?.free();
-  }
-}
-
-function approachAngle(current: number, target: number, maxDelta: number): number {
-  if (Math.abs(target - current) &lt;= maxDelta) {
-    return target;
-  }
-  return current + Math.sign(target - current) * maxDelta;
-}
-
-function degreesToRadians(deg: number): number {
-  return (deg * Math.PI) / 180;
-}
-
-function radiansToDegrees(rad: number): number {
-  return (rad * 180) / Math.PI;
-}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/render/PixiRenderer.ts">/**
- * Pixi-powered renderer for Flunk-Out Frenzy.
- *
- * This adapter owns the canvas, draws the live board state, and reacts to
- * semantic effect events with lightweight pulses and lamp updates. Vue never
- * owns the playfield rendering itself.
- */
-
-import {
-  Application,
-  BlurFilter,
-  Container,
-  Graphics,
-  Text,
-} from &quot;pixi.js&quot;;
-
-import type { GameHudSnapshot, GameViewSnapshot } from &quot;../core/runtimeTypes&quot;;
-import type { GameEffectEvent } from &quot;../presentation/gameEffectTypes&quot;;
-import { PROTOTYPE_ALPHA_TABLE } from &quot;../table/prototypeAlphaTable&quot;;
-import type { RuntimeRenderer } from &quot;./renderTypes&quot;;
-
-interface RolloverNode {
-  container: Container;
-  ring: Graphics;
-  label: Text;
-}
-
-export class PixiRenderer implements RuntimeRenderer {
-  private readonly app = new Application();
-  private readonly scene = new Container();
-  private readonly underlay = new Container();
-  private readonly pulseLayer = new Container();
-  private readonly rolloverLayer = new Container();
-  private readonly ballGraphic = new Graphics();
-  private readonly leftFlipperGraphic = new Graphics();
-  private readonly rightFlipperGraphic = new Graphics();
-  private readonly rolloverNodes = new Map&lt;string, RolloverNode&gt;();
-  private hostElement: HTMLElement | null = null;
-  private lastCanvasWidth = 0;
-  private lastCanvasHeight = 0;
-
-  static async create(): Promise&lt;PixiRenderer&gt; {
-    const renderer = new PixiRenderer();
-    await renderer.init();
-    return renderer;
-  }
-
-  private async init(): Promise&lt;void&gt; {
-    await this.app.init({
-      width: PROTOTYPE_ALPHA_TABLE.board.width,
-      height: PROTOTYPE_ALPHA_TABLE.board.height,
-      antialias: true,
-      autoDensity: true,
-      backgroundAlpha: 0,
-      preference: &quot;webgl&quot;,
-      sharedTicker: true,
-      autoStart: true,
-    });
-
-    this.app.canvas.dataset.test = &quot;runtime-renderer-canvas&quot;;
-    this.app.canvas.className = &quot;fof-host__canvas&quot;;
-    this.app.canvas.setAttribute(&quot;aria-hidden&quot;, &quot;true&quot;);
-    this.app.canvas.style.position = &quot;absolute&quot;;
-    this.app.canvas.style.inset = &quot;0&quot;;
-    this.app.canvas.style.width = &quot;100%&quot;;
-    this.app.canvas.style.height = &quot;100%&quot;;
-    this.app.canvas.style.pointerEvents = &quot;none&quot;;
-
-    this.scene.eventMode = &quot;none&quot;;
-    this.app.stage.addChild(this.scene);
-    this.scene.addChild(this.underlay);
-    this.scene.addChild(this.pulseLayer);
-    this.scene.addChild(this.rolloverLayer);
-    this.scene.addChild(this.leftFlipperGraphic);
-    this.scene.addChild(this.rightFlipperGraphic);
-    this.scene.addChild(this.ballGraphic);
-
-    this.drawStaticUnderlay();
-    this.buildRolloverNodes();
-    this.drawFlipper(this.leftFlipperGraphic, &quot;left&quot;);
-    this.drawFlipper(this.rightFlipperGraphic, &quot;right&quot;);
-    this.ballGraphic.visible = false;
-  }
-
-  attach(hostElement: HTMLElement): void {
-    if (this.hostElement === hostElement &amp;&amp; this.app.canvas.parentElement === hostElement) {
-      this.syncViewport();
-      return;
-    }
-
-    if (this.app.canvas.parentElement &amp;&amp; this.app.canvas.parentElement !== hostElement) {
-      this.app.canvas.parentElement.removeChild(this.app.canvas);
-    }
-
-    this.hostElement = hostElement;
-    hostElement.appendChild(this.app.canvas);
-    this.syncViewport();
-  }
-
-  render(view: GameViewSnapshot, hud: GameHudSnapshot, effects: GameEffectEvent[]): void {
-    this.syncViewport();
-    this.syncRollovers(view);
-    this.syncBall(view);
-    this.syncFlippers(view);
-    this.applyEffects(effects, hud);
-  }
-
-  dispose(): void {
-    this.rolloverNodes.clear();
-    this.hostElement = null;
-    this.app.destroy({ removeView: true }, true);
-  }
-
-  private drawStaticUnderlay(): void {
-    for (const bumper of PROTOTYPE_ALPHA_TABLE.bumpers) {
-      const glow = new Graphics();
-      glow.position.set(bumper.x, bumper.y);
-      glow.circle(0, 0, bumper.radius * 1.38).fill({ color: 0x61ff7d, alpha: 0.09 });
-      glow.filters = [new BlurFilter({ strength: 8 })];
-      this.underlay.addChild(glow);
-    }
-  }
-
-  private buildRolloverNodes(): void {
-    for (const rollover of PROTOTYPE_ALPHA_TABLE.rollovers) {
-      const ring = new Graphics();
-      const label = new Text({
-        text: rollover.label,
-        style: {
-          fill: 0xffee8d,
-          fontFamily: &apos;&quot;IBM Plex Sans&quot;, sans-serif&apos;,
-          fontSize: 20,
-          fontWeight: &quot;800&quot;,
-          letterSpacing: 1,
-        },
-      });
-
-      label.anchor.set(0.5);
-
-      const container = new Container();
-      container.position.set(rollover.x, rollover.y);
-      container.addChild(ring);
-      container.addChild(label);
-      this.rolloverLayer.addChild(container);
-      this.rolloverNodes.set(rollover.tag, { container, ring, label });
-    }
-  }
-
-  private syncRollovers(view: GameViewSnapshot): void {
-    for (const rollover of view.rollovers) {
-      const node = this.rolloverNodes.get(rollover.tag);
-      if (!node) {
-        continue;
-      }
-
-      node.container.position.set(rollover.x, rollover.y);
-      node.label.text = rollover.label;
-      this.drawRollover(node.ring, rollover.lit);
-    }
-  }
-
-  private drawRollover(graphic: Graphics, lit: boolean): void {
-    graphic.clear();
-    graphic.circle(0, 0, 21);
-    graphic.fill({
-      color: lit ? 0xffee8d : 0x191a15,
-      alpha: lit ? 0.78 : 0.36,
-    });
-    graphic.stroke({
-      color: 0xffee8d,
-      alpha: lit ? 0.92 : 0.22,
-      width: lit ? 2 : 1,
-    });
-
-    if (lit) {
-      graphic.circle(0, 0, 27);
-      graphic.stroke({
-        color: 0xffee8d,
-        alpha: 0.22,
-        width: 7,
-      });
-    }
-  }
-
-  private syncBall(view: GameViewSnapshot): void {
-    if (!view.ball) {
-      this.ballGraphic.visible = false;
-      return;
-    }
-
-    this.ballGraphic.visible = true;
-    this.ballGraphic.clear();
-    this.ballGraphic.circle(0, 0, view.ball.radius);
-    this.ballGraphic.fill({
-      color: 0xe2e8f0,
-    });
-    this.ballGraphic.stroke({
-      color: 0xffffff,
-      alpha: 0.3,
-      width: 1.2,
-    });
-    this.ballGraphic.position.set(view.ball.x, view.ball.y);
-  }
-
-  private syncFlippers(view: GameViewSnapshot): void {
-    this.leftFlipperGraphic.position.set(
-      view.flippers.left.pivotX,
-      view.flippers.left.pivotY,
-    );
-    this.leftFlipperGraphic.rotation = degreesToRadians(view.flippers.left.angleDeg);
-
-    this.rightFlipperGraphic.position.set(
-      view.flippers.right.pivotX,
-      view.flippers.right.pivotY,
-    );
-    this.rightFlipperGraphic.rotation = degreesToRadians(view.flippers.right.angleDeg);
-  }
-
-  private drawFlipper(graphic: Graphics, side: &quot;left&quot; | &quot;right&quot;): void {
-    const flipper = PROTOTYPE_ALPHA_TABLE.flippers[side];
-    const x = side === &quot;left&quot; ? 0 : -flipper.length;
-
-    graphic.clear();
-    graphic.roundRect(x, -flipper.thickness / 2, flipper.length, flipper.thickness, 999);
-    graphic.fill({ color: 0xff4f96 });
-    graphic.stroke({
-      color: 0xffd3e5,
-      alpha: 0.3,
-      width: 1.4,
-    });
-  }
-
-  private applyEffects(effects: GameEffectEvent[], hud: GameHudSnapshot): void {
-    this.app.canvas.dataset.runtimeStatus = hud.status;
-    this.app.canvas.dataset.runtimeMuted = String(hud.muted);
-
-    for (const effect of effects) {
-      switch (effect.type) {
-        case &quot;bumper-hit&quot;: {
-          const bumper = PROTOTYPE_ALPHA_TABLE.bumpers.find((item) =&gt; item.tag === effect.tag);
-          if (bumper) {
-            this.spawnPulse(bumper.x, bumper.y, 32, 0x69ff7d, 170);
-          }
-          break;
-        }
-        case &quot;sling-hit&quot;: {
-          const sling = PROTOTYPE_ALPHA_TABLE.slings.find((item) =&gt; item.tag === effect.tag);
-          if (sling) {
-            const centroidX =
-              (sling.vertices[0].x + sling.vertices[1].x + sling.vertices[2].x) / 3;
-            const centroidY =
-              (sling.vertices[0].y + sling.vertices[1].y + sling.vertices[2].y) / 3;
-            this.spawnPulse(centroidX, centroidY, 26, 0xff8a47, 150);
-          }
-          break;
-        }
-        case &quot;rollover-lit&quot;: {
-          const rollover = PROTOTYPE_ALPHA_TABLE.rollovers.find((item) =&gt; item.tag === effect.tag);
-          if (rollover) {
-            this.spawnPulse(rollover.x, rollover.y, 22, 0xffee8d, 130);
-          }
-          break;
-        }
-        case &quot;tripwire-crossed&quot;: {
-          const tripwire = PROTOTYPE_ALPHA_TABLE.tripwires.find((item) =&gt; item.tag === effect.tag);
-          if (tripwire) {
-            this.spawnPulse(tripwire.x, tripwire.y, 28, 0x6be9ff, 140);
-          }
-          break;
-        }
-        case &quot;standup-target-hit&quot;: {
-          const target = PROTOTYPE_ALPHA_TABLE.standupTargets.find((item) =&gt; item.tag === effect.tag);
-          if (target) {
-            this.spawnPulse(target.x, target.y, 24, 0xffc769, 155);
-          }
-          break;
-        }
-        case &quot;popup-target-hit&quot;: {
-          const target = PROTOTYPE_ALPHA_TABLE.popupTargets.find((item) =&gt; item.tag === effect.tag);
-          if (target) {
-            this.spawnPulse(target.x, target.y, target.radius + 10, 0xff8df0, 165);
-          }
-          break;
-        }
-        case &quot;gate-passed&quot;: {
-          const gate = PROTOTYPE_ALPHA_TABLE.gates.find((item) =&gt; item.tag === effect.tag);
-          if (gate) {
-            this.spawnPulse(gate.x, gate.y, 22, 0x9ee081, 130);
-          }
-          break;
-        }
-        case &quot;late-bank-complete&quot;:
-          this.spawnPulse(300, 146, 110, 0xffee8d, 280);
-          break;
-        case &quot;bonus-awarded&quot;:
-          this.spawnPulse(300, 1030, 72, 0xffcf7c, 240);
-          break;
-        case &quot;jackpot-lit&quot;:
-          this.spawnPulse(300, 250, 48, 0xff8df0, 200);
-          break;
-        case &quot;jackpot-awarded&quot;:
-          this.spawnPulse(300, 420, 126, 0xff8df0, 300);
-          break;
-        case &quot;shoot-again-lit&quot;:
-          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, 930, 42, 0x8dffcf, 220);
-          break;
-        case &quot;ball-drained&quot;:
-          this.spawnPulse(300, 1136, 54, 0xff5d92, 200);
-          break;
-        case &quot;ball-spawned&quot;:
-          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, PROTOTYPE_ALPHA_TABLE.ball.spawn.y, 24, 0xb8c5ff, 150);
-          break;
-        case &quot;game-over&quot;:
-          this.spawnPulse(300, 680, 150, 0xff5d92, 360);
-          break;
-        case &quot;round-started&quot;:
-        case &quot;flipper-fired&quot;:
-        case &quot;launch-released&quot;:
-          break;
-      }
-    }
-  }
-
-  private spawnPulse(
-    x: number,
-    y: number,
-    radius: number,
-    color: number,
-    durationMs: number,
-  ): void {
-    const pulse = new Graphics();
-    pulse.position.set(x, y);
-    pulse.circle(0, 0, radius);
-    pulse.stroke({
-      color,
-      alpha: 0.72,
-      width: 4,
-    });
-    pulse.filters = [new BlurFilter({ strength: 2 })];
-    this.pulseLayer.addChild(pulse);
-
-    let elapsedMs = 0;
-    const tick = () =&gt; {
-      elapsedMs += this.app.ticker.deltaMS;
-
-      const progress = Math.min(elapsedMs / durationMs, 1);
-      pulse.alpha = 1 - progress;
-      pulse.scale.set(1 + progress * 0.92);
-
-      if (progress &gt;= 1) {
-        this.app.ticker.remove(tick);
-        pulse.destroy();
-      }
-    };
-
-    this.app.ticker.add(tick);
-  }
-
-  private syncViewport(): void {
-    if (!this.hostElement) {
-      return;
-    }
-
-    const width = Math.max(Math.floor(this.hostElement.clientWidth), 1);
-    const height = Math.max(Math.floor(this.hostElement.clientHeight), 1);
-
-    if (width !== this.lastCanvasWidth || height !== this.lastCanvasHeight) {
-      this.app.renderer.resize(width, height);
-      this.lastCanvasWidth = width;
-      this.lastCanvasHeight = height;
-    }
-
-    const scale = Math.min(
-      width / PROTOTYPE_ALPHA_TABLE.board.width,
-      height / PROTOTYPE_ALPHA_TABLE.board.height,
-    );
-
-    this.scene.scale.set(scale);
-    this.scene.position.set(
-      Math.round((width - PROTOTYPE_ALPHA_TABLE.board.width * scale) / 2),
-      Math.round((height - PROTOTYPE_ALPHA_TABLE.board.height * scale) / 2),
-    );
-  }
-}
-
-function degreesToRadians(deg: number): number {
-  return (deg * Math.PI) / 180;
 }</file><file path="frontend/apps/skriptoteket/src/router/routes.ts">import type { RouteRecordRaw } from &quot;vue-router&quot;;
 
 export const routes: RouteRecordRaw[] = [
@@ -5813,7 +4774,96 @@ pending submission into an official leaderboard entry.
 - Validation may run in-process first and later move to a worker-backed flow.
 - Rejected submissions should remain auditable for operations and support.
 - This story is where the shared `competitive_play` subsystem becomes more than
-  a storage seam and starts enforcing real competition policy.</file><file path="docs/reference/ref-competitive-games-cross-cutting-programme.md">---
+  a storage seam and starts enforcing real competition policy.</file><file path="docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md">---
+type: story
+id: ST-25-05
+title: &quot;Flunk-Out Frenzy mechanics-port foundation&quot;
+status: in_progress
+owners: &quot;agents&quot;
+created: 2026-04-01
+epic: &quot;EPIC-25&quot;
+dependencies: [&quot;ST-25-02&quot;, &quot;ADR-0073&quot;]
+acceptance_criteria:
+  - &quot;Given the local runtime needs richer table behavior, when this story is complete, then the physics boundary can emit semantic events for targets, lanes, capture/eject devices, ramps, gates, and launcher/feed lifecycle without leaking Rapier internals.&quot;
+  - &quot;Given the rule engine must grow beyond bumper and `L-A-T-E` rollover scoring, when this story is complete, then score, bonus, jackpot, ball-save or shoot-again, and objective progression are decomposed into small rule modules instead of one monolithic controller.&quot;
+  - &quot;Given the prototype-alpha table expands, when new devices are authored, then their geometry, tags, and authored parameters remain in typed TypeScript table modules rather than an external JSON content system.&quot;
+  - &quot;Given official score submission and replay validation still matter later, when these mechanics slices land, then the browser-owned runtime plus the app/version/ruleset seams from `ST-25-02` remain intact and replay-friendly.&quot;
+  - &quot;Given the work is reviewed incrementally, when the mechanics backlog is executed, then each PR remains narrow, testable, and aligned with the repo size budget instead of introducing a new engine monolith.&quot;
+ui_impact: &quot;Yes (richer local gameplay feedback and HUD states)&quot;
+data_impact: &quot;No (browser-local mechanics expansion only)&quot;
+---
+
+## Context
+
+`ST-25-02` proved that Flunk-Out Frenzy can run as a browser-owned local game
+inside Skriptoteket, but its current mechanics surface is intentionally narrow:
+bumper, sling, rollover, drain, simple launcher, and a single multiplier loop.
+That is enough for a vertical slice, but not enough for the richer device and
+rules semantics we want from a real pinball-like curated app.
+
+This story uses the local clone of `SpaceCadetPinball` under
+`.artifacts/SpaceCadetPinball/` as a behavioral donor for device semantics,
+lane progression, bonus and jackpot loops, and ball-lifecycle choreography. It
+does **not** copy that codebase wholesale. SDL rendering, native broadphase
+code, and the monolithic `control.cpp` architecture remain out of scope.
+
+## What this story is really about
+
+- Broaden the event vocabulary between Rapier-backed physics and the pure
+  rules layer.
+- Refactor oversized gameplay files before adding more devices and rules.
+- Add typed table-authoring seams for targets, capture devices, ramps, gates,
+  and launcher or feed zones.
+- Keep the runtime compatible with future `ST-25-03` and `ST-25-04`
+  competition work instead of creating a local-only dead end.
+
+## Planned PR slices
+
+### Tranche 1: Foundation gate
+
+1. [PR-0188: Flunk-Out Frenzy: machine-event contract expansion and PhysicsWorld decomposition](../prs/pr-0188-flunk-out-frenzy-machine-event-contract-expansion-and-physicsworld-decomposition.md)
+2. [PR-0189: Flunk-Out Frenzy: lanes, targets, and tripwire devices](../prs/pr-0189-flunk-out-frenzy-lanes-targets-and-tripwire-devices.md)
+3. [PR-0190: Flunk-Out Frenzy: bonus, jackpot, and ball-lifecycle rule state](../prs/pr-0190-flunk-out-frenzy-bonus-jackpot-and-ball-lifecycle-rule-state.md)
+
+### Formal reassessment gate
+
+4. [PR-0191: Flunk-Out Frenzy: mechanics foundation reassessment and go/no-go](../prs/pr-0191-flunk-out-frenzy-mechanics-foundation-reassessment-and-go-no-go.md)
+
+### Tranche 2: Higher-risk mechanics
+
+5. [PR-0192: Flunk-Out Frenzy: flipper contact model and explicit launcher state](../prs/pr-0192-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md)
+6. [PR-0193: Flunk-Out Frenzy: capture, eject, and save devices](../prs/pr-0193-flunk-out-frenzy-capture-eject-and-save-devices.md)
+7. [PR-0194: Flunk-Out Frenzy: ramps, gates, and field-zone semantics](../prs/pr-0194-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md)
+8. [PR-0195: Flunk-Out Frenzy: objective controllers and bank progression](../prs/pr-0195-flunk-out-frenzy-objective-controllers-and-bank-progression.md)
+
+Dependency chain: `PR-0188 -&gt; PR-0189 -&gt; PR-0190 -&gt; PR-0191 -&gt; PR-0192 -&gt;
+PR-0193 -&gt; PR-0194 -&gt; PR-0195`.
+
+## Execution strategy
+
+- `PR-0188` through `PR-0190` are one gated foundation tranche.
+- `PR-0191` is mandatory before any physical-fidelity or advanced-device work
+  starts.
+- `PR-0192` through `PR-0195` stay blocked until the reassessment explicitly
+  confirms the tranche-one seams are stable enough to deepen mechanics.
+
+## Non-goals
+
+- Reimplement the original Space Cadet engine or asset pipeline.
+- Port `TEdgeManager`, SDL rendering, or native loader code.
+- Introduce backend competition, replay validation, or leaderboard work in this
+  story.
+- Replace the browser-owned runtime with a native or emulated engine core.
+- Externalize table content to JSON or add a general-purpose table editor.
+
+## Notes
+
+- Port semantics, not implementation details: preserve Rapier, Pixi, Howler,
+  and the existing browser-owned runtime shell.
+- Keep files under the repo size budget by splitting device factories and rule
+  controllers before the new mechanics land.
+- Treat the donor repo as a design reference for targets, lanes, capture,
+  launcher, and drain behavior, not as a source tree to transliterate.</file><file path="docs/reference/ref-competitive-games-cross-cutting-programme.md">---
 type: reference
 id: REF-competitive-games-cross-cutting-programme
 title: &quot;Reference: Competitive games cross-cutting delivery programme&quot;
@@ -5981,7 +5031,1284 @@ Good split candidates:
 ## Notes
 
 - This programme is cross-cutting delivery structure, not a user-facing hub.
-- Flunk-Out Frenzy remains the first app-specific implementation reference.</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/audio/AudioDirector.ts">/**
+- Flunk-Out Frenzy remains the first app-specific implementation reference.</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts">/**
+ * Runtime core shared contracts for Flunk-Out Frenzy.
+ *
+ * These types define the command-driven seam between the runtime spine, input
+ * adapters, and the Vue host component. They intentionally stay minimal in
+ * `PR-0098` so later physics and rules slices can extend them without
+ * rewriting the shell boundary.
+ */
+
+export type GameSessionStatus = &quot;ready&quot; | &quot;running&quot; | &quot;paused&quot; | &quot;game-over&quot;;
+
+export interface GameHudBonusSnapshot {
+  points: number;
+  collectReady: boolean;
+}
+
+export interface GameHudJackpotSnapshot {
+  points: number;
+  lit: boolean;
+}
+
+export interface GameHudBallLifecycleSnapshot {
+  shootAgainLit: boolean;
+}
+
+export interface GameHudSnapshot {
+  score: number;
+  ballsRemaining: number;
+  multiplier: number;
+  bonus: GameHudBonusSnapshot;
+  jackpot: GameHudJackpotSnapshot;
+  ballLifecycle: GameHudBallLifecycleSnapshot;
+  status: GameSessionStatus;
+  muted: boolean;
+}
+
+export interface GameBoardSnapshot {
+  width: number;
+  height: number;
+}
+
+export interface GameBallSnapshot {
+  x: number;
+  y: number;
+  radius: number;
+}
+
+export interface GameFlipperSnapshot {
+  side: &quot;left&quot; | &quot;right&quot;;
+  pivotX: number;
+  pivotY: number;
+  length: number;
+  thickness: number;
+  angleDeg: number;
+}
+
+export interface GameRolloverSnapshot {
+  tag: string;
+  label: string;
+  x: number;
+  y: number;
+  lit: boolean;
+}
+
+export interface GameViewSnapshot {
+  board: GameBoardSnapshot;
+  ball: GameBallSnapshot | null;
+  flippers: {
+    left: GameFlipperSnapshot;
+    right: GameFlipperSnapshot;
+  };
+  rollovers: GameRolloverSnapshot[];
+}
+
+export type RuntimeCommand =
+  | { type: &quot;left-flip&quot;; pressed: boolean }
+  | { type: &quot;right-flip&quot;; pressed: boolean }
+  | { type: &quot;launch&quot;; pressed: boolean };
+
+export interface RuntimeInputState {
+  leftFlipPressed: boolean;
+  rightFlipPressed: boolean;
+  launchPressed: boolean;
+  lastCommandLabel: string;
+}
+
+export interface AnimationScheduler {
+  now(): number;
+  requestFrame(callback: FrameRequestCallback): number;
+  cancelFrame(handle: number): void;
+}
+
+export function createInitialHudSnapshot(): GameHudSnapshot {
+  return {
+    score: 0,
+    ballsRemaining: 3,
+    multiplier: 1,
+    bonus: {
+      points: 0,
+      collectReady: false,
+    },
+    jackpot: {
+      points: 10_000,
+      lit: false,
+    },
+    ballLifecycle: {
+      shootAgainLit: false,
+    },
+    status: &quot;ready&quot;,
+    muted: false,
+  };
+}
+
+export function createInitialInputState(): RuntimeInputState {
+  return {
+    leftFlipPressed: false,
+    rightFlipPressed: false,
+    launchPressed: false,
+    lastCommandLabel: &quot;Awaiting input&quot;,
+  };
+}
+
+export function createBrowserAnimationScheduler(): AnimationScheduler {
+  return {
+    now: () =&gt; performance.now(),
+    requestFrame: (callback) =&gt; window.requestAnimationFrame(callback),
+    cancelFrame: (handle) =&gt; window.cancelAnimationFrame(handle),
+  };
+}
+
+export function describeRuntimeCommand(command: RuntimeCommand): string {
+  if (command.type === &quot;left-flip&quot;) {
+    return command.pressed ? &quot;Vänster flipper ned&quot; : &quot;Vänster flipper upp&quot;;
+  }
+  if (command.type === &quot;right-flip&quot;) {
+    return command.pressed ? &quot;Höger flipper ned&quot; : &quot;Höger flipper upp&quot;;
+  }
+  return command.pressed ? &quot;Launch laddas&quot; : &quot;Launch släpps&quot;;
+}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts">/**
+ * Rapier-backed physics world for Flunk-Out Frenzy prototype alpha.
+ *
+ * This module owns Rapier rigid bodies, colliders, sensor events, and
+ * authored impulses. It emits stable semantic machine events so rules never
+ * touch raw collider handles or engine-specific details.
+ */
+
+import RAPIER from &quot;@dimforge/rapier2d-compat&quot;;
+
+import type { RuntimeCommand } from &quot;../core/runtimeTypes&quot;;
+import {
+  PROTOTYPE_ALPHA_TABLE,
+  type PrototypeAlphaTable,
+} from &quot;../table/prototypeAlphaTable&quot;;
+import type {
+  TableBumperDefinition,
+  TableFlipperDefinition,
+  TablePoint,
+  TableSlingDefinition,
+} from &quot;../table/tableDefinitionTypes&quot;;
+import type { ColliderMeta } from &quot;./colliderMeta&quot;;
+import { createLaneDevices } from &quot;./createLaneDevices&quot;;
+import { createTargetDevices } from &quot;./createTargetDevices&quot;;
+import {
+  resolveFlipperContactImpulse,
+} from &quot;./flipperContactModel&quot;;
+import { collectMachineEvents } from &quot;./machineEventEmitter&quot;;
+import type { MachineEvent, PhysicsSnapshot } from &quot;./physicsTypes&quot;;
+import {
+  createInitialPlungerLaneState,
+  stepPlungerLaneState,
+  type PlungerLaneBallSnapshot,
+  type PlungerLaneState,
+} from &quot;./plungerLaneState&quot;;
+
+export class PhysicsWorld {
+  private world!: RAPIER.World;
+  private eventQueue!: RAPIER.EventQueue;
+  private ballBody: RAPIER.RigidBody | null = null;
+  private ballColliderHandle: number | null = null;
+  private leftFlipper!: RAPIER.RigidBody;
+  private rightFlipper!: RAPIER.RigidBody;
+  private leftFlipperAngleRad = 0;
+  private rightFlipperAngleRad = 0;
+  private leftPressed = false;
+  private rightPressed = false;
+  private launchPressed = false;
+  private wasLeftPressed = false;
+  private wasRightPressed = false;
+  private plungerLaneState: PlungerLaneState = createInitialPlungerLaneState();
+  private readonly cooldowns = new Map&lt;string, number&gt;();
+  private readonly colliderMetaByHandle = new Map&lt;number, ColliderMeta&gt;();
+
+  static async create(table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE): Promise&lt;PhysicsWorld&gt; {
+    await RAPIER.init();
+    return new PhysicsWorld(table);
+  }
+
+  private constructor(private readonly table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE) {
+    this.reset();
+  }
+
+  reset(): void {
+    this.disposeWorld();
+
+    this.world = new RAPIER.World(this.table.gravity);
+    this.eventQueue = new RAPIER.EventQueue(true);
+    this.world.lengthUnit = 100;
+
+    this.leftPressed = false;
+    this.rightPressed = false;
+    this.launchPressed = false;
+    this.wasLeftPressed = false;
+    this.wasRightPressed = false;
+    this.plungerLaneState = createInitialPlungerLaneState();
+    this.cooldowns.clear();
+    this.colliderMetaByHandle.clear();
+    this.ballBody = null;
+    this.ballColliderHandle = null;
+    this.leftFlipperAngleRad = degreesToRadians(this.table.flippers.left.restAngleDeg);
+    this.rightFlipperAngleRad = degreesToRadians(this.table.flippers.right.restAngleDeg);
+
+    this.buildStaticWorld();
+    this.leftFlipper = this.createFlipper(this.table.flippers.left);
+    this.rightFlipper = this.createFlipper(this.table.flippers.right);
+  }
+
+  dispose(): void {
+    this.disposeWorld();
+  }
+
+  applyCommand(command: RuntimeCommand): void {
+    if (command.type === &quot;left-flip&quot;) {
+      this.leftPressed = command.pressed;
+      return;
+    }
+
+    if (command.type === &quot;right-flip&quot;) {
+      this.rightPressed = command.pressed;
+      return;
+    }
+
+    this.launchPressed = command.pressed;
+  }
+
+  spawnBall(position: TablePoint = this.table.ball.spawn): void {
+    if (this.ballBody) {
+      this.world.removeRigidBody(this.ballBody);
+    }
+
+    const bodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(position.x, position.y)
+      .setLinearDamping(0.06)
+      .setAngularDamping(0.14)
+      .setCanSleep(false)
+      .setCcdEnabled(true)
+      .setAdditionalMass(this.table.ball.mass);
+
+    this.ballBody = this.world.createRigidBody(bodyDesc);
+    const ballCollider = this.world.createCollider(
+      RAPIER.ColliderDesc.ball(this.table.ball.radius)
+        .setMass(this.table.ball.mass)
+        .setRestitution(0.55)
+        .setFriction(0.18)
+        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
+      this.ballBody,
+    );
+
+    this.ballColliderHandle = ballCollider.handle;
+    this.colliderMetaByHandle.set(ballCollider.handle, {
+      kind: &quot;ball&quot;,
+      tag: &quot;ball/main&quot;,
+    });
+    this.plungerLaneState = createInitialPlungerLaneState();
+  }
+
+  removeBall(): void {
+    if (!this.ballBody) {
+      return;
+    }
+
+    this.world.removeRigidBody(this.ballBody);
+    this.ballBody = null;
+    this.ballColliderHandle = null;
+    this.plungerLaneState = createInitialPlungerLaneState();
+  }
+
+  step(dtMs: number): MachineEvent[] {
+    const dtSeconds = dtMs / 1000;
+    this.tickCooldowns(dtMs);
+    this.updateFlippers(dtSeconds);
+    const launcherPreStepEvents = this.updateLauncherState(dtMs);
+    this.world.timestep = dtSeconds;
+    this.world.step(this.eventQueue);
+
+    const stepResult = collectMachineEvents({
+      eventQueue: this.eventQueue,
+      colliderMetaByHandle: this.colliderMetaByHandle,
+      cooldowns: this.cooldowns,
+      ballBody: this.ballBody,
+      table: this.table,
+    });
+    const launcherPostStepEvents = this.updateLauncherState(0);
+    if (stepResult.shouldRemoveBall) {
+      this.removeBall();
+    }
+    this.wasLeftPressed = this.leftPressed;
+    this.wasRightPressed = this.rightPressed;
+    return [
+      ...launcherPreStepEvents,
+      ...stepResult.events,
+      ...launcherPostStepEvents,
+    ];
+  }
+
+  currentSnapshot(): PhysicsSnapshot {
+    const leftDef = this.table.flippers.left;
+    const rightDef = this.table.flippers.right;
+
+    return {
+      ball: this.ballBody
+        ? {
+            x: this.ballBody.translation().x,
+            y: this.ballBody.translation().y,
+            radius: this.table.ball.radius,
+          }
+        : null,
+      flippers: {
+        left: {
+          side: &quot;left&quot;,
+          pivotX: leftDef.pivot.x,
+          pivotY: leftDef.pivot.y,
+          length: leftDef.length,
+          thickness: leftDef.thickness,
+          angleDeg: radiansToDegrees(this.leftFlipperAngleRad),
+        },
+        right: {
+          side: &quot;right&quot;,
+          pivotX: rightDef.pivot.x,
+          pivotY: rightDef.pivot.y,
+          length: rightDef.length,
+          thickness: rightDef.thickness,
+          angleDeg: radiansToDegrees(this.rightFlipperAngleRad),
+        },
+      },
+    };
+  }
+
+  private buildStaticWorld(): void {
+    for (const wall of this.table.walls) {
+      this.world.createCollider(
+        RAPIER.ColliderDesc.segment(wall.from, wall.to)
+          .setRestitution(0.34)
+          .setFriction(0.16),
+      );
+    }
+
+    for (const bumper of this.table.bumpers) {
+      this.buildBumper(bumper);
+    }
+
+    for (const sling of this.table.slings) {
+      this.buildSling(sling);
+    }
+
+    createLaneDevices({
+      world: this.world,
+      colliderMetaByHandle: this.colliderMetaByHandle,
+      rollovers: this.table.rollovers,
+      tripwires: this.table.tripwires,
+      gates: this.table.gates,
+    });
+
+    createTargetDevices({
+      world: this.world,
+      colliderMetaByHandle: this.colliderMetaByHandle,
+      standupTargets: this.table.standupTargets,
+      popupTargets: this.table.popupTargets,
+    });
+
+    const drain = this.world.createCollider(
+      RAPIER.ColliderDesc.cuboid(this.table.drain.width / 2, this.table.drain.height / 2)
+        .setTranslation(this.table.drain.x, this.table.drain.y)
+        .setSensor(true)
+        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
+    );
+    this.colliderMetaByHandle.set(drain.handle, {
+      kind: &quot;drain&quot;,
+      tag: this.table.drain.tag,
+    });
+  }
+
+  private buildBumper(bumper: TableBumperDefinition): void {
+    this.world.createCollider(
+      RAPIER.ColliderDesc.ball(bumper.radius)
+        .setTranslation(bumper.x, bumper.y)
+        .setRestitution(0.92)
+        .setFriction(0.08),
+    );
+
+    const sensor = this.world.createCollider(
+      RAPIER.ColliderDesc.ball(bumper.sensorRadius)
+        .setTranslation(bumper.x, bumper.y)
+        .setSensor(true)
+        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
+    );
+    this.colliderMetaByHandle.set(sensor.handle, {
+      kind: &quot;bumper&quot;,
+      tag: bumper.tag,
+      center: { x: bumper.x, y: bumper.y },
+      impulse: bumper.impulse,
+    });
+  }
+
+  private buildSling(sling: TableSlingDefinition): void {
+    this.world.createCollider(
+      RAPIER.ColliderDesc.triangle(...sling.vertices)
+        .setRestitution(0.72)
+        .setFriction(0.14),
+    );
+
+    const sensor = this.world.createCollider(
+      RAPIER.ColliderDesc.triangle(...sling.vertices)
+        .setSensor(true)
+        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
+    );
+    this.colliderMetaByHandle.set(sensor.handle, {
+      kind: &quot;sling&quot;,
+      tag: sling.tag,
+      side: sling.side,
+      impulse: sling.impulse,
+    });
+  }
+
+  private createFlipper(flipper: TableFlipperDefinition): RAPIER.RigidBody {
+    const body = this.world.createRigidBody(
+      RAPIER.RigidBodyDesc.kinematicPositionBased()
+        .setTranslation(flipper.pivot.x, flipper.pivot.y)
+        .setRotation(degreesToRadians(flipper.restAngleDeg)),
+    );
+
+    const xOffset = flipper.side === &quot;left&quot; ? flipper.length / 2 : -flipper.length / 2;
+    this.world.createCollider(
+      RAPIER.ColliderDesc.cuboid(flipper.length / 2, flipper.thickness / 2)
+        .setTranslation(xOffset, 0)
+        .setRestitution(0.28)
+        .setFriction(0.68),
+      body,
+    );
+
+    return body;
+  }
+
+  private updateFlippers(dtSeconds: number): void {
+    this.leftFlipperAngleRad = this.driveFlipper(
+      this.leftFlipper,
+      this.table.flippers.left,
+      this.leftPressed,
+      dtSeconds,
+      this.leftFlipperAngleRad,
+    );
+    this.rightFlipperAngleRad = this.driveFlipper(
+      this.rightFlipper,
+      this.table.flippers.right,
+      this.rightPressed,
+      dtSeconds,
+      this.rightFlipperAngleRad,
+    );
+
+    if (this.leftPressed &amp;&amp; !this.wasLeftPressed) {
+      this.applyFlipperContact(this.table.flippers.left, this.leftFlipperAngleRad);
+    }
+    if (this.rightPressed &amp;&amp; !this.wasRightPressed) {
+      this.applyFlipperContact(this.table.flippers.right, this.rightFlipperAngleRad);
+    }
+  }
+
+  private driveFlipper(
+    body: RAPIER.RigidBody,
+    flipper: TableFlipperDefinition,
+    pressed: boolean,
+    dtSeconds: number,
+    currentAngle: number,
+  ): number {
+    const targetAngle = degreesToRadians(
+      pressed ? flipper.activeAngleDeg : flipper.restAngleDeg,
+    );
+    const maxDelta = dtSeconds * 18;
+    const nextAngle = approachAngle(currentAngle, targetAngle, maxDelta);
+    body.setNextKinematicRotation(nextAngle);
+    return nextAngle;
+  }
+
+  private applyFlipperContact(
+    flipper: TableFlipperDefinition,
+    angleRad: number,
+  ): void {
+    if (!this.ballBody) {
+      return;
+    }
+
+    const contactImpulse = resolveFlipperContactImpulse({
+      ball: {
+        x: this.ballBody.translation().x,
+        y: this.ballBody.translation().y,
+        radius: this.table.ball.radius,
+      },
+      flipper,
+      angleRad,
+    });
+    if (!contactImpulse) {
+      return;
+    }
+
+    this.ballBody.applyImpulseAtPoint(contactImpulse.impulse, contactImpulse.point, true);
+  }
+
+  private updateLauncherState(dtMs: number): MachineEvent[] {
+    const result = stepPlungerLaneState({
+      state: this.plungerLaneState,
+      ball: this.currentPlungerBallSnapshot(),
+      launchPressed: this.launchPressed,
+      launcher: this.table.launcher,
+      dtMs,
+    });
+    this.plungerLaneState = result.nextState;
+
+    if (this.ballBody &amp;&amp; result.releaseImpulse) {
+      this.ballBody.applyImpulse(result.releaseImpulse, true);
+    }
+
+    return result.machineEvents;
+  }
+
+  private currentPlungerBallSnapshot(): PlungerLaneBallSnapshot | null {
+    if (!this.ballBody) {
+      return null;
+    }
+
+    const position = this.ballBody.translation();
+    const velocity = this.ballBody.linvel();
+
+    return {
+      position: {
+        x: position.x,
+        y: position.y,
+      },
+      velocity: {
+        x: velocity.x,
+        y: velocity.y,
+      },
+    };
+  }
+
+  private tickCooldowns(dtMs: number): void {
+    for (const [tag, remainingMs] of [...this.cooldowns.entries()]) {
+      const nextRemaining = remainingMs - dtMs;
+      if (nextRemaining &lt;= 0) {
+        this.cooldowns.delete(tag);
+        continue;
+      }
+      this.cooldowns.set(tag, nextRemaining);
+    }
+  }
+
+  private disposeWorld(): void {
+    this.eventQueue?.free();
+    this.world?.free();
+  }
+}
+
+function approachAngle(current: number, target: number, maxDelta: number): number {
+  if (Math.abs(target - current) &lt;= maxDelta) {
+    return target;
+  }
+  return current + Math.sign(target - current) * maxDelta;
+}
+
+function degreesToRadians(deg: number): number {
+  return (deg * Math.PI) / 180;
+}
+
+function radiansToDegrees(rad: number): number {
+  return (rad * 180) / Math.PI;
+}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/render/PixiRenderer.ts">/**
+ * Pixi-powered renderer for Flunk-Out Frenzy.
+ *
+ * This adapter owns the canvas, draws the live board state, and reacts to
+ * semantic effect events with lightweight pulses and lamp updates. Vue never
+ * owns the playfield rendering itself.
+ */
+
+import {
+  Application,
+  BlurFilter,
+  Container,
+  Graphics,
+  Text,
+} from &quot;pixi.js&quot;;
+
+import type { GameHudSnapshot, GameViewSnapshot } from &quot;../core/runtimeTypes&quot;;
+import type { GameEffectEvent } from &quot;../presentation/gameEffectTypes&quot;;
+import { PROTOTYPE_ALPHA_TABLE } from &quot;../table/prototypeAlphaTable&quot;;
+import type { RuntimeRenderer } from &quot;./renderTypes&quot;;
+import { buildStaticBoardUnderlay } from &quot;./staticBoardUnderlay&quot;;
+
+interface RolloverNode {
+  container: Container;
+  ring: Graphics;
+  label: Text;
+}
+
+export class PixiRenderer implements RuntimeRenderer {
+  private readonly app = new Application();
+  private readonly scene = new Container();
+  private readonly underlay = new Container();
+  private readonly pulseLayer = new Container();
+  private readonly rolloverLayer = new Container();
+  private readonly ballGraphic = new Graphics();
+  private readonly leftFlipperGraphic = new Graphics();
+  private readonly rightFlipperGraphic = new Graphics();
+  private readonly rolloverNodes = new Map&lt;string, RolloverNode&gt;();
+  private hostElement: HTMLElement | null = null;
+  private lastCanvasWidth = 0;
+  private lastCanvasHeight = 0;
+
+  static async create(): Promise&lt;PixiRenderer&gt; {
+    const renderer = new PixiRenderer();
+    await renderer.init();
+    return renderer;
+  }
+
+  private async init(): Promise&lt;void&gt; {
+    await this.app.init({
+      width: PROTOTYPE_ALPHA_TABLE.board.width,
+      height: PROTOTYPE_ALPHA_TABLE.board.height,
+      antialias: true,
+      autoDensity: true,
+      backgroundAlpha: 0,
+      preference: &quot;webgl&quot;,
+      sharedTicker: true,
+      autoStart: true,
+    });
+
+    this.app.canvas.dataset.test = &quot;runtime-renderer-canvas&quot;;
+    this.app.canvas.className = &quot;fof-host__canvas&quot;;
+    this.app.canvas.setAttribute(&quot;aria-hidden&quot;, &quot;true&quot;);
+    this.app.canvas.style.position = &quot;absolute&quot;;
+    this.app.canvas.style.inset = &quot;0&quot;;
+    this.app.canvas.style.width = &quot;100%&quot;;
+    this.app.canvas.style.height = &quot;100%&quot;;
+    this.app.canvas.style.pointerEvents = &quot;none&quot;;
+
+    this.scene.eventMode = &quot;none&quot;;
+    this.app.stage.addChild(this.scene);
+    this.scene.addChild(this.underlay);
+    this.scene.addChild(this.pulseLayer);
+    this.scene.addChild(this.rolloverLayer);
+    this.scene.addChild(this.leftFlipperGraphic);
+    this.scene.addChild(this.rightFlipperGraphic);
+    this.scene.addChild(this.ballGraphic);
+
+    this.drawStaticUnderlay();
+    this.buildRolloverNodes();
+    this.drawFlipper(this.leftFlipperGraphic, &quot;left&quot;);
+    this.drawFlipper(this.rightFlipperGraphic, &quot;right&quot;);
+    this.ballGraphic.visible = false;
+  }
+
+  attach(hostElement: HTMLElement): void {
+    if (this.hostElement === hostElement &amp;&amp; this.app.canvas.parentElement === hostElement) {
+      this.syncViewport();
+      return;
+    }
+
+    if (this.app.canvas.parentElement &amp;&amp; this.app.canvas.parentElement !== hostElement) {
+      this.app.canvas.parentElement.removeChild(this.app.canvas);
+    }
+
+    this.hostElement = hostElement;
+    hostElement.appendChild(this.app.canvas);
+    this.syncViewport();
+  }
+
+  render(view: GameViewSnapshot, hud: GameHudSnapshot, effects: GameEffectEvent[]): void {
+    this.syncViewport();
+    this.syncRollovers(view);
+    this.syncBall(view);
+    this.syncFlippers(view);
+    this.applyEffects(effects, hud);
+  }
+
+  dispose(): void {
+    this.rolloverNodes.clear();
+    this.hostElement = null;
+    this.app.destroy({ removeView: true }, true);
+  }
+
+  private drawStaticUnderlay(): void {
+    buildStaticBoardUnderlay(this.underlay);
+  }
+
+  private buildRolloverNodes(): void {
+    for (const rollover of PROTOTYPE_ALPHA_TABLE.rollovers) {
+      const ring = new Graphics();
+      const label = new Text({
+        text: rollover.label,
+        style: {
+          fill: 0xffee8d,
+          fontFamily: &apos;&quot;IBM Plex Sans&quot;, sans-serif&apos;,
+          fontSize: 20,
+          fontWeight: &quot;800&quot;,
+          letterSpacing: 1,
+        },
+      });
+
+      label.anchor.set(0.5);
+
+      const container = new Container();
+      container.position.set(rollover.x, rollover.y);
+      container.addChild(ring);
+      container.addChild(label);
+      this.rolloverLayer.addChild(container);
+      this.rolloverNodes.set(rollover.tag, { container, ring, label });
+    }
+  }
+
+  private syncRollovers(view: GameViewSnapshot): void {
+    for (const rollover of view.rollovers) {
+      const node = this.rolloverNodes.get(rollover.tag);
+      if (!node) {
+        continue;
+      }
+
+      node.container.position.set(rollover.x, rollover.y);
+      node.label.text = rollover.label;
+      this.drawRollover(node.ring, rollover.lit);
+    }
+  }
+
+  private drawRollover(graphic: Graphics, lit: boolean): void {
+    graphic.clear();
+    graphic.circle(0, 0, 21);
+    graphic.fill({
+      color: lit ? 0xffee8d : 0x191a15,
+      alpha: lit ? 0.78 : 0.36,
+    });
+    graphic.stroke({
+      color: 0xffee8d,
+      alpha: lit ? 0.92 : 0.22,
+      width: lit ? 2 : 1,
+    });
+
+    if (lit) {
+      graphic.circle(0, 0, 27);
+      graphic.stroke({
+        color: 0xffee8d,
+        alpha: 0.22,
+        width: 7,
+      });
+    }
+  }
+
+  private syncBall(view: GameViewSnapshot): void {
+    if (!view.ball) {
+      this.ballGraphic.visible = false;
+      return;
+    }
+
+    this.ballGraphic.visible = true;
+    this.ballGraphic.clear();
+    this.ballGraphic.circle(0, 0, view.ball.radius);
+    this.ballGraphic.fill({
+      color: 0xe2e8f0,
+    });
+    this.ballGraphic.stroke({
+      color: 0xffffff,
+      alpha: 0.3,
+      width: 1.2,
+    });
+    this.ballGraphic.position.set(view.ball.x, view.ball.y);
+  }
+
+  private syncFlippers(view: GameViewSnapshot): void {
+    this.leftFlipperGraphic.position.set(
+      view.flippers.left.pivotX,
+      view.flippers.left.pivotY,
+    );
+    this.leftFlipperGraphic.rotation = degreesToRadians(view.flippers.left.angleDeg);
+
+    this.rightFlipperGraphic.position.set(
+      view.flippers.right.pivotX,
+      view.flippers.right.pivotY,
+    );
+    this.rightFlipperGraphic.rotation = degreesToRadians(view.flippers.right.angleDeg);
+  }
+
+  private drawFlipper(graphic: Graphics, side: &quot;left&quot; | &quot;right&quot;): void {
+    const flipper = PROTOTYPE_ALPHA_TABLE.flippers[side];
+    const x = side === &quot;left&quot; ? 0 : -flipper.length;
+
+    graphic.clear();
+    graphic.roundRect(x, -flipper.thickness / 2, flipper.length, flipper.thickness, 999);
+    graphic.fill({ color: 0xff4f96 });
+    graphic.stroke({
+      color: 0xffd3e5,
+      alpha: 0.3,
+      width: 1.4,
+    });
+  }
+
+  private applyEffects(effects: GameEffectEvent[], hud: GameHudSnapshot): void {
+    this.app.canvas.dataset.runtimeStatus = hud.status;
+    this.app.canvas.dataset.runtimeMuted = String(hud.muted);
+
+    for (const effect of effects) {
+      switch (effect.type) {
+        case &quot;bumper-hit&quot;: {
+          const bumper = PROTOTYPE_ALPHA_TABLE.bumpers.find((item) =&gt; item.tag === effect.tag);
+          if (bumper) {
+            this.spawnPulse(bumper.x, bumper.y, 32, 0x69ff7d, 170);
+          }
+          break;
+        }
+        case &quot;sling-hit&quot;: {
+          const sling = PROTOTYPE_ALPHA_TABLE.slings.find((item) =&gt; item.tag === effect.tag);
+          if (sling) {
+            const centroidX =
+              (sling.vertices[0].x + sling.vertices[1].x + sling.vertices[2].x) / 3;
+            const centroidY =
+              (sling.vertices[0].y + sling.vertices[1].y + sling.vertices[2].y) / 3;
+            this.spawnPulse(centroidX, centroidY, 26, 0xff8a47, 150);
+          }
+          break;
+        }
+        case &quot;rollover-lit&quot;: {
+          const rollover = PROTOTYPE_ALPHA_TABLE.rollovers.find((item) =&gt; item.tag === effect.tag);
+          if (rollover) {
+            this.spawnPulse(rollover.x, rollover.y, 22, 0xffee8d, 130);
+          }
+          break;
+        }
+        case &quot;tripwire-crossed&quot;: {
+          const tripwire = PROTOTYPE_ALPHA_TABLE.tripwires.find((item) =&gt; item.tag === effect.tag);
+          if (tripwire) {
+            this.spawnPulse(tripwire.x, tripwire.y, 28, 0x6be9ff, 140);
+          }
+          break;
+        }
+        case &quot;standup-target-hit&quot;: {
+          const target = PROTOTYPE_ALPHA_TABLE.standupTargets.find((item) =&gt; item.tag === effect.tag);
+          if (target) {
+            this.spawnPulse(target.x, target.y, 24, 0xffc769, 155);
+          }
+          break;
+        }
+        case &quot;popup-target-hit&quot;: {
+          const target = PROTOTYPE_ALPHA_TABLE.popupTargets.find((item) =&gt; item.tag === effect.tag);
+          if (target) {
+            this.spawnPulse(target.x, target.y, target.radius + 10, 0xff8df0, 165);
+          }
+          break;
+        }
+        case &quot;gate-passed&quot;: {
+          const gate = PROTOTYPE_ALPHA_TABLE.gates.find((item) =&gt; item.tag === effect.tag);
+          if (gate) {
+            this.spawnPulse(gate.x, gate.y, 22, 0x9ee081, 130);
+          }
+          break;
+        }
+        case &quot;late-bank-complete&quot;:
+          this.spawnPulse(300, 146, 110, 0xffee8d, 280);
+          break;
+        case &quot;bonus-awarded&quot;:
+          this.spawnPulse(300, 1030, 72, 0xffcf7c, 240);
+          break;
+        case &quot;jackpot-lit&quot;:
+          this.spawnPulse(300, 250, 48, 0xff8df0, 200);
+          break;
+        case &quot;jackpot-awarded&quot;:
+          this.spawnPulse(300, 420, 126, 0xff8df0, 300);
+          break;
+        case &quot;shoot-again-lit&quot;:
+          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, 930, 42, 0x8dffcf, 220);
+          break;
+        case &quot;ball-drained&quot;:
+          this.spawnPulse(300, 1136, 54, 0xff5d92, 200);
+          break;
+        case &quot;ball-spawned&quot;:
+          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, PROTOTYPE_ALPHA_TABLE.ball.spawn.y, 24, 0xb8c5ff, 150);
+          break;
+        case &quot;game-over&quot;:
+          this.spawnPulse(300, 680, 150, 0xff5d92, 360);
+          break;
+        case &quot;round-started&quot;:
+        case &quot;flipper-fired&quot;:
+        case &quot;launch-released&quot;:
+          break;
+      }
+    }
+  }
+
+  private spawnPulse(
+    x: number,
+    y: number,
+    radius: number,
+    color: number,
+    durationMs: number,
+  ): void {
+    const pulse = new Graphics();
+    pulse.position.set(x, y);
+    pulse.circle(0, 0, radius);
+    pulse.stroke({
+      color,
+      alpha: 0.72,
+      width: 4,
+    });
+    pulse.filters = [new BlurFilter({ strength: 2 })];
+    this.pulseLayer.addChild(pulse);
+
+    let elapsedMs = 0;
+    const tick = () =&gt; {
+      elapsedMs += this.app.ticker.deltaMS;
+
+      const progress = Math.min(elapsedMs / durationMs, 1);
+      pulse.alpha = 1 - progress;
+      pulse.scale.set(1 + progress * 0.92);
+
+      if (progress &gt;= 1) {
+        this.app.ticker.remove(tick);
+        pulse.destroy();
+      }
+    };
+
+    this.app.ticker.add(tick);
+  }
+
+  private syncViewport(): void {
+    if (!this.hostElement) {
+      return;
+    }
+
+    const width = Math.max(Math.floor(this.hostElement.clientWidth), 1);
+    const height = Math.max(Math.floor(this.hostElement.clientHeight), 1);
+
+    if (width !== this.lastCanvasWidth || height !== this.lastCanvasHeight) {
+      this.app.renderer.resize(width, height);
+      this.lastCanvasWidth = width;
+      this.lastCanvasHeight = height;
+    }
+
+    const scale = Math.min(
+      width / PROTOTYPE_ALPHA_TABLE.board.width,
+      height / PROTOTYPE_ALPHA_TABLE.board.height,
+    );
+
+    this.scene.scale.set(scale);
+    this.scene.position.set(
+      Math.round((width - PROTOTYPE_ALPHA_TABLE.board.width * scale) / 2),
+      Math.round((height - PROTOTYPE_ALPHA_TABLE.board.height * scale) / 2),
+    );
+  }
+}
+
+function degreesToRadians(deg: number): number {
+  return (deg * Math.PI) / 180;
+}</file><file path="frontend/apps/skriptoteket/src/views/apps/flunkOutFrenzyTypes.ts">/**
+ * Typed Flunk-Out Frenzy SPA contracts.
+ *
+ * These interfaces mirror the app-specific bootstrap payload used by the
+ * bespoke game shell. They stay deliberately small so later runtime slices can
+ * add richer state without rewriting the initial route contract.
+ */
+
+export type FlunkOutFrenzyFeatureFlags = {
+  audio_enabled: boolean;
+  replay_capture_enabled: boolean;
+  score_submission_enabled: boolean;
+};
+
+export type FlunkOutFrenzyBootstrap = {
+  app_id: string;
+  title: string;
+  summary: string;
+  app_version: string;
+  ruleset_id: string;
+  feature_flags: FlunkOutFrenzyFeatureFlags;
+};
+
+function isRecord(value: unknown): value is Record&lt;string, unknown&gt; {
+  return typeof value === &quot;object&quot; &amp;&amp; value !== null;
+}
+
+function readStringField(source: Record&lt;string, unknown&gt;, field: string): string {
+  const value = source[field];
+  if (typeof value !== &quot;string&quot; || value.length === 0) {
+    throw new Error(`Ogiltigt bootstrap-svar: saknar strängfältet &quot;${field}&quot;.`);
+  }
+  return value;
+}
+
+function readBooleanField(source: Record&lt;string, unknown&gt;, field: string): boolean {
+  const value = source[field];
+  if (typeof value !== &quot;boolean&quot;) {
+    throw new Error(`Ogiltigt bootstrap-svar: saknar booleska fältet &quot;${field}&quot;.`);
+  }
+  return value;
+}
+
+export function parseFlunkOutFrenzyBootstrap(payload: unknown): FlunkOutFrenzyBootstrap {
+  if (!isRecord(payload)) {
+    throw new Error(&quot;Ogiltigt bootstrap-svar: förväntade ett objekt.&quot;);
+  }
+
+  const featureFlags = payload.feature_flags;
+  if (!isRecord(featureFlags)) {
+    throw new Error(&apos;Ogiltigt bootstrap-svar: saknar objektet &quot;feature_flags&quot;.&apos;);
+  }
+
+  return {
+    app_id: readStringField(payload, &quot;app_id&quot;),
+    title: readStringField(payload, &quot;title&quot;),
+    summary: readStringField(payload, &quot;summary&quot;),
+    app_version: readStringField(payload, &quot;app_version&quot;),
+    ruleset_id: readStringField(payload, &quot;ruleset_id&quot;),
+    feature_flags: {
+      audio_enabled: readBooleanField(featureFlags, &quot;audio_enabled&quot;),
+      replay_capture_enabled: readBooleanField(featureFlags, &quot;replay_capture_enabled&quot;),
+      score_submission_enabled: readBooleanField(featureFlags, &quot;score_submission_enabled&quot;),
+    },
+  };
+}</file><file path="frontend/apps/skriptoteket/src/views/apps/useFlunkOutFrenzyBootstrap.ts">/**
+ * Flunk-Out Frenzy bootstrap loader.
+ *
+ * This composable owns the initial app-shell bootstrap fetch so the bespoke
+ * view can stay rendering-focused while still consuming a typed backend
+ * contract.
+ */
+
+import { onMounted, ref } from &quot;vue&quot;;
+
+import { apiGet, isApiError } from &quot;../../api/client&quot;;
+import {
+  parseFlunkOutFrenzyBootstrap,
+  type FlunkOutFrenzyBootstrap,
+} from &quot;./flunkOutFrenzyTypes&quot;;
+
+const BOOTSTRAP_PATH = &quot;/api/v1/apps/games.flunk_out_frenzy/bootstrap&quot;;
+
+export function useFlunkOutFrenzyBootstrap() {
+  const bootstrap = ref&lt;FlunkOutFrenzyBootstrap | null&gt;(null);
+  const bootstrapError = ref&lt;string | null&gt;(null);
+  const isBootstrapping = ref(true);
+
+  async function loadBootstrap(): Promise&lt;void&gt; {
+    isBootstrapping.value = true;
+    bootstrapError.value = null;
+
+    try {
+      const payload = await apiGet&lt;unknown&gt;(BOOTSTRAP_PATH);
+      bootstrap.value = parseFlunkOutFrenzyBootstrap(payload);
+    } catch (error: unknown) {
+      bootstrap.value = null;
+      bootstrapError.value = isApiError(error)
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : &quot;Kunde inte ladda Flunk-Out Frenzy.&quot;;
+    } finally {
+      isBootstrapping.value = false;
+    }
+  }
+
+  onMounted(() =&gt; {
+    void loadBootstrap();
+  });
+
+  return {
+    bootstrap,
+    bootstrapError,
+    isBootstrapping,
+    loadBootstrap,
+  };
+}</file><file path="frontend/apps/skriptoteket/src/views/AppHostView.vue">&lt;script setup lang=&quot;ts&quot;&gt;
+/**
+ * Curated app host view.
+ *
+ * This view resolves a curated app deep link, fetches the generic app detail
+ * metadata, and selects either a bespoke SPA surface or the generic fallback
+ * view depending on the registered `ui_mode`.
+ */
+
+import { computed, defineAsyncComponent, ref, shallowRef, watch } from &quot;vue&quot;;
+import type { Component } from &quot;vue&quot;;
+import { useRoute } from &quot;vue-router&quot;;
+
+import { apiGet, isApiError } from &quot;../api/client&quot;;
+import type { components } from &quot;../api/openapi&quot;;
+import AppDetailView from &quot;./AppDetailView.vue&quot;;
+
+type AppDetailResponse = components[&quot;schemas&quot;][&quot;AppDetailResponse&quot;];
+type UiMode = &quot;generic_ok&quot; | &quot;bespoke_required&quot;;
+
+const route = useRoute();
+
+const appId = computed(() =&gt; {
+  const param = route.params.appId;
+  return typeof param === &quot;string&quot; ? param : &quot;&quot;;
+});
+
+const app = ref&lt;AppDetailResponse | null&gt;(null);
+const isLoading = ref(true);
+const errorMessage = ref&lt;string | null&gt;(null);
+
+const bespokeView = shallowRef&lt;Component | null&gt;(null);
+
+const bespokeRegistry: Record&lt;string, () =&gt; Promise&lt;{ default: Component }&gt;&gt; = {
+  &quot;chemistry.reagent_prep_chef&quot;: () =&gt; import(&quot;./apps/ReagentPrepChefView.vue&quot;),
+  &quot;classroom.group-seating-studio&quot;: () =&gt; import(&quot;./apps/ClassroomPlannerView.vue&quot;),
+  &quot;games.flunk_out_frenzy&quot;: () =&gt; import(&quot;./apps/FlunkOutFrenzyView.vue&quot;),
+};
+
+function resolveBespokeView(appIdValue: string): void {
+  const loader = bespokeRegistry[appIdValue];
+  if (!loader) {
+    bespokeView.value = null;
+    return;
+  }
+  bespokeView.value = defineAsyncComponent(loader);
+}
+
+const uiMode = computed&lt;UiMode | null&gt;(() =&gt; {
+  const raw = (app.value as unknown as { ui_mode?: unknown } | null)?.ui_mode;
+  if (raw === &quot;generic_ok&quot; || raw === &quot;bespoke_required&quot;) return raw;
+  return null;
+});
+
+const shouldBlock = computed(() =&gt; uiMode.value === &quot;bespoke_required&quot; &amp;&amp; bespokeView.value === null);
+
+async function load(): Promise&lt;void&gt; {
+  if (!appId.value) {
+    errorMessage.value = &quot;Saknar app-id i länken.&quot;;
+    isLoading.value = false;
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = null;
+  app.value = null;
+
+  try {
+    app.value = await apiGet&lt;AppDetailResponse&gt;(`/api/v1/apps/${encodeURIComponent(appId.value)}`);
+  } catch (error: unknown) {
+    if (isApiError(error)) {
+      errorMessage.value = error.message;
+    } else if (error instanceof Error) {
+      errorMessage.value = error.message;
+    } else {
+      errorMessage.value = &quot;Det gick inte att ladda appen.&quot;;
+    }
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+watch(
+  appId,
+  (value) =&gt; {
+    resolveBespokeView(value);
+    void load();
+  },
+  { immediate: true },
+);
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;div
+    v-if=&quot;isLoading || errorMessage || shouldBlock&quot;
+    class=&quot;max-w-3xl space-y-6&quot;
+  &gt;
+    &lt;div
+      v-if=&quot;isLoading&quot;
+      class=&quot;p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm&quot;
+    &gt;
+      Laddar...
+    &lt;/div&gt;
+
+    &lt;div
+      v-else-if=&quot;errorMessage&quot;
+      class=&quot;p-4 border border-error bg-white shadow-brutal-sm text-error text-sm&quot;
+    &gt;
+      {{ errorMessage }}
+    &lt;/div&gt;
+
+    &lt;div
+      v-else
+      class=&quot;p-4 border border-burgundy bg-white shadow-brutal-sm space-y-2&quot;
+    &gt;
+      &lt;p class=&quot;text-sm font-semibold text-burgundy&quot;&gt;
+        Den här appen kräver en anpassad vy som inte är installerad ännu.
+      &lt;/p&gt;
+      &lt;p class=&quot;text-sm text-navy/70&quot;&gt;
+        Kontakta admin eller uppdatera installationen för att få tillgång till appen.
+      &lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;component
+    :is=&quot;bespokeView&quot;
+    v-else-if=&quot;bespokeView&quot;
+  /&gt;
+
+  &lt;AppDetailView v-else /&gt;
+&lt;/template&gt;</file><file path="frontend/apps/skriptoteket/package.json">{
+  &quot;name&quot;: &quot;@skriptoteket/spa&quot;,
+  &quot;private&quot;: true,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite --port 5173 --strictPort&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;build:watch&quot;: &quot;vite build --watch&quot;,
+    &quot;gen:api-types&quot;: &quot;openapi-typescript ./openapi.json -o ./src/api/openapi.d.ts&quot;,
+    &quot;preview&quot;: &quot;vite preview --port 4173 --strictPort&quot;,
+    &quot;typecheck&quot;: &quot;vue-tsc --noEmit&quot;,
+    &quot;lint&quot;: &quot;eslint src --max-warnings=0&quot;,
+    &quot;lint:fix&quot;: &quot;eslint src --fix&quot;,
+    &quot;test&quot;: &quot;node ./scripts/vitest-run.mjs&quot;,
+    &quot;test:watch&quot;: &quot;vitest&quot;,
+    &quot;test:coverage&quot;: &quot;vitest run --coverage&quot;,
+    &quot;test:ui&quot;: &quot;vitest --ui&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@codemirror/autocomplete&quot;: &quot;^6.20.0&quot;,
+    &quot;@codemirror/commands&quot;: &quot;^6.10.1&quot;,
+    &quot;@codemirror/lang-json&quot;: &quot;^6.0.2&quot;,
+    &quot;@codemirror/lang-python&quot;: &quot;^6.2.1&quot;,
+    &quot;@codemirror/language&quot;: &quot;^6.11.3&quot;,
+    &quot;@codemirror/lint&quot;: &quot;^6.9.2&quot;,
+    &quot;@codemirror/merge&quot;: &quot;^6.11.2&quot;,
+    &quot;@codemirror/search&quot;: &quot;^6.5.11&quot;,
+    &quot;@codemirror/state&quot;: &quot;^6.5.2&quot;,
+    &quot;@codemirror/view&quot;: &quot;^6.39.4&quot;,
+    &quot;@dimforge/rapier2d&quot;: &quot;^0.19.3&quot;,
+    &quot;@dimforge/rapier2d-compat&quot;: &quot;^0.19.3&quot;,
+    &quot;diff&quot;: &quot;^8.0.2&quot;,
+    &quot;dompurify&quot;: &quot;^3.3.1&quot;,
+    &quot;howler&quot;: &quot;^2.2.4&quot;,
+    &quot;idb&quot;: &quot;^8.0.3&quot;,
+    &quot;lucide-vue-next&quot;: &quot;^0.563.0&quot;,
+    &quot;marked&quot;: &quot;^17.0.1&quot;,
+    &quot;pinia&quot;: &quot;^3.0.0&quot;,
+    &quot;pixi.js&quot;: &quot;^8.17.1&quot;,
+    &quot;vue&quot;: &quot;^3.5.0&quot;,
+    &quot;vue-draggable-plus&quot;: &quot;^0.6.1&quot;,
+    &quot;vue-router&quot;: &quot;^4.6.0&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@eslint/js&quot;: &quot;^9.0.0&quot;,
+    &quot;@pinia/testing&quot;: &quot;^1.0.3&quot;,
+    &quot;@tailwindcss/typography&quot;: &quot;^0.5.19&quot;,
+    &quot;@tailwindcss/vite&quot;: &quot;^4.1.18&quot;,
+    &quot;@vitejs/plugin-vue&quot;: &quot;^5.0.0&quot;,
+    &quot;@vitest/coverage-v8&quot;: &quot;^4.0.16&quot;,
+    &quot;@vue/test-utils&quot;: &quot;^2.4.6&quot;,
+    &quot;eslint&quot;: &quot;^9.0.0&quot;,
+    &quot;eslint-plugin-vue&quot;: &quot;^10.0.0&quot;,
+    &quot;globals&quot;: &quot;^16.0.0&quot;,
+    &quot;happy-dom&quot;: &quot;^20.0.11&quot;,
+    &quot;jsdom&quot;: &quot;^27.4.0&quot;,
+    &quot;openapi-typescript&quot;: &quot;^7.10.1&quot;,
+    &quot;tailwindcss&quot;: &quot;^4.1.18&quot;,
+    &quot;typescript&quot;: &quot;^5.7.0&quot;,
+    &quot;typescript-eslint&quot;: &quot;^8.0.0&quot;,
+    &quot;vite&quot;: &quot;^6.0.0&quot;,
+    &quot;vitest&quot;: &quot;^4.0.16&quot;,
+    &quot;vue-eslint-parser&quot;: &quot;^10.0.0&quot;,
+    &quot;vue-tsc&quot;: &quot;^2.0.0&quot;
+  }
+}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/audio/AudioDirector.ts">/**
  * Howler-backed audio director for Flunk-Out Frenzy.
  *
  * This adapter turns semantic game-effect events into lightweight synthesized
@@ -6389,6 +6716,9 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
         case &quot;gate-passed&quot;:
           effects.push({ type: &quot;gate-passed&quot;, tag: event.tag });
           break;
+        case &quot;launcher-released&quot;:
+          effects.push({ type: &quot;launch-released&quot;, chargeActive: true });
+          break;
         case &quot;drain-enter&quot;:
           effects.push({
             type: &quot;ball-drained&quot;,
@@ -6396,6 +6726,8 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
           });
           break;
         case &quot;launch-lane-enter&quot;:
+        case &quot;launcher-fed&quot;:
+        case &quot;launcher-charged&quot;:
         case &quot;ball-captured&quot;:
         case &quot;ball-ejected&quot;:
         case &quot;ball-saved&quot;:
@@ -6436,319 +6768,111 @@ function mapRuleEventToGameEffect(ruleEvent: RuleEvent): GameEffectEvent {
         type: &quot;shoot-again-lit&quot;,
       };
   }
-}</file><file path="frontend/apps/skriptoteket/src/views/apps/flunkOutFrenzyTypes.ts">/**
- * Typed Flunk-Out Frenzy SPA contracts.
+}</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/gameHostTypes.ts">/**
+ * Flunk-Out Frenzy shell-to-host contracts.
  *
- * These interfaces mirror the app-specific bootstrap payload used by the
- * bespoke game shell. They stay deliberately small so later runtime slices can
- * add richer state without rewriting the initial route contract.
+ * These types keep the bespoke route shell decoupled from the browser-owned
+ * runtime. The route consumes read-only HUD projections while `GameHost.vue`
+ * forwards imperative lifecycle controls into the runtime core.
  */
 
-export type FlunkOutFrenzyFeatureFlags = {
-  audio_enabled: boolean;
-  replay_capture_enabled: boolean;
-  score_submission_enabled: boolean;
-};
+import type {
+  GameHudSnapshot,
+  GameSessionStatus,
+  RuntimeCommand,
+} from &quot;./game/core/runtimeTypes&quot;;
+import type { MachineEvent } from &quot;./game/physics/physicsTypes&quot;;
 
-export type FlunkOutFrenzyBootstrap = {
-  app_id: string;
-  title: string;
-  summary: string;
-  app_version: string;
-  ruleset_id: string;
-  feature_flags: FlunkOutFrenzyFeatureFlags;
-};
+export type {
+  GameHudSnapshot,
+  GameSessionStatus,
+  GameViewSnapshot,
+} from &quot;./game/core/runtimeTypes&quot;;
 
-function isRecord(value: unknown): value is Record&lt;string, unknown&gt; {
-  return typeof value === &quot;object&quot; &amp;&amp; value !== null;
+export type GameRuntimeLoadState = &quot;idle&quot; | &quot;loading&quot; | &quot;ready&quot; | &quot;error&quot;;
+
+export interface GameHostApi {
+  startGame(): Promise&lt;void&gt;;
+  pauseGame(): void;
+  resumeGame(): void;
+  restartGame(): Promise&lt;void&gt;;
+  setMuted(muted: boolean): void;
 }
 
-function readStringField(source: Record&lt;string, unknown&gt;, field: string): string {
-  const value = source[field];
-  if (typeof value !== &quot;string&quot; || value.length === 0) {
-    throw new Error(`Ogiltigt bootstrap-svar: saknar strängfältet &quot;${field}&quot;.`);
-  }
-  return value;
+export interface GameRuntimeLike {
+  mount(hostElement: HTMLElement): void;
+  start(): void;
+  pause(): void;
+  resume(): void;
+  restart(): void;
+  setMuted(muted: boolean): void;
+  enqueueCommand(command: RuntimeCommand): void;
+  subscribeHud(listener: (hud: GameHudSnapshot) =&gt; void): () =&gt; void;
+  dispose(): void;
+  injectMachineEventsForDebug?(events: MachineEvent[]): void;
 }
 
-function readBooleanField(source: Record&lt;string, unknown&gt;, field: string): boolean {
-  const value = source[field];
-  if (typeof value !== &quot;boolean&quot;) {
-    throw new Error(`Ogiltigt bootstrap-svar: saknar booleska fältet &quot;${field}&quot;.`);
-  }
-  return value;
+export interface GameRuntimeFactoryOptions {
+  audioEnabled: boolean;
 }
 
-export function parseFlunkOutFrenzyBootstrap(payload: unknown): FlunkOutFrenzyBootstrap {
-  if (!isRecord(payload)) {
-    throw new Error(&quot;Ogiltigt bootstrap-svar: förväntade ett objekt.&quot;);
+export type GameRuntimeFactory = (
+  options: GameRuntimeFactoryOptions,
+) =&gt; Promise&lt;GameRuntimeLike&gt;;
+
+export function labelGameSessionStatus(
+  status: GameSessionStatus,
+): &quot;Pågående runda&quot; | &quot;Pausad&quot; | &quot;Game over&quot; | &quot;Redo att starta&quot; {
+  switch (status) {
+    case &quot;running&quot;:
+      return &quot;Pågående runda&quot;;
+    case &quot;paused&quot;:
+      return &quot;Pausad&quot;;
+    case &quot;game-over&quot;:
+      return &quot;Game over&quot;;
+    case &quot;ready&quot;:
+      return &quot;Redo att starta&quot;;
   }
+}</file><file path="src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py">&quot;&quot;&quot;HTTP routes for the Flunk-Out Frenzy curated app.
+This router exposes the bespoke app-specific bootstrap contract used by the SPA
+shell. It keeps access checks in the web layer and delegates payload building
+to the application handler.
+&quot;&quot;&quot;
 
-  const featureFlags = payload.feature_flags;
-  if (!isRecord(featureFlags)) {
-    throw new Error(&apos;Ogiltigt bootstrap-svar: saknar objektet &quot;feature_flags&quot;.&apos;);
-  }
+from fastapi import APIRouter, Depends
 
-  return {
-    app_id: readStringField(payload, &quot;app_id&quot;),
-    title: readStringField(payload, &quot;title&quot;),
-    summary: readStringField(payload, &quot;summary&quot;),
-    app_version: readStringField(payload, &quot;app_version&quot;),
-    ruleset_id: readStringField(payload, &quot;ruleset_id&quot;),
-    feature_flags: {
-      audio_enabled: readBooleanField(featureFlags, &quot;audio_enabled&quot;),
-      replay_capture_enabled: readBooleanField(featureFlags, &quot;replay_capture_enabled&quot;),
-      score_submission_enabled: readBooleanField(featureFlags, &quot;score_submission_enabled&quot;),
-    },
-  };
-}</file><file path="frontend/apps/skriptoteket/src/views/apps/useFlunkOutFrenzyBootstrap.ts">/**
- * Flunk-Out Frenzy bootstrap loader.
- *
- * This composable owns the initial app-shell bootstrap fetch so the bespoke
- * view can stay rendering-focused while still consuming a typed backend
- * contract.
- */
+from skriptoteket.application.curated_apps.flunk_out_frenzy import FlunkOutFrenzyBootstrapResult
+from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
+from skriptoteket.domain.errors import not_found
+from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
+from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.dishka_dependencies import FromDishka
 
-import { onMounted, ref } from &quot;vue&quot;;
+APP_ID = &quot;games.flunk_out_frenzy&quot;
+router = APIRouter(prefix=f&quot;/api/v1/apps/{APP_ID}&quot;, tags=[&quot;apps&quot;, &quot;flunk-out-frenzy&quot;])
 
-import { apiGet, isApiError } from &quot;../../api/client&quot;;
-import {
-  parseFlunkOutFrenzyBootstrap,
-  type FlunkOutFrenzyBootstrap,
-} from &quot;./flunkOutFrenzyTypes&quot;;
 
-const BOOTSTRAP_PATH = &quot;/api/v1/apps/games.flunk_out_frenzy/bootstrap&quot;;
+def _require_app_access(
+    *, registry: CuratedAppRegistryProtocol, user: User
+) -&gt; CuratedAppDefinition:
+    app = registry.get_by_app_id(app_id=APP_ID)
+    if app is None:
+        raise not_found(&quot;CuratedApp&quot;, APP_ID)
+    require_at_least_role(user=user, role=app.min_role)
+    return app
 
-export function useFlunkOutFrenzyBootstrap() {
-  const bootstrap = ref&lt;FlunkOutFrenzyBootstrap | null&gt;(null);
-  const bootstrapError = ref&lt;string | null&gt;(null);
-  const isBootstrapping = ref(true);
 
-  async function loadBootstrap(): Promise&lt;void&gt; {
-    isBootstrapping.value = true;
-    bootstrapError.value = null;
-
-    try {
-      const payload = await apiGet&lt;unknown&gt;(BOOTSTRAP_PATH);
-      bootstrap.value = parseFlunkOutFrenzyBootstrap(payload);
-    } catch (error: unknown) {
-      bootstrap.value = null;
-      bootstrapError.value = isApiError(error)
-        ? error.message
-        : error instanceof Error
-          ? error.message
-          : &quot;Kunde inte ladda Flunk-Out Frenzy.&quot;;
-    } finally {
-      isBootstrapping.value = false;
-    }
-  }
-
-  onMounted(() =&gt; {
-    void loadBootstrap();
-  });
-
-  return {
-    bootstrap,
-    bootstrapError,
-    isBootstrapping,
-    loadBootstrap,
-  };
-}</file><file path="frontend/apps/skriptoteket/src/views/AppHostView.vue">&lt;script setup lang=&quot;ts&quot;&gt;
-/**
- * Curated app host view.
- *
- * This view resolves a curated app deep link, fetches the generic app detail
- * metadata, and selects either a bespoke SPA surface or the generic fallback
- * view depending on the registered `ui_mode`.
- */
-
-import { computed, defineAsyncComponent, ref, shallowRef, watch } from &quot;vue&quot;;
-import type { Component } from &quot;vue&quot;;
-import { useRoute } from &quot;vue-router&quot;;
-
-import { apiGet, isApiError } from &quot;../api/client&quot;;
-import type { components } from &quot;../api/openapi&quot;;
-import AppDetailView from &quot;./AppDetailView.vue&quot;;
-
-type AppDetailResponse = components[&quot;schemas&quot;][&quot;AppDetailResponse&quot;];
-type UiMode = &quot;generic_ok&quot; | &quot;bespoke_required&quot;;
-
-const route = useRoute();
-
-const appId = computed(() =&gt; {
-  const param = route.params.appId;
-  return typeof param === &quot;string&quot; ? param : &quot;&quot;;
-});
-
-const app = ref&lt;AppDetailResponse | null&gt;(null);
-const isLoading = ref(true);
-const errorMessage = ref&lt;string | null&gt;(null);
-
-const bespokeView = shallowRef&lt;Component | null&gt;(null);
-
-const bespokeRegistry: Record&lt;string, () =&gt; Promise&lt;{ default: Component }&gt;&gt; = {
-  &quot;chemistry.reagent_prep_chef&quot;: () =&gt; import(&quot;./apps/ReagentPrepChefView.vue&quot;),
-  &quot;classroom.group-seating-studio&quot;: () =&gt; import(&quot;./apps/ClassroomPlannerView.vue&quot;),
-  &quot;games.flunk_out_frenzy&quot;: () =&gt; import(&quot;./apps/FlunkOutFrenzyView.vue&quot;),
-};
-
-function resolveBespokeView(appIdValue: string): void {
-  const loader = bespokeRegistry[appIdValue];
-  if (!loader) {
-    bespokeView.value = null;
-    return;
-  }
-  bespokeView.value = defineAsyncComponent(loader);
-}
-
-const uiMode = computed&lt;UiMode | null&gt;(() =&gt; {
-  const raw = (app.value as unknown as { ui_mode?: unknown } | null)?.ui_mode;
-  if (raw === &quot;generic_ok&quot; || raw === &quot;bespoke_required&quot;) return raw;
-  return null;
-});
-
-const shouldBlock = computed(() =&gt; uiMode.value === &quot;bespoke_required&quot; &amp;&amp; bespokeView.value === null);
-
-async function load(): Promise&lt;void&gt; {
-  if (!appId.value) {
-    errorMessage.value = &quot;Saknar app-id i länken.&quot;;
-    isLoading.value = false;
-    return;
-  }
-
-  isLoading.value = true;
-  errorMessage.value = null;
-  app.value = null;
-
-  try {
-    app.value = await apiGet&lt;AppDetailResponse&gt;(`/api/v1/apps/${encodeURIComponent(appId.value)}`);
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      errorMessage.value = error.message;
-    } else if (error instanceof Error) {
-      errorMessage.value = error.message;
-    } else {
-      errorMessage.value = &quot;Det gick inte att ladda appen.&quot;;
-    }
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-watch(
-  appId,
-  (value) =&gt; {
-    resolveBespokeView(value);
-    void load();
-  },
-  { immediate: true },
-);
-&lt;/script&gt;
-
-&lt;template&gt;
-  &lt;div
-    v-if=&quot;isLoading || errorMessage || shouldBlock&quot;
-    class=&quot;max-w-3xl space-y-6&quot;
-  &gt;
-    &lt;div
-      v-if=&quot;isLoading&quot;
-      class=&quot;p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm&quot;
-    &gt;
-      Laddar...
-    &lt;/div&gt;
-
-    &lt;div
-      v-else-if=&quot;errorMessage&quot;
-      class=&quot;p-4 border border-error bg-white shadow-brutal-sm text-error text-sm&quot;
-    &gt;
-      {{ errorMessage }}
-    &lt;/div&gt;
-
-    &lt;div
-      v-else
-      class=&quot;p-4 border border-burgundy bg-white shadow-brutal-sm space-y-2&quot;
-    &gt;
-      &lt;p class=&quot;text-sm font-semibold text-burgundy&quot;&gt;
-        Den här appen kräver en anpassad vy som inte är installerad ännu.
-      &lt;/p&gt;
-      &lt;p class=&quot;text-sm text-navy/70&quot;&gt;
-        Kontakta admin eller uppdatera installationen för att få tillgång till appen.
-      &lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-
-  &lt;component
-    :is=&quot;bespokeView&quot;
-    v-else-if=&quot;bespokeView&quot;
-  /&gt;
-
-  &lt;AppDetailView v-else /&gt;
-&lt;/template&gt;</file><file path="frontend/apps/skriptoteket/package.json">{
-  &quot;name&quot;: &quot;@skriptoteket/spa&quot;,
-  &quot;private&quot;: true,
-  &quot;type&quot;: &quot;module&quot;,
-  &quot;scripts&quot;: {
-    &quot;dev&quot;: &quot;vite --port 5173 --strictPort&quot;,
-    &quot;build&quot;: &quot;vite build&quot;,
-    &quot;build:watch&quot;: &quot;vite build --watch&quot;,
-    &quot;gen:api-types&quot;: &quot;openapi-typescript ./openapi.json -o ./src/api/openapi.d.ts&quot;,
-    &quot;preview&quot;: &quot;vite preview --port 4173 --strictPort&quot;,
-    &quot;typecheck&quot;: &quot;vue-tsc --noEmit&quot;,
-    &quot;lint&quot;: &quot;eslint src --max-warnings=0&quot;,
-    &quot;lint:fix&quot;: &quot;eslint src --fix&quot;,
-    &quot;test&quot;: &quot;node ./scripts/vitest-run.mjs&quot;,
-    &quot;test:watch&quot;: &quot;vitest&quot;,
-    &quot;test:coverage&quot;: &quot;vitest run --coverage&quot;,
-    &quot;test:ui&quot;: &quot;vitest --ui&quot;
-  },
-  &quot;dependencies&quot;: {
-    &quot;@codemirror/autocomplete&quot;: &quot;^6.20.0&quot;,
-    &quot;@codemirror/commands&quot;: &quot;^6.10.1&quot;,
-    &quot;@codemirror/lang-json&quot;: &quot;^6.0.2&quot;,
-    &quot;@codemirror/lang-python&quot;: &quot;^6.2.1&quot;,
-    &quot;@codemirror/language&quot;: &quot;^6.11.3&quot;,
-    &quot;@codemirror/lint&quot;: &quot;^6.9.2&quot;,
-    &quot;@codemirror/merge&quot;: &quot;^6.11.2&quot;,
-    &quot;@codemirror/search&quot;: &quot;^6.5.11&quot;,
-    &quot;@codemirror/state&quot;: &quot;^6.5.2&quot;,
-    &quot;@codemirror/view&quot;: &quot;^6.39.4&quot;,
-    &quot;@dimforge/rapier2d&quot;: &quot;^0.19.3&quot;,
-    &quot;@dimforge/rapier2d-compat&quot;: &quot;^0.19.3&quot;,
-    &quot;diff&quot;: &quot;^8.0.2&quot;,
-    &quot;dompurify&quot;: &quot;^3.3.1&quot;,
-    &quot;howler&quot;: &quot;^2.2.4&quot;,
-    &quot;idb&quot;: &quot;^8.0.3&quot;,
-    &quot;lucide-vue-next&quot;: &quot;^0.563.0&quot;,
-    &quot;marked&quot;: &quot;^17.0.1&quot;,
-    &quot;pinia&quot;: &quot;^3.0.0&quot;,
-    &quot;pixi.js&quot;: &quot;^8.17.1&quot;,
-    &quot;vue&quot;: &quot;^3.5.0&quot;,
-    &quot;vue-draggable-plus&quot;: &quot;^0.6.1&quot;,
-    &quot;vue-router&quot;: &quot;^4.6.0&quot;
-  },
-  &quot;devDependencies&quot;: {
-    &quot;@eslint/js&quot;: &quot;^9.0.0&quot;,
-    &quot;@pinia/testing&quot;: &quot;^1.0.3&quot;,
-    &quot;@tailwindcss/typography&quot;: &quot;^0.5.19&quot;,
-    &quot;@tailwindcss/vite&quot;: &quot;^4.1.18&quot;,
-    &quot;@vitejs/plugin-vue&quot;: &quot;^5.0.0&quot;,
-    &quot;@vitest/coverage-v8&quot;: &quot;^4.0.16&quot;,
-    &quot;@vue/test-utils&quot;: &quot;^2.4.6&quot;,
-    &quot;eslint&quot;: &quot;^9.0.0&quot;,
-    &quot;eslint-plugin-vue&quot;: &quot;^10.0.0&quot;,
-    &quot;globals&quot;: &quot;^16.0.0&quot;,
-    &quot;happy-dom&quot;: &quot;^20.0.11&quot;,
-    &quot;jsdom&quot;: &quot;^27.4.0&quot;,
-    &quot;openapi-typescript&quot;: &quot;^7.10.1&quot;,
-    &quot;tailwindcss&quot;: &quot;^4.1.18&quot;,
-    &quot;typescript&quot;: &quot;^5.7.0&quot;,
-    &quot;typescript-eslint&quot;: &quot;^8.0.0&quot;,
-    &quot;vite&quot;: &quot;^6.0.0&quot;,
-    &quot;vitest&quot;: &quot;^4.0.16&quot;,
-    &quot;vue-eslint-parser&quot;: &quot;^10.0.0&quot;,
-    &quot;vue-tsc&quot;: &quot;^2.0.0&quot;
-  }
-}</file><file path="docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md">---
+@router.get(&quot;/bootstrap&quot;, response_model=FlunkOutFrenzyBootstrapResult)
+async def get_bootstrap(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[FlunkOutFrenzyBootstrapHandlerProtocol],
+    user: User = Depends(require_user_api),
+) -&gt; FlunkOutFrenzyBootstrapResult:
+    app = _require_app_access(registry=registry, user=user)
+    return await handler.handle(app=app)</file><file path="docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md">---
 type: epic
 id: EPIC-25
 title: &quot;Curated app family: competitive games foundations and Flunk-Out Frenzy&quot;
@@ -6814,6 +6938,16 @@ dependencies: [&quot;ADR-0023&quot;, &quot;ADR-0027&quot;, &quot;ADR-0073&quot;]
 - Cross-cutting sequencing beyond this epic is tracked in
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`.
 
+## Implementation Summary (as of 2026-04-01)
+
+- `ST-25-05` tranche-one foundation (`PR-0188`, `PR-0189`, `PR-0190`) is
+  complete: `PhysicsWorld` and `RuleEngine` are decomposed into modular seams,
+  machine-event vocabulary is widened, and pure rule-state modules own bonus,
+  jackpot, and ball-lifecycle logic.
+- `PR-0191` reassessment returned a **GO** decision: the architecture is stable,
+  file-size targets are met, and the runtime boundary is verified as ready for
+  the higher-fidelity mechanics tranche.
+
 ## Implementation Summary (as of 2026-03-23)
 
 - `ST-25-01` shipped the Flunk-Out Frenzy curated-app registration,
@@ -6821,72 +6955,7 @@ dependencies: [&quot;ADR-0023&quot;, &quot;ADR-0027&quot;, &quot;ADR-0073&quot;]
   contract.
 - `ST-25-02` shipped the immersive game-first shell, runtime/core boundary,
   Rapier-backed prototype-alpha physics/rules, and the first playable local
-  Pixi/Howler 3-ball slice with verified pause/restart/mute and route disposal.</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/gameHostTypes.ts">/**
- * Flunk-Out Frenzy shell-to-host contracts.
- *
- * These types keep the bespoke route shell decoupled from the browser-owned
- * runtime. The route consumes read-only HUD projections while `GameHost.vue`
- * forwards imperative lifecycle controls into the runtime core.
- */
-
-import type {
-  GameHudSnapshot,
-  GameSessionStatus,
-  RuntimeCommand,
-} from &quot;./game/core/runtimeTypes&quot;;
-import type { MachineEvent } from &quot;./game/physics/physicsTypes&quot;;
-
-export type {
-  GameHudSnapshot,
-  GameSessionStatus,
-  GameViewSnapshot,
-} from &quot;./game/core/runtimeTypes&quot;;
-
-export type GameRuntimeLoadState = &quot;idle&quot; | &quot;loading&quot; | &quot;ready&quot; | &quot;error&quot;;
-
-export interface GameHostApi {
-  startGame(): Promise&lt;void&gt;;
-  pauseGame(): void;
-  resumeGame(): void;
-  restartGame(): Promise&lt;void&gt;;
-  setMuted(muted: boolean): void;
-}
-
-export interface GameRuntimeLike {
-  mount(hostElement: HTMLElement): void;
-  start(): void;
-  pause(): void;
-  resume(): void;
-  restart(): void;
-  setMuted(muted: boolean): void;
-  enqueueCommand(command: RuntimeCommand): void;
-  subscribeHud(listener: (hud: GameHudSnapshot) =&gt; void): () =&gt; void;
-  dispose(): void;
-  injectMachineEventsForDebug?(events: MachineEvent[]): void;
-}
-
-export interface GameRuntimeFactoryOptions {
-  audioEnabled: boolean;
-}
-
-export type GameRuntimeFactory = (
-  options: GameRuntimeFactoryOptions,
-) =&gt; Promise&lt;GameRuntimeLike&gt;;
-
-export function labelGameSessionStatus(
-  status: GameSessionStatus,
-): &quot;Pågående runda&quot; | &quot;Pausad&quot; | &quot;Game over&quot; | &quot;Redo att starta&quot; {
-  switch (status) {
-    case &quot;running&quot;:
-      return &quot;Pågående runda&quot;;
-    case &quot;paused&quot;:
-      return &quot;Pausad&quot;;
-    case &quot;game-over&quot;:
-      return &quot;Game over&quot;;
-    case &quot;ready&quot;:
-      return &quot;Redo att starta&quot;;
-  }
-}</file><file path="frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.vue">&lt;script setup lang=&quot;ts&quot;&gt;
+  Pixi/Howler 3-ball slice with verified pause/restart/mute and route disposal.</file><file path="frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.vue">&lt;script setup lang=&quot;ts&quot;&gt;
 /**
  * Flunk-Out Frenzy shell view.
  *
@@ -7895,46 +7964,7 @@ onBeforeUnmount(() =&gt; {
     padding: 0.75rem;
   }
 }
-&lt;/style&gt;</file><file path="src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py">&quot;&quot;&quot;HTTP routes for the Flunk-Out Frenzy curated app.
-This router exposes the bespoke app-specific bootstrap contract used by the SPA
-shell. It keeps access checks in the web layer and delegates payload building
-to the application handler.
-&quot;&quot;&quot;
-
-from fastapi import APIRouter, Depends
-
-from skriptoteket.application.curated_apps.flunk_out_frenzy import FlunkOutFrenzyBootstrapResult
-from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
-from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
-from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_dependencies import FromDishka
-
-APP_ID = &quot;games.flunk_out_frenzy&quot;
-router = APIRouter(prefix=f&quot;/api/v1/apps/{APP_ID}&quot;, tags=[&quot;apps&quot;, &quot;flunk-out-frenzy&quot;])
-
-
-def _require_app_access(
-    *, registry: CuratedAppRegistryProtocol, user: User
-) -&gt; CuratedAppDefinition:
-    app = registry.get_by_app_id(app_id=APP_ID)
-    if app is None:
-        raise not_found(&quot;CuratedApp&quot;, APP_ID)
-    require_at_least_role(user=user, role=app.min_role)
-    return app
-
-
-@router.get(&quot;/bootstrap&quot;, response_model=FlunkOutFrenzyBootstrapResult)
-async def get_bootstrap(
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[FlunkOutFrenzyBootstrapHandlerProtocol],
-    user: User = Depends(require_user_api),
-) -&gt; FlunkOutFrenzyBootstrapResult:
-    app = _require_app_access(registry=registry, user=user)
-    return await handler.handle(app=app)</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/GameRuntime.ts">/**
+&lt;/style&gt;</file><file path="frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/GameRuntime.ts">/**
  * Browser-owned runtime core for Flunk-Out Frenzy.
  *
  * The runtime owns session lifecycle, command draining, and the authoritative
@@ -8185,8 +8215,6 @@ export class GameRuntime {
     const effects: GameEffectEvent[] = [];
 
     for (const command of pendingCommands) {
-      const previousLaunchPressed = this.inputState.launchPressed;
-
       if (command.type === &quot;left-flip&quot;) {
         this.inputState.leftFlipPressed = command.pressed;
         if (command.pressed) {
@@ -8199,9 +8227,6 @@ export class GameRuntime {
         }
       } else {
         this.inputState.launchPressed = command.pressed;
-        if (!command.pressed &amp;&amp; previousLaunchPressed) {
-          effects.push({ type: &quot;launch-released&quot;, chargeActive: true });
-        }
       }
 
       this.inputState.lastCommandLabel = describeRuntimeCommand(command);
@@ -8338,13 +8363,6 @@ const props = withDefaults(defineProps&lt;{
   audioEnabled: true,
   runtimeFactory: undefined,
 });
-
-// These are intentionally temporary reference-art crops until the dedicated
-// Flunk-Out Frenzy art pass replaces them.
-const referencePlayfieldUrl = new URL(
-  &quot;../../../assets/flunk-out-frenzy/reference-playfield-crop.jpg&quot;,
-  import.meta.url,
-).href;
 
 const emit = defineEmits&lt;{
   hudChange: [hud: GameHudSnapshot];
@@ -8537,11 +8555,7 @@ defineExpose&lt;GameHostApi&gt;({
       :data-runtime-load-state=&quot;runtimeLoadState&quot;
       class=&quot;fof-host__playfield&quot;
     &gt;
-      &lt;img
-        class=&quot;fof-host__image&quot;
-        :src=&quot;referencePlayfieldUrl&quot;
-        alt=&quot;Illustrerad referens för Flunk-Out Frenzys pinball-playfield&quot;
-      &gt;
+      &lt;div class=&quot;fof-host__backdrop&quot; /&gt;
       &lt;div class=&quot;fof-host__glass&quot; /&gt;
       &lt;div class=&quot;fof-host__scanline&quot; /&gt;
 
@@ -8603,14 +8617,14 @@ defineExpose&lt;GameHostApi&gt;({
     0 18px 34px rgba(12, 8, 5, 0.3);
 }
 
-.fof-host__image {
+.fof-host__backdrop {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  filter: saturate(0.98) contrast(1.05) brightness(0.78);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(102, 181, 130, 0.18), transparent 24%),
+    radial-gradient(circle at 22% 78%, rgba(255, 126, 174, 0.14), transparent 20%),
+    radial-gradient(circle at 78% 72%, rgba(108, 170, 255, 0.16), transparent 22%),
+    linear-gradient(180deg, rgba(18, 28, 24, 0.94), rgba(8, 11, 10, 0.98));
 }
 
 .fof-host__glass,
@@ -8844,6 +8858,23 @@ Skriptoteket as a first-class curated game app while staying compatible with:
 - the existing SPA stack and current game/runtime libraries
 - future shared global high-score mechanics
 
+## Governing Assumptions
+
+Treat these as fixed product direction for this package:
+
+- `Flappy Birds` ships as `games.flappy_birds` from day one.
+- It is a bespoke curated app, not a detached runtime experiment.
+- It follows the already-accepted competitive-games model:
+  browser-owned live simulation plus backend-owned competition state.
+- `Flunk-Out Frenzy` is the first consumer of that pattern, not a special
+  exception.
+- Delivery should follow the existing programme order:
+  local playable app first, shared competition plumbing second, official score
+  support third.
+- High scores are a lightweight teacher-fun feature, not a real audit-heavy
+  esports system. Do not overdesign replay review, moderation, or forensic
+  validation for this port.
+
 ## Upstream Snapshot
 
 - Source repo: `https://github.com/trilogy-group/flappybirds`
@@ -8852,21 +8883,22 @@ Skriptoteket as a first-class curated game app while staying compatible with:
 
 ## Questions This Package Should Answer
 
-1. Should `Flappy Birds` become a new curated app such as
-   `games.flappy_birds`, or should it be treated as a runtime/library exercise
-   within the competitive-games family first?
-2. Which upstream parts are worth preserving as-is:
+1. Which upstream parts are worth preserving as authored gameplay semantics:
    entity model, difficulty tuning, power-up semantics, asset layout, input
    scheme, local score loop?
-3. Which parts should be rewritten onto Skriptoteket-native seams:
+2. Which parts should be rewritten onto Skriptoteket-native seams:
    route shell, auth-gated bootstrap, profile-aware identity, leaderboard UX,
-   replay/score submission, and app-specific API contracts?
-4. Should the port keep upstream raw Canvas/Web Audio patterns behind adapters,
-   or should it move directly onto the current Skriptoteket game stack
-   (`Pixi`, `Rapier`, `Howler`) even if those libraries need extension?
-5. What shared `competitive_play` abstractions should be introduced so both
+   score submission, and app-specific API contracts?
+3. Should the port keep upstream raw Canvas/Web Audio patterns behind adapters,
+   or should it move directly onto the current Skriptoteket game shell pattern
+   with `Pixi` and `Howler`, while avoiding unnecessary `Rapier` adoption for a
+   simple arcade loop?
+4. What shared `competitive_play` abstractions should be introduced so both
    `Flunk-Out Frenzy` and a future `Flappy Birds` app can submit scores and
    query global leaderboards without one-off persistence logic?
+5. What is the lightest credible score-submission model that preserves
+   cross-game consistency without turning fun teacher leaderboards into a heavy
+   audit product?
 
 ## Important Current-State Reality
 
@@ -8879,6 +8911,10 @@ Skriptoteket as a first-class curated game app while staying compatible with:
 - `Flunk-Out Frenzy` already proves the intended browser-owned runtime plus
   backend-owned competition split and shows the current frontend game-library
   direction.
+- The repo backlog still frames replay validation and promotion more strongly
+  than this product needs for a casual teacher leaderboard. For this package,
+  treat those heavier ideas as background context, not as a requirement to
+  reproduce in full for `Flappy Birds` v1.
 
 ## Suggested Reading Order
 
@@ -8894,13 +8930,38 @@ Skriptoteket as a first-class curated game app while staying compatible with:
   and local high score handling.
 - Skriptoteket wants auth-gated curated app routes, typed bootstrap, browser
   runtime isolation, and future server-owned official leaderboard state.
+- Preserve gameplay semantics, not the donor shell. The likely port is an
+  adapter/rebuild around Skriptoteket-native route, bootstrap, HUD, and score
+  seams rather than a direct transplant of `Game.ts`.
+- Prefer the current curated-game shell pattern:
+  lazy runtime loading, imperative host lifecycle, and read-only HUD snapshots
+  flowing back to Vue.
+- Reuse `Pixi` for rendering and `Howler` for audio unless the architect finds
+  a strong reason not to. `Rapier` should be considered optional for this app,
+  not mandatory.
 - The likely porting center of gravity is not a literal transplant; it is an
   adapter or rewrite that preserves game semantics while moving shell, identity,
   persistence, and competition mechanics onto Skriptoteket-native boundaries.
+- Keep client storage for non-authoritative preferences such as bird color if
+  useful, but treat any local best score as local-only. Official/global boards
+  still belong to backend-owned app-specific endpoints.
 - Library reuse is allowed to evolve. The package includes the current SPA/game
   dependencies specifically so the architect can judge whether to:
   keep upstream rendering/input patterns,
   port onto the existing `Flunk-Out Frenzy` runtime substrate,
   or define a slightly broader reusable browser-game substrate for multiple
   curated games.
+
+## Lightweight Competition Guidance
+
+Design the leaderboard path as a fun, low-stakes feature:
+
+- Keep `app_id`, `app_version`, and `ruleset_id` from day one so future balance
+  changes do not corrupt one shared board.
+- Use app-specific endpoints and backend-owned score rows, but keep the
+  integrity model proportionate.
+- Prefer lightweight run summaries and compact replay or input-log data that
+  support debugging or future iteration if cheap, not a full audit trail.
+- Avoid designing for manual review, anti-cheat operations, or real-world score
+  disputes unless the product direction changes later.
 </instruction></repomix>

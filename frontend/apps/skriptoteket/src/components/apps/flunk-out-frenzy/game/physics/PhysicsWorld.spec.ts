@@ -61,20 +61,66 @@ describe("PhysicsWorld", () => {
 
     try {
       world.spawnBall();
+      collectEventsUntil(world, 40, (events) => {
+        return events.some((event) => event.type === "launcher-fed");
+      });
 
       const initialY = world.currentSnapshot().ball?.y ?? 0;
 
       world.applyCommand({ type: "launch", pressed: true });
-      for (let index = 0; index < 12; index += 1) {
+      collectEventsUntil(world, 40, (events) => {
+        return events.some((event) => event.type === "launcher-charged");
+      });
+      for (let index = 0; index < 18; index += 1) {
         world.step(16);
       }
 
       world.applyCommand({ type: "launch", pressed: false });
-      for (let index = 0; index < 12; index += 1) {
-        world.step(16);
-      }
+      const releaseEvents = world.step(16);
+      const gateEvents = collectEventsUntil(world, 120, (events) => {
+        return events.some((event) => {
+          return event.type === "gate-passed"
+            && event.tag === PROTOTYPE_ALPHA_TABLE.gates[0].tag;
+        });
+      });
 
+      expect(releaseEvents).toContainEqual({
+        type: "launcher-released",
+        tag: PROTOTYPE_ALPHA_TABLE.launcher.tag,
+      });
+      expect(gateEvents).toContainEqual({
+        type: "gate-passed",
+        tag: PROTOTYPE_ALPHA_TABLE.gates[0].tag,
+      });
       expect(world.currentSnapshot().ball?.y ?? 10_000).toBeLessThan(initialY);
+    } finally {
+      world.dispose();
+    }
+  });
+
+  it("emits explicit launcher feed and charged events from the launcher state machine", async () => {
+    const world = await PhysicsWorld.create();
+
+    try {
+      world.spawnBall();
+
+      const feedEvents = collectEventsUntil(world, 40, (events) => {
+        return events.some((event) => event.type === "launcher-fed");
+      });
+      expect(feedEvents).toContainEqual({
+        type: "launcher-fed",
+        tag: PROTOTYPE_ALPHA_TABLE.launcher.tag,
+      });
+
+      world.applyCommand({ type: "launch", pressed: true });
+      const chargedEvents = collectEventsUntil(world, 40, (events) => {
+        return events.some((event) => event.type === "launcher-charged");
+      });
+
+      expect(chargedEvents).toContainEqual({
+        type: "launcher-charged",
+        tag: PROTOTYPE_ALPHA_TABLE.launcher.tag,
+      });
     } finally {
       world.dispose();
     }
@@ -178,6 +224,9 @@ describe("PhysicsWorld", () => {
       { type: "popup-target-hit", tag: "target/pop-center" },
       { type: "gate-passed", tag: "gate/orbit-return" },
       { type: "launch-lane-enter", tag: "lane/launch" },
+      { type: "launcher-fed", tag: "launcher/main" },
+      { type: "launcher-charged", tag: "launcher/main" },
+      { type: "launcher-released", tag: "launcher/main" },
       { type: "ball-captured", tag: "capture/hole-left", deviceKind: "hole" },
       { type: "ball-ejected", tag: "capture/kickout-left", deviceKind: "kickout" },
       { type: "ball-saved", tag: "save/right-kickback", deviceKind: "kickback" },
@@ -189,9 +238,27 @@ describe("PhysicsWorld", () => {
       "popup-target-hit",
       "gate-passed",
       "launch-lane-enter",
+      "launcher-fed",
+      "launcher-charged",
+      "launcher-released",
       "ball-captured",
       "ball-ejected",
       "ball-saved",
     ]);
   });
 });
+
+function collectEventsUntil(
+  world: PhysicsWorldType,
+  maxSteps: number,
+  predicate: (events: MachineEvent[]) => boolean,
+): MachineEvent[] {
+  for (let index = 0; index < maxSteps; index += 1) {
+    const events = world.step(16);
+    if (predicate(events)) {
+      return events;
+    }
+  }
+
+  throw new Error("Expected machine events were not emitted in time.");
+}
