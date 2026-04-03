@@ -6,6 +6,11 @@
  * concerns into either side.
  */
 
+import type {
+  CaptureMachineEventKind,
+  SaveMachineEventKind,
+} from "../physics/physicsTypes";
+
 export type GameEffectEvent =
   | { type: "round-started" }
   | { type: "ball-spawned" }
@@ -18,10 +23,16 @@ export type GameEffectEvent =
   | { type: "standup-target-hit"; tag: string }
   | { type: "popup-target-hit"; tag: string }
   | { type: "gate-passed"; tag: string }
+  | { type: "ball-captured"; tag: string; deviceKind: CaptureMachineEventKind }
+  | { type: "ball-ejected"; tag: string; deviceKind: CaptureMachineEventKind }
+  | { type: "ball-saved"; tag: string; deviceKind: SaveMachineEventKind }
   | { type: "late-bank-complete"; multiplier: number }
   | { type: "bonus-awarded"; points: number }
   | { type: "jackpot-lit"; points: number }
   | { type: "jackpot-awarded"; points: number }
+  | { type: "capture-awarded"; tag: string; deviceKind: CaptureMachineEventKind; points: number }
+  | { type: "eject-awarded"; tag: string; deviceKind: CaptureMachineEventKind; points: number }
+  | { type: "save-awarded"; tag: string; deviceKind: SaveMachineEventKind; points: number }
   | { type: "shoot-again-lit" }
   | { type: "ball-drained"; ballsRemaining: number }
   | { type: "game-over"; finalScore: number };

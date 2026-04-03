@@ -11,6 +11,12 @@ export interface TablePoint {
   y: number;
 }
 
+export interface TablePoint3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
 export interface TableBoardDefinition {
   width: number;
   height: number;
@@ -49,23 +55,85 @@ export interface TableRolloverDefinition {
   bankTag?: string;
 }
 
-export interface TableTripwireDefinition {
-  tag: string;
-  x: number;
-  y: number;
+export type TableTriggerPhaseDefinition = "enter" | "exit" | "both";
+
+export interface TableRectTriggerShapeDefinition {
+  kind: "rect";
+  center: TablePoint;
   width: number;
   height: number;
-  laneTag?: string;
+  angleDeg?: number;
 }
 
-export interface TableGateDefinition {
-  tag: string;
+export interface TableCircleTriggerShapeDefinition {
+  kind: "circle";
+  center: TablePoint;
+  radius: number;
+}
+
+export interface TablePolygonTriggerShapeDefinition {
+  kind: "polygon";
+  points: readonly TablePoint[];
+}
+
+export interface TableCapsuleTriggerShapeDefinition {
+  kind: "capsule";
+  center: TablePoint;
+  length: number;
+  radius: number;
+  angleDeg?: number;
+}
+
+export interface TableCorridorRegionShapeDefinition {
+  kind: "donor-corridor";
+  leftBoundary: readonly TablePoint[];
+  rightBoundary: readonly TablePoint[];
+}
+
+export interface TableDonorWireRolloverTriggerShapeDefinition {
+  kind: "donor-wire-rollover";
+  center: TablePoint;
+  wireLength: number;
+  wireRadius: number;
+  angleDeg?: number;
+  donorSourceId?: string;
+}
+
+export type TableTriggerShapeDefinition =
+  | TableRectTriggerShapeDefinition
+  | TableCircleTriggerShapeDefinition
+  | TablePolygonTriggerShapeDefinition
+  | TableCapsuleTriggerShapeDefinition
+  | TableDonorWireRolloverTriggerShapeDefinition;
+
+export type TableRegionShapeDefinition =
+  | TableRectTriggerShapeDefinition
+  | TableCircleTriggerShapeDefinition
+  | TablePolygonTriggerShapeDefinition
+  | TableCapsuleTriggerShapeDefinition
+  | TableCorridorRegionShapeDefinition;
+
+interface TableLegacyRectTriggerBoundsDefinition {
   x: number;
   y: number;
   width: number;
   height: number;
-  laneTag?: string;
+  angleDeg?: number;
 }
+
+interface TableTriggerDeviceDefinitionBase {
+  tag: string;
+  laneTag?: string;
+  triggerPhase?: TableTriggerPhaseDefinition;
+}
+
+type TableTriggerDefinition =
+  | (TableTriggerDeviceDefinitionBase & TableLegacyRectTriggerBoundsDefinition)
+  | (TableTriggerDeviceDefinitionBase & { shape: TableTriggerShapeDefinition });
+
+export type TableTripwireDefinition = TableTriggerDefinition;
+
+export type TableGateDefinition = TableTriggerDefinition;
 
 export interface TableStandupTargetDefinition {
   tag: string;
@@ -84,6 +152,32 @@ export interface TablePopupTargetDefinition {
   radius: number;
   sensorRadius: number;
   bankTag?: string;
+}
+
+export type TableCaptureDeviceKind = "hole" | "kickout" | "sink";
+export type TableSaveDeviceKind = "kickback" | "save-post";
+
+export interface TableCaptureDeviceDefinition {
+  tag: string;
+  kind: TableCaptureDeviceKind;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  holdMs: number;
+  cooldownMs: number;
+  ejectImpulse: TablePoint;
+}
+
+export interface TableSaveDeviceDefinition {
+  tag: string;
+  kind: TableSaveDeviceKind;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  cooldownMs: number;
+  saveImpulse: TablePoint;
 }
 
 export interface TableFlipperContactModelDefinition {
@@ -106,16 +200,68 @@ export interface TableFlipperDefinition {
   contactModel: TableFlipperContactModelDefinition;
 }
 
-export interface TableLauncherLaneBoundsDefinition {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
+export interface TableLauncherWallSection3DDefinition {
+  tag: string;
+  donorSourceId: string;
+  points: readonly TablePoint[];
+  heightBottom: number;
+  heightTop: number;
+}
+
+export interface TableLauncherGuideRail3DDefinition {
+  tag: string;
+  donorSourceId: string;
+  path: readonly TablePoint[];
+  radius: number;
+  heightBottom: number;
+  heightTop: number;
+}
+
+export interface TableLauncherSensor3DDefinition {
+  tag: string;
+  donorSourceIds: readonly string[];
+  shape: TableTriggerShapeDefinition;
+  triggerPhase: TableTriggerPhaseDefinition;
+  semanticRole: "feed" | "exit";
+}
+
+export interface TableLauncherTravelRoute3DDefinition {
+  tag: string;
+  donorSourceIds: readonly string[];
+  path: readonly TablePoint3D[];
+  entryMode?: "release" | "chain";
+  nextRouteTag?: string;
+  minChargeRatio: number;
+  handoffVelocity: TablePoint;
+  handoffZ?: number;
+}
+
+export interface TableLauncherPlunger3DDefinition {
+  tag: string;
+  donorSourceId: string;
+  center: TablePoint3D;
+  width: number;
+  depth: number;
+  height: number;
+  stroke: number;
+  speedPull: number;
+  speedFire: number;
+  parkPosition: number;
+  momentumTransfer: number;
+}
+
+export interface TableLauncher3DDefinition {
+  plunger: TableLauncherPlunger3DDefinition;
+  walls: readonly TableLauncherWallSection3DDefinition[];
+  guideRails: readonly TableLauncherGuideRail3DDefinition[];
+  sensors: readonly TableLauncherSensor3DDefinition[];
+  travelRoutes?: readonly TableLauncherTravelRoute3DDefinition[];
+  ballRestZ: number;
 }
 
 export interface TableLauncherDefinition {
   tag: string;
-  laneBounds: TableLauncherLaneBoundsDefinition;
+  laneRegions: readonly TableRegionShapeDefinition[];
   feedSettledSpeedMax: number;
   chargeMsMin: number;
   chargeMsMax: number;
@@ -123,6 +269,7 @@ export interface TableLauncherDefinition {
   launchImpulseMin: number;
   launchImpulseMax: number;
   launchAssistX: number;
+  threeD: TableLauncher3DDefinition;
 }
 
 export interface TableDrainDefinition {

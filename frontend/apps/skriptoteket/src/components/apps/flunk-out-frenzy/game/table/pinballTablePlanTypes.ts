@@ -10,6 +10,8 @@ import type {
   TableBallDefinition,
   TableBoardDefinition,
   TableBumperDefinition,
+  TableCaptureDeviceDefinition,
+  TableCaptureDeviceKind,
   TableDrainDefinition,
   TableFlipperDefinition,
   TableGateDefinition,
@@ -17,9 +19,22 @@ import type {
   TablePoint,
   TablePopupTargetDefinition,
   TableRolloverDefinition,
+  TableSaveDeviceDefinition,
+  TableSaveDeviceKind,
   TableSlingDefinition,
   TableStandupTargetDefinition,
+  TableTriggerPhaseDefinition,
+  TableTriggerShapeDefinition,
   TableTripwireDefinition,
+} from "./tableDefinitionTypes";
+
+export type {
+  TableLauncherGuideRail3DDefinition,
+  TableLauncherPlunger3DDefinition,
+  TableLauncherSensor3DDefinition,
+  TableLauncherTravelRoute3DDefinition,
+  TableLauncherWallSection3DDefinition,
+  TablePoint3D,
 } from "./tableDefinitionTypes";
 
 export interface TableSurfaceSpec {
@@ -41,9 +56,24 @@ export interface TableSpawnSpec {
 export interface TableRailSpec {
   id: string;
   path: readonly TablePoint[];
+  /**
+   * Optional per-point donor z profile. If provided, this must match `path`
+   * length so segment-level z bands can be preserved without inventing local
+   * flattening seams.
+   */
+  zPath?: readonly number[];
   radius: number;
+  /**
+   * Optional donor elevation band for rails whose contact path lives above the
+   * playfield contact plane.
+   */
+  heightBottom?: number;
+  heightTop?: number;
+  donorSourceId?: string;
+  physics?: boolean;
   surfaceId?: string;
   renderLayer?: string;
+  render?: boolean;
 }
 
 export interface TableWallSpec {
@@ -51,6 +81,10 @@ export interface TableWallSpec {
   a: TablePoint;
   b: TablePoint;
   radius: number;
+  heightBottom?: number;
+  heightTop?: number;
+  donorSourceId?: string;
+  physics?: boolean;
   surfaceId?: string;
   renderLayer?: string;
 }
@@ -63,7 +97,33 @@ export interface TablePostSpec {
   renderLayer?: string;
 }
 
+export interface TableSolidSpec {
+  id: string;
+  points: readonly TablePoint[];
+  /**
+   * Optional donor elevation range. When provided, the compiler only emits a
+   * physical collider if the playfield ball-contact z intersects this band.
+   * Render output is always emitted so elevated donor walls stay visible.
+   */
+  heightBottom?: number;
+  heightTop?: number;
+  surfaceId?: string;
+  renderLayer?: string;
+  fillColor?: number;
+  fillAlpha?: number;
+  strokeColor?: number;
+  strokeAlpha?: number;
+  strokeWidth?: number;
+}
+
 export type TableRenderSurfaceSpec =
+  | Readonly<{
+      kind: "polyline";
+      id: string;
+      points: readonly TablePoint[];
+      thickness: number;
+      layer?: string;
+    }>
   | Readonly<{
       kind: "polygon";
       id: string;
@@ -107,11 +167,14 @@ export interface PinballTableSpec {
   gates: readonly TableGateDefinition[];
   standupTargets: readonly TableStandupTargetDefinition[];
   popupTargets: readonly TablePopupTargetDefinition[];
+  captureDevices: readonly TableCaptureDeviceDefinition[];
+  saveDevices: readonly TableSaveDeviceDefinition[];
   drain: TableDrainDefinition;
   spawns: readonly TableSpawnSpec[];
   rails: readonly TableRailSpec[];
   walls?: readonly TableWallSpec[];
   posts?: readonly TablePostSpec[];
+  solids?: readonly TableSolidSpec[];
   renderSurfaces?: readonly TableRenderSurfaceSpec[];
   surfaces?: readonly TableSurfaceSpec[];
 }
@@ -127,6 +190,7 @@ export type TableColliderShapePlan =
   | Readonly<{ kind: "thick-segment"; halfLength: number; radius: number }>
   | Readonly<{ kind: "circle"; radius: number }>
   | Readonly<{ kind: "cuboid"; halfExtents: TablePoint }>
+  | Readonly<{ kind: "convex-polygon"; vertices: readonly TablePoint[] }>
   | Readonly<{ kind: "triangle"; vertices: readonly [TablePoint, TablePoint, TablePoint] }>;
 
 export type TriggerSemanticKind =
@@ -137,6 +201,8 @@ export type TriggerSemanticKind =
   | "gate"
   | "standup-target"
   | "popup-target"
+  | "capture"
+  | "save"
   | "drain";
 
 export interface TableColliderPlan {
@@ -153,6 +219,16 @@ export interface TableColliderPlan {
   impulse?: TablePoint;
   impulseMagnitude?: number;
   side?: "left" | "right";
+  captureDeviceKind?: TableCaptureDeviceKind;
+  saveDeviceKind?: TableSaveDeviceKind;
+  holdMs?: number;
+  cooldownMs?: number;
+  ejectImpulse?: TablePoint;
+  saveImpulse?: TablePoint;
+  trigger?: Readonly<{
+    shape: TableTriggerShapeDefinition;
+    phase: TableTriggerPhaseDefinition;
+  }>;
 }
 
 export type TableRenderNodePlan =
@@ -223,6 +299,8 @@ export interface CompiledPinballTable {
   gates: readonly TableGateDefinition[];
   standupTargets: readonly TableStandupTargetDefinition[];
   popupTargets: readonly TablePopupTargetDefinition[];
+  captureDevices: readonly TableCaptureDeviceDefinition[];
+  saveDevices: readonly TableSaveDeviceDefinition[];
   drain: TableDrainDefinition;
   surfaces: Readonly<Record<string, TableSurfaceSpec>>;
   physics: CompiledPhysicsPlan;

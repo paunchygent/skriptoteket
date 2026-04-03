@@ -199,6 +199,11 @@ export class GameRuntime {
       delete this.hostElement.dataset.launchActive;
       delete this.hostElement.dataset.lastCommand;
       delete this.hostElement.dataset.ballPresent;
+      delete this.hostElement.dataset.ballX;
+      delete this.hostElement.dataset.ballY;
+      delete this.hostElement.dataset.plungerVisible;
+      delete this.hostElement.dataset.plungerX;
+      delete this.hostElement.dataset.plungerY;
       delete this.hostElement.dataset.runtimeScore;
       delete this.hostElement.dataset.runtimeBallsRemaining;
       delete this.hostElement.dataset.runtimeMultiplier;
@@ -327,6 +332,11 @@ export class GameRuntime {
     this.hostElement.dataset.launchActive = String(this.inputState.launchPressed);
     this.hostElement.dataset.lastCommand = this.inputState.lastCommandLabel;
     this.hostElement.dataset.ballPresent = String(this.viewSnapshot.ball !== null);
+    this.hostElement.dataset.ballX = this.viewSnapshot.ball ? String(this.viewSnapshot.ball.x) : "";
+    this.hostElement.dataset.ballY = this.viewSnapshot.ball ? String(this.viewSnapshot.ball.y) : "";
+    this.hostElement.dataset.plungerVisible = String(this.viewSnapshot.plunger !== null);
+    this.hostElement.dataset.plungerX = this.viewSnapshot.plunger ? String(this.viewSnapshot.plunger.x) : "";
+    this.hostElement.dataset.plungerY = this.viewSnapshot.plunger ? String(this.viewSnapshot.plunger.y) : "";
     this.hostElement.dataset.runtimeScore = String(this.hudSnapshot.score);
     this.hostElement.dataset.runtimeBallsRemaining = String(this.hudSnapshot.ballsRemaining);
     this.hostElement.dataset.runtimeMultiplier = String(this.hudSnapshot.multiplier);

@@ -31,6 +31,13 @@ export interface PhysicsBallSnapshot {
   radius: number;
 }
 
+export interface PhysicsPlungerSnapshot {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface PhysicsFlipperSnapshot {
   side: "left" | "right";
   pivotX: number;
@@ -42,6 +49,7 @@ export interface PhysicsFlipperSnapshot {
 
 export interface PhysicsSnapshot {
   ball: PhysicsBallSnapshot | null;
+  plunger: PhysicsPlungerSnapshot | null;
   flippers: {
     left: PhysicsFlipperSnapshot;
     right: PhysicsFlipperSnapshot;

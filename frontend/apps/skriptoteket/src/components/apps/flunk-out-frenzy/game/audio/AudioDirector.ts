@@ -21,10 +21,16 @@ type CueName =
   | "standup-target-hit"
   | "popup-target-hit"
   | "gate-passed"
+  | "ball-captured"
+  | "ball-ejected"
+  | "ball-saved"
   | "late-bank-complete"
   | "bonus-awarded"
   | "jackpot-lit"
   | "jackpot-awarded"
+  | "capture-awarded"
+  | "eject-awarded"
+  | "save-awarded"
   | "shoot-again-lit"
   | "ball-drained"
   | "game-over";
@@ -52,10 +58,16 @@ export class AudioDirector implements RuntimeAudioDirector {
     this.cues.set("standup-target-hit", this.createCue(520, 92, 0.09, "square"));
     this.cues.set("popup-target-hit", this.createCue(720, 105, 0.1));
     this.cues.set("gate-passed", this.createCue(470, 55, 0.06, "triangle"));
+    this.cues.set("ball-captured", this.createCue(360, 115, 0.11, "triangle"));
+    this.cues.set("ball-ejected", this.createCue(540, 100, 0.1, "sawtooth"));
+    this.cues.set("ball-saved", this.createCue(690, 110, 0.11));
     this.cues.set("late-bank-complete", this.createCue(880, 240, 0.18));
     this.cues.set("bonus-awarded", this.createCue(760, 210, 0.16, "triangle"));
     this.cues.set("jackpot-lit", this.createCue(940, 120, 0.14));
     this.cues.set("jackpot-awarded", this.createCue(1_060, 280, 0.2));
+    this.cues.set("capture-awarded", this.createCue(610, 150, 0.14, "triangle"));
+    this.cues.set("eject-awarded", this.createCue(720, 145, 0.14));
+    this.cues.set("save-awarded", this.createCue(830, 160, 0.14, "square"));
     this.cues.set("shoot-again-lit", this.createCue(640, 170, 0.14, "square"));
     this.cues.set("ball-drained", this.createCue(180, 240, 0.16, "triangle"));
     this.cues.set("game-over", this.createCue(120, 360, 0.18, "sawtooth"));
@@ -98,6 +110,15 @@ export class AudioDirector implements RuntimeAudioDirector {
         case "gate-passed":
           this.playCue("gate-passed");
           break;
+        case "ball-captured":
+          this.playCue("ball-captured");
+          break;
+        case "ball-ejected":
+          this.playCue("ball-ejected");
+          break;
+        case "ball-saved":
+          this.playCue("ball-saved");
+          break;
         case "late-bank-complete":
           this.playCue("late-bank-complete");
           break;
@@ -109,6 +130,15 @@ export class AudioDirector implements RuntimeAudioDirector {
           break;
         case "jackpot-awarded":
           this.playCue("jackpot-awarded");
+          break;
+        case "capture-awarded":
+          this.playCue("capture-awarded");
+          break;
+        case "eject-awarded":
+          this.playCue("eject-awarded");
+          break;
+        case "save-awarded":
+          this.playCue("save-awarded");
           break;
         case "shoot-again-lit":
           this.playCue("shoot-again-lit");

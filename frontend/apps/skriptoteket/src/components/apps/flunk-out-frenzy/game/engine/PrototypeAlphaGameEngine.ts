@@ -112,6 +112,7 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
           height: PROTOTYPE_ALPHA_TABLE.board.height,
         },
         ball: physicsSnapshot.ball,
+        plunger: physicsSnapshot.plunger,
         flippers: physicsSnapshot.flippers,
         rollovers: PROTOTYPE_ALPHA_TABLE.rollovers.map((rollover) => ({
           tag: rollover.tag,
@@ -167,6 +168,27 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
         case "gate-passed":
           effects.push({ type: "gate-passed", tag: event.tag });
           break;
+        case "ball-captured":
+          effects.push({
+            type: "ball-captured",
+            tag: event.tag,
+            deviceKind: event.deviceKind,
+          });
+          break;
+        case "ball-ejected":
+          effects.push({
+            type: "ball-ejected",
+            tag: event.tag,
+            deviceKind: event.deviceKind,
+          });
+          break;
+        case "ball-saved":
+          effects.push({
+            type: "ball-saved",
+            tag: event.tag,
+            deviceKind: event.deviceKind,
+          });
+          break;
         case "launcher-released":
           effects.push({ type: "launch-released", chargeActive: true });
           break;
@@ -179,9 +201,6 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
         case "launch-lane-enter":
         case "launcher-fed":
         case "launcher-charged":
-        case "ball-captured":
-        case "ball-ejected":
-        case "ball-saved":
           break;
       }
     }
@@ -212,6 +231,27 @@ function mapRuleEventToGameEffect(ruleEvent: RuleEvent): GameEffectEvent {
     case "jackpot-awarded":
       return {
         type: "jackpot-awarded",
+        points: ruleEvent.points,
+      };
+    case "capture-awarded":
+      return {
+        type: "capture-awarded",
+        tag: ruleEvent.tag,
+        deviceKind: ruleEvent.deviceKind,
+        points: ruleEvent.points,
+      };
+    case "eject-awarded":
+      return {
+        type: "eject-awarded",
+        tag: ruleEvent.tag,
+        deviceKind: ruleEvent.deviceKind,
+        points: ruleEvent.points,
+      };
+    case "save-awarded":
+      return {
+        type: "save-awarded",
+        tag: ruleEvent.tag,
+        deviceKind: ruleEvent.deviceKind,
         points: ruleEvent.points,
       };
     case "shoot-again-lit":

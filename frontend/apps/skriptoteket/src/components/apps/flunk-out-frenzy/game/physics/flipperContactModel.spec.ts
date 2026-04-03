@@ -17,8 +17,8 @@ describe("resolveFlipperContactImpulse", () => {
 
     const nearBase = resolveFlipperContactImpulse({
       ball: {
-        x: 246,
-        y: 1022,
+        x: 238,
+        y: 994,
         radius: PROTOTYPE_ALPHA_TABLE.ball.radius,
       },
       flipper,
@@ -26,8 +26,8 @@ describe("resolveFlipperContactImpulse", () => {
     });
     const nearTip = resolveFlipperContactImpulse({
       ball: {
-        x: 281,
-        y: 975,
+        x: 256,
+        y: 966,
         radius: PROTOTYPE_ALPHA_TABLE.ball.radius,
       },
       flipper,

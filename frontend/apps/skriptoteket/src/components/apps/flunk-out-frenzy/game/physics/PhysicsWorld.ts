@@ -7,8 +7,7 @@
  * details.
  */
 
-import RAPIER from "@dimforge/rapier2d-compat";
-
+import RAPIER3D from "@dimforge/rapier3d-compat";
 import type { RuntimeCommand } from "../core/runtimeTypes";
 import type {
   TableBodyPlan,
@@ -20,27 +19,51 @@ import {
   type PrototypeAlphaTable,
 } from "../table/prototypeAlphaTable";
 import type {
-  TableFlipperDefinition,
+  TableCaptureDeviceDefinition,
   TablePoint,
+  TableSaveDeviceDefinition,
 } from "../table/tableDefinitionTypes";
 import type { ColliderMeta } from "./colliderMeta";
-import { resolveFlipperContactImpulse } from "./flipperContactModel";
+import {
+  applyCaptureLifecycleStep,
+  createCaptureDeviceTagIndex,
+  createInitialCaptureLifecycleState,
+  createSaveDeviceTagIndex,
+  resetCaptureLifecycleState,
+} from "./captureDeviceLifecycle";
+import {
+  applyFlipperContactImpulse,
+  degreesToRadians,
+  driveFlipperKinematic,
+  radiansToDegrees,
+} from "./flipperActuation";
 import { collectMachineEvents } from "./machineEventEmitter";
 import type { MachineEvent, PhysicsSnapshot } from "./physicsTypes";
+import { LauncherChain3D } from "./launcherChain3d";
 import {
   createInitialPlungerLaneState,
+  isPointInLauncherLaneRegion,
   stepPlungerLaneState,
   type PlungerLaneBallSnapshot,
   type PlungerLaneState,
 } from "./plungerLaneState";
 
+const BOARD_COLLIDER_HALF_DEPTH = 24;
+
+interface LauncherStateStep {
+  machineEvents: MachineEvent[];
+  chargeRatio: number | null;
+  releaseChargeRatio: number | null;
+}
+
 export class PhysicsWorld {
-  private world!: RAPIER.World;
-  private eventQueue!: RAPIER.EventQueue;
-  private ballBody: RAPIER.RigidBody | null = null;
+  private world!: RAPIER3D.World;
+  private eventQueue!: RAPIER3D.EventQueue;
+  private launcherChain: LauncherChain3D | null = null;
+  private ballBody: RAPIER3D.RigidBody | null = null;
   private ballColliderHandle: number | null = null;
-  private leftFlipper!: RAPIER.RigidBody;
-  private rightFlipper!: RAPIER.RigidBody;
+  private leftFlipper!: RAPIER3D.RigidBody;
+  private rightFlipper!: RAPIER3D.RigidBody;
   private leftFlipperAngleRad = 0;
   private rightFlipperAngleRad = 0;
   private leftPressed = false;
@@ -50,23 +73,33 @@ export class PhysicsWorld {
   private wasRightPressed = false;
   private plungerLaneState: PlungerLaneState = createInitialPlungerLaneState();
   private readonly cooldowns = new Map<string, number>();
+  private readonly captureDevicesByTag: ReadonlyMap<string, TableCaptureDeviceDefinition>;
+  private readonly saveDevicesByTag: ReadonlyMap<string, TableSaveDeviceDefinition>;
   private readonly colliderMetaByHandle = new Map<number, ColliderMeta>();
+  private readonly captureLifecycleState = createInitialCaptureLifecycleState();
+  private currentPlungerCenterY = 0;
 
   static async create(table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE): Promise<PhysicsWorld> {
-    await RAPIER.init();
+    await RAPIER3D.init();
     return new PhysicsWorld(table);
   }
 
   private constructor(private readonly table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE) {
+    this.captureDevicesByTag = createCaptureDeviceTagIndex(this.table.captureDevices);
+    this.saveDevicesByTag = createSaveDeviceTagIndex(this.table.saveDevices);
     this.reset();
   }
-
   reset(): void {
+    this.launcherChain?.dispose();
+    this.launcherChain = null;
     this.disposeWorld();
 
-    this.world = new RAPIER.World(this.table.gravity);
-    this.eventQueue = new RAPIER.EventQueue(true);
-    this.world.lengthUnit = 100;
+    this.world = new RAPIER3D.World({
+      x: this.table.gravity.x,
+      y: this.table.gravity.y,
+      z: 0,
+    });
+    this.eventQueue = new RAPIER3D.EventQueue(true);
 
     this.leftPressed = false;
     this.rightPressed = false;
@@ -76,10 +109,13 @@ export class PhysicsWorld {
     this.plungerLaneState = createInitialPlungerLaneState();
     this.cooldowns.clear();
     this.colliderMetaByHandle.clear();
+    resetCaptureLifecycleState(this.captureLifecycleState);
     this.ballBody = null;
     this.ballColliderHandle = null;
+    this.currentPlungerCenterY = this.table.launcher.threeD.plunger.center.y;
     this.leftFlipperAngleRad = degreesToRadians(this.table.flippers.left.restAngleDeg);
     this.rightFlipperAngleRad = degreesToRadians(this.table.flippers.right.restAngleDeg);
+    this.launcherChain = new LauncherChain3D(this.table.launcher, this.table.ball);
 
     const bodyById = this.buildWorldFromPlan();
     this.leftFlipper = this.requireBody(bodyById, this.table.refs.flipperBodyIds.left);
@@ -87,6 +123,8 @@ export class PhysicsWorld {
   }
 
   dispose(): void {
+    this.launcherChain?.dispose();
+    this.launcherChain = null;
     this.disposeWorld();
   }
 
@@ -105,61 +143,67 @@ export class PhysicsWorld {
   }
 
   spawnBall(position?: TablePoint): void {
-    if (this.ballBody) {
-      this.removeBall();
-    }
-
+    this.removeBall();
     const spawn = this.resolveSpawn(position);
     const spawnPosition = position ?? spawn.position;
-
-    const bodyDesc = RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(spawnPosition.x, spawnPosition.y)
-      .setLinearDamping(0.06)
-      .setAngularDamping(0.14)
-      .setCanSleep(false)
-      .setCcdEnabled(true)
-      .setAdditionalMass(this.table.ball.mass);
-
-    this.ballBody = this.world.createRigidBody(bodyDesc);
-    const ballCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.ball(this.table.ball.radius)
-        .setMass(this.table.ball.mass)
-        .setRestitution(0.55)
-        .setFriction(0.18)
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-      this.ballBody,
-    );
-
-    this.ballColliderHandle = ballCollider.handle;
-    this.colliderMetaByHandle.set(ballCollider.handle, {
-      kind: "ball",
-      tag: "ball/main",
-    });
-    if (spawn.launchVelocity) {
-      this.ballBody.setLinvel(spawn.launchVelocity, true);
+    if (
+      this.launcherChain
+      && isPointInLauncherLaneRegion(spawnPosition, this.table.launcher)
+    ) {
+      this.launcherChain.spawnBall(spawnPosition);
+    } else {
+      this.spawnBallInMainWorld(spawnPosition, spawn.launchVelocity);
     }
     this.plungerLaneState = createInitialPlungerLaneState();
+    this.currentPlungerCenterY = this.table.launcher.threeD.plunger.center.y;
   }
 
   removeBall(): void {
-    if (!this.ballBody) {
-      return;
+    this.launcherChain?.removeBall();
+
+    if (this.ballBody) {
+      if (this.ballColliderHandle !== null) {
+        this.colliderMetaByHandle.delete(this.ballColliderHandle);
+      }
+      this.world.removeRigidBody(this.ballBody);
+      this.ballBody = null;
+      this.ballColliderHandle = null;
     }
 
-    if (this.ballColliderHandle !== null) {
-      this.colliderMetaByHandle.delete(this.ballColliderHandle);
-    }
-    this.world.removeRigidBody(this.ballBody);
-    this.ballBody = null;
-    this.ballColliderHandle = null;
     this.plungerLaneState = createInitialPlungerLaneState();
+    this.currentPlungerCenterY = this.table.launcher.threeD.plunger.center.y;
+    resetCaptureLifecycleState(this.captureLifecycleState);
   }
 
   step(dtMs: number): MachineEvent[] {
     const dtSeconds = dtMs / 1000;
     this.tickCooldowns(dtMs);
     this.updateFlippers(dtSeconds);
-    const launcherPreStepEvents = this.updateLauncherState(dtMs);
+    const launcherStep = this.updateLauncherState(dtMs);
+    const launcherPreStepEvents = [...launcherStep.machineEvents];
+    let boardHandoffFromChain: { position: { x: number; y: number; z: number }; velocity: TablePoint } | null = null;
+
+    if (this.launcherChain?.hasBall()) {
+      const chainStep = this.launcherChain.step(
+        dtMs,
+        launcherStep.chargeRatio,
+        launcherStep.releaseChargeRatio,
+      );
+      this.currentPlungerCenterY = this.launcherChain.currentPlungerSnapshot().y;
+      launcherPreStepEvents.push(...chainStep.machineEvents);
+      if (chainStep.releaseToBoard) {
+        boardHandoffFromChain = chainStep.releaseToBoard;
+      }
+    } else if (this.ballBody && launcherStep.releaseChargeRatio !== null) {
+      const releaseVelocity = resolveReleaseVelocity(this.table.launcher, launcherStep.releaseChargeRatio);
+      const currentVelocity = this.ballBody.linvel();
+      this.ballBody.setLinvel({
+        x: releaseVelocity.x,
+        y: Math.min(currentVelocity.y, releaseVelocity.y),
+        z: 0,
+      }, true);
+    }
+
     this.world.timestep = dtSeconds;
     this.world.step(this.eventQueue);
 
@@ -170,31 +214,121 @@ export class PhysicsWorld {
       ballBody: this.ballBody,
       table: this.table,
     });
-    const launcherPostStepEvents = this.updateLauncherState(0);
+    const captureLifecycleStep = applyCaptureLifecycleStep({
+      state: this.captureLifecycleState,
+      events: stepResult.events,
+      dtMs,
+      hasBall: this.ballBody !== null && !stepResult.shouldRemoveBall,
+      captureDevicesByTag: this.captureDevicesByTag,
+      saveDevicesByTag: this.saveDevicesByTag,
+    });
+    if (this.ballBody && !stepResult.shouldRemoveBall) {
+      if (captureLifecycleStep.holdPosition) {
+        const current = this.ballBody.translation();
+        this.ballBody.setTranslation({
+          x: captureLifecycleStep.holdPosition.x,
+          y: captureLifecycleStep.holdPosition.y,
+          z: current.z,
+        }, true);
+        this.ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        this.ballBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      }
+      for (const impulse of captureLifecycleStep.impulses) {
+        this.ballBody.applyImpulse({
+          x: impulse.x,
+          y: impulse.y,
+          z: 0,
+        }, true);
+      }
+    }
     if (stepResult.shouldRemoveBall) {
       this.removeBall();
+    }
+    if (boardHandoffFromChain) {
+      this.spawnBallInMainWorld(
+        boardHandoffFromChain.position,
+        boardHandoffFromChain.velocity,
+        boardHandoffFromChain.position.z,
+      );
     }
     this.wasLeftPressed = this.leftPressed;
     this.wasRightPressed = this.rightPressed;
     return [
       ...launcherPreStepEvents,
-      ...stepResult.events,
-      ...launcherPostStepEvents,
+      ...captureLifecycleStep.forwardedEvents,
+      ...captureLifecycleStep.postStepEvents,
     ];
+  }
+
+  private spawnBallInMainWorld(
+    position: TablePoint,
+    launchVelocity?: TablePoint,
+    spawnZ: number = this.table.ball.radius,
+  ): void {
+    const bodyDesc = RAPIER3D.RigidBodyDesc.dynamic()
+      .setTranslation(position.x, position.y, spawnZ)
+      .setLinearDamping(0.06)
+      .setAngularDamping(0.14)
+      .setCanSleep(false)
+      .setCcdEnabled(true)
+      .enabledTranslations(true, true, false)
+      .enabledRotations(false, false, true);
+
+    this.ballBody = this.world.createRigidBody(bodyDesc);
+    const ballCollider = this.world.createCollider(
+      RAPIER3D.ColliderDesc.ball(this.table.ball.radius)
+        .setMass(this.table.ball.mass)
+        .setRestitution(0.55)
+        .setFriction(0.18)
+        .setActiveEvents(RAPIER3D.ActiveEvents.COLLISION_EVENTS),
+      this.ballBody,
+    );
+
+    this.ballColliderHandle = ballCollider.handle;
+    this.colliderMetaByHandle.set(ballCollider.handle, {
+      kind: "ball",
+      tag: "ball/main",
+    });
+    if (launchVelocity) {
+      this.ballBody.setLinvel(
+        {
+          x: launchVelocity.x,
+          y: launchVelocity.y,
+          z: 0,
+        },
+        true,
+      );
+    }
   }
 
   currentSnapshot(): PhysicsSnapshot {
     const leftDef = this.table.flippers.left;
     const rightDef = this.table.flippers.right;
+    const launcherPlunger = this.launcherChain?.currentPlungerSnapshot();
+    const chainBall = this.launcherChain?.currentSnapshot() ?? null;
+    const boardBall = this.ballBody
+      ? {
+          x: this.ballBody.translation().x,
+          y: this.ballBody.translation().y,
+          radius: this.table.ball.radius,
+        }
+      : null;
+    const activeBall = boardBall ?? (chainBall
+      ? {
+          x: chainBall.position.x,
+          y: chainBall.position.y,
+          radius: this.table.ball.radius,
+        }
+      : null);
 
     return {
-      ball: this.ballBody
-        ? {
-            x: this.ballBody.translation().x,
-            y: this.ballBody.translation().y,
-            radius: this.table.ball.radius,
-          }
-        : null,
+      ball: activeBall,
+      plunger: {
+        x: launcherPlunger?.x ?? this.table.launcher.threeD.plunger.center.x,
+        y: launcherPlunger?.y ?? this.currentPlungerCenterY,
+        width: launcherPlunger?.width ?? this.table.launcher.threeD.plunger.width,
+        height: launcherPlunger?.height ?? this.table.launcher.threeD.plunger.depth,
+      },
       flippers: {
         left: {
           side: "left",
@@ -216,8 +350,8 @@ export class PhysicsWorld {
     };
   }
 
-  private buildWorldFromPlan(): Map<string, RAPIER.RigidBody> {
-    const bodyById = new Map<string, RAPIER.RigidBody>();
+  private buildWorldFromPlan(): Map<string, RAPIER3D.RigidBody> {
+    const bodyById = new Map<string, RAPIER3D.RigidBody>();
 
     for (const bodyPlan of this.table.physics.bodies) {
       const rigidBody = this.world.createRigidBody(this.createRigidBodyDesc(bodyPlan));
@@ -239,46 +373,52 @@ export class PhysicsWorld {
     return bodyById;
   }
 
-  private createRigidBodyDesc(plan: TableBodyPlan): RAPIER.RigidBodyDesc {
+  private createRigidBodyDesc(plan: TableBodyPlan): RAPIER3D.RigidBodyDesc {
     const desc =
       plan.type === "fixed"
-        ? RAPIER.RigidBodyDesc.fixed()
-        : RAPIER.RigidBodyDesc.kinematicPositionBased();
+        ? RAPIER3D.RigidBodyDesc.fixed()
+        : RAPIER3D.RigidBodyDesc.kinematicPositionBased();
 
     return desc
-      .setTranslation(plan.translation.x, plan.translation.y)
-      .setRotation(plan.rotationRad);
+      .setTranslation(plan.translation.x, plan.translation.y, 0)
+      .setRotation(quaternionFromYaw(plan.rotationRad));
   }
 
-  private createColliderDesc(plan: TableColliderPlan): RAPIER.ColliderDesc {
+  private createColliderDesc(plan: TableColliderPlan): RAPIER3D.ColliderDesc {
     const desc = this.createShapeDesc(plan.shape);
     const surface = this.table.surfaces[plan.surfaceId] ?? this.table.surfaces.wall;
 
     desc
-      .setTranslation(plan.translation.x, plan.translation.y)
-      .setRotation(plan.rotationRad)
+      .setTranslation(plan.translation.x, plan.translation.y, 0)
+      .setRotation(quaternionFromYaw(plan.rotationRad))
       .setRestitution(surface.restitution)
       .setFriction(surface.friction);
 
     if (plan.sensor) {
       desc
         .setSensor(true)
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+        .setActiveEvents(RAPIER3D.ActiveEvents.COLLISION_EVENTS);
     }
 
     return desc;
   }
 
-  private createShapeDesc(shape: TableColliderShapePlan): RAPIER.ColliderDesc {
+  private createShapeDesc(shape: TableColliderShapePlan): RAPIER3D.ColliderDesc {
     switch (shape.kind) {
       case "thick-segment":
-        return RAPIER.ColliderDesc.cuboid(shape.halfLength, shape.radius);
+        return createRoundedThickSegmentColliderDesc(shape.halfLength, shape.radius);
       case "circle":
-        return RAPIER.ColliderDesc.ball(shape.radius);
+        return RAPIER3D.ColliderDesc.ball(shape.radius);
       case "cuboid":
-        return RAPIER.ColliderDesc.cuboid(shape.halfExtents.x, shape.halfExtents.y);
+        return RAPIER3D.ColliderDesc.cuboid(
+          shape.halfExtents.x,
+          shape.halfExtents.y,
+          BOARD_COLLIDER_HALF_DEPTH,
+        );
+      case "convex-polygon":
+        return createConvexPolygonColliderDesc(shape.vertices);
       case "triangle":
-        return RAPIER.ColliderDesc.triangle(...shape.vertices);
+        return createConvexPolygonColliderDesc(shape.vertices);
     }
   }
 
@@ -311,22 +451,50 @@ export class PhysicsWorld {
       case "rollover":
         return { kind: "rollover", tag: plan.tag };
       case "tripwire":
-        return { kind: "tripwire", tag: plan.tag };
+        return {
+          kind: "tripwire",
+          tag: plan.tag,
+          triggerPhase: plan.trigger?.phase ?? "enter",
+          triggerShapeKind: plan.trigger?.shape.kind ?? "rect",
+        };
       case "gate":
-        return { kind: "gate", tag: plan.tag };
+        return {
+          kind: "gate",
+          tag: plan.tag,
+          triggerPhase: plan.trigger?.phase ?? "enter",
+          triggerShapeKind: plan.trigger?.shape.kind ?? "rect",
+        };
       case "standup-target":
         return { kind: "standup-target", tag: plan.tag };
       case "popup-target":
         return { kind: "popup-target", tag: plan.tag };
       case "drain":
         return { kind: "drain", tag: plan.tag };
+      case "capture":
+        if (!plan.captureDeviceKind) {
+          throw new Error(`Capture collider "${plan.id}" is missing compiled device kind.`);
+        }
+        return {
+          kind: "capture",
+          tag: plan.tag,
+          deviceKind: plan.captureDeviceKind,
+        };
+      case "save":
+        if (!plan.saveDeviceKind) {
+          throw new Error(`Save collider "${plan.id}" is missing compiled device kind.`);
+        }
+        return {
+          kind: "save",
+          tag: plan.tag,
+          deviceKind: plan.saveDeviceKind,
+        };
     }
   }
 
   private requireBody(
-    bodyById: ReadonlyMap<string, RAPIER.RigidBody>,
+    bodyById: ReadonlyMap<string, RAPIER3D.RigidBody>,
     bodyId: string,
-  ): RAPIER.RigidBody {
+  ): RAPIER3D.RigidBody {
     const body = bodyById.get(bodyId);
     if (!body) {
       throw new Error(`Missing rigid body "${bodyId}" in compiled physics plan.`);
@@ -347,14 +515,14 @@ export class PhysicsWorld {
   }
 
   private updateFlippers(dtSeconds: number): void {
-    this.leftFlipperAngleRad = this.driveFlipper(
+    this.leftFlipperAngleRad = driveFlipperKinematic(
       this.leftFlipper,
       this.table.flippers.left,
       this.leftPressed,
       dtSeconds,
       this.leftFlipperAngleRad,
     );
-    this.rightFlipperAngleRad = this.driveFlipper(
+    this.rightFlipperAngleRad = driveFlipperKinematic(
       this.rightFlipper,
       this.table.flippers.right,
       this.rightPressed,
@@ -370,28 +538,16 @@ export class PhysicsWorld {
     }
   }
 
-  private driveFlipper(
-    body: RAPIER.RigidBody,
-    flipper: TableFlipperDefinition,
-    pressed: boolean,
-    dtSeconds: number,
-    currentAngle: number,
-  ): number {
-    const targetAngle = degreesToRadians(
-      pressed ? flipper.activeAngleDeg : flipper.restAngleDeg,
-    );
-    const maxDelta = dtSeconds * 18;
-    const nextAngle = approachAngle(currentAngle, targetAngle, maxDelta);
-    body.setNextKinematicRotation(nextAngle);
-    return nextAngle;
-  }
-
-  private applyFlipperContact(flipper: TableFlipperDefinition, angleRad: number): void {
+  private applyFlipperContact(
+    flipper: PrototypeAlphaTable["flippers"]["left"],
+    angleRad: number,
+  ): void {
     if (!this.ballBody) {
       return;
     }
 
-    const contactImpulse = resolveFlipperContactImpulse({
+    applyFlipperContactImpulse({
+      ballBody: this.ballBody,
       ball: {
         x: this.ballBody.translation().x,
         y: this.ballBody.translation().y,
@@ -400,14 +556,9 @@ export class PhysicsWorld {
       flipper,
       angleRad,
     });
-    if (!contactImpulse) {
-      return;
-    }
-
-    this.ballBody.applyImpulseAtPoint(contactImpulse.impulse, contactImpulse.point, true);
   }
 
-  private updateLauncherState(dtMs: number): MachineEvent[] {
+  private updateLauncherState(dtMs: number): LauncherStateStep {
     const result = stepPlungerLaneState({
       state: this.plungerLaneState,
       ball: this.currentPlungerBallSnapshot(),
@@ -416,15 +567,26 @@ export class PhysicsWorld {
       dtMs,
     });
     this.plungerLaneState = result.nextState;
-
-    if (this.ballBody && result.releaseImpulse) {
-      this.ballBody.applyImpulse(result.releaseImpulse, true);
+    if (!this.launcherChain?.hasBall()) {
+      this.syncPlunger(dtMs, result.chargeRatio);
     }
 
-    return result.machineEvents;
+    return {
+      machineEvents: [...result.machineEvents],
+      chargeRatio: result.chargeRatio,
+      releaseChargeRatio: result.releaseChargeRatio,
+    };
   }
 
   private currentPlungerBallSnapshot(): PlungerLaneBallSnapshot | null {
+    const launcherBall = this.launcherChain?.currentSnapshot();
+    if (launcherBall) {
+      return {
+        position: launcherBall.position,
+        velocity: launcherBall.velocity,
+      };
+    }
+
     if (!this.ballBody) {
       return null;
     }
@@ -444,6 +606,22 @@ export class PhysicsWorld {
     };
   }
 
+  private syncPlunger(dtMs: number, chargeRatio: number | null): void {
+    const plunger = this.table.launcher.threeD.plunger;
+    const dtSeconds = dtMs / 1000;
+    const targetCenterY = chargeRatio !== null
+      ? plunger.center.y + plunger.stroke * chargeRatio
+      : plunger.center.y;
+    const maxTravel = chargeRatio !== null
+      ? plunger.speedPull * dtMs
+      : plunger.speedFire * dtSeconds;
+    const delta = targetCenterY - this.currentPlungerCenterY;
+    const travel = Math.abs(delta) <= maxTravel
+      ? delta
+      : Math.sign(delta) * maxTravel;
+    this.currentPlungerCenterY += travel;
+  }
+
   private tickCooldowns(dtMs: number): void {
     for (const [tag, remainingMs] of [...this.cooldowns.entries()]) {
       const nextRemaining = remainingMs - dtMs;
@@ -461,17 +639,64 @@ export class PhysicsWorld {
   }
 }
 
-function approachAngle(current: number, target: number, maxDelta: number): number {
-  if (Math.abs(target - current) <= maxDelta) {
-    return target;
+function createConvexPolygonColliderDesc(vertices: readonly TablePoint[]): RAPIER3D.ColliderDesc {
+  const flatVertices = new Float32Array(
+    vertices.flatMap((vertex) => [
+      vertex.x,
+      vertex.y,
+      -BOARD_COLLIDER_HALF_DEPTH,
+      vertex.x,
+      vertex.y,
+      BOARD_COLLIDER_HALF_DEPTH,
+    ]),
+  );
+  const colliderDesc = RAPIER3D.ColliderDesc.convexHull(flatVertices);
+
+  if (!colliderDesc) {
+    throw new Error("Failed to compile convex polygon collider from authored donor vertices.");
   }
-  return current + Math.sign(target - current) * maxDelta;
+
+  return colliderDesc;
 }
 
-function degreesToRadians(deg: number): number {
-  return (deg * Math.PI) / 180;
+function resolveReleaseVelocity(
+  launcher: PrototypeAlphaTable["launcher"],
+  chargeRatio: number,
+): TablePoint {
+  const speed = launcher.launchImpulseMin
+    + (launcher.launchImpulseMax - launcher.launchImpulseMin) * chargeRatio;
+
+  return {
+    x: launcher.launchAssistX,
+    y: -speed,
+  };
 }
 
-function radiansToDegrees(rad: number): number {
-  return (rad * 180) / Math.PI;
+function quaternionFromYaw(angleRad: number): RAPIER3D.Rotation {
+  return {
+    x: 0,
+    y: 0,
+    z: Math.sin(angleRad / 2),
+    w: Math.cos(angleRad / 2),
+  };
+}
+
+function createRoundedThickSegmentColliderDesc(
+  halfLength: number,
+  radius: number,
+): RAPIER3D.ColliderDesc {
+  const borderRadius = Math.max(
+    0,
+    Math.min(radius, halfLength, BOARD_COLLIDER_HALF_DEPTH) - 1e-4,
+  );
+  if (borderRadius <= 0) {
+    return RAPIER3D.ColliderDesc.cuboid(halfLength, radius, BOARD_COLLIDER_HALF_DEPTH);
+  }
+
+  return RAPIER3D.ColliderDesc.roundCuboid(
+    Math.max(halfLength - borderRadius, 1e-4),
+    Math.max(radius - borderRadius, 1e-4),
+    Math.max(BOARD_COLLIDER_HALF_DEPTH - borderRadius, 1e-4),
+    borderRadius,
+  );
 }

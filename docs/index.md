@@ -47,6 +47,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0191-flunk-out-frenzy-mechanics-foundation-reassessment-and-go-no-go.md`
 - Flunk-Out Frenzy donor-topology corrective task:
   `docs/backlog/prs/pr-0198-flunk-out-frenzy-vpw-donor-topology-and-spec-cutover.md`
+- Flunk-Out Frenzy donor-semantic fidelity follow-up:
+  `docs/backlog/prs/pr-0199-flunk-out-frenzy-donor-semantic-representation-and-trigger-shape-fidelity.md`
+- Flunk-Out Frenzy Rapier 3D launcher-chain migration follow-up:
+  `docs/backlog/prs/pr-0200-flunk-out-frenzy-launcher-release-path-and-donor-wall-face-representation.md`
+- Flunk-Out Frenzy shooter-corridor geometry corrective task:
+  `docs/backlog/prs/pr-0201-flunk-out-frenzy-shooter-corridor-wall263-de-overlap.md`
+- Flunk-Out Frenzy full-board donor 3D carrier mapping follow-up:
+  `docs/backlog/prs/pr-0202-flunk-out-frenzy-full-board-donor-3d-carrier-mapping-and-elevated-rails.md`
+- Flunk-Out Frenzy elevated donor rail travel and left-handoff mechanics:
+  `docs/backlog/prs/pr-0203-flunk-out-frenzy-elevated-rail-travel-and-left-handoff-mechanics.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:

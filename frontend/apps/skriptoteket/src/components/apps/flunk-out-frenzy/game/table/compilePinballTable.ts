@@ -15,6 +15,13 @@ import type {
 } from "./pinballTablePlanTypes";
 import { DEFAULT_TABLE_SURFACES } from "./pinballTablePlanTypes";
 import { degreesToRadians, magnitude, midpoint, segmentAngle, sub, v } from "./pinballTableMath";
+import type {
+  TableGateDefinition,
+  TablePoint,
+  TableRegionShapeDefinition,
+  TableTripwireDefinition,
+  TableTriggerShapeDefinition,
+} from "./tableDefinitionTypes";
 
 export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTable {
   assertValidTableSpec(spec);
@@ -54,44 +61,50 @@ export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTabl
     for (let index = 0; index < rail.path.length - 1; index += 1) {
       const from = rail.path[index];
       const to = rail.path[index + 1];
-      colliders.push({
-        id: `${rail.id}:segment:${index}`,
-        bodyId: staticBodyId,
-        translation: midpoint(from, to),
-        rotationRad: segmentAngle(from, to),
-        shape: {
-          kind: "thick-segment",
-          halfLength: magnitude(sub(to, from)) * 0.5,
-          radius: rail.radius,
-        },
-        sensor: false,
-        surfaceId: rail.surfaceId ?? "wall",
-      });
+      if (railSegmentIntersectsPlayfieldContactZ(rail, index, spec.launcher.threeD.ballRestZ)) {
+        colliders.push({
+          id: `${rail.id}:segment:${index}`,
+          bodyId: staticBodyId,
+          translation: midpoint(from, to),
+          rotationRad: segmentAngle(from, to),
+          shape: {
+            kind: "thick-segment",
+            halfLength: magnitude(sub(to, from)) * 0.5,
+            radius: rail.radius,
+          },
+          sensor: false,
+          surfaceId: rail.surfaceId ?? "wall",
+        });
+      }
     }
 
-    renderNodes.push({
-      kind: "polyline",
-      id: `${rail.id}:render`,
-      layer: rail.renderLayer ?? "walls",
-      points: rail.path,
-      thickness: rail.radius * 2,
-    });
+    if (rail.render !== false) {
+      renderNodes.push({
+        kind: "polyline",
+        id: `${rail.id}:render`,
+        layer: rail.renderLayer ?? "walls",
+        points: rail.path,
+        thickness: rail.radius * 2,
+      });
+    }
   }
 
   for (const wall of spec.walls ?? []) {
-    colliders.push({
-      id: `${wall.id}:segment`,
-      bodyId: staticBodyId,
-      translation: midpoint(wall.a, wall.b),
-      rotationRad: segmentAngle(wall.a, wall.b),
-      shape: {
-        kind: "thick-segment",
-        halfLength: magnitude(sub(wall.b, wall.a)) * 0.5,
-        radius: wall.radius,
-      },
-      sensor: false,
-      surfaceId: wall.surfaceId ?? "wall",
-    });
+    if (wallIntersectsPlayfieldContactZ(wall, spec.launcher.threeD.ballRestZ)) {
+      colliders.push({
+        id: `${wall.id}:segment`,
+        bodyId: staticBodyId,
+        translation: midpoint(wall.a, wall.b),
+        rotationRad: segmentAngle(wall.a, wall.b),
+        shape: {
+          kind: "thick-segment",
+          halfLength: magnitude(sub(wall.b, wall.a)) * 0.5,
+          radius: wall.radius,
+        },
+        sensor: false,
+        surfaceId: wall.surfaceId ?? "wall",
+      });
+    }
 
     renderNodes.push({
       kind: "polyline",
@@ -119,6 +132,35 @@ export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTabl
       layer: post.renderLayer ?? "posts",
       center: post.center,
       radius: post.radius,
+    });
+  }
+
+  for (const solid of spec.solids ?? []) {
+    if (solidIntersectsPlayfieldContactZ(solid, spec.launcher.threeD.ballRestZ)) {
+      colliders.push({
+        id: `${solid.id}:body`,
+        bodyId: staticBodyId,
+        translation: v(0, 0),
+        rotationRad: 0,
+        shape: {
+          kind: "convex-polygon",
+          vertices: solid.points,
+        },
+        sensor: false,
+        surfaceId: solid.surfaceId ?? "wall",
+      });
+    }
+
+    renderNodes.push({
+      kind: "polygon",
+      id: `${solid.id}:render`,
+      layer: solid.renderLayer ?? "walls",
+      points: solid.points,
+      fillColor: solid.fillColor,
+      fillAlpha: solid.fillAlpha,
+      strokeColor: solid.strokeColor,
+      strokeAlpha: solid.strokeAlpha,
+      strokeWidth: solid.strokeWidth,
     });
   }
 
@@ -214,30 +256,42 @@ export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTabl
   }
 
   for (const tripwire of spec.tripwires) {
+    const triggerShape = resolveTriggerShapeDefinition(tripwire);
+    const compiledShape = compileTriggerColliderGeometry(triggerShape);
     colliders.push({
       id: `${tripwire.tag}:sensor`,
       bodyId: staticBodyId,
-      translation: { x: tripwire.x, y: tripwire.y },
-      rotationRad: 0,
-      shape: { kind: "cuboid", halfExtents: v(tripwire.width / 2, tripwire.height / 2) },
+      translation: compiledShape.translation,
+      rotationRad: compiledShape.rotationRad,
+      shape: compiledShape.shape,
       sensor: true,
       surfaceId: "sensor",
       semanticKind: "tripwire",
       tag: tripwire.tag,
+      trigger: {
+        shape: triggerShape,
+        phase: tripwire.triggerPhase ?? "enter",
+      },
     });
   }
 
   for (const gate of spec.gates) {
+    const triggerShape = resolveTriggerShapeDefinition(gate);
+    const compiledShape = compileTriggerColliderGeometry(triggerShape);
     colliders.push({
       id: `${gate.tag}:sensor`,
       bodyId: staticBodyId,
-      translation: { x: gate.x, y: gate.y },
-      rotationRad: 0,
-      shape: { kind: "cuboid", halfExtents: v(gate.width / 2, gate.height / 2) },
+      translation: compiledShape.translation,
+      rotationRad: compiledShape.rotationRad,
+      shape: compiledShape.shape,
       sensor: true,
       surfaceId: "sensor",
       semanticKind: "gate",
       tag: gate.tag,
+      trigger: {
+        shape: triggerShape,
+        phase: gate.triggerPhase ?? "enter",
+      },
     });
   }
 
@@ -318,6 +372,71 @@ export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTabl
     });
   }
 
+  for (const capture of spec.captureDevices) {
+    colliders.push({
+      id: `${capture.tag}:sensor`,
+      bodyId: staticBodyId,
+      translation: { x: capture.x, y: capture.y },
+      rotationRad: 0,
+      shape: { kind: "cuboid", halfExtents: v(capture.width / 2, capture.height / 2) },
+      sensor: true,
+      surfaceId: "sensor",
+      semanticKind: "capture",
+      tag: capture.tag,
+      captureDeviceKind: capture.kind,
+      holdMs: capture.holdMs,
+      cooldownMs: capture.cooldownMs,
+      ejectImpulse: capture.ejectImpulse,
+    });
+
+    renderNodes.push({
+      kind: "rect",
+      id: `${capture.tag}:render`,
+      layer: "capture-devices",
+      center: { x: capture.x, y: capture.y },
+      width: capture.width,
+      height: capture.height,
+      rotationRad: 0,
+      fillColor: 0x8dffcf,
+      fillAlpha: 0.1,
+      strokeColor: 0xc7ffe5,
+      strokeAlpha: 0.4,
+      strokeWidth: 2,
+    });
+  }
+
+  for (const save of spec.saveDevices) {
+    colliders.push({
+      id: `${save.tag}:sensor`,
+      bodyId: staticBodyId,
+      translation: { x: save.x, y: save.y },
+      rotationRad: 0,
+      shape: { kind: "cuboid", halfExtents: v(save.width / 2, save.height / 2) },
+      sensor: true,
+      surfaceId: "sensor",
+      semanticKind: "save",
+      tag: save.tag,
+      saveDeviceKind: save.kind,
+      cooldownMs: save.cooldownMs,
+      saveImpulse: save.saveImpulse,
+    });
+
+    renderNodes.push({
+      kind: "rect",
+      id: `${save.tag}:render`,
+      layer: "save-devices",
+      center: { x: save.x, y: save.y },
+      width: save.width,
+      height: save.height,
+      rotationRad: 0,
+      fillColor: 0x8db6ff,
+      fillAlpha: 0.1,
+      strokeColor: 0xdbe7ff,
+      strokeAlpha: 0.42,
+      strokeWidth: 2,
+    });
+  }
+
   colliders.push({
     id: `${spec.drain.tag}:sensor`,
     bodyId: staticBodyId,
@@ -345,7 +464,15 @@ export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTabl
   });
 
   for (const surface of spec.renderSurfaces ?? []) {
-    if (surface.kind === "polygon") {
+    if (surface.kind === "polyline") {
+      renderNodes.push({
+        kind: "polyline",
+        id: surface.id,
+        layer: surface.layer ?? "field",
+        points: surface.points,
+        thickness: surface.thickness,
+      });
+    } else if (surface.kind === "polygon") {
       renderNodes.push({
         kind: "polygon",
         id: surface.id,
@@ -397,6 +524,8 @@ export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTabl
     gates: spec.gates,
     standupTargets: spec.standupTargets,
     popupTargets: spec.popupTargets,
+    captureDevices: spec.captureDevices,
+    saveDevices: spec.saveDevices,
     drain: spec.drain,
     surfaces,
     physics: {
@@ -432,6 +561,65 @@ function compileFlipperCollider(
   };
 }
 
+function resolveTriggerShapeDefinition(
+  definition: TableTripwireDefinition | TableGateDefinition,
+): TableTriggerShapeDefinition {
+  if ("shape" in definition) {
+    return definition.shape;
+  }
+
+  return {
+    kind: "rect",
+    center: { x: definition.x, y: definition.y },
+    width: definition.width,
+    height: definition.height,
+    angleDeg: definition.angleDeg,
+  };
+}
+
+function compileTriggerColliderGeometry(shape: TableTriggerShapeDefinition): Readonly<{
+  translation: TablePoint;
+  rotationRad: number;
+  shape: TableColliderPlan["shape"];
+}> {
+  switch (shape.kind) {
+    case "rect":
+      return {
+        translation: shape.center,
+        rotationRad: degreesToRadians(shape.angleDeg ?? 0),
+        shape: { kind: "cuboid", halfExtents: v(shape.width / 2, shape.height / 2) },
+      };
+    case "circle":
+      return {
+        translation: shape.center,
+        rotationRad: 0,
+        shape: { kind: "circle", radius: shape.radius },
+      };
+    case "polygon":
+      return {
+        translation: v(0, 0),
+        rotationRad: 0,
+        shape: { kind: "convex-polygon", vertices: shape.points },
+      };
+    case "capsule":
+      return {
+        translation: shape.center,
+        rotationRad: degreesToRadians(shape.angleDeg ?? 0),
+        shape: { kind: "thick-segment", halfLength: shape.length / 2, radius: shape.radius },
+      };
+    case "donor-wire-rollover":
+      return {
+        translation: shape.center,
+        rotationRad: degreesToRadians(shape.angleDeg ?? 0),
+        shape: {
+          kind: "thick-segment",
+          halfLength: shape.wireLength / 2,
+          radius: shape.wireRadius,
+        },
+      };
+  }
+}
+
 function mergeSurfaceIndex(
   userSurfaces: readonly TableSurfaceSpec[] | undefined,
 ): Readonly<Record<string, TableSurfaceSpec>> {
@@ -458,9 +646,47 @@ function assertValidTableSpec(spec: PinballTableSpec): void {
     if (rail.path.length < 2) {
       throw new Error(`Rail "${rail.id}" must have at least two points.`);
     }
+    if (rail.zPath && rail.zPath.length !== rail.path.length) {
+      throw new Error(`Rail "${rail.id}" zPath length must match path length.`);
+    }
+    if ((rail.heightBottom === undefined) !== (rail.heightTop === undefined)) {
+      throw new Error(
+        `Rail "${rail.id}" must declare both heightBottom and heightTop when using elevation bounds.`,
+      );
+    }
+    if (rail.heightBottom !== undefined && rail.heightTop !== undefined
+      && rail.heightTop < rail.heightBottom) {
+      throw new Error(`Rail "${rail.id}" must not invert height bounds.`);
+    }
   }
-  for (const wall of spec.walls ?? []) registerId(wall.id, "wall");
+  for (const wall of spec.walls ?? []) {
+    registerId(wall.id, "wall");
+    if ((wall.heightBottom === undefined) !== (wall.heightTop === undefined)) {
+      throw new Error(
+        `Wall "${wall.id}" must declare both heightBottom and heightTop when using elevation bounds.`,
+      );
+    }
+    if (wall.heightBottom !== undefined && wall.heightTop !== undefined
+      && wall.heightTop < wall.heightBottom) {
+      throw new Error(`Wall "${wall.id}" must not invert height bounds.`);
+    }
+  }
   for (const post of spec.posts ?? []) registerId(post.id, "post");
+  for (const solid of spec.solids ?? []) {
+    registerId(solid.id, "solid");
+    if (solid.points.length < 3) {
+      throw new Error(`Solid "${solid.id}" must have at least three points.`);
+    }
+    if ((solid.heightBottom === undefined) !== (solid.heightTop === undefined)) {
+      throw new Error(
+        `Solid "${solid.id}" must declare both heightBottom and heightTop when using elevation bounds.`,
+      );
+    }
+    if (solid.heightBottom !== undefined && solid.heightTop !== undefined
+      && solid.heightTop < solid.heightBottom) {
+      throw new Error(`Solid "${solid.id}" must not invert height bounds.`);
+    }
+  }
   for (const surface of spec.renderSurfaces ?? []) registerId(surface.id, "render surface");
 
   const seenSemanticTags = new Set<string>();
@@ -478,9 +704,221 @@ function assertValidTableSpec(spec: PinballTableSpec): void {
   for (const gate of spec.gates) registerSemanticTag(gate.tag, "gate");
   for (const target of spec.standupTargets) registerSemanticTag(target.tag, "standup target");
   for (const target of spec.popupTargets) registerSemanticTag(target.tag, "popup target");
+  for (const capture of spec.captureDevices) registerSemanticTag(capture.tag, "capture device");
+  for (const save of spec.saveDevices) registerSemanticTag(save.tag, "save device");
   registerSemanticTag(spec.drain.tag, "drain");
 
   if (spec.board.width <= 0 || spec.board.height <= 0) {
     throw new Error("Table board dimensions must be positive.");
+  }
+
+  if (spec.launcher.laneRegions.length === 0) {
+    throw new Error('Launcher "launcher/main" must declare at least one lane region.');
+  }
+
+  if (spec.launcher.threeD.walls.length === 0) {
+    throw new Error('Launcher "launcher/main" must declare at least one 3D wall section.');
+  }
+
+  if (spec.launcher.threeD.sensors.length === 0) {
+    throw new Error('Launcher "launcher/main" must declare at least one 3D launcher sensor.');
+  }
+
+  if (spec.launcher.threeD.guideRails.length === 0) {
+    throw new Error('Launcher "launcher/main" must declare at least one 3D launcher guide rail.');
+  }
+
+  for (const [index, region] of spec.launcher.laneRegions.entries()) {
+    assertValidLauncherRegionDefinition(`${spec.launcher.tag}[${index}]`, region);
+  }
+
+  for (const wall of spec.launcher.threeD.walls) {
+    if (wall.points.length < 3) {
+      throw new Error(`Launcher 3D wall "${wall.tag}" must have at least three points.`);
+    }
+    if (wall.heightTop < wall.heightBottom) {
+      throw new Error(`Launcher 3D wall "${wall.tag}" must not invert height bounds.`);
+    }
+  }
+
+  for (const rail of spec.launcher.threeD.guideRails) {
+    if (rail.path.length < 2) {
+      throw new Error(`Launcher 3D guide rail "${rail.tag}" must have at least two points.`);
+    }
+    if (rail.radius <= 0) {
+      throw new Error(`Launcher 3D guide rail "${rail.tag}" must have a positive radius.`);
+    }
+    if (rail.heightTop < rail.heightBottom) {
+      throw new Error(`Launcher 3D guide rail "${rail.tag}" must not invert height bounds.`);
+    }
+  }
+
+  for (const sensor of spec.launcher.threeD.sensors) {
+    assertValidTriggerDefinition(sensor.tag, sensor.shape);
+  }
+
+  if (spec.launcher.threeD.plunger.width <= 0
+    || spec.launcher.threeD.plunger.depth <= 0
+    || spec.launcher.threeD.plunger.height <= 0
+    || spec.launcher.threeD.plunger.stroke <= 0) {
+    throw new Error('Launcher 3D plunger must declare positive width/depth/height/stroke.');
+  }
+
+  for (const tripwire of spec.tripwires) {
+    assertValidTriggerDefinition(tripwire.tag, resolveTriggerShapeDefinition(tripwire));
+  }
+
+  for (const gate of spec.gates) {
+    assertValidTriggerDefinition(gate.tag, resolveTriggerShapeDefinition(gate));
+  }
+
+  for (const capture of spec.captureDevices) {
+    if (capture.width <= 0 || capture.height <= 0) {
+      throw new Error(`Capture device "${capture.tag}" must have positive bounds.`);
+    }
+    if (capture.holdMs < 0) {
+      throw new Error(`Capture device "${capture.tag}" holdMs must be >= 0.`);
+    }
+    if (capture.cooldownMs < 0) {
+      throw new Error(`Capture device "${capture.tag}" cooldownMs must be >= 0.`);
+    }
+    if (magnitude(capture.ejectImpulse) <= 0) {
+      throw new Error(`Capture device "${capture.tag}" must have a non-zero eject impulse.`);
+    }
+  }
+
+  for (const save of spec.saveDevices) {
+    if (save.width <= 0 || save.height <= 0) {
+      throw new Error(`Save device "${save.tag}" must have positive bounds.`);
+    }
+    if (save.cooldownMs < 0) {
+      throw new Error(`Save device "${save.tag}" cooldownMs must be >= 0.`);
+    }
+    if (magnitude(save.saveImpulse) <= 0) {
+      throw new Error(`Save device "${save.tag}" must have a non-zero save impulse.`);
+    }
+  }
+}
+
+function assertValidTriggerDefinition(tag: string, shape: TableTriggerShapeDefinition): void {
+  switch (shape.kind) {
+    case "rect":
+      if (shape.width <= 0 || shape.height <= 0) {
+        throw new Error(`Trigger "${tag}" rect shape must have positive bounds.`);
+      }
+      return;
+    case "circle":
+      if (shape.radius <= 0) {
+        throw new Error(`Trigger "${tag}" circle shape must have a positive radius.`);
+      }
+      return;
+    case "polygon":
+      if (shape.points.length < 3) {
+        throw new Error(`Trigger "${tag}" polygon shape must have at least three points.`);
+      }
+      return;
+    case "capsule":
+      if (shape.length <= 0 || shape.radius <= 0) {
+        throw new Error(`Trigger "${tag}" capsule shape must have positive length and radius.`);
+      }
+      return;
+    case "donor-wire-rollover":
+      if (shape.wireLength <= 0 || shape.wireRadius <= 0) {
+        throw new Error(
+          `Trigger "${tag}" donor wire-rollover shape must have positive wire length and radius.`,
+        );
+      }
+      return;
+  }
+}
+
+function solidIntersectsPlayfieldContactZ(
+  solid: Readonly<{
+    heightBottom?: number;
+    heightTop?: number;
+  }>,
+  playfieldContactZ: number,
+): boolean {
+  if (solid.heightBottom === undefined || solid.heightTop === undefined) {
+    return true;
+  }
+
+  return solid.heightBottom <= playfieldContactZ && playfieldContactZ <= solid.heightTop;
+}
+
+function wallIntersectsPlayfieldContactZ(
+  wall: Readonly<{
+    physics?: boolean;
+    heightBottom?: number;
+    heightTop?: number;
+  }>,
+  playfieldContactZ: number,
+): boolean {
+  if (wall.physics === false) {
+    return false;
+  }
+
+  return solidIntersectsPlayfieldContactZ(wall, playfieldContactZ);
+}
+
+function railSegmentIntersectsPlayfieldContactZ(
+  rail: Readonly<{
+    physics?: boolean;
+    zPath?: readonly number[];
+    heightBottom?: number;
+    heightTop?: number;
+  }>,
+  segmentIndex: number,
+  playfieldContactZ: number,
+): boolean {
+  if (rail.physics === false) {
+    return false;
+  }
+
+  if (rail.zPath && rail.zPath.length > segmentIndex + 1) {
+    const fromZ = rail.zPath[segmentIndex];
+    const toZ = rail.zPath[segmentIndex + 1];
+    const minZ = Math.min(fromZ, toZ);
+    const maxZ = Math.max(fromZ, toZ);
+    return minZ <= playfieldContactZ && playfieldContactZ <= maxZ;
+  }
+
+  return solidIntersectsPlayfieldContactZ(rail, playfieldContactZ);
+}
+
+function assertValidLauncherRegionDefinition(
+  label: string,
+  shape: TableRegionShapeDefinition,
+): void {
+  switch (shape.kind) {
+    case "rect":
+      if (shape.width <= 0 || shape.height <= 0) {
+        throw new Error(`Launcher region "${label}" rect shape must have positive bounds.`);
+      }
+      return;
+    case "circle":
+      if (shape.radius <= 0) {
+        throw new Error(`Launcher region "${label}" circle shape must have a positive radius.`);
+      }
+      return;
+    case "polygon":
+      if (shape.points.length < 3) {
+        throw new Error(`Launcher region "${label}" polygon shape must have at least three points.`);
+      }
+      return;
+    case "capsule":
+      if (shape.length <= 0 || shape.radius <= 0) {
+        throw new Error(
+          `Launcher region "${label}" capsule shape must have positive length and radius.`,
+        );
+      }
+      return;
+    case "donor-corridor":
+      if (shape.leftBoundary.length < 2 || shape.rightBoundary.length < 2) {
+        throw new Error(
+          `Launcher region "${label}" donor corridor must have at least two points per boundary.`,
+        );
+      }
+      return;
   }
 }

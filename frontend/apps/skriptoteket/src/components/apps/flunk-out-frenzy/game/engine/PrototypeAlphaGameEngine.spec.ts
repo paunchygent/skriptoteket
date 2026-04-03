@@ -63,6 +63,7 @@ class FakePhysicsMachine implements PrototypeAlphaPhysicsMachine {
             radius: PROTOTYPE_ALPHA_TABLE.ball.radius,
           }
         : null,
+      plunger: null,
       flippers: {
         left: {
           side: "left",
@@ -260,6 +261,29 @@ describe("PrototypeAlphaGameEngine", () => {
       { type: "popup-target-hit", tag: "target/pop-study" },
       { type: "gate-passed", tag: "gate/launch-lane-exit" },
       { type: "jackpot-lit", points: 17500 },
+    ]);
+  });
+
+  it("surfaces capture, eject, and save machine events with their rule-award effects", () => {
+    const physics = new FakePhysicsMachine();
+    const engine = new PrototypeAlphaGameEngine(physics, new RuleEngine());
+    engine.startGame();
+
+    physics.enqueueEvents([
+      { type: "ball-captured", tag: "capture/scoop-study", deviceKind: "hole" },
+      { type: "ball-ejected", tag: "capture/scoop-study", deviceKind: "hole" },
+      { type: "ball-saved", tag: "save/right-kickback", deviceKind: "kickback" },
+    ]);
+    const state = engine.step(16);
+
+    expect(state.score).toBe(3_000);
+    expect(state.effects).toEqual([
+      { type: "ball-captured", tag: "capture/scoop-study", deviceKind: "hole" },
+      { type: "ball-ejected", tag: "capture/scoop-study", deviceKind: "hole" },
+      { type: "ball-saved", tag: "save/right-kickback", deviceKind: "kickback" },
+      { type: "capture-awarded", tag: "capture/scoop-study", deviceKind: "hole", points: 1_000 },
+      { type: "eject-awarded", tag: "capture/scoop-study", deviceKind: "hole", points: 750 },
+      { type: "save-awarded", tag: "save/right-kickback", deviceKind: "kickback", points: 1_250 },
     ]);
   });
 

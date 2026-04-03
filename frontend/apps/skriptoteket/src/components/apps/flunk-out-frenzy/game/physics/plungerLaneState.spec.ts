@@ -2,7 +2,7 @@
  * Plunger-lane state tests for Flunk-Out Frenzy.
  *
  * These tests keep launcher feed, charge, release, and relaunch transitions
- * explicit and pure before `PhysicsWorld` applies any Rapier impulses.
+ * explicit and pure before `PhysicsWorld` applies any Rapier launcher motion.
  */
 
 import { describe, expect, it } from "vitest";
@@ -56,11 +56,8 @@ describe("stepPlungerLaneState", () => {
       dtMs: 16,
     });
     expect(released.machineEvents).toEqual([{ type: "launcher-released", tag: launcher.tag }]);
-    expect(released.releaseImpulse).toEqual({
-      x: launcher.launchAssistX,
-      y: expect.any(Number),
-    });
-    expect(released.releaseImpulse?.y ?? 0).toBeLessThan(0);
+    expect(released.releaseChargeRatio).toBeGreaterThan(0);
+    expect(released.releaseChargeRatio).toBeLessThanOrEqual(1);
     expect(released.nextState.phase).toBe("released");
   });
 
@@ -83,6 +80,6 @@ describe("stepPlungerLaneState", () => {
 
     expect(relit.machineEvents).toEqual([{ type: "launcher-fed", tag: launcher.tag }]);
     expect(relit.nextState.phase).toBe("fed");
-    expect(relit.releaseImpulse).toBeNull();
+    expect(relit.releaseChargeRatio).toBeNull();
   });
 });

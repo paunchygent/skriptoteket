@@ -7,14 +7,30 @@ Keep this file updated so the next session can pick up work quickly.
 - Never include secrets/tokens/passwords or personal data.
 - Keep this file under 200 lines; move history to `docs/`.
 ## Snapshot
-- Date: 2026-04-02
+- Date: 2026-04-03
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
 - Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0127`, `PR-0128`, `PR-0129`, `PR-0130`, `PR-0131`, `PR-0132`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0149`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0156`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`, `PR-0166`, `PR-0169`, `PR-0170`, `PR-0171`, `PR-0173`, `PR-0174`, `PR-0176`, `PR-0177`, `PR-0179`, `PR-0180`, `PR-0181`, `PR-0182`, `PR-0183`, `PR-0184`, `PR-0185`, `PR-0186`, `PR-0187`
 ## Status
 - `ST-25-05` / `PR-0192` is now migrated onto the compiled pinball-table system locally: `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/prototypeAlphaTableSpec.ts` is the authored source of truth, `pinballTablePlanTypes.ts` and `compilePinballTable.ts` now produce the compiled physics/render plan, `prototypeAlphaTable.ts` exports that compiled table directly, `PhysicsWorld.ts` now builds the Rapier world from compiled bodies/colliders instead of the removed `createLaneDevices.ts` / `createTargetDevices.ts` path, and `staticBoardUnderlay.ts` now renders compiled render nodes instead of the removed authored-table primitives. The old authored-table stack (`authoredTableTypes.ts`, `boardGeometryPrimitives.ts`, `prototypeAlphaAuthoredTable.ts`, `compileAuthoredTable.ts`) is deleted. Post-review fixes are included: default serve spawns now honor compiled `launchVelocity`, and the compiler now rejects duplicate semantic device tags.
-- `ST-25-06` / `PR-0198` are now in progress as the corrective donor-topology slice: `data/pinball_resources_and_repos/vpw-rom-example-table-donor-map.md` captures the borrowed VPW boundary grammar and source files, `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/prototypeAlphaVpwDonorMap.ts` now carries donor drag-point chains for the outer boundary, inner guides, outlanes, inlanes, drain guides, shooter walls, sling faces, flipper proportions, and measured gate footprints, `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/prototypeAlphaVpwDonorDevices.ts` now carries donor-derived anchors for the visible rollovers, left drop bank, middle scoop marker, shooter exit, and drain footprint, and `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/prototypeAlphaTableSpec.ts` now consumes those donor carriers directly instead of mixing them with locally-authored lane-fill polygons or hand-placed device coordinates. `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/render/staticBoardUnderlay.ts` also dropped the hard-coded orbit sketch so the visible board is closer to the donor grammar. The donor corrective task was renumbered from `PR-0196` to `PR-0198` to avoid colliding with an existing `EPIC-29` PR id.
+- `PR-0193` planning scope is now explicitly checkpointed in docs as `PR-0193a`/`PR-0193b`/`PR-0193c` inside the single PR task (`docs/backlog/prs/pr-0193-flunk-out-frenzy-capture-eject-and-save-devices.md`): checkpoint A locks capture/save contracts + compiler validation, checkpoint B locks deterministic capture/hold/eject/save physics lifecycle emission, and checkpoint C locks rules/effects/reset integration with final integrated proof.
+- `ST-25-05` / `PR-0193` implementation is now in place locally across all checkpoints: checkpoint A contract/compiler wiring is active in `tableDefinitionTypes.ts`, `pinballTablePlanTypes.ts`, `compilePinballTable.ts`, and `prototypeAlphaTableSpec.ts`; checkpoint B capture/save lifecycle is active in `captureDeviceLifecycle.ts` + `PhysicsWorld.ts`; and checkpoint C rule/effect wiring is active in `captureAwardsState.ts`, `RuleEngine.ts`, `ruleTypes.ts`, `gameEffectTypes.ts`, `PrototypeAlphaGameEngine.ts`, `PixiRenderer.ts`, and `AudioDirector.ts`. The long-standing flipper contact fixture drift is also corrected in `flipperContactModel.spec.ts` so the full physics+rules+engine matrix now passes in one run.
+- Scope note for the donor-review follow-up: the local worktree already contains separate `PR-0193` capture/save WIP in shared table files such as `tableDefinitionTypes.ts`, `compilePinballTable.ts`, and `prototypeAlphaTableSpec.ts`; this `PR-0198` follow-up only changes the donor-review hunks inside those files and does not extend the capture/save slice.
+- `ST-25-06` is now split explicitly across two linked donor-fidelity tasks: `PR-0198` owns the VPW donor topology and board-carrier cutover, while new `PR-0199` owns full donor semantic representation for richer triggers, gates, and rollover shapes. The donor map reference (`data/pinball_resources_and_repos/vpw-rom-example-table-donor-map.md`) and the pinball authoring skill (`~/.codex/skills/pinball-board-authoring/SKILL.md`) now state the hard rule: if a donor object exceeds the current schema, extend the schema/compiler/runtime instead of flattening it into a simpler local shape or undocumented remap.
+- `ST-25-06` donor-lane governance is now stricter: donor lanes and launcher corridors must not rely on flattened `laneBounds` / AABB containment seams when the donor defines shaped lane regions. `PR-0199` now explicitly owns replacing those remaining seams with donor-shaped lane-region semantics across the launcher corridor and related board lanes.
+- Donor audit on 2026-04-03 clarified that the launcher blocker is the exposed top edge of donor `Wall34`, not a missing mid-right wall. The remaining gap is representation, not donor coverage: the browser model still reduces donor launcher flow to a donor-trigger-derived rest position plus a pure upward impulse, without first-class donor plunger release-path or donor wall-face flow semantics.
+- The same donor-review lane slice now includes a user-reported plunger-lane jam fix inside `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/prototypeAlphaTableSpec.ts`: the shooter-corridor rails are thinner (`radius: 2`) so the 24px ball is not pinched by donor centerline carriers, the plunger now launches straight up instead of shoving left into the lane wall, and the launch impulse range is higher (`1700`–`2500`) so one charged launch clears the lower shooter corridor.
+- `ST-25-06` now has a third explicit donor-fidelity follow-up: `PR-0200` owns the Rapier 3D launcher-chain migration for the launcher/right-side receiving flow. It exists because `PR-0199` covers trigger/gate/lane-region fidelity, but the remaining `Wall34` jam requires truthful plunger, wall-face, and height representation instead of more flat-model patching.
+- `ST-25-06` now has a geometry-first corrective slice before `PR-0200`: `PR-0201` owns splitting or thinning the `Wall263` shooter-corridor slice so donor `Wall95`, `Wall34`, `Wall010`, `Wall011`, `Apron1`, and `Apron2` own the lower shooter lane physically. Re-test this before committing to the broader physical-plunger rewrite.
+- `ST-25-06` / `PR-0201` is now implemented locally as a geometry-only donor correction: `prototypeAlphaVpwDonorMap.ts` splits donor `Wall263` into a main outer-boundary path plus a shooter-corridor slice, `prototypeAlphaTableSpec.ts` compiles that corridor slice as a thin `radius: 2` physics rail while keeping the full donor `Wall263` outline visible through a render-only polyline surface, and `compilePinballTable.spec.ts` / `PhysicsWorld.spec.ts` lock the corridor-ownership and launcher-clearance proof. User-owned browser inspection on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` confirmed the narrow result: the lower pinch is relieved, but the ball still bounces off the exposed solid `Wall34` cap instead of entering gameplay, so `PR-0200` remains necessary.
+- `ST-25-06` / `PR-0202` is now in progress for full-board donor 3D carrier mapping: `prototypeAlphaVpwDonorMap.ts` and `prototypeAlphaTableSpec.ts` now include provenance-backed upper inner metal guides (`Wall017`/`Wall002`) plus elevated above-playfield wire rails (`RampS3`/`RampS001`/`RampS002`/`RampS4`), while `pinballTablePlanTypes.ts` and `compilePinballTable.ts` now carry explicit rail elevation metadata (`zPath`, `heightBottom/heightTop`, `physics`) so those carriers are represented without silent flattening.
+- `ST-25-06` / `PR-0203` is now in progress for elevated donor rail travel and left handoff mechanics: `prototypeAlphaVpwDonorMap.ts` now exports a provenance-backed overhead 3D route from `RampS3/S001/S002/S4`, `prototypeAlphaTableSpec.ts` now carries that route in `launcher.threeD.travelRoutes`, `launcherChain3d.ts` now follows the donor multi-height route with deterministic handoff (including honored handoff z), and `PhysicsWorld.ts` now delegates launcher-phase ball ownership to the 3D launcher chain before board handoff.
+- Follow-up `PR-0201` trim now narrows the `Wall263` shooter-corridor physical splice further to the upper shoulder-only donor segment (`points 55..60`) so the lower continuation toward `Wall34` is not reintroduced as another physical lane carrier.
+- `ST-25-06` / `PR-0200` launcher work currently runs on a single Rapier 3D `PhysicsWorld.ts` seam with authored 3D launcher contracts in `tableDefinitionTypes.ts` / `pinballTablePlanTypes.ts` and donor provenance in `prototypeAlphaVpwDonorDevices.ts` / `prototypeAlphaTableSpec.ts`. The checked-in `launcherChain3d.ts` helper exists, but is not the live wired runtime seam in the current local state.
+- `PR-0200` release behavior now drops the temporary hardcoded right-bias launch vector. `PhysicsWorld.ts` now releases from authored launcher semantics (`launchAssistX`, `launchImpulseMin/Max`) instead of forcing a local `x=180` shove.
+- Live route verification for `PR-0200` needed one environment refresh: the Docker frontend on `:5173` initially could not resolve `@dimforge/rapier3d-compat`, so `docker exec windsurf-project-frontend-1 pnpm -C /app/frontend install` was run to update the running workspace. After that, a bootstrap-superuser Playwright check confirmed `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` reaches `data-runtime-load-state="ready"`, mounts the runtime canvas, and writes `.artifacts/flunk-out-frenzy-route-check-pr0200/flunk-out-frenzy-route-pr0200.png`.
+- Latest `skriptoteket_reviewer` pass for `PR-0200` returned `changes_requested`: docs had stale architecture claims, and the launcher release path is still a direct `setLinvel(...)` shortcut rather than a proven physical plunger-body strike.
 - `EPIC-31` is now proposed in `docs/backlog/epics/epic-31-flappy-birds-curated-app.md`, with the required pending review in `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`. The scope fixes `games.flappy_birds` as a real bespoke curated app from day one, keeps the browser-owned runtime plus backend-owned leaderboard split, and explicitly narrows highscores to a lightweight teacher-fun feature with simple server-owned leaderboard state.
 - The older competitive-games planning family has now been rewritten around lightweight leaderboard support rather than heavyweight submission-promotion assumptions: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`, `docs/reference/ref-competitive-games-cross-cutting-programme.md`, `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`, `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`, `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`, `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`, `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`, `docs/backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md`, and `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`. `ST-25-04` was renamed from the old promotion framing to the new leaderboard-hardening/ruleset-scoping framing, and `docs/index.md` now points at the renamed story.
 - `ST-25-05` / `PR-0190` are now implemented locally: `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/rules/RuleEngine.ts` is now an orchestrator over the new `ruleTypes.ts`, `scoreState.ts`, `bonusJackpotState.ts`, and `ballLifecycleState.ts` helpers; the runtime seam now carries nested `bonus`, `jackpot`, and `ballLifecycle` HUD state through `runtimeEngineTypes.ts`, `runtimeTypes.ts`, `GameRuntime.ts`, `GameHost.vue`, and `FlunkOutFrenzyView.vue`; `PrototypeAlphaGameEngine.ts`, `gameEffectTypes.ts`, `PixiRenderer.ts`, and `AudioDirector.ts` now surface semantic bonus/jackpot/shoot-again effects; and the post-review rollover exploit fix now gates rollover bonus accrual to newly lit lanes only, with a regression added in `RuleEngine.spec.ts`.
@@ -28,6 +44,26 @@ Keep this file updated so the next session can pick up work quickly.
 - Backlog reconciliation is now current for `EPIC-29`: `ST-29-01`, `ST-29-04`, `ST-29-05`, and `ST-29-10` are now written as done to match the shipped desktop-first planner behavior; `PR-0127`, `PR-0131`, `PR-0132`, `PR-0156`, `PR-0182`, `PR-0183`, and `PR-0184` are marked done; `PR-0158` is canceled as stale seating-first planning; and the remaining follow-on primitive/symbol lane is now isolated in `ST-29-11` and `ST-29-12`, with `ST-29-08` positioned as the later custom-tooltip enhancement on top of that baseline.
 - `ST-29-11` now has an explicit three-slice execution path: `PR-0195` for shared primitive-contract normalization plus generic menu/split behavior, `PR-0196` for planner wrapper thinning and action-surface adapter cleanup, and `PR-0197` for editor/site adoption proof plus segmented-toggle contract completion.
 ## Verification
+- 2026-04-02 `ST-25-05` / `PR-0193` capture/eject/save checkpoints A+B+C:
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/rules/ballLifecycleState.spec.ts src/components/apps/flunk-out-frenzy/game/rules/bonusJackpotState.spec.ts src/components/apps/flunk-out-frenzy/game/rules/scoreState.spec.ts src/components/apps/flunk-out-frenzy/game/rules/captureAwardsState.spec.ts src/components/apps/flunk-out-frenzy/game/rules/RuleEngine.spec.ts src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/physics/*.spec.ts src/components/apps/flunk-out-frenzy/game/rules/*.spec.ts src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts` (run from `frontend/apps/skriptoteket`)
+  - `pdm run fe-lint`
+  - `pdm run fe-type-check`
+  - `pdm run fe-build`
+  - one-off bootstrap-login Playwright screenshots on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` via `pdm run python - <<'PY' ... PY`:
+    - ready state: `.artifacts/flunk-out-frenzy-pr0193-live-check.png`
+    - running state after `Start`: `.artifacts/flunk-out-frenzy-pr0193-live-check-running.png`
+- 2026-04-02 Flunk-Out Frenzy aspect-ratio + breakpoint reflow stabilization:
+  - live Vite route capture and viewport-fit proof on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` using bootstrap-superuser login via one-off `pdm run python - <<'PY' ... PY` Playwright checks
+  - confirmed gameplay mode hides the `PROTOTYPE ALPHA / Flunk-Out Frenzy` slug block (`intro_visible_after_start: false`)
+  - confirmed 1536x960 running host is fully visible (`host_top: 107.72`, `host_bottom: 946.59`)
+  - confirmed no sticky shrunk state after breakpoint round-trip (`1536x960 -> 900x900 -> 1536x960`) with identical host size before/after (`610x847.22`)
+  - removed screenshot/photo cabinet background from `.fof-machine-scene::before`; live check PNG: `.artifacts/flunk-out-frenzy-breakpoint-reflow/no-screenshot-background.png`
+  - PNG artifacts:
+    - `.artifacts/flunk-out-frenzy-breakpoint-reflow/before-resize-desktop.png`
+    - `.artifacts/flunk-out-frenzy-breakpoint-reflow/during-small-breakpoint.png`
+    - `.artifacts/flunk-out-frenzy-breakpoint-reflow/after-resize-desktop.png`
+    - `.artifacts/flunk-out-frenzy-aspect-ratio-pngs/desktop-1536x960-running.png`
 - 2026-04-02 `ST-25-05` / `PR-0192` compiled pinball-table migration:
   - `pdm run fe-type-check`
   - `pdm run fe-build`
@@ -35,14 +71,30 @@ Keep this file updated so the next session can pick up work quickly.
   - one `skriptoteket_implementation_specialist` iteration fixed those two slices in `PhysicsWorld.ts` and `compilePinballTable.ts`
   - post-fix deterministic rerun on the merged state: `pdm run fe-type-check`, `pdm run fe-build`
   - no browser proof was run in this slice; the remaining honest visual risk is that `staticBoardUnderlay.ts` still keeps a decorative hard-coded top orbit glow outside the compiled render-node path
-- 2026-04-02 `ST-25-06` / `PR-0198` VPW donor-topology corrective cutover:
-  - `pdm run fe-type-check`
-  - `pdm run fe-build`
+- 2026-04-02 `ST-25-06` donor-topology and donor-semantics checkpoint:
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - donor topology work remains in `PR-0198`, but the focused physics regressions still show the remaining semantic gap: richer donor shooter/plunger trigger semantics are being forced through an incomplete sensor model, so the launcher path is not yet donor-faithful enough to close the corrective lane
+  - no browser proof was run for this checkpoint; manual browser inspection remains user-owned
+  - follow-up task `PR-0199` now tracks the required schema/compiler/runtime expansion for donor trigger-shape and trigger-phase fidelity
+- 2026-04-02 `ST-25-06` docs and skill-governance follow-up:
   - `pdm run docs-validate`
-  - donor strictness pass: `prototypeAlphaVpwDonorMap.ts` now uses donor drag-point chains for wall/lane carriers, donor-derived sling faces, donor-measured flipper proportions, donor-measured shooter-lane bounds, and donor-measured right-return gate footprint; `prototypeAlphaVpwDonorDevices.ts` now ports the visible rollover, drop-target, scoop, shooter-exit, and drain anchors from donor objects; `prototypeAlphaTableSpec.ts` no longer overlays locally-authored lane `renderSurfaces` or hand-placed visible board devices, and `staticBoardUnderlay.ts` no longer draws the hard-coded orbit arc
-  - post-fix deterministic reruns: `pdm run fe-type-check`, `pdm run fe-build`, then `pdm run fe-type-check`, `pdm run fe-build`, then `pdm run fe-type-check`, `pdm run fe-build`
-  - attempted independent `skriptoteket_reviewer` passes and one fallback explorer review, but the subagents stalled without returning a verdict before shutdown; no review findings were captured from tooling in this session
-  - manual browser inspection is intentionally pending user on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`
+  - added `docs/backlog/prs/pr-0199-flunk-out-frenzy-donor-semantic-representation-and-trigger-shape-fidelity.md`
+  - updated `ST-25-06`, `PR-0198`, the donor-map reference, the pinball authoring skill, `docs/index.md`, and `.agents/handoff.md` so future work must extend schema/semantics instead of flattening donor objects into simpler local approximations
+- 2026-04-03 `ST-25-06` donor lane-region governance update:
+  - `pdm run docs-validate`
+  - updated `EPIC-25`, `ST-25-06`, `PR-0198`, `PR-0199`, the donor-map reference, the pinball authoring skill, and `.agents/handoff.md`
+  - donor lanes and launcher corridors are now explicitly required to use donor-shaped lane-region semantics; flattened `laneBounds` / AABB containment is documented as follow-up debt to remove rather than an acceptable final representation
+- 2026-04-03 `ST-25-06` launcher-representation task split:
+  - `pdm run docs-validate`
+  - added `docs/backlog/prs/pr-0200-flunk-out-frenzy-launcher-release-path-and-donor-wall-face-representation.md`
+  - updated `PR-0199`, `ST-25-06`, `EPIC-25`, `docs/index.md`, and `.agents/handoff.md`
+  - explicit ruling for the next slice: do not invent synthetic join carriers around `Wall34`; extend the launcher representation until donor `PlungerRose`, `swplunger`, `sw16`, and the donor wall-face flow chain can be expressed honestly
+- 2026-04-03 `ST-25-06` shooter-corridor geometry corrective split:
+  - `pdm run docs-validate`
+  - added `docs/backlog/prs/pr-0201-flunk-out-frenzy-shooter-corridor-wall263-de-overlap.md`
+  - updated `ST-25-06`, `EPIC-25`, `docs/index.md`, and `.agents/handoff.md`
+  - explicit ruling for the next slice: fix the lower-lane `Wall263` physical overlap first, then re-test before resuming the broader `PR-0200` physical-plunger rewrite
+  - local implementation now splits donor `Wall263` into `outer-boundary-main` (`radius: 8`) and `outer-boundary-shooter-corridor` (`radius: 2`) in `prototypeAlphaVpwDonorMap.ts` / `prototypeAlphaTableSpec.ts`; focused reruns passed with `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`, `pdm run fe-type-check`, and `pdm run fe-build`
 - 2026-04-01 `EPIC-31` Flappy Birds curated-app epic and review scaffolding:
   - `pdm run docs-validate`
 - 2026-04-01 competitive-games docs rewrite for lightweight leaderboard support:
@@ -61,6 +113,42 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run fe-type-check`
   - `pdm run fe-build`
   - `pdm run python -m scripts.playwright_flunk_out_frenzy_route_check --base-url http://127.0.0.1:8000` -> `playwright-flunk-out-frenzy: ok -> .artifacts/flunk-out-frenzy-route-check`
+- 2026-04-03 `ST-25-06` / `PR-0201` Wall263 shooter-corridor de-overlap:
+  - `pdm run docs-validate`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-build`
+  - user-owned browser inspection on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` reported: lower shooter-lane pinch relieved; ball still bounces off the exposed solid `Wall34` top edge and does not yet enter gameplay
+- 2026-04-03 `ST-25-06` / `PR-0200` Rapier 3D launcher-chain migration:
+  - `pdm run fe-type-check`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - `pdm run fe-build`
+  - `docker exec windsurf-project-frontend-1 pnpm -C /app/frontend install`
+  - one-off Playwright check against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` using the bootstrap superuser -> `playwright-flunk-out-frenzy-pr0200: ok -> .artifacts/flunk-out-frenzy-route-check-pr0200/flunk-out-frenzy-route-pr0200.png`
+- 2026-04-03 `ST-25-06` follow-up launcher path correction:
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-build`
+  - one-off bootstrap-login Playwright charged-launch traces on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` writing:
+    - `.artifacts/flunk-out-frenzy-launch-blocker-check/samples.json`
+    - `.artifacts/flunk-out-frenzy-launch-blocker-check/samples-no-bias.json`
+    - `.artifacts/flunk-out-frenzy-launch-blocker-check/after-launch.png`
+    - `.artifacts/flunk-out-frenzy-launch-blocker-check/after-launch-no-bias.png`
+  - observed in sampled launch traces: charge windows `250ms`/`450ms`/`700ms` no longer stall at the former choke seam and reach wider field coordinates before draining/re-serving; this is coordinate-trace proof, not final manual gameplay-path acceptance
+- 2026-04-03 `ST-25-06` / `PR-0202` full-board donor 3D carrier mapping:
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - `pdm run fe-lint`
+  - `pdm run fe-type-check`
+  - `pdm run fe-build`
+  - `pdm run docs-validate`
+  - `pdm run python -m scripts.playwright_flunk_out_frenzy_route_check --base-url http://127.0.0.1:5173` -> `playwright-flunk-out-frenzy: ok -> .artifacts/flunk-out-frenzy-route-check`
+- 2026-04-03 `ST-25-06` / `PR-0203` elevated donor rail travel + left handoff:
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - `pdm run fe-lint`
+  - `pdm run fe-type-check`
+  - `pdm run fe-build`
+  - `pdm run docs-validate`
+  - `pdm run python -m scripts.playwright_flunk_out_frenzy_route_check --base-url http://127.0.0.1:5173` -> `playwright-flunk-out-frenzy: ok -> .artifacts/flunk-out-frenzy-route-check`
 - 2026-04-01 `ST-25-05` / `PR-0188` machine-event and PhysicsWorld foundation:
   - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
   - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
@@ -91,14 +179,18 @@ pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://1
 ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh'
 ```
 ## Known Issues / Risks
-- The donor corrective slice now uses donor drag-point carriers for the visible board boundary network plus donor-derived visible-device anchors; the remaining non-donor values in `prototypeAlphaTableSpec.ts` are mechanics-side tuning such as flipper swing angles, flipper contact impulse tuning, launcher charge/impulse values, and bumper sizing/impulses rather than visible lane or boundary coordinates.
+- The remaining blocker in `ST-25-06` is donor semantic fidelity, not just donor geometry: `PR-0199` covers trigger/gate and lane-region semantics, but the current launcher still lacks donor plunger release-path and donor wall-face representation. `PR-0200` now tracks that follow-up explicitly.
+- The latest launcher diagnosis suggests a more immediate geometry fault too: the lower shooter lane is likely double-defined by the `Wall263`-derived `outer-boundary` rail plus donor shooter walls. `PR-0201` now tracks that geometry-first correction and should be tested before assuming the full `PR-0200` plunger rewrite is required immediately.
+- `PR-0201` lower-lane de-overlap is no longer the active choke seam; latest coordinate traces show the ball can clear past that region. Manual visual acceptance of donor-faithful right-side receiving flow is still pending.
+- `PR-0200` now moves launcher simulation into Rapier 3D, but the live browser proof for this slice only covers runtime startup and renderer mount on `5173`. The deterministic physics tests cover charged-release lane exit, but manual/browser proof that the visible ball now clears `Wall34` into satisfying gameplay still needs a dedicated follow-up check.
 - The canonical local browser proof for Klassrumskartan no-classroom flows depends on the backend-served static SPA bundle once auth redirects into `:8000`; rerun `pdm run fe-build` before trusting `http://127.0.0.1:5173` Playwright outcomes after frontend changes.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - `tests/integration/test_migration_revision_coverage_idempotent.py` still has one pre-existing full-suite harness failure on merge revision `6a1e9d3c4b7f` because `tests/integration/migration_idempotency_support.py` assumes a linear `down_revision`; the new `b7f9c2d4e1a6` revision itself passes both targeted migration checks.
 ## Next Steps
-- Do the manual browser read for `PR-0198` on the donor-backed compiled-table build and decide whether the next slice is still launcher/lane geometry cleanup inside `prototypeAlphaTableSpec.ts` or whether `PR-0193` can begin.
+- Keep `PR-0198` scoped to donor topology and board-carrier fidelity, finish `PR-0199` for trigger/gate/lane-region semantics, then implement `PR-0200` so the launcher/right-side receiving flow stops relying on a pure upward impulse and instead uses donor plunger release-path plus donor wall-face representation.
+- `PR-0201` is complete and `PR-0200` is now implemented locally. Next, run the ruthless reviewer loop for `PR-0200`, then do a focused manual/browser launcher-flow check to confirm the visible ball clears the old `Wall34` choke point in live play instead of only in deterministic physics proof.
 - Review `EPIC-31` / `REV-EPIC-31`, then scaffold the first `ST-31-0x` story stack for `games.flappy_birds` around substrate/bootstrap, local playable runtime, and lightweight leaderboard plumbing.
-- `ST-25-05` remains in progress behind the donor corrective gate; do not continue `PR-0193` through `PR-0195` until the donor-backed board is accepted in the browser.
+- If the donor corrective lane is accepted, move `PR-0193` from local implementation state to reviewed/merged status and then continue with `PR-0194`/`PR-0195`.
 - Next planning choice inside `EPIC-29` is to implement `ST-29-11` in order through `PR-0195`, `PR-0196`, and `PR-0197`, then define the `ST-29-12` symbol/discoverability slice sequence before taking `ST-29-08`.
 - If the no-classroom proof is rerun after more frontend changes, rebuild the backend-served SPA first with `pdm run fe-build`.

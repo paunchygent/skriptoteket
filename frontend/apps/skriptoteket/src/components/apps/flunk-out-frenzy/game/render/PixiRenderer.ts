@@ -17,6 +17,7 @@ import {
 import type { GameHudSnapshot, GameViewSnapshot } from "../core/runtimeTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
 import { PROTOTYPE_ALPHA_TABLE } from "../table/prototypeAlphaTable";
+import type { TableTriggerShapeDefinition } from "../table/tableDefinitionTypes";
 import type { RuntimeRenderer } from "./renderTypes";
 import { buildStaticBoardUnderlay } from "./staticBoardUnderlay";
 
@@ -33,6 +34,7 @@ export class PixiRenderer implements RuntimeRenderer {
   private readonly pulseLayer = new Container();
   private readonly rolloverLayer = new Container();
   private readonly ballGraphic = new Graphics();
+  private readonly plungerGraphic = new Graphics();
   private readonly leftFlipperGraphic = new Graphics();
   private readonly rightFlipperGraphic = new Graphics();
   private readonly rolloverNodes = new Map<string, RolloverNode>();
@@ -72,6 +74,7 @@ export class PixiRenderer implements RuntimeRenderer {
     this.scene.addChild(this.underlay);
     this.scene.addChild(this.pulseLayer);
     this.scene.addChild(this.rolloverLayer);
+    this.scene.addChild(this.plungerGraphic);
     this.scene.addChild(this.leftFlipperGraphic);
     this.scene.addChild(this.rightFlipperGraphic);
     this.scene.addChild(this.ballGraphic);
@@ -81,6 +84,7 @@ export class PixiRenderer implements RuntimeRenderer {
     this.drawFlipper(this.leftFlipperGraphic, "left");
     this.drawFlipper(this.rightFlipperGraphic, "right");
     this.ballGraphic.visible = false;
+    this.plungerGraphic.visible = false;
   }
 
   attach(hostElement: HTMLElement): void {
@@ -101,6 +105,7 @@ export class PixiRenderer implements RuntimeRenderer {
   render(view: GameViewSnapshot, hud: GameHudSnapshot, effects: GameEffectEvent[]): void {
     this.syncViewport();
     this.syncRollovers(view);
+    this.syncPlunger(view);
     this.syncBall(view);
     this.syncFlippers(view);
     this.applyEffects(effects, hud);
@@ -197,6 +202,33 @@ export class PixiRenderer implements RuntimeRenderer {
     this.ballGraphic.position.set(view.ball.x, view.ball.y);
   }
 
+  private syncPlunger(view: GameViewSnapshot): void {
+    if (!view.plunger) {
+      this.plungerGraphic.visible = false;
+      return;
+    }
+
+    this.plungerGraphic.visible = true;
+    this.plungerGraphic.clear();
+    this.plungerGraphic.roundRect(
+      -view.plunger.width / 2,
+      -view.plunger.height / 2,
+      view.plunger.width,
+      view.plunger.height,
+      999,
+    );
+    this.plungerGraphic.fill({
+      color: 0x8c526b,
+      alpha: 0.92,
+    });
+    this.plungerGraphic.stroke({
+      color: 0xffd7e8,
+      alpha: 0.42,
+      width: 1.4,
+    });
+    this.plungerGraphic.position.set(view.plunger.x, view.plunger.y);
+  }
+
   private syncFlippers(view: GameViewSnapshot): void {
     this.leftFlipperGraphic.position.set(
       view.flippers.left.pivotX,
@@ -259,7 +291,8 @@ export class PixiRenderer implements RuntimeRenderer {
         case "tripwire-crossed": {
           const tripwire = PROTOTYPE_ALPHA_TABLE.tripwires.find((item) => item.tag === effect.tag);
           if (tripwire) {
-            this.spawnPulse(tripwire.x, tripwire.y, 28, 0x6be9ff, 140);
+            const center = resolveTriggerEffectCenter(tripwire);
+            this.spawnPulse(center.x, center.y, 28, 0x6be9ff, 140);
           }
           break;
         }
@@ -280,7 +313,51 @@ export class PixiRenderer implements RuntimeRenderer {
         case "gate-passed": {
           const gate = PROTOTYPE_ALPHA_TABLE.gates.find((item) => item.tag === effect.tag);
           if (gate) {
-            this.spawnPulse(gate.x, gate.y, 22, 0x9ee081, 130);
+            const center = resolveTriggerEffectCenter(gate);
+            this.spawnPulse(center.x, center.y, 22, 0x9ee081, 130);
+          }
+          break;
+        }
+        case "ball-captured": {
+          const captureDevice = PROTOTYPE_ALPHA_TABLE.captureDevices.find(
+            (item) => item.tag === effect.tag,
+          );
+          if (captureDevice) {
+            this.spawnPulse(
+              captureDevice.x,
+              captureDevice.y,
+              Math.max(captureDevice.width, captureDevice.height) * 0.62,
+              0x66f0ff,
+              170,
+            );
+          }
+          break;
+        }
+        case "ball-ejected": {
+          const captureDevice = PROTOTYPE_ALPHA_TABLE.captureDevices.find(
+            (item) => item.tag === effect.tag,
+          );
+          if (captureDevice) {
+            this.spawnPulse(
+              captureDevice.x,
+              captureDevice.y,
+              Math.max(captureDevice.width, captureDevice.height) * 0.82,
+              0xffbf72,
+              180,
+            );
+          }
+          break;
+        }
+        case "ball-saved": {
+          const saveDevice = PROTOTYPE_ALPHA_TABLE.saveDevices.find((item) => item.tag === effect.tag);
+          if (saveDevice) {
+            this.spawnPulse(
+              saveDevice.x,
+              saveDevice.y,
+              Math.max(saveDevice.width, saveDevice.height) * 0.7,
+              0x91ffc6,
+              175,
+            );
           }
           break;
         }
@@ -295,6 +372,15 @@ export class PixiRenderer implements RuntimeRenderer {
           break;
         case "jackpot-awarded":
           this.spawnPulse(300, 420, 126, 0xff8df0, 300);
+          break;
+        case "capture-awarded":
+          this.spawnPulse(300, 980, 62, 0x66f0ff, 240);
+          break;
+        case "eject-awarded":
+          this.spawnPulse(300, 900, 56, 0xffbf72, 220);
+          break;
+        case "save-awarded":
+          this.spawnPulse(300, 850, 64, 0x91ffc6, 250);
           break;
         case "shoot-again-lit":
           this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, 930, 42, 0x8dffcf, 220);
@@ -376,6 +462,44 @@ export class PixiRenderer implements RuntimeRenderer {
       Math.round((height - PROTOTYPE_ALPHA_TABLE.board.height * scale) / 2),
     );
   }
+}
+
+function resolveTriggerEffectCenter(
+  trigger:
+    | (typeof PROTOTYPE_ALPHA_TABLE.tripwires)[number]
+    | (typeof PROTOTYPE_ALPHA_TABLE.gates)[number],
+): { x: number; y: number } {
+  if ("shape" in trigger) {
+    return centerForTriggerShape(trigger.shape);
+  }
+
+  return {
+    x: trigger.x,
+    y: trigger.y,
+  };
+}
+
+function centerForTriggerShape(shape: TableTriggerShapeDefinition): {
+  x: number;
+  y: number;
+} {
+  switch (shape.kind) {
+    case "rect":
+    case "circle":
+    case "capsule":
+    case "donor-wire-rollover":
+      return shape.center;
+    case "polygon":
+      return polygonCentroid(shape.points);
+  }
+}
+
+function polygonCentroid(points: readonly { x: number; y: number }[]): { x: number; y: number } {
+  const count = points.length || 1;
+  return {
+    x: points.reduce((sum, point) => sum + point.x, 0) / count,
+    y: points.reduce((sum, point) => sum + point.y, 0) / count,
+  };
 }
 
 function degreesToRadians(deg: number): number {

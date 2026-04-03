@@ -162,6 +162,7 @@ function createViewSnapshot(
           radius: 12,
         }
       : null,
+    plunger: null,
     flippers: {
       left: {
         side: "left",

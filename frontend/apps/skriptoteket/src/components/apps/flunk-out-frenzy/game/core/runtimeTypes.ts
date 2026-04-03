@@ -45,6 +45,13 @@ export interface GameBallSnapshot {
   radius: number;
 }
 
+export interface GamePlungerSnapshot {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface GameFlipperSnapshot {
   side: "left" | "right";
   pivotX: number;
@@ -65,6 +72,7 @@ export interface GameRolloverSnapshot {
 export interface GameViewSnapshot {
   board: GameBoardSnapshot;
   ball: GameBallSnapshot | null;
+  plunger: GamePlungerSnapshot | null;
   flippers: {
     left: GameFlipperSnapshot;
     right: GameFlipperSnapshot;

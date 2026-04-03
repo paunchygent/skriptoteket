@@ -6,6 +6,11 @@
  * preserving a small engine-facing orchestration surface.
  */
 
+import type {
+  CaptureMachineEventKind,
+  SaveMachineEventKind,
+} from "../physics/physicsTypes";
+
 export interface BonusRuleSnapshot {
   points: number;
   collectReady: boolean;
@@ -36,6 +41,9 @@ export type RuleEvent =
   | { type: "bonus-awarded"; points: number }
   | { type: "jackpot-lit"; points: number }
   | { type: "jackpot-awarded"; points: number }
+  | { type: "capture-awarded"; tag: string; deviceKind: CaptureMachineEventKind; points: number }
+  | { type: "eject-awarded"; tag: string; deviceKind: CaptureMachineEventKind; points: number }
+  | { type: "save-awarded"; tag: string; deviceKind: SaveMachineEventKind; points: number }
   | { type: "shoot-again-lit" };
 
 export interface RuleStepResult {

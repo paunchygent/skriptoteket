@@ -8,7 +8,7 @@
  * `GameHost.vue`.
  */
 
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import GameHost from "../../components/apps/flunk-out-frenzy/GameHost.vue";
 import {
@@ -26,19 +26,14 @@ const props = defineProps<{
 }>();
 
 const { bootstrap, bootstrapError, isBootstrapping, loadBootstrap } = useFlunkOutFrenzyBootstrap();
-// These are intentionally temporary reference-art plates until the dedicated
-// Flunk-Out Frenzy cabinet art pass lands.
-const sceneReferenceUrl = new URL(
-  "../../assets/flunk-out-frenzy/reference-cabinet-scene.jpg",
-  import.meta.url,
-).href;
 
-// The physics board is 600x1200, but the surrounding cabinet frame is wider to
-// preserve a believable machine silhouette around the playfield.
-const CABINET_FRAME_ASPECT_RATIO = 0.76;
+// The physics board is 600x1200, but the surrounding cabinet frame is
+// intentionally wider so the shell reads as a full cabinet instead of a narrow
+// portrait slit on laptop/desktop viewports.
+const CABINET_FRAME_ASPECT_RATIO = 0.72;
 const DESKTOP_BREAKPOINT_PX = 940;
-const DESKTOP_SIDE_RAIL_RESERVE_PX = 336;
-const DESKTOP_BOTTOM_RESERVE_PX = 20;
+const DESKTOP_HORIZONTAL_MARGIN_PX = 24;
+const DESKTOP_BOTTOM_RESERVE_PX = 24;
 
 const gameHost = ref<GameHostApi | null>(null);
 const sceneElement = ref<HTMLElement | null>(null);
@@ -54,6 +49,9 @@ const hostFrame = ref<{
   width: null,
   height: null,
 });
+let sceneResizeObserver: ResizeObserver | null = null;
+let scheduledFrameReflowHandle: number | null = null;
+let deferredFrameReflowHandle: number | null = null;
 
 const featureFlagRows = computed(() => {
   if (!bootstrap.value) {
@@ -82,6 +80,18 @@ const sessionStatusLabel = computed(() => {
 
 const pauseLabel = computed(() => {
   return hud.value.status === "paused" ? "Fortsätt" : "Pausa";
+});
+
+const isGameplayFocusMode = computed(() => {
+  if (runtimeBootError.value) {
+    return false;
+  }
+
+  if (runtimeLoadState.value === "loading") {
+    return true;
+  }
+
+  return hud.value.status !== "ready";
 });
 
 const canPause = computed(() => {
@@ -206,17 +216,18 @@ function updateBoardFrame(): void {
   }
 
   const sceneStyles = window.getComputedStyle(scene);
+  const sceneRect = scene.getBoundingClientRect();
   const paddingX = parseFloat(sceneStyles.paddingLeft) + parseFloat(sceneStyles.paddingRight);
-  const paddingY = parseFloat(sceneStyles.paddingTop) + parseFloat(sceneStyles.paddingBottom);
 
   const availableWidth = Math.max(
-    scene.clientWidth - paddingX - DESKTOP_SIDE_RAIL_RESERVE_PX,
+    scene.clientWidth - paddingX - DESKTOP_HORIZONTAL_MARGIN_PX,
     320,
   );
-  const availableHeight = Math.max(
-    scene.clientHeight - paddingY - DESKTOP_BOTTOM_RESERVE_PX,
-    420,
+  const viewportHeightBudget = Math.max(
+    window.innerHeight - sceneRect.top - DESKTOP_BOTTOM_RESERVE_PX,
+    220,
   );
+  const availableHeight = viewportHeightBudget;
 
   const width = Math.floor(
     Math.min(availableWidth, availableHeight * CABINET_FRAME_ASPECT_RATIO),
@@ -226,13 +237,95 @@ function updateBoardFrame(): void {
   hostFrame.value = { width, height };
 }
 
+function clearScheduledBoardFrameUpdates(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (scheduledFrameReflowHandle !== null) {
+    window.cancelAnimationFrame(scheduledFrameReflowHandle);
+    scheduledFrameReflowHandle = null;
+  }
+
+  if (deferredFrameReflowHandle !== null) {
+    window.clearTimeout(deferredFrameReflowHandle);
+    deferredFrameReflowHandle = null;
+  }
+}
+
+function scheduleBoardFrameUpdate(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  clearScheduledBoardFrameUpdates();
+
+  scheduledFrameReflowHandle = window.requestAnimationFrame(() => {
+    scheduledFrameReflowHandle = null;
+    updateBoardFrame();
+
+    // Breakpoint/layout transitions can settle one paint later; run one more
+    // pass to avoid sticky shrunk playfield sizing after window resizes.
+    deferredFrameReflowHandle = window.setTimeout(() => {
+      deferredFrameReflowHandle = null;
+      updateBoardFrame();
+    }, 80);
+  });
+}
+
+function reconnectSceneResizeObserver(): void {
+  sceneResizeObserver?.disconnect();
+  sceneResizeObserver = null;
+
+  const scene = sceneElement.value;
+  if (!scene || typeof ResizeObserver === "undefined") {
+    return;
+  }
+
+  sceneResizeObserver = new ResizeObserver(() => {
+    scheduleBoardFrameUpdate();
+  });
+  sceneResizeObserver.observe(scene);
+}
+
 onMounted(() => {
-  updateBoardFrame();
-  window.addEventListener("resize", updateBoardFrame);
+  reconnectSceneResizeObserver();
+  scheduleBoardFrameUpdate();
+  window.addEventListener("resize", scheduleBoardFrameUpdate);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", updateBoardFrame);
+  window.removeEventListener("resize", scheduleBoardFrameUpdate);
+  clearScheduledBoardFrameUpdates();
+  sceneResizeObserver?.disconnect();
+  sceneResizeObserver = null;
+});
+
+watch(
+  () => bootstrap.value,
+  (nextBootstrap) => {
+    if (!nextBootstrap) {
+      return;
+    }
+
+    void nextTick(() => {
+      reconnectSceneResizeObserver();
+      scheduleBoardFrameUpdate();
+    });
+  },
+);
+
+watch(isGameplayFocusMode, () => {
+  void nextTick(() => {
+    scheduleBoardFrameUpdate();
+  });
+});
+
+watch(sceneElement, () => {
+  reconnectSceneResizeObserver();
+  void nextTick(() => {
+    scheduleBoardFrameUpdate();
+  });
 });
 </script>
 
@@ -285,7 +378,10 @@ onBeforeUnmount(() => {
       data-test="bootstrap-ready"
       class="fof-ready"
     >
-      <header class="fof-ready__intro">
+      <header
+        v-if="!isGameplayFocusMode"
+        class="fof-ready__intro"
+      >
         <p class="fof-marquee__eyebrow">
           Prototype alpha
         </p>
@@ -301,7 +397,6 @@ onBeforeUnmount(() => {
         ref="sceneElement"
         class="fof-machine-scene"
         :style="{
-          '--fof-scene-image': `url(${sceneReferenceUrl})`,
           '--fof-cabinet-aspect-ratio': String(CABINET_FRAME_ASPECT_RATIO),
         }"
       >
@@ -554,7 +649,7 @@ onBeforeUnmount(() => {
   z-index: 1;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 1rem;
+  gap: 0.45rem;
   min-height: 0;
   height: 100%;
 }
@@ -562,8 +657,8 @@ onBeforeUnmount(() => {
 .fof-ready__intro {
   display: grid;
   gap: 0.35rem;
-  width: min(38rem, 100%);
-  padding: 0.9rem 1rem 0;
+  width: min(34rem, 100%);
+  padding: 0.35rem 0.9rem 0;
 }
 
 .fof-runtime-error {
@@ -650,9 +745,11 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(12, 16, 14, 0.12), rgba(12, 16, 14, 0.58)),
-    linear-gradient(90deg, rgba(14, 18, 16, 0.68), rgba(14, 18, 16, 0.16) 24%, rgba(14, 18, 16, 0.16) 76%, rgba(14, 18, 16, 0.68)),
-    var(--fof-scene-image) center / cover no-repeat;
+    radial-gradient(circle at 50% 16%, rgba(109, 188, 136, 0.12), transparent 28%),
+    radial-gradient(circle at 22% 76%, rgba(255, 112, 163, 0.1), transparent 24%),
+    radial-gradient(circle at 80% 72%, rgba(108, 170, 255, 0.1), transparent 26%),
+    linear-gradient(180deg, rgba(12, 16, 14, 0.22), rgba(12, 16, 14, 0.74)),
+    linear-gradient(90deg, rgba(14, 18, 16, 0.68), rgba(14, 18, 16, 0.22) 24%, rgba(14, 18, 16, 0.22) 76%, rgba(14, 18, 16, 0.68));
 }
 
 .fof-machine-scene::after {
@@ -713,8 +810,8 @@ onBeforeUnmount(() => {
 
 .fof-machine-scene__host {
   width: min(
-    calc((100dvh - 9rem) * var(--fof-cabinet-aspect-ratio, 0.76)),
-    calc(100% - 2rem)
+    calc((100dvh - 6rem) * var(--fof-cabinet-aspect-ratio, 0.76)),
+    calc(100% - 1rem)
   );
   max-width: 100%;
   z-index: 1;
@@ -726,7 +823,7 @@ onBeforeUnmount(() => {
   position: absolute;
   bottom: clamp(0.95rem, 1.8vw, 1.4rem);
   z-index: 2;
-  width: min(10.5rem, 18vw);
+  width: min(8.7rem, 14vw);
 }
 
 .fof-status-cluster {
@@ -947,7 +1044,7 @@ onBeforeUnmount(() => {
 @media (max-width: 1180px) {
   .fof-status-cluster,
   .fof-service-cluster {
-    width: min(9rem, 20vw);
+    width: min(8rem, 19vw);
   }
 }
 

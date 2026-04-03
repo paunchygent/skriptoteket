@@ -151,6 +151,53 @@ describe("RuleEngine", () => {
     expect(thirdDrain.shouldRespawnBall).toBe(false);
   });
 
+  it("awards capture/eject/save points and clears armed captures on drain", () => {
+    const rules = new RuleEngine();
+
+    rules.startGame();
+
+    const progressStep = rules.handleMachineEvents([
+      { type: "ball-captured", tag: "capture/scoop-study", deviceKind: "hole" },
+      { type: "ball-ejected", tag: "capture/scoop-study", deviceKind: "hole" },
+      { type: "ball-saved", tag: "save/right-kickback", deviceKind: "kickback" },
+    ]);
+
+    expect(progressStep.snapshot.score).toBe(3_000);
+    expect(progressStep.ruleEvents).toEqual([
+      {
+        type: "capture-awarded",
+        tag: "capture/scoop-study",
+        deviceKind: "hole",
+        points: 1_000,
+      },
+      {
+        type: "eject-awarded",
+        tag: "capture/scoop-study",
+        deviceKind: "hole",
+        points: 750,
+      },
+      {
+        type: "save-awarded",
+        tag: "save/right-kickback",
+        deviceKind: "kickback",
+        points: 1_250,
+      },
+    ]);
+
+    const armedCapture = rules.handleMachineEvents([
+      { type: "ball-captured", tag: "capture/scoop-study", deviceKind: "hole" },
+    ]);
+    expect(armedCapture.snapshot.score).toBe(4_000);
+
+    rules.handleMachineEvents([{ type: "drain-enter", tag: "drain/main" }]);
+    const staleEject = rules.handleMachineEvents([
+      { type: "ball-ejected", tag: "capture/scoop-study", deviceKind: "hole" },
+    ]);
+
+    expect(staleEject.snapshot.score).toBe(4_000);
+    expect(staleEject.ruleEvents).toEqual([]);
+  });
+
   it("treats explicit launcher lifecycle events as semantic no-ops in the current rule slice", () => {
     const rules = new RuleEngine();
 

@@ -8,12 +8,13 @@
 
 import { BlurFilter, Container, Graphics } from "pixi.js";
 
-import type { TableRenderNodePlan } from "../table/pinballTablePlanTypes";
+import type { TableColliderPlan, TableRenderNodePlan } from "../table/pinballTablePlanTypes";
 import { PROTOTYPE_ALPHA_TABLE } from "../table/prototypeAlphaTable";
 
 const RENDER_LAYER_ORDER: Readonly<Record<string, number>> = Object.freeze({
   field: 10,
   lanes: 20,
+  "overhead-guides": 25,
   walls: 30,
   posts: 40,
   "bumper-halos": 50,
@@ -25,6 +26,7 @@ const RENDER_LAYER_ORDER: Readonly<Record<string, number>> = Object.freeze({
   drain: 110,
   debug: 999,
 });
+const SHOW_PHYSICS_COLLIDER_OVERLAY = import.meta.env.DEV;
 
 export function buildStaticBoardUnderlay(container: Container): void {
   const board = new Graphics();
@@ -68,6 +70,10 @@ export function buildStaticBoardUnderlay(container: Container): void {
     const graphic = new Graphics();
     drawRenderNode(graphic, node);
     container.addChild(graphic);
+  }
+
+  if (SHOW_PHYSICS_COLLIDER_OVERLAY) {
+    drawPhysicsColliderOverlay(container);
   }
 }
 
@@ -202,6 +208,14 @@ function resolvePolylineStyle(layer: string, thickness: number) {
         cap: "round" as const,
         join: "round" as const,
       };
+    case "overhead-guides":
+      return {
+        color: 0xa6d8ff,
+        alpha: 0.54,
+        width: Math.max(thickness * 0.5, 2.1),
+        cap: "round" as const,
+        join: "round" as const,
+      };
     default:
       return {
         color: 0xcfe9d7,
@@ -267,5 +281,75 @@ function resolveCircleStyle(layer: string): {
         strokeAlpha: 0.28,
         strokeWidth: 1.5,
       };
+  }
+}
+
+function drawPhysicsColliderOverlay(container: Container): void {
+  for (const collider of PROTOTYPE_ALPHA_TABLE.physics.colliders) {
+    if (collider.sensor) {
+      continue;
+    }
+
+    const graphic = new Graphics();
+    drawColliderShape(graphic, collider);
+    container.addChild(graphic);
+  }
+}
+
+function drawColliderShape(graphic: Graphics, collider: TableColliderPlan): void {
+  const style = {
+    color: 0xff5a9c,
+    alpha: 0.72,
+    width: 2.1,
+  } as const;
+
+  switch (collider.shape.kind) {
+    case "thick-segment": {
+      graphic.position.set(collider.translation.x, collider.translation.y);
+      graphic.rotation = collider.rotationRad;
+      graphic.moveTo(-collider.shape.halfLength, 0);
+      graphic.lineTo(collider.shape.halfLength, 0);
+      graphic.stroke({
+        color: style.color,
+        alpha: style.alpha,
+        width: collider.shape.radius * 2,
+        cap: "round",
+        join: "round",
+      });
+      graphic.moveTo(-collider.shape.halfLength, 0);
+      graphic.lineTo(collider.shape.halfLength, 0);
+      graphic.stroke({
+        color: 0xffffff,
+        alpha: 0.92,
+        width: 1.1,
+        cap: "round",
+        join: "round",
+      });
+      return;
+    }
+    case "circle": {
+      graphic.position.set(collider.translation.x, collider.translation.y);
+      graphic.circle(0, 0, collider.shape.radius);
+      graphic.stroke(style);
+      return;
+    }
+    case "cuboid": {
+      graphic.position.set(collider.translation.x, collider.translation.y);
+      graphic.rotation = collider.rotationRad;
+      graphic.rect(
+        -collider.shape.halfExtents.x,
+        -collider.shape.halfExtents.y,
+        collider.shape.halfExtents.x * 2,
+        collider.shape.halfExtents.y * 2,
+      );
+      graphic.stroke(style);
+      return;
+    }
+    case "convex-polygon":
+    case "triangle": {
+      graphic.poly([...collider.shape.vertices]);
+      graphic.stroke(style);
+      return;
+    }
   }
 }

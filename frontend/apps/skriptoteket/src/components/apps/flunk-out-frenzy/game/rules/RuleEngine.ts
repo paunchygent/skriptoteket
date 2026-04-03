@@ -15,6 +15,12 @@ import {
   resolveDrain,
 } from "./ballLifecycleState";
 import {
+  createInitialCaptureAwardsState,
+  handleCaptureAwardsMachineEvent,
+  resetCaptureAwardsForNextBall,
+  type CaptureAwardsMachineEvent,
+} from "./captureAwardsState";
+import {
   createInitialBonusJackpotState,
   currentBonusSnapshot,
   currentJackpotSnapshot,
@@ -43,6 +49,7 @@ const SCORE_VALUES = {
 export class RuleEngine {
   private scoreState = createInitialScoreState();
   private bonusJackpotState = createInitialBonusJackpotState();
+  private captureAwardsState = createInitialCaptureAwardsState();
   private ballLifecycleState = createInitialBallLifecycleState(
     PROTOTYPE_ALPHA_TABLE.ballsPerGame,
   );
@@ -50,6 +57,7 @@ export class RuleEngine {
   startGame(): RuleSnapshot {
     this.scoreState = createInitialScoreState();
     this.bonusJackpotState = createInitialBonusJackpotState();
+    this.captureAwardsState = createInitialCaptureAwardsState();
     this.ballLifecycleState = createInitialBallLifecycleState(
       PROTOTYPE_ALPHA_TABLE.ballsPerGame,
     );
@@ -98,10 +106,12 @@ export class RuleEngine {
         case "launcher-fed":
         case "launcher-charged":
         case "launcher-released":
+          this.handleBonusJackpotEvent(event, ruleEvents);
+          break;
         case "ball-captured":
         case "ball-ejected":
         case "ball-saved":
-          this.handleBonusJackpotEvent(event, ruleEvents);
+          this.handleCaptureAwardEvent(event, ruleEvents);
           break;
         case "drain-enter":
           shouldRespawnBall = this.handleDrain(ruleEvents);
@@ -149,9 +159,20 @@ export class RuleEngine {
     }
   }
 
+  private handleCaptureAwardEvent(
+    event: CaptureAwardsMachineEvent,
+    ruleEvents: RuleEvent[],
+  ): void {
+    const result = handleCaptureAwardsMachineEvent(this.captureAwardsState, event);
+    this.captureAwardsState = result.nextState;
+    this.scoreState = awardFlatPoints(this.scoreState, result.awardedScore);
+    ruleEvents.push(...result.ruleEvents);
+  }
+
   private handleDrain(ruleEvents: RuleEvent[]): boolean {
     const drainSettlement = settleBonusJackpotOnDrain(this.bonusJackpotState);
     this.bonusJackpotState = drainSettlement.nextState;
+    this.captureAwardsState = resetCaptureAwardsForNextBall(this.captureAwardsState);
     this.scoreState = awardFlatPoints(this.scoreState, drainSettlement.awardedScore);
     ruleEvents.push(...drainSettlement.ruleEvents);
 

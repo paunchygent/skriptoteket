@@ -7,7 +7,7 @@
  * table rather than a hybrid of donor and legacy Flunk-Out geometry.
  */
 
-import type { TablePoint } from "./tableDefinitionTypes";
+import type { TablePoint, TablePoint3D } from "./tableDefinitionTypes";
 import { v } from "./pinballTableMath";
 
 const DONOR_BOARD_WIDTH = 1081;
@@ -290,6 +290,124 @@ const WALL_34_POINTS = [
   [1000.0, 1438.0],
 ] as const;
 
+const WALL_018_POINTS = [
+  [949.00995, 266.17642],
+  [949.4456, 129.38327],
+  [1003.8749, 129.60924],
+  [1003.4484, 265.848],
+] as const;
+
+const WALL_019_POINTS = [
+  [943.99115, 247.19344],
+  [944.3592, 130.0],
+  [998.81055, 130.2222],
+  [998.4487, 247.23589],
+] as const;
+
+const WALL_010_POINTS = [
+  [952.82715, 1080.2274],
+  [983.1234, 1243.799],
+  [1006.4996, 1238.5991],
+  [976.2514, 1075.1033],
+] as const;
+
+const WALL_011_POINTS = [
+  [956.02704, 1267.6265],
+  [938.6296, 1363.9829],
+  [961.1782, 1368.8137],
+  [978.55865, 1272.3873],
+] as const;
+
+const WALL_024_POINTS = [
+  [843.38727, 1551.7461],
+  [841.78827, 1476.1539],
+  [838.902, 1555.9504],
+  [903.3405, 1556.5917],
+  [903.4306, 1477.0256],
+  [899.17554, 1551.7462],
+] as const;
+
+const WALL_APRON1_POINTS = [
+  [1081.0, 1920.5254],
+  [1032.1781, 1929.2754],
+  [1000.0, 1922.3857],
+  [1000.0, 1902.9609],
+] as const;
+
+const WALL_APRON2_POINTS = [
+  [1000.0, 1829.1067],
+  [1000.0, 1759.8445],
+  [976.23505, 1760.0652],
+] as const;
+
+const WALL_002_POINTS = [
+  [722.729, 216.52353],
+  [736.5052, 226.41463],
+  [702.225, 483.55542],
+  [696.3801, 487.87167],
+  [699.99817, 492.48013],
+  [746.89685, 456.16028],
+  [783.5492, 412.09113],
+  [805.99866, 367.5025],
+  [808.6855, 317.4794],
+  [793.6221, 269.6463],
+  [764.0724, 235.10744],
+  [735.0, 217.0],
+  [724.97766, 212.20518],
+] as const;
+
+const WALL_017_POINTS = [
+  [318.49396, 526.3152],
+  [334.28067, 571.67975],
+  [362.981, 679.81665],
+  [365.39453, 679.1051],
+  [335.57343, 571.268],
+  [321.91263, 525.2617],
+  [321.19647, 524.1929],
+  [319.81, 524.0166],
+  [318.6381, 524.9268],
+] as const;
+
+const RAMP_S001_POINTS = [
+  [1031.5, 270.0, 0.0],
+  [1031.5, 125.0, 0.0],
+] as const;
+
+const RAMP_S002_POINTS = [
+  [1031.5, 125.0, 0.0],
+  [1031.5, 110.099, 0.0],
+  [1027.9177, 86.870674, 0.0],
+  [1018.7783, 66.707726, 0.0],
+  [997.97107, 47.97677, 0.0],
+  [971.5704, 38.113785, 0.0],
+  [932.0838, 36.083355, 0.0],
+  [901.80316, 36.0, 0.0],
+] as const;
+
+const RAMP_S3_POINTS = [
+  [1031.5, 1575.0, 0.0],
+  [1031.4999, 1227.979, 2.14],
+  [1031.5, 813.1283, 0.0],
+  [1031.5, 508.25128, 30.0],
+  [1031.5, 270.0, 0.0],
+] as const;
+
+const RAMP_S4_POINTS = [
+  [901.7462, 36.18238, 0.0],
+  [606.1428, 36.0, 0.0],
+  [394.24762, 38.0, 0.0],
+  [372.88232, 42.556362, 0.0],
+  [345.28152, 55.037945, 0.0],
+  [325.63632, 81.6918, 0.0],
+  [319.71494, 112.028015, 0.0],
+  [329.68787, 148.58394, 0.0],
+  [355.14984, 171.76091, 0.0],
+  [386.30734, 181.01797, 0.0],
+  [419.5, 178.42093, 0.0],
+  [453.25488, 162.049, 0.0],
+  [484.43073, 145.14818, -20.0],
+] as const;
+
 export const PROTOTYPE_ALPHA_VPW_DONOR_SCALE = 600 / DONOR_BOARD_WIDTH;
 export const PROTOTYPE_ALPHA_VPW_DONOR_BOARD = Object.freeze({
   width: 600,
@@ -319,6 +437,28 @@ export const PROTOTYPE_ALPHA_VPW_DONOR_SOURCES = Object.freeze({
     ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall95.json",
   shooterLaneDivider:
     ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall34.json",
+  rightReceiveMouthOuter:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall018.json",
+  rightReceiveMouthInner:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall019.json",
+  shooterHandoffUpper:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall010.json",
+  shooterHandoffLower:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall011.json",
+  rightReturnThroatShield:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall024.json",
+  rightUpperInnerMetal:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall002.json",
+  leftUpperInnerMetal:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Wall017.json",
+  shooterWireVertical:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Ramp.RampS3.json",
+  shooterWireMouthConnector:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Ramp.RampS001.json",
+  shooterWireTopRight:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Ramp.RampS002.json",
+  shooterWireTopArch:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Ramp.RampS4.json",
   leftSling:
     ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.LeftSlingShot.json",
   rightSling:
@@ -341,8 +481,10 @@ export const PROTOTYPE_ALPHA_VPW_DONOR_SOURCES = Object.freeze({
     ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Trigger.sw16.json",
   returnGate:
     ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Gate.GateSW49.json",
-  rampGate:
-    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Gate.GateSW51.json",
+  apron1:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Apron1.json",
+  apron2:
+    ".artifacts/vpw-rom-example-table-extracted/ROM_Example_Table_VPW/gameitems/Wall.Apron2.json",
 });
 
 function donorPoint(x: number, y: number): TablePoint {
@@ -364,6 +506,91 @@ function donorPath(points: readonly (readonly [number, number])[]): readonly Tab
   return points.map(([x, y]) => donorPoint(x, y));
 }
 
+function donorPath3DWithLinearHeightProfile(
+  points: readonly (readonly [number, number])[],
+  heightBottom: number,
+  heightTop: number,
+): readonly TablePoint3D[] {
+  if (points.length === 0) {
+    return [];
+  }
+
+  const scaled = points.map(([x, y]) => donorPoint(x, y));
+  const cumulativeDistances: number[] = [0];
+  for (let index = 1; index < scaled.length; index += 1) {
+    const previous = scaled[index - 1];
+    const current = scaled[index];
+    const distance = Math.hypot(current.x - previous.x, current.y - previous.y);
+    cumulativeDistances[index] = cumulativeDistances[index - 1] + distance;
+  }
+
+  const totalDistance = cumulativeDistances[cumulativeDistances.length - 1];
+  const bottomZ = scaleDonorLength(heightBottom);
+  const topZ = scaleDonorLength(heightTop);
+
+  return scaled.map((point, index) => {
+    const t = totalDistance <= 0 ? 0 : cumulativeDistances[index] / totalDistance;
+    return {
+      x: point.x,
+      y: point.y,
+      z: roundTenth(bottomZ + (topZ - bottomZ) * t),
+    };
+  });
+}
+
+function path3DWithLinearHeightProfile(
+  path: readonly TablePoint[],
+  zStart: number,
+  zEnd: number,
+): readonly TablePoint3D[] {
+  if (path.length === 0) {
+    return [];
+  }
+
+  const cumulativeDistances: number[] = [0];
+  for (let index = 1; index < path.length; index += 1) {
+    const previous = path[index - 1];
+    const current = path[index];
+    const distance = Math.hypot(current.x - previous.x, current.y - previous.y);
+    cumulativeDistances[index] = cumulativeDistances[index - 1] + distance;
+  }
+
+  const totalDistance = cumulativeDistances[cumulativeDistances.length - 1];
+  return path.map((point, index) => {
+    const t = totalDistance <= 0 ? 0 : cumulativeDistances[index] / totalDistance;
+    return {
+      x: point.x,
+      y: point.y,
+      z: roundTenth(zStart + (zEnd - zStart) * t),
+    };
+  });
+}
+
+function mergePath3DSegments(
+  segments: readonly (readonly TablePoint3D[])[],
+): readonly TablePoint3D[] {
+  const merged: TablePoint3D[] = [];
+  for (const segment of segments) {
+    for (const point of segment) {
+      const previous = merged[merged.length - 1];
+      if (
+        previous
+        && Math.abs(previous.x - point.x) < 1e-6
+        && Math.abs(previous.y - point.y) < 1e-6
+        && Math.abs(previous.z - point.z) < 1e-6
+      ) {
+        continue;
+      }
+      merged.push(point);
+    }
+  }
+  return merged;
+}
+
+function planarPath(points: readonly (readonly [number, number, number])[]): readonly (readonly [number, number])[] {
+  return points.map(([x, y]) => [x, y] as const);
+}
+
 function closeDonorPath(points: readonly (readonly [number, number])[]): readonly TablePoint[] {
   const path = donorPath(points);
   if (path.length === 0) {
@@ -377,8 +604,29 @@ function roundTenth(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-export const VPW_OUTER_BOUNDARY_PATH = closeDonorPath(WALL_263_POINTS);
+export const VPW_OUTER_BOUNDARY_RENDER_PATH = closeDonorPath(WALL_263_POINTS);
+// Wall263 in VPW is a composite perimeter item: the left/top cabinet boundary
+// and a separate upper-right shooter descent live in the same drag-point list.
+// Keep physics ownership explicit by limiting "main" to the left/top cabinet
+// shell while launcher-right carriers are represented by dedicated donor walls
+// and guides (Wall34/Wall011/Wall010/Wall264 + Wall263 shoulder slice).
+export const VPW_OUTER_BOUNDARY_MAIN_PATH = donorPath(WALL_263_POINTS.slice(0, 45));
+// Keep only the upper curved descent from Wall263 as a physical guide.
+// The lower kinked continuation forms a deterministic pinch against the
+// launcher-return chain when represented as thick 2D segments, so it remains
+// render-only until the seam supports donor-faithful joined-edge geometry.
+export const VPW_OUTER_BOUNDARY_RIGHT_DESCENT_PATH = donorPath(WALL_263_POINTS.slice(45, 55));
+// Keep only the donor right-shoulder continuation that guides the lower edge
+// of the launcher return path toward Wall010.
+// Keep the full donor shoulder continuation from points 54..60 as a continuous
+// carrier so the shooter gradient stays closed all the way into the lower
+// handoff chain.
+// The lower Wall263 continuation toward Wall34 is represented by dedicated
+// donor wall solids (Wall011/Wall010 chain + apron carriers) and must not be
+// reintroduced as an extra physical rail in the shooter corridor.
+export const VPW_OUTER_BOUNDARY_SHOOTER_CORRIDOR_PATH = donorPath(WALL_263_POINTS.slice(54, 61));
 export const VPW_LEFT_UPPER_GUIDE_PATH = donorPath(WALL_268_POINTS);
+export const VPW_LEFT_UPPER_GUIDE_DESCENT_PATH = donorPath(WALL_268_POINTS.slice(26, 37).reverse());
 export const VPW_RIGHT_UPPER_GUIDE_PATH = donorPath(WALL_264_POINTS);
 export const VPW_LEFT_OUTLANE_PATH = donorPath(WALL_76_POINTS);
 export const VPW_LEFT_INLANE_PATH = donorPath(WALL_016_POINTS);
@@ -386,8 +634,54 @@ export const VPW_RIGHT_INLANE_PATH = donorPath(WALL_015_POINTS);
 export const VPW_RIGHT_OUTLANE_PATH = donorPath(WALL_234_POINTS);
 export const VPW_LEFT_DRAIN_PATH = donorPath(WALL_013_POINTS);
 export const VPW_RIGHT_DRAIN_PATH = donorPath(WALL_021_POINTS);
-export const VPW_SHOOTER_OUTER_PATH = closeDonorPath(WALL_95_POINTS);
-export const VPW_SHOOTER_DIVIDER_PATH = closeDonorPath(WALL_34_POINTS);
+export const VPW_SHOOTER_OUTER_POLYGON = donorPath(WALL_95_POINTS);
+export const VPW_SHOOTER_DIVIDER_POLYGON = donorPath(WALL_34_POINTS);
+export const VPW_RIGHT_RECEIVE_MOUTH_OUTER_POLYGON = donorPath(WALL_018_POINTS);
+export const VPW_RIGHT_RECEIVE_MOUTH_INNER_POLYGON = donorPath(WALL_019_POINTS);
+export const VPW_SHOOTER_HANDOFF_UPPER_POLYGON = donorPath(WALL_010_POINTS);
+export const VPW_SHOOTER_HANDOFF_LOWER_POLYGON = donorPath(WALL_011_POINTS);
+export const VPW_RIGHT_RETURN_THROAT_SHIELD_POLYGON = donorPath(WALL_024_POINTS);
+export const VPW_APRON_1_POLYGON = donorPath(WALL_APRON1_POINTS);
+export const VPW_APRON_2_POLYGON = donorPath(WALL_APRON2_POINTS);
+export const VPW_RIGHT_UPPER_INNER_METAL_PATH = donorPath(WALL_002_POINTS);
+export const VPW_LEFT_UPPER_INNER_METAL_PATH = donorPath(WALL_017_POINTS);
+
+export const VPW_SHOOTER_DIVIDER_PATH = VPW_SHOOTER_DIVIDER_POLYGON;
+export const VPW_SHOOTER_OUTER_INNER_EDGE = donorPath([
+  [1057.0, 22.5],
+  [1057.0, 1948.0],
+]);
+export const VPW_SHOOTER_LANE_LEFT_BOUNDARY_SEGMENTS = Object.freeze({
+  upperHandoff: donorPath([
+    [939.0524, 1035.5],
+    [976.2514, 1075.1033],
+  ]),
+  wall010: donorPath([
+    [976.2514, 1075.1033],
+    [1006.4996, 1238.5991],
+  ]),
+  wall010ToWall011: donorPath([
+    [1006.4996, 1238.5991],
+    [978.55865, 1272.3873],
+  ]),
+  wall011: donorPath([
+    [978.55865, 1272.3873],
+    [961.1782, 1368.8137],
+  ]),
+  wall011ToDivider: donorPath([
+    [961.1782, 1368.8137],
+    [1000.0, 1438.0],
+  ]),
+  divider: donorPath([
+    [1000.0, 1438.0],
+    [1000.0, 1760.0],
+  ]),
+  apronToPlunger: donorPath([
+    [1000.0, 1759.8445],
+    [1000.0, 1829.1067],
+    [1002.51404, 1851.5724],
+  ]),
+});
 
 export const VPW_LEFT_SLING_TRIANGLE = Object.freeze([
   donorPoint(316.74026, 1485.6082),
@@ -406,13 +700,6 @@ export const VPW_FLIPPER_GEOMETRY = Object.freeze({
   thickness: roundTenth(20 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
 });
 
-export const VPW_SHOOTER_LANE_BOUNDS = Object.freeze({
-  minX: roundTenth(976 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
-  maxX: roundTenth(1057 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
-  minY: roundTenth(22.5 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
-  maxY: roundTenth(1948 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
-});
-
 export const VPW_FLIPPER_PIVOTS = Object.freeze({
   left: donorPoint(405.96786, 1833.0863),
   right: donorPoint(724.0889, 1832.9792),
@@ -428,9 +715,100 @@ export const VPW_LOWER_SWITCH_CENTERS = Object.freeze({
 export const VPW_SHOOTER_SENSOR_CENTER = donorPoint(1028.5228, 1884.67);
 export const VPW_PLUNGER_ROLLOVER_CENTER = donorPoint(1032.7303, 1890.2291);
 
+export const VPW_METAL_RAIL_3D_SPECS = Object.freeze({
+  shooterVertical: Object.freeze({
+    donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireVertical,
+    path: donorPath3DWithLinearHeightProfile(planarPath(RAMP_S3_POINTS), 0, 180),
+    radius: scaleDonorLength(3.5),
+    heightBottom: scaleDonorLength(0),
+    heightTop: scaleDonorLength(180),
+  }),
+  shooterMouthConnector: Object.freeze({
+    donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireMouthConnector,
+    path: donorPath3DWithLinearHeightProfile(planarPath(RAMP_S001_POINTS), 180, 180),
+    radius: scaleDonorLength(3.5),
+    heightBottom: scaleDonorLength(180),
+    heightTop: scaleDonorLength(180),
+  }),
+  shooterTopRight: Object.freeze({
+    donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireTopRight,
+    path: donorPath3DWithLinearHeightProfile(planarPath(RAMP_S002_POINTS), 180, 180),
+    radius: scaleDonorLength(3.5),
+    heightBottom: scaleDonorLength(180),
+    heightTop: scaleDonorLength(180),
+  }),
+  shooterTopArch: Object.freeze({
+    donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireTopArch,
+    path: donorPath3DWithLinearHeightProfile(planarPath(RAMP_S4_POINTS), 180, 100),
+    radius: scaleDonorLength(3.5),
+    heightBottom: scaleDonorLength(100),
+    heightTop: scaleDonorLength(180),
+  }),
+});
+
+const VPW_LEFT_UPPER_GUIDE_DESCENT_PATH_3D = path3DWithLinearHeightProfile(
+  VPW_LEFT_UPPER_GUIDE_DESCENT_PATH,
+  scaleDonorLength(100),
+  scaleDonorLength(0),
+);
+
+export const VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_DONOR_SOURCES = Object.freeze([
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireVertical,
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireMouthConnector,
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireTopRight,
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterWireTopArch,
+] as const);
+
+export const VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_3D_PATH = mergePath3DSegments([
+  VPW_METAL_RAIL_3D_SPECS.shooterVertical.path,
+  VPW_METAL_RAIL_3D_SPECS.shooterMouthConnector.path,
+  VPW_METAL_RAIL_3D_SPECS.shooterTopRight.path,
+  VPW_METAL_RAIL_3D_SPECS.shooterTopArch.path,
+]);
+
+export const VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES = Object.freeze([
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.leftUpperGuide,
+] as const);
+
+export const VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_3D_PATH = mergePath3DSegments([
+  VPW_LEFT_UPPER_GUIDE_DESCENT_PATH_3D,
+]);
+
+export const VPW_FULL_BOARD_PATH_TARGET = Object.freeze({
+  perimeterAndLanes: Object.freeze({
+    outerBoundary: VPW_OUTER_BOUNDARY_RENDER_PATH,
+    leftUpperGuide: VPW_LEFT_UPPER_GUIDE_PATH,
+    rightUpperGuide: VPW_RIGHT_UPPER_GUIDE_PATH,
+    leftOutlane: VPW_LEFT_OUTLANE_PATH,
+    leftInlane: VPW_LEFT_INLANE_PATH,
+    rightInlane: VPW_RIGHT_INLANE_PATH,
+    rightOutlane: VPW_RIGHT_OUTLANE_PATH,
+    leftDrain: VPW_LEFT_DRAIN_PATH,
+    rightDrain: VPW_RIGHT_DRAIN_PATH,
+  }),
+  shooterAndReceiveChain: Object.freeze({
+    shooterOuter: VPW_SHOOTER_OUTER_POLYGON,
+    shooterDivider: VPW_SHOOTER_DIVIDER_POLYGON,
+    shooterHandoffUpper: VPW_SHOOTER_HANDOFF_UPPER_POLYGON,
+    shooterHandoffLower: VPW_SHOOTER_HANDOFF_LOWER_POLYGON,
+    rightReceiveOuter: VPW_RIGHT_RECEIVE_MOUTH_OUTER_POLYGON,
+    rightReceiveInner: VPW_RIGHT_RECEIVE_MOUTH_INNER_POLYGON,
+    apron1: VPW_APRON_1_POLYGON,
+    apron2: VPW_APRON_2_POLYGON,
+    wall263Shoulder: VPW_OUTER_BOUNDARY_SHOOTER_CORRIDOR_PATH,
+  }),
+  overheadMetalRails: Object.freeze({
+    shooterVertical: VPW_METAL_RAIL_3D_SPECS.shooterVertical.path,
+    shooterMouthConnector: VPW_METAL_RAIL_3D_SPECS.shooterMouthConnector.path,
+    shooterTopRight: VPW_METAL_RAIL_3D_SPECS.shooterTopRight.path,
+    shooterTopArch: VPW_METAL_RAIL_3D_SPECS.shooterTopArch.path,
+    rightUpperInnerMetal: VPW_RIGHT_UPPER_INNER_METAL_PATH,
+    leftUpperInnerMetal: VPW_LEFT_UPPER_INNER_METAL_PATH,
+  }),
+});
+
 export const VPW_GATE_CENTERS = Object.freeze({
   rightReturn: donorPoint(722.30853, 818.7679),
-  leftRamp: donorPoint(402.23004, 630.5573),
 });
 
 export const VPW_GATE_SPECS = Object.freeze({
@@ -439,12 +817,6 @@ export const VPW_GATE_SPECS = Object.freeze({
     width: roundTenth(100 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
     height: roundTenth(50 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
     rotationDeg: 14,
-  }),
-  leftRamp: Object.freeze({
-    center: donorPoint(402.23004, 630.5573),
-    width: roundTenth(100 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
-    height: roundTenth(50 * PROTOTYPE_ALPHA_VPW_DONOR_SCALE),
-    rotationDeg: -16.5,
   }),
 });
 
