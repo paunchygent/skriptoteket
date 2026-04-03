@@ -69,6 +69,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0208-flunk-out-frenzy-strike-ready-rest-pose-and-release-integration-fix.md`
 - Flunk-Out Frenzy end-to-end launch-to-drop telemetry contract:
   `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`
+- Flunk-Out Frenzy file size compliance and frontend module decomposition:
+  `docs/backlog/prs/pr-0210-flunk-out-frenzy-file-size-compliance-and-frontend-module-decomposition.md`
+- ST-32-04 guest snapshot contract + storage foundation:
+  `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -189,6 +193,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md`
 - Proposed public curated-app access review:
   `docs/backlog/reviews/review-epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md`
+- ST-32-04 Option A1 guest snapshot frontend hardening slice:
+  `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - Local password reset planning slice:
   `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
 - Home messaging + registration feedback + default bookmark slice:

@@ -5,6 +5,7 @@ title: "Flunk-Out Frenzy mechanics-port foundation"
 status: in_progress
 owners: "agents"
 created: 2026-04-01
+updated: 2026-04-03
 epic: "EPIC-25"
 dependencies: ["ST-25-02", "ADR-0073"]
 acceptance_criteria:
@@ -60,8 +61,14 @@ code, and the monolithic `control.cpp` architecture remain out of scope.
 7. [PR-0194: Flunk-Out Frenzy: ramps, gates, and field-zone semantics](../prs/pr-0194-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md)
 8. [PR-0195: Flunk-Out Frenzy: objective controllers and bank progression](../prs/pr-0195-flunk-out-frenzy-objective-controllers-and-bank-progression.md)
 
+### Tranche 3: Code quality and file size compliance
+
+9. [PR-0210: Flunk-Out Frenzy: file size compliance and frontend module decomposition](../prs/pr-0210-flunk-out-frenzy-file-size-compliance-and-frontend-module-decomposition.md)
+
 Dependency chain: `PR-0188 -> PR-0189 -> PR-0190 -> PR-0191 -> PR-0192 ->
-PR-0193 -> PR-0194 -> PR-0195`.
+PR-0193 -> PR-0194 -> PR-0195`. `PR-0210` can proceed in parallel with Tranche 2
+but must complete before any additional mechanics work that would further
+increase file sizes.
 
 ## Execution strategy
 

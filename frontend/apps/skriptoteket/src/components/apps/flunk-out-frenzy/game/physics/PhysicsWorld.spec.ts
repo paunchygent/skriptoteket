@@ -77,10 +77,92 @@ type LaunchProofCaseRecord = Readonly<{
   strike_classification: LaunchProofStrikeClassification;
 }>;
 
+type LaunchToDropPhase =
+  | "feed_rest"
+  | "charge_pull"
+  | "release_strike_window"
+  | "route_overhead"
+  | "route_endpoint_bridge"
+  | "route_descent"
+  | "handoff_to_board"
+  | "board_drop_preimpact"
+  | "board_drop_postimpact";
+
+type LaunchToDropTraceStepRecord = Readonly<{
+  step_index: number;
+  dt_ms: number;
+  phase: LaunchToDropPhase;
+  ball_owner: "launcher_chain" | "main_world" | "none";
+  ball_position: { x: number; y: number; z: number } | null;
+  ball_velocity: { x: number; y: number; z: number } | null;
+  plunger: {
+    currentY: number;
+    targetY: number;
+    chargeRatio: number | null;
+    phase: "idle" | "feeding" | "fed" | "charging" | "released" | "relaunch";
+  };
+  route: {
+    pendingReleaseChargeRatio: number | null;
+    activeRouteTag: string | null;
+    captureWindowMsRemaining: number;
+    routeProgressDistancePx: number;
+  };
+  route_capture: {
+    lastDecision: "none" | "accepted" | "rejected";
+    lastRejectReason: LaunchProofRouteRejectReason | null;
+  };
+  sensors: {
+    feedInside: boolean;
+    exitInside: boolean;
+    lastSw16ExitStep: number | null;
+  };
+  contact: {
+    plungerBallContactActive: boolean;
+    contactEnteredThisStep: boolean;
+    contactExitedThisStep: boolean;
+    separationPx: number | null;
+    overlapPx: number;
+    relativeVyAtContact: number | null;
+    lastContactAtStep: number | null;
+    impulseTransferMarker: number;
+  };
+  seam_transition: {
+    fromRouteTag: string;
+    toRouteTag: string;
+    xyDeltaPx: number;
+    zDeltaPx: number;
+  } | null;
+  events: MachineEvent[];
+  handoff_to_board_step: number | null;
+  first_board_collision_step: number | null;
+  board_collision_started_this_step: boolean;
+}>;
+
+type LaunchToDropTraceCaseRecord = Readonly<{
+  case_id: string;
+  hold_profile: LaunchProofHoldProfile;
+  dt_ms: number;
+  hold_steps: number;
+  relaunch_gap_steps: number;
+  observation_steps: number;
+  board_drop_observation_steps: number;
+  phase_order_observed: LaunchToDropPhase[];
+  sw16_exit_observed: boolean;
+  handoff_to_board_step: number | null;
+  first_board_collision_step: number | null;
+  peak_speed: number;
+  min_vy: number;
+  max_displacement_px: number;
+  strike_classification: LaunchProofStrikeClassification;
+  invariant_violations: string[];
+  trace_steps: LaunchToDropTraceStepRecord[];
+}>;
+
 const PR0206_DT_MS = 16;
 const PR0206_PRE_RELEASE_STABILITY_STEPS = 10;
 const PR0206_OBSERVATION_STEPS = 60;
 const PR0206_RELAUNCH_GAP_STEPS = 16;
+const PR0209_BOARD_DROP_OBSERVATION_STEPS = 300;
 const PR0206_PROOF_MATRIX_CASES: readonly LaunchProofCaseContract[] = [
   {
     caseId: "K-REST-STEADY",
@@ -357,6 +439,121 @@ describe("PhysicsWorld", () => {
       ]).toContain(record.strike_classification);
       expect("gate-passed" in record).toBe(false);
     }
+  });
+
+  it("records the PR-0209 launch-to-drop trace matrix artifact with deterministic phase contracts", async () => {
+    const gateTag = PROTOTYPE_ALPHA_TABLE.gates[0].tag;
+    const traceRecords: LaunchToDropTraceCaseRecord[] = [];
+    const invariantFailures: string[] = [];
+
+    for (const proofCase of PR0206_PROOF_MATRIX_CASES) {
+      traceRecords.push(await runLaunchToDropTraceCase(proofCase, gateTag));
+    }
+
+    expect(traceRecords.map((record) => record.case_id)).toEqual([
+      "K-REST-STEADY",
+      "K-SHORT-STEADY",
+      "K-MEDIUM-STEADY",
+      "K-FULL-STEADY",
+      "K-RELAUNCH-MEDIUM",
+    ]);
+    expect(traceRecords.map((record) => record.observation_steps)).toEqual(
+      Array.from({ length: traceRecords.length }, () => PR0206_OBSERVATION_STEPS),
+    );
+    expect(traceRecords.map((record) => record.board_drop_observation_steps)).toEqual(
+      Array.from({ length: traceRecords.length }, () => PR0209_BOARD_DROP_OBSERVATION_STEPS),
+    );
+    for (const record of traceRecords) {
+      if (record.trace_steps.length === 0) {
+        invariantFailures.push(`case=${record.case_id}: no trace steps`);
+        continue;
+      }
+      if (record.invariant_violations.length > 0) {
+        const sw16GateEventCount = record.trace_steps.reduce((count, step) => {
+          const stepSw16Count = step.events.filter((event) => {
+            return event.type === "gate-passed" && event.tag === gateTag;
+          }).length;
+          return count + stepSw16Count;
+        }, 0);
+        invariantFailures.push(
+          `case=${record.case_id}: ${record.invariant_violations.join(", ")} | `
+          + `sw16_exit_observed=${record.sw16_exit_observed} `
+          + `sw16_gate_events=${sw16GateEventCount} `
+          + `handoff_to_board_step=${record.handoff_to_board_step} `
+          + `first_board_collision_step=${record.first_board_collision_step} `
+          + `phase_order=[${record.phase_order_observed.join(" -> ")}]`,
+        );
+      }
+      if (record.phase_order_observed.length === 0) {
+        invariantFailures.push(`case=${record.case_id}: empty phase order`);
+      }
+    }
+
+    const artifactPayload = buildLaunchToDropTraceArtifactPayload(traceRecords);
+    await writeLaunchToDropTraceArtifact(artifactPayload);
+
+    if (invariantFailures.length > 0) {
+      throw new Error(
+        `PR-0209 invariant failures -> ${invariantFailures.join("; ")}`,
+      );
+    }
+
+    const mediumRecord = traceRecords.find((record) => record.case_id === "K-MEDIUM-STEADY");
+    const fullRecord = traceRecords.find((record) => record.case_id === "K-FULL-STEADY");
+    const relaunchRecord = traceRecords.find((record) => record.case_id === "K-RELAUNCH-MEDIUM");
+    const restRecord = traceRecords.find((record) => record.case_id === "K-REST-STEADY");
+    if (!mediumRecord || !fullRecord || !relaunchRecord || !restRecord) {
+      throw new Error("Missing one or more PR-0209 launch trace matrix cases.");
+    }
+    expect(mediumRecord.phase_order_observed).toEqual(
+      expect.arrayContaining([
+        "route_overhead",
+        "route_endpoint_bridge",
+        "route_descent",
+        "handoff_to_board",
+        "board_drop_preimpact",
+      ]),
+    );
+    expect(fullRecord.phase_order_observed).toEqual(
+      expect.arrayContaining([
+        "route_overhead",
+        "route_endpoint_bridge",
+        "route_descent",
+        "handoff_to_board",
+        "board_drop_preimpact",
+      ]),
+    );
+    expect(relaunchRecord.phase_order_observed).toEqual(
+      expect.arrayContaining([
+        "route_overhead",
+        "route_endpoint_bridge",
+        "route_descent",
+        "handoff_to_board",
+        "board_drop_preimpact",
+      ]),
+    );
+    expect(mediumRecord.sw16_exit_observed).toBe(true);
+    expect(fullRecord.sw16_exit_observed).toBe(true);
+    expect(relaunchRecord.sw16_exit_observed).toBe(true);
+    expect(mediumRecord.handoff_to_board_step).not.toBeNull();
+    expect(fullRecord.handoff_to_board_step).not.toBeNull();
+    expect(relaunchRecord.handoff_to_board_step).not.toBeNull();
+    expect(fullRecord.first_board_collision_step).not.toBeNull();
+    expect(restRecord.sw16_exit_observed).toBe(false);
+    expect(restRecord.handoff_to_board_step).toBeNull();
+    expect(restRecord.first_board_collision_step).toBeNull();
+
+    expect(artifactPayload).toEqual(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          generated_at_utc: expect.any(String),
+          repo_branch: "local",
+          engine_version_marker: "pr-0209-launch-to-drop-trace",
+        }),
+        matrix_summaries: expect.any(Array),
+        traces: expect.any(Object),
+      }),
+    );
   });
 
   it("emits explicit launcher feed and charged events from the launcher state machine", async () => {
@@ -1013,6 +1210,302 @@ async function runLaunchProofCase(
   } finally {
     world.dispose();
   }
+}
+
+async function runLaunchToDropTraceCase(
+  proofCase: LaunchProofCaseContract,
+  gateTag: string,
+): Promise<LaunchToDropTraceCaseRecord> {
+  const world = await PhysicsWorld.create();
+
+  try {
+    world.spawnBall();
+    collectEventsUntil(world, 40, (events) => {
+      return events.some((event) => event.type === "launcher-fed");
+    });
+
+    const restSnapshot = world.currentSnapshot();
+    const restBall = restSnapshot.ball;
+    if (!restBall) {
+      throw new Error(`Missing rest ball snapshot for trace case "${proofCase.caseId}".`);
+    }
+
+    const traceSteps: LaunchToDropTraceStepRecord[] = [];
+    let maxDisplacement = 0;
+    let minVy = Number.POSITIVE_INFINITY;
+    let peakSpeed = 0;
+    let routeCaptureDecision: LaunchProofRouteCaptureDecision = "none";
+    let maxOverlapPx = 0;
+    let minRelativeVyAtContact = Number.POSITIVE_INFINITY;
+    let impulseTransferMarker = 0;
+
+    const stepAndCollectTrace = (): void => {
+      world.step(PR0206_DT_MS);
+      const snapshot = world.currentSnapshot();
+      const ball = snapshot.ball;
+      if (ball) {
+        maxDisplacement = Math.max(
+          maxDisplacement,
+          Math.hypot(ball.x - restBall.x, ball.y - restBall.y),
+        );
+      }
+
+      const telemetry = snapshot.launcherTelemetry;
+      if (telemetry) {
+        routeCaptureDecision = normalizeRouteCaptureDecision(
+          telemetry.routeCapture.lastDecision ?? routeCaptureDecision,
+        );
+        maxOverlapPx = Math.max(maxOverlapPx, telemetry.contact.overlapPx);
+        const relativeVy = telemetry.contact.relativeVyAtContact;
+        if (Number.isFinite(relativeVy)) {
+          minRelativeVyAtContact = Math.min(
+            minRelativeVyAtContact,
+            relativeVy ?? minRelativeVyAtContact,
+          );
+        }
+        impulseTransferMarker = Math.max(
+          impulseTransferMarker,
+          telemetry.contact.impulseTransferMarker,
+        );
+      }
+
+      const traceStep = snapshot.launchTraceStep;
+      if (traceStep) {
+        const vy = traceStep.ballVelocity?.y;
+        if (Number.isFinite(vy)) {
+          minVy = Math.min(minVy, vy ?? minVy);
+        }
+        const speed = traceStep.ballVelocity
+          ? Math.hypot(traceStep.ballVelocity.x, traceStep.ballVelocity.y, traceStep.ballVelocity.z)
+          : 0;
+        peakSpeed = Math.max(peakSpeed, speed);
+        traceSteps.push({
+          step_index: traceStep.stepIndex,
+          dt_ms: traceStep.dtMs,
+          phase: traceStep.phase as LaunchToDropPhase,
+          ball_owner: traceStep.ballOwner,
+          ball_position: traceStep.ballPosition,
+          ball_velocity: traceStep.ballVelocity,
+          plunger: traceStep.plunger,
+          route: traceStep.route,
+          route_capture: {
+            lastDecision: traceStep.routeCapture.lastDecision,
+            lastRejectReason: normalizeRouteCaptureReason(
+              traceStep.routeCapture.lastRejectReason,
+            ),
+          },
+          sensors: traceStep.sensors,
+          contact: traceStep.contact,
+          seam_transition: traceStep.seamTransition,
+          events: traceStep.events,
+          handoff_to_board_step: traceStep.handoffToBoardStep,
+          first_board_collision_step: traceStep.firstBoardCollisionStep,
+          board_collision_started_this_step: traceStep.boardCollisionStartedThisStep,
+        });
+      }
+    };
+
+    if (proofCase.holdProfile === "rest") {
+      for (let index = 0; index < PR0206_PRE_RELEASE_STABILITY_STEPS; index += 1) {
+        stepAndCollectTrace();
+      }
+    } else {
+      world.applyCommand({ type: "launch", pressed: true });
+      for (let index = 0; index < proofCase.holdSteps; index += 1) {
+        stepAndCollectTrace();
+      }
+      world.applyCommand({ type: "launch", pressed: false });
+      stepAndCollectTrace();
+
+      if (proofCase.holdProfile === "relaunch") {
+        for (let index = 0; index < PR0206_RELAUNCH_GAP_STEPS; index += 1) {
+          stepAndCollectTrace();
+        }
+        const secondHoldSteps = proofCase.relaunchSecondHoldSteps ?? proofCase.holdSteps;
+        world.applyCommand({ type: "launch", pressed: true });
+        for (let index = 0; index < secondHoldSteps; index += 1) {
+          stepAndCollectTrace();
+        }
+        world.applyCommand({ type: "launch", pressed: false });
+        stepAndCollectTrace();
+      }
+    }
+
+    const totalObservationSteps = PR0206_OBSERVATION_STEPS + PR0209_BOARD_DROP_OBSERVATION_STEPS;
+    for (let index = 0; index < totalObservationSteps; index += 1) {
+      stepAndCollectTrace();
+    }
+
+    const normalizedMinVy = Number.isFinite(minVy) ? minVy : 0;
+    const normalizedMinRelativeVyAtContact = Number.isFinite(minRelativeVyAtContact)
+      ? minRelativeVyAtContact
+      : null;
+    const strikeClassification = classifyStrikeFromContact({
+      maxOverlapPx,
+      minRelativeVyAtContact: normalizedMinRelativeVyAtContact,
+      impulseTransferMarker,
+      routeCaptureDecision,
+    });
+    const phaseOrderObserved = distinctPhases(traceSteps);
+    const sw16ExitObserved = traceSteps.some((step) => {
+      return step.events.some((event) => event.type === "gate-passed" && event.tag === gateTag);
+    });
+    const handoffToBoardStep = firstDefinedStep(traceSteps, "handoff_to_board_step");
+    const firstBoardCollisionStep = firstDefinedStep(traceSteps, "first_board_collision_step");
+    const invariantViolations = evaluateTraceCaseInvariants({
+      proofCase,
+      phaseOrderObserved,
+      sw16ExitObserved,
+      handoffToBoardStep,
+      firstBoardCollisionStep,
+      traceSteps,
+    });
+
+    return {
+      case_id: proofCase.caseId,
+      hold_profile: proofCase.holdProfile,
+      dt_ms: PR0206_DT_MS,
+      hold_steps: proofCase.holdSteps,
+      relaunch_gap_steps: PR0206_RELAUNCH_GAP_STEPS,
+      observation_steps: PR0206_OBSERVATION_STEPS,
+      board_drop_observation_steps: PR0209_BOARD_DROP_OBSERVATION_STEPS,
+      phase_order_observed: phaseOrderObserved,
+      sw16_exit_observed: sw16ExitObserved,
+      handoff_to_board_step: handoffToBoardStep,
+      first_board_collision_step: firstBoardCollisionStep,
+      peak_speed: peakSpeed,
+      min_vy: normalizedMinVy,
+      max_displacement_px: maxDisplacement,
+      strike_classification: strikeClassification,
+      invariant_violations: invariantViolations,
+      trace_steps: traceSteps,
+    };
+  } finally {
+    world.dispose();
+  }
+}
+
+function distinctPhases(traceSteps: readonly LaunchToDropTraceStepRecord[]): LaunchToDropPhase[] {
+  const phases: LaunchToDropPhase[] = [];
+  for (const step of traceSteps) {
+    if (phases.includes(step.phase)) {
+      continue;
+    }
+    phases.push(step.phase);
+  }
+  return phases;
+}
+
+function firstDefinedStep(
+  traceSteps: readonly LaunchToDropTraceStepRecord[],
+  key: "handoff_to_board_step" | "first_board_collision_step",
+): number | null {
+  for (const step of traceSteps) {
+    const value = step[key];
+    if (value !== null) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function evaluateTraceCaseInvariants(args: {
+  proofCase: LaunchProofCaseContract;
+  phaseOrderObserved: readonly LaunchToDropPhase[];
+  sw16ExitObserved: boolean;
+  handoffToBoardStep: number | null;
+  firstBoardCollisionStep: number | null;
+  traceSteps: readonly LaunchToDropTraceStepRecord[];
+}): string[] {
+  const violations: string[] = [];
+  const isQualifyingCase = args.proofCase.holdProfile === "medium"
+    || args.proofCase.holdProfile === "full"
+    || args.proofCase.holdProfile === "relaunch";
+
+  if (isQualifyingCase) {
+    const requiredPhases: readonly LaunchToDropPhase[] = [
+      "route_overhead",
+      "route_endpoint_bridge",
+      "route_descent",
+      "handoff_to_board",
+      "board_drop_preimpact",
+    ];
+    for (const phase of requiredPhases) {
+      if (!args.phaseOrderObserved.includes(phase)) {
+        violations.push(`missing_phase:${phase}`);
+      }
+    }
+    if (!args.sw16ExitObserved) {
+      violations.push("missing_sw16_exit");
+    }
+    if (args.handoffToBoardStep === null) {
+      violations.push("missing_handoff_to_board_step");
+    }
+  }
+
+  if (args.proofCase.holdProfile === "full" && args.firstBoardCollisionStep === null) {
+    violations.push("missing_first_board_collision_step_for_full_case");
+  }
+
+  if (args.proofCase.holdProfile === "rest") {
+    if (args.sw16ExitObserved) {
+      violations.push("rest_case_unexpected_sw16_exit");
+    }
+    if (args.handoffToBoardStep !== null) {
+      violations.push("rest_case_unexpected_handoff");
+    }
+    if (args.firstBoardCollisionStep !== null) {
+      violations.push("rest_case_unexpected_board_collision");
+    }
+  }
+
+  if (args.firstBoardCollisionStep !== null) {
+    if (args.handoffToBoardStep === null) {
+      violations.push("board_collision_without_handoff");
+    } else if (args.firstBoardCollisionStep <= args.handoffToBoardStep) {
+      violations.push("board_collision_not_post_handoff");
+    }
+  }
+
+  for (const step of args.traceSteps) {
+    if (step.first_board_collision_step !== null && step.handoff_to_board_step === null) {
+      violations.push("trace_step_board_collision_without_handoff_marker");
+      break;
+    }
+  }
+
+  return violations;
+}
+
+function buildLaunchToDropTraceArtifactPayload(records: readonly LaunchToDropTraceCaseRecord[]) {
+  return {
+    metadata: {
+      generated_at_utc: new Date().toISOString(),
+      repo_branch: "local",
+      engine_version_marker: "pr-0209-launch-to-drop-trace",
+    },
+    matrix_summaries: records.map((record) => {
+      const { trace_steps: _trace_steps, ...summary } = record;
+      return summary;
+    }),
+    traces: Object.fromEntries(records.map((record) => [record.case_id, record.trace_steps])),
+  };
+}
+
+async function writeLaunchToDropTraceArtifact(
+  payload: ReturnType<typeof buildLaunchToDropTraceArtifactPayload>,
+): Promise<void> {
+  const loadFsPromises = Function(
+    "return import('node:fs/promises')",
+  ) as () => Promise<unknown>;
+  const fsPromises = await loadFsPromises() as {
+    mkdir(path: string, options?: { recursive?: boolean }): Promise<void>;
+    writeFile(path: string, data: string, encoding: "utf-8"): Promise<void>;
+  };
+  const artifactDir = ".artifacts/flunk-out-frenzy-launch-to-drop";
+  const artifactPath = `${artifactDir}/launch-to-drop-trace-matrix.json`;
+  await fsPromises.mkdir(artifactDir, { recursive: true });
+  await fsPromises.writeFile(artifactPath, `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
 }
 
 function collectEventsForSteps(world: PhysicsWorldType, steps: number): MachineEvent[] {

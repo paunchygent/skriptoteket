@@ -12,6 +12,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { loadGameRuntime } from "./game/core/loadGameRuntime";
 import {
   createInitialHudSnapshot,
+  type RuntimeCommand,
   type GameLauncherDebugSnapshot,
 } from "./game/core/runtimeTypes";
 import { KeyboardInputController } from "./game/input/KeyboardInputController";
@@ -54,6 +55,8 @@ interface FlunkOutFrenzyDebugHandle {
   injectMachineEvents(events: MachineEvent[]): void;
   hud(): GameHudSnapshot;
   launcherTelemetry(): GameLauncherDebugSnapshot | null;
+  enqueueCommand(command: RuntimeCommand): void;
+  restartRuntime(): void;
 }
 
 declare global {
@@ -130,6 +133,12 @@ async function ensureRuntimeReady(): Promise<GameRuntimeLike | null> {
           },
           launcherTelemetry() {
             return createdRuntime.debugLauncherTelemetry?.() ?? null;
+          },
+          enqueueCommand(command: RuntimeCommand) {
+            createdRuntime.enqueueCommand(command);
+          },
+          restartRuntime() {
+            createdRuntime.restart();
           },
         };
       }

@@ -49,6 +49,7 @@ Primary implementation scope:
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/GameRuntime.ts`
+- `scripts/playwright_flunk_out_frenzy_launch_trace_check.py` (new live-proof artifact script)
 
 Proof/contract scope:
 
@@ -116,6 +117,30 @@ Each case summary must include:
 - `strike_classification` (`no_effective_strike|post_strike_route_rejection|strike_and_route_accepted`)
 - `invariant_violations` (array; empty when pass)
 
+### 4. Exact phase predicates (must be typed and deterministic)
+
+Phase transitions must be derived from typed source-of-truth fields, not ad hoc inference:
+
+- `handoff_to_board_step`:
+  - first step where `ball_owner` transitions from `launcher_chain` to `main_world`
+  - transition must be recorded from the `PhysicsWorld` board-handoff seam (`releaseToBoard` commit path)
+  - `handoff_to_board_step` is `null` if no such transition occurs within the case observation budget
+
+- `first_board_collision_step`:
+  - first post-handoff step where a new typed telemetry marker confirms ball contact with a non-sensor board collider in the main world
+  - launcher-chain wall/guide contacts and sensor transitions must not count
+  - `first_board_collision_step` is `null` if no qualifying contact occurs within board-drop observation budget
+
+- `board_drop_preimpact`:
+  - steps after `handoff_to_board_step` and strictly before `first_board_collision_step`
+
+- `board_drop_postimpact`:
+  - steps at and after `first_board_collision_step`
+
+Focused specs must assert:
+- `first_board_collision_step === null` before handoff
+- launcher-chain contacts do not classify as board-drop impact
+
 ## Deterministic matrix contract
 
 Use unchanged PR-0206 matrix controls:
@@ -123,7 +148,8 @@ Use unchanged PR-0206 matrix controls:
 - `dtMs=16`
 - `holdSteps=0/8/26/56` + relaunch second release profile
 - `relaunchGapSteps=16`
-- `observationSteps=60` (launcher proof) and additional board-drop window as documented in test
+- `observationSteps=60` (launcher proof window)
+- `boardDropObservationSteps=300` (fixed additional board-drop window)
 
 Required cases:
 
@@ -134,6 +160,31 @@ Required cases:
 - `K-RELAUNCH-MEDIUM`
 
 No threshold, case-set, or schema relaxations allowed.
+
+Frozen per-case obligations:
+
+- `K-REST-STEADY`:
+  - qualifying for full route/drop proof: `no`
+  - required terminal expectations: no route chain required, `sw16_exit_observed=false`, `handoff_to_board_step=null`, `first_board_collision_step=null`
+
+- `K-SHORT-STEADY`:
+  - qualifying for full route/drop proof: `no`
+  - required terminal expectations: route/drop phases not required, `handoff_to_board_step` and `first_board_collision_step` may remain `null`
+
+- `K-MEDIUM-STEADY`:
+  - qualifying for full route/drop proof: `yes`
+  - required phase order includes: `route_overhead -> route_endpoint_bridge -> route_descent -> handoff_to_board -> board_drop_preimpact`
+  - required outcomes: `sw16_exit_observed=true`, non-null `handoff_to_board_step`; `first_board_collision_step` may be non-null within board-drop budget
+
+- `K-FULL-STEADY`:
+  - qualifying for full route/drop proof: `yes`
+  - required phase order includes: `route_overhead -> route_endpoint_bridge -> route_descent -> handoff_to_board -> board_drop_preimpact`
+  - required outcomes: `sw16_exit_observed=true`, non-null `handoff_to_board_step`, non-null `first_board_collision_step` within board-drop budget
+
+- `K-RELAUNCH-MEDIUM`:
+  - qualifying for full route/drop proof: `yes`
+  - required phase order includes full route/drop path for the second release window
+  - required outcomes: at least one valid handoff/drop chain for relaunch phase, `sw16_exit_observed=true`
 
 ## Artifact contract
 
@@ -192,8 +243,13 @@ Forbidden artifact behavior:
 
 - URL:
   - `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`
-- Run route check and preserve artifacts:
-  - `pdm run python -m scripts.playwright_flunk_out_frenzy_route_check --base-url http://127.0.0.1:5173`
+- Run executable telemetry-proof check and preserve artifacts:
+  - `pdm run python -m scripts.playwright_flunk_out_frenzy_launch_trace_check --base-url http://127.0.0.1:5173 --artifact-dir .artifacts/flunk-out-frenzy-launch-to-drop`
+- Required live-proof artifact fields (machine-readable JSON):
+  - `phase_order_observed`
+  - `sw16_exit_observed`
+  - `handoff_to_board_step`
+  - `first_board_collision_step`
 - Record in `.agents/handoff.md`:
   - exact command
   - artifact folder paths

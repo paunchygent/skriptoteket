@@ -14,6 +14,7 @@ import type {
   LauncherRouteCaptureDecision,
   LauncherRouteCaptureRejectReason,
   MachineEvent,
+  PhysicsLauncherSeamTransitionSnapshot,
   PhysicsLauncherTelemetrySnapshot,
 } from "./physicsTypes";
 import { isPointInTriggerShape } from "./plungerLaneState";
@@ -23,6 +24,7 @@ import type {
   TableLauncherTravelRoute3DDefinition,
   TablePoint,
   TablePoint3D,
+  TableTriggerShapeDefinition,
 } from "../table/tableDefinitionTypes";
 import { magnitude, midpoint, segmentAngle } from "../table/pinballTableMath";
 
@@ -74,6 +76,7 @@ export class LauncherChain3D {
   private boardHandoffArmed = false;
   private activeTravelRoute: ActiveTravelRoute | null = null;
   private pendingReleaseChargeRatio: number | null = null;
+  private pendingReleaseNeedsSw16Exit = false;
   private routeCaptureWindowMsRemaining = 0;
   private stepCounter = 0;
   private feedInside = false;
@@ -91,6 +94,7 @@ export class LauncherChain3D {
   private lastContactAtStep: number | null = null;
   private impulseTransferMarker = 0;
   private releaseIntegrationWindowMsRemaining = 0;
+  private seamTransition: PhysicsLauncherSeamTransitionSnapshot | null = null;
 
   constructor(
     private readonly launcher: TableLauncherDefinition,
@@ -145,6 +149,7 @@ export class LauncherChain3D {
     this.boardHandoffArmed = false;
     this.activeTravelRoute = null;
     this.pendingReleaseChargeRatio = null;
+    this.pendingReleaseNeedsSw16Exit = false;
     this.routeCaptureWindowMsRemaining = 0;
     this.lastRouteCaptureDecision = "none";
     this.lastRouteCaptureRejectReason = null;
@@ -157,6 +162,7 @@ export class LauncherChain3D {
     this.lastContactAtStep = null;
     this.impulseTransferMarker = 0;
     this.releaseIntegrationWindowMsRemaining = 0;
+    this.seamTransition = null;
   }
 
   removeBall(): void {
@@ -170,6 +176,7 @@ export class LauncherChain3D {
     this.boardHandoffArmed = false;
     this.activeTravelRoute = null;
     this.pendingReleaseChargeRatio = null;
+    this.pendingReleaseNeedsSw16Exit = false;
     this.routeCaptureWindowMsRemaining = 0;
     this.feedInside = false;
     this.stepCounter = 0;
@@ -184,6 +191,7 @@ export class LauncherChain3D {
     this.lastContactAtStep = null;
     this.impulseTransferMarker = 0;
     this.releaseIntegrationWindowMsRemaining = 0;
+    this.seamTransition = null;
   }
 
   currentSnapshot(): LauncherChainBallSnapshot | null {
@@ -233,6 +241,7 @@ export class LauncherChain3D {
         pendingReleaseChargeRatio: this.pendingReleaseChargeRatio,
         activeRouteTag: this.activeTravelRoute?.route.tag ?? null,
         captureWindowMsRemaining: this.routeCaptureWindowMsRemaining,
+        routeProgressDistancePx: this.activeTravelRoute?.distance ?? 0,
       },
       routeCapture: {
         lastDecision: this.lastRouteCaptureDecision,
@@ -253,6 +262,7 @@ export class LauncherChain3D {
         lastContactAtStep: this.lastContactAtStep,
         impulseTransferMarker: this.impulseTransferMarker,
       },
+      seamTransition: this.seamTransition,
     };
   }
 
@@ -272,15 +282,42 @@ export class LauncherChain3D {
     this.overlapPx = 0;
     this.relativeVyAtContact = null;
     this.impulseTransferMarker = 0;
+    this.seamTransition = null;
     if (releaseChargeRatio !== null) {
       this.pendingReleaseChargeRatio = releaseChargeRatio;
+      this.pendingReleaseNeedsSw16Exit = true;
       this.boardHandoffArmed = false;
       this.routeCaptureWindowMsRemaining = RELEASE_ROUTE_CAPTURE_WINDOW_MS;
       this.lastRouteCaptureDecision = "none";
       this.lastRouteCaptureRejectReason = null;
       this.releaseIntegrationWindowMsRemaining = this.computeReleaseIntegrationWindowMs();
     }
+    const preIntegrationPosition = this.currentBallPosition();
     this.stepWorldWithReleaseIntegration(dtMs, chargeRatio);
+    const postIntegrationPosition = this.currentBallPosition();
+    this.feedInside = this.isInsideFeedSensor();
+    const wasInsideExit = this.exitInside;
+    const isInsideExit = this.isInsideExitSensor();
+    const hasSweptExitCrossing = this.didCrossExitSensorDuringStep(
+      preIntegrationPosition,
+      postIntegrationPosition,
+    );
+    const shouldEmitExit = this.isExitCrossingUpward(
+      preIntegrationPosition,
+      postIntegrationPosition,
+    ) && (
+      (wasInsideExit && !isInsideExit)
+      || (!wasInsideExit && !isInsideExit && hasSweptExitCrossing)
+    );
+    this.exitInside = isInsideExit;
+
+    if (shouldEmitExit) {
+      machineEvents.push({ type: "gate-passed", tag: "gate/launch-lane-exit" });
+      this.boardHandoffArmed = true;
+      this.lastSw16ExitStep = this.stepCounter;
+      this.pendingReleaseNeedsSw16Exit = false;
+    }
+
     this.tryEnterReleaseTravelRoute();
     if (this.pendingReleaseChargeRatio !== null && !this.activeTravelRoute) {
       this.routeCaptureWindowMsRemaining = Math.max(
@@ -289,6 +326,7 @@ export class LauncherChain3D {
       );
       if (this.routeCaptureWindowMsRemaining === 0) {
         this.pendingReleaseChargeRatio = null;
+        this.pendingReleaseNeedsSw16Exit = false;
         this.markRouteCaptureRejected("window_expired");
       }
     }
@@ -296,16 +334,6 @@ export class LauncherChain3D {
     const routeHandoff = this.activeTravelRoute ? this.advanceTravelRoute(dtMs) : null;
     if (this.activeTravelRoute) {
       this.boardHandoffArmed = false;
-    }
-    this.feedInside = this.isInsideFeedSensor();
-    const wasInsideExit = this.exitInside;
-    const isInsideExit = this.isInsideExitSensor();
-    this.exitInside = isInsideExit;
-
-    if (wasInsideExit && !isInsideExit) {
-      machineEvents.push({ type: "gate-passed", tag: "gate/launch-lane-exit" });
-      this.boardHandoffArmed = true;
-      this.lastSw16ExitStep = this.stepCounter;
     }
 
     if (this.boardHandoffArmed && !this.activeTravelRoute && this.hasClearedReleasePlane()) {
@@ -480,6 +508,7 @@ export class LauncherChain3D {
     const travelRoute = this.resolveTravelRoute(chargeRatio);
     if (!travelRoute) {
       this.pendingReleaseChargeRatio = null;
+      this.pendingReleaseNeedsSw16Exit = false;
        this.markRouteCaptureRejected("no_route");
       return;
     }
@@ -503,6 +532,7 @@ export class LauncherChain3D {
     this.activeTravelRoute = buildActiveTravelRoute(travelRoute, routeSpeed);
     this.boardHandoffArmed = false;
     this.pendingReleaseChargeRatio = null;
+    this.pendingReleaseNeedsSw16Exit = false;
     this.markRouteCaptureAccepted();
     const startPoint = samplePointAlongTravelRoute(
       this.activeTravelRoute.route.path,
@@ -524,6 +554,9 @@ export class LauncherChain3D {
 
     const entryMode = route.entryMode ?? "release";
     if (entryMode !== "release") {
+      return { canAttach: false, reason: "no_route" };
+    }
+    if (this.pendingReleaseNeedsSw16Exit) {
       return { canAttach: false, reason: "no_route" };
     }
 
@@ -606,7 +639,15 @@ export class LauncherChain3D {
 
     const nextRouteTag = this.activeTravelRoute.route.nextRouteTag;
     if (nextRouteTag) {
+      const seamFrom = this.activeTravelRoute.route.path[this.activeTravelRoute.route.path.length - 1];
       const nextRoute = this.resolveTravelRouteByTag(nextRouteTag);
+      const seamTo = nextRoute.path[0];
+      this.seamTransition = {
+        fromRouteTag: this.activeTravelRoute.route.tag,
+        toRouteTag: nextRoute.tag,
+        xyDeltaPx: Math.hypot(seamFrom.x - seamTo.x, seamFrom.y - seamTo.y),
+        zDeltaPx: Math.abs(seamFrom.z - seamTo.z),
+      };
       this.activeTravelRoute = buildActiveTravelRoute(
         nextRoute,
         this.activeTravelRoute.speed,
@@ -725,6 +766,76 @@ export class LauncherChain3D {
 
     const position = this.ballBody.translation();
     return isPointInTriggerShape({ x: position.x, y: position.y }, exitSensor.shape);
+  }
+
+  private resolveExitSensorShape(): TableTriggerShapeDefinition | null {
+    const exitSensor = this.launcher.threeD.sensors.find((sensor) => sensor.semanticRole === "exit");
+    return exitSensor?.shape ?? null;
+  }
+
+  private currentBallPosition(): TablePoint3D | null {
+    if (!this.ballBody) {
+      return null;
+    }
+    const position = this.ballBody.translation();
+    return { x: position.x, y: position.y, z: position.z };
+  }
+
+  private didCrossExitSensorDuringStep(
+    previousPosition: TablePoint3D | null,
+    currentPosition: TablePoint3D | null,
+  ): boolean {
+    if (!previousPosition || !currentPosition) {
+      return false;
+    }
+    const exitSensorShape = this.resolveExitSensorShape();
+    if (!exitSensorShape) {
+      return false;
+    }
+
+    const travelDistance = Math.hypot(
+      currentPosition.x - previousPosition.x,
+      currentPosition.y - previousPosition.y,
+    );
+    if (travelDistance <= 1e-3) {
+      return false;
+    }
+
+    const sampleCount = Math.max(
+      2,
+      Math.ceil(travelDistance / Math.max(this.ball.radius / 2, 1)),
+    );
+    let sawInside = false;
+    let sawOutside = false;
+    for (let sampleIndex = 0; sampleIndex <= sampleCount; sampleIndex += 1) {
+      const t = sampleIndex / sampleCount;
+      const samplePoint = {
+        x: previousPosition.x + (currentPosition.x - previousPosition.x) * t,
+        y: previousPosition.y + (currentPosition.y - previousPosition.y) * t,
+      };
+      const isInside = isPointInTriggerShape(samplePoint, exitSensorShape);
+      if (isInside) {
+        sawInside = true;
+      } else {
+        sawOutside = true;
+      }
+      if (sawInside && sawOutside) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private isExitCrossingUpward(
+    previousPosition: TablePoint3D | null,
+    currentPosition: TablePoint3D | null,
+  ): boolean {
+    if (!previousPosition || !currentPosition || !this.ballBody) {
+      return false;
+    }
+    const vy = this.ballBody.linvel().y;
+    return vy <= -RELEASE_ROUTE_ENTRY_MIN_UPWARD_SPEED || currentPosition.y < previousPosition.y;
   }
 
   private hasClearedReleasePlane(): boolean {

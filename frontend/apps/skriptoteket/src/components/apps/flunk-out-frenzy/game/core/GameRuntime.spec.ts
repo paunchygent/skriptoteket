@@ -208,6 +208,7 @@ function createViewSnapshot(
         pendingReleaseChargeRatio: null,
         activeRouteTag: null,
         captureWindowMsRemaining: 0,
+        routeProgressDistancePx: 0,
       },
       routeCapture: {
         lastDecision: "none",
@@ -228,6 +229,51 @@ function createViewSnapshot(
         lastContactAtStep: null,
         impulseTransferMarker: 0,
       },
+      seamTransition: null,
+    },
+    launchTraceStep: {
+      stepIndex: 0,
+      dtMs: 0,
+      phase: "feed_rest",
+      ballOwner: ballVisible ? "launcher_chain" : "none",
+      ballPosition: ballVisible ? { x: 528, y: 1044, z: 12 } : null,
+      ballVelocity: ballVisible ? { x: 0, y: 0, z: 0 } : null,
+      plunger: {
+        currentY: 1065.5,
+        targetY: 1065.5,
+        chargeRatio: null,
+        phase: "fed",
+      },
+      route: {
+        pendingReleaseChargeRatio: null,
+        activeRouteTag: null,
+        captureWindowMsRemaining: 0,
+        routeProgressDistancePx: 0,
+      },
+      routeCapture: {
+        lastDecision: "none",
+        lastRejectReason: null,
+      },
+      sensors: {
+        feedInside: ballVisible,
+        exitInside: false,
+        lastSw16ExitStep: null,
+      },
+      contact: {
+        plungerBallContactActive: false,
+        contactEnteredThisStep: false,
+        contactExitedThisStep: false,
+        separationPx: 0.8,
+        overlapPx: 0,
+        relativeVyAtContact: null,
+        lastContactAtStep: null,
+        impulseTransferMarker: 0,
+      },
+      seamTransition: null,
+      events: [],
+      handoffToBoardStep: null,
+      firstBoardCollisionStep: null,
+      boardCollisionStartedThisStep: false,
     },
   };
 }
@@ -606,6 +652,7 @@ describe("GameRuntime", () => {
     expect(telemetry.input.launchPressed).toBe(false);
     expect(telemetry.input.lastTransitionMs).not.toBeNull();
     expect(telemetry.launcher).not.toBeNull();
+    expect(telemetry.launchToDropTraceStep).not.toBeNull();
     if (!telemetry.launcher) {
       throw new Error("Expected launcher telemetry for proof record test.");
     }

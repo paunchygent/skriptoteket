@@ -83,6 +83,7 @@ class FakePhysicsMachine implements PrototypeAlphaPhysicsMachine {
         },
       },
       launcherTelemetry: null,
+      launchTraceStep: null,
     };
   }
 

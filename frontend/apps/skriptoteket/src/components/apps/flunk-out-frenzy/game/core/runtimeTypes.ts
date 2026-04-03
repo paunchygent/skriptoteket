@@ -7,6 +7,8 @@
  * rewriting the shell boundary.
  */
 
+import type { MachineEvent } from "../physics/physicsTypes";
+
 export type GameSessionStatus = "ready" | "running" | "paused" | "game-over";
 
 export interface GameHudBonusSnapshot {
@@ -97,6 +99,7 @@ export interface GameLauncherTelemetrySnapshot {
     pendingReleaseChargeRatio: number | null;
     activeRouteTag: string | null;
     captureWindowMsRemaining: number;
+    routeProgressDistancePx: number;
   };
   routeCapture: {
     lastDecision: GameLauncherRouteCaptureDecision;
@@ -117,6 +120,44 @@ export interface GameLauncherTelemetrySnapshot {
     lastContactAtStep: number | null;
     impulseTransferMarker: number;
   };
+  seamTransition: GameLauncherSeamTransitionSnapshot | null;
+}
+
+export interface GameLauncherSeamTransitionSnapshot {
+  fromRouteTag: string;
+  toRouteTag: string;
+  xyDeltaPx: number;
+  zDeltaPx: number;
+}
+
+export type GameLaunchToDropPhase =
+  | "feed_rest"
+  | "charge_pull"
+  | "release_strike_window"
+  | "route_overhead"
+  | "route_endpoint_bridge"
+  | "route_descent"
+  | "handoff_to_board"
+  | "board_drop_preimpact"
+  | "board_drop_postimpact";
+
+export interface GameLaunchToDropTraceStep {
+  stepIndex: number;
+  dtMs: number;
+  phase: GameLaunchToDropPhase;
+  ballOwner: GameLauncherBallOwner;
+  ballPosition: { x: number; y: number; z: number } | null;
+  ballVelocity: { x: number; y: number; z: number } | null;
+  plunger: GameLauncherTelemetrySnapshot["plunger"];
+  route: GameLauncherTelemetrySnapshot["route"];
+  routeCapture: GameLauncherTelemetrySnapshot["routeCapture"];
+  sensors: GameLauncherTelemetrySnapshot["sensors"];
+  contact: GameLauncherTelemetrySnapshot["contact"];
+  seamTransition: GameLauncherSeamTransitionSnapshot | null;
+  events: MachineEvent[];
+  handoffToBoardStep: number | null;
+  firstBoardCollisionStep: number | null;
+  boardCollisionStartedThisStep: boolean;
 }
 
 export interface GameLauncherDebugSnapshot {
@@ -125,6 +166,7 @@ export interface GameLauncherDebugSnapshot {
     lastTransitionMs: number | null;
   };
   launcher: GameLauncherTelemetrySnapshot | null;
+  launchToDropTraceStep: GameLaunchToDropTraceStep | null;
 }
 
 export interface GameViewSnapshot {
@@ -137,6 +179,7 @@ export interface GameViewSnapshot {
   };
   rollovers: GameRolloverSnapshot[];
   launcherTelemetry?: GameLauncherTelemetrySnapshot | null;
+  launchTraceStep?: GameLaunchToDropTraceStep | null;
 }
 
 export type RuntimeCommand =

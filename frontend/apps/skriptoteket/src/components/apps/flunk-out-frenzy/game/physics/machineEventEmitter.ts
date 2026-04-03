@@ -17,6 +17,7 @@ import type { MachineEvent } from "./physicsTypes";
 export interface MachineEventStepResult {
   events: MachineEvent[];
   shouldRemoveBall: boolean;
+  boardCollisionStarted: boolean;
 }
 
 export interface MachineEventEmitterArgs {
@@ -24,15 +25,28 @@ export interface MachineEventEmitterArgs {
   colliderMetaByHandle: ReadonlyMap<number, ColliderMeta>;
   cooldowns: Map<string, number>;
   ballBody: RAPIER3D.RigidBody | null;
+  ballColliderHandle: number | null;
   table: PrototypeAlphaTable;
 }
 
 export function collectMachineEvents(args: MachineEventEmitterArgs): MachineEventStepResult {
-  const { eventQueue, colliderMetaByHandle, cooldowns, ballBody, table } = args;
+  const { eventQueue, colliderMetaByHandle, cooldowns, ballBody, ballColliderHandle, table } = args;
   const events: MachineEvent[] = [];
   let shouldRemoveBall = false;
+  let boardCollisionStarted = false;
 
   eventQueue.drainCollisionEvents((handleOne, handleTwo, started) => {
+    const involvesMainBall = ballColliderHandle !== null && (
+      handleOne === ballColliderHandle || handleTwo === ballColliderHandle
+    );
+    if (started && involvesMainBall) {
+      const otherHandle = handleOne === ballColliderHandle ? handleTwo : handleOne;
+      const otherMeta = colliderMetaByHandle.get(otherHandle);
+      if (!otherMeta || otherMeta.kind === "ball") {
+        boardCollisionStarted = true;
+      }
+    }
+
     const metaOne = colliderMetaByHandle.get(handleOne);
     const metaTwo = colliderMetaByHandle.get(handleTwo);
     const sensorMeta = resolveMachineColliderMeta(metaOne, metaTwo);
@@ -161,6 +175,7 @@ export function collectMachineEvents(args: MachineEventEmitterArgs): MachineEven
   return {
     events,
     shouldRemoveBall,
+    boardCollisionStarted,
   };
 }
 

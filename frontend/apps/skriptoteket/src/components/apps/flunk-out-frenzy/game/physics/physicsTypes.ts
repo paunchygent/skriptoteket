@@ -87,6 +87,7 @@ export interface PhysicsLauncherTelemetrySnapshot {
     pendingReleaseChargeRatio: number | null;
     activeRouteTag: string | null;
     captureWindowMsRemaining: number;
+    routeProgressDistancePx: number;
   };
   routeCapture: {
     lastDecision: LauncherRouteCaptureDecision;
@@ -107,6 +108,44 @@ export interface PhysicsLauncherTelemetrySnapshot {
     lastContactAtStep: number | null;
     impulseTransferMarker: number;
   };
+  seamTransition: PhysicsLauncherSeamTransitionSnapshot | null;
+}
+
+export interface PhysicsLauncherSeamTransitionSnapshot {
+  fromRouteTag: string;
+  toRouteTag: string;
+  xyDeltaPx: number;
+  zDeltaPx: number;
+}
+
+export type PhysicsLaunchToDropPhase =
+  | "feed_rest"
+  | "charge_pull"
+  | "release_strike_window"
+  | "route_overhead"
+  | "route_endpoint_bridge"
+  | "route_descent"
+  | "handoff_to_board"
+  | "board_drop_preimpact"
+  | "board_drop_postimpact";
+
+export interface PhysicsLaunchToDropTraceStep {
+  stepIndex: number;
+  dtMs: number;
+  phase: PhysicsLaunchToDropPhase;
+  ballOwner: LauncherBallOwner;
+  ballPosition: PhysicsLauncherPoint3DSnapshot | null;
+  ballVelocity: PhysicsLauncherVector3Snapshot | null;
+  plunger: PhysicsLauncherTelemetrySnapshot["plunger"];
+  route: PhysicsLauncherTelemetrySnapshot["route"];
+  routeCapture: PhysicsLauncherTelemetrySnapshot["routeCapture"];
+  sensors: PhysicsLauncherTelemetrySnapshot["sensors"];
+  contact: PhysicsLauncherTelemetrySnapshot["contact"];
+  seamTransition: PhysicsLauncherSeamTransitionSnapshot | null;
+  events: MachineEvent[];
+  handoffToBoardStep: number | null;
+  firstBoardCollisionStep: number | null;
+  boardCollisionStartedThisStep: boolean;
 }
 
 export interface PhysicsSnapshot {
@@ -117,4 +156,5 @@ export interface PhysicsSnapshot {
     right: PhysicsFlipperSnapshot;
   };
   launcherTelemetry: PhysicsLauncherTelemetrySnapshot | null;
+  launchTraceStep: PhysicsLaunchToDropTraceStep | null;
 }

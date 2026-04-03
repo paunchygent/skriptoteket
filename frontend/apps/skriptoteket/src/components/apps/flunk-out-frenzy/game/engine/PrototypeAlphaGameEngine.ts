@@ -122,6 +122,7 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
           lit: ruleSnapshot.litLaneTags.includes(rollover.tag),
         })),
         launcherTelemetry: physicsSnapshot.launcherTelemetry,
+        launchTraceStep: physicsSnapshot.launchTraceStep,
       },
     };
   }

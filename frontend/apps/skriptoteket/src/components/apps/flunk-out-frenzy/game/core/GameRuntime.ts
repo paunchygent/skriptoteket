@@ -238,6 +238,7 @@ export class GameRuntime {
         lastTransitionMs: this.lastLaunchTransitionMs,
       },
       launcher: this.viewSnapshot.launcherTelemetry ?? null,
+      launchToDropTraceStep: this.viewSnapshot.launchTraceStep ?? null,
     };
   }
 

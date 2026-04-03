@@ -12,6 +12,7 @@ import argparse
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Sequence
 
 
 def _read_dotenv(path: Path) -> dict[str, str]:
@@ -59,7 +60,7 @@ class PlaywrightConfig:
     password: str
 
 
-def get_config() -> PlaywrightConfig:
+def get_config(argv: Sequence[str] | None = None) -> PlaywrightConfig:
     """Parse CLI args with env var / .env fallbacks.
 
     Priority: CLI args > env vars > dotenv file > defaults.
@@ -81,7 +82,7 @@ def get_config() -> PlaywrightConfig:
         default=os.environ.get("DOTENV_PATH") or ".env",
         help="Dotenv file to read defaults from (default: DOTENV_PATH env var or .env)",
     )
-    pre_args, _ = pre_parser.parse_known_args()
+    pre_args, _ = pre_parser.parse_known_args(argv)
     dotenv = _read_dotenv(Path(pre_args.dotenv))
     host_platform_override = _get_config_value(
         key="PLAYWRIGHT_HOST_PLATFORM_OVERRIDE", dotenv=dotenv
@@ -117,7 +118,7 @@ def get_config() -> PlaywrightConfig:
         ),
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if not args.email or not args.password:
         parser.error(

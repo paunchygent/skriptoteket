@@ -38,7 +38,13 @@ import {
   radiansToDegrees,
 } from "./flipperActuation";
 import { collectMachineEvents } from "./machineEventEmitter";
-import type { MachineEvent, PhysicsSnapshot } from "./physicsTypes";
+import type {
+  MachineEvent,
+  PhysicsLaunchToDropPhase,
+  PhysicsLaunchToDropTraceStep,
+  PhysicsLauncherTelemetrySnapshot,
+  PhysicsSnapshot,
+} from "./physicsTypes";
 import { LauncherChain3D } from "./launcherChain3d";
 import {
   createInitialPlungerLaneState,
@@ -78,6 +84,12 @@ export class PhysicsWorld {
   private readonly colliderMetaByHandle = new Map<number, ColliderMeta>();
   private readonly captureLifecycleState = createInitialCaptureLifecycleState();
   private currentPlungerCenterY = 0;
+  private traceStepIndex = 0;
+  private lastStepDtMs = 0;
+  private lastStepEvents: MachineEvent[] = [];
+  private lastHandoffToBoardStep: number | null = null;
+  private firstBoardCollisionStep: number | null = null;
+  private boardCollisionStartedThisStep = false;
 
   static async create(table: PrototypeAlphaTable = PROTOTYPE_ALPHA_TABLE): Promise<PhysicsWorld> {
     await RAPIER3D.init();
@@ -113,6 +125,12 @@ export class PhysicsWorld {
     this.ballBody = null;
     this.ballColliderHandle = null;
     this.currentPlungerCenterY = this.table.launcher.threeD.plunger.center.y;
+    this.traceStepIndex = 0;
+    this.lastStepDtMs = 0;
+    this.lastStepEvents = [];
+    this.lastHandoffToBoardStep = null;
+    this.firstBoardCollisionStep = null;
+    this.boardCollisionStartedThisStep = false;
     this.leftFlipperAngleRad = degreesToRadians(this.table.flippers.left.restAngleDeg);
     this.rightFlipperAngleRad = degreesToRadians(this.table.flippers.right.restAngleDeg);
     this.launcherChain = new LauncherChain3D(this.table.launcher, this.table.ball);
@@ -156,6 +174,12 @@ export class PhysicsWorld {
     }
     this.plungerLaneState = createInitialPlungerLaneState();
     this.currentPlungerCenterY = this.table.launcher.threeD.plunger.center.y;
+    this.traceStepIndex = 0;
+    this.lastStepDtMs = 0;
+    this.lastStepEvents = [];
+    this.lastHandoffToBoardStep = null;
+    this.firstBoardCollisionStep = null;
+    this.boardCollisionStartedThisStep = false;
   }
 
   removeBall(): void {
@@ -173,9 +197,15 @@ export class PhysicsWorld {
     this.plungerLaneState = createInitialPlungerLaneState();
     this.currentPlungerCenterY = this.table.launcher.threeD.plunger.center.y;
     resetCaptureLifecycleState(this.captureLifecycleState);
+    this.lastStepEvents = [];
+    this.boardCollisionStartedThisStep = false;
   }
 
   step(dtMs: number): MachineEvent[] {
+    this.traceStepIndex += 1;
+    this.lastStepDtMs = dtMs;
+    this.lastStepEvents = [];
+    this.boardCollisionStartedThisStep = false;
     const dtSeconds = dtMs / 1000;
     this.tickCooldowns(dtMs);
     this.updateFlippers(dtSeconds);
@@ -205,8 +235,18 @@ export class PhysicsWorld {
       colliderMetaByHandle: this.colliderMetaByHandle,
       cooldowns: this.cooldowns,
       ballBody: this.ballBody,
+      ballColliderHandle: this.ballColliderHandle,
       table: this.table,
     });
+    this.boardCollisionStartedThisStep = stepResult.boardCollisionStarted;
+    if (
+      this.boardCollisionStartedThisStep
+      && this.lastHandoffToBoardStep !== null
+      && this.traceStepIndex > this.lastHandoffToBoardStep
+      && this.firstBoardCollisionStep === null
+    ) {
+      this.firstBoardCollisionStep = this.traceStepIndex;
+    }
     const captureLifecycleStep = applyCaptureLifecycleStep({
       state: this.captureLifecycleState,
       events: stepResult.events,
@@ -243,14 +283,17 @@ export class PhysicsWorld {
         boardHandoffFromChain.velocity,
         boardHandoffFromChain.position.z,
       );
+      this.lastHandoffToBoardStep = this.traceStepIndex;
     }
     this.wasLeftPressed = this.leftPressed;
     this.wasRightPressed = this.rightPressed;
-    return [
+    const machineEvents = [
       ...launcherPreStepEvents,
       ...captureLifecycleStep.forwardedEvents,
       ...captureLifecycleStep.postStepEvents,
     ];
+    this.lastStepEvents = machineEvents;
+    return machineEvents;
   }
 
   private spawnBallInMainWorld(
@@ -380,6 +423,7 @@ export class PhysicsWorld {
         },
       },
       launcherTelemetry,
+      launchTraceStep: this.buildLaunchToDropTraceStep(launcherTelemetry),
     };
   }
 
@@ -690,6 +734,70 @@ export class PhysicsWorld {
     this.ballBody = null;
     this.ballColliderHandle = null;
     resetCaptureLifecycleState(this.captureLifecycleState);
+  }
+
+  private buildLaunchToDropTraceStep(
+    launcherTelemetry: PhysicsLauncherTelemetrySnapshot | null,
+  ): PhysicsLaunchToDropTraceStep | null {
+    if (!launcherTelemetry) {
+      return null;
+    }
+
+    return {
+      stepIndex: this.traceStepIndex,
+      dtMs: this.lastStepDtMs,
+      phase: this.resolveLaunchToDropPhase(launcherTelemetry),
+      ballOwner: launcherTelemetry.ball.owner,
+      ballPosition: launcherTelemetry.ball.position,
+      ballVelocity: launcherTelemetry.ball.velocity,
+      plunger: launcherTelemetry.plunger,
+      route: launcherTelemetry.route,
+      routeCapture: launcherTelemetry.routeCapture,
+      sensors: launcherTelemetry.sensors,
+      contact: launcherTelemetry.contact,
+      seamTransition: launcherTelemetry.seamTransition,
+      events: [...this.lastStepEvents],
+      handoffToBoardStep: this.lastHandoffToBoardStep,
+      firstBoardCollisionStep: this.firstBoardCollisionStep,
+      boardCollisionStartedThisStep: this.boardCollisionStartedThisStep,
+    };
+  }
+
+  private resolveLaunchToDropPhase(
+    launcherTelemetry: PhysicsLauncherTelemetrySnapshot,
+  ): PhysicsLaunchToDropPhase {
+    const routeTag = launcherTelemetry.route.activeRouteTag;
+    if (routeTag === "launcher/travel/overhead") {
+      return "route_overhead";
+    }
+    if (routeTag === "launcher/travel/endpoint-bridge") {
+      return "route_endpoint_bridge";
+    }
+    if (routeTag === "launcher/travel/descent") {
+      return "route_descent";
+    }
+
+    if (launcherTelemetry.ball.owner === "main_world") {
+      if (this.lastHandoffToBoardStep !== null && this.traceStepIndex === this.lastHandoffToBoardStep) {
+        return "handoff_to_board";
+      }
+      if (this.firstBoardCollisionStep !== null && this.traceStepIndex > this.firstBoardCollisionStep) {
+        return "board_drop_postimpact";
+      }
+      return "board_drop_preimpact";
+    }
+
+    if (launcherTelemetry.plunger.phase === "charging") {
+      return "charge_pull";
+    }
+    if (
+      launcherTelemetry.plunger.phase === "released"
+      && launcherTelemetry.ball.owner === "launcher_chain"
+    ) {
+      return "release_strike_window";
+    }
+
+    return "feed_rest";
   }
 }
 
