@@ -13,6 +13,9 @@ from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordH
 from skriptoteket.infrastructure.security.password_reset_request_throttle import (
     InMemoryPasswordResetRequestThrottle,
 )
+from skriptoteket.infrastructure.security.public_helper_request_throttle import (
+    InMemoryPublicHelperRequestThrottle,
+)
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.clock import ClockProtocol
@@ -20,6 +23,7 @@ from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRende
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import PasswordHasherProtocol
 from skriptoteket.protocols.password_reset import PasswordResetRequestThrottleProtocol
+from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 
@@ -53,6 +57,13 @@ class InfrastructureServicesProvider(Provider):
     ) -> PasswordResetRequestThrottleProtocol:
         return InMemoryPasswordResetRequestThrottle(
             cooldown_seconds=settings.PASSWORD_RESET_REQUEST_COOLDOWN_SECONDS
+        )
+
+    @provide(scope=Scope.APP)
+    def public_helper_request_throttle(self, settings: Settings) -> PublicHelperThrottleProtocol:
+        return InMemoryPublicHelperRequestThrottle(
+            max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
+            window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
         )
 
     @provide(scope=Scope.APP)

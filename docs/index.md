@@ -67,6 +67,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0207-flunk-out-frenzy-launcher-strike-ready-rest-pose-alignment.md`
 - Flunk-Out Frenzy strike-ready rest-pose and release-contact integration fix:
   `docs/backlog/prs/pr-0208-flunk-out-frenzy-strike-ready-rest-pose-and-release-integration-fix.md`
+- Flunk-Out Frenzy end-to-end launch-to-drop telemetry contract:
+  `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -654,6 +656,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0206-flunk-out-frenzy-plunger-strike-root-cause-proof-and-telemetry-contract.md`
 - `docs/backlog/prs/pr-0207-flunk-out-frenzy-launcher-strike-ready-rest-pose-alignment.md`
 - `docs/backlog/prs/pr-0208-flunk-out-frenzy-strike-ready-rest-pose-and-release-integration-fix.md`
+- `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`

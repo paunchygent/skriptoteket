@@ -33,6 +33,13 @@ class ErrorCode(StrEnum):
     CONFLICT = "CONFLICT"
     DUPLICATE_ENTRY = "DUPLICATE_ENTRY"
 
+    # Request throttling (429)
+    TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS"
+
+    # Payload/media validation (413/415)
+    PAYLOAD_TOO_LARGE = "PAYLOAD_TOO_LARGE"
+    UNSUPPORTED_MEDIA_TYPE = "UNSUPPORTED_MEDIA_TYPE"
+
     # Service errors (503)
     SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
 

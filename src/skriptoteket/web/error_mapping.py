@@ -18,6 +18,9 @@ ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.SESSION_NOT_FOUND: 404,
     ErrorCode.CONFLICT: 409,
     ErrorCode.DUPLICATE_ENTRY: 409,
+    ErrorCode.TOO_MANY_REQUESTS: 429,
+    ErrorCode.PAYLOAD_TOO_LARGE: 413,
+    ErrorCode.UNSUPPORTED_MEDIA_TYPE: 415,
     ErrorCode.EMAIL_SEND_FAILED: 503,
     ErrorCode.SERVICE_UNAVAILABLE: 503,
 }

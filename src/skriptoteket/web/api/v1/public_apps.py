@@ -20,8 +20,8 @@ from skriptoteket.domain.curated_apps.models import (
     CuratedAppPublicAccessProfile,
     CuratedAppUiMode,
 )
-from skriptoteket.domain.errors import not_found
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.web.api.v1.public_apps_support import require_public_curated_app
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/public/apps", tags=["public-apps"])
@@ -45,9 +45,7 @@ async def get_public_app_bootstrap(
     app_id: str,
     registry: FromDishka[CuratedAppRegistryProtocol],
 ) -> PublicAppBootstrapResponse:
-    app = registry.get_by_app_id(app_id=app_id)
-    if app is None or not app.supports_public_access:
-        raise not_found("CuratedApp", app_id)
+    app = require_public_curated_app(app_id=app_id, registry=registry)
 
     return PublicAppBootstrapResponse(
         app_id=app.app_id,

@@ -190,6 +190,11 @@ class Settings(BaseSettings):
     PASSWORD_RESET_BASE_URL: str = "https://skriptoteket.hule.education"
     PASSWORD_RESET_REQUEST_COOLDOWN_SECONDS: int = 60
 
+    PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS: int = 60
+    PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS: int = 5
+    PUBLIC_HELPER_IMPORT_PREVIEW_MAX_FILE_BYTES: int = 5_000_000
+    PUBLIC_HELPER_IMPORT_PREVIEW_TIMEOUT_SECONDS: int = 15
+
     # LLM API
     LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
     LLM_COMPLETION_GPT5_TEMPLATE_ID: str = "inline_completion_gpt5_v1"

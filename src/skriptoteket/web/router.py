@@ -25,6 +25,9 @@ from skriptoteket.web.api.v1 import my_runs as api_v1_my_runs
 from skriptoteket.web.api.v1 import my_tools as api_v1_my_tools
 from skriptoteket.web.api.v1 import profile as api_v1_profile
 from skriptoteket.web.api.v1 import public_apps as api_v1_public_apps
+from skriptoteket.web.api.v1 import (
+    public_apps_classroom_planner as api_v1_public_apps_classroom_planner,
+)
 from skriptoteket.web.api.v1 import suggestions as api_v1_suggestions
 from skriptoteket.web.api.v1 import tools as api_v1_tools
 from skriptoteket.web.api.v1 import vault as api_v1_vault
@@ -41,6 +44,7 @@ router.include_router(api_v1_my_runs.router)
 router.include_router(api_v1_my_tools.router)
 router.include_router(api_v1_apps.router)
 router.include_router(api_v1_public_apps.router)
+router.include_router(api_v1_public_apps_classroom_planner.router)
 router.include_router(api_v1_apps_classroom_planner.router)
 router.include_router(api_v1_apps_classroom_planner_smart_rules.router)
 router.include_router(api_v1_apps_classroom_planner_grouping.router)

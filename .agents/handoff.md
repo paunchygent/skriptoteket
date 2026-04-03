@@ -25,6 +25,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0206` is now implemented as a proof-only lane (no geometry/runtime behavior fix): launcher telemetry contract is wired end-to-end (`launcherChain3d.ts` -> `PhysicsWorld.ts` -> `PrototypeAlphaGameEngine.ts` -> `GameRuntime.ts` -> `GameHost.vue` debug seam), and a deterministic full-charge launch-effect proof test is now intentionally red in `PhysicsWorld.spec.ts`.
 - `PR-0207` is now approved and implemented as a proof-first gate only: focused test/telemetry contract tightening in `compilePinballTable.spec.ts`, `PhysicsWorld.spec.ts`, and `GameRuntime.spec.ts` locks unchanged PR-0206 matrix parameters plus endpoint-bridge seam-contract assertions, while production geometry/runtime behavior fixes remain explicitly blocked.
 - `PR-0208` is now authored and implemented as the bounded launcher behavior-fix slice after proof-gate approval: `launcherChain3d.ts` now aligns fed/rest spawn to a strike-ready plunger-front rest gap and runs a bounded post-release substep integration window for deterministic physical plunger-body contact resolution; no seam tolerance relaxation, no helper geometry, and no direct launch `setLinvel(...)` shortcut were introduced.
+- `PR-0209` is now drafted as the next natural proof-first hardening slice: end-to-end launch-to-drop telemetry contract and deterministic matrix artifacts to make full gameplay-path seam behavior auditable beyond launcher-only snapshots.
 - `tableDefinitionTypes.ts` now enforces chained-vs-terminal route semantics (chained routes forbid `handoffVelocity`, terminal route requires it), and `compilePinballTable.ts` hard-fails seam/contract violations (unique tags, route min points, min-charge bounds, nextRoute existence, cycle-free graph, seam continuity `xy<=1/z<=1`, exactly one feed sensor and one exit sensor, terminal-only board handoff).
 - Runtime seam behavior now aligns with architect invariants: `launcherChain3d.ts` performs physical plunger-contact release gating, bounded post-release route-capture window, and sw16-only gate emission on real exit transition; `PhysicsWorld.ts` uses launcher-chain ownership/handoff for launch/relaunch rather than a main-world release shortcut.
 - Docs-as-code and skill governance are updated for this invariant set: `docs/backlog/prs/pr-0200-flunk-out-frenzy-launcher-release-path-and-donor-wall-face-representation.md` and `~/.codex/skills/pinball-board-authoring/SKILL.md` now explicitly pin strict seam continuity, endpoint-bridge seam authoring, and no helper/freehand seam geometry.
@@ -100,6 +101,14 @@ Keep this file updated so the next session can pick up work quickly.
     - `pdm run fe-type-check` (pass)
     - `pdm run fe-build` (pass)
     - `pdm run docs-validate` (pass)
+  - second minimal corrective release-seam patch added dynamic release-window duration derived from plunger travel-to-strike distance and contact-aware release strike target in `launcherChain3d.ts`
+  - focused verification status after second corrective attempt:
+    - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts` (pass; 51/51 tests)
+    - `pdm run fe-type-check` (pass)
+    - `pdm run fe-build` (pass)
+    - `pdm run docs-validate` (pass)
+  - required live launcher check:
+    - `pdm run python -m scripts.playwright_flunk_out_frenzy_route_check --base-url http://127.0.0.1:5173` -> `playwright-flunk-out-frenzy: ok -> .artifacts/flunk-out-frenzy-route-check`
 ## How to Run
 ```bash
 ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
@@ -107,17 +116,15 @@ pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://1
 ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh'
 ```
 ## Known Issues / Risks
-- Current blocking seam risk is now explicit from user-owned live browser verification: the plunger does not move and has no visible effect on the ball, so `PR-0200` is not functionally accepted despite green compile/physics tests.
-- Launcher closure likely needs focused runtime debugging at the input->plunger->contact seam (`KeyboardInputController` -> `plungerLaneState` release intent -> `launcherChain3d` plunger kinematics/ball contact -> rendered plunger snapshot), plus a new visible/manual proof pass once fixed.
+- Historical manual-live concern (plunger looked inert) is now superseded by green focused verification and a passing automated live launcher route check artifact (`.artifacts/flunk-out-frenzy-route-check`); keep a final human visual confirmation pass as release hardening.
 - The canonical local browser proof for Klassrumskartan no-classroom flows depends on the backend-served static SPA bundle once auth redirects into `:8000`; rerun `pdm run fe-build` before trusting `http://127.0.0.1:5173` Playwright outcomes after frontend changes.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - `tests/integration/test_migration_revision_coverage_idempotent.py` still has one pre-existing full-suite harness failure on merge revision `6a1e9d3c4b7f` because `tests/integration/migration_idempotency_support.py` assumes a linear `down_revision`; the new `b7f9c2d4e1a6` revision itself passes both targeted migration checks.
 ## Next Steps
 - Continue `EPIC-32` only from the next approved checkpoint after the public-profile + public-host foundation: proposed follow-on is `ST-32-03` public API namespace/anonymous abuse-control planning and implementation, while keeping `/apps/:appId` and `GET /api/v1/apps/{app_id}` authenticated and leaving browser-owned guest workspace/import/export for later approved slices.
-- Reproduce and fix the user-confirmed live defect where the plunger does not move/affect the ball; keep the strict endpoint-bridge seam invariants unchanged (`xy<=1`, `z<=1`, no helper rails/freehand seam geometry, no synthetic `gate-passed`).
-- Use `PR-0206` as the active root-cause baseline: keep the red launch-effect proof test and telemetry contract intact while implementing the next bounded behavior-fix slice.
-- After the fix, rerun the focused command set (`fe-test` targeted slice + `fe-type-check` + `fe-build` + `docs-validate`) and repeat a browser launcher matrix pass with explicit plunger-motion and ball-response evidence before considering `PR-0200` accepted.
+- Run final independent ruthless review sign-off for `PR-0208` with the now-green focused verification set and recorded automated live launcher route check.
+- Perform one final human visual launcher matrix sanity check (rest/short/medium/full/relaunch) before marking donor-launcher closure fully accepted.
 - Review `EPIC-31` / `REV-EPIC-31`, then scaffold the first `ST-31-0x` story stack for `games.flappy_birds` around substrate/bootstrap, local playable runtime, and lightweight leaderboard plumbing.
 - If the donor corrective lane is accepted, move `PR-0193` from local implementation state to reviewed/merged status and then continue with `PR-0194`/`PR-0195`.
 - Next planning choice inside `EPIC-29` is to implement `ST-29-11` in order through `PR-0195`, `PR-0196`, and `PR-0197`, then define the `ST-29-12` symbol/discoverability slice sequence before taking `ST-29-08`.
