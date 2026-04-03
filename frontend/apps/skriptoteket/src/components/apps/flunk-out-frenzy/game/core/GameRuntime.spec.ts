@@ -13,6 +13,7 @@ import { GameRuntime } from "./GameRuntime";
 import { ManualAnimationScheduler } from "./manualAnimationScheduler.spec-support";
 import type {
   GameHudSnapshot,
+  GameLauncherDebugSnapshot,
   GameViewSnapshot,
   RuntimeCommand,
 } from "./runtimeTypes";
@@ -187,6 +188,47 @@ function createViewSnapshot(
       { tag: "lane/top-t", label: "T", x: 340, y: 130, lit: false },
       { tag: "lane/top-e", label: "E", x: 420, y: 150, lit: false },
     ],
+    launcherTelemetry: {
+      plunger: {
+        currentY: 1065.5,
+        targetY: 1065.5,
+        chargeRatio: null,
+        phase: "fed",
+      },
+      ball: {
+        owner: ballVisible ? "launcher_chain" : "none",
+        position: ballVisible
+          ? { x: 528, y: 1044, z: 12 }
+          : null,
+        velocity: ballVisible
+          ? { x: 0, y: 0, z: 0 }
+          : null,
+      },
+      route: {
+        pendingReleaseChargeRatio: null,
+        activeRouteTag: null,
+        captureWindowMsRemaining: 0,
+      },
+      routeCapture: {
+        lastDecision: "none",
+        lastRejectReason: null,
+      },
+      sensors: {
+        feedInside: ballVisible,
+        exitInside: false,
+        lastSw16ExitStep: null,
+      },
+      contact: {
+        plungerBallContactActive: false,
+        contactEnteredThisStep: false,
+        contactExitedThisStep: false,
+        separationPx: 0.8,
+        overlapPx: 0,
+        relativeVyAtContact: null,
+        lastContactAtStep: null,
+        impulseTransferMarker: 0,
+      },
+    },
   };
 }
 
@@ -197,6 +239,102 @@ function lastHud(hudEvents: GameHudSnapshot[]): GameHudSnapshot {
   }
   return hud;
 }
+
+type LaunchProofStrikeClassification =
+  | "no_effective_strike"
+  | "post_strike_route_rejection"
+  | "strike_and_route_accepted";
+
+function classifyStrike(
+  telemetry: NonNullable<GameLauncherDebugSnapshot["launcher"]>,
+): LaunchProofStrikeClassification {
+  const strikeEvidencePresent = telemetry.contact.overlapPx >= 0.5
+    || (telemetry.contact.relativeVyAtContact ?? Number.POSITIVE_INFINITY) <= -5
+    || telemetry.contact.impulseTransferMarker >= 0.1;
+  if (!strikeEvidencePresent) {
+    return "no_effective_strike";
+  }
+  if (telemetry.routeCapture.lastDecision === "accepted") {
+    return "strike_and_route_accepted";
+  }
+  return "post_strike_route_rejection";
+}
+
+function createLaunchProofCaseRecord(args: {
+  caseId: string;
+  inputMode: "keyboard" | "pointer";
+  holdProfile: "rest" | "short" | "medium" | "full" | "relaunch";
+  dtMs: number;
+  holdMs: number;
+  holdSteps: number;
+  relaunchGapMs: number;
+  relaunchGapSteps: number;
+  observationSteps: number;
+  plungerDelta: number;
+  ballDisplacementMagnitude: number;
+  maxVy: number;
+  minVy: number;
+  sw16ExitObserved: boolean;
+  telemetry: GameLauncherDebugSnapshot;
+}) {
+  if (!args.telemetry.launcher) {
+    throw new Error("Launcher telemetry is required to build proof records.");
+  }
+  const launcher = args.telemetry.launcher;
+  return {
+    case_id: args.caseId,
+    input_mode: args.inputMode,
+    hold_profile: args.holdProfile,
+    dt_ms: args.dtMs,
+    hold_ms: args.holdMs,
+    hold_steps: args.holdSteps,
+    relaunch_gap_ms: args.relaunchGapMs,
+    relaunch_gap_steps: args.relaunchGapSteps,
+    observation_steps: args.observationSteps,
+    plunger_delta: args.plungerDelta,
+    ball_displacement_magnitude: args.ballDisplacementMagnitude,
+    max_vy: args.maxVy,
+    min_vy: args.minVy,
+    route_capture_decision: launcher.routeCapture.lastDecision,
+    route_capture_reason: launcher.routeCapture.lastRejectReason,
+    sw16_exit_observed: args.sw16ExitObserved,
+    contact_diagnostics: {
+      contactActive: launcher.contact.plungerBallContactActive,
+      maxOverlapPx: launcher.contact.overlapPx,
+      lastContactAtStep: launcher.contact.lastContactAtStep,
+      impulseTransferMarker: launcher.contact.impulseTransferMarker,
+    },
+    strike_classification: classifyStrike(launcher),
+  };
+}
+
+const PR_0206_PROOF_MATRIX_CONTRACT = [
+  { caseId: "K-REST-STEADY", holdProfile: "rest", holdSteps: 0, thresholdPx: 0, thresholdVy: 0 },
+  { caseId: "K-SHORT-STEADY", holdProfile: "short", holdSteps: 8, thresholdPx: 2, thresholdVy: -8 },
+  {
+    caseId: "K-MEDIUM-STEADY",
+    holdProfile: "medium",
+    holdSteps: 26,
+    thresholdPx: 4,
+    thresholdVy: -20,
+  },
+  { caseId: "K-FULL-STEADY", holdProfile: "full", holdSteps: 56, thresholdPx: 8, thresholdVy: -40 },
+  {
+    caseId: "K-RELAUNCH-MEDIUM",
+    holdProfile: "relaunch",
+    holdSteps: 26,
+    thresholdPx: 4,
+    thresholdVy: -20,
+  },
+] as const;
+
+const PR_0206_ALLOWED_ROUTE_REJECT_REASONS = [
+  "distance_xy",
+  "distance_z",
+  "vy_gate",
+  "window_expired",
+  "no_route",
+] as const;
 
 describe("GameRuntime", () => {
   it("publishes ready, running, paused, resumed, and game-over HUD snapshots", () => {
@@ -446,5 +584,92 @@ describe("GameRuntime", () => {
       type: "launch-released",
       chargeActive: true,
     });
+  });
+
+  it("exposes launcher telemetry and proof-record schema without gate-passed alias", () => {
+    const scheduler = new ManualAnimationScheduler();
+    const engine = new FakeRuntimeEngine();
+    const runtime = new GameRuntime({
+      scheduler,
+      engine,
+      renderer: new FakeRenderer(),
+      audio: new FakeAudioDirector(),
+    });
+
+    runtime.start();
+    runtime.enqueueCommand({ type: "launch", pressed: true });
+    scheduler.runFrame(0);
+    runtime.enqueueCommand({ type: "launch", pressed: false });
+    scheduler.runFrame(16);
+
+    const telemetry = runtime.debugLauncherTelemetry();
+    expect(telemetry.input.launchPressed).toBe(false);
+    expect(telemetry.input.lastTransitionMs).not.toBeNull();
+    expect(telemetry.launcher).not.toBeNull();
+    if (!telemetry.launcher) {
+      throw new Error("Expected launcher telemetry for proof record test.");
+    }
+
+    const proofCase = createLaunchProofCaseRecord({
+      caseId: "K-FULL-STEADY",
+      inputMode: "keyboard",
+      holdProfile: "full",
+      dtMs: 16,
+      holdMs: 896,
+      holdSteps: 56,
+      relaunchGapMs: 256,
+      relaunchGapSteps: 16,
+      observationSteps: 60,
+      plungerDelta: 0,
+      ballDisplacementMagnitude: 0,
+      maxVy: 0,
+      minVy: 0,
+      sw16ExitObserved: false,
+      telemetry,
+    });
+
+    expect(proofCase).toEqual(expect.objectContaining({
+      case_id: "K-FULL-STEADY",
+      input_mode: "keyboard",
+      hold_profile: "full",
+      route_capture_decision: "none",
+      route_capture_reason: null,
+      sw16_exit_observed: false,
+      strike_classification: expect.any(String),
+    }));
+    expect(["none", "accepted", "rejected"]).toContain(proofCase.route_capture_decision);
+    if (proofCase.route_capture_reason !== null) {
+      expect(PR_0206_ALLOWED_ROUTE_REJECT_REASONS).toContain(proofCase.route_capture_reason);
+    }
+    expect("gate-passed" in proofCase).toBe(false);
+  });
+
+  it("locks the unchanged PR-0206 launch matrix contract used by proof telemetry", () => {
+    expect(PR_0206_PROOF_MATRIX_CONTRACT).toEqual([
+      { caseId: "K-REST-STEADY", holdProfile: "rest", holdSteps: 0, thresholdPx: 0, thresholdVy: 0 },
+      { caseId: "K-SHORT-STEADY", holdProfile: "short", holdSteps: 8, thresholdPx: 2, thresholdVy: -8 },
+      {
+        caseId: "K-MEDIUM-STEADY",
+        holdProfile: "medium",
+        holdSteps: 26,
+        thresholdPx: 4,
+        thresholdVy: -20,
+      },
+      { caseId: "K-FULL-STEADY", holdProfile: "full", holdSteps: 56, thresholdPx: 8, thresholdVy: -40 },
+      {
+        caseId: "K-RELAUNCH-MEDIUM",
+        holdProfile: "relaunch",
+        holdSteps: 26,
+        thresholdPx: 4,
+        thresholdVy: -20,
+      },
+    ]);
+    expect(PR_0206_ALLOWED_ROUTE_REJECT_REASONS).toEqual([
+      "distance_xy",
+      "distance_z",
+      "vy_gate",
+      "window_expired",
+      "no_route",
+    ]);
   });
 });

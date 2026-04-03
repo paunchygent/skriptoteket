@@ -54,6 +54,16 @@ the donor launcher handoff can be expressed honestly:
 - a compiled seam that lets the existing top-down renderer stay intact while
   the launcher chain stops being flattened into false flat blockers
 
+## Hard invariants
+
+- Keep launcher seam continuity strict at `xy<=1, z<=1`; do not relax tolerance.
+- Do not add helper rails or freehand seam geometry around `Wall34`/launcher mouth.
+- Treat the overhead-to-descent connection as a table-authoring seam artifact:
+  explicit endpoint bridge between donor-owned anchors, not a hidden physics workaround.
+- Keep `swplunger` (`enter`) and `sw16` (`exit`) semantics separate; route start
+  must never synthesize `gate-passed`.
+- Only terminal launcher routes may declare terminal board handoff velocity.
+
 ## Non-goals
 
 - No VPX script or ROM rule import.
@@ -86,6 +96,9 @@ the donor launcher handoff can be expressed honestly:
 - Re-express donor `Wall34` and its immediate chain neighbors as truthful 3D
   geometry/faces instead of full false-flat caps. If a donor object needs
   a partial face, height, or non-flat contact surface, model that directly.
+- Author the elevated launcher seam as three chained routes:
+  `overhead -> endpoint-bridge -> descent`, where the bridge path is exactly
+  `[overheadExitAnchor, descentEntryAnchor]` derived from existing donor routes.
 - Keep `PR-0201` geometry correction intact where it remains valid, but delete
   any remaining launcher-local flat shortcut that survives only because the old
   impulse model needed it.
@@ -146,6 +159,10 @@ Manual/live:
   `ballBody.setLinvel(...)` shortcut on `launcher-released` rather than a proven
   plunger-body contact strike. This PR remains `in_progress` until that physical
   contact-path contract is implemented or explicitly re-scoped.
+- Seam status (current strict baseline): overhead donor route endpoint and
+  descent donor route entry are not the same authored point; the measured gap is
+  approximately `23.9` normalized px in XY while Z is already compatible. This
+  is an authored seam issue, not a tolerance issue.
 - The browser route on `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`
   initially failed because the running frontend container could not resolve the
   new `@dimforge/rapier3d-compat` dependency. Refreshing the container install
@@ -183,3 +200,5 @@ Manual/live:
     `PhysicsWorld` implementation (no stale “wired launcherChain3d seam” wording)
   - avoid over-claiming browser gameplay proof from coordinate-only traces
   - keep the `Wall263` shoulder truncation pinned by focused regression coverage
+  - keep strict seam continuity hard-failing until endpoint-bridge authoring is
+    explicit and donor-anchored

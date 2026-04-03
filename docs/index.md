@@ -57,6 +57,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0202-flunk-out-frenzy-full-board-donor-3d-carrier-mapping-and-elevated-rails.md`
 - Flunk-Out Frenzy elevated donor rail travel and left-handoff mechanics:
   `docs/backlog/prs/pr-0203-flunk-out-frenzy-elevated-rail-travel-and-left-handoff-mechanics.md`
+- Flunk-Out Frenzy ruthless independent review gate for launcher input/overlay seam:
+  `docs/backlog/prs/pr-0204-flunk-out-frenzy-ruthless-review-gate-for-launcher-input-and-overlay-seam.md`
+- Flunk-Out Frenzy launcher root-cause proof and input lifecycle fix plan:
+  `docs/backlog/prs/pr-0205-flunk-out-frenzy-launcher-root-cause-proof-and-input-lifecycle-fix-plan.md`
+- Flunk-Out Frenzy plunger-strike root-cause proof and telemetry contract:
+  `docs/backlog/prs/pr-0206-flunk-out-frenzy-plunger-strike-root-cause-proof-and-telemetry-contract.md`
+- Flunk-Out Frenzy launcher strike-ready rest-pose alignment and deterministic closure:
+  `docs/backlog/prs/pr-0207-flunk-out-frenzy-launcher-strike-ready-rest-pose-alignment.md`
+- Flunk-Out Frenzy strike-ready rest-pose and release-contact integration fix:
+  `docs/backlog/prs/pr-0208-flunk-out-frenzy-strike-ready-rest-pose-and-release-integration-fix.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -167,10 +177,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - Proposed local password reset ADR:
   `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
+- Proposed public curated-app access ADR:
+  `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- Proposed public curated-app access epic:
+  `docs/backlog/epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md`
 - Approved local password reset review:
   `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md`
+- Proposed public curated-app access review:
+  `docs/backlog/reviews/review-epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md`
 - Local password reset planning slice:
   `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
 - Home messaging + registration feedback + default bookmark slice:
@@ -322,6 +338,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
 - `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
+- `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
 - `docs/reference/ref-runner-contract-v3.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-frontend-transition-continuity-v1.md`
@@ -626,6 +643,17 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0193-flunk-out-frenzy-capture-eject-and-save-devices.md`
 - `docs/backlog/prs/pr-0194-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md`
 - `docs/backlog/prs/pr-0195-flunk-out-frenzy-objective-controllers-and-bank-progression.md`
+- `docs/backlog/prs/pr-0198-flunk-out-frenzy-vpw-donor-topology-and-spec-cutover.md`
+- `docs/backlog/prs/pr-0199-flunk-out-frenzy-donor-semantic-representation-and-trigger-shape-fidelity.md`
+- `docs/backlog/prs/pr-0200-flunk-out-frenzy-launcher-release-path-and-donor-wall-face-representation.md`
+- `docs/backlog/prs/pr-0201-flunk-out-frenzy-shooter-corridor-wall263-de-overlap.md`
+- `docs/backlog/prs/pr-0202-flunk-out-frenzy-full-board-donor-3d-carrier-mapping-and-elevated-rails.md`
+- `docs/backlog/prs/pr-0203-flunk-out-frenzy-elevated-rail-travel-and-left-handoff-mechanics.md`
+- `docs/backlog/prs/pr-0204-flunk-out-frenzy-ruthless-review-gate-for-launcher-input-and-overlay-seam.md`
+- `docs/backlog/prs/pr-0205-flunk-out-frenzy-launcher-root-cause-proof-and-input-lifecycle-fix-plan.md`
+- `docs/backlog/prs/pr-0206-flunk-out-frenzy-plunger-strike-root-cause-proof-and-telemetry-contract.md`
+- `docs/backlog/prs/pr-0207-flunk-out-frenzy-launcher-strike-ready-rest-pose-alignment.md`
+- `docs/backlog/prs/pr-0208-flunk-out-frenzy-strike-ready-rest-pose-and-release-integration-fix.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`

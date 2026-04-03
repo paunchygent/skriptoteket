@@ -1,5 +1,10 @@
 """Focused Playwright proof for the PR-0116 room-template editor refactor.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This browser check reuses the planner smoke's protected-route login and class
 workspace helpers, then validates the extracted room-template editor through a
 live create/edit/delete flow. It exists to confirm the new builder/sidebar/
@@ -14,6 +19,7 @@ from pathlib import Path
 
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     APP_PATH,
     create_roster,
@@ -24,7 +30,6 @@ from scripts._playwright_classroom_planner import (
     wait_for_app_heading,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0116-room-template-check")
 
@@ -116,7 +121,7 @@ def main() -> None:
     edited_name = f"{template_name} Redigerad"
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 960})
         page = context.new_page()
 

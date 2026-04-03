@@ -21,6 +21,7 @@ import {
   describeRuntimeCommand,
   type AnimationScheduler,
   type GameHudSnapshot,
+  type GameLauncherDebugSnapshot,
   type GameViewSnapshot,
   type RuntimeCommand,
 } from "./runtimeTypes";
@@ -46,6 +47,7 @@ export class GameRuntime {
   private hudSnapshot: GameHudSnapshot;
   private viewSnapshot: GameViewSnapshot;
   private inputState = createInitialInputState();
+  private lastLaunchTransitionMs: number | null = null;
 
   static async create(options: Omit<GameRuntimeOptions, "engine"> = {}): Promise<GameRuntime> {
     const [engine, renderer, audio] = await Promise.all([
@@ -97,6 +99,7 @@ export class GameRuntime {
   start(): void {
     const nextState = this.engine.startGame();
     this.inputState = createInitialInputState();
+    this.lastLaunchTransitionMs = null;
     this.commandQueue.clear();
     this.applyEngineState(nextState, "running");
     this.runner.start();
@@ -135,6 +138,7 @@ export class GameRuntime {
   restart(): void {
     const nextState = this.engine.restartGame();
     this.inputState = createInitialInputState();
+    this.lastLaunchTransitionMs = null;
     this.commandQueue.clear();
     this.applyEngineState(nextState, "running");
     this.runner.start();
@@ -227,6 +231,16 @@ export class GameRuntime {
     this.applyEngineState(nextState, nextStatus);
   }
 
+  debugLauncherTelemetry(): GameLauncherDebugSnapshot {
+    return {
+      input: {
+        launchPressed: this.inputState.launchPressed,
+        lastTransitionMs: this.lastLaunchTransitionMs,
+      },
+      launcher: this.viewSnapshot.launcherTelemetry ?? null,
+    };
+  }
+
   private readonly onFixedStep = (dtMs: number): void => {
     this.processPendingCommands();
 
@@ -265,6 +279,9 @@ export class GameRuntime {
           effects.push({ type: "flipper-fired", side: "right" });
         }
       } else {
+        if (this.inputState.launchPressed !== command.pressed) {
+          this.lastLaunchTransitionMs = safeNowMs();
+        }
         this.inputState.launchPressed = command.pressed;
       }
 
@@ -375,4 +392,11 @@ async function createDefaultRenderer(): Promise<RuntimeRenderer> {
   // Keep Pixi out of jsdom unit-test imports; browser/live checks remain renderer truth.
   const { PixiRenderer } = await import("../render/PixiRenderer");
   return PixiRenderer.create();
+}
+
+function safeNowMs(): number {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    return performance.now();
+  }
+  return Date.now();
 }

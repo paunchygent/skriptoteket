@@ -41,7 +41,7 @@ Target Python is **3.13–3.14**.
   - Add the relevant verification commands/manual checks under `## Verification`.
 - **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agents/rules/096-review-workflow.md`
 - `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
-- `.agents/`: agent workflow helpers (`.agents/readme-first.md`, `.agents/handoff.md`, prompt template) + coding rules (`.agents/rules/`)
+- `.agents/`: agent workflow helpers (`.agents/handoff.md`, prompt template) + coding rules (`.agents/rules/`)
 - `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
 
@@ -128,9 +128,9 @@ Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
 
 ## Agent docs size budgets (enforced)
 
-- Keep `.agents/readme-first.md` ≤ 300 lines and `.agents/handoff.md` ≤ 200 lines (enforced by pre-commit).
+- Keep `.agents/handoff.md` ≤ 200 lines (enforced by pre-commit).
 - `.agents/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
-  `.agents/readme-first.md` (links only) + `docs/`.
+  `docs/`.
 
 ## Observability Stack
 

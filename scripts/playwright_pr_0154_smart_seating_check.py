@@ -1,5 +1,10 @@
 """Live PR-0154 proof for Klassrumskartan smart seating.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This browser check seeds precise smart-seating scenarios through the real local
 API, then verifies the shipped teacher workflow in the live SPA against the
 `PR-0154` contract:
@@ -22,13 +27,13 @@ from uuid import uuid4
 import requests
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
     login_to_app,
     open_class_workspace,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0154-smart-seating")
 
@@ -491,7 +496,7 @@ def main() -> None:
     )
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 1100})
         page = context.new_page()
         login_to_app(page, base_url=base_url, email=config.email, password=config.password)

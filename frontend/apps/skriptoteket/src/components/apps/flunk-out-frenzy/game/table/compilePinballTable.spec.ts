@@ -19,7 +19,13 @@ import {
 import {
   PROTOTYPE_ALPHA_VPW_DONOR_SOURCES,
   VPW_GATE_SPECS,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_ENTRY_ANCHOR_3D,
+  VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_DONOR_SOURCES,
   VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_EXIT_ANCHOR_3D,
   VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_DONOR_SOURCES,
   VPW_LEFT_UPPER_INNER_METAL_PATH,
   VPW_METAL_RAIL_3D_SPECS,
@@ -181,6 +187,11 @@ describe("compilePinballTable", () => {
     );
     expect(mainBoundarySegments.length).toBe(VPW_OUTER_BOUNDARY_MAIN_PATH.length - 1);
     expect(shooterCorridorSegments.length).toBe(VPW_OUTER_BOUNDARY_SHOOTER_CORRIDOR_PATH.length - 1);
+    expect(
+      compiled.physics.colliders.some((collider) => {
+        return collider.id.startsWith("outer-boundary-wall263-render:");
+      }),
+    ).toBe(false);
     expect(
       compiled.render.nodes.find((node) => node.id === "outer-boundary-main:render"),
     ).toBeUndefined();
@@ -403,9 +414,29 @@ describe("compilePinballTable", () => {
           tag: "launcher/travel/overhead",
           donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_DONOR_SOURCES,
           path: VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_3D_PATH,
+          nextRouteTag: "launcher/travel/endpoint-bridge",
+        }),
+        expect.objectContaining({
+          tag: "launcher/travel/endpoint-bridge",
+          donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_DONOR_SOURCES,
+          path: VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_3D_PATH,
+          entryMode: "chain",
+          nextRouteTag: "launcher/travel/descent",
+        }),
+        expect.objectContaining({
+          tag: "launcher/travel/descent",
+          donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES,
+          path: VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_3D_PATH,
+          entryMode: "chain",
         }),
       ]),
     );
+    const endpointBridgeRoute = compiled.launcher.threeD.travelRoutes?.find((route) => {
+      return route.tag === "launcher/travel/endpoint-bridge";
+    });
+    expect(endpointBridgeRoute?.path).toHaveLength(2);
+    expect(endpointBridgeRoute?.path[0]).toEqual(VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_EXIT_ANCHOR_3D);
+    expect(endpointBridgeRoute?.path[1]).toEqual(VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_ENTRY_ANCHOR_3D);
   });
 
   it("maps upper inner metal guides from donor Wall017/Wall002 as explicit carriers", () => {
@@ -506,6 +537,135 @@ describe("compilePinballTable", () => {
       saveDeviceKind: "kickback",
       cooldownMs: 650,
     });
+  });
+
+  it("rejects launcher travel-route seams when chained endpoints are not donor-continuous", () => {
+    expect(() => {
+      compilePinballTable({
+        ...PROTOTYPE_ALPHA_TABLE_SPEC,
+        launcher: {
+          ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher,
+          threeD: {
+            ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD,
+            travelRoutes: (PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD.travelRoutes ?? []).map((route) => {
+              if (route.tag !== "launcher/travel/endpoint-bridge") {
+                return route;
+              }
+              const [first, ...rest] = route.path;
+              return {
+                ...route,
+                path: [{ ...first, x: first.x + 1.1 }, ...rest],
+              };
+            }),
+          },
+        },
+      });
+    }).toThrowError(
+      'Launcher 3D travel route seam "launcher/travel/overhead" -> "launcher/travel/endpoint-bridge"',
+    );
+  });
+
+  it("rejects endpoint-bridge seams when the descent-entry anchor is perturbed by more than 1px", () => {
+    expect(() => {
+      compilePinballTable({
+        ...PROTOTYPE_ALPHA_TABLE_SPEC,
+        launcher: {
+          ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher,
+          threeD: {
+            ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD,
+            travelRoutes: (PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD.travelRoutes ?? []).map((route) => {
+              if (route.tag !== "launcher/travel/endpoint-bridge") {
+                return route;
+              }
+              const path = [...route.path];
+              const lastIndex = path.length - 1;
+              const last = path[lastIndex];
+              if (!last) {
+                return route;
+              }
+              path[lastIndex] = { ...last, x: last.x + 1.1 };
+              return {
+                ...route,
+                path,
+              };
+            }),
+          },
+        },
+      });
+    }).toThrowError(
+      'Launcher 3D travel route seam "launcher/travel/endpoint-bridge" -> "launcher/travel/descent"',
+    );
+  });
+
+  it("rejects chained launcher routes that declare terminal handoff velocity", () => {
+    expect(() => {
+      compilePinballTable({
+        ...PROTOTYPE_ALPHA_TABLE_SPEC,
+        launcher: {
+          ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher,
+          threeD: {
+            ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD,
+            travelRoutes: (PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD.travelRoutes ?? []).map((route) => {
+              if (route.tag !== "launcher/travel/endpoint-bridge") {
+                return route;
+              }
+              return {
+                ...route,
+                handoffVelocity: { x: -140, y: 360 },
+              } as unknown as typeof route;
+            }),
+          },
+        },
+      });
+    }).toThrowError(
+      'Launcher 3D travel route "launcher/travel/endpoint-bridge" must not declare handoff velocity when chaining.',
+    );
+  });
+
+  it("rejects terminal launcher routes missing handoff velocity", () => {
+    expect(() => {
+      compilePinballTable({
+        ...PROTOTYPE_ALPHA_TABLE_SPEC,
+        launcher: {
+          ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher,
+          threeD: {
+            ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD,
+            travelRoutes: (PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD.travelRoutes ?? []).map((route) => {
+              if (route.tag !== "launcher/travel/descent") {
+                return route;
+              }
+              return {
+                ...route,
+                handoffVelocity: undefined,
+              } as unknown as typeof route;
+            }),
+          },
+        },
+      });
+    }).toThrowError(
+      'Launcher 3D travel route "launcher/travel/descent" must declare a terminal handoff velocity.',
+    );
+  });
+
+  it("rejects launcher definitions without exactly one feed and one exit sensor", () => {
+    expect(() => {
+      compilePinballTable({
+        ...PROTOTYPE_ALPHA_TABLE_SPEC,
+        launcher: {
+          ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher,
+          threeD: {
+            ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD,
+            sensors: [
+              ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD.sensors,
+              {
+                ...PROTOTYPE_ALPHA_TABLE_SPEC.launcher.threeD.sensors[0],
+                tag: "launcher/feed-duplicate",
+              },
+            ],
+          },
+        },
+      });
+    }).toThrowError('Launcher "launcher/main" must declare exactly one feed sensor.');
   });
 
   it("rejects capture devices with zero eject impulse", () => {

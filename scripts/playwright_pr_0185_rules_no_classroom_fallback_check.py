@@ -1,5 +1,10 @@
 """Live PR-0185 proof for the rules no-classroom fallback slice.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify the narrowed ST-29-06 implementation against the live local SPA by
     creating one real roster with no classroom, then proving that `Regler`
@@ -22,13 +27,13 @@ from uuid import uuid4
 import requests
 from playwright.sync_api import Locator, Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
     login_to_app,
     open_class_workspace,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0185-rules-no-classroom-fallback-check")
 EMPTY_STATE_COPY = (
@@ -244,7 +249,7 @@ def main() -> None:
     roster_name = _prepare_workspace(api_base_url, config.email, config.password)
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         try:
             for screenshot_prefix, width, height in [
                 ("desktop-1440x900", 1440, 900),

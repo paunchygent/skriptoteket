@@ -17,11 +17,14 @@ import { DEFAULT_TABLE_SURFACES } from "./pinballTablePlanTypes";
 import { degreesToRadians, magnitude, midpoint, segmentAngle, sub, v } from "./pinballTableMath";
 import type {
   TableGateDefinition,
+  TableLauncherTravelRoute3DDefinition,
   TablePoint,
   TableRegionShapeDefinition,
   TableTripwireDefinition,
   TableTriggerShapeDefinition,
 } from "./tableDefinitionTypes";
+
+const LAUNCHER_ROUTE_SEAM_TOLERANCE = 1;
 
 export function compilePinballTable(spec: PinballTableSpec): CompiledPinballTable {
   assertValidTableSpec(spec);
@@ -756,6 +759,14 @@ function assertValidTableSpec(spec: PinballTableSpec): void {
   for (const sensor of spec.launcher.threeD.sensors) {
     assertValidTriggerDefinition(sensor.tag, sensor.shape);
   }
+  const feedSensors = spec.launcher.threeD.sensors.filter((sensor) => sensor.semanticRole === "feed");
+  const exitSensors = spec.launcher.threeD.sensors.filter((sensor) => sensor.semanticRole === "exit");
+  if (feedSensors.length !== 1) {
+    throw new Error('Launcher "launcher/main" must declare exactly one feed sensor.');
+  }
+  if (exitSensors.length !== 1) {
+    throw new Error('Launcher "launcher/main" must declare exactly one exit sensor.');
+  }
 
   if (spec.launcher.threeD.plunger.width <= 0
     || spec.launcher.threeD.plunger.depth <= 0
@@ -763,6 +774,7 @@ function assertValidTableSpec(spec: PinballTableSpec): void {
     || spec.launcher.threeD.plunger.stroke <= 0) {
     throw new Error('Launcher 3D plunger must declare positive width/depth/height/stroke.');
   }
+  assertValidLauncherTravelRoutes(spec.launcher.threeD.travelRoutes ?? []);
 
   for (const tripwire of spec.tripwires) {
     assertValidTriggerDefinition(tripwire.tag, resolveTriggerShapeDefinition(tripwire));
@@ -920,5 +932,88 @@ function assertValidLauncherRegionDefinition(
         );
       }
       return;
+  }
+}
+
+function assertValidLauncherTravelRoutes(
+  routes: readonly TableLauncherTravelRoute3DDefinition[],
+): void {
+  const routeByTag = new Map<string, TableLauncherTravelRoute3DDefinition>();
+
+  for (const route of routes) {
+    if (routeByTag.has(route.tag)) {
+      throw new Error(`Launcher 3D travel route tag "${route.tag}" must be unique.`);
+    }
+    routeByTag.set(route.tag, route);
+    if (route.path.length < 2) {
+      throw new Error(`Launcher 3D travel route "${route.tag}" must have at least two points.`);
+    }
+    if (route.minChargeRatio < 0 || route.minChargeRatio > 1) {
+      throw new Error(`Launcher 3D travel route "${route.tag}" minChargeRatio must be in [0, 1].`);
+    }
+    if (!route.nextRouteTag && !route.handoffVelocity) {
+      throw new Error(
+        `Launcher 3D travel route "${route.tag}" must declare a terminal handoff velocity.`,
+      );
+    }
+    const hasMidChainHandoff = route.nextRouteTag
+      && (route as { handoffVelocity?: unknown }).handoffVelocity !== undefined;
+    if (hasMidChainHandoff) {
+      throw new Error(
+        `Launcher 3D travel route "${route.tag}" must not declare handoff velocity when chaining.`,
+      );
+    }
+  }
+
+  for (const route of routes) {
+    if (!route.nextRouteTag) {
+      continue;
+    }
+    const nextRoute = routeByTag.get(route.nextRouteTag);
+    if (!nextRoute) {
+      throw new Error(
+        `Launcher 3D travel route "${route.tag}" references unknown nextRouteTag "${route.nextRouteTag}".`,
+      );
+    }
+    const nextEntryMode = nextRoute.entryMode ?? "release";
+    if (nextEntryMode !== "chain") {
+      throw new Error(
+        `Launcher 3D travel route "${route.nextRouteTag}" must declare entryMode "chain".`,
+      );
+    }
+
+    const routeEnd = route.path[route.path.length - 1];
+    const nextStart = nextRoute.path[0];
+    const xyDelta = Math.hypot(routeEnd.x - nextStart.x, routeEnd.y - nextStart.y);
+    const zDelta = Math.abs(routeEnd.z - nextStart.z);
+    if (xyDelta > LAUNCHER_ROUTE_SEAM_TOLERANCE || zDelta > LAUNCHER_ROUTE_SEAM_TOLERANCE) {
+      throw new Error(
+        `Launcher 3D travel route seam "${route.tag}" -> "${nextRoute.tag}" must be continuous `
+        + `(xy<=${LAUNCHER_ROUTE_SEAM_TOLERANCE}, z<=${LAUNCHER_ROUTE_SEAM_TOLERANCE}).`,
+      );
+    }
+  }
+
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const visit = (tag: string) => {
+    if (visited.has(tag)) {
+      return;
+    }
+    if (visiting.has(tag)) {
+      throw new Error(`Launcher 3D travel routes must not form cycles (detected at "${tag}").`);
+    }
+
+    visiting.add(tag);
+    const route = routeByTag.get(tag);
+    if (route?.nextRouteTag) {
+      visit(route.nextRouteTag);
+    }
+    visiting.delete(tag);
+    visited.add(tag);
+  };
+
+  for (const route of routes) {
+    visit(route.tag);
   }
 }

@@ -1,5 +1,10 @@
 """Focused Playwright proof for the PR-0120 seating export affordance.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This script validates the live teacher-facing seating export flow through the
 real planner UI. It checks the compact export subsection, the default
 `Exportera` happy path, and a forced reload/reopen recovery path where the
@@ -23,6 +28,7 @@ import requests
 from playwright.sync_api import Download, Page, expect, sync_playwright
 from sqlalchemy import select
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     APP_PATH,
     create_roster,
@@ -32,7 +38,6 @@ from scripts._playwright_classroom_planner import (
     wait_for_app_heading,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0120-seating-export-check")
 
@@ -290,7 +295,7 @@ def main() -> None:
     template_name = f"PW PR0120 Sal {run_suffix}"
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = _create_authenticated_context(
             browser,
             base_url=base_url,

@@ -33,6 +33,13 @@ class CuratedAppUiMode(StrEnum):
     BESPOKE_REQUIRED = "bespoke_required"
 
 
+class CuratedAppPublicAccessProfile(StrEnum):
+    AUTHENTICATED_ONLY = "authenticated_only"
+    PUBLIC_STATELESS = "public_stateless"
+    PUBLIC_BROWSER_RUNTIME = "public_browser_runtime"
+    PUBLIC_BROWSER_WORKSPACE_WITH_UPGRADE = "public_browser_workspace_with_upgrade"
+
+
 class CuratedAppPlacement(BaseModel):
     """Where an app appears in Katalog (profession/category browse tree)."""
 
@@ -64,6 +71,9 @@ class CuratedAppDefinition(BaseModel):
     title: str
     summary: str | None = None
     min_role: Role = Role.USER
+    public_access_profile: CuratedAppPublicAccessProfile = (
+        CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY
+    )
     default_favorite: bool = False
     placements: list[CuratedAppPlacement]
 
@@ -104,3 +114,7 @@ class CuratedAppDefinition(BaseModel):
             p.profession_slug == normalized_profession and p.category_slug == normalized_category
             for p in self.placements
         )
+
+    @property
+    def supports_public_access(self) -> bool:
+        return self.public_access_profile is not CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY

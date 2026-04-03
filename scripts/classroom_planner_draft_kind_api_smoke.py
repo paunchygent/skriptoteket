@@ -1,5 +1,9 @@
 """Request-level smoke for class-scoped draft kinds in Klassrumskartan.
 
+This script is the canonical request-level planner API baseline. It should stay
+green alongside the browser smoke so class-scoped draft ownership remains
+guarded even when targeted planner proofs are pruned.
+
 This script uses the repo's standard smoke-test config to log in, create
 temporary planner assets, and verify that active drafts now coexist per class
 and draft kind instead of per owner. It writes a small JSON summary artifact so

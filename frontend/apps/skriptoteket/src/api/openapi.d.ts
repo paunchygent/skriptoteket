@@ -1958,6 +1958,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/apps/{app_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Public App Bootstrap */
+        get: operations["get_public_app_bootstrap_api_v1_public_apps__app_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -2783,6 +2800,11 @@ export interface components {
              */
             tool_id: string;
         };
+        /**
+         * CuratedAppPublicAccessProfile
+         * @enum {string}
+         */
+        CuratedAppPublicAccessProfile: "authenticated_only" | "public_stateless" | "public_browser_runtime" | "public_browser_workspace_with_upgrade";
         /**
          * CuratedAppUiMode
          * @enum {string}
@@ -4172,6 +4194,26 @@ export interface components {
         ProfileResponse: {
             profile: components["schemas"]["UserProfile"];
             user: components["schemas"]["User"];
+        };
+        /**
+         * PublicAppBootstrapResponse
+         * @description Public-safe bootstrap payload for a curated app public host.
+         */
+        PublicAppBootstrapResponse: {
+            /** App Id */
+            app_id: string;
+            /**
+             * Host Mode
+             * @default public
+             * @constant
+             */
+            host_mode: "public";
+            public_access_profile: components["schemas"]["CuratedAppPublicAccessProfile"];
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+            ui_mode: components["schemas"]["CuratedAppUiMode"];
         };
         /** PublishToolResponse */
         PublishToolResponse: {
@@ -10233,6 +10275,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_public_app_bootstrap_api_v1_public_apps__app_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicAppBootstrapResponse"];
+                };
             };
             /** @description Validation Error */
             422: {

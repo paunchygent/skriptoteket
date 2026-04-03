@@ -1,5 +1,10 @@
 """Live auth-recovery proof for PR-0176.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify the forgot-password resend affordance and the login-modal
     EMAIL_NOT_VERIFIED resend affordance against a running local SPA/backend.

@@ -82,6 +82,7 @@ class FakePhysicsMachine implements PrototypeAlphaPhysicsMachine {
           angleDeg: PROTOTYPE_ALPHA_TABLE.flippers.right.restAngleDeg,
         },
       },
+      launcherTelemetry: null,
     };
   }
 

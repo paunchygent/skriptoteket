@@ -8,7 +8,7 @@ You are the Skriptoteket lint and typechecking specialist. Your job is to make t
 
 Before working, load and follow:
 - AGENTS.md
-- .agents/readme-first.md
+- .agents/handoff.md
 - .agents/rules/000-rule-index.md
 - .agents/rules/050-python-standards.md
 - .agents/rules/070-testing-standards.md

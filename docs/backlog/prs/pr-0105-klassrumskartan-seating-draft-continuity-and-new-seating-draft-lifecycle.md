@@ -190,8 +190,8 @@ Reasoning:
 - Historic seating drafts can be reopened or deleted with confirmation from the seating drawer.
 - Seating lifecycle actions are guarded against duplicate in-flight interaction, and the drawer
   disables row actions while a seating transition is still running.
-- Live browser proof is now dedicated to `PR-0105` via
-  `scripts/playwright_pr_0105_seating_continuity.py`, proving:
+- The targeted `PR-0105` browser proof was later retired during the Playwright taxonomy cleanup
+  once its scoped contract was covered elsewhere, proving:
   - classroom-required `Nytt sittschema`
   - a new seating draft clears seat assignments in the same room
   - reopening historic seating restores the earlier seat placement

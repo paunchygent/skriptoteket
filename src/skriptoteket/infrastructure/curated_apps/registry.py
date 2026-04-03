@@ -13,6 +13,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
+    CuratedAppPublicAccessProfile,
     CuratedAppUiMode,
     curated_app_tool_id,
 )
@@ -41,6 +42,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 title="Interaktiv räknare (demo)",
                 summary="Demo-app som körs utan verktygseditor och använder UI-kontrakt v2.",
                 min_role=Role.USER,
+                public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,
                 placements=[
                     CuratedAppPlacement(profession_slug="gemensamt", category_slug="ovrigt"),
                 ],
@@ -56,6 +58,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     "säkerhetsråd för ämnen i listan."
                 ),
                 min_role=Role.USER,
+                public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,
                 placements=[
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
                 ],
@@ -71,6 +74,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     "(batch + forhandsvisning)."
                 ),
                 min_role=Role.USER,
+                public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,
                 placements=[
                     CuratedAppPlacement(profession_slug="gemensamt", category_slug="ovrigt"),
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
@@ -87,6 +91,9 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     "finjustera med drag-and-drop."
                 ),
                 min_role=Role.USER,
+                public_access_profile=(
+                    CuratedAppPublicAccessProfile.PUBLIC_BROWSER_WORKSPACE_WITH_UPGRADE
+                ),
                 default_favorite=True,
                 placements=[
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
@@ -103,6 +110,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     "framtida stod for officiella high scores."
                 ),
                 min_role=Role.USER,
+                public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,
                 placements=[
                     CuratedAppPlacement(profession_slug="gemensamt", category_slug="ovrigt"),
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),

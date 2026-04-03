@@ -1,5 +1,10 @@
 """Focused Playwright proof for the authenticated top-bar brand hit target.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This check verifies that the top-left Skriptoteket brand keeps a stable link
 hit target with a pointer cursor after common planner modal flows complete.
 """
@@ -11,9 +16,9 @@ from pathlib import Path
 
 from playwright.sync_api import Page, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import login_to_app, wait_for_app_heading
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0166-topbar-brand-hit-target-check")
 
@@ -66,7 +71,7 @@ def main() -> None:
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 960})
         page = context.new_page()
 

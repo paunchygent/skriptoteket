@@ -10,7 +10,12 @@
 
 import RAPIER3D from "@dimforge/rapier3d-compat";
 
-import type { MachineEvent } from "./physicsTypes";
+import type {
+  LauncherRouteCaptureDecision,
+  LauncherRouteCaptureRejectReason,
+  MachineEvent,
+  PhysicsLauncherTelemetrySnapshot,
+} from "./physicsTypes";
 import { isPointInTriggerShape } from "./plungerLaneState";
 import type {
   TableBallDefinition,
@@ -46,6 +51,18 @@ interface ActiveTravelRoute {
   speed: number;
 }
 
+const RELEASE_ROUTE_ENTRY_TOLERANCE_MULTIPLIER = 1.5;
+const RELEASE_ROUTE_ENTRY_MIN_UPWARD_SPEED = 1;
+const RELEASE_ROUTE_CAPTURE_WINDOW_MS = 2200;
+const STRIKE_READY_REST_GAP_PX = 1;
+const RELEASE_INTEGRATION_SUBSTEP_MS = 4;
+const RELEASE_INTEGRATION_WINDOW_MS = 64;
+const RELEASE_STRIKE_LEAD_PX = 3;
+const RELEASE_CONTACT_OVERLAP_PX = 1.5;
+const RELEASE_STRIKE_SETTLE_MARGIN_MS = 24;
+
+type RouteCaptureRejectReason = Exclude<LauncherRouteCaptureRejectReason, null>;
+
 export class LauncherChain3D {
   private readonly world: RAPIER3D.World;
   private readonly plungerBody: RAPIER3D.RigidBody;
@@ -56,7 +73,24 @@ export class LauncherChain3D {
   private exitInside = false;
   private boardHandoffArmed = false;
   private activeTravelRoute: ActiveTravelRoute | null = null;
-  private pendingRouteGateEvent = false;
+  private pendingReleaseChargeRatio: number | null = null;
+  private routeCaptureWindowMsRemaining = 0;
+  private stepCounter = 0;
+  private feedInside = false;
+  private lastSw16ExitStep: number | null = null;
+  private lastRouteCaptureDecision: LauncherRouteCaptureDecision = "none";
+  private lastRouteCaptureRejectReason: LauncherRouteCaptureRejectReason = null;
+  private currentPlungerTargetY = 0;
+  private currentPlungerVelocityY = 0;
+  private plungerBallContactActive = false;
+  private contactEnteredThisStep = false;
+  private contactExitedThisStep = false;
+  private separationPx: number | null = null;
+  private overlapPx = 0;
+  private relativeVyAtContact: number | null = null;
+  private lastContactAtStep: number | null = null;
+  private impulseTransferMarker = 0;
+  private releaseIntegrationWindowMsRemaining = 0;
 
   constructor(
     private readonly launcher: TableLauncherDefinition,
@@ -66,6 +100,7 @@ export class LauncherChain3D {
     this.parkCenter = launcher.threeD.plunger.center;
     this.releasePlaneY = resolveReleasePlaneY(launcher);
     this.currentPlungerCenterY = this.parkCenter.y;
+    this.currentPlungerTargetY = this.parkCenter.y;
 
     this.createFloor();
     this.createWalls();
@@ -82,10 +117,11 @@ export class LauncherChain3D {
 
   spawnBall(position: TablePoint): void {
     this.removeBall();
+    const strikeReadyPosition = this.resolveStrikeReadySpawnPosition(position);
 
     const body = this.world.createRigidBody(
       RAPIER3D.RigidBodyDesc.dynamic()
-        .setTranslation(position.x, position.y, this.launcher.threeD.ballRestZ)
+        .setTranslation(strikeReadyPosition.x, strikeReadyPosition.y, this.launcher.threeD.ballRestZ)
         .setCanSleep(false)
         .setLinearDamping(0.08)
         .setAngularDamping(0.08)
@@ -100,10 +136,27 @@ export class LauncherChain3D {
     );
 
     this.ballBody = body;
+    this.ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    this.ballBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    this.stepCounter = 0;
+    this.feedInside = this.isInsideFeedSensor();
     this.exitInside = this.isInsideExitSensor();
+    this.lastSw16ExitStep = null;
     this.boardHandoffArmed = false;
     this.activeTravelRoute = null;
-    this.pendingRouteGateEvent = false;
+    this.pendingReleaseChargeRatio = null;
+    this.routeCaptureWindowMsRemaining = 0;
+    this.lastRouteCaptureDecision = "none";
+    this.lastRouteCaptureRejectReason = null;
+    this.plungerBallContactActive = false;
+    this.contactEnteredThisStep = false;
+    this.contactExitedThisStep = false;
+    this.separationPx = null;
+    this.overlapPx = 0;
+    this.relativeVyAtContact = null;
+    this.lastContactAtStep = null;
+    this.impulseTransferMarker = 0;
+    this.releaseIntegrationWindowMsRemaining = 0;
   }
 
   removeBall(): void {
@@ -116,7 +169,21 @@ export class LauncherChain3D {
     this.exitInside = false;
     this.boardHandoffArmed = false;
     this.activeTravelRoute = null;
-    this.pendingRouteGateEvent = false;
+    this.pendingReleaseChargeRatio = null;
+    this.routeCaptureWindowMsRemaining = 0;
+    this.feedInside = false;
+    this.stepCounter = 0;
+    this.currentPlungerTargetY = this.parkCenter.y;
+    this.currentPlungerVelocityY = 0;
+    this.plungerBallContactActive = false;
+    this.contactEnteredThisStep = false;
+    this.contactExitedThisStep = false;
+    this.separationPx = null;
+    this.overlapPx = 0;
+    this.relativeVyAtContact = null;
+    this.lastContactAtStep = null;
+    this.impulseTransferMarker = 0;
+    this.releaseIntegrationWindowMsRemaining = 0;
   }
 
   currentSnapshot(): LauncherChainBallSnapshot | null {
@@ -142,6 +209,53 @@ export class LauncherChain3D {
     };
   }
 
+  currentTelemetrySnapshot(): PhysicsLauncherTelemetrySnapshot {
+    const ballPosition = this.ballBody?.translation() ?? null;
+    const ballVelocity = this.ballBody?.linvel() ?? null;
+
+    return {
+      plunger: {
+        currentY: this.currentPlungerCenterY,
+        targetY: this.currentPlungerTargetY,
+        chargeRatio: null,
+        phase: "idle",
+      },
+      ball: {
+        owner: this.ballBody ? "launcher_chain" : "none",
+        position: ballPosition
+          ? { x: ballPosition.x, y: ballPosition.y, z: ballPosition.z }
+          : null,
+        velocity: ballVelocity
+          ? { x: ballVelocity.x, y: ballVelocity.y, z: ballVelocity.z }
+          : null,
+      },
+      route: {
+        pendingReleaseChargeRatio: this.pendingReleaseChargeRatio,
+        activeRouteTag: this.activeTravelRoute?.route.tag ?? null,
+        captureWindowMsRemaining: this.routeCaptureWindowMsRemaining,
+      },
+      routeCapture: {
+        lastDecision: this.lastRouteCaptureDecision,
+        lastRejectReason: this.lastRouteCaptureRejectReason,
+      },
+      sensors: {
+        feedInside: this.feedInside,
+        exitInside: this.exitInside,
+        lastSw16ExitStep: this.lastSw16ExitStep,
+      },
+      contact: {
+        plungerBallContactActive: this.plungerBallContactActive,
+        contactEnteredThisStep: this.contactEnteredThisStep,
+        contactExitedThisStep: this.contactExitedThisStep,
+        separationPx: this.separationPx,
+        overlapPx: this.overlapPx,
+        relativeVyAtContact: this.relativeVyAtContact,
+        lastContactAtStep: this.lastContactAtStep,
+        impulseTransferMarker: this.impulseTransferMarker,
+      },
+    };
+  }
+
   step(
     dtMs: number,
     chargeRatio: number | null,
@@ -152,29 +266,46 @@ export class LauncherChain3D {
     }
 
     const machineEvents: MachineEvent[] = [];
+    this.stepCounter += 1;
+    this.contactEnteredThisStep = false;
+    this.contactExitedThisStep = false;
+    this.overlapPx = 0;
+    this.relativeVyAtContact = null;
+    this.impulseTransferMarker = 0;
     if (releaseChargeRatio !== null) {
-      this.applyReleaseImpulse(releaseChargeRatio);
+      this.pendingReleaseChargeRatio = releaseChargeRatio;
+      this.boardHandoffArmed = false;
+      this.routeCaptureWindowMsRemaining = RELEASE_ROUTE_CAPTURE_WINDOW_MS;
+      this.lastRouteCaptureDecision = "none";
+      this.lastRouteCaptureRejectReason = null;
+      this.releaseIntegrationWindowMsRemaining = this.computeReleaseIntegrationWindowMs();
     }
-    this.syncPlunger(dtMs, chargeRatio);
-    this.world.timestep = dtMs / 1000;
-    this.world.step();
+    this.stepWorldWithReleaseIntegration(dtMs, chargeRatio);
+    this.tryEnterReleaseTravelRoute();
+    if (this.pendingReleaseChargeRatio !== null && !this.activeTravelRoute) {
+      this.routeCaptureWindowMsRemaining = Math.max(
+        this.routeCaptureWindowMsRemaining - dtMs,
+        0,
+      );
+      if (this.routeCaptureWindowMsRemaining === 0) {
+        this.pendingReleaseChargeRatio = null;
+        this.markRouteCaptureRejected("window_expired");
+      }
+    }
 
     const routeHandoff = this.activeTravelRoute ? this.advanceTravelRoute(dtMs) : null;
     if (this.activeTravelRoute) {
       this.boardHandoffArmed = false;
     }
+    this.feedInside = this.isInsideFeedSensor();
     const wasInsideExit = this.exitInside;
     const isInsideExit = this.isInsideExitSensor();
     this.exitInside = isInsideExit;
 
-    if (this.pendingRouteGateEvent) {
-      machineEvents.push({ type: "gate-passed", tag: "gate/launch-lane-exit" });
-      this.pendingRouteGateEvent = false;
-    }
-
     if (wasInsideExit && !isInsideExit) {
       machineEvents.push({ type: "gate-passed", tag: "gate/launch-lane-exit" });
       this.boardHandoffArmed = true;
+      this.lastSw16ExitStep = this.stepCounter;
     }
 
     if (this.boardHandoffArmed && !this.activeTravelRoute && this.hasClearedReleasePlane()) {
@@ -189,6 +320,36 @@ export class LauncherChain3D {
     }
 
     return { releaseToBoard: null, machineEvents };
+  }
+
+  private resolveStrikeReadySpawnPosition(position: TablePoint): TablePoint {
+    const plungerFrontFaceY = this.parkCenter.y - this.launcher.threeD.plunger.depth / 2;
+    const desiredBallY = plungerFrontFaceY - this.ball.radius - STRIKE_READY_REST_GAP_PX;
+    return {
+      x: position.x,
+      y: Math.min(position.y, desiredBallY),
+    };
+  }
+
+  private stepWorldWithReleaseIntegration(
+    dtMs: number,
+    chargeRatio: number | null,
+  ): void {
+    let remainingMs = dtMs;
+    while (remainingMs > 0) {
+      const stepMs = this.releaseIntegrationWindowMsRemaining > 0
+        ? Math.min(RELEASE_INTEGRATION_SUBSTEP_MS, remainingMs)
+        : remainingMs;
+      this.syncPlunger(stepMs, chargeRatio);
+      this.world.timestep = stepMs / 1000;
+      this.world.step();
+      this.updateContactTelemetry();
+      remainingMs -= stepMs;
+    }
+    this.releaseIntegrationWindowMsRemaining = Math.max(
+      this.releaseIntegrationWindowMsRemaining - dtMs,
+      0,
+    );
   }
 
   private createFloor(): void {
@@ -253,9 +414,13 @@ export class LauncherChain3D {
   private syncPlunger(dtMs: number, chargeRatio: number | null): void {
     const plunger = this.launcher.threeD.plunger;
     const dtSeconds = dtMs / 1000;
+    const releaseStrikeTargetY = this.resolveReleaseStrikeTargetY();
     const targetCenterY = chargeRatio !== null
       ? this.parkCenter.y + plunger.stroke * chargeRatio
-      : this.parkCenter.y;
+      : (this.releaseIntegrationWindowMsRemaining > 0
+        ? releaseStrikeTargetY
+        : this.parkCenter.y);
+    this.currentPlungerTargetY = targetCenterY;
 
     const maxTravel = chargeRatio !== null
       ? plunger.speedPull * dtMs
@@ -265,6 +430,7 @@ export class LauncherChain3D {
       ? delta
       : Math.sign(delta) * maxTravel;
     this.currentPlungerCenterY += travel;
+    this.currentPlungerVelocityY = dtSeconds > 0 ? travel / dtSeconds : 0;
 
     this.plungerBody.setNextKinematicTranslation({
       x: this.parkCenter.x,
@@ -273,44 +439,110 @@ export class LauncherChain3D {
     });
   }
 
-  private applyReleaseImpulse(chargeRatio: number): void {
+  private resolveReleaseStrikeTargetY(): number {
+    const defaultTarget = this.parkCenter.y - RELEASE_STRIKE_LEAD_PX;
+    if (!this.ballBody) {
+      return defaultTarget;
+    }
+    const ballBottomY = this.ballBody.translation().y + this.ball.radius;
+    const contactTarget = ballBottomY
+      - RELEASE_CONTACT_OVERLAP_PX
+      + this.launcher.threeD.plunger.depth / 2;
+    return Math.min(defaultTarget, contactTarget);
+  }
+
+  private computeReleaseIntegrationWindowMs(): number {
+    const plunger = this.launcher.threeD.plunger;
+    const strikeTargetY = this.resolveReleaseStrikeTargetY();
+    const distanceToStrike = Math.abs(this.currentPlungerCenterY - strikeTargetY);
+    const speedPerSecond = Math.max(plunger.speedFire, 1e-6);
+    const travelMs = (distanceToStrike / speedPerSecond) * 1000;
+    return Math.max(
+      RELEASE_INTEGRATION_WINDOW_MS,
+      Math.ceil(travelMs + RELEASE_STRIKE_SETTLE_MARGIN_MS),
+    );
+  }
+
+  private tryEnterReleaseTravelRoute(): void {
     if (!this.ballBody) {
       return;
     }
-    const plunger = this.launcher.threeD.plunger;
-    const velocity = this.ballBody.linvel();
-    const minimumLaunchSpeed = this.launcher.launchImpulseMin * plunger.momentumTransfer;
-    const maximumLaunchSpeed = this.launcher.launchImpulseMax * plunger.momentumTransfer;
-    const launchSpeed = minimumLaunchSpeed + (maximumLaunchSpeed - minimumLaunchSpeed) * chargeRatio;
 
-    if (-velocity.y >= launchSpeed) {
+    if (this.activeTravelRoute || this.pendingReleaseChargeRatio === null) {
+      return;
+    }
+    if (this.routeCaptureWindowMsRemaining <= 0) {
+      this.pendingReleaseChargeRatio = null;
       return;
     }
 
+    const chargeRatio = this.pendingReleaseChargeRatio;
     const travelRoute = this.resolveTravelRoute(chargeRatio);
-    if (travelRoute) {
-      this.activeTravelRoute = buildActiveTravelRoute(travelRoute, launchSpeed);
-      this.boardHandoffArmed = false;
-      this.pendingRouteGateEvent = true;
-      const startPoint = samplePointAlongTravelRoute(
-        this.activeTravelRoute.route.path,
-        this.activeTravelRoute.cumulativeDistances,
-        this.activeTravelRoute.totalDistance,
-        this.activeTravelRoute.distance,
-      );
-      this.ballBody.setTranslation(startPoint, true);
-      this.ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    if (!travelRoute) {
+      this.pendingReleaseChargeRatio = null;
+       this.markRouteCaptureRejected("no_route");
       return;
     }
 
-    this.ballBody.setLinvel(
-      {
-        x: velocity.x,
-        y: -launchSpeed,
-        z: velocity.z,
-      },
-      true,
+    const routeEligibility = this.canAttachReleaseTravelRoute(travelRoute);
+    if (!routeEligibility.canAttach) {
+      this.markRouteCaptureRejected(routeEligibility.reason);
+      if (this.hasClearedReleasePlane()) {
+        this.pendingReleaseChargeRatio = null;
+      }
+      return;
+    }
+
+    const velocity = this.ballBody.linvel();
+    const measuredSpeed = Math.hypot(velocity.x, velocity.y, velocity.z);
+    const routeSpeed = Math.max(
+      measuredSpeed,
+      resolveLaunchSpeedFromCharge(this.launcher, chargeRatio),
     );
+
+    this.activeTravelRoute = buildActiveTravelRoute(travelRoute, routeSpeed);
+    this.boardHandoffArmed = false;
+    this.pendingReleaseChargeRatio = null;
+    this.markRouteCaptureAccepted();
+    const startPoint = samplePointAlongTravelRoute(
+      this.activeTravelRoute.route.path,
+      this.activeTravelRoute.cumulativeDistances,
+      this.activeTravelRoute.totalDistance,
+      this.activeTravelRoute.distance,
+    );
+    this.ballBody.setTranslation(startPoint, true);
+    this.ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+  }
+
+  private canAttachReleaseTravelRoute(route: TableLauncherTravelRoute3DDefinition): {
+    canAttach: boolean;
+    reason: RouteCaptureRejectReason;
+  } {
+    if (!this.ballBody) {
+      return { canAttach: false, reason: "no_route" };
+    }
+
+    const entryMode = route.entryMode ?? "release";
+    if (entryMode !== "release") {
+      return { canAttach: false, reason: "no_route" };
+    }
+
+    const ballPosition = this.ballBody.translation();
+    const routeStart = route.path[0];
+    const routeEntryTolerance = this.ball.radius * RELEASE_ROUTE_ENTRY_TOLERANCE_MULTIPLIER;
+    const xyDistance = Math.hypot(ballPosition.x - routeStart.x, ballPosition.y - routeStart.y);
+    const zDistance = Math.abs(ballPosition.z - routeStart.z);
+    if (xyDistance > routeEntryTolerance || zDistance > routeEntryTolerance) {
+      if (xyDistance > routeEntryTolerance) {
+        return { canAttach: false, reason: "distance_xy" };
+      }
+      return { canAttach: false, reason: "distance_z" };
+    }
+
+    if (this.ballBody.linvel().y > -RELEASE_ROUTE_ENTRY_MIN_UPWARD_SPEED) {
+      return { canAttach: false, reason: "vy_gate" };
+    }
+    return { canAttach: true, reason: "no_route" };
   }
 
   private resolveTravelRoute(chargeRatio: number): TableLauncherTravelRoute3DDefinition | null {
@@ -391,6 +623,12 @@ export class LauncherChain3D {
     }
 
     const handoffZ = this.activeTravelRoute.route.handoffZ ?? this.launcher.threeD.ballRestZ;
+    const handoffVelocity = this.activeTravelRoute.route.handoffVelocity;
+    if (!handoffVelocity) {
+      throw new Error(
+        `Launcher travel route "${this.activeTravelRoute.route.tag}" is missing terminal handoff velocity.`,
+      );
+    }
 
     return {
       position: {
@@ -398,7 +636,7 @@ export class LauncherChain3D {
         y: nextPoint.y,
         z: handoffZ,
       },
-      velocity: this.activeTravelRoute.route.handoffVelocity,
+      velocity: handoffVelocity,
     };
   }
 
@@ -408,6 +646,71 @@ export class LauncherChain3D {
       throw new Error(`Launcher travel route "${tag}" is not defined.`);
     }
     return route;
+  }
+
+  private markRouteCaptureAccepted(): void {
+    this.lastRouteCaptureDecision = "accepted";
+    this.lastRouteCaptureRejectReason = null;
+  }
+
+  private markRouteCaptureRejected(reason: RouteCaptureRejectReason): void {
+    this.lastRouteCaptureDecision = "rejected";
+    this.lastRouteCaptureRejectReason = reason;
+  }
+
+  private updateContactTelemetry(): void {
+    if (!this.ballBody) {
+      this.separationPx = null;
+      this.overlapPx = 0;
+      this.relativeVyAtContact = null;
+      this.impulseTransferMarker = 0;
+      if (this.plungerBallContactActive) {
+        this.contactExitedThisStep = true;
+      }
+      this.plungerBallContactActive = false;
+      return;
+    }
+
+    const ballPosition = this.ballBody.translation();
+    const ballVelocity = this.ballBody.linvel();
+    const plungerFrontFaceY = this.currentPlungerCenterY - this.launcher.threeD.plunger.depth / 2;
+    const separation = plungerFrontFaceY - (ballPosition.y + this.ball.radius);
+    const overlap = Math.max(-separation, 0);
+    const contactActive = overlap > 0;
+    this.separationPx = separation;
+    this.overlapPx = Math.max(this.overlapPx, overlap);
+    if (contactActive) {
+      const relativeVyAtContact = ballVelocity.y - this.currentPlungerVelocityY;
+      this.relativeVyAtContact = this.relativeVyAtContact === null
+        ? relativeVyAtContact
+        : Math.min(this.relativeVyAtContact, relativeVyAtContact);
+    }
+    this.impulseTransferMarker = clamp01(
+      Math.max(this.overlapPx / Math.max(this.ball.radius, 1e-6), 0),
+    );
+
+    if (contactActive && !this.plungerBallContactActive) {
+      this.contactEnteredThisStep = true;
+    }
+    if (!contactActive && this.plungerBallContactActive) {
+      this.contactExitedThisStep = true;
+    }
+    this.plungerBallContactActive = contactActive;
+    if (contactActive) {
+      this.lastContactAtStep = this.stepCounter;
+    }
+  }
+
+  private isInsideFeedSensor(): boolean {
+    if (!this.ballBody) {
+      return false;
+    }
+    const feedSensor = this.launcher.threeD.sensors.find((sensor) => sensor.semanticRole === "feed");
+    if (!feedSensor) {
+      return false;
+    }
+    const position = this.ballBody.translation();
+    return isPointInTriggerShape({ x: position.x, y: position.y }, feedSensor.shape);
   }
 
   private isInsideExitSensor(): boolean {
@@ -446,6 +749,16 @@ function buildActiveTravelRoute(
     distance: 0,
     speed: Math.max(releaseSpeed * 0.85, 850),
   };
+}
+
+function resolveLaunchSpeedFromCharge(
+  launcher: TableLauncherDefinition,
+  chargeRatio: number,
+): number {
+  const plunger = launcher.threeD.plunger;
+  const minimumLaunchSpeed = launcher.launchImpulseMin * plunger.momentumTransfer;
+  const maximumLaunchSpeed = launcher.launchImpulseMax * plunger.momentumTransfer;
+  return minimumLaunchSpeed + (maximumLaunchSpeed - minimumLaunchSpeed) * chargeRatio;
 }
 
 function buildCumulativeDistances(path: readonly TablePoint3D[]): readonly number[] {
@@ -536,4 +849,8 @@ function resolveReleasePlaneY(launcher: TableLauncherDefinition): number {
   }
 
   return Math.min(...divider.points.map((point) => point.y));
+}
+
+function clamp01(value: number): number {
+  return Math.min(Math.max(value, 0), 1);
 }

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-from scripts.playwright_ui_smoke import _launch_chromium
+from scripts._playwright_browser import launch_chromium
 
 
 @dataclass
@@ -217,7 +217,7 @@ def main() -> None:
 
     try:
         with sync_playwright() as playwright:
-            browser = _launch_chromium(playwright)
+            browser = launch_chromium(playwright)
             page = browser.new_page()
             page.on("console", on_console)
             page.on("pageerror", on_page_error)

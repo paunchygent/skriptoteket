@@ -4,7 +4,7 @@ id: REV-EPIC-25
 title: "Review: Competitive games foundations and Flunk-Out Frenzy"
 status: approved
 owners: "agents"
-updated: 2026-04-01
+updated: 2026-04-03
 reviewer: "lead-developer"
 epic: "EPIC-25"
 created: 2026-03-22
@@ -111,3 +111,34 @@ None. The proposal is thorough and aligns with the project's architectural princ
 |--------|----------|-------------|
 | 1 | ADR-0073 | Initial proposal created |
 | 2 | EPIC-25 / ST-25-01..04 | Initial scope and stories created |
+
+## Supplemental Review Record: PR-0204 Launcher Input/Overlay Gate
+
+**Reviewer:** `skriptoteket_reviewer` (independent; not the plan author)
+**Date:** 2026-04-03
+**Verdict:** `changes_requested`
+
+### Scope Reviewed
+
+- `docs/backlog/prs/pr-0204-flunk-out-frenzy-ruthless-review-gate-for-launcher-input-and-overlay-seam.md`
+
+### Required Changes (blocking for gate approval)
+
+1. Make the authoritative live plunger defect explicit approval blocker; do not
+   allow `approved` while unresolved.
+2. Make overlay/input interaction checks explicit (keyboard + pointer, focus
+   states, overlay closed/reopened).
+3. Replace route/bootstrap-only evidence with launcher behavior proof
+   requirements.
+4. Operationalize reviewer independence (no self-approval, no delegated
+   approval for this gate).
+5. Require explicit scope listing and retained verdict artifact discipline.
+
+### Evidence Notes
+
+- This supplemental record is retained to keep the launcher review gate verdict
+  in canonical docs workflow, not session-only notes.
+- Enforcing surfaces for the terminal-route-only `handoffVelocity` invariant:
+  - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/tableDefinitionTypes.ts`
+  - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.ts`
+  - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts`

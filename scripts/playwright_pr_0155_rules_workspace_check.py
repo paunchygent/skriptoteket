@@ -1,5 +1,10 @@
 """Live PR-0155 proof for the Klassrumskartan Regler workspace cut-over.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify the shipped `Regler` workspace against the approved PR-0155 scope in
     the live local SPA.
@@ -23,13 +28,13 @@ from uuid import uuid4
 import requests
 from playwright.sync_api import Locator, Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
     login_to_app,
     open_class_workspace,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0155-rules-workspace-check")
 RULES_BOOTSTRAP_TRANSITION_LABEL = (
@@ -464,7 +469,7 @@ def main() -> None:
     )
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1600, "height": 1200})
         page = context.new_page()
         delayed_resolve_requests = {"count": 0}

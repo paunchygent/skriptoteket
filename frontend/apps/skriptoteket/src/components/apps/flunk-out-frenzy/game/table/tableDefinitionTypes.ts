@@ -225,16 +225,30 @@ export interface TableLauncherSensor3DDefinition {
   semanticRole: "feed" | "exit";
 }
 
-export interface TableLauncherTravelRoute3DDefinition {
+interface TableLauncherTravelRoute3DBaseDefinition {
   tag: string;
   donorSourceIds: readonly string[];
   path: readonly TablePoint3D[];
   entryMode?: "release" | "chain";
-  nextRouteTag?: string;
   minChargeRatio: number;
-  handoffVelocity: TablePoint;
   handoffZ?: number;
 }
+
+export interface TableLauncherTravelRoute3DChainedDefinition
+  extends TableLauncherTravelRoute3DBaseDefinition {
+  nextRouteTag: string;
+  handoffVelocity?: never;
+}
+
+export interface TableLauncherTravelRoute3DTerminalDefinition
+  extends TableLauncherTravelRoute3DBaseDefinition {
+  nextRouteTag?: undefined;
+  handoffVelocity: TablePoint;
+}
+
+export type TableLauncherTravelRoute3DDefinition =
+  | TableLauncherTravelRoute3DChainedDefinition
+  | TableLauncherTravelRoute3DTerminalDefinition;
 
 export interface TableLauncherPlunger3DDefinition {
   tag: string;

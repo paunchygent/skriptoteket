@@ -47,6 +47,68 @@ export interface PhysicsFlipperSnapshot {
   angleDeg: number;
 }
 
+export type LauncherBallOwner = "launcher_chain" | "main_world" | "none";
+
+export type LauncherRouteCaptureDecision = "accepted" | "rejected" | "none";
+
+export type LauncherRouteCaptureRejectReason =
+  | "distance_xy"
+  | "distance_z"
+  | "vy_gate"
+  | "window_expired"
+  | "no_route"
+  | null;
+
+export interface PhysicsLauncherPoint3DSnapshot {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface PhysicsLauncherVector3Snapshot {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface PhysicsLauncherTelemetrySnapshot {
+  plunger: {
+    currentY: number;
+    targetY: number;
+    chargeRatio: number | null;
+    phase: "idle" | "feeding" | "fed" | "charging" | "released" | "relaunch";
+  };
+  ball: {
+    owner: LauncherBallOwner;
+    position: PhysicsLauncherPoint3DSnapshot | null;
+    velocity: PhysicsLauncherVector3Snapshot | null;
+  };
+  route: {
+    pendingReleaseChargeRatio: number | null;
+    activeRouteTag: string | null;
+    captureWindowMsRemaining: number;
+  };
+  routeCapture: {
+    lastDecision: LauncherRouteCaptureDecision;
+    lastRejectReason: LauncherRouteCaptureRejectReason;
+  };
+  sensors: {
+    feedInside: boolean;
+    exitInside: boolean;
+    lastSw16ExitStep: number | null;
+  };
+  contact: {
+    plungerBallContactActive: boolean;
+    contactEnteredThisStep: boolean;
+    contactExitedThisStep: boolean;
+    separationPx: number | null;
+    overlapPx: number;
+    relativeVyAtContact: number | null;
+    lastContactAtStep: number | null;
+    impulseTransferMarker: number;
+  };
+}
+
 export interface PhysicsSnapshot {
   ball: PhysicsBallSnapshot | null;
   plunger: PhysicsPlungerSnapshot | null;
@@ -54,4 +116,5 @@ export interface PhysicsSnapshot {
     left: PhysicsFlipperSnapshot;
     right: PhysicsFlipperSnapshot;
   };
+  launcherTelemetry: PhysicsLauncherTelemetrySnapshot | null;
 }

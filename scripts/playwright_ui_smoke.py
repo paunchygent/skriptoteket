@@ -11,44 +11,11 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from playwright.sync_api import Browser, Locator, Page, Playwright, expect, sync_playwright
-from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import Locator, Page, expect, sync_playwright
 
+from scripts._playwright_auth import login_to_browse
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
-
-
-def _find_chromium_headless_shell() -> str | None:
-    root = Path.home() / "Library" / "Caches" / "ms-playwright"
-    if not root.exists():
-        return None
-
-    candidates = sorted(root.glob("chromium_headless_shell-*"), reverse=True)
-    for candidate in candidates:
-        for subdir in [
-            "chrome-headless-shell-mac-arm64",
-            "chrome-headless-shell-mac-x64",
-        ]:
-            binary = candidate / subdir / "chrome-headless-shell"
-            if binary.is_file():
-                return str(binary)
-
-    return None
-
-
-def _launch_chromium(playwright: Playwright) -> Browser:
-    try:
-        return playwright.chromium.launch(headless=True)
-    except PlaywrightError as exc:
-        executable_path = _find_chromium_headless_shell()
-        if not executable_path:
-            raise
-
-        message = str(exc)
-        if "chromium_headless_shell" not in message and "Executable doesn't exist" not in message:
-            raise
-
-        print("Chromium launch failed; retrying with explicit headless shell executable_path.")
-        return playwright.chromium.launch(headless=True, executable_path=executable_path)
 
 
 def _assert_public_landing(page: Page, *, verify_equal_cta_widths: bool = False) -> None:
@@ -88,36 +55,6 @@ def _assert_public_landing(page: Page, *, verify_equal_cta_widths: bool = False)
     )
 
 
-def _login(page: Page, *, base_url: str, email: str, password: str) -> None:
-    protected_destination = f"{base_url}/browse"
-    catalog_heading = page.get_by_role("heading", name=re.compile(r"^Katalog$", re.IGNORECASE))
-
-    for attempt in range(3):
-        page.goto(protected_destination, wait_until="domcontentloaded")
-        if catalog_heading.count() > 0 and catalog_heading.first.is_visible():
-            return
-
-        dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-        if dialog.count() == 0:
-            page.wait_for_timeout(750)
-            continue
-
-        expect(dialog).to_be_visible(timeout=10_000)
-        dialog.get_by_label("E-post").fill(email)
-        dialog.get_by_label("Lösenord").fill(password)
-        dialog.get_by_role("button", name=re.compile(r"^Logga in", re.IGNORECASE)).click()
-
-        try:
-            expect(catalog_heading).to_be_visible(timeout=30_000)
-            return
-        except AssertionError:
-            if attempt == 2:
-                raise
-            page.wait_for_timeout(1_000)
-
-    raise AssertionError("Protected-route login did not reach the catalog after three attempts.")
-
-
 def _open_help_panel(page: Page) -> Locator | None:
     help_button = page.get_by_role("button", name=re.compile(r"Hjälp", re.IGNORECASE))
     if help_button.count() == 0:
@@ -148,7 +85,7 @@ def main() -> None:
 
     with sync_playwright() as playwright:
         device = playwright.devices["iPhone 12"]
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(**device)
         page = context.new_page()
 
@@ -163,7 +100,7 @@ def main() -> None:
             expect(help_panel).to_be_hidden()
 
         # Login
-        _login(page, base_url=base_url, email=email, password=password)
+        login_to_browse(page, base_url=base_url, email=email, password=password)
         page.goto(f"{base_url}/", wait_until="domcontentloaded")
         expect(
             page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
@@ -216,14 +153,14 @@ def main() -> None:
         browser.close()
 
         # Desktop sanity check
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1280, "height": 720})
         page = context.new_page()
 
         page.goto(f"{base_url}/", wait_until="domcontentloaded")
         _assert_public_landing(page, verify_equal_cta_widths=True)
         page.screenshot(path=str(artifacts_dir / "landing-desktop.png"), full_page=True)
-        _login(page, base_url=base_url, email=email, password=password)
+        login_to_browse(page, base_url=base_url, email=email, password=password)
         page.goto(f"{base_url}/", wait_until="domcontentloaded")
         expect(
             page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))

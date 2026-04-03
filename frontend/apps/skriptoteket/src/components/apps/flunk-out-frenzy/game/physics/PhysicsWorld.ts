@@ -179,6 +179,7 @@ export class PhysicsWorld {
     const dtSeconds = dtMs / 1000;
     this.tickCooldowns(dtMs);
     this.updateFlippers(dtSeconds);
+    this.tryTransferMainWorldBallToLauncherChain();
     const launcherStep = this.updateLauncherState(dtMs);
     const launcherPreStepEvents = [...launcherStep.machineEvents];
     let boardHandoffFromChain: { position: { x: number; y: number; z: number }; velocity: TablePoint } | null = null;
@@ -194,14 +195,6 @@ export class PhysicsWorld {
       if (chainStep.releaseToBoard) {
         boardHandoffFromChain = chainStep.releaseToBoard;
       }
-    } else if (this.ballBody && launcherStep.releaseChargeRatio !== null) {
-      const releaseVelocity = resolveReleaseVelocity(this.table.launcher, launcherStep.releaseChargeRatio);
-      const currentVelocity = this.ballBody.linvel();
-      this.ballBody.setLinvel({
-        x: releaseVelocity.x,
-        y: Math.min(currentVelocity.y, releaseVelocity.y),
-        z: 0,
-      }, true);
     }
 
     this.world.timestep = dtSeconds;
@@ -306,6 +299,7 @@ export class PhysicsWorld {
     const rightDef = this.table.flippers.right;
     const launcherPlunger = this.launcherChain?.currentPlungerSnapshot();
     const chainBall = this.launcherChain?.currentSnapshot() ?? null;
+    const chainTelemetry = this.launcherChain?.currentTelemetrySnapshot() ?? null;
     const boardBall = this.ballBody
       ? {
           x: this.ballBody.translation().x,
@@ -320,6 +314,44 @@ export class PhysicsWorld {
           radius: this.table.ball.radius,
         }
       : null);
+    const boardVelocity = this.ballBody?.linvel() ?? null;
+    const launcherChargeRatio = this.plungerLaneState.phase === "charging"
+      ? (this.table.launcher.chargeMsMax > 0
+        ? Math.min(this.plungerLaneState.chargeMs / this.table.launcher.chargeMsMax, 1)
+        : 1)
+      : null;
+    const launcherTelemetry = chainTelemetry
+      ? (() => {
+          const ballOwner: "main_world" | "launcher_chain" | "none" = boardBall
+            ? "main_world"
+            : (chainBall ? "launcher_chain" : "none");
+          return {
+          ...chainTelemetry,
+          plunger: {
+            ...chainTelemetry.plunger,
+            chargeRatio: launcherChargeRatio,
+            phase: this.plungerLaneState.phase,
+          },
+          ball: {
+            owner: ballOwner,
+            position: boardBall
+              ? {
+                  x: boardBall.x,
+                  y: boardBall.y,
+                  z: this.table.ball.radius,
+                }
+              : chainTelemetry.ball.position,
+            velocity: boardVelocity
+              ? {
+                  x: boardVelocity.x,
+                  y: boardVelocity.y,
+                  z: boardVelocity.z,
+                }
+              : chainTelemetry.ball.velocity,
+          },
+        };
+      })()
+      : null;
 
     return {
       ball: activeBall,
@@ -347,6 +379,7 @@ export class PhysicsWorld {
           angleDeg: radiansToDegrees(this.rightFlipperAngleRad),
         },
       },
+      launcherTelemetry,
     };
   }
 
@@ -586,24 +619,7 @@ export class PhysicsWorld {
         velocity: launcherBall.velocity,
       };
     }
-
-    if (!this.ballBody) {
-      return null;
-    }
-
-    const position = this.ballBody.translation();
-    const velocity = this.ballBody.linvel();
-
-    return {
-      position: {
-        x: position.x,
-        y: position.y,
-      },
-      velocity: {
-        x: velocity.x,
-        y: velocity.y,
-      },
-    };
+    return null;
   }
 
   private syncPlunger(dtMs: number, chargeRatio: number | null): void {
@@ -637,6 +653,44 @@ export class PhysicsWorld {
     this.eventQueue?.free();
     this.world?.free();
   }
+
+  private tryTransferMainWorldBallToLauncherChain(): void {
+    if (!this.ballBody || !this.launcherChain || this.launcherChain.hasBall()) {
+      return;
+    }
+
+    const translation = this.ballBody.translation();
+    const position = {
+      x: translation.x,
+      y: translation.y,
+    };
+    if (!isPointInLauncherLaneRegion(position, this.table.launcher)) {
+      return;
+    }
+
+    const velocity = this.ballBody.linvel();
+    const speed = Math.hypot(velocity.x, velocity.y);
+    if (speed > this.table.launcher.feedSettledSpeedMax) {
+      return;
+    }
+
+    this.removeMainWorldBall();
+    this.launcherChain.spawnBall(position);
+  }
+
+  private removeMainWorldBall(): void {
+    if (!this.ballBody) {
+      return;
+    }
+
+    if (this.ballColliderHandle !== null) {
+      this.colliderMetaByHandle.delete(this.ballColliderHandle);
+    }
+    this.world.removeRigidBody(this.ballBody);
+    this.ballBody = null;
+    this.ballColliderHandle = null;
+    resetCaptureLifecycleState(this.captureLifecycleState);
+  }
 }
 
 function createConvexPolygonColliderDesc(vertices: readonly TablePoint[]): RAPIER3D.ColliderDesc {
@@ -657,19 +711,6 @@ function createConvexPolygonColliderDesc(vertices: readonly TablePoint[]): RAPIE
   }
 
   return colliderDesc;
-}
-
-function resolveReleaseVelocity(
-  launcher: PrototypeAlphaTable["launcher"],
-  chargeRatio: number,
-): TablePoint {
-  const speed = launcher.launchImpulseMin
-    + (launcher.launchImpulseMax - launcher.launchImpulseMin) * chargeRatio;
-
-  return {
-    x: launcher.launchAssistX,
-    y: -speed,
-  };
 }
 
 function quaternionFromYaw(angleRad: number): RAPIER3D.Rotation {

@@ -8,7 +8,7 @@ You are an independent review specialist for the Skriptoteket codebase.
 
 Before reviewing, load and follow:
 - AGENTS.md
-- .agents/readme-first.md
+- .agents/handoff.md
 - .agents/rules/000-rule-index.md
 - /Users/olofs_mba/.codex/skills/ruthless-code-review/SKILL.md
 

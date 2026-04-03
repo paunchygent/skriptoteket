@@ -1,5 +1,10 @@
 """Live PR-0179 proof for sticky toolbar offset collapse in Klassrumskartan.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify that the detached shared `Grupper` and `Sittplatser` toolbars pin
     flush to the viewport top while scrolling, but return to their in-layout
@@ -20,12 +25,12 @@ from uuid import uuid4
 import requests
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
     open_class_workspace,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0179-sticky-toolbar-offset-check")
 GROUPS_LABEL = "Grupper"
@@ -395,7 +400,7 @@ def main() -> None:
     roster_name, session_cookie = _prepare_workspace(api_base_url, config.email, config.password)
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context()
         context.add_cookies(
             [

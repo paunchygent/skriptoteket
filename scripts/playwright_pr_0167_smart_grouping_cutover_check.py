@@ -1,5 +1,10 @@
 """Live PR-0167 proof for grouping/seating toolbar cutover and smart grouping.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify the settled PR-0167 toolbar contract against the live Docker-backed
     SPA by seeding one real planner workspace, then checking the grouping and
@@ -21,13 +26,13 @@ from uuid import uuid4
 import requests
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
     login_to_app,
     open_class_workspace,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0167-toolbar-check")
 NO_HISTORY_MESSAGE = (
@@ -342,7 +347,7 @@ def main() -> None:
     )
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         page = browser.new_page(viewport={"width": 1440, "height": 900})
         login_to_app(
             page,

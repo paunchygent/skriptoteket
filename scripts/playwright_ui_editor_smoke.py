@@ -1,46 +1,19 @@
+"""Canonical Playwright smoke for the authenticated editor workflow shell.
+
+This smoke is a canonical release gate for the editor lane. It verifies the
+shared login path, editor hub entry, and core editor-shell affordances without
+depending on narrower PR-specific browser proofs.
+"""
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
-from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
-
-
-def _find_chromium_headless_shell() -> str | None:
-    root = Path.home() / "Library" / "Caches" / "ms-playwright"
-    if not root.exists():
-        return None
-
-    candidates = sorted(root.glob("chromium_headless_shell-*"), reverse=True)
-    for candidate in candidates:
-        for subdir in [
-            "chrome-headless-shell-mac-arm64",
-            "chrome-headless-shell-mac-x64",
-        ]:
-            binary = candidate / subdir / "chrome-headless-shell"
-            if binary.is_file():
-                return str(binary)
-
-    return None
-
-
-def _launch_chromium(playwright: object) -> object:
-    try:
-        return playwright.chromium.launch(headless=True)
-    except PlaywrightError as exc:
-        executable_path = _find_chromium_headless_shell()
-        if not executable_path:
-            raise
-
-        message = str(exc)
-        if "chromium_headless_shell" not in message and "Executable doesn't exist" not in message:
-            raise
-
-        print("Chromium launch failed; retrying with explicit headless shell executable_path.")
-        return playwright.chromium.launch(headless=True, executable_path=executable_path)
 
 
 def _login(
@@ -181,7 +154,7 @@ def main() -> None:
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 

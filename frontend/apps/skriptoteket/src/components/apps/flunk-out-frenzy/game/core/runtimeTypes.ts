@@ -69,6 +69,64 @@ export interface GameRolloverSnapshot {
   lit: boolean;
 }
 
+export type GameLauncherBallOwner = "launcher_chain" | "main_world" | "none";
+
+export type GameLauncherRouteCaptureDecision = "accepted" | "rejected" | "none";
+
+export type GameLauncherRouteCaptureRejectReason =
+  | "distance_xy"
+  | "distance_z"
+  | "vy_gate"
+  | "window_expired"
+  | "no_route"
+  | null;
+
+export interface GameLauncherTelemetrySnapshot {
+  plunger: {
+    currentY: number;
+    targetY: number;
+    chargeRatio: number | null;
+    phase: "idle" | "feeding" | "fed" | "charging" | "released" | "relaunch";
+  };
+  ball: {
+    owner: GameLauncherBallOwner;
+    position: { x: number; y: number; z: number } | null;
+    velocity: { x: number; y: number; z: number } | null;
+  };
+  route: {
+    pendingReleaseChargeRatio: number | null;
+    activeRouteTag: string | null;
+    captureWindowMsRemaining: number;
+  };
+  routeCapture: {
+    lastDecision: GameLauncherRouteCaptureDecision;
+    lastRejectReason: GameLauncherRouteCaptureRejectReason;
+  };
+  sensors: {
+    feedInside: boolean;
+    exitInside: boolean;
+    lastSw16ExitStep: number | null;
+  };
+  contact: {
+    plungerBallContactActive: boolean;
+    contactEnteredThisStep: boolean;
+    contactExitedThisStep: boolean;
+    separationPx: number | null;
+    overlapPx: number;
+    relativeVyAtContact: number | null;
+    lastContactAtStep: number | null;
+    impulseTransferMarker: number;
+  };
+}
+
+export interface GameLauncherDebugSnapshot {
+  input: {
+    launchPressed: boolean;
+    lastTransitionMs: number | null;
+  };
+  launcher: GameLauncherTelemetrySnapshot | null;
+}
+
 export interface GameViewSnapshot {
   board: GameBoardSnapshot;
   ball: GameBallSnapshot | null;
@@ -78,6 +136,7 @@ export interface GameViewSnapshot {
     right: GameFlipperSnapshot;
   };
   rollovers: GameRolloverSnapshot[];
+  launcherTelemetry?: GameLauncherTelemetrySnapshot | null;
 }
 
 export type RuntimeCommand =

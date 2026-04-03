@@ -1,5 +1,10 @@
 """Live PR-0157 proof for grouping card header alignment.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify the live `Grupper` workspace after the header-row cleanup so the
     group-name input and reorder/delete controls share one row, one height
@@ -18,6 +23,7 @@ from pathlib import Path
 
 from playwright.sync_api import Locator, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     create_roster,
     focus_workspace_mode,
@@ -25,7 +31,6 @@ from scripts._playwright_classroom_planner import (
     open_class_workspace,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0157-group-card-alignment-check")
 
@@ -55,7 +60,7 @@ def main() -> None:
     roster_name = f"PR0157 Gruppkort {int(time.time())}"
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1512, "height": 982})
         page = context.new_page()
 

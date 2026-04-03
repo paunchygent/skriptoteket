@@ -10,7 +10,10 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { loadGameRuntime } from "./game/core/loadGameRuntime";
-import { createInitialHudSnapshot } from "./game/core/runtimeTypes";
+import {
+  createInitialHudSnapshot,
+  type GameLauncherDebugSnapshot,
+} from "./game/core/runtimeTypes";
 import { KeyboardInputController } from "./game/input/KeyboardInputController";
 import type { MachineEvent } from "./game/physics/physicsTypes";
 import {
@@ -50,6 +53,7 @@ let disposed = false;
 interface FlunkOutFrenzyDebugHandle {
   injectMachineEvents(events: MachineEvent[]): void;
   hud(): GameHudSnapshot;
+  launcherTelemetry(): GameLauncherDebugSnapshot | null;
 }
 
 declare global {
@@ -113,7 +117,7 @@ async function ensureRuntimeReady(): Promise<GameRuntimeLike | null> {
         emit("hudChange", nextHud);
       });
 
-      keyboardController = new KeyboardInputController(createdRuntime);
+      keyboardController = new KeyboardInputController(createdRuntime, window, mountedHost);
       keyboardController.attach();
 
       if (import.meta.env.DEV) {
@@ -123,6 +127,9 @@ async function ensureRuntimeReady(): Promise<GameRuntimeLike | null> {
           },
           hud() {
             return hudSnapshot.value;
+          },
+          launcherTelemetry() {
+            return createdRuntime.debugLauncherTelemetry?.() ?? null;
           },
         };
       }
@@ -221,6 +228,7 @@ defineExpose<GameHostApi>({
       data-test="runtime-host-placeholder"
       :data-runtime-load-state="runtimeLoadState"
       class="fof-host__playfield"
+      tabindex="0"
     >
       <div class="fof-host__backdrop" />
       <div class="fof-host__glass" />
@@ -282,6 +290,7 @@ defineExpose<GameHostApi>({
   box-shadow:
     inset 0 1px 0 rgba(255, 243, 222, 0.12),
     0 18px 34px rgba(12, 8, 5, 0.3);
+  touch-action: none;
 }
 
 .fof-host__backdrop {
@@ -292,6 +301,7 @@ defineExpose<GameHostApi>({
     radial-gradient(circle at 22% 78%, rgba(255, 126, 174, 0.14), transparent 20%),
     radial-gradient(circle at 78% 72%, rgba(108, 170, 255, 0.16), transparent 22%),
     linear-gradient(180deg, rgba(18, 28, 24, 0.94), rgba(8, 11, 10, 0.98));
+  pointer-events: none;
 }
 
 .fof-host__glass,

@@ -1,5 +1,10 @@
 """Live proof for PR-0157 dense planner/editor toolbars.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Verifies the shared dense-tool primitives on the two proving grounds for this
 slice:
 

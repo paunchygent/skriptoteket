@@ -1,5 +1,10 @@
 """Focused Playwright proof for PR-0175 class-list import drop zone UX.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This browser check validates the shared Klassrumskartan create/edit roster
 modal after the drag-and-drop affordance was added. It proves the teacher can
 drop a supported file into the new zone, see the updated user-facing guidance,
@@ -14,9 +19,9 @@ from pathlib import Path
 
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import login_to_app, wait_for_app_heading
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0175-class-list-import-dropzone-check")
 IMPORT_FILE = Path("data/class_list_example_inputs/sa24d_klasslista_komma.txt")
@@ -128,7 +133,7 @@ def main() -> None:
     roster_name = f"SA24D PW0175 {int(time.time())}"
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1600, "height": 1200})
         page = context.new_page()
 

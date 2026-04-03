@@ -50,7 +50,7 @@ services/llm_provider_service/protocols.py
 - Core implementation files (main logic + tests)
 - Event contracts (if event-driven)
 - Service patterns (DI, protocols, config)
-- Documentation (handoff.md, readme-first.md, task docs)
+- Documentation (handoff.md, AGENTS.md, task docs)
 - Infrastructure (idempotency, logging, error handling)
 - Critical rules (042-async-patterns, 048-error-handling, 051-pydantic, 052-event-contracts, 075-testing)
 
@@ -62,7 +62,7 @@ services/cj_assessment_service/kafka_consumer.py,
 libs/common_core/src/common_core/events/*.py,
 services/cj_assessment_service/event_processor.py,
 .claude/work/session/handoff.md,
-.claude/work/session/readme-first.md,
+AGENTS.md,
 TASKS/TASK-*.md,
 .claude/rules/042-async-patterns-and-di.md,
 .claude/rules/048-structured-error-handling-standards.md,
@@ -110,14 +110,14 @@ libs/common_core/src/common_core/events/*.py,
 
 **File Categories**:
 - Task documentation (TASKS/*.md)
-- Handoff and README files (.claude/work/session/handoff.md, .claude/work/session/readme-first.md)
+- Handoff and session context files (.claude/work/session/handoff.md, AGENTS.md)
 - Primary implementation file(s)
 - Relevant event contracts (if applicable)
 
 **Example Includes**:
 ```bash
 .claude/work/session/handoff.md,
-.claude/work/session/readme-first.md,
+AGENTS.md,
 TASKS/TASK-{specific-task}.md,
 {primary-implementation-file}.py
 ```
@@ -147,7 +147,7 @@ huledu-reboot/
 │   ├── repomix_packages/       # Generated packages (output location)
 │   ├── work/session/
 │   │   ├── handoff.md          # Current project state
-│   │   └── readme-first.md     # Critical context
+│   │   └── [other notes]       # Optional session notes
 ├── TASKS/                       # Task documentation
 ├── Documentation/               # Schemas, architecture docs
 └── test_uploads/                # Test data and fixtures
@@ -252,7 +252,7 @@ After generation, inform user of:
 
 1. **Start Small**: For exploratory analysis, start with minimal context and expand as needed
 2. **Avoid Noise**: Exclude test fixtures, migrations, and large data files unless specifically needed
-3. **Include Context**: Always include `.claude/work/session/handoff.md` and `.claude/work/session/readme-first.md` for critical project context
+3. **Include Context**: Always include `.claude/work/session/handoff.md` and `AGENTS.md` for critical project context
 4. **Match Patterns**: Follow existing naming conventions visible in `.claude/repomix_packages/`
 5. **Verify Files Exist**: Before executing, ensure suggested files exist in the repository
 6. **Token Budget**: For AI analysis, target 70K-100K tokens for comprehensive reviews, <30K for focused analysis

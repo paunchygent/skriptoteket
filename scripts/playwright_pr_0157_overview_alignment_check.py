@@ -1,5 +1,10 @@
 """Live PR-0157 proof for Klassrumskartan overview panel alignment.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 Purpose:
     Verify the live `Översikt` surface after the dense-tool/panel compression
     pass so the roster and classroom panels stay perfectly aligned, the two
@@ -24,9 +29,9 @@ from uuid import uuid4
 import requests
 from playwright.sync_api import Locator, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import login_to_app, open_class_workspace
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0157-overview-alignment-check")
 
@@ -194,7 +199,7 @@ def main() -> None:
     )
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1512, "height": 982})
         page = context.new_page()
 

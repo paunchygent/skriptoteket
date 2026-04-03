@@ -1,5 +1,10 @@
 """Focused Playwright proof for PR-0136 room-editor toggle removal polish.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This browser check validates the live classroom editor behavior newly extended
 in PR-0136: floor fixtures and wall fixtures should toggle off when clicked
 again with the same tool selected, while conflicting different-tool clicks must
@@ -14,6 +19,7 @@ from pathlib import Path
 
 from playwright.sync_api import Locator, Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     create_roster,
     create_template,
@@ -23,7 +29,6 @@ from scripts._playwright_classroom_planner import (
     wait_for_app_heading,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0136-room-editor-toggle-check")
 
@@ -135,7 +140,7 @@ def main() -> None:
     template_name = f"PW PR0136 Sal {run_suffix}"
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 960})
         page = context.new_page()
 

@@ -157,4 +157,28 @@ describe("router guards", () => {
     });
     expect(result).toBe(false);
   });
+
+  it("leaves the dedicated public curated app route unauthenticated", async () => {
+    const auth = createAuth();
+    const loginModal = createLoginModal();
+    mockUseAuthStore.mockReturnValue(auth);
+    mockUseLoginModal.mockReturnValue(loginModal);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: "public-app-detail",
+      path: "/public/apps/classroom.group-seating-studio",
+      fullPath: "/public/apps/classroom.group-seating-studio",
+      params: { appId: "classroom.group-seating-studio" },
+      meta: {},
+      query: {},
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).not.toHaveBeenCalled();
+    expect(loginModal.open).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
 });

@@ -13,8 +13,8 @@ from pathlib import Path
 
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 APP_PATH = "/apps/games.flunk_out_frenzy"
 ARTIFACTS_DIR = Path(".artifacts/flunk-out-frenzy-route-check")
@@ -105,7 +105,7 @@ def main() -> None:
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1600, "height": 1200})
         page = context.new_page()
 

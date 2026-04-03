@@ -8,6 +8,7 @@
 
 import type {
   GameHudSnapshot,
+  GameLauncherDebugSnapshot,
   GameSessionStatus,
   RuntimeCommand,
 } from "./game/core/runtimeTypes";
@@ -40,6 +41,7 @@ export interface GameRuntimeLike {
   subscribeHud(listener: (hud: GameHudSnapshot) => void): () => void;
   dispose(): void;
   injectMachineEventsForDebug?(events: MachineEvent[]): void;
+  debugLauncherTelemetry?(): GameLauncherDebugSnapshot;
 }
 
 export interface GameRuntimeFactoryOptions {

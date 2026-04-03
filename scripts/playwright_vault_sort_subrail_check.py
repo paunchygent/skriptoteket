@@ -19,8 +19,8 @@ from pathlib import Path
 
 from playwright.sync_api import expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/vault-sort-subrail-check")
 
@@ -45,7 +45,7 @@ def main() -> None:
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         page = context.new_page()
 

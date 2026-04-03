@@ -1,5 +1,10 @@
 """Dedicated live browser proof for the overview-first Klassrumskartan cutover.
 
+This script is a targeted browser proof for a bounded slice. It is not a
+canonical release gate and should be pruned once its scoped contract is covered
+elsewhere.
+
+
 This script reuses the established classroom-planner Playwright helpers to log
 in, create one real class list and classroom, seed active grouping and seating
 drafts through the live UI, and then verify the cutover behavior end to end:
@@ -17,6 +22,7 @@ from typing import Any
 
 from playwright.sync_api import expect, sync_playwright
 
+from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
     create_roster,
     create_template,
@@ -24,7 +30,6 @@ from scripts._playwright_classroom_planner import (
     login_to_app,
 )
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0111-live-check")
 APP_PATH = "/apps/classroom.group-seating-studio"
@@ -178,7 +183,7 @@ def main() -> None:
     screenshot_path = ARTIFACTS_DIR / "pr0111-overview-resumable-entry.png"
 
     with sync_playwright() as playwright:
-        browser = _launch_chromium(playwright)
+        browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1600, "height": 1200})
         page = context.new_page()
 
