@@ -9,9 +9,11 @@
 
 import type {
   DraftWorkspaceResponse,
+  GroupAssignment,
   RoomTemplate,
   Roster,
   RosterSmartRulesResponse,
+  SeatAssignment,
 } from "./classroomPlannerTypes";
 import type {
   ClassroomPlannerGuestCheckpointDescriptor,
@@ -34,6 +36,9 @@ export type ClassroomPlannerGuestCheckpointSeed = {
   draft_kind: "grouping" | "seating";
   created_at: string;
   label: string | null;
+  template_local_id: string | null;
+  group_assignments: GroupAssignment[];
+  seat_assignments: SeatAssignment[];
 };
 
 export type ClassroomPlannerGuestSnapshotSeed = {
@@ -131,7 +136,9 @@ export function mapDraftWorkspaceToGuestSnapshot(
     draft_kind: workspace.draft.draft_kind,
     roster_local_id: workspace.roster.id,
     template_local_id: workspace.template?.id ?? null,
-    task_entry_classroom_selection_mode: workspace.template ? "optional" : "required",
+    task_entry_classroom_selection_mode:
+      workspace.draft.task_entry_classroom_selection_mode ??
+      (workspace.template ? "optional" : "required"),
     smart_enabled: workspace.draft.smart_enabled ?? false,
     use_history: workspace.draft.use_history ?? false,
     grouping_seating_distance_enabled:
@@ -196,6 +203,9 @@ export function createClassroomPlannerGuestSnapshotFromSeed(
       created_at: checkpoint.created_at,
       label: checkpoint.label,
       source: "export" as const,
+      template_local_id: checkpoint.template_local_id,
+      group_assignments: checkpoint.group_assignments,
+      seat_assignments: checkpoint.seat_assignments,
       fingerprint: createClassroomPlannerGuestFingerprint(checkpoint),
     })),
     ui_state: mapUiStateToGuestSnapshot(seed.ui_state),
@@ -269,6 +279,7 @@ function hydrateGuestDraft(
       roster_id: draft.roster_local_id,
       draft_kind: draft.draft_kind,
       template_id: draft.template_local_id,
+      task_entry_classroom_selection_mode: draft.task_entry_classroom_selection_mode,
       smart_enabled: draft.smart_enabled,
       use_history: draft.use_history,
       grouping_seating_distance_enabled: draft.grouping_seating_distance_enabled,

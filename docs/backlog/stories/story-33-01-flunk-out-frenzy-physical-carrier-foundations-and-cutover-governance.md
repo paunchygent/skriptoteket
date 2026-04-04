@@ -61,8 +61,9 @@ Only after this story is complete may the physical cut-over tasks resume.
 
 ## Execution strategy
 
-- `PR-0220` asks the offline reviewer to assess the approved implementation
-  order and advise on the remaining pre-implementation uncertainties.
+- `PR-0220` is now complete: the offline reviewer assessed the approved
+  implementation order and answered the remaining pre-implementation
+  uncertainties.
 - `PR-0217` defines the model.
 - `PR-0218` compiles/builds the model into launcher-world carrier surfaces.
 - `PR-0219` proves the observer/governance layer needed before transport

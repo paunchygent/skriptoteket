@@ -192,10 +192,12 @@ class PlanDraft(BaseModel):
     roster_id: UUID
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
+    task_entry_classroom_selection_mode: ClassroomSelectionMode = ClassroomSelectionMode.OPTIONAL
     smart_enabled: bool = False
     use_history: bool = False
     grouping_seating_distance_enabled: bool = False
     status: PlanDraftStatus = PlanDraftStatus.ACTIVE
+    guest_import_identity: str | None = None
     revision: int = 0
     last_opened_at: datetime
     created_at: datetime

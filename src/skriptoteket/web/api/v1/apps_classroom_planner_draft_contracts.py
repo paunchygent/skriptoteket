@@ -11,7 +11,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraft, PlanDraftKind
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassroomSelectionMode,
+    PlanDraft,
+    PlanDraftKind,
+)
 
 
 class PlanDraftDto(BaseModel):
@@ -23,6 +27,7 @@ class PlanDraftDto(BaseModel):
     roster_id: UUID
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
+    task_entry_classroom_selection_mode: ClassroomSelectionMode
     smart_enabled: bool = False
     use_history: bool = False
     grouping_seating_distance_enabled: bool = False

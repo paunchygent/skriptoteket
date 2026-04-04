@@ -13,6 +13,8 @@ import { RouterLink } from "vue-router";
 import { useLoginModal } from "../../composables/useLoginModal";
 import { CLASSROOM_PLANNER_APP_ID } from "./classroomPlannerNavigation";
 import { useClassroomPlannerGuestSnapshotStatus } from "./useClassroomPlannerGuestSnapshotStatus";
+import { useClassroomPlannerGuestUpgrade } from "./useClassroomPlannerGuestUpgrade";
+import ClassroomPlannerGuestUpgradePrompt from "./ClassroomPlannerGuestUpgradePrompt.vue";
 import ClassroomPlannerView from "./ClassroomPlannerView.vue";
 
 const props = withDefaults(
@@ -33,6 +35,14 @@ const guestSnapshotStatus = guestSnapshot.status;
 const guestSnapshotSummary = guestSnapshot.summary;
 const guestSnapshotErrorMessage = guestSnapshot.errorMessage;
 const guestSnapshotIsWorking = guestSnapshot.isWorking;
+const authenticatedGuestUpgrade = useClassroomPlannerGuestUpgrade({
+  enabled: props.hostMode === "authenticated",
+});
+const authenticatedGuestUpgradeErrorMessage = authenticatedGuestUpgrade.errorMessage;
+const authenticatedGuestUpgradePreviewReceipt = authenticatedGuestUpgrade.previewReceipt;
+const authenticatedGuestUpgradeSummary = authenticatedGuestUpgrade.summary;
+const authenticatedGuestUpgradeIsBlocking = authenticatedGuestUpgrade.isBlocking;
+const authenticatedGuestUpgradeShouldShowPrompt = authenticatedGuestUpgrade.shouldShowPrompt;
 
 function openLoginModal(): void {
   loginModal.open(authenticatedRoute.value);
@@ -40,7 +50,29 @@ function openLoginModal(): void {
 </script>
 
 <template>
-  <ClassroomPlannerView v-if="props.hostMode === 'authenticated'" />
+  <section
+    v-if="props.hostMode === 'authenticated'"
+    class="mx-auto flex max-w-4xl flex-col gap-6"
+  >
+    <div
+      v-if="authenticatedGuestUpgradeIsBlocking"
+      class="border border-navy bg-white px-6 py-5 text-sm text-navy/80 shadow-brutal-md"
+    >
+      Kontrollerar lokal gästarbetsyta för möjlig inloggad import...
+    </div>
+
+    <ClassroomPlannerGuestUpgradePrompt
+      v-else-if="authenticatedGuestUpgradeShouldShowPrompt"
+      :error-message="authenticatedGuestUpgradeErrorMessage"
+      :preview-receipt="authenticatedGuestUpgradePreviewReceipt"
+      :summary="authenticatedGuestUpgradeSummary"
+      @discard="authenticatedGuestUpgrade.discardGuestWorkspace"
+      @import="authenticatedGuestUpgrade.importGuestWorkspace"
+      @postpone="authenticatedGuestUpgrade.postponeGuestWorkspace"
+    />
+
+    <ClassroomPlannerView v-else />
+  </section>
 
   <section
     v-else

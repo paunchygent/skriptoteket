@@ -32,7 +32,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "b7f9c2d4e1a6"
+    target_revision = "d3a9f6b2c4e7"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
@@ -314,10 +314,17 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         assert "status" in await get_columns("classroom_planner_plan_drafts")
         assert "draft_kind" in await get_columns("classroom_planner_plan_drafts")
         assert "last_opened_at" in await get_columns("classroom_planner_plan_drafts")
+        assert "task_entry_classroom_selection_mode" in await get_columns(
+            "classroom_planner_plan_drafts"
+        )
+        assert "guest_import_identity" in await get_columns("classroom_planner_plan_drafts")
         assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
         assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
         assert "group_count" not in await get_columns("classroom_planner_plan_drafts")
         assert "uq_cp_active_draft_roster_kind" in await get_index_names(
+            "classroom_planner_plan_drafts"
+        )
+        assert "uq_cp_guest_import_identity" in await get_index_names(
             "classroom_planner_plan_drafts"
         )
         assert "uq_cp_active_draft_owner" not in await get_index_names(
@@ -471,6 +478,10 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         assert "classroom_planner_planning_profiles" not in tables_after_reupgrade
         assert "fixtures" in await get_columns("classroom_planner_room_templates")
         assert "draft_kind" in await get_columns("classroom_planner_plan_drafts")
+        assert "task_entry_classroom_selection_mode" in await get_columns(
+            "classroom_planner_plan_drafts"
+        )
+        assert "guest_import_identity" in await get_columns("classroom_planner_plan_drafts")
         assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
         assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
     finally:

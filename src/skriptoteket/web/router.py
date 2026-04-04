@@ -1,3 +1,10 @@
+"""Top-level FastAPI router assembly for Skriptoteket.
+
+This module gathers every API router plus the final SPA history fallback in
+one place so route order stays explicit and curated-app slices can register
+their bespoke endpoints without leaking concerns across modules.
+"""
+
 from fastapi import APIRouter
 
 from skriptoteket.web.api.v1 import admin_tools as api_v1_admin_tools
@@ -6,6 +13,9 @@ from skriptoteket.web.api.v1 import apps as api_v1_apps
 from skriptoteket.web.api.v1 import apps_classroom_planner as api_v1_apps_classroom_planner
 from skriptoteket.web.api.v1 import (
     apps_classroom_planner_grouping as api_v1_apps_classroom_planner_grouping,
+)
+from skriptoteket.web.api.v1 import (
+    apps_classroom_planner_guest_upgrade as api_v1_apps_classroom_planner_guest_upgrade,
 )
 from skriptoteket.web.api.v1 import (
     apps_classroom_planner_seating as api_v1_apps_classroom_planner_seating,
@@ -46,6 +56,7 @@ router.include_router(api_v1_apps.router)
 router.include_router(api_v1_public_apps.router)
 router.include_router(api_v1_public_apps_classroom_planner.router)
 router.include_router(api_v1_apps_classroom_planner.router)
+router.include_router(api_v1_apps_classroom_planner_guest_upgrade.router)
 router.include_router(api_v1_apps_classroom_planner_smart_rules.router)
 router.include_router(api_v1_apps_classroom_planner_grouping.router)
 router.include_router(api_v1_apps_classroom_planner_seating.router)

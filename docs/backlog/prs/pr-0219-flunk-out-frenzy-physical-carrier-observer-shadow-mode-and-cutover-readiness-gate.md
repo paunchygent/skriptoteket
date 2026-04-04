@@ -15,8 +15,10 @@ dependencies:
   - "REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04"
 acceptance_criteria:
   - "Given the physical carrier cut-over must not happen on intuition alone, when this task is complete, then the runtime can shadow carrier occupancy/progress against the current transport model and expose divergence evidence without using the observer to fake green results."
-  - "Given temporary seam correction may exist during bring-up, when this task is complete, then correction counters and intervention telemetry are explicit and production acceptance still requires them to reach `0`."
-  - "Given `PR-0214` remains the truth surface, when this task is complete, then no drift threshold widening or baseline repin is introduced; instead the repo gains an explicit go/no-go gate for later transport deletion."
+  - "Given route phases must be earned by physical evidence, when this task is complete, then a `route_*` phase is valid only when raw trace rows show launcher ownership plus physical occupancy evidence on compiled carrier/receiver geometry, after which progress may be projected onto the matched observation spine."
+  - "Given `PR-0219` must prove more than generic divergence, when this task is complete, then the raw trace includes occupied carrier/receiver tags, active observation-spine tag, projected progress, and correction counters/details in addition to the current route/seam/handoff facts."
+  - "Given temporary seam correction may exist during bring-up, when this task is complete, then correction counters and intervention telemetry are explicit, any correction is treated as blocked debt, and production readiness still requires the counter to reach `0`."
+  - "Given `PR-0214` remains the truth surface, when this task is complete, then no drift threshold widening or baseline repin is introduced; instead the repo gains an explicit go/no-go gate for later transport deletion with hard blockers for non-raw-row-backed summary claims, route phases without physical occupancy evidence, projected-progress discontinuities without seam evidence, or observer/transport disagreement beyond declared thresholds."
 ---
 
 ## Problem
@@ -39,9 +41,24 @@ before physical carrier cut-over work resumes.
 
 - Shadow physical carrier occupancy/progress against current transport-driven
   output.
+- Define a minimal truthful observer contract:
+  - launcher ownership plus physical occupancy evidence gates phase validity
+  - observation spines classify/provide progress only after occupancy is proven
+  - summary claims stay raw-row-backed rather than reconstructed
+- Extend the raw trace schema with the carrier-observer facts needed to prove
+  shadow behavior:
+  - occupied carrier/receiver tags
+  - active observation-spine tag
+  - projected progress
+  - correction counters/details
 - Emit divergence evidence and seam-correction counters explicitly.
 - Extend the `PR-0214` decision surface with the cut-over readiness facts needed
-  for a future go/no-go.
+  for a future go/no-go, including hard blockers for:
+  - any `route_*` phase without physical occupancy evidence
+  - projected-progress discontinuity without a seam transition
+  - observer/transport disagreement on first occupancy, endpoint bridge,
+    descent, or handoff beyond declared thresholds
+  - any non-zero production correction count
 
 ## Test plan
 

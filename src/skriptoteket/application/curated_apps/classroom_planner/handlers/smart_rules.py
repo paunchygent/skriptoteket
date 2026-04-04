@@ -11,61 +11,17 @@ from uuid import UUID
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RelationshipRule,
-    Roster,
     RosterSmartRules,
     StudentSeatingPreference,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.protocols.classroom_planner import (
     RosterRepositoryProtocol,
     RosterSmartRuleRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-
-def _ensure_unique(values: list[str], *, label: str) -> None:
-    """Raise a validation error when one request repeats stable identifiers."""
-
-    if len(values) != len(set(values)):
-        raise validation_error(f"{label} must be unique within the smart-rule set.")
-
-
-def _normalize_seating_preferences(
-    seating_preferences: list[StudentSeatingPreference],
-) -> list[StudentSeatingPreference]:
-    """Keep only active near-teacher preferences in the persisted rule set."""
-
-    return [preference for preference in seating_preferences if preference.near_teacher]
-
-
-def _validate_roster_smart_rules(
-    *,
-    roster: Roster,
-    seating_preferences: list[StudentSeatingPreference],
-    relationship_rules: list[RelationshipRule],
-) -> None:
-    """Validate roster-owned smart rules against the active class list."""
-
-    valid_student_ids = {student.id for student in roster.students}
-    _ensure_unique(
-        [preference.student_id for preference in seating_preferences],
-        label="Seating preference student IDs",
-    )
-    _ensure_unique([rule.id for rule in relationship_rules], label="Relationship rule IDs")
-
-    for preference in seating_preferences:
-        if preference.student_id not in valid_student_ids:
-            raise validation_error("Seating preferences must reference roster students.")
-
-    students_in_relationship_rules: list[str] = []
-    for rule in relationship_rules:
-        for student_id in rule.student_ids:
-            if student_id not in valid_student_ids:
-                raise validation_error("Relationship rules must reference roster students.")
-            students_in_relationship_rules.append(student_id)
-
-    if len(students_in_relationship_rules) != len(set(students_in_relationship_rules)):
-        raise validation_error("One student can belong to at most one relationship rule.")
+from .smart_rule_validation import normalize_seating_preferences, validate_roster_smart_rules
 
 
 class GetRosterSmartRulesHandler:
@@ -111,14 +67,14 @@ class PatchRosterSmartRulesHandler:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(roster_id))
-        seating_preferences = _normalize_seating_preferences(seating_preferences)
+        seating_preferences = normalize_seating_preferences(seating_preferences)
         if expected_revision < 0:
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,
                 message="Roster smart-rule revision must be zero or greater.",
             )
 
-        _validate_roster_smart_rules(
+        validate_roster_smart_rules(
             roster=roster,
             seating_preferences=seating_preferences,
             relationship_rules=relationship_rules,

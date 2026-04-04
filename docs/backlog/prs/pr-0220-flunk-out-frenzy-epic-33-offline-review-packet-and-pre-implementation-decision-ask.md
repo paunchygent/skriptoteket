@@ -2,7 +2,7 @@
 type: pr
 id: PR-0220
 title: "Flunk-Out Frenzy: EPIC-33 offline review packet and pre-implementation decision ask"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-04
 updated: 2026-04-04
@@ -117,3 +117,12 @@ If the framing proves wrong:
 2. supersede `PR-0220` with a corrected reviewer packet task
 3. rebuild the package against the corrected implementation order instead of
    guessing during code changes
+
+## Closure note
+
+The offline reviewer has now answered the decision questions this packet was
+created to ask, and the resulting guidance has been folded back into
+`PR-0217`, `PR-0218`, and `PR-0219`.
+
+`PR-0220` is therefore complete as a planning/review lane and no longer blocks
+the start of `PR-0217`.

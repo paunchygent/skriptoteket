@@ -110,6 +110,18 @@ describe("classroomPlannerGuestSnapshotMapping", () => {
           draft_kind: "grouping",
           created_at: "2026-04-04T08:05:00.000Z",
           label: "PDF-export",
+          template_local_id: null,
+          group_assignments: [{ student_id: "student-1", group_id: "group-1" }],
+          seat_assignments: [],
+        },
+        {
+          local_id: "checkpoint-2",
+          draft_kind: "seating",
+          created_at: "2026-04-04T08:06:00.000Z",
+          label: "Poster-export",
+          template_local_id: "template-1",
+          group_assignments: [],
+          seat_assignments: [{ student_id: "student-2", seat_id: "seat-1" }],
         },
       ],
       ui_state: {
@@ -131,6 +143,13 @@ describe("classroomPlannerGuestSnapshotMapping", () => {
     expect(snapshot.smart_rule_sets[0]?.fingerprint).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(snapshot.grouping_draft?.fingerprint).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(snapshot.grouping_draft?.task_entry_classroom_selection_mode).toBe("optional");
+    expect(snapshot.checkpoint_descriptors[0]?.group_assignments).toEqual([
+      { student_id: "student-1", group_id: "group-1" },
+    ]);
+    expect(snapshot.checkpoint_descriptors[1]?.template_local_id).toBe("template-1");
+    expect(snapshot.checkpoint_descriptors[1]?.seat_assignments).toEqual([
+      { student_id: "student-2", seat_id: "seat-1" },
+    ]);
 
     expect(hydrated.rosters[0]?.id).toBe("roster-1");
     expect(hydrated.templates[0]?.id).toBe("template-1");
@@ -142,5 +161,8 @@ describe("classroomPlannerGuestSnapshotMapping", () => {
     expect(hydrated.ui_state.current_screen).toBe("planner");
     expect(hydrated.ui_state.planner_initial_view).toBe("rules");
     expect(hydrated.checkpoint_descriptors[0]?.source).toBe("export");
+    expect(hydrated.checkpoint_descriptors[1]?.seat_assignments).toEqual([
+      { student_id: "student-2", seat_id: "seat-1" },
+    ]);
   });
 });

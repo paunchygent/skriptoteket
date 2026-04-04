@@ -12,6 +12,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
     ActivateSeatingHistoryDraftHandler,
+    ClassroomPlannerGuestUpgradeHandler,
     CreateGroupingDraftHandler,
     CreateGroupingExportJobHandler,
     CreateRoomTemplateHandler,
@@ -152,6 +153,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_
 from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_jobs import (
     PostgreSQLGroupingExportJobRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_guest_upgrade import (
+    PostgreSQLClassroomPlannerGuestUpgradeRepository,
+)
 from skriptoteket.infrastructure.repositories.classroom_planner_seating_export_checkpoints import (
     PostgreSQLSeatingExportCheckpointRepository,
 )
@@ -177,6 +181,9 @@ from skriptoteket.protocols.classroom_planner_exports import (
     SeatingPdfRendererProtocol,
     SeatingPosterRendererProtocol,
     SeatingXlsxRendererProtocol,
+)
+from skriptoteket.protocols.classroom_planner_guest_upgrade import (
+    ClassroomPlannerGuestUpgradeRepositoryProtocol,
 )
 from skriptoteket.protocols.classroom_planner_imports import (
     ClassListHeuristicParserProtocol,
@@ -986,6 +993,37 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def classroom_planner_guest_upgrade_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        seating_checkpoints: SeatingExportCheckpointRepositoryProtocol,
+        grouping_checkpoints: GroupingExportCheckpointRepositoryProtocol,
+        seating_export_jobs: SeatingExportJobRepositoryProtocol,
+        grouping_export_jobs: GroupingExportJobRepositoryProtocol,
+        guest_upgrade_repository: ClassroomPlannerGuestUpgradeRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ClassroomPlannerGuestUpgradeHandler:
+        return ClassroomPlannerGuestUpgradeHandler(
+            uow=uow,
+            rosters=rosters,
+            templates=templates,
+            smart_rules=smart_rules,
+            drafts=drafts,
+            seating_checkpoints=seating_checkpoints,
+            grouping_checkpoints=grouping_checkpoints,
+            seating_export_jobs=seating_export_jobs,
+            grouping_export_jobs=grouping_export_jobs,
+            guest_upgrade_repository=guest_upgrade_repository,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def plan_draft_repository(self, session: AsyncSession) -> PlanDraftRepositoryProtocol:
         return PostgreSQLPlanDraftRepository(session=session)
 
@@ -1026,6 +1064,12 @@ class CuratedAppsProvider(Provider):
         self, session: AsyncSession
     ) -> GroupingExportCheckpointRepositoryProtocol:
         return PostgreSQLGroupingExportCheckpointRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def classroom_planner_guest_upgrade_repository(
+        self, session: AsyncSession
+    ) -> ClassroomPlannerGuestUpgradeRepositoryProtocol:
+        return PostgreSQLClassroomPlannerGuestUpgradeRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
     def conversion_hub_job_repository(

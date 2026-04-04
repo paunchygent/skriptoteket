@@ -5,7 +5,7 @@ title: "Klassrumskartan demo adoption on the public browser-workspace profile"
 status: ready
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 epic: "EPIC-32"
 dependencies: ["ST-32-02", "ST-32-03", "ST-32-04", "ST-32-05", "EPIC-27", "EPIC-29"]
 acceptance_criteria:
@@ -35,3 +35,7 @@ reviewable first consumer: Klassrumskartan.
   - undo/redo is local editing state
   - local draft restore/history is local continuity
   - smart `use_history` depends on export-backed checkpoints only
+- Checkpoint payload note: browser-owned guest snapshots now carry canonical
+  importable checkpoint payloads for authenticated upgrade; do not reintroduce
+  metadata-only checkpoint compatibility or `skipped` fallback behavior without
+  a new explicit docs-as-code decision.

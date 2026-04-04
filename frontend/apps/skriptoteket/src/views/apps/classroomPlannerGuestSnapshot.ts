@@ -95,6 +95,9 @@ export type ClassroomPlannerGuestCheckpointDescriptor = {
   created_at: string;
   label: string | null;
   source: "export";
+  template_local_id: string | null;
+  group_assignments: GroupAssignment[];
+  seat_assignments: SeatAssignment[];
   fingerprint: string;
 };
 

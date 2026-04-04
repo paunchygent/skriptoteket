@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassroomSelectionMode,
     ClassWorkspaceDraftSummary,
     DraftGroup,
     DraftHistoryStatus,
@@ -78,16 +79,24 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
     def _to_draft(self, model: PlanDraftModel) -> PlanDraft:
         """Map one draft ORM row to the active domain aggregate."""
 
+        task_entry_classroom_selection_mode = (
+            ClassroomSelectionMode.OPTIONAL
+            if model.task_entry_classroom_selection_mode is None
+            else ClassroomSelectionMode(model.task_entry_classroom_selection_mode)
+        )
+
         return PlanDraft(
             id=model.id,
             owner_user_id=model.owner_user_id,
             roster_id=model.roster_id,
             draft_kind=PlanDraftKind(model.draft_kind),
             template_id=model.template_id,
+            task_entry_classroom_selection_mode=task_entry_classroom_selection_mode,
             smart_enabled=model.smart_enabled,
             use_history=model.use_history,
             grouping_seating_distance_enabled=model.grouping_seating_distance_enabled,
             status=PlanDraftStatus(model.status),
+            guest_import_identity=model.guest_import_identity,
             revision=model.revision,
             last_opened_at=model.last_opened_at,
             created_at=model.created_at,
@@ -365,10 +374,14 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.roster_id = draft.roster_id
             model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
+            model.task_entry_classroom_selection_mode = (
+                draft.task_entry_classroom_selection_mode.value
+            )
             model.smart_enabled = draft.smart_enabled
             model.use_history = draft.use_history
             model.grouping_seating_distance_enabled = draft.grouping_seating_distance_enabled
             model.status = draft.status.value
+            model.guest_import_identity = draft.guest_import_identity
             model.revision = draft.revision
             model.last_opened_at = draft.last_opened_at
             model.updated_at = draft.updated_at
@@ -379,10 +392,14 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
+                task_entry_classroom_selection_mode=(
+                    draft.task_entry_classroom_selection_mode.value
+                ),
                 smart_enabled=draft.smart_enabled,
                 use_history=draft.use_history,
                 grouping_seating_distance_enabled=draft.grouping_seating_distance_enabled,
                 status=draft.status.value,
+                guest_import_identity=draft.guest_import_identity,
                 revision=draft.revision,
                 last_opened_at=draft.last_opened_at,
                 created_at=draft.created_at,
@@ -457,10 +474,14 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
+                task_entry_classroom_selection_mode=(
+                    draft.task_entry_classroom_selection_mode.value
+                ),
                 smart_enabled=draft.smart_enabled,
                 use_history=draft.use_history,
                 grouping_seating_distance_enabled=draft.grouping_seating_distance_enabled,
                 status=draft.status.value,
+                guest_import_identity=draft.guest_import_identity,
                 revision=draft.revision,
                 last_opened_at=draft.last_opened_at,
                 created_at=draft.created_at,
@@ -471,10 +492,14 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.roster_id = draft.roster_id
             model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
+            model.task_entry_classroom_selection_mode = (
+                draft.task_entry_classroom_selection_mode.value
+            )
             model.smart_enabled = draft.smart_enabled
             model.use_history = draft.use_history
             model.grouping_seating_distance_enabled = draft.grouping_seating_distance_enabled
             model.status = draft.status.value
+            model.guest_import_identity = draft.guest_import_identity
             model.revision = draft.revision
             model.last_opened_at = draft.last_opened_at
             model.updated_at = draft.updated_at

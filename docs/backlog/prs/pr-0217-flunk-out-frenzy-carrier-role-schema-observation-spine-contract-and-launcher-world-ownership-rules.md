@@ -15,9 +15,10 @@ dependencies:
   - "REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04"
 acceptance_criteria:
   - "Given the current launcher 3D schema only knows `walls`, `guideRails`, `sensors`, and optional `travelRoutes`, when this task is complete, then authored/compiled contracts distinguish physical carrier roles from proof roles without overloading those legacy constructs."
-  - "Given `travelRoutes` currently mix motion and proof semantics, when this task is complete, then the contract explicitly demotes them into observation-spine or equivalent proof-only semantics."
-  - "Given launcher-world ownership is the decisive architectural seam, when this task is complete, then the contract defines which carrier anchors and surfaces belong to the launcher Rapier world through the one terminal board handoff."
-  - "Given strict seam continuity remains valuable, when this task is complete, then continuity validation survives for carrier anchors and observation spines without acting as a transport rail contract."
+  - "Given `travelRoutes` currently mix motion and proof semantics, when this task is complete, then the contract explicitly demotes them into observation-spine or equivalent proof-only semantics that cannot generate colliders or own motion."
+  - "Given the architect guidance prefers one tagged carrier model, when this task is complete, then the launcher contract uses one tagged `carriers[]` union with explicit `kind`, explicit compile role (`physical`, `observation`, or `terminal_seam`), explicit donor provenance, and explicit `ownerWorld` with no default."
+  - "Given launcher-world ownership is the decisive architectural seam, when this task is complete, then the contract defines which carrier anchors and surfaces belong to the launcher Rapier world through the one terminal board handoff and explicitly forbids duplicate donor-span ownership across worlds."
+  - "Given strict seam continuity remains valuable, when this task is complete, then continuity validation survives for carrier anchors and observation spines without acting as a transport rail contract, including unique tags, connected acyclic graph validation, exactly one terminal `handoff_seam`, no mid-chain handoff seams, and preserved chained-anchor continuity."
 ---
 
 ## Problem
@@ -40,12 +41,26 @@ cut-over work can be honest.
 
 ## Implementation plan
 
-- Extend `tableDefinitionTypes.ts` and related compiled-plan contracts with
-  explicit carrier-role semantics.
-- Define the observation-spine replacement for motion-owning `travelRoutes`.
+- Extend `tableDefinitionTypes.ts` and related compiled-plan contracts with one
+  tagged `carriers[]` union instead of multiple role-specific arrays.
+- Require every carrier entry to declare:
+  - `kind`
+  - compile role (`physical`, `observation`, or `terminal_seam`)
+  - explicit donor provenance
+  - explicit `ownerWorld`
+- Define the observation-spine replacement for motion-owning `travelRoutes` and
+  hard-fail any attempt for `observation_spine` entries to generate colliders
+  or own motion.
 - Encode launcher-world ownership rules and one-late-handoff topology in the
-  contract/validation layer.
-- Keep provenance explicit for donor-backed carrier anchors.
+  contract/validation layer, including an explicit prohibition on duplicate
+  donor-span ownership across worlds.
+- Carry forward the strongest existing route validator guarantees into the new
+  carrier graph:
+  - unique tags
+  - connected acyclic graph
+  - exactly one terminal `handoff_seam`
+  - no mid-chain handoff seams
+  - preserved chained-anchor continuity
 
 ## Test plan
 

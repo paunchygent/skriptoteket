@@ -42,6 +42,13 @@ class PlanDraftModel(Base):
             unique=True,
             postgresql_where=text("status = 'active'"),
         ),
+        Index(
+            "uq_cp_guest_import_identity",
+            "owner_user_id",
+            "guest_import_identity",
+            unique=True,
+            postgresql_where=text("guest_import_identity IS NOT NULL"),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -67,6 +74,11 @@ class PlanDraftModel(Base):
         ForeignKey("classroom_planner_room_templates.id", ondelete="CASCADE"),
         nullable=True,
     )
+    task_entry_classroom_selection_mode: Mapped[str] = mapped_column(
+        String(32),
+        server_default="optional",
+        nullable=False,
+    )
     smart_enabled: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
@@ -90,6 +102,10 @@ class PlanDraftModel(Base):
         server_default="active",
         nullable=False,
         index=True,
+    )
+    guest_import_identity: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
     )
     revision: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)
     last_opened_at: Mapped[datetime] = mapped_column(

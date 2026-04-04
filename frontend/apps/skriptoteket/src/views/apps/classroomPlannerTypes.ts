@@ -78,6 +78,7 @@ export type PlanDraft = {
   roster_id: string;
   draft_kind: PlanDraftKind;
   template_id?: string | null;
+  task_entry_classroom_selection_mode?: ClassroomSelectionMode;
   smart_enabled?: boolean;
   use_history?: boolean;
   grouping_seating_distance_enabled?: boolean;

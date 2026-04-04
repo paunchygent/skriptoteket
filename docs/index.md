@@ -95,6 +95,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0220-flunk-out-frenzy-epic-33-offline-review-packet-and-pre-implementation-decision-ask.md`
 - ST-32-04 guest snapshot contract + storage foundation:
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
+- ST-32-05 authenticated guest-upgrade orchestration + idempotent import foundation:
+  `docs/backlog/prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md`
+- ST-32-06 browser-authored guest checkpoint payload capture for export-backed history:
+  `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -703,6 +707,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md`
 - `docs/backlog/prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md`
 - `docs/backlog/prs/pr-0220-flunk-out-frenzy-epic-33-offline-review-packet-and-pre-implementation-decision-ask.md`
+- `docs/backlog/prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md`
+- `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`

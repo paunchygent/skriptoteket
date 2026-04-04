@@ -32,6 +32,7 @@ from .handlers.grouping_history import (
     ActivateGroupingHistoryDraftHandler,
     DeleteHistoricGroupingDraftHandler,
 )
+from .handlers.guest_upgrade import ClassroomPlannerGuestUpgradeHandler
 from .handlers.rosters import (
     CreateRosterHandler,
     DeleteRosterHandler,
@@ -79,6 +80,7 @@ __all__ = [
     "CreateGroupingExportJobHandler",
     "CreateSeatingDraftHandler",
     "CreateSeatingExportJobHandler",
+    "ClassroomPlannerGuestUpgradeHandler",
     "DeleteHistoricGroupingDraftHandler",
     "DeleteHistoricSeatingDraftHandler",
     "DeleteRoomTemplateHandler",

@@ -14,8 +14,10 @@ dependencies:
   - "REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04"
 acceptance_criteria:
   - "Given the overhead donor wireforms (`RampS3`, `RampS001`, `RampS002`, `RampS4`) are currently provenance-backed but render-only, when this task is complete, then the compiler can produce launcher-world support/guard/receiver carrier output from those donors without simply flipping top-level playfield rails to `physics: true`."
+  - "Given donor-to-collider representation is now a design decision rather than an implementation guess, when this task is complete, then support/guard/receiver carriers compile as launcher-world fixed compound assemblies built from thick segments, capsules, rounded cuboids, and receiver-appropriate convex/extruded surfaces rather than thin mesh/polyline shortcuts."
   - "Given geometry builders must remain pure, when this task is complete, then `LauncherWorldGeometry.ts` can build the new launcher-world carrier colliders without phase logic or transport policy leaking into geometry code."
-  - "Given world ownership must stay explicit, when this task is complete, then the compiled output makes it clear which elevated-route surfaces are owned by the launcher Rapier world and which seam remains the terminal board handoff."
+  - "Given world ownership must stay explicit, when this task is complete, then the compiled output makes it clear which elevated-route surfaces are owned by the launcher Rapier world, which seam remains the terminal board handoff, and that no donor-derived span is physical in both worlds at once."
+  - "Given provenance and auditability are critical for this cut-over lane, when this task is complete, then focused tests or emitted artifacts include a donor-source-to-compiled-collider ownership matrix (`donor source id -> collider ids -> role -> owning world`) and reject invisible stabilizer colliders with no donor provenance."
 ---
 
 ## Problem
@@ -39,10 +41,21 @@ colliders without performing the physical cut-over yet.
 
 - Extend compiler output for launcher-world support/guard/receiver carrier
   colliders derived from donor geometry.
+- Compile carriers with a locked collider-family policy:
+  - support carriers as load-bearing thick segments / capsules / rounded
+    compounds
+  - guard carriers as explicit retaining geometry, not reused support output
+  - receiver carriers as short funnel / mouth structures using the most stable
+    convex or extruded surfaces needed for capture/confine behavior
+- Do not model the overhead route as a thin perfect mesh/polyline rail and do
+  not flip the current top-level playfield render rails to `physics: true`.
 - Keep provenance explicit for compiled carrier output.
+- Emit or test a donor-source-to-compiled-collider ownership matrix so launcher
+  ownership is inspectable rather than implied.
 - Update `LauncherWorldGeometry.ts` to build those colliders and nothing more.
 - Add focused tests that prove donor-backed collider presence and launcher-world
-  ownership.
+  ownership, including rejection of duplicate donor-span ownership across worlds
+  and rejection of stabilizer colliders with no provenance.
 
 ## Test plan
 
