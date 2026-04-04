@@ -5,7 +5,7 @@ title: "Flunk-Out Frenzy mechanics-port foundation"
 status: in_progress
 owners: "agents"
 created: 2026-04-01
-updated: 2026-04-03
+updated: 2026-04-04
 epic: "EPIC-25"
 dependencies: ["ST-25-02", "ADR-0073"]
 acceptance_criteria:
@@ -14,6 +14,7 @@ acceptance_criteria:
   - "Given the prototype-alpha table expands, when new devices are authored, then their geometry, tags, and authored parameters remain in typed TypeScript table modules rather than an external JSON content system."
   - "Given lightweight score submission and leaderboard support still matter later, when these mechanics slices land, then the browser-owned runtime plus the app/version/ruleset seams from `ST-25-02` remain intact and ready for a compact post-run score handoff."
   - "Given the work is reviewed incrementally, when the mechanics backlog is executed, then each PR remains narrow, testable, and aligned with the repo size budget instead of introducing a new engine monolith."
+  - "Given repo file size limits are enforced, when PR-0210 completes, then all Flunk-Out Frenzy frontend modules are under 500 LoC with clear component communication patterns and no memory leaks."
 ui_impact: "Yes (richer local gameplay feedback and HUD states)"
 data_impact: "No (browser-local mechanics expansion only)"
 ---

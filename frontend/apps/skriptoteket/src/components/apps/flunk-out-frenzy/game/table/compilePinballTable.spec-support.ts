@@ -1,0 +1,109 @@
+/**
+ * Shared donor-compilation test fixtures for the Flunk-Out Frenzy table compiler.
+ *
+ * The focused spec modules import from here so each regression slice can stay
+ * small while still asserting against the same donor-backed authored inputs.
+ */
+
+import { compilePinballTable } from "./compilePinballTable";
+import { PROTOTYPE_ALPHA_TABLE_SPEC } from "./prototypeAlphaTableSpec";
+import {
+  VPW_LAUNCH_LANE_EXIT_TRIGGER_SPEC,
+  VPW_PLUNGER_ROSE_3D_SPEC,
+  VPW_RIGHT_RETURN_TRIGGER_SPEC,
+  VPW_SHOOTER_PLUNGER_TRIGGER_SPEC,
+} from "./prototypeAlphaVpwDonorDevices";
+import {
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES,
+  VPW_APRON_1_POLYGON,
+  VPW_APRON_2_POLYGON,
+  VPW_GATE_SPECS,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_ENTRY_ANCHOR_3D,
+  VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_EXIT_ANCHOR_3D,
+  VPW_LEFT_UPPER_INNER_METAL_PATH,
+  VPW_METAL_RAIL_3D_SPECS,
+  VPW_OUTER_BOUNDARY_MAIN_PATH,
+  VPW_OUTER_BOUNDARY_RENDER_PATH,
+  VPW_OUTER_BOUNDARY_RIGHT_DESCENT_PATH,
+  VPW_OUTER_BOUNDARY_SHOOTER_CORRIDOR_PATH,
+  VPW_RIGHT_UPPER_INNER_METAL_PATH,
+  VPW_SHOOTER_DIVIDER_POLYGON,
+  VPW_SHOOTER_HANDOFF_LOWER_POLYGON,
+  VPW_SHOOTER_HANDOFF_UPPER_POLYGON,
+  VPW_SHOOTER_LANE_LEFT_BOUNDARY_SEGMENTS,
+  VPW_SHOOTER_OUTER_INNER_EDGE,
+  VPW_SHOOTER_OUTER_POLYGON,
+  scaleDonorPoint,
+} from "./prototypeAlphaVpwDonorMap";
+
+export {
+  compilePinballTable,
+  PROTOTYPE_ALPHA_TABLE_SPEC,
+  PROTOTYPE_ALPHA_VPW_DONOR_SOURCES,
+  VPW_APRON_1_POLYGON,
+  VPW_APRON_2_POLYGON,
+  VPW_GATE_SPECS,
+  VPW_LAUNCH_LANE_EXIT_TRIGGER_SPEC,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_ENTRY_ANCHOR_3D,
+  VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_3D_PATH,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_DONOR_SOURCES,
+  VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_EXIT_ANCHOR_3D,
+  VPW_LEFT_UPPER_INNER_METAL_PATH,
+  VPW_METAL_RAIL_3D_SPECS,
+  VPW_OUTER_BOUNDARY_MAIN_PATH,
+  VPW_OUTER_BOUNDARY_RENDER_PATH,
+  VPW_OUTER_BOUNDARY_RIGHT_DESCENT_PATH,
+  VPW_OUTER_BOUNDARY_SHOOTER_CORRIDOR_PATH,
+  VPW_PLUNGER_ROSE_3D_SPEC,
+  VPW_RIGHT_RETURN_TRIGGER_SPEC,
+  VPW_RIGHT_UPPER_INNER_METAL_PATH,
+  VPW_SHOOTER_DIVIDER_POLYGON,
+  VPW_SHOOTER_HANDOFF_LOWER_POLYGON,
+  VPW_SHOOTER_HANDOFF_UPPER_POLYGON,
+  VPW_SHOOTER_LANE_LEFT_BOUNDARY_SEGMENTS,
+  VPW_SHOOTER_OUTER_INNER_EDGE,
+  VPW_SHOOTER_OUTER_POLYGON,
+  VPW_SHOOTER_PLUNGER_TRIGGER_SPEC,
+  scaleDonorPoint,
+};
+
+export function degreesToRadians(deg: number): number {
+  return (deg * Math.PI) / 180;
+}
+
+export function expectRectShape(
+  shape: (typeof VPW_SHOOTER_PLUNGER_TRIGGER_SPEC)["shape"],
+): Extract<(typeof VPW_SHOOTER_PLUNGER_TRIGGER_SPEC)["shape"], { kind: "rect" }> {
+  if (shape.kind !== "rect") {
+    throw new Error(`Expected rect trigger shape, got ${shape.kind}.`);
+  }
+  return shape;
+}
+
+export function expectWireRolloverShape(
+  shape: (typeof VPW_LAUNCH_LANE_EXIT_TRIGGER_SPEC)["shape"],
+): Extract<(typeof VPW_LAUNCH_LANE_EXIT_TRIGGER_SPEC)["shape"], { kind: "donor-wire-rollover" }> {
+  if (shape.kind !== "donor-wire-rollover") {
+    throw new Error(`Expected donor-wire-rollover trigger shape, got ${shape.kind}.`);
+  }
+  return shape;
+}
+
+export function expectCapsuleShape(
+  shape: (typeof VPW_RIGHT_RETURN_TRIGGER_SPEC)["shape"],
+): Extract<(typeof VPW_RIGHT_RETURN_TRIGGER_SPEC)["shape"], { kind: "capsule" }> {
+  if (shape.kind !== "capsule") {
+    throw new Error(`Expected capsule trigger shape, got ${shape.kind}.`);
+  }
+  return shape;
+}

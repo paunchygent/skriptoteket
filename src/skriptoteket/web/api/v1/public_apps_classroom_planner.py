@@ -13,8 +13,6 @@ Relationships:
     request time budget before work reaches the import pipeline.
 """
 
-from __future__ import annotations
-
 import asyncio
 
 import structlog

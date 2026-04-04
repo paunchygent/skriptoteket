@@ -17,8 +17,8 @@ import {
 import type { GameHudSnapshot, GameViewSnapshot } from "../core/runtimeTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
 import { PROTOTYPE_ALPHA_TABLE } from "../table/prototypeAlphaTable";
-import type { TableTriggerShapeDefinition } from "../table/tableDefinitionTypes";
 import type { RuntimeRenderer } from "./renderTypes";
+import { resolvePixiPulseDescriptors } from "./PixiRendererEffects";
 import { buildStaticBoardUnderlay } from "./staticBoardUnderlay";
 
 interface RolloverNode {
@@ -261,144 +261,8 @@ export class PixiRenderer implements RuntimeRenderer {
     this.app.canvas.dataset.runtimeStatus = hud.status;
     this.app.canvas.dataset.runtimeMuted = String(hud.muted);
 
-    for (const effect of effects) {
-      switch (effect.type) {
-        case "bumper-hit": {
-          const bumper = PROTOTYPE_ALPHA_TABLE.bumpers.find((item) => item.tag === effect.tag);
-          if (bumper) {
-            this.spawnPulse(bumper.x, bumper.y, 32, 0x69ff7d, 170);
-          }
-          break;
-        }
-        case "sling-hit": {
-          const sling = PROTOTYPE_ALPHA_TABLE.slings.find((item) => item.tag === effect.tag);
-          if (sling) {
-            const centroidX =
-              (sling.vertices[0].x + sling.vertices[1].x + sling.vertices[2].x) / 3;
-            const centroidY =
-              (sling.vertices[0].y + sling.vertices[1].y + sling.vertices[2].y) / 3;
-            this.spawnPulse(centroidX, centroidY, 26, 0xff8a47, 150);
-          }
-          break;
-        }
-        case "rollover-lit": {
-          const rollover = PROTOTYPE_ALPHA_TABLE.rollovers.find((item) => item.tag === effect.tag);
-          if (rollover) {
-            this.spawnPulse(rollover.x, rollover.y, 22, 0xffee8d, 130);
-          }
-          break;
-        }
-        case "tripwire-crossed": {
-          const tripwire = PROTOTYPE_ALPHA_TABLE.tripwires.find((item) => item.tag === effect.tag);
-          if (tripwire) {
-            const center = resolveTriggerEffectCenter(tripwire);
-            this.spawnPulse(center.x, center.y, 28, 0x6be9ff, 140);
-          }
-          break;
-        }
-        case "standup-target-hit": {
-          const target = PROTOTYPE_ALPHA_TABLE.standupTargets.find((item) => item.tag === effect.tag);
-          if (target) {
-            this.spawnPulse(target.x, target.y, 24, 0xffc769, 155);
-          }
-          break;
-        }
-        case "popup-target-hit": {
-          const target = PROTOTYPE_ALPHA_TABLE.popupTargets.find((item) => item.tag === effect.tag);
-          if (target) {
-            this.spawnPulse(target.x, target.y, target.radius + 10, 0xff8df0, 165);
-          }
-          break;
-        }
-        case "gate-passed": {
-          const gate = PROTOTYPE_ALPHA_TABLE.gates.find((item) => item.tag === effect.tag);
-          if (gate) {
-            const center = resolveTriggerEffectCenter(gate);
-            this.spawnPulse(center.x, center.y, 22, 0x9ee081, 130);
-          }
-          break;
-        }
-        case "ball-captured": {
-          const captureDevice = PROTOTYPE_ALPHA_TABLE.captureDevices.find(
-            (item) => item.tag === effect.tag,
-          );
-          if (captureDevice) {
-            this.spawnPulse(
-              captureDevice.x,
-              captureDevice.y,
-              Math.max(captureDevice.width, captureDevice.height) * 0.62,
-              0x66f0ff,
-              170,
-            );
-          }
-          break;
-        }
-        case "ball-ejected": {
-          const captureDevice = PROTOTYPE_ALPHA_TABLE.captureDevices.find(
-            (item) => item.tag === effect.tag,
-          );
-          if (captureDevice) {
-            this.spawnPulse(
-              captureDevice.x,
-              captureDevice.y,
-              Math.max(captureDevice.width, captureDevice.height) * 0.82,
-              0xffbf72,
-              180,
-            );
-          }
-          break;
-        }
-        case "ball-saved": {
-          const saveDevice = PROTOTYPE_ALPHA_TABLE.saveDevices.find((item) => item.tag === effect.tag);
-          if (saveDevice) {
-            this.spawnPulse(
-              saveDevice.x,
-              saveDevice.y,
-              Math.max(saveDevice.width, saveDevice.height) * 0.7,
-              0x91ffc6,
-              175,
-            );
-          }
-          break;
-        }
-        case "late-bank-complete":
-          this.spawnPulse(300, 146, 110, 0xffee8d, 280);
-          break;
-        case "bonus-awarded":
-          this.spawnPulse(300, 1030, 72, 0xffcf7c, 240);
-          break;
-        case "jackpot-lit":
-          this.spawnPulse(300, 250, 48, 0xff8df0, 200);
-          break;
-        case "jackpot-awarded":
-          this.spawnPulse(300, 420, 126, 0xff8df0, 300);
-          break;
-        case "capture-awarded":
-          this.spawnPulse(300, 980, 62, 0x66f0ff, 240);
-          break;
-        case "eject-awarded":
-          this.spawnPulse(300, 900, 56, 0xffbf72, 220);
-          break;
-        case "save-awarded":
-          this.spawnPulse(300, 850, 64, 0x91ffc6, 250);
-          break;
-        case "shoot-again-lit":
-          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, 930, 42, 0x8dffcf, 220);
-          break;
-        case "ball-drained":
-          this.spawnPulse(300, 1136, 54, 0xff5d92, 200);
-          break;
-        case "ball-spawned":
-          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, PROTOTYPE_ALPHA_TABLE.ball.spawn.y, 24, 0xb8c5ff, 150);
-          break;
-        case "game-over":
-          this.spawnPulse(300, 680, 150, 0xff5d92, 360);
-          break;
-        case "round-started":
-        case "flipper-fired":
-        case "launch-released":
-          break;
-      }
+    for (const pulse of resolvePixiPulseDescriptors(effects)) {
+      this.spawnPulse(pulse.x, pulse.y, pulse.radius, pulse.color, pulse.durationMs);
     }
   }
 
@@ -462,44 +326,6 @@ export class PixiRenderer implements RuntimeRenderer {
       Math.round((height - PROTOTYPE_ALPHA_TABLE.board.height * scale) / 2),
     );
   }
-}
-
-function resolveTriggerEffectCenter(
-  trigger:
-    | (typeof PROTOTYPE_ALPHA_TABLE.tripwires)[number]
-    | (typeof PROTOTYPE_ALPHA_TABLE.gates)[number],
-): { x: number; y: number } {
-  if ("shape" in trigger) {
-    return centerForTriggerShape(trigger.shape);
-  }
-
-  return {
-    x: trigger.x,
-    y: trigger.y,
-  };
-}
-
-function centerForTriggerShape(shape: TableTriggerShapeDefinition): {
-  x: number;
-  y: number;
-} {
-  switch (shape.kind) {
-    case "rect":
-    case "circle":
-    case "capsule":
-    case "donor-wire-rollover":
-      return shape.center;
-    case "polygon":
-      return polygonCentroid(shape.points);
-  }
-}
-
-function polygonCentroid(points: readonly { x: number; y: number }[]): { x: number; y: number } {
-  const count = points.length || 1;
-  return {
-    x: points.reduce((sum, point) => sum + point.x, 0) / count,
-    y: points.reduce((sum, point) => sum + point.y, 0) / count,
-  };
 }
 
 function degreesToRadians(deg: number): number {

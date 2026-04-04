@@ -1,0 +1,251 @@
+/**
+ * Namespaced control-panel styling for the Flunk-Out Frenzy shell.
+ *
+ * This companion stylesheet owns plaques, controls, and settings-drawer chrome
+ * while remaining scoped beneath `.fof-game-container`.
+ */
+
+.fof-game-container .fof-runtime-error {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(255, 162, 176, 0.3);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(180deg, rgba(72, 18, 26, 0.92), rgba(38, 11, 16, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 219, 227, 0.12),
+    0 14px 30px rgba(11, 6, 5, 0.26);
+}
+
+.fof-game-container .fof-runtime-error__title,
+.fof-game-container .fof-runtime-error__body {
+  margin: 0;
+}
+
+.fof-game-container .fof-runtime-error__title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fof-game-container .fof-runtime-error__body {
+  color: rgba(247, 240, 228, 0.82);
+  line-height: 1.5;
+}
+
+.fof-game-container .fof-plaque,
+.fof-game-container .fof-keyguide,
+.fof-game-container .fof-controls {
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(21, 31, 25, 0.72), rgba(15, 21, 18, 0.78));
+  border: 1px solid rgba(255, 244, 222, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 247, 232, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+.fof-game-container .fof-plaque {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.78rem 0.88rem;
+}
+
+.fof-game-container .fof-plaque span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 240, 228, 0.65);
+}
+
+.fof-game-container .fof-plaque strong {
+  font-size: clamp(1.02rem, 1.35vw, 1.28rem);
+  line-height: 1.04;
+  font-weight: 800;
+}
+
+.fof-game-container .fof-keyguide {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+}
+
+.fof-game-container .fof-keyguide__row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.fof-game-container .fof-keyguide__row > span:last-child {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--fof-text-soft);
+}
+
+.fof-game-container .fof-keycaps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.fof-game-container .fof-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: 0.48rem 0.72rem;
+  border-radius: 0.7rem;
+  background:
+    linear-gradient(180deg, rgba(245, 234, 214, 0.98), rgba(215, 198, 171, 0.98));
+  color: var(--fof-ink);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.fof-game-container .fof-controls {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.72rem;
+}
+
+.fof-game-container .fof-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.78rem 1rem;
+  border: 1px solid rgba(255, 244, 222, 0.12);
+  border-radius: 0.85rem;
+  background:
+    linear-gradient(180deg, rgba(39, 54, 45, 0.98), rgba(22, 31, 26, 0.98));
+  color: var(--fof-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.fof-game-container .fof-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(255, 244, 222, 0.24);
+}
+
+.fof-game-container .fof-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fof-game-container .fof-action--primary {
+  border-color: rgba(255, 198, 221, 0.24);
+  background: linear-gradient(180deg, var(--fof-coral), var(--fof-coral-deep));
+  color: #240d16;
+}
+
+.fof-game-container .fof-action--ghost {
+  width: 100%;
+  background:
+    linear-gradient(180deg, rgba(95, 66, 44, 0.95), rgba(63, 42, 29, 0.95));
+}
+
+.fof-game-container .fof-settings {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  background: rgba(10, 12, 11, 0.48);
+  backdrop-filter: blur(12px);
+}
+
+.fof-game-container .fof-settings__panel {
+  width: min(27rem, 100%);
+  display: grid;
+  gap: 1.3rem;
+  align-content: start;
+  padding: 1.35rem;
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(180deg, rgba(29, 42, 35, 0.98), rgba(19, 27, 23, 0.98));
+  border: 1px solid rgba(255, 244, 222, 0.12);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.32);
+}
+
+.fof-game-container .fof-settings__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fof-game-container .fof-settings__title {
+  margin: 0.2rem 0 0;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.fof-game-container .fof-settings__meta,
+.fof-game-container .fof-settings__flags {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fof-game-container .fof-settings__meta > div,
+.fof-game-container .fof-settings__flag {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+  background: rgba(255, 247, 232, 0.06);
+}
+
+.fof-game-container .fof-settings__meta dt,
+.fof-game-container .fof-settings__flag dt {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(247, 240, 228, 0.6);
+}
+
+.fof-game-container .fof-settings__meta dd,
+.fof-game-container .fof-settings__flag dd {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: var(--fof-text);
+}
+
+.fof-game-container .fof-settings-enter-active,
+.fof-game-container .fof-settings-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.fof-game-container .fof-settings-enter-from,
+.fof-game-container .fof-settings-leave-to {
+  opacity: 0;
+}
+
+.fof-game-container .fof-settings-enter-from .fof-settings__panel,
+.fof-game-container .fof-settings-leave-to .fof-settings__panel {
+  transform: translateX(1.5rem);
+}
+
+@media (max-width: 767px) {
+  .fof-game-container .fof-keycaps {
+    gap: 0.35rem;
+  }
+
+  .fof-game-container .fof-settings {
+    padding: 0.75rem;
+  }
+}

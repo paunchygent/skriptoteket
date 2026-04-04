@@ -4,7 +4,7 @@ id: REV-EPIC-25
 title: "Review: Competitive games foundations and Flunk-Out Frenzy"
 status: approved
 owners: "agents"
-updated: 2026-04-03
+updated: 2026-04-04
 reviewer: "lead-developer"
 epic: "EPIC-25"
 created: 2026-03-22
@@ -142,3 +142,44 @@ None. The proposal is thorough and aligns with the project's architectural princ
   - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/tableDefinitionTypes.ts`
   - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.ts`
   - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts`
+
+## Supplemental Review Record: PR-0212 Launcher Shortcut Breach Inventory and Truth-Gate Audit
+
+**Reviewer:** `lead-developer` (user approval recorded in session)
+**Date:** 2026-04-04
+**Verdict:** `approved`
+
+### Scope Reviewed
+
+- `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
+- `.agents/repomix_packages/repomix-flunk-out-frenzy-pr-0212-shortcut-audit-brief.md`
+- `.agents/repomix_packages/repomix-flunk-out-frenzy-pr-0212-shortcut-audit-review.xml`
+
+### Required Review Outputs
+
+1. Confirm the shortcut inventory is complete and each item is correctly classified as runtime shortcut, proof-layer shortcut, or declared bounded heuristic.
+2. Confirm the gate-truth matrix cleanly separates direct proof from inferred/reconstructed proof.
+3. Confirm the dishonest/not-yet-validated gameplay declaration is explicit and not overstated.
+4. Confirm the hypothesis list remains evidence-tied and non-speculative.
+5. Approve or reject whether launcher behavior work may proceed.
+
+### Final Approval Notes
+
+1. The previously raised advisory issues were addressed in `PR-0212` by:
+   - adding the missing proof-layer breach for absent raw `route_endpoint_bridge` / `seamTransition` evidence in the live artifact,
+   - explicitly documenting the live-vs-focused artifact schema/cadence mismatch and prohibiting them from being treated as contract-equivalent proof surfaces.
+2. Approval is for the audit/truth-gate artifact only. It does not change any runtime or geometry behavior by itself.
+
+### Pending Approval Decisions
+
+- [x] Breach inventory completeness is approved.
+- [x] Gate-truth matrix accuracy is approved.
+- [x] Dishonest gameplay declaration accuracy is approved.
+- [x] Hypothesis framing is approved.
+- [x] Follow-on launcher behavior work may proceed.
+
+### Reviewer Notes
+
+- Approval recorded from the user as lead developer in session.
+- The advisory Codex review remains part of the retained audit trail, but the
+  final decision on this supplemental record is `approved`.

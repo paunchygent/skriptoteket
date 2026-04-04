@@ -71,6 +71,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`
 - Flunk-Out Frenzy file size compliance and frontend module decomposition:
   `docs/backlog/prs/pr-0210-flunk-out-frenzy-file-size-compliance-and-frontend-module-decomposition.md`
+- Flunk-Out Frenzy launcher shortcut breach inventory and truth-gate audit:
+  `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
 - ST-32-04 guest snapshot contract + storage foundation:
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - Seating continuity follow-up:

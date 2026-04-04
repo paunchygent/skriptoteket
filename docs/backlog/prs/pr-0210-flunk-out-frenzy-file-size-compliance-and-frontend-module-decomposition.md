@@ -5,7 +5,7 @@ title: "Flunk-Out Frenzy: file size compliance and frontend module decomposition
 status: ready
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 stories:
   - "ST-25-05"
 tags: ["frontend", "games", "refactoring", "architecture", "code-quality"]
@@ -18,6 +18,9 @@ acceptance_criteria:
   - "compilePinballTable.ts is refactored into a compiler directory with single-responsibility modules."
   - "No behavioral regressions in existing game functionality (launch, flip, drain, scoring)."
   - "All existing tests pass after decomposition (pdm run fe-test)."
+  - "Component communication follows the Props/Events pattern without circular dependencies."
+  - "CSS styles are namespace-scoped under .fof-game-container to prevent global leakage."
+  - "No memory leaks detected during 60fps stability check (Chrome DevTools Memory tab)."
 ---
 
 ## Problem
@@ -76,6 +79,37 @@ views/apps/flunkOutFrenzy/
     └── fof-shell.css                      (~250 lines - extracted styles)
 ```
 
+#### Communication & State Pattern (Phase 1)
+
+To prevent "prop-drilling hell" or fragmented reactive state:
+
+- **Source of Truth**: `FlunkOutFrenzyView.vue` owns the authoritative game state
+  (bootstrap data, HUD snapshot, runtime load state) via `ref()`/`computed()`.
+- **Props Down**: Parent passes primitive props and callbacks to children:
+  - `FofStatusCluster`: receives `hud: GameHudSnapshot` (read-only)
+  - `FofServiceCluster`: receives `canStart`, `canPause`, `onStart`, `onPauseToggle`
+  - `FofGameScene`: receives `runtimeFactory`, `audioEnabled`, emits `@hudChange`, `@bootError`
+- **Events Up**: Child components emit events for user actions; parent handles state mutations.
+- **No Pinia Store**: Local game state is ephemeral and scoped to the route; no global state needed.
+- **No Provide/Inject**: Avoid implicit dependencies; explicit props/events maintain clarity.
+
+Pattern enforced by: ESLint `vue/require-explicit-emits`, manual code review for prop depth.
+
+#### CSS Scoping (Phase 1)
+
+All extracted styles in `fof-shell.css` are namespace-scoped:
+
+```css
+/* fof-shell.css - All selectors prefixed */
+.fof-game-container { /* root namespace */ }
+.fof-game-container .fof-status-cluster { /* child elements */ }
+.fof-game-container .fof-service-cluster { }
+```
+
+- No global element selectors (e.g., `button`, `div`)
+- No CSS custom properties at `:root` that could leak
+- Scoped under `.fof-game-container` to isolate from Skriptoteket shell
+
 ### Phase 2: Test File Decomposition
 
 Split `PhysicsWorld.spec.ts` (1206 lines):
@@ -90,6 +124,11 @@ physics/
 │   └── helpers/
 │       └── physicsTestHelpers.ts          (~150 lines)
 ```
+
+Each test file:
+- Imports shared helpers from `physicsTestHelpers.ts`
+- Sets up its own isolated Rapier world instance
+- Runs independently (no test interdependencies)
 
 ### Phase 3: Table Compiler Decomposition
 
@@ -107,6 +146,34 @@ table/
 └── types/
     └── compilerTypes.ts                   (~80 lines)
 ```
+
+#### Compiler Orchestration Contract (Phase 3)
+
+To prevent "Contract Drift" between orchestrator and sub-compilers:
+
+Strict interfaces in `compilerTypes.ts`:
+
+```typescript
+// Each sub-compiler implements this interface
+interface TableElementCompiler<T extends TableDeviceDefinition> {
+  compile(device: T, world: Rapier.World, context: CompilerContext): CompiledElement;
+}
+
+// Orchestrator validates output completeness
+interface CompiledTable {
+  walls: CompiledWall[];
+  bumpers: CompiledBumper[];
+  sensors: CompiledSensor[];
+  rails: CompiledRail[];
+  captureDevices: CompiledCaptureDevice[];
+  // Mandatory: must have all keys, no partial returns
+}
+```
+
+- Each `compile*.ts` module exports a pure function matching `TableElementCompiler`
+- `compilePinballTable.ts` orchestrator aggregates results and validates completeness
+- TypeScript enforces: missing return properties cause compile-time errors
+- Runtime assertion: `assertCompleteTable(compiled)` throws if any category is missing
 
 ### Phase 4: Launcher Chain Decomposition
 
@@ -126,8 +193,43 @@ physics/
 ### Phase 5: Supporting Module Cleanup
 
 - `prototypeAlphaVpwDonorMap.ts` → Split into `donorWalls.ts`, `donorBumpers.ts`, `donorSensors.ts`
-- `PhysicsWorld.ts` → Extract `PhysicsWorldFlippers.ts`, `PhysicsWorldSensors.ts`
 - `prototypeAlphaTableSpec.ts` → Extract device-specific spec modules
+
+#### PhysicsWorld Delegation Architecture (Phase 5)
+
+For `PhysicsWorld.ts` extraction, use a **Delegation Pattern** (not mixins):
+
+```typescript
+// PhysicsWorld.ts - remains owner of Rapier world
+class PhysicsWorld {
+  private readonly world: Rapier.World;
+  private readonly flipperHandler: FlipperHandler;  // delegated
+  private readonly sensorHandler: SensorHandler;    // delegated
+
+  constructor(config: WorldConfig) {
+    this.world = new Rapier.World(config.gravity);
+    // Delegates initialized with direct world reference
+    this.flipperHandler = new FlipperHandler(this.world, config.flippers);
+    this.sensorHandler = new SensorHandler(this.world, config.sensors);
+  }
+
+  step(dtMs: number): WorldSnapshot {
+    // Delegates handle specific logic; PhysicsWorld orchestrates
+    this.flipperHandler.update(dtMs);
+    const sensorEvents = this.sensorHandler.poll();
+    this.world.step();
+    return this.buildSnapshot(sensorEvents);
+  }
+}
+```
+
+- `PhysicsWorld` retains sole ownership of `Rapier.World` instance
+- Handlers receive world reference in constructor; no runtime lookup
+- Handlers are stateless logic wrappers (no internal world state duplication)
+- Direct method calls (not event emitters) for 60fps performance
+- Handlers are testable in isolation by injecting mock world
+
+Performance requirement: No `requestAnimationFrame` jitter; maintain 60fps stable.
 
 ## Test plan
 
@@ -137,7 +239,7 @@ Automated:
 # Frontend unit tests
 pdm run fe-test -- --run src/components/apps/flunk-out-frenzy
 
-# Type checking
+# Type checking (enforces compiler contracts)
 pdm run fe-type-check
 
 # Build verification
@@ -154,6 +256,26 @@ Manual/live:
 - Verify: pause/resume, mute toggle, settings panel
 - Verify: No console errors or runtime warnings
 
+### Performance & Memory Verification
+
+**60fps Stability Check:**
+- Open Chrome DevTools > Performance tab
+- Record 30 seconds of gameplay
+- Verify: No dropped frames, consistent 60fps, no long task warnings
+
+**Memory Leak Check:**
+- Open Chrome DevTools > Memory tab
+- Take heap snapshot before starting game
+- Play 3 complete games (launch, play, drain x3)
+- Take heap snapshot after games complete
+- Verify: Memory delta < 10MB, no retained `GameRuntime` instances in heap
+- Force GC (`performance.memory` if available) and confirm cleanup
+
+**CSS Leakage Check:**
+- Load game, then navigate to Skriptoteket home/catalog
+- Verify: No layout shifts, color overrides, or broken button styles
+- Check computed styles on main navigation buttons remain unchanged
+
 ## Rollback plan
 
 - Git revert the decomposition commits
@@ -167,7 +289,10 @@ Manual/live:
 | Behavioral regression during file moves | Comprehensive test coverage before refactoring; no logic changes during moves |
 | Import path breakage | Update all relative imports; verify with TypeScript compiler |
 | Test coverage gaps | Ensure all original test cases are preserved across split files |
-| Style leakage after CSS extraction | Verify visual parity with before/after screenshots |
+| Style leakage after CSS extraction | Verify visual parity with before/after screenshots; namespace all CSS |
+| Prop-drilling in view decomposition | Props/events pattern enforced; max prop depth of 2; events bubble to parent |
+| Physics performance degradation | Delegation pattern keeps direct references; benchmark 60fps before/after |
+| Compiler contract drift | Strict TypeScript interfaces; runtime completeness assertion |
 
 ## Related documentation
 

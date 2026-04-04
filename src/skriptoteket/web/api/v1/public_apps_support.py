@@ -9,8 +9,6 @@ Relationships:
   - Raises the same not-found contract used by authenticated/public app hosts.
 """
 
-from __future__ import annotations
-
 from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.errors import not_found
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
