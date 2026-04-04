@@ -14,7 +14,7 @@ dependencies:
 acceptance_criteria:
   - "All Flunk-Out Frenzy frontend files are under the 500 LoC hard limit per repo rules."
   - "FlunkOutFrenzyView.vue is decomposed from 1109 lines into focused sub-components and composables."
-  - "PhysicsWorld.spec.ts is split into domain-specific test modules without losing coverage."
+  - "The Flunk-Out Frenzy physics spec surface is split into domain-specific `game/physics/__tests__/PhysicsWorld.*.spec.ts` modules without losing coverage."
   - "compilePinballTable.ts is refactored into a compiler directory with single-responsibility modules."
   - "No behavioral regressions in existing game functionality (launch, flip, drain, scoring)."
   - "All existing tests pass after decomposition (pdm run fe-test)."
@@ -32,7 +32,7 @@ Multiple Flunk-Out Frenzy frontend files violate the repo's hard file size limit
 | File | Lines | Over Limit |
 |------|-------|------------|
 | `FlunkOutFrenzyView.vue` | 1109 | +609 |
-| `PhysicsWorld.spec.ts` | 1206 | +706 |
+| `Flunk-Out Frenzy physics spec surface` | 1206 | +706 |
 | `compilePinballTable.ts` | 1019 | +519 |
 | `launcherChain3d.ts` | 856 | +356 |
 | `prototypeAlphaVpwDonorMap.ts` | 845 | +345 |
@@ -112,7 +112,7 @@ All extracted styles in `fof-shell.css` are namespace-scoped:
 
 ### Phase 2: Test File Decomposition
 
-Split `PhysicsWorld.spec.ts` (1206 lines):
+Split the former monolithic Flunk-Out Frenzy physics spec surface (1206 lines):
 
 ```
 physics/

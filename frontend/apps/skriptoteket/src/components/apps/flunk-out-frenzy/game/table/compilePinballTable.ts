@@ -32,6 +32,7 @@ import {
   compileGates,
   compileDrain,
 } from "./compiler/compileSensors";
+import { compileLauncherWorldPlan } from "./compiler/compileLauncherWorldPlan";
 import {
   compileStandupTargets,
   compilePopupTargets,
@@ -113,6 +114,11 @@ export function compilePinballTable(
     compileFlipperCollider(spec.flippers.right, flipperBodyIds.right),
   );
 
+  const launcherWorld = compileLauncherWorldPlan(
+    spec.launcher,
+    spec.launcher.threeD.ballRestZ,
+  );
+
   const result: CompiledPinballTable = {
     id: spec.id,
     name: spec.name,
@@ -134,6 +140,7 @@ export function compilePinballTable(
     saveDevices: spec.saveDevices,
     drain: spec.drain,
     surfaces,
+    launcherWorld,
     physics: {
       bodies,
       colliders,

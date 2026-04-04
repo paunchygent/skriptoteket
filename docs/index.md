@@ -97,7 +97,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - ST-32-05 authenticated guest-upgrade orchestration + idempotent import foundation:
   `docs/backlog/prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md`
-- ST-32-06 browser-authored guest checkpoint payload capture for export-backed history:
+- ST-32-06 canceled legacy checkpoint-compatibility planning stub:
   `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`

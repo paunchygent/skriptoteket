@@ -124,7 +124,11 @@ export class PhysicsWorld {
     this.ctx.boardCollisionStartedThisStep = false;
     this.ctx.leftFlipperAngleRad = degreesToRadians(this.ctx.table.flippers.left.restAngleDeg);
     this.ctx.rightFlipperAngleRad = degreesToRadians(this.ctx.table.flippers.right.restAngleDeg);
-    this.ctx.launcherChain = new LauncherChain3D(this.ctx.table.launcher, this.ctx.table.ball);
+    this.ctx.launcherChain = new LauncherChain3D(
+      this.ctx.table.launcher,
+      this.ctx.table.launcherWorld,
+      this.ctx.table.ball,
+    );
 
     const bodyById = buildWorldFromPlan(this.ctx);
     this.ctx.leftFlipper = requireBodyFromPlan(bodyById, this.ctx.table.refs.flipperBodyIds.left);

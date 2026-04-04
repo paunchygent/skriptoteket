@@ -17,6 +17,7 @@ import type {
   TablePoint,
   TablePoint3D,
 } from "../table/tableDefinitionTypes";
+import type { CompiledLauncherWorldPlan } from "../table/pinballTablePlanTypes";
 
 // Sub-modules
 import type { LauncherContext } from "./launcher/LauncherContext";
@@ -83,6 +84,7 @@ export class LauncherChain3D {
 
   constructor(
     launcher: TableLauncherDefinition,
+    launcherWorld: CompiledLauncherWorldPlan,
     ball: TableBallDefinition,
   ) {
     const world = new RAPIER3D.World({ x: 0, y: 0, z: -981 });
@@ -91,6 +93,7 @@ export class LauncherChain3D {
     this.ctx = {
       world,
       launcher,
+      launcherWorld,
       ball,
       plungerBody: null as unknown as RAPIER3D.RigidBody,
       ballBody: null,
@@ -123,7 +126,7 @@ export class LauncherChain3D {
     };
 
     createLauncherWorldFloor(this.ctx.world);
-    createLauncherWorldWalls(this.ctx.world, this.ctx.launcher);
+    createLauncherWorldWalls(this.ctx.world, this.ctx.launcherWorld);
     (this.ctx as MutableLauncherContext).plungerBody = createLauncherPlungerBody(this.ctx);
   }
 

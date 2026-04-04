@@ -2,17 +2,20 @@
  * World-geometry helpers for the Flunk-Out Frenzy launcher chain.
  *
  * LauncherChain3D owns step orchestration while this module builds the Rapier
- * floor, donor walls, guide rails, plunger body, and board handoff plane.
+ * floor, compiled launcher-world carrier colliders, plunger body, and board
+ * handoff plane.
  */
 
 import RAPIER3D from "@dimforge/rapier3d-compat";
 
-import { magnitude, midpoint, segmentAngle } from "../../table/pinballTableMath";
 import type {
-  TableLauncherCarrier3DDefinition,
+  CompiledLauncherWorldAssemblyPlan,
+  CompiledLauncherWorldPlan,
+} from "../../table/pinballTablePlanTypes";
+import type {
   TableLauncherDefinition,
-  TableLauncherPhysicalCarrier3DDefinition,
   TablePoint,
+  TablePoint3D,
 } from "../../table/tableDefinitionTypes";
 import type { LauncherContext } from "./LauncherContext";
 
@@ -24,37 +27,10 @@ export function createLauncherWorldFloor(world: RAPIER3D.World): void {
 
 export function createLauncherWorldWalls(
   world: RAPIER3D.World,
-  launcher: TableLauncherDefinition,
+  launcherWorld: CompiledLauncherWorldPlan,
 ): void {
-  for (const carrier of launcher.threeD.carriers) {
-    if (!isPhysicalLauncherCarrier(carrier)) {
-      continue;
-    }
-    if (carrier.geometryKind === "extruded_polygon") {
-      const collider = createExtrudedPolygonColliderDesc(
-        carrier.points,
-        carrier.heightBottom,
-        carrier.heightTop,
-      );
-      world.createCollider(collider);
-      continue;
-    }
-
-    const halfHeight = Math.max((carrier.heightTop - carrier.heightBottom) / 2, 0.5);
-    const centerZ = carrier.heightBottom + halfHeight;
-    for (let index = 0; index < carrier.path.length - 1; index += 1) {
-      const from = carrier.path[index];
-      const to = carrier.path[index + 1];
-      world.createCollider(
-        RAPIER3D.ColliderDesc.cuboid(
-          magnitude({ x: to.x - from.x, y: to.y - from.y }) / 2,
-          carrier.radius,
-          halfHeight,
-        )
-          .setTranslation(midpoint(from, to).x, midpoint(from, to).y, centerZ)
-          .setRotation(quaternionFromYaw(segmentAngle(from, to))),
-      );
-    }
+  for (const assembly of launcherWorld.assemblies) {
+    createAssemblyColliders(world, assembly);
   }
 }
 
@@ -94,7 +70,59 @@ export function resolveReleasePlaneY(launcher: TableLauncherDefinition): number 
   return Math.min(...divider.points.map((point) => point.y));
 }
 
-function createExtrudedPolygonColliderDesc(
+function createAssemblyColliders(
+  world: RAPIER3D.World,
+  assembly: CompiledLauncherWorldAssemblyPlan,
+): void {
+  switch (assembly.primitiveKind) {
+    case "prism_hull":
+      world.createCollider(
+        createPrismHullColliderDesc(
+          assembly.points,
+          assembly.heightBottom,
+          assembly.heightTop,
+        ),
+      );
+      return;
+    case "round_convex_hull":
+      world.createCollider(
+        createRoundConvexHullColliderDesc(assembly.points, assembly.borderRadius),
+      );
+      return;
+    case "cuboid_segment_path":
+      createSegmentPathColliders(world, assembly.path, (halfLength, midpoint, rotation) => {
+        return RAPIER3D.ColliderDesc.cuboid(
+          assembly.halfWidth,
+          halfLength,
+          assembly.halfHeight,
+        )
+          .setTranslation(midpoint.x, midpoint.y, midpoint.z)
+          .setRotation(rotation);
+      });
+      return;
+    case "round_cuboid_segment_path":
+      createSegmentPathColliders(world, assembly.path, (halfLength, midpoint, rotation) => {
+        return RAPIER3D.ColliderDesc.roundCuboid(
+          assembly.halfWidth,
+          halfLength,
+          assembly.halfHeight,
+          assembly.borderRadius,
+        )
+          .setTranslation(midpoint.x, midpoint.y, midpoint.z)
+          .setRotation(rotation);
+      });
+      return;
+    case "capsule_segment_path":
+      createSegmentPathColliders(world, assembly.path, (halfLength, midpoint, rotation) => {
+        return RAPIER3D.ColliderDesc.capsule(halfLength, assembly.radius)
+          .setTranslation(midpoint.x, midpoint.y, midpoint.z)
+          .setRotation(rotation);
+      });
+      return;
+  }
+}
+
+function createPrismHullColliderDesc(
   points: readonly TablePoint[],
   heightBottom: number,
   heightTop: number,
@@ -117,31 +145,140 @@ function createExtrudedPolygonColliderDesc(
   return collider;
 }
 
-function quaternionFromYaw(angleRad: number): RAPIER3D.Rotation {
+function createRoundConvexHullColliderDesc(
+  points: readonly TablePoint3D[],
+  borderRadius: number,
+): RAPIER3D.ColliderDesc {
+  const collider = RAPIER3D.ColliderDesc.roundConvexHull(
+    new Float32Array(points.flatMap((point) => [point.x, point.y, point.z])),
+    borderRadius,
+  );
+  if (!collider) {
+    throw new Error("Failed to compile 3D launcher-world round convex hull.");
+  }
+  return collider;
+}
+
+function createSegmentPathColliders(
+  world: RAPIER3D.World,
+  path: readonly TablePoint3D[],
+  createColliderDesc: (
+    halfLength: number,
+    midpoint: TablePoint3D,
+    rotation: RAPIER3D.Rotation,
+  ) => RAPIER3D.ColliderDesc,
+): void {
+  for (let index = 0; index < path.length - 1; index += 1) {
+    const from = path[index];
+    const to = path[index + 1];
+    const segment = {
+      x: to.x - from.x,
+      y: to.y - from.y,
+      z: to.z - from.z,
+    };
+    const length = Math.hypot(segment.x, segment.y, segment.z);
+    if (length <= 1e-6) {
+      continue;
+    }
+    world.createCollider(
+      createColliderDesc(
+        length / 2,
+        midpoint3D(from, to),
+        quaternionFromUnitYToSegment(segment),
+      ),
+    );
+  }
+}
+
+function quaternionFromUnitYToSegment(
+  segment: Readonly<{ x: number; y: number; z: number }>,
+): RAPIER3D.Rotation {
+  const from = { x: 0, y: 1, z: 0 };
+  const length = Math.hypot(segment.x, segment.y, segment.z);
+  if (length <= 1e-6) {
+    return { x: 0, y: 0, z: 0, w: 1 };
+  }
+  const to = {
+    x: segment.x / length,
+    y: segment.y / length,
+    z: segment.z / length,
+  };
+  const dot = from.x * to.x + from.y * to.y + from.z * to.z;
+  if (dot <= -0.999999) {
+    return quaternionFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.PI);
+  }
+
+  const cross = {
+    x: from.y * to.z - from.z * to.y,
+    y: from.z * to.x - from.x * to.z,
+    z: from.x * to.y - from.y * to.x,
+  };
+  return normalizeQuaternion({
+    x: cross.x,
+    y: cross.y,
+    z: cross.z,
+    w: 1 + dot,
+  });
+}
+
+function quaternionFromAxisAngle(
+  axis: Readonly<{ x: number; y: number; z: number }>,
+  angleRad: number,
+): RAPIER3D.Rotation {
+  const halfAngle = angleRad / 2;
+  const sinHalfAngle = Math.sin(halfAngle);
   return {
-    x: 0,
-    y: 0,
-    z: Math.sin(angleRad / 2),
-    w: Math.cos(angleRad / 2),
+    x: axis.x * sinHalfAngle,
+    y: axis.y * sinHalfAngle,
+    z: axis.z * sinHalfAngle,
+    w: Math.cos(halfAngle),
   };
 }
 
-function isPhysicalLauncherCarrier(
-  carrier: TableLauncherCarrier3DDefinition,
-): carrier is TableLauncherPhysicalCarrier3DDefinition {
-  return carrier.compileRole === "physical";
+function normalizeQuaternion(
+  rotation: RAPIER3D.Rotation,
+): RAPIER3D.Rotation {
+  const magnitude = Math.hypot(
+    rotation.x,
+    rotation.y,
+    rotation.z,
+    rotation.w,
+  );
+  if (magnitude <= 1e-6) {
+    return { x: 0, y: 0, z: 0, w: 1 };
+  }
+  return {
+    x: rotation.x / magnitude,
+    y: rotation.y / magnitude,
+    z: rotation.z / magnitude,
+    w: rotation.w / magnitude,
+  };
+}
+
+function midpoint3D(
+  from: TablePoint3D,
+  to: TablePoint3D,
+): TablePoint3D {
+  return {
+    x: (from.x + to.x) / 2,
+    y: (from.y + to.y) / 2,
+    z: (from.z + to.z) / 2,
+  };
 }
 
 function resolveExtrudedPhysicalCarrierByTag(
   launcher: TableLauncherDefinition,
   tag: string,
-): Extract<TableLauncherPhysicalCarrier3DDefinition, { geometryKind: "extruded_polygon" }> | null {
+): Extract<
+  TableLauncherDefinition["threeD"]["carriers"][number],
+  { compileRole: "physical"; geometryKind: "extruded_polygon" }
+> | null {
   const carrier = launcher.threeD.carriers.find((candidate) => {
     return candidate.tag === tag && candidate.compileRole === "physical";
   });
   if (
     !carrier ||
-    !isPhysicalLauncherCarrier(carrier) ||
+    carrier.compileRole !== "physical" ||
     carrier.geometryKind !== "extruded_polygon"
   ) {
     return null;

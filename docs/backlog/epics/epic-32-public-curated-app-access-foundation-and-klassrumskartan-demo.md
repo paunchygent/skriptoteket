@@ -5,7 +5,7 @@ title: "Public curated-app access foundation and Klassrumskartan demo"
 status: active
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 outcome: "Skriptoteket gains a reusable public curated-app access model with explicit per-app access profiles, separate public/authenticated seams, browser-owned guest-state rules, and authenticated upgrade boundaries; Klassrumskartan becomes the first approved `public_browser_workspace_with_upgrade` consumer without weakening the existing authenticated curated-app host or owner-scoped APIs."
 dependencies:
   [
@@ -96,3 +96,14 @@ dependencies:
 - Future app adoption should become “classify + implement app-specific public
   seam” work, not another platform architecture debate.
 - This epic requires review approval before implementation begins.
+
+## Implementation Summary (as of 2026-04-04)
+
+- `ST-32-05` is now shipped through `PR-0221`: authenticated
+  Klassrumskartan host entry is gated behind an explicit guest-upgrade prompt,
+  the authenticated `/api/v1/apps/classroom.group-seating-studio/guest-upgrade`
+  boundary now server-recomputes snapshot/entity fingerprints before import
+  decisions, repeat commits dedupe imported historical drafts through the
+  durable `guest_import_identity` lookup seam, and the frontend now keeps the
+  local guest snapshot when commit receipts contain conflicts while showing a
+  dismissible post-import summary after durable success.

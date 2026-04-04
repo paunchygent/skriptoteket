@@ -63,7 +63,7 @@ keeping the donor board outline visible and donor-backed.
 
 Automated:
 
-- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
 
@@ -112,7 +112,7 @@ Manual/live:
   contract explicitly, including that the lower corridor is physically owned by
   donor `Wall95`, `Wall34`, `Wall010`, `Wall011`, `Apron1`, and `Apron2`, and
   that the full donor `Wall263` outline still renders.
-- `PhysicsWorld.spec.ts` now keeps the launcher proof focused on clearing the
+- `PhysicsWorld.launcher.spec.ts` now keeps the launcher proof focused on clearing the
   `Wall34` choke point instead of asserting the ball remains above its spawn
   position indefinitely after later playfield travel.
 - Manual browser inspection on the live `:5173` route reported the expected
@@ -125,14 +125,14 @@ Manual/live:
 ## Verification notes
 
 - `pdm run docs-validate`
-- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
 - `pdm run python - <<'PY' ...` (bootstrap-login Playwright launch trace with
   sampled `data-ball-x`/`data-ball-y`, artifacts under
   `.artifacts/flunk-out-frenzy-launch-blocker-check/`)
 - Follow-up launcher-joint regression after shoulder micro-join trim:
-  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
   - `pdm run fe-type-check`
   - `pdm run python - <<'PY' ...` (bootstrap-login Playwright launch sweep)
     - `.artifacts/flunk-out-frenzy-launch-blocker-check/charge-sweep-after-shoulder-trim.json`

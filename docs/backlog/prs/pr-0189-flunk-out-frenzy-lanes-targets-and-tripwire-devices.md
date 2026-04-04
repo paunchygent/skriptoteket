@@ -68,8 +68,8 @@ Introduce the first new device families from the donor mechanics:
   and
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/presentation/gameEffectTypes.ts`
   so target and lane events can become semantic game effects.
-- Extend
-  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- Extend the split Flunk-Out Frenzy physics spec surface under
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.*.spec.ts`
   and
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
   with target-bank and tripwire coverage.
@@ -78,7 +78,7 @@ Introduce the first new device families from the donor mechanics:
 
 Automated:
 
-- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
+- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
 

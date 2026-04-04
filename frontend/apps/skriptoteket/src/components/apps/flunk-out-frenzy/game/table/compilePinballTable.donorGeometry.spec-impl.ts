@@ -483,4 +483,77 @@ describe("compilePinballTable donor geometry", () => {
       ]),
     );
   });
+
+  it("emits compiled launcher-world overhead donor assemblies with grouped ownership proof", () => {
+    const compiled = compilePinballTable(PROTOTYPE_ALPHA_TABLE_SPEC);
+    const expectedOverheadDonorProofs = [
+      {
+        id: "shooter-vertical",
+        donorSourceId: VPW_METAL_RAIL_3D_SPECS.shooterVertical.donorSourceId,
+        expectsReceiver: true,
+      },
+      {
+        id: "shooter-mouth-connector",
+        donorSourceId: VPW_METAL_RAIL_3D_SPECS.shooterMouthConnector.donorSourceId,
+        expectsReceiver: false,
+      },
+      {
+        id: "shooter-top-right",
+        donorSourceId: VPW_METAL_RAIL_3D_SPECS.shooterTopRight.donorSourceId,
+        expectsReceiver: false,
+      },
+      {
+        id: "shooter-top-arch",
+        donorSourceId: VPW_METAL_RAIL_3D_SPECS.shooterTopArch.donorSourceId,
+        expectsReceiver: true,
+      },
+    ] as const;
+
+    for (const proof of expectedOverheadDonorProofs) {
+      const ownershipEntries = compiled.launcherWorld.ownershipMatrix.filter((entry) => {
+        return entry.donorSourceId === proof.donorSourceId;
+      });
+
+      expect(compiled.launcherWorld.assemblies).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          id: `launcher/compiled/overhead/${proof.id}/support`,
+          primitiveKind: "round_cuboid_segment_path",
+          role: "support",
+        }),
+        expect.objectContaining({
+          id: `launcher/compiled/overhead/${proof.id}/guard-left`,
+          primitiveKind: "capsule_segment_path",
+          role: "guard",
+        }),
+        expect.objectContaining({
+          id: `launcher/compiled/overhead/${proof.id}/guard-right`,
+          primitiveKind: "capsule_segment_path",
+          role: "guard",
+        }),
+      ]));
+      if (proof.expectsReceiver) {
+        expect(compiled.launcherWorld.assemblies).toEqual(expect.arrayContaining([
+          expect.objectContaining({
+            id: `launcher/compiled/overhead/${proof.id}/receiver`,
+            primitiveKind: "round_convex_hull",
+            role: "receiver",
+          }),
+        ]));
+      }
+
+      expect(ownershipEntries).toEqual(expect.arrayContaining([
+        expect.objectContaining({ role: "support", ownerWorld: "launcher" }),
+        expect.objectContaining({ role: "guard", ownerWorld: "launcher" }),
+      ]));
+      if (proof.expectsReceiver) {
+        expect(ownershipEntries).toEqual(expect.arrayContaining([
+          expect.objectContaining({ role: "receiver", ownerWorld: "launcher" }),
+        ]));
+      } else {
+        expect(ownershipEntries.find((entry) => entry.role === "receiver")).toBeUndefined();
+      }
+
+      expect(ownershipEntries.every((entry) => entry.colliderIds.length > 0)).toBe(true);
+    }
+  });
 });

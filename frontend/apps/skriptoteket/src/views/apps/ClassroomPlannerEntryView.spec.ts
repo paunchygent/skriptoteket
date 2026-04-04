@@ -60,14 +60,25 @@ const guestUpgradeMocks = vi.hoisted(() => ({
     created: unknown[];
     reused: unknown[];
     skipped: unknown[];
+      conflicted: unknown[];
+  },
+  lastReceipt: null as null | {
+    mode: "preview" | "commit";
+    snapshot_id: string;
+    schema_version: number;
+    submitted_snapshot_content_hash: string;
+    server_snapshot_content_hash: string;
+    created: unknown[];
+    reused: unknown[];
+    skipped: unknown[];
     conflicted: unknown[];
   },
-  lastReceipt: null,
   errorMessage: null as string | null,
   isBlocking: false,
   shouldShowPrompt: false,
   importGuestWorkspace: vi.fn(),
   postponeGuestWorkspace: vi.fn(),
+  dismissLastReceiptSummary: vi.fn(),
   discardGuestWorkspace: vi.fn(),
 }));
 
@@ -131,6 +142,7 @@ describe("ClassroomPlannerEntryView", () => {
     guestUpgradeMocks.shouldShowPrompt = false;
     guestUpgradeMocks.importGuestWorkspace.mockReset();
     guestUpgradeMocks.postponeGuestWorkspace.mockReset();
+    guestUpgradeMocks.dismissLastReceiptSummary.mockReset();
     guestUpgradeMocks.discardGuestWorkspace.mockReset();
   });
 
@@ -176,6 +188,35 @@ describe("ClassroomPlannerEntryView", () => {
     expect(guestUpgradeMocks.importGuestWorkspace).toHaveBeenCalledOnce();
     expect(guestUpgradeMocks.postponeGuestWorkspace).toHaveBeenCalledOnce();
     expect(guestUpgradeMocks.discardGuestWorkspace).toHaveBeenCalledOnce();
+  });
+
+  it("shows a dismissible post-import summary alongside the authenticated planner", async () => {
+    guestUpgradeMocks.lastReceipt = {
+      mode: "commit",
+      snapshot_id: "guest-snapshot-1",
+      schema_version: 1,
+      submitted_snapshot_content_hash: "sha256:guest",
+      server_snapshot_content_hash: "sha256:server",
+      created: [{ entity_type: "roster", local_id: "roster-1" }],
+      reused: [{ entity_type: "template", local_id: "template-1" }],
+      skipped: [],
+      conflicted: [],
+    };
+
+    const wrapper = mount(ClassroomPlannerEntryView, {
+      props: {
+        hostMode: "authenticated",
+      },
+    });
+
+    expect(wrapper.find("[data-test='guest-upgrade-result-summary']").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Gästarbetsytan importerades till ditt konto");
+    expect(wrapper.text()).toContain("guest-snapshot-1");
+    expect(wrapper.find("[data-test='live-classroom-planner']").exists()).toBe(true);
+
+    await wrapper.get("[data-test='guest-upgrade-result-dismiss']").trigger("click");
+
+    expect(guestUpgradeMocks.dismissLastReceiptSummary).toHaveBeenCalledOnce();
   });
 
   it("shows the missing guest workspace state and initializes storage on demand", async () => {

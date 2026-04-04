@@ -55,7 +55,7 @@ Live verification shows input and plunger motion updates are visible in runtime 
 
 1. Add deterministic red test coverage for launch-effect contract:
    - target surface:
-     - `src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+     - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts`
    - fixed deterministic test parameters:
      - simulation step: `dtMs = 16`
@@ -151,7 +151,7 @@ Live verification shows input and plunger motion updates are visible in runtime 
 ## Test plan
 
 - Focused proof commands:
-  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
   - `pdm run docs-validate`
 - Expected profile for this task:
   - at least one new launch-effect test is red on current baseline

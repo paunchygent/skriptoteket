@@ -5,6 +5,7 @@ import type {
   TableLauncherObservationSpine3DDefinition,
   TablePoint3D,
 } from "../../table/tableDefinitionTypes";
+import type { CompiledLauncherWorldPlan } from "../../table/pinballTablePlanTypes";
 import type {
   LauncherRouteCaptureDecision,
   LauncherRouteCaptureRejectReason,
@@ -22,6 +23,7 @@ export interface ActiveTravelRoute {
 export interface LauncherContext {
   readonly world: RAPIER3D.World;
   readonly launcher: TableLauncherDefinition;
+  readonly launcherWorld: CompiledLauncherWorldPlan;
   readonly ball: TableBallDefinition;
   readonly plungerBody: RAPIER3D.RigidBody;
   ballBody: RAPIER3D.RigidBody | null;

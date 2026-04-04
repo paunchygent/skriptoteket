@@ -61,15 +61,15 @@ Create the narrow physics foundation for the mechanics-port story:
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts`
   so it owns only world setup, stepping, command application, snapshot
   projection, and orchestration of the new helper modules.
-- Update
-  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- Update the split Flunk-Out Frenzy physics spec surface under
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.*.spec.ts`
   to lock both legacy event behavior and the newly expanded event shapes.
 
 ## Test plan
 
 Automated:
 
-- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
 
@@ -102,7 +102,7 @@ Manual/live:
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts`
   from 504 lines to 420 lines so the world class is back to orchestration,
   stepping, snapshots, and command handling.
-- Updated
-  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- Updated the split Flunk-Out Frenzy physics spec surface under
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.*.spec.ts`
   to keep the existing authored-zone behavior locked while also compile-checking
   the widened future-facing event surface.

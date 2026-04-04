@@ -45,6 +45,8 @@ services:
       - LLM_CHAT_OPS_FALLBACK_MODEL=gpt-5.2
       - LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT=low
     volumes:
+      - ./alembic.ini:/app/alembic.ini
+      - ./migrations:/app/migrations
       - ./src:/app/src
       - vault_data:/var/lib/skriptoteket/vault
     depends_on:

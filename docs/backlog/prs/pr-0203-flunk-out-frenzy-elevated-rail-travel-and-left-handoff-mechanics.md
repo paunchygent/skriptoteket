@@ -68,7 +68,7 @@ eventually resumes:
 
 ## Test plan
 
-- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `pdm run fe-lint`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
@@ -95,12 +95,12 @@ eventually resumes:
   `PhysicsWorld.ts` so launch-phase balls run through the donor route before
   board handoff.
 - Added focused compile/physics proof updates in
-  `compilePinballTable.spec.ts` and `PhysicsWorld.spec.ts` for route presence
+  `compilePinballTable.spec.ts` and `PhysicsWorld.launcher.spec.ts` for route presence
   and left-flow traversal.
 
 ## Verification Notes
 
-- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `pdm run fe-lint`
 - `pdm run fe-type-check`
 - `pdm run fe-build`

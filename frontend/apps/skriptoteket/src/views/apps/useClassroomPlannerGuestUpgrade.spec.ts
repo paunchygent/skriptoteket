@@ -162,10 +162,49 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     expect(harness.getState().lastReceipt.value?.mode).toBe("commit");
   });
 
+  it("keeps local guest data when the commit receipt reports conflicts", async () => {
+    const guestStorage = createReadyGuestStorage();
+    guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade
+      .mockResolvedValueOnce({
+        mode: "preview",
+        snapshot_id: "guest-snapshot-1",
+        schema_version: 1,
+        submitted_snapshot_content_hash: "sha256:guest",
+        server_snapshot_content_hash: "sha256:server",
+        created: [],
+        reused: [],
+        skipped: [],
+        conflicted: [],
+      })
+      .mockResolvedValueOnce({
+        mode: "commit",
+        snapshot_id: "guest-snapshot-1",
+        schema_version: 1,
+        submitted_snapshot_content_hash: "sha256:guest",
+        server_snapshot_content_hash: "sha256:server",
+        created: [],
+        reused: [],
+        skipped: [],
+        conflicted: [{ entity_type: "draft", local_id: "draft-grouping-1" }],
+      });
+
+    const harness = mountGuestUpgradeHarness({ enabled: true, guestStorage });
+    await flushGuestUpgradeWork();
+    await harness.getState().importGuestWorkspace();
+
+    expect(guestStorage.clearCurrentSnapshot).not.toHaveBeenCalled();
+    expect(harness.getState().gateState.value).toBe("prompt");
+    expect(harness.getState().shouldShowPrompt.value).toBe(true);
+    expect(harness.getState().snapshot.value?.snapshot_id).toBe("guest-snapshot-1");
+    expect(harness.getState().previewReceipt.value?.conflicted).toHaveLength(1);
+    expect(harness.getState().errorMessage.value).toContain("konflikt");
+    expect(harness.getState().lastReceipt.value).toBeNull();
+  });
+
   it("allows postponing without clearing local guest data", async () => {
     const guestStorage = createReadyGuestStorage();
     guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade.mockResolvedValueOnce({
-      mode: "preview",
+        mode: "preview",
       snapshot_id: "guest-snapshot-1",
       schema_version: 1,
       submitted_snapshot_content_hash: "sha256:guest",
@@ -183,5 +222,42 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     expect(guestStorage.clearCurrentSnapshot).not.toHaveBeenCalled();
     expect(harness.getState().gateState.value).toBe("allowed");
     expect(harness.getState().snapshot.value?.snapshot_id).toBe("guest-snapshot-1");
+  });
+
+  it("allows dismissing the post-import summary after a successful commit", async () => {
+    const guestStorage = createReadyGuestStorage();
+    guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade
+      .mockResolvedValueOnce({
+        mode: "preview",
+        snapshot_id: "guest-snapshot-1",
+        schema_version: 1,
+        submitted_snapshot_content_hash: "sha256:guest",
+        server_snapshot_content_hash: "sha256:server",
+        created: [],
+        reused: [],
+        skipped: [],
+        conflicted: [],
+      })
+      .mockResolvedValueOnce({
+        mode: "commit",
+        snapshot_id: "guest-snapshot-1",
+        schema_version: 1,
+        submitted_snapshot_content_hash: "sha256:guest",
+        server_snapshot_content_hash: "sha256:server",
+        created: [{ entity_type: "roster", local_id: "roster-1" }],
+        reused: [],
+        skipped: [],
+        conflicted: [],
+      });
+
+    const harness = mountGuestUpgradeHarness({ enabled: true, guestStorage });
+    await flushGuestUpgradeWork();
+    await harness.getState().importGuestWorkspace();
+
+    expect(harness.getState().lastReceipt.value?.created).toHaveLength(1);
+
+    harness.getState().dismissLastReceiptSummary();
+
+    expect(harness.getState().lastReceipt.value).toBeNull();
   });
 });

@@ -50,7 +50,7 @@ Lock a proof-first plan that demonstrates:
     ball advancement under direct launch commands, including explicit launcher
     lifecycle events.
   - Current proof surface:
-    - `src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+    - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 
 - Assumption B (previous fix did not prove pointer lifecycle correctness):
   - Evidence: focused input-path test currently fails because pointer capture is
@@ -96,7 +96,7 @@ Lock a proof-first plan that demonstrates:
 ## Test plan
 
 - Proof command set for this task:
-  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
   - `pdm run docs-validate`
 - Invariant to proof-surface map (must stay explicit):
   - seam contracts, route ownership/provenance, and terminal-route handoff
@@ -106,7 +106,7 @@ Lock a proof-first plan that demonstrates:
     - `src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts`
   - runtime launcher behavior, real `sw16` semantics, and no synthetic route-start
     gate event behavior:
-    - `src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+    - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
   - input lifecycle red baseline and pointer/keyboard path contract:
     - `src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
 - Live matrix prerequisites (must be satisfied before running cases):

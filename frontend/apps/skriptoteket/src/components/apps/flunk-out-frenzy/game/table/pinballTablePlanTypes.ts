@@ -15,8 +15,10 @@ import type {
   TableDrainDefinition,
   TableFlipperDefinition,
   TableGateDefinition,
+  TableLauncherCarrierKind,
   TableLauncherDefinition,
   TablePoint,
+  TablePoint3D,
   TablePopupTargetDefinition,
   TableRolloverDefinition,
   TableSaveDeviceDefinition,
@@ -29,6 +31,7 @@ import type {
 } from "./tableDefinitionTypes";
 
 export type {
+  TableLauncherCarrierKind,
   TableLauncherCarrier3DDefinition,
   TableLauncherHandoffSeam3DDefinition,
   TableLauncherObservationSpine3DDefinition,
@@ -283,6 +286,83 @@ export interface CompiledRenderPlan {
   nodes: readonly TableRenderNodePlan[];
 }
 
+export type CompiledLauncherWorldCarrierRole = Extract<
+  TableLauncherCarrierKind,
+  "support" | "guard" | "receiver"
+>;
+
+interface CompiledLauncherWorldAssemblyBase {
+  id: string;
+  role: CompiledLauncherWorldCarrierRole;
+  ownerWorld: "launcher";
+  donorSourceIds: readonly string[];
+  sourceCarrierTags: readonly string[];
+}
+
+export interface CompiledLauncherWorldPrismHullAssemblyPlan
+  extends CompiledLauncherWorldAssemblyBase {
+  primitiveKind: "prism_hull";
+  colliderIds: readonly [string];
+  points: readonly TablePoint[];
+  heightBottom: number;
+  heightTop: number;
+}
+
+export interface CompiledLauncherWorldRoundConvexHullAssemblyPlan
+  extends CompiledLauncherWorldAssemblyBase {
+  primitiveKind: "round_convex_hull";
+  colliderIds: readonly [string];
+  points: readonly TablePoint3D[];
+  borderRadius: number;
+}
+
+export interface CompiledLauncherWorldCuboidSegmentPathAssemblyPlan
+  extends CompiledLauncherWorldAssemblyBase {
+  primitiveKind: "cuboid_segment_path";
+  colliderIds: readonly string[];
+  path: readonly TablePoint3D[];
+  halfWidth: number;
+  halfHeight: number;
+}
+
+export interface CompiledLauncherWorldRoundCuboidSegmentPathAssemblyPlan
+  extends CompiledLauncherWorldAssemblyBase {
+  primitiveKind: "round_cuboid_segment_path";
+  colliderIds: readonly string[];
+  path: readonly TablePoint3D[];
+  halfWidth: number;
+  halfHeight: number;
+  borderRadius: number;
+}
+
+export interface CompiledLauncherWorldCapsuleSegmentPathAssemblyPlan
+  extends CompiledLauncherWorldAssemblyBase {
+  primitiveKind: "capsule_segment_path";
+  colliderIds: readonly string[];
+  path: readonly TablePoint3D[];
+  radius: number;
+}
+
+export type CompiledLauncherWorldAssemblyPlan =
+  | CompiledLauncherWorldPrismHullAssemblyPlan
+  | CompiledLauncherWorldRoundConvexHullAssemblyPlan
+  | CompiledLauncherWorldCuboidSegmentPathAssemblyPlan
+  | CompiledLauncherWorldRoundCuboidSegmentPathAssemblyPlan
+  | CompiledLauncherWorldCapsuleSegmentPathAssemblyPlan;
+
+export interface CompiledLauncherWorldOwnershipEntry {
+  donorSourceId: string;
+  colliderIds: readonly string[];
+  role: CompiledLauncherWorldCarrierRole;
+  ownerWorld: "launcher";
+  assemblyIds: readonly string[];
+}
+
+export interface CompiledLauncherWorldPlan {
+  assemblies: readonly CompiledLauncherWorldAssemblyPlan[];
+  ownershipMatrix: readonly CompiledLauncherWorldOwnershipEntry[];
+}
+
 export interface CompiledPinballTable {
   id: string;
   name: string;
@@ -304,6 +384,7 @@ export interface CompiledPinballTable {
   saveDevices: readonly TableSaveDeviceDefinition[];
   drain: TableDrainDefinition;
   surfaces: Readonly<Record<string, TableSurfaceSpec>>;
+  launcherWorld: CompiledLauncherWorldPlan;
   physics: CompiledPhysicsPlan;
   render: CompiledRenderPlan;
   refs: Readonly<{

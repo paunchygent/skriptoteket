@@ -53,7 +53,7 @@ Primary implementation scope:
 
 Focused proof/support scope:
 
-- `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `.agents/handoff.md`
 
 Out of scope:
@@ -83,13 +83,13 @@ Out of scope:
    - Aggregate per-step overlap/relative-contact velocity across release substeps for deterministic telemetry evidence.
 
 4. Keep proof contracts strict and typed:
-   - Fix nullable proof typing in `PhysicsWorld.spec.ts` by asserting/guarding required telemetry fields (no `number|null` silent coercion).
+   - Fix nullable proof typing in `PhysicsWorld.launcher.spec.ts` by asserting/guarding required telemetry fields (no `number|null` silent coercion).
    - Do not relax or delete any existing failing assertions.
 
 ## Test plan
 
 - Focused regression commands:
-  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
+  - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
   - `pdm run fe-type-check`
   - `pdm run fe-build`
   - `pdm run docs-validate`

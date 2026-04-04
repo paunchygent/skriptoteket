@@ -40,12 +40,6 @@ importers:
       '@codemirror/view':
         specifier: ^6.39.4
         version: 6.39.4
-      '@dimforge/rapier2d':
-        specifier: ^0.19.3
-        version: 0.19.3
-      '@dimforge/rapier2d-compat':
-        specifier: ^0.19.3
-        version: 0.19.3
       '@dimforge/rapier3d-compat':
         specifier: ^0.19.3
         version: 0.19.3
@@ -244,12 +238,6 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
-
-  '@dimforge/rapier2d-compat@0.19.3':
-    resolution: {integrity: sha512-5HZUgiSpu9Uba3He+4SCPVte3h2vgxcodkxWThRjd3X/zgq/Z4OyRUKpNEOsOR6AC+OfulPkkZ5asZGzRMpcwA==}
-
-  '@dimforge/rapier2d@0.19.3':
-    resolution: {integrity: sha512-3dz6q3E3+Gbla1qje6/EhzlZ+nH/oQNpUASM4Mspk8DPPH7itxutpLJyvbu7Nci1aW1hhHp7eBZ3w3j45O5MiQ==}
 
   '@dimforge/rapier3d-compat@0.19.3':
     resolution: {integrity: sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==}
@@ -2199,10 +2187,6 @@ snapshots:
   '@csstools/css-syntax-patches-for-csstree@1.0.22': {}
 
   '@csstools/css-tokenizer@3.0.4': {}
-
-  '@dimforge/rapier2d-compat@0.19.3': {}
-
-  '@dimforge/rapier2d@0.19.3': {}
 
   '@dimforge/rapier3d-compat@0.19.3': {}
 

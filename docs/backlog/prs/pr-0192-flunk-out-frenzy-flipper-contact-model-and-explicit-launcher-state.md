@@ -58,7 +58,9 @@ devices:
   with the authored launcher or feed parameters needed by the new model.
 - Add focused specs for the new flipper and launcher modules plus updated
   coverage in
-  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`.
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts`
+  and
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`.
 
 ## Test plan
 

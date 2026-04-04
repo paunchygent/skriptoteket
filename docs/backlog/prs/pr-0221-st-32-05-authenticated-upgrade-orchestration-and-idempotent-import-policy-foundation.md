@@ -2,7 +2,7 @@
 type: pr
 id: PR-0221
 title: "ST-32-05: authenticated guest-upgrade orchestration and idempotent import foundation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-04
 updated: 2026-04-04

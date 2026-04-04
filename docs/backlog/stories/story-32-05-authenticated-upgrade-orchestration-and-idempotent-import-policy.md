@@ -2,10 +2,10 @@
 type: story
 id: ST-32-05
 title: "Authenticated upgrade orchestration and idempotent import policy"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 epic: "EPIC-32"
 dependencies: ["ST-32-04", "ADR-0079", "EPIC-27"]
 acceptance_criteria:
@@ -17,7 +17,7 @@ acceptance_criteria:
   - "Given guest checkpoints collide with existing account checkpoints, when conflicts are handled, then checkpoints import additively with fingerprint dedupe rather than replacing existing history."
   - "Given migration succeeds or fails, when local guest storage is updated, then local guest state clears only after durable success and remains intact after failed or cancelled imports."
 ui_impact: "Adds a first-auth-session guest import prompt and post-import summary behavior for upgrade-capable apps."
-data_impact: "Likely requires authenticated import receipts/mapping data later; this story only locks the contract and conflict rules."
+data_impact: "Ships authenticated guest-upgrade receipts, durable imported-draft identity lookup, and end-to-end preservation of imported planner draft metadata such as `task_entry_classroom_selection_mode`."
 ---
 
 ## Context

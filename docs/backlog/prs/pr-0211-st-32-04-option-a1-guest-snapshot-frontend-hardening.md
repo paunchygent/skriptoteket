@@ -91,7 +91,7 @@ identity is strong enough for later ST-32-05 import/idempotency work.
   - pass
 - `pdm run fe-type-check`
   - blocked by unrelated pre-existing local error in
-    `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+    `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
     (`TS2307: Cannot find module 'node:fs/promises'`)
 - live public-shell proof via Playwright MCP:
   - navigated to `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`

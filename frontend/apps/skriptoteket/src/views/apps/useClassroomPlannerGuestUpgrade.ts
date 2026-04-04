@@ -22,6 +22,14 @@ import type {
 type ClassroomPlannerGuestStorageAdapter = ReturnType<typeof createClassroomPlannerGuestStorage>;
 type GuestUpgradeGateState = "allowed" | "checking" | "previewing" | "prompt" | "committing";
 
+function buildConflictErrorMessage(receipt: ClassroomPlannerGuestUpgradeReceipt): string {
+  const conflictCount = receipt.conflicted.length;
+  if (conflictCount === 1) {
+    return "Importen blev inte klar. 1 konflikt behöver hanteras innan den lokala gästarbetsytan kan rensas.";
+  }
+  return `Importen blev inte klar. ${conflictCount} konflikter behöver hanteras innan den lokala gästarbetsytan kan rensas.`;
+}
+
 export function useClassroomPlannerGuestUpgrade(options?: {
   enabled?: boolean;
   guestStorage?: ClassroomPlannerGuestStorageAdapter;
@@ -106,10 +114,19 @@ export function useClassroomPlannerGuestUpgrade(options?: {
     gateState.value = "committing";
     errorMessage.value = null;
     try {
-      lastReceipt.value = await runClassroomPlannerGuestUpgrade({
+      const commitReceipt = await runClassroomPlannerGuestUpgrade({
         mode: "commit",
         snapshot: snapshot.value,
       });
+      if (commitReceipt.conflicted.length > 0) {
+        lastReceipt.value = null;
+        previewReceipt.value = commitReceipt;
+        gateState.value = "prompt";
+        errorMessage.value = buildConflictErrorMessage(commitReceipt);
+        return;
+      }
+
+      lastReceipt.value = commitReceipt;
       await resolveGuestStorage().clearCurrentSnapshot();
       snapshot.value = null;
       summary.value = null;
@@ -125,6 +142,10 @@ export function useClassroomPlannerGuestUpgrade(options?: {
 
   function postponeGuestWorkspace(): void {
     gateState.value = "allowed";
+  }
+
+  function dismissLastReceiptSummary(): void {
+    lastReceipt.value = null;
   }
 
   async function discardGuestWorkspace(): Promise<void> {
@@ -159,6 +180,7 @@ export function useClassroomPlannerGuestUpgrade(options?: {
     ),
     importGuestWorkspace,
     postponeGuestWorkspace,
+    dismissLastReceiptSummary,
     discardGuestWorkspace,
   };
 }

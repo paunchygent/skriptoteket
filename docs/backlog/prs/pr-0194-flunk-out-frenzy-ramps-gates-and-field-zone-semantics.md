@@ -58,8 +58,8 @@ Add the authored path semantics needed for richer table choreography:
   and
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts`
   so ramp and gate transitions emit semantic events.
-- Extend
-  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+- Extend the split Flunk-Out Frenzy physics spec surface under
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.*.spec.ts`
   and
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
   with path-transition coverage.
