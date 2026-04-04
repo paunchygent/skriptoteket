@@ -1,3 +1,11 @@
+/**
+ * Route math and bounded handoff helpers for the Flunk-Out Frenzy launcher.
+ *
+ * The launcher chain uses these helpers to classify authored route segments,
+ * measure along-route motion, and keep any remaining route kinematics explicit
+ * and testable while the broader runtime-shortcut remediation is in progress.
+ */
+
 import type {
   TableLauncherTravelRoute3DDefinition,
   TablePoint3D,
@@ -36,7 +44,7 @@ export function buildActiveTravelRoute(
     cumulativeDistances,
     totalDistance,
     distance: 0,
-    speed: Math.max(releaseSpeed * 0.85, 850),
+    speed: Math.max(releaseSpeed, 0),
   };
 }
 
@@ -72,7 +80,6 @@ export function samplePointAlongTravelRoute(
 
   const clamped = Math.min(Math.max(distance, 0), totalDistance);
   for (let index = 1; index < path.length; index += 1) {
-    const segmentStartDistance = cumulativeDistances[index - 1];
     const segmentEndDistance = cumulativeDistances[index];
     if (clamped > segmentEndDistance && index < path.length - 1) {
       continue;
@@ -107,30 +114,19 @@ export function advanceTravelRoute(
     ctx.activeTravelRoute.distance + ctx.activeTravelRoute.speed * dtSeconds,
     ctx.activeTravelRoute.totalDistance,
   );
-  const currentPoint = samplePointAlongTravelRoute(
-    ctx.activeTravelRoute.route.path,
-    ctx.activeTravelRoute.cumulativeDistances,
-    ctx.activeTravelRoute.totalDistance,
-    ctx.activeTravelRoute.distance,
-  );
   const nextPoint = samplePointAlongTravelRoute(
     ctx.activeTravelRoute.route.path,
     ctx.activeTravelRoute.cumulativeDistances,
     ctx.activeTravelRoute.totalDistance,
     nextDistance,
   );
-  const dx = nextPoint.x - currentPoint.x;
-  const dy = nextPoint.y - currentPoint.y;
-  const dz = nextPoint.z - currentPoint.z;
-  const segmentMagnitude = Math.hypot(dx, dy, dz);
-  const velocity =
-    segmentMagnitude <= 1e-6
-      ? { x: 0, y: 0, z: 0 }
-      : {
-          x: (dx / segmentMagnitude) * ctx.activeTravelRoute.speed,
-          y: (dy / segmentMagnitude) * ctx.activeTravelRoute.speed,
-          z: (dz / segmentMagnitude) * ctx.activeTravelRoute.speed,
-        };
+  const velocity = resolveTravelRouteVelocity(
+    ctx.activeTravelRoute.route.path,
+    ctx.activeTravelRoute.cumulativeDistances,
+    ctx.activeTravelRoute.totalDistance,
+    nextDistance,
+    ctx.activeTravelRoute.speed,
+  );
 
   ctx.ballBody.setTranslation(nextPoint, true);
   ctx.ballBody.setLinvel(velocity, true);
@@ -164,8 +160,15 @@ export function advanceTravelRoute(
       ctx.activeTravelRoute.totalDistance,
       ctx.activeTravelRoute.distance,
     );
+    const startVelocity = resolveTravelRouteVelocity(
+      ctx.activeTravelRoute.route.path,
+      ctx.activeTravelRoute.cumulativeDistances,
+      ctx.activeTravelRoute.totalDistance,
+      ctx.activeTravelRoute.distance,
+      ctx.activeTravelRoute.speed,
+    );
     ctx.ballBody.setTranslation(startPoint, true);
-    ctx.ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    ctx.ballBody.setLinvel(startVelocity, true);
     return null;
   }
 
@@ -185,6 +188,83 @@ export function advanceTravelRoute(
       z: handoffZ,
     },
     velocity: handoffVelocity,
+  };
+}
+
+export function resolveTravelRouteVelocity(
+  path: readonly TablePoint3D[],
+  cumulativeDistances: readonly number[],
+  totalDistance: number,
+  distance: number,
+  speed: number,
+): { x: number; y: number; z: number } {
+  const tangent = resolveTravelRouteTangent(path, cumulativeDistances, totalDistance, distance);
+  return {
+    x: tangent.x * speed,
+    y: tangent.y * speed,
+    z: tangent.z * speed,
+  };
+}
+
+export function resolveObservedTravelRouteProgressSpeed(
+  route: TableLauncherTravelRoute3DDefinition,
+  velocity: { x: number; y: number; z: number },
+): number {
+  const cumulativeDistances = buildCumulativeDistances(route.path);
+  const totalDistance = cumulativeDistances[cumulativeDistances.length - 1] ?? 0;
+  const tangent = resolveTravelRouteTangent(route.path, cumulativeDistances, totalDistance, 0);
+  const planarTangentMagnitude = Math.hypot(tangent.x, tangent.y);
+  if (planarTangentMagnitude <= 1e-6) {
+    return 0;
+  }
+  const observedPlanarSpeed = Math.hypot(velocity.x, velocity.y);
+  return observedPlanarSpeed / planarTangentMagnitude;
+}
+
+function resolveTravelRouteTangent(
+  path: readonly TablePoint3D[],
+  cumulativeDistances: readonly number[],
+  totalDistance: number,
+  distance: number,
+): { x: number; y: number; z: number } {
+  if (path.length < 2 || totalDistance <= 1e-6) {
+    return { x: 0, y: 0, z: 0 };
+  }
+
+  const clamped = Math.min(Math.max(distance, 0), totalDistance);
+  for (let index = 1; index < path.length; index += 1) {
+    const segmentEndDistance = cumulativeDistances[index];
+    if (clamped > segmentEndDistance && index < path.length - 1) {
+      continue;
+    }
+    return normalizeTravelRouteVector(
+      path[index].x - path[index - 1].x,
+      path[index].y - path[index - 1].y,
+      path[index].z - path[index - 1].z,
+    );
+  }
+
+  const lastIndex = path.length - 1;
+  return normalizeTravelRouteVector(
+    path[lastIndex].x - path[lastIndex - 1].x,
+    path[lastIndex].y - path[lastIndex - 1].y,
+    path[lastIndex].z - path[lastIndex - 1].z,
+  );
+}
+
+function normalizeTravelRouteVector(
+  dx: number,
+  dy: number,
+  dz: number,
+): { x: number; y: number; z: number } {
+  const magnitude = Math.hypot(dx, dy, dz);
+  if (magnitude <= 1e-6) {
+    return { x: 0, y: 0, z: 0 };
+  }
+  return {
+    x: dx / magnitude,
+    y: dy / magnitude,
+    z: dz / magnitude,
   };
 }
 

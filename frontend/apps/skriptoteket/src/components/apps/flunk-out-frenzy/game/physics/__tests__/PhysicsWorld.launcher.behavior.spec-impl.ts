@@ -283,6 +283,78 @@ describe("PhysicsWorld Launcher behavior", () => {
     }
   });
 
+  it("does not amplify active-route planar speed beyond the observed pre-capture entry speed", async () => {
+    const world = await PhysicsWorld.create();
+
+    try {
+      world.spawnBall();
+      collectEventsUntil(world, 40, (events) => {
+        return events.some((event) => event.type === "launcher-fed");
+      });
+
+      world.applyCommand({ type: "launch", pressed: true });
+      for (let index = 0; index < 30; index += 1) {
+        world.step(16);
+      }
+      world.applyCommand({ type: "launch", pressed: false });
+
+      let maxObservedPreRoutePlanarSpeed = 0;
+      let firstActiveRoutePlanarSpeed: number | null = null;
+      for (let index = 0; index < 180; index += 1) {
+        world.step(16);
+        const telemetry = world.currentSnapshot().launcherTelemetry;
+        const speed = planarSpeedMagnitude(telemetry?.ball.velocity);
+        if (!telemetry) {
+          continue;
+        }
+        if (telemetry.route.activeRouteTag === null) {
+          maxObservedPreRoutePlanarSpeed = Math.max(maxObservedPreRoutePlanarSpeed, speed);
+          continue;
+        }
+        firstActiveRoutePlanarSpeed = speed;
+        break;
+      }
+
+      expect(firstActiveRoutePlanarSpeed).not.toBeNull();
+      expect(firstActiveRoutePlanarSpeed).toBeLessThanOrEqual(maxObservedPreRoutePlanarSpeed + 1);
+    } finally {
+      world.dispose();
+    }
+  });
+
+  it("preserves non-zero route velocity across chained seam transitions", async () => {
+    const world = await PhysicsWorld.create();
+
+    try {
+      world.spawnBall();
+      collectEventsUntil(world, 40, (events) => {
+        return events.some((event) => event.type === "launcher-fed");
+      });
+
+      world.applyCommand({ type: "launch", pressed: true });
+      for (let index = 0; index < 56; index += 1) {
+        world.step(16);
+      }
+      world.applyCommand({ type: "launch", pressed: false });
+
+      let seamVelocityMagnitude: number | null = null;
+      for (let index = 0; index < 1000; index += 1) {
+        world.step(16);
+        const telemetry = world.currentSnapshot().launcherTelemetry;
+        if (!telemetry?.seamTransition) {
+          continue;
+        }
+        seamVelocityMagnitude = speedMagnitude(telemetry.ball.velocity);
+        break;
+      }
+
+      expect(seamVelocityMagnitude).not.toBeNull();
+      expect(seamVelocityMagnitude).toBeGreaterThan(1);
+    } finally {
+      world.dispose();
+    }
+  });
+
   it("does not treat the old full-height shooter aabb as launcher containment anymore", async () => {
     const world = await PhysicsWorld.create();
     const plungerShape = expectRectTriggerShape(VPW_SHOOTER_PLUNGER_TRIGGER_SPEC.shape);
@@ -378,4 +450,28 @@ function xOnBoundaryAtY(
     return start.x + (end.x - start.x) * ratio;
   }
   return null;
+}
+
+function speedMagnitude(
+  velocity:
+    | { x: number; y: number; z?: number | null }
+    | null
+    | undefined,
+): number {
+  if (!velocity) {
+    return 0;
+  }
+  return Math.hypot(velocity.x, velocity.y, velocity.z ?? 0);
+}
+
+function planarSpeedMagnitude(
+  velocity:
+    | { x: number; y: number; z?: number | null }
+    | null
+    | undefined,
+): number {
+  if (!velocity) {
+    return 0;
+  }
+  return Math.hypot(velocity.x, velocity.y);
 }

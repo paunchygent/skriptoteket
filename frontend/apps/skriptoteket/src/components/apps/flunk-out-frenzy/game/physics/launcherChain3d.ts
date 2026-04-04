@@ -24,7 +24,9 @@ import { updateContactTelemetry } from "./launcher/LauncherContactTelemetry";
 import {
   advanceTravelRoute,
   buildActiveTravelRoute,
+  resolveObservedTravelRouteProgressSpeed,
   resolveTravelRoute,
+  resolveTravelRouteVelocity,
   samplePointAlongTravelRoute,
 } from "./launcher/LauncherTravelRoute";
 import {
@@ -424,11 +426,14 @@ export class LauncherChain3D {
     }
 
     const velocity = this.ctx.ballBody.linvel();
-    const measuredSpeed = Math.hypot(velocity.x, velocity.y, velocity.z);
-    const routeSpeed = Math.max(
-      measuredSpeed,
-      resolveLaunchSpeedFromCharge(this.ctx.launcher, chargeRatio),
-    );
+    const routeSpeed = resolveObservedTravelRouteProgressSpeed(travelRoute, velocity);
+    if (routeSpeed <= 0) {
+      this.markRouteCaptureRejected("vy_gate");
+      if (hasClearedReleasePlane(this.ctx)) {
+        this.ctx.pendingReleaseChargeRatio = null;
+      }
+      return;
+    }
 
     this.ctx.activeTravelRoute = buildActiveTravelRoute(travelRoute, routeSpeed);
     this.ctx.boardHandoffArmed = false;
@@ -441,8 +446,15 @@ export class LauncherChain3D {
       this.ctx.activeTravelRoute.totalDistance,
       this.ctx.activeTravelRoute.distance,
     );
+    const startVelocity = resolveTravelRouteVelocity(
+      this.ctx.activeTravelRoute.route.path,
+      this.ctx.activeTravelRoute.cumulativeDistances,
+      this.ctx.activeTravelRoute.totalDistance,
+      this.ctx.activeTravelRoute.distance,
+      this.ctx.activeTravelRoute.speed,
+    );
     this.ctx.ballBody.setTranslation(startPoint, true);
-    this.ctx.ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    this.ctx.ballBody.setLinvel(startVelocity, true);
   }
 
   private markRouteCaptureAccepted(): void {
@@ -454,15 +466,4 @@ export class LauncherChain3D {
     this.ctx.lastRouteCaptureDecision = "rejected";
     this.ctx.lastRouteCaptureRejectReason = reason;
   }
-
-}
-
-function resolveLaunchSpeedFromCharge(
-  launcher: TableLauncherDefinition,
-  chargeRatio: number,
-): number {
-  const plunger = launcher.threeD.plunger;
-  const minimumLaunchSpeed = launcher.launchImpulseMin * plunger.momentumTransfer;
-  const maximumLaunchSpeed = launcher.launchImpulseMax * plunger.momentumTransfer;
-  return minimumLaunchSpeed + (maximumLaunchSpeed - minimumLaunchSpeed) * chargeRatio;
 }

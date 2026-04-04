@@ -153,7 +153,7 @@ export const PR0206_DT_MS = 16;
 export const PR0206_PRE_RELEASE_STABILITY_STEPS = 10;
 export const PR0206_OBSERVATION_STEPS = 60;
 export const PR0206_RELAUNCH_GAP_STEPS = 16;
-export const PR0209_BOARD_DROP_OBSERVATION_STEPS = 300;
+export const PR0209_BOARD_DROP_OBSERVATION_STEPS = 900;
 export const PR0206_PROOF_MATRIX_CASES: readonly LaunchProofCaseContract[] = [
   {
     caseId: "K-REST-STEADY",

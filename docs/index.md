@@ -77,6 +77,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0213-flunk-out-frenzy-live-trace-contract-parity-remediation.md`
 - Flunk-Out Frenzy launch-trace operational summary and decision gate:
   `docs/backlog/prs/pr-0214-flunk-out-frenzy-launch-trace-operational-summary-and-decision-gate.md`
+- Flunk-Out Frenzy launcher runtime shortcut remediation and physical-truth alignment:
+  `docs/backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md`
+- Flunk-Out Frenzy physical rail carrier semantics and architect guidance packet:
+  `docs/backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md`
 - ST-32-04 guest snapshot contract + storage foundation:
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - Seating continuity follow-up:
@@ -674,6 +678,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
 - `docs/backlog/prs/pr-0213-flunk-out-frenzy-live-trace-contract-parity-remediation.md`
 - `docs/backlog/prs/pr-0214-flunk-out-frenzy-launch-trace-operational-summary-and-decision-gate.md`
+- `docs/backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md`
+- `docs/backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`
