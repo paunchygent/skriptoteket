@@ -8,6 +8,7 @@
  */
 
 import type { MachineEvent } from "../physics/physicsTypes";
+import type { LaunchToDropTraceArtifactPayload } from "../physics/launchTraceContract";
 
 export type GameSessionStatus = "ready" | "running" | "paused" | "game-over";
 
@@ -168,6 +169,8 @@ export interface GameLauncherDebugSnapshot {
   launcher: GameLauncherTelemetrySnapshot | null;
   launchToDropTraceStep: GameLaunchToDropTraceStep | null;
 }
+
+export type GameLaunchTraceArtifactDebugPayload = LaunchToDropTraceArtifactPayload;
 
 export interface GameViewSnapshot {
   board: GameBoardSnapshot;

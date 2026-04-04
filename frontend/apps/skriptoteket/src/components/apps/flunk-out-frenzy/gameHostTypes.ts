@@ -8,6 +8,7 @@
 
 import type {
   GameHudSnapshot,
+  GameLaunchTraceArtifactDebugPayload,
   GameLauncherDebugSnapshot,
   GameSessionStatus,
   RuntimeCommand,
@@ -42,6 +43,7 @@ export interface GameRuntimeLike {
   dispose(): void;
   injectMachineEventsForDebug?(events: MachineEvent[]): void;
   debugLauncherTelemetry?(): GameLauncherDebugSnapshot;
+  buildLaunchToDropTraceArtifactForDebug?(): Promise<GameLaunchTraceArtifactDebugPayload>;
 }
 
 export interface GameRuntimeFactoryOptions {

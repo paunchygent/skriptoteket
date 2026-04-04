@@ -13,6 +13,7 @@ import { loadGameRuntime } from "./game/core/loadGameRuntime";
 import {
   createInitialHudSnapshot,
   type RuntimeCommand,
+  type GameLaunchTraceArtifactDebugPayload,
   type GameLauncherDebugSnapshot,
 } from "./game/core/runtimeTypes";
 import { KeyboardInputController } from "./game/input/KeyboardInputController";
@@ -55,6 +56,7 @@ interface FlunkOutFrenzyDebugHandle {
   injectMachineEvents(events: MachineEvent[]): void;
   hud(): GameHudSnapshot;
   launcherTelemetry(): GameLauncherDebugSnapshot | null;
+  buildLaunchToDropTraceArtifact(): Promise<GameLaunchTraceArtifactDebugPayload>;
   enqueueCommand(command: RuntimeCommand): void;
   restartRuntime(): void;
 }
@@ -133,6 +135,12 @@ async function ensureRuntimeReady(): Promise<GameRuntimeLike | null> {
           },
           launcherTelemetry() {
             return createdRuntime.debugLauncherTelemetry?.() ?? null;
+          },
+          buildLaunchToDropTraceArtifact() {
+            if (typeof createdRuntime.buildLaunchToDropTraceArtifactForDebug !== "function") {
+              return Promise.reject(new Error("Runtime does not support launch trace proof debug."));
+            }
+            return createdRuntime.buildLaunchToDropTraceArtifactForDebug();
           },
           enqueueCommand(command: RuntimeCommand) {
             createdRuntime.enqueueCommand(command);

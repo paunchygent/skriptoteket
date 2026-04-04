@@ -21,6 +21,7 @@ import {
   describeRuntimeCommand,
   type AnimationScheduler,
   type GameHudSnapshot,
+  type GameLaunchTraceArtifactDebugPayload,
   type GameLauncherDebugSnapshot,
   type GameViewSnapshot,
   type RuntimeCommand,
@@ -240,6 +241,13 @@ export class GameRuntime {
       launcher: this.viewSnapshot.launcherTelemetry ?? null,
       launchToDropTraceStep: this.viewSnapshot.launchTraceStep ?? null,
     };
+  }
+
+  async buildLaunchToDropTraceArtifactForDebug(): Promise<GameLaunchTraceArtifactDebugPayload> {
+    const { buildLaunchToDropTraceArtifactForBrowserDebug } = await import(
+      "../physics/launchTraceBrowserDebug"
+    );
+    return buildLaunchToDropTraceArtifactForBrowserDebug();
   }
 
   private readonly onFixedStep = (dtMs: number): void => {

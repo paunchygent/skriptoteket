@@ -15,6 +15,7 @@ import {
   buildLaunchToDropTraceArtifactPayload,
   PR0206_OBSERVATION_STEPS,
   PR0206_PROOF_MATRIX_CASES,
+  summarizeInvariantFailures,
   writeLaunchToDropTraceArtifact,
   type LaunchToDropTraceCaseRecord,
 } from "../test-support/physicsTestTelemetry";
@@ -73,5 +74,25 @@ describe("PhysicsWorld Launcher proof", () => {
     expect(records.map((record) => record.observation_steps)).toEqual(
       Array.from({ length: records.length }, () => PR0206_OBSERVATION_STEPS),
     );
+    expect(summarizeInvariantFailures(payload)).toEqual([]);
+
+    for (const record of records) {
+      expect(record.trace_steps.every((step) => step.dt_ms === record.dt_ms)).toBe(true);
+
+      const rawPhases = new Set(record.trace_steps.map((step) => step.phase));
+      for (const phase of record.phase_order_observed) {
+        expect(rawPhases.has(phase)).toBe(true);
+      }
+
+      if (record.phase_order_observed.includes("route_endpoint_bridge")) {
+        expect(record.trace_steps.some((step) => step.phase === "route_endpoint_bridge")).toBe(
+          true,
+        );
+      }
+
+      if (record.phase_order_observed.includes("route_endpoint_bridge")) {
+        expect(record.trace_steps.some((step) => step.seam_transition !== null)).toBe(true);
+      }
+    }
   });
 });

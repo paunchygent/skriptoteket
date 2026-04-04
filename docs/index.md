@@ -73,6 +73,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0210-flunk-out-frenzy-file-size-compliance-and-frontend-module-decomposition.md`
 - Flunk-Out Frenzy launcher shortcut breach inventory and truth-gate audit:
   `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
+- Flunk-Out Frenzy live trace contract parity remediation:
+  `docs/backlog/prs/pr-0213-flunk-out-frenzy-live-trace-contract-parity-remediation.md`
+- Flunk-Out Frenzy launch-trace operational summary and decision gate:
+  `docs/backlog/prs/pr-0214-flunk-out-frenzy-launch-trace-operational-summary-and-decision-gate.md`
 - ST-32-04 guest snapshot contract + storage foundation:
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - Seating continuity follow-up:
@@ -665,6 +669,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0207-flunk-out-frenzy-launcher-strike-ready-rest-pose-alignment.md`
 - `docs/backlog/prs/pr-0208-flunk-out-frenzy-strike-ready-rest-pose-and-release-integration-fix.md`
 - `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`
+- `docs/backlog/prs/pr-0210-flunk-out-frenzy-file-size-compliance-and-frontend-module-decomposition.md`
+- `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
+- `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
+- `docs/backlog/prs/pr-0213-flunk-out-frenzy-live-trace-contract-parity-remediation.md`
+- `docs/backlog/prs/pr-0214-flunk-out-frenzy-launch-trace-operational-summary-and-decision-gate.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`
