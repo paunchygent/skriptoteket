@@ -9,7 +9,9 @@ import RAPIER3D from "@dimforge/rapier3d-compat";
 
 import { magnitude, midpoint, segmentAngle } from "../../table/pinballTableMath";
 import type {
+  TableLauncherCarrier3DDefinition,
   TableLauncherDefinition,
+  TableLauncherPhysicalCarrier3DDefinition,
   TablePoint,
 } from "../../table/tableDefinitionTypes";
 import type { LauncherContext } from "./LauncherContext";
@@ -24,25 +26,29 @@ export function createLauncherWorldWalls(
   world: RAPIER3D.World,
   launcher: TableLauncherDefinition,
 ): void {
-  for (const wall of launcher.threeD.walls) {
-    const collider = createExtrudedPolygonColliderDesc(
-      wall.points,
-      wall.heightBottom,
-      wall.heightTop,
-    );
-    world.createCollider(collider);
-  }
+  for (const carrier of launcher.threeD.carriers) {
+    if (!isPhysicalLauncherCarrier(carrier)) {
+      continue;
+    }
+    if (carrier.geometryKind === "extruded_polygon") {
+      const collider = createExtrudedPolygonColliderDesc(
+        carrier.points,
+        carrier.heightBottom,
+        carrier.heightTop,
+      );
+      world.createCollider(collider);
+      continue;
+    }
 
-  for (const rail of launcher.threeD.guideRails) {
-    const halfHeight = Math.max((rail.heightTop - rail.heightBottom) / 2, 0.5);
-    const centerZ = rail.heightBottom + halfHeight;
-    for (let index = 0; index < rail.path.length - 1; index += 1) {
-      const from = rail.path[index];
-      const to = rail.path[index + 1];
+    const halfHeight = Math.max((carrier.heightTop - carrier.heightBottom) / 2, 0.5);
+    const centerZ = carrier.heightBottom + halfHeight;
+    for (let index = 0; index < carrier.path.length - 1; index += 1) {
+      const from = carrier.path[index];
+      const to = carrier.path[index + 1];
       world.createCollider(
         RAPIER3D.ColliderDesc.cuboid(
           magnitude({ x: to.x - from.x, y: to.y - from.y }) / 2,
-          rail.radius,
+          carrier.radius,
           halfHeight,
         )
           .setTranslation(midpoint(from, to).x, midpoint(from, to).y, centerZ)
@@ -77,7 +83,10 @@ export function createLauncherPlungerBody(ctx: LauncherContext): RAPIER3D.RigidB
 }
 
 export function resolveReleasePlaneY(launcher: TableLauncherDefinition): number {
-  const divider = launcher.threeD.walls.find((wall) => wall.tag === "launcher/wall34");
+  const divider = resolveExtrudedPhysicalCarrierByTag(
+    launcher,
+    "launcher/wall34",
+  );
   if (!divider) {
     throw new Error("3D launcher chain is missing donor Wall34 for board handoff.");
   }
@@ -115,4 +124,27 @@ function quaternionFromYaw(angleRad: number): RAPIER3D.Rotation {
     z: Math.sin(angleRad / 2),
     w: Math.cos(angleRad / 2),
   };
+}
+
+function isPhysicalLauncherCarrier(
+  carrier: TableLauncherCarrier3DDefinition,
+): carrier is TableLauncherPhysicalCarrier3DDefinition {
+  return carrier.compileRole === "physical";
+}
+
+function resolveExtrudedPhysicalCarrierByTag(
+  launcher: TableLauncherDefinition,
+  tag: string,
+): Extract<TableLauncherPhysicalCarrier3DDefinition, { geometryKind: "extruded_polygon" }> | null {
+  const carrier = launcher.threeD.carriers.find((candidate) => {
+    return candidate.tag === tag && candidate.compileRole === "physical";
+  });
+  if (
+    !carrier ||
+    !isPhysicalLauncherCarrier(carrier) ||
+    carrier.geometryKind !== "extruded_polygon"
+  ) {
+    return null;
+  }
+  return carrier;
 }

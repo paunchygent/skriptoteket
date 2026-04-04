@@ -1,13 +1,11 @@
 import { magnitude } from "../pinballTableMath";
 import type { PinballTableSpec } from "../pinballTablePlanTypes";
 import type {
-  TableLauncherTravelRoute3DDefinition,
   TableRegionShapeDefinition,
   TableTriggerShapeDefinition,
 } from "../tableDefinitionTypes";
 import { resolveTriggerShapeDefinition } from "./compileSensors";
-
-const LAUNCHER_ROUTE_SEAM_TOLERANCE = 1;
+import { assertValidLauncherCarrierGraph } from "./assertValidLauncherCarrierGraph";
 
 export function assertValidTableSpec(spec: PinballTableSpec): void {
   const seenIds = new Set<string>();
@@ -115,21 +113,9 @@ export function assertValidTableSpec(spec: PinballTableSpec): void {
     );
   }
 
-  if (spec.launcher.threeD.walls.length === 0) {
-    throw new Error(
-      'Launcher "launcher/main" must declare at least one 3D wall section.',
-    );
-  }
-
   if (spec.launcher.threeD.sensors.length === 0) {
     throw new Error(
       'Launcher "launcher/main" must declare at least one 3D launcher sensor.',
-    );
-  }
-
-  if (spec.launcher.threeD.guideRails.length === 0) {
-    throw new Error(
-      'Launcher "launcher/main" must declare at least one 3D launcher guide rail.',
     );
   }
 
@@ -138,37 +124,6 @@ export function assertValidTableSpec(spec: PinballTableSpec): void {
       `${spec.launcher.tag}[${index}]`,
       region,
     );
-  }
-
-  for (const wall of spec.launcher.threeD.walls) {
-    if (wall.points.length < 3) {
-      throw new Error(
-        `Launcher 3D wall "${wall.tag}" must have at least three points.`,
-      );
-    }
-    if (wall.heightTop < wall.heightBottom) {
-      throw new Error(
-        `Launcher 3D wall "${wall.tag}" must not invert height bounds.`,
-      );
-    }
-  }
-
-  for (const rail of spec.launcher.threeD.guideRails) {
-    if (rail.path.length < 2) {
-      throw new Error(
-        `Launcher 3D guide rail "${rail.tag}" must have at least two points.`,
-      );
-    }
-    if (rail.radius <= 0) {
-      throw new Error(
-        `Launcher 3D guide rail "${rail.tag}" must have a positive radius.`,
-      );
-    }
-    if (rail.heightTop < rail.heightBottom) {
-      throw new Error(
-        `Launcher 3D guide rail "${rail.tag}" must not invert height bounds.`,
-      );
-    }
   }
 
   for (const sensor of spec.launcher.threeD.sensors) {
@@ -201,7 +156,7 @@ export function assertValidTableSpec(spec: PinballTableSpec): void {
       "Launcher 3D plunger must declare positive width/depth/height/stroke.",
     );
   }
-  assertValidLauncherTravelRoutes(spec.launcher.threeD.travelRoutes ?? []);
+  assertValidLauncherCarrierGraph(spec.launcher);
 
   for (const tripwire of spec.tripwires) {
     assertValidTriggerDefinition(
@@ -328,103 +283,5 @@ function assertValidLauncherRegionDefinition(
         );
       }
       return;
-  }
-}
-
-function assertValidLauncherTravelRoutes(
-  routes: readonly TableLauncherTravelRoute3DDefinition[],
-): void {
-  const routeByTag = new Map<string, TableLauncherTravelRoute3DDefinition>();
-
-  for (const route of routes) {
-    if (routeByTag.has(route.tag)) {
-      throw new Error(
-        `Launcher 3D travel route tag "${route.tag}" must be unique.`,
-      );
-    }
-    routeByTag.set(route.tag, route);
-    if (route.path.length < 2) {
-      throw new Error(
-        `Launcher 3D travel route "${route.tag}" must have at least two points.`,
-      );
-    }
-    if (route.minChargeRatio < 0 || route.minChargeRatio > 1) {
-      throw new Error(
-        `Launcher 3D travel route "${route.tag}" minChargeRatio must be in [0, 1].`,
-      );
-    }
-    if (!route.nextRouteTag && !route.handoffVelocity) {
-      throw new Error(
-        `Launcher 3D travel route "${route.tag}" must declare a terminal handoff velocity.`,
-      );
-    }
-    const hasMidChainHandoff =
-      route.nextRouteTag &&
-      (route as { handoffVelocity?: unknown }).handoffVelocity !== undefined;
-    if (hasMidChainHandoff) {
-      throw new Error(
-        `Launcher 3D travel route "${route.tag}" must not declare handoff velocity when chaining.`,
-      );
-    }
-  }
-
-  for (const route of routes) {
-    if (!route.nextRouteTag) {
-      continue;
-    }
-    const nextRoute = routeByTag.get(route.nextRouteTag);
-    if (!nextRoute) {
-      throw new Error(
-        `Launcher 3D travel route "${route.tag}" references unknown nextRouteTag "${route.nextRouteTag}".`,
-      );
-    }
-    const nextEntryMode = nextRoute.entryMode ?? "release";
-    if (nextEntryMode !== "chain") {
-      throw new Error(
-        `Launcher 3D travel route "${route.nextRouteTag}" must declare entryMode "chain".`,
-      );
-    }
-
-    const routeEnd = route.path[route.path.length - 1];
-    const nextStart = nextRoute.path[0];
-    const xyDelta = Math.hypot(
-      routeEnd.x - nextStart.x,
-      routeEnd.y - nextStart.y,
-    );
-    const zDelta = Math.abs(routeEnd.z - nextStart.z);
-    if (
-      xyDelta > LAUNCHER_ROUTE_SEAM_TOLERANCE ||
-      zDelta > LAUNCHER_ROUTE_SEAM_TOLERANCE
-    ) {
-      throw new Error(
-        `Launcher 3D travel route seam "${route.tag}" -> "${nextRoute.tag}" must be continuous ` +
-          `(xy<=${LAUNCHER_ROUTE_SEAM_TOLERANCE}, z<=${LAUNCHER_ROUTE_SEAM_TOLERANCE}).`,
-      );
-    }
-  }
-
-  const visiting = new Set<string>();
-  const visited = new Set<string>();
-  const visit = (tag: string) => {
-    if (visited.has(tag)) {
-      return;
-    }
-    if (visiting.has(tag)) {
-      throw new Error(
-        `Launcher 3D travel routes must not form cycles (detected at "${tag}").`,
-      );
-    }
-
-    visiting.add(tag);
-    const route = routeByTag.get(tag);
-    if (route?.nextRouteTag) {
-      visit(route.nextRouteTag);
-    }
-    visiting.delete(tag);
-    visited.add(tag);
-  };
-
-  for (const route of routes) {
-    visit(route.tag);
   }
 }

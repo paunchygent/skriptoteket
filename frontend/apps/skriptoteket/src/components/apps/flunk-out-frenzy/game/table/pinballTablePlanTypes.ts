@@ -29,11 +29,12 @@ import type {
 } from "./tableDefinitionTypes";
 
 export type {
-  TableLauncherGuideRail3DDefinition,
+  TableLauncherCarrier3DDefinition,
+  TableLauncherHandoffSeam3DDefinition,
+  TableLauncherObservationSpine3DDefinition,
   TableLauncherPlunger3DDefinition,
+  TableLauncherPhysicalCarrier3DDefinition,
   TableLauncherSensor3DDefinition,
-  TableLauncherTravelRoute3DDefinition,
-  TableLauncherWallSection3DDefinition,
   TablePoint3D,
 } from "./tableDefinitionTypes";
 

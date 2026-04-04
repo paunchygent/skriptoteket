@@ -10,7 +10,7 @@ import type {
 } from "../physicsTypes";
 import { isPointInTriggerShape } from "../plungerLaneState";
 import type {
-  TableLauncherTravelRoute3DDefinition,
+  TableLauncherObservationSpine3DDefinition,
   TablePoint3D,
   TableTriggerShapeDefinition,
 } from "../../table/tableDefinitionTypes";
@@ -20,7 +20,7 @@ export type RouteCaptureRejectReason = Exclude<LauncherRouteCaptureRejectReason,
 
 export function canAttachReleaseTravelRoute(
   ctx: LauncherContext,
-  route: TableLauncherTravelRoute3DDefinition,
+  route: TableLauncherObservationSpine3DDefinition,
   routeEntryToleranceMultiplier: number,
   minUpwardSpeed: number,
 ): { canAttach: boolean; reason: RouteCaptureRejectReason } {

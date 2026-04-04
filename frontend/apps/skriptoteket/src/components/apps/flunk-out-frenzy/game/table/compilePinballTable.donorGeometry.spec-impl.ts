@@ -319,29 +319,38 @@ describe("compilePinballTable donor geometry", () => {
 
   it("carries the donor 3D launcher-chain provenance in the compiled table", () => {
     const compiled = compilePinballTable(PROTOTYPE_ALPHA_TABLE_SPEC);
+    const physicalCarriers = compiled.launcher.threeD.carriers.filter((carrier) => {
+      return carrier.compileRole === "physical";
+    });
+    const observationSpines = compiled.launcher.threeD.carriers.filter((carrier) => {
+      return carrier.kind === "observation_spine";
+    });
+    const handoffSeam = compiled.launcher.threeD.carriers.find((carrier) => {
+      return carrier.kind === "handoff_seam";
+    });
 
     expect(compiled.launcher.threeD.plunger).toEqual(VPW_PLUNGER_ROSE_3D_SPEC);
-    expect(compiled.launcher.threeD.walls).toEqual(
+    expect(physicalCarriers).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           tag: "launcher/wall34",
-          donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterLaneDivider,
+          kind: "support",
+          donorSourceIds: [PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterLaneDivider],
         }),
         expect.objectContaining({
           tag: "launcher/wall95",
-          donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterOuterWall,
+          kind: "support",
+          donorSourceIds: [PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.shooterOuterWall],
         }),
-      ]),
-    );
-    expect(compiled.launcher.threeD.guideRails).toEqual(
-      expect.arrayContaining([
         expect.objectContaining({
           tag: "launcher/wall263-shoulder",
-          donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.outerBoundary,
+          kind: "guard",
+          donorSourceIds: [PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.outerBoundary],
         }),
         expect.objectContaining({
           tag: "launcher/wall264",
-          donorSourceId: PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.rightUpperGuide,
+          kind: "guard",
+          donorSourceIds: [PROTOTYPE_ALPHA_VPW_DONOR_SOURCES.rightUpperGuide],
         }),
       ]),
     );
@@ -357,30 +366,44 @@ describe("compilePinballTable donor geometry", () => {
         }),
       ]),
     );
-    expect(compiled.launcher.threeD.travelRoutes).toEqual(
+    expect(observationSpines).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           tag: "launcher/travel/overhead",
+          kind: "observation_spine",
           donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_DONOR_SOURCES,
           path: VPW_LAUNCH_TRAVEL_ROUTE_OVERHEAD_3D_PATH,
-          nextRouteTag: "launcher/travel/endpoint-bridge",
+          nextCarrierTag: "launcher/travel/endpoint-bridge",
         }),
         expect.objectContaining({
           tag: "launcher/travel/endpoint-bridge",
+          kind: "observation_spine",
           donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_DONOR_SOURCES,
           path: VPW_LAUNCH_TRAVEL_ROUTE_ENDPOINT_BRIDGE_3D_PATH,
           entryMode: "chain",
-          nextRouteTag: "launcher/travel/descent",
+          nextCarrierTag: "launcher/travel/descent",
         }),
         expect.objectContaining({
           tag: "launcher/travel/descent",
+          kind: "observation_spine",
           donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES,
           path: VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_3D_PATH,
           entryMode: "chain",
+          nextCarrierTag: "launcher/seam/board-handoff",
         }),
       ]),
     );
-    const endpointBridgeRoute = compiled.launcher.threeD.travelRoutes?.find((route) => {
+    expect(handoffSeam).toEqual(
+      expect.objectContaining({
+        tag: "launcher/seam/board-handoff",
+        kind: "handoff_seam",
+        donorSourceIds: VPW_LAUNCH_TRAVEL_ROUTE_DESCENT_DONOR_SOURCES,
+        handoffVelocity: { x: -140, y: 360 },
+        handoffZ: PROTOTYPE_ALPHA_TABLE_SPEC.ball.radius,
+        targetWorld: "board",
+      }),
+    );
+    const endpointBridgeRoute = observationSpines.find((route) => {
       return route.tag === "launcher/travel/endpoint-bridge";
     });
     expect(endpointBridgeRoute?.path).toHaveLength(2);

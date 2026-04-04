@@ -200,22 +200,56 @@ export interface TableFlipperDefinition {
   contactModel: TableFlipperContactModelDefinition;
 }
 
-export interface TableLauncherWallSection3DDefinition {
+export type TableLauncherCarrierCompileRole =
+  | "physical"
+  | "observation"
+  | "terminal_seam";
+
+export type TableLauncherCarrierOwnerWorld = "launcher" | "board";
+
+export type TableLauncherCarrierKind =
+  | "support"
+  | "guard"
+  | "receiver"
+  | "observation_spine"
+  | "handoff_seam";
+
+export type TableLauncherObservationEntryMode = "release" | "chain";
+
+interface TableLauncherCarrierBaseDefinition {
   tag: string;
-  donorSourceId: string;
-  points: readonly TablePoint[];
+  kind: TableLauncherCarrierKind;
+  compileRole: TableLauncherCarrierCompileRole;
+  ownerWorld: TableLauncherCarrierOwnerWorld;
+  donorSourceIds: readonly string[];
+}
+
+interface TableLauncherPhysicalCarrier3DBaseDefinition
+  extends TableLauncherCarrierBaseDefinition {
+  kind: "support" | "guard" | "receiver";
+  compileRole: "physical";
+  ownerWorld: "launcher";
+  ownedDonorSpanIds: readonly string[];
   heightBottom: number;
   heightTop: number;
 }
 
-export interface TableLauncherGuideRail3DDefinition {
-  tag: string;
-  donorSourceId: string;
+export interface TableLauncherExtrudedPolygonCarrier3DDefinition
+  extends TableLauncherPhysicalCarrier3DBaseDefinition {
+  geometryKind: "extruded_polygon";
+  points: readonly TablePoint[];
+}
+
+export interface TableLauncherSegmentPathCarrier3DDefinition
+  extends TableLauncherPhysicalCarrier3DBaseDefinition {
+  geometryKind: "segment_path";
   path: readonly TablePoint[];
   radius: number;
-  heightBottom: number;
-  heightTop: number;
 }
+
+export type TableLauncherPhysicalCarrier3DDefinition =
+  | TableLauncherExtrudedPolygonCarrier3DDefinition
+  | TableLauncherSegmentPathCarrier3DDefinition;
 
 export interface TableLauncherSensor3DDefinition {
   tag: string;
@@ -225,30 +259,33 @@ export interface TableLauncherSensor3DDefinition {
   semanticRole: "feed" | "exit";
 }
 
-interface TableLauncherTravelRoute3DBaseDefinition {
-  tag: string;
-  donorSourceIds: readonly string[];
+export interface TableLauncherObservationSpine3DDefinition
+  extends TableLauncherCarrierBaseDefinition {
+  kind: "observation_spine";
+  compileRole: "observation";
+  ownerWorld: "launcher";
   path: readonly TablePoint3D[];
-  entryMode?: "release" | "chain";
+  entryMode?: TableLauncherObservationEntryMode;
   minChargeRatio: number;
-  handoffZ?: number;
+  nextCarrierTag: string;
 }
 
-export interface TableLauncherTravelRoute3DChainedDefinition
-  extends TableLauncherTravelRoute3DBaseDefinition {
-  nextRouteTag: string;
-  handoffVelocity?: never;
-}
-
-export interface TableLauncherTravelRoute3DTerminalDefinition
-  extends TableLauncherTravelRoute3DBaseDefinition {
-  nextRouteTag?: undefined;
+export interface TableLauncherHandoffSeam3DDefinition
+  extends TableLauncherCarrierBaseDefinition {
+  kind: "handoff_seam";
+  compileRole: "terminal_seam";
+  ownerWorld: "launcher";
+  anchor: TablePoint3D;
+  targetWorld: "board";
   handoffVelocity: TablePoint;
+  handoffZ: number;
+  ownedDonorSpanIds: readonly string[];
 }
 
-export type TableLauncherTravelRoute3DDefinition =
-  | TableLauncherTravelRoute3DChainedDefinition
-  | TableLauncherTravelRoute3DTerminalDefinition;
+export type TableLauncherCarrier3DDefinition =
+  | TableLauncherPhysicalCarrier3DDefinition
+  | TableLauncherObservationSpine3DDefinition
+  | TableLauncherHandoffSeam3DDefinition;
 
 export interface TableLauncherPlunger3DDefinition {
   tag: string;
@@ -266,10 +303,8 @@ export interface TableLauncherPlunger3DDefinition {
 
 export interface TableLauncher3DDefinition {
   plunger: TableLauncherPlunger3DDefinition;
-  walls: readonly TableLauncherWallSection3DDefinition[];
-  guideRails: readonly TableLauncherGuideRail3DDefinition[];
+  carriers: readonly TableLauncherCarrier3DDefinition[];
   sensors: readonly TableLauncherSensor3DDefinition[];
-  travelRoutes?: readonly TableLauncherTravelRoute3DDefinition[];
   ballRestZ: number;
 }
 

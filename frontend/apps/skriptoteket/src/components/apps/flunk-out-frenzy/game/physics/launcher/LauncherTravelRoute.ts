@@ -7,7 +7,8 @@
  */
 
 import type {
-  TableLauncherTravelRoute3DDefinition,
+  TableLauncherHandoffSeam3DDefinition,
+  TableLauncherObservationSpine3DDefinition,
   TablePoint3D,
 } from "../../table/tableDefinitionTypes";
 import type { LauncherChainBallSnapshot } from "../launcherChain3d";
@@ -16,9 +17,9 @@ import type { ActiveTravelRoute, LauncherContext } from "./LauncherContext";
 export function resolveTravelRoute(
   ctx: LauncherContext,
   chargeRatio: number,
-): TableLauncherTravelRoute3DDefinition | null {
-  const routes = ctx.launcher.threeD.travelRoutes;
-  if (!routes || routes.length === 0) {
+): TableLauncherObservationSpine3DDefinition | null {
+  const routes = resolveObservationSpines(ctx);
+  if (routes.length === 0) {
     return null;
   }
 
@@ -34,7 +35,7 @@ export function resolveTravelRoute(
 }
 
 export function buildActiveTravelRoute(
-  route: TableLauncherTravelRoute3DDefinition,
+  route: TableLauncherObservationSpine3DDefinition,
   releaseSpeed: number,
 ): ActiveTravelRoute {
   const cumulativeDistances = buildCumulativeDistances(route.path);
@@ -80,6 +81,7 @@ export function samplePointAlongTravelRoute(
 
   const clamped = Math.min(Math.max(distance, 0), totalDistance);
   for (let index = 1; index < path.length; index += 1) {
+    const segmentStartDistance = cumulativeDistances[index - 1];
     const segmentEndDistance = cumulativeDistances[index];
     if (clamped > segmentEndDistance && index < path.length - 1) {
       continue;
@@ -136,8 +138,9 @@ export function advanceTravelRoute(
     return null;
   }
 
-  const nextRouteTag = ctx.activeTravelRoute.route.nextRouteTag;
-  if (nextRouteTag) {
+  const nextRouteTag = ctx.activeTravelRoute.route.nextCarrierTag;
+  const handoffSeam = resolveHandoffSeamByTag(ctx, nextRouteTag);
+  if (!handoffSeam) {
     const seamFrom =
       ctx.activeTravelRoute.route.path[
         ctx.activeTravelRoute.route.path.length - 1
@@ -172,22 +175,13 @@ export function advanceTravelRoute(
     return null;
   }
 
-  const handoffZ =
-    ctx.activeTravelRoute.route.handoffZ ?? ctx.launcher.threeD.ballRestZ;
-  const handoffVelocity = ctx.activeTravelRoute.route.handoffVelocity;
-  if (!handoffVelocity) {
-    throw new Error(
-      `Launcher travel route "${ctx.activeTravelRoute.route.tag}" is missing terminal handoff velocity.`,
-    );
-  }
-
   return {
     position: {
-      x: nextPoint.x,
-      y: nextPoint.y,
-      z: handoffZ,
+      x: handoffSeam.anchor.x,
+      y: handoffSeam.anchor.y,
+      z: handoffSeam.handoffZ,
     },
-    velocity: handoffVelocity,
+    velocity: handoffSeam.handoffVelocity,
   };
 }
 
@@ -207,7 +201,7 @@ export function resolveTravelRouteVelocity(
 }
 
 export function resolveObservedTravelRouteProgressSpeed(
-  route: TableLauncherTravelRoute3DDefinition,
+  route: TableLauncherObservationSpine3DDefinition,
   velocity: { x: number; y: number; z: number },
 ): number {
   const cumulativeDistances = buildCumulativeDistances(route.path);
@@ -271,12 +265,33 @@ function normalizeTravelRouteVector(
 export function resolveTravelRouteByTag(
   ctx: LauncherContext,
   tag: string,
-): TableLauncherTravelRoute3DDefinition {
-  const route = ctx.launcher.threeD.travelRoutes?.find(
+): TableLauncherObservationSpine3DDefinition {
+  const route = resolveObservationSpines(ctx).find(
     (candidate) => candidate.tag === tag,
   );
   if (!route) {
     throw new Error(`Launcher travel route "${tag}" is not defined.`);
   }
   return route;
+}
+
+function resolveObservationSpines(
+  ctx: LauncherContext,
+): readonly TableLauncherObservationSpine3DDefinition[] {
+  return ctx.launcher.threeD.carriers.filter((carrier) => {
+    return carrier.kind === "observation_spine";
+  }) as readonly TableLauncherObservationSpine3DDefinition[];
+}
+
+function resolveHandoffSeamByTag(
+  ctx: LauncherContext,
+  tag: string,
+): TableLauncherHandoffSeam3DDefinition | null {
+  const carrier = ctx.launcher.threeD.carriers.find((candidate) => {
+    return candidate.tag === tag && candidate.kind === "handoff_seam";
+  });
+  if (!carrier || carrier.kind !== "handoff_seam") {
+    return null;
+  }
+  return carrier;
 }

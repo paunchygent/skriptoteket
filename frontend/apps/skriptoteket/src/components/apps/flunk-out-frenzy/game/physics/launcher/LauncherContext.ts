@@ -2,7 +2,7 @@ import RAPIER3D from "@dimforge/rapier3d-compat";
 import type {
   TableBallDefinition,
   TableLauncherDefinition,
-  TableLauncherTravelRoute3DDefinition,
+  TableLauncherObservationSpine3DDefinition,
   TablePoint3D,
 } from "../../table/tableDefinitionTypes";
 import type {
@@ -12,7 +12,7 @@ import type {
 } from "../physicsTypes";
 
 export interface ActiveTravelRoute {
-  route: TableLauncherTravelRoute3DDefinition;
+  route: TableLauncherObservationSpine3DDefinition;
   cumulativeDistances: readonly number[];
   totalDistance: number;
   distance: number;
