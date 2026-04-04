@@ -145,6 +145,19 @@ describe("ClassroomPlannerView", () => {
     window.history.replaceState(null, "");
   });
 
+  it("keeps a stable centered desktop shell when mounted inside a flex host", () => {
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        plugins: [createPinia()],
+      },
+    });
+
+    expect(wrapper.classes()).toContain("w-full");
+    expect(wrapper.classes()).toContain("max-w-[90rem]");
+    expect(wrapper.classes()).toContain("self-center");
+    expect(wrapper.classes()).not.toContain("mx-auto");
+  });
+
   it("opens straight into the overview-first workspace using the resumable draft roster", async () => {
     const workspaceSummary: ClassWorkspaceSummary = {
       roster: { id: "roster-1", name: "SA24D", student_count: 1 },

@@ -157,6 +157,7 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     await harness.getState().importGuestWorkspace();
 
     expect(guestStorage.clearCurrentSnapshot).toHaveBeenCalledOnce();
+    expect(harness.getState().plannerRefreshKey.value).toBe(1);
     expect(harness.getState().gateState.value).toBe("allowed");
     expect(harness.getState().snapshot.value).toBeNull();
     expect(harness.getState().lastReceipt.value?.mode).toBe("commit");
@@ -197,7 +198,9 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     expect(harness.getState().shouldShowPrompt.value).toBe(true);
     expect(harness.getState().snapshot.value?.snapshot_id).toBe("guest-snapshot-1");
     expect(harness.getState().previewReceipt.value?.conflicted).toHaveLength(1);
-    expect(harness.getState().errorMessage.value).toContain("konflikt");
+    expect(harness.getState().errorMessage.value).toBe(
+      "Allt gick inte att spara. Det som blev kvar finns fortfarande i den här webbläsaren.",
+    );
     expect(harness.getState().lastReceipt.value).toBeNull();
   });
 

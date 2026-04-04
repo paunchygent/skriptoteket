@@ -156,7 +156,7 @@ describe("ClassroomPlannerEntryView", () => {
     expect(wrapper.find("[data-test='live-classroom-planner']").exists()).toBe(true);
   });
 
-  it("shows the authenticated guest-upgrade prompt before booting the planner", async () => {
+  it("shows the authenticated guest-upgrade prompt as a modal over the live planner", async () => {
     guestUpgradeMocks.shouldShowPrompt = true;
     guestUpgradeMocks.summary = {
       snapshot_id: "guest-snapshot-1",
@@ -179,7 +179,7 @@ describe("ClassroomPlannerEntryView", () => {
     });
 
     expect(wrapper.find("[data-test='guest-upgrade-prompt']").exists()).toBe(true);
-    expect(wrapper.find("[data-test='live-classroom-planner']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='live-classroom-planner']").exists()).toBe(true);
 
     await wrapper.get("[data-test='guest-upgrade-import']").trigger("click");
     await wrapper.get("[data-test='guest-upgrade-postpone']").trigger("click");

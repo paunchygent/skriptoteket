@@ -99,6 +99,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md`
 - ST-32-06 canceled legacy checkpoint-compatibility planning stub:
   `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
+- ST-32-06 public Klassrumskartan demo capability matrix + browser-workspace adoption:
+  `docs/backlog/prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md`
+- ST-29-11 desktop-first planner width stability + shrink-to-fit remediation:
+  `docs/backlog/prs/pr-0224-st-29-11-desktop-first-planner-width-stability-and-shrink-to-fit-remediation.md`
+- ST-29-11 desktop-first planner toolbar priority + overflow hardening:
+  `docs/backlog/prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:

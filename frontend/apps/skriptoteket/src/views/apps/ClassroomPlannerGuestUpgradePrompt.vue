@@ -10,7 +10,7 @@
 import type { ClassroomPlannerGuestUpgradeReceipt } from "./classroomPlannerGuestUpgradeApi";
 import type { ClassroomPlannerGuestSnapshotSummary } from "./classroomPlannerGuestSnapshot";
 
-defineProps<{
+const props = defineProps<{
   summary: ClassroomPlannerGuestSnapshotSummary | null;
   previewReceipt: ClassroomPlannerGuestUpgradeReceipt | null;
   errorMessage: string | null;
@@ -21,136 +21,114 @@ defineEmits<{
   postpone: [];
   discard: [];
 }>();
+
+function formatCount(count: number, singular: string, plural: string): string | null {
+  if (count <= 0) {
+    return null;
+  }
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function joinHumanList(parts: string[]): string {
+  if (parts.length === 0) {
+    return "";
+  }
+  if (parts.length === 1) {
+    return parts[0];
+  }
+  if (parts.length === 2) {
+    return `${parts[0]} och ${parts[1]}`;
+  }
+  return `${parts.slice(0, -1).join(", ")} och ${parts.at(-1)}`;
+}
+
+function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null): string {
+  if (!summary) {
+    return "Tidigare arbete finns att föra över till ditt konto.";
+  }
+
+  const parts = [
+    formatCount(summary.roster_count, "klass", "klasser"),
+    formatCount(summary.template_count, "klassrum", "klassrum"),
+    summary.smart_rule_set_count > 0 ? "regler" : null,
+    formatCount(
+      Number(summary.has_grouping_draft) + Number(summary.has_seating_draft),
+      "utkast",
+      "utkast",
+    ),
+  ].filter((part): part is string => part !== null);
+
+  if (parts.length === 0) {
+    return "Tidigare arbete finns att föra över till ditt konto.";
+  }
+
+  return `${joinHumanList(parts)} finns att föra över till ditt konto.`;
+}
 </script>
 
 <template>
-  <section class="mx-auto flex max-w-4xl flex-col gap-6 border border-navy bg-white p-6 shadow-brutal-md md:p-8">
-    <div class="space-y-3">
-      <p class="text-xs font-semibold uppercase tracking-[0.22em] text-burgundy">
-        Lokal gästarbetsyta hittad
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-navy/35 p-4 backdrop-blur-[1px]"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="guest-upgrade-title"
+    data-test="guest-upgrade-modal"
+  >
+    <section class="w-full max-w-[34rem] border border-navy bg-white p-6 shadow-brutal-md md:p-7">
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-burgundy">
+          Arbete från gästläge hittat
+        </p>
+        <div class="space-y-2">
+          <h1
+            id="guest-upgrade-title"
+            class="font-serif text-3xl text-navy"
+          >
+            Vill du importera det?
+          </h1>
+          <p
+            data-test="guest-upgrade-summary-line"
+            class="text-base leading-7 text-navy/78"
+          >
+            {{ buildSummaryLine(props.summary) }}
+          </p>
+        </div>
+      </div>
+
+      <p
+        v-if="errorMessage"
+        data-test="guest-upgrade-error-message"
+        class="mt-4 text-sm leading-6 text-burgundy"
+      >
+        {{ errorMessage }}
       </p>
-      <div class="space-y-2">
-        <h1 class="font-serif text-3xl text-navy md:text-4xl">
-          Importera till ditt konto?
-        </h1>
-        <p class="max-w-2xl text-sm leading-6 text-navy/80 md:text-base">
-          Den här webbläsaren har sparad Klassrumskartan-data från gästläget. Du kan
-          importera den nu, vänta till senare eller rensa den lokala gästarbetsytan.
-        </p>
-      </div>
-    </div>
 
-    <div
-      v-if="errorMessage"
-      class="border border-error/30 bg-white px-4 py-3 text-sm text-error"
-    >
-      {{ errorMessage }}
-    </div>
-
-    <dl
-      v-if="summary"
-      class="grid gap-3 border border-navy/15 bg-canvas p-4 text-sm text-navy/80 md:grid-cols-2"
-    >
-      <div>
-        <dt class="font-semibold text-navy">
-          Snapshot-id
-        </dt>
-        <dd class="break-all font-mono text-xs">
-          {{ summary.snapshot_id }}
-        </dd>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          class="btn-primary"
+          data-test="guest-upgrade-import-button"
+          @click="$emit('import')"
+        >
+          Importera
+        </button>
+        <button
+          type="button"
+          class="btn-ghost"
+          data-test="guest-upgrade-postpone-button"
+          @click="$emit('postpone')"
+        >
+          Inte nu
+        </button>
+        <button
+          type="button"
+          class="btn-ghost text-burgundy"
+          data-test="guest-upgrade-discard-button"
+          @click="$emit('discard')"
+        >
+          Kasta
+        </button>
       </div>
-      <div>
-        <dt class="font-semibold text-navy">
-          Går ut
-        </dt>
-        <dd>{{ summary.expires_at }}</dd>
-      </div>
-      <div>
-        <dt class="font-semibold text-navy">
-          Roster / mallar
-        </dt>
-        <dd>{{ summary.roster_count }} / {{ summary.template_count }}</dd>
-      </div>
-      <div>
-        <dt class="font-semibold text-navy">
-          Regler / checkpoints
-        </dt>
-        <dd>{{ summary.smart_rule_set_count }} / {{ summary.checkpoint_count }}</dd>
-      </div>
-      <div>
-        <dt class="font-semibold text-navy">
-          Grupputkast
-        </dt>
-        <dd>{{ summary.has_grouping_draft ? "Ja" : "Nej" }}</dd>
-      </div>
-      <div>
-        <dt class="font-semibold text-navy">
-          Sittutkast
-        </dt>
-        <dd>{{ summary.has_seating_draft ? "Ja" : "Nej" }}</dd>
-      </div>
-    </dl>
-
-    <div
-      v-if="previewReceipt"
-      class="grid gap-4 md:grid-cols-4"
-    >
-      <article class="border border-success/30 bg-canvas p-4 shadow-brutal-sm">
-        <h2 class="font-serif text-lg text-navy">
-          Skapas
-        </h2>
-        <p class="mt-2 text-2xl text-navy">
-          {{ previewReceipt.created.length }}
-        </p>
-      </article>
-      <article class="border border-navy/20 bg-canvas p-4 shadow-brutal-sm">
-        <h2 class="font-serif text-lg text-navy">
-          Återanvänds
-        </h2>
-        <p class="mt-2 text-2xl text-navy">
-          {{ previewReceipt.reused.length }}
-        </p>
-      </article>
-      <article class="border border-burgundy/20 bg-canvas p-4 shadow-brutal-sm">
-        <h2 class="font-serif text-lg text-navy">
-          Hoppar över
-        </h2>
-        <p class="mt-2 text-2xl text-navy">
-          {{ previewReceipt.skipped.length }}
-        </p>
-      </article>
-      <article class="border border-error/20 bg-canvas p-4 shadow-brutal-sm">
-        <h2 class="font-serif text-lg text-navy">
-          Konflikter
-        </h2>
-        <p class="mt-2 text-2xl text-navy">
-          {{ previewReceipt.conflicted.length }}
-        </p>
-      </article>
-    </div>
-
-    <div class="flex flex-wrap gap-3">
-      <button
-        type="button"
-        class="btn-primary"
-        @click="$emit('import')"
-      >
-        Importera nu
-      </button>
-      <button
-        type="button"
-        class="btn-ghost"
-        @click="$emit('postpone')"
-      >
-        Inte nu
-      </button>
-      <button
-        type="button"
-        class="btn-ghost"
-        @click="$emit('discard')"
-      >
-        Rensa lokal gästarbetsyta
-      </button>
-    </div>
-  </section>
+    </section>
+  </div>
 </template>

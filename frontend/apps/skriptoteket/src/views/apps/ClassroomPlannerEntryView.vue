@@ -44,6 +44,7 @@ const authenticatedGuestUpgradeLastReceipt = authenticatedGuestUpgrade.lastRecei
 const authenticatedGuestUpgradeSummary = authenticatedGuestUpgrade.summary;
 const authenticatedGuestUpgradeIsBlocking = authenticatedGuestUpgrade.isBlocking;
 const authenticatedGuestUpgradeShouldShowPrompt = authenticatedGuestUpgrade.shouldShowPrompt;
+const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshKey;
 
 function openLoginModal(): void {
   loginModal.open(authenticatedRoute.value);
@@ -53,13 +54,84 @@ function openLoginModal(): void {
 <template>
   <section
     v-if="props.hostMode === 'authenticated'"
-    class="mx-auto flex max-w-4xl flex-col gap-6"
+    class="flex flex-col gap-6"
   >
+    <section
+      v-if="authenticatedGuestUpgradeLastReceipt"
+      data-test="guest-upgrade-result-summary"
+      class="mx-auto w-full max-w-4xl border border-success/30 bg-canvas p-6 shadow-brutal-md"
+    >
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-success">
+            Inloggad import klar
+          </p>
+          <div class="space-y-1">
+            <h2 class="font-serif text-2xl text-navy">
+              Gästarbetsytan importerades till ditt konto
+            </h2>
+            <p class="text-sm leading-6 text-navy/80">
+              Snapshot <span class="font-mono text-xs">{{ authenticatedGuestUpgradeLastReceipt.snapshot_id }}</span>
+              är nu överförd. Sammanfattningen nedan visar vad som skapades eller återanvändes.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-ghost"
+          data-test="guest-upgrade-result-dismiss"
+          @click="authenticatedGuestUpgrade.dismissLastReceiptSummary"
+        >
+          Stäng sammanfattning
+        </button>
+      </div>
+
+      <div class="mt-4 grid gap-4 md:grid-cols-4">
+        <article class="border border-success/30 bg-white p-4 shadow-brutal-sm">
+          <h3 class="font-serif text-lg text-navy">
+            Skapades
+          </h3>
+          <p class="mt-2 text-2xl text-navy">
+            {{ authenticatedGuestUpgradeLastReceipt.created.length }}
+          </p>
+        </article>
+        <article class="border border-navy/20 bg-white p-4 shadow-brutal-sm">
+          <h3 class="font-serif text-lg text-navy">
+            Återanvändes
+          </h3>
+          <p class="mt-2 text-2xl text-navy">
+            {{ authenticatedGuestUpgradeLastReceipt.reused.length }}
+          </p>
+        </article>
+        <article class="border border-burgundy/20 bg-white p-4 shadow-brutal-sm">
+          <h3 class="font-serif text-lg text-navy">
+            Hoppades över
+          </h3>
+          <p class="mt-2 text-2xl text-navy">
+            {{ authenticatedGuestUpgradeLastReceipt.skipped.length }}
+          </p>
+        </article>
+        <article class="border border-error/20 bg-white p-4 shadow-brutal-sm">
+          <h3 class="font-serif text-lg text-navy">
+            Konflikter
+          </h3>
+          <p class="mt-2 text-2xl text-navy">
+            {{ authenticatedGuestUpgradeLastReceipt.conflicted.length }}
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <ClassroomPlannerView :key="authenticatedPlannerRefreshKey" />
+
     <div
       v-if="authenticatedGuestUpgradeIsBlocking"
-      class="border border-navy bg-white px-6 py-5 text-sm text-navy/80 shadow-brutal-md"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-navy/30 p-4 backdrop-blur-[1px]"
+      data-test="guest-upgrade-blocking-modal"
     >
-      Kontrollerar lokal gästarbetsyta för möjlig inloggad import...
+      <div class="w-full max-w-[28rem] border border-navy bg-white px-6 py-5 text-sm text-navy/80 shadow-brutal-md">
+        Kontrollerar om det finns tidigare arbete i den här webbläsaren...
+      </div>
     </div>
 
     <ClassroomPlannerGuestUpgradePrompt
@@ -71,79 +143,6 @@ function openLoginModal(): void {
       @import="authenticatedGuestUpgrade.importGuestWorkspace"
       @postpone="authenticatedGuestUpgrade.postponeGuestWorkspace"
     />
-
-    <div
-      v-else
-      class="flex flex-col gap-6"
-    >
-      <section
-        v-if="authenticatedGuestUpgradeLastReceipt"
-        data-test="guest-upgrade-result-summary"
-        class="border border-success/30 bg-canvas p-6 shadow-brutal-md"
-      >
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div class="space-y-2">
-            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-success">
-              Inloggad import klar
-            </p>
-            <div class="space-y-1">
-              <h2 class="font-serif text-2xl text-navy">
-                Gästarbetsytan importerades till ditt konto
-              </h2>
-              <p class="text-sm leading-6 text-navy/80">
-                Snapshot <span class="font-mono text-xs">{{ authenticatedGuestUpgradeLastReceipt.snapshot_id }}</span>
-                är nu överförd. Sammanfattningen nedan visar vad som skapades eller återanvändes.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="btn-ghost"
-            data-test="guest-upgrade-result-dismiss"
-            @click="authenticatedGuestUpgrade.dismissLastReceiptSummary"
-          >
-            Stäng sammanfattning
-          </button>
-        </div>
-
-        <div class="mt-4 grid gap-4 md:grid-cols-4">
-          <article class="border border-success/30 bg-white p-4 shadow-brutal-sm">
-            <h3 class="font-serif text-lg text-navy">
-              Skapades
-            </h3>
-            <p class="mt-2 text-2xl text-navy">
-              {{ authenticatedGuestUpgradeLastReceipt.created.length }}
-            </p>
-          </article>
-          <article class="border border-navy/20 bg-white p-4 shadow-brutal-sm">
-            <h3 class="font-serif text-lg text-navy">
-              Återanvändes
-            </h3>
-            <p class="mt-2 text-2xl text-navy">
-              {{ authenticatedGuestUpgradeLastReceipt.reused.length }}
-            </p>
-          </article>
-          <article class="border border-burgundy/20 bg-white p-4 shadow-brutal-sm">
-            <h3 class="font-serif text-lg text-navy">
-              Hoppades över
-            </h3>
-            <p class="mt-2 text-2xl text-navy">
-              {{ authenticatedGuestUpgradeLastReceipt.skipped.length }}
-            </p>
-          </article>
-          <article class="border border-error/20 bg-white p-4 shadow-brutal-sm">
-            <h3 class="font-serif text-lg text-navy">
-              Konflikter
-            </h3>
-            <p class="mt-2 text-2xl text-navy">
-              {{ authenticatedGuestUpgradeLastReceipt.conflicted.length }}
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <ClassroomPlannerView />
-    </div>
   </section>
 
   <section

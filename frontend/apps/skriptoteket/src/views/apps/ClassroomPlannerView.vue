@@ -96,7 +96,7 @@ const {
 
 <template>
   <div
-    class="mx-auto max-w-[90rem] px-4 py-4 md:px-6"
+    class="w-full max-w-[90rem] self-center px-4 py-4 md:px-6"
     :class="currentScreen === 'planner' ? 'flex min-h-full flex-col gap-6' : 'space-y-6'"
   >
     <header class="border-b border-navy pb-4">

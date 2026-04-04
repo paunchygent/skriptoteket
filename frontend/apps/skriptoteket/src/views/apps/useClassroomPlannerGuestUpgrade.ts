@@ -23,11 +23,10 @@ type ClassroomPlannerGuestStorageAdapter = ReturnType<typeof createClassroomPlan
 type GuestUpgradeGateState = "allowed" | "checking" | "previewing" | "prompt" | "committing";
 
 function buildConflictErrorMessage(receipt: ClassroomPlannerGuestUpgradeReceipt): string {
-  const conflictCount = receipt.conflicted.length;
-  if (conflictCount === 1) {
-    return "Importen blev inte klar. 1 konflikt behöver hanteras innan den lokala gästarbetsytan kan rensas.";
+  if (receipt.conflicted.length === 0) {
+    return "Allt gick inte att spara.";
   }
-  return `Importen blev inte klar. ${conflictCount} konflikter behöver hanteras innan den lokala gästarbetsytan kan rensas.`;
+  return "Allt gick inte att spara. Det som blev kvar finns fortfarande i den här webbläsaren.";
 }
 
 export function useClassroomPlannerGuestUpgrade(options?: {
@@ -44,6 +43,7 @@ export function useClassroomPlannerGuestUpgrade(options?: {
   const previewReceipt = ref<ClassroomPlannerGuestUpgradeReceipt | null>(null);
   const lastReceipt = ref<ClassroomPlannerGuestUpgradeReceipt | null>(null);
   const errorMessage = ref<string | null>(null);
+  const plannerRefreshKey = ref(0);
 
   function resolveGuestStorage(): ClassroomPlannerGuestStorageAdapter {
     if (!guestStorage) {
@@ -131,6 +131,7 @@ export function useClassroomPlannerGuestUpgrade(options?: {
       snapshot.value = null;
       summary.value = null;
       previewReceipt.value = null;
+      plannerRefreshKey.value += 1;
       gateState.value = "allowed";
     } catch (error: unknown) {
       gateState.value = "prompt";
@@ -168,6 +169,7 @@ export function useClassroomPlannerGuestUpgrade(options?: {
     previewReceipt,
     lastReceipt,
     errorMessage,
+    plannerRefreshKey,
     isBlocking: computed(
       () =>
         enabled &&
