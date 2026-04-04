@@ -50,16 +50,19 @@ over critical limitations in the current physics and modeling world.
 
 ## Planned PR slices
 
-1. [PR-0217: Flunk-Out Frenzy carrier-role schema, observation-spine contract, and launcher-world ownership rules](../prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md)
-2. [PR-0218: Flunk-Out Frenzy launcher-world carrier compiler and donor overhead collider foundation](../prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md)
-3. [PR-0219: Flunk-Out Frenzy physical carrier observer shadow mode and cut-over readiness gate](../prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md)
+1. [PR-0220: Flunk-Out Frenzy EPIC-33 offline review packet and pre-implementation decision ask](../prs/pr-0220-flunk-out-frenzy-epic-33-offline-review-packet-and-pre-implementation-decision-ask.md)
+2. [PR-0217: Flunk-Out Frenzy carrier-role schema, observation-spine contract, and launcher-world ownership rules](../prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md)
+3. [PR-0218: Flunk-Out Frenzy launcher-world carrier compiler and donor overhead collider foundation](../prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md)
+4. [PR-0219: Flunk-Out Frenzy physical carrier observer shadow mode and cut-over readiness gate](../prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md)
 
-Dependency chain: `PR-0217 -> PR-0218 -> PR-0219`
+Dependency chain: `PR-0220 -> PR-0217 -> PR-0218 -> PR-0219`
 
 Only after this story is complete may the physical cut-over tasks resume.
 
 ## Execution strategy
 
+- `PR-0220` asks the offline reviewer to assess the approved implementation
+  order and advise on the remaining pre-implementation uncertainties.
 - `PR-0217` defines the model.
 - `PR-0218` compiles/builds the model into launcher-world carrier surfaces.
 - `PR-0219` proves the observer/governance layer needed before transport

@@ -10,6 +10,7 @@ stories:
   - "ST-33-01"
 tags: ["frontend", "games", "launcher", "physics", "schema", "compiler", "truth"]
 dependencies:
+  - "PR-0220"
   - "PR-0216"
   - "REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04"
 acceptance_criteria:

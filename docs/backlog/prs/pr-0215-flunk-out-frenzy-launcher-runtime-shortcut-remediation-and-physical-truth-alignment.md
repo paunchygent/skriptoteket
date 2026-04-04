@@ -53,6 +53,23 @@ This slice is now explicitly a **runtime-honesty checkpoint**:
 3. the only remaining bounded heuristic is the terminal board handoff already
    declared in the donor spec
 
+## Checkpoint definition
+
+`PR-0215` is a bounded checkpoint whose purpose is to stabilize the current
+truth surface and keep the remaining runtime shortcuts visible.
+
+That means this slice may:
+
+- remove or reduce launcher-runtime overclaim when direct runtime evidence can
+  support the change
+- preserve the `PR-0213` / `PR-0214` proof stack as the canonical decision
+  surface
+- convert unresolved transport behavior into explicit blocked debt instead of
+  renaming it into carrier truth
+
+That also means this slice must stop once it has made the current truth surface
+honest enough to show what still remains unresolved.
+
 ## Non-goals
 
 - No proof-surface weakening or telemetry reconstruction.
@@ -115,6 +132,20 @@ made a broader structural point explicit:
 
 This PR therefore remains valid only as a bounded runtime-honesty checkpoint.
 Any further cut-over continuation is blocked on `PR-0217` through `PR-0219`.
+
+## Hard stop conditions
+
+Stop `PR-0215` and route the work into `EPIC-33` / `ST-33-01` if truthful
+runtime remediation requires any of the following:
+
+- carrier-role schema or observation-spine contract changes
+- launcher-world ownership redefinition
+- donor overhead collider conversion or compiler-owned carrier output
+- observer shadow-mode or cut-over readiness-gate work
+- baseline repin, drift-threshold widening, or other `PR-0214` softening
+
+If any of those become necessary, this PR has reached its intended checkpoint
+boundary and should record the blocker rather than absorb the next lane.
 
 ## Evidence-locked shortcut targets
 
@@ -300,3 +331,14 @@ Required artifact review after the live gate:
 - If truthful runtime remediation proves blocked by geometry or topology that
   this slice cannot change safely, stop and open a separate follow-up PR rather
   than weakening the contract or restoring hidden shortcuts.
+
+## Definition of done
+
+`PR-0215` is done when all of the following are true:
+
+- the current truth surface still reports launcher behavior honestly through the
+  focused tests, canonical live trace, and manual launcher matrix gate
+- any remaining shortcut or transport debt is named explicitly as blocked debt
+  instead of being narrated as a finished physical rail
+- the work has stopped short of carrier schema, donor collider, ownership, and
+  cut-over governance concerns now assigned to `EPIC-33` / `ST-33-01`

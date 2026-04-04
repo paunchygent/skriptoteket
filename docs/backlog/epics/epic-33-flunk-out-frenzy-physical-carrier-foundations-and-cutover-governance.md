@@ -67,5 +67,8 @@ risks:
 - `REV-EPIC-33` is now approved, so this corrective foundation epic is active.
 - `ST-33-01` is the approved prerequisite before any further physical cut-over
   continuation resumes.
+- `PR-0220` is now the final offline-review and decision packet before
+  implementation starts.
 - `PR-0217`, `PR-0218`, and `PR-0219` define the approved schema, compiler, and
-  observer-governance sequence for the carrier-model foundation lane.
+  observer-governance sequence for the carrier-model foundation lane after that
+  final review checkpoint.
