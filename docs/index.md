@@ -37,10 +37,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
 - Competitive games + Flunk-Out Frenzy reference:
   `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
+- Flunk-Out Frenzy physical rail architect direction:
+  `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`
 - Flunk-Out Frenzy mechanics-port foundation story:
   `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`
 - Flunk-Out Frenzy donor-topology corrective story:
   `docs/backlog/stories/story-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md`
+- Flunk-Out Frenzy physical-carrier foundation story:
+  `docs/backlog/stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 - Flunk-Out Frenzy mechanics-port PR backlog starts here:
   `docs/backlog/prs/pr-0188-flunk-out-frenzy-machine-event-contract-expansion-and-physicsworld-decomposition.md`
 - Flunk-Out Frenzy mechanics reassessment gate:
@@ -81,6 +85,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md`
 - Flunk-Out Frenzy physical rail carrier semantics and architect guidance packet:
   `docs/backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md`
+- Flunk-Out Frenzy carrier-role schema and observation-spine contract:
+  `docs/backlog/prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md`
+- Flunk-Out Frenzy launcher-world carrier compiler foundation:
+  `docs/backlog/prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md`
+- Flunk-Out Frenzy physical carrier observer shadow gate:
+  `docs/backlog/prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md`
 - ST-32-04 guest snapshot contract + storage foundation:
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - Seating continuity follow-up:
@@ -241,6 +251,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-31-flappy-birds-curated-app.md`
 - Proposed Flappy Birds curated-app review:
   `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`
+- Approved Flunk-Out Frenzy physical-carrier foundations review:
+  `docs/backlog/reviews/review-epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 - Same-shell transition continuity planning slice:
   `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
 - Same-shell transition continuity implementation slice:
@@ -255,6 +267,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
 - Proposed EPIC: `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
+- Active EPIC: `docs/backlog/epics/epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 - Riskunderlag praxis (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - Hazards↔shortcards policy (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`
@@ -406,6 +419,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-23-group-seating-studio.md`
 - `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
 - `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
+- `docs/backlog/epics/epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 - `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
@@ -435,6 +449,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
 - `docs/backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md`
 - `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`
+- `docs/backlog/stories/story-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md`
+- `docs/backlog/stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 - `docs/backlog/stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md`
 - `docs/backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md`
 - `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`
@@ -495,6 +511,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 - `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`
+- `docs/backlog/reviews/review-epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 
 ### Backlog Sprints
 
@@ -680,6 +697,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0214-flunk-out-frenzy-launch-trace-operational-summary-and-decision-gate.md`
 - `docs/backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md`
 - `docs/backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md`
+- `docs/backlog/prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md`
+- `docs/backlog/prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md`
+- `docs/backlog/prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`
@@ -939,6 +959,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
+- `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`
 - `docs/reference/ref-ai-completion-architecture.md`
 - `docs/reference/ref-ai-inline-completion-harness.md`
 - `docs/reference/ref-ai-script-generation-kb-llm.md`

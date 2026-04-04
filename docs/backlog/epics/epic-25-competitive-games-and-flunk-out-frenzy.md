@@ -5,7 +5,7 @@ title: "Curated app family: competitive games foundations and Flunk-Out Frenzy"
 status: active
 owners: "agents"
 created: 2026-03-22
-updated: 2026-04-03
+updated: 2026-04-04
 outcome: "Signed-in users can open Flunk-Out Frenzy as a bespoke curated app, play a polished local browser-based experience inside the existing Skriptoteket SPA, deepen the local runtime with richer pinball-like mechanics without collapsing architecture boundaries, and retain the backend seams required to add lightweight global high scores without rewriting the app contract."
 dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 ---
@@ -62,13 +62,15 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
   foundation tranche, `PR-0191` is a formal reassessment and go/no-go
   checkpoint, and only then do the higher-risk mechanics slices begin.
 - **Board corrective gate**: `ST-25-06` / `PR-0198` track the donor-topology
-  rebuild needed before the higher-risk mechanics slices can continue safely on
-  the new compiled table seam, `PR-0199` owns trigger/gate and lane-region
-  semantic fidelity, `PR-0201` owns the lower shooter-corridor `Wall263`
-  de-overlap correction, `PR-0200` owns the Rapier 3D launcher-chain
-  migration after that geometry fix, `PR-0202` owns the full-board
-  donor-carrier mapping target including above-playfield metal rails, and
-  `PR-0203` owns donor-route elevated travel plus left-handoff mechanics.
+  rebuild needed before higher-risk mechanics slices can continue safely on the
+  compiled table seam, `PR-0199` owns trigger/gate and lane-region semantic
+  fidelity, and `PR-0201` owns the lower shooter-corridor `Wall263`
+  de-overlap correction.
+- **Physical-carrier foundation gate**: further continuation of `PR-0200`,
+  `PR-0202`, and `PR-0203` is now blocked on `EPIC-33` /
+  `ST-33-01`, which owns the carrier-role schema, launcher-world ownership
+  rules, donor overhead collider foundation, and observer/cut-over governance
+  required by the architect direction.
 - Cross-cutting sequencing beyond this epic is tracked in
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`.
 
@@ -105,6 +107,21 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 - `PR-0203` now explicitly owns runtime traversal/handoff along donor elevated
   rail carriers (`RampS3/S001/S002/S4` + `Wall268` descent) so launcher flow is
   not left to perimeter bounce artifacts.
+
+## Implementation Summary (as of 2026-04-04)
+
+- The architect direction in
+  `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`
+  now governs any future launcher physical-rail cut-over.
+- `PR-0215` is tightened to a runtime-honesty checkpoint only; it is no longer
+  the implied vehicle for full physical-carrier implementation.
+- New `EPIC-33` / `ST-33-01` now slot ahead of further cut-over work and own
+  the carrier-role schema, launcher-world ownership model, donor overhead
+  collider foundation, and observer/cut-over readiness gate.
+- `PR-0200`, `PR-0202`, and `PR-0203` remain part of the longer launcher
+  corrective lane, but their further continuation is now explicitly blocked on
+  that foundation so no slotted task continues under stale route-driven
+  assumptions.
 
 ## Implementation Summary (as of 2026-03-23)
 

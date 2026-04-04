@@ -2,10 +2,10 @@
 type: pr
 id: PR-0202
 title: "Flunk-Out Frenzy: full-board donor 3D carrier mapping and elevated rail fidelity"
-status: in_progress
+status: blocked
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 stories:
   - "ST-25-06"
 tags: ["frontend", "games", "physics", "table-authoring", "donor-fidelity", "3d"]
@@ -14,6 +14,7 @@ dependencies:
   - "PR-0199"
   - "PR-0200"
   - "PR-0201"
+  - "ST-33-01"
 acceptance_criteria:
   - "Given ST-25-06 now uses the VPW donor as geometry truth, when this task is complete, then the full board-path carrier map (perimeter, lane forks, shooter chain, upper guides) is represented as explicit donor-backed 3D carriers instead of mixed legacy/local approximations."
   - "Given the donor table includes above-playfield metal/wire rail paths, when this task is complete, then those rails are represented as first-class donor-backed 3D carrier definitions with source provenance and elevation semantics rather than flattened ad hoc 2D overlays."
@@ -46,6 +47,19 @@ Flunk-Out Frenzy today:
 - launcher/right receiving chain: donor-backed and continuity-safe
 - above-playfield metal/wire rails: donor-backed 3D carrier definitions
 - compile + render projection from the same carrier truth
+
+## Sequencing correction (2026-04-04)
+
+This PR is now blocked for further continuation by the architect direction in
+`docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`.
+
+Specifically:
+
+- above-playfield donor rails must compile into launcher-world or otherwise
+  explicitly owned physical carriers, not be cut over by flipping current
+  render-first assets in place
+- the carrier-role schema and ownership model from `ST-33-01` must land before
+  this PR resumes deeper physical-fidelity work
 
 ## Non-goals
 
@@ -123,3 +137,5 @@ Manual/live:
 - Elevated donor rail physics remains render-first in this slice (`physics: false`)
   because full donor-faithful multi-height rail travel and handoff mechanics are
   not yet implemented end-to-end for above-playfield gameplay routing.
+- Further continuation is blocked pending `ST-33-01` so the physical carrier
+  cut-over does not outrun its schema/compiler/ownership foundations.

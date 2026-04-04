@@ -5,8 +5,9 @@ title: "Flunk-Out Frenzy VPW donor topology and table-spec rebuild"
 status: in_progress
 owners: "agents"
 created: 2026-04-02
+updated: 2026-04-04
 epic: "EPIC-25"
-dependencies: ["ST-25-05", "PR-0191"]
+dependencies: ["ST-25-05", "PR-0191", "ST-33-01"]
 acceptance_criteria:
   - "Given repeated board-shape failures from locally-invented geometry, when this story is complete, then Flunk-Out Frenzy has a checked-in donor map artifact that captures the VPW whole-board boundary grammar and the parts we intentionally borrow."
   - "Given the compiled pinball-table runtime is now the stable seam, when this story is complete, then `prototypeAlphaTableSpec.ts` is rebuilt from the donor topology while the compiler, rules, and runtime contracts stay intact."
@@ -58,8 +59,14 @@ topology.
     above-playfield metal/wire rails, so board-path fidelity is governed by one
     provenance-explicit donor carrier layer
   - `PR-0203` owns elevated donor rail travel and left-handoff mechanics so the
-    launcher path is runtime-driven by donor route carriers instead of falling
-    back to perimeter bounce behavior
+    launcher path is runtime-driven by donor carriers instead of falling back
+    to perimeter bounce behavior
+  - sequencing correction from
+    `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`:
+    no further continuation of `PR-0200`, `PR-0202`, or `PR-0203` may proceed
+    until `ST-33-01` establishes the carrier-role schema, launcher-world
+    ownership model, and observer/cut-over governance needed to avoid route-
+    driven cut-over shortcuts
   - keep the compiler/runtime seam intact
   - do not port VPX/ROM rule code or editor artifacts
 - Track progress in the linked PR task:

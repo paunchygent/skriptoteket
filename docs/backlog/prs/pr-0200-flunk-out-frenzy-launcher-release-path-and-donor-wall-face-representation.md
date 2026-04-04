@@ -2,10 +2,10 @@
 type: pr
 id: PR-0200
 title: "Flunk-Out Frenzy: Rapier 3D launcher-chain migration"
-status: in_progress
+status: blocked
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 stories:
   - "ST-25-06"
 tags: ["frontend", "games", "physics", "table-authoring", "launcher", "donor-fidelity", "3d"]
@@ -13,6 +13,7 @@ dependencies:
   - "PR-0198"
   - "PR-0199"
   - "PR-0201"
+  - "ST-33-01"
 acceptance_criteria:
   - "Given the current Flunk-Out Frenzy runtime expresses donor launcher flow through a flat impulse-and-solid model, when this task is complete, then the launcher/right-side receiving chain runs on a dedicated Rapier 3D simulation path that can represent donor height, plunger stroke, and wall-face truth directly."
   - "Given the current live board makes donor `Wall34` a false full cap across the shooter path, when this task is complete, then `Wall34`, `Wall95`, `Wall011`, `Wall010`, the `Wall263` right shoulder, `Wall264`, and `Wall018`/`Wall019` are represented in 3D with the donor-authored launcher handoff preserved instead of flattened into plain flat blockers."
@@ -53,6 +54,20 @@ the donor launcher handoff can be expressed honestly:
   `Wall010`, the `Wall263` shoulder, `Wall264`, and `Wall018`/`Wall019`
 - a compiled seam that lets the existing top-down renderer stay intact while
   the launcher chain stops being flattened into false flat blockers
+
+## Sequencing correction (2026-04-04)
+
+This PR is now blocked for further continuation by the architect direction in
+`docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`.
+
+What changed:
+
+- `travelRoutes` can no longer be treated as the motion-owning carrier model
+- carrier-role schema and launcher-world ownership rules must land first under
+  `EPIC-33` / `ST-33-01`
+- any future continuation of this PR must treat route phases as an
+  observation-spine/proof layer over a physical carrier graph rather than as
+  the transport contract itself
 
 ## Hard invariants
 
@@ -96,9 +111,9 @@ the donor launcher handoff can be expressed honestly:
 - Re-express donor `Wall34` and its immediate chain neighbors as truthful 3D
   geometry/faces instead of full false-flat caps. If a donor object needs
   a partial face, height, or non-flat contact surface, model that directly.
-- Author the elevated launcher seam as three chained routes:
-  `overhead -> endpoint-bridge -> descent`, where the bridge path is exactly
-  `[overheadExitAnchor, descentEntryAnchor]` derived from existing donor routes.
+- Preserve the elevated launcher phase chain as three observation-spine phases:
+  `overhead -> endpoint-bridge -> descent`, while physical support/guard/
+  receiver carriers own motion once the foundational carrier work is complete.
 - Keep `PR-0201` geometry correction intact where it remains valid, but delete
   any remaining launcher-local flat shortcut that survives only because the old
   impulse model needed it.

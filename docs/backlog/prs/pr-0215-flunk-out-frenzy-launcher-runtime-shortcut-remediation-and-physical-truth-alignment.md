@@ -14,13 +14,14 @@ dependencies:
   - "PR-0212"
   - "PR-0213"
   - "PR-0214"
+  - "PR-0216"
 acceptance_criteria:
   - "Given route admission currently promotes speed from inferred charge and a hard floor, when this task is complete, then accepted route travel derives from directly observed launcher contact/release state and does not upgrade velocity beyond what runtime evidence supports."
-  - "Given route progression currently advances the ball by direct `setTranslation(...)` and `setLinvel(...)` writes along authored route points, when this task is complete, then launcher corridor travel is no longer represented as free physical truth while still depending on per-step body teleportation."
+  - "Given route progression currently advances the ball by direct `setTranslation(...)` and `setLinvel(...)` writes along authored route points, when this checkpoint is complete, then any remaining transport shortcut is treated as explicit blocked debt rather than being narrated as a completed physical rail."
   - "Given `handoffVelocity` is the only acceptable declared bounded heuristic from `PR-0212`, when this task is complete, then any remaining non-simulated behavior is isolated to the terminal board handoff and is never overstated as continuous route physics."
   - "Given the proof surface is now truthful and operational through `PR-0213` and `PR-0214`, when this task is complete, then the canonical focused tests and live Playwright trace continue to serve as the decision gate for whether runtime remediation actually improved physical truth."
   - "Given automated traces can still mask the known inert-launch false-green risk, when this task is complete, then acceptance remains blocked until a manual launcher matrix check for `rest`, `short`, `medium`, `full`, and `relaunch` is recorded in `.agents/handoff.md` alongside the automated evidence."
-  - "Given this slice owns runtime honesty rather than new proof abstractions, when this task is complete, then no telemetry reconstruction is reintroduced, no donor geometry is redrawn freehand, and no contract weakening is used to make the mechanics debt disappear."
+  - "Given this slice is now a bounded runtime-honesty checkpoint rather than the physical-carrier cut-over itself, when this task is complete, then no new carrier-role schema, donor overhead collider cut-over, or baseline repin is smuggled into the slice."
 ---
 
 ## Problem
@@ -39,21 +40,27 @@ while still depending on speed amplification and kinematic corridor transport.
 
 ## Goal
 
-Remove the hidden launcher-runtime shortcuts while preserving the now-truthful
-proof stack.
+Reduce the launcher-runtime shortcuts enough to expose honest drift and preserve
+the truthful proof stack, without pretending that this slice can complete the
+full physical-carrier conversion on current foundations.
 
-This slice should make the launcher lane honest in runtime terms:
+This slice is now explicitly a **runtime-honesty checkpoint**:
 
 1. accepted route energy comes from observed runtime state, not inferred speed
    promotion
-2. route progression reflects physical corridor behavior rather than per-step
-   body teleportation
+2. remaining route transport debt is surfaced honestly and kept blocked, not
+   renamed into physical truth
 3. the only remaining bounded heuristic is the terminal board handoff already
    declared in the donor spec
 
 ## Non-goals
 
 - No proof-surface weakening or telemetry reconstruction.
+- No physical carrier graph implementation.
+- No new carrier-role schema or launcher-world ownership model work; that now
+  belongs to `EPIC-33` / `ST-33-01`.
+- No donor overhead collider cut-over.
+- No baseline repin.
 - No broad Playwright/summary rewrite beyond what runtime remediation forces the
   truthful trace to report.
 - No donor-map redraw or speculative new launcher topology.
@@ -90,9 +97,24 @@ Reference-but-not-rewrite scope:
 Out of scope:
 
 - new route-contract weakening PR work
-- broad table-compiler schema changes unrelated to launcher honesty
+- broad table-compiler or launcher-schema changes unrelated to this checkpoint
 - reauthoring donor rail geometry without first proving runtime code cannot use
   the existing donor-backed corridor
+- physical cut-over work now governed by `EPIC-33` / `ST-33-01`
+
+## Sequencing correction (2026-04-04)
+
+The architect direction in
+`docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`
+made a broader structural point explicit:
+
+- `PR-0215` is not the physical-carrier implementation vehicle
+- `travelRoutes` should become observation/proof spines, not motion owners
+- physical carrier schema/compiler/ownership work must land first under
+  `EPIC-33` / `ST-33-01`
+
+This PR therefore remains valid only as a bounded runtime-honesty checkpoint.
+Any further cut-over continuation is blocked on `PR-0217` through `PR-0219`.
 
 ## Evidence-locked shortcut targets
 

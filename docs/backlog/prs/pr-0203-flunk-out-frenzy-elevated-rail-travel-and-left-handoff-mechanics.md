@@ -2,10 +2,10 @@
 type: pr
 id: PR-0203
 title: "Flunk-Out Frenzy: elevated donor rail travel and left-handoff mechanics"
-status: in_progress
+status: blocked
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 stories:
   - "ST-25-06"
 tags: ["frontend", "games", "physics", "table-authoring", "donor-fidelity", "3d", "launcher"]
@@ -13,11 +13,12 @@ dependencies:
   - "PR-0200"
   - "PR-0201"
   - "PR-0202"
+  - "ST-33-01"
 acceptance_criteria:
-  - "Given elevated donor rails are currently render-first, when this task is complete, then the launcher release path can enter a donor-backed multi-height travel route and stay on that route through upper-right to upper-left handoff."
-  - "Given donor path fidelity is required, when this task is complete, then route segments and handoff anchors are built from donor carriers (`RampS3`, `RampS001`, `RampS002`, `RampS4`, and `Wall268`) with explicit source provenance."
+  - "Given elevated donor rails are currently render-first, when this task is complete, then the launcher release path can enter a donor-backed multi-height physical carrier graph and stay physically supported through upper-right to upper-left handoff."
+  - "Given donor path fidelity is required, when this task is complete, then carrier anchors, observation-spine phases, and handoff seams are built from donor carriers (`RampS3`, `RampS001`, `RampS002`, `RampS4`, and `Wall268`) with explicit source provenance."
   - "Given this slice must remove the remaining launch-path regression, when this task is complete, then focused physics proof shows charged launch traverses the elevated route and hands off leftward toward gameplay instead of immediate local bounce/fail."
-  - "Given anti-flattening rules are active, when this task is complete, then no local freehand path is introduced; authored route points stay donor-derived."
+  - "Given anti-flattening rules are active, when this task is complete, then no local freehand path is introduced; authored observation spines and carrier anchors stay donor-derived."
 ---
 
 ## Problem
@@ -29,9 +30,21 @@ off leftward into gameplay flow.
 
 ## Goal
 
-Implement donor-backed elevated rail travel/handoff mechanics so the launch can
-follow the intended right-up -> top -> left feed path at multi-height before
-returning to playfield flow.
+Implement donor-backed elevated carrier traversal/handoff mechanics so the
+launch can follow the intended right-up -> top -> left feed path at multi-height
+before returning to playfield flow.
+
+## Sequencing correction (2026-04-04)
+
+This PR is now blocked for further continuation by the architect direction in
+`docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`.
+
+The old route-driven cut-over assumption is no longer valid. When this PR
+eventually resumes:
+
+- `travelRoutes` must be observation spines only
+- physical motion must belong to the carrier graph, not a route runner
+- continuation must build on `EPIC-33` / `ST-33-01`, not bypass it
 
 ## Non-goals
 
@@ -41,16 +54,17 @@ returning to playfield flow.
 
 ## Implementation plan
 
-- Extend launcher 3D contracts with explicit donor-backed travel route
-  definitions (path, provenance, charge threshold, handoff semantics).
-- Build a donor-derived launch travel route from `RampS3/S001/S002/S4` into the
-  upper-left guide descent (`Wall268`) with explicit z-profile.
-- Add route-travel runtime logic in `PhysicsWorld.ts`:
-  - enter route on charged release
-  - follow route at multi-height
-  - perform deterministic left-hand-off at route exit
-- Keep focused tests in compile/physics specs to prove route presence and
-  behavior.
+- Build on `ST-33-01` carrier-role schema and launcher-world ownership rules.
+- Compile donor-derived support/guard/receiver carriers plus observation-spine
+  phases from `RampS3/S001/S002/S4` into the upper-left guide descent
+  (`Wall268`) with explicit provenance and z-profile.
+- Add physical carrier traversal runtime logic rather than route-follow
+  transport logic:
+  - enter carrier occupancy on charged release
+  - observe progress/phase along the observation spine
+  - perform deterministic left-hand-off at the terminal seam only
+- Keep focused tests in compile/physics specs to prove carrier presence,
+  observation fidelity, and left-flow traversal.
 
 ## Test plan
 
