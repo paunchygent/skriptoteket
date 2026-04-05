@@ -24,6 +24,10 @@ const props = defineProps<{
   availableTemplates: RoomTemplate[];
   description?: string | null;
   isLoadingWorkspace: boolean;
+  showActions?: boolean;
+  createDisabledReason?: string | null;
+  editDisabledReason?: string | null;
+  deleteDisabledReason?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -161,10 +165,15 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
       </div>
     </div>
 
-    <div class="planner-overview-panel-footer">
+    <div
+      v-if="showActions !== false"
+      class="planner-overview-panel-footer"
+    >
       <button
         type="button"
         class="btn-primary planner-overview-panel-action"
+        :disabled="Boolean(createDisabledReason)"
+        :title="createDisabledReason ?? undefined"
         @click="emit('create-template')"
       >
         Nytt klassrum
@@ -172,7 +181,8 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
       <button
         type="button"
         class="btn-ghost planner-btn-ghost planner-overview-panel-action"
-        :disabled="!selectedTemplate"
+        :disabled="!selectedTemplate || Boolean(editDisabledReason)"
+        :title="editDisabledReason ?? undefined"
         data-test="overview-edit-template"
         @click="emit('edit-current-template', selectedTemplate ?? undefined)"
       >
@@ -182,7 +192,8 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
       <button
         type="button"
         class="btn-ghost planner-btn-ghost planner-btn-ghost-muted planner-overview-panel-action"
-        :disabled="!selectedTemplate"
+        :disabled="!selectedTemplate || Boolean(deleteDisabledReason)"
+        :title="deleteDisabledReason ?? undefined"
         data-test="overview-delete-template"
         @click="emit('delete-current-template')"
       >

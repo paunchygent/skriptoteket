@@ -20,6 +20,9 @@ const routeMocks = vi.hoisted(() => ({
       appId: "classroom.group-seating-studio",
     },
   },
+  router: {
+    push: vi.fn(),
+  },
 }));
 
 const clientMocks = vi.hoisted(() => ({
@@ -40,6 +43,7 @@ vi.mock("vue-router", async (importOriginal) => {
       template: "<a :href='typeof to === \"string\" ? to : to.path'><slot /></a>",
     },
     useRoute: () => routeMocks.route,
+    useRouter: () => routeMocks.router,
   };
 });
 
@@ -78,6 +82,7 @@ function createPublicBootstrap(
 describe("PublicAppHostView", () => {
   beforeEach(() => {
     routeMocks.route.params.appId = "classroom.group-seating-studio";
+    routeMocks.router.push.mockReset();
     clientMocks.apiGet.mockReset();
     clientMocks.isApiError.mockReset();
     clientMocks.isApiError.mockReturnValue(false);
@@ -94,8 +99,8 @@ describe("PublicAppHostView", () => {
     expect(clientMocks.apiGet).toHaveBeenCalledWith(
       "/api/v1/public/apps/classroom.group-seating-studio",
     );
-    expect(wrapper.text()).toContain("Publik apphost");
-    expect(wrapper.text()).toContain("Logga in till full version");
+    expect(wrapper.text()).toContain("Klassrumskartan");
+    expect(wrapper.text()).toContain("Vissa funktioner kräver att du registrerar ett konto.");
 
     wrapper.unmount();
   });

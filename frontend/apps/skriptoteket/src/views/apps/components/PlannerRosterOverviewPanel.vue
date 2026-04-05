@@ -19,6 +19,10 @@ const props = defineProps<{
   availableRosters: Roster[];
   selectedRosterPreviewNames: string[];
   isLoadingWorkspace: boolean;
+  showActions?: boolean;
+  createDisabledReason?: string | null;
+  editDisabledReason?: string | null;
+  deleteDisabledReason?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -110,10 +114,15 @@ function selectRoster(event: Event): void {
       </div>
     </div>
 
-    <div class="planner-overview-panel-footer">
+    <div
+      v-if="showActions !== false"
+      class="planner-overview-panel-footer"
+    >
       <button
         type="button"
         class="btn-primary planner-overview-panel-action"
+        :disabled="Boolean(createDisabledReason)"
+        :title="createDisabledReason ?? undefined"
         @click="emit('create-roster')"
       >
         Ny klasslista
@@ -121,7 +130,8 @@ function selectRoster(event: Event): void {
       <button
         type="button"
         class="btn-ghost planner-btn-ghost planner-overview-panel-action"
-        :disabled="!selectedRoster"
+        :disabled="!selectedRoster || Boolean(editDisabledReason)"
+        :title="editDisabledReason ?? undefined"
         data-test="overview-edit-roster"
         @click="emit('edit-roster')"
       >
@@ -131,7 +141,8 @@ function selectRoster(event: Event): void {
       <button
         type="button"
         class="btn-ghost planner-btn-ghost planner-btn-ghost-muted planner-overview-panel-action"
-        :disabled="!selectedRoster"
+        :disabled="!selectedRoster || Boolean(deleteDisabledReason)"
+        :title="deleteDisabledReason ?? undefined"
         data-test="overview-delete-roster"
         @click="emit('delete-current-roster')"
       >

@@ -1,0 +1,185 @@
+/**
+ * Klassrumskartan guest overview shell tests.
+ *
+ * These tests verify that the checkpoint-1 public overview controller
+ * bootstraps from the browser-owned snapshot seam and persists overview UI
+ * state there instead of relying on the authenticated route shell.
+ */
+
+import { mount } from "@vue/test-utils";
+import { defineComponent, nextTick } from "vue";
+import { describe, expect, it, vi } from "vitest";
+
+import { createClassroomPlannerGuestSnapshotFromSeed } from "./classroomPlannerGuestSnapshotMapping";
+import { summarizeClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
+import { useClassroomPlannerGuestOverviewShell } from "./useClassroomPlannerGuestOverviewShell";
+
+function mountGuestOverviewHarness(
+  options?: Parameters<typeof useClassroomPlannerGuestOverviewShell>[0],
+) {
+  let exposedState: ReturnType<typeof useClassroomPlannerGuestOverviewShell> | null = null;
+
+  const Harness = defineComponent({
+    setup() {
+      exposedState = useClassroomPlannerGuestOverviewShell(options);
+      return () => null;
+    },
+  });
+
+  mount(Harness);
+  return {
+    getState() {
+      if (!exposedState) {
+        throw new Error("Guest overview harness did not expose state.");
+      }
+      return exposedState;
+    },
+  };
+}
+
+async function flushGuestOverview(): Promise<void> {
+  await nextTick();
+  await Promise.resolve();
+  await Promise.resolve();
+  await nextTick();
+}
+
+describe("useClassroomPlannerGuestOverviewShell", () => {
+  it("initializes an empty browser-owned snapshot when none exists yet", async () => {
+    const emptySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-1",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [],
+      templates: [],
+      smart_rule_sets: [],
+      grouping_draft: null,
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: null,
+        selected_template_id: null,
+        current_screen: "class-workspace",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+    const initializeEmptySnapshot = vi.fn(async () => ({
+      status: "ready" as const,
+      snapshot: emptySnapshot,
+      summary: summarizeClassroomPlannerGuestSnapshot(emptySnapshot),
+    }));
+
+    const harness = mountGuestOverviewHarness({
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "missing" as const,
+          snapshot: null,
+          summary: null,
+        })),
+        saveSnapshot: vi.fn(),
+        initializeEmptySnapshot,
+        clearCurrentSnapshot: vi.fn(),
+      }),
+    });
+    await flushGuestOverview();
+
+    expect(initializeEmptySnapshot).toHaveBeenCalledOnce();
+    expect(harness.getState().isBootstrapping.value).toBe(false);
+    expect(harness.getState().bootstrapError.value).toBeNull();
+    expect(harness.getState().availableRosters.value).toEqual([]);
+    expect(harness.getState().availableTemplates.value).toEqual([]);
+  });
+
+  it("hydrates snapshot-backed overview state and persists later selection changes", async () => {
+    const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-2",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [
+        {
+          id: "roster-1",
+          name: "SA24D",
+          students: [{ id: "student-1", display_name: "Ada" }],
+        },
+        {
+          id: "roster-2",
+          name: "NA25A",
+          students: [{ id: "student-2", display_name: "Bo" }],
+        },
+      ],
+      templates: [
+        {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 8,
+          grid_rows: 6,
+          seats: [{ id: "seat-1", x: 1, y: 1, zone: "front" }],
+          fixtures: [],
+        },
+      ],
+      smart_rule_sets: [],
+      grouping_draft: null,
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: "roster-1",
+        selected_template_id: "template-1",
+        current_screen: "planner",
+        planner_initial_view: "rules",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+
+    const saveSnapshot = vi.fn(async () => undefined);
+    const harness = mountGuestOverviewHarness({
+      nowIso: () => "2026-04-05T09:30:00.000Z",
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "ready" as const,
+          snapshot: readySnapshot,
+          summary: {
+            snapshot_id: readySnapshot.snapshot_id,
+            profile: readySnapshot.profile,
+            created_at: readySnapshot.created_at,
+            updated_at: readySnapshot.updated_at,
+            expires_at: readySnapshot.expires_at,
+            roster_count: readySnapshot.rosters.length,
+            template_count: readySnapshot.templates.length,
+            smart_rule_set_count: readySnapshot.smart_rule_sets.length,
+            checkpoint_count: readySnapshot.checkpoint_descriptors.length,
+            has_grouping_draft: false,
+            has_seating_draft: false,
+          },
+        })),
+        saveSnapshot,
+        initializeEmptySnapshot: vi.fn(),
+        clearCurrentSnapshot: vi.fn(),
+      }),
+    });
+    await flushGuestOverview();
+
+    expect(harness.getState().selectedRosterId.value).toBe("roster-1");
+    expect(harness.getState().selectedTemplateId.value).toBe("template-1");
+    expect(harness.getState().classWorkspaceSummary.value?.roster.name).toBe("SA24D");
+    expect(saveSnapshot).toHaveBeenCalledOnce();
+    const firstSavedSnapshot = (saveSnapshot.mock.calls as unknown[][])[0]?.[0] as
+      | { ui_state: { current_screen: string; planner_initial_view: string } }
+      | undefined;
+    expect(firstSavedSnapshot?.ui_state.current_screen).toBe("class-workspace");
+    expect(firstSavedSnapshot?.ui_state.planner_initial_view).toBe("groups");
+
+    await harness.getState().selectWorkspaceRoster("roster-2");
+
+    expect(harness.getState().selectedRosterId.value).toBe("roster-2");
+    expect(saveSnapshot).toHaveBeenCalledTimes(2);
+    const secondSavedSnapshot = (saveSnapshot.mock.calls as unknown[][])[1]?.[0] as
+      | { ui_state: { selected_roster_local_id: string | null } }
+      | undefined;
+    expect(secondSavedSnapshot?.ui_state.selected_roster_local_id).toBe("roster-2");
+  });
+});

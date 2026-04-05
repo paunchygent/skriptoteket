@@ -2,7 +2,7 @@
 type: pr
 id: PR-0223
 title: "ST-32-06: public Klassrumskartan demo capability matrix and browser-workspace adoption"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-04-05
 updated: 2026-04-05
@@ -32,6 +32,48 @@ contract and authenticated upgrade boundary. What remains before implementation
 starts is not the overall direction, but a small set of still-unfrozen
 guest-mode details that need one explicit contract inside this PR so the
 implementation does not drift.
+
+## Current implementation status
+
+As of 2026-04-05, checkpoint 1 is implemented locally and checkpoints 2-4 are
+still pending.
+
+Implemented so far:
+
+- the public Klassrumskartan route no longer renders the old placeholder/stub;
+  it now renders the real overview shell
+- public overview state is bootstrapped from the browser-owned guest snapshot
+  seam through a dedicated guest overview controller/view
+- authenticated Klassrumskartan orchestration remains separate and unchanged
+- checkpoint-1 public presentation uses final-state user copy only:
+  - the locked guest system message is shown
+  - temporary implementation-stage helper/tooltips are not shown
+  - unfinished public modes/actions are hidden rather than explained with
+    temporary copy
+
+Not implemented yet:
+
+- browser-owned roster/template authoring
+- guest `Grupper` / `Sittplatser` draft/session orchestration
+- guest smart rules, export, and final account-only affordance behavior
+
+Local proof so far:
+
+- `pdm run fe-type-check`
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerEntryView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/PublicAppHostView.spec.ts`
+- live browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`:
+  - public route renders the real overview shell
+  - the locked registration message is present
+  - no authenticated planner/catalog/draft/export API seam was used; observed
+    app requests were the public bootstrap route plus the global auth-session
+    check
+
+Reviewer follow-up retained for this checkpoint:
+
+- keep a focused test that the public empty state preserves the final-state
+  registration copy while unfinished guest actions stay hidden
+- when this slice is re-verified live, keep browser/network evidence that the
+  guest overview does not hit owner-scoped authenticated APIs
 
 ## Already locked decisions
 
@@ -297,6 +339,69 @@ Review questions:
 - is the guest system message subtle, singular, and correctly placed?
 - is browser-owned overview state clearly separated from authenticated APIs?
 
+Implementation-ready task order:
+1. Add a public-only guest overview controller that loads or initializes the
+   current browser-owned snapshot, hydrates overview-ready state, and exposes
+   only the checkpoint-1 surface:
+   - selected roster/template
+   - available rosters/templates
+   - overview workspace summary
+   - guest system message state
+   - no draft/session/export orchestration
+2. Add a real public overview view that reuses the existing overview
+   presentation components instead of the current public placeholder/stub.
+3. Rewire the entry boundary so:
+   - authenticated host continues to render the existing authenticated planner
+     route shell
+   - public host renders the new guest overview view
+   - the current placeholder copy is removed
+4. Extract overview selection persistence behind a small adapter so:
+   - authenticated mode can keep the current local-storage-backed selection
+     behavior
+   - public guest mode persists overview UI state into the guest snapshot
+     `ui_state`
+5. Add guest snapshot `ui_state` write support for the currently selected
+   roster/template and other checkpoint-1 overview-only state without touching
+   drafts, rules, or export lanes yet.
+6. Keep overview controls honest for checkpoint 1 by adding a small capability
+   seam to the shared overview presentation so public mode can:
+   - allow browser-owned selection/rendering
+   - block create/edit/delete authoring cleanly until checkpoint 2
+   - avoid fake guest CRUD and avoid authenticated fallback calls
+7. Add or update focused tests for:
+   - public entry renders the real overview shell instead of the placeholder
+   - guest overview controller bootstraps from browser snapshot only
+   - overview selection persistence is snapshot-backed in public mode
+   - authenticated route-shell behavior remains unchanged
+8. Do a live browser proof on the public route and confirm the network surface
+   stays honest:
+   - same overview shell language as authenticated Klassrumskartan
+   - one subtle guest system message
+   - no authenticated catalog/draft/export/owner-scoped API calls
+
+Primary file edits for checkpoint 1:
+- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.vue`
+- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerOverviewStore.ts`
+- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshotMapping.ts`
+- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestStorage.ts`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRosterOverviewPanel.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerTemplateOverviewPanel.vue`
+
+Expected new files for checkpoint 1:
+- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.vue`
+- `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestOverviewShell.ts`
+- a small overview-persistence adapter module if needed to keep authenticated
+  and guest selection storage separate
+
+Checkpoint-1 definition of done:
+- public Klassrumskartan opens in the real overview shell, not a placeholder
+- public mode reads rosters/templates/selection from the guest snapshot only
+- public mode does not call authenticated catalog, draft, export, or
+  owner-scoped APIs
+- authenticated route-shell behavior remains unchanged
+- the guest system message appears once, subtly, in the approved location
+
 ### Checkpoint 2. Browser-owned roster and template authoring
 
 Intent:
@@ -331,6 +436,10 @@ Review questions:
   authenticated APIs?
 - can a guest create, edit, and delete a room template with browser-owned
   persistence only?
+- do focused browser/network proof and guest adapter tests show that guest
+  roster/template authoring uses only browser-owned snapshot persistence plus
+  the public import-preview helper seam, never owner-scoped authenticated
+  roster/template APIs?
 - does the public route still look and behave like normal Klassrumskartan?
 
 ### Checkpoint 3. Guest draft/session adapter
@@ -372,6 +481,10 @@ Review questions:
 - does the public planner now use browser-owned drafts end-to-end?
 - are `Grupper` and `Sittplatser` using the same shell language as
   authenticated mode?
+- do focused browser/network proof and guest draft/session controller tests
+  show that planner hydration, resume, and workspace switching come from the
+  guest snapshot lane rather than owner-scoped authenticated draft/workspace
+  endpoints?
 - has authenticated route-shell behavior remained unchanged?
 
 ### Checkpoint 4. Smart rules, export, and account-only affordances
@@ -415,6 +528,9 @@ Review questions:
   instead of leaking into authenticated APIs?
 - does guest `use_history` read only guest-local export-backed checkpoints?
 - is guest export immediate-download only?
+- do focused browser/network proof and guest adapter/controller tests show that
+  guest smart-run, export, and history behavior never falls through to
+  owner-scoped authenticated APIs?
 - are account-only affordances blocked in the minimal, clean way approved in
   this PR?
 
@@ -439,6 +555,14 @@ products.”
 - `pdm run precommit-run`
 - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run`
 - `pdm run docs-validate`
+- required evidence for checkpoints 2 through 4:
+  - focused browser/network proof that guest flows call only the dedicated
+    public helper namespace or stay fully local in the browser, and never hit
+    owner-scoped authenticated `/api/v1/apps/classroom.group-seating-studio/...`
+    endpoints
+  - focused adapter/controller tests around guest snapshot hydration and guest
+    draft/session orchestration so the guest lane is proven structurally, not
+    only visually
 - focused browser proof for:
   - guest authoring continuity for rosters, templates, smart rules, and drafts
   - guest roster import preview through the public helper route only

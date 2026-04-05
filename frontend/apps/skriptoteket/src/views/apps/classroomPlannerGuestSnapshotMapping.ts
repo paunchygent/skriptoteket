@@ -257,6 +257,37 @@ export function hydrateGuestSnapshot(
   };
 }
 
+export function replaceGuestSnapshotUiState(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  input: {
+    selected_roster_id: string | null;
+    selected_template_id: string | null;
+    current_screen: ClassroomPlannerGuestPlannerScreen;
+    planner_initial_view: ClassroomPlannerGuestPlannerInitialView;
+    dismissed_grouping_draft_id: string | null;
+    dismissed_seating_draft_id: string | null;
+    updated_at: string;
+  },
+): ClassroomPlannerGuestSnapshot {
+  const nextSnapshot = {
+    ...snapshot,
+    updated_at: input.updated_at,
+    ui_state: mapUiStateToGuestSnapshot({
+      selected_roster_id: input.selected_roster_id,
+      selected_template_id: input.selected_template_id,
+      current_screen: input.current_screen,
+      planner_initial_view: input.planner_initial_view,
+      dismissed_grouping_draft_id: input.dismissed_grouping_draft_id,
+      dismissed_seating_draft_id: input.dismissed_seating_draft_id,
+    }),
+  };
+
+  return {
+    ...nextSnapshot,
+    snapshot_content_hash: createClassroomPlannerGuestContentHash(nextSnapshot),
+  };
+}
+
 function hydrateGuestDraft(
   draft: ClassroomPlannerGuestDraft | null,
   snapshot: ClassroomPlannerGuestSnapshot,

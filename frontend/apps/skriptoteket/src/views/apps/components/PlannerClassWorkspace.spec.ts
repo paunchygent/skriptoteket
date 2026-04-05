@@ -306,4 +306,27 @@ describe("PlannerClassWorkspace", () => {
     expect(preview.text()).toContain("Elev01 Andersson");
     expect(preview.text()).toContain("...");
   });
+
+  it("accepts public capability overrides without changing the shared shell layout", () => {
+    const wrapper = mountWorkspace({
+      overviewCapabilities: {
+        show_grouping_option: false,
+        show_seating_option: false,
+        show_rules_option: false,
+        show_roster_actions: false,
+        show_template_actions: false,
+      },
+    });
+
+    expect(wrapper.find("[data-test='planner-top-panel-status-message']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='planner-top-panel-supporting-text']").exists()).toBe(false);
+
+    expect(wrapper.find("[data-test='overview-edit-roster']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='overview-edit-template']").exists()).toBe(false);
+
+    expect(wrapper.findAll('[data-ui="segmented-toggle"] button')).toHaveLength(1);
+    expect(wrapper.text()).not.toContain("Grupper");
+    expect(wrapper.text()).not.toContain("Sittplatser");
+    expect(wrapper.text()).not.toContain("Regler");
+  });
 });

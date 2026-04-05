@@ -2,7 +2,7 @@
 type: story
 id: ST-32-06
 title: "Klassrumskartan demo adoption on the public browser-workspace profile"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-04-03
 updated: 2026-04-05

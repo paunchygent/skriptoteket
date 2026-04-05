@@ -22,6 +22,9 @@ const props = withDefaults(
     title: string;
     contextLabel?: string | null;
     modeValue: WorkspaceMode;
+    showGroupingOption?: boolean;
+    showSeatingOption?: boolean;
+    showRulesOption?: boolean;
     groupingDisabledReason?: string | null;
     seatingDisabledReason?: string | null;
     rulesDisabledReason?: string | null;
@@ -33,6 +36,9 @@ const props = withDefaults(
   }>(),
   {
     contextLabel: null,
+    showGroupingOption: true,
+    showSeatingOption: true,
+    showRulesOption: true,
     groupingDisabledReason: null,
     seatingDisabledReason: null,
     rulesDisabledReason: null,
@@ -49,30 +55,43 @@ const emit = defineEmits<{
   (e: "exit"): void;
 }>();
 
-const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => [
-  { value: "overview", label: "Översikt", dataTest: "planner-mode-overview" },
-  {
-    value: "grouping",
-    label: "Grupper",
-    disabled: Boolean(props.groupingDisabledReason),
-    title: props.groupingDisabledReason ?? undefined,
-    dataTest: "planner-mode-grouping",
-  },
-  {
-    value: "seating",
-    label: "Sittplatser",
-    disabled: Boolean(props.seatingDisabledReason),
-    title: props.seatingDisabledReason ?? undefined,
-    dataTest: "planner-mode-seating",
-  },
-  {
-    value: "rules",
-    label: "Regler",
-    disabled: Boolean(props.rulesDisabledReason),
-    title: props.rulesDisabledReason ?? undefined,
-    dataTest: "planner-mode-rules",
-  },
-]);
+const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => {
+  const options: UiSegmentedToggleOption[] = [
+    { value: "overview", label: "Översikt", dataTest: "planner-mode-overview" },
+  ];
+
+  if (props.showGroupingOption) {
+    options.push({
+      value: "grouping",
+      label: "Grupper",
+      disabled: Boolean(props.groupingDisabledReason),
+      title: props.groupingDisabledReason ?? undefined,
+      dataTest: "planner-mode-grouping",
+    });
+  }
+
+  if (props.showSeatingOption) {
+    options.push({
+      value: "seating",
+      label: "Sittplatser",
+      disabled: Boolean(props.seatingDisabledReason),
+      title: props.seatingDisabledReason ?? undefined,
+      dataTest: "planner-mode-seating",
+    });
+  }
+
+  if (props.showRulesOption) {
+    options.push({
+      value: "rules",
+      label: "Regler",
+      disabled: Boolean(props.rulesDisabledReason),
+      title: props.rulesDisabledReason ?? undefined,
+      dataTest: "planner-mode-rules",
+    });
+  }
+
+  return options;
+});
 
 const statusToneClass = computed(() => {
   switch (props.statusTone) {

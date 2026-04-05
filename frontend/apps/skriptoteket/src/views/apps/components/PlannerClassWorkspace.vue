@@ -17,6 +17,7 @@ import type {
   RoomTemplate,
   Roster,
 } from "../classroomPlannerTypes";
+import type { ClassroomPlannerOverviewCapabilities } from "../classroomPlannerOverviewCapabilities";
 import {
   resolvePlannerOverviewPrerequisiteCopy,
   resolvePlannerWorkspaceDisabledReasons,
@@ -38,6 +39,7 @@ const props = defineProps<{
   transitionLabel?: string | null;
   visibleGroupingDraft: PlanDraftSummary | null;
   visibleSeatingDraft: PlanDraftSummary | null;
+  overviewCapabilities?: ClassroomPlannerOverviewCapabilities | null;
 }>();
 
 const emit = defineEmits<{
@@ -115,16 +117,27 @@ const selectedRosterCountLabel = computed(() => {
   return "Välj en klasslista";
 });
 const workspaceDisabledReasons = computed(() => {
-  return resolvePlannerWorkspaceDisabledReasons({
+  const baseReasons = resolvePlannerWorkspaceDisabledReasons({
     hasRoster: props.selectedRosterId !== null,
     hasTemplate: props.selectedTemplateId !== null,
   });
+
+  return {
+    grouping: baseReasons.grouping,
+    seating: baseReasons.seating,
+    rules: baseReasons.rules,
+  };
 });
 const overviewPrerequisiteCopy = computed(() => {
-  return resolvePlannerOverviewPrerequisiteCopy({
+  const baseCopy = resolvePlannerOverviewPrerequisiteCopy({
     hasRoster: props.selectedRosterId !== null,
     hasTemplate: props.selectedTemplateId !== null,
   });
+
+  return {
+    guidance: props.overviewCapabilities?.status_message ?? baseCopy.guidance,
+    help: props.overviewCapabilities?.supporting_text ?? baseCopy.help,
+  };
 });
 
 function selectWorkspaceMode(value: string): void {
@@ -156,6 +169,9 @@ function selectWorkspaceMode(value: string): void {
       :title="workspaceHomeTitle"
       :context-label="workspaceContextLabel"
       :mode-value="workspaceMode"
+      :show-grouping-option="overviewCapabilities?.show_grouping_option !== false"
+      :show-seating-option="overviewCapabilities?.show_seating_option !== false"
+      :show-rules-option="overviewCapabilities?.show_rules_option !== false"
       :grouping-disabled-reason="workspaceDisabledReasons.grouping"
       :seating-disabled-reason="workspaceDisabledReasons.seating"
       :rules-disabled-reason="workspaceDisabledReasons.rules"
@@ -185,6 +201,10 @@ function selectWorkspaceMode(value: string): void {
         :available-rosters="availableRosters"
         :selected-roster-preview-names="selectedRosterPreviewNames"
         :is-loading-workspace="isLoadingWorkspace"
+        :show-actions="overviewCapabilities?.show_roster_actions !== false"
+        :create-disabled-reason="overviewCapabilities?.roster_actions?.create_disabled_reason"
+        :edit-disabled-reason="overviewCapabilities?.roster_actions?.edit_disabled_reason"
+        :delete-disabled-reason="overviewCapabilities?.roster_actions?.delete_disabled_reason"
         @select-roster="emit('select-roster', $event)"
         @create-roster="emit('create-roster')"
         @edit-roster="emit('edit-roster')"
@@ -196,6 +216,10 @@ function selectWorkspaceMode(value: string): void {
         :selected-template-id="selectedTemplateId"
         :available-templates="availableTemplates"
         :is-loading-workspace="isLoadingWorkspace"
+        :show-actions="overviewCapabilities?.show_template_actions !== false"
+        :create-disabled-reason="overviewCapabilities?.template_actions?.create_disabled_reason"
+        :edit-disabled-reason="overviewCapabilities?.template_actions?.edit_disabled_reason"
+        :delete-disabled-reason="overviewCapabilities?.template_actions?.delete_disabled_reason"
         @select-template="emit('select-template', $event)"
         @create-template="emit('create-template')"
         @edit-current-template="emit('edit-current-template', $event)"
