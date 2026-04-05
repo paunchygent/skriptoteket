@@ -288,6 +288,44 @@ export function replaceGuestSnapshotUiState(
   };
 }
 
+export function replaceGuestSnapshotRosters(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  rosters: Roster[],
+  input: {
+    updated_at: string;
+  },
+): ClassroomPlannerGuestSnapshot {
+  const nextSnapshot = {
+    ...snapshot,
+    updated_at: input.updated_at,
+    rosters: rosters.map(mapRosterToGuestSnapshot),
+  };
+
+  return {
+    ...nextSnapshot,
+    snapshot_content_hash: createClassroomPlannerGuestContentHash(nextSnapshot),
+  };
+}
+
+export function replaceGuestSnapshotTemplates(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  templates: RoomTemplate[],
+  input: {
+    updated_at: string;
+  },
+): ClassroomPlannerGuestSnapshot {
+  const nextSnapshot = {
+    ...snapshot,
+    updated_at: input.updated_at,
+    templates: templates.map(mapTemplateToGuestSnapshot),
+  };
+
+  return {
+    ...nextSnapshot,
+    snapshot_content_hash: createClassroomPlannerGuestContentHash(nextSnapshot),
+  };
+}
+
 function hydrateGuestDraft(
   draft: ClassroomPlannerGuestDraft | null,
   snapshot: ClassroomPlannerGuestSnapshot,

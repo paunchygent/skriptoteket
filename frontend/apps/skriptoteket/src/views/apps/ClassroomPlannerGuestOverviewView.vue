@@ -2,16 +2,19 @@
 /**
  * Classroom planner public guest overview view.
  *
- * This view is the checkpoint-1 public Klassrumskartan shell. It keeps the
+ * This view is the checkpoint-2 public Klassrumskartan shell. It keeps the
  * same overview-first presentation language as the authenticated planner while
- * delegating all public state to the browser-owned guest snapshot controller.
+ * delegating public overview authoring to the browser-owned guest controller.
  */
 
 import { RouterLink, useRouter } from "vue-router";
 
 import SystemMessage from "../../components/ui/SystemMessage.vue";
+import CreateRosterModal from "./components/CreateRosterModal.vue";
+import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
 import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
-import { useClassroomPlannerGuestOverviewShell } from "./useClassroomPlannerGuestOverviewShell";
+import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
+import { useClassroomPlannerGuestController } from "./useClassroomPlannerGuestController";
 
 const router = useRouter();
 const {
@@ -24,9 +27,40 @@ const {
   plannerActionError,
   classWorkspaceSummary,
   overviewCapabilities,
+  isRosterModalOpen,
+  isTemplateModalOpen,
+  activeRosterModal,
+  activeTemplateModal,
+  overviewDeleteRosterTarget,
+  overviewDeleteTemplateTarget,
+  overviewDeleteRosterError,
+  overviewDeleteTemplateError,
+  isDeletingOverviewRoster,
+  isDeletingOverviewTemplate,
+  rosterImportPreviewApiPath,
   selectWorkspaceRoster,
   selectWorkspaceTemplate,
-} = useClassroomPlannerGuestOverviewShell();
+  openRosterCreate,
+  closeRosterModal,
+  openSelectedRosterEdit,
+  openSelectedRosterDelete,
+  openTemplateCreate,
+  closeTemplateModal,
+  openOverviewTemplateEdit,
+  openSelectedTemplateDelete,
+  closeOverviewRosterDelete,
+  closeOverviewTemplateDelete,
+  saveRoster,
+  deleteRoster,
+  saveTemplate,
+  deleteTemplate,
+  applySavedRoster,
+  applyDeletedRoster,
+  applySavedTemplate,
+  applyDeletedTemplate,
+  confirmOverviewRosterDelete,
+  confirmOverviewTemplateDelete,
+} = useClassroomPlannerGuestController();
 
 async function exitPublicPlanner(): Promise<void> {
   await router.push({ name: "home" });
@@ -93,8 +127,59 @@ async function exitPublicPlanner(): Promise<void> {
       :visible-seating-draft="null"
       :overview-capabilities="overviewCapabilities"
       @exit-app="void exitPublicPlanner()"
+      @create-roster="openRosterCreate"
+      @edit-roster="openSelectedRosterEdit"
+      @delete-current-roster="openSelectedRosterDelete"
       @select-roster="void selectWorkspaceRoster($event)"
+      @create-template="openTemplateCreate"
       @select-template="void selectWorkspaceTemplate($event)"
+      @edit-current-template="openOverviewTemplateEdit"
+      @delete-current-template="openSelectedTemplateDelete"
+    />
+
+    <CreateRosterModal
+      v-if="isRosterModalOpen"
+      :roster="activeRosterModal"
+      :import-preview-api-path="rosterImportPreviewApiPath"
+      :save-roster="saveRoster"
+      :delete-roster="deleteRoster"
+      @close="closeRosterModal"
+      @saved="applySavedRoster"
+      @deleted="applyDeletedRoster"
+    />
+
+    <CreateRoomTemplateModal
+      v-if="isTemplateModalOpen"
+      :template="activeTemplateModal"
+      :save-template="saveTemplate"
+      :delete-template="deleteTemplate"
+      @close="closeTemplateModal"
+      @saved="applySavedTemplate"
+      @deleted="applyDeletedTemplate"
+    />
+
+    <PlannerConfirmationDialog
+      v-if="overviewDeleteRosterTarget"
+      eyebrow="Ta bort klasslista"
+      title="Är du säker?"
+      :message="`Klasslistan ${overviewDeleteRosterTarget.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
+      confirm-label="Ta bort klasslista"
+      :error-message="overviewDeleteRosterError"
+      :is-submitting="isDeletingOverviewRoster"
+      @cancel="closeOverviewRosterDelete"
+      @confirm="void confirmOverviewRosterDelete()"
+    />
+
+    <PlannerConfirmationDialog
+      v-if="overviewDeleteTemplateTarget"
+      eyebrow="Ta bort klassrum"
+      title="Är du säker?"
+      :message="`Klassrummet ${overviewDeleteTemplateTarget.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
+      confirm-label="Ta bort klassrum"
+      :error-message="overviewDeleteTemplateError"
+      :is-submitting="isDeletingOverviewTemplate"
+      @cancel="closeOverviewTemplateDelete"
+      @confirm="void confirmOverviewTemplateDelete()"
     />
   </div>
 </template>

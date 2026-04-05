@@ -1,67 +1,29 @@
 /**
- * Classroom planner guest overview shell.
+ * Classroom planner guest controller.
  *
- * This composable owns checkpoint-1 public Klassrumskartan orchestration. It
- * bootstraps the browser-owned guest snapshot, normalizes the public route to
- * the overview-only lane, and exposes the shared overview presentation state
- * without touching the authenticated route shell or owner-scoped APIs.
+ * This composable owns public Klassrumskartan guest orchestration. It
+ * bootstraps the browser-owned guest snapshot, keeps the public route on the
+ * overview-authoring lane for checkpoint 2, and delegates pure persistence and
+ * overview CRUD details to focused helper modules.
  */
 
 import { computed, onMounted, ref } from "vue";
 
-import type { ClassroomPlannerOverviewCapabilities } from "./classroomPlannerOverviewCapabilities";
-import { createClassroomPlannerGuestStorage } from "./classroomPlannerGuestStorage";
+import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import {
-  hydrateGuestSnapshot,
-  replaceGuestSnapshotUiState,
-} from "./classroomPlannerGuestSnapshotMapping";
-import type {
-  ClassWorkspaceSummary,
-  RoomTemplate,
-  Roster,
-} from "./classroomPlannerTypes";
+  buildWorkspaceSummary,
+  CHECKPOINT_TWO_OVERVIEW_CAPABILITIES,
+  hydrateGuestOverviewSnapshot,
+  normalizeOverviewSnapshotUiState,
+  PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH,
+} from "./classroomPlannerGuestControllerSupport";
+import { createClassroomPlannerGuestOverviewCrudFlow } from "./classroomPlannerGuestOverviewCrud";
+import { createClassroomPlannerGuestStorage } from "./classroomPlannerGuestStorage";
+import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
 
 type ClassroomPlannerGuestStorageAdapter = ReturnType<typeof createClassroomPlannerGuestStorage>;
 
-const CHECKPOINT_ONE_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapabilities = {
-  show_grouping_option: false,
-  show_seating_option: false,
-  show_rules_option: false,
-  show_roster_actions: false,
-  show_template_actions: false,
-};
-
-function buildWorkspaceSummary(selectedRoster: Roster | null): ClassWorkspaceSummary | null {
-  if (!selectedRoster) {
-    return null;
-  }
-
-  return {
-    roster: {
-      id: selectedRoster.id,
-      name: selectedRoster.name,
-      student_count: selectedRoster.students.length,
-    },
-    task_entry_options: [],
-    active_grouping_draft: null,
-    active_seating_draft: null,
-    grouping_history: [],
-    seating_history: [],
-  };
-}
-
-function resolveExistingId<T extends { id: string }>(
-  preferredId: string | null,
-  entries: T[],
-): string | null {
-  if (preferredId && entries.some((entry) => entry.id === preferredId)) {
-    return preferredId;
-  }
-
-  return entries[0]?.id ?? null;
-}
-
-export function useClassroomPlannerGuestOverviewShell(options?: {
+export function useClassroomPlannerGuestController(options?: {
   enabled?: boolean;
   guestStorage?: ClassroomPlannerGuestStorageAdapter;
   guestStorageFactory?: () => ClassroomPlannerGuestStorageAdapter;
@@ -79,7 +41,7 @@ export function useClassroomPlannerGuestOverviewShell(options?: {
   const plannerActionError = ref<string | null>(null);
   const currentSnapshotId = ref<string | null>(null);
 
-  const overviewCapabilities = CHECKPOINT_ONE_OVERVIEW_CAPABILITIES;
+  const overviewCapabilities = CHECKPOINT_TWO_OVERVIEW_CAPABILITIES;
   const classWorkspaceSummary = computed(() => {
     const selectedRoster = availableRosters.value.find((roster) => roster.id === selectedRosterId.value) ?? null;
     return buildWorkspaceSummary(selectedRoster);
@@ -94,6 +56,29 @@ export function useClassroomPlannerGuestOverviewShell(options?: {
 
   function getNowIso(): string {
     return options?.nowIso?.() ?? new Date().toISOString();
+  }
+
+  function applyHydratedSnapshot(
+    snapshot: ClassroomPlannerGuestSnapshot,
+    options?: {
+      preserveExplicitTemplateNull?: boolean;
+    },
+  ): {
+    normalizedSelectedRosterId: string | null;
+    normalizedSelectedTemplateId: string | null;
+  } {
+    const hydratedOverviewState = hydrateGuestOverviewSnapshot(snapshot, options);
+
+    availableRosters.value = hydratedOverviewState.rosters;
+    availableTemplates.value = hydratedOverviewState.templates;
+    selectedRosterId.value = hydratedOverviewState.normalizedSelectedRosterId;
+    selectedTemplateId.value = hydratedOverviewState.normalizedSelectedTemplateId;
+    currentSnapshotId.value = snapshot.snapshot_id;
+
+    return {
+      normalizedSelectedRosterId: hydratedOverviewState.normalizedSelectedRosterId,
+      normalizedSelectedTemplateId: hydratedOverviewState.normalizedSelectedTemplateId,
+    };
   }
 
   async function ensureReadySnapshot() {
@@ -111,23 +96,53 @@ export function useClassroomPlannerGuestOverviewShell(options?: {
     return initializedSnapshot.snapshot;
   }
 
+  async function persistSnapshotMutation<TResult>(input: {
+    mutate: (snapshot: ClassroomPlannerGuestSnapshot, updatedAt: string) => {
+      nextSnapshot: ClassroomPlannerGuestSnapshot;
+      result: TResult;
+    };
+  }): Promise<TResult> {
+    const currentSnapshot = await ensureReadySnapshot();
+    const updatedAt = getNowIso();
+    const { nextSnapshot, result } = input.mutate(currentSnapshot, updatedAt);
+    await resolveGuestStorage().saveSnapshot(nextSnapshot);
+    applyHydratedSnapshot(nextSnapshot, {
+      preserveExplicitTemplateNull: nextSnapshot.ui_state.selected_template_local_id === null,
+    });
+    return result;
+  }
+
   async function persistUiState(input: {
     selectedRosterId: string | null;
     selectedTemplateId: string | null;
   }): Promise<void> {
-    const snapshot = await ensureReadySnapshot();
-    const nextSnapshot = replaceGuestSnapshotUiState(snapshot, {
-      selected_roster_id: input.selectedRosterId,
-      selected_template_id: input.selectedTemplateId,
-      current_screen: "class-workspace",
-      planner_initial_view: "groups",
-      dismissed_grouping_draft_id: null,
-      dismissed_seating_draft_id: null,
-      updated_at: getNowIso(),
+    await persistSnapshotMutation({
+      mutate(snapshot, updatedAt) {
+        return {
+          nextSnapshot: normalizeOverviewSnapshotUiState(snapshot, {
+            preferredRosterId: input.selectedRosterId,
+            preferredTemplateId: input.selectedTemplateId,
+            updatedAt,
+            preserveExplicitTemplateNull: input.selectedTemplateId === null,
+          }),
+          result: undefined,
+        };
+      },
     });
-    await resolveGuestStorage().saveSnapshot(nextSnapshot);
-    currentSnapshotId.value = nextSnapshot.snapshot_id;
   }
+
+  const overviewCrudFlow = createClassroomPlannerGuestOverviewCrudFlow(
+    {
+      availableRosters,
+      availableTemplates,
+      selectedRosterId,
+      selectedTemplateId,
+      plannerActionError,
+    },
+    {
+      persistSnapshotMutation,
+    },
+  );
 
   async function bootstrapGuestOverview(): Promise<void> {
     if (!enabled) {
@@ -146,34 +161,23 @@ export function useClassroomPlannerGuestOverviewShell(options?: {
 
     try {
       const snapshot = await ensureReadySnapshot();
-      const hydratedSnapshot = hydrateGuestSnapshot(snapshot);
-      const normalizedSelectedRosterId = resolveExistingId(
-        hydratedSnapshot.ui_state.selected_roster_id,
-        hydratedSnapshot.rosters,
-      );
-      const normalizedSelectedTemplateId = resolveExistingId(
-        hydratedSnapshot.ui_state.selected_template_id,
-        hydratedSnapshot.templates,
-      );
+      const {
+        normalizedSelectedRosterId,
+        normalizedSelectedTemplateId,
+      } = applyHydratedSnapshot(snapshot, {
+        preserveExplicitTemplateNull: snapshot.ui_state.selected_template_local_id === null,
+      });
+      const normalizedSnapshot = normalizeOverviewSnapshotUiState(snapshot, {
+        preferredRosterId: normalizedSelectedRosterId,
+        preferredTemplateId: normalizedSelectedTemplateId,
+        updatedAt: getNowIso(),
+        preserveExplicitTemplateNull: normalizedSelectedTemplateId === null,
+      });
 
-      availableRosters.value = hydratedSnapshot.rosters;
-      availableTemplates.value = hydratedSnapshot.templates;
-      selectedRosterId.value = normalizedSelectedRosterId;
-      selectedTemplateId.value = normalizedSelectedTemplateId;
-      currentSnapshotId.value = snapshot.snapshot_id;
-
-      const needsUiStateNormalization =
-        snapshot.ui_state.selected_roster_local_id !== normalizedSelectedRosterId
-        || snapshot.ui_state.selected_template_local_id !== normalizedSelectedTemplateId
-        || snapshot.ui_state.current_screen !== "class-workspace"
-        || snapshot.ui_state.planner_initial_view !== "groups"
-        || snapshot.ui_state.dismissed_grouping_draft_local_id !== null
-        || snapshot.ui_state.dismissed_seating_draft_local_id !== null;
-
-      if (needsUiStateNormalization) {
-        await persistUiState({
-          selectedRosterId: normalizedSelectedRosterId,
-          selectedTemplateId: normalizedSelectedTemplateId,
+      if (normalizedSnapshot !== snapshot) {
+        await resolveGuestStorage().saveSnapshot(normalizedSnapshot);
+        applyHydratedSnapshot(normalizedSnapshot, {
+          preserveExplicitTemplateNull: normalizedSnapshot.ui_state.selected_template_local_id === null,
         });
       }
     } catch (error: unknown) {
@@ -240,8 +244,10 @@ export function useClassroomPlannerGuestOverviewShell(options?: {
     classWorkspaceSummary,
     currentSnapshotId,
     overviewCapabilities,
+    rosterImportPreviewApiPath: PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH,
     selectWorkspaceRoster,
     selectWorkspaceTemplate,
     bootstrapGuestOverview,
+    ...overviewCrudFlow,
   };
 }

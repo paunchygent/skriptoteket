@@ -35,8 +35,8 @@ implementation does not drift.
 
 ## Current implementation status
 
-As of 2026-04-05, checkpoint 1 is implemented locally and checkpoints 2-4 are
-still pending.
+As of 2026-04-05, checkpoints 1-2 are implemented locally and checkpoints 3-4
+are still pending.
 
 Implemented so far:
 
@@ -44,6 +44,22 @@ Implemented so far:
   it now renders the real overview shell
 - public overview state is bootstrapped from the browser-owned guest snapshot
   seam through a dedicated guest overview controller/view
+- browser-owned roster/template authoring is now wired through the same public
+  overview shell:
+  - `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`
+    now owns guest bootstrap/selection orchestration
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestOverviewCrud.ts`
+    now owns public overview modal + delete-confirmation CRUD
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestControllerSupport.ts`
+    now owns snapshot hydration/normalization helpers
+  - the old
+    `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestOverviewShell.ts`
+    controller has been removed
+- guest roster/template create, edit, delete, and selection all persist back
+  into the browser-owned guest snapshot lane
+- guest roster import preview now stays on the dedicated public/stateless seam
+  only:
+  - `/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview`
 - authenticated Klassrumskartan orchestration remains separate and unchanged
 - checkpoint-1 public presentation uses final-state user copy only:
   - the locked guest system message is shown
@@ -53,20 +69,28 @@ Implemented so far:
 
 Not implemented yet:
 
-- browser-owned roster/template authoring
 - guest `Grupper` / `Sittplatser` draft/session orchestration
 - guest smart rules, export, and final account-only affordance behavior
 
 Local proof so far:
 
-- `pdm run fe-type-check`
 - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerEntryView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/PublicAppHostView.spec.ts`
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerEntryView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/PublicAppHostView.spec.ts src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+- `pdm run fe-type-check`
+- `pdm run docs-validate`
+- `pdm run python -m scripts.playwright_pr_0223_public_guest_overview_checkpoint2_check --base-url http://127.0.0.1:5173`
 - live browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`:
-  - public route renders the real overview shell
-  - the locked registration message is present
-  - no authenticated planner/catalog/draft/export API seam was used; observed
-    app requests were the public bootstrap route plus the global auth-session
-    check
+  - public route renders the real overview shell with the final registration
+    system message still intact
+  - guest can create, edit, and delete a roster in the browser-owned workspace
+    while import preview uses the public helper seam
+  - guest can create, edit, and delete a room template in the browser-owned
+    workspace
+  - no owner-scoped authenticated planner/catalog/draft/export API seam was
+    used; the network audit observed only `GET /api/v1/auth/me`,
+    `GET /api/v1/public/apps/classroom.group-seating-studio`, and
+    `POST /api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview`
+  - artifacts: `.artifacts/pr-0223-public-guest-overview-checkpoint2/`
 
 Reviewer follow-up retained for this checkpoint:
 
@@ -292,232 +316,110 @@ The following surface-level decisions are now locked for implementation.
 5. Prove unchanged authenticated behavior plus guest/reset/export/first-auth
    upgrade flows with focused browser verification.
 
-## Suggested execution flow
+## Detailed implementation decisions
 
-The implementation should be executed as four explicit checkpoints. The goal is
-to keep every checkpoint reviewable, runnable, and honest rather than creating
-one large guest-mode merge that mixes product decisions, orchestration changes,
-and UI parity work.
+The remaining implementation for this PR is now intentionally treated as one
+broader guest-controller buildout. The older checkpoints 2-4 remain useful as
+review vocabulary, but they are no longer hard delivery boundaries for the code
+shape.
 
-### Checkpoint 1. Guest overview adapter
+### 1. Public/authenticated boundary stays hard
 
-Intent:
-- replace the current public-host placeholder/stub with the real
-  Klassrumskartan shell
-- keep the UI visually aligned with the authenticated app
-- avoid touching authenticated owner-scoped APIs
-
-Why this comes first:
-- it proves the correct architectural seam before draft/history/export work
-- it lets the public host stop looking like a separate demo product
-- it creates a stable home for the small system message and later lock states
-
-Implementation shape:
-- introduce a dedicated guest workspace adapter for the public host
-- derive browser-owned:
-  - available rosters
-  - available templates
-  - selected roster/template UI state
-  - overview workspace summary
-- continue to use the existing browser snapshot contract and storage seam
-
-Primary files/seams:
+Locked decision:
 - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.vue`
-- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshot.ts`
-- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestStorage.ts`
-- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshotMapping.ts`
+  remains the authority split
+- authenticated host continues to render the authenticated route shell only
+- public host continues to render a guest-owned controller/view only
+- `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerRouteShell.ts`
+  must not become a hidden dual-mode controller
 
-Non-goals:
-- no guest draft lifecycle yet
-- no smart-rule authoring yet
-- no guest export yet
-- no changes to authenticated route-shell orchestration
+### 2. Immediate rename from guest overview shell to guest controller
 
-Review questions:
-- does the public route now feel like the same product as authenticated
-  Klassrumskartan?
-- is the guest system message subtle, singular, and correctly placed?
-- is browser-owned overview state clearly separated from authenticated APIs?
-
-Implementation-ready task order:
-1. Add a public-only guest overview controller that loads or initializes the
-   current browser-owned snapshot, hydrates overview-ready state, and exposes
-   only the checkpoint-1 surface:
-   - selected roster/template
-   - available rosters/templates
-   - overview workspace summary
-   - guest system message state
-   - no draft/session/export orchestration
-2. Add a real public overview view that reuses the existing overview
-   presentation components instead of the current public placeholder/stub.
-3. Rewire the entry boundary so:
-   - authenticated host continues to render the existing authenticated planner
-     route shell
-   - public host renders the new guest overview view
-   - the current placeholder copy is removed
-4. Extract overview selection persistence behind a small adapter so:
-   - authenticated mode can keep the current local-storage-backed selection
-     behavior
-   - public guest mode persists overview UI state into the guest snapshot
-     `ui_state`
-5. Add guest snapshot `ui_state` write support for the currently selected
-   roster/template and other checkpoint-1 overview-only state without touching
-   drafts, rules, or export lanes yet.
-6. Keep overview controls honest for checkpoint 1 by adding a small capability
-   seam to the shared overview presentation so public mode can:
-   - allow browser-owned selection/rendering
-   - block create/edit/delete authoring cleanly until checkpoint 2
-   - avoid fake guest CRUD and avoid authenticated fallback calls
-7. Add or update focused tests for:
-   - public entry renders the real overview shell instead of the placeholder
-   - guest overview controller bootstraps from browser snapshot only
-   - overview selection persistence is snapshot-backed in public mode
-   - authenticated route-shell behavior remains unchanged
-8. Do a live browser proof on the public route and confirm the network surface
-   stays honest:
-   - same overview shell language as authenticated Klassrumskartan
-   - one subtle guest system message
-   - no authenticated catalog/draft/export/owner-scoped API calls
-
-Primary file edits for checkpoint 1:
-- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.vue`
-- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerOverviewStore.ts`
-- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshotMapping.ts`
-- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestStorage.ts`
-- `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue`
-- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRosterOverviewPanel.vue`
-- `frontend/apps/skriptoteket/src/views/apps/components/PlannerTemplateOverviewPanel.vue`
-
-Expected new files for checkpoint 1:
-- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.vue`
+Locked decision:
 - `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestOverviewShell.ts`
-- a small overview-persistence adapter module if needed to keep authenticated
-  and guest selection storage separate
+  will be renamed immediately rather than kept as a temporary wrapper
+- the replacement name should describe the broader responsibility:
+  `useClassroomPlannerGuestController.ts`
+- the renamed controller owns the public guest workspace beyond overview-only
+  state
 
-Checkpoint-1 definition of done:
-- public Klassrumskartan opens in the real overview shell, not a placeholder
-- public mode reads rosters/templates/selection from the guest snapshot only
-- public mode does not call authenticated catalog, draft, export, or
-  owner-scoped APIs
-- authenticated route-shell behavior remains unchanged
-- the guest system message appears once, subtly, in the approved location
+### 3. One broader guest controller, not separate per-checkpoint controllers
 
-### Checkpoint 2. Browser-owned roster and template authoring
+Locked decision:
+- the public guest lane should converge on one controller that owns:
+  - bootstrap from guest snapshot storage
+  - roster/template CRUD and selection
+  - guest grouping/seating draft continuity
+  - smart-rule persistence
+  - guest export/direct-download state
+  - account-only affordance policy for the public shell
+- do not create a second temporary guest-only controller just to avoid touching
+  later guest capabilities
 
-Intent:
-- make the overview workspace genuinely useful in guest mode
-- reuse the same authoring modals and import affordances rather than inventing
-  guest-only UI
+### 4. Snapshot mutations stay explicit and testable
 
-Why this comes second:
-- roster/template authoring is the lowest-risk browser-owned persistence lane
-- it validates the injected transport seams before draft/state complexity is
-  introduced
+Locked decision:
+- browser-owned persistence must be expressed through focused guest snapshot
+  mutation helpers, not ad hoc inline object surgery spread across views
+- the guest controller orchestrates those helpers and storage writes
+- authenticated owner-scoped orchestration stays separate and unchanged
 
-Implementation shape:
-- wire the public host through the injected save/delete/import-preview seams
-- keep roster import preview on the stateless public helper namespace
-- persist created/edited/deleted rosters and templates directly into the
+### 5. Reuse presentation, inject transport
+
+Locked decision:
+- shared presentation components and modals should be reused wherever they are
+  transport-agnostic
+- guest mode injects browser-owned save/delete handlers plus explicit public
+  helper paths rather than reusing authenticated API defaults
+- if a public/stateless helper seam is absent, that guest capability stays
+  blocked instead of falling through to `/api/v1/apps/...`
+
+### 6. Public import preview seam
+
+Locked decision:
+- roster import preview in guest mode must use:
+  `/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview`
+- the existing modal/import composable contract should stay transport-focused
+  and receive that path by injection
+- guest mode must not use the authenticated import-preview path as fallback
+
+## Execution checklist
+
+- [x] Checkpoint 1 delivered: public route renders the real overview shell from
+  browser-owned guest snapshot state without owner-scoped planner/catalog/
+  draft/export API calls
+- [x] Rename
+  `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestOverviewShell.ts`
+  to
+  `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`
+  and update the public host/import sites immediately
+- [x] Extend the guest controller to own browser-owned roster/template CRUD,
+  selection, and modal orchestration
+- [x] Inject guest roster import preview through the dedicated public helper
+  route only
+- [x] Persist guest roster/template mutations into the guest snapshot lane
+- [ ] Extend the guest controller to own guest grouping/seating draft/session
+  continuity without reusing authenticated draft/workspace endpoints
+- [ ] Extend the guest controller to own guest smart-rule persistence in the
   browser-owned snapshot
-
-Primary files/seams:
-- `frontend/apps/skriptoteket/src/views/apps/components/CreateRosterModal.vue`
-- `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue`
-- `frontend/apps/skriptoteket/src/views/apps/useClassListImportFlow.ts`
-- public guest workspace adapter introduced in checkpoint 1
-
-Non-goals:
-- no authenticated draft endpoints
-- no owner-scoped roster/template CRUD calls from the public route
-- no guest-specific alternate overview layout
-
-Review questions:
-- can a guest create, edit, delete, and import a roster without hitting
-  authenticated APIs?
-- can a guest create, edit, and delete a room template with browser-owned
-  persistence only?
-- do focused browser/network proof and guest adapter tests show that guest
-  roster/template authoring uses only browser-owned snapshot persistence plus
-  the public import-preview helper seam, never owner-scoped authenticated
-  roster/template APIs?
-- does the public route still look and behave like normal Klassrumskartan?
-
-### Checkpoint 3. Guest draft/session adapter
-
-Intent:
-- enable `Grupper` and `Sittplatser` in guest mode without reusing the
-  authenticated draft/session lifecycle
-- preserve the same planner shell while swapping orchestration, not visuals
-
-Why this is a separate checkpoint:
-- this is the first genuinely complex state transition lane
-- draft/session logic is where accidental coupling to owner-scoped APIs is most
-  likely
-- keeping it separate makes architectural review much easier
-
-Implementation shape:
-- add a guest draft/session controller for:
-  - create or resume grouping draft
-  - create or resume seating draft
-  - local switching between overview and planner workspaces
-- hydrate planner-friendly shapes from the guest snapshot instead of from the
-  authenticated draft/workspace endpoints
-- reuse the existing planner panes and shell where they are presentation-only
-
-Primary files/seams:
-- guest workspace adapter introduced in checkpoint 1
-- guest mapping/hydration seam in
-  `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshotMapping.ts`
-- planner shell components under
-  `frontend/apps/skriptoteket/src/views/apps/components/`
-
-Non-goals:
-- no hidden conditional branch that turns the authenticated route shell into a
-  two-personality controller
-- no account-owned draft persistence
-- no export recovery surfaces
-
-Review questions:
-- does the public planner now use browser-owned drafts end-to-end?
-- are `Grupper` and `Sittplatser` using the same shell language as
-  authenticated mode?
-- do focused browser/network proof and guest draft/session controller tests
-  show that planner hydration, resume, and workspace switching come from the
-  guest snapshot lane rather than owner-scoped authenticated draft/workspace
-  endpoints?
-- has authenticated route-shell behavior remained unchanged?
-
-### Checkpoint 4. Smart rules, export, and account-only affordances
-
-Intent:
-- finish the guest capability matrix honestly
-- enforce the final boundary between browser-owned guest work and
-  account-owned/app-owned features
-
-Why this is last:
-- it depends on the guest overview and guest draft lanes already being real
-- it is where the final product honesty is expressed in the UI
-
-Implementation shape:
-- persist guest smart rules in the browser-owned snapshot
-- keep smart compute stateless and server-assisted only when needed through
-  explicit guest-capable public helper seams
-- if a guest-capable smart-run seam is not yet present for one workspace, keep
-  that affordance honestly blocked rather than routing guest mode through the
-  authenticated owner-scoped APIs
-- provide direct-download export only from the normal export entry point
-- omit account-owned recovery/job/Vault surfaces from guest mode
-- use disabled + tooltip only where showing the control improves comprehension
-
-Primary files/seams:
-- guest workspace adapter
-- guest draft/session controller
-- smart-rule surfaces in `Regler`
-- grouping/seating export entry points
-
-Non-goals:
-- no guest Vault/MyFiles
-- no resumable export jobs in guest mode
+- [ ] Keep guest export direct-download only and omit/block account-owned
+  recovery, job, and Vault/MyFiles affordances according to the frozen matrix
+- [x] Preserve the same public shell and final-state guest system message from
+  checkpoint 1
+- [x] Keep authenticated Klassrumskartan behavior unchanged
+- [x] Add or update focused tests for the broader guest-controller lane,
+  including overview authoring and public-helper injection
+- [x] Run the required verification stack:
+  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerEntryView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/PublicAppHostView.spec.ts src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run docs-validate`
+- [x] Gather live public-route proof on
+  `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` showing:
+  - guest can create, edit, and delete a roster in the browser-owned workspace
+  - guest can create, edit, and delete a room template in the browser-owned
+    workspace
+  - the final registration/system message still looks correct
+  - no owner-scoped authenticated planner/catalog/draft/export API seam is used
 - no pseudo-working dead ends
 
 Review questions:
