@@ -18,6 +18,15 @@ import RoomTemplatePreviewScene from "./RoomTemplatePreviewScene.vue";
 
 const props = defineProps<{
   template?: RoomTemplate | null;
+  saveTemplate?: (payload: {
+    existingTemplate: RoomTemplate | null;
+    name: string;
+    grid_cols: number;
+    grid_rows: number;
+    seats: RoomTemplate["seats"];
+    fixtures: RoomTemplate["fixtures"];
+  }) => Promise<RoomTemplate>;
+  deleteTemplate?: (templateId: string) => Promise<void>;
 }>();
 
 const emit = defineEmits<{
@@ -74,15 +83,20 @@ async function submit(): Promise<void> {
       seats: parsedSeats.value,
       fixtures: parsedFixtures.value,
     };
-    const response = isEditing.value && props.template
-      ? await apiPut<RoomTemplate>(
-          `/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`,
-          payload,
-        )
-      : await apiPost<RoomTemplate>(
-          "/api/v1/apps/classroom.group-seating-studio/templates",
-          payload,
-        );
+    const response = props.saveTemplate
+      ? await props.saveTemplate({
+          existingTemplate: props.template ?? null,
+          ...payload,
+        })
+      : isEditing.value && props.template
+        ? await apiPut<RoomTemplate>(
+            `/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`,
+            payload,
+          )
+        : await apiPost<RoomTemplate>(
+            "/api/v1/apps/classroom.group-seating-studio/templates",
+            payload,
+          );
     emit("saved", response);
   } catch (submitError: unknown) {
     error.value = submitError instanceof Error ? submitError.message : "Kunde inte spara klassrummet.";
@@ -100,7 +114,11 @@ async function removeTemplate(): Promise<void> {
   error.value = null;
 
   try {
-    await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`);
+    if (props.deleteTemplate) {
+      await props.deleteTemplate(props.template.id);
+    } else {
+      await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`);
+    }
     emit("deleted", props.template.id);
   } catch (deleteError: unknown) {
     error.value = deleteError instanceof Error ? deleteError.message : "Kunde inte radera klassrummet.";

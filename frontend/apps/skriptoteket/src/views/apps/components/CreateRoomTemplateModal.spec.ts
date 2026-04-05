@@ -314,6 +314,57 @@ describe("CreateRoomTemplateModal", () => {
     ]);
   });
 
+  it("uses injected save and delete handlers when provided", async () => {
+    const saveTemplate = vi.fn().mockResolvedValue({
+      id: "guest-template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [],
+    });
+    const deleteTemplate = vi.fn().mockResolvedValue(undefined);
+
+    const createWrapper = mount(CreateRoomTemplateModal, {
+      props: {
+        saveTemplate,
+      },
+    });
+
+    await createWrapper.get('input[type="text"]').setValue("Sal 101");
+    await createWrapper.get("button.btn-primary").trigger("click");
+
+    expect(saveTemplate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        existingTemplate: null,
+        name: "Sal 101",
+      }),
+    );
+    expect(clientMocks.apiPost).not.toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/templates",
+      expect.anything(),
+    );
+
+    const editWrapper = mount(CreateRoomTemplateModal, {
+      props: {
+        template: {
+          id: "guest-template-1",
+          name: "Sal 101",
+          grid_cols: 14,
+          grid_rows: 9,
+          seats: [],
+          fixtures: [],
+        },
+        deleteTemplate,
+      },
+    });
+
+    await editWrapper.get("button.planner-btn-danger").trigger("click");
+
+    expect(deleteTemplate).toHaveBeenCalledWith("guest-template-1");
+    expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+  });
+
   it("clears seats and fixtures without changing the current grid size", async () => {
     clientMocks.apiPost.mockResolvedValueOnce({
       id: "template-1",

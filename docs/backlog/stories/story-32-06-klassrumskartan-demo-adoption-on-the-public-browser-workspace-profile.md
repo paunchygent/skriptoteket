@@ -50,9 +50,17 @@ reviewable first consumer: Klassrumskartan.
 - Upgrade trigger lock: detect pending guest work only on the first
   authenticated Klassrumskartan visit, not during registration, generic site
   login, or incidental auth changes elsewhere.
-- Reset affordance lock: use the user-facing action label `Rensa arbetsyta`
+- Reset affordance lock: use the user-facing action label `Kasta`
   with plain-language browser/shared-device copy; do not expose internal guest
   storage terminology in the visible UI.
+- UI parity lock: guest mode should look and behave like the logged-in
+  Klassrumskartan workspace by default, not like a separate demo product.
+  Differences should stay minimal and explicit:
+  - account-owned affordances may be disabled/greyed out with short tooltips
+  - one small system message or banner may explain in plain user Swedish that
+    some functions require an account
+  - do not introduce a separate guest-specific layout language, large explainer
+    cards, or heavy upsell surfaces
 
 ## Planned PR slices
 

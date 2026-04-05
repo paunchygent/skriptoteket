@@ -162,6 +162,24 @@ describe("CreateRosterModal", () => {
     );
   });
 
+  it("supports an injected public import-preview path without hardcoding the owner route", async () => {
+    clientMocks.apiPost.mockResolvedValueOnce(buildImportPreview());
+
+    const wrapper = mount(CreateRosterModal, {
+      props: {
+        importPreviewApiPath:
+          "/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview",
+      },
+    });
+
+    await dropImportFile(wrapper);
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview",
+      expect.any(FormData),
+    );
+  });
+
   it("shows drag-active styling only while a file is over the drop zone", async () => {
     const wrapper = mount(CreateRosterModal);
     const dropzone = wrapper.get("[data-test='roster-modal-import-dropzone']");
@@ -262,5 +280,56 @@ describe("CreateRosterModal", () => {
       "Kunde inte radera klasslistan just nu.",
     );
     expect(wrapper.emitted("deleted")).toBeUndefined();
+  });
+
+  it("uses injected save and delete handlers when provided", async () => {
+    const saveRoster = vi.fn().mockResolvedValue({
+      id: "guest-roster-1",
+      name: "SA24D",
+      students: [{ id: "student-1", display_name: "Ada" }],
+    });
+    const deleteRoster = vi.fn().mockResolvedValue(undefined);
+
+    const createWrapper = mount(CreateRosterModal, {
+      props: {
+        saveRoster,
+      },
+    });
+
+    await createWrapper.get("input[type='text']").setValue("SA24D");
+    await createWrapper.get("textarea").setValue("Ada");
+    const saveButton = createWrapper.findAll("button").find((button) => button.text() === "Skapa klasslista");
+    if (!saveButton) {
+      throw new Error("Expected the create save button to be rendered.");
+    }
+    await saveButton.trigger("click");
+    await flushPromises();
+
+    expect(saveRoster).toHaveBeenCalledWith({
+      existingRoster: null,
+      name: "SA24D",
+      students: [expect.objectContaining({ display_name: "Ada" })],
+    });
+    expect(clientMocks.apiPost).not.toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters",
+      expect.anything(),
+    );
+
+    const editWrapper = mount(CreateRosterModal, {
+      props: {
+        roster: {
+          id: "guest-roster-1",
+          name: "SA24D",
+          students: [{ id: "student-1", display_name: "Ada" }],
+        },
+        deleteRoster,
+      },
+    });
+
+    await editWrapper.get("button.planner-btn-danger").trigger("click");
+    await flushPromises();
+
+    expect(deleteRoster).toHaveBeenCalledWith("guest-roster-1");
+    expect(clientMocks.apiDelete).not.toHaveBeenCalled();
   });
 });

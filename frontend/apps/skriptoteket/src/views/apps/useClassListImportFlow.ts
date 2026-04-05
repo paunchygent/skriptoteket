@@ -31,6 +31,10 @@ export interface ClassListImportPreview {
   file_name: string;
 }
 
+type UseClassListImportFlowOptions = {
+  apiPath?: string;
+};
+
 function getImportErrorMessage(error: unknown, fallbackMessage: string): string {
   if (isApiError(error)) {
     return error.message;
@@ -38,7 +42,9 @@ function getImportErrorMessage(error: unknown, fallbackMessage: string): string 
   return fallbackMessage;
 }
 
-export function useClassListImportFlow() {
+export function useClassListImportFlow(options: UseClassListImportFlowOptions = {}) {
+  const apiPath =
+    options.apiPath ?? "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview";
   const isUploading = ref(false);
   const preview = ref<ClassListImportPreview | null>(null);
   const error = ref<string | null>(null);
@@ -53,7 +59,7 @@ export function useClassListImportFlow() {
 
     try {
       preview.value = await apiPost<ClassListImportPreview>(
-        "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview",
+        apiPath,
         formData,
       );
     } catch (uploadError: unknown) {

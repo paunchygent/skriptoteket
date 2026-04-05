@@ -17,6 +17,13 @@ import type { Roster, Student } from "../classroomPlannerTypes";
 
 const props = defineProps<{
   roster?: Roster | null;
+  importPreviewApiPath?: string;
+  saveRoster?: (payload: {
+    existingRoster: Roster | null;
+    name: string;
+    students: Student[];
+  }) => Promise<Roster>;
+  deleteRoster?: (rosterId: string) => Promise<void>;
 }>();
 
 const emit = defineEmits<{
@@ -35,7 +42,9 @@ const ambiguousRows = ref<AmbiguousRow[]>([]);
 const isImportDropActive = ref(false);
 
 const { isUploading, preview, error: importError, uploadFile, cancel: resetImportState } =
-  useClassListImportFlow();
+  useClassListImportFlow({
+    apiPath: props.importPreviewApiPath,
+  });
 
 const isEditing = computed(() => Boolean(props.roster));
 const importDropZoneClass = computed(() => {
@@ -120,12 +129,18 @@ async function submit(): Promise<void> {
       name: name.value.trim(),
       students: parsedStudents.value,
     };
-    const response = isEditing.value && props.roster
-      ? await apiPut<Roster>(
-          `/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`,
-          payload,
-        )
-      : await apiPost<Roster>("/api/v1/apps/classroom.group-seating-studio/rosters", payload);
+    const response = props.saveRoster
+      ? await props.saveRoster({
+          existingRoster: props.roster ?? null,
+          name: payload.name,
+          students: payload.students,
+        })
+      : isEditing.value && props.roster
+        ? await apiPut<Roster>(
+            `/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`,
+            payload,
+          )
+        : await apiPost<Roster>("/api/v1/apps/classroom.group-seating-studio/rosters", payload);
     emit("saved", response);
   } catch (submitError: unknown) {
     formError.value =
@@ -144,7 +159,11 @@ async function removeRoster(): Promise<void> {
   formError.value = null;
 
   try {
-    await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`);
+    if (props.deleteRoster) {
+      await props.deleteRoster(props.roster.id);
+    } else {
+      await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`);
+    }
     emit("deleted", props.roster.id);
   } catch (deleteError: unknown) {
     formError.value =
