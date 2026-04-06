@@ -392,7 +392,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find("[data-test='rules-pane']").exists()).toBe(true);
   });
 
-  it("pulls grouping and seating toolbars up against the authenticated topbar once they become sticky", () => {
+  it("keeps grouping and seating toolbars on the shared viewport-relative sticky shell contract", () => {
     const commonGlobal = {
       stubs: {
         GroupBoard: { template: "<div data-test='group-board' />" },
@@ -416,12 +416,12 @@ describe("PlannerWorkspaceShell", () => {
     expect(
       groupingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["sticky", "top-0", "z-20", "md:-top-4"]),
+      expect.arrayContaining(["sticky", "top-0", "z-20"]),
     );
     expect(
       groupingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
     ).not.toContain(
-      "top-3",
+      "md:-top-4",
     );
 
     stateMocks.plannerState.draft = {
@@ -442,12 +442,12 @@ describe("PlannerWorkspaceShell", () => {
     expect(
       seatingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["sticky", "top-0", "z-20", "md:-top-4"]),
+      expect.arrayContaining(["sticky", "top-0", "z-20"]),
     );
     expect(
       seatingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
     ).not.toContain(
-      "top-3",
+      "md:-top-4",
     );
   });
 

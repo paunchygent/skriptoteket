@@ -92,13 +92,64 @@ describe("GroupCard", () => {
     });
 
     const studentLabels = wrapper.findAll('[data-test="group-student-name"]');
+    const firstStudentRow = wrapper.get('[data-test="group-student-row-student-1"]');
 
     expect(studentLabels).toHaveLength(8);
     expect(wrapper.get('[data-test="group-card"]').classes()).toContain("self-start");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:self-auto");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:min-h-[234px]");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:h-full");
+    expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("h-[234px]");
+    expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("max-h-[234px]");
+    expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("overflow-y-auto");
+    expect(firstStudentRow.classes()).toContain("min-h-[56px]");
+    expect(wrapper.get('[data-test="group-card-body"]').classes()).toContain("flex-1");
+    expect(wrapper.get('[data-test="group-card-body"]').classes()).toContain("min-h-0");
+    expect(wrapper.get('[data-test="group-card-body"]').classes()).not.toContain("overflow-y-auto");
     for (const label of studentLabels) {
       expect(label.classes()).toContain("break-words");
       expect(label.classes()).not.toContain("truncate");
     }
+  });
+
+  it("uses the approved taller empty-state and assigned-row floors", () => {
+    const wrapper = mount(GroupCard, {
+      props: {
+        group: {
+          id: "group-a",
+          name: "Grupp A",
+          sort_order: 0,
+          name_is_custom: false,
+        },
+        students: [],
+        canMoveUp: false,
+        canMoveDown: true,
+      },
+    });
+
+    expect(wrapper.get('[data-test="group-empty-drop-zone"]').classes()).toContain("min-h-[112px]");
+    expect(wrapper.get('[data-test="group-empty-drop-zone"]').classes()).toContain("flex-1");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:min-h-[234px]");
+  });
+
+  it("keeps the desktop card floor even after one student is assigned", () => {
+    const wrapper = mount(GroupCard, {
+      props: {
+        group: {
+          id: "group-a",
+          name: "Grupp A",
+          sort_order: 0,
+          name_is_custom: false,
+        },
+        students: [{ id: "student-1", display_name: "Ada Lovelace" }],
+        canMoveUp: false,
+        canMoveDown: true,
+      },
+    });
+
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:min-h-[234px]");
+    expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("max-h-[234px]");
+    expect(wrapper.find('[data-test="group-empty-drop-zone"]').exists()).toBe(false);
   });
 
   it("keeps assigned student rows hover-only without a persistent selected hue", () => {

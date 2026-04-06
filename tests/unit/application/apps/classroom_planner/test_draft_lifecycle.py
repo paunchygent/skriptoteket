@@ -506,7 +506,7 @@ async def test_create_grouping_draft_supersedes_existing_active_grouping(
     drafts.save_workspace.assert_awaited_once()
     saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
     assert saved_workspace.group_assignments == []
-    assert len(saved_workspace.groups) == 6
+    assert len(saved_workspace.groups) == 4
 
 
 @pytest.mark.asyncio

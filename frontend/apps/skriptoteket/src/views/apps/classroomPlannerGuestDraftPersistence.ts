@@ -72,21 +72,15 @@ function defaultCreateDraftId(): string {
   return `guest-draft-${Date.now()}`;
 }
 
+const DEFAULT_GROUPING_DRAFT_GROUP_COUNT = 4;
+
 function createDefaultGroupingDraftGroups(): DraftGroup[] {
-  return [
-    {
-      id: createGroupId(),
-      name: buildDefaultGroupName(0),
-      sort_order: 0,
-      name_is_custom: false,
-    },
-    {
-      id: createGroupId(),
-      name: buildDefaultGroupName(1),
-      sort_order: 1,
-      name_is_custom: false,
-    },
-  ];
+  return Array.from({ length: DEFAULT_GROUPING_DRAFT_GROUP_COUNT }, (_entry, index) => ({
+    id: createGroupId(),
+    name: buildDefaultGroupName(index),
+    sort_order: index,
+    name_is_custom: false,
+  }));
 }
 
 export function createClassroomPlannerGuestDraftPersistence(
@@ -104,6 +98,17 @@ export function createClassroomPlannerGuestDraftPersistence(
     relationshipRules,
     smartRulesRevision,
   } = context;
+
+  function resolvePersistedSelectedTemplateId(
+    snapshot: ClassroomPlannerGuestSnapshot,
+    draftKind: PlanDraftKind,
+  ): string | null {
+    if (draftKind === "grouping") {
+      return snapshot.ui_state.selected_template_local_id;
+    }
+
+    return template.value?.id ?? null;
+  }
 
   async function persistGuestWorkspace(): Promise<DraftWorkspaceResponse> {
     if (!draft.value || !roster.value) {
@@ -129,7 +134,10 @@ export function createClassroomPlannerGuestDraftPersistence(
             currentScreen: "planner",
             plannerInitialView: workspace.draft.draft_kind === "grouping" ? "groups" : "seats",
             selectedRosterId: roster.value!.id,
-            selectedTemplateId: template.value?.id ?? null,
+            selectedTemplateId: resolvePersistedSelectedTemplateId(
+              snapshot,
+              workspace.draft.draft_kind,
+            ),
             dismissedGroupingDraftId: null,
             dismissedSeatingDraftId: null,
           }),

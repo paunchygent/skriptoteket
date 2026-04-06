@@ -94,6 +94,44 @@ describe("GroupBoard", () => {
     expect(cards).toHaveLength(2);
     expect(cards[0]?.text()).toContain("Grupp A");
     expect(cards[1]?.text()).toContain("Grupp B");
+    expect(wrapper.get('[data-test="group-board"]').classes()).toEqual(
+      expect.arrayContaining([
+        "content-start",
+        "gap-3",
+        "md:grid-cols-2",
+        "xl:min-h-[480px]",
+        "xl:auto-rows-[minmax(234px,auto)]",
+        "xl:items-stretch",
+      ]),
+    );
+  });
+
+  it("freezes the desktop two-row board math through row-floor grid classes", () => {
+    stateMocks.plannerState.groups = [
+      { id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false },
+      { id: "group-b", name: "Grupp B", sort_order: 1, name_is_custom: false },
+      { id: "group-c", name: "Grupp C", sort_order: 2, name_is_custom: false },
+      { id: "group-d", name: "Grupp D", sort_order: 3, name_is_custom: false },
+    ];
+    stateMocks.plannerState.studentsByGroupId = {
+      "group-a": [],
+      "group-b": [],
+      "group-c": [],
+      "group-d": [],
+    } as Record<string, Array<{ id: string; display_name: string }>>;
+
+    const wrapper = mountBoard();
+
+    expect(wrapper.findAll('[data-test="group-card"]')).toHaveLength(4);
+    expect(wrapper.get('[data-test="group-board"]').classes()).toEqual(
+      expect.arrayContaining([
+        "md:grid-cols-2",
+        "gap-3",
+        "xl:min-h-[480px]",
+        "xl:auto-rows-[minmax(234px,auto)]",
+        "xl:items-stretch",
+      ]),
+    );
   });
 
   it("passes the workspace busy state down to group cards", () => {

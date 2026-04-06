@@ -5,7 +5,7 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-01
+updated: 2026-04-06
 outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, and coherent grouping/seating/rules work surfaces; the remaining EPIC-29 lane is shared site/app primitive, symbol, and discoverability tightening rather than unfinished workspace layout execution."
 dependencies:
   [
@@ -106,3 +106,4 @@ into the `laptop` proof width.
 - `ST-29-05` is now done in practice through the current `ST-29-03`, `ST-29-02`, and `ST-29-09` behavior set: grouping and seating read as desktop work instruments with stable split-pane composition, compact local chrome, detached sticky action surfaces, and less stacked-card overhead.
 - `ST-29-06` is now done through `PR-0185`: the no-classroom `Regler` planning-map state now uses the approved classroom guidance copy, off-map students render as an organized selectable roster with visible pending-selection order instead of a loose chip cloud, `Grupper` now uses the approved calmer helper copy, and the live proof is locked at `1366x768` and `1440x900` through `scripts/playwright_pr_0185_rules_no_classroom_fallback_check.py`.
 - `ST-29-10` is now done through `PR-0182`, `PR-0183`, and `PR-0184`: first-run workspace reachability is now truthful in the shared selector, `Översikt` shows the approved compact prerequisite guidance plus `Hjälp` affordance copy, and `docs/mockups/st-29-10-first-run-workspace-gating/index.html` remains the canonical mockup/preview path that grounded the slice before the live shell changes.
+- `ST-29-11` now has its current planner hardening set implemented through `PR-0224`, `PR-0225`, `PR-0226`, and `PR-0227`: shared planner shell parity is tightened across guest and authenticated mode, grouping now holds the explicit `480px` desktop floor with `56px` / `112px` group-card sizing, grouping autosave preserves the selected classroom instead of clearing `Sittplatser`, fresh grouping drafts now seed 4 groups consistently in both guest and authenticated mode, and the default 4-card desktop grouping board now proves exact `480px` two-row math at `1440x900` while populated cards retain a desktop `234px` minimum-height floor and can grow without forced internal scrolling.

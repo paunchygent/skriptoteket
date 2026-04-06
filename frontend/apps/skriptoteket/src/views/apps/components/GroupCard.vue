@@ -85,7 +85,7 @@ function commitName(): void {
 <template>
   <div
     data-test="group-card"
-    class="flex self-start flex-col border border-navy bg-white p-3 shadow-brutal-sm"
+    class="flex self-start flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:min-h-[234px] xl:h-full xl:self-auto"
     @dragover="onDragOver"
     @drop="onDrop"
   >
@@ -135,12 +135,15 @@ function commitName(): void {
       </div>
     </div>
 
-    <div class="mt-2.5 flex flex-col gap-1.5">
+    <div
+      data-test="group-card-body"
+      class="mt-2.5 flex min-h-0 flex-1 flex-col gap-1.5"
+    >
       <div
         v-for="student in students"
         :key="student.id"
         :data-test="`group-student-row-${student.id}`"
-        class="flex min-h-[44px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
+        class="flex min-h-[56px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
         :class="'border-navy bg-white text-navy hover:bg-canvas'"
         :draggable="!props.disabled"
         @dragstart="onDragStart($event, student)"
@@ -174,7 +177,8 @@ function commitName(): void {
 
       <div
         v-if="students.length === 0"
-        class="flex min-h-[88px] items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-4 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
+        data-test="group-empty-drop-zone"
+        class="flex min-h-[112px] flex-1 items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-4 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
       >
         Släpp elever här
       </div>

@@ -44,6 +44,19 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0224: ST-29-11 desktop-first planner width stability and shrink-to-fit remediation](../prs/pr-0224-st-29-11-desktop-first-planner-width-stability-and-shrink-to-fit-remediation.md)
 - [PR-0225: ST-29-11 desktop-first planner toolbar priority and overflow hardening](../prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md)
 - [PR-0226: ST-29-11 shared planner shell parity and grouping viewport-height stabilization](../prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md)
+- [PR-0227: ST-29-11 exact two-row grouping board height contract at desktop baseline](../prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md)
+
+## Implementation Summary (as of 2026-04-06)
+
+- `PR-0224`, `PR-0225`, `PR-0226`, and `PR-0227` are now implemented as the current
+  planner-focused `ST-29-11` hardening set: the desktop shell stays width-stable, toolbar actions
+  now respect the shared overflow/priority contract, guest and authenticated grouping/seating
+  shells now share the same sticky wrapper/layout contract, the grouping workspace keeps the
+  explicit `480px` desktop lane floor with `56px` / `112px` group-card sizing, fresh grouping
+  drafts now seed 4 groups in both guest and authenticated mode, grouping autosave preserves the
+  overview-selected classroom, and the default 4-card desktop grouping board now proves exact
+  `480px` two-row math at `1440x900` while populated cards retain a desktop `234px` minimum-height
+  floor and can grow without forced internal scrolling.
 
 ## References
 

@@ -17,6 +17,7 @@ import PlannerGroupingWorkspaceToolbar from "./components/PlannerGroupingWorkspa
 import PlannerSeatingWorkspacePane from "./components/PlannerSeatingWorkspacePane.vue";
 import PlannerSeatingWorkspaceToolbar from "./components/PlannerSeatingWorkspaceToolbar.vue";
 import PlannerTopPanel from "./components/PlannerTopPanel.vue";
+import PlannerWorkspaceModeSurface from "./components/PlannerWorkspaceModeSurface.vue";
 import { resolvePlannerWorkspaceDisabledReasons } from "./plannerWorkspacePrerequisites";
 import { useClassroomState } from "./useClassroomState";
 
@@ -168,15 +169,11 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
       @exit="emit('exit-app')"
     />
 
-    <div
+    <PlannerWorkspaceModeSurface
       v-if="currentView === 'groups'"
-      class="flex flex-col gap-4 xl:min-h-0 xl:flex-1"
+      view="groups"
     >
-      <div
-        class="sticky top-0 z-20 md:-top-4"
-        data-ui="planner-workspace-toolbar-shell"
-        data-view="groups"
-      >
+      <template #toolbar>
         <PlannerGroupingWorkspaceToolbar
           :available-rosters="availableRosters"
           :selected-roster-id="selectedRosterId"
@@ -187,26 +184,16 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
           @new-grouping-draft="startNewGroupingDraft"
           @edit-roster="emit('edit-roster')"
         />
-      </div>
+      </template>
 
-      <div
-        class="xl:min-h-0 xl:max-h-full xl:overflow-y-auto"
-        data-ui="planner-workspace-pane-shell"
-        data-view="groups"
-      >
-        <PlannerGroupingWorkspacePane />
-      </div>
-    </div>
+      <PlannerGroupingWorkspacePane />
+    </PlannerWorkspaceModeSurface>
 
-    <div
+    <PlannerWorkspaceModeSurface
       v-else
-      class="flex flex-col gap-4 xl:min-h-0 xl:flex-1"
+      view="seats"
     >
-      <div
-        class="sticky top-0 z-20 md:-top-4"
-        data-ui="planner-workspace-toolbar-shell"
-        data-view="seats"
-      >
+      <template #toolbar>
         <PlannerSeatingWorkspaceToolbar
           :available-templates="availableTemplates"
           :selected-template-id="selectedPlannerTemplate?.id ?? null"
@@ -218,17 +205,11 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
           @edit-roster="emit('edit-roster')"
           @edit-current-template="editCurrentTemplate"
         />
-      </div>
+      </template>
 
-      <div
-        class="xl:min-h-0 xl:max-h-full xl:overflow-y-auto"
-        data-ui="planner-workspace-pane-shell"
-        data-view="seats"
-      >
-        <PlannerSeatingWorkspacePane
-          :selected-template-id="selectedPlannerTemplate?.id ?? null"
-        />
-      </div>
-    </div>
+      <PlannerSeatingWorkspacePane
+        :selected-template-id="selectedPlannerTemplate?.id ?? null"
+      />
+    </PlannerWorkspaceModeSurface>
   </section>
 </template>

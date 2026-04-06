@@ -8,7 +8,7 @@
 
 import { mount } from "@vue/test-utils";
 import { defineComponent, nextTick } from "vue";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createClassroomPlannerGuestSnapshotFromSeed } from "./classroomPlannerGuestSnapshotMapping";
 import { summarizeClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
@@ -45,6 +45,10 @@ async function flushGuestOverview(): Promise<void> {
 }
 
 describe("useClassroomPlannerGuestController", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("initializes an empty browser-owned snapshot when none exists yet", async () => {
     const emptySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
       snapshot_id: "guest-snapshot-1",
@@ -596,6 +600,185 @@ describe("useClassroomPlannerGuestController", () => {
     expect(savedSnapshot?.ui_state.current_screen).toBe("planner");
     expect(savedSnapshot?.ui_state.planner_initial_view).toBe("groups");
     expect(savedSnapshot?.ui_state.selected_template_local_id).toBe("template-1");
+  });
+
+  it("preserves the overview classroom selection when grouping autosave persists random assignments", async () => {
+    vi.useFakeTimers();
+    const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-7b",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [
+        {
+          id: "roster-1",
+          name: "SA24D",
+          students: [
+            { id: "student-1", display_name: "Ada" },
+            { id: "student-2", display_name: "Bo" },
+            { id: "student-3", display_name: "Cia" },
+            { id: "student-4", display_name: "Dan" },
+          ],
+        },
+      ],
+      templates: [
+        {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 8,
+          grid_rows: 6,
+          seats: [{ id: "seat-1", x: 1, y: 1, zone: "front" }],
+          fixtures: [],
+        },
+      ],
+      smart_rule_sets: [],
+      grouping_draft: {
+        draft: {
+          id: "draft-grouping-4",
+          roster_id: "roster-1",
+          draft_kind: "grouping",
+          template_id: null,
+          smart_enabled: false,
+          use_history: false,
+          grouping_seating_distance_enabled: false,
+          status: "active",
+          revision: 1,
+          last_opened_at: "2026-04-05T09:10:00.000Z",
+        },
+        roster: {
+          id: "roster-1",
+          name: "SA24D",
+          students: [
+            { id: "student-1", display_name: "Ada" },
+            { id: "student-2", display_name: "Bo" },
+            { id: "student-3", display_name: "Cia" },
+            { id: "student-4", display_name: "Dan" },
+          ],
+        },
+        template: null,
+        groups: [
+          { id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+          { id: "group-2", name: "Grupp 2", sort_order: 1, name_is_custom: false },
+        ],
+        group_assignments: [],
+        seat_assignments: [],
+        history_status: { can_undo: false, can_redo: false },
+      },
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: "roster-1",
+        selected_template_id: "template-1",
+        current_screen: "class-workspace",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+    const saveSnapshot = vi.fn(async () => undefined);
+    const harness = mountGuestOverviewHarness({
+      nowIso: () => "2026-04-05T09:30:00.000Z",
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "ready" as const,
+          snapshot: readySnapshot,
+          summary: summarizeClassroomPlannerGuestSnapshot(readySnapshot),
+        })),
+        saveSnapshot,
+        initializeEmptySnapshot: vi.fn(),
+        clearCurrentSnapshot: vi.fn(),
+      }),
+    });
+    await flushGuestOverview();
+
+    await harness.getState().openGroupingWorkspace();
+    harness.getState().guestPlannerState.randomizeGroups();
+    await vi.advanceTimersByTimeAsync(900);
+    await flushGuestOverview();
+
+    expect(harness.getState().selectedTemplateId.value).toBe("template-1");
+    const savedSnapshot = (saveSnapshot.mock.calls as unknown[][]).at(-1)?.[0] as
+      | { ui_state: { selected_template_local_id: string | null } }
+      | undefined;
+    expect(savedSnapshot?.ui_state.selected_template_local_id).toBe("template-1");
+  });
+
+  it("seeds four default groups when opening a brand-new guest grouping draft", async () => {
+    const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-7c",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [
+        {
+          id: "roster-1",
+          name: "SA24D",
+          students: [
+            { id: "student-1", display_name: "Ada" },
+            { id: "student-2", display_name: "Bo" },
+          ],
+        },
+      ],
+      templates: [
+        {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 8,
+          grid_rows: 6,
+          seats: [{ id: "seat-1", x: 1, y: 1, zone: "front" }],
+          fixtures: [],
+        },
+      ],
+      smart_rule_sets: [],
+      grouping_draft: null,
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: "roster-1",
+        selected_template_id: "template-1",
+        current_screen: "class-workspace",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+    const saveSnapshot = vi.fn(async () => undefined);
+    const harness = mountGuestOverviewHarness({
+      nowIso: () => "2026-04-05T09:30:00.000Z",
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "ready" as const,
+          snapshot: readySnapshot,
+          summary: summarizeClassroomPlannerGuestSnapshot(readySnapshot),
+        })),
+        saveSnapshot,
+        initializeEmptySnapshot: vi.fn(),
+        clearCurrentSnapshot: vi.fn(),
+      }),
+    });
+    await flushGuestOverview();
+
+    await harness.getState().openGroupingWorkspace();
+
+    expect(harness.getState().guestPlannerState.groups.value).toEqual([
+      expect.objectContaining({ name: "Grupp 1", sort_order: 0 }),
+      expect.objectContaining({ name: "Grupp 2", sort_order: 1 }),
+      expect.objectContaining({ name: "Grupp 3", sort_order: 2 }),
+      expect.objectContaining({ name: "Grupp 4", sort_order: 3 }),
+    ]);
+    const savedSnapshot = (saveSnapshot.mock.calls as unknown[][]).at(-1)?.[0] as
+      | {
+          grouping_draft: {
+            groups: Array<{ name: string; sort_order: number }>;
+          } | null;
+        }
+      | undefined;
+    expect(savedSnapshot?.grouping_draft?.groups).toEqual([
+      expect.objectContaining({ name: "Grupp 1", sort_order: 0 }),
+      expect.objectContaining({ name: "Grupp 2", sort_order: 1 }),
+      expect.objectContaining({ name: "Grupp 3", sort_order: 2 }),
+      expect.objectContaining({ name: "Grupp 4", sort_order: 3 }),
+    ]);
   });
 
   it("creates a fresh seating draft when the requested classroom changed", async () => {

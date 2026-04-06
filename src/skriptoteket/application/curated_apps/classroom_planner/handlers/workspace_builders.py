@@ -16,11 +16,13 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 
+DEFAULT_GROUPING_DRAFT_GROUP_COUNT = 4
+
 
 def build_default_groups(
     *,
     id_generator: IdGeneratorProtocol,
-    count: int = 6,
+    count: int = DEFAULT_GROUPING_DRAFT_GROUP_COUNT,
 ) -> list[DraftGroup]:
     """Create the default group buckets for a new grouping draft."""
 

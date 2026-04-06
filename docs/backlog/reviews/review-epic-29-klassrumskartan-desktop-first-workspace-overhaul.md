@@ -5,6 +5,7 @@ title: "Review: Klassrumskartan desktop-first workspace overhaul"
 status: changes_requested
 owners: "agents"
 created: 2026-03-28
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-29
 adrs:
@@ -126,3 +127,133 @@ layouts. Use the new workspace doctrine as the planning reference throughout.
 | 5 | `EPIC-29`, `REF-klassrumskartan-workspace-ui-doctrine-2026-03-28`, `ST-29-02`..`ST-29-07` | Added an explicit `phone` / `tablet` / `laptop` / `desktop` viewport-proof matrix and updated acceptance criteria to reference the named review viewports |
 | 6 | `ST-29-01` | Moved icon accessibility and discoverability requirements into acceptance criteria so the symbol-system slice locks both space efficiency and usability |
 | 7 | `ST-29-06` | Added `ST-29-03` as an explicit dependency so the rules workspace cannot bypass shared desktop-composition primitives |
+
+## Supplemental Review Record: PR-0226 Shared Planner Shell Parity and Grouping Viewport-Height Stabilization
+
+**Reviewer:** `lead-developer`
+**Date:** 2026-04-06
+**Verdict:** `approved`
+
+### Scope To Review
+
+- `docs/backlog/prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md`
+- `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`
+- `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+
+### Required Review Outputs
+
+1. Confirm the slice really belongs under `ST-29-11` shared primitive/parity tightening rather
+   than reopening core workspace redesign scope.
+2. Confirm sticky toolbar behavior is specified as one shared viewport-relative shell contract,
+   not as a guest-only patch or a page-height/wrapper-dependent offset.
+3. Confirm the grouping-height stabilization contract is bounded and reviewable:
+   - grouping board lane floor is explicitly frozen at `480px`
+   - unassigned-student pool floor is explicitly frozen at `480px`
+   - both floors are tied to the current seating `RoomCanvas` viewport baseline
+   - no content-count collapse is allowed when only a few groups exist
+4. Confirm the proposed taller group buckets are frozen as explicit `56px` assigned-row floors
+   and `112px` empty drop-target floors, and that the proof plan requires direct component/spec
+   assertions for those values instead of shell-only or screenshot-only evidence.
+5. Approve or reject whether `PR-0226` may proceed as the next implementation slice.
+
+### Review Resolution
+
+The previously requested review tightening is resolved. `PR-0226` now freezes the
+shared `480px` grouping-floor contract, the `56px` / `112px` group-card floors,
+and the fresh grouping-draft seed count at `4`, with focused component/spec and
+draft-lifecycle proof added before implementation close-out.
+
+### Suggestions (Optional)
+
+- Keep the current shared-shell framing. The guest/authenticated sticky-toolbar drift is a valid
+  `ST-29-11` follow-up because the bug is still wrapper/parity hardening, not a new workflow
+  redesign. The grouping-height portion just needs a tighter review contract so it stays a bounded
+  stabilization slice.
+
+### Decision Approvals
+
+- [x] `PR-0226` is the right bounded follow-up slice for the reported guest/authenticated shell
+      parity drift.
+- [x] The sticky toolbar contract should be shared and viewport-relative across guest and
+      authenticated shells.
+- [x] Grouping should keep a shared explicit `480px` minimum-height floor for both the board lane
+      and student-pool lane instead of shrinking to current content.
+- [x] Group cards and empty drop targets should use the explicit `56px` / `112px` minimum-height
+      floors and prove them through focused component/spec assertions.
+- [x] `PR-0226` may proceed to implementation once this supplemental review clears.
+
+### Reviewer Notes
+
+- This supplemental review task was added after `PR-0226` was created so the follow-up slice has a
+  retained review gate inside the canonical `REV-EPIC-29` record.
+
+### Changes Made
+
+1. `PR-0226` now freezes the grouping-height contract against the current seating baseline:
+   `480px` for both the grouping board lane and the unassigned-student pool.
+2. `PR-0226` now freezes the taller group-bucket contract as explicit `56px` assigned-row floors
+   and `112px` empty drop-target floors instead of the earlier "about 25 percent taller"
+   phrasing.
+3. `PR-0226` now requires focused component/spec proof through `GroupCard.spec.ts`,
+   `GroupBoard.spec.ts`, and `PlannerGroupingWorkspacePane.smart-rules.spec.ts` in addition to the
+   guest/authenticated shell parity checks.
+4. `PR-0226` now also freezes fresh grouping drafts to `4` default groups in both guest and
+   authenticated mode so the parity contract includes blank-draft seeding behavior.
+
+## Supplemental Review Record: PR-0227 Exact Two-Row Grouping Board Height Contract at Desktop Baseline
+
+**Reviewer:** `lead-developer`
+**Date:** 2026-04-06
+**Verdict:** `approved`
+
+### Scope To Review
+
+- `docs/backlog/prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md`
+- `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`
+- `.agents/handoff.md`
+
+### Required Review Outputs
+
+1. Confirm `PR-0227` stays a bounded `ST-29-11` desktop-first hardening slice rather than
+   reopening the broader responsive/mobile workflow redesign.
+2. Confirm the contract distinguishes the empty/default exact `480px` desktop proof case from the
+   populated-card behavior after students are assigned.
+3. Confirm the `234px` group-card rule is expressed as a desktop `min-height` floor, not a
+   universal hard cap that would force clipping or internal scrolling for populated cards.
+4. Confirm smaller breakpoints are explicitly allowed to diverge from the desktop-heavy workspace
+   behavior and are not silently locked to the desktop proof math.
+5. Confirm the proof plan now requires a browser-level rendered measurement for the exact
+   `480px` empty/default board case in addition to class/token assertions.
+
+### Review Resolution
+
+The previously requested tightening is resolved. `PR-0227` now freezes a desktop-only group-card
+floor where `234px` persists as the desktop `min-height` after assignment, while the exact
+`480px` math is retained only for the empty/default 4-card desktop proof case. The task also now
+states that populated cards may grow past the floor without forced internal scrolling and that
+smaller breakpoints may intentionally diverge from the desktop workspace behavior.
+
+### Decision Approvals
+
+- [x] `PR-0227` remains a valid bounded `ST-29-11` follow-up for desktop-first grouping hardening.
+- [x] The exact `480px` rule is now correctly limited to the empty/default 4-card desktop proof
+      case.
+- [x] The `234px` desktop card rule is now correctly frozen as a `min-height` floor that persists
+      after assignment rather than as a universal maximum.
+- [x] Populated cards are explicitly allowed to grow beyond the floor without mandatory internal
+      scrolling in this slice.
+- [x] Smaller breakpoint workflows are explicitly allowed to diverge from the desktop proof path.
+- [x] The proof plan now requires rendered browser measurement for the exact empty/default
+      `480px` contract.
+
+### Changes Made
+
+1. `PR-0227` acceptance criteria now distinguish:
+   - the exact empty/default desktop `480px` board proof
+   - the persistent desktop `234px` card `min-height` floor after assignment
+2. `PR-0227` now explicitly states that populated cards may grow beyond `234px` and must not be
+   forced into clipping or mandatory internal scrolling in this slice.
+3. `PR-0227` now explicitly limits the contract to the desktop proof path and allows smaller
+   breakpoint workflows to diverge intentionally.
+4. `PR-0227` now requires browser geometry proof via `getBoundingClientRect()` with an explicit
+   `0.5px` tolerance for the empty/default `480px` verification step.

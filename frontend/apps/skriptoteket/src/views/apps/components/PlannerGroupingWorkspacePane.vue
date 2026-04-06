@@ -12,6 +12,11 @@
 import { computed } from "vue";
 
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
+import {
+  PLANNER_GROUPING_BOARD_LANE_CLASS,
+  PLANNER_GROUPING_LAYOUT_ROW_CLASS,
+  PLANNER_GROUPING_STUDENT_POOL_LANE_CLASS,
+} from "../plannerWorkspaceLayout";
 import GroupBoard from "./GroupBoard.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import { useClassroomState } from "../useClassroomState";
@@ -78,8 +83,14 @@ function onDragOver(event: DragEvent): void {
       </div>
     </div>
 
-    <div class="flex flex-col gap-3 xl:min-h-0 xl:flex-row xl:items-stretch">
-      <div class="xl:flex xl:min-h-0 xl:w-[240px] xl:flex-none xl:self-stretch xl:[contain:size]">
+    <div
+      :class="PLANNER_GROUPING_LAYOUT_ROW_CLASS"
+      data-test="grouping-layout-lane"
+    >
+      <div
+        :class="PLANNER_GROUPING_STUDENT_POOL_LANE_CLASS"
+        data-test="grouping-student-pool-lane"
+      >
         <PlannerStudentPool
           title="Ej grupperade"
           :students="state.ungroupedStudents"
@@ -94,7 +105,7 @@ function onDragOver(event: DragEvent): void {
       </div>
 
       <div
-        class="min-w-0 flex-1"
+        :class="PLANNER_GROUPING_BOARD_LANE_CLASS"
         data-test="grouping-board-lane"
       >
         <GroupBoard

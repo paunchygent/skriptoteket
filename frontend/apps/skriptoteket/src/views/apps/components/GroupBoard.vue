@@ -10,6 +10,7 @@
 import { computed } from "vue";
 
 import GroupCard from "./GroupCard.vue";
+import { PLANNER_GROUP_BOARD_CLASS } from "../plannerWorkspaceLayout";
 import { useClassroomState } from "../useClassroomState";
 
 const props = defineProps<{
@@ -21,7 +22,10 @@ const orderedGroups = computed(() => [...state.groups].sort((left, right) => lef
 </script>
 
 <template>
-  <div class="grid items-start gap-3 md:grid-cols-2 2xl:grid-cols-3">
+  <div
+    :class="PLANNER_GROUP_BOARD_CLASS"
+    data-test="group-board"
+  >
     <GroupCard
       v-for="(group, index) in orderedGroups"
       :key="group.id"

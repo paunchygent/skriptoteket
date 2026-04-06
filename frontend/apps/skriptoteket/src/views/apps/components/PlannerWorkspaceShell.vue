@@ -20,6 +20,7 @@ import PlannerSeatingSettingsDrawer from "./PlannerSeatingSettingsDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
+import PlannerWorkspaceModeSurface from "./PlannerWorkspaceModeSurface.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
 import { resolvePlannerWorkspaceDisabledReasons } from "../plannerWorkspacePrerequisites";
@@ -485,15 +486,11 @@ watch(
     </div>
 
     <template v-if="!isTransitioningBetweenWorkspaces">
-      <div
+      <PlannerWorkspaceModeSurface
         v-if="currentView === 'groups'"
-        class="flex flex-col gap-4 xl:min-h-0 xl:flex-1"
+        view="groups"
       >
-        <div
-          class="sticky top-0 z-20 md:-top-4"
-          data-ui="planner-workspace-toolbar-shell"
-          data-view="groups"
-        >
+        <template #toolbar>
           <PlannerGroupingWorkspaceToolbar
             :available-rosters="availableRosters"
             :selected-roster-id="selectedRosterId"
@@ -510,26 +507,16 @@ watch(
             @export-default="emit('export-grouping-default')"
             @export-option="emit('export-grouping-option', $event)"
           />
-        </div>
+        </template>
 
-        <div
-          class="xl:min-h-0 xl:max-h-full xl:overflow-y-auto"
-          data-ui="planner-workspace-pane-shell"
-          data-view="groups"
-        >
-          <PlannerGroupingWorkspacePane />
-        </div>
-      </div>
+        <PlannerGroupingWorkspacePane />
+      </PlannerWorkspaceModeSurface>
 
-      <div
+      <PlannerWorkspaceModeSurface
         v-if="currentView === 'seats'"
-        class="flex flex-col gap-4 xl:min-h-0 xl:flex-1"
+        view="seats"
       >
-        <div
-          class="sticky top-0 z-20 md:-top-4"
-          data-ui="planner-workspace-toolbar-shell"
-          data-view="seats"
-        >
+        <template #toolbar>
           <PlannerSeatingWorkspaceToolbar
             :available-templates="availableTemplates"
             :selected-template-id="pendingSeatingTemplateId"
@@ -547,18 +534,12 @@ watch(
             @open-settings="openSeatingSettingsDrawer"
             @open-history="openSeatingHistoryDrawer"
           />
-        </div>
+        </template>
 
-        <div
-          class="xl:min-h-0 xl:max-h-full xl:overflow-y-auto"
-          data-ui="planner-workspace-pane-shell"
-          data-view="seats"
-        >
-          <PlannerSeatingWorkspacePane
-            :selected-template-id="pendingSeatingTemplateId"
-          />
-        </div>
-      </div>
+        <PlannerSeatingWorkspacePane
+          :selected-template-id="pendingSeatingTemplateId"
+        />
+      </PlannerWorkspaceModeSurface>
 
       <PlannerRulesWorkspacePane
         v-if="currentView === 'rules'"

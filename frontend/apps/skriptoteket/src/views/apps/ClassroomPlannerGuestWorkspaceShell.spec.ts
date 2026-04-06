@@ -102,6 +102,36 @@ function mountGuestWorkspaceShellHarness() {
 }
 
 describe("ClassroomPlannerGuestWorkspaceShell", () => {
+  it("uses the shared sticky toolbar shell contract for both guest workspace modes", async () => {
+    const { wrapper, initialView, plannerState } = mountGuestWorkspaceShellHarness();
+
+    expect(
+      wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
+    ).toEqual(
+      expect.arrayContaining(["sticky", "top-0", "z-20"]),
+    );
+    expect(
+      wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
+    ).not.toContain("md:-top-4");
+
+    initialView.value = "groups";
+    plannerState.draft = {
+      id: "draft-grouping-1",
+      draft_kind: "grouping",
+    } as ClassroomStateLike["draft"];
+    plannerState.template = null as ClassroomStateLike["template"];
+    await nextTick();
+
+    expect(
+      wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
+    ).toEqual(
+      expect.arrayContaining(["sticky", "top-0", "z-20"]),
+    );
+    expect(
+      wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
+    ).not.toContain("md:-top-4");
+  });
+
   it("returns to grouping after a seating-first mode switch sequence", async () => {
     const { wrapper, initialView, plannerState } = mountGuestWorkspaceShellHarness();
 
@@ -146,5 +176,10 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     expect(
       wrapper.get("[data-test='planner-top-panel-mode']").attributes("data-context-label"),
     ).toBe("Sal 101");
+    expect(
+      wrapper.get('[data-ui="planner-workspace-pane-shell"][data-view="groups"]').classes(),
+    ).toEqual(
+      expect.arrayContaining(["xl:min-h-0", "xl:max-h-full", "xl:overflow-y-auto"]),
+    );
   });
 });
