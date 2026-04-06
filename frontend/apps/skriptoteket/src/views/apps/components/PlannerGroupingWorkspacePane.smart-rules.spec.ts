@@ -92,7 +92,7 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
     );
   });
 
-  it("keeps the ungrouped pool as a stretched desktop column with an internal list scroller", () => {
+  it("keeps the ungrouped pool and board in a bounded desktop split workspace", () => {
     const wrapper = mount(PlannerGroupingWorkspacePane);
     const layoutRow = wrapper.get('[data-test="grouping-layout-lane"]');
     const pool = wrapper.get('[data-test="grouping-student-pool"]');
@@ -102,36 +102,25 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
 
     expect(layoutRow.classes()).toEqual(
       expect.arrayContaining([
-        "xl:min-h-[480px]",
-        "xl:flex-row",
-        "xl:items-stretch",
+        "planner-grouping-layout-row",
       ]),
     );
     expect(pool.classes()).toEqual(
       expect.arrayContaining([
-        "min-h-0",
-        "xl:min-h-[480px]",
-        "xl:h-full",
-        "xl:flex-1",
-        "xl:overflow-hidden",
+        "planner-student-pool-surface",
       ]),
     );
     expect(pool.attributes("style")).toBeUndefined();
     expect(poolLane.classes()).toEqual(
       expect.arrayContaining([
-        "xl:flex",
-        "xl:min-h-[480px]",
-        "xl:w-[240px]",
-        "xl:flex-none",
-        "xl:self-stretch",
-        "xl:[contain:size]",
+        "planner-workspace-pool-lane",
+        "planner-grouping-pool-lane",
       ]),
     );
     expect(boardLane.classes()).toEqual(
       expect.arrayContaining([
-        "min-w-0",
-        "flex-1",
-        "xl:min-h-[480px]",
+        "planner-workspace-primary-lane",
+        "planner-grouping-board-lane",
       ]),
     );
     expect(scrollBody.classes()).toEqual(

@@ -700,6 +700,171 @@ body.app-shell-game-mode::before {
   flex-direction: column;
 }
 
+.route-stage--workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.route-stage--workspace .route-stage-item {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KLASSRUMSKARTAN WORKSPACE PRIMITIVES
+
+   CSS owns the planner geometry. These primitives define the shell, pane,
+   split lanes, and grouping card/board contracts so layout ownership does not
+   drift across component-local utility stacks.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.planner-workspace-shell {
+  --planner-toolbar-sticky-offset: 62px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-4);
+}
+
+.planner-workspace-mode-surface {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--huleedu-space-4);
+}
+
+.planner-workspace-toolbar-shell {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.planner-workspace-pane-shell {
+  min-height: 0;
+}
+
+.planner-workspace-split-row,
+.planner-grouping-layout-row {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--huleedu-space-3);
+}
+
+.planner-workspace-pool-lane,
+.planner-workspace-primary-lane,
+.planner-grouping-board-lane,
+.planner-grouping-pool-lane,
+.planner-seating-pool-lane,
+.planner-seating-workspace-lane {
+  min-width: 0;
+  min-height: 0;
+}
+
+.planner-student-pool-surface {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: white;
+  padding: var(--huleedu-space-3);
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+.planner-group-board {
+  display: grid;
+  align-items: start;
+  align-content: start;
+  gap: var(--huleedu-space-3);
+}
+
+.planner-group-card {
+  display: flex;
+  align-self: start;
+  flex-direction: column;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: white;
+  padding: var(--huleedu-space-3);
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+@media (min-width: 768px) {
+  .planner-group-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .planner-workspace-split-row {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .planner-grouping-layout-row {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .planner-grouping-pool-lane {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+    min-height: 480px;
+    height: 480px;
+    max-height: 480px;
+  }
+
+  .planner-seating-pool-lane {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+    min-height: 480px;
+    height: 480px;
+    max-height: 480px;
+  }
+
+  .planner-workspace-primary-lane,
+  .planner-grouping-board-lane,
+  .planner-seating-workspace-lane {
+    min-height: 0;
+  }
+
+  .planner-seating-workspace-lane {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .planner-student-pool-surface {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .planner-group-board {
+    min-height: 480px;
+    grid-auto-rows: minmax(234px, auto);
+    align-items: stretch;
+  }
+
+  .planner-group-card {
+    min-height: 234px;
+    height: 100%;
+    align-self: auto;
+  }
+}
+
+@media (min-width: 1536px) {
+  .planner-group-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .page-enter-active,
 .page-leave-active {
   transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);

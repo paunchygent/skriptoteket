@@ -66,6 +66,7 @@ describe("RoomCanvas", () => {
 
     expect(wrapper.text()).toContain("Sittschema");
     expect(wrapper.text()).not.toContain("Grupp A");
+    expect(wrapper.get("section").classes()).toContain("flex-1");
   });
 
   it("renders shared presentation labels and merged seating-scene fixtures", () => {

@@ -136,7 +136,7 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
     expect(wrapper.find('[data-test="student-pool-markers-student-2"]').exists()).toBe(false);
   });
 
-  it("keeps the unseated pool constrained by the workspace lane with an internal list scroller", () => {
+  it("keeps the unseated pool and canvas lane in a bounded desktop split workspace", () => {
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
@@ -147,24 +147,34 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
         },
       },
     });
+    const layoutRow = wrapper.get('[data-test="seating-layout-lane"]');
     const pool = wrapper.get('[data-test="seating-student-pool"]');
+    const poolLane = wrapper.get('[data-test="seating-student-pool-lane"]');
+    const workspaceLane = wrapper.get('[data-test="seating-workspace-lane"]');
     const scrollBody = wrapper.get('[data-test="seating-student-pool-scroll-body"]');
-    const layoutLane = pool.element.parentElement;
 
-    expect(pool.classes()).toEqual(
+    expect(layoutRow.classes()).toEqual(
       expect.arrayContaining([
-        "min-h-0",
-        "xl:h-full",
-        "xl:flex-1",
-        "xl:overflow-hidden",
+        "planner-workspace-split-row",
+        "planner-seating-layout-row",
       ]),
     );
-    expect(layoutLane?.className).toContain("xl:w-[240px]");
-    expect(layoutLane?.className).toContain("xl:flex");
-    expect(layoutLane?.className).toContain("xl:min-h-0");
-    expect(layoutLane?.className).toContain("xl:flex-none");
-    expect(layoutLane?.className).toContain("xl:self-stretch");
-    expect(layoutLane?.className).toContain("xl:[contain:size]");
+    expect(pool.classes()).toEqual(
+      expect.arrayContaining([
+        "planner-student-pool-surface",
+      ]),
+    );
+    expect(poolLane.classes()).toEqual(
+      expect.arrayContaining([
+        "planner-workspace-pool-lane",
+        "planner-seating-pool-lane",
+      ]),
+    );
+    expect(workspaceLane.classes()).toEqual(
+      expect.arrayContaining([
+        "planner-seating-workspace-lane",
+      ]),
+    );
     expect(scrollBody.classes()).toEqual(
       expect.arrayContaining([
         "min-h-0",

@@ -108,7 +108,7 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     expect(
       wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["sticky", "top-0", "z-20"]),
+      expect.arrayContaining(["planner-workspace-toolbar-shell"]),
     );
     expect(
       wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
@@ -125,7 +125,7 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     expect(
       wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["sticky", "top-0", "z-20"]),
+      expect.arrayContaining(["planner-workspace-toolbar-shell"]),
     );
     expect(
       wrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
@@ -179,7 +179,7 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     expect(
       wrapper.get('[data-ui="planner-workspace-pane-shell"][data-view="groups"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["xl:min-h-0", "xl:max-h-full", "xl:overflow-y-auto"]),
+      expect.arrayContaining(["planner-workspace-pane-shell"]),
     );
   });
 });

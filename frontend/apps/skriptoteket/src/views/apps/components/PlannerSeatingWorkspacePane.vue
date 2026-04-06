@@ -12,6 +12,11 @@ import { computed } from "vue";
 
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
+import {
+  PLANNER_SEATING_LAYOUT_ROW_CLASS,
+  PLANNER_SEATING_STUDENT_POOL_LANE_CLASS,
+  PLANNER_SEATING_WORKSPACE_LANE_CLASS,
+} from "../plannerWorkspaceLayout";
 import { setSeatStyledStudentDragPreview } from "../roomSeatDragPreview";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
@@ -78,7 +83,7 @@ function onDragOver(event: DragEvent): void {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 xl:min-h-0">
+  <div class="flex min-h-0 flex-1 flex-col gap-3">
     <div
       v-if="plannerState.smartRuleHydrationStatus === 'error'"
       class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
@@ -99,8 +104,14 @@ function onDragOver(event: DragEvent): void {
       </div>
     </div>
 
-    <div class="flex flex-col gap-3 xl:min-h-0 xl:flex-row xl:items-stretch">
-      <div class="xl:flex xl:min-h-0 xl:w-[240px] xl:flex-none xl:self-stretch xl:[contain:size]">
+    <div
+      :class="PLANNER_SEATING_LAYOUT_ROW_CLASS"
+      data-test="seating-layout-lane"
+    >
+      <div
+        :class="PLANNER_SEATING_STUDENT_POOL_LANE_CLASS"
+        data-test="seating-student-pool-lane"
+      >
         <PlannerStudentPool
           title="Ej placerade"
           :students="plannerState.unseatedStudents"
@@ -114,7 +125,7 @@ function onDragOver(event: DragEvent): void {
       </div>
 
       <div
-        class="min-w-0 flex-1"
+        :class="PLANNER_SEATING_WORKSPACE_LANE_CLASS"
         data-test="seating-workspace-lane"
       >
         <RoomCanvas

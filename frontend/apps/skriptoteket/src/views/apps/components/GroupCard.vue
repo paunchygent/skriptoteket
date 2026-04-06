@@ -12,6 +12,7 @@ import { ref, watch } from "vue";
 
 import { IconTrash, IconX } from "../../../components/icons";
 import type { DraftGroup, Student } from "../classroomPlannerTypes";
+import { PLANNER_GROUP_CARD_CLASS } from "../plannerWorkspaceLayout";
 import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
 
 const props = defineProps<{
@@ -85,7 +86,7 @@ function commitName(): void {
 <template>
   <div
     data-test="group-card"
-    class="flex self-start flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:min-h-[234px] xl:h-full xl:self-auto"
+    :class="PLANNER_GROUP_CARD_CLASS"
     @dragover="onDragOver"
     @drop="onDrop"
   >

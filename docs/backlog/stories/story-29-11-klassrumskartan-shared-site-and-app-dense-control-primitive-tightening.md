@@ -45,6 +45,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0225: ST-29-11 desktop-first planner toolbar priority and overflow hardening](../prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md)
 - [PR-0226: ST-29-11 shared planner shell parity and grouping viewport-height stabilization](../prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md)
 - [PR-0227: ST-29-11 exact two-row grouping board height contract at desktop baseline](../prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md)
+- [PR-0228: ST-29-11 follow-up: desktop student-pool rail stickiness restoration](../prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -57,6 +58,9 @@ instead of treating it as unfinished planner-layout implementation.
   overview-selected classroom, and the default 4-card desktop grouping board now proves exact
   `480px` two-row math at `1440x900` while populated cards retain a desktop `234px` minimum-height
   floor and can grow without forced internal scrolling.
+- `PR-0228` is the planned follow-up hardening slice for the student-pool/class-list rail after the
+  latest planner shell tightening. The regression is being tracked here for implementation, but the
+  canonical sticky rail contract is explicitly owned by `ST-29-03` and reinforced by `ST-29-05`.
 
 ## References
 

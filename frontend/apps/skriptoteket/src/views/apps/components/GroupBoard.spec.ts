@@ -96,12 +96,7 @@ describe("GroupBoard", () => {
     expect(cards[1]?.text()).toContain("Grupp B");
     expect(wrapper.get('[data-test="group-board"]').classes()).toEqual(
       expect.arrayContaining([
-        "content-start",
-        "gap-3",
-        "md:grid-cols-2",
-        "xl:min-h-[480px]",
-        "xl:auto-rows-[minmax(234px,auto)]",
-        "xl:items-stretch",
+        "planner-group-board",
       ]),
     );
   });
@@ -125,11 +120,7 @@ describe("GroupBoard", () => {
     expect(wrapper.findAll('[data-test="group-card"]')).toHaveLength(4);
     expect(wrapper.get('[data-test="group-board"]').classes()).toEqual(
       expect.arrayContaining([
-        "md:grid-cols-2",
-        "gap-3",
-        "xl:min-h-[480px]",
-        "xl:auto-rows-[minmax(234px,auto)]",
-        "xl:items-stretch",
+        "planner-group-board",
       ]),
     );
   });

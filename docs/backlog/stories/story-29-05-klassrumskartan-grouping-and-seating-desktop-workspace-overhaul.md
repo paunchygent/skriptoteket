@@ -5,7 +5,7 @@ title: "Klassrumskartan — Grouping and seating desktop workspace overhaul"
 status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-01
+updated: 2026-04-06
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -16,6 +16,7 @@ dependencies:
 acceptance_criteria:
   - "Given the teacher enters `Grupper`, when the redesigned desktop workspace renders, then the composition reads primarily as student pool plus group board, with chrome and summaries subordinate to the live grouping surface."
   - "Given the teacher enters `Sittplatser`, when the redesigned desktop workspace renders, then the composition reads primarily as student pool plus room canvas, with the room canvas clearly dominating the visual hierarchy."
+  - "Given the teacher scrolls within `Grupper` or `Sittplatser` at the `laptop` or `desktop` review widths, when the workspace remains active, then the class-list/student-pool panel stays as a stable locally sticky side surface instead of dropping away like ordinary page content."
   - "Given grouping or seating shows task-local summaries, setup context, or export state, when this slice ships, then those surfaces stay compact and local instead of consuming additional full-width bands above the main work area."
   - "Given browser proof is run at the `EPIC-29` `laptop` (`1366x768`) and `desktop` (`1440x900`) review viewports, when the slice is reviewed, then both workspaces remain orderly, dense, and legible without reverting to mobile-first card stacking."
 ui_impact: "Yes (grouping and seating workspace layout and hierarchy)"
@@ -36,6 +37,10 @@ keep chrome, helper copy, and continuity affordances subordinate to the main wor
 - The shipped behavior spans several slices rather than one dedicated `ST-29-05` PR chain: the
   current split-pane/local-scroll structure comes from `ST-29-03`, the detached sticky compact
   shell comes from `ST-29-02`, and later feedback/visibility polish lands through `ST-29-09`.
+- The class-list/student-pool panel is part of the shipped desktop composition contract, not an
+  incidental implementation detail. If that rail loses local stickiness in grouping or seating,
+  treat the issue as a regression against the current desktop workspace overhaul rather than as a
+  new design direction.
 - Remaining EPIC-29 work should not re-open grouping/seating composition as a new layout project.
   The follow-on lane is now shared site/app primitive tightening, canonical symbol completion, and
   discoverability governance.

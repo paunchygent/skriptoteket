@@ -22,6 +22,7 @@ import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import PlannerWorkspaceModeSurface from "./PlannerWorkspaceModeSurface.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
+import { PLANNER_WORKSPACE_SHELL_CLASS } from "../plannerWorkspaceLayout";
 import { useClassroomState } from "../useClassroomState";
 import { resolvePlannerWorkspaceDisabledReasons } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
@@ -445,7 +446,7 @@ watch(
 </script>
 
 <template>
-  <section class="space-y-4 xl:flex xl:min-h-0 xl:flex-col">
+  <section :class="PLANNER_WORKSPACE_SHELL_CLASS">
     <div
       v-if="plannerState.plannerConflictMessage"
       class="system-message system-message-warning"

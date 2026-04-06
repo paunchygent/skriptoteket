@@ -416,7 +416,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(
       groupingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["sticky", "top-0", "z-20"]),
+      expect.arrayContaining(["planner-workspace-toolbar-shell"]),
     );
     expect(
       groupingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
@@ -442,7 +442,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(
       seatingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["sticky", "top-0", "z-20"]),
+      expect.arrayContaining(["planner-workspace-toolbar-shell"]),
     );
     expect(
       seatingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
@@ -475,7 +475,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(
       groupingWrapper.get('[data-ui="planner-workspace-pane-shell"][data-view="groups"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["xl:min-h-0", "xl:max-h-full", "xl:overflow-y-auto"]),
+      expect.arrayContaining(["planner-workspace-pane-shell"]),
     );
 
     stateMocks.plannerState.draft = {
@@ -496,7 +496,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(
       seatingWrapper.get('[data-ui="planner-workspace-pane-shell"][data-view="seats"]').classes(),
     ).toEqual(
-      expect.arrayContaining(["xl:min-h-0", "xl:max-h-full", "xl:overflow-y-auto"]),
+      expect.arrayContaining(["planner-workspace-pane-shell"]),
     );
   });
 

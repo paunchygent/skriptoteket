@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="border border-navy bg-white p-3 shadow-brutal-sm">
+  <section class="flex min-h-0 flex-1 flex-col border border-navy bg-white p-3 shadow-brutal-sm">
     <div class="flex flex-col gap-2 border-b border-navy/20 pb-2 md:flex-row md:items-start md:justify-between">
       <div>
         <h3 class="font-serif text-lg text-navy">
@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
     <div
       ref="canvasViewport"
       data-test="room-canvas-viewport"
-      class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
+      class="mt-3 min-h-[480px] flex-1 overflow-auto border border-navy/20 bg-white p-3"
     >
       <div
         data-test="room-canvas-scroll-frame"

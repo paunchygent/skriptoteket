@@ -1,17 +1,27 @@
 /**
  * Shared planner workspace layout contract.
  *
- * This module freezes the detached-toolbar shell classes and the PR-0226
- * grouping-height floors so guest and authenticated planner surfaces inherit
- * the same viewport-relative behavior and the same reviewable desktop layout
- * contract.
+ * This module names the shared planner-shell primitives while CSS remains the
+ * single source of truth for their geometry. Guest and authenticated planner
+ * surfaces both consume these classes so the workspace frame, rail, and lane
+ * contracts are defined once in the shared shell seam.
  */
 
-export const PLANNER_WORKSPACE_MODE_SURFACE_CLASS = "flex flex-col gap-4 xl:min-h-0 xl:flex-1";
-export const PLANNER_WORKSPACE_TOOLBAR_SHELL_CLASS = "sticky top-0 z-20";
-export const PLANNER_WORKSPACE_PANE_SHELL_CLASS = "xl:min-h-0 xl:max-h-full xl:overflow-y-auto";
+export const PLANNER_WORKSPACE_SHELL_CLASS = "planner-workspace-shell";
+export const PLANNER_WORKSPACE_MODE_SURFACE_CLASS = "planner-workspace-mode-surface";
+export const PLANNER_WORKSPACE_TOOLBAR_SHELL_CLASS = "planner-workspace-toolbar-shell";
+export const PLANNER_WORKSPACE_PANE_SHELL_CLASS = "planner-workspace-pane-shell";
 
-export const PLANNER_GROUPING_LAYOUT_ROW_CLASS = "flex flex-col gap-3 xl:min-h-[480px] xl:flex-row xl:items-stretch";
-export const PLANNER_GROUPING_STUDENT_POOL_LANE_CLASS = "xl:flex xl:min-h-[480px] xl:w-[240px] xl:flex-none xl:self-stretch xl:[contain:size]";
-export const PLANNER_GROUPING_BOARD_LANE_CLASS = "min-w-0 flex-1 xl:min-h-[480px]";
-export const PLANNER_GROUP_BOARD_CLASS = "grid items-start content-start gap-3 md:grid-cols-2 xl:min-h-[480px] xl:auto-rows-[minmax(234px,auto)] xl:items-stretch 2xl:grid-cols-3";
+export const PLANNER_WORKSPACE_SPLIT_ROW_CLASS = "planner-workspace-split-row";
+export const PLANNER_STUDENT_POOL_LANE_CLASS = "planner-workspace-pool-lane";
+export const PLANNER_WORKSPACE_PRIMARY_LANE_CLASS = "planner-workspace-primary-lane";
+
+export const PLANNER_GROUPING_LAYOUT_ROW_CLASS = "planner-grouping-layout-row";
+export const PLANNER_GROUPING_STUDENT_POOL_LANE_CLASS = "planner-workspace-pool-lane planner-grouping-pool-lane";
+export const PLANNER_GROUPING_BOARD_LANE_CLASS = "planner-workspace-primary-lane planner-grouping-board-lane";
+export const PLANNER_SEATING_LAYOUT_ROW_CLASS = "planner-workspace-split-row planner-seating-layout-row";
+export const PLANNER_SEATING_STUDENT_POOL_LANE_CLASS = "planner-workspace-pool-lane planner-seating-pool-lane";
+export const PLANNER_SEATING_WORKSPACE_LANE_CLASS = "planner-seating-workspace-lane";
+export const PLANNER_STUDENT_POOL_SURFACE_CLASS = "planner-student-pool-surface";
+export const PLANNER_GROUP_BOARD_CLASS = "planner-group-board";
+export const PLANNER_GROUP_CARD_CLASS = "planner-group-card";

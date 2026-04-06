@@ -4,34 +4,43 @@ import HelpButton from "../help/HelpButton.vue";
 </script>
 
 <template>
-  <!-- Landing header: Logo only, no nav links -->
-  <header class="landing-header">
-    <div class="landing-header-inner">
-      <RouterLink
-        to="/"
-        class="landing-brand"
-      >
-        <BrandLogo height="28px" />
-      </RouterLink>
-      <div class="landing-header-actions">
+  <div class="landing-shell">
+    <!-- Landing header: Logo only, no nav links -->
+    <header class="landing-header">
+      <div class="landing-header-inner">
         <RouterLink
-          to="/register"
-          class="landing-register"
+          to="/"
+          class="landing-brand"
         >
-          Skapa konto
+          <BrandLogo height="28px" />
         </RouterLink>
-        <HelpButton />
+        <div class="landing-header-actions">
+          <RouterLink
+            to="/register"
+            class="landing-register"
+          >
+            Skapa konto
+          </RouterLink>
+          <HelpButton />
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Landing main content -->
-  <main class="landing-main">
-    <slot />
-  </main>
+    <!-- Landing main content -->
+    <main class="landing-main">
+      <slot />
+    </main>
+  </div>
 </template>
 
 <style scoped>
+.landing-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
 .landing-header {
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-canvas);
@@ -83,8 +92,13 @@ import HelpButton from "../help/HelpButton.vue";
 }
 
 .landing-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   max-width: var(--huleedu-max-width-6xl);
   margin: 0 auto;
   padding: var(--huleedu-space-8) var(--huleedu-space-6);
+  width: 100%;
 }
 </style>

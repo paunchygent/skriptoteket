@@ -95,10 +95,7 @@ describe("GroupCard", () => {
     const firstStudentRow = wrapper.get('[data-test="group-student-row-student-1"]');
 
     expect(studentLabels).toHaveLength(8);
-    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("self-start");
-    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:self-auto");
-    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:min-h-[234px]");
-    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:h-full");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("planner-group-card");
     expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("h-[234px]");
     expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("max-h-[234px]");
     expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("overflow-y-auto");
@@ -129,7 +126,7 @@ describe("GroupCard", () => {
 
     expect(wrapper.get('[data-test="group-empty-drop-zone"]').classes()).toContain("min-h-[112px]");
     expect(wrapper.get('[data-test="group-empty-drop-zone"]').classes()).toContain("flex-1");
-    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:min-h-[234px]");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("planner-group-card");
   });
 
   it("keeps the desktop card floor even after one student is assigned", () => {
@@ -147,7 +144,7 @@ describe("GroupCard", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("xl:min-h-[234px]");
+    expect(wrapper.get('[data-test="group-card"]').classes()).toContain("planner-group-card");
     expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("max-h-[234px]");
     expect(wrapper.find('[data-test="group-empty-drop-zone"]').exists()).toBe(false);
   });

@@ -8,6 +8,7 @@
  */
 
 import type { Student } from "../classroomPlannerTypes";
+import { PLANNER_STUDENT_POOL_SURFACE_CLASS } from "../plannerWorkspaceLayout";
 import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
 
 withDefaults(
@@ -42,13 +43,16 @@ const emit = defineEmits<{
 
 <template>
   <aside
-    class="flex min-h-0 flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:min-h-[480px] xl:h-full xl:flex-1 xl:overflow-hidden"
+    :class="PLANNER_STUDENT_POOL_SURFACE_CLASS"
     :data-test="rootTestId"
     :aria-label="title"
     @dragover="emit('pool-dragover', $event)"
     @drop="emit('pool-drop', $event)"
   >
-    <div class="flex items-end justify-between gap-3 border-b border-navy/20 pb-2">
+    <div
+      class="flex items-end justify-between gap-3 border-b border-navy/20 pb-2"
+      :data-test="rootTestId ? `${rootTestId}-header` : undefined"
+    >
       <div>
         <h3 class="font-serif text-lg text-navy">
           {{ title }}

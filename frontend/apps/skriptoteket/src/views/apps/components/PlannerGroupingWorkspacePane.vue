@@ -62,7 +62,7 @@ function onDragOver(event: DragEvent): void {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 xl:min-h-0">
+  <div class="flex min-h-0 flex-1 flex-col gap-3">
     <div
       v-if="state.smartRuleHydrationStatus === 'error'"
       class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"

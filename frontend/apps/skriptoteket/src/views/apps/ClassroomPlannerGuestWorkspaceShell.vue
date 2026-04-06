@@ -18,6 +18,7 @@ import PlannerSeatingWorkspacePane from "./components/PlannerSeatingWorkspacePan
 import PlannerSeatingWorkspaceToolbar from "./components/PlannerSeatingWorkspaceToolbar.vue";
 import PlannerTopPanel from "./components/PlannerTopPanel.vue";
 import PlannerWorkspaceModeSurface from "./components/PlannerWorkspaceModeSurface.vue";
+import { PLANNER_WORKSPACE_SHELL_CLASS } from "./plannerWorkspaceLayout";
 import { resolvePlannerWorkspaceDisabledReasons } from "./plannerWorkspacePrerequisites";
 import { useClassroomState } from "./useClassroomState";
 
@@ -137,7 +138,7 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
 </script>
 
 <template>
-  <section class="space-y-4 xl:flex xl:min-h-0 xl:flex-col">
+  <section :class="PLANNER_WORKSPACE_SHELL_CLASS">
     <div
       v-if="plannerState.plannerConflictMessage"
       class="system-message system-message-warning"

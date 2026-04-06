@@ -125,6 +125,72 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
   - Use the editor micro-typography pattern: `text-[10px] font-semibold uppercase tracking-wide text-navy/60`.
   - Use `.btn-ghost` with size/shadow overrides for 28px controls (see `EditorWorkspaceToolbar.vue`).
 
+### Layout geometry ownership
+
+- This is a frontend mandate, not a workspace-specific preference: **CSS owns layout geometry**.
+- Layout geometry includes:
+  - panel height, width, and position
+  - sticky behavior
+  - overflow ownership and scroll containment
+  - breakpoint cutover
+  - lane/column alignment
+- If a surface drifts, fix CSS containment, track sizing, `min-h-0`, and overflow ownership first.
+  Do not compensate with runtime geometry math.
+- CSS is the only source of truth for layout shape:
+  - shells, panes, rails, boards, canvases, inspectors, drawers, and sidebars get size/position/sticky/overflow behavior from CSS
+  - use grid for structural composition and flex for one-dimensional alignment
+- JS may select state, not geometry:
+  - allowed: mode switches, semantic state, conditional mount/unmount, data flow, interaction logic
+  - forbidden by default: persistent panel height, top offset, max-height, sticky thresholds, or breakpoint behavior
+- Breakpoints are declarative:
+  - define breakpoint cutovers once in shared CSS/layout tokens
+  - do not re-encode the same breakpoint contract in runtime JS
+- Overflow must have named owners:
+  - for each axis, be able to name exactly which element scrolls
+  - if multiple ancestors compete for the same vertical scroll path without a deliberate reason, the layout is invalid
+- Sticky must resolve through CSS containment alone:
+  - sticky rails/headers should work because the containing block and overflow chain are correct
+  - do not repair sticky failures with JS position recomputation
+- Measured layout is forbidden by default:
+  - treat `window.innerHeight`, `getBoundingClientRect()`, `ResizeObserver`, or scroll listeners used for persistent surface sizing/alignment as a design smell unless an explicit exception is approved
+
+### Geometry review red flags
+
+- `window.innerHeight - rect.top` or similar viewport math to size persistent UI surfaces
+- updating CSS variables from `getBoundingClientRect()` to keep panels visible/aligned
+- scroll listeners whose job is panel alignment or sticky compensation
+- `ResizeObserver` loops whose job is persistent surface sizing
+- route-specific wrapper offsets or per-shell top math
+- duplicating CSS breakpoint behavior in JS
+- fixing nested-scroll bugs by adding another measured height layer
+
+### Allowed JS domains
+
+- data/state orchestration
+- drag-and-drop and canvas interactions inside an already bounded workspace
+- focus management and accessibility behavior
+- virtualization inside a scroller whose size/overflow are already defined by CSS
+- transient measurement/effects that do not define persistent panel geometry
+
+### Exception path
+
+- A JS layout exception is allowed only when all of these are true:
+  - CSS cannot express the behavior cleanly and that reason is documented
+  - the exception is explicit and localized, not hidden in normal component flow
+  - it does not depend on page scroll position or wrapper-relative offsets
+  - it does not duplicate CSS breakpoint logic
+  - it does not redefine shell/overflow ownership
+  - browser proof covers canonical widths and resize transitions
+
+### Geometry review questions
+
+- Who owns the height budget?
+- Who owns vertical overflow?
+- Would sticky still work if post-render JS measurement stopped?
+- Are breakpoints defined once?
+- Does any code author geometry from viewport or element measurements?
+- Are there competing scroll owners on the same axis?
+
 ### Responsive strategy for curated apps
 
 - Default assumption for workspace-heavy curated apps: desktop-first.
@@ -168,6 +234,8 @@ Use Context7 when you need exact API details or version-specific behavior:
 - OpenAPI + TS generation: `docs/adr/adr-0030-openapi-and-frontend-types.md`
 - Tailwind v4 tokens bridge: `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
 - Workspace UI doctrine: `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
+- Concrete desktop-composition examples: `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md`,
+  `docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md`
 - Testing runbook: `docs/runbooks/runbook-testing.md`
 - SPA design system rules: `.agents/rules/045-huleedu-design-system.md`
 - Testing standards: `.agents/rules/070-testing-standards.md`

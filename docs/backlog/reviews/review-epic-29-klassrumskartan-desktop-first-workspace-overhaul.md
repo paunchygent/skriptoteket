@@ -257,3 +257,240 @@ smaller breakpoints may intentionally diverge from the desktop workspace behavio
    breakpoint workflows to diverge intentionally.
 4. `PR-0227` now requires browser geometry proof via `getBoundingClientRect()` with an explicit
    `0.5px` tolerance for the empty/default `480px` verification step.
+
+## Supplemental Review Task: PR-0228 Planner Workspace Shell, Breakpoint, and Overflow Contract
+
+**Reviewer:** `lead-developer`
+**Date:** `2026-04-06`
+**Verdict:** `changes_requested`
+
+### Role
+
+You are the fresh-eyes post-implementation reviewer for the current `PR-0228` planner workspace
+regression lane.
+
+### Scope
+
+- In scope:
+  - `PR-0228`
+  - the shared planner workspace shell and pane contract across guest and authenticated routes
+  - breakpoint behavior at `laptop` and `desktop`, plus the currently failing resize / in-between
+    viewport behavior
+  - toolbar, student-pool rail, grouping board, and seating canvas overflow ownership
+- Out of scope:
+  - backend planner logic, grouping math from `PR-0226` / `PR-0227`, and broader mobile workflow
+    redesign unless the review proves the current shared shell contract is invalidated by them
+
+### Mandatory Repomix Package (External Review)
+
+- Package: `.agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml`
+- Template: `code-review`
+- Included files: `27`
+- Current largest files by token count:
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+  - `scripts/playwright_pr_0227_group_board_height_contract_check.py`
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
+
+### Goal Shape To Review Against
+
+At the named `laptop` and `desktop` review widths, Klassrumskartan should behave like a bounded
+workspace frame rather than ordinary page content:
+
+1. Page header, planner top panel, and toolbar remain stable chrome above the active workspace.
+2. The active workspace body becomes one bounded region that owns the visible grouping/seating
+   work area.
+3. Inside that region, the student-pool rail is a stable side lane with a fixed visible header and
+   a scrolling list body.
+4. The active right-hand lane owns the deeper grouping-board or seating-canvas scrolling.
+5. The toolbar and workspace body must not disappear, collapse, or change overflow behavior merely
+   because the browser crosses a breakpoint or is resized through an intermediate width band.
+6. Smaller breakpoints may intentionally diverge from the desktop-heavy workspace model, but the
+   cutover must be explicit and stable rather than accidental or shell-fragile.
+
+### Desired Implementation Direction To Test Critically
+
+The most likely robust direction is a shared shell contract where:
+
+- the planner shell owns the height budget and breakpoint cutover
+- the workspace body has one clear overflow owner instead of nested competing scrollers
+- the student-pool rail keeps only local header/list scrolling responsibilities
+- the right-hand board/canvas lane owns deeper work-area scroll
+- CSS layout primitives (`min-h-0`, bounded rows, explicit split-lane ownership) carry the
+  contract first, with runtime measurement allowed only if the reviewer can justify why CSS alone
+  cannot provide a stable contract
+
+Treat that as a design direction to evaluate, not as an approved implementation.
+
+### Do Not Assume
+
+- Do not assume the issue is a backend failure; current container evidence shows planner workspace
+  endpoints returning `200`.
+- Do not assume the current `window.innerHeight` / `ResizeObserver` pane-budget logic is either the
+  root cause or the correct fix.
+- Do not assume the problem is only “sticky rail lost again”; the bug may sit in shared shell
+  height ownership, breakpoint cutover, overflow ownership, resize transitions, or a combination.
+- Do not assume the `desktop` split-workspace behavior should be copied unchanged to all smaller
+  breakpoints.
+- Do not assume the present `xl:` cutover is the right breakpoint boundary; verify against the
+  named review widths and the failing in-between width band.
+
+### Artifacts To Review
+
+| File | Focus | Time |
+|------|-------|------|
+| `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md` | Current intended contract and frozen decisions | 5 min |
+| `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md` | Canonical shared desktop-composition ownership | 4 min |
+| `docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md` | Shipped grouping/seating composition expectations | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue` | Planner route shell height/frame ownership | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` | Shared authenticated planner shell | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue` | Guest shell parity | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue` | Shared pane shell and current measured-height seam | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts` | Breakpoint and overflow contract tokens | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue` | Grouping lane composition | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue` | Seating lane composition | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue` | Rail header/list scroll behavior | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue` | Board-lane interaction with overflow ownership | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue` | Seating canvas overflow expectations | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts` | Grouping layout regression coverage | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts` | Seating layout regression coverage | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts` | Shared shell assertions | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` | Guest shared-shell assertions | 4 min |
+| `scripts/playwright_pr_0227_group_board_height_contract_check.py` | Current live proof lane and its blind spots | 5 min |
+
+**Total estimated time:** ~76 minutes
+
+### Review Checklist
+
+- [ ] The review identifies the true height and overflow owners at each planner-shell layer.
+- [ ] The breakpoint contract is explicit for `laptop`, `desktop`, and the currently failing
+      in-between resize band.
+- [ ] The recommended fix removes brittle nesting assumptions rather than layering new sticky or
+      measured-height patches on top.
+- [ ] Guest and authenticated shells are evaluated as one shared contract, not as isolated bugs.
+- [ ] Toolbar overflow behavior is reviewed together with pane-body rendering rather than as a
+      disconnected issue.
+- [ ] The regression-proof plan includes both static specs and live browser checks at the failing
+      widths.
+
+### Required Verification
+
+- Run:
+  - `pdm run fe-test src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run python -m scripts.playwright_pr_0227_group_board_height_contract_check --base-url http://127.0.0.1:5173`
+- Manual checks:
+  - authenticated `Grupper` and `Sittplatser`
+  - guest `Grupper` and `Sittplatser`
+  - full desktop viewport
+  - failing intermediate width / resize transition
+- Pass means:
+  - the workspace body remains visible and structurally intact below the toolbar
+  - the student-pool rail and right-hand lane preserve their intended relationship at desktop/laptop
+  - toolbar overflow remains orderly
+  - no shell-specific divergence appears between guest and authenticated routes
+
+### Output
+
+- Verdict: `approved` | `changes_requested` | `rejected`
+- If not approved:
+  - list the exact structural fault lines with file paths
+  - state which assumptions were disproven
+  - propose `2` to `3` fix directions with pros/cons
+- If approved:
+  - state the target shell/breakpoint/overflow contract clearly enough that implementation can
+    proceed without inferring unstated layout rules
+
+### Close-out (Required If Approved)
+
+- Update this retained review record with the final verdict and decision approvals.
+- Update `PR-0228` status and notes to reflect the approved structural direction.
+- Update `.agents/handoff.md` with the review outcome and verification commands.
+- Run `pdm run docs-validate` and record the result.
+
+### Review Resolution
+
+`PR-0228` is not ready to approve. The current implementation improves the local student-pool
+header/list contract, but it does not yet establish one bounded planner workspace body that owns
+desktop/laptop height and overflow.
+
+Live review against the real authenticated `SA24D` / `G20` drafts on `http://127.0.0.1:5173`
+showed the new pane shell still overflowing `main.auth-main-content` on both named proof
+viewports:
+
+- `Grupper` at `desktop` (`1440x900`): pane shell height = `480px`, but authenticated main still
+  overflowed (`clientHeight=843`, `scrollHeight=928`)
+- `Grupper` at `laptop` (`1366x768`): pane shell height = `480px`, but authenticated main still
+  overflowed (`clientHeight=711`, `scrollHeight=928`)
+- `Sittplatser` at `desktop` (`1440x900`): pane shell height = `480px`, while the right-hand lane
+  also kept its own scroll (`lane scrollHeight=731`, `clientHeight=480`) and authenticated main
+  still overflowed (`clientHeight=843`, `scrollHeight=928`)
+- `Sittplatser` at `laptop` (`1366x768`): pane shell height = `480px`, lane scroll remained local
+  (`scrollHeight=678`, `clientHeight=480`), and authenticated main still overflowed
+  (`clientHeight=711`, `scrollHeight=928`)
+
+At `1279px` width the split workspace dropped into a long stacked column (`Grupper` pane shell
+`1330px`, `Sittplatser` pane shell `909px`) without an explicit approved breakpoint contract or a
+review proof that the resize transition is the intended cutover.
+
+### Structural Fault Lines
+
+1. `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue`
+   (`syncDesktopPaneHeight`) now clamps the pane shell to `Math.max(480, window.innerHeight -
+   rect.top)`. On the real `SA24D` / `G20` planner route the visible space below the toolbar is
+   already smaller than `480px` at both named proof heights, so the clamp guarantees outer
+   authenticated-page overflow instead of removing it.
+2. `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts` plus
+   `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue` still leave multiple vertical
+   overflow owners in play. The authenticated shell keeps `overflow-y: auto`, the pane shell also
+   uses `overflow-y: auto`, and the right-hand workspace lane can scroll internally too. That is
+   not the one clear overflow owner this review requested.
+3. `scripts/playwright_pr_0227_group_board_height_contract_check.py` does not prove the new shell
+   seam. The newly added `_assert_pool_stays_sticky_during_workspace_scroll(...)` helper is never
+   called, and the script does not assert the `1279px` resize/cutover band that this review asked
+   to validate.
+4. The focused specs in
+   `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`,
+   `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`,
+   `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts`,
+   and
+   `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
+   still only prove class-token presence. They do not prove rendered geometry, outer-shell
+   overflow elimination, or the failing resize transition.
+
+### Disproven Assumptions
+
+- The measured pane shell does **not** currently own the desktop/laptop height budget; the
+  authenticated page shell still scrolls on the named proof widths.
+- The current `window.innerHeight` / `ResizeObserver` seam is **not** a sufficient fix by itself.
+  It preserves a `480px` pane even when the actual remaining viewport budget is materially smaller.
+- The existing proof lane does **not** validate the true shared scroll-owner contract or the
+  in-between resize band.
+- Guest/authenticated parity is still mostly a shared-component inference plus token-level spec
+  coverage, not a retained live proof of the reviewed shell contract.
+
+### Fix Directions
+
+1. Move height budgeting up to the planner route shell and keep the pane shell CSS-first.
+   Pros: lets one outer planner workspace own the visible budget, removes the need for the pane
+   shell to outgrow the remaining viewport, and aligns with the review’s “CSS first” direction.
+   Cons: likely requires rebalancing `ClassroomPlannerView.vue`, `PlannerWorkspaceShell.vue`, and
+   the authenticated/guest shell wrappers together instead of patching one component.
+2. If runtime measurement must stay, cap the pane shell to the real available budget and keep the
+   `480px` rules as inner-lane `min-height` floors only.
+   Pros: smallest conceptual delta from the current patch and preserves the accepted grouping/seating
+   floor language.
+   Cons: still leaves a runtime-coupled seam and remains more fragile than a pure flex/grid budget.
+3. Tighten the proof plan before another implementation pass.
+   Pros: the next attempt can fail fast if `main.auth-main-content`, the pane shell, or the
+   document starts owning scroll unexpectedly, and it can explicitly cover `1440`, `1366`, and the
+   sub-`xl` resize band.
+   Cons: requires updating both the targeted Playwright lane and at least one browser-level layout
+   proof around real geometry rather than class tokens alone.
+
+### Decision Approvals
+
+- [x] `PR-0228` remains a valid bounded `ST-29-11` follow-up rather than a full workspace-redesign
+      restart.
+- [ ] The current measured pane-shell implementation is acceptable as the shared shell contract.
+- [ ] The current breakpoint/cutover contract is explicit enough to approve.
+- [ ] The current regression-proof plan is sufficient to guard the reviewed shell/overflow contract.

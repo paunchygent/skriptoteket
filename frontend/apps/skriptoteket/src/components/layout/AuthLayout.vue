@@ -53,6 +53,10 @@ const isImmersiveCuratedAppRoute = computed(() => {
   return typeof appId === "string" && IMMERSIVE_CURATED_APP_IDS.has(appId);
 });
 
+const isClassroomPlannerRoute = computed(() => {
+  return route.name === "app-detail" && route.params.appId === "classroom.group-seating-studio";
+});
+
 const sidebarOpen = ref(false);
 
 function toggleSidebar(): void {
@@ -167,6 +171,7 @@ onBeforeUnmount(() => {
       class="auth-main-content"
       :class="{
         'auth-main-content--editor': isEditorRoute,
+        'auth-main-content--workspace': isClassroomPlannerRoute,
         'auth-main-content--immersive': isImmersiveCuratedAppRoute,
       }"
     >
@@ -251,6 +256,21 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   display: flex;
+  flex-direction: column;
+}
+
+.auth-main-content--workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+}
+
+.auth-main-content--workspace .route-stage,
+.auth-main-content--workspace .route-stage-item {
+  display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
 }
 

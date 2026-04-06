@@ -56,6 +56,14 @@ const isEditorRoute = computed(
   () => route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor",
 );
 
+const isClassroomPlannerRoute = computed(() => {
+  const appId = route.params?.appId;
+  return (
+    (route.name === "app-detail" || route.name === "public-app-detail")
+    && appId === CLASSROOM_PLANNER_APP_ID
+  );
+});
+
 onMounted(() => {
   void auth.bootstrap();
 });
@@ -155,7 +163,10 @@ async function onLogout(): Promise<void> {
     <LandingLayout v-if="!isAuthenticated">
       <div
         class="route-stage"
-        :class="{ 'route-stage--editor': isEditorRoute }"
+        :class="{
+          'route-stage--editor': isEditorRoute,
+          'route-stage--workspace': isClassroomPlannerRoute,
+        }"
       >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
@@ -196,7 +207,10 @@ async function onLogout(): Promise<void> {
     >
       <div
         class="route-stage"
-        :class="{ 'route-stage--editor': isEditorRoute }"
+        :class="{
+          'route-stage--editor': isEditorRoute,
+          'route-stage--workspace': isClassroomPlannerRoute,
+        }"
       >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
