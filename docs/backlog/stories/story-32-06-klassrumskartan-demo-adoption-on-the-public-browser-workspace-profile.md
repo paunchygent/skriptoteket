@@ -5,7 +5,7 @@ title: "Klassrumskartan demo adoption on the public browser-workspace profile"
 status: in_progress
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-05
+updated: 2026-04-06
 epic: "EPIC-32"
 dependencies: ["ST-32-02", "ST-32-03", "ST-32-04", "ST-32-05", "EPIC-27", "EPIC-29"]
 acceptance_criteria:
@@ -61,6 +61,11 @@ reviewable first consumer: Klassrumskartan.
     some functions require an account
   - do not introduce a separate guest-specific layout language, large explainer
     cards, or heavy upsell surfaces
+- `PR-0223` checkpoint 3 is now verified end-to-end: the public overview shell
+  swaps into a dedicated guest planner shell, grouping/seating drafts resume
+  from the browser-owned snapshot across overview round-trips and reloads, and
+  the remaining story scope is now limited to guest smart rules, direct-download
+  export, and final account-only affordance polish.
 
 ## Planned PR slices
 

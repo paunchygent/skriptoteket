@@ -30,6 +30,14 @@ export const CHECKPOINT_TWO_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapab
   show_template_actions: true,
 };
 
+export const CHECKPOINT_THREE_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapabilities = {
+  show_grouping_option: true,
+  show_seating_option: true,
+  show_rules_option: false,
+  show_roster_actions: true,
+  show_template_actions: true,
+};
+
 export type SaveGuestRosterPayload = {
   existingRoster: Roster | null;
   name: string;
@@ -90,14 +98,18 @@ export function buildOverviewUiState(input: {
   selectedRosterId: string | null;
   selectedTemplateId: string | null;
   updatedAt: string;
+  currentScreen?: "class-workspace" | "planner";
+  plannerInitialView?: "groups" | "seats" | "rules";
+  dismissedGroupingDraftId?: string | null;
+  dismissedSeatingDraftId?: string | null;
 }) {
   return {
     selected_roster_id: input.selectedRosterId,
     selected_template_id: input.selectedTemplateId,
-    current_screen: "class-workspace" as const,
-    planner_initial_view: "groups" as const,
-    dismissed_grouping_draft_id: null,
-    dismissed_seating_draft_id: null,
+    current_screen: input.currentScreen ?? ("class-workspace" as const),
+    planner_initial_view: input.plannerInitialView ?? ("groups" as const),
+    dismissed_grouping_draft_id: input.dismissedGroupingDraftId ?? null,
+    dismissed_seating_draft_id: input.dismissedSeatingDraftId ?? null,
     updated_at: input.updatedAt,
   };
 }
@@ -136,6 +148,10 @@ export function normalizeOverviewSnapshotUiState(
     preferredTemplateId: string | null;
     updatedAt: string;
     preserveExplicitTemplateNull?: boolean;
+    currentScreen?: "class-workspace" | "planner";
+    plannerInitialView?: "groups" | "seats" | "rules";
+    dismissedGroupingDraftId?: string | null;
+    dismissedSeatingDraftId?: string | null;
   },
 ): ClassroomPlannerGuestSnapshot {
   const hydratedOverviewState = hydrateGuestOverviewSnapshot(snapshot, {
@@ -156,6 +172,12 @@ export function normalizeOverviewSnapshotUiState(
     selectedRosterId: normalizedSelectedRosterId,
     selectedTemplateId: normalizedSelectedTemplateId,
     updatedAt: input.updatedAt,
+    currentScreen: input.currentScreen ?? snapshot.ui_state.current_screen,
+    plannerInitialView: input.plannerInitialView ?? snapshot.ui_state.planner_initial_view,
+    dismissedGroupingDraftId:
+      input.dismissedGroupingDraftId ?? snapshot.ui_state.dismissed_grouping_draft_local_id,
+    dismissedSeatingDraftId:
+      input.dismissedSeatingDraftId ?? snapshot.ui_state.dismissed_seating_draft_local_id,
   });
 
   const needsNormalization =

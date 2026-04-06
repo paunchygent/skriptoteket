@@ -5,7 +5,7 @@ title: "Klassrumskartan — Shared site/app dense-control primitive tightening"
 status: ready
 owners: "agents"
 created: 2026-04-01
-updated: 2026-04-05
+updated: 2026-04-06
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -43,6 +43,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0197: ST-29-11 editor/site adoption proof and segmented-toggle contract completion](../prs/pr-0197-st-29-11-editor-site-adoption-proof-and-segmented-toggle-contract-completion.md)
 - [PR-0224: ST-29-11 desktop-first planner width stability and shrink-to-fit remediation](../prs/pr-0224-st-29-11-desktop-first-planner-width-stability-and-shrink-to-fit-remediation.md)
 - [PR-0225: ST-29-11 desktop-first planner toolbar priority and overflow hardening](../prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md)
+- [PR-0226: ST-29-11 shared planner shell parity and grouping viewport-height stabilization](../prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md)
 
 ## References
 

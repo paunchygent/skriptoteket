@@ -1,10 +1,10 @@
 /**
  * Classroom planner guest controller.
  *
- * This composable owns public Klassrumskartan guest orchestration. It
- * bootstraps the browser-owned guest snapshot, keeps the public route on the
- * overview-authoring lane for checkpoint 2, and delegates pure persistence and
- * overview CRUD details to focused helper modules.
+ * This composable owns the public Klassrumskartan guest shell for checkpoint 3.
+ * It restores the browser-owned guest snapshot, exposes overview CRUD for the
+ * public class workspace, and coordinates the guest-local grouping/seating
+ * planner without touching authenticated route-shell behavior.
  */
 
 import { computed, onMounted, ref } from "vue";
@@ -12,16 +12,31 @@ import { computed, onMounted, ref } from "vue";
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import {
   buildWorkspaceSummary,
-  CHECKPOINT_TWO_OVERVIEW_CAPABILITIES,
+  CHECKPOINT_THREE_OVERVIEW_CAPABILITIES,
   hydrateGuestOverviewSnapshot,
   normalizeOverviewSnapshotUiState,
   PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH,
 } from "./classroomPlannerGuestControllerSupport";
+import { createClassroomPlannerGuestDraftSession } from "./classroomPlannerGuestDraftSession";
+import { buildGuestWorkspaceSummary } from "./classroomPlannerGuestDraftMutations";
 import { createClassroomPlannerGuestOverviewCrudFlow } from "./classroomPlannerGuestOverviewCrud";
+import { hydrateGuestSnapshot } from "./classroomPlannerGuestSnapshotMapping";
 import { createClassroomPlannerGuestStorage } from "./classroomPlannerGuestStorage";
+import type { ClassroomPlannerGuestPlannerInitialView } from "./classroomPlannerGuestSnapshot";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
 
 type ClassroomPlannerGuestStorageAdapter = ReturnType<typeof createClassroomPlannerGuestStorage>;
+
+function resolveSnapshotDraftId(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  initialView: ClassroomPlannerGuestPlannerInitialView,
+): string | null {
+  const hydrated = hydrateGuestSnapshot(snapshot);
+  if (initialView === "seats" || initialView === "rules") {
+    return hydrated.seating_draft?.draft.id ?? hydrated.grouping_draft?.draft.id ?? null;
+  }
+  return hydrated.grouping_draft?.draft.id ?? hydrated.seating_draft?.draft.id ?? null;
+}
 
 export function useClassroomPlannerGuestController(options?: {
   enabled?: boolean;
@@ -36,15 +51,23 @@ export function useClassroomPlannerGuestController(options?: {
   const availableTemplates = ref<RoomTemplate[]>([]);
   const selectedRosterId = ref<string | null>(null);
   const selectedTemplateId = ref<string | null>(null);
+  const currentScreen = ref<"class-workspace" | "planner">("class-workspace");
+  const plannerInitialView = ref<"groups" | "seats">("groups");
   const isBootstrapping = ref(enabled);
   const bootstrapError = ref<string | null>(null);
   const plannerActionError = ref<string | null>(null);
+  const currentSnapshot = ref<ClassroomPlannerGuestSnapshot | null>(null);
   const currentSnapshotId = ref<string | null>(null);
 
-  const overviewCapabilities = CHECKPOINT_TWO_OVERVIEW_CAPABILITIES;
+  const overviewCapabilities = CHECKPOINT_THREE_OVERVIEW_CAPABILITIES;
   const classWorkspaceSummary = computed(() => {
-    const selectedRoster = availableRosters.value.find((roster) => roster.id === selectedRosterId.value) ?? null;
-    return buildWorkspaceSummary(selectedRoster);
+    if (!currentSnapshot.value || !selectedRosterId.value) {
+      const selectedRoster =
+        availableRosters.value.find((roster) => roster.id === selectedRosterId.value) ?? null;
+      return buildWorkspaceSummary(selectedRoster);
+    }
+
+    return buildGuestWorkspaceSummary(currentSnapshot.value, selectedRosterId.value);
   });
 
   function resolveGuestStorage(): ClassroomPlannerGuestStorageAdapter {
@@ -60,40 +83,35 @@ export function useClassroomPlannerGuestController(options?: {
 
   function applyHydratedSnapshot(
     snapshot: ClassroomPlannerGuestSnapshot,
-    options?: {
+    applyOptions?: {
       preserveExplicitTemplateNull?: boolean;
     },
-  ): {
-    normalizedSelectedRosterId: string | null;
-    normalizedSelectedTemplateId: string | null;
-  } {
-    const hydratedOverviewState = hydrateGuestOverviewSnapshot(snapshot, options);
-
+  ): void {
+    const hydratedOverviewState = hydrateGuestOverviewSnapshot(snapshot, applyOptions);
     availableRosters.value = hydratedOverviewState.rosters;
     availableTemplates.value = hydratedOverviewState.templates;
     selectedRosterId.value = hydratedOverviewState.normalizedSelectedRosterId;
     selectedTemplateId.value = hydratedOverviewState.normalizedSelectedTemplateId;
+    currentScreen.value = snapshot.ui_state.current_screen;
+    plannerInitialView.value =
+      snapshot.ui_state.planner_initial_view === "seats" ? "seats" : "groups";
+    currentSnapshot.value = snapshot;
     currentSnapshotId.value = snapshot.snapshot_id;
-
-    return {
-      normalizedSelectedRosterId: hydratedOverviewState.normalizedSelectedRosterId,
-      normalizedSelectedTemplateId: hydratedOverviewState.normalizedSelectedTemplateId,
-    };
   }
 
-  async function ensureReadySnapshot() {
+  async function ensureReadySnapshot(): Promise<ClassroomPlannerGuestSnapshot> {
     const storage = resolveGuestStorage();
-    const currentSnapshot = await storage.loadCurrentSnapshot();
-    if (currentSnapshot.status === "ready") {
-      return currentSnapshot.snapshot;
+    const current = await storage.loadCurrentSnapshot();
+    if (current.status === "ready") {
+      return current.snapshot;
     }
 
-    const initializedSnapshot = await storage.initializeEmptySnapshot();
-    if (initializedSnapshot.status !== "ready") {
+    const initialized = await storage.initializeEmptySnapshot();
+    if (initialized.status !== "ready") {
       throw new Error("Det gick inte att initiera den publika arbetsytan.");
     }
 
-    return initializedSnapshot.snapshot;
+    return initialized.snapshot;
   }
 
   async function persistSnapshotMutation<TResult>(input: {
@@ -102,9 +120,9 @@ export function useClassroomPlannerGuestController(options?: {
       result: TResult;
     };
   }): Promise<TResult> {
-    const currentSnapshot = await ensureReadySnapshot();
+    const snapshot = await ensureReadySnapshot();
     const updatedAt = getNowIso();
-    const { nextSnapshot, result } = input.mutate(currentSnapshot, updatedAt);
+    const { nextSnapshot, result } = input.mutate(snapshot, updatedAt);
     await resolveGuestStorage().saveSnapshot(nextSnapshot);
     applyHydratedSnapshot(nextSnapshot, {
       preserveExplicitTemplateNull: nextSnapshot.ui_state.selected_template_local_id === null,
@@ -115,6 +133,8 @@ export function useClassroomPlannerGuestController(options?: {
   async function persistUiState(input: {
     selectedRosterId: string | null;
     selectedTemplateId: string | null;
+    currentScreen?: "class-workspace" | "planner";
+    plannerInitialView?: "groups" | "seats";
   }): Promise<void> {
     await persistSnapshotMutation({
       mutate(snapshot, updatedAt) {
@@ -124,12 +144,20 @@ export function useClassroomPlannerGuestController(options?: {
             preferredTemplateId: input.selectedTemplateId,
             updatedAt,
             preserveExplicitTemplateNull: input.selectedTemplateId === null,
+            currentScreen: input.currentScreen,
+            plannerInitialView: input.plannerInitialView,
           }),
           result: undefined,
         };
       },
     });
   }
+
+  const guestPlannerState = createClassroomPlannerGuestDraftSession({
+    getSnapshot: ensureReadySnapshot,
+    persistSnapshotMutation,
+    nowIso: getNowIso,
+  });
 
   const overviewCrudFlow = createClassroomPlannerGuestOverviewCrudFlow(
     {
@@ -144,14 +172,43 @@ export function useClassroomPlannerGuestController(options?: {
     },
   );
 
-  async function bootstrapGuestOverview(): Promise<void> {
+  async function restorePlannerFromSnapshot(snapshot: ClassroomPlannerGuestSnapshot): Promise<void> {
+    if (snapshot.ui_state.current_screen !== "planner") {
+      guestPlannerState.clearWorkspace();
+      return;
+    }
+
+    const draftId = resolveSnapshotDraftId(snapshot, snapshot.ui_state.planner_initial_view);
+    if (!draftId) {
+      guestPlannerState.clearWorkspace();
+      currentScreen.value = "class-workspace";
+      plannerInitialView.value = "groups";
+      await persistUiState({
+        selectedRosterId: selectedRosterId.value,
+        selectedTemplateId: selectedTemplateId.value,
+        currentScreen: "class-workspace",
+        plannerInitialView: "groups",
+      });
+      return;
+    }
+
+    await guestPlannerState.loadWorkspace(draftId);
+  }
+
+  async function bootstrapGuestWorkspace(): Promise<void> {
     if (!enabled) {
+      guestPlannerState.clearWorkspace();
       isBootstrapping.value = false;
       bootstrapError.value = null;
+      plannerActionError.value = null;
       availableRosters.value = [];
       availableTemplates.value = [];
       selectedRosterId.value = null;
       selectedTemplateId.value = null;
+      currentScreen.value = "class-workspace";
+      plannerInitialView.value = "groups";
+      currentSnapshot.value = null;
+      currentSnapshotId.value = null;
       return;
     }
 
@@ -161,25 +218,23 @@ export function useClassroomPlannerGuestController(options?: {
 
     try {
       const snapshot = await ensureReadySnapshot();
-      const {
-        normalizedSelectedRosterId,
-        normalizedSelectedTemplateId,
-      } = applyHydratedSnapshot(snapshot, {
+      const hydratedOverviewState = hydrateGuestOverviewSnapshot(snapshot, {
         preserveExplicitTemplateNull: snapshot.ui_state.selected_template_local_id === null,
       });
       const normalizedSnapshot = normalizeOverviewSnapshotUiState(snapshot, {
-        preferredRosterId: normalizedSelectedRosterId,
-        preferredTemplateId: normalizedSelectedTemplateId,
+        preferredRosterId: hydratedOverviewState.normalizedSelectedRosterId,
+        preferredTemplateId: hydratedOverviewState.normalizedSelectedTemplateId,
         updatedAt: getNowIso(),
-        preserveExplicitTemplateNull: normalizedSelectedTemplateId === null,
+        preserveExplicitTemplateNull: hydratedOverviewState.normalizedSelectedTemplateId === null,
       });
 
       if (normalizedSnapshot !== snapshot) {
         await resolveGuestStorage().saveSnapshot(normalizedSnapshot);
-        applyHydratedSnapshot(normalizedSnapshot, {
-          preserveExplicitTemplateNull: normalizedSnapshot.ui_state.selected_template_local_id === null,
-        });
       }
+      applyHydratedSnapshot(normalizedSnapshot, {
+        preserveExplicitTemplateNull: normalizedSnapshot.ui_state.selected_template_local_id === null,
+      });
+      await restorePlannerFromSnapshot(normalizedSnapshot);
     } catch (error: unknown) {
       bootstrapError.value = error instanceof Error
         ? error.message
@@ -194,9 +249,7 @@ export function useClassroomPlannerGuestController(options?: {
       return;
     }
 
-    selectedRosterId.value = rosterId;
     plannerActionError.value = null;
-
     try {
       await persistUiState({
         selectedRosterId: rosterId,
@@ -214,9 +267,7 @@ export function useClassroomPlannerGuestController(options?: {
       return;
     }
 
-    selectedTemplateId.value = templateId;
     plannerActionError.value = null;
-
     try {
       await persistUiState({
         selectedRosterId: selectedRosterId.value,
@@ -229,8 +280,169 @@ export function useClassroomPlannerGuestController(options?: {
     }
   }
 
+  async function flushPlannerForModeSwitch(
+    conflictMessage: string,
+    fallbackMessage: string,
+  ): Promise<boolean> {
+    if (!guestPlannerState.draft.value) {
+      return true;
+    }
+
+    const result = await guestPlannerState.prepareForWorkspaceSwitch({
+      conflictMessage,
+      fallbackMessage,
+    });
+    if (result.status === "blocked") {
+      plannerActionError.value = result.message;
+      return false;
+    }
+    return true;
+  }
+
+  async function openGroupingWorkspace(rosterId: string | null = selectedRosterId.value): Promise<void> {
+    if (!rosterId) {
+      return;
+    }
+
+    plannerActionError.value = null;
+    try {
+      await guestPlannerState.resolveDraft(rosterId, null, "grouping");
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : "Kunde inte öppna grupparbetsytan just nu.";
+    }
+  }
+
+  async function openSeatingWorkspace(templateId: string | null): Promise<void> {
+    if (!selectedRosterId.value || !templateId) {
+      return;
+    }
+
+    plannerActionError.value = null;
+    try {
+      await guestPlannerState.resolveDraft(selectedRosterId.value, templateId, "seating");
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : "Kunde inte öppna sittplatserna just nu.";
+    }
+  }
+
+  async function changeGroupingRoster(payload: { rosterId: string }): Promise<void> {
+    if (!(await flushPlannerForModeSwitch(
+      "Lös sparkonflikten innan du byter klass.",
+      "Kunde inte spara ändringarna innan klassen byttes.",
+    ))) {
+      return;
+    }
+    await openGroupingWorkspace(payload.rosterId);
+  }
+
+  async function changeGroupingTemplate(): Promise<void> {
+    return;
+  }
+
+  async function changeSeatingTemplate(payload: { templateId: string | null }): Promise<void> {
+    if (!(await flushPlannerForModeSwitch(
+      "Lös sparkonflikten innan du byter klassrum.",
+      "Kunde inte spara ändringarna innan klassrummet byttes.",
+    ))) {
+      return;
+    }
+    await openSeatingWorkspace(payload.templateId);
+  }
+
+  async function startNewGroupingDraft(): Promise<void> {
+    if (!selectedRosterId.value) {
+      return;
+    }
+    if (!(await flushPlannerForModeSwitch(
+      "Lös sparkonflikten innan du startar ett nytt grupputkast.",
+      "Kunde inte spara ändringarna innan nytt grupputkast startades.",
+    ))) {
+      return;
+    }
+
+    plannerActionError.value = null;
+    try {
+      await guestPlannerState.startNewGroupingDraft(selectedRosterId.value, null);
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : "Kunde inte starta ett nytt grupputkast just nu.";
+    }
+  }
+
+  async function startNewSeatingDraft(payload: { templateId: string }): Promise<void> {
+    if (!selectedRosterId.value) {
+      return;
+    }
+    if (!(await flushPlannerForModeSwitch(
+      "Lös sparkonflikten innan du startar ett nytt sittschema.",
+      "Kunde inte spara ändringarna innan nytt sittschema startades.",
+    ))) {
+      return;
+    }
+
+    plannerActionError.value = null;
+    try {
+      await guestPlannerState.startNewSeatingDraft(selectedRosterId.value, payload.templateId);
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : "Kunde inte starta ett nytt sittschema just nu.";
+    }
+  }
+
+  async function selectPlannerWorkspaceMode(mode: "overview" | "grouping" | "seating"): Promise<void> {
+    if (mode === "overview") {
+      plannerActionError.value = null;
+      try {
+        await guestPlannerState.persistCurrentWorkspaceToOverview({
+          selectedRosterId: guestPlannerState.roster.value?.id ?? selectedRosterId.value,
+          selectedTemplateId: guestPlannerState.template.value?.id ?? selectedTemplateId.value,
+          plannerInitialView: plannerInitialView.value,
+        });
+        guestPlannerState.clearWorkspace();
+      } catch (error: unknown) {
+        plannerActionError.value = error instanceof Error
+          ? error.message
+          : "Kunde inte återvända till klassarbetsytan just nu.";
+      }
+      return;
+    }
+
+    if (mode === "grouping") {
+      await openGroupingWorkspace();
+      return;
+    }
+
+    await openSeatingWorkspace(guestPlannerState.template.value?.id ?? selectedTemplateId.value);
+  }
+
+  async function saveRoster(
+    payload: Parameters<typeof overviewCrudFlow.saveRoster>[0],
+  ): Promise<Roster> {
+    const roster = await overviewCrudFlow.saveRoster(payload);
+    if (guestPlannerState.roster.value?.id === roster.id) {
+      guestPlannerState.replaceCurrentRoster(roster);
+    }
+    return roster;
+  }
+
+  async function saveTemplate(
+    payload: Parameters<typeof overviewCrudFlow.saveTemplate>[0],
+  ): Promise<RoomTemplate> {
+    const template = await overviewCrudFlow.saveTemplate(payload);
+    if (guestPlannerState.template.value?.id === template.id) {
+      guestPlannerState.replaceCurrentTemplate(template);
+    }
+    return template;
+  }
+
   onMounted(() => {
-    void bootstrapGuestOverview();
+    void bootstrapGuestWorkspace();
   });
 
   return {
@@ -238,16 +450,29 @@ export function useClassroomPlannerGuestController(options?: {
     availableTemplates,
     selectedRosterId,
     selectedTemplateId,
+    currentScreen,
+    plannerInitialView,
     isBootstrapping,
     bootstrapError,
     plannerActionError,
     classWorkspaceSummary,
     currentSnapshotId,
     overviewCapabilities,
+    guestPlannerState,
     rosterImportPreviewApiPath: PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH,
     selectWorkspaceRoster,
     selectWorkspaceTemplate,
-    bootstrapGuestOverview,
+    bootstrapGuestWorkspace,
+    openGroupingWorkspace,
+    openSeatingWorkspace,
+    changeGroupingRoster,
+    changeGroupingTemplate,
+    changeSeatingTemplate,
+    startNewGroupingDraft,
+    startNewSeatingDraft,
+    selectPlannerWorkspaceMode,
     ...overviewCrudFlow,
+    saveRoster,
+    saveTemplate,
   };
 }

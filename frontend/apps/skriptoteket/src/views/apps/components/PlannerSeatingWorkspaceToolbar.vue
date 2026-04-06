@@ -37,6 +37,9 @@ const props = withDefaults(
     exportBusy?: boolean;
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
+    showHistoryAction?: boolean;
+    showSmartControls?: boolean;
+    showExportActions?: boolean;
   }>(),
   {
     availableTemplates: () => [],
@@ -46,6 +49,9 @@ const props = withDefaults(
     exportBusy: false,
     exportStatusLabel: null,
     exportErrorMessage: null,
+    showHistoryAction: true,
+    showSmartControls: true,
+    showExportActions: true,
   },
 );
 
@@ -109,32 +115,36 @@ const exportStatus = computed<{
   }
   return null;
 });
-const secondaryActionItems = computed(() => [
-  {
-    id: "history",
-    label: "Historik",
-    icon: IconHistory,
-    disabled: props.seatingLifecycleBusy,
-    testId: "seating-history",
-    onSelect: () => emit("open-history"),
-  },
-  {
+const secondaryActionItems = computed(() => {
+  const items = [];
+  if (props.showHistoryAction) {
+    items.push({
+      id: "history",
+      label: "Historik",
+      icon: IconHistory,
+      disabled: props.seatingLifecycleBusy,
+      testId: "seating-history",
+      onSelect: () => emit("open-history"),
+    });
+  }
+  items.push({
     id: "edit-roster",
     label: "Redigera klass",
     icon: IconAdjustments,
     disabled: plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
     testId: "edit-seating-roster",
     onSelect: () => emit("edit-roster"),
-  },
-  {
+  });
+  items.push({
     id: "edit-classroom",
     label: "Redigera klassrum",
     icon: IconAdjustments,
     disabled: !canEditCurrentTemplate.value || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
     testId: "edit-current-template",
     onSelect: editCurrentTemplate,
-  },
-]);
+  });
+  return items;
+});
 
 async function startNewSeatingDraft(): Promise<void> {
   if (props.seatingLifecycleBusy) {
@@ -258,6 +268,7 @@ function handleExportOption(option: PlannerExportOptionValue): void {
           </template>
         </UiDenseActionButton>
         <div
+          v-if="showSmartControls"
           class="flex items-center [&>*+*]:-ml-px"
           data-test="seating-smart-cluster"
         >
@@ -331,12 +342,13 @@ function handleExportOption(option: PlannerExportOptionValue): void {
 
       <template #secondary>
         <PlannerExportActionGroup
+          v-if="showExportActions"
           :busy="exportBusy"
           @export-default="emit('export-default')"
           @export-option="handleExportOption"
         />
         <UiDenseStatusPill
-          v-if="exportStatus"
+          v-if="showExportActions && exportStatus"
           :label="exportStatus.label"
           :tone="exportStatus.tone"
           :title="exportStatus.title"

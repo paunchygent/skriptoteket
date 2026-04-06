@@ -5,7 +5,7 @@ title: "ST-32-06: public Klassrumskartan demo capability matrix and browser-work
 status: in_progress
 owners: "agents"
 created: 2026-04-05
-updated: 2026-04-05
+updated: 2026-04-06
 stories:
   - "ST-32-06"
 tags: ["frontend", "backend", "klassrumskartan", "public-access", "guest-workspace"]
@@ -28,15 +28,15 @@ acceptance_criteria:
 ## Problem
 
 `ST-32-04` and `ST-32-05` already established the browser-owned snapshot
-contract and authenticated upgrade boundary. What remains before implementation
-starts is not the overall direction, but a small set of still-unfrozen
+contract and authenticated upgrade boundary. What remains for the unfinished
+part of this PR is not the overall direction, but a small set of still-unfrozen
 guest-mode details that need one explicit contract inside this PR so the
 implementation does not drift.
 
 ## Current implementation status
 
-As of 2026-04-05, checkpoints 1-2 are implemented locally and checkpoints 3-4
-are still pending.
+As of 2026-04-06, checkpoints 1-3 are implemented locally and checkpoint 4
+remains pending.
 
 Implemented so far:
 
@@ -61,6 +61,20 @@ Implemented so far:
   only:
   - `/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview`
 - authenticated Klassrumskartan orchestration remains separate and unchanged
+- checkpoint 3 guest planner continuity is now in place:
+  - the public shell swaps between overview and a dedicated guest planner shell
+    through `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.vue`
+    and `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue`
+  - guest planner state is browser-owned and split across focused modules:
+    `useClassroomPlannerGuestController.ts`,
+    `classroomPlannerGuestDraftSession.ts`,
+    `classroomPlannerGuestDraftPersistence.ts`,
+    `classroomPlannerGuestDraftWorkspace.ts`, and
+    `classroomPlannerGuestDraftMutations.ts`
+  - guest `Grupper` / `Sittplatser` now reopen from the same browser snapshot,
+    survive overview round-trips, preserve the selected overview classroom
+    across planner mode switches, and no longer let the shell selector drift
+    away from the hydrated draft kind
 - checkpoint-1 public presentation uses final-state user copy only:
   - the locked guest system message is shown
   - temporary implementation-stage helper/tooltips are not shown
@@ -69,8 +83,10 @@ Implemented so far:
 
 Not implemented yet:
 
-- guest `Grupper` / `Sittplatser` draft/session orchestration
-- guest smart rules, export, and final account-only affordance behavior
+- later follow-on work:
+  - guest smart rules
+  - guest export and export-backed checkpoint UX
+  - final account-only affordance behavior by surface
 
 Local proof so far:
 
@@ -90,7 +106,12 @@ Local proof so far:
     used; the network audit observed only `GET /api/v1/auth/me`,
     `GET /api/v1/public/apps/classroom.group-seating-studio`, and
     `POST /api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview`
-  - artifacts: `.artifacts/pr-0223-public-guest-overview-checkpoint2/`
+  - checkpoint-3 continuity is now live too:
+    - overview-selected classroom keeps `Sittplatser` enabled after entering
+      `Grupper`
+    - `Sittplatser -> Grupper` returns to the real grouping lane instead of
+      leaving the shell stuck on seating
+    - artifacts: `.artifacts/pr-0223-public-guest-checkpoint3/`
 
 Reviewer follow-up retained for this checkpoint:
 
@@ -98,6 +119,68 @@ Reviewer follow-up retained for this checkpoint:
   registration copy while unfinished guest actions stay hidden
 - when this slice is re-verified live, keep browser/network evidence that the
   guest overview does not hit owner-scoped authenticated APIs
+
+## Checkpoint-3 implementation freeze (2026-04-06)
+
+Checkpoint 3 is now explicitly the next bounded implementation slice inside
+`PR-0223`. It must stop after guest grouping/seating draft continuity lands.
+
+### Scope in
+
+- extend
+  `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`
+  beyond overview-only orchestration so the public shell can open and resume
+  guest `Grupper` / `Sittplatser`
+- keep browser-owned draft/session logic in new focused guest modules rather
+  than growing the existing checkpoint-2 files further
+- reuse the existing presentation shell where it stays transport-agnostic:
+  `PlannerClassWorkspace.vue`, `PlannerWorkspaceShell.vue`, and their child
+  panes/toolbars
+- keep draft continuity browser-owned through the existing guest snapshot
+  contract in
+  `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshot.ts`
+  and
+  `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestSnapshotMapping.ts`
+- update the targeted existing Playwright proof in
+  `scripts/playwright_pr_0223_public_guest_overview_checkpoint2_check.py`
+  rather than creating a second overlapping PR-0223 browser script
+
+### Scope out
+
+- guest smart-rule authoring and persistence
+- guest direct-download export behavior and checkpoint UX polish
+- public smart-run compute seams
+- any reuse of authenticated `/api/v1/apps/classroom.group-seating-studio/...`
+  draft, history, export, or smart-run endpoints
+- any broadening of
+  `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerRouteShell.ts`
+  into a dual-mode guest/authenticated controller
+
+### Planned module split
+
+The checkpoint-3 code shape should stay below the repo file-size ceiling by
+adding focused guest draft/session modules instead of inflating the
+checkpoint-2 files.
+
+- new module:
+  `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts`
+  - own guest draft open/resume/return transitions, public planner-screen
+    state, and screen-specific snapshot hydration
+- new module:
+  `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftMutations.ts`
+  - own pure browser-owned snapshot mutations for grouping/seating drafts and
+    related UI state updates
+- existing module touched:
+  `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`
+  - orchestrate the new helpers and expose one broader guest workspace surface
+- existing module touched:
+  `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.vue`
+  - re-enable only the guest-capable `Grupper` / `Sittplatser` entry points
+- existing checkpoint-2 helper files
+  `classroomPlannerGuestControllerSupport.ts` and
+  `classroomPlannerGuestOverviewCrud.ts`
+  - keep their current responsibilities and do not absorb guest planner-session
+    orchestration
 
 ## Already locked decisions
 
@@ -383,6 +466,27 @@ Locked decision:
   and receive that path by injection
 - guest mode must not use the authenticated import-preview path as fallback
 
+### 7. Checkpoint-3 stops before smart rules and export
+
+Locked decision:
+- checkpoint 3 is only guest grouping/seating draft continuity
+- smart-rule authoring/persistence, export, and export-backed checkpoint UX are
+  the following slice unless checkpoint-3 implementation proves one tiny seam is
+  strictly required to keep the snapshot model coherent
+- do not absorb guest smart-run/public-compute design into checkpoint 3 while
+  no approved public smart-run seam exists in code
+
+### 8. Existing PR-0223 Playwright proof is extended in place
+
+Locked decision:
+- update
+  `scripts/playwright_pr_0223_public_guest_overview_checkpoint2_check.py`
+  instead of creating a second overlapping PR-0223 public-route script
+- the script keeps the existing overview/browser-owned/network-audit proof and
+  adds checkpoint-3 guest grouping/seating continuity coverage
+- if the checkpoint-2-only filename becomes too misleading later, rename once
+  at final PR-0223 close-out rather than spawning parallel proof scripts now
+
 ## Execution checklist
 
 - [x] Checkpoint 1 delivered: public route renders the real overview shell from
@@ -398,8 +502,14 @@ Locked decision:
 - [x] Inject guest roster import preview through the dedicated public helper
   route only
 - [x] Persist guest roster/template mutations into the guest snapshot lane
-- [ ] Extend the guest controller to own guest grouping/seating draft/session
+- [x] Extend the guest controller to own guest grouping/seating draft/session
   continuity without reusing authenticated draft/workspace endpoints
+- [x] Implement checkpoint-3 guest draft/session helpers in new focused modules
+  instead of growing `classroomPlannerGuestControllerSupport.ts` or
+  `classroomPlannerGuestOverviewCrud.ts` into mixed-responsibility files
+- [x] Re-enable only the guest-capable `Grupper` / `Sittplatser` paths in the
+  public shell while leaving `Regler`, export polish, and account-only
+  recovery/history/job surfaces blocked or omitted
 - [ ] Extend the guest controller to own guest smart-rule persistence in the
   browser-owned snapshot
 - [ ] Keep guest export direct-download only and omit/block account-owned
@@ -409,9 +519,30 @@ Locked decision:
 - [x] Keep authenticated Klassrumskartan behavior unchanged
 - [x] Add or update focused tests for the broader guest-controller lane,
   including overview authoring and public-helper injection
+- [x] Add focused checkpoint-3 tests for guest draft/session continuity:
+  - `src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts`
+    keeps controller-level guest bootstrap, browser snapshot hydration, and
+    draft/session continuity coverage
+  - `src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`
+    proves the dedicated guest planner shell preserves overview-selected
+    classroom state, keeps `Sittplatser` enabled honestly, and round-trips
+    `Sittplatser -> Grupper` without selector drift
+  - `src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts`
+    proves the public overview shell swaps cleanly into the dedicated guest
+    planner shell while unfinished guest surfaces stay blocked honestly
+- [x] Extend
+  `scripts/playwright_pr_0223_public_guest_overview_checkpoint2_check.py`
+  in place so the targeted browser proof now covers:
+  - overview authoring
+  - guest grouping draft creation/resume
+  - guest seating draft creation/resume
+  - reload continuity in the same browser workspace
+  - unchanged owner-scoped API blocking/network audit
 - [x] Run the required verification stack:
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerEntryView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/PublicAppHostView.spec.ts src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+  - `pdm run fe-test src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts`
   - `pdm run fe-type-check`
+  - `python -m py_compile scripts/playwright_pr_0223_public_guest_overview_checkpoint2_check.py`
+  - `pdm run python -m scripts.playwright_pr_0223_public_guest_overview_checkpoint2_check --base-url http://127.0.0.1:5173`
   - `pdm run docs-validate`
 - [x] Gather live public-route proof on
   `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` showing:
@@ -457,6 +588,11 @@ products.”
 - `pdm run precommit-run`
 - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run`
 - `pdm run docs-validate`
+- checkpoint-3 focused verification target:
+  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerEntryView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/classroomPlannerGuestDraftSession.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/PublicAppHostView.spec.ts src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run docs-validate`
+  - `pdm run python -m scripts.playwright_pr_0223_public_guest_overview_checkpoint2_check --base-url http://127.0.0.1:5173`
 - required evidence for checkpoints 2 through 4:
   - focused browser/network proof that guest flows call only the dedicated
     public helper namespace or stay fully local in the browser, and never hit
@@ -466,10 +602,12 @@ products.”
     draft/session orchestration so the guest lane is proven structurally, not
     only visually
 - focused browser proof for:
-  - guest authoring continuity for rosters, templates, smart rules, and drafts
+  - guest authoring continuity for rosters, templates, and checkpoint-3 drafts
   - guest roster import preview through the public helper route only
-  - guest-local draft resume and guest-local export-backed checkpoint
-    continuity in the same browser workspace
+  - guest-local grouping/seating draft resume after returning to overview and
+    after page reload in the same browser workspace
+  - guest-local export-backed checkpoint continuity once export ships in the
+    later slice
   - guest smart-run behavior:
     - if a guest-capable public smart-run seam ships in this slice, prove it
       stays stateless and browser-owned

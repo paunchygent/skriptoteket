@@ -1,9 +1,10 @@
-"""Focused Playwright proof for PR-0223 public guest overview checkpoint 2.
+"""Focused Playwright proof for PR-0223 public guest checkpoint 3.
 
 This script is a targeted browser proof for a bounded public Klassrumskartan
-slice. It validates that the public guest overview can author rosters and room
-templates in the browser-owned workspace, keeps the final registration message
-visible, and avoids owner-scoped authenticated planner APIs.
+slice. It validates that the public guest shell can author rosters and room
+templates in the browser-owned workspace, continue into Grupper and
+Sittplatser, keep draft continuity across overview returns, preserve the final
+registration message, and avoid owner-scoped authenticated planner APIs.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ from playwright.sync_api import Page, Response, expect, sync_playwright
 
 from scripts._playwright_browser import launch_chromium
 
-ARTIFACTS_DIR = Path(".artifacts/pr-0223-public-guest-overview-checkpoint2")
+ARTIFACTS_DIR = Path(".artifacts/pr-0223-public-guest-checkpoint3")
 IMPORT_FILE = Path("data/class_list_example_inputs/sa24d_klasslista_komma.txt")
 PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
 FINAL_GUEST_MESSAGE = (
@@ -129,6 +130,8 @@ def _edit_roster(page: Page, *, edited_name: str) -> None:
 def _delete_roster(page: Page) -> None:
     """Delete the selected roster through the overview confirmation dialog."""
 
+    _open_workspace_mode(page, label="overview")
+    _wait_for_overview_shell(page)
     page.locator('[data-test="overview-delete-roster"]').click()
     heading = page.get_by_role("heading", name="Är du säker?", exact=True)
     expect(heading).to_be_visible()
@@ -165,6 +168,102 @@ def _create_template(page: Page, *, template_name: str) -> None:
     assert any(template_name in label for label in option_labels)
 
 
+def _open_workspace_mode(page: Page, *, label: str) -> None:
+    """Switch between overview/grouping/seating using the shared top-panel toggle."""
+
+    page.locator(f'[data-test="planner-mode-{label}"]').last.click(force=True)
+
+
+def _wait_for_guest_workspace_entry(page: Page) -> None:
+    """Wait for the guest overview to enable both planner entry points."""
+
+    expect(page.locator('[data-test="planner-mode-grouping"]')).to_be_enabled()
+    expect(page.locator('[data-test="planner-mode-seating"]')).to_be_enabled()
+
+
+def _wait_for_overview_shell(page: Page) -> None:
+    """Wait for the overview shell to become the only active mode-switch surface."""
+
+    expect(page.locator('[data-test="overview-roster-preview"]')).to_be_visible(timeout=10000)
+    expect(page.locator('[data-test="overview-template-select"]')).to_be_visible(timeout=10000)
+    page.wait_for_function(
+        """
+        () => document.querySelectorAll('[data-test="planner-mode-seating"]').length === 1
+        """
+    )
+
+
+def _wait_for_grouping_workspace(page: Page) -> None:
+    """Wait for the dedicated guest grouping shell to finish replacing overview."""
+
+    expect(page.locator('[data-test="new-grouping-draft"]')).to_be_visible(timeout=10000)
+    expect(page.locator('[data-test="grouping-board-lane"]')).to_be_visible(timeout=10000)
+    expect(page.locator('[data-test="grouping-student-pool"]')).to_contain_text("Ej grupperade")
+    expect(page.locator('[data-test="planner-mode-rules"]')).to_have_count(0)
+
+
+def _wait_for_seating_workspace(page: Page) -> None:
+    """Wait for the dedicated guest seating shell to finish replacing overview."""
+
+    expect(page.locator('[data-test="seating-workspace-lane"]')).to_be_visible(timeout=10000)
+    expect(page.locator('[data-test="seating-template-select"]')).to_be_visible(timeout=10000)
+    expect(page.locator('[data-test="planner-mode-rules"]')).to_have_count(0)
+
+
+def _assert_grouping_draft_continuity(page: Page, *, artifacts_dir: Path) -> None:
+    """Verify the guest grouping draft persists when returning to overview."""
+
+    _open_workspace_mode(page, label="grouping")
+    _wait_for_grouping_workspace(page)
+    page.screenshot(path=str(artifacts_dir / "guest-grouping-workspace.png"), full_page=True)
+
+    _open_workspace_mode(page, label="overview")
+    expect(page.locator('[data-test="overview-roster-preview"]')).to_be_visible()
+
+    _open_workspace_mode(page, label="grouping")
+    _wait_for_grouping_workspace(page)
+
+
+def _assert_seating_entry_and_continuity(
+    page: Page,
+    *,
+    expected_template_name: str,
+    artifacts_dir: Path,
+) -> None:
+    """Verify the guest seating shell opens and keeps the selected classroom."""
+
+    _open_workspace_mode(page, label="overview")
+    _wait_for_overview_shell(page)
+    expect(page.locator('[data-test="overview-classroom-empty"]')).to_have_count(0)
+
+    _open_workspace_mode(page, label="seating")
+    _wait_for_seating_workspace(page)
+    selected_label = page.locator('[data-test="seating-template-select"]').evaluate(
+        "element => element.selectedOptions[0]?.label ?? ''"
+    )
+    assert expected_template_name in selected_label
+
+    _open_workspace_mode(page, label="overview")
+    _wait_for_overview_shell(page)
+    expect(page.locator('[data-test="overview-template-select"]')).to_have_value(re.compile(r".+"))
+
+    _open_workspace_mode(page, label="overview")
+    _wait_for_overview_shell(page)
+    expect(page.locator('[data-test="overview-template-select"]')).to_have_value(re.compile(r".+"))
+    page.screenshot(path=str(artifacts_dir / "guest-seating-workspace.png"), full_page=True)
+
+    _open_workspace_mode(page, label="overview")
+    _wait_for_overview_shell(page)
+    expect(page.locator('[data-test="overview-template-select"]')).to_have_value(re.compile(r".+"))
+
+    _open_workspace_mode(page, label="seating")
+    _wait_for_seating_workspace(page)
+    selected_label = page.locator('[data-test="seating-template-select"]').evaluate(
+        "element => element.selectedOptions[0]?.label ?? ''"
+    )
+    assert expected_template_name in selected_label
+
+
 def _edit_template(page: Page, *, edited_name: str) -> None:
     """Rename the selected template through the public room-template modal."""
 
@@ -183,9 +282,37 @@ def _edit_template(page: Page, *, edited_name: str) -> None:
     assert any(edited_name in label for label in option_labels)
 
 
+def _select_overview_option_by_label(
+    page: Page,
+    *,
+    selector: str,
+    expected_label_fragment: str,
+) -> None:
+    """Select an overview roster/template option by matching part of its label."""
+
+    value = page.locator(selector).evaluate(
+        """
+        (element, expectedLabelFragment) => {
+          const option = Array.from(element.options).find(
+            (candidate) => candidate.label.includes(expectedLabelFragment),
+          );
+          return option ? option.value : null;
+        }
+        """,
+        expected_label_fragment,
+    )
+    if not value:
+        raise AssertionError(
+            f"Could not find overview option containing label fragment: {expected_label_fragment}"
+        )
+    page.locator(selector).select_option(value)
+
+
 def _delete_template(page: Page) -> None:
     """Delete the selected room template through the overview confirmation dialog."""
 
+    _open_workspace_mode(page, label="overview")
+    _wait_for_overview_shell(page)
     page.locator('[data-test="overview-delete-template"]').click()
     heading = page.get_by_role("heading", name="Är du säker?", exact=True)
     expect(heading).to_be_visible()
@@ -239,7 +366,7 @@ def _assert_no_owner_scoped_api_calls(api_responses: list[dict[str, object]]) ->
 
 
 def main() -> None:
-    """Run the checkpoint-2 public guest overview proof."""
+    """Run the checkpoint-3 public guest browser-owned planner proof."""
 
     if not IMPORT_FILE.is_file():
         raise FileNotFoundError(f"Missing example import file: {IMPORT_FILE}")
@@ -268,15 +395,34 @@ def main() -> None:
 
         _create_roster(page, roster_name=roster_name)
         _edit_roster(page, edited_name=edited_roster_name)
+        _select_overview_option_by_label(
+            page,
+            selector='[data-test="overview-roster-select"]',
+            expected_label_fragment=edited_roster_name,
+        )
         page.screenshot(path=str(artifacts_dir / "public-guest-roster-edited.png"), full_page=True)
-        _delete_roster(page)
 
         _create_template(page, template_name=template_name)
         _edit_template(page, edited_name=edited_template_name)
+        _select_overview_option_by_label(
+            page,
+            selector='[data-test="overview-template-select"]',
+            expected_label_fragment=edited_template_name,
+        )
+        _wait_for_guest_workspace_entry(page)
         page.screenshot(
             path=str(artifacts_dir / "public-guest-template-edited.png"), full_page=True
         )
+
+        _assert_grouping_draft_continuity(page, artifacts_dir=artifacts_dir)
+        _assert_seating_entry_and_continuity(
+            page,
+            expected_template_name=edited_template_name,
+            artifacts_dir=artifacts_dir,
+        )
+
         _delete_template(page)
+        _delete_roster(page)
 
         _assert_final_guest_message(page)
         normalized_text = _normalize_visible_text(page)
@@ -300,7 +446,7 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(f"playwright-pr-0223-public-guest-overview: ok -> {artifacts_dir}")
+    print(f"playwright-pr-0223-public-guest-checkpoint3: ok -> {artifacts_dir}")
 
 
 if __name__ == "__main__":  # pragma: no cover

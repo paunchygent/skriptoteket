@@ -1,11 +1,13 @@
 /**
- * Klassrumskartan public guest overview view tests.
+ * Klassrumskartan public guest view tests.
  *
- * These tests verify that the public empty-state shell keeps the final
- * user-facing registration copy while checkpoint-2 overview authoring is
- * available without exposing later planner lanes yet.
+ * These tests verify that the public shell keeps the final registration copy,
+ * enables checkpoint-3 guest grouping/seating entry points on the class
+ * workspace, and swaps to the dedicated guest planner shell when a guest draft
+ * is active.
  */
 
+import { defineComponent } from "vue";
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -16,35 +18,52 @@ const routerMocks = vi.hoisted(() => ({
 }));
 
 const guestOverviewMocks = vi.hoisted(() => ({
-  availableRosters: [],
-  availableTemplates: [],
-  selectedRosterId: null,
-  selectedTemplateId: null,
-  isBootstrapping: false,
-  bootstrapError: null,
-  plannerActionError: null,
-  classWorkspaceSummary: null,
+  availableRosters: { value: [] as unknown[] },
+  availableTemplates: { value: [] as unknown[] },
+  selectedRosterId: { value: null as string | null },
+  selectedTemplateId: { value: null as string | null },
+  currentScreen: { value: "class-workspace" as "class-workspace" | "planner" },
+  plannerInitialView: { value: "groups" as "groups" | "seats" },
+  isBootstrapping: { value: false },
+  bootstrapError: { value: null as string | null },
+  plannerActionError: { value: null as string | null },
+  classWorkspaceSummary: { value: null as unknown },
+  currentSnapshotId: { value: null as string | null },
   overviewCapabilities: {
-    show_grouping_option: false,
-    show_seating_option: false,
+    show_grouping_option: true,
+    show_seating_option: true,
     show_rules_option: false,
     show_roster_actions: true,
     show_template_actions: true,
   },
-  isRosterModalOpen: false,
-  isTemplateModalOpen: false,
-  activeRosterModal: null,
-  activeTemplateModal: null,
-  overviewDeleteRosterTarget: null,
-  overviewDeleteTemplateTarget: null,
-  overviewDeleteRosterError: null,
-  overviewDeleteTemplateError: null,
-  isDeletingOverviewRoster: false,
-  isDeletingOverviewTemplate: false,
+  guestPlannerState: {
+    draft: { value: null as unknown },
+    roster: { value: null as unknown },
+    template: { value: null as unknown },
+  },
+  isRosterModalOpen: { value: false },
+  isTemplateModalOpen: { value: false },
+  activeRosterModal: { value: null as unknown },
+  activeTemplateModal: { value: null as unknown },
+  overviewDeleteRosterTarget: { value: null as unknown },
+  overviewDeleteTemplateTarget: { value: null as unknown },
+  overviewDeleteRosterError: { value: null as string | null },
+  overviewDeleteTemplateError: { value: null as string | null },
+  isDeletingOverviewRoster: { value: false },
+  isDeletingOverviewTemplate: { value: false },
   rosterImportPreviewApiPath:
     "/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview",
   selectWorkspaceRoster: vi.fn(),
   selectWorkspaceTemplate: vi.fn(),
+  bootstrapGuestWorkspace: vi.fn(),
+  openGroupingWorkspace: vi.fn(),
+  openSeatingWorkspace: vi.fn(),
+  changeGroupingRoster: vi.fn(),
+  changeGroupingTemplate: vi.fn(),
+  changeSeatingTemplate: vi.fn(),
+  startNewGroupingDraft: vi.fn(),
+  startNewSeatingDraft: vi.fn(),
+  selectPlannerWorkspaceMode: vi.fn(),
   openRosterCreate: vi.fn(),
   closeRosterModal: vi.fn(),
   openSelectedRosterEdit: vi.fn(),
@@ -67,6 +86,21 @@ const guestOverviewMocks = vi.hoisted(() => ({
   confirmOverviewTemplateDelete: vi.fn(),
 }));
 
+// eslint-disable-next-line vue/one-component-per-file
+const PlannerClassWorkspaceStub = defineComponent({
+  name: "PlannerClassWorkspace",
+  props: {
+    overviewCapabilities: { type: Object, required: false, default: null },
+  },
+  template: "<div data-test='planner-class-workspace-stub' />",
+});
+
+// eslint-disable-next-line vue/one-component-per-file
+const ClassroomPlannerGuestWorkspaceShellStub = defineComponent({
+  name: "ClassroomPlannerGuestWorkspaceShell",
+  template: "<div data-test='guest-planner-shell-stub' />",
+});
+
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("vue-router")>();
   return {
@@ -83,44 +117,57 @@ vi.mock("./useClassroomPlannerGuestController", () => ({
   useClassroomPlannerGuestController: () => guestOverviewMocks,
 }));
 
+function mountView() {
+  return mount(ClassroomPlannerGuestOverviewView, {
+    global: {
+      stubs: {
+        PlannerClassWorkspace: PlannerClassWorkspaceStub,
+        ClassroomPlannerGuestWorkspaceShell: ClassroomPlannerGuestWorkspaceShellStub,
+        CreateRosterModal: true,
+        CreateRoomTemplateModal: true,
+        PlannerConfirmationDialog: true,
+      },
+    },
+  });
+}
+
 describe("ClassroomPlannerGuestOverviewView", () => {
   beforeEach(() => {
     routerMocks.push.mockReset();
-    guestOverviewMocks.selectWorkspaceRoster.mockReset();
-    guestOverviewMocks.selectWorkspaceTemplate.mockReset();
-    guestOverviewMocks.availableRosters = [];
-    guestOverviewMocks.availableTemplates = [];
-    guestOverviewMocks.selectedRosterId = null;
-    guestOverviewMocks.selectedTemplateId = null;
-    guestOverviewMocks.isBootstrapping = false;
-    guestOverviewMocks.bootstrapError = null;
-    guestOverviewMocks.plannerActionError = null;
-    guestOverviewMocks.classWorkspaceSummary = null;
-    guestOverviewMocks.overviewCapabilities = {
-      show_grouping_option: false,
-      show_seating_option: false,
-      show_rules_option: false,
-      show_roster_actions: true,
-      show_template_actions: true,
-    };
+    guestOverviewMocks.currentScreen.value = "class-workspace";
+    guestOverviewMocks.plannerInitialView.value = "groups";
+    guestOverviewMocks.isBootstrapping.value = false;
+    guestOverviewMocks.bootstrapError.value = null;
+    guestOverviewMocks.plannerActionError.value = null;
+    guestOverviewMocks.classWorkspaceSummary.value = null;
+    guestOverviewMocks.openGroupingWorkspace.mockReset();
+    guestOverviewMocks.openSeatingWorkspace.mockReset();
+    guestOverviewMocks.selectPlannerWorkspaceMode.mockReset();
   });
 
-  it("keeps the final registration message while exposing checkpoint-2 overview authoring only", () => {
-    const wrapper = mount(ClassroomPlannerGuestOverviewView);
+  it("keeps the final registration copy and passes checkpoint-3 capabilities to the class workspace", () => {
+    const wrapper = mountView();
     const normalizedText = wrapper.text().replace(/\s+/g, " ").trim();
 
     expect(normalizedText).toContain(
       "Vissa funktioner kräver att du registrerar ett konto. Tryck här för att skapa ett.",
     );
-    expect(normalizedText).toContain("Börja med att skapa en klasslista.");
-    expect(normalizedText).toContain("Behöver du mer vägledning kan du trycka på Hjälp.");
-    expect(wrapper.findAll('[data-ui="segmented-toggle"] button')).toHaveLength(1);
-    expect(wrapper.find("[data-test='overview-edit-roster']").exists()).toBe(true);
-    expect(wrapper.find("[data-test='overview-edit-template']").exists()).toBe(true);
-    expect(normalizedText).toContain("Ny klasslista");
-    expect(normalizedText).toContain("Nytt klassrum");
-    expect(normalizedText).not.toContain("Grupper");
-    expect(normalizedText).not.toContain("Sittplatser");
-    expect(normalizedText).not.toContain("Regler");
+    const classWorkspace = wrapper.findComponent(PlannerClassWorkspaceStub);
+    expect(classWorkspace.exists()).toBe(true);
+    expect(classWorkspace.props("overviewCapabilities")).toMatchObject({
+      show_grouping_option: true,
+      show_seating_option: true,
+      show_rules_option: false,
+    });
+    expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(false);
+  });
+
+  it("renders the dedicated guest planner shell when the browser-owned draft is active", () => {
+    guestOverviewMocks.currentScreen.value = "planner";
+
+    const wrapper = mountView();
+
+    expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(true);
+    expect(wrapper.find("[data-test='planner-class-workspace-stub']").exists()).toBe(false);
   });
 });

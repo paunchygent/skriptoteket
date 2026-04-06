@@ -48,6 +48,9 @@ const props = withDefaults(
     exportBusy?: boolean;
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
+    showHistoryAction?: boolean;
+    showSmartControls?: boolean;
+    showExportActions?: boolean;
   }>(),
   {
     availableRosters: () => [],
@@ -56,6 +59,9 @@ const props = withDefaults(
     exportBusy: false,
     exportStatusLabel: null,
     exportErrorMessage: null,
+    showHistoryAction: true,
+    showSmartControls: true,
+    showExportActions: true,
   },
 );
 
@@ -122,24 +128,28 @@ const exportOptions = computed<PlannerExportOption[]>(() => [
     option: "pdf_a4_portrait",
   },
 ]);
-const secondaryActionItems = computed(() => [
-  {
-    id: "history",
-    label: "Historik",
-    icon: IconHistory,
-    disabled: state.isWorkspaceBusy,
-    testId: "grouping-history",
-    onSelect: () => emit("open-history"),
-  },
-  {
+const secondaryActionItems = computed(() => {
+  const items = [];
+  if (props.showHistoryAction) {
+    items.push({
+      id: "history",
+      label: "Historik",
+      icon: IconHistory,
+      disabled: state.isWorkspaceBusy,
+      testId: "grouping-history",
+      onSelect: () => emit("open-history"),
+    });
+  }
+  items.push({
     id: "edit-roster",
     label: "Redigera klass",
     icon: IconAdjustments,
     disabled: state.isWorkspaceBusy,
     testId: "edit-grouping-roster",
     onSelect: () => emit("edit-roster"),
-  },
-]);
+  });
+  return items;
+});
 const isResetGroupingDialogOpen = ref(false);
 
 function isGroupingExportOption(option: PlannerExportOptionValue): option is GroupingExportOption {
@@ -241,6 +251,7 @@ function incrementGroupCount(): void {
           </template>
         </UiDenseActionButton>
         <div
+          v-if="showSmartControls"
           class="flex items-center [&>*+*]:-ml-px"
           data-test="grouping-smart-cluster"
         >
@@ -343,6 +354,7 @@ function incrementGroupCount(): void {
 
       <template #secondary>
         <PlannerExportActionGroup
+          v-if="showExportActions"
           :busy="exportBusy"
           :options="exportOptions"
           group-test-id="grouping-export-group"
@@ -353,7 +365,7 @@ function incrementGroupCount(): void {
           @export-option="handleExportOption"
         />
         <UiDenseStatusPill
-          v-if="exportStatus"
+          v-if="showExportActions && exportStatus"
           :label="exportStatus.label"
           :tone="exportStatus.tone"
           :title="exportStatus.title"

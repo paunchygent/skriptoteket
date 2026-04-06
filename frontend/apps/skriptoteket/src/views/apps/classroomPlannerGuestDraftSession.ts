@@ -1,35 +1,16 @@
 /**
- * Classroom planner state adapter.
+ * Classroom planner guest draft/session controller.
  *
- * Purpose:
- *   Compose the active Klassrumskartan planner session out of dedicated
- *   modules: one session controller, one draft persistence lane, one roster
- *   smart-rule lane, one smart-rule UI bucket, and explicit transition
- *   policies. This file intentionally stays a thin adapter over those
- *   contracts plus the shipped grouping/seating mutation helpers.
- *
- * Relationships:
- *   - delegates session identity to `usePlannerSessionController.ts`
- *   - delegates draft persistence to `useDraftPersistenceLane.ts`
- *   - delegates roster smart-rule state to `useRosterSmartRuleLane.ts`
- *   - delegates transient smart-rule UI state to `useSmartRuleUiState.ts`
- *   - delegates transition semantics to `plannerTransitionPolicies.ts`
+ * This module owns the browser-owned guest planner state used by public
+ * Klassrumskartan checkpoint 3. It reuses the shipped planner mutation and
+ * status helpers while keeping lifecycle, draft persistence, and smart-rule
+ * hydration inside the guest snapshot boundary instead of the authenticated
+ * API boundary.
  */
 
-import {
-  computed,
-  inject,
-  provide,
-  ref,
-  type InjectionKey,
-} from "vue";
-import { defineStore } from "pinia";
+import { computed, ref } from "vue";
 
-import { apiDelete, apiGet, apiPatch, apiPost } from "../../api/client";
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
-import { createClassroomPlannerLifecycle } from "./classroomPlannerLifecycle";
-import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
-import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
 import {
   buildFixtureMap,
   buildGroupMap,
@@ -37,11 +18,19 @@ import {
   buildStudentMap,
   createPlannerMutationActions,
 } from "./classroomPlannerStoreMutations";
-import { useSmartGroupingRun } from "./useSmartGroupingRun";
-import { useSmartSeatingRun } from "./useSmartSeatingRun";
+import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
+import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
+import {
+  createClassroomPlannerGuestDraftPersistence,
+  type CreateClassroomPlannerGuestDraftSessionOptions,
+} from "./classroomPlannerGuestDraftPersistence";
+import { createClassroomPlannerGuestDraftWorkspace } from "./classroomPlannerGuestDraftWorkspace";
+import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
+import { usePlannerSessionController } from "./usePlannerSessionController";
+import { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
+import { useSmartRuleUiState } from "./useSmartRuleUiState";
 import type {
   DraftGroup,
-  DraftHistoryStatus,
   GroupAssignment,
   PlanDraft,
   RelationshipRule,
@@ -51,15 +40,10 @@ import type {
   Student,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
-import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
-import { usePlannerSessionController } from "./usePlannerSessionController";
-import { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
-import { useSmartRuleUiState } from "./useSmartRuleUiState";
 
-const EXIT_AUTOSAVE_TIMEOUT_MS = 1500;
-const SMART_RULE_HYDRATION_FALLBACK_MESSAGE = "Kunde inte ladda smarta regler.";
-
-const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () => {
+export function createClassroomPlannerGuestDraftSession(
+  options: CreateClassroomPlannerGuestDraftSessionOptions,
+) {
   const draft = ref<PlanDraft | null>(null);
   const roster = ref<Roster | null>(null);
   const template = ref<RoomTemplate | null>(null);
@@ -69,7 +53,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
   const smartRulesRevision = ref(0);
-  const historyStatus = ref<DraftHistoryStatus>({
+  const historyStatus = ref({
     can_undo: false,
     can_redo: false,
   });
@@ -79,10 +63,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
 
   const sessionController = usePlannerSessionController();
 
-  const hasWorkspace = computed(() => {
-    return draft.value !== null && roster.value !== null;
-  });
-
+  const hasWorkspace = computed(() => draft.value !== null && roster.value !== null);
   const isWorkspaceBusy = computed(() => {
     return (
       historyActionInFlight.value
@@ -95,11 +76,11 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const students = computed(() => roster.value?.students ?? []);
   const seats = computed(() => template.value?.seats ?? []);
   const fixtures = computed(() => template.value?.fixtures ?? []);
-
   const studentsById = computed(() => buildStudentMap(students.value));
   const seatsById = computed(() => buildSeatMap(seats.value));
   const fixturesById = computed(() => buildFixtureMap(fixtures.value));
   const groupsById = computed(() => buildGroupMap(groups.value));
+
   const hasAssignedTarget = (
     entry: [string, string | null],
   ): entry is [string, string] => {
@@ -118,11 +99,11 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
       .map(([studentId, seatId]) => ({ student_id: studentId, seat_id: seatId }));
   });
 
-  const ungroupedStudents = computed(() => {
+  const ungroupedStudents = computed<Student[]>(() => {
     return students.value.filter((student) => !groupAssignmentsByStudentId.value[student.id]);
   });
 
-  const unseatedStudents = computed(() => {
+  const unseatedStudents = computed<Student[]>(() => {
     return students.value.filter((student) => !seatAssignmentsByStudentId.value[student.id]);
   });
 
@@ -174,25 +155,32 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
 
   function getStateSupport(): ReturnType<typeof createClassroomPlannerStateSupport> {
     if (!stateSupportHolder.current) {
-      throw new Error("Planner state support has not been initialized.");
+      throw new Error("Guest planner state support has not been initialized.");
     }
     return stateSupportHolder.current;
   }
+  const persistence = createClassroomPlannerGuestDraftPersistence({
+    options,
+    draft,
+    roster,
+    template,
+    groups,
+    groupAssignments,
+    seatAssignments,
+    seatingPreferences,
+    relationshipRules,
+    smartRulesRevision,
+  });
 
   const draftLane = useDraftPersistenceLane({
     canSchedule: () => !isWorkspaceBusy.value,
     getSessionToken: () => sessionController.sessionToken.value,
-    normalizeErrorMessage: (error, fallbackMessage) => {
-      return getStateSupport().normalizeMutationError(error, fallbackMessage);
-    },
-    persistDraft: async (draftId, patch) => {
-      return await apiPatch(
-        `/api/v1/apps/classroom.group-seating-studio/drafts/${draftId}`,
-        patch,
-      );
-    },
+    normalizeErrorMessage: (_error, fallbackMessage) => fallbackMessage,
+    persistDraft: async () => await persistence.persistGuestWorkspace(),
     serializePatch: () => getStateSupport().serializeDraftPatch(),
-    applyCommittedWorkspace: (workspace) => getStateSupport().applyWorkspace(workspace),
+    applyCommittedWorkspace: (workspace) => {
+      getStateSupport().applyWorkspace(workspace);
+    },
     applyAcknowledgement: (workspace) => {
       getStateSupport().applyDraftSaveAcknowledgement(workspace);
     },
@@ -201,17 +189,12 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const smartRuleLane = useRosterSmartRuleLane({
     canSchedule: () => !isWorkspaceBusy.value,
     getSessionToken: () => sessionController.sessionToken.value,
-    normalizeErrorMessage: (error, fallbackMessage) => {
-      return getStateSupport().normalizeMutationError(error, fallbackMessage);
-    },
-    persistSmartRules: async (rosterId, patch) => {
-      return await apiPatch(
-        `/api/v1/apps/classroom.group-seating-studio/rosters/${rosterId}/smart-rules`,
-        patch,
-      );
-    },
+    normalizeErrorMessage: (_error, fallbackMessage) => fallbackMessage,
+    persistSmartRules: async () => await persistence.persistGuestSmartRules(),
     serializePatch: () => getStateSupport().serializeSmartRulesPatch(),
-    applyCommittedRules: (rules) => getStateSupport().applyRosterSmartRules(rules),
+    applyCommittedRules: (rules) => {
+      getStateSupport().applyRosterSmartRules(rules);
+    },
     applyAcknowledgement: (rules) => {
       getStateSupport().applySmartRuleSaveAcknowledgement(rules);
     },
@@ -222,11 +205,9 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   });
 
   const smartRulesHydrated = computed(() => smartRuleLane.isHydrated.value);
-
   const canEditSeatingSmartRules = computed(() => {
     return roster.value !== null && smartRuleLane.isHydrated.value && !isWorkspaceBusy.value;
   });
-
   const canUndo = computed(() => {
     return (
       draft.value !== null
@@ -234,7 +215,6 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
       && (historyStatus.value.can_undo || draftLane.hasPendingChanges.value)
     );
   });
-
   const canRedo = computed(() => {
     return draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_redo;
   });
@@ -273,25 +253,6 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     isWorkspaceBusy,
   });
 
-  const smartSeatingRun = useSmartSeatingRun({
-    draft,
-    smartRulesHydrated,
-    runningState: smartSeatingRunInFlight,
-    flushDraftLane: draftLane.flushPendingChanges,
-    flushSmartRuleLane: smartRuleLane.flushPendingChanges,
-    applyWorkspace: stateSupport.applyWorkspace,
-    normalizeErrorMessage: stateSupport.normalizeMutationError,
-  });
-  const smartGroupingRun = useSmartGroupingRun({
-    draft,
-    smartRulesHydrated,
-    runningState: smartGroupingRunInFlight,
-    flushDraftLane: draftLane.flushPendingChanges,
-    flushSmartRuleLane: smartRuleLane.flushPendingChanges,
-    applyWorkspace: stateSupport.applyWorkspace,
-    normalizeErrorMessage: stateSupport.normalizeMutationError,
-  });
-
   const smartRuleActions = createClassroomPlannerSmartRuleActions({
     draft,
     seatingPreferences,
@@ -303,31 +264,6 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
-  });
-
-  const lifecycle = createClassroomPlannerLifecycle({
-    apiDelete,
-    apiGet,
-    apiPost,
-    exitAutosaveTimeoutMs: EXIT_AUTOSAVE_TIMEOUT_MS,
-    smartRuleHydrationFallbackMessage: SMART_RULE_HYDRATION_FALLBACK_MESSAGE,
-    draft,
-    roster,
-    historyActionInFlight,
-    sessionController,
-    syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
-    createTransitionController: stateSupport.createTransitionController,
-    normalizeMutationError: stateSupport.normalizeMutationError,
-    clearRosterSmartRules: stateSupport.clearRosterSmartRules,
-    applyWorkspace: stateSupport.applyWorkspace,
-    applyRosterSmartRules: stateSupport.applyRosterSmartRules,
-    clearWorkspace: stateSupport.clearWorkspace,
-    discardPendingSessionWork: stateSupport.discardPendingSessionWork,
-    discardPendingDraftChanges: draftLane.discardPendingChanges,
-    resetBoundDraft: draftLane.resetBoundDraft,
-    bindSmartRuleRoster: smartRuleLane.bindRoster,
-    markSmartRuleHydrating: smartRuleLane.markHydrating,
-    failSmartRuleHydration: smartRuleLane.failHydration,
   });
 
   const mutationActions = createPlannerMutationActions({
@@ -344,29 +280,45 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
       draftLane.markDirty();
     },
   });
+  const workspaceActions = createClassroomPlannerGuestDraftWorkspace({
+    options,
+    draft,
+    roster,
+    template,
+    groups,
+    groupAssignments,
+    seatAssignments,
+    sessionController,
+    draftLane,
+    smartRuleLane,
+    stateSupport,
+    persistence,
+  });
 
-  async function runSeatingShuffle(): Promise<void> {
-    if (!draft.value || draft.value.draft_kind !== "seating") {
-      return;
-    }
-    if ((draft.value.smart_enabled ?? false) !== true) {
-      smartSeatingRun.clearFeedback();
-      mutationActions.randomizeSeating();
-      return;
-    }
-    await smartSeatingRun.run();
+  const smartGroupingRunMessage = ref<string | null>(null);
+  const smartGroupingRunTone = ref<"neutral" | "success" | "warning">("neutral");
+  const smartSeatingRunMessage = ref<string | null>(null);
+  const smartSeatingRunTone = ref<"neutral" | "success" | "warning">("neutral");
+
+  function clearGuestSmartRunFeedback(): void {
+    smartGroupingRunMessage.value = null;
+    smartGroupingRunTone.value = "neutral";
+    smartSeatingRunMessage.value = null;
+    smartSeatingRunTone.value = "neutral";
   }
 
   async function runGroupingShuffle(): Promise<void> {
-    if (!draft.value || draft.value.draft_kind !== "grouping") {
-      return;
-    }
-    if ((draft.value.smart_enabled ?? false) !== true) {
-      smartGroupingRun.clearFeedback();
-      mutationActions.randomizeGroups();
-      return;
-    }
-    await smartGroupingRun.run();
+    clearGuestSmartRunFeedback();
+    mutationActions.randomizeGroups();
+  }
+
+  async function runSeatingShuffle(): Promise<void> {
+    clearGuestSmartRunFeedback();
+    mutationActions.randomizeSeating();
+  }
+
+  async function noopHistoryAction(): Promise<void> {
+    return;
   }
 
   return {
@@ -381,12 +333,12 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     smartRulePersistenceMessage: smartRuleLane.message,
     smartRuleHydrationStatus: smartRuleLane.hydrationStatus,
     smartRuleHydrationMessage: smartRuleLane.hydrationMessage,
-    isRunningSmartGrouping: smartGroupingRun.isBusy,
-    smartGroupingRunMessage: smartGroupingRun.message,
-    smartGroupingRunTone: smartGroupingRun.tone,
-    isRunningSmartSeating: smartSeatingRun.isBusy,
-    smartSeatingRunMessage: smartSeatingRun.message,
-    smartSeatingRunTone: smartSeatingRun.tone,
+    isRunningSmartGrouping: computed(() => smartGroupingRunInFlight.value),
+    smartGroupingRunMessage,
+    smartGroupingRunTone,
+    isRunningSmartSeating: computed(() => smartSeatingRunInFlight.value),
+    smartSeatingRunMessage,
+    smartSeatingRunTone,
     plannerStatusLabel: plannerStatus.plannerStatusLabel,
     plannerStatusMessage: plannerStatus.plannerStatusMessage,
     plannerStatusTone: plannerStatus.plannerStatusTone,
@@ -427,26 +379,31 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     discardPendingSessionWork: stateSupport.discardPendingSessionWork,
     replaceCurrentRoster: stateSupport.replaceCurrentRoster,
     replaceCurrentTemplate: stateSupport.replaceCurrentTemplate,
-    prepareForWorkspaceSwitch: lifecycle.prepareForWorkspaceSwitch,
-    prepareForExport: lifecycle.prepareForExport,
-    prepareForPlannerExit: lifecycle.prepareForPlannerExit,
-    retrySmartRuleHydration: lifecycle.retrySmartRuleHydration,
-    resolveDraft: lifecycle.resolveDraft,
-    startNewGroupingDraft: lifecycle.startNewGroupingDraft,
-    startNewSeatingDraft: lifecycle.startNewSeatingDraft,
-    loadWorkspace: lifecycle.loadWorkspace,
-    reloadActiveWorkspace: lifecycle.reloadActiveWorkspace,
-    activateGroupingHistoryDraft: lifecycle.activateGroupingHistoryDraft,
-    deleteGroupingHistoryDraft: lifecycle.deleteGroupingHistoryDraft,
-    activateSeatingHistoryDraft: lifecycle.activateSeatingHistoryDraft,
-    deleteSeatingHistoryDraft: lifecycle.deleteSeatingHistoryDraft,
-    undoGroupingDraft: lifecycle.undoGroupingDraft,
-    redoGroupingDraft: lifecycle.redoGroupingDraft,
-    undoSeatingDraft: lifecycle.undoSeatingDraft,
-    redoSeatingDraft: lifecycle.redoSeatingDraft,
-    getResumableDraft: lifecycle.getResumableDraft,
-    getClassWorkspaceSummary: lifecycle.getClassWorkspaceSummary,
-    abandonDraft: lifecycle.abandonDraft,
+    prepareForWorkspaceSwitch: workspaceActions.prepareForWorkspaceSwitch,
+    prepareForExport: workspaceActions.prepareForExport,
+    prepareForPlannerExit: workspaceActions.prepareForPlannerExit,
+    retrySmartRuleHydration: workspaceActions.retrySmartRuleHydration,
+    resolveDraft: workspaceActions.resolveDraft,
+    startNewGroupingDraft: workspaceActions.startNewGroupingDraft,
+    startNewSeatingDraft: workspaceActions.startNewSeatingDraft,
+    loadWorkspace: workspaceActions.loadWorkspace,
+    reloadActiveWorkspace: async () => {
+      if (!draft.value) {
+        return;
+      }
+      await workspaceActions.loadWorkspace(draft.value.id);
+    },
+    activateGroupingHistoryDraft: noopHistoryAction,
+    deleteGroupingHistoryDraft: noopHistoryAction,
+    activateSeatingHistoryDraft: noopHistoryAction,
+    deleteSeatingHistoryDraft: noopHistoryAction,
+    undoGroupingDraft: noopHistoryAction,
+    redoGroupingDraft: noopHistoryAction,
+    undoSeatingDraft: noopHistoryAction,
+    redoSeatingDraft: noopHistoryAction,
+    getResumableDraft: persistence.getResumableDraft,
+    getClassWorkspaceSummary: persistence.getClassWorkspaceSummary,
+    abandonDraft: async () => ({ status: "saved" as const }),
     setDraftSmartEnabled: smartRuleActions.setDraftSmartEnabled,
     setDraftUseHistoryEnabled: smartRuleActions.setDraftUseHistoryEnabled,
     setActiveSeatingSmartTool: smartRuleUiState.setActiveSeatingSmartTool,
@@ -479,18 +436,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     runGroupingShuffle,
     randomizeSeating: mutationActions.randomizeSeating,
     runSeatingShuffle,
+    persistCurrentWorkspaceToOverview: workspaceActions.persistCurrentWorkspaceToOverview,
+    persistOverviewUiState: workspaceActions.persistOverviewUiState,
   };
-});
-
-export type ClassroomStateLike = ReturnType<typeof useAuthenticatedClassroomStateStore>;
-
-const CLASSROOM_STATE_INJECTION_KEY: InjectionKey<ClassroomStateLike> =
-  Symbol("classroom-state");
-
-export function provideClassroomState(state: ClassroomStateLike): void {
-  provide(CLASSROOM_STATE_INJECTION_KEY, state);
-}
-
-export function useClassroomState(): ClassroomStateLike {
-  return inject(CLASSROOM_STATE_INJECTION_KEY, null) ?? useAuthenticatedClassroomStateStore();
 }

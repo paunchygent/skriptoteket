@@ -1,12 +1,14 @@
 <script setup lang="ts">
 /**
- * Classroom planner public guest overview view.
+ * Classroom planner public guest view.
  *
- * This view is the checkpoint-2 public Klassrumskartan shell. It keeps the
- * same overview-first presentation language as the authenticated planner while
- * delegating public overview authoring to the browser-owned guest controller.
+ * This view hosts the public guest Klassrumskartan shell. It keeps the
+ * browser-owned overview authoring surface, restores the checkpoint-3 guest
+ * planner lane, and injects the guest-local planner state into the shared
+ * grouping/seating presentation subtree.
  */
 
+import { reactive } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
 import SystemMessage from "../../components/ui/SystemMessage.vue";
@@ -14,53 +16,15 @@ import CreateRosterModal from "./components/CreateRosterModal.vue";
 import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
 import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
 import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
+import ClassroomPlannerGuestWorkspaceShell from "./ClassroomPlannerGuestWorkspaceShell.vue";
+import { provideClassroomState, type ClassroomStateLike } from "./useClassroomState";
 import { useClassroomPlannerGuestController } from "./useClassroomPlannerGuestController";
 
 const router = useRouter();
-const {
-  availableRosters,
-  availableTemplates,
-  selectedRosterId,
-  selectedTemplateId,
-  isBootstrapping,
-  bootstrapError,
-  plannerActionError,
-  classWorkspaceSummary,
-  overviewCapabilities,
-  isRosterModalOpen,
-  isTemplateModalOpen,
-  activeRosterModal,
-  activeTemplateModal,
-  overviewDeleteRosterTarget,
-  overviewDeleteTemplateTarget,
-  overviewDeleteRosterError,
-  overviewDeleteTemplateError,
-  isDeletingOverviewRoster,
-  isDeletingOverviewTemplate,
-  rosterImportPreviewApiPath,
-  selectWorkspaceRoster,
-  selectWorkspaceTemplate,
-  openRosterCreate,
-  closeRosterModal,
-  openSelectedRosterEdit,
-  openSelectedRosterDelete,
-  openTemplateCreate,
-  closeTemplateModal,
-  openOverviewTemplateEdit,
-  openSelectedTemplateDelete,
-  closeOverviewRosterDelete,
-  closeOverviewTemplateDelete,
-  saveRoster,
-  deleteRoster,
-  saveTemplate,
-  deleteTemplate,
-  applySavedRoster,
-  applyDeletedRoster,
-  applySavedTemplate,
-  applyDeletedTemplate,
-  confirmOverviewRosterDelete,
-  confirmOverviewTemplateDelete,
-} = useClassroomPlannerGuestController();
+const guestController = useClassroomPlannerGuestController();
+const providedGuestPlannerState = reactive(guestController.guestPlannerState);
+
+provideClassroomState(providedGuestPlannerState as unknown as ClassroomStateLike);
 
 async function exitPublicPlanner(): Promise<void> {
   await router.push({ name: "home" });
@@ -68,7 +32,10 @@ async function exitPublicPlanner(): Promise<void> {
 </script>
 
 <template>
-  <div class="w-full max-w-[90rem] self-center space-y-6 px-4 py-4 md:px-6">
+  <div
+    class="w-full max-w-[90rem] self-center px-4 py-4 md:px-6"
+    :class="guestController.currentScreen.value === 'planner' ? 'flex min-h-full flex-col gap-6' : 'space-y-6'"
+  >
     <header class="border-b border-navy pb-4">
       <div>
         <h1 class="page-title">
@@ -95,91 +62,120 @@ async function exitPublicPlanner(): Promise<void> {
     </SystemMessage>
 
     <div
-      v-if="isBootstrapping"
+      v-if="guestController.isBootstrapping.value"
       class="border border-navy bg-white px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
     >
       Laddar planeringsmiljön...
     </div>
 
     <SystemMessage
-      v-else-if="bootstrapError"
+      v-else-if="guestController.bootstrapError.value"
       :dismissible="false"
-      :model-value="bootstrapError"
+      :model-value="guestController.bootstrapError.value"
       variant="error"
     />
 
     <SystemMessage
-      v-else-if="plannerActionError"
+      v-else-if="guestController.plannerActionError.value"
       :dismissible="false"
-      :model-value="plannerActionError"
+      :model-value="guestController.plannerActionError.value"
       variant="error"
     />
 
-    <PlannerClassWorkspace
-      v-else
-      :workspace-summary="classWorkspaceSummary"
-      :available-rosters="availableRosters"
-      :available-templates="availableTemplates"
-      :selected-roster-id="selectedRosterId"
-      :selected-template-id="selectedTemplateId"
-      :is-loading-workspace="false"
-      :visible-grouping-draft="null"
-      :visible-seating-draft="null"
-      :overview-capabilities="overviewCapabilities"
-      @exit-app="void exitPublicPlanner()"
-      @create-roster="openRosterCreate"
-      @edit-roster="openSelectedRosterEdit"
-      @delete-current-roster="openSelectedRosterDelete"
-      @select-roster="void selectWorkspaceRoster($event)"
-      @create-template="openTemplateCreate"
-      @select-template="void selectWorkspaceTemplate($event)"
-      @edit-current-template="openOverviewTemplateEdit"
-      @delete-current-template="openSelectedTemplateDelete"
-    />
+    <div
+      class="relative"
+      :class="guestController.currentScreen.value === 'planner' ? 'flex min-h-0 flex-1 flex-col' : undefined"
+    >
+      <Transition name="planner-shell-swap">
+        <PlannerClassWorkspace
+          v-if="guestController.currentScreen.value === 'class-workspace'"
+          :key="guestController.classWorkspaceSummary.value?.roster.id ?? 'guest-class-workspace'"
+          :workspace-summary="guestController.classWorkspaceSummary.value"
+          :available-rosters="guestController.availableRosters.value"
+          :available-templates="guestController.availableTemplates.value"
+          :selected-roster-id="guestController.selectedRosterId.value"
+          :selected-template-id="guestController.selectedTemplateId.value"
+          :is-loading-workspace="false"
+          :visible-grouping-draft="null"
+          :visible-seating-draft="null"
+          :overview-capabilities="guestController.overviewCapabilities"
+          @exit-app="void exitPublicPlanner()"
+          @create-roster="guestController.openRosterCreate"
+          @edit-roster="guestController.openSelectedRosterEdit"
+          @delete-current-roster="guestController.openSelectedRosterDelete"
+          @select-roster="void guestController.selectWorkspaceRoster($event)"
+          @create-template="guestController.openTemplateCreate"
+          @select-template="void guestController.selectWorkspaceTemplate($event)"
+          @edit-current-template="guestController.openOverviewTemplateEdit"
+          @delete-current-template="guestController.openSelectedTemplateDelete"
+          @open-grouping="void guestController.openGroupingWorkspace()"
+          @open-seating="void guestController.openSeatingWorkspace($event.templateId)"
+        />
+
+        <ClassroomPlannerGuestWorkspaceShell
+          v-else
+          key="guest-planner"
+          class="flex-1 min-h-0"
+          :available-rosters="guestController.availableRosters.value"
+          :available-templates="guestController.availableTemplates.value"
+          :selected-roster-id="guestController.selectedRosterId.value"
+          :selected-template-id="guestController.selectedTemplateId.value"
+          :initial-view="guestController.plannerInitialView.value"
+          @change-grouping-roster="void guestController.changeGroupingRoster($event)"
+          @change-seating-template="void guestController.changeSeatingTemplate($event)"
+          @new-grouping-draft="void guestController.startNewGroupingDraft()"
+          @new-seating-draft="void guestController.startNewSeatingDraft($event)"
+          @edit-roster="guestController.openSelectedRosterEdit"
+          @edit-current-template="guestController.openOverviewTemplateEdit"
+          @select-workspace-mode="void guestController.selectPlannerWorkspaceMode($event)"
+          @exit-app="void exitPublicPlanner()"
+        />
+      </Transition>
+    </div>
 
     <CreateRosterModal
-      v-if="isRosterModalOpen"
-      :roster="activeRosterModal"
-      :import-preview-api-path="rosterImportPreviewApiPath"
-      :save-roster="saveRoster"
-      :delete-roster="deleteRoster"
-      @close="closeRosterModal"
-      @saved="applySavedRoster"
-      @deleted="applyDeletedRoster"
+      v-if="guestController.isRosterModalOpen.value"
+      :roster="guestController.activeRosterModal.value"
+      :import-preview-api-path="guestController.rosterImportPreviewApiPath"
+      :save-roster="guestController.saveRoster"
+      :delete-roster="guestController.deleteRoster"
+      @close="guestController.closeRosterModal"
+      @saved="guestController.applySavedRoster"
+      @deleted="guestController.applyDeletedRoster"
     />
 
     <CreateRoomTemplateModal
-      v-if="isTemplateModalOpen"
-      :template="activeTemplateModal"
-      :save-template="saveTemplate"
-      :delete-template="deleteTemplate"
-      @close="closeTemplateModal"
-      @saved="applySavedTemplate"
-      @deleted="applyDeletedTemplate"
+      v-if="guestController.isTemplateModalOpen.value"
+      :template="guestController.activeTemplateModal.value"
+      :save-template="guestController.saveTemplate"
+      :delete-template="guestController.deleteTemplate"
+      @close="guestController.closeTemplateModal"
+      @saved="guestController.applySavedTemplate"
+      @deleted="guestController.applyDeletedTemplate"
     />
 
     <PlannerConfirmationDialog
-      v-if="overviewDeleteRosterTarget"
+      v-if="guestController.overviewDeleteRosterTarget.value"
       eyebrow="Ta bort klasslista"
       title="Är du säker?"
-      :message="`Klasslistan ${overviewDeleteRosterTarget.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
+      :message="`Klasslistan ${guestController.overviewDeleteRosterTarget.value.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
       confirm-label="Ta bort klasslista"
-      :error-message="overviewDeleteRosterError"
-      :is-submitting="isDeletingOverviewRoster"
-      @cancel="closeOverviewRosterDelete"
-      @confirm="void confirmOverviewRosterDelete()"
+      :error-message="guestController.overviewDeleteRosterError.value"
+      :is-submitting="guestController.isDeletingOverviewRoster.value"
+      @cancel="guestController.closeOverviewRosterDelete"
+      @confirm="void guestController.confirmOverviewRosterDelete()"
     />
 
     <PlannerConfirmationDialog
-      v-if="overviewDeleteTemplateTarget"
+      v-if="guestController.overviewDeleteTemplateTarget.value"
       eyebrow="Ta bort klassrum"
       title="Är du säker?"
-      :message="`Klassrummet ${overviewDeleteTemplateTarget.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
+      :message="`Klassrummet ${guestController.overviewDeleteTemplateTarget.value.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
       confirm-label="Ta bort klassrum"
-      :error-message="overviewDeleteTemplateError"
-      :is-submitting="isDeletingOverviewTemplate"
-      @cancel="closeOverviewTemplateDelete"
-      @confirm="void confirmOverviewTemplateDelete()"
+      :error-message="guestController.overviewDeleteTemplateError.value"
+      :is-submitting="guestController.isDeletingOverviewTemplate.value"
+      @cancel="guestController.closeOverviewTemplateDelete"
+      @confirm="void guestController.confirmOverviewTemplateDelete()"
     />
   </div>
 </template>
