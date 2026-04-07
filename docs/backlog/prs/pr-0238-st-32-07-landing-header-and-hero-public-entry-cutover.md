@@ -5,7 +5,7 @@ title: "ST-32-07: landing header and hero public-entry cutover"
 status: ready
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 stories:
   - "ST-32-07"
 tags: ["frontend", "ux", "landing-page", "public-access"]
@@ -55,11 +55,20 @@ public app first, account paths second.
 5. Add or update focused frontend specs in the visible-contract layers, including `HomeView.spec.ts`
    plus at least one shared-shell assertion in `LandingLayout` or `App`, and record a live landing
    check in `.agents/handoff.md`.
+6. Preserve post-login destination semantics for the new in-place login affordances:
+   - from `/public/apps/classroom.group-seating-studio`, successful login must land on the
+     authenticated planner route rather than leave the user on the public host
+   - from signed-out-only auth routes such as `/register`, `/forgot-password`, and
+     `/reset-password`, successful login must land on an authenticated destination instead of
+     leaving the user on the signed-out page
+7. Prove the redirect contract with focused `App` / shared-header / auth-page tests before merge.
 
 ## Test plan
 
 - Focused frontend tests for the unauthenticated landing header and hero CTA hierarchy, centered on
   `HomeView.spec.ts` plus at least one shared-shell assertion in `LandingLayout` or `App`.
+- Focused redirect-contract tests for the new in-place login affordances:
+  `pdm run fe-test -- --run src/App.spec.ts src/views/PublicAppHostView.spec.ts`
 - Live browser proof on `http://127.0.0.1:5173/` and
   `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`
 - Live signed-out shell checks on `/register` and the password-recovery routes that reuse the

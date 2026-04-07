@@ -11,7 +11,9 @@ import { useRouter } from "vue-router";
 
 import { apiPost } from "../api/client";
 import SystemMessage from "../components/ui/SystemMessage.vue";
+import { buildSignedOutOnlyLoginRedirect } from "../composables/auth/loginRedirects";
 import { useVerificationResend } from "../composables/auth/useVerificationResend";
+import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
 
 type ForgotPasswordResponse = {
@@ -19,6 +21,7 @@ type ForgotPasswordResponse = {
 };
 
 const auth = useAuthStore();
+const loginModal = useLoginModal();
 const router = useRouter();
 
 const email = ref("");
@@ -139,12 +142,13 @@ async function resendVerification(): Promise<void> {
 
     <p class="text-sm text-navy/70">
       Kom du på lösenordet?
-      <RouterLink
-        to="/login"
+      <button
+        type="button"
         class="text-navy underline hover:text-burgundy"
+        @click="loginModal.open(buildSignedOutOnlyLoginRedirect())"
       >
         Logga in
-      </RouterLink>
+      </button>
     </p>
 
     <section

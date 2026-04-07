@@ -11,8 +11,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomeView from "./HomeView.vue";
 
 const homeMocks = vi.hoisted(() => ({
-  loginOpen: vi.fn(),
-  loadDashboard: vi.fn(),
   auth: {
     isAuthenticated: false,
     hasAtLeastRole: vi.fn(() => false),
@@ -42,12 +40,6 @@ vi.mock("../stores/auth", () => ({
   useAuthStore: () => homeMocks.auth,
 }));
 
-vi.mock("../composables/useLoginModal", () => ({
-  useLoginModal: () => ({
-    open: homeMocks.loginOpen,
-  }),
-}));
-
 vi.mock("../composables/home/useHomeDashboard", () => ({
   useHomeDashboard: () => homeMocks.dashboard,
 }));
@@ -57,11 +49,10 @@ describe("HomeView", () => {
     homeMocks.auth.isAuthenticated = false;
     homeMocks.auth.hasAtLeastRole.mockReset();
     homeMocks.auth.hasAtLeastRole.mockReturnValue(false);
-    homeMocks.loginOpen.mockReset();
     homeMocks.dashboard.loadDashboard.mockReset();
   });
 
-  it("shows the curated teacher-library positioning for signed-out users", async () => {
+  it("shows the public-entry hero hierarchy for signed-out users", () => {
     const wrapper = mount(HomeView, {
       global: {
         stubs: {
@@ -73,17 +64,13 @@ describe("HomeView", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Professionellt appbibliotek för lärare");
-    expect(wrapper.text()).toContain(
-      "Logga in och använd appar och verktyg för undervisning, planering och dokumentation.",
-    );
+    expect(wrapper.text()).toContain("Lärarverktyg direkt i webbläsaren.");
+    expect(wrapper.text()).toContain("Klassrumskartan är en av Skriptotekets appar.");
+    expect(wrapper.text()).toContain("Öppna Klassrumskartan");
+    expect(wrapper.text()).toContain("skapa ett konto");
     expect(wrapper.text()).toContain("Dela med kollegor");
-    expect(wrapper.text()).not.toContain("Ta koden i egna händer");
+    expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
     expect(wrapper.html()).toContain('href="/register"');
-
-    await wrapper.get("button").trigger("click");
-
-    expect(homeMocks.loginOpen).toHaveBeenCalledTimes(1);
     expect(homeMocks.dashboard.loadDashboard).not.toHaveBeenCalled();
   });
 });

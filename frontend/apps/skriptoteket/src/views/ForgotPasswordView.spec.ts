@@ -22,6 +22,9 @@ const routerMocks = vi.hoisted(() => ({
 }));
 
 const apiPostMock = vi.fn();
+const loginModalMocks = vi.hoisted(() => ({
+  open: vi.fn(),
+}));
 
 vi.mock("vue-router", () => ({
   useRouter: () => routerMocks.router,
@@ -35,10 +38,15 @@ vi.mock("../stores/auth", () => ({
   useAuthStore: () => routerMocks.auth,
 }));
 
+vi.mock("../composables/useLoginModal", () => ({
+  useLoginModal: () => loginModalMocks,
+}));
+
 describe("ForgotPasswordView", () => {
   beforeEach(() => {
     routerMocks.router.replace.mockReset();
     apiPostMock.mockReset();
+    loginModalMocks.open.mockReset();
     routerMocks.auth = reactive({
       isAuthenticated: false,
       bootstrap: vi.fn().mockResolvedValue(undefined),
@@ -102,7 +110,7 @@ describe("ForgotPasswordView", () => {
 
     expect(wrapper.text()).toContain("Inte verifierat än?");
 
-    await wrapper.get("button[type='button']").trigger("click");
+    await wrapper.get("section button.btn-secondary").trigger("click");
     await flushPromises();
 
     expect(apiPostMock).toHaveBeenNthCalledWith(2, "/api/v1/auth/resend-verification", {
@@ -112,7 +120,7 @@ describe("ForgotPasswordView", () => {
     expect(wrapper.text()).not.toContain("Försök igen om");
 
     await wrapper.get("#forgot-password-email").setValue("ada.lovelace@mail.harryda.se");
-    await wrapper.get("button[type='button']").trigger("click");
+    await wrapper.get("section button.btn-secondary").trigger("click");
     await flushPromises();
 
     expect(apiPostMock).toHaveBeenNthCalledWith(3, "/api/v1/auth/resend-verification", {
@@ -141,5 +149,13 @@ describe("ForgotPasswordView", () => {
 
     expect(routerMocks.auth.bootstrap).toHaveBeenCalled();
     expect(routerMocks.router.replace).toHaveBeenCalledWith("/");
+  });
+
+  it("opens login in place instead of linking to /login", async () => {
+    const wrapper = mount(ForgotPasswordView);
+
+    await wrapper.get("p button[type='button']").trigger("click");
+
+    expect(loginModalMocks.open).toHaveBeenCalledWith({ name: "home" });
   });
 });

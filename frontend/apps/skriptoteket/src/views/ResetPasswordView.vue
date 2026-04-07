@@ -13,6 +13,8 @@ import { useRoute } from "vue-router";
 import { ApiError, apiPost, isApiError } from "../api/client";
 import { IconCheck, IconWarning, IconX } from "../components/icons";
 import SystemMessage from "../components/ui/SystemMessage.vue";
+import { buildSignedOutOnlyLoginRedirect } from "../composables/auth/loginRedirects";
+import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
 
 type ResetPasswordViewState = "form" | "success" | "expired" | "invalid";
@@ -21,6 +23,7 @@ type ResetPasswordResponse = {
 };
 
 const auth = useAuthStore();
+const loginModal = useLoginModal();
 const route = useRoute();
 
 const password = ref("");
@@ -183,12 +186,13 @@ async function submit(): Promise<void> {
         <p class="text-navy leading-relaxed">
           {{ successMessage }}
         </p>
-        <RouterLink
-          to="/login"
+        <button
+          type="button"
           class="inline-block mt-6 text-navy underline hover:text-burgundy"
+          @click="loginModal.open(buildSignedOutOnlyLoginRedirect())"
         >
           Gå till inloggning
-        </RouterLink>
+        </button>
       </div>
 
       <div

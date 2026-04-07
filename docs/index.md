@@ -129,6 +129,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md`
 - ST-32-09 SPA catch-all route + malformed public-route recovery:
   `docs/backlog/prs/pr-0240-st-32-09-spa-catch-all-route-and-malformed-public-route-recovery.md`
+- ST-11-25 measurement harness + pilot baseline capture:
+  `docs/backlog/prs/pr-0241-st-11-25-measurement-harness-and-pilot-baseline-capture.md`
 - Pending ST-32-06 guest-gap bridge ruthless review gate:
   `docs/backlog/reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md`
 - ST-29-11 desktop-first planner width stability + shrink-to-fit remediation:
@@ -335,6 +337,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - Approved Hemma deploy entrypoint review:
   `docs/backlog/reviews/review-st-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
+- Pending SPA route-load performance audit review:
+  `docs/backlog/reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -584,6 +588,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
 - `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
 - `docs/backlog/reviews/review-st-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
+- `docs/backlog/reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
@@ -823,6 +828,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0048-execution-queue-session-context-and-state-semantics.md`
 - `docs/backlog/prs/pr-0049-backend-srp-refactor-god-modules.md`
 - `docs/backlog/prs/pr-0043-ai-inline-completions-consent-hardening.md`
+- `docs/backlog/prs/pr-0241-st-11-25-measurement-harness-and-pilot-baseline-capture.md`
 
 ### Backlog Stories
 
@@ -959,6 +965,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-11-22-remove-login-route.md`
 - `docs/backlog/stories/story-11-23-tool-owner-and-maintainer-permissions.md`
 - `docs/backlog/stories/story-11-24-home-view-messaging-reset-for-curated-library.md`
+- `docs/backlog/stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md`
 - `docs/backlog/stories/story-12-01-multi-file-upload.md`
 - `docs/backlog/stories/story-12-02-native-pdf-output-helper.md`
 - `docs/backlog/stories/story-12-03-personalized-tool-settings.md`

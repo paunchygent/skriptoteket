@@ -19,5 +19,8 @@ defineProps<{
   display: block;
   height: 32px;
   width: auto;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 </style>

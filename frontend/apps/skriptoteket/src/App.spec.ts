@@ -201,6 +201,83 @@ describe("App", () => {
     });
   });
 
+  it("pushes the authenticated planner route after login succeeds from the public host", async () => {
+    if (!routerMocks.loginModal || !routerMocks.route) {
+      throw new Error("Expected login modal and route mocks to be initialized.");
+    }
+    routerMocks.route.name = "public-app-detail";
+    routerMocks.route.fullPath = "/public/apps/classroom.group-seating-studio";
+    routerMocks.route.path = "/public/apps/classroom.group-seating-studio";
+    routerMocks.route.params.appId = "classroom.group-seating-studio";
+    routerMocks.route.matched = [{ meta: {} }];
+    routerMocks.loginModal.isOpen.value = true;
+    routerMocks.loginModal.redirectTo.value = {
+      name: "app-detail",
+      params: { appId: "classroom.group-seating-studio" },
+    };
+
+    const wrapper = mount(App, {
+      global: {
+        stubs: {
+          LandingLayout: { template: "<div><slot /></div>" },
+          AuthLayout: { template: "<div><slot /></div>" },
+          LoginModal: {
+            emits: ["success", "close"],
+            template: "<button type='button' data-test='login-success' @click=\"$emit('success')\">Success</button>",
+          },
+          ToastHost: { template: "<div />" },
+          RouterView: { template: "<div />" },
+        },
+      },
+    });
+
+    await wrapper.get("[data-test='login-success']").trigger("click");
+
+    expect(routerMocks.pageTransition?.suppressNext).toHaveBeenCalled();
+    expect(routerMocks.router.push).toHaveBeenCalledWith({
+      name: "app-detail",
+      params: { appId: "classroom.group-seating-studio" },
+    });
+  });
+
+  it.each([
+    ["forgot-password", "/forgot-password"],
+    ["reset-password", "/reset-password"],
+  ])(
+    "pushes home after login succeeds from %s",
+    async (routeName, routePath) => {
+      if (!routerMocks.loginModal || !routerMocks.route) {
+        throw new Error("Expected login modal and route mocks to be initialized.");
+      }
+      routerMocks.route.name = routeName;
+      routerMocks.route.fullPath = routePath;
+      routerMocks.route.path = routePath;
+      routerMocks.route.matched = [{ meta: {} }];
+      routerMocks.loginModal.isOpen.value = true;
+      routerMocks.loginModal.redirectTo.value = { name: "home" };
+
+      const wrapper = mount(App, {
+        global: {
+          stubs: {
+            LandingLayout: { template: "<div><slot /></div>" },
+            AuthLayout: { template: "<div><slot /></div>" },
+            LoginModal: {
+              emits: ["success", "close"],
+              template: "<button type='button' data-test='login-success' @click=\"$emit('success')\">Success</button>",
+            },
+            ToastHost: { template: "<div />" },
+            RouterView: { template: "<div />" },
+          },
+        },
+      });
+
+      await wrapper.get("[data-test='login-success']").trigger("click");
+
+      expect(routerMocks.pageTransition?.suppressNext).toHaveBeenCalled();
+      expect(routerMocks.router.push).toHaveBeenCalledWith({ name: "home" });
+    },
+  );
+
   it("closes the login modal after route navigation succeeds", async () => {
     if (!routerMocks.loginModal || !routerMocks.route) {
       throw new Error("Expected route and login modal mocks to be initialized.");

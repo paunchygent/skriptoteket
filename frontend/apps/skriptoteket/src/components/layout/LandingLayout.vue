@@ -1,32 +1,61 @@
 <script setup lang="ts">
+/**
+ * Signed-out landing shell.
+ *
+ * This layout frames public-entry routes that share the unauthenticated
+ * Skriptoteket shell, keeping header actions quiet so route-level hero
+ * surfaces can own the strongest next step.
+ */
+
 import BrandLogo from "../brand/BrandLogo.vue";
 import HelpButton from "../help/HelpButton.vue";
+import { buildLandingLoginRedirect } from "../../composables/auth/loginRedirects";
+import { useLoginModal } from "../../composables/useLoginModal";
+import { useRoute } from "vue-router";
+
+const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
+const loginModal = useLoginModal();
+const route = useRoute();
 </script>
 
 <template>
   <div class="landing-shell">
-    <!-- Landing header: Logo only, no nav links -->
     <header class="landing-header">
       <div class="landing-header-inner">
-        <RouterLink
-          to="/"
-          class="landing-brand"
-        >
-          <BrandLogo height="28px" />
-        </RouterLink>
-        <div class="landing-header-actions">
+        <div class="landing-header-leading">
           <RouterLink
-            to="/register"
-            class="landing-register"
+            to="/"
+            class="landing-brand"
           >
-            Skapa konto
+            <BrandLogo height="28px" />
           </RouterLink>
+
+          <nav
+            class="landing-nav"
+            aria-label="Publika genvägar"
+          >
+            <RouterLink
+              :to="publicClassroomPlannerPath"
+              class="landing-nav-link"
+            >
+              Klassrumskartan
+            </RouterLink>
+          </nav>
+        </div>
+
+        <div class="landing-header-actions">
+          <button
+            type="button"
+            class="landing-header-link"
+            @click="loginModal.open(buildLandingLoginRedirect(route))"
+          >
+            Logga in
+          </button>
           <HelpButton />
         </div>
       </div>
     </header>
 
-    <!-- Landing main content -->
     <main class="landing-main">
       <slot />
     </main>
@@ -48,47 +77,105 @@ import HelpButton from "../help/HelpButton.vue";
 
 .landing-header-inner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: var(--huleedu-space-4) var(--huleedu-space-4);
-  gap: var(--huleedu-space-4);
+  gap: var(--huleedu-space-3) var(--huleedu-space-6);
+  width: 100%;
+  max-width: var(--huleedu-max-width-6xl);
+  margin: 0 auto;
+  padding: var(--huleedu-space-4) var(--huleedu-space-6);
+}
+
+.landing-header-leading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--huleedu-space-3) var(--huleedu-space-6);
 }
 
 .landing-brand {
-  font-family: var(--huleedu-font-serif);
-  font-weight: var(--huleedu-font-bold);
-  font-size: var(--huleedu-text-xl);
-  letter-spacing: var(--huleedu-tracking-tight);
-  color: var(--huleedu-navy);
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
   text-decoration: none;
+  user-select: none;
 }
 
-.landing-brand:hover {
-  color: var(--huleedu-burgundy);
+.landing-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--huleedu-space-4);
+}
+
+.landing-nav-link,
+.landing-header-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  color: var(--huleedu-navy);
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-semibold);
+  line-height: 1.3;
+  text-decoration: none;
+  transition:
+    color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.landing-nav-link::after,
+.landing-header-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.1rem;
+  height: 1px;
+  background-color: currentcolor;
+  opacity: 0;
+  transform: scaleX(0.55);
+  transform-origin: left center;
+  transition:
+    opacity var(--huleedu-duration-default) var(--huleedu-ease-default),
+    transform var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.landing-header-link {
+  color: var(--huleedu-navy-70);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .landing-header-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--huleedu-space-3);
 }
 
-.landing-register {
-  padding: var(--huleedu-space-2) var(--huleedu-space-3);
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: var(--huleedu-navy);
-  color: var(--huleedu-canvas);
-  font-size: var(--huleedu-text-xs);
-  font-weight: var(--huleedu-font-semibold);
-  letter-spacing: var(--huleedu-tracking-label);
-  text-transform: uppercase;
-  text-decoration: none;
-  box-shadow: var(--huleedu-shadow-brutal-xs);
-  transition: background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+.landing-brand:hover,
+.landing-nav-link:hover,
+.landing-header-link:hover {
+  color: var(--huleedu-burgundy);
 }
 
-.landing-register:hover {
-  background-color: var(--huleedu-burgundy);
+.landing-nav-link:hover::after,
+.landing-nav-link:focus-visible::after,
+.landing-header-link:hover::after,
+.landing-header-link:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.landing-nav-link:focus-visible,
+.landing-header-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--huleedu-burgundy) 40%, transparent);
+  outline-offset: 4px;
 }
 
 .landing-main {
@@ -100,5 +187,16 @@ import HelpButton from "../help/HelpButton.vue";
   margin: 0 auto;
   padding: var(--huleedu-space-8) var(--huleedu-space-6);
   width: 100%;
+}
+
+@media (max-width: 48rem) {
+  .landing-header-inner,
+  .landing-main {
+    padding-inline: var(--huleedu-space-4);
+  }
+
+  .landing-header-actions {
+    gap: var(--huleedu-space-2) var(--huleedu-space-3);
+  }
 }
 </style>

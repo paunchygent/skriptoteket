@@ -20,6 +20,9 @@ const routerMocks = vi.hoisted(() => ({
 }));
 
 const apiPostMock = vi.fn();
+const loginModalMocks = vi.hoisted(() => ({
+  open: vi.fn(),
+}));
 
 vi.mock("vue-router", () => ({
   useRoute: () => routerMocks.route,
@@ -37,9 +40,14 @@ vi.mock("../stores/auth", () => ({
   useAuthStore: () => routerMocks.auth,
 }));
 
+vi.mock("../composables/useLoginModal", () => ({
+  useLoginModal: () => loginModalMocks,
+}));
+
 describe("ResetPasswordView", () => {
   beforeEach(() => {
     apiPostMock.mockReset();
+    loginModalMocks.open.mockReset();
     routerMocks.route = reactive({
       query: reactive({ token: "reset-token-123" }) as Record<string, unknown>,
     });
@@ -125,6 +133,10 @@ describe("ResetPasswordView", () => {
     });
     expect(routerMocks.auth?.clear).toHaveBeenCalled();
     expect(wrapper.text()).toContain("Lösenordet är uppdaterat");
+
+    await wrapper.get("button[type='button']").trigger("click");
+
+    expect(loginModalMocks.open).toHaveBeenCalledWith({ name: "home" });
   });
 
   it("renders the expired-token state when the backend rejects an expired reset token", async () => {

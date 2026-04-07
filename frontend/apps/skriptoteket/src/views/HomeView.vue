@@ -1,16 +1,24 @@
 <script setup lang="ts">
+/**
+ * Auth-adaptive home surface.
+ *
+ * This view keeps the signed-out landing hero focused on the public
+ * Klassrumskartan entry while authenticated users continue into the existing
+ * role-aware dashboard.
+ */
+
 import { computed, onMounted } from "vue";
 
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import HomeCreateDraftTool from "../components/home/HomeCreateDraftTool.vue";
+import LandingClassroomPreview from "../components/home/LandingClassroomPreview.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
 import { IconArrow } from "../components/icons";
 import { useHomeDashboard } from "../composables/home/useHomeDashboard";
-import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
-const loginModal = useLoginModal();
+const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
 const {
   loadDashboard,
   dashboardError,
@@ -70,38 +78,53 @@ onMounted(async () => {
          PRE-LOGIN: Hero + Features
          ═══════════════════════════════════════════════════════════════════════ -->
     <template v-if="!isAuthenticated">
-      <!-- Hero Section -->
-      <section class="py-16 text-center max-w-4xl mx-auto">
-        <h1
-          class="font-serif text-5xl md:text-6xl font-bold text-navy tracking-tighter leading-tight"
-        >
-          Skriptoteket
-        </h1>
-        <p class="mt-3 text-xl text-navy/80 font-medium">
-          Professionellt appbibliotek för lärare
-        </p>
-        <p class="mt-5 text-lg text-navy/70 max-w-3xl mx-auto leading-relaxed">
-          Logga in och använd appar och verktyg för undervisning, planering och dokumentation.
-        </p>
-        <div class="mt-10 grid w-full max-w-[37rem] gap-3 mx-auto sm:grid-cols-2">
-          <button
-            type="button"
-            class="btn-primary w-full px-8 py-4 text-sm font-semibold tracking-wide"
-            @click="loginModal.open()"
-          >
-            Logga in
-          </button>
-          <RouterLink
-            to="/register"
-            class="btn-cta w-full px-8 py-4 text-sm font-semibold tracking-wide no-underline"
-          >
-            Skapa konto
-          </RouterLink>
+      <section class="border-b border-navy py-12 md:py-16 lg:py-20">
+        <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(18rem,5fr)] lg:gap-16">
+          <div class="max-w-[40rem]">
+            <h1
+              class="max-w-[14ch] font-serif text-5xl leading-[0.98] font-semibold tracking-[-0.03em] text-navy md:text-6xl lg:text-[4.25rem]"
+            >
+              Lärarverktyg direkt i webbläsaren.
+            </h1>
+            <div
+              class="mt-8 h-[2px] w-24 bg-navy"
+              aria-hidden="true"
+            />
+            <p class="mt-6 max-w-[42ch] text-lg leading-8 text-navy md:text-[1.15rem]">
+              Klassrumskartan är en av Skriptotekets appar. Den är öppen för alla.
+              Du behöver inget konto för att komma igång.
+            </p>
+
+            <div class="mt-8">
+              <RouterLink
+                :to="publicClassroomPlannerPath"
+                class="btn-cta group gap-3 px-6 py-4 text-sm no-underline md:px-7"
+              >
+                Öppna Klassrumskartan
+                <IconArrow
+                  :size="18"
+                  class="transition-transform duration-150 group-hover:translate-x-1"
+                />
+              </RouterLink>
+            </div>
+
+            <p class="mt-5 text-sm leading-6 text-navy/70">
+              eller
+              <RouterLink
+                to="/register"
+                class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+              >
+                skapa ett konto
+              </RouterLink>
+              för att spara ditt arbete.
+            </p>
+          </div>
+
+          <LandingClassroomPreview />
         </div>
       </section>
 
-      <!-- Positioning Section -->
-      <section class="py-16 border-t border-navy/10">
+      <section class="py-16">
         <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           <div
             v-for="(highlight, index) in publicHighlights"

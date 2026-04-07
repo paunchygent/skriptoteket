@@ -8,12 +8,18 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, append the removed content directly to `docs/reference/ref-development-changelog.md` first.
 ## Snapshot
-- Date: 2026-04-07
+- Date: 2026-04-08
 - Branch: `main` + local changes
-- Current lane: `EPIC-32` / `ST-32-07` blueprint selected through `PR-0237`; `PR-0238` next for landing public-entry cutover, with `ST-32-08` and `ST-32-09` queued after that
+- Current lane: `EPIC-32` / `ST-32-07` implemented locally through `PR-0238`; next queued implementation slice is `ST-32-08` / `PR-0239`, with `ST-32-09` / `PR-0240` after that
 - Production: Full Vue SPA
 - Completed: `PR-0231`, `PR-0232`, `PR-0233`, `PR-0234`, `PR-0235`, and `PR-0236` are shipped on `main`; the public/export review follow-ups and Vitest path-normalization hardening are pushed; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
 ## Status
+- `ST-11-25` is now planned as an `EPIC-11` post-cutover follow-up and is gated by `REV-ST-11-25`:
+  - the story defines the representative route matrix for SPA route-load and network-isolation analysis
+  - the retained package requires production-style baseline capture plus per-route request, byte, chunk, and trace evidence
+  - `PR-0241` is drafted as the first bounded implementation slice for measurement harness + pilot baseline capture using `@lhci/cli`, `rollup-plugin-visualizer`, and the existing Playwright lane
+  - `PR-0241` now also defines the intended command surface (`fe-perf-lhci`, `fe-perf-bundle`, `ui-perf-inventory`), file layout (`lighthouserc.json`, `scripts/playwright_route_perf_inventory.py`, `scripts/_playwright_perf.py`), and artifact root `.artifacts/frontend-performance/`
+  - no implementation PR slice is approved yet; get the retained review approved before adding measurement harness or cleanup work
 - `PR-0231` is shipped on `main` and its retained review follow-ups are fixed. Guest `Regler`, public solver-backed Smart, request streaming limits, persistence rollback, and helper-family throttle wiring are in place.
 - `PR-0232` is shipped on `main` without reopening the guest/auth boundary:
   - guest undo/redo moved into a small guest-only helper and is wired through the shared shortcut composable at the guest/auth workspace-shell seam
@@ -36,6 +42,17 @@ Keep this file updated so the next session can pick up work quickly.
   - the canonical blueprint artifact for follow-on work is the separate copy `docs/mockups/st-32-07-public-landing-discoverability/index.html`
   - do not refine or overwrite `designer-a.html`; any further iteration should branch from the copy, not the original submission
   - carry forward the review caveats that any baseline overlay is working scaffolding only and that minor monospace / uppercase micro-markers can be softened later without reopening the layout direction
+- `PR-0238` is now implemented locally as the narrow `ST-32-07` cutover slice:
+  - the shared signed-out header now exposes `Klassrumskartan` as a quiet discoverability link to `/public/apps/classroom.group-seating-studio`
+  - the shared signed-out header `Logga in` affordance now opens the existing login modal in place instead of routing through the unmatched `/login` path, and its redirect contract is restored:
+    - on `/public/apps/classroom.group-seating-studio`, successful login now upgrades into the authenticated planner route instead of leaving the user on the public host
+    - on signed-out-only auth routes such as `/register`, `/forgot-password`, `/reset-password`, and `/verify-email`, successful login now routes to the authenticated home surface instead of leaving the user on the signed-out page
+  - the signed-out home hero now makes `Öppna Klassrumskartan` the single strong primary CTA above the fold, with `skapa ett konto` demoted to secondary copy and no `ST-32-08` showcase surface pulled into scope
+  - the classroom preview SVG is now extracted from `frontend/apps/skriptoteket/src/views/HomeView.vue` into `frontend/apps/skriptoteket/src/components/home/LandingClassroomPreview.vue`, so the landing route keeps hero/layout structure separate from illustration markup
+  - `frontend/apps/skriptoteket/src/views/ForgotPasswordView.vue` and `frontend/apps/skriptoteket/src/views/ResetPasswordView.vue` now use the same in-place login modal affordance instead of linking to `/login`, which removes the signed-out Vue Router warning during local checks
+  - the shared redirect logic for these in-place login affordances now lives in `frontend/apps/skriptoteket/src/composables/auth/loginRedirects.ts`
+  - the logo/header cursor is explicitly hardened through `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue` and `frontend/apps/skriptoteket/src/components/brand/BrandLogo.vue` so the brand affordance stays pointer/non-selectable after public-app -> home navigation
+  - focused frontend coverage now includes the signed-out hero contract in `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`, route-aware shared-shell header coverage in `frontend/apps/skriptoteket/src/components/layout/LandingLayout.spec.ts`, signed-out login-modal affordance coverage in forgot/reset view specs, and App-level redirect-success coverage in `frontend/apps/skriptoteket/src/App.spec.ts`
 - The review follow-up pass that closed the public export/Vitest footguns is also shipped on `main`:
   - `public_seating_export.py` now imports and uses `validation_error(...)` correctly
   - direct handler tests cover invalid public PDF branches and route tests assert forwarded handler args
@@ -46,6 +63,21 @@ Keep this file updated so the next session can pick up work quickly.
 - Shell quality is part of the normal repo gate now: `pre-commit` runs ShellCheck on staged shell scripts, and `pdm run lint` includes repo-wide `pdm run shellcheck-all`.
 - Active docs guidance now uses `docs/reference/ref-development-changelog.md` as the append-only dump for removed handoff history, and the stale `REF-implementation-map-script-hub-v0-2` reference has been removed.
 ## Verification
+- `pdm run fe-test -- --run src/views/HomeView.spec.ts src/components/layout/LandingLayout.spec.ts` (pass for `PR-0238`; signed-out hero CTA hierarchy plus shared signed-out header login/public-link contract)
+- `pdm run fe-type-check` (pass for `PR-0238`)
+- `pdm run docs-validate` (pass for `PR-0238`)
+- `pdm run fe-test -- --run src/views/HomeView.spec.ts src/components/layout/LandingLayout.spec.ts src/views/ForgotPasswordView.spec.ts src/views/ResetPasswordView.spec.ts` (pass on 2026-04-08 for the `PR-0238` follow-up cleanup; extracted landing preview component plus in-place login affordances on forgot/reset views)
+- `pdm run fe-test -- --run src/App.spec.ts src/views/PublicAppHostView.spec.ts` (pass on 2026-04-08 for the reviewer redirect follow-up; public host login now upgrades into the authenticated planner route and auth-page login success now routes home)
+- `pdm run fe-test -- --run src/views/HomeView.spec.ts src/components/layout/LandingLayout.spec.ts src/views/ForgotPasswordView.spec.ts src/views/ResetPasswordView.spec.ts` (pass on 2026-04-08 after the redirect-contract fix; LandingLayout now chooses route-aware login redirects and forgot/reset login affordances now pass non-null home redirects)
+- `pdm run fe-type-check` (pass on 2026-04-08 after extracting `LandingClassroomPreview.vue` and tightening signed-out login affordances)
+- `pdm run docs-validate` (pass on 2026-04-08 after refreshing `.agents/handoff.md`)
+- Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/` (pass after extracting `LandingClassroomPreview.vue`; hero/header contract unchanged, preview still rendered, logo cursor stayed pointer)
+- Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/forgot-password` (pass; shared header rendered correctly and the old `/login` warning is gone because the in-page login affordance now opens the modal in place)
+- Live signed-out browser proof on 2026-04-07 against `http://127.0.0.1:5173/` (pass; shared header rendered `Klassrumskartan` link to `/public/apps/classroom.group-seating-studio`, quiet `Logga in` button, hero heading `Lärarverktyg direkt i webbläsaren.`, primary CTA `Öppna Klassrumskartan`, and secondary `skapa ett konto` link)
+- Live signed-out browser proof on 2026-04-07 against `http://127.0.0.1:5173/register` (pass; shared signed-out header rendered the same quiet `Klassrumskartan` + `Logga in` affordances above the register form)
+- Live signed-out browser proof on 2026-04-07 against `http://127.0.0.1:5173/forgot-password` (pass for header/shell at the time; superseded by the 2026-04-08 in-place login fix that removed the route warning)
+- Live signed-out browser proof on 2026-04-07 against `http://127.0.0.1:5173/reset-password` (pass; shared signed-out header rendered correctly above the invalid-link recovery state)
+- Live signed-out browser proof on 2026-04-07 against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; shared signed-out header rendered the same quiet `Klassrumskartan` + `Logga in` affordances above the public Klassrumskartan workspace)
 - `pdm run lint` (pass on pushed tree after the public export/OpenAPI-safe route follow-up)
 - `pdm run typecheck` (pass on pushed tree)
 - `pdm run docs-validate` (pass on pushed tree)
@@ -84,6 +116,9 @@ Keep this file updated so the next session can pick up work quickly.
 - Live local browser proof on `docs/mockups/st-32-07-public-landing-discoverability/designer-cascade.html` (pass; layout verified according to PR-0237 rules)
 - Live local browser proof on `docs/mockups/st-32-07-public-landing-discoverability/index.html` (pass; canonical copy derived from `designer-a.html` renders locally without touching the original submission)
 - `pdm run docs-validate` (pass after recording the `PR-0237` winner, promoting `designer-a.html` via separate `index.html` copy, and refreshing story/PR/handoff docs)
+- `pdm run docs-validate` (pass on 2026-04-08 after adding `ST-11-25`, `REV-ST-11-25`, updating `EPIC-11`, `docs/index.md`, and `.agents/handoff.md`)
+- `pdm run docs-validate` (pass on 2026-04-08 after drafting `PR-0241`, linking it from `ST-11-25`, and refreshing `docs/index.md` plus `.agents/handoff.md`)
+- `pdm run docs-validate` (pass on 2026-04-08 after tightening `PR-0241` with the concrete command surface, file layout, and artifact directory plan)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
 - Live public browser proof against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` with local backend on `http://127.0.0.1:8000` (pass; guest `Regler`, guest Smart drawer parity without `Historik`, and live `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` `200 OK`)
 - Live public browser proof for `PR-0234` against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; seeded guest snapshot kept `selected_template_local_id = template-1` and `grouping_draft.template_local_id = template-1` after overview -> `Grupper`; a forced grouping-without-classroom state rendered `Sittplatser` disabled with title `Skapa eller välj först ett klassrum.`)
@@ -91,6 +126,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## How to Run
 ```bash
 ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
+pdm run fe-test -- --run src/views/HomeView.spec.ts src/components/layout/LandingLayout.spec.ts src/views/ForgotPasswordView.spec.ts src/views/ResetPasswordView.spec.ts
 pdm run fe-type-check
 pdm run pytest tests/unit/web/test_public_apps_classroom_planner_exports.py tests/unit/web/apps/classroom_planner/test_grouping_export_job_api.py tests/unit/web/apps/classroom_planner/test_seating_export_job_api.py
 pdm run fe-test -- --run src/views/apps/classroomPlannerGuestDraftHistory.spec.ts src/views/apps/usePublicGroupingExportFlow.spec.ts src/views/apps/usePublicSeatingExportFlow.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/classroomPlannerGuestSnapshotMapping.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/classroomPlannerGuestDraftWorkspace.spec.ts
@@ -108,7 +144,9 @@ pdm run docs-validate
 - `ClassroomPlannerView.spec.ts` still emits the pre-existing suppressed runtime warning from `resolveHomeRosterId(...)` during one centered-shell test even though the suite passes; it was not part of `PR-0226`.
 ## Next Steps
 - Keep `PR-0232` scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.
-- Start `PR-0238` from `docs/mockups/st-32-07-public-landing-discoverability/index.html`, which is the canonical copy based on the winning `designer-a.html`; keep the original submission untouched.
+- Finish review/merge for `PR-0238` as the header/hero-only `ST-32-07` cutover slice. The reviewer-raised redirect blockers are now fixed locally; keep scope frozen from here: no featured showcase/authenticated preview work from `ST-32-08` and no route-recovery work from `ST-32-09`.
+- Get `REV-ST-11-25` reviewed before implementation, then create the first audit slice for measurement harness + baseline capture against the approved route matrix.
+- If `REV-ST-11-25` is approved, start with `PR-0241` only: standard toolchain selection, pilot baselines for `/`, signed-in `/browse`, and `/admin/tools/:toolId`, and no cleanup work in the same slice.
 - Refine lightly from the approved direction rather than reopening the overall landing layout debate, then move into `ST-32-08` for the below-the-fold showcase/authenticated-preview work through `PR-0239`.
 - Treat `ST-32-09` / `PR-0240` as the final repair story for unmatched-route handling so malformed `/public/<app-id>` paths recover visibly without changing the canonical `/public/apps/:appId` contract.
 - If follow-up polish is needed, return to `PR-0229` for toolbar overflow/discoverability work without reopening the guest/auth transport boundary.
