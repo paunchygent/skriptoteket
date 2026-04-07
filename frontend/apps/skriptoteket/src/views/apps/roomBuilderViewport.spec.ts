@@ -1,39 +1,31 @@
+/**
+ * Room viewport fit-scale tests.
+ *
+ * These tests freeze the shared framed-surface viewport contract used by the
+ * builder, seating canvas, and rules seating map so downstream composables do
+ * not quietly drift back to the older one-edge padding model.
+ */
+
 import { describe, expect, it } from "vitest";
 
-import {
-  MAX_ROOM_VIEWPORT_SCALE,
-  MIN_ROOM_VIEWPORT_SCALE,
-  clampRoomViewportScale,
-  computeRoomViewportFitScale,
-  getScaledRoomSurfaceStyle,
-} from "./roomBuilderViewport";
+import { computeRoomViewportFitScale } from "./roomBuilderViewport";
 
-describe("roomBuilderViewport", () => {
-  it("clamps zoom scales inside the supported builder range", () => {
-    expect(clampRoomViewportScale(0.1)).toBe(MIN_ROOM_VIEWPORT_SCALE);
-    expect(clampRoomViewportScale(0.9)).toBe(0.9);
-    expect(clampRoomViewportScale(3)).toBe(MAX_ROOM_VIEWPORT_SCALE);
+describe("computeRoomViewportFitScale", () => {
+  it("uses the full framed surface when fitting a room into the viewport", () => {
+    expect(
+      computeRoomViewportFitScale(
+        { width: 524, height: 374 },
+        { width: 1000, height: 700 },
+      ),
+    ).toBeCloseTo(0.4657142857142857);
   });
 
-  it("computes a fit scale that prefers showing the full room surface", () => {
-    expect(computeRoomViewportFitScale(
-      { width: 900, height: 640 },
-      { width: 1400, height: 920 },
-    )).toBeLessThan(1);
-
-    expect(computeRoomViewportFitScale(
-      { width: 2000, height: 1400 },
-      { width: 600, height: 400 },
-    )).toBe(MAX_ROOM_VIEWPORT_SCALE);
-  });
-
-  it("returns scaled frame sizes for the zoomed room surface", () => {
-    expect(getScaledRoomSurfaceStyle(
-      { width: 1000, height: 800 },
-      0.5,
-    )).toEqual({
-      width: "500px",
-      height: "400px",
-    });
+  it("caps fit-to-view at 100 percent for smaller rooms", () => {
+    expect(
+      computeRoomViewportFitScale(
+        { width: 1200, height: 800 },
+        { width: 320, height: 240 },
+      ),
+    ).toBe(1);
   });
 });

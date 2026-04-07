@@ -22,11 +22,13 @@ import PlannerSeatingWorkspacePane from "./components/PlannerSeatingWorkspacePan
 import PlannerSeatingWorkspaceToolbar from "./components/PlannerSeatingWorkspaceToolbar.vue";
 import PlannerTopPanel from "./components/PlannerTopPanel.vue";
 import PlannerWorkspaceModeSurface from "./components/PlannerWorkspaceModeSurface.vue";
+import {
+  resolveGuestWorkspaceTemplateContext,
+  type GuestPlannerView,
+} from "./classroomPlannerGuestTemplateContext";
 import { PLANNER_WORKSPACE_SHELL_CLASS } from "./plannerWorkspaceLayout";
 import { resolvePlannerWorkspaceDisabledReasons } from "./plannerWorkspacePrerequisites";
 import { useClassroomState } from "./useClassroomState";
-
-type GuestPlannerView = "groups" | "seats" | "rules";
 
 const props = withDefaults(
   defineProps<{
@@ -82,17 +84,15 @@ const pendingSeatingTemplateId = ref(plannerState.template?.id ?? props.selected
 const lastGroupingSmartRunToast = ref<string | null>(null);
 const lastSeatingSmartRunToast = ref<string | null>(null);
 
-const resolvedTemplateId = computed(() => {
-  return (
-    plannerState.template?.id
-    ?? pendingSeatingTemplateId.value
-    ?? pendingGroupingTemplateId.value
-    ?? props.selectedTemplateId
-    ?? null
-  );
+const liveTemplateId = computed(() => {
+  return resolveGuestWorkspaceTemplateContext({
+    currentView: currentView.value,
+    selectedTemplateId: props.selectedTemplateId,
+    plannerTemplateId: plannerState.template?.id ?? null,
+  });
 });
 const selectedPlannerTemplate = computed(() => {
-  const templateId = resolvedTemplateId.value;
+  const templateId = liveTemplateId.value;
   if (!templateId) {
     return null;
   }
@@ -114,7 +114,7 @@ const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules
 const workspaceDisabledReasons = computed(() => {
   return resolvePlannerWorkspaceDisabledReasons({
     hasRoster: plannerState.roster !== null,
-    hasTemplate: resolvedTemplateId.value !== null,
+    hasTemplate: liveTemplateId.value !== null,
   });
 });
 const isSeatWorkspaceWithoutTemplate = computed(() => {
@@ -252,14 +252,25 @@ watch(
 );
 
 watch(
-  () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null],
+  () => ({
+    draftKind: plannerState.draft?.draft_kind ?? null,
+    plannerTemplateId: plannerState.template?.id ?? null,
+    selectedTemplateId: props.selectedTemplateId,
+    currentView: currentView.value,
+  }),
   () => {
-    currentView.value = resolvePlannerView(currentView.value);
+    const nextView = resolvePlannerView(currentView.value);
+    const nextTemplateId = resolveGuestWorkspaceTemplateContext({
+      currentView: nextView,
+      selectedTemplateId: props.selectedTemplateId,
+      plannerTemplateId: plannerState.template?.id ?? null,
+    }) ?? "";
+    currentView.value = nextView;
     isGroupingSettingsDrawerOpen.value = false;
     isSeatingSettingsDrawerOpen.value = false;
     selectedStudentId.value = null;
-    pendingGroupingTemplateId.value = plannerState.template?.id ?? props.selectedTemplateId ?? "";
-    pendingSeatingTemplateId.value = plannerState.template?.id ?? props.selectedTemplateId ?? "";
+    pendingGroupingTemplateId.value = nextTemplateId;
+    pendingSeatingTemplateId.value = nextTemplateId;
   },
 );
 

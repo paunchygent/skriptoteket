@@ -99,12 +99,20 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`
 - ST-32-05 authenticated guest-upgrade orchestration + idempotent import foundation:
   `docs/backlog/prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md`
+- ST-32-05 follow-up authenticated guest-upgrade template reuse + seat-remap hardening:
+  `docs/backlog/prs/pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md`
 - ST-32-06 canceled legacy checkpoint-compatibility planning stub:
   `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - ST-32-06 public Klassrumskartan demo capability matrix + browser-workspace adoption:
   `docs/backlog/prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md`
 - ST-32-06 guest `Regler` + solver-Smart parity + expandable Smart settings drawer:
   `docs/backlog/prs/pr-0231-st-32-06-guest-regler-workspace-solver-smart-parity-and-expandable-smart-settings-drawer.md`
+- ST-32-06 follow-up guest grouping classroom-context persistence + seating affordance hardening:
+  `docs/backlog/prs/pr-0234-st-32-06-guest-grouping-classroom-context-persistence-and-seating-affordance-hardening.md`
+- ST-24-04 follow-up shared room viewport fit-scale contract reassessment + test realignment:
+  `docs/backlog/prs/pr-0235-st-24-04-shared-room-viewport-fit-scale-contract-reassessment-and-test-realignment.md`
+- ST-32-06 follow-up overview action-capability test realignment + import-boundary assertions:
+  `docs/backlog/prs/pr-0236-st-32-06-overview-action-capability-test-realignment-and-import-boundary-assertions.md`
 - ST-32-06 guest local draft parity + direct-download export + account-only history polish:
   `docs/backlog/prs/pr-0232-st-32-06-guest-local-draft-parity-direct-download-export-and-account-only-history-affordance-polish.md`
 - Pending ST-32-06 guest-gap bridge ruthless review gate:

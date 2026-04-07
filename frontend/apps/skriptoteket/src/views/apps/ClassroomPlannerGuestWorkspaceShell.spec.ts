@@ -11,6 +11,7 @@ import { defineComponent, nextTick, reactive, ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
 import ClassroomPlannerGuestWorkspaceShell from "./ClassroomPlannerGuestWorkspaceShell.vue";
+import { PLANNER_NO_CLASSROOM_HINT } from "./plannerWorkspacePrerequisites";
 import { provideClassroomState, type ClassroomStateLike } from "./useClassroomState";
 
 vi.mock("../../components/help/useHelp", () => ({
@@ -30,8 +31,10 @@ vi.mock("../../composables/useToast", () => ({
 
 function mountGuestWorkspaceShellHarness(options?: {
   initialView?: "groups" | "seats" | "rules";
+  selectedTemplateId?: string | null;
 }) {
   const initialView = ref<"groups" | "seats" | "rules">(options?.initialView ?? "seats");
+  const selectedTemplateId = ref<string | null>(options?.selectedTemplateId ?? "template-1");
   const plannerState = reactive({
     draft: {
       id: "draft-seating-1",
@@ -66,6 +69,7 @@ function mountGuestWorkspaceShellHarness(options?: {
       provideClassroomState(plannerState);
       return {
         initialView,
+        selectedTemplateId,
       };
     },
     template: `
@@ -73,7 +77,7 @@ function mountGuestWorkspaceShellHarness(options?: {
         :available-rosters="[{ id: 'roster-1', name: 'SA24D', students: [] }]"
         :available-templates="[{ id: 'template-1', name: 'Sal 101', grid_cols: 4, grid_rows: 4, seats: [], fixtures: [] }]"
         selected-roster-id="roster-1"
-        selected-template-id="template-1"
+        :selected-template-id="selectedTemplateId"
         :initial-view="initialView"
       />
     `,
@@ -164,6 +168,7 @@ function mountGuestWorkspaceShellHarness(options?: {
   return {
     wrapper,
     initialView,
+    selectedTemplateId,
     plannerState,
   };
 }
@@ -254,5 +259,26 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
         "data-show-history-setting",
       ),
     ).toBe("false");
+  });
+
+  it("disables Sittplatser when grouping no longer has a classroom context", async () => {
+    const { wrapper, plannerState, selectedTemplateId } = mountGuestWorkspaceShellHarness({
+      initialView: "groups",
+      selectedTemplateId: "template-1",
+    });
+
+    plannerState.draft = {
+      id: "draft-grouping-1",
+      draft_kind: "grouping",
+    } as ClassroomStateLike["draft"];
+    plannerState.template = null as ClassroomStateLike["template"];
+    await nextTick();
+
+    selectedTemplateId.value = null;
+    await nextTick();
+
+    expect(
+      wrapper.get("[data-test='planner-top-panel-mode']").attributes("data-seating-disabled-reason"),
+    ).toBe(PLANNER_NO_CLASSROOM_HINT);
   });
 });

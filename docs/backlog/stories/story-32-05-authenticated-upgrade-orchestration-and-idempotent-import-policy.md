@@ -5,7 +5,7 @@ title: "Authenticated upgrade orchestration and idempotent import policy"
 status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-04
+updated: 2026-04-07
 epic: "EPIC-32"
 dependencies: ["ST-32-04", "ADR-0079", "EPIC-27"]
 acceptance_criteria:
@@ -37,3 +37,26 @@ That boundary therefore needs to be explicit before implementation begins.
 - For Klassrumskartan-style planners, the one-active-draft-per-kind rule must
   be preserved; guest import must not silently replace the user's current active
   grouping or seating draft.
+- `PR-0221` shipped the initial authenticated upgrade boundary, but live
+  authenticated proof on 2026-04-07 also surfaced a pre-existing
+  template-bearing preview failure inside the exact-template reuse/remap seam.
+  That corrective lane is now explicitly owned by `PR-0233` rather than being
+  worked around from `ST-32-06`.
+
+## Planned PR slices
+
+- [PR-0221: ST-32-05 authenticated upgrade orchestration and idempotent import
+  policy foundation](../prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md)
+- [PR-0233: ST-32-05 follow-up: authenticated guest-upgrade template reuse and
+  seat-remap hardening](../prs/pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md)
+
+## References
+
+- Epic parent:
+  [EPIC-32](../epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md)
+- Public curated-app access boundary:
+  [ADR-0079](../../adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
+- Browser-owned guest-state foundation:
+  [ST-32-04](story-32-04-browser-owned-guest-state-profiles-and-snapshot-contracts.md)
+- Related guest continuity consumer:
+  [ST-32-06](story-32-06-klassrumskartan-demo-adoption-on-the-public-browser-workspace-profile.md)

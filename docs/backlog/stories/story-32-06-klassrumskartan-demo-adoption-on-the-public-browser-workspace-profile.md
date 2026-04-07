@@ -84,6 +84,10 @@ reviewable first consumer: Klassrumskartan.
   browser-workspace adoption](../prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md)
 - [PR-0231: ST-32-06 guest Regler workspace, solver-Smart parity, and
   expandable Smart settings drawer](../prs/pr-0231-st-32-06-guest-regler-workspace-solver-smart-parity-and-expandable-smart-settings-drawer.md)
+- [PR-0234: ST-32-06 follow-up: guest grouping classroom-context persistence
+  and seating affordance hardening](../prs/pr-0234-st-32-06-guest-grouping-classroom-context-persistence-and-seating-affordance-hardening.md)
+- [PR-0236: ST-32-06 follow-up: overview action-capability test realignment
+  and import-boundary assertions](../prs/pr-0236-st-32-06-overview-action-capability-test-realignment-and-import-boundary-assertions.md)
 - [PR-0232: ST-32-06 guest local draft parity, direct-download export, and
   account-only history affordance polish](../prs/pr-0232-st-32-06-guest-local-draft-parity-direct-download-export-and-account-only-history-affordance-polish.md)
 

@@ -18,6 +18,7 @@ import {
   PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH,
 } from "./classroomPlannerGuestControllerSupport";
 import { createClassroomPlannerGuestDraftSession } from "./classroomPlannerGuestDraftSession";
+import { resolveGuestGroupingTemplateContext } from "./classroomPlannerGuestTemplateContext";
 import { buildGuestWorkspaceSummary } from "./classroomPlannerGuestDraftMutations";
 import { createClassroomPlannerGuestOverviewCrudFlow } from "./classroomPlannerGuestOverviewCrud";
 import { hydrateGuestSnapshot } from "./classroomPlannerGuestSnapshotMapping";
@@ -310,7 +311,11 @@ export function useClassroomPlannerGuestController(options?: {
 
     plannerActionError.value = null;
     try {
-      await guestPlannerState.resolveDraft(rosterId, null, "grouping");
+      await guestPlannerState.resolveDraft(
+        rosterId,
+        resolveGuestGroupingTemplateContext(selectedTemplateId.value),
+        "grouping",
+      );
     } catch (error: unknown) {
       plannerActionError.value = error instanceof Error
         ? error.message
@@ -388,7 +393,10 @@ export function useClassroomPlannerGuestController(options?: {
 
     plannerActionError.value = null;
     try {
-      await guestPlannerState.startNewGroupingDraft(selectedRosterId.value, null);
+      await guestPlannerState.startNewGroupingDraft(
+        selectedRosterId.value,
+        resolveGuestGroupingTemplateContext(selectedTemplateId.value),
+      );
     } catch (error: unknown) {
       plannerActionError.value = error instanceof Error
         ? error.message

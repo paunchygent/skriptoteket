@@ -72,11 +72,26 @@ Define and implement the next toolbar hardening step for the planner-family desk
    - support planner-scoped undo/redo shortcuts when focus is not inside a text input, textarea, or
      menu interaction that should keep the key event
    - keep grouping and seating on the same shortcut contract
+   - if `PR-0232` lands first and introduces the shared shortcut composable to unblock guest
+     parity, this PR owns the follow-up polish and alignment work:
+     - keep authenticated and guest toolbar surfaces on one deliberate shortcut contract
+     - align shortcut discoverability with overflow behavior once undo/redo are no longer pinned
+     - absorb any post-`PR-0232` toolbar-shell cleanup needed to keep the shared command strip
+       coherent across guest/auth lanes
 
 4. Strengthen proof at the shared toolbar seam.
    - add focused component/spec coverage for overflow-order behavior and shortcut handling
    - add live browser proof that shows the toolbar staying one row while overflow content grows at
      the named width bands
+
+## Coordination note
+
+`PR-0232` is allowed to introduce the shared planner undo/redo shortcut composable early so the
+guest boundary slice can ship real shortcut parity without waiting on the toolbar overflow lane.
+
+That early shortcut wiring does not close this PR. `PR-0229` still owns the desktop-first toolbar
+shape, overflow escalation order, and any final shortcut/discoverability polish required after the
+guest slice lands.
 
 ## Test plan
 

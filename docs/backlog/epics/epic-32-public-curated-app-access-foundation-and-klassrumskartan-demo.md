@@ -107,7 +107,10 @@ dependencies:
   decisions, repeat commits dedupe imported historical drafts through the
   durable `guest_import_identity` lookup seam, and the frontend now keeps the
   local guest snapshot when commit receipts contain conflicts while showing a
-  dismissible post-import summary after durable success.
+  dismissible post-import summary after durable success. A newly reproduced
+  live defect remains in the exact-template reuse/remap seam for non-toy
+  template-bearing snapshots; `PR-0233` now owns that focused hardening lane
+  without changing the approved guest/public boundary shape.
 - `ST-32-06` is now materially advanced through `PR-0223` checkpoints 1-3:
   the public Klassrumskartan route now uses the real browser-owned overview
   shell, guest roster/template authoring persists locally through the public

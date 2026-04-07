@@ -19,7 +19,6 @@ from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contr
     GuestUpgradeTemplatePayload,
     build_server_roster_fingerprint,
     build_server_smart_rule_fingerprint,
-    build_server_template_fingerprint,
     build_smart_rule_fingerprint_relationship_rule,
     build_smart_rule_fingerprint_seating_preference,
 )
@@ -41,6 +40,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 
 from .guest_upgrade_support import MappedRoster, MappedTemplate, build_preview_uuid
+from .guest_upgrade_template_reuse import find_reusable_template_match
 from .smart_rule_validation import normalize_seating_preferences, validate_roster_smart_rules
 
 
@@ -217,38 +217,12 @@ class GuestUpgradeAssetImporter:
         existing_templates: list[RoomTemplate],
         guest_template: GuestUpgradeTemplatePayload,
     ) -> MappedTemplate:
-        target = next(
-            (
-                template
-                for template in existing_templates
-                if build_server_template_fingerprint(guest_template)
-                == build_server_template_fingerprint(
-                    guest_template.model_copy(
-                        update={
-                            "seats": [
-                                seat.model_copy(update={"id": template_seat.id})
-                                for seat, template_seat in zip(
-                                    sorted(
-                                        guest_template.seats,
-                                        key=lambda seat: (seat.x, seat.y, seat.zone or ""),
-                                    ),
-                                    sorted(
-                                        template.seats,
-                                        key=lambda seat: (seat.x, seat.y, seat.zone or ""),
-                                    ),
-                                    strict=False,
-                                )
-                            ]
-                        }
-                    )
-                )
-            ),
-            None,
+        reusable_match = find_reusable_template_match(
+            guest_template=guest_template,
+            existing_templates=existing_templates,
         )
-        if target is not None:
-            coordinate_map = {
-                f"{seat.x}:{seat.y}:{seat.zone or ''}": seat.id for seat in target.seats
-            }
+        if reusable_match is not None:
+            target, seat_id_map = reusable_match
             receipt.reused.append(
                 ClassroomPlannerGuestUpgradeReceiptItem(
                     entity_type="template",
@@ -259,10 +233,7 @@ class GuestUpgradeAssetImporter:
             )
             return MappedTemplate(
                 template=target,
-                seat_id_map={
-                    seat.id: coordinate_map[f"{seat.x}:{seat.y}:{seat.zone or ''}"]
-                    for seat in guest_template.seats
-                },
+                seat_id_map=seat_id_map,
                 was_created=False,
             )
 

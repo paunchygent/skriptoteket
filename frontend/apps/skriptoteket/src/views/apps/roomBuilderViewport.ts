@@ -31,7 +31,9 @@ export function computeRoomViewportFitScale(
   const widthScale = (viewport.width - (ROOM_VIEWPORT_FRAME_PADDING * 2)) / surface.width;
   const heightScale = (viewport.height - (ROOM_VIEWPORT_FRAME_PADDING * 2)) / surface.height;
 
-  return clampRoomViewportScale(Math.min(widthScale, heightScale));
+  // Fit-to-view should respect the framed viewport while never auto-upscaling
+  // a smaller room beyond its authored size.
+  return clampRoomViewportScale(Math.min(widthScale, heightScale, 1));
 }
 
 export function getScaledRoomSurfaceStyle(

@@ -30,6 +30,7 @@ scope: "testing"
   current working directory for output files, because cwd drift can make the server try to write to `/.playwright-mcp`
   instead of the intended project-local scratch directory.
 - REQUIRED: If Playwright MCP reports `Browser is already in use ...`, do not switch to headless. First terminate lingering `playwright-mcp` launchers and Chrome processes using `~/Library/Caches/ms-playwright/mcp-chrome*`, then retry the MCP browser.
+- REQUIRED: After any live Playwright MCP browser check in Codex, close the browser/tab with the MCP tools and then terminate any leftover Playwright MCP / Playwright-launched Chrome helper processes at the OS level before continuing. Do not leave background MCP or `playwright_chromiumdev_profile*` Chrome helper processes alive after the check.
 
 Canonical recovery commands:
 
@@ -37,6 +38,14 @@ Canonical recovery commands:
 ps aux | rg 'playwright-mcp|@playwright/mcp|ms-playwright/mcp-chrome|Google Chrome.*ms-playwright/mcp-chrome'
 pkill -TERM -f 'playwright-mcp|@playwright/mcp@latest|playwright-mcp-server' || true
 pkill -TERM -f 'Google Chrome.*ms-playwright/mcp-chrome' || true
+```
+
+Canonical post-check cleanup commands:
+
+```bash
+ps aux | rg 'playwright-mcp|@playwright/mcp|ms-playwright/mcp-chrome|playwright_chromiumdev_profile'
+pkill -TERM -f 'playwright-mcp|@playwright/mcp@latest|playwright-mcp-server' || true
+pkill -TERM -f 'playwright_chromiumdev_profile|Google Chrome.*mcp-chrome|Google Chrome Helper.*playwright_chromiumdev_profile' || true
 ```
 
 - REQUIRED: If you terminate the MCP server that backs the current thread, start a fresh Codex session/thread before retrying the Playwright browser tools.
