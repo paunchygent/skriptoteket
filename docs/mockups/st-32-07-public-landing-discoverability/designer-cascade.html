@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ST-32-07 mockup — Public landing entry hierarchy</title>
+  <style>
+    :root {
+      --canvas: #FAFAF6;
+      --paper: #ffffff;
+      --navy: #1C2E4A;
+      --navy-soft: rgba(28, 46, 74, 0.68);
+      --navy-faint: rgba(28, 46, 74, 0.16);
+      --burgundy: #4D1521;
+      --success: #059669;
+      --warning: #D97706;
+      --shadow: 4px 4px 0 var(--navy);
+      --shadow-sm: 2px 2px 0 var(--navy);
+      --border: 2px solid var(--navy);
+      --border-thin: 1px solid var(--navy);
+      --transition: 160ms ease;
+      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--canvas);
+      color: var(--navy);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 { margin: 0; line-height: 1.1; }
+    p { margin: 0; }
+    a { text-decoration: none; color: inherit; }
+
+    .header {
+      border-bottom: var(--border-thin);
+      background: var(--canvas);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header-brand {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--navy-soft);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color var(--transition);
+    }
+
+    .nav-link:hover {
+      color: var(--navy);
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .hero {
+      padding: 120px 0 100px;
+      display: grid;
+      grid-template-columns: 10fr 7fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-content {
+      max-width: 680px;
+    }
+
+    .hero-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 4.2rem;
+      color: var(--navy);
+      margin-bottom: 32px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-text {
+      font-size: 1.25rem;
+      line-height: 1.5;
+      color: var(--navy-soft);
+      margin-bottom: 48px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-cta {
+      background: var(--burgundy);
+      color: var(--paper);
+      border: var(--border-thin);
+      padding: 14px 28px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: inline-block;
+      box-shadow: var(--shadow);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .btn-cta:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--navy);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--navy);
+      border: var(--border-thin);
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: inline-block;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .btn-ghost:hover {
+      background: var(--paper);
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0 var(--navy);
+    }
+
+    .hero-visual {
+      background: var(--paper);
+      border: var(--border-thin);
+      aspect-ratio: 4/3;
+      box-shadow: var(--shadow);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--navy-faint) 1px, transparent 1px),
+        linear-gradient(90deg, var(--navy-faint) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.5;
+    }
+
+    .section {
+      padding: 80px 0;
+      border-top: 2px solid var(--navy-faint);
+      display: grid;
+      grid-template-columns: 4fr 10fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .section-header {
+      position: sticky;
+      top: 40px;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-family: Georgia, "Times New Roman", serif;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      color: var(--navy-soft);
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+
+    .showcase-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+
+    .showcase-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .showcase-text h3 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+
+    .showcase-text p {
+      color: var(--navy-soft);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border-top: 1px solid var(--navy-faint);
+    }
+
+    .feature-list li {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--navy-faint);
+      color: var(--navy);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .feature-list li::before {
+      content: "→";
+      color: var(--burgundy);
+      font-weight: bold;
+    }
+
+    .showcase-visual {
+      background: var(--canvas);
+      border: var(--border-thin);
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      min-height: 280px;
+    }
+
+    .mock-desk-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .mock-desk {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--navy);
+      background: var(--paper);
+      border-radius: 24px;
+    }
+
+    .mock-teacher {
+      width: 100px;
+      height: 24px;
+      border: 1px solid var(--navy);
+      background: var(--navy-faint);
+      margin-bottom: 24px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+    }
+
+    .preview-item h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .preview-item h3::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    .preview-item p {
+      color: var(--navy-soft);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 64px 0;
+      }
+      .section {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .section-header {
+        position: static;
+      }
+      .showcase-item {
+        grid-template-columns: 1fr;
+      }
+      .preview-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">Skriptoteket</div>
+      <nav class="header-nav">
+        <a href="#" class="nav-link">Klassrumskartan</a>
+        <a href="#" class="nav-link">Logga in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Undervisningsnära verktyg.<br/>Direkt i webbläsaren.</h1>
+        <p class="hero-text">Börja planera direkt. Skapa klasslistor, generera grupper och möblera klassrummet — utan att skapa ett konto först.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn-cta">Öppna Klassrumskartan</a>
+          <a href="#" class="btn-ghost">Skapa konto</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div style="z-index: 1; display: flex; flex-direction: column; align-items: center;">
+           <div class="mock-teacher"></div>
+           <div class="mock-desk-grid">
+             <div class="mock-desk"></div><div class="mock-desk"></div><div class="mock-desk"></div><div class="mock-desk"></div>
+             <div class="mock-desk"></div><div class="mock-desk"></div><div class="mock-desk"></div><div class="mock-desk"></div>
+           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Klassrumskartan</h2>
+        <p class="section-desc">Ett samlat verktyg för att ordna eleverna.</p>
+      </div>
+      <div class="showcase-content">
+        <div class="showcase-item">
+          <div class="showcase-text">
+            <h3>Gruppera och placera</h3>
+            <p>Skriv in dina elever, välj rummets storlek och låt verktyget föreslå grupper. Justera manuellt när det behövs.</p>
+            <ul class="feature-list">
+              <li>Dra och släpp platser</li>
+              <li>Sätt regler för vilka som inte bör sitta ihop</li>
+              <li>Ladda ner som PDF inför lektionen</li>
+            </ul>
+          </div>
+          <div class="showcase-visual">
+            <div style="text-align: center; font-weight: 600; color: var(--navy-soft);">Interaktiv förhandsgranskning</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Logga in för att spara</h2>
+        <p class="section-desc">Det går snabbare när du bygger vidare på det du redan gjort.</p>
+      </div>
+      <div class="preview-grid">
+        <div class="preview-item">
+          <h3>Spara mallar och listor</h3>
+          <p>Behåll klasslistor och rumsdesigner över tid istället för att börja om varje termin.</p>
+        </div>
+        <div class="preview-item">
+          <h3>Dela med kollegor</h3>
+          <p>Gör dina bästa lektionsupplägg tillgängliga för fler på skolan.</p>
+        </div>
+        <div class="preview-item">
+          <h3>Fler verktyg</h3>
+          <p>Tillgång till Konverteringsnavet och nya verktyg allt eftersom de publiceras.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

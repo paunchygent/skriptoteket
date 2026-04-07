@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<!--
+  Mockup module: PR-0237 / ST-32-07 public landing discoverability direction.
+
+  Purpose:
+  Demonstrate a desktop-first public landing-page information architecture where
+  Klassrumskartan is the clear first action for signed-out visitors, while
+  account creation and login remain visibly secondary.
+
+  Relationships:
+  - Grounded in docs/backlog/prs/pr-0237-st-32-07-landing-public-entry-information-architecture-and-canonical-mockup-preview.md
+  - Responds to the current signed-out shell in frontend/apps/skriptoteket/src/views/HomeView.vue
+  - Reuses the Skriptoteket/HuleEdu brutalist-academic language rather than a separate marketing aesthetic
+-->
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PR-0237 mockup — public landing discoverability</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23fafaf6'/%3E%3Cpath d='M12 15h40v34H12z' fill='none' stroke='%231c2e4a' stroke-width='5'/%3E%3Cpath d='M22 23h20v18H22z' fill='%234d1521'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        --canvas: #fafaf6;
+        --paper: #fffdf8;
+        --navy: #1c2e4a;
+        --navy-75: rgba(28, 46, 74, 0.75);
+        --navy-55: rgba(28, 46, 74, 0.55);
+        --navy-20: rgba(28, 46, 74, 0.2);
+        --navy-10: rgba(28, 46, 74, 0.1);
+        --burgundy: #4d1521;
+        --burgundy-soft: rgba(77, 21, 33, 0.1);
+        --gold: #c48f2b;
+        --shadow-sm: 2px 2px 0 var(--navy);
+        --shadow: 4px 4px 0 var(--navy);
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --space-12: 48px;
+        --space-16: 64px;
+        --space-20: 80px;
+        --measure: 40rem;
+        --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+        --font-sans: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+        --font-mono: "IBM Plex Mono", "SFMono-Regular", "Cascadia Code", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: light;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background-color: var(--canvas);
+        color: var(--navy);
+        font-family: var(--font-sans);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        width: min(1360px, calc(100vw - 40px));
+        margin: 0 auto;
+      }
+
+      .site-header {
+        border-bottom: 2px solid var(--navy);
+        background: rgba(250, 250, 246, 0.96);
+      }
+
+      .site-header__inner {
+        display: grid;
+        grid-template-columns: 1.2fr auto auto;
+        gap: var(--space-6);
+        align-items: center;
+        padding: var(--space-4) 0;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: baseline;
+        gap: var(--space-3);
+        text-decoration: none;
+      }
+
+      .brand__name {
+        font-family: var(--font-serif);
+        font-size: 1.7rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .brand__meta {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--navy-55);
+      }
+
+      .quiet-nav,
+      .header-links {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-4);
+      }
+
+      .quiet-nav a,
+      .header-links a {
+        font-size: 0.88rem;
+        text-decoration: none;
+      }
+
+      .quiet-nav a {
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--navy-75);
+      }
+
+      .header-links a {
+        color: var(--navy-75);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        text-decoration-thickness: 1px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 7fr) minmax(320px, 5fr);
+        gap: var(--space-12);
+        padding: var(--space-16) 0 var(--space-12);
+        align-items: end;
+      }
+
+      .eyebrow {
+        margin: 0 0 var(--space-3);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--navy-55);
+      }
+
+      .hero h1 {
+        max-width: 11ch;
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: clamp(4rem, 7vw, 6.6rem);
+        line-height: 0.92;
+        letter-spacing: -0.05em;
+      }
+
+      .hero__lead {
+        max-width: var(--measure);
+        margin: var(--space-6) 0 0;
+        font-size: 1.18rem;
+        line-height: 1.55;
+        color: var(--navy-75);
+      }
+
+      .hero__cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-4);
+        margin-top: var(--space-8);
+      }
+
+      .cta-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 56px;
+        padding: 0 var(--space-8);
+        border: 2px solid var(--navy);
+        background: var(--burgundy);
+        color: var(--canvas);
+        font-family: var(--font-mono);
+        font-size: 0.86rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-decoration: none;
+        text-transform: uppercase;
+        box-shadow: var(--shadow);
+      }
+
+      .cta-secondary {
+        display: inline-flex;
+        gap: var(--space-4);
+        align-items: center;
+        font-size: 0.96rem;
+        color: var(--navy-75);
+      }
+
+      .cta-secondary a {
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        text-decoration-thickness: 1px;
+      }
+
+      .hero__notes {
+        display: grid;
+        gap: var(--space-6);
+        padding: var(--space-6) 0 0;
+        border-top: 2px solid var(--navy);
+      }
+
+      .hero__rule {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: var(--space-4);
+        align-items: start;
+      }
+
+      .hero__rule dt {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--navy-55);
+      }
+
+      .hero__rule dd {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.55;
+      }
+
+      .section {
+        padding: var(--space-12) 0;
+        border-top: 2px solid var(--navy);
+      }
+
+      .section__grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 3fr) minmax(0, 9fr);
+        gap: var(--space-8);
+        align-items: start;
+      }
+
+      .section__label {
+        position: sticky;
+        top: var(--space-6);
+      }
+
+      .section__label .eyebrow {
+        margin-bottom: var(--space-2);
+      }
+
+      .section__label h2 {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: clamp(2.1rem, 4vw, 3.2rem);
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+      }
+
+      .section__label p {
+        max-width: 24rem;
+        margin: var(--space-4) 0 0;
+        line-height: 1.55;
+        color: var(--navy-75);
+      }
+
+      .showcase {
+        display: grid;
+        grid-template-columns: minmax(0, 5fr) minmax(320px, 4fr);
+        gap: var(--space-8);
+      }
+
+      .showcase__frame {
+        border: 2px solid var(--navy);
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .showcase__topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: var(--space-4);
+        padding: var(--space-4) var(--space-6);
+        border-bottom: 2px solid var(--navy);
+        background: rgba(28, 46, 74, 0.04);
+      }
+
+      .showcase__topbar strong {
+        font-size: 1.05rem;
+      }
+
+      .showcase__topbar span {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--navy-55);
+      }
+
+      .showcase__canvas {
+        display: grid;
+        grid-template-columns: 1.25fr 0.9fr;
+        gap: var(--space-6);
+        padding: var(--space-6);
+      }
+
+      .room-stage {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: var(--space-4);
+      }
+
+      .toolbar {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .toolbar span {
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--navy);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: white;
+      }
+
+      .toolbar span.is-active {
+        background: var(--navy);
+        color: var(--canvas);
+      }
+
+      .classroom-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: var(--space-2);
+        padding: var(--space-4);
+        border: 2px solid var(--navy);
+        background:
+          linear-gradient(rgba(28, 46, 74, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(28, 46, 74, 0.06) 1px, transparent 1px),
+          white;
+        background-size: 40px 40px;
+      }
+
+      .seat {
+        aspect-ratio: 1;
+        border: 2px solid var(--navy);
+        background: var(--canvas);
+      }
+
+      .seat.is-accent {
+        background: var(--burgundy-soft);
+      }
+
+      .room-stage footer {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-4);
+        font-size: 0.92rem;
+        color: var(--navy-75);
+      }
+
+      .work-steps {
+        display: grid;
+        gap: 0;
+        border-left: 2px solid var(--navy);
+      }
+
+      .work-steps article {
+        padding: var(--space-4) 0 var(--space-4) var(--space-6);
+        border-top: 1px solid var(--navy-20);
+      }
+
+      .work-steps article:first-child {
+        border-top: 0;
+      }
+
+      .work-steps h3 {
+        margin: 0 0 var(--space-2);
+        font-size: 1.05rem;
+      }
+
+      .work-steps p {
+        max-width: 28ch;
+        margin: 0;
+        line-height: 1.5;
+        color: var(--navy-75);
+      }
+
+      .preview-list {
+        display: grid;
+        gap: 0;
+        border-top: 2px solid var(--navy);
+      }
+
+      .preview-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 1.4fr) minmax(0, 2fr) auto;
+        gap: var(--space-6);
+        align-items: center;
+        padding: var(--space-5) 0;
+        border-bottom: 1px solid var(--navy-20);
+      }
+
+      .preview-row strong {
+        font-size: 1rem;
+      }
+
+      .preview-row p {
+        margin: 0;
+        line-height: 1.5;
+        color: var(--navy-75);
+      }
+
+      .preview-tag {
+        justify-self: end;
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--navy);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .preview-tag.is-locked {
+        background: rgba(28, 46, 74, 0.05);
+      }
+
+      .endcap {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-8);
+        align-items: end;
+      }
+
+      .endcap h2 {
+        max-width: 12ch;
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: clamp(2.3rem, 4vw, 3.4rem);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .endcap p {
+        max-width: 32rem;
+        margin: var(--space-4) 0 0;
+        line-height: 1.55;
+        color: var(--navy-75);
+      }
+
+      .draft-note {
+        margin-top: var(--space-3);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--navy-55);
+      }
+
+      @media (max-width: 1080px) {
+        .site-header__inner,
+        .hero,
+        .showcase,
+        .section__grid,
+        .endcap {
+          grid-template-columns: 1fr;
+        }
+
+        .section__label {
+          position: static;
+        }
+
+        .preview-row {
+          grid-template-columns: 1fr;
+          gap: var(--space-2);
+        }
+
+        .preview-tag {
+          justify-self: start;
+        }
+
+        .showcase__canvas {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100vw, calc(100vw - 24px));
+        }
+
+        .hero {
+          padding-top: var(--space-12);
+        }
+
+        .hero h1,
+        .section__label h2,
+        .endcap h2 {
+          max-width: none;
+        }
+
+        .hero__rule {
+          grid-template-columns: 1fr;
+          gap: var(--space-2);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="page site-header__inner">
+        <a
+          class="brand"
+          href="/"
+        >
+          <span class="brand__name">Skriptoteket</span>
+          <span class="brand__meta">PR-0237 mockup</span>
+        </a>
+
+        <nav
+          class="quiet-nav"
+          aria-label="Public discoverability"
+        >
+          <a href="/public/apps/classroom.group-seating-studio">Klassrumskartan</a>
+        </nav>
+
+        <div class="header-links">
+          <a href="/register">Skapa konto</a>
+          <a href="#konto">Med konto</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Offentlig ingång</p>
+          <h1>Öppna Klassrumskartan direkt.</h1>
+          <p class="hero__lead">
+            Börja i ett riktigt arbetsflöde. Prova klassrum, grupper och sittplatser direkt i
+            webbläsaren. Logga in senare när du vill spara vidare.
+          </p>
+
+          <div class="hero__cta-row">
+            <a
+              class="cta-primary"
+              href="/public/apps/classroom.group-seating-studio"
+            >
+              Öppna Klassrumskartan
+            </a>
+          <div class="cta-secondary">
+              <a href="/register">Skapa konto</a>
+              <a href="#logga-in">Logga in</a>
+            </div>
+          </div>
+        </div>
+
+        <dl class="hero__notes">
+          <div class="hero__rule">
+            <dt>Nu öppet</dt>
+            <dd>Bygg en klass, testa grupper och arbeta vidare utan att börja med inloggning.</dd>
+          </div>
+          <div class="hero__rule">
+            <dt>Med konto</dt>
+            <dd>Spara arbetet, fortsätt senare och håll ihop det du vill använda över tid.</dd>
+          </div>
+          <div class="hero__rule">
+            <dt>Ton</dt>
+            <dd>Headern visar vägen lugnt. Hero-ytan tar hela beslutet.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="section">
+        <div class="section__grid">
+          <div class="section__label">
+            <p class="eyebrow">Visa först</p>
+            <h2>Det här går att använda nu.</h2>
+            <p>
+              Den publika ytan ska kännas som en riktig startpunkt, inte som en skylt för något som
+              kommer senare.
+            </p>
+          </div>
+
+          <div class="showcase">
+            <div class="showcase__frame">
+              <div class="showcase__topbar">
+                <strong>Klassrumskartan</strong>
+                <span>Publik arbetsyta</span>
+              </div>
+
+              <div class="showcase__canvas">
+                <div class="room-stage">
+                  <div class="toolbar">
+                    <span>Översikt</span>
+                    <span class="is-active">Grupper</span>
+                    <span>Sittplatser</span>
+                    <span>Exportera</span>
+                  </div>
+
+                  <div class="classroom-grid" aria-hidden="true">
+                    <div class="seat is-accent"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat is-accent"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat is-accent"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat is-accent"></div>
+                    <div class="seat"></div>
+                    <div class="seat is-accent"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                    <div class="seat is-accent"></div>
+                    <div class="seat"></div>
+                    <div class="seat"></div>
+                  </div>
+
+                  <footer>
+                    <span>Skapa klassrum</span>
+                    <span>Fördela elever</span>
+                    <span>Justera snabbt</span>
+                  </footer>
+                </div>
+
+                <div class="work-steps">
+                  <article>
+                    <h3>Börja direkt</h3>
+                    <p>Öppna den publika vägen utan att fastna i konto-frågan först.</p>
+                  </article>
+                  <article>
+                    <h3>Bygg något konkret</h3>
+                    <p>Visa ett riktigt lärarflöde med klassrum, grupper och tydliga val.</p>
+                  </article>
+                  <article>
+                    <h3>Bestäm senare</h3>
+                    <p>Flytta över fokus till konto först när det hjälper arbetet framåt.</p>
+                  </article>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="eyebrow">Tänkt rytm</p>
+              <div class="preview-list">
+                <div class="preview-row">
+                  <strong>Öppna</strong>
+                  <p>Visa den publika vägen som första val, inte som en dold sidodörr.</p>
+                  <span class="preview-tag">Hero-CTA</span>
+                </div>
+                <div class="preview-row">
+                  <strong>Prova</strong>
+                  <p>Visa att man kan göra något tydligt och lärarnära redan före konto.</p>
+                  <span class="preview-tag">Publikt nu</span>
+                </div>
+                <div class="preview-row">
+                  <strong>Fortsätt</strong>
+                  <p>Flytta in konto-värdet till nästa steg i stället för att lägga det först.</p>
+                  <span class="preview-tag">Sekundärt</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section"
+        id="konto"
+      >
+        <div class="section__grid">
+          <div class="section__label">
+            <p class="eyebrow">Med konto senare</p>
+            <h2>Behåll nästa steg tydligt.</h2>
+            <p>
+              De inloggade fördelarna får gärna synas, men de ska läsas som nästa steg och inte som
+              den enda riktiga vägen in.
+            </p>
+          </div>
+
+          <div class="preview-list">
+            <div class="preview-row">
+              <strong>Spara arbetet</strong>
+              <p>Fortsätt med samma klassrum och samma utkast när du kommer tillbaka.</p>
+              <span class="preview-tag is-locked">Kräver konto</span>
+            </div>
+            <div class="preview-row">
+              <strong>Samla det du använder</strong>
+              <p>Håll ihop verktyg, körningar och sådant du vill återvända till i vardagen.</p>
+              <span class="preview-tag is-locked">Kräver konto</span>
+            </div>
+            <div class="preview-row">
+              <strong>Dela vidare</strong>
+              <p>Ta arbetet vidare när det ska sparas, följas upp eller användas tillsammans.</p>
+              <span class="preview-tag is-locked">Kräver konto</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="endcap">
+          <div>
+            <p class="eyebrow">Sista raden</p>
+            <h2>Börja öppet. Spara senare.</h2>
+            <p>
+              Landningen ska sluta utan ett extra argumentationsvarv: visa den publika vägen, håll
+              kontot som ett tydligt nästa steg och lämna resten till senare iterationer.
+            </p>
+            <p class="draft-note">All svensk text är utkast för riktning, inte slutcopy.</p>
+          </div>
+
+          <a
+            class="cta-primary"
+            href="/public/apps/classroom.group-seating-studio"
+          >
+            Gå till den publika appen
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

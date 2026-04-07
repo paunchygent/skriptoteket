@@ -31,6 +31,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `ST-32-07` owns landing header/hero entry hierarchy plus the required mockup-first alignment pass through `PR-0237` and `PR-0238`
   - `ST-32-08` owns the featured public-app showcase and authenticated-value preview surface through `PR-0239`
   - `ST-32-09` owns catch-all route recovery and malformed public-path guidance through `PR-0240`
+- `PR-0237` competitive mockup round has begun with `docs/mockups/st-32-07-public-landing-discoverability/designer-cascade.html` demonstrating the calm header, strong Klassrumskartan hero CTA, and non-card typographic layout.
 - The review follow-up pass that closed the public export/Vitest footguns is also shipped on `main`:
   - `public_seating_export.py` now imports and uses `validation_error(...)` correctly
   - direct handler tests cover invalid public PDF branches and route tests assert forwarded handler args
@@ -76,6 +77,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Live local browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass for `PR-0235`; public builder modal rendered `builder-zoom-percent = 100%` and `room-builder-scroll-frame[data-overflow-anchor] = center` for a fresh small-room state; Playwright Chrome session was explicitly closed after the check)
 - `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.agents/handoff.md`)
 - `pdm run docs-validate` (pass after scaffolding `ST-32-07` and `PR-0237` through `PR-0240`)
+- Live local browser proof on `docs/mockups/st-32-07-public-landing-discoverability/designer-cascade.html` (pass; layout verified according to PR-0237 rules)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
 - Live public browser proof against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` with local backend on `http://127.0.0.1:8000` (pass; guest `Regler`, guest Smart drawer parity without `Historik`, and live `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` `200 OK`)
 - Live public browser proof for `PR-0234` against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; seeded guest snapshot kept `selected_template_local_id = template-1` and `grouping_draft.template_local_id = template-1` after overview -> `Grupper`; a forced grouping-without-classroom state rendered `Sittplatser` disabled with title `Skapa eller välj först ett klassrum.`)
