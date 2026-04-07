@@ -1,24 +1,26 @@
 ---
 type: review
-id: REV-EPIC-08
-title: "Review: Anchor/Patch-based AI Edit Ops v2"
+id: REV-ST-08-24
+title: "Review: ST-08-24 AI edit ops anchor/patch v2"
 status: approved
 owners: "agents"
 created: 2026-01-10
-updated: 2026-01-11
+updated: 2026-04-06
 reviewer: "lead-developer"
-epic: EPIC-08
-adrs:
-  - ADR-0051
 stories:
   - ST-08-24
+links:
+  - EPIC-08
+adrs:
+  - ADR-0051
 ---
 
 ## TL;DR
 
 We are updating ADR-0051 to add a v2 edit-ops protocol that supports anchor/patch-based targeting so chat-driven edits
 can apply deterministically without relying on cursor position. This review validates the decision scope, contract shape,
-and the new story slice for EPIC-08.
+and the new story slice for EPIC-08. This record was migrated from the legacy `REV-EPIC-08` archive and now anchors the
+retained review surface on `ST-08-24`.
 
 ## Problem Statement
 
@@ -37,8 +39,10 @@ This undermines trust in the chat assistant and does not match expected coding-a
 | `docs/adr/adr-0051-chat-first-ai-editing.md` | v2 contract additions + guardrails | 8 min |
 | `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md` | acceptance criteria + scope | 5 min |
 | `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md` | story list + scope alignment | 3 min |
+| `docs/backlog/prs/pr-0015-editor-ai-edit-ops-anchor-patch-v2.md` | implementation slice | 3 min |
+| `docs/backlog/prs/pr-0016-editor-ai-edit-ops-v2-hardening.md` | hardening slice | 3 min |
 
-**Total estimated time:** ~16 minutes
+**Total estimated time:** ~22 minutes
 
 ## Key Decisions
 
@@ -103,3 +107,4 @@ This undermines trust in the chat assistant and does not match expected coding-a
 | 2 | ST-08-24 | Acceptance criteria updated/validated against implemented v2 behavior. |
 | 3 | Backend | Patch/anchor ops supported; backend preview/apply endpoints; bounded fuzz ladder; safe-fail error mapping. |
 | 4 | Frontend | Explicit cursor TTL; omit cursor/selection when implicit; AI-specific diff preview UI + regenerate path. |
+| 5 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-24` target-based review record. |

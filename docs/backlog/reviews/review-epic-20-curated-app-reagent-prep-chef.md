@@ -5,6 +5,7 @@ title: "Review: Curated app — Reagent Prep Chef"
 status: pending
 owners: "agents"
 created: 2026-01-26
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-20
 adrs:
@@ -64,3 +65,29 @@ Teachers need a fast, reliable prep sheet with explicit safety posture and minim
 - [ ] Acceptance criteria are testable and match platform constraints
 - [ ] Dependency choice is reasonable for prod images
 - [ ] Risks are identified with mitigations
+
+## Review Feedback
+
+**Reviewer:** lead-developer
+**Date:** 2026-04-06
+**Verdict:** pending
+
+### Required Changes
+
+Confirm the safety posture, PDF/export shape, and dependency tradeoffs before implementation starts.
+
+### Suggestions (Optional)
+
+Keep the app-specific UX and the safety fallback contract explicit so the review stays reviewable.
+
+### Decision Approvals
+
+- [ ] Safety posture prevents false confidence
+- [ ] Scope stays within "solution prep"
+- [ ] Acceptance criteria are testable and match platform constraints
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Kept the curated-app proposal in canonical review shape while leaving the core EPIC-20 decisions pending. |

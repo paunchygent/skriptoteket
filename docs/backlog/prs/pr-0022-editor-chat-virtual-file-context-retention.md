@@ -69,7 +69,7 @@ Revert the PR; optional request fields are backwards compatible and hidden messa
 
 ## References
 
-- Review: `docs/backlog/reviews/review-epic-08-editor-chat-virtual-files-context.md`
+- Review: `docs/backlog/reviews/review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - Story: `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - ADR: `docs/adr/adr-0054-editor-chat-virtual-file-context.md`
 - Epic: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`

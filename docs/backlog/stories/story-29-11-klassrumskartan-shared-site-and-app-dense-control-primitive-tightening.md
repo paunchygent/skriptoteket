@@ -35,6 +35,10 @@ instead of treating it as unfinished planner-layout implementation.
   surfaces, not one more local planner toolbar pass.
 - `ST-29-01` is now the shipped foundation story. This story picks up the still-open consolidation
   and adapter-thinning work that no longer belongs under the old `PR-0158` seating-first framing.
+- Bounded planner shell/layout corrections are still allowed here when they restore the existing
+  `ST-29-03` / `ST-29-05` desktop contract, but that restoration work must keep planner geometry
+  CSS-owned and must not reopen the accepted workspace direction through new runtime sizing or
+  breakpoint logic.
 
 ## Planned PR slices
 
@@ -46,6 +50,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0226: ST-29-11 shared planner shell parity and grouping viewport-height stabilization](../prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md)
 - [PR-0227: ST-29-11 exact two-row grouping board height contract at desktop baseline](../prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md)
 - [PR-0228: ST-29-11 follow-up: desktop student-pool rail stickiness restoration](../prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md)
+- [PR-0229: ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity](../prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -58,9 +63,14 @@ instead of treating it as unfinished planner-layout implementation.
   overview-selected classroom, and the default 4-card desktop grouping board now proves exact
   `480px` two-row math at `1440x900` while populated cards retain a desktop `234px` minimum-height
   floor and can grow without forced internal scrolling.
-- `PR-0228` is the planned follow-up hardening slice for the student-pool/class-list rail after the
-  latest planner shell tightening. The regression is being tracked here for implementation, but the
-  canonical sticky rail contract is explicitly owned by `ST-29-03` and reinforced by `ST-29-05`.
+- `PR-0228` is now closed as the bounded student-pool/class-list rail follow-up after the latest
+  planner shell tightening. The canonical sticky rail contract is still explicitly owned by
+  `ST-29-03` and reinforced by `ST-29-05`, while this slice closes the regression-restoration lane
+  on the healthier CSS-owned baseline: the main page/workspace scroll is back, the large top panel
+  can scroll away, the toolbar becomes the sticky working band, grouping/seating share the same
+  `480px` rail pattern, the retained live browser proof stays on the authenticated real-data path,
+  and guest/auth parity is carried by the shared shell implementation plus focused guest/auth shell
+  specs.
 
 ## References
 

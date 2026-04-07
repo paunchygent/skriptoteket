@@ -119,7 +119,7 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 ## Suggested Approval Wording
 
 **Reviewer:** @lead-developer
-**Date:** YYYY-MM-DD
+**Date:** 2026-03-24
 **Verdict:** approved
 
 EPIC-26 is approved as the next Klassrumskartan lane after EPIC-24. The package keeps the accepted draft-vs-artifact boundary intact, starts with a no-slop seating PDF poster rendered through a standalone export contract, keeps roster import preview-first and bounded, and defers advanced history, metadata, zoning, and smart-placement work. Klassrumskartan-owned artifacts stay local to Skriptoteket, while Sir Convert-a-Lot remains the preferred dedicated service boundary for parsing and general conversion workloads. The epic may move from `proposed` to `active`, while its stories remain `ready` until implementation begins.

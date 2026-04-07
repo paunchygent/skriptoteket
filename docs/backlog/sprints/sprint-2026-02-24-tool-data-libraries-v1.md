@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-02-24
 title: "Sprint 2026-02-24: Tool data libraries v1"
-status: planned
+status: deprecated
 owners: "agents"
 created: 2026-01-12
 starts: 2026-02-24

@@ -56,7 +56,7 @@ Revert the PR; fallback keeps heuristic estimation intact.
 
 ## References
 
-- Review: `docs/backlog/reviews/review-epic-08-editor-chat-virtual-files-context.md`
+- Review: `docs/backlog/reviews/review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - Story: `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - ADR: `docs/adr/adr-0055-tokenizer-backed-prompt-budgeting.md`
 - Epic: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`

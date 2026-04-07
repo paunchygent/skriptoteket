@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-06-23
 title: "Sprint 2026-06-23: Tool layout editor v1 (contract + renderer)"
-status: planned
+status: deprecated
 owners: "agents"
 created: 2025-12-29
 starts: 2026-06-23

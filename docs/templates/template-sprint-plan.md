@@ -2,53 +2,24 @@
 type: template
 id: TPL-sprint-plan
 title: "Sprint plan template"
-status: active
+status: deprecated
 owners: "agents"
 created: 2025-12-19
+updated: 2026-04-06
 for_type: sprint
 ---
 
-Copy, fill in, and save under `docs/backlog/sprints/`:
+Sprint docs are retired in this repo.
 
-```markdown
----
-type: sprint
-id: SPR-YYYY-MM-DD
-title: "Sprint YYYY-MM-DD: Short title"
-status: planned
-owners: "agents"
-created: YYYY-MM-DD
-starts: YYYY-MM-DD
-ends: YYYY-MM-DD
-objective: "What success looks like by sprint end."
-prd: "PRD-..."
-epics: ["EPIC-.."]
-stories: ["ST-..-.."]
-adrs: ["ADR-...."]
----
+Do not create new `type: sprint` docs.
 
-## Objective
+Use the current docs-as-code stack instead:
 
-## Scope (committed stories)
+- PRD for product scope
+- ADR for decision surfaces
+- EPIC for outcome scope
+- STORY for shippable slices
+- PR backlog docs for bounded implementation slices
+- target-based review docs for retained review gates
 
-- ST-XX-YY: title (link)
-
-## Out of scope
-
-## Decisions required (ADRs)
-
-- ADR-XXXX: title (status proposed/accepted)
-
-## Risks / edge cases
-
-## Execution plan
-
-## Demo checklist
-
-## Verification checklist
-
-- `pdm run docs-validate`
-- Add story-specific verification steps (UI pages, runner flows, etc.)
-
-## Notes / follow-ups
-```
+Existing sprint docs under `docs/backlog/sprints/` are preserved only as legacy planning records.

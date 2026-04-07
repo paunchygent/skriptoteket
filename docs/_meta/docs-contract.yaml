@@ -45,7 +45,7 @@ types:
     folder: docs/backlog/sprints
     filename_regex: "^sprint-\\d{4}-\\d{2}-\\d{2}-[a-z0-9-]+\\.md$"
     id_regex: "^SPR-\\d{4}-\\d{2}-\\d{2}$"
-    status_allowed: ["planned", "active", "done", "canceled"]
+    status_allowed: ["deprecated"]
     required: ["starts", "ends", "objective", "stories"]
     optional: ["prd", "epics", "adrs"]
 
@@ -115,11 +115,11 @@ types:
 
   review:
     folder: docs/backlog/reviews
-    filename_regex: "^review-epic-\\d{2}-[a-z0-9-]+\\.md$"
-    id_regex: "^REV-EPIC-\\d{2}$"
+    filename_regex: "^review-[a-z0-9-]+\\.md$"
+    id_regex: "^REV-(EPIC-\\d{2}|ST-\\d{2}-\\d{2}|PR-\\d{4})$"
     status_allowed: ["pending", "approved", "changes_requested", "rejected"]
-    required: ["reviewer", "epic"]
-    optional: ["adrs", "stories"]
+    required: ["reviewer"]
+    optional: ["epic", "stories", "prs", "adrs"]
 
   guide:
     folder: docs/guides

@@ -5,7 +5,7 @@ title: "Review: AI Editor Integration for EPIC-08"
 status: approved
 owners: "agents"
 created: 2025-12-26
-updated: 2026-01-01
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-08
 adrs:
@@ -81,9 +81,12 @@ See [ADR-0052](../../adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md) for pr
 
 **Reviewer:** @user-lead
 **Date:** 2025-12-26
-**Verdict:** changes_requested
+**Verdict:** approved
 
-### Required Changes
+Initial review opened with `changes_requested`; the required changes below were later completed, and
+the retained record is approved overall.
+
+### Initial Required Changes (Resolved)
 
 1. Add multi-line completions as explicitly in-scope: update ST-08-14 acceptance criteria + remove "Multi-line ghost text formatting" from Out of Scope; add tests for multi-line render + Tab insertion + truncated suppression.
 2. Add `OPENAI_LLM_COMPLETION_API_KEY` to ADR-0043 and ST-08-14 configuration blocks (optional for Ollama).

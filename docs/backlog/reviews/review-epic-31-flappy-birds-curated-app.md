@@ -5,6 +5,7 @@ title: "Review: Flappy Birds as a bespoke curated app"
 status: pending
 owners: "agents"
 created: 2026-04-01
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-31
 adrs:
@@ -74,16 +75,16 @@ submission and leaderboard state.
 ## Review Feedback
 
 **Reviewer:** @lead-developer
-**Date:** YYYY-MM-DD
+**Date:** 2026-04-06
 **Verdict:** pending
 
 ### Required Changes
 
-- Pending review.
+Clarify whether `EPIC-31` stays a single curated-app epic or should be split before implementation starts.
 
 ### Suggestions (Optional)
 
-- Pending review.
+Keep the first slice focused on the app route, gameplay shell, and the smallest useful leaderboard contract.
 
 ### Decision Approvals
 

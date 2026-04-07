@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-06-09
 title: "Sprint 2026-06-09: Tool UI contract v2.x (action defaults + file references)"
-status: planned
+status: deprecated
 owners: "agents"
 created: 2025-12-29
 starts: 2026-06-09

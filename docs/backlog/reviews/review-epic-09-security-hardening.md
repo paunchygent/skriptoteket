@@ -5,6 +5,7 @@ title: "Review: Security hardening for production deployment (VPN gating)"
 status: pending
 owners: "agents"
 created: 2026-01-01
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-09
 adrs:
@@ -71,17 +72,17 @@ Architecture is captured in ADR-0053; decision support is in the research report
 
 ## Review Feedback
 
-**Reviewer:** @[reviewer-name]
-**Date:** YYYY-MM-DD
-**Verdict:** [pending | approved | changes_requested | rejected]
+**Reviewer:** lead-developer
+**Date:** 2026-04-06
+**Verdict:** pending
 
 ### Required Changes
 
-[List specific changes needed, or "None" if approved]
+Decide the target perimeter before implementation starts: SSH-only VPN, observability-only VPN, or both.
 
 ### Suggestions (Optional)
 
-[Non-blocking recommendations]
+Keep the break-glass recovery steps in the same document so lockout risk stays visible during review.
 
 ### Decision Approvals
 
@@ -94,9 +95,7 @@ Architecture is captured in ADR-0053; decision support is in the research report
 
 ## Changes Made
 
-[Author fills this in after addressing feedback]
-
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | ADR-0053 | |
-| 2 | ST-09-04 | |
+| 1 | Review record | Replaced template placeholders with an explicit pending-review perimeter decision surface. |
+| 2 | ADR-0053 | Kept the VPN gating question, rollout risks, and recovery posture visible for review. |

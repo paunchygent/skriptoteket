@@ -48,7 +48,7 @@ scope: "all"
 
 ## Documentation & Planning
 
-- [096-review-workflow.md](096-review-workflow.md): EPIC/Story review workflow (REQUIRED before implementation)
+- [096-review-workflow.md](096-review-workflow.md): Target-based review workflow (REQUIRED before implementation)
 
 ---
 

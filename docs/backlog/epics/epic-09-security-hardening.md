@@ -5,7 +5,7 @@ title: "Security hardening for production deployment"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-03-30
+updated: 2026-04-06
 outcome: "Skriptoteket is hardened against common internet threats with defense-in-depth at the reverse proxy, OS, and application layers."
 ---
 
@@ -73,6 +73,10 @@ outcome: "Skriptoteket is hardened against common internet threats with defense-
     validation, bootstrap-superuser login proof through `http://127.0.0.1:5173`,
     and an approved final `skriptoteket_reviewer` pass after one
     `skriptoteket_implementation_specialist` iteration
+- ST-09-04 is now closed as a perimeter-hardening backfill/current-state record:
+  - the story now serves as the canonical write-up of the already-implemented
+    bot/probe mitigation posture, Loki/Grafana visibility, and VPN-gating
+    decision scaffolding instead of hanging as a `ready` implementation item
 - ST-09-08 is planned as the remaining Hemma/nginx follow-through:
   - deploy the repo-side hardening patch
   - protect `/metrics` at the edge

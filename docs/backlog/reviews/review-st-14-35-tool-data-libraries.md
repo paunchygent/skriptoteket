@@ -1,38 +1,41 @@
 ---
 type: review
-id: REV-EPIC-14
-title: "Review: EPIC-14 Tool data libraries (datasets + file vault)"
+id: REV-ST-14-35
+title: "Review: ST-14-35 tool data libraries"
 status: pending
 owners: "agents"
 created: 2026-01-12
+updated: 2026-04-06
 reviewer: "external-reviewer"
-epic: EPIC-14
 adrs:
   - ADR-0058
   - ADR-0059
 stories:
   - ST-14-35
   - ST-14-36
+links:
+  - EPIC-14
+  - EPIC-19
 ---
 
 ## TL;DR
 
-We propose adding two reusable per-user data surfaces for tools: datasets (structured lists such as class rosters) and a
-file vault (reusable uploads + saved artifacts). This should reduce repetitive uploads and unlock better tool UX without
-changing the runner contract beyond memory injection and input staging.
+We propose two reusable per-user data surfaces for tools: datasets for structured lists such as class rosters, and a
+file vault for reusable uploads and saved artifacts. The review stays anchored on `ST-14-35`, with `ST-14-36` retained
+as supporting governed scope.
 
 ## Problem Statement
 
-Tool settings are a single dict and cannot represent reusable lists. Users also re-upload the same files repeatedly, and
-run artifacts are not reusable as inputs. These gaps block workflows like class-based grouping, roster reuse, and using
-cleaned outputs as inputs for subsequent runs.
+Tool settings are a single dict and cannot represent reusable lists. Users also re-upload the same files repeatedly,
+and run artifacts are not reusable as inputs. Those gaps block workflows like class-based grouping, roster reuse, and
+using cleaned outputs as inputs for subsequent runs.
 
 ## Proposed Solution
 
-- ADR-0058: Per-user datasets library scoped to a tool, with CRUD and a picker. Selected dataset is injected into
+- ADR-0058: per-user datasets library scoped to a tool, with CRUD and a picker. Selected dataset is injected into
   `memory["dataset"]` + `memory["dataset_meta"]`.
-- ADR-0059: Per-user file vault with explicit save/delete/restore, including save-from-artifact. Selected vault files are
-  staged into `/work/input` and appear in the input manifest.
+- ADR-0059: per-user file vault with explicit save/delete/restore, including save-from-artifact. Selected vault files
+  are staged into `/work/input` and appear in the input manifest.
 
 ## Artifacts to Review
 
@@ -62,35 +65,30 @@ cleaned outputs as inputs for subsequent runs.
 - [ ] Implementation aligns with codebase patterns
 - [ ] Risks are identified with mitigations
 
----
-
 ## Review Feedback
 
-**Reviewer:** @[reviewer-name]
-**Date:** YYYY-MM-DD
-**Verdict:** [pending | approved | changes_requested | rejected]
+**Reviewer:** external-reviewer
+**Date:** 2026-04-06
+**Verdict:** pending
 
 ### Required Changes
 
-[List specific changes needed, or "None" if approved]
+Decide the dataset injection shape and file-vault retention model before implementation starts, and confirm whether
+artifact save belongs in this slice or a later follow-up.
 
 ### Suggestions (Optional)
 
-[Non-blocking recommendations]
+Keep `ST-14-36` as supporting governed scope rather than a second primary review gate.
 
 ### Decision Approvals
 
-- [ ] Decision 1
-- [ ] Decision 2
-- [ ] Decision 3
-
----
+- [ ] Dataset injection shape
+- [ ] File vault retention model
+- [ ] Artifact save scope
 
 ## Changes Made
 
-[Author fills this in after addressing feedback]
-
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | ADR-0058 | [What was changed] |
-| 2 | ADR-0059 | [What was changed] |
+| 1 | Review record | Replaced template placeholders with explicit pending-review decisions for the tool-data libraries split. |
+| 2 | ST-14-35 / ST-14-36 | Preserved `ST-14-36` as supporting scope instead of hiding it behind generic placeholder text. |

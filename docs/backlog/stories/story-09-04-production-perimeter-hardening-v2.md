@@ -3,9 +3,10 @@ type: story
 id: ST-09-04
 title: "Production perimeter hardening v2 (bots + VPN gating plan)"
 epic: EPIC-09
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-01
+updated: 2026-04-06
 dependencies: ["ADR-0053"]
 ui_impact: "None (ops/security only)"
 data_impact: "None"
@@ -109,3 +110,11 @@ ssh hemma "curl -s http://127.0.0.1:3100/loki/api/v1/labels | jq '.data' | rg -n
 # Grafana dashboard file is mounted
 ssh hemma "sudo docker exec grafana ls -1 /etc/grafana/provisioning/dashboards | rg -n 'skriptoteket-nginx-proxy-security'"
 ```
+
+## Implementation Summary (as of 2026-04-06)
+
+- The perimeter-hardening v2 lane is now treated as a closed backfill/current-state story rather
+  than hanging future work: the bot/probe mitigation, repeat-offender banning, Loki/Grafana
+  visibility, and VPN-gating decision scaffolding described here are already the documented baseline.
+- Follow-on production security work continues under the remaining active EPIC-09 stories instead of
+  leaving this backlog item in `ready`.

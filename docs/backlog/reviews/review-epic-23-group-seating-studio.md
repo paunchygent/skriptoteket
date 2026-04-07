@@ -7,40 +7,57 @@ owners: "agents"
 reviewer: "architect"
 epic: "EPIC-23"
 created: 2026-03-20
+updated: 2026-04-06
 ---
 
-## 1. TL;DR
-This review covers Slice 1 of the new "Klassrumskartan" (Group Seating Studio) curated app. It proposes treating seat assignment and group assignment as strictly decoupled, using an app-specific relational persistence model rather than generic `tool_sessions`, and implementing a manual-only drag-and-drop prototype first.
+## TL;DR
 
-## 2. Problem Statement
-The current iteration of the seating planner tool lacks strict invariant control (failing to handle seat swapping properly), relies on hardcoded room constants, and uses a standard generic runner UI that does not fit the highly interactive drag-and-drop nature of seating maps.
+Slice 1 is a credible foundation for the new "Klassrumskartan" curated app, but this retained record should stay honest
+about what it covers. `ST-23-06` remains the primary target, `ST-23-02` is supporting governed scope, and the broader
+EPIC-24 fundamentals reset is now carried by the EPIC-24 planning review instead of being absorbed into this record.
 
-## 3. Proposed Solution
-Build a first-class curated app using Vue SPA with `vue-draggable-plus`. Define `ADR-0069` to enforce strict domain invariants mapping `SeatAssignment` and `GroupAssignment` separately keyed on `student_id`. Slice 1 will introduce the app with backend CRUD forms for roster/room template configurations and an interactive, visually synchronized 2D grid/list workspace, deferring the generative solver algorithms to Slice 2.
+## Problem Statement
 
-## 4. Artifacts to Review
-1. [ADR-0069: Klassrumskartan Domain Model and Data Persistence](../../adr/adr-0069-group-seating-studio-domain-model.md)
-2. [EPIC-23: Kurated app: Klassrumskartan (Slice 1)](../../backlog/epics/epic-23-group-seating-studio.md)
-3. [ST-23-01: Klassrumskartan — Registry, App Route, Bootstrap Endpoint](../../backlog/stories/story-23-01-group-seating-studio-skeleton.md)
-4. [ST-23-02: Klassrumskartan — Roster/Room Persistence & Lesson Mode](../../backlog/stories/story-23-02-group-seating-studio-manual-planner.md)
-5. [ST-23-03: Klassrumskartan — Group Assignment Board](../../backlog/stories/story-23-03-group-seating-studio-drag-drop-canvas.md)
-6. [ST-23-04: Klassrumskartan — Seat Assignment Canvas](../../backlog/stories/story-23-04-group-seating-studio-seat-canvas.md)
-7. [ST-23-05: Klassrumskartan — Cross-View Synchronization and Invariants](../../backlog/stories/story-23-05-group-seating-studio-sync-engine.md)
-8. [ST-23-06: Klassrumskartan — PlanDraft Persistence and Autosave](../../backlog/stories/story-23-06-group-seating-studio-draft-persistence.md)
+The seating planner still needs a truthful retained decision record for Slice 1. The app has real autosave and state
+normalization work, but this epic review must not imply a full close-out when reload/hydrate, metadata drawer support,
+group lifecycle, server invariants, ownership checks, CSRF, and revision gating are still unresolved.
 
-## 5. Key Decisions
-| Decision | Description | Status |
-|----------|-------------|--------|
-| **App-Specific Persistence** | Dedicated robust DB models for Rosters, Templates, and Drafts instead of caching transient form data or using generic `tool_sessions`. | Pending |
-| **Normalized State** | View state must not rely on fragile array mutation; assignments are mapped relationally by `student_id`. | Pending |
-| **Separate Draft/Final** | Distinguish between a mutable real-time PlanDraft and an immutable ArrangementSnapshot. | Pending |
-| **Decoupled Axes** | Dropping an item onto a Seat assigns the seat only. Dropping into a Group assigns the group only. | Pending |
+## Proposed Solution
 
-## 6. Review Checklist
-- [x] Are the 5 stories adequately isolated?
-- [x] Are the acceptance criteria observable and behavior-driven?
-- [x] Does the Domain Model conform to repository conventions?
-- [x] Decision to decouple generative algorithms from Slice 1 mapping.
+Keep the canonical retained review anchored on `EPIC-23`, preserve the slice-1 assessment as a story-level historical
+record, and route broader fundamentals-recovery guidance to the EPIC-24 review/doc set. That keeps the slice-1 record
+focused while still documenting the real follow-up surface.
+
+## Artifacts to Review
+
+| File | Focus | Time |
+|------|-------|------|
+| `docs/adr/adr-0069-group-seating-studio-domain-model.md` | Persistence and invariant model | 10 min |
+| `docs/backlog/epics/epic-23-group-seating-studio.md` | Slice 1 scope and archived rollout notes | 5 min |
+| `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md` | Broader fundamentals follow-up context | 5 min |
+| `docs/backlog/stories/story-23-02-group-seating-studio-manual-planner.md` | Metadata drawer / planning meta gap | 5 min |
+| `docs/backlog/stories/story-23-06-group-seating-studio-draft-persistence.md` | Draft persistence and autosave slice | 10 min |
+| `src/skriptoteket/application/apps/classroom_planner/*` | Implementation surface | 15 min |
+
+**Total estimated time:** ~50 minutes
+
+## Key Decisions
+
+| Decision | Rationale | Approve? |
+|----------|-----------|----------|
+| App-specific persistence | A curated app needs its own durable model rather than generic session state | [x] |
+| Normalized state | Separate maps for group and seat assignments reduce mutation ambiguity | [x] |
+| Separate draft/final lifecycle | Mutable plan drafts and immutable snapshots should not be conflated | [x] |
+| Decoupled axes | Seat and group assignment must remain independent projections | [x] |
+| Follow-up scope stays separate | ST-23-02 and EPIC-24 remain discoverable without being misrouted into the primary slice-1 gate | [x] |
+
+## Review Checklist
+
+- [x] Slice 1 is a real implementation foundation, not a mock
+- [x] The strongest architectural gaps are named explicitly
+- [x] Supporting scope is explicit in `stories:`
+- [x] EPIC-24 follow-up context is linked rather than absorbed into the primary record
+- [x] Follow-up requirements are scoped as concrete next actions
 
 ## Review Feedback
 
@@ -49,10 +66,25 @@ Build a first-class curated app using Vue SPA with `vue-draggable-plus`. Define 
 **Verdict:** approved
 
 ### Required Changes
+
 None, changes have been applied.
 
-### Approved Decisions
+### Suggestions (Optional)
+
+Keep the broader fundamentals recovery in the EPIC-24 review trail so this slice-1 record stays focused on the
+primary target.
+
+### Decision Approvals
+
 - [x] App-Specific Persistence
 - [x] Normalized State
 - [x] Separate Draft/Final
 - [x] Decoupled Axes
+- [x] Follow-up scope stays separate
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Normalized the review into the canonical target-based shape and kept EPIC-23 as the primary target. |
+| 2 | Scope | Made ST-23-02 supporting governed scope and linked the broader EPIC-24 follow-up review instead of folding it into this record. |

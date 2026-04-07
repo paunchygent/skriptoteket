@@ -2,7 +2,7 @@
 type: pr
 id: PR-0228
 title: "ST-29-11 follow-up: desktop student-pool rail stickiness restoration"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-04-06
 updated: 2026-04-06
@@ -18,8 +18,9 @@ dependencies:
 acceptance_criteria:
   - "Given the teacher works inside `Grupper` or `Sittplatser` at the `EPIC-29` `laptop` (`1366x768`) and `desktop` (`1440x900`) review viewports, when the live workspace overflows vertically, then the student-pool rail and the active board/canvas lane remain preserved as a stable desktop split workspace instead of drifting apart through page-level scroll."
   - "Given the student-pool rail is locally sticky, when the teacher works with long class lists, then the student-pool header remains fixed and only the list body scrolls."
-  - "Given the desktop split workspace remains aligned, when the teacher scrolls deeper into grouping or seating, then that deeper movement happens inside the active board/canvas lane rather than by displacing the whole split-workspace relationship."
-  - "Given guest and authenticated planner shells share the same visible grouping/seating layout contract, when the stickiness fix ships, then the student-pool rail behaves the same in both routes instead of drifting by wrapper."
+  - "Given the teacher scrolls deeper through grouping or seating at the named desktop proof widths, when the large top panel leaves the viewport, then the page/workspace scroll remains the primary vertical path, the toolbar becomes the sticky working band, the student-pool rail stays visually attached below it, and the board/canvas does not collapse into a tiny competing internal scroller."
+  - "Given guest and authenticated planner shells share the same visible grouping/seating layout contract through the shared shell primitives and focused guest/auth shell specs, when the retained real-data browser proof is run on the authenticated route, then the student-pool rail still behaves as one shared contract without requiring a second guest-only live proof lane for this bounded slice."
+  - "Given the planner shell crosses the failing intermediate desktop cutover band below `xl`, when browser proof is run, then the split workspace does not silently collapse into long stacked page content without an explicit breakpoint decision."
   - "Given browser proof is run on the live local SPA, when the follow-up is reviewed, then the proof extends the existing planner Playwright lane instead of introducing a disconnected one-off script path."
 ---
 
@@ -39,6 +40,19 @@ desktop tool rail.
 Restore and explicitly freeze the desktop student-pool rail stickiness contract across grouping and
 seating, while keeping the current shared guest/authenticated shell direction and the recently
 accepted desktop height contracts.
+
+## Current implementation baseline
+
+The local implementation is now materially healthier than the earlier rejected bounded-pane pass.
+The large top panel can scroll away, the toolbar becomes the sticky working band, grouping and
+seating both use the same `480px` class-list rail pattern, and shared planner geometry is now
+defined through named CSS primitives instead of runtime pane-height math.
+
+That baseline is worth preserving, and this PR now closes on that corrected contract. The written
+task/review trail now matches the CSS-owned page/workspace scroll model, and the retained
+guest/authenticated parity obligation is satisfied by the shared shell implementation plus focused
+guest/auth shell specs while the retained live browser proof stays on the stronger authenticated
+real-data lane.
 
 ## Non-goals
 
@@ -67,9 +81,21 @@ accepted desktop height contracts.
    that behavior, not replace it with page-level scroll hunting.
 
 5. Keep the desktop split workspace stable at the shell seam.
-   The pane shell should bound the visible desktop workspace, the student pool should keep its own
-   internal list scroller, and deeper grouping/seating movement should happen inside the active
-   right-hand lane rather than by letting the full workspace chrome drift out of alignment.
+   The main page/workspace scroller should own the outer vertical path, the large top panel may
+   scroll away, the toolbar should become the sticky working band, the student pool should keep its
+   own `480px` local list scroller, and the board/canvas should stay on the main page/workspace
+   scroll path instead of collapsing into a tiny competing internal scroller.
+
+6. Keep planner geometry CSS-owned.
+   Size, position, sticky behavior, overflow ownership, and breakpoint cutover should come from the
+   shared layout contract. Persistent `window.innerHeight`, `getBoundingClientRect()`,
+   `ResizeObserver`, or scroll-driven pane sizing/alignment are out of scope for this follow-up
+   unless an explicit exception is approved.
+
+7. Close this slice on one retained live-proof lane.
+   The authenticated real-data Playwright path is the retained browser proof for this bounded PR.
+   Guest/auth parity still matters, but it is enforced here through the shared shell primitives and
+   focused guest/auth shell specs rather than a second retained guest live-proof script.
 
 ## Implementation plan
 
@@ -83,17 +109,24 @@ accepted desktop height contracts.
 2. Restore one shared sticky-rail contract at the desktop breakpoint path so grouping and seating
    consume the same fix rather than drifting again.
 
-3. Keep the sticky behavior bounded to the local workspace seam:
+3. Restore the shell through CSS containment first:
+   - fix containment, track sizing, `min-h-0`, and overflow ownership before adding any new runtime
+     logic
+   - define breakpoint cutover once in the shared layout tokens instead of re-encoding it in JS
+   - keep the corrected page/workspace scroll model and sticky toolbar band rather than reintroducing
+     a measured bounded-pane scroller
+
+4. Keep the sticky behavior bounded to the local workspace seam:
    - the rail should stay visible beside the board/canvas while the teacher scrolls the workspace
    - the rail header should remain fixed
    - the list body should remain the only scrolling region inside the panel
 
-4. Add focused frontend coverage that proves:
+5. Add focused frontend coverage that proves:
    - the rail/lane keeps the expected sticky desktop classes
    - the internal scroll body contract stays intact
    - guest/authenticated shared shells do not diverge on the affected surfaces
 
-5. Extend the existing targeted planner Playwright proof lane rather than creating a disconnected
+6. Extend the existing targeted planner Playwright proof lane rather than creating a disconnected
    brand-new script. Reuse the current classroom-planner helpers and whichever of the existing
    `PR-0179` or `PR-0227` scripts gives the cleanest route to live stickiness measurement.
 
@@ -106,10 +139,19 @@ accepted desktop height contracts.
   - `http://127.0.0.1:5173/apps/classroom.group-seating-studio`
   - `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`
 - Playwright proof should extend an existing planner script/helper path and verify, at minimum:
+  - the shell contract using the real local `SA24D` roster and `G20` classroom when they are
+    available, rather than ad hoc toy review fixtures
+  - the authenticated route on the corrected page/workspace scroll model as the current baseline
   - grouping student-pool rail remains sticky while scrolling deeper into the board
   - seating student-pool rail remains sticky while scrolling deeper into the canvas workspace
+  - seating rail-to-right-lane alignment remains preserved during deeper canvas scrolling, not only
+    the fixed-header behavior
   - the student-pool header remains fixed
-  - both authenticated and guest shells preserve the same visible stickiness behavior
+  - the authenticated route remains the retained real-data browser proof lane, while shared-shell
+    guest/auth parity is locked by the focused guest/auth shell specs that exercise the same pane
+    and toolbar contract without requiring a separate retained guest live-proof script
+  - the named `laptop` (`1366x768`) and `desktop` (`1440x900`) review widths plus the currently
+    failing intermediate pre-`xl` resize band
 
 ## Rollback plan
 
@@ -119,6 +161,7 @@ accepted desktop height contracts.
 
 ## References
 
+- Retained review gate: [REV-PR-0228](../reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md)
 - Story parent: [ST-29-11](../stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
 - Canonical desktop composition owner: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - User-facing grouping/seating composition owner: [ST-29-05](../stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md)

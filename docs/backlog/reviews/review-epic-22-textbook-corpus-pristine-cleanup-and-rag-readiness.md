@@ -5,6 +5,7 @@ title: "Review: Textbook corpus pristine cleanup and RAG readiness"
 status: pending
 owners: "agents"
 created: 2026-03-04
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-22
 adrs:
@@ -63,3 +64,30 @@ traceability.
 - [ ] PR tasks are independently shippable and testable
 - [ ] Promotion gates block unsafe corpus states
 - [ ] Provenance contract is sufficient for downstream retrieval auditability
+
+## Review Feedback
+
+**Reviewer:** lead-developer
+**Date:** 2026-04-06
+**Verdict:** pending
+
+### Required Changes
+
+Confirm the integrity gates, manual-restoration split, and provenance requirements before implementation starts.
+
+### Suggestions (Optional)
+
+Keep the deterministic mechanical cleanup lane separate from the semantic/manual restoration lane so the corpus review
+stays auditable.
+
+### Decision Approvals
+
+- [ ] Strict no-autofix semantic zones
+- [ ] Manual patch + verifier workflow
+- [ ] Fail-closed pristine/RAG promotion gates
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Preserved the textbook corpus review in canonical shape while keeping the integrity/provenance decisions pending. |

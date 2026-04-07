@@ -1,23 +1,26 @@
 ---
 type: review
-id: REV-EPIC-14
-title: "Review: UI contract v2.x action prefill defaults"
+id: REV-ST-14-23
+title: "Review: ST-14-23 UI contract v2.x action prefill defaults"
 status: approved
 owners: "agents"
 created: 2026-01-15
 reviewer: "lead-developer"
-epic: EPIC-14
+updated: 2026-04-06
 adrs:
   - ADR-0060
 stories:
   - ST-14-23
+links:
+  - EPIC-14
 ---
 
 ## TL;DR
 
 Add a backwards-compatible v2.x extension so tools can provide explicit defaults/prefill for `next_actions` fields via an
 action-level `prefill` map, validated deterministically during normalization with actionable system notices for invalid
-values.
+values. This record was migrated from the legacy `REV-EPIC-14` archive and now anchors the retained story review surface
+on `ST-14-23`.
 
 ST-14-24 (file references) will be handled in a separate ADR.
 
@@ -82,3 +85,9 @@ None.
 - [x] Defaults location: action-level `prefill`
 - [x] Invalid default handling: strip + system notice
 - [x] ADR strategy: separate ST-14-23 and ST-14-24 ADRs
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-14` archive to the canonical `REV-ST-14-23` target-based story review record. |

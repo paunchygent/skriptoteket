@@ -87,6 +87,10 @@ into the `laptop` proof width.
 - The core desktop-first workspace/layout lane is now represented by shipped behavior in practice;
   the main remaining active follow-on work is the shared primitive/symbol/discoverability set now
   tracked in `ST-29-08`, `ST-29-11`, and `ST-29-12`.
+- For planner-family workspace shells, layout geometry remains CSS-owned even in follow-on hardening
+  work: shell/pane/rail/board/canvas size, position, sticky behavior, overflow ownership, and
+  breakpoint cutover should be restored through shared containment and layout tokens rather than
+  persistent runtime geometry math.
 - `ST-29-08` is intentionally an enhancement follow-up after the remaining primitive and symbol
   definition/tightening lane rather than a blocker on the already-shipped workspace layouts.
 - `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
@@ -107,3 +111,9 @@ into the `laptop` proof width.
 - `ST-29-06` is now done through `PR-0185`: the no-classroom `Regler` planning-map state now uses the approved classroom guidance copy, off-map students render as an organized selectable roster with visible pending-selection order instead of a loose chip cloud, `Grupper` now uses the approved calmer helper copy, and the live proof is locked at `1366x768` and `1440x900` through `scripts/playwright_pr_0185_rules_no_classroom_fallback_check.py`.
 - `ST-29-10` is now done through `PR-0182`, `PR-0183`, and `PR-0184`: first-run workspace reachability is now truthful in the shared selector, `Översikt` shows the approved compact prerequisite guidance plus `Hjälp` affordance copy, and `docs/mockups/st-29-10-first-run-workspace-gating/index.html` remains the canonical mockup/preview path that grounded the slice before the live shell changes.
 - `ST-29-11` now has its current planner hardening set implemented through `PR-0224`, `PR-0225`, `PR-0226`, and `PR-0227`: shared planner shell parity is tightened across guest and authenticated mode, grouping now holds the explicit `480px` desktop floor with `56px` / `112px` group-card sizing, grouping autosave preserves the selected classroom instead of clearing `Sittplatser`, fresh grouping drafts now seed 4 groups consistently in both guest and authenticated mode, and the default 4-card desktop grouping board now proves exact `480px` two-row math at `1440x900` while populated cards retain a desktop `234px` minimum-height floor and can grow without forced internal scrolling.
+- `PR-0228` is now closed as the bounded `ST-29-11` planner-shell follow-up: the local shell stays
+  on the better CSS-owned baseline where page/workspace scroll replaces the earlier rejected
+  bounded-pane model, the large top panel can scroll away, the toolbar becomes the sticky working
+  band, and grouping/seating share the same `480px` class-list rail pattern. Close-out keeps the
+  retained live browser proof on the authenticated real-data path while guest/auth parity is
+  enforced through the shared shell implementation plus focused guest/auth shell specs.

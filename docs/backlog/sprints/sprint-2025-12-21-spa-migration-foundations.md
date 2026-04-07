@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2025-12-21
 title: "Sprint 2025-12-21: SPA migration foundations"
-status: done
+status: deprecated
 owners: "agents"
 created: 2025-12-21
 starts: 2025-12-21

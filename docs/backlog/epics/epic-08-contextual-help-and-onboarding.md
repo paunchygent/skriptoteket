@@ -121,4 +121,4 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 
 ## Reviews
 
-- [Review: Editor chat virtual file context + tokenizer budgeting](../reviews/review-epic-08-editor-chat-virtual-files-context.md)
+- [Review: ST-08-27 editor chat virtual file context retention + tokenizers](../reviews/review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md)

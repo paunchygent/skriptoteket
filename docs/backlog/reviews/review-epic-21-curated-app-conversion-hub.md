@@ -5,6 +5,7 @@ title: "Review: Curated app - Conversion Hub (Sir Convert-a-Lot v2)"
 status: pending
 owners: "agents"
 created: 2026-03-01
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-21
 adrs:
@@ -64,3 +65,29 @@ This duplicates capabilities, hardcodes an interaction flow, and blurs the produ
 - [ ] Stories have testable acceptance criteria and cover batch + preview
 - [ ] Migration plan updates E2E/unit tests without weakening coverage
 - [ ] Risks have explicit mitigations (timeouts, error surfaces, artifact assertions)
+
+## Review Feedback
+
+**Reviewer:** lead-developer
+**Date:** 2026-04-06
+**Verdict:** pending
+
+### Required Changes
+
+Decide the canonical conversion UI, local job-ownership boundary, and transport contract before implementation begins.
+
+### Suggestions (Optional)
+
+Keep the batch/preview story slices small enough that the curated app stays reviewable as a single conversion lane.
+
+### Decision Approvals
+
+- [ ] Curated app is canonical conversion UI
+- [ ] Batch conversion uses independent v2 jobs
+- [ ] Conversion Hub owns local job ids and proxy auth
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Preserved the conversion-hub proposal in canonical review shape while keeping the review pending. |

@@ -34,6 +34,10 @@ the shared desktop composition seams that later workspace-specific slices can re
   sticky beside the grouping board or seating canvas at desktop widths, treat that as a regression
   against `ST-29-03` even if the regression is introduced by a later shell- or hardening-focused
   PR.
+- This story is the canonical desktop geometry owner for planner-family workspaces. Shared CSS
+  containment, track sizing, `min-h-0`, sticky behavior, overflow ownership, and breakpoint cutover
+  should define the workspace shape; persistent runtime pane sizing or wrapper-relative geometry math
+  should be treated as a regression unless an explicit exception is approved.
 - Current state in practice:
   - `PR-0128` is effectively shipped through the current split-pane/local-scroll student-pool layout.
   - `PR-0129` is now implemented locally through the shared zoned `PlannerWorkspaceActionBar`

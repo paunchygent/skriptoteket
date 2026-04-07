@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-03-03
 title: "Sprint 2026-03-03: Tool editor DX quick wins"
-status: planned
+status: deprecated
 owners: "agents"
 created: 2025-12-29
 updated: 2026-01-02

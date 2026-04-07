@@ -34,6 +34,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - AI API surfaces codemap: `docs/reference/reports/codemaps/ai-api-surfaces-tool-editor.md`
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
+- Historical edit-ops patch-workflow support brief:
+  `docs/reference/ref-pr-0031-edit-ops-patch-workflow-brief.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
 - Competitive games + Flunk-Out Frenzy reference:
   `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
@@ -101,6 +103,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - ST-32-06 public Klassrumskartan demo capability matrix + browser-workspace adoption:
   `docs/backlog/prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md`
+- ST-32-06 guest `Regler` + solver-Smart parity + expandable Smart settings drawer:
+  `docs/backlog/prs/pr-0231-st-32-06-guest-regler-workspace-solver-smart-parity-and-expandable-smart-settings-drawer.md`
+- ST-32-06 guest local draft parity + direct-download export + account-only history polish:
+  `docs/backlog/prs/pr-0232-st-32-06-guest-local-draft-parity-direct-download-export-and-account-only-history-affordance-polish.md`
+- Pending ST-32-06 guest-gap bridge ruthless review gate:
+  `docs/backlog/reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md`
 - ST-29-11 desktop-first planner width stability + shrink-to-fit remediation:
   `docs/backlog/prs/pr-0224-st-29-11-desktop-first-planner-width-stability-and-shrink-to-fit-remediation.md`
 - ST-29-11 desktop-first planner toolbar priority + overflow hardening:
@@ -111,6 +119,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md`
 - ST-29-11 follow-up desktop student-pool rail stickiness restoration:
   `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md`
+- ST-29-11 follow-up desktop-first planner toolbar breakpoint overflow escalation + undo/redo shortcut parity:
+  `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -221,11 +231,13 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - Proposed local password reset ADR:
   `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
-- Proposed public curated-app access ADR:
+- Accepted public curated-app access ADR:
   `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
+- Accepted Klassrumskartan guest Smart/history boundary ADR:
+  `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
-- Proposed public curated-app access epic:
+- Active public curated-app access epic:
   `docs/backlog/epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md`
 - Approved local password reset review:
   `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md`
@@ -261,6 +273,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul review:
   `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- Retained PR-0228 planner shell review:
+  `docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md`
+- Pending PR-0229 planner toolbar review:
+  `docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
 - Active same-shell transition continuity epic:
   `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 - Approved same-shell transition continuity review:
@@ -269,6 +285,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-31-flappy-birds-curated-app.md`
 - Proposed Flappy Birds curated-app review:
   `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`
+- Active docs-as-code tightening epic:
+  `docs/backlog/epics/epic-34-docs-as-code-tightening-and-legacy-review-record-migration.md`
+- Approved docs-as-code tightening review:
+  `docs/backlog/reviews/review-epic-34-docs-as-code-tightening-and-legacy-review-record-migration.md`
+- Backfilled docs-as-code review-workflow cutover story:
+  `docs/backlog/stories/story-34-01-docs-as-code-review-workflow-cutover-and-sprint-retirement-backfill.md`
+- Ready legacy review-record migration story:
+  `docs/backlog/stories/story-34-02-legacy-review-record-migration-to-the-target-based-model.md`
+- Ready legacy review-record migration slice:
+  `docs/backlog/prs/pr-0230-st-34-02-legacy-review-record-migration-to-the-target-based-model.md`
 - Approved Flunk-Out Frenzy physical-carrier foundations review:
   `docs/backlog/reviews/review-epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 - Same-shell transition continuity planning slice:
@@ -295,7 +321,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Hemma critical paths + ops inventory: `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
 - Agent browser automation runbook: `docs/runbooks/runbook-agent-browser-automation.md`
 - Feedback email CLI runbook: `docs/runbooks/runbook-feedback-email-cli.md`
-- Active sprint: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`
+- Sprint docs are retired as a live planning shape; legacy archive:
+  `docs/backlog/sprints/`
 - Release notes: `docs/releases/`
 - ADRs: `docs/adr/`
 - Backlog: `docs/backlog/`
@@ -444,6 +471,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 - `docs/backlog/epics/epic-31-flappy-birds-curated-app.md`
+- `docs/backlog/epics/epic-34-docs-as-code-tightening-and-legacy-review-record-migration.md`
 
 ### Backlog Stories
 
@@ -497,6 +525,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md`
 - `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md`
 - `docs/backlog/stories/story-30-02-adopt-transition-continuity-across-editor-and-selector-shells.md`
+- `docs/backlog/stories/story-34-01-docs-as-code-review-workflow-cutover-and-sprint-retirement-backfill.md`
+- `docs/backlog/stories/story-34-02-legacy-review-record-migration-to-the-target-based-model.md`
 
 ### Backlog Reviews
 
@@ -504,15 +534,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
 - `docs/backlog/reviews/review-epic-07-correlation-middleware-asgi.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
-- `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`
-- `docs/backlog/reviews/review-epic-08-editor-ai-edit-ops-patch-only-alignment.md`
-- `docs/backlog/reviews/review-epic-08-edit-ops-patch-workflow.md`
-- `docs/backlog/reviews/review-epic-08-editor-chat-virtual-files-context.md`
-- `docs/backlog/reviews/review-epic-08-llm-response-capture.md`
+- `docs/backlog/reviews/review-st-08-24-ai-edit-ops-anchor-patch-v2.md`
+- `docs/backlog/reviews/review-pr-0031-editor-ai-edit-ops-patch-only-alignment.md`
+- `docs/backlog/reviews/review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
+- `docs/backlog/reviews/review-st-08-28-ai-chat-ops-response-capture-on-error.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
 - `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`
-- `docs/backlog/reviews/review-epic-14-tool-data-libraries.md`
-- `docs/backlog/reviews/review-epic-14-ui-contract-v2x-action-prefill.md`
+- `docs/backlog/reviews/review-st-14-23-ui-contract-v2x-action-prefill.md`
+- `docs/backlog/reviews/review-st-14-35-tool-data-libraries.md`
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
 - `docs/backlog/reviews/review-epic-18-execution-queue.md`
@@ -521,17 +550,23 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-21-curated-app-conversion-hub.md`
 - `docs/backlog/reviews/review-epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/reviews/review-epic-23-group-seating-studio.md`
+- `docs/backlog/reviews/review-st-23-06-group-seating-studio-draft-persistence.md`
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
 - `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- `docs/backlog/reviews/review-pr-0226-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md`
+- `docs/backlog/reviews/review-pr-0227-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md`
+- `docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md`
+- `docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
 - `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 - `docs/backlog/reviews/review-epic-31-flappy-birds-curated-app.md`
+- `docs/backlog/reviews/review-epic-34-docs-as-code-tightening-and-legacy-review-record-migration.md`
 - `docs/backlog/reviews/review-epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`
 
-### Backlog Sprints
+### Legacy Sprint Archive
 
 - `docs/backlog/sprints/sprint-2025-12-21-spa-migration-foundations.md`
 - `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
@@ -618,6 +653,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0179-st-29-02-sticky-toolbar-offset-gap-collapse.md`
 - `docs/backlog/prs/pr-0177-st-29-09-rule-visibility-and-tool-feedback-continuity.md`
 - `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md`
+- `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
+- `docs/backlog/prs/pr-0230-st-34-02-legacy-review-record-migration-to-the-target-based-model.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

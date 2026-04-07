@@ -5,6 +5,7 @@ title: "Review: Linter Architecture Refactor"
 status: approved
 owners: "agents"
 created: 2025-12-29
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-06
 stories:
@@ -19,7 +20,7 @@ stories:
 
 Refactor of the client-side Python linter to improve cohesion, testability, and extensibility.
 
-## Artifacts
+## Artifacts to Review
 
 - `docs/reference/ref-linter-architecture.md`
 - `docs/adr/adr-0048-linter-context-and-data-flow.md`
@@ -58,7 +59,7 @@ Adopt a **Context-Rule** architecture:
 | Decision | Rationale | Approve? |
 | --- | --- | --- |
 | **Separate Parsing from Rules** | Decouples logic from AST structure; enables re-use of "facts" across rules. | [x] |
-| **Introduce Variable Table** | Enbles data-flow analysis (e.g., knowing `x` is a List) which fixes false positives on dynamic code. | [x] |
+| **Introduce Variable Table** | Enables data-flow analysis (e.g., knowing `x` is a List) which fixes false positives on dynamic code. | [x] |
 | **Headless Test Harness** | Critical for ensuring stability; allows testing rules against string inputs without a browser. | [x] |
 
 ## Review Checklist
@@ -79,9 +80,12 @@ Adopt a **Context-Rule** architecture:
 
 **Reviewer:** Antigravity (Agent)
 **Date:** 2025-12-29
-**Verdict:** changes_requested
+**Verdict:** approved
 
-### Required Changes
+Initial review opened with `changes_requested`; the re-review below approved the slice after those
+changes were completed.
+
+### Initial Required Changes (Resolved)
 
 1. **Scoped Variable Table (Critical):**
     The proposed flat `VariableTable` (`Map<string, VariableInfo>`) in `ref-linter-architecture.md` is insufficient for Python.
@@ -123,7 +127,7 @@ Adopt a **Context-Rule** architecture:
 - **Type Guards:** Consider tracking `isinstance` checks in control flow to support `if isinstance(outputs, list): return outputs`, future-proofing the "dynamic" check.
 - **Performance Budget:** Add a constraint to the ADR that the entire Context Builder pass must stay under 5-10ms for typical files (<500 LOC) to ensure typing latency remains low.
 
-## Changes Made (2025-12-31)
+## Changes Made
 
 All required changes are implemented across ST-06-10..14:
 

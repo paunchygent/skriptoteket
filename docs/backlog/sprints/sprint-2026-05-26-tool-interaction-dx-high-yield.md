@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-05-26
 title: "Sprint 2026-05-26: Tool interaction DX high-yield wins"
-status: planned
+status: deprecated
 owners: "agents"
 created: 2025-12-29
 updated: 2026-01-03

@@ -1,18 +1,21 @@
 ---
 type: review
-id: REV-EPIC-08
+id: REV-PR-0031
 title: "Review: PR-0031 Editor AI patch-only edit-ops alignment"
 status: approved
 owners: "agents"
 created: 2026-01-14
-updated: 2026-01-14
+updated: 2026-04-06
 reviewer: "lead-developer"
-epic: EPIC-08
-adrs:
-  - ADR-0051
-stories:
+prs:
+  - PR-0031
+links:
+  - EPIC-08
   - ST-08-24
   - ST-08-28
+  - REF-pr-0031-edit-ops-patch-workflow-brief
+adrs:
+  - ADR-0051
 ---
 
 ## TL;DR
@@ -27,6 +30,24 @@ workflow gaps:
 
 PR-0031 proposes a patch-only alignment + diff hygiene + correlation propagation cleanup so edit-ops feels like a modern
 AI IDE workflow without cursor/selection targeting.
+
+The historical patch-workflow analysis is preserved separately in
+[docs/reference/ref-pr-0031-edit-ops-patch-workflow-brief.md](/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/docs/reference/ref-pr-0031-edit-ops-patch-workflow-brief.md)
+as linked support material, so this retained review does not imply the broader brief was itself an approval record.
+
+This record was migrated from the legacy `REV-EPIC-08` archive and now anchors the retained PR review surface on
+`PR-0031`.
+
+## Problem Statement
+
+Patch-only edit-ops needs to be reliable enough that malformed diffs and unstable correlation ids do not force the user
+back into noisy regeneration loops or make preview/apply failures hard to diagnose.
+
+## Proposed Solution
+
+Keep patch-only v2 semantics unambiguous, repair or reject malformed unified diffs deterministically, and propagate the
+same correlation id through generation, preview, and apply so the retained review record matches the actual debugging
+surface.
 
 ## Scope
 
@@ -49,6 +70,18 @@ AI IDE workflow without cursor/selection targeting.
 - `docs/adr/adr-0051-chat-first-ai-editing.md`
 - `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md`
 - `docs/backlog/stories/story-08-28-ai-chat-ops-response-capture-on-error.md`
+
+**Historical support material**
+
+- `docs/reference/ref-pr-0031-edit-ops-patch-workflow-brief.md`
+
+## Key Decisions
+
+| Decision | Rationale | Approve? |
+|----------|-----------|----------|
+| Patch-only in v2 mode | Avoids cursor/selection ambiguity while preserving v1 CRUD compatibility | [x] |
+| Hybrid hunk repair | Fixes mechanical hunk-count mistakes without rewriting the model’s intent | [x] |
+| Correlation propagation | Keeps generation, preview, and apply failures traceable with one id | [x] |
 
 **Implementation entry points**
 
@@ -100,3 +133,11 @@ The plan to align on **patch-only edit ops** is approved and strongly recommende
 
 - Ensure `X-Correlation-ID` plumbing is verified end-to-end in the frontend (`useEditorEditOps.ts`).
 - The backend diff repair logic should log a specific metadata flag (e.g. `rewrote_hunk_counts=True`) so we can track how often the model is getting it wrong vs right.
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-PR-0031` target-based PR review record. |
+| 2 | Legacy brief | Preserved the historical edit-ops patch-workflow analysis brief as linked support material via `REF-pr-0031-edit-ops-patch-workflow-brief`. |
+| 3 | Support brief | Added `REF-pr-0031-edit-ops-patch-workflow-brief` so the broader analysis remains discoverable without implying approval or archival retirement. |

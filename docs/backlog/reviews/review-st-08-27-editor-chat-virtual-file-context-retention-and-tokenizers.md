@@ -1,13 +1,12 @@
 ---
 type: review
-id: REV-EPIC-08
-title: "Review: Editor chat virtual file context + tokenizer budgeting"
-status: pending
+id: REV-ST-08-27
+title: "Review: ST-08-27 editor chat virtual file context retention + tokenizers"
+status: changes_requested
 owners: "agents"
 created: 2026-01-11
-updated: 2026-01-11
+updated: 2026-04-06
 reviewer: "main-architect"
-epic: EPIC-08
 adrs:
   - ADR-0051
   - ADR-0052
@@ -15,6 +14,8 @@ adrs:
   - ADR-0055
 stories:
   - ST-08-27
+links:
+  - EPIC-08
 ---
 
 ## TL;DR
@@ -23,7 +24,8 @@ Editor chat must see virtual files without repeatedly resending unchanged conten
 context window and moving from heuristic token estimates to model-accurate tokenizers. The recommended minimal-change
 direction is: persist hidden per-file context messages, run a post-user-message retention/refresh algorithm, add
 tokenizer-backed budgeting (GPT-5 + devstral-2-small), and extend chat requests with optional `active_file` +
-`virtual_files`.
+`virtual_files`. This record was migrated from the legacy `REV-EPIC-08` archive and now anchors the retained story
+review surface on `ST-08-27`.
 
 ## Problem Statement
 
@@ -167,3 +169,9 @@ Fallback: if tokenizer assets missing, log metadata-only warning and use heurist
 - Extend `EditorChatRequest` with optional `active_file` + `virtual_files`.
 - Store hidden context messages in `tool_session_messages`.
 - Filter hidden messages from chat history responses.
+
+## Changes Made
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-27` target-based story review record. |

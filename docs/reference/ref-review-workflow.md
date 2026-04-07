@@ -1,154 +1,186 @@
 ---
 type: reference
 id: REF-review-workflow
-title: "Review workflow for EPICs, ADRs, and Stories"
+title: "Review workflow for backlog items and retained decision records"
 status: active
 owners: "agents"
 created: 2025-12-26
+updated: 2026-04-06
 topic: "review-workflow"
 ---
 
-# Review Workflow
+This document defines how review records work in this repo. Reviews are retained decision records,
+but they are now target-based rather than epic-ledger catch-alls.
 
-This document defines how to create, conduct, and close reviews for proposed EPICs, ADRs, and Stories.
+## When reviews are required
 
-## When Reviews Are Required
-
-All proposed implementations require review before work begins:
+All proposed implementation packages still require review before implementation begins:
 
 | Artifact | Trigger | Reviewer |
 |----------|---------|----------|
 | ADR | Status = `proposed` | Lead developer or architect |
 | EPIC | Status = `proposed` | Lead developer |
-| Stories | Part of proposed EPIC | Reviewed with EPIC |
+| Stories in a proposed epic package | Reviewed with the epic package | Lead developer |
+| Story or PR follow-up slice with its own decision gate | When the backlog item explicitly calls for retained review | Lead developer or delegated reviewer |
 
-## Review Document Structure
+ADRs still require review, but they are recorded inside the governing epic, story, or PR review
+doc via `adrs:`. Standalone ADR-target review docs are not a current shape in this repo; if a
+proposed ADR has no governing backlog item yet, create the smallest backlog item that owns its
+implementation gate first.
+
+## Canonical review shape
 
 ### Location
 
+Save review docs under:
+
+```text
+docs/backlog/reviews/review-{primary-target-lower}-{short-name}.md
 ```
-docs/backlog/reviews/review-{epic-id}-{short-name}.md
-```
 
-Example: `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
+Examples:
 
-### Required Sections
+- `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- `docs/backlog/reviews/review-st-23-01-classroom-planner-slice-1.md`
+- `docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow.md`
 
-1. **TL;DR** — One paragraph summary of what's being proposed
-2. **Problem Statement** — What user/system problem this solves
-3. **Proposed Solution** — High-level approach (reference ADRs for details)
-4. **Artifacts to Review** — Ordered list with estimated reading time
-5. **Key Decisions** — Table of decisions requiring explicit approval
-6. **Review Checklist** — Checkboxes for reviewer to complete
+### Primary target rules
 
-### Review Status
+Each review doc has one primary target. The frontmatter `id` must match that target:
+
+- Epic review: `id: REV-EPIC-XX` with `epic: EPIC-XX`
+- Story review: `id: REV-ST-XX-YY` with `stories: [ST-XX-YY, ...]`
+- PR review: `id: REV-PR-XXXX` with `prs: [PR-XXXX, ...]`
+
+Primary-target precedence is:
+
+1. `epic`
+2. first item in `stories`
+3. first item in `prs`
+
+When `stories:` or `prs:` contains multiple items, put the primary target first because the review
+`id` derives from that first entry.
+
+Supporting governed items may still appear in `stories:`, `prs:`, or `adrs:` when the review
+genuinely covers them together, but only one primary target drives the filename and `id`. Use
+`links:` for broader context such as parent epics, adjacent stories, or related ADRs when those
+items are not themselves governed by the review.
+
+### Frontmatter expectations
+
+Each review doc should include:
+
+- the standard docs frontmatter fields required by the docs contract
+- `reviewer`
+- the primary-target field that drives the review `id`
+- optional `stories:`, `prs:`, or `adrs:` for tightly coupled governed scope
+- optional `links:` for broader context that should stay out of the primary-target contract
+
+### What not to do
+
+- Do not create new PR or story review gates as supplemental sections inside an epic review doc.
+- Do not keep multiple unrelated review cycles bundled into one retained review ledger merely
+  because they share an epic.
+- Do not use review docs as ad hoc notes; they should freeze a reviewable decision surface.
+
+Legacy epic-ledger reviews may still exist in history, but new review work should use one review
+doc per primary target.
+
+## Required sections
+
+Every review doc should include:
+
+1. `TL;DR`
+2. `Problem Statement`
+3. `Proposed Solution`
+4. `Artifacts to Review`
+5. `Key Decisions`
+6. `Review Checklist`
+7. `Review Feedback`
+8. `Changes Made`
+
+The exact depth can vary by scope, but the target, verification burden, and close-out path must be
+clear enough that a reviewer does not have to infer hidden rules.
+
+## Review status
 
 ```yaml
 status: pending | approved | changes_requested | rejected
 ```
 
-## Reviewer Responsibilities
+## Reviewer responsibilities
 
-### Before Starting
+### Before starting
 
-1. Block ~30 minutes of uninterrupted time
-2. Read artifacts in the order specified
-3. Have the codebase open for reference
+1. Read the target backlog item and its frozen decisions first.
+2. Read the parent story or epic only as needed to understand scope boundaries.
+3. Check whether the review claims shared behavior, parity, or proof obligations that extend beyond
+   a single file or route.
 
-### During Review
+### During review
 
-For each artifact, evaluate:
+For each review, evaluate:
 
 | Criterion | Question |
 |-----------|----------|
-| **Alignment** | Does this solve the stated problem? |
-| **Architecture** | Does it follow our DDD/Clean Architecture patterns? |
-| **Scope** | Is scope appropriate (not too broad, not too narrow)? |
-| **Testability** | Are acceptance criteria testable and complete? |
-| **Risk** | Are risks identified and mitigations reasonable? |
+| Alignment | Does the target solve the stated problem without reopening settled scope? |
+| Contract clarity | Are acceptance criteria, review widths, decisions, or verification rules explicit? |
+| Structural risk | Are the real fault lines named, or is the task relying on vague symptoms? |
+| Proof strength | Do tests and live checks actually exercise the claimed contract? |
+| Closure honesty | Does the doc distinguish between an improved baseline and true close-out? |
 
-### Recording Feedback
+### Recording feedback
 
-Add feedback directly to the review document under a `## Review Feedback` section:
+Record reviewer output directly in the review doc under `## Review Feedback`.
 
-```markdown
-## Review Feedback
+If the reviewer finds structural issues:
 
-**Reviewer:** @lead-developer
-**Date:** 2025-12-27
-**Verdict:** changes_requested
+- name the exact fault lines with file paths
+- state which assumptions were disproven
+- propose `2` to `3` fix directions with pros/cons
 
-### Required Changes
+## Post-review actions
 
-1. ADR-0041: Clarify cascade delete behavior when tool is unpublished (not deleted)
-2. ST-16-03: Add acceptance criterion for empty filter state
+### If approved
 
-### Suggestions (Optional)
+1. Update the review doc status to `approved`.
+2. Update the governed backlog item status if approval unblocks it.
+3. Update linked story/epic notes or implementation summaries if the approved review changes the
+   canonical direction.
+4. Update `.agents/handoff.md`.
+5. Run `pdm run docs-validate`.
 
-- Consider adding pagination to flat catalog API for future scalability
+### If changes are requested
 
-### Approved Decisions
+1. Update the review doc status to `changes_requested`.
+2. Address each required change in the governed backlog item or implementation.
+3. Add or refresh `## Changes Made`.
+4. Request re-review against the same retained review record.
 
-- [x] OR filter logic
-- [x] Server-side favorites
-- [x] ILIKE search (sufficient for current scale)
+### If rejected
+
+1. Update the review doc status to `rejected`.
+2. Record why the target is rejected.
+3. Update the governed backlog item so the repo no longer implies approval is pending.
+
+## Lifecycle
+
+```text
+pending -> approved
+pending -> changes_requested -> approved
+pending -> rejected
+changes_requested -> rejected
 ```
 
-## Post-Review Actions
+Review docs are retained. They are not disposable checklists.
 
-### If Approved
+## Legacy migration note
 
-1. Update review doc status to `approved`
-2. Update ADR status from `proposed` → `accepted`
-3. Update EPIC status from `proposed` → `active`
-4. Stories remain `ready` (unchanged)
-5. Review doc is **retained** as decision record
-
-### If Changes Requested
-
-1. Update review doc status to `changes_requested`
-2. Author addresses each required change in the artifacts
-3. Author adds `## Changes Made` section to review doc documenting what was changed
-4. Author requests re-review
-5. Reviewer verifies changes and updates verdict
-
-### If Rejected
-
-1. Update review doc status to `rejected`
-2. Reviewer documents rejection reason in feedback
-3. ADRs remain `proposed` or move to `deprecated`
-4. EPIC moves to `dropped`
-5. Review doc is **retained** as decision record (why we didn't do this)
-
-## Review Document Lifecycle
-
-```
-┌──────────┐     ┌──────────────────┐     ┌──────────┐
-│ pending  │────▶│ changes_requested│────▶│ approved │
-└──────────┘     └──────────────────┘     └──────────┘
-     │                    │
-     │                    ▼
-     │           ┌──────────────────┐
-     └──────────▶│    rejected      │
-                 └──────────────────┘
-```
-
-**Retention:** Review docs are never deleted. They serve as:
-
-- Decision records (why we approved/rejected)
-- Onboarding context (what was considered)
-- Audit trail (who approved what, when)
+- Old sprint-led planning and epic-ledger supplemental review patterns are legacy.
+- When touched, split supplemental review sections into their own target-based review docs.
+- A separate legacy migration pass can refactor older records that still bundle multiple review
+  cycles or reuse the same epic review id across unrelated documents.
 
 ## Template
 
-Use `docs/templates/template-review.md` when creating new reviews.
-
-## Example Review Cycle
-
-1. Agent creates EPIC-16 with 2 ADRs and 7 stories (status: `proposed`)
-2. Agent creates `review-epic-16-catalog-discovery.md` (status: `pending`)
-3. Lead developer reviews, requests 2 changes (status: `changes_requested`)
-4. Agent updates ADR-0041 and ST-16-03, documents changes
-5. Lead developer re-reviews, approves (status: `approved`)
-6. ADRs → `accepted`, EPIC → `active`
-7. Implementation begins with ST-16-01
+Use [template-review.md](../templates/template-review.md) when creating new reviews.

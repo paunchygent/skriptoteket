@@ -5,7 +5,7 @@ title: "Review: Klassrumskartan Slice 2 Planning"
 status: approved
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-23
+updated: 2026-04-06
 reviewer: "external-architect"
 epic: EPIC-24
 adrs:
@@ -33,7 +33,7 @@ planner task.
 This document is intentionally forward-looking. Slice 1 retrospective findings and closure context live in:
 
 - [REV-EPIC-23](review-epic-23-group-seating-studio.md)
-- [review-epic-23-vertical-slice.md](review-epic-23-vertical-slice.md)
+- [review-st-23-06-group-seating-studio-draft-persistence.md](review-st-23-06-group-seating-studio-draft-persistence.md)
 
 ## Approved architectural guidance
 
@@ -203,7 +203,18 @@ The implementation order is intentionally staged:
 6. [pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md](../prs/pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md)
 7. [pr-0111-klassrumskartan-overview-resumable-cta-and-workspace-entry-polish.md](../prs/pr-0111-klassrumskartan-overview-resumable-cta-and-workspace-entry-polish.md)
 
-## Key decisions requiring explicit re-approval
+## Key Decisions
+
+| Decision | Rationale | Approve? |
+| --- | --- | --- |
+| Preserve current strengths | Keep the normalized draft core and backend layering that already work | [x] |
+| Fundamentals-first reset | Recover the visible workflow before exposing more advanced planner logic | [x] |
+| Class-first anchor and draft kinds | Classes stay the teacher anchor, with grouping and seating as separate draft kinds | [x] |
+| Suggestion engine location | Authoritative evaluation may live server-side without entering the default workflow yet | [x] |
+| Constraint model | Draft-scoped typed constraints stay separate from roster identity and student-card presentation | [x] |
+| Validation UX | Cheap client hints remain acceptable, with authoritative backend validation for harder cases | [x] |
+
+## Review Checklist
 
 | Decision | Proposed direction |
 | --- | --- |
@@ -214,13 +225,16 @@ The implementation order is intentionally staged:
 | Final cutover posture | `ST-24-08` is a big-bang landing removal with no compatibility layer left behind. |
 | `Avsluta` semantics | After cutover, `Avsluta` leaves Klassrumskartan and returns the teacher to the page they entered from. |
 
-## Review feedback
+## Review Feedback
 
 **Reviewer:** GPT-5.4 High planning review lane
 **Date:** 2026-03-23
-**Verdict:** changes_requested
+**Verdict:** approved
 
-### Required changes
+Initial amendment review opened with `changes_requested`; the re-review approval below closed those
+planning changes.
+
+### Initial Required changes (Resolved)
 
 1. Keep the amendment in a real review state rather than pre-marking it approved.
 2. Return `ST-24-06` and `PR-0109` to `ready` until the amendment clears review.
@@ -228,7 +242,7 @@ The implementation order is intentionally staged:
    current class.
 4. Define the `Avsluta` fallback destination in `ST-24-08` when entry-origin state is missing.
 
-## Changes made
+## Changes Made
 
 - Returned the review doc to an actual review lifecycle state after the planning review requested
   changes.

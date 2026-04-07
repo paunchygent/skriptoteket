@@ -5,6 +5,7 @@ title: "Review: Observability Visualization and Operations"
 status: pending
 owners: "agents"
 created: 2025-12-26
+updated: 2026-04-06
 reviewer: "lead-developer"
 epic: EPIC-17
 adrs: []
@@ -77,17 +78,18 @@ Operators cannot effectively monitor Skriptoteket health:
 
 ## Review Feedback
 
-**Reviewer:** @[reviewer-name]
-**Date:** YYYY-MM-DD
+**Reviewer:** lead-developer
+**Date:** 2026-04-06
 **Verdict:** pending
 
 ### Required Changes
 
-[List specific changes needed, or "None" if approved]
+Confirm the first slice stays scoped to dashboards, alert rules, and access shape, with Jaeger auth and alerting
+notifications called out explicitly.
 
 ### Suggestions (Optional)
 
-[Non-blocking recommendations]
+Keep the runbook updates and access-pattern notes in the same review trail so the operational contract is reviewable.
 
 ### Decision Approvals
 
@@ -101,7 +103,7 @@ Operators cannot effectively monitor Skriptoteket health:
 
 ## Changes Made
 
-[Author fills this in after addressing feedback]
-
 | Change | Artifact | Description |
 |--------|----------|-------------|
+| 1 | Review record | Replaced template placeholders with a concrete pending-review observability scope. |
+| 2 | EPIC-17 | Kept the dashboard, alerting, and access decisions visible without implying approval. |

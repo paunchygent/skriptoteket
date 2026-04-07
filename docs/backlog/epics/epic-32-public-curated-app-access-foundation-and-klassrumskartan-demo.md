@@ -5,7 +5,7 @@ title: "Public curated-app access foundation and Klassrumskartan demo"
 status: active
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-06
+updated: 2026-04-07
 outcome: "Skriptoteket gains a reusable public curated-app access model with explicit per-app access profiles, separate public/authenticated seams, browser-owned guest-state rules, and authenticated upgrade boundaries; Klassrumskartan becomes the first approved `public_browser_workspace_with_upgrade` consumer without weakening the existing authenticated curated-app host or owner-scoped APIs."
 dependencies:
   [
@@ -13,6 +13,7 @@ dependencies:
     "ADR-0023",
     "ADR-0075",
     "ADR-0079",
+    "ADR-0080",
     "EPIC-27",
     "EPIC-29",
   ]
@@ -97,7 +98,7 @@ dependencies:
   seam” work, not another platform architecture debate.
 - This epic requires review approval before implementation begins.
 
-## Implementation Summary (as of 2026-04-06)
+## Implementation Summary (as of 2026-04-07)
 
 - `ST-32-05` is now shipped through `PR-0221`: authenticated
   Klassrumskartan host entry is gated behind an explicit guest-upgrade prompt,
@@ -112,5 +113,11 @@ dependencies:
   shell, guest roster/template authoring persists locally through the public
   seam, and the dedicated guest planner shell now resumes grouping/seating
   drafts across overview round-trips and reloads with passing focused browser
-  proof. Remaining `ST-32-06` scope is narrowed to guest smart rules,
-  direct-download export, and final account-only affordance polish.
+  proof. `PR-0223` is now docs-closed around that delivered baseline, while
+  `ADR-0080` freezes the remaining guest Smart/history boundary:
+  solver-based Smart parity, `Regler`, and the expandable Smart settings
+  drawer remain part of guest parity, but history-based Smart and `Use history`
+  stay account-only. The remaining `ST-32-06` work is now split into
+  `PR-0231` (guest `Regler` + solver-Smart parity) and `PR-0232`
+  (guest local undo/redo + direct-download export + account-only
+  history/recovery polish).

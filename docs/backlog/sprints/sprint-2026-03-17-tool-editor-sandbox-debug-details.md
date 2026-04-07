@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-03-17
 title: "Sprint 2026-03-17: Tool editor sandbox debug details"
-status: done
+status: deprecated
 owners: "agents"
 created: 2025-12-29
 updated: 2026-01-12

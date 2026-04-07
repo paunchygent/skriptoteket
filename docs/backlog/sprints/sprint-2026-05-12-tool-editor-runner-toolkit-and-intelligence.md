@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-05-12
 title: "Sprint 2026-05-12: Tool editor runner toolkit + intelligence"
-status: planned
+status: deprecated
 owners: "agents"
 created: 2025-12-29
 starts: 2026-05-12

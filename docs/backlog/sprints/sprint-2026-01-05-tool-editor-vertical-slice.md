@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-01-05
 title: "Sprint 2026-01-05: Tool editor vertical slice"
-status: done
+status: deprecated
 owners: "agents"
 created: 2025-12-27
 updated: 2025-12-31

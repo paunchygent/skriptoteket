@@ -63,8 +63,8 @@ This task should:
 
 ## Review gate
 
-This slice requires the supplemental `PR-0226` review task retained inside
-`docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+This slice requires
+`docs/backlog/reviews/review-pr-0226-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md`
 to clear before implementation begins.
 
 ## Frozen decisions
