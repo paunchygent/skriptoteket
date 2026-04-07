@@ -92,6 +92,8 @@ pdm run fe-test-coverage
 
 - Prefer unit tests for pure helpers/composables; use `@vue/test-utils` only when component wiring matters.
 - Coverage output is written under the SPA app (e.g. `frontend/apps/skriptoteket/coverage/`).
+- The canonical filtered command surface is `pdm run fe-test ...` (or `pnpm -C frontend/apps/skriptoteket test ...`), not raw `pnpm ... exec vitest ...`.
+- The SPA wrapper now normalizes both app-local targets like `src/views/apps/ClassroomPlannerEntryView.spec.ts` and repo-root targets like `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.spec.ts`.
 
 ## UI / E2E (Playwright)
 

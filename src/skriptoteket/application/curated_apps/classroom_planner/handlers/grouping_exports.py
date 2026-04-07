@@ -66,6 +66,26 @@ class PrepareGroupingExportHandler:
             draft_id=draft_id,
             owner_user_id=owner_user_id,
         )
+        return self.build_prepared_contract(
+            workspace=workspace,
+            export_kind=export_kind,
+            paper_size=paper_size,
+        )
+
+    def build_prepared_contract(
+        self,
+        *,
+        workspace: ClassroomPlannerWorkspace,
+        export_kind: GroupingExportKind,
+        paper_size: GroupingExportPaperSize | None,
+    ) -> PreparedGroupingExportContract:
+        """Build the typed grouping export contract from a hydrated workspace."""
+
+        if export_kind is GroupingExportKind.PDF and paper_size is None:
+            raise validation_error("PDF-export kräver pappersstorlek.")
+        if export_kind is GroupingExportKind.XLSX and paper_size is not None:
+            raise validation_error("Excel-export använder inte pappersstorlek.")
+
         return PreparedGroupingExportContract(
             grouping_draft_id=workspace.draft.id,
             roster_id=workspace.roster.id,

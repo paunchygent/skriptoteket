@@ -546,6 +546,8 @@ export function useClassroomPlannerGuestController(options?: {
     plannerActionError,
     classWorkspaceSummary,
     currentSnapshotId,
+    ensureReadySnapshot,
+    persistSnapshotMutation,
     overviewCapabilities,
     guestPlannerState,
     rosterImportPreviewApiPath: PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH,

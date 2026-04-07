@@ -2,8 +2,8 @@
  * Classroom planner guest workspace shell tests.
  *
  * These tests verify that the guest shell keeps the shared workspace chrome,
- * exposes `Regler` and Smart parity, and still hides account-only history
- * settings in the public browser-owned lane.
+ * exposes `Regler`, Smart, and export parity while still hiding account-only
+ * history settings in the public browser-owned lane.
  */
 
 import { mount } from "@vue/test-utils";
@@ -108,13 +108,19 @@ function mountGuestWorkspaceShellHarness(options?: {
         },
         PlannerGroupingWorkspaceToolbar: {
           name: "PlannerGroupingWorkspaceToolbar",
-          props: ["showHistoryAction", "showSmartControls", "smartSettingsOpen"],
+          props: [
+            "showHistoryAction",
+            "showSmartControls",
+            "smartSettingsOpen",
+            "showExportActions",
+          ],
           template: `
             <div
               data-test='grouping-toolbar-stub'
               :data-show-history-action="String(showHistoryAction)"
               :data-show-smart-controls="String(showSmartControls)"
               :data-smart-settings-open="String(smartSettingsOpen)"
+              :data-show-export-actions="String(showExportActions)"
             />
           `,
         },
@@ -123,13 +129,19 @@ function mountGuestWorkspaceShellHarness(options?: {
         },
         PlannerSeatingWorkspaceToolbar: {
           name: "PlannerSeatingWorkspaceToolbar",
-          props: ["showHistoryAction", "showSmartControls", "smartSettingsOpen"],
+          props: [
+            "showHistoryAction",
+            "showSmartControls",
+            "smartSettingsOpen",
+            "showExportActions",
+          ],
           template: `
             <div
               data-test='seating-toolbar-stub'
               :data-show-history-action="String(showHistoryAction)"
               :data-show-smart-controls="String(showSmartControls)"
               :data-smart-settings-open="String(smartSettingsOpen)"
+              :data-show-export-actions="String(showExportActions)"
             />
           `,
         },
@@ -211,11 +223,14 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     ).toBe("true");
   });
 
-  it("keeps Smart visible while hiding account-only history controls in the guest shell", async () => {
+  it("keeps Smart and export visible while hiding account-only history controls in the guest shell", async () => {
     const { wrapper, initialView, plannerState } = mountGuestWorkspaceShellHarness();
 
     expect(
       wrapper.get("[data-test='seating-toolbar-stub']").attributes("data-show-smart-controls"),
+    ).toBe("true");
+    expect(
+      wrapper.get("[data-test='seating-toolbar-stub']").attributes("data-show-export-actions"),
     ).toBe("true");
     expect(
       wrapper.get("[data-test='seating-toolbar-stub']").attributes("data-show-history-action"),
@@ -243,6 +258,9 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
 
     expect(
       wrapper.get("[data-test='grouping-toolbar-stub']").attributes("data-show-smart-controls"),
+    ).toBe("true");
+    expect(
+      wrapper.get("[data-test='grouping-toolbar-stub']").attributes("data-show-export-actions"),
     ).toBe("true");
     expect(
       wrapper.get("[data-test='grouping-toolbar-stub']").attributes("data-show-history-action"),

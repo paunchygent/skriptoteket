@@ -39,6 +39,7 @@ type CreateClassroomPlannerSmartRuleActionsOptions = {
   smartRuleLane: SmartRuleLane;
   smartRuleUiState: SmartRuleUiState;
   syncVisibleSessionBindings: () => void;
+  onDraftMutation?: () => void;
 };
 
 function createRelationshipRuleId(): string {
@@ -66,6 +67,7 @@ export function createClassroomPlannerSmartRuleActions(
       [key]: enabled,
     };
     options.syncVisibleSessionBindings();
+    options.onDraftMutation?.();
     options.draftLane.markDirty();
   }
 

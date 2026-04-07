@@ -165,4 +165,50 @@ describe("classroomPlannerGuestSnapshotMapping", () => {
       { student_id: "student-2", seat_id: "seat-1" },
     ]);
   });
+
+  it("builds checkpoint fingerprints from export content instead of local labels", () => {
+    const snapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-2",
+      created_at: "2026-04-04T08:00:00.000Z",
+      updated_at: "2026-04-04T08:00:00.000Z",
+      expires_at: "2026-04-18T08:00:00.000Z",
+      rosters: [],
+      templates: [],
+      smart_rule_sets: [],
+      grouping_draft: null,
+      seating_draft: null,
+      checkpoint_descriptors: [
+        {
+          local_id: "checkpoint-a",
+          draft_kind: "grouping",
+          created_at: "2026-04-04T08:05:00.000Z",
+          label: "Excel-export",
+          template_local_id: null,
+          group_assignments: [{ student_id: "student-1", group_id: "group-1" }],
+          seat_assignments: [],
+        },
+        {
+          local_id: "checkpoint-b",
+          draft_kind: "grouping",
+          created_at: "2026-04-04T08:06:00.000Z",
+          label: "PDF-export",
+          template_local_id: null,
+          group_assignments: [{ student_id: "student-1", group_id: "group-1" }],
+          seat_assignments: [],
+        },
+      ],
+      ui_state: {
+        selected_roster_id: null,
+        selected_template_id: null,
+        current_screen: "class-workspace",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+
+    expect(snapshot.checkpoint_descriptors[0]?.fingerprint).toBe(
+      snapshot.checkpoint_descriptors[1]?.fingerprint,
+    );
+  });
 });

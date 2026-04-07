@@ -1362,7 +1362,26 @@ describe("useClassroomState", () => {
 
     await vi.advanceTimersByTimeAsync(900);
 
-    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
+    const draftPatchCalls = clientMocks.apiPatch.mock.calls.filter(
+      ([url]) => url === "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1",
+    );
+    const smartRulePatchCalls = clientMocks.apiPatch.mock.calls.filter(
+      ([url]) => url === "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+    );
+
+    expect(draftPatchCalls).toHaveLength(1);
+    expect(smartRulePatchCalls).toHaveLength(0);
+    expect(draftPatchCalls[0]?.[1]).toEqual(
+      expect.objectContaining({
+        expected_revision: 4,
+        groups: expect.arrayContaining([
+          expect.objectContaining({
+            id: "group-a",
+            name: "Handledargrupp",
+          }),
+        ]),
+      }),
+    );
     expect(state.draftPersistenceStatus).toBe("saved");
     expect(state.hasPendingAutosave).toBe(false);
     expect(state.historyStatus).toEqual({

@@ -38,6 +38,7 @@ from skriptoteket.application.curated_apps.classroom_planner.public_smart_run_co
     PublicStudentDto,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassroomPlannerWorkspace,
     DraftGroup,
     DraftHistoryStatus,
     DraftWorkspace,
@@ -134,6 +135,23 @@ def materialize_public_smart_workspace(
         template=template,
         smart_rules=smart_rules,
         workspace=workspace,
+    )
+
+
+def build_public_classroom_planner_workspace(
+    *,
+    materialized: MaterializedPublicSmartWorkspace,
+) -> ClassroomPlannerWorkspace:
+    """Hydrate the canonical planner workspace for public export preparation."""
+
+    return ClassroomPlannerWorkspace(
+        draft=materialized.workspace.draft,
+        roster=materialized.roster,
+        template=materialized.template,
+        groups=list(materialized.workspace.groups),
+        group_assignments=list(materialized.workspace.group_assignments),
+        seat_assignments=list(materialized.workspace.seat_assignments),
+        history_status=DraftHistoryStatus(can_undo=False, can_redo=False),
     )
 
 

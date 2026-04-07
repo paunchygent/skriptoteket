@@ -12,15 +12,12 @@ import { computed, ref } from "vue";
 
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
 import { buildGuestWorkspaceResponse } from "./classroomPlannerGuestDraftMutations";
-import {
-  buildFixtureMap,
-  buildGroupMap,
-  buildSeatMap,
-  buildStudentMap,
-  createPlannerMutationActions,
-} from "./classroomPlannerStoreMutations";
+import { createPlannerMutationActions } from "./classroomPlannerStoreMutations";
+import { createClassroomPlannerGuestDraftDerivedState } from "./classroomPlannerGuestDraftDerivedState";
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
+import { createClassroomPlannerGuestDraftHistory } from "./classroomPlannerGuestDraftHistory";
+import { createClassroomPlannerGuestDraftSessionApi } from "./classroomPlannerGuestDraftSessionApi";
 import {
   PUBLIC_GROUPING_SMART_RUN_API_PATH,
   PUBLIC_SEATING_SMART_RUN_API_PATH,
@@ -38,19 +35,15 @@ import { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 import { useSmartRuleUiState } from "./useSmartRuleUiState";
 import type {
   DraftGroup,
-  GroupAssignment,
+  DraftWorkspaceResponse,
   PlanDraft,
   RelationshipRule,
   RoomTemplate,
   Roster,
-  SeatAssignment,
-  Student,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 
-export function createClassroomPlannerGuestDraftSession(
-  options: CreateClassroomPlannerGuestDraftSessionOptions,
-) {
+export function createClassroomPlannerGuestDraftSession(options: CreateClassroomPlannerGuestDraftSessionOptions) {
   const draft = ref<PlanDraft | null>(null);
   const roster = ref<Roster | null>(null);
   const template = ref<RoomTemplate | null>(null);
@@ -67,9 +60,8 @@ export function createClassroomPlannerGuestDraftSession(
   const historyActionInFlight = ref(false);
   const smartGroupingRunInFlight = ref(false);
   const smartSeatingRunInFlight = ref(false);
-
+  const guestHistory = createClassroomPlannerGuestDraftHistory();
   const sessionController = usePlannerSessionController();
-
   const hasWorkspace = computed(() => draft.value !== null && roster.value !== null);
   const isWorkspaceBusy = computed(() => {
     return (
@@ -79,87 +71,34 @@ export function createClassroomPlannerGuestDraftSession(
       || sessionController.transitionDepth.value > 0
     );
   });
-
-  const students = computed(() => roster.value?.students ?? []);
-  const seats = computed(() => template.value?.seats ?? []);
-  const fixtures = computed(() => template.value?.fixtures ?? []);
-  const studentsById = computed(() => buildStudentMap(students.value));
-  const seatsById = computed(() => buildSeatMap(seats.value));
-  const fixturesById = computed(() => buildFixtureMap(fixtures.value));
-  const groupsById = computed(() => buildGroupMap(groups.value));
-
-  const hasAssignedTarget = (
-    entry: [string, string | null],
-  ): entry is [string, string] => {
-    return typeof entry[1] === "string" && entry[1].length > 0;
-  };
-
-  const groupAssignments = computed<GroupAssignment[]>(() => {
-    return Object.entries(groupAssignmentsByStudentId.value)
-      .filter(hasAssignedTarget)
-      .map(([studentId, groupId]) => ({ student_id: studentId, group_id: groupId }));
+  const {
+    students,
+    seats,
+    fixtures,
+    studentsById,
+    seatsById,
+    fixturesById,
+    groupsById,
+    groupAssignments,
+    seatAssignments,
+    ungroupedStudents,
+    unseatedStudents,
+    studentsByGroupId,
+    studentBySeatId,
+    zones,
+  } = createClassroomPlannerGuestDraftDerivedState({
+    roster,
+    template,
+    groups,
+    groupAssignmentsByStudentId,
+    seatAssignmentsByStudentId,
   });
-
-  const seatAssignments = computed<SeatAssignment[]>(() => {
-    return Object.entries(seatAssignmentsByStudentId.value)
-      .filter(hasAssignedTarget)
-      .map(([studentId, seatId]) => ({ student_id: studentId, seat_id: seatId }));
-  });
-
-  const ungroupedStudents = computed<Student[]>(() => {
-    return students.value.filter((student) => !groupAssignmentsByStudentId.value[student.id]);
-  });
-
-  const unseatedStudents = computed<Student[]>(() => {
-    return students.value.filter((student) => !seatAssignmentsByStudentId.value[student.id]);
-  });
-
-  const studentsByGroupId = computed<Record<string, Student[]>>(() => {
-    const grouped: Record<string, Student[]> = {};
-    for (const group of groups.value) {
-      grouped[group.id] = [];
-    }
-    for (const student of students.value) {
-      const groupId = groupAssignmentsByStudentId.value[student.id];
-      if (groupId && grouped[groupId]) {
-        grouped[groupId].push(student);
-      }
-    }
-    return grouped;
-  });
-
-  const studentBySeatId = computed<Record<string, Student | null>>(() => {
-    const placed: Record<string, Student | null> = {};
-    for (const seat of seats.value) {
-      placed[seat.id] = null;
-    }
-    for (const student of students.value) {
-      const seatId = seatAssignmentsByStudentId.value[student.id];
-      if (seatId && placed[seatId] !== undefined) {
-        placed[seatId] = student;
-      }
-    }
-    return placed;
-  });
-
-  const zones = computed(() => {
-    return Array.from(
-      new Set(
-        seats.value
-          .map((seat) => seat.zone ?? null)
-          .filter((zone): zone is string => typeof zone === "string" && zone.length > 0),
-      ),
-    ).sort();
-  });
-
   const smartRuleUiState = useSmartRuleUiState({
     canEditSmartRules: () => canEditSeatingSmartRules.value,
   });
-
   const stateSupportHolder: {
     current: ReturnType<typeof createClassroomPlannerStateSupport> | null;
   } = { current: null };
-
   function getStateSupport(): ReturnType<typeof createClassroomPlannerStateSupport> {
     if (!stateSupportHolder.current) {
       throw new Error("Guest planner state support has not been initialized.");
@@ -178,21 +117,15 @@ export function createClassroomPlannerGuestDraftSession(
     relationshipRules,
     smartRulesRevision,
   });
-
   const draftLane = useDraftPersistenceLane({
     canSchedule: () => !isWorkspaceBusy.value,
     getSessionToken: () => sessionController.sessionToken.value,
     normalizeErrorMessage: (_error, fallbackMessage) => fallbackMessage,
     persistDraft: async () => await persistence.persistGuestWorkspace(),
     serializePatch: () => getStateSupport().serializeDraftPatch(),
-    applyCommittedWorkspace: (workspace) => {
-      getStateSupport().applyWorkspace(workspace);
-    },
-    applyAcknowledgement: (workspace) => {
-      getStateSupport().applyDraftSaveAcknowledgement(workspace);
-    },
+    applyCommittedWorkspace: applyCommittedGuestWorkspace,
+    applyAcknowledgement: applyGuestDraftSaveAcknowledgement,
   });
-
   const smartRuleLane = useRosterSmartRuleLane({
     canSchedule: () => !isWorkspaceBusy.value,
     getSessionToken: () => sessionController.sessionToken.value,
@@ -206,26 +139,19 @@ export function createClassroomPlannerGuestDraftSession(
       getStateSupport().applySmartRuleSaveAcknowledgement(rules);
     },
   });
-
   const hasPendingAutosave = computed(() => {
     return draftLane.hasPendingChanges.value || smartRuleLane.hasPendingChanges.value;
   });
-
   const smartRulesHydrated = computed(() => smartRuleLane.isHydrated.value);
   const canEditSeatingSmartRules = computed(() => {
     return roster.value !== null && smartRuleLane.isHydrated.value && !isWorkspaceBusy.value;
   });
   const canUndo = computed(() => {
-    return (
-      draft.value !== null
-      && !isWorkspaceBusy.value
-      && (historyStatus.value.can_undo || draftLane.hasPendingChanges.value)
-    );
+    return draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_undo;
   });
   const canRedo = computed(() => {
     return draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_redo;
   });
-
   stateSupportHolder.current = createClassroomPlannerStateSupport({
     draft,
     roster,
@@ -246,7 +172,43 @@ export function createClassroomPlannerGuestDraftSession(
     smartRuleUiState,
   });
   const stateSupport = getStateSupport();
-
+  function syncGuestHistoryStatus(): void {
+    historyStatus.value = guestHistory.getHistoryStatus(draft.value?.id ?? null);
+  }
+  function syncWorkspaceHistory(workspace: DraftWorkspaceResponse): void {
+    guestHistory.bindWorkspace(workspace);
+    syncGuestHistoryStatus();
+  }
+  function replaceCurrentGuestHistoryWorkspace(): void {
+    const workspace = getCurrentWorkspace();
+    if (!workspace) {
+      syncGuestHistoryStatus();
+      return;
+    }
+    guestHistory.replaceCurrentWorkspace(workspace);
+    syncGuestHistoryStatus();
+  }
+  function captureCurrentGuestWorkspace(): void {
+    const workspace = getCurrentWorkspace();
+    if (!workspace) {
+      syncGuestHistoryStatus();
+      return;
+    }
+    guestHistory.captureWorkspace(workspace);
+    syncGuestHistoryStatus();
+  }
+  function applyWorkspaceWithHistoryCapture(workspace: DraftWorkspaceResponse): void {
+    stateSupport.applyWorkspace(workspace);
+    captureCurrentGuestWorkspace();
+  }
+  function applyCommittedGuestWorkspace(workspace: DraftWorkspaceResponse): void {
+    stateSupport.applyWorkspace(workspace);
+    replaceCurrentGuestHistoryWorkspace();
+  }
+  function applyGuestDraftSaveAcknowledgement(workspace: DraftWorkspaceResponse): void {
+    stateSupport.applyDraftSaveAcknowledgement(workspace);
+    replaceCurrentGuestHistoryWorkspace();
+  }
   const plannerStatus = createPlannerStatusModel({
     draftPersistenceStatus: draftLane.status,
     draftPersistenceMessage: draftLane.message,
@@ -259,7 +221,6 @@ export function createClassroomPlannerGuestDraftSession(
     hasPendingAutosave,
     isWorkspaceBusy,
   });
-
   const smartRuleActions = createClassroomPlannerSmartRuleActions({
     draft,
     seatingPreferences,
@@ -271,8 +232,8 @@ export function createClassroomPlannerGuestDraftSession(
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
+    onDraftMutation: captureCurrentGuestWorkspace,
   });
-
   const mutationActions = createPlannerMutationActions({
     students,
     studentsById,
@@ -284,6 +245,7 @@ export function createClassroomPlannerGuestDraftSession(
     canMutate: () => !isWorkspaceBusy.value,
     markDirty: () => {
       stateSupport.syncVisibleSessionBindings();
+      captureCurrentGuestWorkspace();
       draftLane.markDirty();
     },
   });
@@ -300,8 +262,8 @@ export function createClassroomPlannerGuestDraftSession(
     smartRuleLane,
     stateSupport,
     persistence,
+    syncWorkspaceHistory,
   });
-
   function getCurrentWorkspace() {
     if (!draft.value || !roster.value) {
       return null;
@@ -316,13 +278,11 @@ export function createClassroomPlannerGuestDraftSession(
       seatAssignments: seatAssignments.value,
     });
   }
-
   async function persistAppliedWorkspace() {
     stateSupport.syncVisibleSessionBindings();
     draftLane.markDirty();
     return await draftLane.flushPendingChanges();
   }
-
   const publicSmartGroupingRun = usePublicSmartGroupingRun({
     apiPath: PUBLIC_GROUPING_SMART_RUN_API_PATH,
     draft,
@@ -332,7 +292,7 @@ export function createClassroomPlannerGuestDraftSession(
     flushDraftLane: draftLane.flushPendingChanges,
     flushSmartRuleLane: smartRuleLane.flushPendingChanges,
     getCurrentWorkspace,
-    applyWorkspace: stateSupport.applyWorkspace,
+    applyWorkspace: applyWorkspaceWithHistoryCapture,
     persistAppliedWorkspace,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
@@ -345,11 +305,10 @@ export function createClassroomPlannerGuestDraftSession(
     flushDraftLane: draftLane.flushPendingChanges,
     flushSmartRuleLane: smartRuleLane.flushPendingChanges,
     getCurrentWorkspace,
-    applyWorkspace: stateSupport.applyWorkspace,
+    applyWorkspace: applyWorkspaceWithHistoryCapture,
     persistAppliedWorkspace,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
-
   async function runGroupingShuffle(): Promise<void> {
     publicSmartGroupingRun.clearFeedback();
     if (!draft.value || draft.value.draft_kind !== "grouping") {
@@ -361,7 +320,6 @@ export function createClassroomPlannerGuestDraftSession(
     }
     await publicSmartGroupingRun.run();
   }
-
   async function runSeatingShuffle(): Promise<void> {
     publicSmartSeatingRun.clearFeedback();
     if (!draft.value || draft.value.draft_kind !== "seating") {
@@ -373,127 +331,168 @@ export function createClassroomPlannerGuestDraftSession(
     }
     await publicSmartSeatingRun.run();
   }
-
   async function noopHistoryAction(): Promise<void> {
     return;
   }
+  function buildHistoryWorkspace(
+    workspace: DraftWorkspaceResponse,
+  ): DraftWorkspaceResponse {
+    return {
+      ...workspace,
+      draft: {
+        ...workspace.draft,
+        revision: draft.value?.revision ?? workspace.draft.revision,
+        last_opened_at: draft.value?.last_opened_at ?? workspace.draft.last_opened_at,
+      },
+    };
+  }
+  async function applyGuestHistoryAction(direction: "undo" | "redo"): Promise<void> {
+    if (!draft.value || isWorkspaceBusy.value) {
+      return;
+    }
 
-  return {
-    draft,
-    roster,
-    template,
-    groups,
-    historyStatus,
-    draftPersistenceStatus: draftLane.status,
-    draftPersistenceMessage: draftLane.message,
-    smartRulePersistenceStatus: smartRuleLane.status,
-    smartRulePersistenceMessage: smartRuleLane.message,
-    smartRuleHydrationStatus: smartRuleLane.hydrationStatus,
-    smartRuleHydrationMessage: smartRuleLane.hydrationMessage,
-    isRunningSmartGrouping: publicSmartGroupingRun.isBusy,
-    smartGroupingRunMessage: publicSmartGroupingRun.message,
-    smartGroupingRunTone: publicSmartGroupingRun.tone,
-    isRunningSmartSeating: publicSmartSeatingRun.isBusy,
-    smartSeatingRunMessage: publicSmartSeatingRun.message,
-    smartSeatingRunTone: publicSmartSeatingRun.tone,
-    plannerStatusLabel: plannerStatus.plannerStatusLabel,
-    plannerStatusMessage: plannerStatus.plannerStatusMessage,
-    plannerStatusTone: plannerStatus.plannerStatusTone,
-    plannerConflictMessage: plannerStatus.plannerConflictMessage,
-    isWorkspaceBusy,
-    canEditSeatingSmartRules,
-    hasPendingAutosave,
-    hasWorkspace,
-    students,
-    seats,
-    fixtures,
-    studentsById,
-    seatsById,
-    fixturesById,
-    groupsById,
-    groupAssignmentsByStudentId,
-    seatAssignmentsByStudentId,
-    seatingPreferences,
-    relationshipRules,
-    smartRulesRevision,
-    smartRulesHydrated,
-    activeSeatingSmartTool: smartRuleUiState.activeSeatingSmartTool,
-    pendingRelationshipStudentIds: smartRuleUiState.pendingRelationshipStudentIds,
-    editingRelationshipRuleId: smartRuleUiState.editingRelationshipRuleId,
-    editingNearTeacherRule: smartRuleUiState.editingNearTeacherRule,
-    smartRuleFeedbackMessage: smartRuleUiState.feedbackMessage,
-    groupAssignments,
-    seatAssignments,
-    ungroupedStudents,
-    unseatedStudents,
-    studentsByGroupId,
-    studentBySeatId,
-    zones,
-    canUndo,
-    canRedo,
-    canCommitPendingRelationshipRule: smartRuleUiState.canCommitPendingRelationshipRule,
-    clearWorkspace: stateSupport.clearWorkspace,
-    discardPendingSessionWork: stateSupport.discardPendingSessionWork,
-    replaceCurrentRoster: stateSupport.replaceCurrentRoster,
-    replaceCurrentTemplate: stateSupport.replaceCurrentTemplate,
-    prepareForWorkspaceSwitch: workspaceActions.prepareForWorkspaceSwitch,
-    prepareForExport: workspaceActions.prepareForExport,
-    prepareForPlannerExit: workspaceActions.prepareForPlannerExit,
-    retrySmartRuleHydration: workspaceActions.retrySmartRuleHydration,
-    resolveDraft: workspaceActions.resolveDraft,
-    startNewGroupingDraft: workspaceActions.startNewGroupingDraft,
-    startNewSeatingDraft: workspaceActions.startNewSeatingDraft,
-    loadWorkspace: workspaceActions.loadWorkspace,
-    reloadActiveWorkspace: async () => {
-      if (!draft.value) {
+    historyActionInFlight.value = true;
+    try {
+      const historyWorkspace = direction === "undo"
+        ? guestHistory.undo(draft.value.id)
+        : guestHistory.redo(draft.value.id);
+      if (!historyWorkspace) {
+        syncGuestHistoryStatus();
         return;
       }
-      await workspaceActions.loadWorkspace(draft.value.id);
-    },
-    activateGroupingHistoryDraft: noopHistoryAction,
-    deleteGroupingHistoryDraft: noopHistoryAction,
-    activateSeatingHistoryDraft: noopHistoryAction,
-    deleteSeatingHistoryDraft: noopHistoryAction,
-    undoGroupingDraft: noopHistoryAction,
-    redoGroupingDraft: noopHistoryAction,
-    undoSeatingDraft: noopHistoryAction,
-    redoSeatingDraft: noopHistoryAction,
-    getResumableDraft: persistence.getResumableDraft,
-    getClassWorkspaceSummary: persistence.getClassWorkspaceSummary,
-    abandonDraft: async () => ({ status: "saved" as const }),
-    setDraftSmartEnabled: smartRuleActions.setDraftSmartEnabled,
-    setDraftUseHistoryEnabled: smartRuleActions.setDraftUseHistoryEnabled,
-    setActiveSeatingSmartTool: smartRuleUiState.setActiveSeatingSmartTool,
-    clearPendingRelationshipSelection: smartRuleUiState.clearPendingRelationshipSelection,
-    setStudentNearTeacherEnabled: smartRuleActions.setStudentNearTeacherEnabled,
-    replaceNearTeacherPreference: smartRuleActions.replaceNearTeacherPreference,
-    handleSeatingSmartToolStudentSelection: smartRuleActions.handleSeatingSmartToolStudentSelection,
-    commitPendingRelationshipRule: smartRuleActions.commitPendingRelationshipRule,
-    beginRelationshipRuleEdit: smartRuleActions.beginRelationshipRuleEdit,
-    beginNearTeacherEdit: smartRuleActions.beginNearTeacherEdit,
-    clearNearTeacherRule: smartRuleActions.clearNearTeacherRule,
-    deleteRelationshipRule: smartRuleActions.deleteRelationshipRule,
-    isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
-    setDraftGroupingSeatingDistanceEnabled:
-      smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
-    isStudentInPendingRelationshipSelection:
-      smartRuleUiState.isStudentInPendingRelationshipSelection,
-    assignStudentToGroup: mutationActions.assignStudentToGroup,
-    removeStudentFromGroup: mutationActions.removeStudentFromGroup,
-    clearGroupingAssignments: mutationActions.clearGroupingAssignments,
-    assignStudentToSeat: mutationActions.assignStudentToSeat,
-    swapSeatAssignments: mutationActions.swapSeatAssignments,
-    clearSeatAssignment: mutationActions.clearSeatAssignment,
-    clearSeatingAssignments: mutationActions.clearSeatingAssignments,
-    addGroup: mutationActions.addGroup,
-    renameGroup: mutationActions.renameGroup,
-    moveGroup: mutationActions.moveGroup,
-    removeGroup: mutationActions.removeGroup,
-    randomizeGroups: mutationActions.randomizeGroups,
-    runGroupingShuffle,
-    randomizeSeating: mutationActions.randomizeSeating,
-    runSeatingShuffle,
-    persistCurrentWorkspaceToOverview: workspaceActions.persistCurrentWorkspaceToOverview,
-    persistOverviewUiState: workspaceActions.persistOverviewUiState,
+
+      stateSupport.applyWorkspace(buildHistoryWorkspace(historyWorkspace));
+      replaceCurrentGuestHistoryWorkspace();
+      stateSupport.syncVisibleSessionBindings();
+      draftLane.markDirty();
+    } finally {
+      historyActionInFlight.value = false;
+    }
+  }
+  const reloadActiveWorkspace = async () => {
+    if (!draft.value) {
+      return;
+    }
+    await workspaceActions.loadWorkspace(draft.value.id);
   };
+
+  function createScopedHistoryAction(
+    draftKind: "grouping" | "seating",
+    direction: "undo" | "redo",
+  ) {
+    return async () => {
+      if (draft.value?.draft_kind !== draftKind) {
+        return;
+      }
+      await applyGuestHistoryAction(direction);
+    };
+  }
+  const undoGroupingDraft = createScopedHistoryAction("grouping", "undo");
+  const redoGroupingDraft = createScopedHistoryAction("grouping", "redo");
+  const undoSeatingDraft = createScopedHistoryAction("seating", "undo");
+  const redoSeatingDraft = createScopedHistoryAction("seating", "redo");
+  const abandonDraft = async () => ({ status: "saved" as const });
+  return createClassroomPlannerGuestDraftSessionApi({
+    sessionState: {
+      draft, roster, template, groups, historyStatus,
+      draftPersistenceStatus: draftLane.status,
+      draftPersistenceMessage: draftLane.message,
+      smartRulePersistenceStatus: smartRuleLane.status,
+      smartRulePersistenceMessage: smartRuleLane.message,
+      smartRuleHydrationStatus: smartRuleLane.hydrationStatus,
+      smartRuleHydrationMessage: smartRuleLane.hydrationMessage,
+      isRunningSmartGrouping: publicSmartGroupingRun.isBusy,
+      smartGroupingRunMessage: publicSmartGroupingRun.message,
+      smartGroupingRunTone: publicSmartGroupingRun.tone,
+      isRunningSmartSeating: publicSmartSeatingRun.isBusy,
+      smartSeatingRunMessage: publicSmartSeatingRun.message,
+      smartSeatingRunTone: publicSmartSeatingRun.tone,
+      plannerStatusLabel: plannerStatus.plannerStatusLabel,
+      plannerStatusMessage: plannerStatus.plannerStatusMessage,
+      plannerStatusTone: plannerStatus.plannerStatusTone,
+      plannerConflictMessage: plannerStatus.plannerConflictMessage,
+      isWorkspaceBusy, canEditSeatingSmartRules, hasPendingAutosave, hasWorkspace,
+      students, seats, fixtures,
+      studentsById, seatsById, fixturesById, groupsById,
+      groupAssignmentsByStudentId,
+      seatAssignmentsByStudentId,
+      seatingPreferences, relationshipRules, smartRulesRevision, smartRulesHydrated,
+      groupAssignments, seatAssignments,
+      ungroupedStudents, unseatedStudents, studentsByGroupId, studentBySeatId, zones,
+      canUndo, canRedo,
+    },
+    smartRuleState: {
+      activeSeatingSmartTool: smartRuleUiState.activeSeatingSmartTool,
+      pendingRelationshipStudentIds: smartRuleUiState.pendingRelationshipStudentIds,
+      editingRelationshipRuleId: smartRuleUiState.editingRelationshipRuleId,
+      editingNearTeacherRule: smartRuleUiState.editingNearTeacherRule,
+      smartRuleFeedbackMessage: smartRuleUiState.feedbackMessage,
+      canCommitPendingRelationshipRule: smartRuleUiState.canCommitPendingRelationshipRule,
+      setDraftSmartEnabled: smartRuleActions.setDraftSmartEnabled,
+      setDraftUseHistoryEnabled: smartRuleActions.setDraftUseHistoryEnabled,
+      setActiveSeatingSmartTool: smartRuleUiState.setActiveSeatingSmartTool,
+      clearPendingRelationshipSelection: smartRuleUiState.clearPendingRelationshipSelection,
+      setStudentNearTeacherEnabled: smartRuleActions.setStudentNearTeacherEnabled,
+      replaceNearTeacherPreference: smartRuleActions.replaceNearTeacherPreference,
+      handleSeatingSmartToolStudentSelection:
+        smartRuleActions.handleSeatingSmartToolStudentSelection,
+      commitPendingRelationshipRule: smartRuleActions.commitPendingRelationshipRule,
+      beginRelationshipRuleEdit: smartRuleActions.beginRelationshipRuleEdit,
+      beginNearTeacherEdit: smartRuleActions.beginNearTeacherEdit,
+      clearNearTeacherRule: smartRuleActions.clearNearTeacherRule,
+      deleteRelationshipRule: smartRuleActions.deleteRelationshipRule,
+      isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
+      setDraftGroupingSeatingDistanceEnabled:
+        smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
+      isStudentInPendingRelationshipSelection:
+        smartRuleUiState.isStudentInPendingRelationshipSelection,
+    },
+    workspaceActions: {
+      clearWorkspace: stateSupport.clearWorkspace,
+      discardPendingSessionWork: stateSupport.discardPendingSessionWork,
+      replaceCurrentRoster: stateSupport.replaceCurrentRoster,
+      replaceCurrentTemplate: stateSupport.replaceCurrentTemplate,
+      prepareForWorkspaceSwitch: workspaceActions.prepareForWorkspaceSwitch,
+      prepareForExport: workspaceActions.prepareForExport,
+      prepareForPlannerExit: workspaceActions.prepareForPlannerExit,
+      retrySmartRuleHydration: workspaceActions.retrySmartRuleHydration,
+      resolveDraft: workspaceActions.resolveDraft,
+      startNewGroupingDraft: workspaceActions.startNewGroupingDraft,
+      startNewSeatingDraft: workspaceActions.startNewSeatingDraft,
+      loadWorkspace: workspaceActions.loadWorkspace,
+      reloadActiveWorkspace,
+      getResumableDraft: persistence.getResumableDraft,
+      getClassWorkspaceSummary: persistence.getClassWorkspaceSummary,
+      abandonDraft,
+      persistCurrentWorkspaceToOverview: workspaceActions.persistCurrentWorkspaceToOverview,
+      persistOverviewUiState: workspaceActions.persistOverviewUiState,
+    },
+    historyActions: {
+      activateGroupingHistoryDraft: noopHistoryAction,
+      deleteGroupingHistoryDraft: noopHistoryAction,
+      activateSeatingHistoryDraft: noopHistoryAction,
+      deleteSeatingHistoryDraft: noopHistoryAction,
+      undoGroupingDraft,
+      redoGroupingDraft,
+      undoSeatingDraft,
+      redoSeatingDraft,
+    },
+    mutationActions: {
+      assignStudentToGroup: mutationActions.assignStudentToGroup,
+      removeStudentFromGroup: mutationActions.removeStudentFromGroup,
+      clearGroupingAssignments: mutationActions.clearGroupingAssignments,
+      assignStudentToSeat: mutationActions.assignStudentToSeat,
+      swapSeatAssignments: mutationActions.swapSeatAssignments,
+      clearSeatAssignment: mutationActions.clearSeatAssignment,
+      clearSeatingAssignments: mutationActions.clearSeatingAssignments,
+      addGroup: mutationActions.addGroup,
+      renameGroup: mutationActions.renameGroup,
+      moveGroup: mutationActions.moveGroup,
+      removeGroup: mutationActions.removeGroup,
+      randomizeGroups: mutationActions.randomizeGroups,
+      runGroupingShuffle,
+      randomizeSeating: mutationActions.randomizeSeating,
+      runSeatingShuffle,
+    },
+  });
 }

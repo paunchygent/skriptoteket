@@ -24,6 +24,7 @@ import PlannerWorkspaceModeSurface from "./PlannerWorkspaceModeSurface.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import { PLANNER_WORKSPACE_SHELL_CLASS } from "../plannerWorkspaceLayout";
 import { useClassroomState } from "../useClassroomState";
+import { usePlannerUndoRedoShortcuts } from "../usePlannerUndoRedoShortcuts";
 import { resolvePlannerWorkspaceDisabledReasons } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
 import { useToast } from "../../../composables/useToast";
@@ -94,6 +95,11 @@ const emit = defineEmits<{
 
 const plannerState = useClassroomState();
 const toast = useToast();
+
+usePlannerUndoRedoShortcuts({
+  plannerState,
+  isEnabled: () => !isTransitioningBetweenWorkspaces.value,
+});
 
 function resolvePlannerView(requestedView: PlannerView): PlannerView {
   if (requestedView === "rules") {

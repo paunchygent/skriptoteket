@@ -3,9 +3,9 @@
  * Classroom planner public guest workspace shell.
  *
  * This guest-only shell reuses the shared planner workspace surfaces for the
- * browser-owned public lane. It keeps `Regler` and Smart drawer parity with
- * the authenticated shell while intentionally hiding account-only history and
- * export affordances.
+ * browser-owned public lane. It keeps `Regler`, Smart, and export parity with
+ * the authenticated shell while intentionally hiding account-only history
+ * affordances.
  */
 
 import { computed, onUnmounted, ref, watch } from "vue";
@@ -29,6 +29,8 @@ import {
 import { PLANNER_WORKSPACE_SHELL_CLASS } from "./plannerWorkspaceLayout";
 import { resolvePlannerWorkspaceDisabledReasons } from "./plannerWorkspacePrerequisites";
 import { useClassroomState } from "./useClassroomState";
+import { usePlannerUndoRedoShortcuts } from "./usePlannerUndoRedoShortcuts";
+import type { GroupingExportOption, SeatingExportOption } from "./classroomPlannerExportApi";
 
 const props = withDefaults(
   defineProps<{
@@ -37,6 +39,12 @@ const props = withDefaults(
     selectedRosterId?: string | null;
     selectedTemplateId?: string | null;
     initialView?: GuestPlannerView;
+    groupingExportBusy?: boolean;
+    groupingExportStatusLabel?: string | null;
+    groupingExportErrorMessage?: string | null;
+    seatingExportBusy?: boolean;
+    seatingExportStatusLabel?: string | null;
+    seatingExportErrorMessage?: string | null;
   }>(),
   {
     availableRosters: () => [],
@@ -44,6 +52,12 @@ const props = withDefaults(
     selectedRosterId: null,
     selectedTemplateId: null,
     initialView: "groups",
+    groupingExportBusy: false,
+    groupingExportStatusLabel: null,
+    groupingExportErrorMessage: null,
+    seatingExportBusy: false,
+    seatingExportStatusLabel: null,
+    seatingExportErrorMessage: null,
   },
 );
 
@@ -54,6 +68,10 @@ const emit = defineEmits<{
   (e: "new-grouping-draft", payload: { templateId: string | null }): void;
   (e: "new-seating-draft", payload: { templateId: string }): void;
   (e: "edit-roster"): void;
+  (e: "export-grouping-default"): void;
+  (e: "export-grouping-option", option: GroupingExportOption): void;
+  (e: "export-seating-default"): void;
+  (e: "export-seating-option", option: SeatingExportOption): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;
   (e: "exit-app"): void;
@@ -61,6 +79,10 @@ const emit = defineEmits<{
 
 const plannerState = useClassroomState();
 const toast = useToast();
+
+usePlannerUndoRedoShortcuts({
+  plannerState,
+});
 
 function resolvePlannerView(requestedView: GuestPlannerView): GuestPlannerView {
   if (requestedView === "rules") {
@@ -346,13 +368,18 @@ watch(
           :available-rosters="availableRosters"
           :selected-roster-id="selectedRosterId"
           :smart-settings-open="isGroupingSettingsDrawerOpen"
+          :export-busy="groupingExportBusy"
+          :export-status-label="groupingExportStatusLabel"
+          :export-error-message="groupingExportErrorMessage"
           :show-history-action="false"
           :show-smart-controls="true"
-          :show-export-actions="false"
+          :show-export-actions="true"
           @change-grouping-roster="changeGroupingRoster($event)"
           @new-grouping-draft="startNewGroupingDraft"
           @open-settings="openGroupingSettingsDrawer"
           @edit-roster="emit('edit-roster')"
+          @export-default="emit('export-grouping-default')"
+          @export-option="emit('export-grouping-option', $event)"
         />
       </template>
 
@@ -368,14 +395,19 @@ watch(
           :available-templates="availableTemplates"
           :selected-template-id="pendingSeatingTemplateId || null"
           :smart-settings-open="isSeatingSettingsDrawerOpen"
+          :export-busy="seatingExportBusy"
+          :export-status-label="seatingExportStatusLabel"
+          :export-error-message="seatingExportErrorMessage"
           :show-history-action="false"
           :show-smart-controls="true"
-          :show-export-actions="false"
+          :show-export-actions="true"
           @change-seating-template="changeSeatingTemplate($event)"
           @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
           @edit-roster="emit('edit-roster')"
           @edit-current-template="editCurrentTemplate"
           @open-settings="openSeatingSettingsDrawer"
+          @export-default="emit('export-seating-default')"
+          @export-option="emit('export-seating-option', $event)"
         />
       </template>
 

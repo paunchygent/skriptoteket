@@ -52,6 +52,7 @@ type GuestDraftWorkspaceContext = {
   smartRuleLane: ReturnType<typeof useRosterSmartRuleLane>;
   stateSupport: ReturnType<typeof createClassroomPlannerStateSupport>;
   persistence: ReturnType<typeof createClassroomPlannerGuestDraftPersistence>;
+  syncWorkspaceHistory: (workspace: DraftWorkspaceResponse) => void;
 };
 
 export function createClassroomPlannerGuestDraftWorkspace(
@@ -70,10 +71,12 @@ export function createClassroomPlannerGuestDraftWorkspace(
     smartRuleLane,
     stateSupport,
     persistence,
+    syncWorkspaceHistory,
   } = context;
 
   function applyWorkspace(workspace: Awaited<ReturnType<typeof persistence.createNewWorkspace>>): void {
     stateSupport.applyWorkspace(workspace);
+    syncWorkspaceHistory(workspace);
     sessionController.replaceSession({
       draftId: workspace.draft.id,
       rosterId: workspace.roster.id,

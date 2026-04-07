@@ -10,6 +10,7 @@
 import { defineComponent, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 
 import ClassroomPlannerGuestOverviewView from "./ClassroomPlannerGuestOverviewView.vue";
 
@@ -119,8 +120,11 @@ vi.mock("./useClassroomPlannerGuestController", () => ({
 }));
 
 function mountView() {
+  const pinia = createPinia();
+  setActivePinia(pinia);
   return mount(ClassroomPlannerGuestOverviewView, {
     global: {
+      plugins: [pinia],
       stubs: {
         PlannerClassWorkspace: PlannerClassWorkspaceStub,
         ClassroomPlannerGuestWorkspaceShell: ClassroomPlannerGuestWorkspaceShellStub,
@@ -134,6 +138,7 @@ function mountView() {
 
 describe("ClassroomPlannerGuestOverviewView", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     routerMocks.push.mockReset();
     guestOverviewMocks.currentScreen.value = "class-workspace";
     guestOverviewMocks.plannerInitialView.value = "groups";

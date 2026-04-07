@@ -6,8 +6,9 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { defineComponent, nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 
 import PublicAppHostView from "./PublicAppHostView.vue";
 import type { components } from "../api/openapi";
@@ -34,6 +35,10 @@ const loginModalMocks = vi.hoisted(() => ({
   open: vi.fn(),
 }));
 
+const hostRegistryMocks = vi.hoisted(() => ({
+  resolveCuratedAppHostView: vi.fn(),
+}));
+
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("vue-router")>();
   return {
@@ -55,6 +60,22 @@ vi.mock("../api/client", () => ({
 vi.mock("../composables/useLoginModal", () => ({
   useLoginModal: () => loginModalMocks,
 }));
+
+vi.mock("./curatedAppHostRegistry", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./curatedAppHostRegistry")>();
+  return {
+    ...actual,
+    resolveCuratedAppHostView: hostRegistryMocks.resolveCuratedAppHostView,
+  };
+});
+
+const PublicHostViewStub = defineComponent({
+  name: "PublicHostViewStub",
+  props: {
+    hostMode: { type: String, required: false, default: null },
+  },
+  template: "<div data-test='classroom-planner-entry-view-stub'>ClassroomPlannerEntryView {{ hostMode }}</div>",
+});
 
 async function flushPromises(): Promise<void> {
   await Promise.resolve();
@@ -81,26 +102,38 @@ function createPublicBootstrap(
 
 describe("PublicAppHostView", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     routeMocks.route.params.appId = "classroom.group-seating-studio";
     routeMocks.router.push.mockReset();
     clientMocks.apiGet.mockReset();
     clientMocks.isApiError.mockReset();
     clientMocks.isApiError.mockReturnValue(false);
     loginModalMocks.open.mockReset();
+    hostRegistryMocks.resolveCuratedAppHostView.mockReset();
+    hostRegistryMocks.resolveCuratedAppHostView.mockReturnValue({
+      component: PublicHostViewStub,
+      props: { hostMode: "public" },
+    });
   });
 
   it("loads the public bootstrap endpoint and renders the public Klassrumskartan shell", async () => {
     clientMocks.apiGet.mockResolvedValue(createPublicBootstrap());
+    const pinia = createPinia();
+    setActivePinia(pinia);
 
-    const wrapper = mount(PublicAppHostView);
+    const wrapper = mount(PublicAppHostView, {
+      global: {
+        plugins: [pinia],
+      },
+    });
     await flushPromises();
     await flushPromises();
 
     expect(clientMocks.apiGet).toHaveBeenCalledWith(
       "/api/v1/public/apps/classroom.group-seating-studio",
     );
-    expect(wrapper.text()).toContain("Klassrumskartan");
-    expect(wrapper.text()).toContain("Vissa funktioner kräver att du registrerar ett konto.");
+    expect(wrapper.find("[data-test='classroom-planner-entry-view-stub']").exists()).toBe(true);
+    expect(wrapper.text()).toContain("ClassroomPlannerEntryView public");
 
     wrapper.unmount();
   });

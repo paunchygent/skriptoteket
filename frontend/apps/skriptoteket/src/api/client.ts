@@ -41,6 +41,12 @@ type ApiRequestOptions = Omit<RequestInit, "body" | "headers" | "credentials" | 
   headers?: HeadersInit;
 };
 
+export type ApiBlobResponse = {
+  blob: Blob;
+  contentType: string | null;
+  filename: string | null;
+};
+
 function isJsonSerializableBody(body: unknown): body is Record<string, unknown> {
   if (body === null) {
     return false;
@@ -228,6 +234,92 @@ export async function apiFetchBlob(path: string, options: ApiRequestOptions = {}
 
   if (response.ok) {
     return await response.blob();
+  }
+
+  if (response.status === 401) {
+    auth.clear();
+  }
+
+  throw await toApiError(response);
+}
+
+function parseContentDispositionFilename(headerValue: string | null): string | null {
+  if (!headerValue) {
+    return null;
+  }
+
+  const utf8Match = headerValue.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]);
+    } catch {
+      return utf8Match[1];
+    }
+  }
+
+  const quotedMatch = headerValue.match(/filename="([^"]+)"/i);
+  if (quotedMatch?.[1]) {
+    return quotedMatch[1];
+  }
+
+  const plainMatch = headerValue.match(/filename=([^;]+)/i);
+  return plainMatch?.[1]?.trim() ?? null;
+}
+
+export async function apiFetchBlobResponse(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<ApiBlobResponse> {
+  const auth = useAuthStore();
+
+  const method = (options.method ?? "GET").toUpperCase();
+  const headers = new Headers(options.headers);
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "*/*");
+  }
+
+  let body: BodyInit | undefined = undefined;
+  if (options.body !== undefined) {
+    if (options.body instanceof FormData) {
+      body = options.body;
+    } else if (typeof options.body === "string") {
+      body = options.body;
+    } else if (options.body instanceof Blob) {
+      body = options.body;
+    } else if (options.body instanceof ArrayBuffer) {
+      body = options.body;
+    } else if (isJsonSerializableBody(options.body)) {
+      headers.set("Content-Type", "application/json");
+      body = JSON.stringify(options.body);
+    } else {
+      headers.set("Content-Type", "application/json");
+      body = JSON.stringify(options.body);
+    }
+  }
+
+  if (method !== "GET" && method !== "HEAD") {
+    await auth.ensureCsrfToken();
+    if (auth.csrfToken) {
+      headers.set("X-CSRF-Token", auth.csrfToken);
+    }
+  }
+
+  const response = await fetch(path, {
+    ...options,
+    method,
+    headers,
+    body,
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return {
+      blob: await response.blob(),
+      contentType: response.headers.get("content-type"),
+      filename: parseContentDispositionFilename(
+        response.headers.get("content-disposition"),
+      ),
+    };
   }
 
   if (response.status === 401) {

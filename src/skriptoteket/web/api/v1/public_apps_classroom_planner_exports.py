@@ -1,31 +1,33 @@
-"""Public Klassrumskartan Smart helper routes with browser-owned semantics.
+"""Public Klassrumskartan direct-download export routes for guest snapshots.
 
 Purpose:
-  Expose stateless solver-backed Smart helper seams for browser-owned guest
-  Klassrumskartan without weakening the authenticated owner-scoped planner API.
+  Expose cookie-agnostic grouping and seating export helpers under the public
+  Klassrumskartan namespace without weakening the authenticated export-job
+  boundary.
 
 Relationships:
-  - Reads the canonical public-access profile from the curated-app registry.
-  - Reuses the browser-owned guest snapshot contract as the Smart helper input.
-  - Reuses the public helper throttle for anonymous abuse controls.
+  - Reuses the browser-owned guest snapshot request contracts from the
+    application layer.
+  - Reuses the public helper throttle and time-budget pattern already used by
+    the public Smart helper routes.
+  - Returns direct-download attachment responses only; it never creates jobs
+    or Vault artifacts.
 """
 
 import asyncio
 
 import structlog
 from fastapi import APIRouter, Request
+from fastapi.responses import Response
 from pydantic import ValidationError
 
 from skriptoteket.application.curated_apps.classroom_planner import (
-    RunPublicSmartGroupingHandler,
-    RunPublicSmartSeatingHandler,
+    RunPublicGroupingExportHandler,
+    RunPublicSeatingExportHandler,
 )
-from skriptoteket.application.curated_apps.classroom_planner.public_smart_run_contracts import (
-    PublicSmartGroupingAppliedResponse,
-    PublicSmartGroupingBlockedResponse,
-    PublicSmartRunRequest,
-    PublicSmartSeatingAppliedResponse,
-    PublicSmartSeatingBlockedResponse,
+from skriptoteket.application.curated_apps.classroom_planner.public_export_contracts import (
+    PublicGroupingExportRequest,
+    PublicSeatingExportRequest,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
@@ -39,8 +41,8 @@ from skriptoteket.web.request_metadata import get_client_ip, get_correlation_id,
 logger = structlog.get_logger(__name__)
 
 APP_ID = "classroom.group-seating-studio"
-GROUPING_HELPER_NAME = "grouping_smart_run"
-SEATING_HELPER_NAME = "seating_smart_run"
+GROUPING_HELPER_NAME = "grouping_export"
+SEATING_HELPER_NAME = "seating_export"
 
 router = APIRouter(
     prefix=f"/api/v1/public/apps/{APP_ID}",
@@ -57,7 +59,7 @@ async def _read_capped_json_body(*, request: Request, max_bytes: int) -> bytes:
         if len(body) > max_bytes:
             raise DomainError(
                 code=ErrorCode.PAYLOAD_TOO_LARGE,
-                message="Public Smart helper payload exceeds the allowed size.",
+                message="Public export helper payload exceeds the allowed size.",
                 details={
                     "app_id": APP_ID,
                     "reason_code": "public_helper_payload_too_large",
@@ -73,20 +75,6 @@ async def _read_capped_json_body(*, request: Request, max_bytes: int) -> bytes:
             },
         )
     return bytes(body)
-
-
-def _parse_smart_run_request(*, body: bytes) -> PublicSmartRunRequest:
-    try:
-        return PublicSmartRunRequest.model_validate_json(body)
-    except ValidationError as exc:
-        raise validation_error(
-            "Invalid public Smart helper payload.",
-            details={
-                "app_id": APP_ID,
-                "reason_code": "public_helper_invalid_payload",
-                "validation_error_count": len(exc.errors()),
-            },
-        ) from exc
 
 
 def _enforce_rate_limit(
@@ -151,18 +139,45 @@ def _enforce_rate_limit(
     return client_ip, user_agent, correlation_id
 
 
-@router.post(
-    "/grouping/smart-run",
-    response_model=PublicSmartGroupingAppliedResponse | PublicSmartGroupingBlockedResponse,
-)
-async def run_public_smart_grouping(
+def _parse_grouping_export_request(*, body: bytes) -> PublicGroupingExportRequest:
+    try:
+        return PublicGroupingExportRequest.model_validate_json(body)
+    except ValidationError as exc:
+        raise validation_error(
+            "Invalid public grouping export payload.",
+            details={
+                "app_id": APP_ID,
+                "helper_name": GROUPING_HELPER_NAME,
+                "reason_code": "public_helper_invalid_payload",
+                "validation_error_count": len(exc.errors()),
+            },
+        ) from exc
+
+
+def _parse_seating_export_request(*, body: bytes) -> PublicSeatingExportRequest:
+    try:
+        return PublicSeatingExportRequest.model_validate_json(body)
+    except ValidationError as exc:
+        raise validation_error(
+            "Invalid public seating export payload.",
+            details={
+                "app_id": APP_ID,
+                "helper_name": SEATING_HELPER_NAME,
+                "reason_code": "public_helper_invalid_payload",
+                "validation_error_count": len(exc.errors()),
+            },
+        ) from exc
+
+
+@router.post("/grouping/export")
+async def export_public_grouping(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     settings: FromDishka[Settings],
     clock: FromDishka[ClockProtocol],
     throttle: FromDishka[PublicHelperThrottleProtocol],
-    handler: FromDishka[RunPublicSmartGroupingHandler],
-) -> PublicSmartGroupingAppliedResponse | PublicSmartGroupingBlockedResponse:
+    handler: FromDishka[RunPublicGroupingExportHandler],
+) -> Response:
     client_ip, _user_agent, correlation_id = _enforce_rate_limit(
         request=request,
         helper_name=GROUPING_HELPER_NAME,
@@ -177,7 +192,7 @@ async def run_public_smart_grouping(
         request=request,
         max_bytes=settings.PUBLIC_HELPER_SMART_RUN_MAX_REQUEST_BYTES,
     )
-    payload = _parse_smart_run_request(body=body)
+    payload = _parse_grouping_export_request(body=body)
 
     logger.info(
         "public_helper_request_started",
@@ -192,6 +207,8 @@ async def run_public_smart_grouping(
             result = await handler.handle(
                 snapshot=payload.snapshot,
                 expected_revision=payload.expected_revision,
+                export_kind=payload.export_kind,
+                paper_size=payload.paper_size,
             )
     except TimeoutError as exc:
         logger.warning(
@@ -222,21 +239,22 @@ async def run_public_smart_grouping(
         correlation_id=correlation_id,
         client_ip=client_ip,
     )
-    return result
+    return Response(
+        content=result.content,
+        media_type=result.media_type,
+        headers={"Content-Disposition": f'attachment; filename="{result.filename}"'},
+    )
 
 
-@router.post(
-    "/seating/smart-run",
-    response_model=PublicSmartSeatingAppliedResponse | PublicSmartSeatingBlockedResponse,
-)
-async def run_public_smart_seating(
+@router.post("/seating/export")
+async def export_public_seating(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     settings: FromDishka[Settings],
     clock: FromDishka[ClockProtocol],
     throttle: FromDishka[PublicHelperThrottleProtocol],
-    handler: FromDishka[RunPublicSmartSeatingHandler],
-) -> PublicSmartSeatingAppliedResponse | PublicSmartSeatingBlockedResponse:
+    handler: FromDishka[RunPublicSeatingExportHandler],
+) -> Response:
     client_ip, _user_agent, correlation_id = _enforce_rate_limit(
         request=request,
         helper_name=SEATING_HELPER_NAME,
@@ -251,7 +269,7 @@ async def run_public_smart_seating(
         request=request,
         max_bytes=settings.PUBLIC_HELPER_SMART_RUN_MAX_REQUEST_BYTES,
     )
-    payload = _parse_smart_run_request(body=body)
+    payload = _parse_seating_export_request(body=body)
 
     logger.info(
         "public_helper_request_started",
@@ -266,6 +284,9 @@ async def run_public_smart_seating(
             result = await handler.handle(
                 snapshot=payload.snapshot,
                 expected_revision=payload.expected_revision,
+                export_kind=payload.export_kind,
+                layout_id=payload.layout_id,
+                paper_size=payload.paper_size,
             )
     except TimeoutError as exc:
         logger.warning(
@@ -296,4 +317,8 @@ async def run_public_smart_seating(
         correlation_id=correlation_id,
         client_ip=client_ip,
     )
-    return result
+    return Response(
+        content=result.content,
+        media_type=result.media_type,
+        headers={"Content-Disposition": f'attachment; filename="{result.filename}"'},
+    )

@@ -32,6 +32,7 @@ import {
 } from "./classroomPlannerGuestFingerprint";
 import {
   hydrateGuestSnapshot,
+  createClassroomPlannerGuestCheckpointFingerprint,
   mapDraftWorkspaceToGuestSnapshot,
   mapSmartRulesToGuestSnapshot,
   mapUiStateToGuestSnapshot,
@@ -137,6 +138,51 @@ function cloneCheckpointDescriptors(
   }));
 }
 
+function createGuestCheckpointLocalId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `guest-checkpoint-${Date.now()}`;
+}
+
+function resolveCheckpointWorkspace(input: {
+  snapshot: ClassroomPlannerGuestSnapshot;
+  draftKind: PlanDraftKind;
+  draftId: string;
+}): DraftWorkspaceResponse | null {
+  const hydrated = hydrateGuestSnapshot(input.snapshot);
+  const candidate = input.draftKind === "grouping"
+    ? hydrated.grouping_draft
+    : hydrated.seating_draft;
+  if (!candidate || candidate.draft.id !== input.draftId) {
+    return null;
+  }
+  return candidate;
+}
+
+function buildGuestExportCheckpointDescriptor(input: {
+  workspace: DraftWorkspaceResponse;
+  createdAt: string;
+  label: string | null;
+}): ClassroomPlannerGuestCheckpointDescriptor {
+  return {
+    local_id: createGuestCheckpointLocalId(),
+    draft_kind: input.workspace.draft.draft_kind,
+    created_at: input.createdAt,
+    label: input.label,
+    source: "export",
+    template_local_id: input.workspace.template?.id ?? input.workspace.draft.template_id ?? null,
+    group_assignments: cloneGroupAssignments(input.workspace.group_assignments),
+    seat_assignments: cloneSeatAssignments(input.workspace.seat_assignments),
+    fingerprint: createClassroomPlannerGuestCheckpointFingerprint({
+      draft_kind: input.workspace.draft.draft_kind,
+      template_local_id: input.workspace.template?.id ?? input.workspace.draft.template_id ?? null,
+      group_assignments: input.workspace.group_assignments,
+      seat_assignments: input.workspace.seat_assignments,
+    }),
+  };
+}
+
 export function replaceGuestSnapshotDraft(
   snapshot: ClassroomPlannerGuestSnapshot,
   workspace: DraftWorkspaceResponse,
@@ -190,6 +236,108 @@ export function replaceGuestSnapshotSmartRules(
       nextRuleSet,
     ],
     checkpoint_descriptors: cloneCheckpointDescriptors(snapshot.checkpoint_descriptors),
+  };
+
+  return {
+    ...nextSnapshot,
+    snapshot_content_hash: createClassroomPlannerGuestContentHash(nextSnapshot),
+  };
+}
+
+export function appendGuestExportCheckpointDescriptor(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  input: {
+    draftKind: PlanDraftKind;
+    draftId: string;
+    updatedAt: string;
+    label: string | null;
+  },
+): ClassroomPlannerGuestSnapshot {
+  const workspace = resolveCheckpointWorkspace({
+    snapshot,
+    draftKind: input.draftKind,
+    draftId: input.draftId,
+  });
+  if (!workspace) {
+    return snapshot;
+  }
+
+  const descriptor = buildGuestExportCheckpointDescriptor({
+    workspace,
+    createdAt: input.updatedAt,
+    label: input.label,
+  });
+  if (
+    snapshot.checkpoint_descriptors.some((existing) => existing.fingerprint === descriptor.fingerprint)
+  ) {
+    return snapshot;
+  }
+
+  const nextSnapshot = {
+    ...snapshot,
+    updated_at: input.updatedAt,
+    checkpoint_descriptors: [
+      ...cloneCheckpointDescriptors(snapshot.checkpoint_descriptors),
+      descriptor,
+    ],
+  };
+
+  return {
+    ...nextSnapshot,
+    snapshot_content_hash: createClassroomPlannerGuestContentHash(nextSnapshot),
+  };
+}
+
+export function resolveGuestExportCheckpointDescriptor(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  input: {
+    draftKind: PlanDraftKind;
+    draftId: string;
+    createdAt: string;
+    label: string | null;
+  },
+): ClassroomPlannerGuestCheckpointDescriptor | null {
+  const workspace = resolveCheckpointWorkspace({
+    snapshot,
+    draftKind: input.draftKind,
+    draftId: input.draftId,
+  });
+  if (!workspace) {
+    return null;
+  }
+  return buildGuestExportCheckpointDescriptor({
+    workspace,
+    createdAt: input.createdAt,
+    label: input.label,
+  });
+}
+
+export function appendGuestCheckpointDescriptor(
+  snapshot: ClassroomPlannerGuestSnapshot,
+  input: {
+    descriptor: ClassroomPlannerGuestCheckpointDescriptor;
+    updatedAt: string;
+  },
+): ClassroomPlannerGuestSnapshot {
+  if (
+    snapshot.checkpoint_descriptors.some(
+      (existing) => existing.fingerprint === input.descriptor.fingerprint,
+    )
+  ) {
+    return snapshot;
+  }
+
+  const nextSnapshot = {
+    ...snapshot,
+    updated_at: input.updatedAt,
+    checkpoint_descriptors: [
+      ...cloneCheckpointDescriptors(snapshot.checkpoint_descriptors),
+      {
+        ...input.descriptor,
+        group_assignments: cloneGroupAssignments(input.descriptor.group_assignments),
+        seat_assignments: cloneSeatAssignments(input.descriptor.seat_assignments),
+      },
+    ],
   };
 
   return {

@@ -186,6 +186,7 @@ describe("classroomPlannerGuestDraftWorkspace", () => {
       smartRuleLane,
       stateSupport,
       persistence,
+      syncWorkspaceHistory: vi.fn(),
     });
 
     await workspace.resolveDraft("roster-1", "template-2", "grouping");

@@ -79,6 +79,46 @@ export type ClassroomPlannerGuestHydratedWorkspace = {
   };
 };
 
+function sortGuestGroupAssignments(assignments: GroupAssignment[]): GroupAssignment[] {
+  return [...assignments].sort((left, right) => {
+    const studentComparison = left.student_id.localeCompare(right.student_id);
+    if (studentComparison !== 0) {
+      return studentComparison;
+    }
+    return left.group_id.localeCompare(right.group_id);
+  });
+}
+
+function sortGuestSeatAssignments(assignments: SeatAssignment[]): SeatAssignment[] {
+  return [...assignments].sort((left, right) => {
+    const studentComparison = left.student_id.localeCompare(right.student_id);
+    if (studentComparison !== 0) {
+      return studentComparison;
+    }
+    return left.seat_id.localeCompare(right.seat_id);
+  });
+}
+
+export function createClassroomPlannerGuestCheckpointFingerprint(input: {
+  draft_kind: "grouping" | "seating";
+  template_local_id: string | null;
+  group_assignments: GroupAssignment[];
+  seat_assignments: SeatAssignment[];
+}): string {
+  return createClassroomPlannerGuestFingerprint({
+    draft_kind: input.draft_kind,
+    template_local_id: input.template_local_id,
+    group_assignments: sortGuestGroupAssignments(input.group_assignments).map((assignment) => ({
+      student_id: assignment.student_id,
+      group_id: assignment.group_id,
+    })),
+    seat_assignments: sortGuestSeatAssignments(input.seat_assignments).map((assignment) => ({
+      student_id: assignment.student_id,
+      seat_id: assignment.seat_id,
+    })),
+  });
+}
+
 export function mapRosterToGuestSnapshot(roster: Roster): ClassroomPlannerGuestRoster {
   const students = roster.students.map((student) => ({
     local_id: student.id,
@@ -206,7 +246,12 @@ export function createClassroomPlannerGuestSnapshotFromSeed(
       template_local_id: checkpoint.template_local_id,
       group_assignments: checkpoint.group_assignments,
       seat_assignments: checkpoint.seat_assignments,
-      fingerprint: createClassroomPlannerGuestFingerprint(checkpoint),
+      fingerprint: createClassroomPlannerGuestCheckpointFingerprint({
+        draft_kind: checkpoint.draft_kind,
+        template_local_id: checkpoint.template_local_id,
+        group_assignments: checkpoint.group_assignments,
+        seat_assignments: checkpoint.seat_assignments,
+      }),
     })),
     ui_state: mapUiStateToGuestSnapshot(seed.ui_state),
   };

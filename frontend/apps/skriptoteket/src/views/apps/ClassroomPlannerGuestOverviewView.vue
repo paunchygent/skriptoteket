@@ -19,10 +19,22 @@ import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
 import ClassroomPlannerGuestWorkspaceShell from "./ClassroomPlannerGuestWorkspaceShell.vue";
 import { provideClassroomState, type ClassroomStateLike } from "./useClassroomState";
 import { useClassroomPlannerGuestController } from "./useClassroomPlannerGuestController";
+import { usePublicGroupingExportFlow } from "./usePublicGroupingExportFlow";
+import { usePublicSeatingExportFlow } from "./usePublicSeatingExportFlow";
 
 const router = useRouter();
 const guestController = useClassroomPlannerGuestController();
 const providedGuestPlannerState = reactive(guestController.guestPlannerState);
+const groupingExportFlow = usePublicGroupingExportFlow({
+  plannerState: guestController.guestPlannerState,
+  getSnapshot: guestController.ensureReadySnapshot,
+  persistSnapshotMutation: guestController.persistSnapshotMutation,
+});
+const seatingExportFlow = usePublicSeatingExportFlow({
+  plannerState: guestController.guestPlannerState,
+  getSnapshot: guestController.ensureReadySnapshot,
+  persistSnapshotMutation: guestController.persistSnapshotMutation,
+});
 
 provideClassroomState(providedGuestPlannerState as unknown as ClassroomStateLike);
 
@@ -122,12 +134,22 @@ async function exitPublicPlanner(): Promise<void> {
           :selected-roster-id="guestController.selectedRosterId.value"
           :selected-template-id="guestController.selectedTemplateId.value"
           :initial-view="guestController.plannerInitialView.value"
+          :grouping-export-busy="groupingExportFlow.isBusy.value"
+          :grouping-export-status-label="groupingExportFlow.statusLabel.value"
+          :grouping-export-error-message="groupingExportFlow.errorMessage.value"
+          :seating-export-busy="seatingExportFlow.isBusy.value"
+          :seating-export-status-label="seatingExportFlow.statusLabel.value"
+          :seating-export-error-message="seatingExportFlow.errorMessage.value"
           @change-grouping-roster="void guestController.changeGroupingRoster($event)"
           @change-grouping-template="void guestController.changeGroupingTemplate($event)"
           @change-seating-template="void guestController.changeSeatingTemplate($event)"
           @new-grouping-draft="void guestController.startNewGroupingDraft()"
           @new-seating-draft="void guestController.startNewSeatingDraft($event)"
           @edit-roster="guestController.openSelectedRosterEdit"
+          @export-grouping-default="void groupingExportFlow.startDefaultExport()"
+          @export-grouping-option="void groupingExportFlow.startExport($event)"
+          @export-seating-default="void seatingExportFlow.startDefaultExport()"
+          @export-seating-option="void seatingExportFlow.startExport($event)"
           @edit-current-template="guestController.openOverviewTemplateEdit"
           @select-workspace-mode="void guestController.selectPlannerWorkspaceMode($event)"
           @exit-app="void exitPublicPlanner()"

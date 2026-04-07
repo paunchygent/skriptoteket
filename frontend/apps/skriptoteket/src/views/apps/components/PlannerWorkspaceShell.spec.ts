@@ -500,6 +500,68 @@ describe("PlannerWorkspaceShell", () => {
     );
   });
 
+  it("routes Cmd/Ctrl+Z to the active grouping undo action at the shell seam", async () => {
+    stateMocks.plannerState.canUndo = true;
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "grouping",
+      revision: 3,
+    };
+
+    mount(PlannerWorkspaceShell, {
+      props: {
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div />" },
+          PlannerMetadataDrawer: { props: ["open"], template: "<div>{{ open ? 'open' : 'closed' }}</div>" },
+        },
+      },
+    });
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "z", ctrlKey: true }));
+
+    expect(stateMocks.plannerState.undoGroupingDraft).toHaveBeenCalled();
+  });
+
+  it("ignores undo shortcuts while typing inside an input", async () => {
+    stateMocks.plannerState.canUndo = true;
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+
+    mount(PlannerWorkspaceShell, {
+      props: {
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true }));
+
+    expect(stateMocks.plannerState.undoSeatingDraft).not.toHaveBeenCalled();
+
+    document.body.removeChild(input);
+  });
+
   it("keeps grouping drafts on the grouping surface only", async () => {
     stateMocks.plannerState.template = null;
     const wrapper = mount(PlannerWorkspaceShell, {

@@ -45,6 +45,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    RunPublicGroupingExportHandler,
+    RunPublicSeatingExportHandler,
     RunPublicSmartGroupingHandler,
     RunPublicSmartSeatingHandler,
     RunSmartGroupingHandler,
@@ -1007,6 +1009,38 @@ class CuratedAppsProvider(Provider):
         clock: ClockProtocol,
     ) -> RunPublicSmartSeatingHandler:
         return RunPublicSmartSeatingHandler(clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def run_public_grouping_export_handler(
+        self,
+        prepare: PrepareGroupingExportHandler,
+        pdf_renderer: GroupingPdfRendererProtocol,
+        xlsx_renderer: GroupingXlsxRendererProtocol,
+        clock: ClockProtocol,
+    ) -> RunPublicGroupingExportHandler:
+        return RunPublicGroupingExportHandler(
+            prepare=prepare,
+            pdf_renderer=pdf_renderer,
+            xlsx_renderer=xlsx_renderer,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def run_public_seating_export_handler(
+        self,
+        prepare: PrepareSeatingExportHandler,
+        pdf_renderer: SeatingPdfRendererProtocol,
+        poster_renderer: SeatingPosterRendererProtocol,
+        xlsx_renderer: SeatingXlsxRendererProtocol,
+        clock: ClockProtocol,
+    ) -> RunPublicSeatingExportHandler:
+        return RunPublicSeatingExportHandler(
+            prepare=prepare,
+            pdf_renderer=pdf_renderer,
+            poster_renderer=poster_renderer,
+            xlsx_renderer=xlsx_renderer,
+            clock=clock,
+        )
 
     @provide(scope=Scope.REQUEST)
     def classroom_planner_guest_upgrade_handler(

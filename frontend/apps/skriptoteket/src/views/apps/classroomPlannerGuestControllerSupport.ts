@@ -25,6 +25,10 @@ export const PUBLIC_GROUPING_SMART_RUN_API_PATH =
   "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run";
 export const PUBLIC_SEATING_SMART_RUN_API_PATH =
   "/api/v1/public/apps/classroom.group-seating-studio/seating/smart-run";
+export const PUBLIC_GROUPING_EXPORT_API_PATH =
+  "/api/v1/public/apps/classroom.group-seating-studio/grouping/export";
+export const PUBLIC_SEATING_EXPORT_API_PATH =
+  "/api/v1/public/apps/classroom.group-seating-studio/seating/export";
 
 export const CHECKPOINT_TWO_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapabilities = {
   show_grouping_option: false,

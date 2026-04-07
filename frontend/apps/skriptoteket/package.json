@@ -11,10 +11,10 @@
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
-    "test": "node ./scripts/vitest-run.mjs",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test": "node ./scripts/vitest-run.mjs run",
+    "test:watch": "node ./scripts/vitest-run.mjs",
+    "test:coverage": "node ./scripts/vitest-run.mjs run --coverage",
+    "test:ui": "node ./scripts/vitest-run.mjs --ui"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.0",
