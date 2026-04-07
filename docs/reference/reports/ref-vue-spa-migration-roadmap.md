@@ -532,7 +532,7 @@ Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu desig
 ### Pre-Implementation
 
 - [ ] Team reviews this document
-- [ ] Ensure ADR-0027..0030 are accepted and linked from the implementation epic/sprint
+- [ ] Ensure ADR-0027..0030 are accepted and linked from the implementation epic and governing backlog items
 - [ ] Verify all current routes documented correctly
 - [ ] Confirm design token values are accurate
 

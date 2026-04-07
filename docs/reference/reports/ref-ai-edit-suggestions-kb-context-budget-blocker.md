@@ -7,7 +7,6 @@ owners: "skriptoteket"
 created: 2025-12-31
 topic: "ai"
 links:
-  - docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md
   - docs/backlog/epics/epic-08-contextual-help-and-onboarding.md
   - docs/backlog/stories/story-08-14-ai-inline-completions.md
   - docs/backlog/stories/story-08-16-ai-edit-suggestions.md
@@ -20,7 +19,6 @@ ST-08-16 edit suggestions currently return **500 Internal Server Error** because
 
 ## Scope & Links
 
-- Sprint: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`
 - Epic: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
 - Stories:
   - `docs/backlog/stories/story-08-14-ai-inline-completions.md`

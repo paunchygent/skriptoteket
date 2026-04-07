@@ -16,7 +16,7 @@ covering:
 - Tool authoring UX/DX (editor + workflow + sandbox preview)
 - JSON setup (`settings_schema`, `input_schema`) and their semantics
 - Execution infrastructure (runner, artifacts, snapshots, sessions)
-- Key improvement opportunities and a proposed sequence of follow-up sprints
+- Key improvement opportunities and the follow-up backlog themes they imply
 
 ## Current implementation map
 
@@ -90,20 +90,27 @@ Version history navigation exists, but reviewers lack a first-class diff/compare
 - schemas
 - usage instructions
 
-## Proposed follow-up sprints (skeleton backlog)
+## Follow-up backlog themes
 
-All sprint skeletons below are drafted as ~2-work-day “vertical slice” increments.
-
-- Sprint 2026-03-03: Tool editor DX quick wins — `docs/backlog/sprints/sprint-2026-03-03-tool-editor-dx-quick-wins.md`
-- Sprint 2026-03-17: Sandbox debug details — `docs/backlog/sprints/sprint-2026-03-17-tool-editor-sandbox-debug-details.md`
-- Sprint 2026-03-31: Schema editor v1 — `docs/backlog/sprints/sprint-2026-03-31-tool-editor-schema-editor-v1.md`
-- Sprint 2026-04-14: Schema validation v1 — `docs/backlog/sprints/sprint-2026-04-14-tool-editor-schema-validation-v1.md`
-- Sprint 2026-04-28: Version diff v1 — `docs/backlog/sprints/sprint-2026-04-28-tool-editor-version-diff-v1.md`
-- Sprint 2026-05-12: Runner toolkit + editor intelligence — `docs/backlog/sprints/sprint-2026-05-12-tool-editor-runner-toolkit-and-intelligence.md`
-- Sprint 2026-05-26: Tool interaction DX high-yield wins — `docs/backlog/sprints/sprint-2026-05-26-tool-interaction-dx-high-yield.md`
-- Sprint 2026-06-09: Tool UI contract v2.x (action defaults + file references) — `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md`
-- Sprint 2026-06-23: Tool layout editor v1 (contract + renderer) — `docs/backlog/sprints/sprint-2026-06-23-tool-layout-editor-v1-contract-and-renderer.md`
-- Sprint 2026-07-07: Tool layout editor v1 (drag/drop) — `docs/backlog/sprints/sprint-2026-07-07-tool-layout-editor-v1-drag-and-drop.md`
+- Editor sandbox debug visibility:
+  `docs/backlog/stories/story-14-12-editor-sandbox-debug-panel.md`
+- Schema editor and validation UX:
+  `docs/backlog/stories/story-14-14-editor-schema-editor-snippets-and-diagnostics.md`,
+  `docs/backlog/stories/story-14-16-editor-schema-validation-errors-ux.md`
+- Version compare/diff:
+  `docs/backlog/stories/story-14-17-editor-version-diff-view.md`
+- Runner toolkit and editor intelligence:
+  `docs/backlog/stories/story-14-19-runner-toolkit-helper-module.md`,
+  `docs/backlog/stories/story-14-20-editor-intelligence-toolkit-support.md`
+- Tool-run interaction UX, action defaults, and file references:
+  `docs/backlog/stories/story-14-22-tool-run-ux-progress-and-file-references.md`,
+  `docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md`,
+  `docs/backlog/stories/story-14-24-ui-contract-file-references.md`
+- Layout editor output and interactions:
+  `docs/backlog/stories/story-14-25-ui-contract-layout-editor-v1-output.md`,
+  `docs/backlog/stories/story-14-26-ui-renderer-layout-editor-v1-click-assign.md`,
+  `docs/backlog/stories/story-14-27-layout-editor-v1-drag-drop.md`,
+  `docs/backlog/stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md`
 
 Related ADR:
 
@@ -136,9 +143,12 @@ The items below come up frequently when authoring or using multi-step interactiv
 - **Prefilled action fields**: true prefill/defaults sourced from state/prior input need contract support; a high-yield
   partial workaround is client-side “sticky inputs” (remember last submitted values).
 
-See: `docs/backlog/sprints/sprint-2026-05-26-tool-interaction-dx-high-yield.md`
+See:
+`docs/backlog/stories/story-14-22-tool-run-ux-progress-and-file-references.md`
 
-See also: `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md`
+See also:
+`docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md` and
+`docs/backlog/stories/story-14-24-ui-contract-file-references.md`
 
 ## North-star use case: Seating planner (multi-step, interactive layout)
 
@@ -163,17 +173,17 @@ How this maps to the planned work:
 
 - **Now (possible but clunky)**: steps 1–2, 4, 6–8 are straightforward with current `input_schema`, `next_actions`, `state`,
   artifacts, and settings; step 5 can be modeled with action forms (swap/move) but lacks the slot UI.
-- **High-yield UX**: sticky action inputs + progress + file reference UX (SPR-2026-05-26) make multi-step iteration
+- **High-yield UX**: sticky action inputs + progress + file reference UX make multi-step iteration
   tolerable even before deeper contract work.
-- **Contract v2.x**: action defaults/prefill + file references (SPR-2026-06-09) enable “real” guided flows and clean
+- **Contract v2.x**: action defaults/prefill + file references enable “real” guided flows and clean
   reuse of previous rosters/layouts.
 - **Layout editor v1**: a first-class interactive “layout editor” output type (platform-rendered, no arbitrary tool JS)
   unlocks the intended slot editor experience:
-  - contract + click-to-assign (SPR-2026-06-23)
-  - drag/drop enhancement (SPR-2026-07-07)
+  - contract + click-to-assign (`ST-14-25` / `ST-14-26`)
+  - drag/drop enhancement (`ST-14-27` / `ST-14-28`)
   - ADR foundation: `docs/adr/adr-0047-layout-editor-v1.md`
 
-## Deferred “bigger bets” (not included in the sprint skeleton set)
+## Deferred “bigger bets”
 
 - Schema “v2” (defaults/required/help/min/max/placeholder) across domain + OpenAPI + SPA.
 - Vega-Lite end-to-end support (policy + normalization + client renderer).

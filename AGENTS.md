@@ -33,15 +33,16 @@ Target Python is **3.13–3.14**.
 - **PDM/pyproject changes (incl. migration work)**: use `pdm-migration-specialist` for `pyproject.toml` dependency-group updates (generic skill; don’t import HuleEdu monorepo assumptions).
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - `docs/backlog/prs/`: technical PR tasks (refactors/structure work) connected to stories; use `docs/templates/template-pr.md`; validated by the docs contract like other doc types.
-- **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
+- **Docs workflow (REQUIRED)**: use the current docs-as-code flow described in `docs/index.md` and `docs/reference/ref-review-workflow.md`: `PRD -> ADR -> EPIC -> STORY -> PR backlog slices -> retained REVIEW` when a decision gate is needed.
 - **Docs index (REQUIRED)**: when adding new docs, update `docs/index.md` so the full index stays complete.
 - **Epic update workflow (REQUIRED)**: when you mark a story `done`, update its epic in `docs/backlog/epics/`:
   - bump the epic frontmatter `updated` date
   - add/refresh a short “Implementation Summary (as of YYYY-MM-DD)” noting what shipped (at minimum the story ID)
-- **Handoff workflow (REQUIRED)**: when you change any story/epic/sprint status (or scope/dependencies), update `.agents/handoff.md`:
-  - Keep `## Snapshot` fields current (Date, Branch, Current sprint, Production, Completed).
+- **Handoff workflow (REQUIRED)**: when you change any story/epic/PR/review status (or scope/dependencies), update `.agents/handoff.md`:
+  - Keep `## Snapshot` fields current.
   - Do **not** include commit SHAs in Snapshot (avoid churn); use `Branch: <name> + local changes`.
   - Add the relevant verification commands/manual checks under `## Verification`.
+  - When compacting `.agents/handoff.md`, append the removed content directly to `docs/reference/ref-development-changelog.md` first.
 - **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agents/rules/096-review-workflow.md`
 - `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
 - `.agents/`: agent workflow helpers (`.agents/handoff.md`, next-session prompt template) + coding rules (`.agents/rules/`)
@@ -51,28 +52,30 @@ Target Python is **3.13–3.14**.
 ## Key Commands
 
 - Setup: `pdm install -G monorepo-tools`
-- Pre-commit (REQUIRED): `pdm run precommit-install` then `pdm run precommit-run`
+- Pre-commit (REQUIRED): `pdm run precommit-install` then `pdm run precommit-run` (`pre-commit` includes ShellCheck for staged `.sh` / `.bash` files)
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
 - Run (local + log piping): `pdm run dev-logs` (writes `.artifacts/dev-backend.log`)
 - Run (local combo): `pdm run dev-local` (backend + SPA with log piping)
-- Execution worker (one-off dev): `PYTHONPATH=src pdm run python -m skriptoteket.cli run-execution-worker --once`
-- Execution worker healthcheck (for containers): `PYTHONPATH=src pdm run python -m skriptoteket.cli healthcheck-execution-worker`
+- Execution worker (one-off dev): `pdm run run-execution-worker --once`
 - Dev logs: when using Vite (`pdm run fe-dev`), API calls proxy to `127.0.0.1:8000` → check the **host** `pdm run dev` terminal for backend errors (container logs only apply if you point the UI at the container port).
 - Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
 - SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
 - SPA dev (local + log piping): `pdm run fe-dev-logs` (writes `.artifacts/dev-frontend.log`)
 - SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
 - SPA tests (Vitest): `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
+- SPA typecheck: `pdm run fe-type-check`
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-rebuild` / `pdm run dev-db-reset`
 - Docker dev logs (web + worker + frontend): `pdm run dev-containers-logs`
 - **Docker image builds (REQUIRED)**: run in background, log to `.artifacts/`, and give the user the `tail -f` command.
-- Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
+- Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
+- Shell quality: `pdm run shellcheck <paths...>` while iterating on shell scripts; `pdm run lint` is the required final close-out gate and includes repo-wide `pdm run shellcheck-all`
 - Docs: `pdm run docs-validate`
 - Session file ops (prod): `pdm run cleanup-session-files` (TTL cleanup) / `pdm run clear-all-session-files` (danger: deletes all)
 - Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate`
+- Hemma deploy launcher: `pdm run hemma-deploy` / `pdm run hemma-deploy-monitor`
 
 ## SSH Defaults (hemma)
 
@@ -141,8 +144,8 @@ Repo-specific reminders:
 ## Agent docs size budgets (enforced)
 
 - Keep `.agents/handoff.md` ≤ 200 lines (enforced by pre-commit).
-- `.agents/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
-  `docs/`.
+- `.agents/handoff.md` should only keep current delivery-critical backend/frontend info.
+- When pruning `.agents/handoff.md`, move the removed content directly to `docs/reference/ref-development-changelog.md` with minimal reshaping.
 
 ## Observability Stack
 

@@ -176,7 +176,7 @@ Review docs are retained. They are not disposable checklists.
 
 ## Legacy migration note
 
-- Old sprint-led planning and epic-ledger supplemental review patterns are legacy.
+- Old epic-ledger supplemental review patterns are legacy.
 - When touched, split supplemental review sections into their own target-based review docs.
 - A separate legacy migration pass can refactor older records that still bundle multiple review
   cycles or reuse the same epic review id across unrelated documents.

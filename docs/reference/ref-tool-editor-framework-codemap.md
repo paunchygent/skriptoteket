@@ -385,8 +385,9 @@ Grouped by area. Story IDs link to backlog details.
 
 ### Contract v2.x enhancements
 
-- **Sprint 2026-06-09**: action defaults + file references in actions
-  (`docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md`)
+- **ST-14-23**: action defaults / prefill
+- **ST-14-24**: first-class file references in actions
+- **ST-14-25..28**: layout editor output, renderer, drag/drop, and accessibility polish
 
 ## Appendix: reference map
 
@@ -407,14 +408,17 @@ Grouped by area. Story IDs link to backlog details.
 - `docs/reference/ref-ai-script-generation-kb.md`
 - `docs/reference/ref-codemirror-integration.md`
 
-### Sprints (planned)
+### Backlog follow-ups
 
-- `docs/backlog/sprints/sprint-2026-03-03-tool-editor-dx-quick-wins.md`
-- `docs/backlog/sprints/sprint-2026-03-17-tool-editor-sandbox-debug-details.md`
-- `docs/backlog/sprints/sprint-2026-03-31-tool-editor-schema-editor-v1.md`
-- `docs/backlog/sprints/sprint-2026-04-14-tool-editor-schema-validation-v1.md`
-- `docs/backlog/sprints/sprint-2026-04-28-tool-editor-version-diff-v1.md`
-- `docs/backlog/sprints/sprint-2026-05-12-tool-editor-runner-toolkit-and-intelligence.md`
-- `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md`
-- `docs/backlog/sprints/sprint-2026-06-23-tool-layout-editor-v1-contract-and-renderer.md`
-- `docs/backlog/sprints/sprint-2026-07-07-tool-layout-editor-v1-drag-and-drop.md`
+- `docs/backlog/epics/epic-14-admin-tool-authoring.md`
+- `docs/backlog/stories/story-14-12-editor-sandbox-debug-panel.md`
+- `docs/backlog/stories/story-14-14-editor-schema-editor-snippets-and-diagnostics.md`
+- `docs/backlog/stories/story-14-17-editor-version-diff-view.md`
+- `docs/backlog/stories/story-14-19-runner-toolkit-helper-module.md`
+- `docs/backlog/stories/story-14-22-tool-run-ux-progress-and-file-references.md`
+- `docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md`
+- `docs/backlog/stories/story-14-24-ui-contract-file-references.md`
+- `docs/backlog/stories/story-14-25-ui-contract-layout-editor-v1-output.md`
+- `docs/backlog/stories/story-14-26-ui-renderer-layout-editor-v1-click-assign.md`
+- `docs/backlog/stories/story-14-27-layout-editor-v1-drag-drop.md`
+- `docs/backlog/stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md`

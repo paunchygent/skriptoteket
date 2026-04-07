@@ -27,7 +27,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 - Smart assignment V1 decision memo:
   `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
-- Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
+- Development changelog: `docs/reference/ref-development-changelog.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
 - Runner Contract V3 (Structured Results, State & Promotions): `docs/reference/ref-runner-contract-v3.md`
@@ -1047,8 +1047,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-home-server-nginx-proxy.md`
 - `docs/reference/ref-home-server-security-hardening.md`
 - `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
-- `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - `docs/reference/ref-linter-architecture.md`
+- `docs/reference/ref-development-changelog.md`
 - `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - `docs/reference/ref-review-workflow.md`
@@ -1134,4 +1134,5 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - Start-here: `AGENTS.md`
 - Session handoff: `.agents/handoff.md`
+- Development changelog: `docs/reference/ref-development-changelog.md`
 - Next-session prompt template: `.agents/next-session-instruction-prompt-template.md`

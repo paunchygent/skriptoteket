@@ -63,7 +63,7 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 
 ## Stories + planning workflow (when implementing backlog work)
 
-- Planning workflow: `docs/reference/ref-sprint-planning-workflow.md`
+- Planning workflow: `docs/index.md`
 - Review gate (required for proposed EPICs/ADRs): `.agents/rules/096-review-workflow.md`
 
 ## DB + migrations
