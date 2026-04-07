@@ -2,7 +2,7 @@
 type: pr
 id: PR-0237
 title: "ST-32-07: landing public-entry information architecture and canonical mockup preview"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
 updated: 2026-04-07
@@ -38,6 +38,28 @@ debates inside the live app instead of aligning first.
 
 Create one canonical story-scoped mockup that lets us align on public-entry hierarchy, section
 order, and draft showcase language before production landing-page changes begin.
+
+## Decision
+
+`docs/mockups/st-32-07-public-landing-discoverability/designer-a.html` is the winning submission
+for `PR-0237`. The canonical blueprint artifact for `ST-32-07` is the separate copy
+`docs/mockups/st-32-07-public-landing-discoverability/index.html`, derived from the winning file
+without modifying the original submission.
+
+Why this direction won:
+
+- it understands the page as a landing page first, not as an explained information-architecture exercise
+- it keeps the header calmer and more confident
+- it gives the hero one unmistakable first action
+- it shows the product more directly with less explanatory support copy
+- it keeps the authenticated-only preview reading as “later” instead of as a competing route
+- it stays inside the Skriptoteket/HuleEdu brutalist-academic language without drifting into generic marketing design or overbuilt mockup chrome
+- it feels edited: the hierarchy is clearer because it knows what to emphasize and what to leave out
+
+Blueprint caveats to carry into `PR-0238` polish:
+
+- any optional baseline overlay is a working aid only and must not appear in presentations, blueprint exports, or production interpretation
+- a few monospace / uppercase micro-markers can be softened later, especially in smaller labels, captions, or utility-style navigation details, but that is polish rather than a directional problem
 
 ## Non-goals
 

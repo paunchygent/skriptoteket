@@ -47,6 +47,10 @@ Klassrumskartan obvious before the visitor is asked to create an account or log 
 - Mockup-first planning is required here, not optional polish. Follow the precedent from
   `PR-0184`: use `docs/mockups/` to align on header, hero, section order, CTA hierarchy, and
   preview language before touching production Vue components.
+- `PR-0237` is now decided: `docs/mockups/st-32-07-public-landing-discoverability/designer-a.html`
+  is the winning submission, and the separate canonical blueprint copy for follow-on work is
+  `docs/mockups/st-32-07-public-landing-discoverability/index.html`. Carry that direction into
+  `PR-0238` with light polish rather than a reopened layout debate.
 - All Swedish copy in this story is provisional until the user signs it off. Draft copy should aim
   for normal conversational Swedish in full sentences, short and clear, with no internal jargon,
   no compressed technical phrasing, and no salesman language.

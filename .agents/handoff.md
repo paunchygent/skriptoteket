@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-07
 - Branch: `main` + local changes
-- Current lane: `EPIC-32` / `ST-32-07` through `ST-32-09` planning scaffold for landing entry hierarchy, showcase surfaces, and malformed-route recovery
+- Current lane: `EPIC-32` / `ST-32-07` blueprint selected through `PR-0237`; `PR-0238` next for landing public-entry cutover, with `ST-32-08` and `ST-32-09` queued after that
 - Production: Full Vue SPA
 - Completed: `PR-0231`, `PR-0232`, `PR-0233`, `PR-0234`, `PR-0235`, and `PR-0236` are shipped on `main`; the public/export review follow-ups and Vitest path-normalization hardening are pushed; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
 ## Status
@@ -31,7 +31,11 @@ Keep this file updated so the next session can pick up work quickly.
   - `ST-32-07` owns landing header/hero entry hierarchy plus the required mockup-first alignment pass through `PR-0237` and `PR-0238`
   - `ST-32-08` owns the featured public-app showcase and authenticated-value preview surface through `PR-0239`
   - `ST-32-09` owns catch-all route recovery and malformed public-path guidance through `PR-0240`
-- `PR-0237` competitive mockup round has begun with `docs/mockups/st-32-07-public-landing-discoverability/designer-cascade.html` demonstrating the calm header, strong Klassrumskartan hero CTA, and non-card typographic layout.
+- `PR-0237` is now decided and documented as done:
+  - `docs/mockups/st-32-07-public-landing-discoverability/designer-a.html` is the winning submission
+  - the canonical blueprint artifact for follow-on work is the separate copy `docs/mockups/st-32-07-public-landing-discoverability/index.html`
+  - do not refine or overwrite `designer-a.html`; any further iteration should branch from the copy, not the original submission
+  - carry forward the review caveats that any baseline overlay is working scaffolding only and that minor monospace / uppercase micro-markers can be softened later without reopening the layout direction
 - The review follow-up pass that closed the public export/Vitest footguns is also shipped on `main`:
   - `public_seating_export.py` now imports and uses `validation_error(...)` correctly
   - direct handler tests cover invalid public PDF branches and route tests assert forwarded handler args
@@ -78,6 +82,8 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.agents/handoff.md`)
 - `pdm run docs-validate` (pass after scaffolding `ST-32-07` and `PR-0237` through `PR-0240`)
 - Live local browser proof on `docs/mockups/st-32-07-public-landing-discoverability/designer-cascade.html` (pass; layout verified according to PR-0237 rules)
+- Live local browser proof on `docs/mockups/st-32-07-public-landing-discoverability/index.html` (pass; canonical copy derived from `designer-a.html` renders locally without touching the original submission)
+- `pdm run docs-validate` (pass after recording the `PR-0237` winner, promoting `designer-a.html` via separate `index.html` copy, and refreshing story/PR/handoff docs)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
 - Live public browser proof against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` with local backend on `http://127.0.0.1:8000` (pass; guest `Regler`, guest Smart drawer parity without `Historik`, and live `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` `200 OK`)
 - Live public browser proof for `PR-0234` against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; seeded guest snapshot kept `selected_template_local_id = template-1` and `grouping_draft.template_local_id = template-1` after overview -> `Grupper`; a forced grouping-without-classroom state rendered `Sittplatser` disabled with title `Skapa eller välj först ett klassrum.`)
@@ -102,9 +108,8 @@ pdm run docs-validate
 - `ClassroomPlannerView.spec.ts` still emits the pre-existing suppressed runtime warning from `resolveHomeRosterId(...)` during one centered-shell test even though the suite passes; it was not part of `PR-0226`.
 ## Next Steps
 - Keep `PR-0232` scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.
-- Start `ST-32-07` with `PR-0237` only: review `.agents/rules/045-huleedu-design-system.md`, `skriptoteket-frontend-specialist`, and `brutalist-academic-ui`, then create the canonical `docs/mockups/st-32-07-public-landing-discoverability/index.html` preview before touching production landing code.
-- Run `PR-0237` as a competitive mockup round for the lead web designers: each designer should post independent files under `docs/mockups/st-32-07-public-landing-discoverability/`, avoid editing or studying another designer's work unless explicitly told to do so, and expect the best overall submission to be promoted to blueprint.
-- After the mockup is agreed, complete `ST-32-07` with `PR-0238`, then move into `ST-32-08` for the below-the-fold showcase/authenticated-preview work through `PR-0239`.
+- Start `PR-0238` from `docs/mockups/st-32-07-public-landing-discoverability/index.html`, which is the canonical copy based on the winning `designer-a.html`; keep the original submission untouched.
+- Refine lightly from the approved direction rather than reopening the overall landing layout debate, then move into `ST-32-08` for the below-the-fold showcase/authenticated-preview work through `PR-0239`.
 - Treat `ST-32-09` / `PR-0240` as the final repair story for unmatched-route handling so malformed `/public/<app-id>` paths recover visibly without changing the canonical `/public/apps/:appId` contract.
 - If follow-up polish is needed, return to `PR-0229` for toolbar overflow/discoverability work without reopening the guest/auth transport boundary.
 - Return to `PR-0229` only after the guest-mode bridge slice. `PR-0229` now explicitly picks up any post-`PR-0232` toolbar shortcut polish/alignment and overflow discoverability cleanup without reopening the guest/auth boundary.
