@@ -60,11 +60,8 @@ class InfrastructureServicesProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
-    def public_helper_request_throttle(self, settings: Settings) -> PublicHelperThrottleProtocol:
-        return InMemoryPublicHelperRequestThrottle(
-            max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
-            window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
-        )
+    def public_helper_request_throttle(self) -> PublicHelperThrottleProtocol:
+        return InMemoryPublicHelperRequestThrottle()
 
     @provide(scope=Scope.APP)
     def email_sender(self, settings: Settings) -> EmailSenderProtocol:

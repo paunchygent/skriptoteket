@@ -129,11 +129,8 @@ def registry() -> Mock:
 
 
 @pytest.fixture
-def throttle(settings: Settings) -> PublicHelperThrottleProtocol:
-    return InMemoryPublicHelperRequestThrottle(
-        max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
-        window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
-    )
+def throttle() -> PublicHelperThrottleProtocol:
+    return InMemoryPublicHelperRequestThrottle()
 
 
 @pytest.fixture
@@ -307,10 +304,7 @@ async def test_public_import_preview_rejects_payloads_above_the_public_cap(
     import_handler: AsyncMock,
 ) -> None:
     settings = Settings(PUBLIC_HELPER_IMPORT_PREVIEW_MAX_FILE_BYTES=4)
-    throttle = InMemoryPublicHelperRequestThrottle(
-        max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
-        window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
-    )
+    throttle = InMemoryPublicHelperRequestThrottle()
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
     app.include_router(public_planner_api.router)
@@ -346,10 +340,7 @@ async def test_public_import_preview_returns_429_when_anonymous_limit_is_exhaust
     import_handler: AsyncMock,
 ) -> None:
     settings = Settings(PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS=1)
-    throttle = InMemoryPublicHelperRequestThrottle(
-        max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
-        window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
-    )
+    throttle = InMemoryPublicHelperRequestThrottle()
     import_handler.handle.return_value = ClassListImportPreview(
         file_name="test_class.txt",
         suggested_class_name=None,
@@ -394,10 +385,7 @@ async def test_public_import_preview_returns_structured_timeout_reason(
     registry: AsyncMock,
 ) -> None:
     settings = Settings(PUBLIC_HELPER_IMPORT_PREVIEW_TIMEOUT_SECONDS=0)
-    throttle = InMemoryPublicHelperRequestThrottle(
-        max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
-        window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
-    )
+    throttle = InMemoryPublicHelperRequestThrottle()
     import_handler = AsyncMock(spec=CreateClassListImportPreviewHandler)
 
     async def _slow_handle(**_: object) -> ClassListImportPreview:

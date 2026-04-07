@@ -33,6 +33,8 @@ from .handlers.grouping_history import (
     DeleteHistoricGroupingDraftHandler,
 )
 from .handlers.guest_upgrade import ClassroomPlannerGuestUpgradeHandler
+from .handlers.public_smart_grouping import RunPublicSmartGroupingHandler
+from .handlers.public_smart_seating import RunPublicSmartSeatingHandler
 from .handlers.rosters import (
     CreateRosterHandler,
     DeleteRosterHandler,
@@ -109,6 +111,8 @@ __all__ = [
     "PrepareGroupingExportHandler",
     "PreparedGroupingExportContract",
     "PrepareSeatingExportHandler",
+    "RunPublicSmartGroupingHandler",
+    "RunPublicSmartSeatingHandler",
     "PreparedSeatingExportContract",
     "RedoDraftHandler",
     "ResolveDraftHandler",

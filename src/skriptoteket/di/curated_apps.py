@@ -45,6 +45,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    RunPublicSmartGroupingHandler,
+    RunPublicSmartSeatingHandler,
     RunSmartGroupingHandler,
     RunSmartSeatingHandler,
     SeatingExportJobFinalizer,
@@ -991,6 +993,20 @@ class CuratedAppsProvider(Provider):
             seating_checkpoints=seating_checkpoints,
             clock=clock,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def run_public_smart_grouping_handler(
+        self,
+        clock: ClockProtocol,
+    ) -> RunPublicSmartGroupingHandler:
+        return RunPublicSmartGroupingHandler(clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def run_public_smart_seating_handler(
+        self,
+        clock: ClockProtocol,
+    ) -> RunPublicSmartSeatingHandler:
+        return RunPublicSmartSeatingHandler(clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def classroom_planner_guest_upgrade_handler(

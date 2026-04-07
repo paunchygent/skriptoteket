@@ -2,18 +2,22 @@
 /**
  * Classroom planner public guest workspace shell.
  *
- * This guest-only shell keeps checkpoint-3 honest by exposing only the
- * browser-owned grouping and seating lanes. It reuses the shared planner
- * panes and toolbars, while intentionally omitting authenticated-only rules,
- * history, export, and recovery affordances.
+ * This guest-only shell reuses the shared planner workspace surfaces for the
+ * browser-owned public lane. It keeps `Regler` and Smart drawer parity with
+ * the authenticated shell while intentionally hiding account-only history and
+ * export affordances.
  */
 
-import { computed, onUnmounted, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 
 import { useHelp } from "../../components/help/useHelp";
+import { useToast } from "../../composables/useToast";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
+import PlannerGroupingSettingsDrawer from "./components/PlannerGroupingSettingsDrawer.vue";
 import PlannerGroupingWorkspacePane from "./components/PlannerGroupingWorkspacePane.vue";
 import PlannerGroupingWorkspaceToolbar from "./components/PlannerGroupingWorkspaceToolbar.vue";
+import PlannerRulesWorkspacePane from "./components/PlannerRulesWorkspacePane.vue";
+import PlannerSeatingSettingsDrawer from "./components/PlannerSeatingSettingsDrawer.vue";
 import PlannerSeatingWorkspacePane from "./components/PlannerSeatingWorkspacePane.vue";
 import PlannerSeatingWorkspaceToolbar from "./components/PlannerSeatingWorkspaceToolbar.vue";
 import PlannerTopPanel from "./components/PlannerTopPanel.vue";
@@ -22,7 +26,7 @@ import { PLANNER_WORKSPACE_SHELL_CLASS } from "./plannerWorkspaceLayout";
 import { resolvePlannerWorkspaceDisabledReasons } from "./plannerWorkspacePrerequisites";
 import { useClassroomState } from "./useClassroomState";
 
-type GuestPlannerView = "groups" | "seats";
+type GuestPlannerView = "groups" | "seats" | "rules";
 
 const props = withDefaults(
   defineProps<{
@@ -43,39 +47,74 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: "change-grouping-roster", payload: { rosterId: string }): void;
+  (e: "change-grouping-template", payload: { templateId: string | null }): void;
   (e: "change-seating-template", payload: { templateId: string | null }): void;
   (e: "new-grouping-draft", payload: { templateId: string | null }): void;
   (e: "new-seating-draft", payload: { templateId: string }): void;
   (e: "edit-roster"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
-  (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
+  (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;
   (e: "exit-app"): void;
 }>();
 
 const plannerState = useClassroomState();
+const toast = useToast();
 
 function resolvePlannerView(requestedView: GuestPlannerView): GuestPlannerView {
+  if (requestedView === "rules") {
+    return "rules";
+  }
+  if (plannerState.draft?.draft_kind === "grouping") {
+    return "groups";
+  }
   if (plannerState.draft?.draft_kind === "seating") {
     return "seats";
   }
   return requestedView;
 }
 
-const currentView = computed<GuestPlannerView>(() => resolvePlannerView(props.initialView));
+const currentView = ref<GuestPlannerView>(resolvePlannerView(props.initialView));
+const selectedStudentId = ref<string | null>(null);
+const isGroupingSettingsDrawerOpen = ref(false);
+const isSeatingSettingsDrawerOpen = ref(false);
+const pendingGroupingTemplateId = ref(plannerState.template?.id ?? props.selectedTemplateId ?? "");
+const pendingSeatingTemplateId = ref(plannerState.template?.id ?? props.selectedTemplateId ?? "");
+const lastGroupingSmartRunToast = ref<string | null>(null);
+const lastSeatingSmartRunToast = ref<string | null>(null);
+
+const resolvedTemplateId = computed(() => {
+  return (
+    plannerState.template?.id
+    ?? pendingSeatingTemplateId.value
+    ?? pendingGroupingTemplateId.value
+    ?? props.selectedTemplateId
+    ?? null
+  );
+});
 const selectedPlannerTemplate = computed(() => {
-  if (plannerState.template) {
+  const templateId = resolvedTemplateId.value;
+  if (!templateId) {
+    return null;
+  }
+  if (plannerState.template?.id === templateId) {
     return plannerState.template;
   }
-  return props.availableTemplates.find((entry) => entry.id === props.selectedTemplateId) ?? null;
+  return props.availableTemplates.find((entry) => entry.id === templateId) ?? null;
 });
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Planering");
-const workspaceModeValue = computed<"overview" | "grouping" | "seating">(() => {
-  return currentView.value === "groups" ? "grouping" : "seating";
+const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules">(() => {
+  if (currentView.value === "groups") {
+    return "grouping";
+  }
+  if (currentView.value === "rules") {
+    return "rules";
+  }
+  return "seating";
 });
 const workspaceDisabledReasons = computed(() => {
   return resolvePlannerWorkspaceDisabledReasons({
     hasRoster: plannerState.roster !== null,
-    hasTemplate: selectedPlannerTemplate.value !== null,
+    hasTemplate: resolvedTemplateId.value !== null,
   });
 });
 const isSeatWorkspaceWithoutTemplate = computed(() => {
@@ -94,34 +133,11 @@ const supportingText = computed(() => {
   if (currentView.value === "groups") {
     return "Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.";
   }
+  if (currentView.value === "rules") {
+    return "Här ställer du in regler som påverkar Smart i grupper och sittplatser.";
+  }
   return "Dra elever till platserna och justera sittschemat direkt i klassrummet.";
 });
-
-function reloadAfterConflict(): void {
-  void plannerState.reloadActiveWorkspace();
-}
-
-function selectWorkspaceMode(value: string): void {
-  if (value === "overview" || value === "grouping" || value === "seating") {
-    emit("select-workspace-mode", value);
-  }
-}
-
-function changeGroupingRoster(rosterId: string): void {
-  emit("change-grouping-roster", { rosterId });
-}
-
-function changeSeatingTemplate(templateId: string | null): void {
-  emit("change-seating-template", { templateId });
-}
-
-function startNewGroupingDraft(): void {
-  emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
-}
-
-function editCurrentTemplate(template: RoomTemplate): void {
-  emit("edit-current-template", template);
-}
 
 const { setHelpContext, clearHelpContext } = useHelp();
 watch(
@@ -135,6 +151,145 @@ watch(
   { immediate: true },
 );
 onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
+
+function selectStudent(studentId: string): void {
+  if (currentView.value === "rules") {
+    if (plannerState.activeSeatingSmartTool) {
+      plannerState.handleSeatingSmartToolStudentSelection(studentId);
+    }
+    selectedStudentId.value = null;
+    return;
+  }
+  selectedStudentId.value = null;
+}
+
+async function reloadAfterConflict(): Promise<void> {
+  await plannerState.reloadActiveWorkspace();
+}
+
+function selectWorkspaceMode(value: string): void {
+  if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
+    emit("select-workspace-mode", value);
+  }
+}
+
+function changeGroupingRoster(rosterId: string): void {
+  emit("change-grouping-roster", { rosterId });
+}
+
+function changeGroupingTemplate(templateId: string | null): void {
+  pendingGroupingTemplateId.value = templateId ?? "";
+  emit("change-grouping-template", { templateId });
+}
+
+function changeSeatingTemplate(templateId: string | null): void {
+  pendingSeatingTemplateId.value = templateId ?? "";
+  emit("change-seating-template", { templateId });
+}
+
+function startNewGroupingDraft(): void {
+  emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
+}
+
+function openGroupingSettingsDrawer(): void {
+  isGroupingSettingsDrawerOpen.value = true;
+}
+
+function closeGroupingSettingsDrawer(): void {
+  isGroupingSettingsDrawerOpen.value = false;
+}
+
+function openSeatingSettingsDrawer(): void {
+  isSeatingSettingsDrawerOpen.value = true;
+}
+
+function closeSeatingSettingsDrawer(): void {
+  isSeatingSettingsDrawerOpen.value = false;
+}
+
+function openRules(): void {
+  emit("select-workspace-mode", "rules");
+}
+
+function editCurrentTemplate(template: RoomTemplate): void {
+  emit("edit-current-template", template);
+}
+
+function showSmartRunToast(options: {
+  message: string | null;
+  tone: "neutral" | "success" | "warning";
+  lastToastRef: { value: string | null };
+}): void {
+  const { message, tone, lastToastRef } = options;
+  if (!message) {
+    lastToastRef.value = null;
+    return;
+  }
+
+  const toastKey = `${tone}:${message}`;
+  if (toastKey === lastToastRef.value) {
+    return;
+  }
+
+  if (tone === "success") {
+    toast.success(message);
+  } else if (tone === "warning") {
+    toast.warning(message);
+  } else {
+    toast.info(message);
+  }
+  lastToastRef.value = toastKey;
+}
+
+watch(
+  () => props.initialView,
+  (nextView) => {
+    currentView.value = resolvePlannerView(nextView);
+    isGroupingSettingsDrawerOpen.value = false;
+    isSeatingSettingsDrawerOpen.value = false;
+    selectedStudentId.value = null;
+  },
+);
+
+watch(
+  () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null],
+  () => {
+    currentView.value = resolvePlannerView(currentView.value);
+    isGroupingSettingsDrawerOpen.value = false;
+    isSeatingSettingsDrawerOpen.value = false;
+    selectedStudentId.value = null;
+    pendingGroupingTemplateId.value = plannerState.template?.id ?? props.selectedTemplateId ?? "";
+    pendingSeatingTemplateId.value = plannerState.template?.id ?? props.selectedTemplateId ?? "";
+  },
+);
+
+watch(
+  () => ({
+    message: plannerState.smartGroupingRunMessage,
+    tone: plannerState.smartGroupingRunTone,
+  }),
+  ({ message, tone }) => {
+    showSmartRunToast({
+      message,
+      tone,
+      lastToastRef: lastGroupingSmartRunToast,
+    });
+  },
+);
+
+watch(
+  () => ({
+    message: plannerState.smartSeatingRunMessage,
+    tone: plannerState.smartSeatingRunTone,
+  }),
+  ({ message, tone }) => {
+    showSmartRunToast({
+      message,
+      tone,
+      lastToastRef: lastSeatingSmartRunToast,
+    });
+  },
+);
 </script>
 
 <template>
@@ -149,7 +304,7 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
       <button
         type="button"
         class="btn-ghost planner-btn-ghost"
-        @click="reloadAfterConflict"
+        @click="void reloadAfterConflict()"
       >
         Ladda om utkast
       </button>
@@ -159,9 +314,10 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
       :title="plannerTitle"
       :context-label="contextLabel"
       :mode-value="workspaceModeValue"
-      :show-rules-option="false"
+      :show-rules-option="true"
       :grouping-disabled-reason="workspaceDisabledReasons.grouping"
       :seating-disabled-reason="workspaceDisabledReasons.seating"
+      :rules-disabled-reason="workspaceDisabledReasons.rules"
       :supporting-text="supportingText"
       :status-label="plannerState.plannerStatusLabel"
       :status-message="plannerState.plannerStatusMessage"
@@ -178,11 +334,13 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
         <PlannerGroupingWorkspaceToolbar
           :available-rosters="availableRosters"
           :selected-roster-id="selectedRosterId"
+          :smart-settings-open="isGroupingSettingsDrawerOpen"
           :show-history-action="false"
-          :show-smart-controls="false"
+          :show-smart-controls="true"
           :show-export-actions="false"
           @change-grouping-roster="changeGroupingRoster($event)"
           @new-grouping-draft="startNewGroupingDraft"
+          @open-settings="openGroupingSettingsDrawer"
           @edit-roster="emit('edit-roster')"
         />
       </template>
@@ -191,26 +349,51 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
     </PlannerWorkspaceModeSurface>
 
     <PlannerWorkspaceModeSurface
-      v-else
+      v-else-if="currentView === 'seats'"
       view="seats"
     >
       <template #toolbar>
         <PlannerSeatingWorkspaceToolbar
           :available-templates="availableTemplates"
-          :selected-template-id="selectedPlannerTemplate?.id ?? null"
+          :selected-template-id="pendingSeatingTemplateId || null"
+          :smart-settings-open="isSeatingSettingsDrawerOpen"
           :show-history-action="false"
-          :show-smart-controls="false"
+          :show-smart-controls="true"
           :show-export-actions="false"
           @change-seating-template="changeSeatingTemplate($event)"
           @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
           @edit-roster="emit('edit-roster')"
           @edit-current-template="editCurrentTemplate"
+          @open-settings="openSeatingSettingsDrawer"
         />
       </template>
 
       <PlannerSeatingWorkspacePane
-        :selected-template-id="selectedPlannerTemplate?.id ?? null"
+        :selected-template-id="pendingSeatingTemplateId || null"
       />
     </PlannerWorkspaceModeSurface>
+
+    <PlannerRulesWorkspacePane
+      v-else
+      :selected-student-id="selectedStudentId"
+      @student-selected="selectStudent"
+    />
+
+    <PlannerGroupingSettingsDrawer
+      :open="currentView === 'groups' && isGroupingSettingsDrawerOpen"
+      :available-templates="availableTemplates"
+      :selected-template-id="pendingGroupingTemplateId || null"
+      :show-history-setting="false"
+      @close="closeGroupingSettingsDrawer"
+      @change-grouping-template="changeGroupingTemplate($event)"
+      @open-rules="openRules"
+    />
+
+    <PlannerSeatingSettingsDrawer
+      :open="currentView === 'seats' && isSeatingSettingsDrawerOpen"
+      :show-history-setting="false"
+      @close="closeSeatingSettingsDrawer"
+      @open-rules="openRules"
+    />
   </section>
 </template>

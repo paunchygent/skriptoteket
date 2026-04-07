@@ -21,6 +21,10 @@ import type {
 
 export const PUBLIC_ROSTER_IMPORT_PREVIEW_API_PATH =
   "/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview";
+export const PUBLIC_GROUPING_SMART_RUN_API_PATH =
+  "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run";
+export const PUBLIC_SEATING_SMART_RUN_API_PATH =
+  "/api/v1/public/apps/classroom.group-seating-studio/seating/smart-run";
 
 export const CHECKPOINT_TWO_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapabilities = {
   show_grouping_option: false,
@@ -33,7 +37,7 @@ export const CHECKPOINT_TWO_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapab
 export const CHECKPOINT_THREE_OVERVIEW_CAPABILITIES: ClassroomPlannerOverviewCapabilities = {
   show_grouping_option: true,
   show_seating_option: true,
-  show_rules_option: false,
+  show_rules_option: true,
   show_roster_actions: true,
   show_template_actions: true,
 };

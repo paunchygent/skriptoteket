@@ -7,7 +7,7 @@
  * is active.
  */
 
-import { defineComponent } from "vue";
+import { defineComponent, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -23,7 +23,7 @@ const guestOverviewMocks = vi.hoisted(() => ({
   selectedRosterId: { value: null as string | null },
   selectedTemplateId: { value: null as string | null },
   currentScreen: { value: "class-workspace" as "class-workspace" | "planner" },
-  plannerInitialView: { value: "groups" as "groups" | "seats" },
+  plannerInitialView: { value: "groups" as "groups" | "seats" | "rules" },
   isBootstrapping: { value: false },
   bootstrapError: { value: null as string | null },
   plannerActionError: { value: null as string | null },
@@ -32,7 +32,7 @@ const guestOverviewMocks = vi.hoisted(() => ({
   overviewCapabilities: {
     show_grouping_option: true,
     show_seating_option: true,
-    show_rules_option: false,
+    show_rules_option: true,
     show_roster_actions: true,
     show_template_actions: true,
   },
@@ -63,6 +63,7 @@ const guestOverviewMocks = vi.hoisted(() => ({
   changeSeatingTemplate: vi.fn(),
   startNewGroupingDraft: vi.fn(),
   startNewSeatingDraft: vi.fn(),
+  openRulesWorkspace: vi.fn(),
   selectPlannerWorkspaceMode: vi.fn(),
   openRosterCreate: vi.fn(),
   closeRosterModal: vi.fn(),
@@ -142,6 +143,7 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     guestOverviewMocks.classWorkspaceSummary.value = null;
     guestOverviewMocks.openGroupingWorkspace.mockReset();
     guestOverviewMocks.openSeatingWorkspace.mockReset();
+    guestOverviewMocks.openRulesWorkspace.mockReset();
     guestOverviewMocks.selectPlannerWorkspaceMode.mockReset();
   });
 
@@ -157,9 +159,18 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     expect(classWorkspace.props("overviewCapabilities")).toMatchObject({
       show_grouping_option: true,
       show_seating_option: true,
-      show_rules_option: false,
+      show_rules_option: true,
     });
     expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(false);
+  });
+
+  it("routes the class-workspace Regler affordance through the guest controller", async () => {
+    const wrapper = mountView();
+
+    wrapper.findComponent(PlannerClassWorkspaceStub).vm.$emit("open-rules");
+    await nextTick();
+
+    expect(guestOverviewMocks.openRulesWorkspace).toHaveBeenCalledTimes(1);
   });
 
   it("renders the dedicated guest planner shell when the browser-owned draft is active", () => {

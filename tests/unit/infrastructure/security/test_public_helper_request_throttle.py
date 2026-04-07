@@ -10,7 +10,7 @@ from skriptoteket.infrastructure.security.public_helper_request_throttle import 
 
 
 def test_public_helper_throttle_allows_requests_under_limit() -> None:
-    throttle = InMemoryPublicHelperRequestThrottle(max_requests=2, window_seconds=60)
+    throttle = InMemoryPublicHelperRequestThrottle()
     now = datetime(2026, 4, 3, 12, 0, 0)
 
     decision = throttle.evaluate_request(
@@ -18,6 +18,8 @@ def test_public_helper_throttle_allows_requests_under_limit() -> None:
         helper_name="roster_import_preview",
         client_ip="203.0.113.4",
         user_agent="pytest",
+        max_requests=2,
+        window_seconds=60,
         now=now,
     )
 
@@ -26,7 +28,7 @@ def test_public_helper_throttle_allows_requests_under_limit() -> None:
 
 
 def test_public_helper_throttle_returns_retry_after_when_window_is_exhausted() -> None:
-    throttle = InMemoryPublicHelperRequestThrottle(max_requests=2, window_seconds=60)
+    throttle = InMemoryPublicHelperRequestThrottle()
     now = datetime(2026, 4, 3, 12, 0, 0)
 
     throttle.record_request(
@@ -34,6 +36,8 @@ def test_public_helper_throttle_returns_retry_after_when_window_is_exhausted() -
         helper_name="roster_import_preview",
         client_ip="203.0.113.4",
         user_agent="pytest",
+        max_requests=2,
+        window_seconds=60,
         now=now,
     )
     throttle.record_request(
@@ -41,6 +45,8 @@ def test_public_helper_throttle_returns_retry_after_when_window_is_exhausted() -
         helper_name="roster_import_preview",
         client_ip="203.0.113.4",
         user_agent="pytest",
+        max_requests=2,
+        window_seconds=60,
         now=now + timedelta(seconds=1),
     )
 
@@ -49,6 +55,8 @@ def test_public_helper_throttle_returns_retry_after_when_window_is_exhausted() -
         helper_name="roster_import_preview",
         client_ip="203.0.113.4",
         user_agent="pytest",
+        max_requests=2,
+        window_seconds=60,
         now=now + timedelta(seconds=30),
     )
 
@@ -57,7 +65,7 @@ def test_public_helper_throttle_returns_retry_after_when_window_is_exhausted() -
 
 
 def test_public_helper_throttle_prunes_expired_requests() -> None:
-    throttle = InMemoryPublicHelperRequestThrottle(max_requests=1, window_seconds=60)
+    throttle = InMemoryPublicHelperRequestThrottle()
     now = datetime(2026, 4, 3, 12, 0, 0)
 
     throttle.record_request(
@@ -65,6 +73,8 @@ def test_public_helper_throttle_prunes_expired_requests() -> None:
         helper_name="roster_import_preview",
         client_ip="203.0.113.4",
         user_agent="pytest",
+        max_requests=1,
+        window_seconds=60,
         now=now,
     )
 
@@ -73,6 +83,8 @@ def test_public_helper_throttle_prunes_expired_requests() -> None:
         helper_name="roster_import_preview",
         client_ip="203.0.113.4",
         user_agent="pytest",
+        max_requests=1,
+        window_seconds=60,
         now=now + timedelta(seconds=61),
     )
 

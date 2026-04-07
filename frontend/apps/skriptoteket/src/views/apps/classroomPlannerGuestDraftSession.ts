@@ -11,6 +11,7 @@
 import { computed, ref } from "vue";
 
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
+import { buildGuestWorkspaceResponse } from "./classroomPlannerGuestDraftMutations";
 import {
   buildFixtureMap,
   buildGroupMap,
@@ -21,10 +22,16 @@ import {
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
 import {
+  PUBLIC_GROUPING_SMART_RUN_API_PATH,
+  PUBLIC_SEATING_SMART_RUN_API_PATH,
+} from "./classroomPlannerGuestControllerSupport";
+import {
   createClassroomPlannerGuestDraftPersistence,
   type CreateClassroomPlannerGuestDraftSessionOptions,
 } from "./classroomPlannerGuestDraftPersistence";
 import { createClassroomPlannerGuestDraftWorkspace } from "./classroomPlannerGuestDraftWorkspace";
+import { usePublicSmartGroupingRun } from "./usePublicSmartGroupingRun";
+import { usePublicSmartSeatingRun } from "./usePublicSmartSeatingRun";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import { usePlannerSessionController } from "./usePlannerSessionController";
 import { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
@@ -295,26 +302,76 @@ export function createClassroomPlannerGuestDraftSession(
     persistence,
   });
 
-  const smartGroupingRunMessage = ref<string | null>(null);
-  const smartGroupingRunTone = ref<"neutral" | "success" | "warning">("neutral");
-  const smartSeatingRunMessage = ref<string | null>(null);
-  const smartSeatingRunTone = ref<"neutral" | "success" | "warning">("neutral");
+  function getCurrentWorkspace() {
+    if (!draft.value || !roster.value) {
+      return null;
+    }
 
-  function clearGuestSmartRunFeedback(): void {
-    smartGroupingRunMessage.value = null;
-    smartGroupingRunTone.value = "neutral";
-    smartSeatingRunMessage.value = null;
-    smartSeatingRunTone.value = "neutral";
+    return buildGuestWorkspaceResponse({
+      draft: draft.value,
+      roster: roster.value,
+      template: template.value,
+      groups: groups.value,
+      groupAssignments: groupAssignments.value,
+      seatAssignments: seatAssignments.value,
+    });
   }
 
+  async function persistAppliedWorkspace() {
+    stateSupport.syncVisibleSessionBindings();
+    draftLane.markDirty();
+    return await draftLane.flushPendingChanges();
+  }
+
+  const publicSmartGroupingRun = usePublicSmartGroupingRun({
+    apiPath: PUBLIC_GROUPING_SMART_RUN_API_PATH,
+    draft,
+    smartRulesHydrated,
+    runningState: smartGroupingRunInFlight,
+    getSnapshot: options.getSnapshot,
+    flushDraftLane: draftLane.flushPendingChanges,
+    flushSmartRuleLane: smartRuleLane.flushPendingChanges,
+    getCurrentWorkspace,
+    applyWorkspace: stateSupport.applyWorkspace,
+    persistAppliedWorkspace,
+    normalizeErrorMessage: stateSupport.normalizeMutationError,
+  });
+  const publicSmartSeatingRun = usePublicSmartSeatingRun({
+    apiPath: PUBLIC_SEATING_SMART_RUN_API_PATH,
+    draft,
+    smartRulesHydrated,
+    runningState: smartSeatingRunInFlight,
+    getSnapshot: options.getSnapshot,
+    flushDraftLane: draftLane.flushPendingChanges,
+    flushSmartRuleLane: smartRuleLane.flushPendingChanges,
+    getCurrentWorkspace,
+    applyWorkspace: stateSupport.applyWorkspace,
+    persistAppliedWorkspace,
+    normalizeErrorMessage: stateSupport.normalizeMutationError,
+  });
+
   async function runGroupingShuffle(): Promise<void> {
-    clearGuestSmartRunFeedback();
-    mutationActions.randomizeGroups();
+    publicSmartGroupingRun.clearFeedback();
+    if (!draft.value || draft.value.draft_kind !== "grouping") {
+      return;
+    }
+    if ((draft.value.smart_enabled ?? false) !== true) {
+      mutationActions.randomizeGroups();
+      return;
+    }
+    await publicSmartGroupingRun.run();
   }
 
   async function runSeatingShuffle(): Promise<void> {
-    clearGuestSmartRunFeedback();
-    mutationActions.randomizeSeating();
+    publicSmartSeatingRun.clearFeedback();
+    if (!draft.value || draft.value.draft_kind !== "seating") {
+      return;
+    }
+    if ((draft.value.smart_enabled ?? false) !== true) {
+      mutationActions.randomizeSeating();
+      return;
+    }
+    await publicSmartSeatingRun.run();
   }
 
   async function noopHistoryAction(): Promise<void> {
@@ -333,12 +390,12 @@ export function createClassroomPlannerGuestDraftSession(
     smartRulePersistenceMessage: smartRuleLane.message,
     smartRuleHydrationStatus: smartRuleLane.hydrationStatus,
     smartRuleHydrationMessage: smartRuleLane.hydrationMessage,
-    isRunningSmartGrouping: computed(() => smartGroupingRunInFlight.value),
-    smartGroupingRunMessage,
-    smartGroupingRunTone,
-    isRunningSmartSeating: computed(() => smartSeatingRunInFlight.value),
-    smartSeatingRunMessage,
-    smartSeatingRunTone,
+    isRunningSmartGrouping: publicSmartGroupingRun.isBusy,
+    smartGroupingRunMessage: publicSmartGroupingRun.message,
+    smartGroupingRunTone: publicSmartGroupingRun.tone,
+    isRunningSmartSeating: publicSmartSeatingRun.isBusy,
+    smartSeatingRunMessage: publicSmartSeatingRun.message,
+    smartSeatingRunTone: publicSmartSeatingRun.tone,
     plannerStatusLabel: plannerStatus.plannerStatusLabel,
     plannerStatusMessage: plannerStatus.plannerStatusMessage,
     plannerStatusTone: plannerStatus.plannerStatusTone,

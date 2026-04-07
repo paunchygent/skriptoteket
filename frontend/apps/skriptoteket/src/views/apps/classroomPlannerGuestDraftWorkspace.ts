@@ -117,6 +117,17 @@ export function createClassroomPlannerGuestDraftWorkspace(
     });
   }
 
+  function resolveHydratedTemplate(
+    hydrated: ReturnType<typeof hydrateGuestSnapshot>,
+    templateId: string | null,
+  ): RoomTemplate | null {
+    if (templateId === null) {
+      return null;
+    }
+
+    return hydrated.templates.find((entry) => entry.id === templateId) ?? null;
+  }
+
   function resolveReusableDraft(input: {
     draftKind: PlanDraftKind;
     existingDraft: DraftWorkspaceResponse | null;
@@ -134,6 +145,34 @@ export function createClassroomPlannerGuestDraftWorkspace(
     }
 
     return input.existingDraft;
+  }
+
+  function recontextualizeReusableDraft(input: {
+    draftKind: PlanDraftKind;
+    hydrated: ReturnType<typeof hydrateGuestSnapshot>;
+    reusableDraft: DraftWorkspaceResponse;
+    templateId: string | null;
+  }): DraftWorkspaceResponse {
+    if (input.draftKind !== "grouping") {
+      return input.reusableDraft;
+    }
+
+    const nextTemplate = resolveHydratedTemplate(input.hydrated, input.templateId);
+    if ((input.reusableDraft.template?.id ?? null) === (nextTemplate?.id ?? null)) {
+      return input.reusableDraft;
+    }
+
+    return buildGuestWorkspaceResponse({
+      draft: {
+        ...input.reusableDraft.draft,
+        template_id: nextTemplate?.id ?? null,
+      },
+      roster: input.reusableDraft.roster,
+      template: nextTemplate,
+      groups: input.reusableDraft.groups,
+      groupAssignments: input.reusableDraft.group_assignments,
+      seatAssignments: input.reusableDraft.seat_assignments,
+    });
   }
 
   async function loadWorkspaceFromSnapshot(draftId: string): Promise<void> {
@@ -175,15 +214,18 @@ export function createClassroomPlannerGuestDraftWorkspace(
       templateId,
     });
     if (reusableDraft) {
-      await persistPlannerWorkspace(reusableDraft, {
+      const recontextualizedDraft = recontextualizeReusableDraft({
+        draftKind,
+        hydrated,
+        reusableDraft,
+        templateId,
+      });
+      await persistPlannerWorkspace(recontextualizedDraft, {
         rosterId,
-        templateId:
-          draftKind === "grouping"
-            ? hydrated.ui_state.selected_template_id
-            : (reusableDraft.template?.id ?? null),
+        templateId: draftKind === "grouping" ? templateId : (recontextualizedDraft.template?.id ?? null),
         plannerInitialView: draftKind === "grouping" ? "groups" : "seats",
       });
-      await loadWorkspaceFromSnapshot(reusableDraft.draft.id);
+      await loadWorkspaceFromSnapshot(recontextualizedDraft.draft.id);
       return;
     }
 
@@ -191,10 +233,7 @@ export function createClassroomPlannerGuestDraftWorkspace(
     const rules = hydrated.smart_rule_sets.find((entry) => entry.roster_id === rosterId) ?? null;
     await persistPlannerWorkspace(workspace, {
       rosterId,
-      templateId:
-        draftKind === "grouping"
-          ? hydrated.ui_state.selected_template_id
-          : (workspace.template?.id ?? null),
+      templateId: draftKind === "grouping" ? templateId : (workspace.template?.id ?? null),
       plannerInitialView: draftKind === "grouping" ? "groups" : "seats",
     });
     applyWorkspace(workspace);
@@ -208,7 +247,7 @@ export function createClassroomPlannerGuestDraftWorkspace(
     const rules = hydrated.smart_rule_sets.find((entry) => entry.roster_id === rosterId) ?? null;
     await persistPlannerWorkspace(workspace, {
       rosterId,
-      templateId: hydrated.ui_state.selected_template_id,
+      templateId,
       plannerInitialView: "groups",
     });
     applyWorkspace(workspace);

@@ -34,6 +34,8 @@ class PublicHelperThrottleProtocol(Protocol):
         helper_name: str,
         client_ip: str | None,
         user_agent: str | None,
+        max_requests: int,
+        window_seconds: int,
         now: datetime,
     ) -> PublicHelperThrottleDecision: ...
 
@@ -44,5 +46,7 @@ class PublicHelperThrottleProtocol(Protocol):
         helper_name: str,
         client_ip: str | None,
         user_agent: str | None,
+        max_requests: int,
+        window_seconds: int,
         now: datetime,
     ) -> None: ...

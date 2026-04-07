@@ -23,10 +23,12 @@ const props = withDefaults(
     open: boolean;
     availableTemplates?: RoomTemplate[];
     selectedTemplateId?: string | null;
+    showHistorySetting?: boolean;
   }>(),
   {
     availableTemplates: () => [],
     selectedTemplateId: null,
+    showHistorySetting: true,
   },
 );
 
@@ -101,7 +103,10 @@ function openRules(): void {
       </div>
 
       <div class="flex-1 space-y-4 overflow-y-auto p-4">
-        <section class="space-y-2 border border-navy/20 bg-canvas p-4">
+        <section
+          v-if="showHistorySetting"
+          class="space-y-2 border border-navy/20 bg-canvas p-4"
+        >
           <UiDenseToggle
             data-test="grouping-settings-history-toggle"
             label="Historik"

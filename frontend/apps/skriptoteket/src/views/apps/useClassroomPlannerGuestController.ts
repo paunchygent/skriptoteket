@@ -52,7 +52,7 @@ export function useClassroomPlannerGuestController(options?: {
   const selectedRosterId = ref<string | null>(null);
   const selectedTemplateId = ref<string | null>(null);
   const currentScreen = ref<"class-workspace" | "planner">("class-workspace");
-  const plannerInitialView = ref<"groups" | "seats">("groups");
+  const plannerInitialView = ref<"groups" | "seats" | "rules">("groups");
   const isBootstrapping = ref(enabled);
   const bootstrapError = ref<string | null>(null);
   const plannerActionError = ref<string | null>(null);
@@ -94,7 +94,11 @@ export function useClassroomPlannerGuestController(options?: {
     selectedTemplateId.value = hydratedOverviewState.normalizedSelectedTemplateId;
     currentScreen.value = snapshot.ui_state.current_screen;
     plannerInitialView.value =
-      snapshot.ui_state.planner_initial_view === "seats" ? "seats" : "groups";
+      snapshot.ui_state.planner_initial_view === "seats"
+        ? "seats"
+        : snapshot.ui_state.planner_initial_view === "rules"
+          ? "rules"
+          : "groups";
     currentSnapshot.value = snapshot;
     currentSnapshotId.value = snapshot.snapshot_id;
   }
@@ -134,7 +138,7 @@ export function useClassroomPlannerGuestController(options?: {
     selectedRosterId: string | null;
     selectedTemplateId: string | null;
     currentScreen?: "class-workspace" | "planner";
-    plannerInitialView?: "groups" | "seats";
+    plannerInitialView?: "groups" | "seats" | "rules";
   }): Promise<void> {
     await persistSnapshotMutation({
       mutate(snapshot, updatedAt) {
@@ -339,8 +343,26 @@ export function useClassroomPlannerGuestController(options?: {
     await openGroupingWorkspace(payload.rosterId);
   }
 
-  async function changeGroupingTemplate(): Promise<void> {
-    return;
+  async function changeGroupingTemplate(payload: { templateId: string | null }): Promise<void> {
+    if (!(await flushPlannerForModeSwitch(
+      "Lös sparkonflikten innan du byter gruppkontext.",
+      "Kunde inte spara ändringarna innan gruppkontexten byttes.",
+    ))) {
+      return;
+    }
+
+    if (!selectedRosterId.value) {
+      return;
+    }
+
+    plannerActionError.value = null;
+    try {
+      await guestPlannerState.resolveDraft(selectedRosterId.value, payload.templateId, "grouping");
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : "Kunde inte uppdatera gruppkontexten just nu.";
+    }
   }
 
   async function changeSeatingTemplate(payload: { templateId: string | null }): Promise<void> {
@@ -395,7 +417,61 @@ export function useClassroomPlannerGuestController(options?: {
     }
   }
 
-  async function selectPlannerWorkspaceMode(mode: "overview" | "grouping" | "seating"): Promise<void> {
+  async function openRulesWorkspace(): Promise<void> {
+    if (!selectedRosterId.value) {
+      return;
+    }
+
+    plannerActionError.value = null;
+    try {
+      const snapshot = await ensureReadySnapshot();
+      const hydrated = hydrateGuestSnapshot(snapshot);
+      const seatingDraft = hydrated.seating_draft?.roster.id === selectedRosterId.value
+        ? hydrated.seating_draft
+        : null;
+      const groupingDraft = hydrated.grouping_draft?.roster.id === selectedRosterId.value
+        ? hydrated.grouping_draft
+        : null;
+
+      if (guestPlannerState.draft.value && guestPlannerState.roster.value?.id === selectedRosterId.value) {
+        await persistUiState({
+          selectedRosterId: selectedRosterId.value,
+          selectedTemplateId: guestPlannerState.template.value?.id ?? selectedTemplateId.value,
+          currentScreen: "planner",
+          plannerInitialView: "rules",
+        });
+        return;
+      }
+
+      if (seatingDraft) {
+        await guestPlannerState.loadWorkspace(seatingDraft.draft.id);
+      } else if (groupingDraft) {
+        await guestPlannerState.loadWorkspace(groupingDraft.draft.id);
+      } else {
+        const preferredDraftKind = selectedTemplateId.value ? "seating" : "grouping";
+        await guestPlannerState.resolveDraft(
+          selectedRosterId.value,
+          selectedTemplateId.value,
+          preferredDraftKind,
+        );
+      }
+
+      await persistUiState({
+        selectedRosterId: selectedRosterId.value,
+        selectedTemplateId: guestPlannerState.template.value?.id ?? selectedTemplateId.value,
+        currentScreen: "planner",
+        plannerInitialView: "rules",
+      });
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : "Kunde inte öppna reglerna just nu.";
+    }
+  }
+
+  async function selectPlannerWorkspaceMode(
+    mode: "overview" | "grouping" | "seating" | "rules",
+  ): Promise<void> {
     if (mode === "overview") {
       plannerActionError.value = null;
       try {
@@ -410,6 +486,11 @@ export function useClassroomPlannerGuestController(options?: {
           ? error.message
           : "Kunde inte återvända till klassarbetsytan just nu.";
       }
+      return;
+    }
+
+    if (mode === "rules") {
+      await openRulesWorkspace();
       return;
     }
 
@@ -470,6 +551,7 @@ export function useClassroomPlannerGuestController(options?: {
     changeSeatingTemplate,
     startNewGroupingDraft,
     startNewSeatingDraft,
+    openRulesWorkspace,
     selectPlannerWorkspaceMode,
     ...overviewCrudFlow,
     saveRoster,

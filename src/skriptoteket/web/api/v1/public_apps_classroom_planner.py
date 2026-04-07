@@ -148,6 +148,8 @@ async def create_public_import_preview(
         helper_name=HELPER_NAME,
         client_ip=client_ip,
         user_agent=user_agent,
+        max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
+        window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
         now=now,
     )
     if throttle_decision.is_rate_limited:
@@ -178,6 +180,8 @@ async def create_public_import_preview(
         helper_name=HELPER_NAME,
         client_ip=client_ip,
         user_agent=user_agent,
+        max_requests=settings.PUBLIC_HELPER_RATE_LIMIT_MAX_REQUESTS,
+        window_seconds=settings.PUBLIC_HELPER_RATE_LIMIT_WINDOW_SECONDS,
         now=now,
     )
     file_name = _validated_filename(raw_filename=file.filename)

@@ -110,6 +110,7 @@ async function exitPublicPlanner(): Promise<void> {
           @delete-current-template="guestController.openSelectedTemplateDelete"
           @open-grouping="void guestController.openGroupingWorkspace()"
           @open-seating="void guestController.openSeatingWorkspace($event.templateId)"
+          @open-rules="void guestController.openRulesWorkspace()"
         />
 
         <ClassroomPlannerGuestWorkspaceShell
@@ -122,6 +123,7 @@ async function exitPublicPlanner(): Promise<void> {
           :selected-template-id="guestController.selectedTemplateId.value"
           :initial-view="guestController.plannerInitialView.value"
           @change-grouping-roster="void guestController.changeGroupingRoster($event)"
+          @change-grouping-template="void guestController.changeGroupingTemplate($event)"
           @change-seating-template="void guestController.changeSeatingTemplate($event)"
           @new-grouping-draft="void guestController.startNewGroupingDraft()"
           @new-seating-draft="void guestController.startNewSeatingDraft($event)"
