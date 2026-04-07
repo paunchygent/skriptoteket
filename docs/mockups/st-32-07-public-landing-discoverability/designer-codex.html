@@ -102,14 +102,6 @@
         letter-spacing: -0.03em;
       }
 
-      .brand__meta {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: var(--navy-55);
-      }
-
       .quiet-nav,
       .header-links {
         display: inline-flex;
@@ -119,14 +111,11 @@
 
       .quiet-nav a,
       .header-links a {
-        font-size: 0.88rem;
+        font-size: 0.94rem;
         text-decoration: none;
       }
 
       .quiet-nav a {
-        font-family: var(--font-mono);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
         color: var(--navy-75);
       }
 
@@ -143,16 +132,6 @@
         gap: var(--space-12);
         padding: var(--space-16) 0 var(--space-12);
         align-items: end;
-      }
-
-      .eyebrow {
-        margin: 0 0 var(--space-3);
-        font-family: var(--font-mono);
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--navy-55);
       }
 
       .hero h1 {
@@ -227,12 +206,9 @@
       }
 
       .hero__rule dt {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--navy-55);
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--navy);
       }
 
       .hero__rule dd {
@@ -256,10 +232,6 @@
       .section__label {
         position: sticky;
         top: var(--space-6);
-      }
-
-      .section__label .eyebrow {
-        margin-bottom: var(--space-2);
       }
 
       .section__label h2 {
@@ -305,10 +277,7 @@
       }
 
       .showcase__topbar span {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+        font-size: 0.9rem;
         color: var(--navy-55);
       }
 
@@ -412,7 +381,7 @@
 
       .preview-row {
         display: grid;
-        grid-template-columns: minmax(180px, 1.4fr) minmax(0, 2fr) auto;
+        grid-template-columns: minmax(180px, 1.4fr) minmax(0, 2fr);
         gap: var(--space-6);
         align-items: center;
         padding: var(--space-5) 0;
@@ -427,21 +396,6 @@
         margin: 0;
         line-height: 1.5;
         color: var(--navy-75);
-      }
-
-      .preview-tag {
-        justify-self: end;
-        padding: var(--space-2) var(--space-3);
-        border: 1px solid var(--navy);
-        font-family: var(--font-mono);
-        font-size: 0.7rem;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-
-      .preview-tag.is-locked {
-        background: rgba(28, 46, 74, 0.05);
       }
 
       .endcap {
@@ -469,10 +423,7 @@
 
       .draft-note {
         margin-top: var(--space-3);
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+        font-size: 0.82rem;
         color: var(--navy-55);
       }
 
@@ -492,10 +443,6 @@
         .preview-row {
           grid-template-columns: 1fr;
           gap: var(--space-2);
-        }
-
-        .preview-tag {
-          justify-self: start;
         }
 
         .showcase__canvas {
@@ -533,7 +480,6 @@
           href="/"
         >
           <span class="brand__name">Skriptoteket</span>
-          <span class="brand__meta">PR-0237 mockup</span>
         </a>
 
         <nav
@@ -545,7 +491,6 @@
 
         <div class="header-links">
           <a href="/register">Skapa konto</a>
-          <a href="#konto">Med konto</a>
         </div>
       </div>
     </header>
@@ -553,7 +498,6 @@
     <main class="page">
       <section class="hero">
         <div>
-          <p class="eyebrow">Offentlig ingång</p>
           <h1>Öppna Klassrumskartan direkt.</h1>
           <p class="hero__lead">
             Börja i ett riktigt arbetsflöde. Prova klassrum, grupper och sittplatser direkt i
@@ -567,7 +511,7 @@
             >
               Öppna Klassrumskartan
             </a>
-          <div class="cta-secondary">
+            <div class="cta-secondary">
               <a href="/register">Skapa konto</a>
               <a href="#logga-in">Logga in</a>
             </div>
@@ -593,7 +537,6 @@
       <section class="section">
         <div class="section__grid">
           <div class="section__label">
-            <p class="eyebrow">Visa först</p>
             <h2>Det här går att använda nu.</h2>
             <p>
               Den publika ytan ska kännas som en riktig startpunkt, inte som en skylt för något som
@@ -669,22 +612,18 @@
             </div>
 
             <div>
-              <p class="eyebrow">Tänkt rytm</p>
               <div class="preview-list">
                 <div class="preview-row">
                   <strong>Öppna</strong>
                   <p>Visa den publika vägen som första val, inte som en dold sidodörr.</p>
-                  <span class="preview-tag">Hero-CTA</span>
                 </div>
                 <div class="preview-row">
                   <strong>Prova</strong>
                   <p>Visa att man kan göra något tydligt och lärarnära redan före konto.</p>
-                  <span class="preview-tag">Publikt nu</span>
                 </div>
                 <div class="preview-row">
                   <strong>Fortsätt</strong>
                   <p>Flytta in konto-värdet till nästa steg i stället för att lägga det först.</p>
-                  <span class="preview-tag">Sekundärt</span>
                 </div>
               </div>
             </div>
@@ -698,7 +637,6 @@
       >
         <div class="section__grid">
           <div class="section__label">
-            <p class="eyebrow">Med konto senare</p>
             <h2>Behåll nästa steg tydligt.</h2>
             <p>
               De inloggade fördelarna får gärna synas, men de ska läsas som nästa steg och inte som
@@ -709,18 +647,15 @@
           <div class="preview-list">
             <div class="preview-row">
               <strong>Spara arbetet</strong>
-              <p>Fortsätt med samma klassrum och samma utkast när du kommer tillbaka.</p>
-              <span class="preview-tag is-locked">Kräver konto</span>
+              <p>Fortsätt med samma klassrum och samma utkast när du kommer tillbaka med konto.</p>
             </div>
             <div class="preview-row">
               <strong>Samla det du använder</strong>
-              <p>Håll ihop verktyg, körningar och sådant du vill återvända till i vardagen.</p>
-              <span class="preview-tag is-locked">Kräver konto</span>
+              <p>Håll ihop verktyg, körningar och sådant du vill återvända till i vardagen med konto.</p>
             </div>
             <div class="preview-row">
               <strong>Dela vidare</strong>
-              <p>Ta arbetet vidare när det ska sparas, följas upp eller användas tillsammans.</p>
-              <span class="preview-tag is-locked">Kräver konto</span>
+              <p>Ta arbetet vidare när det ska sparas, följas upp eller användas tillsammans med konto.</p>
             </div>
           </div>
         </div>
@@ -729,7 +664,6 @@
       <section class="section">
         <div class="endcap">
           <div>
-            <p class="eyebrow">Sista raden</p>
             <h2>Börja öppet. Spara senare.</h2>
             <p>
               Landningen ska sluta utan ett extra argumentationsvarv: visa den publika vägen, håll

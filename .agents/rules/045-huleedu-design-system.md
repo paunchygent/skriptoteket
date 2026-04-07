@@ -2,7 +2,7 @@
 id: "045-huleedu-design-system"
 type: "implementation"
 created: 2025-12-15
-updated: 2026-03-29
+updated: 2026-04-07
 scope: "frontend"
 references:
   - ADR-0027
@@ -39,6 +39,28 @@ Skriptoteket adopts a **Brutalist Academic** design system. This style prioritiz
 - **Rule**: Content columns (text, markdown, tool titles) must be capped at `max-w-[40rem]` (`~640px`) even if the parent container grows wider.
 - **Dense workspace exception**: this rule applies to prose-heavy reading content, not to operational
   canvases, boards, inspectors, or control rails that must stay compact and scan-friendly.
+
+### Structure Before Labels
+
+- **Problem**: Brutalist and academic interfaces can drift into constant eyebrow labels, all-caps microcopy,
+  and small meta-navigation that adds noise instead of clarity.
+- **Rule**: Build hierarchy first with headings, spacing, section rules, columns, and composition. Do not
+  reach for label-like control language, monospace/all-caps helper text, or eyebrow patterns unless the
+  structure alone is failing to clarify something important.
+- **Default hierarchy devices**:
+  - strong page and section headings
+  - section rules and spacing rhythm
+  - sentence-case navigation and helper copy
+  - visual grouping through columns, rails, and composition
+- **Use small labels only when they solve a real ambiguity**:
+  - dense toolbars
+  - compact inspectors
+  - data tables
+  - repeated state or mode indicators where prose would be slower to scan
+- **Avoid**:
+  - stacking multiple eyebrow labels down a landing page or editorial surface
+  - converting ordinary navigation into tiny all-caps metadata by default
+  - adding small section labels when the heading and surrounding structure already make the hierarchy obvious
 
 ### Operational Density (Instrument, Not Card Stack)
 
@@ -78,6 +100,8 @@ These rules keep our docs, skills, and implementation aligned (ADR-0032):
   `@apply` unless necessary, and use `@reference` when you must apply shared utilities.
 - **Dense workspace rule**: in planner-like screens, do not add a new full-width bordered/shadowed panel unless it adds
   meaning that cannot be expressed inside the stable shell, action row, or local side surface.
+- **Landing/editorial rule**: for landing pages, overview pages, and other prose-led surfaces, rely on headings,
+  section rhythm, and composition before introducing eyebrow labels or compact meta-navigation.
 
 ### V1 freeze for tool-grade surfaces
 
@@ -182,6 +206,8 @@ Notes:
 - Workspace-heavy tools should maintain a canonical symbol language for repeated operations; do not
   default to long text labels for undo/redo/history/settings/export/zoom-class controls when the
   symbol is well-established.
+- The compact label guidance in this section is primarily for dense operational surfaces, not for
+  landing pages or editorial product narratives.
 - Dense toolbars must not introduce new visible labels for abstract, internal, or app-structure
   concepts that the teacher would not naturally say. Labels such as `Klassrumsstöd` are forbidden
   in the command row even when the underlying behavior is valid.
