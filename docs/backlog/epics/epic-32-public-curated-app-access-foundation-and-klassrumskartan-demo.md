@@ -69,6 +69,9 @@ dependencies:
 - [ST-32-04: Browser-owned guest-state profiles and snapshot contracts](../stories/story-32-04-browser-owned-guest-state-profiles-and-snapshot-contracts.md)
 - [ST-32-05: Authenticated upgrade orchestration and idempotent import policy](../stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md)
 - [ST-32-06: Klassrumskartan demo adoption on the public browser-workspace profile](../stories/story-32-06-klassrumskartan-demo-adoption-on-the-public-browser-workspace-profile.md)
+- [ST-32-07: Public landing entry hierarchy and mockup-grounded CTA cutover](../stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md)
+- [ST-32-08: Featured public-app showcase and authenticated-value previews](../stories/story-32-08-featured-public-app-showcase-and-authenticated-value-previews.md)
+- [ST-32-09: Canonical public-route recovery and SPA unmatched state](../stories/story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md)
 
 ## Notes
 
@@ -129,3 +132,11 @@ dependencies:
     forwarding, invalid export-handler branch coverage, autosave proof
     strength, OpenAPI-safe route typing, and the SPA Vitest path-normalization
     wrapper
+- Follow-up planning after `ST-32-06` is now split into explicit story-level
+  implementation units instead of one catch-all container:
+  - `ST-32-07` owns landing header/hero entry hierarchy and the required
+    mockup-first alignment pass
+  - `ST-32-08` owns the show-don't-tell landing showcase and authenticated-only
+    preview surfaces
+  - `ST-32-09` owns malformed public-route recovery and visible SPA unmatched
+    state handling

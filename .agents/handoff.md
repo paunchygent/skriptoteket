@@ -9,8 +9,8 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, append the removed content directly to `docs/reference/ref-development-changelog.md` first.
 ## Snapshot
 - Date: 2026-04-07
-- Branch: `main` clean
-- Current lane: `EPIC-32` / `ST-32-06` pushed-state close-out and next-slice selection
+- Branch: `main` + local changes
+- Current lane: `EPIC-32` / `ST-32-07` through `ST-32-09` planning scaffold for landing entry hierarchy, showcase surfaces, and malformed-route recovery
 - Production: Full Vue SPA
 - Completed: `PR-0231`, `PR-0232`, `PR-0233`, `PR-0234`, `PR-0235`, and `PR-0236` are shipped on `main`; the public/export review follow-ups and Vitest path-normalization hardening are pushed; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
 ## Status
@@ -26,6 +26,11 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0234` is shipped. The assessed root cause was the public guest overview -> grouping seam dropping the selected classroom by opening grouping with `templateId = null`, plus stale pending template refs keeping `Sittplatser` visually enabled after live classroom context was gone. A small helper module now centralizes the live guest classroom-context rule, overview -> grouping preserves the selected classroom, and the guest shell disables `Sittplatser` from real live context rather than stale pending refs.
 - `PR-0235` is shipped. The shared viewport helper keeps the framed-surface fit model across builder / seating / rules, fit-to-view is explicitly capped at `100%`, and the pure helper seam now has focused coverage so the repo no longer relies on stale pre-frame numbers in `useRoomViewportZoom.spec.ts`.
 - `PR-0236` is shipped. The stale isolated roster-overview spec now passes `showActions` explicitly when asserting the visible action footer, also proves the hidden-footer case when actions are disabled, and keeps class-list import inside the create/edit workflow.
+- `ST-32-07` is now scaffolded as the next `EPIC-32` follow-up:
+  - the planning hierarchy is corrected so `EPIC-32` remains the container and the follow-up work now lives as explicit stories `ST-32-07`, `ST-32-08`, and `ST-32-09`
+  - `ST-32-07` owns landing header/hero entry hierarchy plus the required mockup-first alignment pass through `PR-0237` and `PR-0238`
+  - `ST-32-08` owns the featured public-app showcase and authenticated-value preview surface through `PR-0239`
+  - `ST-32-09` owns catch-all route recovery and malformed public-path guidance through `PR-0240`
 - The review follow-up pass that closed the public export/Vitest footguns is also shipped on `main`:
   - `public_seating_export.py` now imports and uses `validation_error(...)` correctly
   - direct handler tests cover invalid public PDF branches and route tests assert forwarded handler args
@@ -70,6 +75,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run fe-test` (pass; 149 files, 771 tests)
 - Live local browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass for `PR-0235`; public builder modal rendered `builder-zoom-percent = 100%` and `room-builder-scroll-frame[data-overflow-anchor] = center` for a fresh small-room state; Playwright Chrome session was explicitly closed after the check)
 - `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.agents/handoff.md`)
+- `pdm run docs-validate` (pass after scaffolding `ST-32-07` and `PR-0237` through `PR-0240`)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
 - Live public browser proof against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` with local backend on `http://127.0.0.1:8000` (pass; guest `Regler`, guest Smart drawer parity without `Historik`, and live `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` `200 OK`)
 - Live public browser proof for `PR-0234` against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; seeded guest snapshot kept `selected_template_local_id = template-1` and `grouping_draft.template_local_id = template-1` after overview -> `Grupper`; a forced grouping-without-classroom state rendered `Sittplatser` disabled with title `Skapa eller välj först ett klassrum.`)
@@ -94,6 +100,10 @@ pdm run docs-validate
 - `ClassroomPlannerView.spec.ts` still emits the pre-existing suppressed runtime warning from `resolveHomeRosterId(...)` during one centered-shell test even though the suite passes; it was not part of `PR-0226`.
 ## Next Steps
 - Keep `PR-0232` scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.
+- Start `ST-32-07` with `PR-0237` only: review `.agents/rules/045-huleedu-design-system.md`, `skriptoteket-frontend-specialist`, and `brutalist-academic-ui`, then create the canonical `docs/mockups/st-32-07-public-landing-discoverability/index.html` preview before touching production landing code.
+- Run `PR-0237` as a competitive mockup round for the lead web designers: each designer should post independent files under `docs/mockups/st-32-07-public-landing-discoverability/`, avoid editing or studying another designer's work unless explicitly told to do so, and expect the best overall submission to be promoted to blueprint.
+- After the mockup is agreed, complete `ST-32-07` with `PR-0238`, then move into `ST-32-08` for the below-the-fold showcase/authenticated-preview work through `PR-0239`.
+- Treat `ST-32-09` / `PR-0240` as the final repair story for unmatched-route handling so malformed `/public/<app-id>` paths recover visibly without changing the canonical `/public/apps/:appId` contract.
 - If follow-up polish is needed, return to `PR-0229` for toolbar overflow/discoverability work without reopening the guest/auth transport boundary.
 - Return to `PR-0229` only after the guest-mode bridge slice. `PR-0229` now explicitly picks up any post-`PR-0232` toolbar shortcut polish/alignment and overflow discoverability cleanup without reopening the guest/auth boundary.
 - Preserve the `PR-0233` seam shape while implementing `PR-0232`: later guest export/checkpoint continuity should keep feeding the existing authenticated `import` / `discard` / `postpone` prompt instead of adding a new compatibility lane.
