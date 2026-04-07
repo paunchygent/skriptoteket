@@ -235,6 +235,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
 - Accepted Klassrumskartan guest Smart/history boundary ADR:
   `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
+- Accepted Hemma deploy entrypoint ADR:
+  `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Active public curated-app access epic:
@@ -307,6 +309,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0170-st-09-07-public-edge-app-runtime-hardening.md`
 - Hemma edge observability + reserved-host lockdown slice:
   `docs/backlog/prs/pr-0171-st-09-08-hemma-edge-observability-and-host-lockdown.md`
+- Done Hemma deploy entrypoint story:
+  `docs/backlog/stories/story-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
+- Approved Hemma deploy entrypoint review:
+  `docs/backlog/reviews/review-st-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -415,6 +421,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
 - `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
+- `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
+- `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - `docs/reference/ref-runner-contract-v3.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-frontend-transition-continuity-v1.md`
@@ -553,6 +561,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-st-23-06-group-seating-studio-draft-persistence.md`
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
 - `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
+- `docs/backlog/reviews/review-st-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
@@ -893,6 +902,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-09-06-production-curated-app-visibility-gate.md`
 - `docs/backlog/stories/story-09-07-public-edge-app-runtime-hardening.md`
 - `docs/backlog/stories/story-09-08-hemma-edge-observability-and-host-lockdown.md`
+- `docs/backlog/stories/story-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - `docs/backlog/stories/story-10-01-tool-ui-contract-v2.md`
 - `docs/backlog/stories/story-10-02-tool-sessions.md`
 - `docs/backlog/stories/story-10-03-ui-payload-normalizer.md`

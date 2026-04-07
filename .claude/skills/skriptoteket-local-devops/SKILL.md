@@ -37,6 +37,10 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
 - Quality gates:
   - `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
   - `pdm run docs-validate`
+  - Shell scripts:
+    - `pdm run shellcheck <paths...>` for targeted shell-script validation
+    - `pdm run shellcheck-all` for the repo-wide shell-script gate
+    - `pdm run lint` is the required final close-out gate, and it includes `shellcheck-all`
 
 ## Quick start checklist (preferred: docker dev stack)
 
@@ -146,6 +150,17 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
   - `rg '<uuid>' .artifacts/dev-backend.log` (expects a `uvicorn.access` JSON line with `correlation_id`)
 - Note: in our pinned Uvicorn (`0.40.0`), `uvicorn.access` is emitted on `http.response.start` (headers sent), so SSE/streaming logs appear when the stream begins.
 - If running the backend via container, use: `docker logs -f skriptoteket_web | rg '<uuid>'`
+
+## Shell-script workflow
+
+- When you add or change shell scripts, especially Hemma/deploy/validation wrappers, run:
+  - `pdm run shellcheck <changed-script>`
+  - `pdm run lint` before close-out
+- `pre-commit` runs ShellCheck on staged `.sh` / `.bash` files, and shell-related issues must be resolved before commit.
+- `pdm run lint` is the shared final quality gate for shell work too, so shell scripts close out under the same repo-wide gate as Python, docs, and other checks.
+- Treat `shellcheck` as complementary to `bash -n`:
+  - `bash -n` verifies syntax
+  - `shellcheck` catches quoting, splitting, subshell, conditional, and other common shell-quality bugs
 
 # PDM groups/extras (avoid rebuild surprises)
 

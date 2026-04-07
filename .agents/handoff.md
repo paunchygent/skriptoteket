@@ -18,6 +18,9 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0231` is now implemented locally on top of that boundary and is the active session outcome: guest `Regler` is enabled in the shared public planner shell, guest Smart grouping/seating now call new stateless public helper routes, and the guest Smart drawers keep parity while hiding account-only `Historik` / `Use history`.
 - The follow-up `REV-PR-0231` findings are now fixed locally too: reused guest grouping drafts now recontextualize to the newly selected classroom before persistence, the public Smart helper enforces request-size limits while streaming instead of after full buffering, and guest Smart grouping/seating roll back the optimistic solver result if browser snapshot persistence is blocked.
 - The final `REV-PR-0231` follow-up is fixed locally as well: the live DI wiring no longer bakes `PublicHelperThrottleProtocol` to the generic import-preview limits. The shared throttle now accepts helper-family limits per request, so import-preview still honors `PUBLIC_HELPER_RATE_LIMIT_*` while public Smart honors `PUBLIC_HELPER_SMART_RUN_*` in both enforcement and emitted `429` metadata.
+- `REV-ST-09-09` is approved, `ADR-0081` is accepted, and `ST-09-09` is now done. The repo now ships `pdm run hemma-deploy` and `pdm run hemma-deploy-monitor`, the canonical runbook path uses the detached launcher, and the on-host deploy script remains the single source of deploy/readiness truth.
+- The live April 7, 2026 Hemma proof for that lane is now recorded: `pdm run hemma-deploy` handed off detached remote PID `1243606`, wrote the authoritative raw log to `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260407-092323.log`, and that raw log shows commit `94be5c23bbfb8294278cf21d3f679ee693277f73` deployed, migrations applied, and the seating-export smoke passing with artifacts under `.artifacts/pr-0146-seat-export-cutover-20260407-092323/`.
+- The final operator polish from the live run is now reflected locally too: `scripts/hemma_deploy_monitor.sh` replays existing milestone/failure lines before following new output, and `scripts/hemma_deploy_start.sh` now says the detached handoff succeeded rather than implying the whole deploy already passed.
 - The new backend seam for `PR-0231` lives under `src/skriptoteket/web/api/v1/public_apps_classroom_planner_smart.py` with stateless application handlers in `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_smart_grouping.py`, `public_smart_seating.py`, and `public_smart_run_support.py`. Dedicated smart-run abuse-control settings now live in `src/skriptoteket/config.py`.
 - The guest frontend wiring for `PR-0231` now spans `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`, `ClassroomPlannerGuestOverviewView.vue`, `ClassroomPlannerGuestWorkspaceShell.vue`, `classroomPlannerGuestDraftSession.ts`, and the new public Smart composables `usePublicSmartGroupingRun.ts` / `usePublicSmartSeatingRun.ts`.
 - `REV-PR-0231` now acts as the retained ruthless review gate for both remaining `ST-32-06` gap-bridging PRs. It reviews `PR-0231` and `PR-0232` as one guest-boundary package so solver-based Smart parity, local undo/redo/export continuity, and the account-only history boundary are judged together rather than drifting apart.
@@ -107,6 +110,23 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run lint` (pass after the review-fix follow-up)
 - Live browser render check against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; public Klassrumskartan route returned `200 OK` and rendered the `Klassrumskartan` heading in the SPA after the guest draft/public Smart follow-up fixes)
 - Live backend API check against `http://127.0.0.1:8000/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` (pass; returned `200 applied` with `Smart gruppindelning klar med stöd från klassens sittschema.` after the helper-family-aware DI throttle fix)
+- `pdm run docs-validate` (pass after returning `REV-ST-09-09` to `changes_requested`, restoring `ADR-0081` / `ST-09-09` to proposed/ready, and removing the premature launcher close-out claims)
+- `bash -n scripts/hemma_deploy_start.sh` (pass)
+- `bash -n scripts/hemma_deploy_monitor.sh` (pass)
+- `pdm run hemma-deploy --help` (pass; confirms the canonical detached-launch operator command is registered)
+- `pdm run hemma-deploy-monitor --help` (pass; confirms the best-effort filtered monitor command is registered)
+- `pdm run docs-validate` (pass after approving `REV-ST-09-09`, accepting `ADR-0081`, moving `ST-09-09` to `in_progress`, updating the Hemma runbook, and wiring the new PDM commands)
+- Live production proof on Hemma (pass on 2026-04-07 without a second deploy after the monitor tweak):
+  - `pdm run hemma-deploy` handed off detached remote PID `1243606`
+  - authoritative raw log: `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260407-092323.log`
+  - deployed commit: `94be5c23bbfb8294278cf21d3f679ee693277f73`
+  - migrations applied successfully
+  - seating-export smoke passed; deploy artifacts: `.artifacts/pr-0146-seat-export-cutover-20260407-092323/`
+  - `scripts/hemma_deploy_monitor.sh` now replays the existing milestone/failure history from that authoritative raw log before following new output
+- `bash -n scripts/hemma_deploy_start.sh` (pass after the final wording tweak)
+- `bash -n scripts/hemma_deploy_monitor.sh` (pass after the replay-first monitor tweak; `shellcheck` unavailable locally)
+- `pdm run docs-validate` (pass after closing `ST-09-09` as done and recording the live Hemma proof)
+- `pdm run lint` (pass after the final Hemma deploy docs/launcher close-out)
 ## How to Run
 ```bash
 ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
@@ -123,5 +143,6 @@ pdm run docs-validate
 - Execute `PR-0232` next as the remaining `ST-32-06` guest-mode bridge slice: guest local undo/redo parity, direct-download export, and account-only history/recovery affordance polish.
 - Return to `PR-0229` after the guest-mode bridge slices if the planner-toolbar overflow lane is still intended to stay open.
 - `REV-PR-0231` is now approved, so `PR-0231` / `PR-0232` can move from planning into implementation without reopening the guest/auth boundary unless the implementation itself discovers a new seam.
+- Keep the implementation thin on any follow-up edits: no local deploy-logic duplication, no hidden repo-path discovery, and no second structured log lane beyond the current raw-log + filtered-monitor split.
 - Debug the authenticated guest-upgrade import prompt separately from `PR-0226`; the planner shell/layout work is verified independently of that modal failure.
 - Decide whether `ST-29-11` should now be closed as done or whether more dense-control follow-up remains beyond the implemented `PR-0224` / `PR-0225` / `PR-0226` set.

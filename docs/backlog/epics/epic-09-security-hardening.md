@@ -5,7 +5,7 @@ title: "Security hardening for production deployment"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-04-06
+updated: 2026-04-07
 outcome: "Skriptoteket is hardened against common internet threats with defense-in-depth at the reverse proxy, OS, and application layers."
 ---
 
@@ -30,11 +30,13 @@ outcome: "Skriptoteket is hardened against common internet threats with defense-
 - ST-09-06: Production curated-app visibility gate
 - ST-09-07: Public-edge app/runtime hardening
 - ST-09-08: Hemma edge observability and reserved-host lockdown
+- ST-09-09: Hemma deploy entrypoint and script-first local launcher
 
 ## ADRs
 
 - ADR-0021: HTTP security headers via nginx reverse proxy
 - ADR-0053: Production security perimeter and VPN gating (proposed)
+- ADR-0081: Hemma deploy entrypoint and script-first local launcher (accepted)
 
 ## Risks
 
@@ -82,3 +84,16 @@ outcome: "Skriptoteket is hardened against common internet threats with defense-
   - protect `/metrics` at the edge
   - claim reserved hosts explicitly so they no longer fall through to the
     Skriptoteket backend
+- ST-09-09 is now planned as the operator-entrypoint hardening follow-up:
+  - the accepted `ADR-0081` decision now keeps the checked-in on-host
+    deploy/readiness script as the single source of deploy truth
+  - shipped local operator entrypoints now expose canonical
+    `pdm run hemma-deploy` and `pdm run hemma-deploy-monitor` commands, with
+    detached remote start, PID/log breadcrumbs, and a best-effort filtered
+    monitor over the authoritative raw remote log
+  - a live April 7, 2026 Hemma run proved the detached launcher on the real
+    production lane: PID `1243606`, raw log
+    `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260407-092323.log`,
+    deployed commit `94be5c23bbfb8294278cf21d3f679ee693277f73`, migrations
+    applied, and seating-export smoke passed with artifacts under
+    `.artifacts/pr-0146-seat-export-cutover-20260407-092323/`

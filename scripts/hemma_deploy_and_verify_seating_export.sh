@@ -52,6 +52,7 @@ require_clean_git_checkout
 sync_checkout_to_origin_main
 
 set -a
+# shellcheck disable=SC1091
 source .env
 set +a
 

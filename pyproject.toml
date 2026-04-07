@@ -98,6 +98,7 @@ monorepo-tools = [
     "types-docker>=7.1.0.20251202",
     "types-requests>=2.32.4.20250913",
     "types-Markdown",
+    "shellcheck-py",
 ]
 
 # "Dev everything" extras that are useful locally but not required in prod images.
@@ -342,6 +343,7 @@ format = "ruff format --force-exclude ."
 lint = { composite = [
     "ruff format --check --diff --force-exclude .",
     "ruff check --force-exclude .",
+    "pdm run shellcheck-all",
     "python -m scripts.check_migration_test_coverage",
     "python -m scripts.check_agent_doc_budgets",
     "python -m scripts.validate_docs",
@@ -349,6 +351,8 @@ lint = { composite = [
 ] }
 lint-fix = "ruff check --fix --force-exclude ."
 typecheck = "mypy --config-file pyproject.toml src tests"
+shellcheck = "shellcheck"
+shellcheck-all = 'find . -type f \( -name "*.sh" -o -name "*.bash" \) -not -path "./.git/*" -not -path "./.venv/*" -not -path "./node_modules/*" -not -path "./frontend/node_modules/*" -exec shellcheck {} +'
 
 # Tests
 test = "pytest"
@@ -358,6 +362,10 @@ test-simulations = "pytest -m simulation -s -v --durations=10 --log-cli-level=IN
 
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"
+
+# Hemma production operator commands
+hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"
+hemma-deploy-monitor = "bash ./scripts/hemma_deploy_monitor.sh"
 check-migration-test-coverage = "python -m scripts.check_migration_test_coverage"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"

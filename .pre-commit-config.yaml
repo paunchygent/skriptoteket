@@ -38,6 +38,13 @@ repos:
         types: [python]
         pass_filenames: true
 
+      - id: shellcheck
+        name: ShellCheck (staged shell scripts)
+        entry: pdm run shellcheck
+        language: system
+        files: \.(sh|bash)$
+        pass_filenames: true
+
       - id: docs-contract-validate
         name: Docs contract validate (placement + naming + frontmatter)
         entry: pdm run docs-validate

@@ -661,13 +661,24 @@ Security-specific notes:
 
 ### Canonical Deploy + Readiness Gate
 
-The production operator entrypoint for Klassrumskartan seating export is the on-host script:
+The canonical local operator entrypoint is:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh"
+pdm run hemma-deploy
 ```
 
-The script is intentionally fail-closed. It:
+That command launches the checked-in on-host script
+`scripts/hemma_deploy_and_verify_seating_export.sh` on Hemma as a detached
+remote process. It prints:
+
+- the remote PID
+- the authoritative remote raw-log path
+- the remote PID-file path
+- the suggested `pdm run hemma-deploy-monitor -- <remote-log-path>` follow
+  command
+
+The detached launcher exists only to hand off cleanly. The actual deploy logic
+remains in the on-host script, which is intentionally fail-closed. It:
 
 - fast-forwards a clean Hemma checkout to the latest `origin/main`
 - builds/redeploys Skriptoteket with `compose.prod.yaml`
@@ -676,6 +687,36 @@ The script is intentionally fail-closed. It:
   local terminal success with a Vault-backed download
 - stores the smoke JSON output under `.artifacts/pr-0146-seat-export-cutover-<timestamp>/` as
   operator evidence
+
+If you want a readable live monitor after launch, use:
+
+```bash
+pdm run hemma-deploy-monitor
+```
+
+or, for a specific log path printed by `pdm run hemma-deploy`:
+
+```bash
+pdm run hemma-deploy-monitor -- /home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-YYYYMMDD-HHMMSS.log
+```
+
+The monitor is best-effort only. It replays the existing milestone/failure
+lines from the authoritative raw remote log, then follows new output and
+filters it to the existing `==>` milestone lines plus obvious failure patterns.
+It is not a second source of deploy truth.
+
+### Direct on-host fallback / debugging
+
+If the local launcher path is unavailable or if you need direct break-glass
+debugging on Hemma, run the on-host script directly:
+
+```bash
+ssh hemma /bin/bash -s <<'EOF'
+set -euo pipefail
+cd /home/paunchygent/apps/skriptoteket
+./scripts/hemma_deploy_and_verify_seating_export.sh
+EOF
+```
 
 ### Manual Deploy Steps (fallback / debugging)
 
