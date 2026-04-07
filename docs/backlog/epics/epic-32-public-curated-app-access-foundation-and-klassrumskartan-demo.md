@@ -107,20 +107,25 @@ dependencies:
   decisions, repeat commits dedupe imported historical drafts through the
   durable `guest_import_identity` lookup seam, and the frontend now keeps the
   local guest snapshot when commit receipts contain conflicts while showing a
-  dismissible post-import summary after durable success. A newly reproduced
-  live defect remains in the exact-template reuse/remap seam for non-toy
-  template-bearing snapshots; `PR-0233` now owns that focused hardening lane
-  without changing the approved guest/public boundary shape.
-- `ST-32-06` is now materially advanced through `PR-0223` checkpoints 1-3:
-  the public Klassrumskartan route now uses the real browser-owned overview
-  shell, guest roster/template authoring persists locally through the public
-  seam, and the dedicated guest planner shell now resumes grouping/seating
-  drafts across overview round-trips and reloads with passing focused browser
-  proof. `PR-0223` is now docs-closed around that delivered baseline, while
-  `ADR-0080` freezes the remaining guest Smart/history boundary:
-  solver-based Smart parity, `Regler`, and the expandable Smart settings
-  drawer remain part of guest parity, but history-based Smart and `Use history`
-  stay account-only. The remaining `ST-32-06` work is now split into
-  `PR-0231` (guest `Regler` + solver-Smart parity) and `PR-0232`
-  (guest local undo/redo + direct-download export + account-only
-  history/recovery polish).
+  dismissible post-import summary after durable success. `PR-0233` is now also
+  shipped, so the earlier exact-template reuse/remap defect for non-toy
+  template-bearing snapshots is closed without changing the approved
+  guest/public boundary shape.
+- `ST-32-06` is now shipped as the first full
+  `public_browser_workspace_with_upgrade` adoption proof for a real curated
+  app:
+  - `PR-0223` established the public host/bootstrap boundary and browser-owned
+    guest workspace baseline
+  - `PR-0231` added guest `Regler`, solver-backed public Smart helpers, and the
+    explicit guest/auth Smart-history split from `ADR-0080`
+  - `PR-0232` added guest-local undo/redo, direct-download public grouping and
+    seating exports, and export-backed checkpoint continuity without reopening
+    authenticated export-job/history/recovery seams
+  - `PR-0234` fixed the public overview -> grouping classroom-context drop and
+    stale seating affordance enablement
+  - `PR-0236` closed the remaining overview capability and import-boundary test
+    gaps
+  - the pushed review-follow-up pass then tightened direct public export route
+    forwarding, invalid export-handler branch coverage, autosave proof
+    strength, OpenAPI-safe route typing, and the SPA Vitest path-normalization
+    wrapper

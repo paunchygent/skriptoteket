@@ -2,7 +2,7 @@
 type: story
 id: ST-32-06
 title: "Klassrumskartan demo adoption on the public browser-workspace profile"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-04-03
 updated: 2026-04-07
@@ -78,7 +78,29 @@ reviewable first consumer: Klassrumskartan.
   slice and one guest local-continuity/export slice, so `PR-0223` can stay
   closed around the shipped public browser-workspace baseline.
 
-## Planned PR slices
+## Implementation Summary (as of 2026-04-07)
+
+- `PR-0223` shipped the public browser-owned baseline: dedicated public host
+  routing, browser-owned guest snapshots, overview-first guest authoring, and
+  resumable local grouping/seating drafts.
+- `PR-0231` shipped guest `Regler`, solver-backed public Smart helpers, and
+  the explicit guest/auth Smart-history boundary from `ADR-0080`.
+- `PR-0232` shipped guest-local undo/redo, direct-download public grouping and
+  seating exports, export-backed checkpoint persistence on the guest snapshot,
+  and continued omission of account-owned history/recovery/job affordances.
+- `PR-0233` hardened the authenticated upgrade seam so non-toy template-bearing
+  guest snapshots with reused template geometry import cleanly instead of
+  reproducing the old template-remap `500`.
+- `PR-0234` fixed the public overview -> grouping classroom-context regression
+  and the stale enabled `Sittplatser` affordance after classroom context was
+  lost.
+- `PR-0236` closed the remaining overview action-capability and import-boundary
+  proof gaps.
+- The pushed review-follow-up pass also locked down direct public export route
+  argument forwarding, invalid handler branches, the draft-autosave proof
+  surface, and OpenAPI-safe typing for the new public route modules.
+
+## Delivered PR slices
 
 - [PR-0223: ST-32-06 public Klassrumskartan demo capability matrix and
   browser-workspace adoption](../prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md)

@@ -9,32 +9,40 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, append the removed content directly to `docs/reference/ref-development-changelog.md` first.
 ## Snapshot
 - Date: 2026-04-07
-- Branch: `main` + local changes
-- Current lane: `PR-0232` guest local continuity, export, and account-only history polish
+- Branch: `main` clean
+- Current lane: `EPIC-32` / `ST-32-06` pushed-state close-out and next-slice selection
 - Production: Full Vue SPA
-- Completed: `PR-0231` is implemented locally with review follow-ups fixed; `PR-0232` is now implemented locally with live guest/auth proof; `PR-0233` is now implemented locally and live-proven against the real `SA24D` / `G20` authenticated guest-upgrade seam; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
+- Completed: `PR-0231`, `PR-0232`, `PR-0233`, `PR-0234`, `PR-0235`, and `PR-0236` are shipped on `main`; the public/export review follow-ups and Vitest path-normalization hardening are pushed; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
 ## Status
-- `PR-0231` is implemented locally and its retained review follow-ups are fixed. Guest `Regler`, public solver-backed Smart, request streaming limits, persistence rollback, and helper-family throttle wiring are in place.
-- `PR-0232` is now implemented locally without reopening the guest/auth boundary:
+- `PR-0231` is shipped on `main` and its retained review follow-ups are fixed. Guest `Regler`, public solver-backed Smart, request streaming limits, persistence rollback, and helper-family throttle wiring are in place.
+- `PR-0232` is shipped on `main` without reopening the guest/auth boundary:
   - guest undo/redo moved into a small guest-only helper and is wired through the shared shortcut composable at the guest/auth workspace-shell seam
   - guest export keeps the shared split-button UI but now uses dedicated public direct-download helpers/routes instead of the authenticated export-job/Vault flow
   - guest export writes deduped export-backed checkpoint descriptors back into the browser snapshot and keeps them outside guest history / `Use history` semantics
   - authenticated export/history transport remains on the canonical `/api/v1/apps/...` job/history seam
-- `PR-0232` frontend coverage now includes both guest grouping and guest seating direct-export composables, plus focused guest history and shell shortcut tests.
-- Post-review `PR-0232` checkpoint drift fix is now in place: guest export checkpoints are derived from the exact frozen snapshot sent to the public export helper, then appended later even if the guest mutates the draft or switches drafts before the download resolves.
-- `PR-0233` is implemented locally as the narrow `ST-32-05` remediation slice. The authenticated guest-upgrade seam now compares guest templates to real persisted template geometry, deterministically remaps reused-template seat ids through a dedicated helper module, and no longer reproduces the old non-toy template-bearing `500` on `/api/v1/apps/classroom.group-seating-studio/guest-upgrade`.
-- `PR-0234` was the blocking `ST-32-06` frontend remediation slice. The assessed root cause was the public guest overview -> grouping seam dropping the selected classroom by opening grouping with `templateId = null`, plus stale pending template refs keeping `Sittplatser` visually enabled after live classroom context was gone.
-- Focused failing frontend regressions are now in place locally before any production fix:
-  - `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestGroupingContext.spec.ts`
-  - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`
-- The `PR-0234` production fix is now implemented locally. A small helper module centralizes the live guest classroom-context rule, overview -> grouping now preserves the selected classroom, and the guest shell now disables `Sittplatser` from the real live context rather than stale pending refs.
-- `PR-0235` is now implemented locally. The shared viewport helper keeps the framed-surface fit model across builder / seating / rules, fit-to-view is explicitly capped at `100%`, and the pure helper seam now has focused coverage so the repo no longer relies on stale pre-frame numbers in `useRoomViewportZoom.spec.ts`.
-- `PR-0236` is now implemented locally. The stale isolated roster-overview spec now passes `showActions` explicitly when asserting the visible action footer, also proves the hidden-footer case when actions are disabled, and keeps class-list import inside the create/edit workflow.
-- The full frontend suite is now green again after closing `PR-0235` and `PR-0236`.
+- `PR-0232` frontend coverage includes both guest grouping and guest seating direct-export composables, plus focused guest history and shell shortcut tests.
+- Post-review `PR-0232` checkpoint drift hardening is shipped: guest export checkpoints are derived from the exact frozen snapshot sent to the public export helper, then appended later even if the guest mutates the draft or switches drafts before the download resolves.
+- `PR-0233` is shipped as the narrow `ST-32-05` remediation slice. The authenticated guest-upgrade seam now compares guest templates to real persisted template geometry, deterministically remaps reused-template seat ids through a dedicated helper module, and no longer reproduces the old non-toy template-bearing `500` on `/api/v1/apps/classroom.group-seating-studio/guest-upgrade`.
+- `PR-0234` is shipped. The assessed root cause was the public guest overview -> grouping seam dropping the selected classroom by opening grouping with `templateId = null`, plus stale pending template refs keeping `Sittplatser` visually enabled after live classroom context was gone. A small helper module now centralizes the live guest classroom-context rule, overview -> grouping preserves the selected classroom, and the guest shell disables `Sittplatser` from real live context rather than stale pending refs.
+- `PR-0235` is shipped. The shared viewport helper keeps the framed-surface fit model across builder / seating / rules, fit-to-view is explicitly capped at `100%`, and the pure helper seam now has focused coverage so the repo no longer relies on stale pre-frame numbers in `useRoomViewportZoom.spec.ts`.
+- `PR-0236` is shipped. The stale isolated roster-overview spec now passes `showActions` explicitly when asserting the visible action footer, also proves the hidden-footer case when actions are disabled, and keeps class-list import inside the create/edit workflow.
+- The review follow-up pass that closed the public export/Vitest footguns is also shipped on `main`:
+  - `public_seating_export.py` now imports and uses `validation_error(...)` correctly
+  - direct handler tests cover invalid public PDF branches and route tests assert forwarded handler args
+  - the autosave/history spec now proves exactly one draft PATCH hits the draft endpoint and zero smart-rule PATCHes leak into that contract
+  - the Vitest wrapper now normalizes repo-root and app-local paths through `frontend/apps/skriptoteket/scripts/vitest-run.mjs`
+- The full backend and frontend suites are green from the pushed tree.
 - `ST-09-09` is done. The canonical local operator commands are `pdm run hemma-deploy` and `pdm run hemma-deploy-monitor`, while the on-host deploy script remains the single deploy/readiness source of truth.
 - Shell quality is part of the normal repo gate now: `pre-commit` runs ShellCheck on staged shell scripts, and `pdm run lint` includes repo-wide `pdm run shellcheck-all`.
 - Active docs guidance now uses `docs/reference/ref-development-changelog.md` as the append-only dump for removed handoff history, and the stale `REF-implementation-map-script-hub-v0-2` reference has been removed.
 ## Verification
+- `pdm run lint` (pass on pushed tree after the public export/OpenAPI-safe route follow-up)
+- `pdm run typecheck` (pass on pushed tree)
+- `pdm run docs-validate` (pass on pushed tree)
+- `pdm run fe-lint` (pass on pushed tree)
+- `pdm run fe-type-check` (pass on pushed tree)
+- `pdm run fe-test` (pass on pushed tree; 149 files, 771 tests)
+- `pdm run test` (pass on pushed tree; 1258 passed, 91 deselected)
 - `pdm run lint` (pass; includes repo-wide `shellcheck-all`)
 - `pdm run docs-validate` (pass after deleting `REF-implementation-map-script-hub-v0-2`, adding `REF-development-changelog`, compacting `.agents/handoff.md`, and aligning the handoff/changelog invariant in active guidance)
 - `pdm run docs-validate` (pass after enriching `PR-0232` with the agreed boundary-first implementation shape, updating `PR-0229` to own post-`PR-0232` toolbar shortcut polish/alignment, and refreshing `.agents/handoff.md`)
@@ -59,7 +67,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run fe-test -- --run src/views/apps/components/PlannerRosterOverviewPanel.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts` (pass; `PR-0236` capability-gated roster overview spec realignment)
 - `pdm run fe-type-check` (pass after the `PR-0235` helper/spec realignment)
 - `pdm run fe-type-check` (pass after the `PR-0236` spec realignment)
-- `pdm run fe-test` (pass; 145 files, 753 tests)
+- `pdm run fe-test` (pass; 149 files, 771 tests)
 - Live local browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass for `PR-0235`; public builder modal rendered `builder-zoom-percent = 100%` and `room-builder-scroll-frame[data-overflow-anchor] = center` for a fresh small-room state; Playwright Chrome session was explicitly closed after the check)
 - `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.agents/handoff.md`)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
