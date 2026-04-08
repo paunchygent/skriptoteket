@@ -109,6 +109,8 @@ class RegisterRequest(BaseModel):
     password: str
     first_name: str
     last_name: str
+    next: str | None = None
+    classroom_planner_entry_origin: str | None = None
 
 
 class RegisterResponse(BaseModel):
@@ -195,6 +197,8 @@ async def register(
             password=payload.password,
             first_name=payload.first_name,
             last_name=payload.last_name,
+            next_path=payload.next,
+            classroom_planner_entry_origin=payload.classroom_planner_entry_origin,
         )
     )
     # No cookie - user must verify email first
@@ -281,6 +285,8 @@ class VerifyEmailResponse(BaseModel):
 class ResendVerificationRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
     email: str
+    next: str | None = None
+    classroom_planner_entry_origin: str | None = None
 
 
 class ResendVerificationResponse(BaseModel):
@@ -291,6 +297,8 @@ class ResendVerificationResponse(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
     email: str | None = None
+    next: str | None = None
+    classroom_planner_entry_origin: str | None = None
 
 
 class ForgotPasswordResponse(BaseModel):
@@ -362,7 +370,13 @@ async def resend_verification(
     """Resend verification email.
     Always returns success for security (doesn't reveal if email exists).
     """
-    result = await handler.handle(ResendVerificationCommand(email=payload.email))
+    result = await handler.handle(
+        ResendVerificationCommand(
+            email=payload.email,
+            next_path=payload.next,
+            classroom_planner_entry_origin=payload.classroom_planner_entry_origin,
+        )
+    )
     return ResendVerificationResponse(message=result.message)
 
 
@@ -376,7 +390,13 @@ async def forgot_password(
     handler: FromDishka[RequestPasswordResetHandlerProtocol],
 ) -> ForgotPasswordResponse:
     email = payload.email.strip() if isinstance(payload.email, str) else ""
-    result = await handler.handle(RequestPasswordResetCommand(email=email))
+    result = await handler.handle(
+        RequestPasswordResetCommand(
+            email=email,
+            next_path=payload.next,
+            classroom_planner_entry_origin=payload.classroom_planner_entry_origin,
+        )
+    )
     return ForgotPasswordResponse(message=result.message)
 
 

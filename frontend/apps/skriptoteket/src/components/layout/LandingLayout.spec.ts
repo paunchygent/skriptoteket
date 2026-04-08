@@ -2,8 +2,8 @@
  * Signed-out landing shell tests.
  *
  * These tests keep the shared signed-out header aligned with the public-entry
- * contract so unauthenticated routes expose Klassrumskartan quietly and open
- * login in place instead of navigating to an unmatched route.
+ * contract so unauthenticated routes expose Klassrumskartan quietly and route
+ * login through the dedicated auth-entry page.
  */
 
 import { mount } from "@vue/test-utils";
@@ -12,7 +12,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import LandingLayout from "./LandingLayout.vue";
 
 const layoutMocks = vi.hoisted(() => ({
-  loginOpen: vi.fn(),
   route: {
     name: "home",
     params: {},
@@ -20,16 +19,14 @@ const layoutMocks = vi.hoisted(() => ({
     name: string;
     params: Record<string, unknown>;
   },
+  router: {
+    push: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 vi.mock("vue-router", () => ({
   useRoute: () => layoutMocks.route,
-}));
-
-vi.mock("../../composables/useLoginModal", () => ({
-  useLoginModal: () => ({
-    open: layoutMocks.loginOpen,
-  }),
+  useRouter: () => layoutMocks.router,
 }));
 
 vi.mock("../help/HelpButton.vue", () => ({
@@ -40,7 +37,8 @@ vi.mock("../help/HelpButton.vue", () => ({
 
 describe("LandingLayout", () => {
   beforeEach(() => {
-    layoutMocks.loginOpen.mockReset();
+    layoutMocks.router.push.mockReset();
+    layoutMocks.router.push.mockResolvedValue(undefined);
     layoutMocks.route.name = "home";
     layoutMocks.route.params = {};
   });
@@ -71,9 +69,9 @@ describe("LandingLayout", () => {
 
     await wrapper.get("button.landing-header-link").trigger("click");
 
-    expect(layoutMocks.loginOpen).toHaveBeenCalledWith({
-      name: "app-detail",
-      params: { appId: "classroom.group-seating-studio" },
+    expect(layoutMocks.router.push).toHaveBeenCalledWith({
+      name: "auth-login",
+      query: { next: "/apps/classroom.group-seating-studio" },
     });
   });
 
@@ -96,6 +94,9 @@ describe("LandingLayout", () => {
 
     await wrapper.get("button.landing-header-link").trigger("click");
 
-    expect(layoutMocks.loginOpen).toHaveBeenCalledWith({ name: "home" });
+    expect(layoutMocks.router.push).toHaveBeenCalledWith({
+      name: "auth-login",
+      query: { next: "/" },
+    });
   });
 });

@@ -5,16 +5,15 @@
  * Quiet bordered list placed below the featured public-app showcase. Each row
  * carries an explicit "Kräver konto" / "Kräver ansökan" tag so visitors do not
  * mistake an authenticated capability for another public route. The trailing
- * "Logga in" link reuses the shared in-place login modal from PR-0238.
+ * "Logga in" action routes through the shared `/auth/login` handoff.
  */
 
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
-import { buildLandingLoginRedirect } from "../../composables/auth/loginRedirects";
-import { useLoginModal } from "../../composables/useLoginModal";
+import { buildLandingAuthEntryLocation } from "../../composables/auth/authEntryNavigation";
 
 const route = useRoute();
-const loginModal = useLoginModal();
+const router = useRouter();
 
 const rows = [
   {
@@ -33,8 +32,8 @@ const rows = [
   },
 ] as const;
 
-function openLoginModal() {
-  loginModal.open(buildLandingLoginRedirect(route));
+async function goToAuthEntry(): Promise<void> {
+  await router.push(buildLandingAuthEntryLocation(route));
 }
 </script>
 
@@ -79,7 +78,7 @@ function openLoginModal() {
       <button
         type="button"
         class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
-        @click="openLoginModal"
+        @click="void goToAuthEntry()"
       >
         Logga in
       </button>

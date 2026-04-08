@@ -193,10 +193,14 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     guestOverviewMocks.guestAuthoringClosed.value = true;
 
     const wrapper = mountView();
+    const normalizedText = wrapper.text().replace(/\s+/g, " ").trim();
 
     expect(wrapper.find("[data-test='public-guest-authoring-closed-message']").exists()).toBe(true);
     expect(wrapper.find("[data-test='public-guest-authoring-closed-state']").exists()).toBe(true);
     expect(wrapper.find("[data-test='planner-class-workspace-stub']").exists()).toBe(false);
     expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(false);
+    expect(normalizedText).toContain(
+      "Det går inte att skapa nya klasser och klassrum i den här webbläsaren eftersom du redan har använt Klassrumskartan inloggad här. Logga in för att fortsätta använda appen.",
+    );
   });
 });

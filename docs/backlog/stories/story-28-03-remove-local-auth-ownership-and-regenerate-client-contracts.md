@@ -5,13 +5,14 @@ title: "Remove local auth ownership and regenerate client contracts"
 status: ready
 owners: "agents"
 created: 2026-03-28
+updated: 2026-04-08
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given Skriptoteket has cut over to the HuleEdu-owned browser session contract, when browser auth flows are audited, then Skriptoteket-local browser auth authority/routes/models are deleted rather than retained as a hidden bridge."
   - "Given the shared browser session contract is the new source of truth, when the frontend client types are regenerated, then auth-related OpenAPI/types align with the shared session endpoints and payloads."
   - "Given local auth ownership is removed, when future browser work is added, then it depends on the shared HuleEdu session contract rather than reintroducing app-local browser auth assumptions."
 ui_impact: "Should be behaviorally neutral to users; this is a hard-break ownership cleanup."
-dependencies: ["ADR-0076", "ST-28-01", "ST-28-02"]
+dependencies: ["ADR-0076", "ST-28-05", "ST-28-01", "ST-28-02"]
 ---
 
 ## Context

@@ -8,13 +8,16 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { ApiError, apiPost, isApiError } from "../api/client";
 import { IconCheck, IconWarning, IconX } from "../components/icons";
 import SystemMessage from "../components/ui/SystemMessage.vue";
-import { buildSignedOutOnlyLoginRedirect } from "../composables/auth/loginRedirects";
-import { useLoginModal } from "../composables/useLoginModal";
+import {
+  buildAuthContinuationLocation,
+  buildSignedOutOnlyAuthEntryLocation,
+  readAuthContinuation,
+} from "../composables/auth/authEntryNavigation";
 import { useAuthStore } from "../stores/auth";
 
 type ResetPasswordViewState = "form" | "success" | "expired" | "invalid";
@@ -23,8 +26,8 @@ type ResetPasswordResponse = {
 };
 
 const auth = useAuthStore();
-const loginModal = useLoginModal();
 const route = useRoute();
+const router = useRouter();
 
 const password = ref("");
 const confirmPassword = ref("");
@@ -32,6 +35,10 @@ const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const isSubmitting = ref(false);
 const state = ref<ResetPasswordViewState>("form");
+const continuation = computed(() => readAuthContinuation(route.query, window.history.state));
+const forgotPasswordLocation = computed(() =>
+  buildAuthContinuationLocation({ name: "forgot-password" }, continuation.value),
+);
 
 const token = computed(() => {
   const rawToken = route.query.token;
@@ -102,6 +109,10 @@ async function submit(): Promise<void> {
   } finally {
     isSubmitting.value = false;
   }
+}
+
+async function goToAuthEntry(): Promise<void> {
+  await router.push(buildSignedOutOnlyAuthEntryLocation(continuation.value));
 }
 </script>
 
@@ -189,7 +200,7 @@ async function submit(): Promise<void> {
         <button
           type="button"
           class="inline-block mt-6 text-navy underline hover:text-burgundy"
-          @click="loginModal.open(buildSignedOutOnlyLoginRedirect())"
+          @click="void goToAuthEntry()"
         >
           Gå till inloggning
         </button>
@@ -209,7 +220,7 @@ async function submit(): Promise<void> {
           Begär en ny återställningslänk för att fortsätta.
         </p>
         <RouterLink
-          to="/forgot-password"
+          :to="forgotPasswordLocation"
           class="text-navy underline hover:text-burgundy"
         >
           Begär ny länk
@@ -230,7 +241,7 @@ async function submit(): Promise<void> {
           Länken kan redan ha använts eller vara felaktig.
         </p>
         <RouterLink
-          to="/forgot-password"
+          :to="forgotPasswordLocation"
           class="text-navy underline hover:text-burgundy"
         >
           Begär en ny länk

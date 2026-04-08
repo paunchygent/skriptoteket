@@ -28,6 +28,20 @@ This document is the evidence and analysis base for
 [EPIC-35](../backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md) and
 [REV-EPIC-35](../backlog/reviews/review-epic-35-launch-seo-and-search-indexing-readiness.md).
 
+The broader cross-repo topology is now governed separately by
+[REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](./ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
+This reference should now be read as the downstream Skriptoteket SEO assessment that consumes that
+topology.
+
+Planning note after the initial assessment:
+
+- the intended platform shape is now explicitly:
+  - `hule.education` = HuleEdu landing entrypoint
+  - `api.hule.education` = HuleEdu Identity/Gateway browser auth and API edge
+  - `skriptoteket.hule.education` = canonical public Skriptoteket app host
+- this means the apex should no longer be treated as “available Skriptoteket canonical host”
+  inside the launch SEO lane
+
 ## Information Gained
 
 ### Live edge findings on 2026-04-08
@@ -60,22 +74,30 @@ This document is the evidence and analysis base for
 
 ## Analysis
 
-### Recommended canonical host for launch
+### Recommended canonical host topology for launch
 
-The current recommended launch canonical host is:
+The current recommended launch topology is:
 
-`https://skriptoteket.hule.education`
+- `https://hule.education` = HuleEdu landing page
+- `https://api.hule.education` = HuleEdu browser auth/API gateway
+- `https://skriptoteket.hule.education` = canonical public Skriptoteket app host
 
 Rationale:
 
-- it already serves the real product
-- production compose and environment defaults already point there
-- it already has working TLS and HTTP-to-HTTPS redirect behavior
-- the apex `https://hule.education` is still a placeholder rather than the real Skriptoteket surface
+- `skriptoteket.hule.education` already serves the real Skriptoteket product
+- production compose and environment defaults already point Skriptoteket there
+- `ADR-0076` and `EPIC-28` already set the intended future auth shape to
+  HuleEdu-owned Gateway/Identity at `api.hule.education`
+- the apex `https://hule.education` is better modeled as the HuleEdu entrypoint
+  than as a temporary Skriptoteket host
 
-That recommendation should remain in force unless the team decides to make the apex the real
-Skriptoteket public home before launch and is willing to migrate DNS, TLS, redirects, app config,
-and search-console ownership together in one cutover.
+The consequence for `EPIC-35` is:
+
+- do not harden Skriptoteket SEO around the apex as if it were a vacant app host
+- do keep Skriptoteket search-facing work clean and canonical on
+  `https://skriptoteket.hule.education`
+- do align landing-page and auth-entry assumptions with the upstream HuleEdu
+  landing and gateway rollout
 
 ### Top launch blockers
 
@@ -85,8 +107,9 @@ and search-console ownership together in one cutover.
 | P0 | `sitemap.xml` returns SPA HTML with `200 OK` | Search engines are not receiving a real sitemap |
 | P0 | Unknown URLs return SPA HTML with `200 OK` | The site currently emits soft-404-like behavior at the edge |
 | P1 | No route-level meta description, canonical tags, or share metadata on current public pages | Even if crawled, the public pages are weakly described and weakly canonicalized |
-| P1 | Canonical host policy is still implicit rather than frozen in backlog and ops docs | Search-console ownership, redirects, and metadata can drift if the hostname decision stays fuzzy |
+| P1 | Canonical host topology is still implicit rather than frozen in backlog and ops docs | Search-console ownership, redirects, and metadata can drift if the HuleEdu apex, gateway, and Skriptoteket host are not treated as one intentional system |
 | P1 | No verified search-operator workflow was available during the assessment | The technical lane can ship without proving that search engines were actually told about it |
+| P1 | HuleEdu landing/gateway rollout is still upstream work | If the apex and shared API edge arrive late, launch-day redirects and auth flows can churn unless the SEO lane stays explicitly compatible with them |
 | P2 | Public crawlable surface is still intentionally small | Indexing can be healthy, but discoverability will still be narrow until more public content exists |
 
 ### What is not currently blocking launch
@@ -101,10 +124,18 @@ and search-console ownership together in one cutover.
 
 | Order | Backlog item | Reason |
 |---|---|---|
-| 1 | `ST-35-01` | Freeze the canonical host before building SEO machinery around the wrong URL |
+| 1 | `ST-35-01` | Freeze the canonical host topology before building SEO machinery around the wrong URL or the wrong product boundary |
 | 2 | `ST-35-02` | Fix crawler truth at the edge before polishing snippets |
 | 3 | `ST-35-03` | Add route-level metadata and indexing policy on the now-honest public surface |
 | 4 | `ST-35-04` | Verify, submit, and document the operator workflow so launch status is measurable |
+
+Parallel upstream lane:
+
+- `EPIC-28` should advance the HuleEdu-owned session contract and auth-entry
+  handoff so Skriptoteket does not overfit to app-local auth assumptions
+- HuleEdu should bring up the apex landing page and `api.hule.education`
+  gateway/identity edge as explicit host owners rather than leaving them as
+  placeholder-vhost debt
 
 ## Decision Trees
 
@@ -112,7 +143,7 @@ and search-console ownership together in one cutover.
 
 | Question | If yes | If no | Recommended current branch |
 |---|---|---|---|
-| Is the apex `https://hule.education` becoming Skriptoteket's real public home before launch? | Migrate fully to the apex and 301 old public Skriptoteket URLs only after the full cutover is ready | Keep `https://skriptoteket.hule.education` canonical and keep the apex non-competing | No |
+| Is the apex `https://hule.education` becoming the HuleEdu landing page before launch? | Keep the apex HuleEdu-owned, link outward to `https://skriptoteket.hule.education`, and avoid treating the apex as a Skriptoteket canonical host | Keep the placeholder non-competing until the HuleEdu landing page is ready | Yes |
 | Do we need `www.hule.education` for launch? | Add DNS, TLS coverage, and a permanent redirect to the canonical host | Keep `www` out of scope and avoid introducing another public variant | No |
 
 ### 2. Crawlability decision
@@ -136,6 +167,8 @@ and search-console ownership together in one cutover.
   that requires account access not available in the repo or public edge checks.
 - Public search-engine queries alone cannot prove whether a URL is fully deindexed, just undiscovered,
   or newly submitted. The operator workflow in `ST-35-04` is still needed.
-- If the product decision changes and the apex becomes the real Skriptoteket home immediately, the
-  canonical-host recommendation in this reference should be revised rather than half-overridden in
+- This assessment still cannot prove delivery timing for the HuleEdu landing
+  page, identity service, or API gateway. Those remain upstream execution risks.
+- If the HuleEdu platform direction changes again, the host-topology
+  recommendation here should be revised explicitly rather than diluted in
   implementation.

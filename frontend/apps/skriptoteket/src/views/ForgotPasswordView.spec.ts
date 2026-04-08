@@ -12,8 +12,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ForgotPasswordView from "./ForgotPasswordView.vue";
 
 const routerMocks = vi.hoisted(() => ({
+  route: null as { query: Record<string, unknown> } | null,
   router: {
     replace: vi.fn(),
+    push: vi.fn().mockResolvedValue(undefined),
   },
   auth: null as {
     isAuthenticated: boolean;
@@ -22,11 +24,9 @@ const routerMocks = vi.hoisted(() => ({
 }));
 
 const apiPostMock = vi.fn();
-const loginModalMocks = vi.hoisted(() => ({
-  open: vi.fn(),
-}));
 
 vi.mock("vue-router", () => ({
+  useRoute: () => routerMocks.route,
   useRouter: () => routerMocks.router,
 }));
 
@@ -38,15 +38,15 @@ vi.mock("../stores/auth", () => ({
   useAuthStore: () => routerMocks.auth,
 }));
 
-vi.mock("../composables/useLoginModal", () => ({
-  useLoginModal: () => loginModalMocks,
-}));
-
 describe("ForgotPasswordView", () => {
   beforeEach(() => {
     routerMocks.router.replace.mockReset();
+    routerMocks.router.push.mockReset();
+    routerMocks.router.push.mockResolvedValue(undefined);
     apiPostMock.mockReset();
-    loginModalMocks.open.mockReset();
+    routerMocks.route = reactive({
+      query: reactive({}) as Record<string, unknown>,
+    });
     routerMocks.auth = reactive({
       isAuthenticated: false,
       bootstrap: vi.fn().mockResolvedValue(undefined),
@@ -54,6 +54,13 @@ describe("ForgotPasswordView", () => {
   });
 
   it("submits the reset request and renders the generic success message", async () => {
+    if (!routerMocks.route) {
+      throw new Error("Expected route stub.");
+    }
+    routerMocks.route.query = reactive({
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    }) as Record<string, unknown>;
     apiPostMock.mockResolvedValue({
       message: "Om kontot kan återställas skickas en återställningslänk.",
     });
@@ -75,6 +82,8 @@ describe("ForgotPasswordView", () => {
 
     expect(apiPostMock).toHaveBeenCalledWith("/api/v1/auth/forgot-password", {
       email: "teacher@example.com",
+      next: "/apps/classroom.group-seating-studio",
+      classroom_planner_entry_origin: "dashboard",
     });
     expect(wrapper.text()).toContain(
       "Om kontot kan återställas skickas en återställningslänk.",
@@ -82,6 +91,13 @@ describe("ForgotPasswordView", () => {
   });
 
   it("allows resend-verification for a different email in the same surface without cooldown drift", async () => {
+    if (!routerMocks.route) {
+      throw new Error("Expected route stub.");
+    }
+    routerMocks.route.query = reactive({
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    }) as Record<string, unknown>;
     apiPostMock
       .mockResolvedValueOnce({
         message: "Om kontot kan återställas skickas en återställningslänk.",
@@ -115,6 +131,8 @@ describe("ForgotPasswordView", () => {
 
     expect(apiPostMock).toHaveBeenNthCalledWith(2, "/api/v1/auth/resend-verification", {
       email: "olof.larsson@harryda.se",
+      next: "/apps/classroom.group-seating-studio",
+      classroom_planner_entry_origin: "dashboard",
     });
     expect(wrapper.text()).toContain("Om kontot finns skickas ett nytt verifieringsmail");
     expect(wrapper.text()).not.toContain("Försök igen om");
@@ -125,6 +143,8 @@ describe("ForgotPasswordView", () => {
 
     expect(apiPostMock).toHaveBeenNthCalledWith(3, "/api/v1/auth/resend-verification", {
       email: "ada.lovelace@mail.harryda.se",
+      next: "/apps/classroom.group-seating-studio",
+      classroom_planner_entry_origin: "dashboard",
     });
   });
 
@@ -132,6 +152,13 @@ describe("ForgotPasswordView", () => {
     if (!routerMocks.auth) {
       throw new Error("Expected auth store stub.");
     }
+    if (!routerMocks.route) {
+      throw new Error("Expected route stub.");
+    }
+    routerMocks.route.query = reactive({
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    }) as Record<string, unknown>;
     routerMocks.auth.isAuthenticated = true;
 
     mount(ForgotPasswordView, {
@@ -148,14 +175,37 @@ describe("ForgotPasswordView", () => {
     await flushPromises();
 
     expect(routerMocks.auth.bootstrap).toHaveBeenCalled();
-    expect(routerMocks.router.replace).toHaveBeenCalledWith("/");
+    expect(routerMocks.router.replace).toHaveBeenCalledWith({
+      name: "app-detail",
+      params: { appId: "classroom.group-seating-studio" },
+      state: {
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    });
   });
 
-  it("opens login in place instead of linking to /login", async () => {
+  it("routes login through auth-login without dropping the original next target", async () => {
+    if (!routerMocks.route) {
+      throw new Error("Expected route stub.");
+    }
+    routerMocks.route.query = reactive({
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    }) as Record<string, unknown>;
+
     const wrapper = mount(ForgotPasswordView);
 
     await wrapper.get("p button[type='button']").trigger("click");
 
-    expect(loginModalMocks.open).toHaveBeenCalledWith({ name: "home" });
+    expect(routerMocks.router.push).toHaveBeenCalledWith({
+      name: "auth-login",
+      query: {
+        next: "/apps/classroom.group-seating-studio",
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+      state: {
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    });
   });
 });

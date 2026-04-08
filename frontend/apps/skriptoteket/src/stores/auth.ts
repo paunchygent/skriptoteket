@@ -344,6 +344,8 @@ export const useAuthStore = defineStore("auth", {
       password: string;
       firstName: string;
       lastName: string;
+      next?: string;
+      classroom_planner_entry_origin?: "dashboard" | "catalog";
     }): Promise<RegisterResponse> {
       this.status = "loading";
       this.error = null;
@@ -363,6 +365,8 @@ export const useAuthStore = defineStore("auth", {
               password: params.password,
               first_name: params.firstName,
               last_name: params.lastName,
+              next: params.next,
+              classroom_planner_entry_origin: params.classroom_planner_entry_origin,
             }),
           },
           { timeoutMs: 20000, timeoutMessage: "Registreringen tog för lång tid. Försök igen." },

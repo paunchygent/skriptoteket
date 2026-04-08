@@ -10,6 +10,8 @@ import re
 
 from playwright.sync_api import Page, expect
 
+from scripts._playwright_auth import login_via_auth_entry
+
 APP_PATH = "/apps/games.flunk_out_frenzy"
 
 
@@ -32,40 +34,18 @@ def wait_for_shell_ready(page: Page) -> None:
 
 
 def login_to_flunk_out_frenzy(page: Page, *, base_url: str, email: str, password: str) -> None:
-    """Log in through the protected Flunk-Out Frenzy route and wait for shell-ready."""
+    """Log in through `/auth/login` and wait for the Flunk-Out Frenzy shell."""
 
-    for attempt in range(3):
-        page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
-        try:
-            wait_for_shell_ready(page)
-            expect(page).to_have_url(re.compile(re.escape(APP_PATH) + r"$"))
-            return
-        except AssertionError:
-            login_dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-            if login_dialog.count() > 0:
-                expect(login_dialog).to_be_visible()
-                login_dialog.get_by_label("E-post").fill(email)
-                login_dialog.get_by_label("Lösenord").fill(password)
-                login_dialog.get_by_role(
-                    "button", name=re.compile(r"Logga in", re.IGNORECASE)
-                ).click()
-                page.wait_for_timeout(1000)
-            elif attempt == 0:
-                page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-                login_page_dialog = page.get_by_role(
-                    "dialog", name=re.compile(r"Logga in", re.IGNORECASE)
-                )
-                if login_page_dialog.count() > 0:
-                    expect(login_page_dialog).to_be_visible()
-                    login_page_dialog.get_by_label("E-post").fill(email)
-                    login_page_dialog.get_by_label("Lösenord").fill(password)
-                    login_page_dialog.get_by_role(
-                        "button", name=re.compile(r"Logga in", re.IGNORECASE)
-                    ).click()
-                    page.wait_for_timeout(1000)
-            if attempt == 2:
-                raise
-            page.wait_for_timeout(1000)
+    login_via_auth_entry(
+        page,
+        base_url=base_url,
+        email=email,
+        password=password,
+        next_path=APP_PATH,
+        success_heading_pattern=r"Flunk-Out Frenzy",
+    )
+    wait_for_shell_ready(page)
+    expect(page).to_have_url(re.compile(re.escape(APP_PATH) + r"$"))
 
 
 def verify_runtime_start(page: Page) -> None:

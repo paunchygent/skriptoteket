@@ -12,6 +12,7 @@ import logging
 from datetime import timedelta
 from typing import Protocol
 
+from skriptoteket.application.identity.auth_link_continuation import append_auth_link_continuation
 from skriptoteket.application.identity.commands import (
     RequestPasswordResetCommand,
     RequestPasswordResetResult,
@@ -130,14 +131,31 @@ class RequestPasswordResetHandler(RequestPasswordResetHandlerProtocol):
                 email=recipient_email,
                 first_name=first_name,
                 token=reset_token,
+                next_path=command.next_path,
+                classroom_planner_entry_origin=command.classroom_planner_entry_origin,
             )
 
         return RequestPasswordResetResult()
 
-    async def _send_reset_email(self, *, email: str, first_name: str, token: str) -> None:
+    async def _send_reset_email(
+        self,
+        *,
+        email: str,
+        first_name: str,
+        token: str,
+        next_path: str | None,
+        classroom_planner_entry_origin: str | None,
+    ) -> None:
         """Send the reset email without surfacing delivery failures to the public route."""
         try:
-            reset_url = f"{self._settings.PASSWORD_RESET_BASE_URL}/reset-password?token={token}"
+            reset_url = append_auth_link_continuation(
+                base_url=self._settings.PASSWORD_RESET_BASE_URL,
+                path="/reset-password",
+                token_name="token",
+                token_value=token,
+                next_path=next_path,
+                classroom_planner_entry_origin=classroom_planner_entry_origin,
+            )
             message = self._email_renderer.render(
                 template_name="reset_password.html",
                 context={

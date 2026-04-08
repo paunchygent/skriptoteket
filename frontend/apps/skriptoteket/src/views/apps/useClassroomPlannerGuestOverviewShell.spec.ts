@@ -169,7 +169,7 @@ describe("useClassroomPlannerGuestController", () => {
         students: [{ id: "student-1", display_name: "Ada" }],
       }),
     ).rejects.toThrow(
-      "Publikt gästarbete är stängt i den här webbläsaren. Logga in för att fortsätta.",
+      "Det går inte att skapa nya klasser och klassrum i den här webbläsaren eftersom du redan har använt Klassrumskartan inloggad här. Logga in för att fortsätta använda appen.",
     );
 
     expect(harness.getState().guestAuthoringClosed.value).toBe(true);

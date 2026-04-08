@@ -168,6 +168,16 @@ dependencies:
     - the canonical `/public/apps/classroom.group-seating-studio` contract
       remains unchanged
   - `ST-32-10` now captures the planned auth-entry follow-up after `PR-0240`:
-    a dedicated page-based login handoff that replaces the overloaded
-    signed-out modal entry seam without reviving the old legacy `/login`
-    behavior
+    - `PR-0242` is now implemented locally and review-approved:
+      - `/auth/login` is the canonical auth-entry route and exact `/login`
+        falls through normal SPA recovery/not-found behavior
+      - sanitized `next` is the durable redirect contract across login,
+        register, forgot-password, reset-password, verify-email, and protected
+        auth interruption entry points
+      - backend-generated verification/reset email links preserve the same
+        continuation contract
+      - Klassrumskartan's `classroomPlannerEntryOrigin` remains supplemental
+        only, but now survives auth detours
+      - the canonical Playwright/browser lane is aligned with the real
+        `/auth/login` flow through green `ui-smoke`, `ui-editor-smoke`,
+        `ui-runtime-smoke`, and Flunk-Out Frenzy route proofs on `5173`

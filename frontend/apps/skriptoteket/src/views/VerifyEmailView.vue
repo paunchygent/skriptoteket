@@ -1,9 +1,23 @@
 <script setup lang="ts">
+/**
+ * Email-verification result view.
+ *
+ * This route verifies local-account email tokens, exposes resend recovery when
+ * the token has expired, and routes post-verification login through the shared
+ * `/auth/login` handoff instead of sending the user back to an overloaded home
+ * shell seam.
+ */
+
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { apiPost, isApiError } from "../api/client";
 import { IconCheck, IconWarning, IconX } from "../components/icons";
+import {
+  buildAuthContinuationApiPayload,
+  buildSignedOutOnlyAuthEntryLocation,
+  readAuthContinuation,
+} from "../composables/auth/authEntryNavigation";
 
 type VerifyState = "loading" | "success" | "expired" | "invalid";
 
@@ -15,6 +29,7 @@ const expiredEmail = ref<string | null>(null);
 const isResending = ref(false);
 const resendSuccess = ref(false);
 const countdown = ref(5);
+const continuation = computed(() => readAuthContinuation(route.query, window.history.state));
 
 let redirectTimer: ReturnType<typeof setTimeout> | null = null;
 let countdownInterval: ReturnType<typeof setInterval> | null = null;
@@ -62,7 +77,7 @@ function startRedirectCountdown(): void {
   }, 1000);
 
   redirectTimer = setTimeout(() => {
-    router.push("/");
+    void router.push(buildSignedOutOnlyAuthEntryLocation(continuation.value));
   }, 5000);
 }
 
@@ -77,6 +92,11 @@ function cancelRedirect(): void {
   }
 }
 
+async function goToAuthEntry(): Promise<void> {
+  cancelRedirect();
+  await router.push(buildSignedOutOnlyAuthEntryLocation(continuation.value));
+}
+
 async function resendVerification(): Promise<void> {
   if (!expiredEmail.value || isResending.value) return;
 
@@ -84,6 +104,7 @@ async function resendVerification(): Promise<void> {
   try {
     await apiPost<{ message: string }>("/api/v1/auth/resend-verification", {
       email: expiredEmail.value,
+      ...buildAuthContinuationApiPayload(continuation.value),
     });
     resendSuccess.value = true;
   } catch {
@@ -131,13 +152,13 @@ onUnmounted(() => {
         </h1>
         <p class="text-navy leading-relaxed">
           Välkommen att
-          <RouterLink
-            to="/"
+          <button
+            type="button"
             class="text-navy underline hover:text-burgundy"
-            @click="cancelRedirect"
+            @click="void goToAuthEntry()"
           >
             logga in
-          </RouterLink>.
+          </button>.
         </p>
         <p class="text-sm text-navy/60 mt-6">
           Omdirigeras om {{ countdown }} sekund{{ countdown !== 1 ? "er" : "" }}...
@@ -196,10 +217,10 @@ onUnmounted(() => {
           Länken kan redan ha använts eller vara felaktig.
         </p>
         <RouterLink
-          to="/"
+          :to="buildSignedOutOnlyAuthEntryLocation(continuation)"
           class="text-navy underline hover:text-burgundy text-sm"
         >
-          Ta mig tillbaka till startsidan
+          Gå till inloggning
         </RouterLink>
       </div>
     </div>

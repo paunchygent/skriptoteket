@@ -92,7 +92,12 @@ async def test_request_password_reset_creates_token_and_sends_email(now: datetim
         token_generator=token_generator,
     )
 
-    result = await handler.handle(RequestPasswordResetCommand(email="Teacher@Example.com"))
+    result = await handler.handle(
+        RequestPasswordResetCommand(
+            email="Teacher@Example.com",
+            next_path="/browse",
+        )
+    )
 
     assert result.message == "Om kontot kan återställas skickas en återställningslänk."
     password_reset_throttle.record_request.assert_called_once_with(
@@ -109,6 +114,9 @@ async def test_request_password_reset_creates_token_and_sends_email(now: datetim
     assert created_token.token_hash == hash_password_reset_token(token="reset-token")
     assert created_token.expires_at == now + timedelta(hours=settings.PASSWORD_RESET_TTL_HOURS)
     email_sender.send.assert_awaited_once()
+    assert email_renderer.render.call_args.kwargs["context"]["reset_url"] == (
+        f"{settings.PASSWORD_RESET_BASE_URL}/reset-password?token=reset-token&next=%2Fbrowse"
+    )
 
 
 @pytest.mark.asyncio

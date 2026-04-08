@@ -2,8 +2,8 @@
 
 This smoke is the repo's broad UI gate for redeploy-style verification. It
 checks the public landing page contract, logs in through the shared protected-
-route modal flow, and then sweeps a small authenticated route set on both
-mobile and desktop viewports.
+route `/auth/login` flow, and then sweeps a small authenticated route set on
+both mobile and desktop viewports.
 """
 
 from __future__ import annotations
@@ -18,41 +18,38 @@ from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
 
 
-def _assert_public_landing(page: Page, *, verify_equal_cta_widths: bool = False) -> None:
+def _assert_public_landing(page: Page) -> None:
     landing_main = page.locator("main").first
     expect(
-        page.get_by_role("heading", name=re.compile(r"^Skriptoteket$", re.IGNORECASE))
-    ).to_be_visible()
-    expect(
-        landing_main.get_by_text("Professionellt appbibliotek för lärare", exact=True)
+        landing_main.get_by_role(
+            "heading", name=re.compile(r"Lärarverktyg direkt i webbläsaren", re.IGNORECASE)
+        )
     ).to_be_visible()
     expect(
         landing_main.get_by_text(
-            "Logga in och använd appar och verktyg för undervisning, planering och dokumentation.",
-            exact=True,
+            re.compile(r"Klassrumskartan.*öppen för alla", re.IGNORECASE),
         )
     ).to_be_visible()
-    expect(landing_main.get_by_text("Professionellt appbibliotek", exact=True)).to_be_visible()
-    expect(landing_main.get_by_text("Dela med kollegor", exact=True)).to_be_visible()
-    expect(landing_main.get_by_text("GDPR-säkrad datahantering", exact=True)).to_be_visible()
-
-    hero_login = landing_main.get_by_role("button", name=re.compile(r"^Logga in$", re.IGNORECASE))
-    hero_register = landing_main.get_by_role(
-        "link", name=re.compile(r"^Skapa konto$", re.IGNORECASE)
-    )
-    expect(hero_login).to_be_visible()
-    expect(hero_register).to_be_visible()
-
-    if not verify_equal_cta_widths:
-        return
-
-    login_width = hero_login.evaluate("element => element.getBoundingClientRect().width")
-    register_width = hero_register.evaluate("element => element.getBoundingClientRect().width")
-    width_diff = abs(login_width - register_width)
-    assert width_diff <= 1.0, (
-        "Expected landing CTA buttons to keep the same width on desktop. "
-        f"Got diff={width_diff:.2f}px (login={login_width:.2f}, register={register_width:.2f})."
-    )
+    expect(
+        landing_main.get_by_text(
+            re.compile(r"Du behöver inget konto.*komma igång", re.IGNORECASE),
+        )
+    ).to_be_visible()
+    expect(
+        page.get_by_role("link", name=re.compile(r"Öppna Klassrumskartan", re.IGNORECASE))
+    ).to_be_visible()
+    expect(
+        page.get_by_role("button", name=re.compile(r"^Logga in$", re.IGNORECASE)).first
+    ).to_be_visible()
+    expect(
+        page.get_by_role("link", name=re.compile(r"skapa ett konto", re.IGNORECASE))
+    ).to_be_visible()
+    expect(
+        page.get_by_role("heading", name=re.compile(r"^Klassrumskartan$", re.IGNORECASE))
+    ).to_be_visible()
+    expect(
+        page.get_by_role("heading", name=re.compile(r"Mer när du loggar in", re.IGNORECASE))
+    ).to_be_visible()
 
 
 def _open_help_panel(page: Page) -> Locator | None:
@@ -158,7 +155,7 @@ def main() -> None:
         page = context.new_page()
 
         page.goto(f"{base_url}/", wait_until="domcontentloaded")
-        _assert_public_landing(page, verify_equal_cta_widths=True)
+        _assert_public_landing(page)
         page.screenshot(path=str(artifacts_dir / "landing-desktop.png"), full_page=True)
         login_to_browse(page, base_url=base_url, email=email, password=password)
         page.goto(f"{base_url}/", wait_until="domcontentloaded")

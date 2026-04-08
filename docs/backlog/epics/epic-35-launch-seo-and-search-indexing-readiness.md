@@ -6,22 +6,29 @@ status: proposed
 owners: "agents"
 created: 2026-04-08
 updated: 2026-04-08
-outcome: "Skriptoteket can launch on one explicit canonical public host with valid crawler-facing files, honest HTTP status semantics, route-level metadata for the current public entry pages, and an operator-ready search verification workflow so search engines can discover and index the intended public surfaces without domain ambiguity or soft-404 drift."
+outcome: "Skriptoteket can launch under the intended HuleEdu domain topology: `hule.education` serves the HuleEdu landing layer, `api.hule.education` becomes the shared browser auth/API edge, `skriptoteket.hule.education` remains the canonical public Skriptoteket app host for its crawlable surfaces, and the current public pages gain valid crawler-facing files, honest HTTP status semantics, route-level metadata, and operator-ready search verification."
 dependencies:
   - "ADR-0027"
   - "ADR-0028"
+  - "ADR-0076"
+  - "EPIC-28"
+  - "ST-28-05"
   - "EPIC-32"
   - "ST-32-07"
   - "ST-32-08"
   - "ST-32-09"
+  - "REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08"
   - "REF-launch-seo-and-search-indexing-readiness-2026-04-08"
 ---
 
 ## Scope
 
-- Freeze the canonical public Skriptoteket host for launch instead of leaving
-  `skriptoteket.hule.education`, `hule.education`, and potential `www`
-  variants in ambiguous competition.
+- Consume the frozen launch topology from `ST-28-05` instead of treating
+  `skriptoteket.hule.education`, `hule.education`, `api.hule.education`, and
+  potential `www` variants as an SEO-owned decision space.
+- Treat `hule.education` as the HuleEdu entrypoint and `api.hule.education` as
+  the shared browser auth/API edge while keeping `skriptoteket.hule.education`
+  as the canonical public Skriptoteket app host.
 - Convert crawler-critical paths such as `/robots.txt` and `/sitemap.xml` into
   real edge-owned responses with correct content type, body, and status code.
 - Repair public-route and unmatched-route HTTP semantics so search engines do
@@ -31,6 +38,9 @@ dependencies:
   `/` and `/public/apps/classroom.group-seating-studio`.
 - Define an explicit indexing policy for public, authenticated, and unmatched
   route families rather than relying on one generic SPA shell.
+- Keep the launch SEO lane aligned with the HuleEdu-owned session direction in
+  `EPIC-28` and `ADR-0076` instead of hardening around app-local auth
+  assumptions or apex-domain drift.
 - Document and execute the search-operator lane: Search Console / Bing
   verification, sitemap submission, launch-day checks, and post-deploy
   revalidation.
@@ -46,11 +56,15 @@ dependencies:
   a follow-up choice after the minimum crawlability lane is honest and stable.
 - Search ranking promises. This epic only aims to make the public surface
   crawlable, coherent, and operator-verifiable.
+- Implementing the HuleEdu identity service, API gateway, or apex landing page
+  itself inside the Skriptoteket repo. Those are upstream platform work, but
+  this epic must stay compatible with them.
 
 ## Risks
 
 - If the canonical host is not decided early, link equity and search-console
-  ownership can split across the apex and subdomain surfaces.
+  ownership can split across the HuleEdu apex, shared API edge, and Skriptoteket
+  subdomain surfaces.
 - If crawler-facing files still fall through to the SPA shell, search engines
   may delay indexing or classify key URLs as low quality or soft 404s.
 - If unmatched URLs stay `200 OK` at the backend edge, route recovery in the
@@ -59,6 +73,9 @@ dependencies:
   misleading snippets even after crawlability is repaired.
 - If search verification is treated as “someone will do it later,” launch-day
   status will remain ambiguous even after the technical fixes ship.
+- If the apex and gateway are built after Skriptoteket hardens around the wrong
+  host assumptions, launch-day SEO work can create avoidable redirect and auth
+  churn.
 
 ## Story Stack
 
@@ -73,7 +90,7 @@ dependencies:
 
 | Decision point | Path A | Path B | Current recommendation |
 |---|---|---|---|
-| Is Skriptoteket moving to `https://hule.education` before launch? | Migrate fully to the apex only if DNS, TLS, redirects, app config, and search-console ownership switch together in one cutover | Keep `https://skriptoteket.hule.education` as the only canonical Skriptoteket host and keep the apex non-competing until it becomes a real product surface | Path B |
+| Does `https://hule.education` become the HuleEdu landing page before launch? | Keep the apex as HuleEdu-owned, link to `https://skriptoteket.hule.education`, and keep Skriptoteket's own canonical app URLs on the subdomain | Keep the temporary placeholder non-competing until the HuleEdu landing page is ready; do not promote the apex into the Skriptoteket app host | Path A |
 | Do we need a `www` variant for launch? | Add DNS, TLS coverage, and a permanent redirect to the canonical host | Leave `www` out of scope for launch and avoid introducing another public variant | Path B |
 
 ### 2. Crawl contract
@@ -95,7 +112,13 @@ dependencies:
 
 - [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md)
   is the canonical evidence and analysis record for this epic.
-- Story ordering matters. `ST-35-01` should freeze the host policy before the
+- [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
+  now governs the upstream launch topology that this epic consumes.
+- The current intended platform shape is: `hule.education` = HuleEdu landing,
+  `api.hule.education` = HuleEdu gateway/session edge, `skriptoteket.hule.education`
+  = canonical public Skriptoteket app host.
+- Story ordering matters. `ST-35-01` should freeze the Skriptoteket-side host
+  and edge behavior under that upstream topology before the
   crawler, metadata, and search-ops stories harden around it.
 - `ST-35-02` is the launch-critical technical truth gate. If `/robots.txt`,
   `/sitemap.xml`, and unmatched URLs are still wrong at the backend edge, the

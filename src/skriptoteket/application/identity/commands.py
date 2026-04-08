@@ -56,6 +56,8 @@ class RegisterUserCommand(BaseModel):
     password: str
     first_name: str
     last_name: str
+    next_path: str | None = None
+    classroom_planner_entry_origin: str | None = None
 
 
 class RegisterUserResult(BaseModel):
@@ -184,6 +186,8 @@ class ResendVerificationCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     email: str
+    next_path: str | None = None
+    classroom_planner_entry_origin: str | None = None
 
 
 class ResendVerificationResult(BaseModel):
@@ -200,6 +204,8 @@ class RequestPasswordResetCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     email: str
+    next_path: str | None = None
+    classroom_planner_entry_origin: str | None = None
 
 
 class RequestPasswordResetResult(BaseModel):

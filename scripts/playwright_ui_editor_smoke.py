@@ -1,8 +1,8 @@
 """Canonical Playwright smoke for the authenticated editor workflow shell.
 
 This smoke is a canonical release gate for the editor lane. It verifies the
-shared login path, editor hub entry, and core editor-shell affordances without
-depending on narrower PR-specific browser proofs.
+shared `/auth/login` entry contract, editor hub entry, and core editor-shell
+affordances without depending on narrower PR-specific browser proofs.
 """
 
 from __future__ import annotations
@@ -12,29 +12,9 @@ from pathlib import Path
 
 from playwright.sync_api import expect, sync_playwright
 
+from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
-
-
-def _login(
-    page: object, *, base_url: str, email: str, password: str, artifacts_dir: Path | None = None
-) -> None:
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-
-    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-    expect(dialog).to_be_visible()
-    dialog.get_by_label("E-post").fill(email)
-    dialog.get_by_label("Lösenord").fill(password)
-    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-
-    try:
-        expect(
-            page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
-        ).to_be_visible()
-    except AssertionError:
-        if artifacts_dir:
-            page.screenshot(path=str(artifacts_dir / "login-failure.png"), full_page=True)
-        raise
 
 
 def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = None) -> None:
@@ -107,6 +87,17 @@ def _open_editor_hub(page: object, *, base_url: str, artifacts_dir: Path | None 
         raise
 
 
+def _workspace_mode_control(page: object, label: str):
+    """Return the live workspace mode control regardless of its ARIA role."""
+
+    radiogroup = page.get_by_role("radiogroup", name=re.compile(r"Välj editor-läge", re.IGNORECASE))
+    if radiogroup.count() > 0:
+        return radiogroup.first.get_by_text(re.compile(rf"^{re.escape(label)}$", re.IGNORECASE))
+    return page.get_by_role(
+        "button", name=re.compile(rf"^{re.escape(label)}$", re.IGNORECASE)
+    ).first
+
+
 def _assert_panel_fill(
     page: object,
     *,
@@ -158,7 +149,15 @@ def main() -> None:
         context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 
-        _login(page, base_url=base_url, email=email, password=password, artifacts_dir=artifacts_dir)
+        login_via_auth_entry(
+            page,
+            base_url=base_url,
+            email=email,
+            password=password,
+            next_path="/",
+            success_heading_pattern=r"Välkommen",
+            failure_artifacts_dir=artifacts_dir,
+        )
         _open_editor_hub(page, base_url=base_url, artifacts_dir=artifacts_dir)
         _open_editor(page, base_url=base_url, artifacts_dir=artifacts_dir)
 
@@ -199,9 +198,9 @@ def main() -> None:
             page.screenshot(path=str(artifacts_dir / "chat-input-not-editable.png"), full_page=True)
             raise
 
-        diff_mode_button = page.get_by_role("button", name=re.compile(r"^Diff$", re.IGNORECASE))
+        diff_mode_button = _workspace_mode_control(page, "Diff")
         if diff_mode_button.count() > 0:
-            diff_mode_button.first.click()
+            diff_mode_button.click()
             page.screenshot(path=str(artifacts_dir / "diff-mode.png"), full_page=True)
             close_diff_button = page.get_by_role(
                 "button", name=re.compile(r"Stäng diff", re.IGNORECASE)
@@ -219,7 +218,7 @@ def main() -> None:
                 label="Diff",
             )
 
-        test_mode_button = page.get_by_role("button", name="Testkör").first
+        test_mode_button = _workspace_mode_control(page, "Testkör")
         expect(test_mode_button).to_be_visible()
         test_mode_button.click()
         page.screenshot(path=str(artifacts_dir / "test-mode.png"), full_page=True)
@@ -257,8 +256,10 @@ def main() -> None:
         ).first
         expect(help_text).to_be_visible()
 
-        sandbox_section_label = page.get_by_role("button", name="Testkör kod")
-        if sandbox_section_label.count() == 0:
+        empty_test_panel = page.get_by_text(
+            re.compile(r"Spara ett utkast för att kunna testa", re.IGNORECASE)
+        )
+        if empty_test_panel.count() > 0 and empty_test_panel.first.is_visible():
             save_menu_button = page.get_by_role("button", name="Spara/Öppna").first
             expect(save_menu_button).to_be_visible()
             save_menu_button.click()

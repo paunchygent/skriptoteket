@@ -1,7 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockUseAuthStore = vi.fn();
-const mockUseLoginModal = vi.fn();
 let registeredGuard: ((to: unknown, from: unknown) => Promise<unknown> | unknown) | null = null;
 
 vi.mock("vue-router", async (importOriginal) => {
@@ -24,10 +23,6 @@ vi.mock("../stores/auth", () => ({
   useAuthStore: mockUseAuthStore,
 }));
 
-vi.mock("../composables/useLoginModal", () => ({
-  useLoginModal: mockUseLoginModal,
-}));
-
 function createAuth(overrides?: {
   isAuthenticated?: boolean;
   hasAtLeastRole?: (role: string) => boolean;
@@ -39,25 +34,18 @@ function createAuth(overrides?: {
   };
 }
 
-function createLoginModal() {
-  return { open: vi.fn() };
-}
-
 beforeAll(async () => {
   await import("./index");
 });
 
 beforeEach(async () => {
   mockUseAuthStore.mockReset();
-  mockUseLoginModal.mockReset();
 });
 
 describe("router guards", () => {
-  it("opens login modal and aborts when auth is required and user is unauthenticated", async () => {
+  it("redirects protected routes to auth-login when the user is unauthenticated", async () => {
     const auth = createAuth();
-    const loginModal = createLoginModal();
     mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
 
     const guard = registeredGuard;
     if (!guard) throw new Error("Router guard not registered");
@@ -71,99 +59,41 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
-    expect(loginModal.open).toHaveBeenCalledWith("/browse");
-    expect(result).toBe(false);
+    expect(result).toEqual({
+      name: "auth-login",
+      query: { next: "/browse" },
+    });
   });
 
-  it("redirects authenticated users away from /login to the next param", async () => {
-    const auth = createAuth({
-      isAuthenticated: true,
-      hasAtLeastRole: vi.fn().mockReturnValue(true),
-    });
-    const loginModal = createLoginModal();
-    mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
-
-    const guard = registeredGuard;
-    if (!guard) throw new Error("Router guard not registered");
-    const result = await guard({
-      path: "/login",
-      fullPath: "/login?next=/profile",
-      meta: {},
-      query: { next: "/profile" },
-    }, {
-      name: undefined,
-    });
-
-    expect(auth.bootstrap).toHaveBeenCalled();
-    expect(loginModal.open).not.toHaveBeenCalled();
-    expect(result).toEqual({ path: "/profile" });
-  });
-
-  it("opens login modal in place and redirects home for signed-out /login", async () => {
+  it("does not treat /login or nearby paths as auth-entry routes", async () => {
     const auth = createAuth();
-    const loginModal = createLoginModal();
     mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
 
     const guard = registeredGuard;
     if (!guard) throw new Error("Router guard not registered");
-    const result = await guard({
+    const exactLoginResult = await guard({
       path: "/login",
-      fullPath: "/login?next=/public/apps/classroom.group-seating-studio",
+      fullPath: "/login",
       meta: {},
-      query: { next: "/public/apps/classroom.group-seating-studio" },
-    }, {
-      name: undefined,
-    });
-
-    expect(auth.bootstrap).toHaveBeenCalled();
-    expect(loginModal.open).toHaveBeenCalledWith("/public/apps/classroom.group-seating-studio");
-    expect(result).toEqual({ path: "/" });
-  });
-
-  it("does not treat /login/oops as the legacy login entry", async () => {
-    const auth = createAuth();
-    const loginModal = createLoginModal();
-    mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
-
-    const guard = registeredGuard;
-    if (!guard) throw new Error("Router guard not registered");
-    const result = await guard({
+      query: {},
+    }, { name: undefined });
+    const nestedLoginResult = await guard({
       path: "/login/oops",
       fullPath: "/login/oops",
       meta: {},
       query: {},
-    }, {
-      name: undefined,
-    });
-
-    expect(auth.bootstrap).not.toHaveBeenCalled();
-    expect(loginModal.open).not.toHaveBeenCalled();
-    expect(result).toBe(true);
-  });
-
-  it("does not treat /login-foo as the legacy login entry", async () => {
-    const auth = createAuth();
-    const loginModal = createLoginModal();
-    mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
-
-    const guard = registeredGuard;
-    if (!guard) throw new Error("Router guard not registered");
-    const result = await guard({
+    }, { name: undefined });
+    const prefixedLoginResult = await guard({
       path: "/login-foo",
       fullPath: "/login-foo",
       meta: {},
       query: {},
-    }, {
-      name: undefined,
-    });
+    }, { name: undefined });
 
     expect(auth.bootstrap).not.toHaveBeenCalled();
-    expect(loginModal.open).not.toHaveBeenCalled();
-    expect(result).toBe(true);
+    expect(exactLoginResult).toBe(true);
+    expect(nestedLoginResult).toBe(true);
+    expect(prefixedLoginResult).toBe(true);
   });
 
   it("redirects to forbidden when minRole is not satisfied", async () => {
@@ -171,9 +101,7 @@ describe("router guards", () => {
       isAuthenticated: true,
       hasAtLeastRole: vi.fn().mockReturnValue(false),
     });
-    const loginModal = createLoginModal();
     mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
 
     const guard = registeredGuard;
     if (!guard) throw new Error("Router guard not registered");
@@ -187,18 +115,15 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
-    expect(loginModal.open).not.toHaveBeenCalled();
     expect(result).toEqual({
       name: "forbidden",
       query: { required: "admin", from: "/admin/tools" },
     });
   });
 
-  it("preserves Klassrumskartan dashboard origin through the login modal redirect", async () => {
+  it("preserves Klassrumskartan dashboard origin through the auth-login redirect", async () => {
     const auth = createAuth();
-    const loginModal = createLoginModal();
     mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
 
     const guard = registeredGuard;
     if (!guard) throw new Error("Router guard not registered");
@@ -214,21 +139,74 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
-    expect(loginModal.open).toHaveBeenCalledWith({
+    expect(result).toEqual({
+      name: "auth-login",
+      query: {
+        next: "/apps/classroom.group-seating-studio",
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+      state: {
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    });
+  });
+
+  it("redirects authenticated users away from auth-login using the preserved next param", async () => {
+    const auth = createAuth({
+      isAuthenticated: true,
+      hasAtLeastRole: vi.fn().mockReturnValue(true),
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/auth/login",
+      fullPath: "/auth/login?next=/profile",
+      meta: {},
+      query: { next: "/profile" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toEqual({ path: "/profile" });
+  });
+
+  it("restores classroom planner origin when auth-login is revisited authenticated", async () => {
+    const auth = createAuth({
+      isAuthenticated: true,
+      hasAtLeastRole: vi.fn().mockReturnValue(true),
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/auth/login",
+      fullPath: "/auth/login?next=/apps/classroom.group-seating-studio&classroomPlannerEntryOrigin=dashboard",
+      meta: {},
+      query: {
+        next: "/apps/classroom.group-seating-studio",
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toEqual({
       name: "app-detail",
       params: { appId: "classroom.group-seating-studio" },
       state: {
         classroomPlannerEntryOrigin: "dashboard",
       },
     });
-    expect(result).toBe(false);
   });
 
   it("leaves the dedicated public curated app route unauthenticated", async () => {
     const auth = createAuth();
-    const loginModal = createLoginModal();
     mockUseAuthStore.mockReturnValue(auth);
-    mockUseLoginModal.mockReturnValue(loginModal);
 
     const guard = registeredGuard;
     if (!guard) throw new Error("Router guard not registered");
@@ -244,7 +222,6 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).not.toHaveBeenCalled();
-    expect(loginModal.open).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 });

@@ -7,13 +7,17 @@
  */
 
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { apiPost } from "../api/client";
 import SystemMessage from "../components/ui/SystemMessage.vue";
-import { buildSignedOutOnlyLoginRedirect } from "../composables/auth/loginRedirects";
+import {
+  buildAuthContinuationApiPayload,
+  buildSignedOutOnlyAuthEntryLocation,
+  readAuthContinuation,
+  resolveAuthLoginSuccessLocation,
+} from "../composables/auth/authEntryNavigation";
 import { useVerificationResend } from "../composables/auth/useVerificationResend";
-import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
 
 type ForgotPasswordResponse = {
@@ -21,7 +25,7 @@ type ForgotPasswordResponse = {
 };
 
 const auth = useAuthStore();
-const loginModal = useLoginModal();
+const route = useRoute();
 const router = useRouter();
 
 const email = ref("");
@@ -29,6 +33,7 @@ const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const hasSubmittedReset = ref(false);
+const continuation = computed(() => readAuthContinuation(route.query, window.history.state));
 
 const {
   clearMessages: clearVerificationMessages,
@@ -43,7 +48,7 @@ const canOfferVerificationResend = computed(() => hasSubmittedReset.value && ema
 onMounted(async () => {
   await auth.bootstrap();
   if (auth.isAuthenticated) {
-    await router.replace("/");
+    await router.replace(resolveAuthLoginSuccessLocation(continuation.value, window.history.state));
   }
 });
 
@@ -66,6 +71,7 @@ async function submit(): Promise<void> {
   try {
     const response = await apiPost<ForgotPasswordResponse>("/api/v1/auth/forgot-password", {
       email: normalizedEmail,
+      ...buildAuthContinuationApiPayload(continuation.value),
     });
     successMessage.value = response.message;
     hasSubmittedReset.value = true;
@@ -78,7 +84,11 @@ async function submit(): Promise<void> {
 }
 
 async function resendVerification(): Promise<void> {
-  await resendVerificationEmail(email.value);
+  await resendVerificationEmail(email.value, buildAuthContinuationApiPayload(continuation.value));
+}
+
+async function goToAuthEntry(): Promise<void> {
+  await router.push(buildSignedOutOnlyAuthEntryLocation(continuation.value));
 }
 </script>
 
@@ -145,7 +155,7 @@ async function resendVerification(): Promise<void> {
       <button
         type="button"
         class="text-navy underline hover:text-burgundy"
-        @click="loginModal.open(buildSignedOutOnlyLoginRedirect())"
+        @click="void goToAuthEntry()"
       >
         Logga in
       </button>

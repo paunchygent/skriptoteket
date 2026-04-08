@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
+from skriptoteket.application.identity.auth_link_continuation import append_auth_link_continuation
 from skriptoteket.application.identity.commands import (
     CreateLocalUserCommand,
     RegisterUserCommand,
@@ -156,6 +157,8 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
                 email=result.user.email,
                 first_name=first_name,
                 token=verification_token.token,
+                next_path=command.next_path,
+                classroom_planner_entry_origin=command.classroom_planner_entry_origin,
             )
 
         return RegisterUserResult(
@@ -180,13 +183,22 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         email: str,
         first_name: str,
         token: str,
+        next_path: str | None,
+        classroom_planner_entry_origin: str | None,
     ) -> None:
         """Send verification email with retry + exponential backoff.
 
         Must be called inside the registration transaction so failures roll back user creation.
         """
         base_url = self._settings.EMAIL_VERIFICATION_BASE_URL
-        verification_url = f"{base_url}/verify-email?token={token}"
+        verification_url = append_auth_link_continuation(
+            base_url=base_url,
+            path="/verify-email",
+            token_name="token",
+            token_value=token,
+            next_path=next_path,
+            classroom_planner_entry_origin=classroom_planner_entry_origin,
+        )
         message = self._email_renderer.render(
             template_name="verify_email.html",
             context={

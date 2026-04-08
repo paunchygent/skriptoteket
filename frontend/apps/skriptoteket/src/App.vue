@@ -2,37 +2,29 @@
 /**
  * Root SPA shell.
  *
- * This component hosts the global layouts, current shared login modal, and
- * auth-reactive redirects so protected curated-app routes keep their entry
- * contracts intact.
- *
- * The signed-out auth-entry modal is transitional on main; the planned
- * dedicated `/auth/login` page contract is tracked separately in ST-32-10 /
- * PR-0242.
+ * This component hosts the global layouts and auth-reactive route recovery so
+ * protected curated-app routes keep their entry contracts intact through the
+ * dedicated `/auth/login` page contract.
  */
 
 import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import LoginModal from "./components/auth/LoginModal.vue";
 import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
 import ToastHost from "./components/ui/ToastHost.vue";
-import { useLoginModal } from "./composables/useLoginModal";
+import {
+  buildProtectedAuthEntryLocationFromCurrentRoute,
+} from "./composables/auth/authEntryNavigation";
 import { usePageTransition } from "./composables/usePageTransition";
 import { useAuthStore } from "./stores/auth";
 import { useHelp } from "./components/help/useHelp";
-import {
-  buildClassroomPlannerEntryTarget,
-  CLASSROOM_PLANNER_APP_ID,
-  readClassroomPlannerEntryOriginFromHistoryState,
-} from "./views/apps/classroomPlannerNavigation";
+import { CLASSROOM_PLANNER_APP_ID } from "./views/apps/classroomPlannerNavigation";
 
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const help = useHelp();
-const loginModal = useLoginModal();
 const pageTransition = usePageTransition();
 
 const logoutError = ref<string | null>(null);
@@ -82,36 +74,9 @@ const isProtectedRoute = computed(() => {
   });
 });
 
-function buildProtectedRouteLoginRedirect() {
-  if (route.name === "app-detail" && route.params.appId === CLASSROOM_PLANNER_APP_ID) {
-    return buildClassroomPlannerEntryTarget(
-      readClassroomPlannerEntryOriginFromHistoryState(window.history.state),
-    );
-  }
-
-  return route.fullPath;
-}
-
-function closeLoginModal(): void {
-  loginModal.close();
-}
-
-function onLoginSuccess(): void {
-  const redirect = loginModal.redirectTo.value;
-  closeLoginModal();
-  if (redirect) {
-    pageTransition.suppressNext();
-    void router.push(redirect);
-  }
-}
-
 watch(
   () => route.fullPath,
-  async (nextPath, previousPath) => {
-    if (loginModal.isOpen.value && nextPath !== previousPath) {
-      closeLoginModal();
-    }
-
+  async () => {
     if (pageTransition.suppressNextPageTransition.value) {
       await nextTick();
       pageTransition.reset();
@@ -133,7 +98,10 @@ watch(
       return;
     }
 
-    loginModal.open(buildProtectedRouteLoginRedirect());
+    pageTransition.suppressNext();
+    void router.push(
+      buildProtectedAuthEntryLocationFromCurrentRoute(route, window.history.state),
+    );
   },
 );
 
@@ -244,13 +212,6 @@ async function onLogout(): Promise<void> {
     <HelpPanel v-if="helpPanelEnabled" />
 
     <ToastHost />
-
-    <!-- Global Login Modal -->
-    <LoginModal
-      :is-open="loginModal.isOpen.value"
-      @close="closeLoginModal"
-      @success="onLoginSuccess"
-    />
   </div>
 </template>
 

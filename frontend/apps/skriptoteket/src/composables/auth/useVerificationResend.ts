@@ -13,6 +13,11 @@ type ResendVerificationResponse = {
   message: string;
 };
 
+type ResendVerificationPayload = {
+  next?: string;
+  classroom_planner_entry_origin?: "dashboard" | "catalog";
+};
+
 export function useVerificationResend() {
   const isSubmitting = ref(false);
   const successMessage = ref<string | null>(null);
@@ -23,7 +28,7 @@ export function useVerificationResend() {
     errorMessage.value = null;
   }
 
-  async function resend(email: string): Promise<void> {
+  async function resend(email: string, continuation: ResendVerificationPayload = {}): Promise<void> {
     const normalizedEmail = email.trim();
     if (!normalizedEmail || isSubmitting.value) {
       return;
@@ -35,6 +40,7 @@ export function useVerificationResend() {
     try {
       const response = await apiPost<ResendVerificationResponse>("/api/v1/auth/resend-verification", {
         email: normalizedEmail,
+        ...continuation,
       });
       successMessage.value = response.message;
     } catch (error: unknown) {

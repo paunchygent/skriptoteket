@@ -82,8 +82,9 @@ async function exitPublicPlanner(): Promise<void> {
       variant="warning"
       data-test="public-guest-authoring-closed-message"
     >
-      Du har redan öppnat Klassrumskartan inloggad i den här webbläsaren. Därför går det inte att
-      starta ett nytt gästläge här. Logga in för att fortsätta, eller
+      Du har redan använt Klassrumskartan inloggad i den här webbläsaren. Därför går det inte att
+      skapa nya klasser och klassrum här utan att logga in. Logga in för att fortsätta använda
+      appen, eller
       <RouterLink
         to="/register"
         class="font-semibold underline"
@@ -119,8 +120,8 @@ async function exitPublicPlanner(): Promise<void> {
       class="border border-navy bg-white px-4 py-12 text-center text-sm text-navy shadow-brutal-sm"
       data-test="public-guest-authoring-closed-state"
     >
-      Det går inte att starta ett nytt gästarbete i den här webbläsaren efter att du har använt
-      Klassrumskartan inloggad. Logga in för att fortsätta.
+      Det går inte att skapa nya klasser och klassrum i den här webbläsaren eftersom du redan har
+      använt Klassrumskartan inloggad här. Logga in för att fortsätta använda appen.
     </section>
 
     <div

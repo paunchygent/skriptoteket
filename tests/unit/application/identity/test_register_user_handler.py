@@ -126,6 +126,8 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
             password="password123",
             first_name=" Ada ",
             last_name=" Lovelace ",
+            next_path="/apps/classroom.group-seating-studio",
+            classroom_planner_entry_origin="dashboard",
         )
     )
 
@@ -144,6 +146,13 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
     # Verify email was sent
     email_sender.send.assert_awaited_once()
     email_renderer.render.assert_called_once()
+    expected_verification_base_url = settings.EMAIL_VERIFICATION_BASE_URL
+    assert email_renderer.render.call_args.kwargs["context"]["verification_url"] == (
+        f"{expected_verification_base_url}/verify-email"
+        "?token=verification-token"
+        "&next=%2Fapps%2Fclassroom.group-seating-studio"
+        "&classroomPlannerEntryOrigin=dashboard"
+    )
 
 
 @pytest.mark.asyncio

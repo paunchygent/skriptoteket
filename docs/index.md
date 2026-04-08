@@ -27,6 +27,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 - Smart assignment V1 decision memo:
   `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
+- HuleEdu launch surface + shared auth topology:
+  `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md`
 - Launch SEO and indexing readiness assessment:
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
@@ -143,6 +145,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
 - ST-32-10 dedicated auth-entry page + redirect-preserving login handoff:
   `docs/backlog/prs/pr-0242-st-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
+- ST-28-05 cross-repo launch surface + shared auth dependency freeze:
+  `docs/backlog/stories/story-28-05-cross-repo-launch-surface-and-shared-auth-dependency-freeze.md`
 - EPIC-35 launch SEO + search indexing readiness:
   `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`
 - Review gate for EPIC-35 launch SEO + search indexing readiness:

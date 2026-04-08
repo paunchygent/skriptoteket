@@ -89,7 +89,13 @@ async def test_resend_verification_creates_token_and_sends_email(now: datetime) 
         token_generator=token_generator,
     )
 
-    result = await handler.handle(ResendVerificationCommand(email="teacher@example.com"))
+    result = await handler.handle(
+        ResendVerificationCommand(
+            email="teacher@example.com",
+            next_path="/apps/classroom.group-seating-studio",
+            classroom_planner_entry_origin="dashboard",
+        )
+    )
 
     assert result.message == "Om kontot finns skickas ett nytt verifieringsmail"
     verification_tokens.create.assert_awaited_once()
@@ -97,6 +103,13 @@ async def test_resend_verification_creates_token_and_sends_email(now: datetime) 
     assert created_token.user_id == user.id
     assert created_token.token == "new-verification-token"
     email_sender.send.assert_awaited_once()
+    expected_verification_base_url = settings.EMAIL_VERIFICATION_BASE_URL
+    assert email_renderer.render.call_args.kwargs["context"]["verification_url"] == (
+        f"{expected_verification_base_url}/verify-email"
+        "?token=new-verification-token"
+        "&next=%2Fapps%2Fclassroom.group-seating-studio"
+        "&classroomPlannerEntryOrigin=dashboard"
+    )
 
 
 @pytest.mark.asyncio

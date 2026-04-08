@@ -17,6 +17,8 @@ import re
 
 from playwright.sync_api import Locator, Page, expect
 
+from scripts._playwright_auth import login_via_auth_entry
+
 APP_PATH = "/apps/classroom.group-seating-studio"
 
 
@@ -62,35 +64,15 @@ def workspace_toggle(page: Page) -> Locator:
 def login_to_app(page: Page, *, base_url: str, email: str, password: str) -> None:
     """Log in through the shared repo flow, then open the protected app route."""
 
-    for attempt in range(3):
-        page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
-        try:
-            wait_for_app_heading(page)
-            return
-        except AssertionError:
-            dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-            if dialog.count() > 0:
-                expect(dialog).to_be_visible()
-                dialog.get_by_label("E-post").fill(email)
-                dialog.get_by_label("Lösenord").fill(password)
-                dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-                page.wait_for_timeout(750)
-            elif attempt == 0:
-                page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-                login_page_dialog = page.get_by_role(
-                    "dialog", name=re.compile(r"Logga in", re.IGNORECASE)
-                )
-                if login_page_dialog.count() > 0:
-                    expect(login_page_dialog).to_be_visible()
-                    login_page_dialog.get_by_label("E-post").fill(email)
-                    login_page_dialog.get_by_label("Lösenord").fill(password)
-                    login_page_dialog.get_by_role(
-                        "button", name=re.compile(r"Logga in", re.IGNORECASE)
-                    ).click()
-                    page.wait_for_timeout(750)
-            if attempt == 2:
-                raise
-            page.wait_for_timeout(1000)
+    login_via_auth_entry(
+        page,
+        base_url=base_url,
+        email=email,
+        password=password,
+        next_path=APP_PATH,
+        success_heading_pattern=r"Klassrumskartan",
+    )
+    wait_for_app_heading(page)
 
 
 def create_roster(page: Page, *, roster_name: str) -> None:

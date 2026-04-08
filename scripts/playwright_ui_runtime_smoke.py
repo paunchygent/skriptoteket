@@ -1,8 +1,9 @@
 """Canonical Playwright smoke for the authenticated runtime execution lane.
 
 This smoke is a canonical release gate for the runtime lane. It verifies the
-shared login path, curated-app execution, and tool-run happy paths without
-depending on narrower PR-specific browser proofs.
+shared `/auth/login` entry contract and the live curated-app runtime surfaces
+that are actually shipped in the current catalog, without depending on narrower
+PR-specific browser proofs.
 """
 
 from __future__ import annotations
@@ -12,18 +13,10 @@ from pathlib import Path
 
 from playwright.sync_api import expect, sync_playwright
 
+from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
-
-
-def _login(page: object, *, base_url: str, email: str, password: str) -> None:
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    page.get_by_label("E-post").fill(email)
-    page.get_by_label("Lösenord").fill(password)
-    page.locator("form").get_by_role(
-        "button", name=re.compile(r"^Logga in$", re.IGNORECASE)
-    ).click()
-    expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
+from scripts._playwright_flunk_out_frenzy import verify_runtime_start, wait_for_shell_ready
 
 
 def _run_curated_app(page: object, *, base_url: str, artifacts_dir: Path) -> None:
@@ -47,101 +40,14 @@ def _run_curated_app(page: object, *, base_url: str, artifacts_dir: Path) -> Non
     page.screenshot(path=str(artifacts_dir / "curated-app.png"), full_page=True)
 
 
-def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
-    page.goto(f"{base_url}/browse/professions/gemensamt/ovrigt", wait_until="domcontentloaded")
-    expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
-
-    tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
-    expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link").click()
-    page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
-
+def _run_flunk_out_frenzy(page: object, *, base_url: str, artifacts_dir: Path) -> None:
+    page.goto(f"{base_url}/apps/games.flunk_out_frenzy", wait_until="domcontentloaded")
+    wait_for_shell_ready(page)
     expect(
-        page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))
+        page.get_by_role("heading", name=re.compile(r"Flunk-Out Frenzy", re.IGNORECASE))
     ).to_be_visible()
-
-    run_button = page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE))
-    expect(run_button).to_be_disabled()
-
-    # Legacy tools (no input_schema) must use the multi-file picker.
-    sample_file_1 = artifacts_dir / "sample.txt"
-    sample_file_2 = artifacts_dir / "sample-2.txt"
-    sample_file_1.write_text("Hello from Playwright runtime smoke.\n", encoding="utf-8")
-    sample_file_2.write_text("Hello again from Playwright runtime smoke.\n", encoding="utf-8")
-
-    page.locator("input[type='file']").set_input_files([str(sample_file_1), str(sample_file_2)])
-    expect(run_button).to_be_enabled()
-    run_button.click()
-
-    next_step_button = page.get_by_role("button", name=re.compile(r"Nästa steg", re.IGNORECASE))
-    expect(next_step_button).to_be_visible(timeout=60_000)
-
-    note_input = page.get_by_label(re.compile(r"Anteckning", re.IGNORECASE))
-    expect(note_input).to_have_value("Steg 1")
-    page.screenshot(path=str(artifacts_dir / "tool-run-next-actions-prefill.png"), full_page=True)
-    page.screenshot(path=str(artifacts_dir / "tool-run.png"), full_page=True)
-
-    download_link = page.locator("a[download]").first
-    if download_link.count() > 0:
-        with page.expect_download() as download_info:
-            download_link.click()
-        download = download_info.value
-        download.save_as(str(artifacts_dir / "artifact-0.bin"))
-
-
-def _run_demo_inputs_no_files(page: object, *, base_url: str, artifacts_dir: Path) -> None:
-    page.goto(f"{base_url}/browse/professions/gemensamt/ovrigt", wait_until="domcontentloaded")
-    expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
-
-    tool_row = page.locator("li").filter(has_text="Demo: Indata utan filer")
-    expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link").click()
-    page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
-
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Demo: Indata utan filer", re.IGNORECASE))
-    ).to_be_visible()
-
-    expect(page.locator("input[type='file']")).to_have_count(0)
-
-    page.get_by_label("Titel").fill("Playwright: utan filer")
-    page.get_by_label("Format").select_option("pdf")
-
-    page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE)).click()
-    expect(page.get_by_role("button", name=re.compile(r"Rensa", re.IGNORECASE))).to_be_visible(
-        timeout=60_000
-    )
-    page.screenshot(path=str(artifacts_dir / "tool-inputs-no-files.png"), full_page=True)
-
-
-def _run_demo_inputs_with_files(page: object, *, base_url: str, artifacts_dir: Path) -> None:
-    page.goto(f"{base_url}/browse/professions/gemensamt/ovrigt", wait_until="domcontentloaded")
-    expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
-
-    tool_row = page.locator("li").filter(has_text="Demo: Indata + filer")
-    expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link").click()
-    page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
-
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Demo: Indata \+ filer", re.IGNORECASE))
-    ).to_be_visible()
-
-    page.get_by_label("Titel").fill("Playwright: med filer")
-
-    run_button = page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE))
-    expect(run_button).to_be_disabled()
-
-    sample_file = artifacts_dir / "sample-inputs.txt"
-    sample_file.write_text("Hello from Playwright tool inputs.\n", encoding="utf-8")
-    page.locator("input[type='file']").set_input_files(str(sample_file))
-
-    expect(run_button).to_be_enabled()
-    run_button.click()
-    expect(page.get_by_role("button", name=re.compile(r"Rensa", re.IGNORECASE))).to_be_visible(
-        timeout=60_000
-    )
-    page.screenshot(path=str(artifacts_dir / "tool-inputs-with-files.png"), full_page=True)
+    verify_runtime_start(page)
+    page.screenshot(path=str(artifacts_dir / "flunk-out-frenzy.png"), full_page=True)
 
 
 def main() -> None:
@@ -160,11 +66,17 @@ def main() -> None:
         )
         page = context.new_page()
 
-        _login(page, base_url=base_url, email=email, password=password)
+        login_via_auth_entry(
+            page,
+            base_url=base_url,
+            email=email,
+            password=password,
+            next_path="/",
+            success_heading_pattern=r"Välkommen",
+            failure_artifacts_dir=artifacts_dir,
+        )
         _run_curated_app(page, base_url=base_url, artifacts_dir=artifacts_dir)
-        _run_demo_tool(page, base_url=base_url, artifacts_dir=artifacts_dir)
-        _run_demo_inputs_no_files(page, base_url=base_url, artifacts_dir=artifacts_dir)
-        _run_demo_inputs_with_files(page, base_url=base_url, artifacts_dir=artifacts_dir)
+        _run_flunk_out_frenzy(page, base_url=base_url, artifacts_dir=artifacts_dir)
 
         context.close()
         browser.close()

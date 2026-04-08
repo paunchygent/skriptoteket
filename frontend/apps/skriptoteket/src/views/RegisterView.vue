@@ -7,14 +7,21 @@
  */
 
 import { computed, onMounted, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 
 import AuthPasswordField from "../components/auth/AuthPasswordField.vue";
 import { IconCheck } from "../components/icons";
+import {
+  buildAuthContinuationApiPayload,
+  buildSignedOutOnlyAuthEntryLocation,
+  readAuthContinuation,
+  resolveAuthLoginSuccessLocation,
+} from "../composables/auth/authEntryNavigation";
 import { useRegistrationValidation } from "../composables/auth/useRegistrationValidation";
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
 
 const firstName = ref("");
@@ -26,6 +33,7 @@ const confirmPassword = ref("");
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
 const registrationMessage = ref<string | null>(null);
+const continuation = computed(() => readAuthContinuation(route.query, window.history.state));
 const {
   canSubmit,
   confirmPasswordError,
@@ -52,7 +60,7 @@ const submitDisabled = computed(() => {
 onMounted(async () => {
   await auth.bootstrap();
   if (auth.isAuthenticated) {
-    await router.replace("/");
+    await router.replace(resolveAuthLoginSuccessLocation(continuation.value, window.history.state));
   }
 });
 
@@ -105,6 +113,7 @@ async function submit(): Promise<void> {
       password: password.value,
       firstName: firstName.value,
       lastName: lastName.value,
+      ...buildAuthContinuationApiPayload(continuation.value),
     });
     registrationMessage.value = result.message;
   } catch (error: unknown) {
@@ -144,10 +153,10 @@ async function submit(): Promise<void> {
         kontrollera din skräppost.
       </p>
       <RouterLink
-        to="/"
+        :to="buildSignedOutOnlyAuthEntryLocation(continuation)"
         class="inline-flex text-sm font-semibold text-navy underline hover:text-burgundy"
       >
-        Till startsidan
+        Till inloggning
       </RouterLink>
     </div>
 

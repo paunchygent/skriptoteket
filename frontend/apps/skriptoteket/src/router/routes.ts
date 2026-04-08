@@ -12,6 +12,11 @@ function getMissingAppsPrefixAppId(appId: unknown): string | null {
 
 export const routes: RouteRecordRaw[] = [
   {
+    path: "/auth/login",
+    name: "auth-login",
+    component: () => import("../views/AuthLoginView.vue"),
+  },
+  {
     path: "/",
     name: "home",
     component: () => import("../views/HomeView.vue"),

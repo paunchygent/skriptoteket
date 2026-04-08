@@ -5,12 +5,13 @@
  * feedback, password visibility toggles, and successful submit wiring.
  */
 
-import { mount, flushPromises } from "@vue/test-utils";
+import { RouterLinkStub, mount, flushPromises } from "@vue/test-utils";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 import RegisterView from "./RegisterView.vue";
 
 const routerMocks = vi.hoisted(() => ({
+  route: null as { query: Record<string, unknown> } | null,
   push: vi.fn(),
   replace: vi.fn(),
 }));
@@ -27,10 +28,8 @@ const apiMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("vue-router", () => ({
-  RouterLink: {
-    props: ["to"],
-    template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
-  },
+  RouterLink: RouterLinkStub,
+  useRoute: () => routerMocks.route,
   useRouter: () => routerMocks,
 }));
 
@@ -48,6 +47,9 @@ describe("RegisterView", () => {
     vi.useFakeTimers();
     routerMocks.push.mockReset();
     routerMocks.replace.mockReset();
+    routerMocks.route = {
+      query: {},
+    };
     authState.isAuthenticated = false;
     authState.bootstrap.mockReset();
     authState.bootstrap.mockResolvedValue(undefined);
@@ -102,6 +104,13 @@ describe("RegisterView", () => {
   });
 
   it("shows verification guidance after successful registration", async () => {
+    if (!routerMocks.route) {
+      throw new Error("Expected route stub.");
+    }
+    routerMocks.route.query = {
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    };
     apiMocks.apiPost.mockResolvedValue({
       email: {
         status: "valid",
@@ -131,6 +140,8 @@ describe("RegisterView", () => {
       password: "password123",
       firstName: "Ada",
       lastName: "Lovelace",
+      next: "/apps/classroom.group-seating-studio",
+      classroom_planner_entry_origin: "dashboard",
     });
     expect(routerMocks.push).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain("Kontrollera din e-post");
@@ -140,5 +151,37 @@ describe("RegisterView", () => {
     expect(wrapper.text()).toContain(
       "Om du inte ser något mejl från noreply@hule.education i din inkorg, kontrollera din skräppost.",
     );
+    expect(wrapper.getComponent(RouterLinkStub).props("to")).toEqual({
+      name: "auth-login",
+      query: {
+        next: "/apps/classroom.group-seating-studio",
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+      state: {
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    });
+  });
+
+  it("redirects authenticated visitors to their preserved destination instead of home", async () => {
+    if (!routerMocks.route) {
+      throw new Error("Expected route stub.");
+    }
+    routerMocks.route.query = {
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    };
+    authState.isAuthenticated = true;
+
+    mount(RegisterView);
+    await flushPromises();
+
+    expect(routerMocks.replace).toHaveBeenCalledWith({
+      name: "app-detail",
+      params: { appId: "classroom.group-seating-studio" },
+      state: {
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    });
   });
 });

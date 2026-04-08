@@ -131,7 +131,9 @@ export function useClassroomPlannerGuestController(options?: {
 
   async function ensureReadySnapshot(): Promise<ClassroomPlannerGuestSnapshot> {
     if (guestAuthoringClosed.value || await refreshGuestAuthoringClosedState()) {
-      throw new Error("Publikt gästarbete är stängt i den här webbläsaren. Logga in för att fortsätta.");
+      throw new Error(
+        "Det går inte att skapa nya klasser och klassrum i den här webbläsaren eftersom du redan har använt Klassrumskartan inloggad här. Logga in för att fortsätta använda appen.",
+      );
     }
 
     const storage = resolveGuestStorage();

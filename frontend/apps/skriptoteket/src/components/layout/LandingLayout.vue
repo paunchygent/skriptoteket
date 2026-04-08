@@ -4,18 +4,22 @@
  *
  * This layout frames public-entry routes that share the unauthenticated
  * Skriptoteket shell, keeping header actions quiet so route-level hero
- * surfaces can own the strongest next step.
+ * surfaces can own the strongest next step while all auth entry flows route
+ * through the dedicated `/auth/login` page.
  */
 
 import BrandLogo from "../brand/BrandLogo.vue";
 import HelpButton from "../help/HelpButton.vue";
-import { buildLandingLoginRedirect } from "../../composables/auth/loginRedirects";
-import { useLoginModal } from "../../composables/useLoginModal";
-import { useRoute } from "vue-router";
+import { buildLandingAuthEntryLocation } from "../../composables/auth/authEntryNavigation";
+import { useRoute, useRouter } from "vue-router";
 
 const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
-const loginModal = useLoginModal();
 const route = useRoute();
+const router = useRouter();
+
+async function goToAuthEntry(): Promise<void> {
+  await router.push(buildLandingAuthEntryLocation(route));
+}
 </script>
 
 <template>
@@ -47,7 +51,7 @@ const route = useRoute();
           <button
             type="button"
             class="landing-header-link"
-            @click="loginModal.open(buildLandingLoginRedirect(route))"
+            @click="void goToAuthEntry()"
           >
             Logga in
           </button>

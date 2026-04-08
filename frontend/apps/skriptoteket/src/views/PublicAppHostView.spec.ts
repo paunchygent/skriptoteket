@@ -31,10 +31,6 @@ const clientMocks = vi.hoisted(() => ({
   isApiError: vi.fn(),
 }));
 
-const loginModalMocks = vi.hoisted(() => ({
-  open: vi.fn(),
-}));
-
 const hostRegistryMocks = vi.hoisted(() => ({
   resolveCuratedAppHostView: vi.fn(),
 }));
@@ -55,10 +51,6 @@ vi.mock("vue-router", async (importOriginal) => {
 vi.mock("../api/client", () => ({
   apiGet: clientMocks.apiGet,
   isApiError: clientMocks.isApiError,
-}));
-
-vi.mock("../composables/useLoginModal", () => ({
-  useLoginModal: () => loginModalMocks,
 }));
 
 vi.mock("./curatedAppHostRegistry", async (importOriginal) => {
@@ -108,7 +100,6 @@ describe("PublicAppHostView", () => {
     clientMocks.apiGet.mockReset();
     clientMocks.isApiError.mockReset();
     clientMocks.isApiError.mockReturnValue(false);
-    loginModalMocks.open.mockReset();
     hostRegistryMocks.resolveCuratedAppHostView.mockReset();
     hostRegistryMocks.resolveCuratedAppHostView.mockReturnValue({
       component: PublicHostViewStub,
