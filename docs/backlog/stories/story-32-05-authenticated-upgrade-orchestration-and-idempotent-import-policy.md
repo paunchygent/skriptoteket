@@ -47,6 +47,24 @@ That boundary therefore needs to be explicit before implementation begins.
   guest-upgrade receipt can still render the `import complete` summary while
   the route shell simultaneously reopens an already-existing backend roster.
   That UI reconciliation lane is now explicitly owned by `PR-0245`.
+- Live testing later on 2026-04-08 clarified a product-policy correction:
+  Klassrumskartan guest-upgrade is intended to be a one-time onboarding bridge
+  from browser-owned guest work into a first authenticated account session in
+  one browser, not a repeatable logged-out/logged-in import loop. That
+  one-time-consumption and repeat-import suppression lane is now explicitly
+  owned by `PR-0246`.
+- The current recommended `PR-0246` direction is not browser-only suppression.
+  It is a hybrid model: one backend-owned canonical consumption fact per
+  user/app plus one browser-owned consumed marker for same-browser stale
+  snapshot cleanup and public guest re-entry suppression. This keeps the
+  product rule reviewable as a durable backend fact instead of inferring it
+  from planner drafts or browser state alone.
+- `REV-PR-0246` narrows that recommendation in two important ways before
+  implementation:
+  - the backend canonical fact is for authenticated policy/debugging only, not
+    for public-host decisions
+  - suspicious all-zero `200` receipts must remain non-consuming so the
+    truthful zero-effect guard from `PR-0245` is preserved
 
 ## Planned PR slices
 
@@ -56,6 +74,8 @@ That boundary therefore needs to be explicit before implementation begins.
   seat-remap hardening](../prs/pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md)
 - [PR-0245: ST-32-05 follow-up: empty guest snapshot and zero-effect import UI
   reconciliation](../prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md)
+- [PR-0246: ST-32-05 follow-up: one-time guest-upgrade consumption and
+  repeat-import suppression](../prs/pr-0246-st-32-05-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md)
 
 ## References
 

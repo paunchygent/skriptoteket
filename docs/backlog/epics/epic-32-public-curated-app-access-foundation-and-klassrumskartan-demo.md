@@ -114,7 +114,10 @@ dependencies:
   dismissible post-import summary after durable success. `PR-0233` is now also
   shipped, so the earlier exact-template reuse/remap defect for non-toy
   template-bearing snapshots is closed without changing the approved
-  guest/public boundary shape.
+  guest/public boundary shape. A further 2026-04-08 follow-up now narrows the
+  product contract again through `PR-0246`: the browser guest-upgrade bridge is
+  being converted into a one-time onboarding import, not a reusable
+  logged-out/logged-in repeat-import loop.
 - `ST-32-06` is now shipped as the first full
   `public_browser_workspace_with_upgrade` adoption proof for a real curated
   app:

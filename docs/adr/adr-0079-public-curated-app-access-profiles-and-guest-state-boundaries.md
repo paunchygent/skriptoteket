@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-08
 links:
   [
     "PRD-script-hub-v0.2",
@@ -200,7 +200,14 @@ Default conflict policy for workspace-style apps such as Klassrumskartan:
 - active draft collisions import as historical drafts by default
 - replacing the current active draft is an explicit opt-in path only
 - checkpoints import additively with fingerprint dedupe
-- local guest data clears only after durable success
+- upgrade-capable browser guest work is a one-time onboarding bridge, not a
+  repeatable sync loop:
+  - the first authenticated guest-upgrade commit consumes the browser snapshot
+    for that app in that browser
+  - later visits in the same browser must not reopen repeat-import prompts for
+    that app
+  - public guest re-entry after that bridge is a product decision rather than
+    an automatic right to keep creating new upgrade-capable guest snapshots
 
 Undo/redo stacks and other transient editing-state noise are not assumed to be
 durable history unless an app-specific contract explicitly says so.

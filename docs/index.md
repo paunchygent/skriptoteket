@@ -103,6 +103,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md`
 - ST-32-05 follow-up empty guest snapshot + zero-effect import UI reconciliation:
   `docs/backlog/prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md`
+- ST-32-05 follow-up one-time guest-upgrade consumption + repeat-import suppression:
+  `docs/backlog/prs/pr-0246-st-32-05-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md`
+- Review gate for ST-32-05 one-time guest-upgrade consumption + repeat-import suppression:
+  `docs/backlog/reviews/review-pr-0246-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md`
 - ST-32-06 canceled legacy checkpoint-compatibility planning stub:
   `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - ST-32-06 public Klassrumskartan demo capability matrix + browser-workspace adoption:
