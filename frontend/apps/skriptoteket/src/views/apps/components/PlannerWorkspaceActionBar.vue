@@ -13,10 +13,21 @@ defineSlots<{
   context?: () => unknown;
   secondary?: () => unknown;
 }>();
+
+import { ref } from "vue";
+
+const rootRef = ref<HTMLDivElement | null>(null);
+
+defineExpose({
+  getRootElement(): HTMLDivElement | null {
+    return rootRef.value;
+  },
+});
 </script>
 
 <template>
   <div
+    ref="rootRef"
     class="flex items-center gap-3 overflow-visible border border-navy bg-white px-3 py-2 shadow-brutal-sm"
     data-ui="planner-workspace-action-bar"
   >

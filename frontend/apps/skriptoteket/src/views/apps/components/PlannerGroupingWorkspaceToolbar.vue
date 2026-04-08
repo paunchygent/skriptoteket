@@ -38,6 +38,7 @@ import PlannerExportActionGroup, {
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
+import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
 import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(
@@ -76,6 +77,9 @@ const emit = defineEmits<{
 }>();
 
 const state = useClassroomState();
+const actionBarRef = ref<{
+  getRootElement: () => HTMLDivElement | null;
+} | null>(null);
 const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
 const groupCount = computed(() => state.groups.length);
 const selectedRosterValue = computed(() => {
@@ -128,8 +132,82 @@ const exportOptions = computed<PlannerExportOption[]>(() => [
     option: "pdf_a4_portrait",
   },
 ]);
-const secondaryActionItems = computed(() => {
+const {
+  hiddenContributionIds,
+  stageLabel,
+  thresholds,
+} = usePlannerToolbarOverflow({
+  getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
+  contributions: [
+    {
+      id: "undo-redo",
+      selector: '[data-overflow-contribution="undo-redo"]',
+    },
+    {
+      id: "reset",
+      selector: '[data-overflow-contribution="reset"]',
+    },
+    {
+      id: "new-draft",
+      selector: '[data-overflow-contribution="new-draft"]',
+    },
+    {
+      id: "context",
+      selector: '[data-overflow-contribution="context"]',
+    },
+    {
+      id: "smart",
+      selector: '[data-overflow-contribution="smart"]',
+    },
+  ],
+});
+const overflowActionItems = computed(() => {
   const items = [];
+  if (hiddenContributionIds.value.includes("undo-redo")) {
+    items.push({
+      id: "undo-grouping",
+      label: "Ångra",
+      icon: IconUndo,
+      disabled: !state.canUndo,
+      testId: "grouping-overflow-undo",
+      onSelect: () => {
+        void state.undoGroupingDraft();
+      },
+    });
+    items.push({
+      id: "redo-grouping",
+      label: "Gör om",
+      icon: IconRedo,
+      disabled: !state.canRedo,
+      testId: "grouping-overflow-redo",
+      onSelect: () => {
+        void state.redoGroupingDraft();
+      },
+    });
+  }
+  if (hiddenContributionIds.value.includes("reset")) {
+    items.push({
+      id: "reset-grouping",
+      label: "Börja om",
+      disabled: state.isWorkspaceBusy || !hasGroupingAssignments.value,
+      tone: "danger" as const,
+      testId: "grouping-overflow-reset",
+      onSelect: openResetGroupingDialog,
+    });
+  }
+  if (hiddenContributionIds.value.includes("new-draft")) {
+    items.push({
+      id: "new-grouping-draft",
+      label: "Nytt utkast",
+      disabled: state.isWorkspaceBusy,
+      testId: "grouping-overflow-new-draft",
+      onSelect: () => emit("new-grouping-draft"),
+    });
+  }
+  return items;
+});
+const secondaryActionItems = computed(() => {
+  const items = [...overflowActionItems.value];
   if (props.showHistoryAction) {
     items.push({
       id: "history",
@@ -200,15 +278,33 @@ function incrementGroupCount(): void {
   }
   state.addGroup();
 }
+
+const isUndoRedoInline = computed(() => !hiddenContributionIds.value.includes("undo-redo"));
+const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
+const isNewDraftInline = computed(() => !hiddenContributionIds.value.includes("new-draft"));
+const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
+const isSmartInline = computed(() => !hiddenContributionIds.value.includes("smart"));
+const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInline.value);
 </script>
 
 <template>
   <div class="space-y-3">
-    <PlannerWorkspaceActionBar>
+    <PlannerWorkspaceActionBar
+      ref="actionBarRef"
+      :data-overflow-stage="stageLabel"
+      :data-overflow-hidden-actions="hiddenContributionIds.join(',')"
+      :data-overflow-undo-redo-inline-min-width="thresholds['undo-redo']"
+      :data-overflow-reset-inline-min-width="thresholds.reset"
+      :data-overflow-new-draft-inline-min-width="thresholds['new-draft']"
+      :data-overflow-context-inline-min-width="thresholds.context"
+      :data-overflow-smart-inline-min-width="thresholds.smart"
+    >
       <template #primary>
         <div
+          v-if="isUndoRedoInline"
           class="flex items-center [&>*+*]:-ml-px"
-          data-test="grouping-history-cluster"
+          data-overflow-contribution="undo-redo"
+          data-test="grouping-undo-redo-cluster"
         >
           <PlannerToolbarIconButton
             label="Ångra"
@@ -233,13 +329,18 @@ function incrementGroupCount(): void {
             <IconRedo :size="16" />
           </PlannerToolbarIconButton>
         </div>
-        <UiDenseActionButton
-          label="Nytt utkast"
-          title="Nytt grupputkast"
-          data-test="new-grouping-draft"
-          :disabled="state.isWorkspaceBusy"
-          @click="emit('new-grouping-draft')"
-        />
+        <div
+          v-if="isNewDraftInline"
+          data-overflow-contribution="new-draft"
+        >
+          <UiDenseActionButton
+            label="Nytt utkast"
+            title="Nytt grupputkast"
+            data-test="new-grouping-draft"
+            :disabled="state.isWorkspaceBusy"
+            @click="emit('new-grouping-draft')"
+          />
+        </div>
         <UiDenseActionButton
           label="Slumpa"
           data-test="randomize-groups"
@@ -251,8 +352,9 @@ function incrementGroupCount(): void {
           </template>
         </UiDenseActionButton>
         <div
-          v-if="showSmartControls"
+          v-if="showSmartControls && isSmartInline"
           class="flex items-center [&>*+*]:-ml-px"
+          data-overflow-contribution="smart"
           data-test="grouping-smart-cluster"
         >
           <UiDenseToggle
@@ -279,15 +381,20 @@ function incrementGroupCount(): void {
             <IconAdjustments :size="14" />
           </UiDenseIconButton>
         </div>
-        <UiDenseActionButton
-          label="Börja om"
-          data-test="reset-grouping-draft"
-          :disabled="state.isWorkspaceBusy || !hasGroupingAssignments"
-          tone="danger"
-          @click="openResetGroupingDialog"
+        <div
+          v-if="isResetInline"
+          data-overflow-contribution="reset"
         >
-          Börja om
-        </UiDenseActionButton>
+          <UiDenseActionButton
+            label="Börja om"
+            data-test="reset-grouping-draft"
+            :disabled="state.isWorkspaceBusy || !hasGroupingAssignments"
+            tone="danger"
+            @click="openResetGroupingDialog"
+          >
+            Börja om
+          </UiDenseActionButton>
+        </div>
         <div
           class="flex items-center"
           data-test="grouping-group-count-control"
@@ -327,11 +434,12 @@ function incrementGroupCount(): void {
       </template>
 
       <template
-        v-if="availableRosters.length > 0"
+        v-if="availableRosters.length > 0 && isContextInline"
         #context
       >
         <label
           class="block w-[8rem]"
+          data-overflow-contribution="context"
           data-test="grouping-roster-control"
         >
           <select
@@ -375,7 +483,71 @@ function incrementGroupCount(): void {
           label="Fler gruppåtgärder"
           :items="secondaryActionItems"
           test-id="grouping-actions-menu"
-        />
+        >
+          <template
+            v-if="showOverflowPanel"
+            #panel
+          >
+            <label
+              v-if="availableRosters.length > 0 && !isContextInline"
+              class="block space-y-1"
+              data-test="grouping-overflow-roster-control"
+            >
+              <span class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
+                Klass
+              </span>
+              <select
+                aria-label="Klass"
+                :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
+                :value="selectedRosterValue"
+                data-test="grouping-overflow-roster-select"
+                @change="changeGroupingRoster"
+              >
+                <option
+                  v-for="roster in availableRosters"
+                  :key="roster.id"
+                  :value="roster.id"
+                >
+                  {{ roster.name }}
+                </option>
+              </select>
+            </label>
+            <div
+              v-if="showSmartControls && !isSmartInline"
+              class="space-y-2"
+              data-test="grouping-overflow-smart-control"
+            >
+              <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
+                Smart
+              </span>
+              <div class="flex items-center [&>*+*]:-ml-px">
+                <UiDenseToggle
+                  data-test="grouping-overflow-smart-toggle"
+                  label="Smart"
+                  group-position="start"
+                  :model-value="state.draft?.smart_enabled ?? false"
+                  :disabled="state.isWorkspaceBusy"
+                  @update:model-value="state.setDraftSmartEnabled($event)"
+                />
+                <UiDenseIconButton
+                  data-test="grouping-overflow-open-settings"
+                  label="Smart-inställningar"
+                  aria-label="Smart-inställningar"
+                  title="Öppna Smart-inställningar"
+                  size="utility"
+                  group-position="end"
+                  :active="smartSettingsOpen"
+                  :expanded="smartSettingsOpen"
+                  has-popup="dialog"
+                  :disabled="state.isWorkspaceBusy"
+                  @click="emit('open-settings')"
+                >
+                  <IconAdjustments :size="14" />
+                </UiDenseIconButton>
+              </div>
+            </div>
+          </template>
+        </PlannerToolbarOverflowMenu>
       </template>
     </PlannerWorkspaceActionBar>
 

@@ -29,6 +29,29 @@ vi.mock("../../composables/useToast", () => ({
   }),
 }));
 
+type GuestWorkspaceTestState = {
+  draft: ClassroomStateLike["draft"];
+  canUndo: boolean;
+  canRedo: boolean;
+  roster: ClassroomStateLike["roster"];
+  template: ClassroomStateLike["template"];
+  activeSeatingSmartTool: ClassroomStateLike["activeSeatingSmartTool"];
+  smartGroupingRunMessage: ClassroomStateLike["smartGroupingRunMessage"];
+  smartGroupingRunTone: ClassroomStateLike["smartGroupingRunTone"];
+  smartSeatingRunMessage: ClassroomStateLike["smartSeatingRunMessage"];
+  smartSeatingRunTone: ClassroomStateLike["smartSeatingRunTone"];
+  plannerStatusLabel: ClassroomStateLike["plannerStatusLabel"];
+  plannerStatusMessage: ClassroomStateLike["plannerStatusMessage"];
+  plannerStatusTone: ClassroomStateLike["plannerStatusTone"];
+  plannerConflictMessage: ClassroomStateLike["plannerConflictMessage"];
+  undoGroupingDraft: ReturnType<typeof vi.fn>;
+  redoGroupingDraft: ReturnType<typeof vi.fn>;
+  undoSeatingDraft: ReturnType<typeof vi.fn>;
+  redoSeatingDraft: ReturnType<typeof vi.fn>;
+  handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
+  reloadActiveWorkspace: ReturnType<typeof vi.fn>;
+};
+
 function mountGuestWorkspaceShellHarness(options?: {
   initialView?: "groups" | "seats" | "rules";
   selectedTemplateId?: string | null;
@@ -38,15 +61,24 @@ function mountGuestWorkspaceShellHarness(options?: {
   const plannerState = reactive({
     draft: {
       id: "draft-seating-1",
+      roster_id: "roster-1",
       draft_kind: "seating",
+      status: "active",
+      revision: 1,
+      last_opened_at: "2026-04-08T18:00:00Z",
     },
+    canUndo: false,
+    canRedo: false,
     roster: {
       id: "roster-1",
       name: "SA24D",
+      students: [],
     },
     template: {
       id: "template-1",
       name: "Sal 101",
+      seats: [],
+      fixtures: [],
     },
     activeSeatingSmartTool: null,
     smartGroupingRunMessage: null,
@@ -57,16 +89,20 @@ function mountGuestWorkspaceShellHarness(options?: {
     plannerStatusMessage: null,
     plannerStatusTone: "neutral",
     plannerConflictMessage: null,
+    undoGroupingDraft: vi.fn(async () => {}),
+    redoGroupingDraft: vi.fn(async () => {}),
+    undoSeatingDraft: vi.fn(async () => {}),
+    redoSeatingDraft: vi.fn(async () => {}),
     handleSeatingSmartToolStudentSelection: vi.fn(),
     reloadActiveWorkspace: vi.fn(),
-  }) as unknown as ClassroomStateLike;
+  }) as unknown as GuestWorkspaceTestState;
 
   const Harness = defineComponent({
     components: {
       ClassroomPlannerGuestWorkspaceShell,
     },
     setup() {
-      provideClassroomState(plannerState);
+      provideClassroomState(plannerState as unknown as ClassroomStateLike);
       return {
         initialView,
         selectedTemplateId,
@@ -298,5 +334,51 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     expect(
       wrapper.get("[data-test='planner-top-panel-mode']").attributes("data-seating-disabled-reason"),
     ).toBe(PLANNER_NO_CLASSROOM_HINT);
+  });
+
+  it("keeps guest seating undo on the shared shortcut seam when the control is overflow-only", () => {
+    const { wrapper, plannerState } = mountGuestWorkspaceShellHarness({
+      initialView: "seats",
+    });
+
+    plannerState.canUndo = true;
+
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "z",
+        ctrlKey: true,
+      }),
+    );
+
+    expect(plannerState.undoSeatingDraft).toHaveBeenCalledTimes(1);
+
+    wrapper.unmount();
+  });
+
+  it("keeps guest grouping redo on the shared shortcut seam after switching workspaces", async () => {
+    const { wrapper, initialView, plannerState } = mountGuestWorkspaceShellHarness({
+      initialView: "groups",
+    });
+
+    initialView.value = "groups";
+    plannerState.draft = {
+      id: "draft-grouping-1",
+      draft_kind: "grouping",
+    } as ClassroomStateLike["draft"];
+    plannerState.template = null as ClassroomStateLike["template"];
+    plannerState.canRedo = true;
+    await nextTick();
+
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "z",
+        ctrlKey: true,
+        shiftKey: true,
+      }),
+    );
+
+    expect(plannerState.redoGroupingDraft).toHaveBeenCalledTimes(1);
+
+    wrapper.unmount();
   });
 });

@@ -24,6 +24,7 @@ const props = defineProps<{
   logoutInProgress: boolean;
   isFocusMode: boolean;
   isImmersiveRoute: boolean;
+  preferXlDesktopBreakpoint?: boolean;
 }>();
 
 const navLink = computed(() => {
@@ -56,7 +57,10 @@ function onToggleFocusMode(): void {
 <template>
   <header
     class="top-user-bar"
-    :class="{ 'top-user-bar--immersive': isImmersiveRoute }"
+    :class="{
+      'top-user-bar--immersive': isImmersiveRoute,
+      'top-user-bar--xl-sidebar-breakpoint': preferXlDesktopBreakpoint,
+    }"
   >
     <div class="top-user-bar-left">
       <div class="topbar-brand-slot">
@@ -141,6 +145,16 @@ function onToggleFocusMode(): void {
 
 @media (min-width: 768px) {
   .top-user-bar {
+    display: flex;
+  }
+
+  .top-user-bar.top-user-bar--xl-sidebar-breakpoint {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .top-user-bar.top-user-bar--xl-sidebar-breakpoint {
     display: flex;
   }
 }

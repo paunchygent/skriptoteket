@@ -30,14 +30,16 @@ vi.mock("vue-router", () => ({
 
 vi.mock("./AuthSidebar.vue", () => ({
   default: {
-    template: "<aside data-test='auth-sidebar-stub'>Sidebar</aside>",
+    props: ["preferXlDesktopBreakpoint"],
+    template: "<aside data-test='auth-sidebar-stub' :data-prefer-xl='preferXlDesktopBreakpoint'>Sidebar</aside>",
   },
 }));
 
 vi.mock("./AuthTopBar.vue", () => ({
   default: {
-    props: ["isImmersiveRoute"],
-    template: "<header data-test='auth-topbar-stub' :data-immersive='isImmersiveRoute'>TopBar</header>",
+    props: ["isImmersiveRoute", "preferXlDesktopBreakpoint"],
+    template:
+      "<header data-test='auth-topbar-stub' :data-immersive='isImmersiveRoute' :data-prefer-xl='preferXlDesktopBreakpoint'>TopBar</header>",
   },
 }));
 
@@ -98,5 +100,36 @@ describe("AuthLayout", () => {
     expect(wrapper.find("[data-test='auth-sidebar-stub']").exists()).toBe(true);
     expect(wrapper.find("[data-test='auth-topbar-stub']").attributes("data-immersive")).toBe("false");
     expect(document.body.classList.contains("app-shell-game-mode")).toBe(false);
+  });
+
+  it("keeps the planner route on the wider sidebar breakpoint contract", async () => {
+    routeMocks.route.params.appId = "classroom.group-seating-studio";
+
+    const wrapper = mount(AuthLayout, {
+      props: {
+        user: { id: "user-1", email: "teacher@example.com", role: "user" },
+        profile: null,
+        aiPolicy: null,
+        canSeeContributor: false,
+        canSeeAdmin: false,
+        canSeeSuperuser: false,
+        logoutError: null,
+        logoutInProgress: false,
+      },
+      slots: {
+        default: "<div>Route content</div>",
+      },
+    });
+
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".auth-mobile-header").classes()).toContain(
+      "auth-mobile-header--xl-sidebar-breakpoint",
+    );
+    expect(wrapper.find(".auth-main-wrapper").classes()).toContain(
+      "auth-main-wrapper--xl-sidebar-breakpoint",
+    );
+    expect(wrapper.find("[data-test='auth-sidebar-stub']").attributes("data-prefer-xl")).toBe("true");
+    expect(wrapper.find("[data-test='auth-topbar-stub']").attributes("data-prefer-xl")).toBe("true");
   });
 });

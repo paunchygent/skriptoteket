@@ -97,6 +97,7 @@ Switch to run bash on hemma via heredocs to avoid nested quoting issues.
 - Load the relevant repo/domain skill before planning or implementation work. Treat skills as the procedural layer and keep `AGENTS.md` focused on repo policy.
 - Minimum expected defaults:
   - global `local-devops` for local development, DB/migrations, and dev-runtime troubleshooting; use this repo's docs, rules, and runbooks for Skriptoteket-specific commands and verification.
+  - global `hemma-devops` for Hemma deploys, remote operations, and host/runtime troubleshooting; use this repo's docs, rules, and runbooks for Skriptoteket-specific Hemma commands and verification.
   - `skriptoteket-frontend-specialist` for SPA and curated-app frontend work
   - `playwright-testing` before planning, writing, running, or reviewing Playwright automation
   - the relevant observability skill when debugging Grafana/Prometheus/Loki/Jaeger/structured logging. Live baseline is always on <http://127.0.0.1:5173> for dev.

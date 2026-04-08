@@ -120,10 +120,10 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     });
 
     expect(wrapper.get('[data-test="seating-template-select"]').classes()).toContain("h-[28px]");
-    expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(false);
-    expect(wrapper.get('[data-zone="primary"]').find('[data-test="seating-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.get('[data-zone="primary"]').find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="context"]').find('[data-test="seating-workspace-setup"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-actions-menu"]').exists()).toBe(true);
     expect(wrapper.get('[data-test="seating-open-settings"]').attributes("aria-label")).toBe(

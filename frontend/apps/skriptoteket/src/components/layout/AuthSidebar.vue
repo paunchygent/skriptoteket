@@ -1,10 +1,21 @@
 <script setup lang="ts">
+/**
+ * Authenticated application sidebar.
+ *
+ * Relationships:
+ * - renders the shared authenticated navigation as either a drawer or fixed rail
+ * - lets planner routes defer the desktop rail until a wider `xl` breakpoint
+ * - stays coordinated with `AuthLayout` so header, backdrop, and content margin
+ *   all switch at the same shell cutoff
+ */
+
 import BrandLogo from "../brand/BrandLogo.vue";
 import { useHelp } from "../help/useHelp";
 
 defineProps<{
   isOpen: boolean;
   isFocusMode: boolean;
+  preferXlDesktopBreakpoint: boolean;
   user: { email: string } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
@@ -36,7 +47,11 @@ function onHelp(): void {
 <template>
   <aside
     class="sidebar"
-    :class="{ 'is-open': isOpen, 'is-focus-mode': isFocusMode }"
+    :class="{
+      'is-open': isOpen,
+      'is-focus-mode': isFocusMode,
+      'sidebar--xl-desktop-breakpoint': preferXlDesktopBreakpoint,
+    }"
   >
     <div class="sidebar-content">
       <RouterLink
@@ -182,7 +197,7 @@ function onHelp(): void {
 
 /* Desktop: sidebar fixed on left */
 @media (min-width: 768px) {
-  .sidebar {
+  .sidebar:not(.sidebar--xl-desktop-breakpoint) {
     display: flex;
     position: fixed;
     left: 0;
@@ -199,7 +214,7 @@ function onHelp(): void {
       visibility 0s linear 0s;
   }
 
-  .sidebar.is-focus-mode {
+  .sidebar:not(.sidebar--xl-desktop-breakpoint).is-focus-mode {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -217,7 +232,7 @@ function onHelp(): void {
 }
 
 @media (min-width: 768px) {
-  .sidebar-content {
+  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-content {
     padding-top: var(--huleedu-space-3);
   }
 }
@@ -233,7 +248,7 @@ function onHelp(): void {
 }
 
 @media (min-width: 768px) {
-  .sidebar-brand {
+  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-brand {
     transform: translateY(1px);
   }
 }
@@ -289,7 +304,47 @@ function onHelp(): void {
 }
 
 @media (min-width: 768px) {
-  .sidebar-nav-help {
+  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-nav-help {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .sidebar.sidebar--xl-desktop-breakpoint {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: auto;
+    border-left: none;
+    border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: var(--huleedu-z-overlay);
+    transition:
+      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
+      visibility 0s linear 0s;
+  }
+
+  .sidebar.sidebar--xl-desktop-breakpoint.is-focus-mode {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
+      visibility 0s linear var(--huleedu-duration-slow);
+  }
+
+  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-content {
+    padding-top: var(--huleedu-space-3);
+  }
+
+  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-brand {
+    transform: translateY(1px);
+  }
+
+  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-nav-help {
     display: none;
   }
 }

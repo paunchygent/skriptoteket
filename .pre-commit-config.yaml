@@ -67,7 +67,7 @@ repos:
         pass_filenames: false
 
       - id: agent-doc-budgets
-        name: Agent docs line budgets (.agents/*)
+        name: Agent docs line budgets (.agents/* -> long-term memory)
         entry: pdm run python -m scripts.check_agent_doc_budgets
         language: system
         files: ^\.agents/(readme-first\.md|handoff\.md)$

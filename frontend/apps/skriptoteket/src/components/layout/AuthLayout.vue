@@ -56,6 +56,7 @@ const isImmersiveCuratedAppRoute = computed(() => {
 const isClassroomPlannerRoute = computed(() => {
   return route.name === "app-detail" && route.params.appId === "classroom.group-seating-studio";
 });
+const prefersXlSidebarBreakpoint = computed(() => isClassroomPlannerRoute.value);
 
 const sidebarOpen = ref(false);
 
@@ -102,7 +103,8 @@ onBeforeUnmount(() => {
   <!-- Mobile header bar: brand left, hamburger right -->
   <header
     v-if="!isImmersiveCuratedAppRoute"
-    class="auth-mobile-header md:hidden"
+    class="auth-mobile-header"
+    :class="{ 'auth-mobile-header--xl-sidebar-breakpoint': prefersXlSidebarBreakpoint }"
   >
     <RouterLink
       to="/"
@@ -129,7 +131,8 @@ onBeforeUnmount(() => {
   >
     <div
       v-if="sidebarOpen"
-      class="md:hidden fixed inset-0 bg-navy/40 z-40"
+      class="auth-sidebar-backdrop"
+      :class="{ 'auth-sidebar-backdrop--xl-sidebar-breakpoint': prefersXlSidebarBreakpoint }"
       @click="closeSidebar"
     />
   </Transition>
@@ -144,6 +147,7 @@ onBeforeUnmount(() => {
     :can-see-admin="canSeeAdmin"
     :can-see-superuser="canSeeSuperuser"
     :logout-in-progress="logoutInProgress"
+    :prefer-xl-desktop-breakpoint="prefersXlSidebarBreakpoint"
     @close="closeSidebar"
     @logout="onLogout"
   />
@@ -154,6 +158,7 @@ onBeforeUnmount(() => {
     :class="{
       'is-focus-mode': focusMode,
       'is-immersive-route': isImmersiveCuratedAppRoute,
+      'auth-main-wrapper--xl-sidebar-breakpoint': prefersXlSidebarBreakpoint,
     }"
   >
     <!-- Top user bar -->
@@ -162,6 +167,7 @@ onBeforeUnmount(() => {
       :logout-in-progress="logoutInProgress"
       :is-focus-mode="focusMode"
       :is-immersive-route="isImmersiveCuratedAppRoute"
+      :prefer-xl-desktop-breakpoint="prefersXlSidebarBreakpoint"
       @toggle-focus-mode="toggleFocusMode"
       @logout="onLogout"
     />
@@ -211,6 +217,39 @@ onBeforeUnmount(() => {
   .auth-mobile-header {
     display: none;
   }
+
+  .auth-mobile-header.auth-mobile-header--xl-sidebar-breakpoint {
+    display: flex;
+  }
+}
+
+@media (min-width: 1280px) {
+  .auth-mobile-header.auth-mobile-header--xl-sidebar-breakpoint {
+    display: none;
+  }
+}
+
+.auth-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--huleedu-z-overlay);
+  background-color: color-mix(in srgb, var(--huleedu-navy) 40%, transparent);
+}
+
+@media (min-width: 768px) {
+  .auth-sidebar-backdrop {
+    display: none;
+  }
+
+  .auth-sidebar-backdrop.auth-sidebar-backdrop--xl-sidebar-breakpoint {
+    display: block;
+  }
+}
+
+@media (min-width: 1280px) {
+  .auth-sidebar-backdrop.auth-sidebar-backdrop--xl-sidebar-breakpoint {
+    display: none;
+  }
 }
 
 /* Main wrapper (authenticated) */
@@ -224,13 +263,25 @@ onBeforeUnmount(() => {
 }
 
 @media (min-width: 768px) {
-  .auth-main-wrapper {
+  .auth-main-wrapper:not(.auth-main-wrapper--xl-sidebar-breakpoint) {
     margin-left: var(--huleedu-sidebar-width);
     will-change: margin-left;
   }
 
-  .auth-main-wrapper.is-focus-mode,
-  .auth-main-wrapper.is-immersive-route {
+  .auth-main-wrapper:not(.auth-main-wrapper--xl-sidebar-breakpoint).is-focus-mode,
+  .auth-main-wrapper:not(.auth-main-wrapper--xl-sidebar-breakpoint).is-immersive-route {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .auth-main-wrapper.auth-main-wrapper--xl-sidebar-breakpoint {
+    margin-left: var(--huleedu-sidebar-width);
+    will-change: margin-left;
+  }
+
+  .auth-main-wrapper.auth-main-wrapper--xl-sidebar-breakpoint.is-focus-mode,
+  .auth-main-wrapper.auth-main-wrapper--xl-sidebar-breakpoint.is-immersive-route {
     margin-left: 0;
   }
 }

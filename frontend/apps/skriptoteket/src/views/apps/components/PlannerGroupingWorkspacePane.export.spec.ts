@@ -118,11 +118,11 @@ describe("PlannerGroupingWorkspaceToolbar", () => {
     });
 
     expect(wrapper.get('[data-test="grouping-roster-select"]').classes()).toContain("h-[28px]");
-    expect(wrapper.find('[data-test="grouping-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-active-rule-count"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-template-select"]').exists()).toBe(false);
-    expect(wrapper.get('[data-zone="primary"]').find('[data-test="grouping-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.get('[data-zone="primary"]').find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="context"]').find('[data-test="grouping-roster-control"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="grouping-actions-menu"]').exists()).toBe(true);
     expect(wrapper.get('[data-test="grouping-open-settings"]').attributes("aria-label")).toBe(

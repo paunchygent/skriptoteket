@@ -39,6 +39,10 @@ const props = withDefaults(
   },
 );
 
+defineSlots<{
+  panel?: () => unknown;
+}>();
+
 const isOpen = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
 const menuRef = ref<HTMLElement | null>(null);
@@ -57,6 +61,19 @@ function handleSelect(item: PlannerToolbarMenuItem): void {
   }
   item.onSelect();
   closeMenu();
+}
+
+function handleMenuKeydown(event: KeyboardEvent): void {
+  const target = event.target;
+  if (
+    target instanceof HTMLInputElement
+    || target instanceof HTMLSelectElement
+    || target instanceof HTMLTextAreaElement
+    || (target instanceof HTMLElement && target.isContentEditable)
+  ) {
+    return;
+  }
+  onMenuKeydown(event);
 }
 </script>
 
@@ -88,8 +105,14 @@ function handleSelect(item: PlannerToolbarMenuItem): void {
         role="menu"
         :aria-label="label"
         @click.stop
-        @keydown="onMenuKeydown"
+        @keydown="handleMenuKeydown"
       >
+        <div
+          v-if="$slots.panel"
+          class="space-y-3 border-b border-navy/10 p-3"
+        >
+          <slot name="panel" />
+        </div>
         <button
           v-for="item in items"
           :key="item.id"

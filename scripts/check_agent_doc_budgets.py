@@ -32,7 +32,8 @@ def main() -> int:
 
         failures.append(
             f"{budget.path} is {lines} lines (limit: {budget.max_lines}). "
-            "Prune old/completed content; move history to docs/ and keep only current sprint-critical info.",
+            "Compress non-session-vital handoff content into repo long-term memory at "
+            "`docs/reference/ref-development-changelog.md`, then keep only current/next-session-critical info here.",
         )
 
     if not failures:
@@ -42,8 +43,9 @@ def main() -> int:
     for failure in failures:
         print(f"- {failure}")
     print(
-        "\nHint: `.agents/handoff.md` should only keep last critical backend+frontend session + current/next session; "
-        "move completed stories to docs/.",
+        "\nHint: `.agents/handoff.md` is the live session handoff only. "
+        "Dump non-session-vital history to repo long-term memory in "
+        "`docs/reference/ref-development-changelog.md` before trimming the handoff back under budget.",
     )
     return 1
 

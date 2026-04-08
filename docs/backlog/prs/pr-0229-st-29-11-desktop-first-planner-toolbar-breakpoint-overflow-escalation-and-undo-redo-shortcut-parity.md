@@ -5,7 +5,7 @@ title: "ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow es
 status: ready
 owners: "agents"
 created: 2026-04-06
-updated: 2026-04-06
+updated: 2026-04-08
 stories:
   - "ST-29-11"
 tags: ["frontend", "design-system", "klassrumskartan", "planner", "toolbar", "keyboard"]
@@ -55,6 +55,15 @@ Define and implement the next toolbar hardening step for the planner-family desk
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue`
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue`
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
+- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue`
+- `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.ts`
+
+## Proof focus
+
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.spec.ts`
 
 ## Implementation plan
 
@@ -69,20 +78,24 @@ Define and implement the next toolbar hardening step for the planner-family desk
    - keep the more critical workflow/export/context controls visible for longer
 
 3. Add canonical keyboard shortcut parity for `undo` / `redo`.
-   - support planner-scoped undo/redo shortcuts when focus is not inside a text input, textarea, or
-     menu interaction that should keep the key event
-   - keep grouping and seating on the same shortcut contract
-   - if `PR-0232` lands first and introduces the shared shortcut composable to unblock guest
-     parity, this PR owns the follow-up polish and alignment work:
+  - support planner-scoped undo/redo shortcuts when focus is not inside a text input, textarea, or
+    menu interaction that should keep the key event
+  - keep authenticated and guest grouping/seating on the same shortcut contract
+  - prove the negative path explicitly so the shared listener never steals `Cmd/Ctrl+Z` while the
+    teacher is typing or navigating overflow/menu focus traps
+  - if `PR-0232` lands first and introduces the shared shortcut composable to unblock guest
+    parity, this PR owns the follow-up polish and alignment work:
      - keep authenticated and guest toolbar surfaces on one deliberate shortcut contract
      - align shortcut discoverability with overflow behavior once undo/redo are no longer pinned
      - absorb any post-`PR-0232` toolbar-shell cleanup needed to keep the shared command strip
        coherent across guest/auth lanes
 
 4. Strengthen proof at the shared toolbar seam.
-   - add focused component/spec coverage for overflow-order behavior and shortcut handling
+   - add focused component/spec coverage for overflow-order behavior plus shared shortcut handling
+     in authenticated and guest shells
+   - add direct shared-composable proof for positive and negative shortcut paths
    - add live browser proof that shows the toolbar staying one row while overflow content grows at
-     the named width bands
+     the named width bands for authenticated and guest routes
 
 ## Coordination note
 
@@ -95,15 +108,20 @@ guest slice lands.
 
 ## Test plan
 
-- `pdm run fe-test src/views/apps/components/PlannerWorkspaceActionBar.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+- `pdm run fe-test -- --run src/views/apps/components/PlannerWorkspaceActionBar.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/usePlannerUndoRedoShortcuts.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run docs-validate`
 - Live desktop proof:
-  - `http://127.0.0.1:5173/apps/classroom.group-seating-studio`
-  - verify grouping and seating at `1279x900`, `1366x768`, and `1440x900`
+  - authenticated: `http://127.0.0.1:5173/apps/classroom.group-seating-studio`
+  - guest: `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`
+  - verify authenticated `Grupper`, authenticated `Sittplatser`, guest `Grupper`, and guest
+    `Sittplatser` at `1279x900`, `1366x768`, and `1440x900`
   - verify the toolbar never wraps to multiple rows and no button is pushed outside the visible bar
   - verify `undo` / `redo` overflow before `Börja om`
   - verify `undo` / `redo` shortcuts still work when those controls are no longer visibly pinned
+    and focus is outside editable text fields
+  - verify `undo` / `redo` shortcuts do not fire while typing in inputs/textareas/contenteditable
+    targets or while focus is inside active overflow/menu interactions
 
 ## Rollback plan
 

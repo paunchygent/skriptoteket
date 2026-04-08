@@ -5,14 +5,14 @@ title: "Development changelog"
 status: active
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 topic: "development-changelog"
 ---
 
-Append-only development log.
+Append-only development log and repo long-term memory for compacted handoff history.
 
 Rule:
-- When compacting `.agents/handoff.md`, append the removed content here first.
+- When compacting `.agents/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
 
 ## 2026-04-07 handoff compaction dump
