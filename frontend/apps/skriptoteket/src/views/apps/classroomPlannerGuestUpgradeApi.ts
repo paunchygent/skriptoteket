@@ -6,7 +6,7 @@
  * request or receipt typing.
  */
 
-import { apiPost } from "../../api/client";
+import { apiGet, apiPost } from "../../api/client";
 
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import type { PlanDraftKind } from "./classroomPlannerTypes";
@@ -34,6 +34,10 @@ export type ClassroomPlannerGuestUpgradeReceipt = {
   conflicted: ClassroomPlannerGuestUpgradeReceiptItem[];
 };
 
+export type ClassroomPlannerGuestUpgradeConsumptionStatus = {
+  consumed: boolean;
+};
+
 export async function runClassroomPlannerGuestUpgrade(args: {
   mode: ClassroomPlannerGuestUpgradeMode;
   snapshot: ClassroomPlannerGuestSnapshot;
@@ -44,5 +48,12 @@ export async function runClassroomPlannerGuestUpgrade(args: {
       mode: args.mode,
       snapshot: args.snapshot,
     },
+  );
+}
+
+export async function getClassroomPlannerGuestUpgradeConsumptionStatus():
+Promise<ClassroomPlannerGuestUpgradeConsumptionStatus> {
+  return await apiGet<ClassroomPlannerGuestUpgradeConsumptionStatus>(
+    "/api/v1/apps/classroom.group-seating-studio/guest-upgrade/consumption",
   );
 }

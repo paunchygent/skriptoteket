@@ -2,7 +2,7 @@
 type: pr
 id: PR-0246
 title: "ST-32-05 follow-up: one-time guest-upgrade consumption and repeat-import suppression"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-08
 updated: 2026-04-08
@@ -25,18 +25,23 @@ dependencies:
   - "PR-0233"
   - "PR-0245"
 acceptance_criteria:
-  - "Given the authenticated Klassrumskartan host commits a guest-upgrade request and receives a receipt that proves meaningful processing occurred, when the commit succeeds, then the backend records one canonical consumption fact for that user and app, the browser-owned guest snapshot is consumed, and the browser records that this app's guest-upgrade bridge has already been used in that browser."
+  - "Given the authenticated Klassrumskartan host commits a guest-upgrade request and receives a receipt that proves meaningful processing occurred, when the commit succeeds, then the backend records one canonical consumption fact for that user and app and the browser-owned guest snapshot is cleared."
   - "Given the same browser later reaches authenticated Klassrumskartan again after a prior consuming guest-upgrade commit, when stale guest snapshot data still exists locally, then the authenticated host may use the backend-owned canonical fact to clear that stale local state silently and does not show the import prompt again."
-  - "Given the same browser later reaches public Klassrumskartan after a prior consuming guest-upgrade commit, when the browser loads the public guest shell, then it relies on the browser-owned consumed marker only, does not initialize a new upgrade-capable guest workspace, and instead blocks with a clear login-first message."
+  - "Given the same browser later reaches public Klassrumskartan after a prior authenticated Klassrumskartan entry, when the browser loads the public guest shell, then it relies on the browser-owned authoring-closure marker only, does not initialize a new upgrade-capable guest workspace, and instead blocks with a clear login-first message."
   - "Given a guest-upgrade commit returns a structurally suspicious all-zero `200` receipt, when the authenticated host resolves the result, then it does not consume the one-time bridge, does not write the backend consumption fact, and keeps the truthful error/prompt lane introduced by `PR-0245`."
   - "Given a guest-upgrade commit imports some entities but also reports conflicts, when the authenticated host resolves the result, then the teacher sees one truthful post-import outcome summary for what was created, reused, or left unchanged and is not trapped in an unresolvable repeat-import prompt."
+  - "Given a browser opens authenticated Klassrumskartan before any guest-upgrade import happens, when the same browser later visits the public Klassrumskartan host, then it does not create a new upgrade-capable guest snapshot and a later authenticated visit does not reopen the guest-upgrade prompt from that path."
 ---
 
 ## Status note
 
-This PR is currently a solution-shaping slice only. Its purpose is to make the
-decision, tradeoffs, and recommended direction reviewable before implementation
-begins.
+This PR is implemented locally and verified. The shipped shape keeps the two
+approved concepts separate:
+
+- backend ledger answers only whether a meaningful authenticated guest-upgrade
+  import was consumed
+- browser markers answer only whether this browser may still create new
+  upgrade-capable guest work
 
 ## Problem
 
@@ -178,14 +183,13 @@ Assessment:
 - best fit for the product direction and debugging needs surfaced in live
   testing
 
-## Recommended direction
+## Implemented direction
 
 Proceed with **Option D**:
 
 - backend-owned canonical one-time consumption fact per user/app for
   authenticated policy only
-- browser-owned consumed marker for same-browser suppression and stale snapshot
-  cleanup
+- browser-owned authoring-closure marker for same-browser public suppression
 - meaningful authenticated guest-upgrade receipts consume the bridge even when
   they include mixed conflict outcomes
 - structurally suspicious all-zero `200` receipts do not consume the bridge and
@@ -201,6 +205,37 @@ Why this is the recommended shape:
   the public bootstrap/helper namespace
 - it avoids designing a long-tail resync/conflict-resolution system around a
   workflow the product does not want to support
+
+## Implementation notes
+
+- Backend:
+  - added a dedicated guest-upgrade consumption ledger plus migration
+  - added an authenticated consumption-status read seam
+  - made ledger writes race-safe with PostgreSQL `ON CONFLICT DO NOTHING`
+- Frontend:
+  - added a browser-owned `guest-authoring-closed` marker
+  - first authenticated Klassrumskartan entry closes new guest authoring in that
+    browser
+  - public host stays browser-marker-only and cookie-agnostic
+  - later public visits in the same browser block instead of auto-creating a
+    new guest snapshot
+  - later authenticated visits use backend truth plus local cleanup and do not
+    reopen the prompt from the approved `E2` path
+
+## Verification
+
+- `pdm run docs-validate`
+- `pdm run fe-type-check`
+- `pdm run pytest tests/integration/infrastructure/repositories/test_classroom_planner_guest_upgrade_repository.py`
+- `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0f4c2d7a9b1e_idempotent.py -q`
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts`
+- live browser proof on 2026-04-08 against `http://127.0.0.1:5173`:
+  - authenticated Klassrumskartan entry set `skriptoteket:classroom-planner:guest-authoring-closed = true`
+  - no guest snapshot pointer or IndexedDB guest snapshot record existed
+  - later public visit in the same browser showed the blocked login-first state
+    and still created no guest snapshot
+  - later authenticated revisit showed no guest-upgrade prompt reopening from
+    that path
 
 ## Decision gates for review
 

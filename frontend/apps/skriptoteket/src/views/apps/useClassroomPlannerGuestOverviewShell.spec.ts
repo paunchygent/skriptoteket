@@ -38,10 +38,10 @@ function mountGuestOverviewHarness(
 }
 
 async function flushGuestOverview(): Promise<void> {
-  await nextTick();
-  await Promise.resolve();
-  await Promise.resolve();
-  await nextTick();
+  for (let index = 0; index < 12; index += 1) {
+    await nextTick();
+    await Promise.resolve();
+  }
 }
 
 describe("useClassroomPlannerGuestController", () => {
@@ -95,6 +95,86 @@ describe("useClassroomPlannerGuestController", () => {
     expect(harness.getState().bootstrapError.value).toBeNull();
     expect(harness.getState().availableRosters.value).toEqual([]);
     expect(harness.getState().availableTemplates.value).toEqual([]);
+  });
+
+  it("does not initialize a new guest snapshot when browser authoring is closed", async () => {
+    const initializeEmptySnapshot = vi.fn();
+
+    const harness = mountGuestOverviewHarness({
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "missing" as const,
+          snapshot: null,
+          summary: null,
+        })),
+        saveSnapshot: vi.fn(),
+        initializeEmptySnapshot,
+        clearCurrentSnapshot: vi.fn(),
+        isGuestAuthoringClosed: vi.fn(async () => true),
+      }),
+    });
+    await flushGuestOverview();
+
+    expect(initializeEmptySnapshot).not.toHaveBeenCalled();
+    expect(harness.getState().guestAuthoringClosed.value).toBe(true);
+    expect(harness.getState().availableRosters.value).toEqual([]);
+    expect(harness.getState().availableTemplates.value).toEqual([]);
+  });
+
+  it("rejects later guest mutations when another tab closes browser authoring", async () => {
+    const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-closure",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [],
+      templates: [],
+      smart_rule_sets: [],
+      grouping_draft: null,
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: null,
+        selected_template_id: null,
+        current_screen: "class-workspace",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+    const saveSnapshot = vi.fn(async () => undefined);
+    let isClosed = false;
+
+    const harness = mountGuestOverviewHarness({
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "ready" as const,
+          snapshot: readySnapshot,
+          summary: summarizeClassroomPlannerGuestSnapshot(readySnapshot),
+        })),
+        saveSnapshot,
+        initializeEmptySnapshot: vi.fn(),
+        clearCurrentSnapshot: vi.fn(),
+        isGuestAuthoringClosed: vi.fn(async () => isClosed),
+      }),
+    });
+    await flushGuestOverview();
+
+    isClosed = true;
+
+    await expect(
+      harness.getState().saveRoster({
+        existingRoster: null,
+        name: "SA24D",
+        students: [{ id: "student-1", display_name: "Ada" }],
+      }),
+    ).rejects.toThrow(
+      "Publikt gästarbete är stängt i den här webbläsaren. Logga in för att fortsätta.",
+    );
+
+    expect(harness.getState().guestAuthoringClosed.value).toBe(true);
+    expect(harness.getState().availableRosters.value).toEqual([]);
+    expect(saveSnapshot).not.toHaveBeenCalled();
   });
 
   it("hydrates snapshot-backed overview state and persists later selection changes", async () => {

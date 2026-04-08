@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60">
+  <style>
+    .wall       { fill: none; stroke: #1c2e4a; stroke-width: 2; shape-rendering: crispEdges; }
+    .wall-echo  { fill: none; stroke: #1c2e4a; stroke-width: 0.6; stroke-opacity: 0.18; shape-rendering: crispEdges; }
+    .fixture    { fill: rgba(28,46,74,0.08); stroke: #1c2e4a; stroke-width: 1; shape-rendering: crispEdges; }
+    .door-open  { stroke: #1c2e4a; stroke-width: 2; stroke-opacity: 0.12; shape-rendering: crispEdges; }
+    .door-arc   { fill: none; stroke: #1c2e4a; stroke-width: 0.7; stroke-dasharray: 1.5,1.5; stroke-opacity: 0.3; }
+    .lbl        { font-family: 'IBM Plex Mono', monospace; font-size: 3.5px; font-weight: 700; fill: #1c2e4a; fill-opacity: 0.4; text-anchor: middle; letter-spacing: 0.8px; }
+    .plus       { stroke: #1c2e4a; stroke-width: 1; stroke-opacity: 0.28; shape-rendering: crispEdges; }
+  </style>
+
+  <!-- Room walls (double-line) -->
+  <rect x="10" y="10" width="80" height="40" class="wall" />
+  <rect x="12" y="12" width="76" height="36" class="wall-echo" />
+
+  <!-- Whiteboard (top wall) -->
+  <rect x="28" y="10" width="36" height="3" class="fixture" />
+  <text x="46" y="8" class="lbl">TAVLA</text>
+
+  <!-- Door (right wall, architectural arc) -->
+  <line x1="90" y1="20" x2="90" y2="34" class="door-open" />
+  <path d="M 90 20 A 14 14 0 0 0 76 34" class="door-arc" />
+
+  <!-- Window (left wall) -->
+  <rect x="10" y="24" width="2.5" height="12" class="fixture" />
+
+  <!-- "Add furniture" indicator -->
+  <line x1="46" y1="30" x2="54" y2="30" class="plus" />
+  <line x1="50" y1="26" x2="50" y2="34" class="plus" />
+</svg>

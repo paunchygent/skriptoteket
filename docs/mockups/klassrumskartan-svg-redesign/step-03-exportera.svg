@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" class="w-full max-w-[10rem]">
+  <!-- Document base with folded corner -->
+  <path d="M 24 6 L 56 6 L 66 16 L 66 54 L 24 54 Z" fill="#fafaf6" stroke="#1c2e4a" stroke-width="2" />
+  <!-- Fold detail -->
+  <path d="M 56 6 L 56 16 L 66 16" fill="rgba(28,46,74,0.05)" stroke="#1c2e4a" stroke-width="1.5" />
+
+  <!-- Small visual preview of a layout inside the PDF -->
+  <rect x="30" y="24" width="28" height="18" fill="none" stroke="#1c2e4a" stroke-width="1" />
+  <rect x="34" y="28" width="6" height="4" fill="#1c2e4a" fill-opacity="0.2" />
+  <rect x="42" y="28" width="6" height="4" fill="#1c2e4a" fill-opacity="0.2" />
+  <rect x="34" y="34" width="6" height="4" fill="#1c2e4a" fill-opacity="0.2" />
+  <rect x="42" y="34" width="6" height="4" fill="#1c2e4a" fill-opacity="0.2" />
+
+  <!-- PDF Label badge -->
+  <rect x="20" y="44" width="22" height="12" fill="#1c2e4a" />
+  <text x="31" y="53" font-family="IBM Plex Mono, monospace" font-size="8" font-weight="700" fill="#fafaf6" text-anchor="middle">PDF</text>
+
+  <!-- Download Arrow Indicator -->
+  <g transform="translate(74, 24)">
+    <circle cx="8" cy="8" r="14" fill="rgba(28,46,74,0.05)" stroke="#1c2e4a" stroke-width="1.5" />
+    <!-- Downward arrow -->
+    <path d="M 8 3 L 8 12 M 4 8 L 8 12 L 12 8" fill="none" stroke="#1c2e4a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

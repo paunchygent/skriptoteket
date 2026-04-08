@@ -9,12 +9,17 @@
 
 import { computed, onMounted, ref } from "vue";
 
-import { createClassroomPlannerGuestStorage } from "./classroomPlannerGuestStorage";
 import {
+  createClassroomPlannerGuestStorage,
+  type ClassroomPlannerGuestStoragePort,
+} from "./classroomPlannerGuestStorage";
+import {
+  getClassroomPlannerGuestUpgradeConsumptionStatus,
   runClassroomPlannerGuestUpgrade,
   type ClassroomPlannerGuestUpgradeReceipt,
 } from "./classroomPlannerGuestUpgradeApi";
 import {
+  hasClassroomPlannerGuestUpgradeMeaningfulConsumption,
   hasClassroomPlannerGuestSnapshotSummaryContent,
   hasClassroomPlannerGuestUpgradeReceiptEffects,
 } from "./classroomPlannerGuestUpgradeOutcome";
@@ -23,7 +28,6 @@ import type {
   ClassroomPlannerGuestSnapshotSummary,
 } from "./classroomPlannerGuestSnapshot";
 
-type ClassroomPlannerGuestStorageAdapter = ReturnType<typeof createClassroomPlannerGuestStorage>;
 type GuestUpgradeGateState = "allowed" | "checking" | "previewing" | "prompt" | "committing";
 
 function buildConflictErrorMessage(receipt: ClassroomPlannerGuestUpgradeReceipt): string {
@@ -35,11 +39,11 @@ function buildConflictErrorMessage(receipt: ClassroomPlannerGuestUpgradeReceipt)
 
 export function useClassroomPlannerGuestUpgrade(options?: {
   enabled?: boolean;
-  guestStorage?: ClassroomPlannerGuestStorageAdapter;
-  guestStorageFactory?: () => ClassroomPlannerGuestStorageAdapter;
+  guestStorage?: ClassroomPlannerGuestStoragePort;
+  guestStorageFactory?: () => ClassroomPlannerGuestStoragePort;
 }) {
   const enabled = options?.enabled ?? true;
-  let guestStorage: ClassroomPlannerGuestStorageAdapter | null = options?.guestStorage ?? null;
+  let guestStorage: ClassroomPlannerGuestStoragePort | null = options?.guestStorage ?? null;
 
   const gateState = ref<GuestUpgradeGateState>(enabled ? "checking" : "allowed");
   const snapshot = ref<ClassroomPlannerGuestSnapshot | null>(null);
@@ -49,7 +53,7 @@ export function useClassroomPlannerGuestUpgrade(options?: {
   const errorMessage = ref<string | null>(null);
   const plannerRefreshKey = ref(0);
 
-  function resolveGuestStorage(): ClassroomPlannerGuestStorageAdapter {
+  function resolveGuestStorage(): ClassroomPlannerGuestStoragePort {
     if (!guestStorage) {
       guestStorage = options?.guestStorageFactory?.() ?? createClassroomPlannerGuestStorage();
     }
@@ -65,6 +69,7 @@ export function useClassroomPlannerGuestUpgrade(options?: {
     gateState.value = "checking";
     errorMessage.value = null;
     try {
+      await resolveGuestStorage().markGuestAuthoringClosed?.();
       const result = await resolveGuestStorage().loadCurrentSnapshot();
       if (result.status !== "ready" || !result.snapshot) {
         snapshot.value = null;
@@ -85,6 +90,22 @@ export function useClassroomPlannerGuestUpgrade(options?: {
 
       snapshot.value = result.snapshot;
       summary.value = result.summary;
+      try {
+        const consumptionStatus = await getClassroomPlannerGuestUpgradeConsumptionStatus();
+        if (consumptionStatus.consumed) {
+          await resolveGuestStorage().clearCurrentSnapshot();
+          snapshot.value = null;
+          summary.value = null;
+          previewReceipt.value = null;
+          lastReceipt.value = null;
+          gateState.value = "allowed";
+          return;
+        }
+      } catch {
+        // Fall back to the existing preview/prompt seam so a transient status-read
+        // failure does not hide real browser-owned guest work from the teacher.
+      }
+
       await previewCurrentSnapshot();
     } catch (error: unknown) {
       snapshot.value = null;
@@ -133,6 +154,18 @@ export function useClassroomPlannerGuestUpgrade(options?: {
         snapshot: snapshot.value,
       });
       const snapshotSummaryHadContent = hasClassroomPlannerGuestSnapshotSummaryContent(summary.value);
+
+      if (hasClassroomPlannerGuestUpgradeMeaningfulConsumption(commitReceipt)) {
+        lastReceipt.value = commitReceipt;
+        await resolveGuestStorage().clearCurrentSnapshot();
+        snapshot.value = null;
+        summary.value = null;
+        previewReceipt.value = null;
+        plannerRefreshKey.value += 1;
+        gateState.value = "allowed";
+        return;
+      }
+
       if (commitReceipt.conflicted.length > 0) {
         lastReceipt.value = null;
         previewReceipt.value = commitReceipt;
@@ -161,13 +194,6 @@ export function useClassroomPlannerGuestUpgrade(options?: {
         return;
       }
 
-      lastReceipt.value = commitReceipt;
-      await resolveGuestStorage().clearCurrentSnapshot();
-      snapshot.value = null;
-      summary.value = null;
-      previewReceipt.value = null;
-      plannerRefreshKey.value += 1;
-      gateState.value = "allowed";
     } catch (error: unknown) {
       gateState.value = "prompt";
       errorMessage.value = error instanceof Error

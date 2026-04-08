@@ -131,6 +131,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-32-08-featured-public-app-showcase-and-authenticated-value-previews.md`
 - ST-32-08 featured public-app showcase + authenticated-value preview surfaces:
   `docs/backlog/prs/pr-0239-st-32-08-featured-public-app-showcase-and-authenticated-value-preview-surfaces.md`
+- ST-32-08 landing showcase SVG asset cutover + backup preservation:
+  `docs/backlog/prs/pr-0247-st-32-08-landing-showcase-svg-asset-cutover-and-backup-preservation.md`
 - ST-32-09 canonical public-route recovery + SPA unmatched state story:
   `docs/backlog/stories/story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md`
 - ST-32-09 SPA catch-all route + malformed public-route recovery:

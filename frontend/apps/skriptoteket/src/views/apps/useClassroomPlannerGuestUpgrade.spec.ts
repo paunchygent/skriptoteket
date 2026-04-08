@@ -13,10 +13,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useClassroomPlannerGuestUpgrade } from "./useClassroomPlannerGuestUpgrade";
 
 const guestUpgradeApiMocks = vi.hoisted(() => ({
+  getClassroomPlannerGuestUpgradeConsumptionStatus: vi.fn(),
   runClassroomPlannerGuestUpgrade: vi.fn(),
 }));
 
 vi.mock("./classroomPlannerGuestUpgradeApi", () => ({
+  getClassroomPlannerGuestUpgradeConsumptionStatus:
+    guestUpgradeApiMocks.getClassroomPlannerGuestUpgradeConsumptionStatus,
   runClassroomPlannerGuestUpgrade: guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade,
 }));
 
@@ -94,6 +97,8 @@ function createReadyGuestStorage() {
     saveSnapshot: vi.fn(),
     initializeEmptySnapshot: vi.fn(),
     clearCurrentSnapshot: vi.fn(async () => undefined),
+    isGuestAuthoringClosed: vi.fn(async () => false),
+    markGuestAuthoringClosed: vi.fn(async () => undefined),
   };
 }
 
@@ -142,11 +147,17 @@ function createEmptyGuestStorage() {
     saveSnapshot: vi.fn(),
     initializeEmptySnapshot: vi.fn(),
     clearCurrentSnapshot: vi.fn(async () => undefined),
+    isGuestAuthoringClosed: vi.fn(async () => false),
+    markGuestAuthoringClosed: vi.fn(async () => undefined),
   };
 }
 
 describe("useClassroomPlannerGuestUpgrade", () => {
   beforeEach(() => {
+    guestUpgradeApiMocks.getClassroomPlannerGuestUpgradeConsumptionStatus.mockReset();
+    guestUpgradeApiMocks.getClassroomPlannerGuestUpgradeConsumptionStatus.mockResolvedValue({
+      consumed: false,
+    });
     guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade.mockReset();
   });
 
@@ -168,6 +179,7 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     await flushGuestUpgradeWork();
 
     expect(guestStorage.loadCurrentSnapshot).toHaveBeenCalledOnce();
+    expect(guestStorage.markGuestAuthoringClosed).toHaveBeenCalledOnce();
     expect(guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade).toHaveBeenCalledWith({
       mode: "preview",
       snapshot: expect.objectContaining({ snapshot_id: "guest-snapshot-1" }),
@@ -185,6 +197,7 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     await flushGuestUpgradeWork();
 
     expect(guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade).not.toHaveBeenCalled();
+    expect(guestStorage.markGuestAuthoringClosed).toHaveBeenCalledOnce();
     expect(guestStorage.clearCurrentSnapshot).toHaveBeenCalledOnce();
     expect(harness.getState().gateState.value).toBe("allowed");
     expect(harness.getState().shouldShowPrompt.value).toBe(false);
@@ -230,7 +243,7 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     expect(harness.getState().lastReceipt.value?.mode).toBe("commit");
   });
 
-  it("keeps local guest data when the commit receipt reports conflicts", async () => {
+  it("keeps local guest data when the commit receipt reports only conflicts", async () => {
     const guestStorage = createReadyGuestStorage();
     guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade
       .mockResolvedValueOnce({
@@ -269,6 +282,44 @@ describe("useClassroomPlannerGuestUpgrade", () => {
       "Allt gick inte att spara. Det som blev kvar finns fortfarande i den här webbläsaren.",
     );
     expect(harness.getState().lastReceipt.value).toBeNull();
+  });
+
+  it("clears local guest data and keeps the result summary when commit has mixed success and conflicts", async () => {
+    const guestStorage = createReadyGuestStorage();
+    guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade
+      .mockResolvedValueOnce({
+        mode: "preview",
+        snapshot_id: "guest-snapshot-1",
+        schema_version: 1,
+        submitted_snapshot_content_hash: "sha256:guest",
+        server_snapshot_content_hash: "sha256:server",
+        created: [],
+        reused: [],
+        skipped: [],
+        conflicted: [],
+      })
+      .mockResolvedValueOnce({
+        mode: "commit",
+        snapshot_id: "guest-snapshot-1",
+        schema_version: 1,
+        submitted_snapshot_content_hash: "sha256:guest",
+        server_snapshot_content_hash: "sha256:server",
+        created: [{ entity_type: "roster", local_id: "roster-1" }],
+        reused: [],
+        skipped: [],
+        conflicted: [{ entity_type: "draft", local_id: "draft-grouping-1" }],
+      });
+
+    const harness = mountGuestUpgradeHarness({ enabled: true, guestStorage });
+    await flushGuestUpgradeWork();
+    await harness.getState().importGuestWorkspace();
+
+    expect(guestStorage.clearCurrentSnapshot).toHaveBeenCalledOnce();
+    expect(harness.getState().gateState.value).toBe("allowed");
+    expect(harness.getState().lastReceipt.value?.created).toHaveLength(1);
+    expect(harness.getState().lastReceipt.value?.conflicted).toHaveLength(1);
+    expect(harness.getState().shouldShowPrompt.value).toBe(false);
+    expect(harness.getState().errorMessage.value).toBeNull();
   });
 
   it("allows postponing without clearing local guest data", async () => {
@@ -369,5 +420,21 @@ describe("useClassroomPlannerGuestUpgrade", () => {
     expect(harness.getState().errorMessage.value).toBe(
       "Importen skapade inget nytt i kontot. Gästarbetet finns kvar i den här webbläsaren.",
     );
+  });
+
+  it("clears stale local guest data silently when the backend ledger says the bridge was consumed", async () => {
+    const guestStorage = createReadyGuestStorage();
+    guestUpgradeApiMocks.getClassroomPlannerGuestUpgradeConsumptionStatus.mockResolvedValueOnce({
+      consumed: true,
+    });
+
+    const harness = mountGuestUpgradeHarness({ enabled: true, guestStorage });
+    await flushGuestUpgradeWork();
+
+    expect(guestStorage.clearCurrentSnapshot).toHaveBeenCalledOnce();
+    expect(guestUpgradeApiMocks.runClassroomPlannerGuestUpgrade).not.toHaveBeenCalled();
+    expect(harness.getState().gateState.value).toBe("allowed");
+    expect(harness.getState().snapshot.value).toBeNull();
+    expect(harness.getState().shouldShowPrompt.value).toBe(false);
   });
 });

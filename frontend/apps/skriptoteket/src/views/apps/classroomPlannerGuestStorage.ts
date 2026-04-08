@@ -19,6 +19,8 @@ import {
 
 export const CLASSROOM_PLANNER_GUEST_SNAPSHOT_POINTER_KEY =
   "skriptoteket:classroom-planner:public-snapshot-id";
+export const CLASSROOM_PLANNER_GUEST_AUTHORING_CLOSED_KEY =
+  "skriptoteket:classroom-planner:guest-authoring-closed";
 
 type SnapshotKeyValueStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -101,6 +103,15 @@ function defaultCreateSnapshotId(): string {
   }
   return `guest-snapshot-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+export type ClassroomPlannerGuestStoragePort = {
+  loadCurrentSnapshot: () => Promise<ClassroomPlannerGuestSnapshotLoadResult>;
+  saveSnapshot: (snapshot: ClassroomPlannerGuestSnapshot) => Promise<void>;
+  initializeEmptySnapshot: () => Promise<ClassroomPlannerGuestSnapshotLoadResult>;
+  clearCurrentSnapshot: () => Promise<void>;
+  isGuestAuthoringClosed?: () => Promise<boolean>;
+  markGuestAuthoringClosed?: () => Promise<void>;
+};
 
 export function createClassroomPlannerGuestStorage(deps?: {
   nowMs?: () => number;
@@ -211,10 +222,20 @@ export function createClassroomPlannerGuestStorage(deps?: {
     await store.delete(snapshotId);
   }
 
+  async function isGuestAuthoringClosed(): Promise<boolean> {
+    return storage.getItem(CLASSROOM_PLANNER_GUEST_AUTHORING_CLOSED_KEY) === "true";
+  }
+
+  async function markGuestAuthoringClosed(): Promise<void> {
+    storage.setItem(CLASSROOM_PLANNER_GUEST_AUTHORING_CLOSED_KEY, "true");
+  }
+
   return {
     loadCurrentSnapshot,
     saveSnapshot,
     initializeEmptySnapshot,
     clearCurrentSnapshot,
+    isGuestAuthoringClosed,
+    markGuestAuthoringClosed,
   };
 }

@@ -8,12 +8,16 @@
  * separate cards) so the showcase reads as a single product surface.
  */
 
+import stepCreateRoomUrl from "../../assets/home/klassrumskartan/landing/redesign-v5/step-01-skapa-salen.svg?no-inline";
+import stepPlaceStudentsUrl from "../../assets/home/klassrumskartan/landing/redesign-v5/step-02-placera-eleverna.svg?no-inline";
+import stepExportUrl from "../../assets/home/klassrumskartan/landing/redesign-v5/step-03-exportera.svg?no-inline";
+
 const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
 
 const steps = [
-  { index: "01", title: "Skapa salen" },
-  { index: "02", title: "Placera eleverna" },
-  { index: "03", title: "Exportera" },
+  { index: "01", title: "Skapa salen", imageSrc: stepCreateRoomUrl },
+  { index: "02", title: "Placera eleverna", imageSrc: stepPlaceStudentsUrl },
+  { index: "03", title: "Exportera", imageSrc: stepExportUrl },
 ] as const;
 </script>
 
@@ -57,173 +61,13 @@ const steps = [
             class="mt-2 flex flex-1 items-center justify-center border border-navy/40 bg-canvas p-3"
             aria-hidden="true"
           >
-            <svg
-              v-if="step.index === '01'"
-              viewBox="0 0 100 60"
+            <img
+              :src="step.imageSrc"
+              alt=""
+              width="100"
+              height="60"
               class="w-full max-w-[10rem]"
             >
-              <rect
-                x="2"
-                y="2"
-                width="96"
-                height="56"
-                fill="none"
-                stroke="#1c2e4a"
-                stroke-width="2"
-              />
-              <rect
-                x="14"
-                y="10"
-                width="22"
-                height="8"
-                fill="rgba(28,46,74,0.10)"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="64"
-                y="10"
-                width="22"
-                height="8"
-                fill="rgba(28,46,74,0.10)"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-            </svg>
-            <svg
-              v-else-if="step.index === '02'"
-              viewBox="0 0 100 60"
-              class="w-full max-w-[10rem]"
-            >
-              <rect
-                x="2"
-                y="2"
-                width="96"
-                height="56"
-                fill="none"
-                stroke="#1c2e4a"
-                stroke-width="2"
-              />
-              <rect
-                x="12"
-                y="22"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="30"
-                y="22"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="48"
-                y="22"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="66"
-                y="22"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="12"
-                y="40"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="30"
-                y="40"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="48"
-                y="40"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <rect
-                x="66"
-                y="40"
-                width="14"
-                height="10"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-            </svg>
-            <svg
-              v-else
-              viewBox="0 0 100 60"
-              class="w-full max-w-[10rem]"
-            >
-              <rect
-                x="20"
-                y="8"
-                width="40"
-                height="44"
-                fill="#fafaf6"
-                stroke="#1c2e4a"
-                stroke-width="2"
-              />
-              <line
-                x1="26"
-                y1="20"
-                x2="54"
-                y2="20"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <line
-                x1="26"
-                y1="28"
-                x2="54"
-                y2="28"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <line
-                x1="26"
-                y1="36"
-                x2="48"
-                y2="36"
-                stroke="#1c2e4a"
-                stroke-width="1.5"
-              />
-              <text
-                x="78"
-                y="38"
-                font-family="IBM Plex Mono, monospace"
-                font-size="11"
-                font-weight="700"
-                fill="#1c2e4a"
-              >PDF</text>
-            </svg>
           </div>
         </article>
       </div>

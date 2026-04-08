@@ -57,6 +57,7 @@ async function exitPublicPlanner(): Promise<void> {
     </header>
 
     <SystemMessage
+      v-if="!guestController.guestAuthoringClosed.value"
       id="classroom-planner-public-guest-message"
       :dismissible="false"
       model-value="guest-message"
@@ -71,6 +72,25 @@ async function exitPublicPlanner(): Promise<void> {
         här
       </RouterLink>
       för att skapa ett.
+    </SystemMessage>
+
+    <SystemMessage
+      v-else
+      id="classroom-planner-public-guest-closed-message"
+      :dismissible="false"
+      model-value="guest-closed-message"
+      variant="warning"
+      data-test="public-guest-authoring-closed-message"
+    >
+      Du har redan öppnat Klassrumskartan inloggad i den här webbläsaren. Därför går det inte att
+      starta ett nytt gästläge här. Logga in för att fortsätta, eller
+      <RouterLink
+        to="/register"
+        class="font-semibold underline"
+      >
+        skapa ett konto
+      </RouterLink>
+      om du inte har ett ännu.
     </SystemMessage>
 
     <div
@@ -94,7 +114,17 @@ async function exitPublicPlanner(): Promise<void> {
       variant="error"
     />
 
+    <section
+      v-else-if="guestController.guestAuthoringClosed.value"
+      class="border border-navy bg-white px-4 py-12 text-center text-sm text-navy shadow-brutal-sm"
+      data-test="public-guest-authoring-closed-state"
+    >
+      Det går inte att starta ett nytt gästarbete i den här webbläsaren efter att du har använt
+      Klassrumskartan inloggad. Logga in för att fortsätta.
+    </section>
+
     <div
+      v-else
       class="relative"
       :class="guestController.currentScreen.value === 'planner' ? 'flex min-h-0 flex-1 flex-col' : undefined"
     >

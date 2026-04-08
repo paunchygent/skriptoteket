@@ -15,6 +15,7 @@ from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     ClassroomPlannerGuestUpgradeHandler,
+    GetClassroomPlannerGuestUpgradeConsumptionHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contracts import (
     SNAPSHOT_PROFILE,
@@ -72,6 +73,7 @@ class GuestUpgradeApiProvider(Provider):
         current_user_provider: CurrentUserProviderProtocol,
         sessions: SessionRepositoryProtocol,
         guest_upgrade_handler: ClassroomPlannerGuestUpgradeHandler,
+        guest_upgrade_consumption_handler: GetClassroomPlannerGuestUpgradeConsumptionHandler,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -79,6 +81,7 @@ class GuestUpgradeApiProvider(Provider):
         self._current_user_provider = current_user_provider
         self._sessions = sessions
         self._guest_upgrade_handler = guest_upgrade_handler
+        self._guest_upgrade_consumption_handler = guest_upgrade_consumption_handler
 
     @provide(scope=Scope.APP)
     def settings(self) -> Settings:
@@ -99,6 +102,12 @@ class GuestUpgradeApiProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def guest_upgrade_handler(self) -> ClassroomPlannerGuestUpgradeHandler:
         return self._guest_upgrade_handler
+
+    @provide(scope=Scope.REQUEST)
+    def guest_upgrade_consumption_handler(
+        self,
+    ) -> GetClassroomPlannerGuestUpgradeConsumptionHandler:
+        return self._guest_upgrade_consumption_handler
 
 
 @pytest.fixture
@@ -136,12 +145,18 @@ def guest_upgrade_handler() -> AsyncMock:
 
 
 @pytest.fixture
+def guest_upgrade_consumption_handler() -> AsyncMock:
+    return AsyncMock(spec=GetClassroomPlannerGuestUpgradeConsumptionHandler)
+
+
+@pytest.fixture
 def app(
     settings: Settings,
     clock: ClockProtocol,
     current_user_provider: AsyncMock,
     sessions: AsyncMock,
     guest_upgrade_handler: AsyncMock,
+    guest_upgrade_consumption_handler: AsyncMock,
 ) -> FastAPI:
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
@@ -154,6 +169,7 @@ def app(
             current_user_provider=current_user_provider,
             sessions=sessions,
             guest_upgrade_handler=guest_upgrade_handler,
+            guest_upgrade_consumption_handler=guest_upgrade_consumption_handler,
         )
     )
     setup_dishka(container, app)
@@ -277,6 +293,15 @@ async def test_guest_upgrade_requires_auth(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_guest_upgrade_consumption_requires_auth(client: httpx.AsyncClient) -> None:
+    response = await client.get(
+        "/api/v1/apps/classroom.group-seating-studio/guest-upgrade/consumption",
+    )
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_guest_upgrade_requires_csrf(
     client: httpx.AsyncClient,
     settings: Settings,
@@ -332,6 +357,31 @@ async def test_guest_upgrade_returns_receipt(
     guest_upgrade_handler.handle.assert_awaited_once()
     assert guest_upgrade_handler.handle.await_args.kwargs["owner_user_id"] == user.id
     assert guest_upgrade_handler.handle.await_args.kwargs["request"].mode == "preview"
+
+
+@pytest.mark.asyncio
+async def test_guest_upgrade_consumption_status_returns_backend_truth(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    guest_upgrade_consumption_handler: AsyncMock,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.USER)
+    session = make_session(user_id=user.id, now=now)
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+    guest_upgrade_consumption_handler.handle.return_value = True
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.get(
+        "/api/v1/apps/classroom.group-seating-studio/guest-upgrade/consumption",
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"consumed": True}
+    guest_upgrade_consumption_handler.handle.assert_awaited_once_with(owner_user_id=user.id)
 
 
 @pytest.mark.asyncio
@@ -400,6 +450,9 @@ async def test_guest_upgrade_preview_handles_template_bearing_snapshot_without_5
             current_user_provider=current_user_provider,
             sessions=sessions,
             guest_upgrade_handler=real_handler,
+            guest_upgrade_consumption_handler=AsyncMock(
+                spec=GetClassroomPlannerGuestUpgradeConsumptionHandler
+            ),
         )
     )
     setup_dishka(container, app)

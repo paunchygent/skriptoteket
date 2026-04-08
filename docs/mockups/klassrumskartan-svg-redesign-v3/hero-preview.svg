@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Klassrumskarta i trådmodell">
+  <style>
+    :root {
+      --color-navy: #1c2e4a;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Inter', sans-serif;
+    }
+    .stroke-thick { fill: none; stroke: var(--color-navy); stroke-width: 2; shape-rendering: crispEdges; }
+    .stroke-main { fill: none; stroke: var(--color-navy); stroke-width: 1.5; shape-rendering: crispEdges; }
+    .stroke-dashed { fill: none; stroke: var(--color-navy); stroke-width: 1.5; stroke-dasharray: 4,4; }
+    .text-mono { font-family: var(--font-mono); font-size: 8px; font-weight: 700; fill: var(--color-navy); letter-spacing: 1px; }
+    .text-sans { font-family: var(--font-sans); font-size: 10px; font-weight: 600; fill: var(--color-navy); text-anchor: middle; }
+  </style>
+
+  <!-- Sharp Room Outer -->
+  <rect x="10" y="10" width="300" height="200" class="stroke-thick" />
+
+  <!-- Sharp Fixtures -->
+  <rect x="80" y="10" width="160" height="6" class="stroke-main" />
+  <rect x="10" y="80" width="6" height="60" class="stroke-main" />
+
+  <!-- Teacher Desk -->
+  <rect x="130" y="30" width="60" height="24" class="stroke-thick" />
+  <text x="160" y="46" class="text-mono" text-anchor="middle">KATEDER</text>
+
+  <!-- Desks Layout: 3 columns, 2 rows. Absolutely sharp geometry. -->
+  <g transform="translate(30, 80)">
+    <rect x="0" y="0" width="70" height="14" class="stroke-main" />
+    <circle cx="20" cy="30" r="12" class="stroke-main" />
+    <text x="20" y="33" class="text-sans">Ada</text>
+    <circle cx="50" cy="30" r="12" class="stroke-main" />
+    <text x="50" y="33" class="text-sans">Bo</text>
+  </g>
+
+  <g transform="translate(125, 80)">
+    <rect x="0" y="0" width="70" height="14" class="stroke-main" />
+    <circle cx="20" cy="30" r="12" class="stroke-main" />
+    <text x="20" y="33" class="text-sans">Ida</text>
+    <circle cx="50" cy="30" r="12" class="stroke-main" />
+    <text x="50" y="33" class="text-sans">Kim</text>
+  </g>
+
+  <g transform="translate(220, 80)">
+    <rect x="0" y="0" width="70" height="14" class="stroke-main" />
+    <circle cx="20" cy="30" r="12" class="stroke-dashed" />
+    <circle cx="50" cy="30" r="12" class="stroke-dashed" />
+  </g>
+
+  <g transform="translate(30, 150)">
+    <rect x="0" y="0" width="70" height="14" class="stroke-main" />
+    <circle cx="20" cy="30" r="12" class="stroke-dashed" />
+    <circle cx="50" cy="30" r="12" class="stroke-main" />
+    <text x="50" y="33" class="text-sans">Leo</text>
+  </g>
+
+  <g transform="translate(125, 150)">
+    <rect x="0" y="0" width="70" height="14" class="stroke-main" />
+    <circle cx="20" cy="30" r="12" class="stroke-main" />
+    <text x="20" y="33" class="text-sans">Max</text>
+    <circle cx="50" cy="30" r="12" class="stroke-main" />
+    <text x="50" y="33" class="text-sans">Pia</text>
+  </g>
+
+  <g transform="translate(220, 150)">
+    <rect x="0" y="0" width="70" height="14" class="stroke-main" />
+    <circle cx="20" cy="30" r="12" class="stroke-main" />
+    <text x="20" y="33" class="text-sans">Tom</text>
+    <circle cx="50" cy="30" r="12" class="stroke-dashed" />
+  </g>
+</svg>

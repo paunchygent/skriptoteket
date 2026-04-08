@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" class="w-full max-w-[10rem]">
+  <style>
+    .stroke-thick { fill: none; stroke: #1c2e4a; stroke-width: 2; shape-rendering: crispEdges; }
+    .stroke-main { fill: none; stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .text-bold { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 700; fill: #1c2e4a; text-anchor: middle; }
+  </style>
+
+  <!-- Extremely sharp document shape with a folded corner made purely of straight paths -->
+  <polyline points="35,8 55,8 65,18 65,52 35,52 35,8" class="stroke-thick" />
+
+  <!-- Fold corner edge (sharp straight lines only) -->
+  <polyline points="55,8 55,18 65,18" class="stroke-main" />
+
+  <!-- Stark Mono Text -->
+  <text x="50" y="38" class="text-bold">PDF</text>
+</svg>

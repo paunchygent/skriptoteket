@@ -35,7 +35,12 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 from .guest_upgrade_assets import GuestUpgradeAssetImporter
+from .guest_upgrade_consumption import APP_ID
 from .guest_upgrade_history import GuestUpgradeHistoryImporter
+
+
+def _receipt_consumed_meaningfully(receipt: ClassroomPlannerGuestUpgradeReceipt) -> bool:
+    return len(receipt.created) > 0 or len(receipt.reused) > 0 or len(receipt.skipped) > 0
 
 
 class ClassroomPlannerGuestUpgradeHandler:
@@ -58,6 +63,8 @@ class ClassroomPlannerGuestUpgradeHandler:
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._uow = uow
+        self._guest_upgrade_repository = guest_upgrade_repository
+        self._clock = clock
         self._assets = GuestUpgradeAssetImporter(
             rosters=rosters,
             templates=templates,
@@ -100,6 +107,13 @@ class ClassroomPlannerGuestUpgradeHandler:
                     snapshot=snapshot,
                     receipt=receipt,
                 )
+                if _receipt_consumed_meaningfully(receipt):
+                    await self._guest_upgrade_repository.record_upgrade_consumption(
+                        owner_user_id=owner_user_id,
+                        app_id=APP_ID,
+                        snapshot_id=snapshot.snapshot_id,
+                        consumed_at=self._clock.now(),
+                    )
             return receipt
 
         await self._process_snapshot(

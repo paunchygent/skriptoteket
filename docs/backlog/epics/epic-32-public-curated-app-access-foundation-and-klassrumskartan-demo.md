@@ -152,6 +152,10 @@ dependencies:
     - the showcase keeps the hero's single strong CTA discipline by using a
       quieter public-app text link below the fold rather than adding a second
       competing CTA treatment
+    - `PR-0247` then converted the hero and three-step drawings into versioned
+      SPA asset files, keeping the original shipped inline drawings as backup
+      SVG assets beside the approved redesign-v5 set so future iteration and
+      revert work no longer depends on reconstructing inline markup
     - the authenticated preview footer still reuses the current in-place login
       modal seam for this launch slice, but a follow-up PR task should replace
       that overloaded signed-out auth entry with a dedicated redirect-friendly

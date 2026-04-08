@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Klassrumskarta: arkitektonisk planritning med placerade elever">
+  <style>
+    .wall       { fill: none; stroke: #1c2e4a; stroke-width: 2.5; shape-rendering: crispEdges; }
+    .wall-echo  { fill: none; stroke: #1c2e4a; stroke-width: 0.8; stroke-opacity: 0.2; shape-rendering: crispEdges; }
+    .fixture    { fill: rgba(28,46,74,0.08); stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .desk-top   { fill: none; stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .seat       { fill: #fafaf6; stroke: #1c2e4a; stroke-width: 1.5; }
+    .seat-empty { fill: none; stroke: #1c2e4a; stroke-width: 1; stroke-dasharray: 2.5,2.5; stroke-opacity: 0.35; }
+    .kateder    { fill: rgba(28,46,74,0.10); stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .door-open  { stroke: #1c2e4a; stroke-width: 2.5; stroke-opacity: 0.12; shape-rendering: crispEdges; }
+    .door-arc   { fill: none; stroke: #1c2e4a; stroke-width: 0.8; stroke-dasharray: 2,2; stroke-opacity: 0.3; }
+    .window     { fill: rgba(28,46,74,0.05); stroke: #1c2e4a; stroke-width: 1; shape-rendering: crispEdges; }
+    .grid-line  { stroke: #1c2e4a; stroke-width: 0.3; stroke-opacity: 0.05; shape-rendering: crispEdges; }
+    .dim-line   { stroke: #1c2e4a; stroke-width: 0.5; stroke-opacity: 0.18; shape-rendering: crispEdges; }
+    .dim-tick   { stroke: #1c2e4a; stroke-width: 0.5; stroke-opacity: 0.18; shape-rendering: crispEdges; }
+    .dim-text   { font-family: 'IBM Plex Mono', monospace; font-size: 4.5px; font-weight: 500; fill: #1c2e4a; fill-opacity: 0.22; text-anchor: middle; }
+    .lbl-fix    { font-family: 'IBM Plex Mono', monospace; font-size: 5.5px; font-weight: 700; fill: #1c2e4a; fill-opacity: 0.45; text-anchor: middle; letter-spacing: 1.2px; }
+    .lbl-kat    { font-family: 'IBM Plex Mono', monospace; font-size: 6px; font-weight: 700; fill: #1c2e4a; fill-opacity: 0.55; text-anchor: middle; letter-spacing: 1px; }
+    .lbl-name   { font-family: 'IBM Plex Sans', sans-serif; font-size: 7.5px; font-weight: 600; fill: #1c2e4a; text-anchor: middle; }
+  </style>
+
+  <!-- ─── Graph-paper background ─── -->
+  <defs>
+    <pattern id="grid-v4" width="16" height="16" patternUnits="userSpaceOnUse">
+      <line x1="16" y1="0" x2="16" y2="16" class="grid-line" />
+      <line x1="0" y1="16" x2="16" y2="16" class="grid-line" />
+    </pattern>
+  </defs>
+  <rect width="320" height="220" fill="url(#grid-v4)" />
+
+  <!-- ─── Dimensional annotations ─── -->
+  <line x1="28" y1="14" x2="300" y2="14" class="dim-line" />
+  <line x1="28" y1="11" x2="28" y2="17" class="dim-tick" />
+  <line x1="300" y1="11" x2="300" y2="17" class="dim-tick" />
+  <text x="164" y="12" class="dim-text">8.5 m</text>
+
+  <line x1="16" y1="26" x2="16" y2="200" class="dim-line" />
+  <line x1="13" y1="26" x2="19" y2="26" class="dim-tick" />
+  <line x1="13" y1="200" x2="19" y2="200" class="dim-tick" />
+  <text x="16" y="115" class="dim-text" transform="rotate(-90,16,115)">5.5 m</text>
+
+  <!-- ─── Room walls (double-line architectural convention) ─── -->
+  <rect x="28" y="26" width="272" height="174" class="wall" />
+  <rect x="32" y="30" width="264" height="166" class="wall-echo" />
+
+  <!-- ─── Whiteboard (top wall, centred) ─── -->
+  <rect x="100" y="26" width="110" height="5" class="fixture" />
+  <text x="155" y="22" class="lbl-fix">WHITEBOARD</text>
+
+  <!-- ─── Door (right wall, architectural swing arc) ─── -->
+  <line x1="300" y1="56" x2="300" y2="88" class="door-open" />
+  <path d="M 300 56 A 32 32 0 0 0 268 88" class="door-arc" />
+  <text x="310" y="74" class="lbl-fix" transform="rotate(90,310,74)">DÖRR</text>
+
+  <!-- ─── Windows (left wall) ─── -->
+  <rect x="28" y="60" width="4" height="26" class="window" />
+  <rect x="28" y="106" width="4" height="26" class="window" />
+  <rect x="28" y="152" width="4" height="26" class="window" />
+
+  <!-- ─── Kateder (teacher desk) ─── -->
+  <rect x="130" y="40" width="56" height="18" class="kateder" />
+  <text x="158" y="52" class="lbl-kat">KATEDER</text>
+
+  <!-- ─── Desk group 1 (row 1, col 1): Ada, Bo ─── -->
+  <g transform="translate(46,78)">
+    <rect x="0" y="0" width="56" height="7" class="desk-top" />
+    <circle cx="14" cy="21" r="10" class="seat" />
+    <text x="14" y="24" class="lbl-name">Ada</text>
+    <circle cx="42" cy="21" r="10" class="seat" />
+    <text x="42" y="24" class="lbl-name">Bo</text>
+  </g>
+
+  <!-- ─── Desk group 2 (row 1, col 2): Ida, Kim ─── -->
+  <g transform="translate(132,78)">
+    <rect x="0" y="0" width="56" height="7" class="desk-top" />
+    <circle cx="14" cy="21" r="10" class="seat" />
+    <text x="14" y="24" class="lbl-name">Ida</text>
+    <circle cx="42" cy="21" r="10" class="seat" />
+    <text x="42" y="24" class="lbl-name">Kim</text>
+  </g>
+
+  <!-- ─── Desk group 3 (row 1, col 3): Leo, empty ─── -->
+  <g transform="translate(220,78)">
+    <rect x="0" y="0" width="56" height="7" class="desk-top" />
+    <circle cx="14" cy="21" r="10" class="seat" />
+    <text x="14" y="24" class="lbl-name">Leo</text>
+    <circle cx="42" cy="21" r="10" class="seat-empty" />
+  </g>
+
+  <!-- ─── Desk group 4 (row 2, col 1): Moa, Nils ─── -->
+  <g transform="translate(46,142)">
+    <rect x="0" y="0" width="56" height="7" class="desk-top" />
+    <circle cx="14" cy="21" r="10" class="seat" />
+    <text x="14" y="24" class="lbl-name">Moa</text>
+    <circle cx="42" cy="21" r="10" class="seat" />
+    <text x="42" y="24" class="lbl-name">Nils</text>
+  </g>
+
+  <!-- ─── Desk group 5 (row 2, col 2): Sara, Vera ─── -->
+  <g transform="translate(132,142)">
+    <rect x="0" y="0" width="56" height="7" class="desk-top" />
+    <circle cx="14" cy="21" r="10" class="seat" />
+    <text x="14" y="24" class="lbl-name">Sara</text>
+    <circle cx="42" cy="21" r="10" class="seat" />
+    <text x="42" y="24" class="lbl-name">Vera</text>
+  </g>
+
+  <!-- ─── Desk group 6 (row 2, col 3): empty, empty ─── -->
+  <g transform="translate(220,142)">
+    <rect x="0" y="0" width="56" height="7" class="desk-top" />
+    <circle cx="14" cy="21" r="10" class="seat-empty" />
+    <circle cx="42" cy="21" r="10" class="seat-empty" />
+  </g>
+</svg>

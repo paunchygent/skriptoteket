@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-08
 - Branch: `main` + local changes
-- Current lane: `EPIC-32` now has retained review approval for the `ST-32-05` / `PR-0246` direction; implementation has not started yet
+- Current lane: `ST-32-05` / `PR-0246` is implemented locally with backend guest-upgrade consumption ledger, browser guest-authoring closure markers, repeat-import suppression, and live `E2` proof on the Docker `5173` lane; remaining work is final docs alignment / close-out only
 - Production: Full Vue SPA
 - Completed: `PR-0231`, `PR-0232`, `PR-0233`, `PR-0234`, `PR-0235`, and `PR-0236` are shipped on `main`; the public/export review follow-ups and Vitest path-normalization hardening are pushed; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
 ## Status
@@ -43,6 +43,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `ST-32-08` is now shipped on `main` through `PR-0239`:
   - the old generic signed-out highlight cards were removed from `HomeView.vue` and replaced with dedicated home components for one featured `Klassrumskartan` showcase plus one authenticated-only ledger preview
   - the showcase follows the approved `PR-0237` below-the-fold direction: asymmetric band, one shared three-step frame, and a quiet `Öppna appen` link so the hero keeps the only strong CTA
+  - `PR-0247` is now implemented locally as the follow-up assetization slice for that showcase: the landing hero and three step drawings move out of inline Vue SVG markup into versioned SPA asset files, while the original shipped drawings are preserved as backup SVG assets for easy revert/reference
   - the authenticated preview ledger uses explicit `Kräver konto` / `Kräver ansökan` labeling and keeps the footer `Logga in` entry on the existing in-place login modal seam for this slice
   - follow-up direction is now explicit and scaffolded as `ST-32-10` / `PR-0242`: replace that overloaded signed-out login modal entry with a dedicated auth redirect page that preserves redirect targets more clearly and is friendlier to launch-day auth flows plus future HuleEdu SSO integration
 - `ST-32-10` / `PR-0242` is now planned as the auth-entry follow-up after `PR-0240`:
@@ -54,17 +55,12 @@ Keep this file updated so the next session can pick up work quickly.
   - the canonical blueprint artifact for follow-on work is the separate copy `docs/mockups/st-32-07-public-landing-discoverability/index.html`
   - do not refine or overwrite `designer-a.html`; any further iteration should branch from the copy, not the original submission
   - carry forward the review caveats that any baseline overlay is working scaffolding only and that minor monospace / uppercase micro-markers can be softened later without reopening the layout direction
-- `PR-0246` is now review-approved and ready for implementation planning:
-  - live testing on 2026-04-08 exposed that Klassrumskartan still behaves like a repeatable guest-import loop after first account upgrade, including partial-import/conflict cases that keep stale browser snapshots alive
-  - the PR now explicitly compares four solution shapes: browser-only marker, planner-artifact inference, backend-only canonical fact, and the recommended hybrid model
-  - the retained review is now recorded in `docs/backlog/reviews/review-pr-0246-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md` with verdict `approved`
-  - approved direction: keep the hybrid model, but keep backend truth on authenticated seams only while same-browser public suppression remains browser-marker-only
-  - approved direction: suspicious all-zero `200` receipts stay non-consuming so `PR-0245`'s truthful zero-effect guard is preserved
-  - the PR now also captures the account-first/guest-later edge case explicitly:
-    - current code still allows it because the public guest shell auto-initializes browser snapshots and the authenticated host later prompts import whenever local guest state exists
-    - the current recommended direction is stricter browser-level closure: once a browser has entered authenticated Klassrumskartan, new upgrade-capable guest authoring should close in that browser even if no import happened on that first authenticated visit
-    - `PR-0246` now sharpens that into a decision table and explicit two-concept policy: backend import-consumption truth vs browser guest-authoring eligibility
-  - implementation must include one explicit acceptance/proof case for the approved account-first/guest-later `E2` path
+- `PR-0246` is now implemented locally and the review follow-up fixes are in:
+  - backend now uses a dedicated guest-upgrade consumption ledger plus an authenticated consumption-status read seam; repository writes are race-safe via PostgreSQL `ON CONFLICT DO NOTHING`
+  - browser state now tracks only guest-authoring closure, not import-consumption truth; first authenticated Klassrumskartan entry closes new guest authoring in that browser
+  - public Klassrumskartan stays browser-marker-only and cookie-agnostic; later public visits in the same browser block instead of auto-creating a new guest snapshot
+  - authenticated follow-up visits use backend truth plus local cleanup and do not reopen the guest-upgrade prompt from the approved account-first/guest-later `E2` path
+  - suspicious all-zero `200` receipts remain non-consuming and stay on the `PR-0245` truthful lane; mixed meaningful+conflict receipts consume the bridge and surface one truthful summary
 - `PR-0238` is now shipped on `main` as the narrow `ST-32-07` cutover slice:
   - the shared signed-out header now exposes `Klassrumskartan` as a quiet discoverability link to `/public/apps/classroom.group-seating-studio`
   - the shared signed-out header `Logga in` affordance now opens the existing login modal in place instead of routing through the unmatched `/login` path, and its redirect contract is restored:
@@ -143,14 +139,23 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run docs-validate` (pass on 2026-04-08 after splitting the old combined `ST-11-25` perf slice into `PR-0241`, `PR-0243`, and `PR-0244`, updating `docs/index.md`, and refreshing `.agents/handoff.md`)
 - `pdm run docs-validate` (pass on 2026-04-08 after closing out `PR-0238` / `ST-32-07` status docs and refreshing `EPIC-32` plus `.agents/handoff.md`)
 - `pdm run fe-test -- --run src/views/HomeView.spec.ts` (pass on 2026-04-08 for `PR-0239`; signed-out landing hero non-regression plus featured showcase/authenticated-preview coverage)
+- `pdm run fe-test -- --run src/views/HomeView.spec.ts` (pass on 2026-04-08 for `PR-0247`; signed-out landing now renders external hero/step SVG assets while preserving the existing hero/showcase/authenticated-preview contract)
+- `pdm run fe-type-check` (pass on 2026-04-08 for `PR-0247`)
+- `pdm run fe-build` (pass on 2026-04-08 for `PR-0247`; production build emitted hashed standalone `hero-preview.svg` and `step-*.svg` files under `src/skriptoteket/web/static/spa/assets/`, confirming file-based delivery instead of bundled inline resources)
+- `pdm run fe-build` (pass on 2026-04-08 after the follow-up hero polish; the updated `hero-preview.svg` built cleanly after removing the dotted door-swing arc that cluttered the signed-out landing illustration)
+- `pdm run fe-build` (pass on 2026-04-08 after the follow-up step polish; the updated `step-01-skapa-salen.svg` built cleanly after removing the matching dotted door-swing arc from the first showcase symbol)
 - `pdm run fe-type-check` (pass on 2026-04-08 for `PR-0239`)
 - Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/` (pass for `PR-0239`; hero remained unchanged with no console errors, the featured band stacked on mobile and resolved to the intended asymmetric desktop grid, the three steps rendered inside one outer navy frame with internal dividers, `Öppna appen` reached `/public/apps/classroom.group-seating-studio`, the ledger showed hard top/bottom rules plus visible `Kräver konto` / `Kräver ansökan` tags, the footer `Logga in` button opened the in-place modal, and the footer `Skapa konto` target remained `/register`)
+- Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/` (pass for `PR-0247`; Playwright confirmed the signed-out landing still rendered the same hero/showcase/ledger structure with no console errors, the hero image resolved from `/src/assets/home/klassrumskartan/landing/redesign-v5/hero-preview.svg?no-inline`, and the three showcase images resolved from the matching `step-*.svg?no-inline` asset URLs)
+- Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/` (pass after the hero polish follow-up; the landing still rendered cleanly with no console errors after removing the dotted door arc from the active hero SVG asset)
+- Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/` (pass after the step-01 polish follow-up; the landing still rendered cleanly with no console errors after removing the dotted door arc from the active `Skapa salen` SVG asset)
 - `pdm run docs-validate` (pass on 2026-04-08 after closing out `PR-0239` / `ST-32-08`, refreshing `EPIC-32`, and recording the next auth-entry follow-up in `.agents/handoff.md`)
+- `pdm run docs-validate` (pass on 2026-04-08 after adding `PR-0247`, indexing it, converting the mockup-folder `README.md` notes into `README.txt` to satisfy the docs contract, and refreshing `.agents/handoff.md`)
 - `pdm run docs-validate` (pass on 2026-04-08 after scaffolding `ST-32-10` / `PR-0242`, linking them from `EPIC-32` and `docs/index.md`, and tightening `PR-0240` scope boundaries)
-- `pdm run docs-validate` (pass on 2026-04-08 after sharpening `PR-0246` with the account-first/guest-later decision table, preserving the narrowed `REV-PR-0246` direction, and refreshing `.agents/handoff.md`)
-- `pdm run docs-validate` (pass on 2026-04-08 after adding `REV-PR-0246`, indexing the retained review doc, and refreshing `.agents/handoff.md`)
-- `pdm run docs-validate` (pass on 2026-04-08 after re-reviewing `PR-0246`, marking `REV-PR-0246` approved, and refreshing `.agents/handoff.md`)
-- `pdm run docs-validate` (pass on 2026-04-08 after recording the explicit `E2` acceptance/proof expectation in `PR-0246` and aligning `.agents/handoff.md` with the approved review state)
+- `pdm run pytest tests/integration/infrastructure/repositories/test_classroom_planner_guest_upgrade_repository.py` (pass on 2026-04-08; guest-upgrade consumption ledger integration including concurrent duplicate writes for the same `(owner_user_id, app_id)`)
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts` (pass on 2026-04-08; open-public-tab closure regression proof plus existing guest overview shell coverage)
+- `pdm run dev-db-upgrade` (pass on 2026-04-08; Docker Compose DB advanced to `0f4c2d7a9b1e` so the `5173` frontend proxy could talk to the Docker web service again)
+- Live authenticated/public `E2` browser proof on 2026-04-08 against `http://127.0.0.1:5173` (pass; first authenticated Klassrumskartan entry set `skriptoteket:classroom-planner:guest-authoring-closed = true`, no guest snapshot pointer or IndexedDB guest snapshot existed, later public visit showed the blocked login-first state and still created no guest snapshot, later authenticated revisit showed no guest-upgrade prompt)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
 - Live public browser proof against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` with local backend on `http://127.0.0.1:8000` (pass; guest `Regler`, guest Smart drawer parity without `Historik`, and live `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` `200 OK`)
 - Live public browser proof for `PR-0234` against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; seeded guest snapshot kept `selected_template_local_id = template-1` and `grouping_draft.template_local_id = template-1` after overview -> `Grupper`; a forced grouping-without-classroom state rendered `Sittplatser` disabled with title `Skapa eller välj först ett klassrum.`)
@@ -166,6 +171,8 @@ pdm run fe-test -- --run src/views/apps/useClassroomPlannerGuestGroupingContext.
 pdm run fe-test -- --run src/views/apps/useClassroomPlannerGuestGroupingContext.spec.ts src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts
 pdm run pytest tests/unit/application/apps/classroom_planner/test_guest_upgrade_handler.py tests/unit/application/apps/classroom_planner/test_guest_upgrade_template_reuse.py tests/unit/application/apps/classroom_planner/test_guest_upgrade_idempotency.py tests/unit/web/apps/classroom_planner/test_guest_upgrade_api.py -q
 pdm run fe-test -- --run src/views/apps/useClassroomPlannerGuestUpgrade.spec.ts src/views/apps/ClassroomPlannerEntryView.spec.ts
+pdm run pytest tests/integration/infrastructure/repositories/test_classroom_planner_guest_upgrade_repository.py
+pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts
 pdm run fe-test
 pdm run docs-validate
 ```
@@ -176,7 +183,6 @@ pdm run docs-validate
 - `ClassroomPlannerView.spec.ts` still emits the pre-existing suppressed runtime warning from `resolveHomeRosterId(...)` during one centered-shell test even though the suite passes; it was not part of `PR-0226`.
 ## Next Steps
 - Keep `PR-0232` scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.
-- Start implementation for `PR-0246` against the now-approved direction: hybrid backend-consumption truth + browser markers, browser-marker-only public suppression, non-consuming all-zero receipts, and browser-level closure of new guest authoring after first authenticated Klassrumskartan entry.
 - Start `PR-0240` as the next bounded implementation slice for `ST-32-09`: add the SPA catch-all route plus malformed `/public/<app-id>` recovery without changing the canonical `/public/apps/:appId` contract.
 - Get `REV-ST-11-25` reviewed before implementation, then deliver the approved perf work as three slices in order: `PR-0241`, `PR-0243`, and `PR-0244`.
 - If `REV-ST-11-25` is approved, start with `PR-0241` only: normalize the existing Playwright tree under `scripts/playwright/` and keep that slice mechanical, with no LHCI wiring or pilot-baseline logic mixed into it.

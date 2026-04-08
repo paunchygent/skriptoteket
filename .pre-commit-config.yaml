@@ -52,6 +52,13 @@ repos:
         files: ^docs/
         pass_filenames: false
 
+      - id: migration-test-coverage
+        name: Migration test coverage
+        entry: pdm run check-migration-test-coverage
+        language: system
+        files: ^(migrations/versions/.*\.py|tests/integration/test_migration_.*\.py|tests/integration/migration_schema_assertions\.py|scripts/check_migration_test_coverage\.py)$
+        pass_filenames: false
+
       - id: reagent-hazard-shortcard-guard
         name: Reagent hazard↔shortcard guard
         entry: pdm run sds-check-hazard-alignment

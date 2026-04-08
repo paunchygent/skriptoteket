@@ -43,10 +43,14 @@ surface.
   intentionally kept the signed-out auth entry on the existing in-place login modal seam. The next
   auth-entry follow-up should replace that overloaded modal with a dedicated redirect-friendly auth
   page that can preserve destinations more explicitly and support future HuleEdu SSO integration.
+- `PR-0247` is the narrow follow-up that converts the shipped landing showcase artwork from inline
+  SVG markup into versioned SPA asset files while preserving the original shipped drawings as
+  revertable backup assets next to the approved redesign set.
 
 ## Planned PR slices
 
 - [PR-0239: ST-32-08 featured public-app showcase and authenticated-value preview surfaces](../prs/pr-0239-st-32-08-featured-public-app-showcase-and-authenticated-value-preview-surfaces.md)
+- [PR-0247: ST-32-08 landing showcase SVG asset cutover and backup preservation](../prs/pr-0247-st-32-08-landing-showcase-svg-asset-cutover-and-backup-preservation.md)
 
 ## References
 

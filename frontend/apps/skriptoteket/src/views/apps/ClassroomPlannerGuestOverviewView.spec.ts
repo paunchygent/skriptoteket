@@ -28,6 +28,7 @@ const guestOverviewMocks = vi.hoisted(() => ({
   isBootstrapping: { value: false },
   bootstrapError: { value: null as string | null },
   plannerActionError: { value: null as string | null },
+  guestAuthoringClosed: { value: false },
   classWorkspaceSummary: { value: null as unknown },
   currentSnapshotId: { value: null as string | null },
   overviewCapabilities: {
@@ -145,6 +146,7 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     guestOverviewMocks.isBootstrapping.value = false;
     guestOverviewMocks.bootstrapError.value = null;
     guestOverviewMocks.plannerActionError.value = null;
+    guestOverviewMocks.guestAuthoringClosed.value = false;
     guestOverviewMocks.classWorkspaceSummary.value = null;
     guestOverviewMocks.openGroupingWorkspace.mockReset();
     guestOverviewMocks.openSeatingWorkspace.mockReset();
@@ -185,5 +187,16 @@ describe("ClassroomPlannerGuestOverviewView", () => {
 
     expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(true);
     expect(wrapper.find("[data-test='planner-class-workspace-stub']").exists()).toBe(false);
+  });
+
+  it("shows login-first guidance instead of the public workspace when browser authoring is closed", () => {
+    guestOverviewMocks.guestAuthoringClosed.value = true;
+
+    const wrapper = mountView();
+
+    expect(wrapper.find("[data-test='public-guest-authoring-closed-message']").exists()).toBe(true);
+    expect(wrapper.find("[data-test='public-guest-authoring-closed-state']").exists()).toBe(true);
+    expect(wrapper.find("[data-test='planner-class-workspace-stub']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(false);
   });
 });

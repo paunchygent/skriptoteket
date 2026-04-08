@@ -22,11 +22,12 @@ import { resolveGuestGroupingTemplateContext } from "./classroomPlannerGuestTemp
 import { buildGuestWorkspaceSummary } from "./classroomPlannerGuestDraftMutations";
 import { createClassroomPlannerGuestOverviewCrudFlow } from "./classroomPlannerGuestOverviewCrud";
 import { hydrateGuestSnapshot } from "./classroomPlannerGuestSnapshotMapping";
-import { createClassroomPlannerGuestStorage } from "./classroomPlannerGuestStorage";
+import {
+  createClassroomPlannerGuestStorage,
+  type ClassroomPlannerGuestStoragePort,
+} from "./classroomPlannerGuestStorage";
 import type { ClassroomPlannerGuestPlannerInitialView } from "./classroomPlannerGuestSnapshot";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
-
-type ClassroomPlannerGuestStorageAdapter = ReturnType<typeof createClassroomPlannerGuestStorage>;
 
 function resolveSnapshotDraftId(
   snapshot: ClassroomPlannerGuestSnapshot,
@@ -41,12 +42,12 @@ function resolveSnapshotDraftId(
 
 export function useClassroomPlannerGuestController(options?: {
   enabled?: boolean;
-  guestStorage?: ClassroomPlannerGuestStorageAdapter;
-  guestStorageFactory?: () => ClassroomPlannerGuestStorageAdapter;
+  guestStorage?: ClassroomPlannerGuestStoragePort;
+  guestStorageFactory?: () => ClassroomPlannerGuestStoragePort;
   nowIso?: () => string;
 }) {
   const enabled = options?.enabled ?? true;
-  let guestStorage: ClassroomPlannerGuestStorageAdapter | null = options?.guestStorage ?? null;
+  let guestStorage: ClassroomPlannerGuestStoragePort | null = options?.guestStorage ?? null;
 
   const availableRosters = ref<Roster[]>([]);
   const availableTemplates = ref<RoomTemplate[]>([]);
@@ -57,6 +58,7 @@ export function useClassroomPlannerGuestController(options?: {
   const isBootstrapping = ref(enabled);
   const bootstrapError = ref<string | null>(null);
   const plannerActionError = ref<string | null>(null);
+  const guestAuthoringClosed = ref(false);
   const currentSnapshot = ref<ClassroomPlannerGuestSnapshot | null>(null);
   const currentSnapshotId = ref<string | null>(null);
 
@@ -71,7 +73,7 @@ export function useClassroomPlannerGuestController(options?: {
     return buildGuestWorkspaceSummary(currentSnapshot.value, selectedRosterId.value);
   });
 
-  function resolveGuestStorage(): ClassroomPlannerGuestStorageAdapter {
+  function resolveGuestStorage(): ClassroomPlannerGuestStoragePort {
     if (!guestStorage) {
       guestStorage = options?.guestStorageFactory?.() ?? createClassroomPlannerGuestStorage();
     }
@@ -80,6 +82,29 @@ export function useClassroomPlannerGuestController(options?: {
 
   function getNowIso(): string {
     return options?.nowIso?.() ?? new Date().toISOString();
+  }
+
+  function applyGuestAuthoringClosedState(): void {
+    guestAuthoringClosed.value = true;
+    guestPlannerState.clearWorkspace();
+    availableRosters.value = [];
+    availableTemplates.value = [];
+    selectedRosterId.value = null;
+    selectedTemplateId.value = null;
+    currentScreen.value = "class-workspace";
+    plannerInitialView.value = "groups";
+    currentSnapshot.value = null;
+    currentSnapshotId.value = null;
+  }
+
+  async function refreshGuestAuthoringClosedState(): Promise<boolean> {
+    const isClosed = await resolveGuestStorage().isGuestAuthoringClosed?.() ?? false;
+    if (isClosed) {
+      applyGuestAuthoringClosedState();
+      return true;
+    }
+    guestAuthoringClosed.value = false;
+    return false;
   }
 
   function applyHydratedSnapshot(
@@ -105,6 +130,10 @@ export function useClassroomPlannerGuestController(options?: {
   }
 
   async function ensureReadySnapshot(): Promise<ClassroomPlannerGuestSnapshot> {
+    if (guestAuthoringClosed.value || await refreshGuestAuthoringClosedState()) {
+      throw new Error("Publikt gästarbete är stängt i den här webbläsaren. Logga in för att fortsätta.");
+    }
+
     const storage = resolveGuestStorage();
     const current = await storage.loadCurrentSnapshot();
     if (current.status === "ready") {
@@ -212,6 +241,7 @@ export function useClassroomPlannerGuestController(options?: {
       selectedTemplateId.value = null;
       currentScreen.value = "class-workspace";
       plannerInitialView.value = "groups";
+      guestAuthoringClosed.value = false;
       currentSnapshot.value = null;
       currentSnapshotId.value = null;
       return;
@@ -222,6 +252,10 @@ export function useClassroomPlannerGuestController(options?: {
     plannerActionError.value = null;
 
     try {
+      if (await refreshGuestAuthoringClosedState()) {
+        return;
+      }
+
       const snapshot = await ensureReadySnapshot();
       const hydratedOverviewState = hydrateGuestOverviewSnapshot(snapshot, {
         preserveExplicitTemplateNull: snapshot.ui_state.selected_template_local_id === null,
@@ -544,6 +578,7 @@ export function useClassroomPlannerGuestController(options?: {
     isBootstrapping,
     bootstrapError,
     plannerActionError,
+    guestAuthoringClosed,
     classWorkspaceSummary,
     currentSnapshotId,
     ensureReadySnapshot,

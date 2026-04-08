@@ -9,6 +9,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CLASSROOM_PLANNER_GUEST_AUTHORING_CLOSED_KEY,
   CLASSROOM_PLANNER_GUEST_SNAPSHOT_POINTER_KEY,
   createClassroomPlannerGuestStorage,
 } from "./classroomPlannerGuestStorage";
@@ -199,5 +200,20 @@ describe("classroomPlannerGuestStorage", () => {
 
     expect(storage.getItem(CLASSROOM_PLANNER_GUEST_SNAPSHOT_POINTER_KEY)).toBeNull();
     expect(snapshotStore.records.size).toBe(0);
+  });
+
+  it("tracks when guest authoring is closed in this browser", async () => {
+    const storage = createMemoryStorage();
+    const guestStorage = createClassroomPlannerGuestStorage({
+      storage,
+      snapshotStore: createMemorySnapshotStore(),
+    });
+
+    expect(await guestStorage.isGuestAuthoringClosed?.()).toBe(false);
+
+    await guestStorage.markGuestAuthoringClosed?.();
+
+    expect(storage.getItem(CLASSROOM_PLANNER_GUEST_AUTHORING_CLOSED_KEY)).toBe("true");
+    expect(await guestStorage.isGuestAuthoringClosed?.()).toBe(true);
   });
 });

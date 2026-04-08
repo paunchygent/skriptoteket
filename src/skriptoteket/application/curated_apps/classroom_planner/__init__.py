@@ -33,6 +33,9 @@ from .handlers.grouping_history import (
     DeleteHistoricGroupingDraftHandler,
 )
 from .handlers.guest_upgrade import ClassroomPlannerGuestUpgradeHandler
+from .handlers.guest_upgrade_consumption import (
+    GetClassroomPlannerGuestUpgradeConsumptionHandler,
+)
 from .handlers.public_grouping_export import RunPublicGroupingExportHandler
 from .handlers.public_seating_export import RunPublicSeatingExportHandler
 from .handlers.public_smart_grouping import RunPublicSmartGroupingHandler
@@ -85,6 +88,7 @@ __all__ = [
     "CreateSeatingDraftHandler",
     "CreateSeatingExportJobHandler",
     "ClassroomPlannerGuestUpgradeHandler",
+    "GetClassroomPlannerGuestUpgradeConsumptionHandler",
     "DeleteHistoricGroupingDraftHandler",
     "DeleteHistoricSeatingDraftHandler",
     "DeleteRoomTemplateHandler",

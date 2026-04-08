@@ -10,7 +10,7 @@
 import { computed, unref } from "vue";
 
 import { useClassroomPlannerGuestUpgrade } from "./useClassroomPlannerGuestUpgrade";
-import { hasClassroomPlannerGuestUpgradeReceiptEffects } from "./classroomPlannerGuestUpgradeOutcome";
+import { hasClassroomPlannerGuestUpgradeMeaningfulConsumption } from "./classroomPlannerGuestUpgradeOutcome";
 import ClassroomPlannerGuestOverviewView from "./ClassroomPlannerGuestOverviewView.vue";
 import ClassroomPlannerGuestUpgradePrompt from "./ClassroomPlannerGuestUpgradePrompt.vue";
 import ClassroomPlannerView from "./ClassroomPlannerView.vue";
@@ -36,7 +36,7 @@ const authenticatedGuestUpgradeShouldShowPrompt = authenticatedGuestUpgrade.shou
 const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshKey;
 const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
   const receipt = unref(authenticatedGuestUpgradeLastReceipt);
-  return hasClassroomPlannerGuestUpgradeReceiptEffects(receipt) ? receipt : null;
+  return hasClassroomPlannerGuestUpgradeMeaningfulConsumption(receipt) ? receipt : null;
 });
 </script>
 

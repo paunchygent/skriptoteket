@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" class="w-full max-w-[10rem]">
+  <!-- In-progress room outline with creation cursor -->
+  <rect x="2" y="2" width="96" height="56" fill="none" stroke="#1c2e4a" stroke-width="2" />
+
+  <!-- Subtle grid pattern indicating "editor" mode -->
+  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#1c2e4a" stroke-width="0.5" stroke-opacity="0.2" />
+  </pattern>
+  <rect x="2" y="2" width="96" height="56" fill="url(#grid)" />
+
+  <!-- Outline being drawn -->
+  <path d="M 10 10 L 90 10 L 90 50 L 50 50" fill="none" stroke="#1c2e4a" stroke-width="2" stroke-dasharray="4 2" />
+
+  <!-- Vertex points -->
+  <circle cx="10" cy="10" r="2" fill="#1c2e4a" />
+  <circle cx="90" cy="10" r="2" fill="#1c2e4a" />
+  <circle cx="90" cy="50" r="2" fill="#1c2e4a" />
+  <circle cx="50" cy="50" r="2" fill="#1c2e4a" />
+
+  <!-- Add/cursor interaction icon -->
+  <g transform="translate(20, 40)">
+    <circle cx="0" cy="0" r="8" fill="#fafaf6" stroke="#1c2e4a" stroke-width="1.5" />
+    <path d="M -4 0 L 4 0 M 0 -4 L 0 4" fill="none" stroke="#1c2e4a" stroke-width="1.5" />
+  </g>
+
+  <!-- Abstract fixture (whiteboard/door) -->
+  <rect x="30" y="6" width="20" height="4" fill="rgba(28,46,74,0.10)" stroke="#1c2e4a" stroke-width="1" />
+</svg>

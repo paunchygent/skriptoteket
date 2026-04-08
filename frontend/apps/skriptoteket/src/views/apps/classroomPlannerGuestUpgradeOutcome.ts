@@ -40,3 +40,17 @@ export function hasClassroomPlannerGuestUpgradeReceiptEffects(
     || receipt.conflicted.length > 0
   );
 }
+
+export function hasClassroomPlannerGuestUpgradeMeaningfulConsumption(
+  receipt: ClassroomPlannerGuestUpgradeReceipt | null,
+): boolean {
+  if (!receipt) {
+    return false;
+  }
+
+  return (
+    receipt.created.length > 0
+    || receipt.reused.length > 0
+    || receipt.skipped.length > 0
+  );
+}

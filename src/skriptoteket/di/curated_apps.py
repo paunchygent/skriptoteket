@@ -25,6 +25,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     DeleteRosterHandler,
     DownloadGroupingExportJobHandler,
     DownloadSeatingExportJobHandler,
+    GetClassroomPlannerGuestUpgradeConsumptionHandler,
     GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
@@ -1071,6 +1072,15 @@ class CuratedAppsProvider(Provider):
             guest_upgrade_repository=guest_upgrade_repository,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def classroom_planner_guest_upgrade_consumption_handler(
+        self,
+        guest_upgrade_repository: ClassroomPlannerGuestUpgradeRepositoryProtocol,
+    ) -> GetClassroomPlannerGuestUpgradeConsumptionHandler:
+        return GetClassroomPlannerGuestUpgradeConsumptionHandler(
+            guest_upgrade_repository=guest_upgrade_repository,
         )
 
     @provide(scope=Scope.REQUEST)

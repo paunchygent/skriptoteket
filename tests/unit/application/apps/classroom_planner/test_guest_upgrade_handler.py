@@ -294,6 +294,97 @@ async def test_guest_upgrade_conflicts_invalid_smart_rules_instead_of_raising(
         for item in receipt.conflicted
     )
     smart_rules.save.assert_not_awaited()
+    guest_upgrade_repository.record_upgrade_consumption.assert_awaited_once_with(
+        owner_user_id=owner_user_id,
+        app_id="classroom.group-seating-studio",
+        snapshot_id="guest-snapshot-1",
+        consumed_at=clock.now.return_value,
+    )
+
+
+@pytest.mark.asyncio
+async def test_guest_upgrade_commit_records_consumption_for_meaningful_import(
+    owner_user_id: UUID,
+    uow: FakeUow,
+    rosters: AsyncMock,
+    templates: AsyncMock,
+    smart_rules: AsyncMock,
+    drafts: AsyncMock,
+    seating_checkpoints: AsyncMock,
+    grouping_checkpoints: AsyncMock,
+    seating_export_jobs: AsyncMock,
+    grouping_export_jobs: AsyncMock,
+    guest_upgrade_repository: AsyncMock,
+    clock: Mock,
+) -> None:
+    created_roster_id = uuid4()
+    handler = _handler(
+        uow=uow,
+        rosters=rosters,
+        templates=templates,
+        smart_rules=smart_rules,
+        drafts=drafts,
+        seating_checkpoints=seating_checkpoints,
+        grouping_checkpoints=grouping_checkpoints,
+        seating_export_jobs=seating_export_jobs,
+        grouping_export_jobs=grouping_export_jobs,
+        guest_upgrade_repository=guest_upgrade_repository,
+        clock=clock,
+        id_generator=_id_generator(created_roster_id),
+    )
+
+    receipt = await handler.handle(
+        owner_user_id=owner_user_id,
+        request=_request(rosters=[_guest_roster()]),
+    )
+
+    assert len(receipt.created) == 1
+    guest_upgrade_repository.record_upgrade_consumption.assert_awaited_once_with(
+        owner_user_id=owner_user_id,
+        app_id="classroom.group-seating-studio",
+        snapshot_id="guest-snapshot-1",
+        consumed_at=clock.now.return_value,
+    )
+
+
+@pytest.mark.asyncio
+async def test_guest_upgrade_preview_does_not_record_consumption(
+    owner_user_id: UUID,
+    uow: FakeUow,
+    rosters: AsyncMock,
+    templates: AsyncMock,
+    smart_rules: AsyncMock,
+    drafts: AsyncMock,
+    seating_checkpoints: AsyncMock,
+    grouping_checkpoints: AsyncMock,
+    seating_export_jobs: AsyncMock,
+    grouping_export_jobs: AsyncMock,
+    guest_upgrade_repository: AsyncMock,
+    clock: Mock,
+) -> None:
+    created_roster_id = uuid4()
+    handler = _handler(
+        uow=uow,
+        rosters=rosters,
+        templates=templates,
+        smart_rules=smart_rules,
+        drafts=drafts,
+        seating_checkpoints=seating_checkpoints,
+        grouping_checkpoints=grouping_checkpoints,
+        seating_export_jobs=seating_export_jobs,
+        grouping_export_jobs=grouping_export_jobs,
+        guest_upgrade_repository=guest_upgrade_repository,
+        clock=clock,
+        id_generator=_id_generator(created_roster_id),
+    )
+
+    receipt = await handler.handle(
+        owner_user_id=owner_user_id,
+        request=_request(mode="preview", rosters=[_guest_roster()]),
+    )
+
+    assert len(receipt.created) == 1
+    guest_upgrade_repository.record_upgrade_consumption.assert_not_awaited()
 
 
 @pytest.mark.asyncio

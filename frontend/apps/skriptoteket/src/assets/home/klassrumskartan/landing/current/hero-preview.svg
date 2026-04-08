@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Klassrum med whiteboard, dörr och placerade elever">
+  <style>
+    .frame { fill: none; stroke: #1c2e4a; stroke-width: 2; }
+    .fixture { fill: rgba(28, 46, 74, 0.06); stroke: #1c2e4a; stroke-width: 2; }
+    .fixture-label {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 9px;
+      font-weight: 700;
+      fill: #1c2e4a;
+      fill-opacity: 0.7;
+      text-anchor: middle;
+    }
+    .desk {
+      fill: #fafaf6;
+      stroke: #1c2e4a;
+      stroke-width: 2;
+    }
+    .desk-empty {
+      fill: rgba(28, 46, 74, 0.05);
+      stroke: #1c2e4a;
+      stroke-width: 2;
+      stroke-dasharray: 3 3;
+    }
+    .name {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      fill: #1c2e4a;
+      text-anchor: middle;
+    }
+    .name-empty {
+      fill-opacity: 0.4;
+    }
+  </style>
+
+  <rect x="2" y="2" width="316" height="216" class="frame" />
+
+  <rect x="16" y="16" width="124" height="22" class="fixture" />
+  <text x="78" y="32" class="fixture-label">WHITEBOARD</text>
+
+  <rect x="232" y="16" width="72" height="22" class="fixture" />
+  <text x="268" y="32" class="fixture-label">DÖRR</text>
+
+  <rect x="20" y="62" width="56" height="28" class="desk" />
+  <text x="48" y="80" class="name">Ada</text>
+  <rect x="92" y="62" width="56" height="28" class="desk" />
+  <text x="120" y="80" class="name">Alan</text>
+  <rect x="172" y="62" width="56" height="28" class="desk" />
+  <text x="200" y="80" class="name">Karin</text>
+  <rect x="244" y="62" width="56" height="28" class="desk" />
+  <text x="272" y="80" class="name">Leo</text>
+
+  <rect x="20" y="106" width="56" height="28" class="desk" />
+  <text x="48" y="124" class="name">Mona</text>
+  <rect x="92" y="106" width="56" height="28" class="desk" />
+  <text x="120" y="124" class="name">Nils</text>
+  <rect x="172" y="106" width="56" height="28" class="desk" />
+  <text x="200" y="124" class="name">Sara</text>
+  <rect x="244" y="106" width="56" height="28" class="desk" />
+  <text x="272" y="124" class="name">Vera</text>
+
+  <rect x="20" y="150" width="56" height="28" class="desk" />
+  <text x="48" y="168" class="name">Yusuf</text>
+  <rect x="92" y="150" width="56" height="28" class="desk" />
+  <text x="120" y="168" class="name">Eva</text>
+  <rect x="172" y="150" width="56" height="28" class="desk-empty" />
+  <text x="200" y="168" class="name name-empty">tom</text>
+  <rect x="244" y="150" width="56" height="28" class="desk-empty" />
+  <text x="272" y="168" class="name name-empty">tom</text>
+</svg>

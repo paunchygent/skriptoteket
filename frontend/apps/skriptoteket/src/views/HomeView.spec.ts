@@ -108,6 +108,15 @@ describe("HomeView", () => {
     expect(wrapper.text()).toContain("Kräver ansökan");
     expect(wrapper.text()).toContain("Skapa konto");
 
+    const heroPreview = wrapper.get('img[alt="Klassrum med tavla, dörr och placerade elever"]');
+    expect(heroPreview.attributes("src")).toContain("hero-preview");
+
+    const showcaseImages = wrapper.findAll('img[alt=""]');
+    expect(showcaseImages).toHaveLength(3);
+    expect(showcaseImages[0]?.attributes("src")).toContain("step-01-skapa-salen");
+    expect(showcaseImages[1]?.attributes("src")).toContain("step-02-placera-eleverna");
+    expect(showcaseImages[2]?.attributes("src")).toContain("step-03-exportera");
+
     // Trailing in-place login trigger is a button (not a public route link)
     const loginButton = wrapper.find('button[type="button"]');
     expect(loginButton.exists()).toBe(true);

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Klassrum med whiteboard, dörr och placerade elever i grupper">
+  <!-- Style definitions for easy editing -->
+  <style>
+    :root {
+      --color-navy: #1c2e4a;
+      --color-canvas: #fafaf6;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Inter', sans-serif;
+    }
+    .bg { fill: none; stroke: var(--color-navy); stroke-width: 2; }
+    .fixture { fill: var(--color-navy); fill-opacity: 0.06; stroke: var(--color-navy); stroke-width: 2; }
+    .fixture-text { font-family: var(--font-mono); font-size: 9px; font-weight: 700; fill: var(--color-navy); fill-opacity: 0.7; text-anchor: middle; }
+    .desk { fill: var(--color-canvas); stroke: var(--color-navy); stroke-width: 2; }
+    .desk-empty { fill: var(--color-navy); fill-opacity: 0.05; stroke: var(--color-navy); stroke-width: 2; stroke-dasharray: 3,3; }
+    .desk-text { font-family: var(--font-sans); font-size: 10px; fill: var(--color-navy); font-weight: 600; text-anchor: middle; }
+    .desk-text-empty { fill-opacity: 0.4; }
+    .teacher-desk { fill: var(--color-navy); fill-opacity: 0.15; stroke: var(--color-navy); stroke-width: 2; }
+    .plant { fill: var(--color-canvas); stroke: var(--color-navy); stroke-width: 2; }
+    .window { fill: #e0f2fe; stroke: var(--color-navy); stroke-width: 2; fill-opacity: 0.3; }
+  </style>
+
+  <!-- Room Outline -->
+  <rect x="2" y="2" width="316" height="216" class="bg" />
+
+  <!-- Windows -->
+  <rect x="2" y="50" width="6" height="40" class="window" />
+  <rect x="2" y="110" width="6" height="40" class="window" />
+  <rect x="2" y="170" width="6" height="40" class="window" />
+
+  <!-- Whiteboard -->
+  <rect x="80" y="16" width="124" height="12" class="fixture" />
+  <text x="142" y="25" class="fixture-text">WHITEBOARD</text>
+
+  <!-- Door -->
+  <path d="M 280 16 L 316 16 L 316 52 A 36 36 0 0 0 280 16" fill="var(--color-navy)" fill-opacity="0.06" stroke="var(--color-navy)" stroke-width="2" />
+  <text x="300" y="32" class="fixture-text">DÖRR</text>
+
+  <!-- Teacher Desk -->
+  <rect x="110" y="44" width="64" height="24" rx="2" class="teacher-desk" />
+  <text x="142" y="60" class="desk-text">Lärare</text>
+
+  <!-- Plants -->
+  <circle cx="24" cy="24" r="10" class="plant" />
+  <circle cx="296" cy="200" r="12" class="plant" />
+
+  <!-- Students in Groups of 4 -->
+  <!-- Group 1: Top Leftish -->
+  <g transform="translate(40, 90)">
+    <!-- Top row -->
+    <rect x="0" y="0" width="48" height="24" class="desk" />
+    <text x="24" y="16" class="desk-text">Ada</text>
+    <rect x="52" y="0" width="48" height="24" class="desk" />
+    <text x="76" y="16" class="desk-text">Alan</text>
+    <!-- Bottom row (facing up) -->
+    <rect x="0" y="28" width="48" height="24" class="desk" />
+    <text x="24" y="44" class="desk-text">Karin</text>
+    <rect x="52" y="28" width="48" height="24" class="desk" />
+    <text x="76" y="44" class="desk-text">Leo</text>
+  </g>
+
+  <!-- Group 2: Top Rightish -->
+  <g transform="translate(180, 90)">
+    <rect x="0" y="0" width="48" height="24" class="desk" />
+    <text x="24" y="16" class="desk-text">Mona</text>
+    <rect x="52" y="0" width="48" height="24" class="desk" />
+    <text x="76" y="16" class="desk-text">Nils</text>
+    <rect x="0" y="28" width="48" height="24" class="desk" />
+    <text x="24" y="44" class="desk-text">Sara</text>
+    <rect x="52" y="28" width="48" height="24" class="desk" />
+    <text x="76" y="44" class="desk-text">Vera</text>
+  </g>
+
+  <!-- Group 3: Bottom Center -->
+  <g transform="translate(110, 160)">
+    <rect x="0" y="0" width="48" height="24" class="desk" />
+    <text x="24" y="16" class="desk-text">Yusuf</text>
+    <rect x="52" y="0" width="48" height="24" class="desk" />
+    <text x="76" y="16" class="desk-text">Eva</text>
+    <rect x="0" y="28" width="48" height="24" class="desk-empty" />
+    <text x="24" y="44" class="desk-text desk-text-empty">tom</text>
+    <rect x="52" y="28" width="48" height="24" class="desk-empty" />
+    <text x="76" y="44" class="desk-text desk-text-empty">tom</text>
+  </g>
+</svg>

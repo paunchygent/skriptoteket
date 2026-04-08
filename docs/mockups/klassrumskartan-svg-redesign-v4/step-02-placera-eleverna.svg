@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60">
+  <style>
+    .list-frame  { fill: none; stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .list-line   { stroke: #1c2e4a; stroke-width: 1; stroke-opacity: 0.5; shape-rendering: crispEdges; }
+    .list-active { stroke: #1c2e4a; stroke-width: 1.2; stroke-opacity: 0.8; shape-rendering: crispEdges; }
+    .desk-top    { fill: none; stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .seat-filled { fill: #fafaf6; stroke: #1c2e4a; stroke-width: 1.5; }
+    .seat-target { fill: none; stroke: #1c2e4a; stroke-width: 1; stroke-dasharray: 2,2; stroke-opacity: 0.45; }
+    .guide       { stroke: #1c2e4a; stroke-width: 0.7; stroke-dasharray: 1.5,1.5; stroke-opacity: 0.3; }
+    .arrow       { fill: none; stroke: #1c2e4a; stroke-width: 0.8; stroke-opacity: 0.4; }
+    .name-text   { font-family: 'IBM Plex Sans', sans-serif; font-size: 5.5px; font-weight: 600; fill: #1c2e4a; text-anchor: middle; }
+    .bullet      { fill: #1c2e4a; fill-opacity: 0.4; }
+    .bullet-act  { fill: #1c2e4a; fill-opacity: 0.8; }
+  </style>
+
+  <!-- Left: class list panel -->
+  <rect x="6" y="10" width="26" height="40" class="list-frame" />
+
+  <!-- List entries (bullets + lines) -->
+  <circle cx="11" cy="19" r="1.2" class="bullet" />
+  <line x1="15" y1="19" x2="28" y2="19" class="list-line" />
+
+  <circle cx="11" cy="27" r="1.2" class="bullet-act" />
+  <line x1="15" y1="27" x2="28" y2="27" class="list-active" />
+
+  <circle cx="11" cy="35" r="1.2" class="bullet" />
+  <line x1="15" y1="35" x2="28" y2="35" class="list-line" />
+
+  <circle cx="11" cy="43" r="1.2" class="bullet" />
+  <line x1="15" y1="43" x2="28" y2="43" class="list-line" />
+
+  <!-- Guide line from active list entry to target seat -->
+  <line x1="32" y1="27" x2="54" y2="33" class="guide" />
+  <polyline points="51,30 55,33 51,36" class="arrow" />
+
+  <!-- Right: desk pair with seats -->
+  <rect x="58" y="16" width="34" height="6" class="desk-top" />
+
+  <!-- Occupied seat -->
+  <circle cx="68" cy="35" r="9" class="seat-filled" />
+  <text x="68" y="37" class="name-text">Ida</text>
+
+  <!-- Target seat (being placed) -->
+  <circle cx="84" cy="35" r="9" class="seat-target" />
+</svg>

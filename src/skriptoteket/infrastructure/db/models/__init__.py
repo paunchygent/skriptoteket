@@ -8,6 +8,9 @@ from skriptoteket.infrastructure.db.models.classroom_planner_grouping_export_che
 from skriptoteket.infrastructure.db.models.classroom_planner_grouping_export_job import (
     GroupingExportJobModel,
 )
+from skriptoteket.infrastructure.db.models.classroom_planner_guest_upgrade_consumption import (
+    ClassroomPlannerGuestUpgradeConsumptionModel,
+)
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     DraftGroupModel,
     GroupAssignmentModel,
@@ -44,6 +47,7 @@ from skriptoteket.infrastructure.db.models.user_favorite import (
 __all__ = [
     "AllowedDomainModel",
     "BlockedDomainModel",
+    "ClassroomPlannerGuestUpgradeConsumptionModel",
     "DraftGroupModel",
     "ConversionHubJobModel",
     "GroupingExportCheckpointModel",
