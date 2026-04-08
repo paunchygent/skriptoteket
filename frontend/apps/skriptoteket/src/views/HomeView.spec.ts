@@ -44,6 +44,13 @@ vi.mock("../composables/home/useHomeDashboard", () => ({
   useHomeDashboard: () => homeMocks.dashboard,
 }));
 
+vi.mock("vue-router", () => ({
+  useRoute: () => ({
+    name: "home",
+    params: {},
+  }),
+}));
+
 describe("HomeView", () => {
   beforeEach(() => {
     homeMocks.auth.isAuthenticated = false;
@@ -68,9 +75,42 @@ describe("HomeView", () => {
     expect(wrapper.text()).toContain("Klassrumskartan är en av Skriptotekets appar.");
     expect(wrapper.text()).toContain("Öppna Klassrumskartan");
     expect(wrapper.text()).toContain("skapa ett konto");
-    expect(wrapper.text()).toContain("Dela med kollegor");
     expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
     expect(wrapper.html()).toContain('href="/register"');
     expect(homeMocks.dashboard.loadDashboard).not.toHaveBeenCalled();
+  });
+
+  it("renders the featured Klassrumskartan showcase and authenticated preview ledger", () => {
+    const wrapper = mount(HomeView, {
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
+          },
+        },
+      },
+    });
+
+    // Featured Klassrumskartan showcase
+    expect(wrapper.text()).toContain("Klassrumskartan");
+    expect(wrapper.text()).toContain("Skapa salen, placera eleverna, spara som PDF.");
+    expect(wrapper.text()).toContain("Öppna appen");
+    expect(wrapper.text()).toContain("Skapa salen");
+    expect(wrapper.text()).toContain("Placera eleverna");
+    expect(wrapper.text()).toContain("Exportera");
+
+    // Authenticated-only preview ledger
+    expect(wrapper.text()).toContain("Mer när du loggar in");
+    expect(wrapper.text()).toContain("Spara dina inställningar och filer");
+    expect(wrapper.text()).toContain("Bygg egna verktyg i kodredigeraren");
+    expect(wrapper.text()).toContain("Kräver konto");
+    expect(wrapper.text()).toContain("Kräver ansökan");
+    expect(wrapper.text()).toContain("Skapa konto");
+
+    // Trailing in-place login trigger is a button (not a public route link)
+    const loginButton = wrapper.find('button[type="button"]');
+    expect(loginButton.exists()).toBe(true);
+    expect(loginButton.text()).toContain("Logga in");
   });
 });

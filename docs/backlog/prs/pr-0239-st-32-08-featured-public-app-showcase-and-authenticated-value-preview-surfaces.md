@@ -2,10 +2,10 @@
 type: pr
 id: PR-0239
 title: "ST-32-08: featured public-app showcase and authenticated-value preview surfaces"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 stories:
   - "ST-32-08"
 tags: ["frontend", "ux", "landing-page", "public-access", "showcase"]
@@ -67,3 +67,17 @@ Replace the generic below-the-fold messaging with a stronger show-first landing 
 
 - Restore the previous generic highlight section if the new showcase direction proves unclear,
   without undoing the header or hero CTA improvements.
+
+## Implementation note (2026-04-08)
+
+This slice shipped the signed-out landing showcase through dedicated home components rather than
+re-expanding `HomeView.vue`, keeping the `PR-0238` hero/header baseline frozen while replacing the
+old generic value highlights with:
+
+- one featured `Klassrumskartan` product showcase with a shared three-step framed strip
+- one authenticated-only ledger preview with explicit account-required labels
+
+The authenticated preview footer intentionally reused the shipped in-place login modal contract from
+`PR-0238` so this slice stayed inside the approved landing-content boundary. A follow-up PR slice
+should replace that overloaded signed-out modal entry with a dedicated auth redirect page that keeps
+redirect targets explicit and is better suited to launch-readiness and future HuleEdu SSO work.

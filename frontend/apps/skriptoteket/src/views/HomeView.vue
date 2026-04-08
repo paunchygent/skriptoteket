@@ -11,7 +11,9 @@ import { computed, onMounted } from "vue";
 
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import HomeCreateDraftTool from "../components/home/HomeCreateDraftTool.vue";
+import LandingAuthenticatedPreview from "../components/home/LandingAuthenticatedPreview.vue";
 import LandingClassroomPreview from "../components/home/LandingClassroomPreview.vue";
+import LandingFeaturedClassroom from "../components/home/LandingFeaturedClassroom.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
 import { IconArrow } from "../components/icons";
 import { useHomeDashboard } from "../composables/home/useHomeDashboard";
@@ -37,24 +39,6 @@ const {
   adminPendingReview,
   adminLoading,
 } = useHomeDashboard();
-
-const publicHighlights = [
-  {
-    title: "Professionellt appbibliotek",
-    description:
-      "Skriptoteket samlar appar och verktyg för planering, dokumentation och undervisningsnära arbete.",
-  },
-  {
-    title: "Dela med kollegor",
-    description:
-      "När ett verktyg är publicerat kan det användas av fler i verksamheten.",
-  },
-  {
-    title: "GDPR-säkrad datahantering",
-    description:
-      "Databehandling sker i en miljö byggd för skolans krav, med tydliga ramar för vad som får lämna servern.",
-  },
-] as const;
 
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
@@ -124,27 +108,8 @@ onMounted(async () => {
         </div>
       </section>
 
-      <section class="py-16">
-        <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-          <div
-            v-for="(highlight, index) in publicHighlights"
-            :key="highlight.title"
-            class="relative"
-          >
-            <div
-              class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
-            >
-              <span class="text-canvas font-bold text-sm">{{ index + 1 }}</span>
-            </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px] text-left">
-              <h2 class="font-semibold text-navy text-lg">{{ highlight.title }}</h2>
-              <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                {{ highlight.description }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <LandingFeaturedClassroom />
+      <LandingAuthenticatedPreview />
     </template>
 
     <!-- ═══════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@ title: "Public curated-app access foundation and Klassrumskartan demo"
 status: active
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-07
+updated: 2026-04-08
 outcome: "Skriptoteket gains a reusable public curated-app access model with explicit per-app access profiles, separate public/authenticated seams, browser-owned guest-state rules, and authenticated upgrade boundaries; Klassrumskartan becomes the first approved `public_browser_workspace_with_upgrade` consumer without weakening the existing authenticated curated-app host or owner-scoped APIs."
 dependencies:
   [
@@ -101,7 +101,7 @@ dependencies:
   seam” work, not another platform architecture debate.
 - This epic requires review approval before implementation begins.
 
-## Implementation Summary (as of 2026-04-07)
+## Implementation Summary (as of 2026-04-08)
 
 - `ST-32-05` is now shipped through `PR-0221`: authenticated
   Klassrumskartan host entry is gated behind an explicit guest-upgrade prompt,
@@ -134,9 +134,23 @@ dependencies:
     wrapper
 - Follow-up planning after `ST-32-06` is now split into explicit story-level
   implementation units instead of one catch-all container:
-  - `ST-32-07` owns landing header/hero entry hierarchy and the required
-    mockup-first alignment pass
-  - `ST-32-08` owns the show-don't-tell landing showcase and authenticated-only
-    preview surfaces
+  - `ST-32-07` is now shipped through `PR-0237` and `PR-0238`:
+    - `PR-0237` locked the public landing blueprint around
+      `docs/mockups/st-32-07-public-landing-discoverability/index.html`
+    - `PR-0238` shipped the signed-out header/hero cutover, restored in-place
+      login redirect semantics for public-host and auth-only signed-out routes,
+      and extracted the landing classroom illustration into a dedicated home
+      component without pulling `ST-32-08` showcase scope into the slice
+  - `ST-32-08` is now shipped through `PR-0239`:
+    - the generic signed-out landing highlight cards were replaced with a
+      featured `Klassrumskartan` showcase and an authenticated-only ledger
+      preview, both grounded in the locked `PR-0237` layout direction
+    - the showcase keeps the hero's single strong CTA discipline by using a
+      quieter public-app text link below the fold rather than adding a second
+      competing CTA treatment
+    - the authenticated preview footer still reuses the current in-place login
+      modal seam for this launch slice, but a follow-up PR task should replace
+      that overloaded signed-out auth entry with a dedicated redirect-friendly
+      auth page that is better aligned with future HuleEdu SSO needs
   - `ST-32-09` owns malformed public-route recovery and visible SPA unmatched
     state handling

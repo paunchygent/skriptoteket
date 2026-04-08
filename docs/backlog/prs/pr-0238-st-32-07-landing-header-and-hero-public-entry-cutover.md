@@ -2,7 +2,7 @@
 type: pr
 id: PR-0238
 title: "ST-32-07: landing header and hero public-entry cutover"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
 updated: 2026-04-08

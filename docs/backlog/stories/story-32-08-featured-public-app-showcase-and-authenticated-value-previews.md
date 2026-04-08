@@ -2,10 +2,10 @@
 type: story
 id: ST-32-08
 title: "Featured public-app showcase and authenticated-value previews"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 epic: "EPIC-32"
 dependencies:
   ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06", "ST-32-07"]
@@ -39,6 +39,10 @@ surface.
 - All Swedish copy remains provisional until the user signs it off sentence by sentence.
 - Keep the page compact and product-grounded. One strong featured public-app section plus one
   authenticated-value preview section is enough.
+- `PR-0239` shipped the current landing showcase and authenticated-preview baseline, but it
+  intentionally kept the signed-out auth entry on the existing in-place login modal seam. The next
+  auth-entry follow-up should replace that overloaded modal with a dedicated redirect-friendly auth
+  page that can preserve destinations more explicitly and support future HuleEdu SSO integration.
 
 ## Planned PR slices
 

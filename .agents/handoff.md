@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-08
 - Branch: `main` + local changes
-- Current lane: `EPIC-32` / `ST-32-07` implemented locally through `PR-0238`; next queued implementation slice is `ST-32-08` / `PR-0239`, with `ST-32-09` / `PR-0240` after that
+- Current lane: `EPIC-32` now advances from shipped `ST-32-08` / `PR-0239` into `ST-32-09` / `PR-0240`; a follow-up auth-entry PR slice should then replace the overloaded signed-out login modal with a dedicated redirect-friendly page
 - Production: Full Vue SPA
 - Completed: `PR-0231`, `PR-0232`, `PR-0233`, `PR-0234`, `PR-0235`, and `PR-0236` are shipped on `main`; the public/export review follow-ups and Vitest path-normalization hardening are pushed; `ST-09-09` is done with the shipped Hemma deploy launcher/monitor path; ShellCheck is now part of pre-commit and `pdm run lint`; active docs guidance now has a canonical development changelog and the stale v0.2 implementation map has been removed
 ## Status
@@ -18,7 +18,8 @@ Keep this file updated so the next session can pick up work quickly.
   - the story defines the representative route matrix for SPA route-load and network-isolation analysis
   - the retained package requires production-style baseline capture plus per-route request, byte, chunk, and trace evidence
   - `PR-0241` is drafted as the first bounded implementation slice for measurement harness + pilot baseline capture using `@lhci/cli`, `rollup-plugin-visualizer`, and the existing Playwright lane
-  - `PR-0241` now also defines the intended command surface (`fe-perf-lhci`, `fe-perf-bundle`, `ui-perf-inventory`), file layout (`lighthouserc.json`, `scripts/playwright_route_perf_inventory.py`, `scripts/_playwright_perf.py`), and artifact root `.artifacts/frontend-performance/`
+  - `PR-0241` now also defines the intended command surface (`fe-perf-lhci`, `fe-perf-bundle`, `ui-perf-inventory`), required `lighthouserc.json` fields and self-owned server bootstrap, deterministic editor fixture seeding via `demo-settings-test`, per-route trace-note evidence for every pilot route, and Playwright raw artifacts under `.artifacts/playwright-route-perf-inventory/`
+  - the planned implementation now normalizes all Playwright entrypoints/helpers under `scripts/playwright/` rather than adding another root-level Playwright module
   - no implementation PR slice is approved yet; get the retained review approved before adding measurement harness or cleanup work
 - `PR-0231` is shipped on `main` and its retained review follow-ups are fixed. Guest `Regler`, public solver-backed Smart, request streaming limits, persistence rollback, and helper-family throttle wiring are in place.
 - `PR-0232` is shipped on `main` without reopening the guest/auth boundary:
@@ -32,17 +33,23 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0234` is shipped. The assessed root cause was the public guest overview -> grouping seam dropping the selected classroom by opening grouping with `templateId = null`, plus stale pending template refs keeping `Sittplatser` visually enabled after live classroom context was gone. A small helper module now centralizes the live guest classroom-context rule, overview -> grouping preserves the selected classroom, and the guest shell disables `Sittplatser` from real live context rather than stale pending refs.
 - `PR-0235` is shipped. The shared viewport helper keeps the framed-surface fit model across builder / seating / rules, fit-to-view is explicitly capped at `100%`, and the pure helper seam now has focused coverage so the repo no longer relies on stale pre-frame numbers in `useRoomViewportZoom.spec.ts`.
 - `PR-0236` is shipped. The stale isolated roster-overview spec now passes `showActions` explicitly when asserting the visible action footer, also proves the hidden-footer case when actions are disabled, and keeps class-list import inside the create/edit workflow.
-- `ST-32-07` is now scaffolded as the next `EPIC-32` follow-up:
+- `ST-32-07` is now shipped as the first landing follow-up under `EPIC-32`:
   - the planning hierarchy is corrected so `EPIC-32` remains the container and the follow-up work now lives as explicit stories `ST-32-07`, `ST-32-08`, and `ST-32-09`
-  - `ST-32-07` owns landing header/hero entry hierarchy plus the required mockup-first alignment pass through `PR-0237` and `PR-0238`
+  - `PR-0237` locked the public-entry blueprint around `docs/mockups/st-32-07-public-landing-discoverability/index.html`
+  - `PR-0238` shipped the signed-out landing header/hero cutover on `main` without pulling `ST-32-08` showcase work or `ST-32-09` route-recovery work into scope
   - `ST-32-08` owns the featured public-app showcase and authenticated-value preview surface through `PR-0239`
   - `ST-32-09` owns catch-all route recovery and malformed public-path guidance through `PR-0240`
+- `ST-32-08` is now shipped on `main` through `PR-0239`:
+  - the old generic signed-out highlight cards were removed from `HomeView.vue` and replaced with dedicated home components for one featured `Klassrumskartan` showcase plus one authenticated-only ledger preview
+  - the showcase follows the approved `PR-0237` below-the-fold direction: asymmetric band, one shared three-step frame, and a quiet `Öppna appen` link so the hero keeps the only strong CTA
+  - the authenticated preview ledger uses explicit `Kräver konto` / `Kräver ansökan` labeling and keeps the footer `Logga in` entry on the existing in-place login modal seam for this slice
+  - follow-up direction is now explicit: replace that overloaded signed-out login modal entry with a dedicated auth redirect page that preserves redirect targets more clearly and is friendlier to launch-day auth flows plus future HuleEdu SSO integration
 - `PR-0237` is now decided and documented as done:
   - `docs/mockups/st-32-07-public-landing-discoverability/designer-a.html` is the winning submission
   - the canonical blueprint artifact for follow-on work is the separate copy `docs/mockups/st-32-07-public-landing-discoverability/index.html`
   - do not refine or overwrite `designer-a.html`; any further iteration should branch from the copy, not the original submission
   - carry forward the review caveats that any baseline overlay is working scaffolding only and that minor monospace / uppercase micro-markers can be softened later without reopening the layout direction
-- `PR-0238` is now implemented locally as the narrow `ST-32-07` cutover slice:
+- `PR-0238` is now shipped on `main` as the narrow `ST-32-07` cutover slice:
   - the shared signed-out header now exposes `Klassrumskartan` as a quiet discoverability link to `/public/apps/classroom.group-seating-studio`
   - the shared signed-out header `Logga in` affordance now opens the existing login modal in place instead of routing through the unmatched `/login` path, and its redirect contract is restored:
     - on `/public/apps/classroom.group-seating-studio`, successful login now upgrades into the authenticated planner route instead of leaving the user on the public host
@@ -119,6 +126,12 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run docs-validate` (pass on 2026-04-08 after adding `ST-11-25`, `REV-ST-11-25`, updating `EPIC-11`, `docs/index.md`, and `.agents/handoff.md`)
 - `pdm run docs-validate` (pass on 2026-04-08 after drafting `PR-0241`, linking it from `ST-11-25`, and refreshing `docs/index.md` plus `.agents/handoff.md`)
 - `pdm run docs-validate` (pass on 2026-04-08 after tightening `PR-0241` with the concrete command surface, file layout, and artifact directory plan)
+- `pdm run docs-validate` (pass on 2026-04-08 after fixing the `PR-0241` findings around LHCI server ownership, deterministic editor fixtures, Playwright artifact placement, per-route trace evidence, and the `scripts/playwright/` child-tree requirement)
+- `pdm run docs-validate` (pass on 2026-04-08 after closing out `PR-0238` / `ST-32-07` status docs and refreshing `EPIC-32` plus `.agents/handoff.md`)
+- `pdm run fe-test -- --run src/views/HomeView.spec.ts` (pass on 2026-04-08 for `PR-0239`; signed-out landing hero non-regression plus featured showcase/authenticated-preview coverage)
+- `pdm run fe-type-check` (pass on 2026-04-08 for `PR-0239`)
+- Live signed-out browser proof on 2026-04-08 against `http://127.0.0.1:5173/` (pass for `PR-0239`; hero remained unchanged with no console errors, the featured band stacked on mobile and resolved to the intended asymmetric desktop grid, the three steps rendered inside one outer navy frame with internal dividers, `Öppna appen` reached `/public/apps/classroom.group-seating-studio`, the ledger showed hard top/bottom rules plus visible `Kräver konto` / `Kräver ansökan` tags, the footer `Logga in` button opened the in-place modal, and the footer `Skapa konto` target remained `/register`)
+- `pdm run docs-validate` (pass on 2026-04-08 after closing out `PR-0239` / `ST-32-08`, refreshing `EPIC-32`, and recording the next auth-entry follow-up in `.agents/handoff.md`)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; stateless public Smart handlers and public helper routes)
 - Live public browser proof against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` with local backend on `http://127.0.0.1:8000` (pass; guest `Regler`, guest Smart drawer parity without `Historik`, and live `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run` `200 OK`)
 - Live public browser proof for `PR-0234` against `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass; seeded guest snapshot kept `selected_template_local_id = template-1` and `grouping_draft.template_local_id = template-1` after overview -> `Grupper`; a forced grouping-without-classroom state rendered `Sittplatser` disabled with title `Skapa eller välj först ett klassrum.`)
@@ -144,11 +157,11 @@ pdm run docs-validate
 - `ClassroomPlannerView.spec.ts` still emits the pre-existing suppressed runtime warning from `resolveHomeRosterId(...)` during one centered-shell test even though the suite passes; it was not part of `PR-0226`.
 ## Next Steps
 - Keep `PR-0232` scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.
-- Finish review/merge for `PR-0238` as the header/hero-only `ST-32-07` cutover slice. The reviewer-raised redirect blockers are now fixed locally; keep scope frozen from here: no featured showcase/authenticated preview work from `ST-32-08` and no route-recovery work from `ST-32-09`.
+- Start `PR-0240` as the next bounded implementation slice for `ST-32-09`: add the SPA catch-all route plus malformed `/public/<app-id>` recovery without changing the canonical `/public/apps/:appId` contract.
 - Get `REV-ST-11-25` reviewed before implementation, then create the first audit slice for measurement harness + baseline capture against the approved route matrix.
 - If `REV-ST-11-25` is approved, start with `PR-0241` only: standard toolchain selection, pilot baselines for `/`, signed-in `/browse`, and `/admin/tools/:toolId`, and no cleanup work in the same slice.
-- Refine lightly from the approved direction rather than reopening the overall landing layout debate, then move into `ST-32-08` for the below-the-fold showcase/authenticated-preview work through `PR-0239`.
 - Treat `ST-32-09` / `PR-0240` as the final repair story for unmatched-route handling so malformed `/public/<app-id>` paths recover visibly without changing the canonical `/public/apps/:appId` contract.
+- After `PR-0240`, draft the next auth-entry follow-up as its own PR slice: replace the overloaded signed-out login modal with a dedicated auth redirect page that preserves destination intent cleanly, reduces auth/UI coupling, and better supports the planned HuleEdu SSO integration.
 - If follow-up polish is needed, return to `PR-0229` for toolbar overflow/discoverability work without reopening the guest/auth transport boundary.
 - Return to `PR-0229` only after the guest-mode bridge slice. `PR-0229` now explicitly picks up any post-`PR-0232` toolbar shortcut polish/alignment and overflow discoverability cleanup without reopening the guest/auth boundary.
 - Preserve the `PR-0233` seam shape while implementing `PR-0232`: later guest export/checkpoint continuity should keep feeding the existing authenticated `import` / `discard` / `postpone` prompt instead of adding a new compatibility lane.

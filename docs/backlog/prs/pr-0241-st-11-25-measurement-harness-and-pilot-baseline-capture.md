@@ -55,10 +55,12 @@ subsystem” in the wrong place.
 - frontend app-local performance configuration belongs in `frontend/apps/skriptoteket/`
   - example: `lighthouserc.json`
   - example: app-local `package.json` scripts
-- browser automation entrypoints belong in `scripts/`
-  - example: `scripts/playwright_route_perf_inventory.py`
-- shared Playwright helpers belong in underscored modules under `scripts/`
-  - example: `scripts/_playwright_perf.py`
+- Playwright browser automation entrypoints belong in a dedicated child tree under `scripts/`
+  - example: `scripts/playwright/route_perf_inventory.py`
+- shared Playwright helpers belong in underscored modules under that child tree
+  - example: `scripts/playwright/_perf.py`
+  - example: `scripts/playwright/_auth.py`
+  - example: `scripts/playwright/_browser.py`
 - repo operator wrappers belong in `pyproject.toml`
   - example: `fe-perf-lhci`, `fe-perf-bundle`, `ui-perf-inventory`
 - operator documentation belongs in versioned docs
@@ -69,6 +71,7 @@ subsystem” in the wrong place.
 
 - do not add route-audit logic inside Vue views or route components
 - do not add bundle-analysis code under `src/skriptoteket/` backend packages
+- do not add new Playwright entrypoints or helpers to the `scripts/` root after this slice
 - do not introduce a generic repo-root `scripts/perf/` tree unless the helper is truly shared across
   multiple apps
 - do not hide large amounts of logic in `vite.config.ts`; keep config wiring thin and move any
@@ -77,13 +80,17 @@ subsystem” in the wrong place.
 ### Modularization rules
 
 - keep each new file under the repo’s normal size budget; treat `400–500` LOC as a hard ceiling
+- treat the Playwright tree normalization as a mechanical placement refactor first:
+  - move existing `scripts/playwright*.py` entrypoints into `scripts/playwright/`
+  - move existing `scripts/_playwright*.py` helpers into `scripts/playwright/`
+  - update `pdm` wrappers and imports in the same change so the command surface stays coherent
 - keep the Playwright entrypoint thin:
   - argument parsing
   - browser/context lifecycle
   - route loop orchestration
   - artifact write delegation
-- move request normalization, duplicate detection, and summary derivation into
-  `scripts/_playwright_perf.py`
+- move request normalization, duplicate detection, trace-note shaping, and summary derivation into
+  `scripts/playwright/_perf.py`
 - keep LHCI config declarative in `lighthouserc.json`; do not embed large audit policy logic in
   ad hoc wrapper scripts
 - keep bundle visualizer wiring as a narrow Vite/plugin seam; do not mix artifact post-processing
@@ -149,31 +156,59 @@ Keep this first slice intentionally narrow. Capture baseline artifacts for:
 |------|------|------|
 | `/` | signed out | cheapest shell and public baseline |
 | `/browse` | signed in | catalog data-loading and filter payload baseline |
-| `/admin/tools/:toolId` | contributor/admin | heavy editor/admin route and chunk boundary baseline |
+| `/admin/tools/:toolId` | contributor/admin | heavy editor/admin route and chunk boundary baseline using one seeded script-bank fixture |
 
 The rest of the story route matrix should remain follow-up work.
 
+### Deterministic editor fixture
+
+The editor pilot route must not pick the first available admin tool.
+
+Use one canonical script-bank fixture:
+
+- slug: `demo-settings-test`
+- seed command:
+  - `pdm run seed-script-bank --slug demo-settings-test --profile dev`
+
+The Playwright inventory lane must:
+
+1. seed or require the seeded slug above
+2. resolve the tool id by slug
+3. open `/admin/tools/<resolved-id>`
+4. fail clearly if the slug is absent instead of falling back to whichever tool happens to exist
+
+This keeps the editor baseline repeatable on a clean local DB and stays aligned with rule 075’s
+script-bank fixture requirement.
+
 ## Implementation plan
 
-1. Add the standard perf-audit dependencies in the frontend workspace with clear ownership:
+1. Normalize the Playwright tree under `scripts/playwright/` before adding the new perf entrypoint.
+   - Move existing root Playwright entrypoints into `scripts/playwright/`.
+   - Move existing `_playwright_*` helpers into `scripts/playwright/`.
+   - Update the existing `pdm` wrappers (`ui-smoke`, `ui-editor-smoke`, `ui-runtime-smoke`,
+     `ui-hmr-probe`) to the new module paths in the same change.
+2. Add the standard perf-audit dependencies in the frontend workspace with clear ownership:
    - `@lhci/cli`
    - `rollup-plugin-visualizer`
-2. Add a small, documented command surface for the audit lane.
+3. Add a small, documented command surface for the audit lane.
    - Prefer repo-approved wrappers or scripts over raw one-off shell commands.
    - Keep commands explicit about output under `.artifacts/`.
-3. Add LHCI configuration for local production-style runs against the built SPA.
+4. Add LHCI configuration for local production-style runs against the built SPA.
    - Start with the public route baseline.
+   - Make the lane executable after `pdm run fe-build` without a separate guessed serving step.
    - If authenticated Lighthouse automation proves awkward, keep Lighthouse CI focused on the
      routes it can run cleanly in this slice and let Playwright own authenticated request inventory.
-4. Add a Playwright-based route inventory script that reuses existing auth/bootstrap helpers and
-   captures per-route request/response evidence for the pilot routes.
+5. Add a Playwright-based route inventory script that reuses existing auth/bootstrap helpers and
+   captures per-route request/response evidence plus one Chromium performance trace per pilot route.
    - Record request URL, method, status, initiator classification, response size when available,
      and duplication counts.
-   - Keep the output as JSON and compact human-readable summaries under `.artifacts/`.
-5. Add bundle/chunk reporting off the normal Vite production build using the visualizer plugin.
-6. Write one small reference or README fragment for how to run the lane and how to read the pilot
+   - Record a short route note per pilot route covering LCP candidates, long-task / INP-sensitive
+     work, and visible CLS contributors from the trace artifact.
+   - Keep the raw script output under the script-named artifact directory required by rule 075.
+6. Add bundle/chunk reporting off the normal Vite production build using the visualizer plugin.
+7. Write one small reference or README fragment for how to run the lane and how to read the pilot
    artifacts.
-7. Record the exact commands and artifact paths in `.agents/handoff.md`.
+8. Record the exact commands and artifact paths in `.agents/handoff.md`.
 
 ## Concrete command surface
 
@@ -192,6 +227,32 @@ Add these app-local scripts:
 Keep `build` unchanged. `perf:bundle` should be a variant of the normal production build, not a
 second build system.
 
+### `frontend/apps/skriptoteket/lighthouserc.json`
+
+The config must make the LHCI lane executable on its own after `pdm run fe-build`.
+
+Required fields:
+
+- `ci.collect.url`
+  - start with `http://127.0.0.1:8000/`
+- `ci.collect.startServerCommand`
+  - `pdm run serve`
+- `ci.collect.startServerReadyPattern`
+  - match the normal Uvicorn startup log so LHCI does not race the backend
+- `ci.collect.startServerReadyTimeout`
+  - give the local backend enough time to boot
+- `ci.collect.numberOfRuns`
+  - set an explicit run count for the pilot baseline
+- `ci.upload.target`
+  - `filesystem`
+- `ci.upload.outputDir`
+  - point into the repo artifact tree, for example
+    `../../../.artifacts/frontend-performance/lhci`
+
+The runbook must state explicitly that the LHCI lane owns its own serving step through
+`startServerCommand`; the operator should not need to guess whether a separate backend process
+must already be running.
+
 ### `pyproject.toml`
 
 Add these repo-facing wrappers:
@@ -203,7 +264,18 @@ Add these repo-facing wrappers:
   - working dir: `frontend`
   - command: `pnpm --filter @skriptoteket/spa perf:bundle`
 - `ui-perf-inventory`
-  - command: `python -m scripts.playwright_route_perf_inventory`
+  - command: `python -m scripts.playwright.route_perf_inventory`
+
+Also update the existing Playwright wrappers to the normalized child directory:
+
+- `ui-smoke`
+  - `python -m scripts.playwright.ui_smoke`
+- `ui-editor-smoke`
+  - `python -m scripts.playwright.ui_editor_smoke`
+- `ui-runtime-smoke`
+  - `python -m scripts.playwright.ui_runtime_smoke`
+- `ui-hmr-probe`
+  - `python -m scripts.playwright.hmr_probe`
 
 Do not add one giant “do everything” composite script yet. The first slice should keep each lane
 individually runnable and debuggable.
@@ -237,17 +309,21 @@ Use the following concrete file/layout plan.
 
 ### Repo Playwright files
 
-- `scripts/playwright_route_perf_inventory.py`
+- `scripts/playwright/route_perf_inventory.py`
   - main entrypoint for authenticated/public route inventory
-  - reuse `scripts._playwright_config.get_config()`
-  - reuse `scripts._playwright_auth.login_to_browse(...)`
-  - reuse `scripts._playwright_browser.launch_chromium(...)`
-- `scripts/_playwright_perf.py`
+  - reuse `scripts.playwright._config.get_config()`
+  - reuse `scripts.playwright._auth.login_to_browse(...)`
+  - reuse `scripts.playwright._browser.launch_chromium(...)`
+- `scripts/playwright/_perf.py`
   - small helper module for:
     - route matrix definitions
     - request normalization
     - duplication detection
+    - performance-trace capture helpers
     - artifact writing
+- `scripts/playwright/`
+  - final home for all current Playwright entrypoints and shared helpers so the `scripts/` root no
+    longer accumulates Playwright-specific files
 
 Keep the entrypoint script as the proof surface and the underscored module as the shared helper
 surface, following the repo’s current Playwright taxonomy.
@@ -263,24 +339,40 @@ surface, following the repo’s current Playwright taxonomy.
 
 ## Artifact directory layout
 
-Write all outputs under one root:
+Keep raw Playwright artifacts in the script-named directory required by rule 075:
+
+- `.artifacts/playwright-route-perf-inventory/`
+
+Use this concrete structure there:
+
+- `.artifacts/playwright-route-perf-inventory/summary.json`
+  - top-level pilot route summary
+- `.artifacts/playwright-route-perf-inventory/routes/public-home.json`
+- `.artifacts/playwright-route-perf-inventory/routes/browse-authenticated.json`
+- `.artifacts/playwright-route-perf-inventory/routes/admin-tool-editor.json`
+  - per-route request ledgers and derived summaries
+- `.artifacts/playwright-route-perf-inventory/traces/public-home.trace.json`
+- `.artifacts/playwright-route-perf-inventory/traces/browse-authenticated.trace.json`
+- `.artifacts/playwright-route-perf-inventory/traces/admin-tool-editor.trace.json`
+  - raw Chromium performance trace artifacts
+- `.artifacts/playwright-route-perf-inventory/notes/public-home.md`
+- `.artifacts/playwright-route-perf-inventory/notes/browse-authenticated.md`
+- `.artifacts/playwright-route-perf-inventory/notes/admin-tool-editor.md`
+  - short route notes covering LCP, long-task / INP-sensitive work, and CLS contributors
+
+Keep shared non-Playwright outputs in:
 
 - `.artifacts/frontend-performance/`
 
-Inside it, use this concrete structure:
+Use this structure there:
 
 - `.artifacts/frontend-performance/lhci/`
   - raw LHCI output and HTML reports
 - `.artifacts/frontend-performance/bundle/`
   - visualizer HTML and any machine-readable bundle stats emitted by the plugin
-- `.artifacts/frontend-performance/routes/summary.json`
-  - top-level pilot route summary
-- `.artifacts/frontend-performance/routes/public-home.json`
-- `.artifacts/frontend-performance/routes/browse-authenticated.json`
-- `.artifacts/frontend-performance/routes/admin-tool-editor.json`
-  - per-route request ledgers and derived summaries
 
-Do not scatter artifacts across unrelated script folders for this lane.
+If a shared perf index is useful, it may reference the Playwright artifact directory, but it should
+not replace the script-named raw output location.
 
 ## Ownership map
 
@@ -289,13 +381,16 @@ To keep the implementation DRY and structurally honest, use this ownership split
 - `frontend/apps/skriptoteket/package.json`
   - owns app-local Node command aliases only
 - `frontend/apps/skriptoteket/lighthouserc.json`
-  - owns LHCI route targets, assertions, and output shape
+  - owns LHCI route targets, server bootstrap, assertions, and output shape
 - `frontend/apps/skriptoteket/vite.config.ts`
   - owns the visualizer plugin hook only
-- `scripts/playwright_route_perf_inventory.py`
+- `scripts/playwright/`
+  - owns the repo’s Playwright entrypoint/helper tree after the root cleanup move
+- `scripts/playwright/route_perf_inventory.py`
   - owns route execution and artifact session orchestration
-- `scripts/_playwright_perf.py`
-  - owns route descriptors, request-ledger shaping, duplicate classification, and summary building
+- `scripts/playwright/_perf.py`
+  - owns route descriptors, request-ledger shaping, duplicate classification, trace-note helpers,
+    and summary building
 - `pyproject.toml`
   - owns repo-facing wrapper commands only
 - `docs/runbooks/runbook-frontend-performance-baseline.md`
@@ -310,6 +405,9 @@ This slice should produce, at minimum:
 
 - Lighthouse/LHCI report output for the public pilot route
 - Playwright request inventory JSON for all pilot routes
+- one Chromium performance trace artifact per pilot route
+- one short route note per pilot route covering LCP candidates, long-task / INP-sensitive work, and
+  visible CLS contributors
 - a compact per-route summary showing:
   - request count
   - duplicate request count
@@ -348,6 +446,11 @@ ledger should remain inspectable JSON.
 - `pdm run ui-perf-inventory --base-url http://127.0.0.1:8000`
 - `pdm run fe-perf-lhci`
 - verify bundle visualizer output is generated from the same production build surface
+- verify the editor pilot route is resolved from the seeded `demo-settings-test` fixture rather than
+  the first available tool
+- verify the Playwright lane writes raw outputs under
+  `.artifacts/playwright-route-perf-inventory/`
+- verify each pilot route has both a request ledger and a trace note artifact
 - perform one live spot-check that the authenticated pilot route proof still uses the canonical
   local login/bootstrap lane and records the exact artifact paths in `.agents/handoff.md`
 

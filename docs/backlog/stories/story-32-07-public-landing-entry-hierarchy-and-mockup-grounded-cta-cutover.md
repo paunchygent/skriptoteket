@@ -2,10 +2,10 @@
 type: story
 id: ST-32-07
 title: "Public landing entry hierarchy and mockup-grounded CTA cutover"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 epic: "EPIC-32"
 dependencies:
   ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06"]
