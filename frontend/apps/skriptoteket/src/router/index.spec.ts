@@ -100,6 +100,72 @@ describe("router guards", () => {
     expect(result).toEqual({ path: "/profile" });
   });
 
+  it("opens login modal in place and redirects home for signed-out /login", async () => {
+    const auth = createAuth();
+    const loginModal = createLoginModal();
+    mockUseAuthStore.mockReturnValue(auth);
+    mockUseLoginModal.mockReturnValue(loginModal);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/login",
+      fullPath: "/login?next=/public/apps/classroom.group-seating-studio",
+      meta: {},
+      query: { next: "/public/apps/classroom.group-seating-studio" },
+    }, {
+      name: undefined,
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(loginModal.open).toHaveBeenCalledWith("/public/apps/classroom.group-seating-studio");
+    expect(result).toEqual({ path: "/" });
+  });
+
+  it("does not treat /login/oops as the legacy login entry", async () => {
+    const auth = createAuth();
+    const loginModal = createLoginModal();
+    mockUseAuthStore.mockReturnValue(auth);
+    mockUseLoginModal.mockReturnValue(loginModal);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/login/oops",
+      fullPath: "/login/oops",
+      meta: {},
+      query: {},
+    }, {
+      name: undefined,
+    });
+
+    expect(auth.bootstrap).not.toHaveBeenCalled();
+    expect(loginModal.open).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it("does not treat /login-foo as the legacy login entry", async () => {
+    const auth = createAuth();
+    const loginModal = createLoginModal();
+    mockUseAuthStore.mockReturnValue(auth);
+    mockUseLoginModal.mockReturnValue(loginModal);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/login-foo",
+      fullPath: "/login-foo",
+      meta: {},
+      query: {},
+    }, {
+      name: undefined,
+    });
+
+    expect(auth.bootstrap).not.toHaveBeenCalled();
+    expect(loginModal.open).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
   it("redirects to forbidden when minRole is not satisfied", async () => {
     const auth = createAuth({
       isAuthenticated: true,

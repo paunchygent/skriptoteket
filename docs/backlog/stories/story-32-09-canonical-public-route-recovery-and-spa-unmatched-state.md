@@ -2,10 +2,10 @@
 type: story
 id: ST-32-09
 title: "Canonical public-route recovery and SPA unmatched state"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 epic: "EPIC-32"
 dependencies:
   ["ADR-0028", "ST-11-03", "ST-32-06", "ST-32-07"]
@@ -34,6 +34,10 @@ This story repairs that failure mode without changing the canonical public route
   the route contract itself.
 - The follow-up dedicated auth-entry redesign belongs in `ST-32-10` / `PR-0242`, not in this
   route-recovery slice.
+- `PR-0240` is now implemented locally and review-approved: Skriptoteket has
+  an explicit `/public/:appId` recovery route, a final SPA catch-all route, a
+  shared recovery view inside the existing shells, and focused router/view
+  coverage including the existing `/login` guard behavior.
 
 ## Planned PR slices
 

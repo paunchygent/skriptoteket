@@ -28,9 +28,14 @@ export const router = createRouter({
 
 const ROLE_VALUES = ["user", "contributor", "admin", "superuser"] as const;
 type Role = (typeof ROLE_VALUES)[number];
+const LEGACY_LOGIN_PATH = "/login";
 
 function isRole(value: string): value is Role {
   return (ROLE_VALUES as readonly string[]).includes(value);
+}
+
+function isLegacyLoginPath(path: string): boolean {
+  return path === LEGACY_LOGIN_PATH;
 }
 
 function getNextParam(value: unknown): string | null {
@@ -40,7 +45,7 @@ function getNextParam(value: unknown): string | null {
   if (!value.startsWith("/")) {
     return null;
   }
-  if (value.startsWith("/login")) {
+  if (value === LEGACY_LOGIN_PATH || value.startsWith(`${LEGACY_LOGIN_PATH}?`)) {
     return null;
   }
   return value;
@@ -72,7 +77,7 @@ router.beforeEach(async (to, from) => {
   const requiresAuth = Boolean(to.meta.requiresAuth);
   const rawMinRole = typeof to.meta.minRole === "string" ? to.meta.minRole : null;
   const minRole = rawMinRole && isRole(rawMinRole) ? rawMinRole : null;
-  const isLoginPath = to.path.startsWith("/login");
+  const isLoginPath = isLegacyLoginPath(to.path);
 
   if (requiresAuth || minRole || isLoginPath) {
     await auth.bootstrap();

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0240
 title: "ST-32-09: SPA catch-all route and malformed public-route recovery"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-08
 stories:
   - "ST-32-09"
 tags: ["frontend", "routing", "public-access", "ux"]
@@ -24,6 +24,17 @@ Malformed public URLs currently fail badly in the SPA: the landing shell still r
 route body is empty because no matched route component exists.
 
 That makes a simple URL-shape mistake look like a broken product.
+
+## Status note
+
+This PR is implemented locally, review-approved, and closed for the current
+slice.
+
+- `/public/<app-id>` now recovers through an explicit SPA route and points the
+  visitor to the canonical `/public/apps/<app-id>` path
+- unrelated unmatched SPA URLs now render a visible not-found recovery surface
+- the canonical `/public/apps/classroom.group-seating-studio` route still uses
+  the existing public host/bootstrap flow without reopening its contract
 
 ## Goal
 
@@ -51,6 +62,7 @@ repairably.
 - Focused router/view tests for unmatched-route recovery.
 - Live browser proof on:
   - `http://127.0.0.1:5173/public/classroom.group-seating-studio`
+  - `http://127.0.0.1:5173/definitely-not-a-route`
   - `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`
 - `pdm run fe-type-check`
 - `pdm run docs-validate`

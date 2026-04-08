@@ -55,8 +55,8 @@ That boundary therefore needs to be explicit before implementation begins.
   owned by `PR-0246`.
 - The current recommended `PR-0246` direction is not browser-only suppression.
   It is a hybrid model: one backend-owned canonical consumption fact per
-  user/app plus one browser-owned consumed marker for same-browser stale
-  snapshot cleanup and public guest re-entry suppression. This keeps the
+  user/app plus one browser-owned authoring-closure marker for same-browser
+  stale snapshot cleanup and public guest re-entry suppression. This keeps the
   product rule reviewable as a durable backend fact instead of inferring it
   from planner drafts or browser state alone.
 - `REV-PR-0246` narrows that recommendation in two important ways before

@@ -114,10 +114,10 @@ dependencies:
   dismissible post-import summary after durable success. `PR-0233` is now also
   shipped, so the earlier exact-template reuse/remap defect for non-toy
   template-bearing snapshots is closed without changing the approved
-  guest/public boundary shape. A further 2026-04-08 follow-up now narrows the
-  product contract again through `PR-0246`: the browser guest-upgrade bridge is
-  being converted into a one-time onboarding import, not a reusable
-  logged-out/logged-in repeat-import loop.
+  guest/public boundary shape. `PR-0246` is now also shipped, so the browser
+  guest-upgrade bridge is now enforced as a one-time onboarding import with a
+  backend consumption ledger, a browser-owned authoring-closure marker, and
+  repeat-import suppression instead of a reusable logged-out/logged-in loop.
 - `ST-32-06` is now shipped as the first full
   `public_browser_workspace_with_upgrade` adoption proof for a real curated
   app:
@@ -160,8 +160,13 @@ dependencies:
       modal seam for this launch slice, but a follow-up PR task should replace
       that overloaded signed-out auth entry with a dedicated redirect-friendly
       auth page that is better aligned with future HuleEdu SSO needs
-  - `ST-32-09` owns malformed public-route recovery and visible SPA unmatched
-    state handling
+  - `ST-32-09` is now implemented locally through `PR-0240`:
+    - malformed `/public/<app-id>` paths now recover through an explicit SPA
+      route that points visitors to `/public/apps/<app-id>`
+    - unrelated unmatched SPA paths now render a visible recovery surface
+      instead of leaving the route body blank
+    - the canonical `/public/apps/classroom.group-seating-studio` contract
+      remains unchanged
   - `ST-32-10` now captures the planned auth-entry follow-up after `PR-0240`:
     a dedicated page-based login handoff that replaces the overloaded
     signed-out modal entry seam without reviving the old legacy `/login`

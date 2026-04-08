@@ -27,6 +27,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 - Smart assignment V1 decision memo:
   `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
+- Launch SEO and indexing readiness assessment:
+  `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
@@ -141,6 +143,18 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
 - ST-32-10 dedicated auth-entry page + redirect-preserving login handoff:
   `docs/backlog/prs/pr-0242-st-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
+- EPIC-35 launch SEO + search indexing readiness:
+  `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`
+- Review gate for EPIC-35 launch SEO + search indexing readiness:
+  `docs/backlog/reviews/review-epic-35-launch-seo-and-search-indexing-readiness.md`
+- ST-35-01 canonical public host + edge indexability decision package:
+  `docs/backlog/stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md`
+- ST-35-02 crawler surfaces + honest HTTP status semantics:
+  `docs/backlog/stories/story-35-02-crawler-surfaces-and-honest-http-status-semantics.md`
+- ST-35-03 public-route metadata + canonical + indexing policy:
+  `docs/backlog/stories/story-35-03-public-route-metadata-canonical-and-indexing-policy.md`
+- ST-35-04 Search Console + Bing + launch-day SEO operations:
+  `docs/backlog/stories/story-35-04-search-console-bing-and-launch-day-seo-operations.md`
 - ST-11-25 Playwright tree normalization under `scripts/playwright`:
   `docs/backlog/prs/pr-0241-st-11-25-playwright-tree-normalization.md`
 - ST-11-25 LHCI + bundle-visualizer toolchain wiring:

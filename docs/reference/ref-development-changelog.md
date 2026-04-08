@@ -118,6 +118,32 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 - `pdm run fe-test src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` (pass; 4 files / 42 tests)
 - `pdm run fe-type-check` (pass)
 - `pdm run docs-validate` (pass after recording the retained `PR-0228` review outcome and real `SA24D` / `G20` verification evidence)
+
+## 2026-04-08 handoff compaction dump
+
+Moved from `.agents/handoff.md` during handoff cleanup.
+
+### Previous Status
+
+- `PR-0234` is shipped. The assessed root cause was the public guest overview -> grouping seam dropping the selected classroom by opening grouping with `templateId = null`, plus stale pending template refs keeping `Sittplatser` visually enabled after live classroom context was gone. A small helper module now centralizes the live guest classroom-context rule, overview -> grouping preserves the selected classroom, and the guest shell disables `Sittplatser` from real live context rather than stale pending refs.
+- `PR-0235` is shipped. The shared viewport helper keeps the framed-surface fit model across builder / seating / rules, fit-to-view is explicitly capped at `100%`, and the pure helper seam now has focused coverage so the repo no longer relies on stale pre-frame numbers in `useRoomViewportZoom.spec.ts`.
+- `PR-0236` is shipped. The stale isolated roster-overview spec now passes `showActions` explicitly when asserting the visible action footer, also proves the hidden-footer case when actions are disabled, and keeps class-list import inside the create/edit workflow.
+- `PR-0237` is now decided and documented as done:
+  - `docs/mockups/st-32-07-public-landing-discoverability/designer-a.html` is the winning submission
+  - the canonical blueprint artifact for follow-on work is the separate copy `docs/mockups/st-32-07-public-landing-discoverability/index.html`
+  - do not refine or overwrite `designer-a.html`; any further iteration should branch from the copy, not the original submission
+  - carry forward the review caveats that any baseline overlay is working scaffolding only and that minor monospace / uppercase micro-markers can be softened later without reopening the layout direction
+
+### Previous Verification
+
+- `pdm run fe-test -- --run src/views/apps/roomBuilderViewport.spec.ts src/views/apps/useRoomViewportZoom.spec.ts src/views/apps/components/RoomTemplateBuilderSurface.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/components/PlannerRulesMapCanvas.spec.ts` (pass; `PR-0235` framed viewport contract + 100% cap across helper/composable/shared consumers)
+- `pdm run fe-test -- --run src/views/apps/components/PlannerRosterOverviewPanel.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts` (pass; `PR-0236` capability-gated roster overview spec realignment)
+- `pdm run fe-type-check` (pass after the `PR-0235` helper/spec realignment)
+- `pdm run fe-type-check` (pass after the `PR-0236` spec realignment)
+- `pdm run fe-test` (pass; 149 files, 771 tests)
+- Live local browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass for `PR-0235`; public builder modal rendered `builder-zoom-percent = 100%` and `room-builder-scroll-frame[data-overflow-anchor] = center` for a fresh small-room state; Playwright Chrome session was explicitly closed after the check)
+- `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.agents/handoff.md`)
+- `pdm run docs-validate` (pass after scaffolding `ST-32-07` and `PR-0237` through `PR-0240`)
 - `repomix --style xml --no-gitignore --output .agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml --include "AGENTS.md,.agents/rules/000-rule-index.md,.agents/rules/075-browser-automation.md,.agents/handoff.md,docs/reference/ref-review-workflow.md,docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md,docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md,docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md,docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md,docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerTopPanel.vue,frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue,frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue,frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts,scripts/playwright_pr_0227_group_board_height_contract_check.py"` (pass; 28 files, 72,943 tokens, output `.agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml`)
 - `pdm run fe-test -- --run src/views/apps/classroomPlannerGuestDraftWorkspace.spec.ts` (pass; 1 test proving reused guest grouping drafts persist the newly selected classroom into the browser snapshot and next public Smart payload)
 - `pdm run pytest tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; 4 tests including the oversized streamed-body `413` guard that never reaches the anonymous Smart handler)

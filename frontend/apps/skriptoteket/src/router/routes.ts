@@ -1,5 +1,15 @@
 import type { RouteRecordRaw } from "vue-router";
 
+const RESERVED_PUBLIC_ROUTE_SEGMENTS = new Set(["apps"]);
+
+function getMissingAppsPrefixAppId(appId: unknown): string | null {
+  if (typeof appId !== "string") {
+    return null;
+  }
+
+  return RESERVED_PUBLIC_ROUTE_SEGMENTS.has(appId) ? null : appId;
+}
+
 export const routes: RouteRecordRaw[] = [
   {
     path: "/",
@@ -71,6 +81,15 @@ export const routes: RouteRecordRaw[] = [
     path: "/public/apps/:appId",
     name: "public-app-detail",
     component: () => import("../views/PublicAppHostView.vue"),
+  },
+  {
+    path: "/public/:appId",
+    name: "public-app-route-recovery",
+    component: () => import("../views/RouteRecoveryView.vue"),
+    props: (route) => ({
+      missingAppsPrefixAppId: getMissingAppsPrefixAppId(route.params.appId),
+      missingAppsPrefix: route.path === "/public/apps",
+    }),
   },
   {
     path: "/tools/:slug/run",
@@ -155,5 +174,10 @@ export const routes: RouteRecordRaw[] = [
     name: "admin-suggestion-detail",
     component: () => import("../views/admin/AdminSuggestionDetailView.vue"),
     meta: { requiresAuth: true, minRole: "admin" },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "not-found",
+    component: () => import("../views/RouteRecoveryView.vue"),
   },
 ];
