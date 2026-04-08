@@ -2,8 +2,13 @@
 /**
  * Root SPA shell.
  *
- * This component hosts the global layouts, login modal, and auth-reactive
- * redirects so protected curated-app routes keep their entry contracts intact.
+ * This component hosts the global layouts, current shared login modal, and
+ * auth-reactive redirects so protected curated-app routes keep their entry
+ * contracts intact.
+ *
+ * The signed-out auth-entry modal is transitional on main; the planned
+ * dedicated `/auth/login` page contract is tracked separately in ST-32-10 /
+ * PR-0242.
  */
 
 import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from "vue";

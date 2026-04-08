@@ -5,7 +5,7 @@ title: "Authenticated upgrade orchestration and idempotent import policy"
 status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-07
+updated: 2026-04-08
 epic: "EPIC-32"
 dependencies: ["ST-32-04", "ADR-0079", "EPIC-27"]
 acceptance_criteria:
@@ -42,6 +42,11 @@ That boundary therefore needs to be explicit before implementation begins.
   template-bearing preview failure inside the exact-template reuse/remap seam.
   That corrective lane is now explicitly owned by `PR-0233` rather than being
   worked around from `ST-32-06`.
+- Live authenticated proof on 2026-04-08 surfaced a separate frontend truth-gap:
+  an empty browser snapshot can still trigger the prompt and an all-zero
+  guest-upgrade receipt can still render the `import complete` summary while
+  the route shell simultaneously reopens an already-existing backend roster.
+  That UI reconciliation lane is now explicitly owned by `PR-0245`.
 
 ## Planned PR slices
 
@@ -49,6 +54,8 @@ That boundary therefore needs to be explicit before implementation begins.
   policy foundation](../prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md)
 - [PR-0233: ST-32-05 follow-up: authenticated guest-upgrade template reuse and
   seat-remap hardening](../prs/pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md)
+- [PR-0245: ST-32-05 follow-up: empty guest snapshot and zero-effect import UI
+  reconciliation](../prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md)
 
 ## References
 

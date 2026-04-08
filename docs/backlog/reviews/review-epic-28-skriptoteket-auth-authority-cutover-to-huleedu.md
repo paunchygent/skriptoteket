@@ -21,14 +21,14 @@ stories:
 EPIC-28 proposes a hard-break cutover where Skriptoteket stops owning browser auth locally and
 instead consumes a HuleEdu-owned cookie-session + CSRF browser contract through
 `https://api.hule.education`. The package preserves Skriptoteket's richer bootstrap semantics and
-modal-first UX, explicitly rejects bearer-browser auth and app-local auth bridges, and adds a
+dedicated redirect-preserving auth-entry UX, explicitly rejects bearer-browser auth and app-local auth bridges, and adds a
 cross-app smoke lane as the acceptance proof.
 
 ## Problem Statement
 
 Skriptoteket already depends on stronger browser-session semantics than HuleEdu's current
-bearer-in-frontend model provides: cookie auth, CSRF, rich bootstrap state, and modal-first login
-handoffs. A real cross-app cutover cannot succeed by downgrading Skriptoteket to bearer-browser
+bearer-in-frontend model provides: cookie auth, CSRF, rich bootstrap state, and redirect-preserving
+login handoffs. A real cross-app cutover cannot succeed by downgrading Skriptoteket to bearer-browser
 auth or by keeping two browser contracts alive. We need one final shared browser-session contract
 that HuleEdu owns and Skriptoteket can safely adopt.
 
@@ -42,7 +42,7 @@ that HuleEdu owns and Skriptoteket can safely adopt.
   - no bearer-browser end state and no local Skriptoteket bridge
 - Add a proposed epic with four ready stories:
   - frontend auth store/API client cutover
-  - modal-first login/route handoff preservation
+  - dedicated auth-entry route/route-handoff preservation
   - deletion of local browser-auth ownership
   - cross-app smoke + runbook proof
 
@@ -53,7 +53,7 @@ that HuleEdu owns and Skriptoteket can safely adopt.
 | `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md` | Final browser-session contract and rejected options | 8 min |
 | `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md` | Scope, hard-break posture, sequencing | 6 min |
 | `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md` | Bootstrap + CSRF cutover | 5 min |
-| `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md` | UX parity, modal-first interruption, and return-to-origin guarantees | 5 min |
+| `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md` | UX parity, dedicated auth-entry interruption, and return-to-origin guarantees | 5 min |
 | `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md` | Deletion posture and contract cleanup | 5 min |
 | `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Joint proof and operator verification | 5 min |
 
@@ -67,13 +67,13 @@ that HuleEdu owns and Skriptoteket can safely adopt.
 | Keep browser auth on secure cookies + CSRF instead of bearer tokens in frontend storage | Preserves the stronger Skriptoteket-grade browser contract needed for SaaS and cross-app parity | [ ] |
 | Use `https://api.hule.education` as the browser auth origin for both apps | One real authority, no app-local auth ownership | [ ] |
 | Reject a Skriptoteket-local auth bridge | Prevents a hidden dual-contract end state | [ ] |
-| Preserve modal-first login and expiry handling as a non-regression requirement | The auth authority changes, but the Skriptoteket UX contract should not regress | [ ] |
+| Preserve dedicated `/auth/login` handoff and redirect semantics as a non-regression requirement | The auth authority changes, but the Skriptoteket UX contract should not regress | [ ] |
 
 ## Review Checklist
 
 - [ ] ADR-0076 defines one final browser auth contract with clear ownership boundaries
 - [ ] EPIC-28 scope is appropriately hard-break and does not hide a compatibility bridge
-- [ ] Stories preserve Skriptoteket's richer bootstrap and modal-first UX
+- [ ] Stories preserve Skriptoteket's richer bootstrap and dedicated auth-entry UX
 - [ ] The package explicitly rejects bearer-browser and dual-contract end states
 - [ ] Risks and external HuleEdu dependencies are identified clearly
 
@@ -97,7 +97,7 @@ that HuleEdu owns and Skriptoteket can safely adopt.
 - [ ] Keep cookie-session + CSRF as the browser transport
 - [ ] Use `https://api.hule.education` as the browser auth origin
 - [ ] Reject a Skriptoteket-local auth bridge
-- [ ] Preserve modal-first login/expiry UX
+- [ ] Preserve dedicated `/auth/login` handoff and expiry recovery UX
 
 ## Changes Made
 
@@ -105,4 +105,4 @@ that HuleEdu owns and Skriptoteket can safely adopt.
 |--------|----------|-------------|
 | 1 | ADR-0076 | Drafted the HuleEdu-owned browser-session target for Skriptoteket |
 | 2 | EPIC-28 | Drafted the hard-break cutover epic and sequencing |
-| 3 | ST-28-01..04 | Drafted the frontend cutover, modal parity, deletion, and proof slices |
+| 3 | ST-28-01..04 | Drafted the frontend cutover, dedicated auth-entry handoff, deletion, and proof slices |

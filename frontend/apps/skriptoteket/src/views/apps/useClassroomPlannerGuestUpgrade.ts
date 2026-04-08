@@ -14,6 +14,10 @@ import {
   runClassroomPlannerGuestUpgrade,
   type ClassroomPlannerGuestUpgradeReceipt,
 } from "./classroomPlannerGuestUpgradeApi";
+import {
+  hasClassroomPlannerGuestSnapshotSummaryContent,
+  hasClassroomPlannerGuestUpgradeReceiptEffects,
+} from "./classroomPlannerGuestUpgradeOutcome";
 import type {
   ClassroomPlannerGuestSnapshot,
   ClassroomPlannerGuestSnapshotSummary,
@@ -69,6 +73,16 @@ export function useClassroomPlannerGuestUpgrade(options?: {
         return;
       }
 
+      if (!hasClassroomPlannerGuestSnapshotSummaryContent(result.summary)) {
+        await resolveGuestStorage().clearCurrentSnapshot();
+        snapshot.value = null;
+        summary.value = null;
+        previewReceipt.value = null;
+        lastReceipt.value = null;
+        gateState.value = "allowed";
+        return;
+      }
+
       snapshot.value = result.snapshot;
       summary.value = result.summary;
       await previewCurrentSnapshot();
@@ -118,11 +132,32 @@ export function useClassroomPlannerGuestUpgrade(options?: {
         mode: "commit",
         snapshot: snapshot.value,
       });
+      const snapshotSummaryHadContent = hasClassroomPlannerGuestSnapshotSummaryContent(summary.value);
       if (commitReceipt.conflicted.length > 0) {
         lastReceipt.value = null;
         previewReceipt.value = commitReceipt;
         gateState.value = "prompt";
         errorMessage.value = buildConflictErrorMessage(commitReceipt);
+        return;
+      }
+
+      if (!hasClassroomPlannerGuestUpgradeReceiptEffects(commitReceipt)) {
+        if (snapshotSummaryHadContent) {
+          lastReceipt.value = null;
+          previewReceipt.value = commitReceipt;
+          gateState.value = "prompt";
+          errorMessage.value = (
+            "Importen skapade inget nytt i kontot. Gästarbetet finns kvar i den här webbläsaren."
+          );
+          return;
+        }
+
+        await resolveGuestStorage().clearCurrentSnapshot();
+        snapshot.value = null;
+        summary.value = null;
+        previewReceipt.value = null;
+        lastReceipt.value = null;
+        gateState.value = "allowed";
         return;
       }
 

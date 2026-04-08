@@ -64,7 +64,10 @@ pkill -TERM -f 'playwright_chromiumdev_profile|Google Chrome.*mcp-chrome|Google 
 - Prefer extending existing scripts rather than adding new ones unless the flow is distinct and reusable.
 - Keep scripts passing; update selectors and steps when UI changes (no stale/aspirational flows).
 - Use `scripts._playwright_config.get_config()` for base URL + credentials.
-- Login via **protected routes + modal** (e.g., `/admin/tools`) instead of `/login` to match SPA routing.
+- Login via the branch's **canonical auth-entry surface** and never rely on the old legacy `/login` route.
+- Current planning direction:
+  - until `ST-32-10` / `PR-0242` lands on the branch under test, protected-route + modal entry is the current production behavior
+  - after `ST-32-10` / `PR-0242`, use the dedicated `/auth/login` page and its explicit redirect contract
 - Editor/sandbox detection must be robust: `.cm-editor` visible + "Testkör" button + test mode open.
 - For sandbox session reuse, assert:
   - `/work/input/<filename>` appears in tool outputs (from `request.json` manifest)
@@ -225,7 +228,10 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+    # Use the branch's canonical auth-entry surface:
+    # - current main before ST-32-10/PR-0242: protected route + modal
+    # - after ST-32-10/PR-0242: /auth/login
+    page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
     page.get_by_label("E-post").fill(email)
     page.get_by_label("Lösenord").fill(password)
     page.get_by_role("button", name="Logga in").click()

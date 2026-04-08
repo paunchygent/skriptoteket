@@ -2,7 +2,11 @@
  * Shared login-modal state.
  *
  * This composable keeps the active login modal redirect target in one place so
- * protected-route entry can survive auth redirects without losing router state.
+ * the current transitional modal-based auth entry can survive auth redirects
+ * without losing router state.
+ *
+ * The planned forward direction is the dedicated `/auth/login` auth-entry page
+ * tracked in ST-32-10 / PR-0242.
  */
 
 import type { RouteLocationRaw } from "vue-router";

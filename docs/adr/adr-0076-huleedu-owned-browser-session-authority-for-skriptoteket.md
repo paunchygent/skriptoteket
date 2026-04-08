@@ -16,7 +16,7 @@ needs:
 - secure cookie-based browser auth
 - CSRF protection for non-GET requests
 - rich bootstrap state through `GET /api/v1/auth/me`
-- modal-first login and expiry handling in the SPA
+- explicit redirect-preserving auth handoff requirements in the SPA
 
 HuleEdu already has the right long-term ownership split emerging on its side:
 
@@ -80,15 +80,18 @@ browser auth/API origin for session bootstrap, login, logout, refresh, and CSRF.
 
 Skriptoteket SHALL NOT keep an app-local browser auth proxy surface as a transition bridge.
 
-### 5. Modal-first UX preservation
+### 5. Dedicated auth-entry handoff preservation
 
-Skriptoteket SHALL preserve its modal-first browser UX during the cutover:
+Skriptoteket SHALL preserve its redirect-preserving browser auth-entry UX during the cutover via a
+dedicated auth-entry page contract:
 
-- protected-route entry stays modal-first
-- auth-expiry handling stays modal-first
-- logout and session invalidation stay modal-first
+- the canonical page-based auth-entry route is `/auth/login`
+- protected-route entry preserves its intended destination through that auth-entry contract
+- signed-out entry surfaces use the same auth-entry contract rather than route-local modal state
+- auth-expiry handling and external auth return paths remain destination-preserving
 
-The auth authority moves; the UX contract does not regress.
+The auth authority moves; the handoff contract does not regress into app-local modal state or route
+fragmentation.
 
 ### 6. Internal service identity
 
@@ -118,8 +121,9 @@ The following options are explicitly rejected:
   over cleanly.
 - Skriptoteket frontend work should target the final `api.hule.education` session contract, not a
   temporary bearer-browser intermediary.
-- Existing modal-first and rich-bootstrap behavior in Skriptoteket becomes an acceptance floor for
-  the shared HuleEdu-owned contract.
+- Existing redirect-preserving and rich-bootstrap behavior in Skriptoteket becomes an acceptance
+  floor for the shared HuleEdu-owned contract, but the current planned browser auth-entry surface is
+  now page-based rather than modal-first.
 - If this ADR is accepted, it narrows and supersedes ADR-0011's open future browser-auth options:
   the future path is no longer "local session bridge vs browser JWT vs both", but one
   HuleEdu-owned browser session authority with one canonical browser bootstrap contract.

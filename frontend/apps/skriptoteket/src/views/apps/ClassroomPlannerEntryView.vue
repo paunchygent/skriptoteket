@@ -7,7 +7,10 @@
  * orchestration separate from the public browser-owned guest overview lane.
  */
 
+import { computed, unref } from "vue";
+
 import { useClassroomPlannerGuestUpgrade } from "./useClassroomPlannerGuestUpgrade";
+import { hasClassroomPlannerGuestUpgradeReceiptEffects } from "./classroomPlannerGuestUpgradeOutcome";
 import ClassroomPlannerGuestOverviewView from "./ClassroomPlannerGuestOverviewView.vue";
 import ClassroomPlannerGuestUpgradePrompt from "./ClassroomPlannerGuestUpgradePrompt.vue";
 import ClassroomPlannerView from "./ClassroomPlannerView.vue";
@@ -31,6 +34,10 @@ const authenticatedGuestUpgradeSummary = authenticatedGuestUpgrade.summary;
 const authenticatedGuestUpgradeIsBlocking = authenticatedGuestUpgrade.isBlocking;
 const authenticatedGuestUpgradeShouldShowPrompt = authenticatedGuestUpgrade.shouldShowPrompt;
 const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshKey;
+const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
+  const receipt = unref(authenticatedGuestUpgradeLastReceipt);
+  return hasClassroomPlannerGuestUpgradeReceiptEffects(receipt) ? receipt : null;
+});
 </script>
 
 <template>
@@ -39,7 +46,7 @@ const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshK
     class="flex flex-col gap-6"
   >
     <section
-      v-if="authenticatedGuestUpgradeLastReceipt"
+      v-if="authenticatedGuestUpgradeCompletedReceipt"
       data-test="guest-upgrade-result-summary"
       class="mx-auto w-full max-w-4xl border border-success/30 bg-canvas p-6 shadow-brutal-md"
     >
@@ -53,7 +60,7 @@ const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshK
               Gästarbetsytan importerades till ditt konto
             </h2>
             <p class="text-sm leading-6 text-navy/80">
-              Snapshot <span class="font-mono text-xs">{{ authenticatedGuestUpgradeLastReceipt.snapshot_id }}</span>
+              Snapshot <span class="font-mono text-xs">{{ authenticatedGuestUpgradeCompletedReceipt.snapshot_id }}</span>
               är nu överförd. Sammanfattningen nedan visar vad som skapades eller återanvändes.
             </p>
           </div>
@@ -74,7 +81,7 @@ const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshK
             Skapades
           </h3>
           <p class="mt-2 text-2xl text-navy">
-            {{ authenticatedGuestUpgradeLastReceipt.created.length }}
+            {{ authenticatedGuestUpgradeCompletedReceipt.created.length }}
           </p>
         </article>
         <article class="border border-navy/20 bg-white p-4 shadow-brutal-sm">
@@ -82,7 +89,7 @@ const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshK
             Återanvändes
           </h3>
           <p class="mt-2 text-2xl text-navy">
-            {{ authenticatedGuestUpgradeLastReceipt.reused.length }}
+            {{ authenticatedGuestUpgradeCompletedReceipt.reused.length }}
           </p>
         </article>
         <article class="border border-burgundy/20 bg-white p-4 shadow-brutal-sm">
@@ -90,7 +97,7 @@ const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshK
             Hoppades över
           </h3>
           <p class="mt-2 text-2xl text-navy">
-            {{ authenticatedGuestUpgradeLastReceipt.skipped.length }}
+            {{ authenticatedGuestUpgradeCompletedReceipt.skipped.length }}
           </p>
         </article>
         <article class="border border-error/20 bg-white p-4 shadow-brutal-sm">
@@ -98,7 +105,7 @@ const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshK
             Konflikter
           </h3>
           <p class="mt-2 text-2xl text-navy">
-            {{ authenticatedGuestUpgradeLastReceipt.conflicted.length }}
+            {{ authenticatedGuestUpgradeCompletedReceipt.conflicted.length }}
           </p>
         </article>
       </div>

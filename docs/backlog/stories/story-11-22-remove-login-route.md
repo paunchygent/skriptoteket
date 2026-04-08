@@ -5,6 +5,7 @@ title: "Remove /login route (modal-only login)"
 status: done
 owners: "agents"
 created: 2025-12-23
+updated: 2026-04-08
 epic: "EPIC-11"
 acceptance_criteria:
   - "Given a user visits /login, then they are returned to / and the login modal opens"
@@ -18,6 +19,20 @@ dependencies: ["ST-11-05", "ST-11-21"]
 
 Skriptoteket now uses a global login modal for auth-first interactions. The remaining `/login` route is legacy
 and should be removed so all login flows are modal-first.
+
+## Historical note (2026-04-08)
+
+This story remains an accurate record of the phase where Skriptoteket removed the legacy `/login`
+page in favor of modal-first login.
+
+It is no longer the forward-looking auth-entry direction for new work.
+
+The current planned direction is:
+
+- keep this story as historical implementation context
+- treat `ST-32-10` / `PR-0242` as the new canonical auth-entry direction
+- use dedicated `/auth/login` as the next page-based auth-entry route rather than reviving the old
+  `/login` behavior
 
 ## Scope
 

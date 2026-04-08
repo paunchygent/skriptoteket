@@ -5,6 +5,7 @@ title: "Auth flow + route guards"
 status: done
 owners: "agents"
 created: 2025-12-21
+updated: 2026-04-08
 epic: "EPIC-11"
 acceptance_criteria:
   - "Given an unauthenticated user visits a protected route, when the SPA loads, then it navigates to /login and preserves the intended destination"
@@ -16,6 +17,16 @@ dependencies: ["ADR-0009", "ADR-0030"]
 ## Context
 
 The SPA must implement the session + CSRF flow and enforce role guards consistent with backend dependencies.
+
+## Historical note (2026-04-08)
+
+This story records the first SPA auth-guard implementation, which initially used `/login` as the
+route-level auth entry.
+
+That route-level contract was later replaced by `ST-11-22`'s modal-only direction, and the current
+planned next direction is the dedicated `/auth/login` auth-entry page in `ST-32-10` / `PR-0242`.
+
+Do not use this story alone as the current auth-entry design target.
 
 ## Implemented (2025-12-21)
 

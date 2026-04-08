@@ -101,6 +101,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md`
 - ST-32-05 follow-up authenticated guest-upgrade template reuse + seat-remap hardening:
   `docs/backlog/prs/pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md`
+- ST-32-05 follow-up empty guest snapshot + zero-effect import UI reconciliation:
+  `docs/backlog/prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md`
 - ST-32-06 canceled legacy checkpoint-compatibility planning stub:
   `docs/backlog/prs/pr-0222-st-32-06-browser-authored-guest-checkpoint-payload-capture-for-export-backed-history.md`
 - ST-32-06 public Klassrumskartan demo capability matrix + browser-workspace adoption:
@@ -129,8 +131,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md`
 - ST-32-09 SPA catch-all route + malformed public-route recovery:
   `docs/backlog/prs/pr-0240-st-32-09-spa-catch-all-route-and-malformed-public-route-recovery.md`
-- ST-11-25 measurement harness + pilot baseline capture:
-  `docs/backlog/prs/pr-0241-st-11-25-measurement-harness-and-pilot-baseline-capture.md`
+- ST-32-10 dedicated auth-entry page + redirect-preserving login handoff story:
+  `docs/backlog/stories/story-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
+- ST-32-10 dedicated auth-entry page + redirect-preserving login handoff:
+  `docs/backlog/prs/pr-0242-st-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
+- ST-11-25 Playwright tree normalization under `scripts/playwright`:
+  `docs/backlog/prs/pr-0241-st-11-25-playwright-tree-normalization.md`
+- ST-11-25 LHCI + bundle-visualizer toolchain wiring:
+  `docs/backlog/prs/pr-0243-st-11-25-lhci-and-bundle-visualizer-toolchain.md`
+- ST-11-25 pilot route inventory + trace baselines:
+  `docs/backlog/prs/pr-0244-st-11-25-pilot-route-inventory-and-trace-baselines.md`
 - Pending ST-32-06 guest-gap bridge ruthless review gate:
   `docs/backlog/reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md`
 - ST-29-11 desktop-first planner width stability + shrink-to-fit remediation:
@@ -828,7 +838,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0048-execution-queue-session-context-and-state-semantics.md`
 - `docs/backlog/prs/pr-0049-backend-srp-refactor-god-modules.md`
 - `docs/backlog/prs/pr-0043-ai-inline-completions-consent-hardening.md`
-- `docs/backlog/prs/pr-0241-st-11-25-measurement-harness-and-pilot-baseline-capture.md`
+- `docs/backlog/prs/pr-0241-st-11-25-playwright-tree-normalization.md`
+- `docs/backlog/prs/pr-0243-st-11-25-lhci-and-bundle-visualizer-toolchain.md`
+- `docs/backlog/prs/pr-0244-st-11-25-pilot-route-inventory-and-trace-baselines.md`
 
 ### Backlog Stories
 

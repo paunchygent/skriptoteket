@@ -32,6 +32,8 @@ This story repairs that failure mode without changing the canonical public route
   technical.
 - The canonical public route shape remains `/public/apps/:appId`; this story improves recovery, not
   the route contract itself.
+- The follow-up dedicated auth-entry redesign belongs in `ST-32-10` / `PR-0242`, not in this
+  route-recovery slice.
 
 ## Planned PR slices
 

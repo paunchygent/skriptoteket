@@ -33,6 +33,7 @@ repairably.
 ## Non-goals
 
 - Reworking the landing header or showcase sections in this slice.
+- Replacing the signed-out login modal with the later dedicated auth-entry page from `PR-0242`.
 - Changing backend history-fallback behavior.
 - Changing the public curated-app route shape itself.
 

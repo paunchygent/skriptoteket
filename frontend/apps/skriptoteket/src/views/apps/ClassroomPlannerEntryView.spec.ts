@@ -174,6 +174,29 @@ describe("ClassroomPlannerEntryView", () => {
     expect(guestUpgradeMocks.dismissLastReceiptSummary).toHaveBeenCalledOnce();
   });
 
+  it("does not render the post-import summary for an all-zero receipt", () => {
+    guestUpgradeMocks.lastReceipt = {
+      mode: "commit",
+      snapshot_id: "guest-snapshot-1",
+      schema_version: 1,
+      submitted_snapshot_content_hash: "sha256:guest",
+      server_snapshot_content_hash: "sha256:server",
+      created: [],
+      reused: [],
+      skipped: [],
+      conflicted: [],
+    };
+
+    const wrapper = mount(ClassroomPlannerEntryView, {
+      props: {
+        hostMode: "authenticated",
+      },
+    });
+
+    expect(wrapper.find("[data-test='guest-upgrade-result-summary']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='live-classroom-planner']").exists()).toBe(true);
+  });
+
   it("renders the dedicated public guest overview shell for the public host", () => {
     const wrapper = mount(ClassroomPlannerEntryView, {
       props: {

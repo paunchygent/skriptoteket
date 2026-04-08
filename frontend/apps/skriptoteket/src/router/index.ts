@@ -3,6 +3,10 @@
  *
  * This module centralizes route protection and keeps login redirects intact for
  * Klassrumskartan so auth handoffs do not drop planner entry-origin state.
+ *
+ * Current main still uses the shared login modal for signed-out auth entry, but
+ * the planned forward direction is the dedicated `/auth/login` handoff tracked
+ * in ST-32-10 / PR-0242 rather than the old legacy `/login` semantics.
  */
 
 import type { RouteLocationNormalizedLoaded, RouteLocationRaw } from "vue-router";

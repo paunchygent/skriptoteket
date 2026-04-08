@@ -5,8 +5,8 @@ title: "Skriptoteket auth authority cutover to HuleEdu"
 status: proposed
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
-outcome: "Skriptoteket no longer owns browser auth authority locally; it consumes a HuleEdu-owned cookie-session + CSRF browser contract while preserving its richer bootstrap and modal-first UX."
+updated: 2026-04-08
+outcome: "Skriptoteket no longer owns browser auth authority locally; it consumes a HuleEdu-owned cookie-session + CSRF browser contract while preserving its richer bootstrap and a dedicated redirect-preserving auth-entry handoff."
 dependencies: ["ADR-0009", "ADR-0011", "ADR-0030", "ADR-0076"]
 ---
 
@@ -17,7 +17,7 @@ dependencies: ["ADR-0009", "ADR-0011", "ADR-0030", "ADR-0076"]
 - Preserve the stronger existing Skriptoteket browser semantics:
   - cookie-session + CSRF
   - rich bootstrap document
-  - modal-first login / expiry / logout UX
+  - dedicated `/auth/login` entry and redirect-preserving auth handoff UX
 - Replace browser bootstrap from local `/api/v1/auth/me` with shared
   `/v1/auth/session`.
 - Remove Skriptoteket-local browser auth ownership and assumptions once the shared contract is in
@@ -59,3 +59,9 @@ dependencies: ["ADR-0009", "ADR-0011", "ADR-0030", "ADR-0076"]
 - ADR-0076 defines the new hard-break HuleEdu-owned browser auth target.
 - HuleEdu must deliver the shared browser session authority and rich bootstrap contract before
   this epic can move from planning to implementation.
+
+## Planning note (2026-04-08)
+
+The old modal-first auth-entry language is now superseded for new work by the dedicated `/auth/login`
+direction planned in `ST-32-10` / `PR-0242`. This epic should be read with that updated
+page-based handoff contract, not with the older modal-only assumption from `ST-11-22`.

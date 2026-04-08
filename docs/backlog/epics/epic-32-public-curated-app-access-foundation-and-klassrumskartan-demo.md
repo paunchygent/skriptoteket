@@ -72,6 +72,7 @@ dependencies:
 - [ST-32-07: Public landing entry hierarchy and mockup-grounded CTA cutover](../stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md)
 - [ST-32-08: Featured public-app showcase and authenticated-value previews](../stories/story-32-08-featured-public-app-showcase-and-authenticated-value-previews.md)
 - [ST-32-09: Canonical public-route recovery and SPA unmatched state](../stories/story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md)
+- [ST-32-10: Dedicated auth-entry page and redirect-preserving login handoff](../stories/story-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md)
 
 ## Notes
 
@@ -154,3 +155,7 @@ dependencies:
       auth page that is better aligned with future HuleEdu SSO needs
   - `ST-32-09` owns malformed public-route recovery and visible SPA unmatched
     state handling
+  - `ST-32-10` now captures the planned auth-entry follow-up after `PR-0240`:
+    a dedicated page-based login handoff that replaces the overloaded
+    signed-out modal entry seam without reviving the old legacy `/login`
+    behavior

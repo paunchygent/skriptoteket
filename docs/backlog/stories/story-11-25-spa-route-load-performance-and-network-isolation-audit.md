@@ -117,7 +117,9 @@ enforcement thresholds.
 
 ### Planned PR slices
 
-- [PR-0241: ST-11-25 measurement harness and pilot baseline capture](../prs/pr-0241-st-11-25-measurement-harness-and-pilot-baseline-capture.md)
+- [PR-0241: ST-11-25 Playwright tree normalization under scripts/playwright](../prs/pr-0241-st-11-25-playwright-tree-normalization.md)
+- [PR-0243: ST-11-25 LHCI and bundle-visualizer toolchain wiring](../prs/pr-0243-st-11-25-lhci-and-bundle-visualizer-toolchain.md)
+- [PR-0244: ST-11-25 pilot route inventory and trace baselines](../prs/pr-0244-st-11-25-pilot-route-inventory-and-trace-baselines.md)
 
 ## Verification expectation
 

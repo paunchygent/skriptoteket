@@ -60,7 +60,7 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 ### Post-cutover follow-ups
 - [ST-11-20: Tool taxonomy editor (professions + categories)](../stories/story-11-20-tool-taxonomy-editor.md) (done)
 - [ST-11-21: Unified landing page (auth-adaptive home view)](../stories/story-11-21-unified-landing-page.md) (done)
-- [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done)
+- [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done; historical direction later superseded for new auth-entry work by `ST-32-10`)
 - [ST-11-23: Tool owner + maintainer permission hardening](../stories/story-11-23-tool-owner-and-maintainer-permissions.md) (done)
 - [ST-11-24: Home view messaging reset for curated library](../stories/story-11-24-home-view-messaging-reset-for-curated-library.md) (done)
 - [ST-11-25: SPA route-load performance and network-isolation audit](../stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md) (ready; review pending)
