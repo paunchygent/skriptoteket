@@ -5,7 +5,7 @@ title: "ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow es
 status: ready
 owners: "agents"
 created: 2026-04-06
-updated: 2026-04-08
+updated: 2026-04-09
 stories:
   - "ST-29-11"
 tags: ["frontend", "design-system", "klassrumskartan", "planner", "toolbar", "keyboard"]
@@ -13,11 +13,12 @@ dependencies:
   - "PR-0225"
   - "PR-0228"
 acceptance_criteria:
-  - "Given the grouping or seating toolbar is rendered at the `EPIC-29` `desktop` (`1440x900`), `laptop` (`1366x768`), or the failing intermediate pre-`xl` desktop band, when width pressure increases, then the toolbar stays one row and lower-priority actions collapse into overflow before any control is pushed outside the visible bar or wraps onto a second row."
+  - "Given the authenticated planner shell is rendered near the shared desktop breakpoint, when the viewport is `1279px` wide, then the left nav stays collapsed with the mobile header owning the chrome; when the viewport reaches `1280px`, then the desktop sidebar pins and the stacked mobile header is gone."
+  - "Given the grouping or seating toolbar is rendered in authenticated or guest shells, when the viewport shrinks through its exact live cutoff widths, then the toolbar stays one row and lower-priority actions collapse into overflow before any control is pushed outside the visible bar or wraps onto a second row."
   - "Given the shared planner toolbar reaches its first overflow breakpoint, when secondary actions must collapse, then undo and redo move into overflow before primary workflow, export, or required context controls."
   - "Given width pressure increases after undo/redo are already overflowed, when the one-row desktop strip still cannot hold, then `Börja om` collapses next into overflow before more critical workflow controls are displaced."
   - "Given undo or redo are no longer visibly pinned in the toolbar, when the teacher uses canonical planner shortcuts outside editable text fields or menu focus traps, then the same undo/redo actions still fire in grouping and seating without requiring the buttons to stay visible."
-  - "Given browser proof is run on the shared planner toolbar, when grouping and seating are checked at `1279x900`, `1366x768`, and `1440x900`, then the breakpoint ladder is deliberate and reviewable rather than spill-driven or accidental."
+  - "Given browser proof is run on the shared planner toolbar, when each lane is checked just above and just below its exact live cutoffs, then the overflow ladder is deliberate, monotonic, and reviewable rather than spill-driven or accidental."
 ---
 
 ## Problem
@@ -34,7 +35,7 @@ The breakpoint behavior needs to be explicit, deliberate, and ordered by action 
 
 Define and implement the next toolbar hardening step for the planner-family desktop workspace:
 
-- freeze explicit breakpoint/width-pressure behavior for the shared planner toolbar
+- freeze explicit shell and toolbar breakpoint behavior for the shared planner workspace
 - preserve a one-row desktop command strip
 - move lower-priority actions into overflow in a deliberate order instead of waiting for visual spill
 - collapse `undo` / `redo` first, then `Börja om`
@@ -62,14 +63,16 @@ Define and implement the next toolbar hardening step for the planner-family desk
 
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.spec.ts`
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.shortcuts.spec.ts`
 - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.shortcuts.spec.ts`
 - `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.spec.ts`
 
 ## Implementation plan
 
-1. Freeze an explicit shared breakpoint ladder for planner toolbar width pressure.
-   - keep the toolbar one row at the named desktop proof widths and the current failing intermediate
-     band
+1. Freeze an explicit shared shell and toolbar breakpoint ladder.
+   - keep the authenticated planner shell compact below `1280px` and pinned at `1280px` and above
+   - derive exact toolbar cutoffs from live geometry instead of a coarse review-width matrix
    - define which controls are always-visible, which collapse first, and which collapse second
 
 2. Escalate overflow intentionally instead of letting the strip spill.
@@ -94,8 +97,8 @@ Define and implement the next toolbar hardening step for the planner-family desk
    - add focused component/spec coverage for overflow-order behavior plus shared shortcut handling
      in authenticated and guest shells
    - add direct shared-composable proof for positive and negative shortcut paths
-   - add live browser proof that shows the toolbar staying one row while overflow content grows at
-     the named width bands for authenticated and guest routes
+   - add live browser proof that binary-searches the exact shell and toolbar cutoffs, then records
+     just-above / just-below evidence for authenticated and guest routes
 
 ## Coordination note
 
@@ -108,20 +111,20 @@ guest slice lands.
 
 ## Test plan
 
-- `pdm run fe-test -- --run src/views/apps/components/PlannerWorkspaceActionBar.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/usePlannerUndoRedoShortcuts.spec.ts`
+- `pdm run fe-test -- --run src/views/apps/components/PlannerWorkspaceActionBar.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerWorkspaceShell.shortcuts.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.shortcuts.spec.ts src/views/apps/usePlannerUndoRedoShortcuts.spec.ts`
 - `pdm run fe-type-check`
+- `pdm run python -m scripts.playwright_pr_0229_toolbar_overflow_threshold_check --dotenv .env.prod-smoke`
 - `pdm run docs-validate`
-- Live desktop proof:
-  - authenticated: `http://127.0.0.1:5173/apps/classroom.group-seating-studio`
-  - guest: `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`
-  - verify authenticated `Grupper`, authenticated `Sittplatser`, guest `Grupper`, and guest
-    `Sittplatser` at `1279x900`, `1366x768`, and `1440x900`
-  - verify the toolbar never wraps to multiple rows and no button is pushed outside the visible bar
-  - verify `undo` / `redo` overflow before `Börja om`
-  - verify `undo` / `redo` shortcuts still work when those controls are no longer visibly pinned
-    and focus is outside editable text fields
-  - verify `undo` / `redo` shortcuts do not fire while typing in inputs/textareas/contenteditable
-    targets or while focus is inside active overflow/menu interactions
+- Live threshold proof expectations from `.artifacts/pr-0229-toolbar-overflow-thresholds/threshold-results.json`:
+  - authenticated shell cutover: compact at `1279px`, desktop sidebar pinned at `1280px`
+  - authenticated grouping overflow: `undo/redo` at `1237px`, `Börja om` at `1156px`, `Nytt utkast` at `1080px`, roster context at `991px`, `Smart` at `568px`
+  - authenticated seating overflow: `undo/redo` at `1237px`, `Börja om` at `1156px`, `Nytt utkast` at `1080px`, template context at `966px`, `Smart` at `459px`
+  - guest grouping overflow: `undo/redo` at `969px`, `Börja om` at `888px`, `Nytt utkast` at `812px`, roster context at `692px`, `Smart` at `552px`
+  - guest seating overflow: `undo/redo` at `933px`, `Börja om` at `852px`, `Nytt utkast` at `776px`, template context at `631px`, `Smart` at `443px`
+  - in every lane, verify just-above / just-below evidence for the exact cutoff, one-row stability, and menu parity for the newly hidden contribution
+- Shortcut negative-path proof expectations:
+  - the shared composable spec must prove the listener stays inert for `input`, `textarea`, `select`, `contenteditable`, `[role="textbox"]`, and `[role="menu"]` targets, plus already-prevented, disabled, no-draft, and no-history-capability cases
+  - the focused auth and guest shell shortcut specs must prove one allowed neutral-toolbar path and two blocked real-shell paths: focused actions-menu item and focused input probe
 
 ## Rollback plan
 

@@ -47,8 +47,13 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--base-url",
-        default="http://127.0.0.1:5173",
-        help="Base URL for the SPA host (default: http://127.0.0.1:5173).",
+        default=None,
+        help="Base URL for the SPA host (defaults to the shared Playwright config resolution).",
+    )
+    parser.add_argument(
+        "--dotenv",
+        default=None,
+        help="Optional dotenv file passed through to the shared Playwright config resolution.",
     )
     parser.add_argument(
         "--artifacts-dir",
@@ -442,8 +447,13 @@ def main() -> None:
     """Run the focused live threshold proof and write JSON artifacts."""
 
     args = _parse_args()
-    config = get_config(["--base-url", args.base_url])
-    base_url = args.base_url.rstrip("/")
+    config_argv: list[str] = []
+    if args.dotenv:
+        config_argv.extend(["--dotenv", args.dotenv])
+    if args.base_url:
+        config_argv.extend(["--base-url", args.base_url])
+    config = get_config(config_argv)
+    base_url = config.base_url.rstrip("/")
     artifacts_dir = Path(args.artifacts_dir)
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 

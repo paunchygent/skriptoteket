@@ -20,6 +20,19 @@ type ShortcutHarnessOptions = {
   isEnabled?: boolean;
 };
 
+function dispatchShortcut(
+  target: Window | Element,
+  init: KeyboardEventInit,
+): KeyboardEvent {
+  const event = new KeyboardEvent("keydown", {
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  target.dispatchEvent(event);
+  return event;
+}
+
 function mountShortcutHarness(options: ShortcutHarnessOptions) {
   const draft: PlanDraft | null = options.draftKind
     ? {
@@ -105,52 +118,166 @@ describe("usePlannerUndoRedoShortcuts", () => {
     seating.wrapper.unmount();
   });
 
-  it("ignores undo shortcuts inside editable targets", () => {
+  it("ignores shortcuts inside editable and menu-managed targets", () => {
     const { wrapper, plannerState } = mountShortcutHarness({
       draftKind: "seating",
       canUndo: true,
+      canRedo: true,
     });
 
-    const input = document.createElement("input");
-    document.body.appendChild(input);
+    const cases = [
+      {
+        label: "input",
+        buildTarget: () => {
+          const input = document.createElement("input");
+          document.body.appendChild(input);
+          return input;
+        },
+        init: { key: "z", ctrlKey: true },
+      },
+      {
+        label: "textarea",
+        buildTarget: () => {
+          const textarea = document.createElement("textarea");
+          document.body.appendChild(textarea);
+          return textarea;
+        },
+        init: { key: "z", ctrlKey: true },
+      },
+      {
+        label: "select",
+        buildTarget: () => {
+          const select = document.createElement("select");
+          document.body.appendChild(select);
+          return select;
+        },
+        init: { key: "z", ctrlKey: true },
+      },
+      {
+        label: "contenteditable host",
+        buildTarget: () => {
+          const editable = document.createElement("div");
+          editable.setAttribute("contenteditable", "true");
+          editable.contentEditable = "true";
+          document.body.appendChild(editable);
+          return editable;
+        },
+        init: { key: "z", ctrlKey: true },
+      },
+      {
+        label: "contenteditable descendant",
+        buildTarget: () => {
+          const editable = document.createElement("div");
+          editable.setAttribute("contenteditable", "true");
+          editable.contentEditable = "true";
+          const child = document.createElement("span");
+          editable.appendChild(child);
+          document.body.appendChild(editable);
+          return child;
+        },
+        init: { key: "z", ctrlKey: true },
+      },
+      {
+        label: "textbox role",
+        buildTarget: () => {
+          const textbox = document.createElement("div");
+          textbox.setAttribute("role", "textbox");
+          document.body.appendChild(textbox);
+          return textbox;
+        },
+        init: { key: "z", ctrlKey: true },
+      },
+      {
+        label: "menu item",
+        buildTarget: () => {
+          const menu = document.createElement("div");
+          menu.setAttribute("role", "menu");
+          const menuItem = document.createElement("button");
+          menu.appendChild(menuItem);
+          document.body.appendChild(menu);
+          return menuItem;
+        },
+        init: { key: "y", ctrlKey: true },
+      },
+    ] as const;
 
-    const event = new KeyboardEvent("keydown", {
+    for (const testCase of cases) {
+      const target = testCase.buildTarget();
+      const event = dispatchShortcut(target, testCase.init);
+
+      expect(
+        plannerState.undoSeatingDraft,
+        `${testCase.label}: expected seating undo to stay untouched`,
+      ).not.toHaveBeenCalled();
+      expect(
+        plannerState.redoSeatingDraft,
+        `${testCase.label}: expected seating redo to stay untouched`,
+      ).not.toHaveBeenCalled();
+      expect(
+        event.defaultPrevented,
+        `${testCase.label}: expected planner shortcut listener to stay inert`,
+      ).toBe(false);
+    }
+
+    wrapper.unmount();
+  });
+
+  it("ignores shortcuts that are already prevented", () => {
+    const prevented = mountShortcutHarness({
+      draftKind: "grouping",
+      canUndo: true,
+    });
+    const preventedEvent = new KeyboardEvent("keydown", {
       key: "z",
       ctrlKey: true,
       bubbles: true,
       cancelable: true,
     });
-    input.dispatchEvent(event);
+    preventedEvent.preventDefault();
+    window.dispatchEvent(preventedEvent);
 
-    expect(plannerState.undoSeatingDraft).not.toHaveBeenCalled();
-    expect(event.defaultPrevented).toBe(false);
-
-    wrapper.unmount();
+    expect(prevented.plannerState.undoGroupingDraft).not.toHaveBeenCalled();
+    prevented.wrapper.unmount();
   });
 
-  it("ignores undo shortcuts during menu-managed keyboard interactions", () => {
-    const { wrapper, plannerState } = mountShortcutHarness({
+  it("ignores shortcuts when the seam is disabled or no draft is active", () => {
+    const disabled = mountShortcutHarness({
       draftKind: "grouping",
       canUndo: true,
+      isEnabled: false,
     });
+    const disabledEvent = dispatchShortcut(window, { key: "z", ctrlKey: true });
+    expect(disabled.plannerState.undoGroupingDraft).not.toHaveBeenCalled();
+    expect(disabledEvent.defaultPrevented).toBe(false);
+    disabled.wrapper.unmount();
 
-    const menu = document.createElement("div");
-    menu.setAttribute("role", "menu");
-    const menuItem = document.createElement("button");
-    menu.appendChild(menuItem);
-    document.body.appendChild(menu);
-
-    const event = new KeyboardEvent("keydown", {
-      key: "z",
-      metaKey: true,
-      bubbles: true,
-      cancelable: true,
+    const noDraft = mountShortcutHarness({
+      draftKind: null,
+      canUndo: true,
     });
-    menuItem.dispatchEvent(event);
+    const noDraftEvent = dispatchShortcut(window, { key: "z", ctrlKey: true });
+    expect(noDraft.plannerState.undoGroupingDraft).not.toHaveBeenCalled();
+    expect(noDraftEvent.defaultPrevented).toBe(false);
+    noDraft.wrapper.unmount();
+  });
 
-    expect(plannerState.undoGroupingDraft).not.toHaveBeenCalled();
-    expect(event.defaultPrevented).toBe(false);
+  it("ignores shortcuts when the active draft cannot undo or redo", () => {
+    const cannotUndo = mountShortcutHarness({
+      draftKind: "grouping",
+      canUndo: false,
+    });
+    const cannotUndoEvent = dispatchShortcut(window, { key: "z", metaKey: true });
+    expect(cannotUndo.plannerState.undoGroupingDraft).not.toHaveBeenCalled();
+    expect(cannotUndoEvent.defaultPrevented).toBe(false);
+    cannotUndo.wrapper.unmount();
 
-    wrapper.unmount();
+    const cannotRedo = mountShortcutHarness({
+      draftKind: "seating",
+      canRedo: false,
+    });
+    const cannotRedoEvent = dispatchShortcut(window, { key: "y", ctrlKey: true });
+    expect(cannotRedo.plannerState.redoSeatingDraft).not.toHaveBeenCalled();
+    expect(cannotRedoEvent.defaultPrevented).toBe(false);
+    cannotRedo.wrapper.unmount();
   });
 });

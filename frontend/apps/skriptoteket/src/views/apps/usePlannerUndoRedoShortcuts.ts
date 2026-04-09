@@ -42,13 +42,26 @@ function isEditableTarget(target: Element | null): boolean {
   if (target instanceof HTMLSelectElement) {
     return true;
   }
-  if (target.closest("[contenteditable='true']")) {
+  const editableTarget = target instanceof HTMLElement ? target : null;
+  if (editableTarget?.isContentEditable) {
     return true;
+  }
+  const editableHost = target.closest<HTMLElement>("[contenteditable]");
+  if (editableHost) {
+    const contentEditableValue = editableHost.getAttribute("contenteditable");
+    if (
+      editableHost.isContentEditable
+      || contentEditableValue === ""
+      || contentEditableValue === "true"
+      || contentEditableValue === "plaintext-only"
+    ) {
+      return true;
+    }
   }
   if (target.closest("[role='textbox']")) {
     return true;
   }
-  return target.matches("[contenteditable='true']");
+  return false;
 }
 
 function isMenuTarget(target: Element | null): boolean {
