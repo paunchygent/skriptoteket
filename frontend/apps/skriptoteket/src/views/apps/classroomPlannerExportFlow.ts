@@ -215,6 +215,7 @@ export function createClassroomPlannerExportFlow<
       autoDownload: boolean;
       successMessage?: string;
       toastOnSuccess?: boolean;
+      recoveredSuccessNotice?: "announce" | "silent";
     } = {
       autoDownload: true,
       toastOnSuccess: true,
@@ -225,7 +226,9 @@ export function createClassroomPlannerExportFlow<
     backgroundPollJobId.value = null;
     if (!finalizeOptions.autoDownload) {
       statusLabel.value = null;
-      announceRecoveredExportSuccess(job);
+      if ((finalizeOptions.recoveredSuccessNotice ?? "announce") === "announce") {
+        announceRecoveredExportSuccess(job);
+      }
       return;
     }
     try {
@@ -309,6 +312,7 @@ export function createClassroomPlannerExportFlow<
         await finalizeCompletedJob(recoveredJob, scope, {
           autoDownload: false,
           toastOnSuccess: false,
+          recoveredSuccessNotice: "silent",
         });
         return;
       }

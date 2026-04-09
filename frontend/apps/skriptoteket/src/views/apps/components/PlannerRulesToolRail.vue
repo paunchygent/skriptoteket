@@ -93,7 +93,7 @@ const pendingActionLabel = computed(() => {
 
 <template>
   <aside
-    class="planner-tool-rail flex h-full flex-col"
+    class="planner-tool-rail planner-rules-tool-lane flex flex-col"
     aria-label="Regelverktyg"
     data-test="rules-tool-rail"
   >

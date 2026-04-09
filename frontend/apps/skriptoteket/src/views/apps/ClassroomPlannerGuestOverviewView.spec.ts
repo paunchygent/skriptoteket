@@ -189,18 +189,37 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     expect(wrapper.find("[data-test='planner-class-workspace-stub']").exists()).toBe(false);
   });
 
-  it("shows login-first guidance instead of the public workspace when browser authoring is closed", () => {
+  it("shows one login-first blocked state with the approved action targets when browser authoring is closed", () => {
     guestOverviewMocks.guestAuthoringClosed.value = true;
 
     const wrapper = mountView();
     const normalizedText = wrapper.text().replace(/\s+/g, " ").trim();
 
-    expect(wrapper.find("[data-test='public-guest-authoring-closed-message']").exists()).toBe(true);
     expect(wrapper.find("[data-test='public-guest-authoring-closed-state']").exists()).toBe(true);
     expect(wrapper.find("[data-test='planner-class-workspace-stub']").exists()).toBe(false);
     expect(wrapper.find("[data-test='guest-planner-shell-stub']").exists()).toBe(false);
+    expect(normalizedText).toContain("Logga in för att fortsätta");
     expect(normalizedText).toContain(
-      "Det går inte att skapa nya klasser och klassrum i den här webbläsaren eftersom du redan har använt Klassrumskartan inloggad här. Logga in för att fortsätta använda appen.",
+      "Klassrumskartan har redan använts inloggad i den här webbläsaren. Därför går det inte att skapa nya klasser eller klassrum här som gäst.",
     );
+    expect(normalizedText).toContain(
+      "Om du inte har ett konto ännu, eller om det här är någon annans webbläsare, kan du skapa ett nytt konto.",
+    );
+    expect(wrapper.get("[data-test='public-guest-authoring-closed-login']").attributes("href")).toBe(
+      "/auth/login",
+    );
+    expect(wrapper.get("[data-test='public-guest-authoring-closed-register']").attributes("href")).toBe(
+      "/register",
+    );
+  });
+
+  it("lets the blocked-state surface own the page even if a stale planner action error is still set", () => {
+    guestOverviewMocks.guestAuthoringClosed.value = true;
+    guestOverviewMocks.plannerActionError.value = "Stale error";
+
+    const wrapper = mountView();
+
+    expect(wrapper.find("[data-test='public-guest-authoring-closed-state']").exists()).toBe(true);
+    expect(wrapper.text()).not.toContain("Stale error");
   });
 });

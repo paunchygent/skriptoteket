@@ -5,7 +5,7 @@ title: "Development changelog"
 status: active
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-08
+updated: 2026-04-09
 topic: "development-changelog"
 ---
 
@@ -14,6 +14,16 @@ Append-only development log and repo long-term memory for compacted handoff hist
 Rule:
 - When compacting `.agents/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
+
+## 2026-04-09 handoff compaction dump
+
+Moved from `.agents/handoff.md` during task-draft bookkeeping for `PR-0248` / `PR-0249`.
+
+- `Keep PR-0232 scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.`
+- `Preserve the PR-0233 seam shape while implementing PR-0232: later guest export/checkpoint continuity should keep feeding the existing authenticated import / discard / postpone prompt instead of adding a new compatibility lane.`
+- `PR-0248` freezes the shared planner UX correction package for silent recovered export re-entry, bounded sticky Regler rail behavior, and removal of the redundant VÄLJ EN KLASSLISTA overview label.`
+- `PR-0249` freezes the public-host reconciliation package for one singular login-first blocked state with approved Logga in / Skapa konto copy and action hierarchy.`
+- `REV-PR-0248` and `REV-PR-0249` now exist as retained review records with initial `changes_requested` findings; the PR drafts were tightened around export-recovery truth, guest controller/view seam ownership, and auth action-target proof before implementation.`
 
 ## 2026-04-07 handoff compaction dump
 

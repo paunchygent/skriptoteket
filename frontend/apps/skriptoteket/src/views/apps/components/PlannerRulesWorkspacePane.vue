@@ -131,7 +131,7 @@ watch(canShowSeatingArrangement, (nextValue) => {
     />
 
     <div
-      class="grid gap-3 xl:grid-cols-[176px_minmax(0,1fr)] xl:items-stretch"
+      class="planner-rules-layout-row"
       data-test="rules-workspace-layout"
     >
       <PlannerRulesToolRail

@@ -248,7 +248,7 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(stateMocks.plannerState.clearNearTeacherRule).toHaveBeenCalledWith();
   });
 
-  it("stretches the tool rail beside the map and reserves the summary panel height before rules exist", () => {
+  it("keeps the tool rail on a bounded sticky lane beside the map and reserves the summary panel height before rules exist", () => {
     stateMocks.plannerState.seatingPreferences = [];
     stateMocks.plannerState.relationshipRules = [];
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
@@ -264,9 +264,9 @@ describe("PlannerRulesWorkspacePane", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="rules-workspace-layout"]').classes()).toContain("xl:items-stretch");
+    expect(wrapper.get('[data-test="rules-workspace-layout"]').classes()).toContain("planner-rules-layout-row");
     expect(wrapper.get('[data-test="rules-tool-rail"]').classes()).toEqual(
-      expect.arrayContaining(["flex", "h-full", "flex-col"]),
+      expect.arrayContaining(["planner-rules-tool-lane", "flex", "flex-col"]),
     );
     expect(wrapper.get('[data-test="rules-summary-empty-state"]').classes()).toContain("min-h-full");
   });

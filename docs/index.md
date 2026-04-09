@@ -109,6 +109,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md`
 - ST-32-05 follow-up one-time guest-upgrade consumption + repeat-import suppression:
   `docs/backlog/prs/pr-0246-st-32-05-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md`
+- ST-32-05 follow-up singular login-first blocked state for closed public guest mode:
+  `docs/backlog/prs/pr-0249-st-32-05-singular-login-first-blocked-state-for-closed-public-guest-mode.md`
+- Review gate for ST-32-05 singular login-first blocked state for closed public guest mode:
+  `docs/backlog/reviews/review-pr-0249-singular-login-first-blocked-state-for-closed-public-guest-mode.md`
 - Review gate for ST-32-05 one-time guest-upgrade consumption + repeat-import suppression:
   `docs/backlog/reviews/review-pr-0246-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md`
 - ST-32-06 canceled legacy checkpoint-compatibility planning stub:
@@ -179,6 +183,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md`
 - ST-29-11 follow-up desktop-first planner toolbar breakpoint overflow escalation + undo/redo shortcut parity:
   `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
+- ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
+  `docs/backlog/prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md`
+- Review gate for ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
+  `docs/backlog/reviews/review-pr-0248-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:

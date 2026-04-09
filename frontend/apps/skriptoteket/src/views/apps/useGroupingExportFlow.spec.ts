@@ -171,6 +171,7 @@ describe("useGroupingExportFlow", () => {
 
   it("recovers an in-flight grouping export after draft reload", async () => {
     const plannerState = reactive(createPlannerState());
+    const pendingRecoveryPoll = createDeferred<GroupingExportJob>();
     exportApiMocks.getRecoverableGroupingExportJob.mockResolvedValue(
       createJob({
         job_id: "job-recover",
@@ -179,6 +180,7 @@ describe("useGroupingExportFlow", () => {
         status: "processing",
       }),
     );
+    exportApiMocks.getGroupingExportJob.mockReturnValueOnce(pendingRecoveryPoll.promise);
 
     useGroupingExportFlow({
       plannerState,
@@ -191,7 +193,7 @@ describe("useGroupingExportFlow", () => {
     expect(exportApiMocks.getRecoverableGroupingExportJob).toHaveBeenCalledWith("draft-1");
   });
 
-  it("announces a recovered successful grouping export once and keeps local status clear", async () => {
+  it("keeps a recovered historical grouping export silent on re-entry", async () => {
     const plannerState = createPlannerState();
     exportApiMocks.getRecoverableGroupingExportJob.mockResolvedValueOnce(
       createJob({
@@ -214,14 +216,63 @@ describe("useGroupingExportFlow", () => {
       maxPollAttempts: 1,
     });
 
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(flow.statusLabel.value).toBeNull();
+    expect(flow.errorMessage.value).toBeNull();
+    expect(toastMocks.success).not.toHaveBeenCalled();
+    expect(exportApiMocks.downloadGroupingExportJob).not.toHaveBeenCalled();
+  });
+
+  it("announces a recovered in-flight grouping export once when it completes later", async () => {
+    const plannerState = createPlannerState();
+    exportApiMocks.getRecoverableGroupingExportJob.mockResolvedValueOnce(
+      createJob({
+        job_id: "job-recovered",
+        export_kind: "pdf",
+        paper_size: "a4_portrait",
+        status: "processing",
+      }),
+    );
+    exportApiMocks.getGroupingExportJob
+      .mockResolvedValueOnce(
+        createJob({
+          job_id: "job-recovered",
+          export_kind: "pdf",
+          paper_size: "a4_portrait",
+          status: "processing",
+        }),
+      )
+      .mockResolvedValueOnce(
+        createJob({
+          job_id: "job-recovered",
+          export_kind: "pdf",
+          paper_size: "a4_portrait",
+          status: "succeeded",
+          vault_artifact: {
+            file_id: "file-recovered",
+            name: "klass-7a-gruppindelning.pdf",
+            bytes: 1234,
+            created_at: "2026-03-26T10:00:05Z",
+          },
+        }),
+      );
+
+    const flow = useGroupingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
     await vi.waitFor(() => {
       expect(toastMocks.success).toHaveBeenCalledWith(
         "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.",
       );
     });
 
+    expect(flow.isBusy.value).toBe(false);
     expect(flow.statusLabel.value).toBeNull();
-    expect(flow.errorMessage.value).toBeNull();
     expect(exportApiMocks.downloadGroupingExportJob).not.toHaveBeenCalled();
   });
 

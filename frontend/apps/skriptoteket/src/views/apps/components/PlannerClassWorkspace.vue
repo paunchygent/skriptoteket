@@ -114,7 +114,7 @@ const selectedRosterCountLabel = computed(() => {
   if (selectedRoster.value) {
     return `${selectedRoster.value.students.length} elever`;
   }
-  return "Välj en klasslista";
+  return null;
 });
 const workspaceDisabledReasons = computed(() => {
   const baseReasons = resolvePlannerWorkspaceDisabledReasons({

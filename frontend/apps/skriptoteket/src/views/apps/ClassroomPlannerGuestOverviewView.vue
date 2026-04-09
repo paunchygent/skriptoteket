@@ -74,32 +74,51 @@ async function exitPublicPlanner(): Promise<void> {
       för att skapa ett.
     </SystemMessage>
 
-    <SystemMessage
-      v-else
-      id="classroom-planner-public-guest-closed-message"
-      :dismissible="false"
-      model-value="guest-closed-message"
-      variant="warning"
-      data-test="public-guest-authoring-closed-message"
-    >
-      Du har redan använt Klassrumskartan inloggad i den här webbläsaren. Därför går det inte att
-      skapa nya klasser och klassrum här utan att logga in. Logga in för att fortsätta använda
-      appen, eller
-      <RouterLink
-        to="/register"
-        class="font-semibold underline"
-      >
-        skapa ett konto
-      </RouterLink>
-      om du inte har ett ännu.
-    </SystemMessage>
-
     <div
       v-if="guestController.isBootstrapping.value"
       class="border border-navy bg-white px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
     >
       Laddar planeringsmiljön...
     </div>
+
+    <section
+      v-else-if="guestController.guestAuthoringClosed.value"
+      class="border border-navy bg-white px-4 py-8 shadow-brutal-sm md:px-6 md:py-10"
+      data-test="public-guest-authoring-closed-state"
+    >
+      <div class="mx-auto flex max-w-3xl flex-col gap-4 text-center text-navy">
+        <div class="space-y-2">
+          <h2 class="planner-shell-title">
+            Logga in för att fortsätta
+          </h2>
+          <p class="text-sm leading-relaxed text-navy/80">
+            Klassrumskartan har redan använts inloggad i den här webbläsaren. Därför går det inte
+            att skapa nya klasser eller klassrum här som gäst.
+          </p>
+          <p class="text-sm leading-relaxed text-navy/70">
+            Om du inte har ett konto ännu, eller om det här är någon annans webbläsare, kan du
+            skapa ett nytt konto.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-stretch justify-center gap-2 sm:flex-row">
+          <RouterLink
+            to="/auth/login"
+            class="btn-primary min-w-[10rem]"
+            data-test="public-guest-authoring-closed-login"
+          >
+            Logga in
+          </RouterLink>
+          <RouterLink
+            to="/register"
+            class="btn-ghost planner-btn-ghost min-w-[10rem]"
+            data-test="public-guest-authoring-closed-register"
+          >
+            Skapa konto
+          </RouterLink>
+        </div>
+      </div>
+    </section>
 
     <SystemMessage
       v-else-if="guestController.bootstrapError.value"
@@ -114,15 +133,6 @@ async function exitPublicPlanner(): Promise<void> {
       :model-value="guestController.plannerActionError.value"
       variant="error"
     />
-
-    <section
-      v-else-if="guestController.guestAuthoringClosed.value"
-      class="border border-navy bg-white px-4 py-12 text-center text-sm text-navy shadow-brutal-sm"
-      data-test="public-guest-authoring-closed-state"
-    >
-      Det går inte att skapa nya klasser och klassrum i den här webbläsaren eftersom du redan har
-      använt Klassrumskartan inloggad här. Logga in för att fortsätta använda appen.
-    </section>
 
     <div
       v-else

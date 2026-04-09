@@ -128,4 +128,23 @@ describe("PublicAppHostView", () => {
 
     wrapper.unmount();
   });
+
+  it("keeps the public classroom planner host on the dedicated public view lane", async () => {
+    clientMocks.apiGet.mockResolvedValue(createPublicBootstrap());
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
+    mount(PublicAppHostView, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    expect(hostRegistryMocks.resolveCuratedAppHostView).toHaveBeenCalledWith(
+      "classroom.group-seating-studio",
+      "public",
+    );
+  });
 });

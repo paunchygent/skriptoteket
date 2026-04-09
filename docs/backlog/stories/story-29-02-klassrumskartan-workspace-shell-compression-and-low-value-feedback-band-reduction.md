@@ -35,6 +35,7 @@ workspace redesign begins.
 - [PR-0161: ST-29-02 shared sticky workspace toolbar and transient feedback cutover](../prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md)
 - [PR-0179: ST-29-02 follow-up sticky toolbar offset gap collapse](../prs/pr-0179-st-29-02-sticky-toolbar-offset-gap-collapse.md)
 - [PR-0180: ST-29-02 follow-up sticky toolbar topbar gap collapse](../prs/pr-0180-st-29-02-sticky-toolbar-topbar-gap-collapse.md)
+- [PR-0248: ST-29-02 follow-up: recovered export silence, rules rail stickiness, and overview copy cleanup](../prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md)
 
 ## References
 

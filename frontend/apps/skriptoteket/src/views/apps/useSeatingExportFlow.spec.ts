@@ -370,14 +370,12 @@ describe("useSeatingExportFlow", () => {
       maxPollAttempts: 1,
     });
 
-    await vi.waitFor(() => {
-      expect(toastMocks.success).toHaveBeenCalledWith(
-        "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.",
-      );
-    });
+    await Promise.resolve();
+    await Promise.resolve();
 
     expect(flow.isBusy.value).toBe(false);
     expect(flow.statusLabel.value).toBeNull();
+    expect(toastMocks.success).not.toHaveBeenCalled();
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 
@@ -452,9 +450,6 @@ describe("useSeatingExportFlow", () => {
 
     await vi.waitFor(() => {
       expect(exportApiMocks.getRecoverableSeatingExportJob).toHaveBeenCalledWith("draft-1");
-      expect(toastMocks.success).toHaveBeenCalledWith(
-        "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.",
-      );
     });
 
     plannerState.draft = {
@@ -473,7 +468,7 @@ describe("useSeatingExportFlow", () => {
     });
 
     expect(flow.statusLabel.value).toBeNull();
-    expect(toastMocks.success).toHaveBeenCalledTimes(1);
+    expect(toastMocks.success).not.toHaveBeenCalled();
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 });

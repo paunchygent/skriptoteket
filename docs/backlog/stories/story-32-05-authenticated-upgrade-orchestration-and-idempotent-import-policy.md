@@ -76,6 +76,8 @@ That boundary therefore needs to be explicit before implementation begins.
   reconciliation](../prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md)
 - [PR-0246: ST-32-05 follow-up: one-time guest-upgrade consumption and
   repeat-import suppression](../prs/pr-0246-st-32-05-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md)
+- [PR-0249: ST-32-05 follow-up: singular login-first blocked state for closed
+  public guest mode](../prs/pr-0249-st-32-05-singular-login-first-blocked-state-for-closed-public-guest-mode.md)
 
 ## References
 

@@ -243,6 +243,10 @@ body.app-shell-game-mode::before {
     @apply border border-navy bg-white px-2 py-2 shadow-brutal-sm;
   }
 
+  .planner-rules-layout-row {
+    @apply grid gap-3;
+  }
+
   .planner-tool-rail-stack {
     @apply flex flex-col gap-1;
   }
@@ -810,6 +814,11 @@ body.app-shell-game-mode::before {
     align-items: start;
   }
 
+  .planner-rules-layout-row {
+    grid-template-columns: 176px minmax(0, 1fr);
+    align-items: start;
+  }
+
   .planner-grouping-pool-lane {
     position: sticky;
     top: var(--planner-toolbar-sticky-offset);
@@ -828,6 +837,15 @@ body.app-shell-game-mode::before {
     min-height: 480px;
     height: 480px;
     max-height: 480px;
+  }
+
+  .planner-rules-tool-lane {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+    max-height: 480px;
+    overflow-y: auto;
   }
 
   .planner-workspace-primary-lane,

@@ -86,6 +86,8 @@ export function useClassroomPlannerGuestController(options?: {
 
   function applyGuestAuthoringClosedState(): void {
     guestAuthoringClosed.value = true;
+    bootstrapError.value = null;
+    plannerActionError.value = null;
     guestPlannerState.clearWorkspace();
     availableRosters.value = [];
     availableTemplates.value = [];

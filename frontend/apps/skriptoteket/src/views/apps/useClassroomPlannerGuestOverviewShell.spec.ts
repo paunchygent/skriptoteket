@@ -119,6 +119,8 @@ describe("useClassroomPlannerGuestController", () => {
     expect(harness.getState().guestAuthoringClosed.value).toBe(true);
     expect(harness.getState().availableRosters.value).toEqual([]);
     expect(harness.getState().availableTemplates.value).toEqual([]);
+    expect(harness.getState().bootstrapError.value).toBeNull();
+    expect(harness.getState().plannerActionError.value).toBeNull();
   });
 
   it("rejects later guest mutations when another tab closes browser authoring", async () => {
@@ -174,6 +176,7 @@ describe("useClassroomPlannerGuestController", () => {
 
     expect(harness.getState().guestAuthoringClosed.value).toBe(true);
     expect(harness.getState().availableRosters.value).toEqual([]);
+    expect(harness.getState().plannerActionError.value).toBeNull();
     expect(saveSnapshot).not.toHaveBeenCalled();
   });
 

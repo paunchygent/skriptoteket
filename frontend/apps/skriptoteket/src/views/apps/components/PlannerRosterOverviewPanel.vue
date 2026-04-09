@@ -12,7 +12,7 @@ import type { Roster } from "../classroomPlannerTypes";
 
 const props = defineProps<{
   title: string;
-  countLabel: string;
+  countLabel?: string | null;
   description?: string | null;
   selectedRoster: Roster | null;
   selectedRosterId: string | null;
@@ -53,7 +53,10 @@ function selectRoster(event: Event): void {
         <p class="text-xl font-semibold text-navy">
           {{ title }}
         </p>
-        <span class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
+        <span
+          v-if="countLabel"
+          class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55"
+        >
           {{ countLabel }}
         </span>
       </div>

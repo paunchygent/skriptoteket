@@ -47,4 +47,21 @@ describe("PlannerRosterOverviewPanel", () => {
     expect(wrapper.find('[data-test="overview-edit-roster"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="overview-delete-roster"]').exists()).toBe(false);
   });
+
+  it("omits the uppercase metadata label when no count label is provided", () => {
+    const wrapper = mount(PlannerRosterOverviewPanel, {
+      props: buildProps({
+        title: "Ingen klass vald",
+        countLabel: null,
+        description: null,
+        selectedRoster: null,
+        selectedRosterId: null,
+        availableRosters: [],
+        selectedRosterPreviewNames: [],
+      }),
+    });
+
+    expect(wrapper.text()).toContain("Ingen klass vald");
+    expect(wrapper.text()).not.toContain("VÄLJ EN KLASSLISTA");
+  });
 });

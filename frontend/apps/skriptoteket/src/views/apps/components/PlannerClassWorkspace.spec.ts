@@ -191,6 +191,9 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.emitted("open-grouping")).toBeUndefined();
     expect(wrapper.emitted("open-seating")).toBeUndefined();
     expect(wrapper.emitted("open-rules")).toBeUndefined();
+    const rosterPanelText = wrapper.get('[data-test="overview-roster-panel"]').text();
+    expect(rosterPanelText).toContain("Ingen klass vald");
+    expect(rosterPanelText).not.toContain("VÄLJ EN KLASSLISTA");
   });
 
   it("keeps Grupper and Regler available while Sittplatser waits for a classroom", async () => {
