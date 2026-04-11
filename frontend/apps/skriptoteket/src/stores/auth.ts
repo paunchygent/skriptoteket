@@ -1,53 +1,28 @@
 /**
- * SPA auth store for cookie-session bootstrap and local-account mutations.
+ * SPA auth store for HuleEdu session bootstrap and local app continuation.
  *
- * This store owns the browser-visible auth snapshot while the backend remains
- * authoritative for session state and CSRF issuance.
+ * This store owns the browser-visible auth snapshot, delegates browser session
+ * proof to HuleEdu, and hydrates Skriptoteket-only app state through a separate
+ * local continuation endpoint.
  */
 
 import { defineStore } from "pinia";
 
-import { ApiError } from "../api/client";
+import { fetchWithTimeout, readAuthError, readErrorMessage } from "../api/authHttp";
 import type { components } from "../api/openapi";
+import { type AuthProfile, type AuthUser } from "../api/sharedAuth";
+import {
+  loadAppContinuation as requestAppContinuation,
+  loadSharedCsrfToken,
+  loadSharedSessionSnapshot,
+} from "./authBootstrap";
 
 type ApiRole = components["schemas"]["Role"];
-type ApiUser = components["schemas"]["User"];
-type ApiUserProfile = components["schemas"]["UserProfile"];
 type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
-type CsrfResponse = components["schemas"]["CsrfResponse"];
 type LoginResponse = components["schemas"]["LoginResponse"];
-type MeResponse = components["schemas"]["MeResponse"];
 type RegisterResponse = components["schemas"]["RegisterResponse"];
 
 type AuthStatus = "idle" | "loading" | "ready" | "error";
-
-type FetchTimeoutOptions = {
-  timeoutMs?: number;
-  timeoutMessage?: string;
-};
-
-async function fetchWithTimeout(
-  input: RequestInfo | URL,
-  init: RequestInit,
-  options: FetchTimeoutOptions = {},
-): Promise<Response> {
-  const timeoutMs = options.timeoutMs ?? 15000;
-  const timeoutMessage = options.timeoutMessage ?? "Request timed out";
-
-  const controller = new AbortController();
-  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    return await fetch(input, { ...init, signal: controller.signal });
-  } catch (error: unknown) {
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(timeoutMessage);
-    }
-    throw error;
-  } finally {
-    globalThis.clearTimeout(timeoutId);
-  }
-}
 
 const ROLE_RANK: Record<ApiRole, number> = {
   user: 0,
@@ -60,74 +35,14 @@ function hasAtLeastRole(params: { actual: ApiRole; minRole: ApiRole }): boolean 
   return ROLE_RANK[params.actual] >= ROLE_RANK[params.minRole];
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-async function readAuthError(response: Response): Promise<Error> {
-  const contentType = response.headers.get("content-type") ?? "";
-  const fallbackMessage = response.statusText || `Request failed (${response.status})`;
-
-  if (contentType.includes("application/json")) {
-    const payload: unknown = await response.json().catch(() => null);
-
-    if (isRecord(payload)) {
-      const error = payload.error;
-      if (isRecord(error) && typeof error.code === "string" && typeof error.message === "string") {
-        return new ApiError({
-          code: error.code,
-          message: error.message,
-          details: error.details ?? null,
-          correlationId:
-            typeof payload.correlation_id === "string" ? payload.correlation_id : null,
-          status: response.status,
-        });
-      }
-
-      if ("detail" in payload && payload.detail) {
-        return new ApiError({
-          code: "VALIDATION_ERROR",
-          message: "Validation error",
-          details: payload.detail,
-          correlationId: null,
-          status: response.status,
-        });
-      }
-    }
-  }
-
-  return new Error(fallbackMessage);
-}
-
-async function readErrorMessage(response: Response): Promise<string> {
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    return response.statusText || `Request failed (${response.status})`;
-  }
-
-  const payload: unknown = await response.json().catch(() => null);
-  if (!isRecord(payload)) {
-    return response.statusText || `Request failed (${response.status})`;
-  }
-
-  const error = payload.error;
-  if (isRecord(error) && typeof error.message === "string") {
-    return error.message;
-  }
-
-  if ("detail" in payload && payload.detail) {
-    return "Validation error";
-  }
-
-  return response.statusText || `Request failed (${response.status})`;
-}
-
 let bootstrapPromise: Promise<void> | null = null;
 
 type AuthState = {
-  user: ApiUser | null;
-  profile: ApiUserProfile | null;
+  user: AuthUser | null;
+  profile: AuthProfile | null;
   aiPolicy: ApiAiPolicy | null;
+  grants: string[];
+  featureFlags: string[];
   csrfToken: string | null;
   bootstrapped: boolean;
   status: AuthStatus;
@@ -139,6 +54,8 @@ export const useAuthStore = defineStore("auth", {
     user: null,
     profile: null,
     aiPolicy: null,
+    grants: [],
+    featureFlags: [],
     csrfToken: null,
     bootstrapped: false,
     status: "idle",
@@ -155,6 +72,12 @@ export const useAuthStore = defineStore("auth", {
         return hasAtLeastRole({ actual: state.user.role, minRole });
       };
     },
+    hasGrant: (state) => {
+      return (grant: string): boolean => state.grants.includes(grant);
+    },
+    hasFeatureFlag: (state) => {
+      return (featureFlag: string): boolean => state.featureFlags.includes(featureFlag);
+    },
     displayName: (state): string | null => {
       if (!state.user) return null;
       if (state.profile?.display_name) return state.profile.display_name;
@@ -167,6 +90,8 @@ export const useAuthStore = defineStore("auth", {
       this.user = null;
       this.profile = null;
       this.aiPolicy = null;
+      this.grants = [];
+      this.featureFlags = [];
       this.csrfToken = null;
       this.status = "ready";
       this.error = null;
@@ -187,45 +112,33 @@ export const useAuthStore = defineStore("auth", {
 
       bootstrapPromise = (async () => {
         try {
-          const response = await fetchWithTimeout(
-            "/api/v1/auth/me",
-            {
-              method: "GET",
-              credentials: "include",
-              headers: { Accept: "application/json" },
-            },
-            { timeoutMs: 10000, timeoutMessage: "Sessionen svarar inte. Försök igen." },
-          );
+          const sharedSession = await loadSharedSessionSnapshot();
 
-          if (response.status === 200) {
-            const payload: MeResponse = await response.json();
-            this.aiPolicy = payload.ai_policy ?? null;
-
-            if (!payload.authenticated || !payload.user) {
-              this.user = null;
-              this.profile = null;
-              this.csrfToken = null;
-              this.status = "ready";
-              this.error = null;
-              return;
-            }
-
-            this.user = payload.user;
-            this.profile = payload.profile ?? null;
-
-            if (!this.csrfToken) {
-              await this.ensureCsrfToken();
-            }
-
-            this.status = "ready";
-            this.error = null;
-            return;
-          }
-
-          if (response.status === 401) {
+          if (sharedSession.kind === "authenticated") {
+            const { snapshot } = sharedSession;
             this.user = null;
             this.profile = null;
             this.aiPolicy = null;
+            this.grants = snapshot.grants;
+            this.featureFlags = snapshot.featureFlags;
+
+            if (snapshot.user) {
+              await this.loadAppContinuation();
+              if (!this.csrfToken) {
+                await this.ensureCsrfToken();
+              }
+            }
+
+            this.status = "ready";
+            return;
+          }
+
+          if (sharedSession.kind === "anonymous") {
+            this.user = null;
+            this.profile = null;
+            this.aiPolicy = null;
+            this.grants = [];
+            this.featureFlags = [];
             this.csrfToken = null;
             this.status = "ready";
             this.error = null;
@@ -235,13 +148,17 @@ export const useAuthStore = defineStore("auth", {
           this.user = null;
           this.profile = null;
           this.aiPolicy = null;
+          this.grants = [];
+          this.featureFlags = [];
           this.csrfToken = null;
           this.status = "error";
-          this.error = await readErrorMessage(response);
+          this.error = sharedSession.message;
         } catch (error: unknown) {
           this.user = null;
           this.profile = null;
           this.aiPolicy = null;
+          this.grants = [];
+          this.featureFlags = [];
           this.csrfToken = null;
           this.status = "error";
           this.error = error instanceof Error ? error.message : "Failed to bootstrap session";
@@ -255,6 +172,30 @@ export const useAuthStore = defineStore("auth", {
         bootstrapPromise = null;
       }
     },
+    async loadAppContinuation(): Promise<void> {
+      this.aiPolicy = null;
+
+      try {
+        const result = await requestAppContinuation();
+
+        if (result.kind === "ready") {
+          this.user = result.continuation.local_user;
+          this.aiPolicy = result.continuation.ai_policy;
+          this.profile = result.profile;
+          this.error = null;
+          return;
+        }
+
+        this.user = null;
+        this.profile = null;
+        this.error = result.message;
+      } catch (error: unknown) {
+        this.user = null;
+        this.profile = null;
+        this.error =
+          error instanceof Error ? error.message : "Failed to load app continuation";
+      }
+    },
     async ensureCsrfToken(): Promise<string | null> {
       if (this.csrfToken) {
         return this.csrfToken;
@@ -265,29 +206,22 @@ export const useAuthStore = defineStore("auth", {
       }
 
       try {
-        const response = await fetchWithTimeout(
-          "/api/v1/auth/csrf",
-          {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-          },
-          { timeoutMs: 10000, timeoutMessage: "Det gick inte att hämta CSRF-token." },
-        );
+        const result = await loadSharedCsrfToken();
 
-        if (response.status === 200) {
-          const payload: CsrfResponse = await response.json();
-          this.csrfToken = payload.csrf_token;
+        if (result.kind === "ready") {
+          this.csrfToken = result.token;
           return this.csrfToken;
         }
 
-        if (response.status === 401) {
+        if (result.kind === "anonymous") {
           this.user = null;
+          this.grants = [];
+          this.featureFlags = [];
           this.csrfToken = null;
           return null;
         }
 
-        this.error = await readErrorMessage(response);
+        this.error = result.message;
         return null;
       } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : "Failed to fetch CSRF token";
@@ -327,6 +261,8 @@ export const useAuthStore = defineStore("auth", {
         this.user = payload.user;
         this.profile = payload.profile ?? null;
         this.aiPolicy = payload.ai_policy ?? null;
+        this.grants = [];
+        this.featureFlags = [];
         this.csrfToken = payload.csrf_token;
         this.bootstrapped = true;
         this.status = "ready";
@@ -382,6 +318,8 @@ export const useAuthStore = defineStore("auth", {
         this.user = null;
         this.profile = null;
         this.aiPolicy = null;
+        this.grants = [];
+        this.featureFlags = [];
         this.csrfToken = null;
         this.bootstrapped = true;
         this.status = "ready";

@@ -164,6 +164,35 @@ describe("client", () => {
       expect(headers.get("X-CSRF-Token")).toBe("test-csrf-token");
     });
 
+    it("fetches CSRF from the shared HuleEdu edge before unsafe requests", async () => {
+      const auth = useAuthStore();
+      auth.user = createTestUser();
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: () => Promise.resolve({ csrf_token: "shared-csrf-token" }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: () => Promise.resolve({ result: "ok" }),
+        } as Response);
+
+      await apiFetch("/api/test", { method: "PATCH", body: { foo: "bar" } });
+
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        "https://api.hule.education/v1/auth/csrf",
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      );
+      const headers = (fetch as ReturnType<typeof vi.fn>).mock.calls[1][1].headers as Headers;
+      expect(headers.get("X-CSRF-Token")).toBe("shared-csrf-token");
+      expect(headers.get("Authorization")).toBeNull();
+    });
+
     it("does not add CSRF token for GET requests", async () => {
       const auth = useAuthStore();
       auth.csrfToken = "test-csrf-token";

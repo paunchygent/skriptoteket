@@ -5,7 +5,7 @@ title: "Development changelog"
 status: active
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-09
+updated: 2026-04-10
 topic: "development-changelog"
 ---
 
@@ -14,6 +14,20 @@ Append-only development log and repo long-term memory for compacted handoff hist
 Rule:
 - When compacting `.agents/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
+
+## 2026-04-10 handoff compaction dump
+
+Moved from `.agents/handoff.md` during EPIC-28 shared-auth consumer migration scaffolding.
+
+- The previous handoff contained the full `PR-0231` through `PR-0249` implementation and proof
+  history. That history remains durable in this changelog and in the corresponding backlog records;
+  the active handoff was reduced back to the current decision points and executable next steps.
+- Before compaction, `.agents/handoff.md` recorded that `REV-EPIC-28` is approved, `ST-32-10` /
+  `PR-0242` owns the dedicated `/auth/login` route contract, and the remaining runtime blocker for
+  EPIC-28 was HuleEdu host/session truth.
+- The active state changed on 2026-04-10: HuleEdu has accepted ADR-0039 and created the
+  provider-conformance + consumer-handoff lane in `ST-01-03` / `TASK-0308`, so Skriptoteket now
+  scaffolds consumer migration PR tasks under EPIC-28 instead of creating a duplicate epic.
 
 ## 2026-04-09 handoff compaction dump
 

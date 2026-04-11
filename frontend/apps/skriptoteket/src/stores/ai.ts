@@ -24,7 +24,7 @@ export const useAiStore = defineStore("ai", () => {
   const auth = useAuthStore();
 
   const remoteProvidersEnabled = computed(
-    () => auth.aiPolicy?.remote_providers_enabled ?? true,
+    () => auth.aiPolicy?.remote_providers_enabled ?? false,
   );
   const completionExternalAvailable = computed(
     () => auth.aiPolicy?.completion_external_available ?? false,

@@ -71,7 +71,7 @@ describe("HomeView", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Lärarverktyg direkt i webbläsaren.");
+    expect(wrapper.text()).toContain("Lektionsplanera direkt i webbläsaren.");
     expect(wrapper.text()).toContain("Klassrumskartan är en av Skriptotekets appar.");
     expect(wrapper.text()).toContain("Öppna Klassrumskartan");
     expect(wrapper.text()).toContain("skapa ett konto");

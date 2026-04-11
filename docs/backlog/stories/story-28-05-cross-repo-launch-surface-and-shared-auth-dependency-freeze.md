@@ -2,18 +2,19 @@
 type: story
 id: ST-28-05
 title: "Cross-repo launch surface and shared auth dependency freeze"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-11
 epic: "EPIC-28"
 dependencies:
   - "ADR-0076"
   - "EPIC-32"
   - "REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08"
+  - "HuleEdu ADR-0039"
 acceptance_criteria:
   - "Given the launch-critical public surface now spans HuleEdu and Skriptoteket, when this story is complete, then the canonical host topology is frozen explicitly as `https://hule.education` for the HuleEdu landing page, `https://api.hule.education` for the shared browser auth/API edge, and `https://skriptoteket.hule.education` for the canonical public Skriptoteket app host."
-  - "Given the current browser auth cutover depends on upstream HuleEdu work, when this story is complete, then the ownership matrix names clearly which work belongs to the HuleEdu repo/platform versus the Skriptoteket repo and which downstream stories remain blocked until the upstream edge exists."
+  - "Given the current browser auth cutover consumes HuleEdu-owned provider work, when this story is complete, then the ownership matrix names clearly which work belongs to the HuleEdu repo/platform versus the Skriptoteket repo, which provider obligations are ready, and which contract gaps must route back to HuleEdu."
   - "Given launch pacing matters, when this story is complete, then the phased critical path distinguishes platform-first decisions and rollout gates from later Skriptoteket-local SEO hardening and polish."
   - "Given Skriptoteket should not harden around a temporary apex vacancy, when this story is reviewed, then `EPIC-28` and `EPIC-35` both consume the same frozen topology and shared-auth assumptions."
 ui_impact: "No"
@@ -40,6 +41,17 @@ Skriptoteket auth cutover, and SEO cleanup into one blurry critical path.
 - It is also the upstream dependency freeze that `EPIC-35` should consume rather than recreate.
 - The story is planning-first and cross-repo by design. It should not be reduced to a local frontend
   implementation slice.
+- HuleEdu has now accepted ADR-0039, completed `TASK-0308`, and published the provider conformance
+  plus consumer handoff lane through `ST-01-03`. Skriptoteket ingested that handoff through
+  [PR-0250](../prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md);
+  `PR-0251` can now start from the retained shared browser-session contract.
+
+## Implementation Summary (as of 2026-04-11)
+
+`ST-28-05` shipped as a docs-only readiness gate through `PR-0250`. It froze the
+`hule.education` / `api.hule.education` / `skriptoteket.hule.education` topology, recorded the
+HuleEdu/Skriptoteket ownership split, confirmed HuleEdu `TASK-0308` public proof, and left no
+provider-side blocker before the `PR-0251` consumer implementation slice.
 
 ## References
 
@@ -49,5 +61,7 @@ Skriptoteket auth cutover, and SEO cleanup into one blurry critical path.
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
 - Browser-session target:
   [ADR-0076](../../adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md)
+- Readiness intake:
+  [PR-0250](../prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md)
 - Downstream launch SEO epic:
   [EPIC-35](../epics/epic-35-launch-seo-and-search-indexing-readiness.md)

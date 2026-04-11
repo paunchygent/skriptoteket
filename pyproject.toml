@@ -33,6 +33,7 @@ dependencies = [
 
     # Security
     "argon2-cffi",
+    "cryptography>=46.0.0",
 
     # Email
     "aiosmtplib>=3.0",
@@ -296,6 +297,7 @@ ui-smoke = "python -m scripts.playwright_ui_smoke"
 ui-editor-smoke = "python -m scripts.playwright_ui_editor_smoke"
 ui-runtime-smoke = "python -m scripts.playwright_ui_runtime_smoke"
 ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
+pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",

@@ -1,3 +1,14 @@
+"""PostgreSQL-backed user repository.
+
+Purpose:
+    Persist and retrieve Skriptoteket users, including HuleEdu-linked local
+    projections used by the shared-session cutover.
+
+Relationships:
+    - Implements `UserRepositoryProtocol`.
+    - Used by identity handlers and app-continuation projection resolution.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -7,7 +18,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.identity.models import Role, User, UserAuth
+from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserAuth
 from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 
@@ -23,6 +34,20 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
 
     async def get_by_id(self, user_id: UUID) -> User | None:
         result = await self._session.execute(select(UserModel).where(UserModel.id == user_id))
+        model = result.scalar_one_or_none()
+        return User.model_validate(model) if model else None
+
+    async def get_by_auth_provider_external_id(
+        self,
+        *,
+        auth_provider: AuthProvider,
+        external_id: str,
+    ) -> User | None:
+        stmt = select(UserModel).where(
+            UserModel.auth_provider == auth_provider.value,
+            UserModel.external_id == external_id,
+        )
+        result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return User.model_validate(model) if model else None
 

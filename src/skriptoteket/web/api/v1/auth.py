@@ -40,7 +40,6 @@ from skriptoteket.application.identity.handlers.verify_email import VerifyEmailH
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Session, User, UserProfile
-from skriptoteket.infrastructure.llm.provider_sets import is_remote_llm_endpoint
 from skriptoteket.protocols.identity import (
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
@@ -48,6 +47,7 @@ from skriptoteket.protocols.identity import (
     RegisterUserHandlerProtocol,
     ValidateRegistrationHandlerProtocol,
 )
+from skriptoteket.web.api.v1.ai_policy import AiPolicyResponse, build_ai_policy
 from skriptoteket.web.auth.api_dependencies import require_session_api
 from skriptoteket.web.auth.dependencies import (
     get_current_session,
@@ -62,31 +62,6 @@ from skriptoteket.web.request_metadata import (
 )
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
-
-
-class AiPolicyResponse(BaseModel):
-    model_config = ConfigDict(frozen=True)
-    remote_providers_enabled: bool
-    completion_external_available: bool
-    completion_local_available: bool
-
-
-def _build_ai_policy(settings: Settings) -> AiPolicyResponse:
-    completion_candidates = [
-        (settings.LLM_COMPLETION_BASE_URL.strip(), settings.LLM_COMPLETION_MODEL.strip()),
-        (
-            settings.LLM_COMPLETION_FALLBACK_BASE_URL.strip(),
-            settings.LLM_COMPLETION_FALLBACK_MODEL.strip(),
-        ),
-    ]
-    configured = [(url, model) for url, model in completion_candidates if url and model]
-    completion_external_available = any(is_remote_llm_endpoint(url) for url, _ in configured)
-    completion_local_available = any(not is_remote_llm_endpoint(url) for url, _ in configured)
-    return AiPolicyResponse(
-        remote_providers_enabled=settings.AI_REMOTE_PROVIDERS_ENABLED,
-        completion_external_available=completion_external_available,
-        completion_local_available=completion_local_available,
-    )
 
 
 class LoginRequest(BaseModel):
@@ -181,7 +156,7 @@ async def login(
         user=result.user,
         profile=result.profile,
         csrf_token=result.csrf_token,
-        ai_policy=_build_ai_policy(settings),
+        ai_policy=build_ai_policy(settings),
     )
 
 
@@ -255,14 +230,14 @@ async def me(
             authenticated=False,
             user=None,
             profile=None,
-            ai_policy=_build_ai_policy(settings),
+            ai_policy=build_ai_policy(settings),
         )
     profile = await profiles.get_by_user_id(user_id=user.id)
     return MeResponse(
         authenticated=True,
         user=user,
         profile=profile,
-        ai_policy=_build_ai_policy(settings),
+        ai_policy=build_ai_policy(settings),
     )
 
 

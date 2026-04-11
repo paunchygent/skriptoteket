@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:afa0805de43b37e9dbb641be7d6e18c4b08968e401a86089073e999a0b7c855d"
+content_hash = "sha256:7370eb20b4cfb51ed617a81a77a417ca5ca47d1d5c448704b673a19880c1f951"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"

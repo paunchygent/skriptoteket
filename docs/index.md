@@ -151,6 +151,32 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0242-st-32-10-dedicated-auth-entry-page-and-redirect-preserving-login-handoff.md`
 - ST-28-05 cross-repo launch surface + shared auth dependency freeze:
   `docs/backlog/stories/story-28-05-cross-repo-launch-surface-and-shared-auth-dependency-freeze.md`
+- EPIC-28 Skriptoteket auth authority cutover to HuleEdu:
+  `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- ST-28-01 frontend auth store + API client cutover to HuleEdu session contract:
+  `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md`
+- ST-28-02 auth interruption + protected-route handoff on HuleEdu-owned session:
+  `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md`
+- ST-28-03 remove local auth ownership + regenerate client contracts:
+  `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`
+- ST-28-04 cross-app auth cutover smoke + operator runbook proof:
+  `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
+- ST-28-05 HuleEdu provider conformance ingest + cutover readiness:
+  `docs/backlog/prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md`
+- ST-28-01 session bootstrap API client cutover:
+  `docs/backlog/prs/pr-0251-st-28-01-session-bootstrap-api-client-cutover.md`
+- ST-28-01 PR-0251 remediation: HuleEdu context + local authorization projection:
+  `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md`
+- Review gate for PR-0255 HuleEdu context + local authorization remediation:
+  `docs/backlog/reviews/review-pr-0255-huleedu-context-and-local-authorization-remediation.md`
+- Review gate for PR-0251 app-local bootstrap continuation:
+  `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md`
+- ST-28-02 auth entry return-to-origin on HuleEdu session:
+  `docs/backlog/prs/pr-0252-st-28-02-auth-entry-return-to-origin-on-huleedu-session.md`
+- ST-28-03 local auth authority retirement + contract regeneration:
+  `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md`
+- ST-28-04 cross-app auth cutover smoke + runbook proof:
+  `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
 - EPIC-35 launch SEO + search indexing readiness:
   `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`
 - Review gate for EPIC-35 launch SEO + search indexing readiness:
@@ -303,6 +329,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
 - Accepted Hemma deploy entrypoint ADR:
   `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
+- Accepted app-local bootstrap continuation ADR:
+  `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md`
+- Changes-requested app-local bootstrap continuation review:
+  `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Active public curated-app access epic:
@@ -491,6 +521,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
 - `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
 - `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
+- `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md`
 - `docs/reference/ref-runner-contract-v3.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-frontend-transition-continuity-v1.md`
@@ -589,6 +620,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md`
 - `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`
 - `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
+- `docs/backlog/stories/story-28-05-cross-repo-launch-surface-and-shared-auth-dependency-freeze.md`
 - `docs/backlog/stories/story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md`
 - `docs/backlog/stories/story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md`
 - `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md`
@@ -634,6 +666,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md`
+- `docs/backlog/reviews/review-pr-0255-huleedu-context-and-local-authorization-remediation.md`
 - `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - `docs/backlog/reviews/review-pr-0226-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md`
 - `docs/backlog/reviews/review-pr-0227-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md`
@@ -873,6 +907,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0241-st-11-25-playwright-tree-normalization.md`
 - `docs/backlog/prs/pr-0243-st-11-25-lhci-and-bundle-visualizer-toolchain.md`
 - `docs/backlog/prs/pr-0244-st-11-25-pilot-route-inventory-and-trace-baselines.md`
+- `docs/backlog/prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md`
+- `docs/backlog/prs/pr-0251-st-28-01-session-bootstrap-api-client-cutover.md`
+- `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md`
+- `docs/backlog/prs/pr-0252-st-28-02-auth-entry-return-to-origin-on-huleedu-session.md`
+- `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md`
+- `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
 
 ### Backlog Stories
 

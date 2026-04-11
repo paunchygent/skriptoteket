@@ -8,8 +8,9 @@ Purpose:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 from uuid import UUID
 
 from skriptoteket.application.identity.admin_users import (
@@ -40,6 +41,7 @@ from skriptoteket.application.identity.commands import (
 )
 from skriptoteket.domain.identity.models import (
     AllowedDomain,
+    AuthProvider,
     BlockedDomain,
     Role,
     Session,
@@ -48,9 +50,19 @@ from skriptoteket.domain.identity.models import (
     UserProfile,
 )
 
+if TYPE_CHECKING:
+    from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
+    from skriptoteket.domain.identity.internal_identity_context import InternalIdentityContextV1
+
 
 class UserRepositoryProtocol(Protocol):
     async def get_by_id(self, user_id: UUID) -> User | None: ...
+    async def get_by_auth_provider_external_id(
+        self,
+        *,
+        auth_provider: AuthProvider,
+        external_id: str,
+    ) -> User | None: ...
     async def get_auth_by_email(self, email: str) -> UserAuth | None: ...
     async def create(self, *, user: User, password_hash: str | None) -> User: ...
     async def update(self, *, user: User) -> User: ...
@@ -109,6 +121,23 @@ class PasswordHasherProtocol(Protocol):
 
 class CurrentUserProviderProtocol(Protocol):
     async def get_current_user(self, *, session_id: UUID | None) -> User | None: ...
+
+
+class HuleEduInternalIdentityVerifierProtocol(Protocol):
+    def verify(
+        self,
+        *,
+        headers: Mapping[str, Any],
+        now_ts: int,
+    ) -> InternalIdentityContextV1: ...
+
+
+class HuleEduAppProjectionResolverProtocol(Protocol):
+    async def resolve(
+        self,
+        *,
+        context: InternalIdentityContextV1,
+    ) -> HuleEduAppUserProjection: ...
 
 
 class LoginHandlerProtocol(Protocol):

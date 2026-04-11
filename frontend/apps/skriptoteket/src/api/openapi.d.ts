@@ -789,6 +789,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/classroom.group-seating-studio/guest-upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Guest Upgrade
+         * @description Preview or commit one authenticated Klassrumskartan guest upgrade.
+         */
+        post: operations["guest_upgrade_api_v1_apps_classroom_group_seating_studio_guest_upgrade_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/guest-upgrade/consumption": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Guest Upgrade Consumption Status
+         * @description Return whether this user's guest-upgrade bridge was already consumed.
+         */
+        get: operations["get_guest_upgrade_consumption_status_api_v1_apps_classroom_group_seating_studio_guest_upgrade_consumption_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/classroom.group-seating-studio/rosters": {
         parameters: {
             query?: never;
@@ -1924,6 +1964,23 @@ export interface paths {
         patch: operations["update_ai_settings_api_v1_profile_ai_settings_patch"];
         trace?: never;
     };
+    "/api/v1/profile/app-continuation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get App Continuation */
+        get: operations["get_app_continuation_api_v1_profile_app_continuation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/profile/email": {
         parameters: {
             query?: never;
@@ -1952,6 +2009,91 @@ export interface paths {
         put?: never;
         /** Change Password */
         post: operations["change_password_api_v1_profile_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/classroom.group-seating-studio/grouping/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Public Grouping */
+        post: operations["export_public_grouping_api_v1_public_apps_classroom_group_seating_studio_grouping_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Public Smart Grouping */
+        post: operations["run_public_smart_grouping_api_v1_public_apps_classroom_group_seating_studio_grouping_smart_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Public Import Preview */
+        post: operations["create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/classroom.group-seating-studio/seating/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Public Seating */
+        post: operations["export_public_seating_api_v1_public_apps_classroom_group_seating_studio_seating_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/classroom.group-seating-studio/seating/smart-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Public Smart Seating */
+        post: operations["run_public_smart_seating_api_v1_public_apps_classroom_group_seating_studio_seating_smart_run_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2437,6 +2579,11 @@ export interface components {
             /** Workspace */
             workspace?: null;
         };
+        /** Body_create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post */
+        Body_create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post: {
+            /** File */
+            file: string;
+        };
         /** Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post */
         Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post: {
             /** File */
@@ -2599,6 +2746,107 @@ export interface components {
             seating_history: components["schemas"]["PlanDraftSummaryDto"][];
             /** Task Entry Options */
             task_entry_options: components["schemas"]["TaskEntryOptionDto"][];
+        };
+        /**
+         * ClassroomPlannerGuestSnapshotPayload
+         * @description Describe the full guest snapshot submitted to the upgrade boundary.
+         */
+        ClassroomPlannerGuestSnapshotPayload: {
+            /** Checkpoint Descriptors */
+            checkpoint_descriptors?: components["schemas"]["GuestUpgradeCheckpointPayload"][];
+            /** Created At */
+            created_at: string;
+            /** Expires At */
+            expires_at: string;
+            grouping_draft?: components["schemas"]["GuestUpgradeDraftPayload"] | null;
+            /**
+             * Profile
+             * @constant
+             */
+            profile: "public_browser_workspace_with_upgrade";
+            /** Rosters */
+            rosters?: components["schemas"]["GuestUpgradeRosterPayload"][];
+            /** Schema Version */
+            schema_version: number;
+            seating_draft?: components["schemas"]["GuestUpgradeDraftPayload"] | null;
+            /** Smart Rule Sets */
+            smart_rule_sets?: components["schemas"]["GuestUpgradeSmartRuleSetPayload"][];
+            /** Snapshot Content Hash */
+            snapshot_content_hash: string;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Templates */
+            templates?: components["schemas"]["GuestUpgradeTemplatePayload"][];
+            ui_state: components["schemas"]["GuestUpgradeUiStatePayload"];
+            /** Updated At */
+            updated_at: string;
+        };
+        /**
+         * ClassroomPlannerGuestUpgradeConsumptionStatusResponse
+         * @description Authenticated guest-upgrade consumption truth for one user/app.
+         */
+        ClassroomPlannerGuestUpgradeConsumptionStatusResponse: {
+            /** Consumed */
+            consumed: boolean;
+        };
+        /**
+         * ClassroomPlannerGuestUpgradeReceipt
+         * @description Describe the preview or commit outcome for one guest snapshot.
+         */
+        ClassroomPlannerGuestUpgradeReceipt: {
+            /** Conflicted */
+            conflicted?: components["schemas"]["ClassroomPlannerGuestUpgradeReceiptItem"][];
+            /** Created */
+            created?: components["schemas"]["ClassroomPlannerGuestUpgradeReceiptItem"][];
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "preview" | "commit";
+            /** Reused */
+            reused?: components["schemas"]["ClassroomPlannerGuestUpgradeReceiptItem"][];
+            /** Schema Version */
+            schema_version: number;
+            /** Server Snapshot Content Hash */
+            server_snapshot_content_hash: string;
+            /** Skipped */
+            skipped?: components["schemas"]["ClassroomPlannerGuestUpgradeReceiptItem"][];
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Submitted Snapshot Content Hash */
+            submitted_snapshot_content_hash: string;
+        };
+        /**
+         * ClassroomPlannerGuestUpgradeReceiptItem
+         * @description Describe one entity-level guest-upgrade receipt line.
+         */
+        ClassroomPlannerGuestUpgradeReceiptItem: {
+            draft_kind?: components["schemas"]["PlanDraftKind"] | null;
+            /**
+             * Entity Type
+             * @enum {string}
+             */
+            entity_type: "roster" | "template" | "smart_rule_set" | "draft" | "checkpoint";
+            /** Local Id */
+            local_id: string;
+            /** Message */
+            message?: string | null;
+            /** Target Id */
+            target_id?: string | null;
+            /** Target Name */
+            target_name?: string | null;
+        };
+        /**
+         * ClassroomPlannerGuestUpgradeRequest
+         * @description Describe one preview or commit call to the guest-upgrade boundary.
+         */
+        ClassroomPlannerGuestUpgradeRequest: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "preview" | "commit";
+            snapshot: components["schemas"]["ClassroomPlannerGuestSnapshotPayload"];
         };
         /**
          * ClassroomSelectionMode
@@ -2891,6 +3139,23 @@ export interface components {
         /** DepublishToolResponse */
         DepublishToolResponse: {
             tool: components["schemas"]["AdminToolItem"];
+        };
+        /**
+         * DraftGroup
+         * @description Represent a stable group bucket inside one draft.
+         */
+        DraftGroup: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Name Is Custom
+             * @default false
+             */
+            name_is_custom: boolean;
+            /** Sort Order */
+            sort_order: number;
         };
         /**
          * DraftGroupDto
@@ -3457,8 +3722,12 @@ export interface components {
         };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {
+            /** Classroom Planner Entry Origin */
+            classroom_planner_entry_origin?: string | null;
             /** Email */
             email?: string | null;
+            /** Next */
+            next?: string | null;
         };
         /** ForgotPasswordResponse */
         ForgotPasswordResponse: {
@@ -3472,6 +3741,16 @@ export interface components {
         /** GetSessionStateResult */
         GetSessionStateResult: {
             session_state: components["schemas"]["InteractiveSessionState"];
+        };
+        /**
+         * GroupAssignment
+         * @description Represent one student-to-group assignment.
+         */
+        GroupAssignment: {
+            /** Group Id */
+            group_id: string;
+            /** Student Id */
+            student_id: string;
         };
         /**
          * GroupAssignmentDto
@@ -3585,6 +3864,154 @@ export interface components {
             display_name: string;
             /** Member Order */
             member_order: number;
+        };
+        /**
+         * GuestUpgradeCheckpointPayload
+         * @description Describe one guest-stored export checkpoint candidate.
+         */
+        GuestUpgradeCheckpointPayload: {
+            /** Created At */
+            created_at: string;
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /** Fingerprint */
+            fingerprint: string;
+            /** Group Assignments */
+            group_assignments?: components["schemas"]["GroupAssignment"][] | null;
+            /** Label */
+            label?: string | null;
+            /** Local Id */
+            local_id: string;
+            /** Seat Assignments */
+            seat_assignments?: components["schemas"]["SeatAssignment"][] | null;
+            /**
+             * Source
+             * @default export
+             * @constant
+             */
+            source: "export";
+            /** Template Local Id */
+            template_local_id?: string | null;
+        };
+        /**
+         * GuestUpgradeDraftPayload
+         * @description Describe one guest-stored draft that may become imported history.
+         */
+        GuestUpgradeDraftPayload: {
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /** Fingerprint */
+            fingerprint: string;
+            /** Group Assignments */
+            group_assignments?: components["schemas"]["GroupAssignment"][];
+            /**
+             * Grouping Seating Distance Enabled
+             * @default false
+             */
+            grouping_seating_distance_enabled: boolean;
+            /** Groups */
+            groups?: components["schemas"]["DraftGroup"][];
+            /** Last Opened At */
+            last_opened_at: string;
+            /** Local Id */
+            local_id: string;
+            /** Revision */
+            revision: number;
+            /** Roster Local Id */
+            roster_local_id: string;
+            /** Seat Assignments */
+            seat_assignments?: components["schemas"]["SeatAssignment"][];
+            /**
+             * Smart Enabled
+             * @default false
+             */
+            smart_enabled: boolean;
+            task_entry_classroom_selection_mode: components["schemas"]["ClassroomSelectionMode"];
+            /** Template Local Id */
+            template_local_id?: string | null;
+            /**
+             * Use History
+             * @default false
+             */
+            use_history: boolean;
+        };
+        /**
+         * GuestUpgradeRosterPayload
+         * @description Describe one guest-stored roster candidate.
+         */
+        GuestUpgradeRosterPayload: {
+            /** Fingerprint */
+            fingerprint: string;
+            /** Local Id */
+            local_id: string;
+            /** Name */
+            name: string;
+            /** Students */
+            students: components["schemas"]["GuestUpgradeStudentPayload"][];
+        };
+        /**
+         * GuestUpgradeSmartRuleSetPayload
+         * @description Describe one guest-stored roster-global smart-rule set.
+         */
+        GuestUpgradeSmartRuleSetPayload: {
+            /** Fingerprint */
+            fingerprint: string;
+            /** Relationship Rules */
+            relationship_rules?: components["schemas"]["RelationshipRule"][];
+            /** Revision */
+            revision: number;
+            /** Roster Local Id */
+            roster_local_id: string;
+            /** Seating Preferences */
+            seating_preferences?: components["schemas"]["StudentSeatingPreference"][];
+        };
+        /**
+         * GuestUpgradeStudentPayload
+         * @description Describe one guest-stored student inside a browser-owned roster.
+         */
+        GuestUpgradeStudentPayload: {
+            /** Display Name */
+            display_name: string;
+            /** Local Id */
+            local_id: string;
+        };
+        /**
+         * GuestUpgradeTemplatePayload
+         * @description Describe one guest-stored room template candidate.
+         */
+        GuestUpgradeTemplatePayload: {
+            /** Fingerprint */
+            fingerprint: string;
+            /** Fixtures */
+            fixtures?: components["schemas"]["RoomFixture"][];
+            /** Grid Cols */
+            grid_cols?: number | null;
+            /** Grid Rows */
+            grid_rows?: number | null;
+            /** Local Id */
+            local_id: string;
+            /** Name */
+            name: string;
+            /** Seats */
+            seats: components["schemas"]["Seat"][];
+        };
+        /**
+         * GuestUpgradeUiStatePayload
+         * @description Describe guest-only UI state carried inside the browser snapshot.
+         */
+        GuestUpgradeUiStatePayload: {
+            /** Current Screen */
+            current_screen: string;
+            /** Dismissed Grouping Draft Local Id */
+            dismissed_grouping_draft_local_id?: string | null;
+            /** Dismissed Seating Draft Local Id */
+            dismissed_seating_draft_local_id?: string | null;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Planner Initial View */
+            planner_initial_view: string;
+            /** Selected Roster Local Id */
+            selected_roster_local_id?: string | null;
+            /** Selected Template Local Id */
+            selected_template_local_id?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -3997,6 +4424,7 @@ export interface components {
             smart_enabled: boolean;
             /** Status */
             status: string;
+            task_entry_classroom_selection_mode: components["schemas"]["ClassroomSelectionMode"];
             /** Template Id */
             template_id?: string | null;
             /**
@@ -4190,6 +4618,16 @@ export interface components {
             /** Sort Order */
             sort_order: number;
         };
+        /** ProfileAppContinuationResponse */
+        ProfileAppContinuationResponse: {
+            ai_policy: components["schemas"]["AiPolicyResponse"];
+            /** Allow Remote Fallback */
+            allow_remote_fallback?: boolean | null;
+            /** Inline Completion Provider */
+            inline_completion_provider?: ("local" | "external") | null;
+            local_user: components["schemas"]["User"];
+            profile: components["schemas"]["UserProfile"];
+        };
         /** ProfileResponse */
         ProfileResponse: {
             profile: components["schemas"]["UserProfile"];
@@ -4214,6 +4652,225 @@ export interface components {
             /** Title */
             title: string;
             ui_mode: components["schemas"]["CuratedAppUiMode"];
+        };
+        /**
+         * PublicDraftHistoryStatusDto
+         * @description Serialize the local-only undo/redo availability for one public workspace.
+         */
+        PublicDraftHistoryStatusDto: {
+            /** Can Redo */
+            can_redo: boolean;
+            /** Can Undo */
+            can_undo: boolean;
+        };
+        /**
+         * PublicDraftWorkspaceResponse
+         * @description Serialize one browser-owned workspace returned by a public Smart helper.
+         */
+        PublicDraftWorkspaceResponse: {
+            draft: components["schemas"]["PublicPlanDraftDto"];
+            /** Group Assignments */
+            group_assignments?: components["schemas"]["GroupAssignment"][];
+            /** Groups */
+            groups?: components["schemas"]["DraftGroup"][];
+            history_status: components["schemas"]["PublicDraftHistoryStatusDto"];
+            roster: components["schemas"]["PublicRosterDto"];
+            /** Seat Assignments */
+            seat_assignments?: components["schemas"]["SeatAssignment"][];
+            template?: components["schemas"]["PublicRoomTemplateDto"] | null;
+        };
+        /**
+         * PublicPlanDraftDto
+         * @description Serialize the mutable browser-owned draft root for public Smart routes.
+         */
+        PublicPlanDraftDto: {
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /**
+             * Grouping Seating Distance Enabled
+             * @default false
+             */
+            grouping_seating_distance_enabled: boolean;
+            /** Id */
+            id: string;
+            /** Last Opened At */
+            last_opened_at: string;
+            /** Revision */
+            revision: number;
+            /** Roster Id */
+            roster_id: string;
+            /**
+             * Smart Enabled
+             * @default false
+             */
+            smart_enabled: boolean;
+            /**
+             * Status
+             * @default active
+             * @constant
+             */
+            status: "active";
+            task_entry_classroom_selection_mode: components["schemas"]["ClassroomSelectionMode"];
+            /** Template Id */
+            template_id?: string | null;
+            /**
+             * Use History
+             * @default false
+             */
+            use_history: boolean;
+        };
+        /**
+         * PublicRoomFixtureDto
+         * @description Serialize one browser-owned room fixture inside a public Smart workspace.
+         */
+        PublicRoomFixtureDto: {
+            /** Height */
+            height: number;
+            /** Id */
+            id: string;
+            /** Label */
+            label?: string | null;
+            /** Type */
+            type: string;
+            /** Width */
+            width: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /**
+         * PublicRoomTemplateDto
+         * @description Serialize one browser-owned room template inside a public Smart workspace.
+         */
+        PublicRoomTemplateDto: {
+            /** Fixtures */
+            fixtures?: components["schemas"]["PublicRoomFixtureDto"][];
+            /** Grid Cols */
+            grid_cols?: number | null;
+            /** Grid Rows */
+            grid_rows?: number | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Seats */
+            seats: components["schemas"]["PublicSeatDto"][];
+        };
+        /**
+         * PublicRosterDto
+         * @description Serialize one browser-owned roster inside a public Smart workspace.
+         */
+        PublicRosterDto: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Students */
+            students: components["schemas"]["PublicStudentDto"][];
+        };
+        /**
+         * PublicSeatDto
+         * @description Serialize one browser-owned seat inside a public Smart workspace.
+         */
+        PublicSeatDto: {
+            /** Id */
+            id: string;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Zone */
+            zone?: string | null;
+        };
+        /**
+         * PublicSmartGroupingAppliedResponse
+         * @description Serialize one applied public guest Smart grouping result.
+         */
+        PublicSmartGroupingAppliedResponse: {
+            /** Message */
+            message?: string | null;
+            /**
+             * Status
+             * @constant
+             */
+            status: "applied";
+            /** Used History */
+            used_history: boolean;
+            /** Used Live Seating */
+            used_live_seating: boolean;
+            workspace: components["schemas"]["PublicDraftWorkspaceResponse"];
+        };
+        /**
+         * PublicSmartGroupingBlockedResponse
+         * @description Serialize one blocked public guest Smart grouping result.
+         */
+        PublicSmartGroupingBlockedResponse: {
+            /** Message */
+            message: string;
+            /**
+             * Reason
+             * @constant
+             */
+            reason: "no_history";
+            /**
+             * Status
+             * @constant
+             */
+            status: "blocked";
+            /** Used History */
+            used_history: boolean;
+            /** Used Live Seating */
+            used_live_seating: boolean;
+            /** Workspace */
+            workspace?: null;
+        };
+        /**
+         * PublicSmartSeatingAppliedResponse
+         * @description Serialize one applied public guest Smart seating result.
+         */
+        PublicSmartSeatingAppliedResponse: {
+            /** Message */
+            message?: string | null;
+            /**
+             * Status
+             * @constant
+             */
+            status: "applied";
+            /** Used History */
+            used_history: boolean;
+            workspace: components["schemas"]["PublicDraftWorkspaceResponse"];
+        };
+        /**
+         * PublicSmartSeatingBlockedResponse
+         * @description Serialize one blocked public guest Smart seating result.
+         */
+        PublicSmartSeatingBlockedResponse: {
+            /** Message */
+            message: string;
+            /**
+             * Reason
+             * @constant
+             */
+            reason: "no_history";
+            /**
+             * Status
+             * @constant
+             */
+            status: "blocked";
+            /** Used History */
+            used_history: boolean;
+            /** Workspace */
+            workspace?: null;
+        };
+        /**
+         * PublicStudentDto
+         * @description Serialize one browser-owned student inside a public Smart workspace.
+         */
+        PublicStudentDto: {
+            /** Display Name */
+            display_name: string;
+            /** Id */
+            id: string;
         };
         /** PublishToolResponse */
         PublishToolResponse: {
@@ -4589,12 +5246,16 @@ export interface components {
         };
         /** RegisterRequest */
         RegisterRequest: {
+            /** Classroom Planner Entry Origin */
+            classroom_planner_entry_origin?: string | null;
             /** Email */
             email: string;
             /** First Name */
             first_name: string;
             /** Last Name */
             last_name: string;
+            /** Next */
+            next?: string | null;
             /** Password */
             password: string;
         };
@@ -4616,6 +5277,23 @@ export interface components {
             status: string;
         };
         /**
+         * RelationshipKind
+         * @description Enumerate supported relationship rule types.
+         * @enum {string}
+         */
+        RelationshipKind: "keep_near" | "keep_apart";
+        /**
+         * RelationshipRule
+         * @description Represent a relationship constraint between two or more students.
+         */
+        RelationshipRule: {
+            /** Id */
+            id: string;
+            kind: components["schemas"]["RelationshipKind"];
+            /** Student Ids */
+            student_ids: string[];
+        };
+        /**
          * RelationshipRuleDto
          * @description Serialize a student relationship constraint.
          */
@@ -4634,8 +5312,12 @@ export interface components {
         };
         /** ResendVerificationRequest */
         ResendVerificationRequest: {
+            /** Classroom Planner Entry Origin */
+            classroom_planner_entry_origin?: string | null;
             /** Email */
             email: string;
+            /** Next */
+            next?: string | null;
         };
         /** ResendVerificationResponse */
         ResendVerificationResponse: {
@@ -4982,6 +5664,16 @@ export interface components {
             zone?: string | null;
         };
         /**
+         * SeatAssignment
+         * @description Represent one student-to-seat assignment.
+         */
+        SeatAssignment: {
+            /** Seat Id */
+            seat_id: string;
+            /** Student Id */
+            student_id: string;
+        };
+        /**
          * SeatAssignmentDto
          * @description Serialize one student-to-seat assignment.
          */
@@ -5217,6 +5909,19 @@ export interface components {
             display_name: string;
             /** Id */
             id: string;
+        };
+        /**
+         * StudentSeatingPreference
+         * @description Represent per-student seating-only preference inputs.
+         */
+        StudentSeatingPreference: {
+            /**
+             * Near Teacher
+             * @default false
+             */
+            near_teacher: boolean;
+            /** Student Id */
+            student_id: string;
         };
         /**
          * StudentSeatingPreferenceDto
@@ -7689,6 +8394,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    guest_upgrade_api_v1_apps_classroom_group_seating_studio_guest_upgrade_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassroomPlannerGuestUpgradeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassroomPlannerGuestUpgradeReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_guest_upgrade_consumption_status_api_v1_apps_classroom_group_seating_studio_guest_upgrade_consumption_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassroomPlannerGuestUpgradeConsumptionStatusResponse"];
                 };
             };
         };
@@ -10219,6 +10979,26 @@ export interface operations {
             };
         };
     };
+    get_app_continuation_api_v1_profile_app_continuation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileAppContinuationResponse"];
+                };
+            };
+        };
+    };
     change_email_api_v1_profile_email_patch: {
         parameters: {
             query?: never;
@@ -10283,6 +11063,119 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_public_grouping_api_v1_public_apps_classroom_group_seating_studio_grouping_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    run_public_smart_grouping_api_v1_public_apps_classroom_group_seating_studio_grouping_smart_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSmartGroupingAppliedResponse"] | components["schemas"]["PublicSmartGroupingBlockedResponse"];
+                };
+            };
+        };
+    };
+    create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassListImportPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_public_seating_api_v1_public_apps_classroom_group_seating_studio_seating_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    run_public_smart_seating_api_v1_public_apps_classroom_group_seating_studio_seating_smart_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSmartSeatingAppliedResponse"] | components["schemas"]["PublicSmartSeatingBlockedResponse"];
                 };
             };
         };

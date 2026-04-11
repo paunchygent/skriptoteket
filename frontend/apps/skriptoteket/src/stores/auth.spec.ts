@@ -6,7 +6,6 @@ import type { components } from "../api/openapi";
 type ApiUser = components["schemas"]["User"];
 type ApiUserProfile = components["schemas"]["UserProfile"];
 
-// Test factory - creates minimal user for testing
 function createTestUser(overrides: Partial<ApiUser> = {}): ApiUser {
   return {
     id: "550e8400-e29b-41d4-a716-446655440000",
@@ -22,7 +21,6 @@ function createTestUser(overrides: Partial<ApiUser> = {}): ApiUser {
   };
 }
 
-// Test factory - creates minimal profile for testing
 function createTestProfile(overrides: Partial<ApiUserProfile> = {}): ApiUserProfile {
   return {
     user_id: "550e8400-e29b-41d4-a716-446655440000",
@@ -35,6 +33,12 @@ function createTestProfile(overrides: Partial<ApiUserProfile> = {}): ApiUserProf
     ...overrides,
   };
 }
+
+const TEST_AI_POLICY = {
+  remote_providers_enabled: true,
+  completion_external_available: true,
+  completion_local_available: true,
+};
 
 function mockJsonResponse(
   payload: unknown,
@@ -234,7 +238,7 @@ describe("useAuthStore", () => {
       expect(token).toBe("new-token");
       expect(store.csrfToken).toBe("new-token");
       expect(fetch).toHaveBeenCalledWith(
-        "/api/v1/auth/csrf",
+        "https://api.hule.education/v1/auth/csrf",
         expect.objectContaining({
           method: "GET",
           credentials: "include",
@@ -396,25 +400,79 @@ describe("useAuthStore", () => {
   });
 
   describe("bootstrap()", () => {
-    it("fetches user info on success", async () => {
+    it("uses app-local continuation for local user id and RBAC on success", async () => {
       const store = useAuthStore();
-      const mockUser = createTestUser();
-      const mockProfile = createTestProfile();
+      const huleEduUserId = "huleedu-provider-subject";
+      const mockUser = createTestUser({
+        role: "contributor",
+        auth_provider: "huleedu",
+        external_id: huleEduUserId,
+      });
+      const mockProfile = createTestProfile({ user_id: mockUser.id });
 
       vi.mocked(fetch)
         .mockResolvedValueOnce(
           mockJsonResponse({
             authenticated: true,
-            user: mockUser,
+            user: { user_id: huleEduUserId, email: mockUser.email, email_verified: true },
+            profile: { display_name: mockProfile.display_name, locale: mockProfile.locale },
+            policy: {
+              roles: ["teacher", "external-admin"],
+              grants: ["tools:run"],
+              feature_flags: ["inline-completion"],
+            },
+            session: { transport: "cookie", csrf_required: true, expires_at: "2026-04-11T12:00:00Z" },
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            local_user: mockUser,
             profile: mockProfile,
-            ai_policy: null,
+            ai_policy: TEST_AI_POLICY,
+            allow_remote_fallback: true,
+            inline_completion_provider: "external",
           }),
         )
         .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }));
 
       await store.bootstrap();
 
-      expect(store.user).toEqual(mockUser);
+      expect(store.user).toEqual(
+        expect.objectContaining({
+          id: mockUser.id,
+          email: mockUser.email,
+          role: mockUser.role,
+          auth_provider: "huleedu",
+          external_id: huleEduUserId,
+        }),
+      );
+      expect(store.user?.id).not.toBe(huleEduUserId);
+      expect(store.hasAtLeastRole("contributor")).toBe(true);
+      expect(store.grants).toEqual(["tools:run"]);
+      expect(store.featureFlags).toEqual(["inline-completion"]);
+      expect(store.aiPolicy).toEqual(TEST_AI_POLICY);
+      expect(store.profile).toEqual(
+        expect.objectContaining({
+          user_id: mockUser.id,
+          allow_remote_fallback: true,
+          inline_completion_provider: "external",
+        }),
+      );
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        "https://api.hule.education/v1/auth/session",
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      );
+      expect(fetch).toHaveBeenNthCalledWith(
+        2,
+        "/api/v1/profile/app-continuation",
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      );
+      expect(fetch).toHaveBeenNthCalledWith(
+        3,
+        "https://api.hule.education/v1/auth/csrf",
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      );
       expect(store.bootstrapped).toBe(true);
       expect(store.status).toBe("ready");
     });
@@ -427,16 +485,58 @@ describe("useAuthStore", () => {
           authenticated: false,
           user: null,
           profile: null,
-          ai_policy: null,
+          policy: {
+            roles: [],
+            grants: [],
+            feature_flags: [],
+          },
+          session: {
+            transport: "cookie",
+            csrf_required: true,
+            expires_at: null,
+          },
         }),
       );
 
       await store.bootstrap();
 
       expect(store.user).toBeNull();
+      expect(fetch).toHaveBeenCalledTimes(1);
       expect(store.bootstrapped).toBe(true);
       expect(store.status).toBe("ready");
       expect(store.error).toBeNull();
+    });
+
+    it("keeps remote AI failed closed when app-local continuation fails", async () => {
+      const store = useAuthStore();
+      const mockUser = createTestUser();
+
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            authenticated: true,
+            user: { user_id: mockUser.id, email: mockUser.email, email_verified: true },
+            profile: { display_name: null, locale: "sv-SE" },
+            policy: { roles: [mockUser.role], grants: [], feature_flags: [] },
+            session: { transport: "cookie", csrf_required: true, expires_at: "2026-04-11T12:00:00Z" },
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockJsonResponse(
+            { error: { code: "APP_CONTINUATION_FAILED", message: "Local app state unavailable" } },
+            503,
+            "Service Unavailable",
+          ),
+        );
+
+      await store.bootstrap();
+
+      expect(store.user).toBeNull();
+      expect(store.aiPolicy).toBeNull();
+      expect(store.profile).toBeNull();
+      expect(store.error).toBe("Local app state unavailable");
+      expect(store.status).toBe("ready");
+      expect(fetch).toHaveBeenCalledTimes(2);
     });
 
     it("skips if already bootstrapped", async () => {

@@ -68,7 +68,7 @@ onMounted(async () => {
             <h1
               class="max-w-[14ch] font-serif text-5xl leading-[0.98] font-semibold tracking-[-0.03em] text-navy md:text-6xl lg:text-[4.25rem]"
             >
-              Lärarverktyg direkt i webbläsaren.
+              Lektionsplanera direkt i webbläsaren.
             </h1>
             <div
               class="mt-8 h-[2px] w-24 bg-navy"

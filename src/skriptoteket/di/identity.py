@@ -40,6 +40,9 @@ from skriptoteket.application.identity.handlers.verify_email import (
     VerifyEmailHandler,
     VerifyEmailHandlerProtocol,
 )
+from skriptoteket.application.identity.huleedu_app_projection import (
+    HuleEduAppProjectionResolver,
+)
 from skriptoteket.config import Settings
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -57,6 +60,7 @@ from skriptoteket.protocols.identity import (
     DomainValidatorProtocol,
     GetProfileHandlerProtocol,
     GetUserHandlerProtocol,
+    HuleEduAppProjectionResolverProtocol,
     ListUsersHandlerProtocol,
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
@@ -105,6 +109,21 @@ class IdentityProvider(Provider):
         clock: ClockProtocol,
     ) -> CurrentUserProviderProtocol:
         return CurrentUserProvider(users=users, sessions=sessions, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def huleedu_app_projection_resolver(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> HuleEduAppProjectionResolverProtocol:
+        return HuleEduAppProjectionResolver(
+            uow=uow,
+            users=users,
+            profiles=profiles,
+            clock=clock,
+        )
 
     @provide(scope=Scope.REQUEST)
     def login_handler(

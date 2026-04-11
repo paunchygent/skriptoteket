@@ -9,6 +9,9 @@ from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.email.sender_factory import create_email_sender
 from skriptoteket.infrastructure.email.template_renderer import Jinja2EmailTemplateRenderer
 from skriptoteket.infrastructure.id_generator import UUID4Generator
+from skriptoteket.infrastructure.security.huleedu_internal_identity import (
+    HuleEduInternalIdentityVerifier,
+)
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
 from skriptoteket.infrastructure.security.password_reset_request_throttle import (
     InMemoryPasswordResetRequestThrottle,
@@ -21,7 +24,10 @@ from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.identity import PasswordHasherProtocol
+from skriptoteket.protocols.identity import (
+    HuleEduInternalIdentityVerifierProtocol,
+    PasswordHasherProtocol,
+)
 from skriptoteket.protocols.password_reset import PasswordResetRequestThrottleProtocol
 from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
@@ -50,6 +56,13 @@ class InfrastructureServicesProvider(Provider):
     @provide(scope=Scope.APP)
     def password_hasher(self) -> PasswordHasherProtocol:
         return Argon2PasswordHasher()
+
+    @provide(scope=Scope.APP)
+    def huleedu_internal_identity_verifier(
+        self,
+        settings: Settings,
+    ) -> HuleEduInternalIdentityVerifierProtocol:
+        return HuleEduInternalIdentityVerifier(settings)
 
     @provide(scope=Scope.APP)
     def password_reset_request_throttle(

@@ -1,3 +1,13 @@
+"""Editor chat API routes.
+
+Purpose:
+    Stream and manage assistant chat turns for the tool editor.
+
+Relationships:
+    - Uses editor application handlers for chat orchestration and history.
+    - Reads remote fallback consent from request-scoped profile preferences.
+"""
+
 import json
 from collections.abc import AsyncIterator
 from uuid import UUID
@@ -5,7 +15,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response, StreamingResponse
 
-from skriptoteket.domain.identity.models import Session, User
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
     EditorChatClearCommand,
@@ -16,10 +26,10 @@ from skriptoteket.protocols.llm import (
     EditorChatHistoryQuery,
     EditorChatStreamEvent,
 )
+from skriptoteket.web.auth.ai_preferences import AiPreferences, require_ai_preferences
 from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
-    require_session_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import require_tool_access
@@ -46,7 +56,7 @@ async def stream_editor_chat(
     handler: FromDishka[EditorChatHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_contributor_api),
-    session: Session = Depends(require_session_api),
+    ai_preferences: AiPreferences = Depends(require_ai_preferences),
     _: None = Depends(require_csrf_token),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
@@ -54,7 +64,7 @@ async def stream_editor_chat(
         tool_id=tool_id,
         message=payload.message,
         base_version_id=payload.base_version_id,
-        allow_remote_fallback=session.allow_remote_fallback,
+        allow_remote_fallback=ai_preferences.allow_remote_fallback,
         active_file=payload.active_file,
         virtual_files=payload.virtual_files.as_map() if payload.virtual_files is not None else None,
     )

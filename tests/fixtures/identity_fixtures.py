@@ -1,3 +1,13 @@
+"""Identity test fixture factories.
+
+Purpose:
+    Provide small domain-model factories for user, profile, and session tests.
+
+Relationships:
+    - Unit web tests use these helpers to keep auth and profile setup compact.
+    - Application tests rely on the same domain models as production handlers.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -6,7 +16,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
+from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User, UserProfile
 
 
 @pytest.fixture
@@ -27,6 +37,27 @@ def make_user(
         is_active=True,
         created_at=timestamp,
         updated_at=timestamp,
+    )
+
+
+def make_user_profile(
+    *,
+    user_id: UUID,
+    allow_remote_fallback: bool | None = None,
+    inline_completion_provider: Literal["local", "external"] | None = None,
+    now: datetime | None = None,
+) -> UserProfile:
+    ts = now or datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    return UserProfile(
+        user_id=user_id,
+        first_name=None,
+        last_name=None,
+        display_name=None,
+        allow_remote_fallback=allow_remote_fallback,
+        inline_completion_provider=inline_completion_provider,
+        locale="sv-SE",
+        created_at=ts,
+        updated_at=ts,
     )
 
 

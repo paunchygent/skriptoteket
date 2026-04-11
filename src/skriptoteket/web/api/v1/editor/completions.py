@@ -1,13 +1,24 @@
+"""Inline-completion editor API routes.
+
+Purpose:
+    Accept editor inline completion requests and translate them into
+    application-layer AI completion commands.
+
+Relationships:
+    - Authentication and CSRF checks stay in web dependencies.
+    - AI consent/provider preferences come from request-scoped profile state.
+"""
+
 from fastapi import APIRouter, Depends, Header, Response
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role, Session, User
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.protocols.llm import InlineCompletionCommand, InlineCompletionHandlerProtocol
+from skriptoteket.web.auth.ai_preferences import AiPreferences, require_ai_preferences
 from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
-    require_session_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -29,7 +40,7 @@ async def create_inline_completion(
     handler: FromDishka[InlineCompletionHandlerProtocol],
     settings: FromDishka[Settings],
     user: User = Depends(require_contributor_api),
-    session: Session = Depends(require_session_api),
+    ai_preferences: AiPreferences = Depends(require_ai_preferences),
     _: None = Depends(require_csrf_token),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorInlineCompletionResponse:
@@ -47,8 +58,8 @@ async def create_inline_completion(
             prefix=payload.prefix,
             suffix=payload.suffix,
             active_file=payload.active_file,
-            allow_remote_fallback=session.allow_remote_fallback,
-            inline_completion_provider=session.inline_completion_provider,
+            allow_remote_fallback=ai_preferences.allow_remote_fallback,
+            inline_completion_provider=ai_preferences.inline_completion_provider,
         ),
     )
     if eval_mode == "1" and result.eval_meta is not None:

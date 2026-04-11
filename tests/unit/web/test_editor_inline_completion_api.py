@@ -1,3 +1,15 @@
+"""Inline-completion route tests.
+
+Purpose:
+    Verify editor inline-completion API auth, CSRF, response mapping, and
+    request-scoped AI preference propagation.
+
+Relationships:
+    - Exercises the FastAPI route module directly with Dishka protocol stubs.
+    - Freezes that AI preferences come from profile state rather than session
+      fields during the HuleEdu auth cutover.
+"""
+
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
@@ -16,6 +28,7 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     CurrentUserProviderProtocol,
+    ProfileRepositoryProtocol,
     SessionRepositoryProtocol,
 )
 from skriptoteket.protocols.llm import (
@@ -25,7 +38,7 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.web.api.v1.editor import completions as completions_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from tests.fixtures.identity_fixtures import make_session, make_user
+from tests.fixtures.identity_fixtures import make_session, make_user, make_user_profile
 
 
 class FixedClock:
@@ -44,6 +57,7 @@ class EditorCompletionApiProvider(Provider):
         clock: ClockProtocol,
         current_user_provider: AsyncMock,
         sessions: AsyncMock,
+        profiles: AsyncMock,
         handler: AsyncMock,
     ) -> None:
         super().__init__()
@@ -51,6 +65,7 @@ class EditorCompletionApiProvider(Provider):
         self._clock = clock
         self._current_user_provider = current_user_provider
         self._sessions = sessions
+        self._profiles = profiles
         self._handler = handler
 
     @provide(scope=Scope.APP)
@@ -68,6 +83,10 @@ class EditorCompletionApiProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def sessions(self) -> SessionRepositoryProtocol:
         return cast(SessionRepositoryProtocol, self._sessions)
+
+    @provide(scope=Scope.REQUEST)
+    def profiles(self) -> ProfileRepositoryProtocol:
+        return cast(ProfileRepositoryProtocol, self._profiles)
 
     @provide(scope=Scope.REQUEST)
     def inline_completion_handler(self) -> InlineCompletionHandlerProtocol:
@@ -99,6 +118,13 @@ def sessions() -> AsyncMock:
 
 
 @pytest.fixture
+def profiles() -> AsyncMock:
+    repo = AsyncMock(spec=ProfileRepositoryProtocol)
+    repo.get_by_user_id.return_value = None
+    return repo
+
+
+@pytest.fixture
 def handler() -> AsyncMock:
     return AsyncMock(spec=InlineCompletionHandlerProtocol)
 
@@ -109,6 +135,7 @@ def app(
     clock: ClockProtocol,
     current_user_provider: AsyncMock,
     sessions: AsyncMock,
+    profiles: AsyncMock,
     handler: AsyncMock,
 ) -> FastAPI:
     app = FastAPI()
@@ -121,6 +148,7 @@ def app(
             clock=clock,
             current_user_provider=current_user_provider,
             sessions=sessions,
+            profiles=profiles,
             handler=handler,
         )
     )
@@ -236,11 +264,18 @@ async def test_inline_completion_passes_ai_settings_to_handler(
     settings: Settings,
     current_user_provider: AsyncMock,
     sessions: AsyncMock,
+    profiles: AsyncMock,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
     user = make_user(role=Role.CONTRIBUTOR)
     session = make_session(
+        user_id=user.id,
+        now=now,
+        allow_remote_fallback=False,
+        inline_completion_provider="local",
+    )
+    profile = make_user_profile(
         user_id=user.id,
         now=now,
         allow_remote_fallback=True,
@@ -249,6 +284,7 @@ async def test_inline_completion_passes_ai_settings_to_handler(
 
     current_user_provider.get_current_user.return_value = user
     sessions.get_by_id.return_value = session
+    profiles.get_by_user_id.return_value = profile
     handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
 
     client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
