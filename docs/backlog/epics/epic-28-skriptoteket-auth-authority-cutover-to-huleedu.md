@@ -99,7 +99,11 @@ the retained shared browser-session conformance contract. `REV-PR-0251` approved
 initially requested implementation changes for app-continuation user resolution and local
 authorization projection, and now approves the `PR-0255` remediation: signed HuleEdu request context
 resolves an existing Skriptoteket-local projection, provider roles remain metadata, and the
-continuation/bootstrap proof runs through the real backend and Vite `/api` proxy.
+continuation/bootstrap proof runs through the real backend and Vite `/api` proxy. `ST-28-02` shipped
+through `PR-0252` as the narrow auth-entry return-to-origin slice: direct protected entry,
+app-local `401` recovery, and top-level return to `/auth/login?next=...` preserve the dedicated
+auth-entry contract on the HuleEdu-owned session model while leaving local auth-authority retirement
+to `PR-0253`.
 
 ## Planning note (2026-04-08)
 

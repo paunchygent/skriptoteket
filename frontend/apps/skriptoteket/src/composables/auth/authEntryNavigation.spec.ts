@@ -27,6 +27,22 @@ describe("authEntryNavigation", () => {
     expect(sanitizeAuthNextPath("/browse?profession=svenska")).toBe("/browse?profession=svenska");
   });
 
+  it("preserves same-origin route search and hash details", () => {
+    expect(sanitizeAuthNextPath("/editor?draft=head#debug")).toBe("/editor?draft=head#debug");
+    expect(
+      readAuthContinuation(
+        {
+          next: "/admin/tools?status=draft#review",
+          state: "ignored-provider-return-param",
+        },
+        null,
+      ),
+    ).toEqual({
+      nextPath: "/admin/tools?status=draft#review",
+      classroomPlannerEntryOrigin: null,
+    });
+  });
+
   it("builds the public-app landing handoff onto auth-login", () => {
     expect(
       buildLandingAuthEntryLocation({

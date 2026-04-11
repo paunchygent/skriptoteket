@@ -2,10 +2,10 @@
 type: story
 id: ST-28-02
 title: "Auth interruption and protected-route handoff on HuleEdu-owned session"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-08
+updated: 2026-04-11
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given the dedicated `/auth/login` auth-entry contract already exists through `ST-32-10`, when an unauthenticated visitor enters a protected Skriptoteket route under the HuleEdu-owned session model, then Skriptoteket preserves the intended destination and routes through that canonical auth-entry page so the shared session flow can resume the intended protected route afterward."
@@ -35,3 +35,11 @@ ceremony to be HuleEdu-owned.
 - Skriptoteket keeps a route-preserving interruption UX through the dedicated `/auth/login` page.
 - The underlying auth ceremony may be completed by HuleEdu in a top-level flow when needed.
 - No route-fragmented fallback or app-local modal bridge should be introduced.
+
+## Implementation Summary (as of 2026-04-11)
+
+`PR-0252` shipped the HuleEdu-session-era return-to-origin proof while keeping the scope narrow:
+protected-route interruption, app-local `401` recovery, and top-level `/auth/login?next=...`
+return all preserve the dedicated auth-entry contract. The live proof exercises the real backend
+app-continuation route and signed HuleEdu request context, but does not retire the remaining local
+browser-auth authority surfaces; that remains owned by `PR-0253`.

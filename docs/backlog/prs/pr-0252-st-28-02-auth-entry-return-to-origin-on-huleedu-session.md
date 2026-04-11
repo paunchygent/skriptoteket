@@ -2,10 +2,10 @@
 type: pr
 id: PR-0252
 title: "ST-28-02 auth entry return-to-origin on HuleEdu session"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-10
-updated: 2026-04-10
+updated: 2026-04-11
 stories:
   - "ST-28-02"
 tags: ["frontend", "auth", "routing", "handoff"]
@@ -25,6 +25,26 @@ contract must remain stable.
 Adapt auth interruption, login continuation, and invalid-session recovery to the HuleEdu-owned
 session model without reopening local auth ownership.
 
+## Result
+
+`PR-0252` is implemented as a narrow frontend/routing slice.
+
+The shipped behavior keeps `/auth/login?next=...` as the canonical Skriptoteket auth-entry
+contract under the HuleEdu-owned session model:
+
+- direct protected-route entry with an anonymous HuleEdu shared session routes to
+  `/auth/login?next=/editor`;
+- app-local `401` recovery on a protected route clears local auth state and returns to
+  `/auth/login?next=/editor` instead of modal state or `/login`;
+- a top-level return to `/auth/login?next=/editor` with an authenticated HuleEdu shared session
+  resumes `/editor` after the real app-continuation route hydrates the Skriptoteket-local
+  projection.
+
+The live proof uses a real backend, real database projection, signed HuleEdu identity context,
+Vite `/api` proxy, and mocked HuleEdu shared-session/CSRF browser edge. Shared Playwright helpers
+now live in `scripts/_playwright_huleedu_auth.py` so `PR-0252` and `PR-0255` targeted proofs do
+not import from one another or duplicate the signed-context setup.
+
 ## Non-goals
 
 - Reintroducing `/login`.
@@ -41,9 +61,14 @@ session model without reopening local auth ownership.
 
 ## Test Plan
 
-- Run focused router/auth-entry tests.
-- Run `pdm run fe-type-check`.
-- Run `pdm run docs-validate`.
+- `pdm run fe-test -- --run src/router/index.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/App.spec.ts`
+- `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/stores/auth.spec.ts src/api/client.spec.ts`
+- `pdm run python -m py_compile scripts/_playwright_huleedu_auth.py scripts/playwright_pr_0252_auth_return_to_origin.py scripts/playwright_pr_0255_auth_bootstrap.py`
+- `pdm run fe-type-check`
+- `pdm run db-upgrade`
+- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0252-auth-return --start-backend --start-vite`
+- `pdm run typecheck`
+- `pdm run docs-validate`
 
 ## Rollback Plan
 

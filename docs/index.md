@@ -175,6 +175,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0252-st-28-02-auth-entry-return-to-origin-on-huleedu-session.md`
 - ST-28-03 local auth authority retirement + contract regeneration:
   `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md`
+- Review gate for PR-0253 local auth authority retirement + contract regeneration:
+  `docs/backlog/reviews/review-pr-0253-local-auth-authority-retirement-and-contract-regeneration.md`
 - ST-28-04 cross-app auth cutover smoke + runbook proof:
   `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
 - EPIC-35 launch SEO + search indexing readiness:

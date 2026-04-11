@@ -169,4 +169,35 @@ describe("App", () => {
       query: { next: "/browse" },
     });
   });
+
+  it("keeps the full current protected destination when a session expires", async () => {
+    if (!routerMocks.route || !routerMocks.auth) {
+      throw new Error("Expected route and auth mocks to be initialized.");
+    }
+    routerMocks.route.name = "admin-tools";
+    routerMocks.route.fullPath = "/admin/tools?status=draft#review";
+    routerMocks.route.path = "/admin/tools";
+    routerMocks.route.matched = [{ meta: { requiresAuth: true, minRole: "admin" } }];
+
+    mount(App, {
+      global: {
+        stubs: {
+          LandingLayout: { template: "<div><slot /></div>" },
+          AuthLayout: { template: "<div><slot /></div>" },
+          ToastHost: { template: "<div />" },
+          RouterView: { template: "<div />" },
+        },
+      },
+    });
+
+    routerMocks.auth.isAuthenticated = false;
+    await nextTick();
+    await nextTick();
+
+    expect(routerMocks.pageTransition?.suppressNext).toHaveBeenCalled();
+    expect(routerMocks.router.push).toHaveBeenCalledWith({
+      name: "auth-login",
+      query: { next: "/admin/tools?status=draft#review" },
+    });
+  });
 });

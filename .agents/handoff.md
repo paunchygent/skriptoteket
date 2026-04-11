@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-11
 - Branch: `main` + local changes
-- Current lane: `PR-0251` session bootstrap cutover is in progress.
+- Current lane: `PR-0252` auth entry return-to-origin is implemented and independent-review approved.
 - Production: Full Vue SPA.
 - Dirty worktree before this lane: `frontend/apps/skriptoteket/src/views/HomeView.vue` and `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`; do not overwrite them unless the lane explicitly takes ownership.
 ## Status
@@ -24,6 +24,9 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0253` now explicitly owns retiring or rewiring the remaining local-session-backed `require_user_api` / role-wrapper consumers after `PR-0251` and `PR-0252`; `PR-0255` only moved `/api/v1/profile/app-continuation`.
 - Reviewer advice acted on: `frontend/apps/skriptoteket/src/stores/ai.ts` now fails closed while `auth.aiPolicy` is missing, and `frontend/apps/skriptoteket/src/stores/ai.spec.ts` freezes that missing app-local AI bootstrap does not allow remote providers.
 - `PR-0251` continuation slice is implemented: `GET /api/v1/profile/app-continuation` returns runtime `ai_policy` plus profile AI preferences, `useAuthStore.bootstrap()` performs HuleEdu session first and app-local continuation second, and editor AI chat/completions/edit-ops no longer read AI preferences from local `Session` fields.
+- `PR-0252` is implemented: direct protected entry, app-local `401` recovery, and top-level `/auth/login?next=...` return preserve the dedicated auth-entry contract on the HuleEdu-owned session model. Live proof uses the real backend app-continuation route, signed HuleEdu request context, DB projection, and Vite `/api` proxy. Shared proof helpers now live in `scripts/_playwright_huleedu_auth.py`.
+- Independent `skriptoteket_reviewer` pass for `PR-0252` approved the implementation with no actionable findings. Residual note: the live proof covers canonical `/editor`; richer query/hash destinations are covered by focused Vitest.
+- `REV-PR-0253` is approved after docs-quality closeout. `PR-0253` requires the retained review/doc gate, route inventory, browser API edge contract, public auth ceremony matrix, provisioning policy, CSRF signed-context proof, session migration/data policy, no-zombie contracts, supported script cleanup, and a live gateway/proxy-signed proof before implementation deletion work.
 - Skriptoteket should not create a second integration epic. Implementation now lives as PR-sized tasks under existing `EPIC-28`:
   - `PR-0250` ingests HuleEdu provider conformance and records cutover readiness.
   - `PR-0251` cuts the SPA auth store/API client over to `GET https://api.hule.education/v1/auth/session` plus CSRF.
@@ -77,6 +80,16 @@ Keep this file updated so the next session can pick up work quickly.
 - `lsof -nP -iTCP:8000 -sTCP:LISTEN` and `lsof -nP -iTCP:5173 -sTCP:LISTEN` (no listeners on 2026-04-11 during retained `REV-PR-0251` re-review).
 - `pdm run docs-validate` (pass on 2026-04-11 after retained `REV-PR-0251` approval docs update).
 - Previous retained proof for `/auth/login` lives in `ST-32-10` / `PR-0242` docs and the prior handoff compaction history in `docs/reference/ref-development-changelog.md`.
+- `pdm run fe-test -- --run src/router/index.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/App.spec.ts` (pass on 2026-04-11 after `PR-0252`; 26 tests).
+- `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/stores/auth.spec.ts src/api/client.spec.ts` (pass on 2026-04-11 after `PR-0252`; 56 tests).
+- `pdm run python -m py_compile scripts/_playwright_huleedu_auth.py scripts/playwright_pr_0252_auth_return_to_origin.py scripts/playwright_pr_0255_auth_bootstrap.py` (pass on 2026-04-11 after `PR-0252` proof helper extraction).
+- `pdm run fe-type-check` (pass on 2026-04-11 after `PR-0252`).
+- `pdm run db-upgrade` (pass on 2026-04-11 before `PR-0252` live proof).
+- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0252-auth-return --start-backend --start-vite` (pass on 2026-04-11; direct `/editor` -> `/auth/login?next=/editor`, app-local `401` recovery preserved `next`, authenticated return resumed `/editor`; artifacts in `.artifacts/playwright-pr-0252-auth-return-to-origin/`).
+- `lsof -nP -iTCP:8000 -sTCP:LISTEN` and `lsof -nP -iTCP:5173 -sTCP:LISTEN` (no listeners after `PR-0252` live proof on 2026-04-11).
+- `pdm run typecheck` (pass on 2026-04-11 after `PR-0252`).
+- `pdm run docs-validate` (pass on 2026-04-11 after retaining `REV-PR-0253` and revising `PR-0253`).
+- `pdm run docs-validate` (pass on 2026-04-11 after approving `REV-PR-0253` through docs-quality closeout).
 ## How to Run
 ```bash
 pdm run docs-validate
@@ -85,14 +98,16 @@ pdm run lint
 pdm run fe-type-check
 pdm run fe-test -- --run src/stores/ai.spec.ts src/stores/auth.spec.ts src/api/sharedAuth.spec.ts src/api/client.spec.ts
 pdm run pytest -q tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_editor_inline_completion_api.py
+pdm run pr-0252-auth-return --start-backend --start-vite
 pdm run pr-0255-auth-bootstrap --start-backend --start-vite
 pdm run fe-test -- --run src/router/index.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/views/ForgotPasswordView.spec.ts src/views/ResetPasswordView.spec.ts src/views/RegisterView.spec.ts src/views/VerifyEmailView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/App.spec.ts
 ```
 ## Known Issues / Risks
 - `PR-0251` must preserve Skriptoteket-local role, profile, AI policy, and app authorization semantics without reinstating local browser auth authority, bearer storage, or direct HuleEdu Identity calls.
-- `REV-PR-0251` retained re-review is approved; `PR-0252` / `PR-0253` / `PR-0254` remain for ceremony cleanup, local-auth retirement, and cross-app proof.
-- Login/logout ceremony cleanup is intentionally not in the continuation slice; keep it with `PR-0252` / `PR-0253` unless review finds a hard blocker.
+- `REV-PR-0251` retained re-review is approved; `PR-0253` / `PR-0254` remain for local-auth retirement and cross-app proof.
+- Login/logout ceremony cleanup beyond return-to-origin proof stays with `PR-0253`; approved `REV-PR-0253` requires exact HuleEdu handoff or retired-state targets before local routes are deleted.
+- `PR-0253` must settle browser API transport, missing-projection provisioning, CSRF signed-context enforcement, active script migration, and sessions-table data policy before deleting local browser-auth authority.
 - `HomeView.vue` / `HomeView.spec.ts` had pre-existing local changes before this docs lane; keep them separate from EPIC-28 scaffolding.
 - Public guest mode remains browser-owned and route-sensitive; clear local public guest storage before treating a stale guest state as an auth-cutover regression.
 ## Next Steps
-- Continue `PR-0252` -> `PR-0253` -> `PR-0254` in order, unless `PR-0251` close-out asks for a narrower local proof.
+- Continue with `PR-0253` -> `PR-0254` in order.

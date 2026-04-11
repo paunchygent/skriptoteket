@@ -65,6 +65,28 @@ describe("router guards", () => {
     });
   });
 
+  it("preserves full protected route destinations through auth-login", async () => {
+    const auth = createAuth();
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/admin/tools",
+      fullPath: "/admin/tools?status=draft#review",
+      meta: { requiresAuth: true, minRole: "admin" },
+      query: { status: "draft" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toEqual({
+      name: "auth-login",
+      query: { next: "/admin/tools?status=draft#review" },
+    });
+  });
+
   it("does not treat /login or nearby paths as auth-entry routes", async () => {
     const auth = createAuth();
     mockUseAuthStore.mockReturnValue(auth);
@@ -171,6 +193,47 @@ describe("router guards", () => {
 
     expect(auth.bootstrap).toHaveBeenCalled();
     expect(result).toEqual({ path: "/profile" });
+  });
+
+  it("resumes the next route when auth-login bootstrap finds a HuleEdu session", async () => {
+    const auth = createAuth();
+    auth.bootstrap.mockImplementation(async () => {
+      auth.isAuthenticated = true;
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/auth/login",
+      fullPath: "/auth/login?next=/editor",
+      meta: {},
+      query: { next: "/editor" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toEqual({ path: "/editor" });
+  });
+
+  it("keeps anonymous HuleEdu sessions on auth-login with next intact", async () => {
+    const auth = createAuth();
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/auth/login",
+      fullPath: "/auth/login?next=/editor",
+      meta: {},
+      query: { next: "/editor" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toBe(true);
   });
 
   it("restores classroom planner origin when auth-login is revisited authenticated", async () => {
