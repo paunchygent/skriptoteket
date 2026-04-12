@@ -34,22 +34,22 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/forgot-password",
     name: "forgot-password",
-    component: () => import("../views/AuthRetiredView.vue"),
+    component: () => import("../views/AuthLifecycleHandoffView.vue"),
   },
   {
     path: "/register",
     name: "register",
-    component: () => import("../views/AuthRetiredView.vue"),
+    component: () => import("../views/AuthLifecycleHandoffView.vue"),
   },
   {
     path: "/reset-password",
     name: "reset-password",
-    component: () => import("../views/AuthRetiredView.vue"),
+    component: () => import("../views/AuthLifecycleHandoffView.vue"),
   },
   {
     path: "/verify-email",
     name: "verify-email",
-    component: () => import("../views/AuthRetiredView.vue"),
+    component: () => import("../views/AuthLifecycleHandoffView.vue"),
   },
   {
     path: "/profile",

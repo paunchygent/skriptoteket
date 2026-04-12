@@ -71,6 +71,11 @@ export type SharedAuthSnapshot = {
 
 export const DEFAULT_SHARED_AUTH_BASE_URL = "https://api.hule.education";
 export const DEFAULT_SHARED_AUTH_ENTRY_URL = "https://api.hule.education/auth/login";
+export const DEFAULT_SHARED_AUTH_REGISTER_ENTRY_URL = "https://api.hule.education/auth/register";
+export const DEFAULT_SHARED_AUTH_PASSWORD_RESET_ENTRY_URL =
+  "https://api.hule.education/auth/password-reset";
+export const DEFAULT_SHARED_AUTH_EMAIL_VERIFICATION_ENTRY_URL =
+  "https://api.hule.education/auth/email-verification";
 export const SHARED_AUTH_APP = "skriptoteket";
 export const SHARED_AUTH_DEFAULT_PRODUCT_IDENTITY_REALM = "skriptoteket_standalone";
 export const SHARED_AUTH_CALLBACK_PATH = "/auth/callback";
@@ -78,12 +83,34 @@ export const SHARED_AUTH_SESSION_PATH = "/v1/auth/session";
 export const SHARED_AUTH_CSRF_PATH = "/v1/auth/csrf";
 export const SHARED_AUTH_LOGOUT_PATH = "/v1/auth/logout";
 const SHARED_AUTH_LOGIN_PATH = "/auth/login";
+const SHARED_AUTH_REGISTER_PATH = "/auth/register";
+const SHARED_AUTH_PASSWORD_RESET_PATH = "/auth/password-reset";
+const SHARED_AUTH_EMAIL_VERIFICATION_PATH = "/auth/email-verification";
+const SHARED_AUTH_ENTRY_PATHS = {
+  login: SHARED_AUTH_LOGIN_PATH,
+  register: SHARED_AUTH_REGISTER_PATH,
+  "password-reset": SHARED_AUTH_PASSWORD_RESET_PATH,
+  "email-verification": SHARED_AUTH_EMAIL_VERIFICATION_PATH,
+} as const;
 const AUTH_ENTRY_LOOP_PATHS = new Set([
   SHARED_AUTH_LOGIN_PATH,
   SHARED_AUTH_CALLBACK_PATH,
   "/login",
 ]);
 const CEREMONY_NEXT_URL_BASE = "https://skriptoteket.local";
+
+export type SharedAuthCeremonyKind =
+  | "login"
+  | "register"
+  | "password-reset"
+  | "email-verification";
+
+const DEFAULT_SHARED_AUTH_ENTRY_URLS: Record<SharedAuthCeremonyKind, string> = {
+  login: DEFAULT_SHARED_AUTH_ENTRY_URL,
+  register: DEFAULT_SHARED_AUTH_REGISTER_ENTRY_URL,
+  "password-reset": DEFAULT_SHARED_AUTH_PASSWORD_RESET_ENTRY_URL,
+  "email-verification": DEFAULT_SHARED_AUTH_EMAIL_VERIFICATION_ENTRY_URL,
+};
 
 export type SharedCsrfResponse = {
   csrf_token: string;
@@ -99,14 +126,31 @@ export function sharedAuthUrl(path: string): string {
   return `${normalizeBaseUrl(import.meta.env.VITE_HULEEDU_AUTH_BASE_URL)}${normalizedPath}`;
 }
 
-function normalizeEntryUrl(value: string | undefined): string {
-  return value?.trim() || DEFAULT_SHARED_AUTH_ENTRY_URL;
+function buildSiblingCeremonyEntryUrl(loginEntryUrl: string, path: string): string {
+  const url = new URL(loginEntryUrl);
+  url.pathname = path;
+  return url.toString();
+}
+
+function normalizeEntryUrl(kind: SharedAuthCeremonyKind): string {
+  const loginEntryUrl = import.meta.env.VITE_HULEEDU_AUTH_ENTRY_URL?.trim();
+  if (kind === "login" && loginEntryUrl) {
+    return loginEntryUrl;
+  }
+
+  if (kind !== "login" && loginEntryUrl) {
+    return buildSiblingCeremonyEntryUrl(loginEntryUrl, SHARED_AUTH_ENTRY_PATHS[kind]);
+  }
+
+  return DEFAULT_SHARED_AUTH_ENTRY_URLS[kind];
 }
 
 export type SharedAuthCeremonyParams = {
+  kind?: SharedAuthCeremonyKind;
   nextPath: string | null;
   origin: string;
   productIdentityRealm?: string | null;
+  token?: string | null;
 };
 
 function callbackUrl(origin: string): string {
@@ -130,7 +174,7 @@ function sanitizeCeremonyNextPath(value: string | null): string | null {
 }
 
 export function sharedAuthCeremonyUrl(params: SharedAuthCeremonyParams): string {
-  const url = new URL(normalizeEntryUrl(import.meta.env.VITE_HULEEDU_AUTH_ENTRY_URL));
+  const url = new URL(normalizeEntryUrl(params.kind ?? "login"));
   if (!url.searchParams.has("app")) {
     url.searchParams.set("app", SHARED_AUTH_APP);
   }
@@ -145,6 +189,11 @@ export function sharedAuthCeremonyUrl(params: SharedAuthCeremonyParams): string 
   const nextPath = sanitizeCeremonyNextPath(params.nextPath);
   if (nextPath) {
     url.searchParams.set("next", nextPath);
+  }
+  url.searchParams.delete("token");
+  const token = params.token?.trim();
+  if (token) {
+    url.searchParams.set("token", token);
   }
   return url.toString();
 }

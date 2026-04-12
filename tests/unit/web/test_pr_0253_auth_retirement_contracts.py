@@ -200,6 +200,11 @@ def test_current_docs_rules_do_not_advertise_retired_smoke_commands() -> None:
 def test_frontend_source_does_not_call_local_auth_or_mint_gateway_identity_headers() -> None:
     retired_auth_fragments = {
         "/v1/auth/login",
+        "/v1/auth/register",
+        "/v1/auth/request-password-reset",
+        "/v1/auth/reset-password",
+        "/v1/auth/request-email-verification",
+        "/v1/auth/verify-email",
         "/api/v1/auth/login",
         "/api/v1/auth/logout",
         "/api/v1/auth/register",

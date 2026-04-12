@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-12
 - Branch: `main` + local changes
-- Current lane: `ST-28-08` / `PR-0257` is prepared as the standalone lifecycle provider-contract gate; `REV-PR-0257` is `changes_requested` pending HuleEdu lifecycle proof.
+- Current lane: `ST-28-08` / `PR-0257` is done; standalone lifecycle URLs now hand off to HuleEdu Gateway ceremonies.
 - Production: Full Vue SPA.
 - Dirty worktree before this lane included docs from `ST-28-06` / `ST-28-07`; preserve unrelated user changes if any appear.
 ## Status
@@ -26,7 +26,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0253` follow-up boundary refinement is implemented: login anchors use a dedicated browser ceremony helper (`VITE_HULEEDU_AUTH_ENTRY_URL`) instead of `/v1/auth/login`, user-facing copy says `inloggning`/Skriptoteket access, and docs preserve `AuthProvider.LOCAL` / local identity data as product-domain concepts rather than browser-session authority.
 - `ST-28-06` / `REV-ST-28-06` are done: `ADR-0083` is accepted and freezes the product identity realm contract. First accepted realms are `skriptoteket_standalone` and `huleedu_school`; browser login must use a Hule Education-hosted `app=skriptoteket` ceremony; final proof requires realm-aware signed context and projection keyed by `(product_identity_realm, realm_subject_id)`; local RBAC remains `User.role`-driven.
 - `ST-28-07` / `PR-0256` are done after review remediation. HuleEdu `TASK-0313` / `TASK-0314` cleared the provider blocker; Skriptoteket now sends `/auth/login` to HuleEdu `GET /auth/login` with `app=skriptoteket`, default `product_identity_realm=skriptoteket_standalone`, `return_to=/auth/callback`, and safe route-level `next`; `/auth/callback` preserves query/hash continuation; helper-level `next` drops hostile/loop values; app continuation requires `active_app=skriptoteket`, supported realm, and `realm_subject_id` before existing subject-key projection lookup.
-- `ST-28-08` / `PR-0257` is now opened but blocked by retained review `REV-PR-0257`: HuleEdu has not yet published app/realm-aware browser ceremonies for standalone registration, password reset, or email verification. Direct Identity Service APIs are not an acceptable browser-consumer contract, and standalone registration must not require HuleEdu school organization registration.
+- `ST-28-08` / `PR-0257` is done after HuleEdu `TASK-0318` closed the provider gate: `/register`, `/forgot-password`, `/reset-password`, and `/verify-email` render HuleEdu Gateway handoff links for `app=skriptoteket`, `product_identity_realm=skriptoteket_standalone`, `return_to=/auth/callback`, safe `next`, and reset/verification `token`; no local form, local browser-auth API, or direct lifecycle POST API is introduced.
 - Skriptoteket should not create a second integration epic. Implementation now lives as PR-sized tasks under existing `EPIC-28`:
   - `PR-0250` ingests HuleEdu provider conformance and records cutover readiness.
   - `PR-0251` cuts the SPA auth store/API client over to `GET https://api.hule.education/v1/auth/session` plus CSRF.
@@ -34,7 +34,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0252` preserves `/auth/login?next=...` interruption and return-to-origin behavior on the shared session.
   - `PR-0253` removes obsolete Skriptoteket-local browser auth ownership and regenerates/realigns contracts; retained implementation review is approved.
   - `PR-0256` implements `ST-28-07` and is approved after HuleEdu provider proof.
-  - `PR-0257` prepares `ST-28-08` and is blocked pending HuleEdu standalone lifecycle provider proof.
+  - `PR-0257` implements `ST-28-08` consumer lifecycle handoffs after HuleEdu `TASK-0318`.
   - `PR-0254` adds the realm-aware cross-app Playwright smoke and operator runbook proof after `ST-28-07` through `ST-28-09`.
 - `EPIC-35` remains downstream of the shared launch topology and should consume the same `api.hule.education` / `skriptoteket.hule.education` assumptions, not recreate them.
 ## Verification
@@ -163,9 +163,11 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run lint` (pass on 2026-04-12 after `PR-0256` review remediation).
 - `pdm run docs-validate` (pass on 2026-04-12 after `PR-0256` review remediation).
 - `git diff --check` (pass on 2026-04-12 after `PR-0256` review remediation).
-- `pdm run docs-validate` (pass on 2026-04-12 after preparing `PR-0257` / `REV-PR-0257`).
-- `git diff --check` (pass on 2026-04-12 after preparing `PR-0257` / `REV-PR-0257`).
-- `wc -l .agents/handoff.md` (`190` lines after handoff compaction for `PR-0257`).
+- `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/views/AuthLifecycleHandoffView.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/router/routes.spec.ts` (pass on 2026-04-12 after `PR-0257`; 25 tests).
+- `pdm run pytest -q tests/unit/web/test_pr_0253_auth_retirement_contracts.py` (pass on 2026-04-12 after `PR-0257`; 7 tests).
+- `pdm run python -m py_compile scripts/playwright_pr_0257_auth_lifecycle.py` and `pdm run python -m scripts.playwright_pr_0257_auth_lifecycle --start-vite` (pass on 2026-04-12; lifecycle handoff URLs render through Vite).
+- `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run typecheck`, and `pdm run lint` (pass on 2026-04-12 after `PR-0257`).
+- `pdm run docs-validate` and `git diff --check` (pass on 2026-04-12 after `PR-0257` docs closeout).
 ## How to Run
 ```bash
 pdm run docs-validate
@@ -178,13 +180,13 @@ pdm run pr-0253-auth-retirement --start-backend --start-vite
 pdm run pr-0252-auth-return --start-backend --start-vite
 pdm run pr-0255-auth-bootstrap --start-backend --start-vite
 pdm run python -m scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite
-pdm run fe-test -- --run src/router/index.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/App.spec.ts
+pdm run python -m scripts.playwright_pr_0257_auth_lifecycle --start-vite
 ```
 ## Known Issues / Risks
 - Canonical Docker-first live testing after the auth switch belongs to `PR-0254` after `ADR-0083` / realm stories; do not resurrect local password-form smoke scripts for that lane.
 - Product identity realm concern is now closed through `ADR-0083` / `REV-ST-28-06`: do not treat local browser-session retirement as removal of standalone Skriptoteket identity.
-- `PR-0257` provider blocker: HuleEdu must publish browser-navigable `app=skriptoteket` lifecycle ceremonies for registration, reset, and verification before Skriptoteket adds consumer handoff links.
+- `ST-28-09` still owns realm-aware projection provisioning; lifecycle completion does not create a Skriptoteket projection by itself.
 - `PR-0254` owns Docker-first cross-app auth proof after the `ADR-0083` realm/login/projection path; do not resurrect removed local password-form smoke commands for that lane.
 ## Next Steps
-- Hand `PR-0257` / `REV-PR-0257` to HuleEdu as the standalone registration/password lifecycle provider blocker.
-- Keep `ST-28-09` and `PR-0254` blocked until `ST-28-08` has a provider-approved lifecycle output contract.
+- Start `ST-28-09`: migrate projection lookup/provisioning toward `(product_identity_realm, realm_subject_id)` after consuming the lifecycle output contract.
+- Keep `PR-0254` as the final Docker/operator cross-app proof after `ST-28-09`.

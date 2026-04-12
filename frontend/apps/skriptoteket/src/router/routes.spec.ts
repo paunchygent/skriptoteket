@@ -71,4 +71,13 @@ describe("routes", () => {
 
     expect(resolved.name).toBe("not-found");
   });
+
+  it("keeps old account lifecycle URLs as deliberate handoff routes", () => {
+    const router = createTestRouter();
+
+    expect(router.resolve("/register").name).toBe("register");
+    expect(router.resolve("/forgot-password").name).toBe("forgot-password");
+    expect(router.resolve("/reset-password?token=reset-token").name).toBe("reset-password");
+    expect(router.resolve("/verify-email?token=verify-token").name).toBe("verify-email");
+  });
 });

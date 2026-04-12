@@ -34,7 +34,21 @@ const loginUrl = computed(() =>
         Logga in för att fortsätta till Skriptoteket.
       </p>
       <p>
-        Saknar du åtkomst? Kontakta administratören för Skriptoteket.
+        Saknar du konto?
+        <RouterLink
+          class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
+          to="/register"
+        >
+          Skapa ett Skriptoteket-konto
+        </RouterLink>.
+      </p>
+      <p>
+        <RouterLink
+          class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
+          to="/forgot-password"
+        >
+          Glömt lösenordet?
+        </RouterLink>
       </p>
     </div>
 

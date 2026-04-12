@@ -160,6 +160,56 @@ describe("sharedAuthCeremonyUrl", () => {
 
     expect(url.searchParams.get("next")).toBe("/editor?draft=head#debug");
   });
+
+  it("builds the HuleEdu standalone registration ceremony URL", () => {
+    const url = sharedAuthCeremonyUrl({
+      kind: "register",
+      nextPath: "/apps/classroom.group-seating-studio",
+      origin: "https://skriptoteket.hule.education",
+    });
+
+    expect(url).toBe(
+      "https://api.hule.education/auth/register?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=https%3A%2F%2Fskriptoteket.hule.education%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",
+    );
+    expect(url).not.toContain("/v1/auth/register");
+  });
+
+  it("keeps lifecycle ceremonies on the configured HuleEdu Gateway origin", () => {
+    vi.stubEnv("VITE_HULEEDU_AUTH_ENTRY_URL", "http://127.0.0.1:9000/auth/login");
+
+    const url = new URL(
+      sharedAuthCeremonyUrl({
+        kind: "password-reset",
+        nextPath: "/profile",
+        origin: "http://127.0.0.1:5173",
+        token: "reset-token-123",
+      }),
+    );
+
+    expect(`${url.origin}${url.pathname}`).toBe("http://127.0.0.1:9000/auth/password-reset");
+    expect(url.searchParams.get("app")).toBe("skriptoteket");
+    expect(url.searchParams.get("product_identity_realm")).toBe("skriptoteket_standalone");
+    expect(url.searchParams.get("return_to")).toBe("http://127.0.0.1:5173/auth/callback");
+    expect(url.searchParams.get("next")).toBe("/profile");
+    expect(url.searchParams.get("token")).toBe("reset-token-123");
+  });
+
+  it("builds email verification handoffs with token continuation and safe next", () => {
+    const url = new URL(
+      sharedAuthCeremonyUrl({
+        kind: "email-verification",
+        nextPath: "https://evil.example/callback",
+        origin: "https://skriptoteket.hule.education",
+        token: " verify-token ",
+      }),
+    );
+
+    expect(`${url.origin}${url.pathname}`).toBe(
+      "https://api.hule.education/auth/email-verification",
+    );
+    expect(url.searchParams.get("token")).toBe("verify-token");
+    expect(url.searchParams.has("next")).toBe(false);
+  });
 });
 
 describe("mapBrowserSessionToAuthSnapshot", () => {

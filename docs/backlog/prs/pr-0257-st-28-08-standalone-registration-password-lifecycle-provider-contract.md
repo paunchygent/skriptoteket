@@ -2,7 +2,7 @@
 type: pr
 id: PR-0257
 title: "ST-28-08 standalone registration/password lifecycle provider contract"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-04-12
 updated: 2026-04-12
@@ -32,29 +32,26 @@ acceptance_criteria:
 Skriptoteket standalone account self-service after `PR-0253` retired local browser registration,
 verification, and password routes.
 
-The lane is not ready for consumer implementation yet. HuleEdu now retains and proves the login
-ceremony, but the same retained browser contract does not yet cover standalone registration,
-password reset, or email verification as app/realm-aware product ceremonies.
+The original provider blocker is now closed by HuleEdu `TASK-0318`. Skriptoteket can implement the
+consumer side, but must stay on the Gateway-owned browser ceremony contract and avoid direct
+Identity Service calls or local browser auth revival.
 
 Current provider evidence:
 
-- HuleEdu `docs/reference/ref-shared-browser-session-consumer-conformance-v1.md` lists
-  `GET /auth/login`, login/logout/refresh/session/csrf, and websocket-ticket as browser endpoints;
-  it does not define registration, password reset, or email verification ceremonies.
-- HuleEdu API Gateway `services/api_gateway_service/routers/auth_routes.py` proxies
-  `/v1/auth/login`, `/v1/auth/logout`, `/v1/auth/refresh`, `/v1/auth/session`, `/v1/auth/csrf`,
-  and `/v1/auth/websocket-ticket`; it does not expose browser lifecycle handoff routes for
-  `/register`, `/forgot-password`, `/reset-password`, or `/verify-email`.
-- HuleEdu Identity Service has direct `POST /v1/auth/register`,
-  `POST /v1/auth/request-password-reset`, `POST /v1/auth/reset-password`,
-  `POST /v1/auth/request-email-verification`, and `POST /v1/auth/verify-email` routes, but those
-  are service API surfaces, not retained browser ceremony targets for a Skriptoteket consumer.
-- The current HuleEdu `RegisterRequest` requires `organization_name` and has no app, product realm,
-  return target, or route continuation field. That does not satisfy standalone
-  `skriptoteket_standalone` registration without HuleEdu school registration.
-- The reset and verification request schemas lack app, product realm, return target, and route
-  continuation fields. The current notification reset link targets a generic HuleEdu reset path,
-  not a retained Skriptoteket product-realm return contract.
+- HuleEdu `TASK-0318` is done at commit `cff626aa` and retained review
+  `REV-TASK-0318-01` is approved.
+- HuleEdu `docs/reference/ref-shared-browser-session-consumer-conformance-v1.md` now defines
+  Gateway-owned browser ceremonies for `GET /auth/register`, `GET /auth/password-reset`, and
+  `GET /auth/email-verification`.
+- Those ceremonies accept the same product handoff fields as login:
+  `app`, `product_identity_realm`, `return_to`, `next`, plus `token` for reset and verification
+  completion links.
+- HuleEdu public proof against `https://api.hule.education` returned `status=ok` for
+  `app=skriptoteket`, `product_identity_realm=skriptoteket_standalone`, with rejected untrusted
+  return-origin checks.
+- HuleEdu confirms lifecycle completion does not mint a browser session by itself; Skriptoteket
+  should return users into the approved login ceremony or existing missing-projection/local-access
+  flow as appropriate.
 
 If Skriptoteket implements only local redirects to those direct API shapes, it will recreate the
 same contract hole `PR-0256` avoided: the UI would look restored while the provider could still be
@@ -63,10 +60,9 @@ projection provisioning.
 
 ## Goal
 
-Prepare `ST-28-08` as a provider-contract gate and define the exact consumer package to implement
-after HuleEdu publishes the missing lifecycle ceremony.
+Implement the Skriptoteket consumer handoff package against the HuleEdu lifecycle ceremony contract.
 
-The eventual consumer implementation must:
+The consumer implementation must:
 
 1. Add safe browser handoff targets for standalone registration, password reset request, reset-token
    completion, email verification request, and verification-token completion.
@@ -90,8 +86,7 @@ The eventual consumer implementation must:
 
 ## Required Provider Contract
 
-HuleEdu must publish and prove a retained browser contract before this PR can move from blocked to
-implementation.
+HuleEdu has published and proved the retained browser contract needed for implementation.
 
 Required minimum:
 
@@ -112,11 +107,9 @@ Required minimum:
 
 ## Implementation Plan
 
-This PR stays blocked until the provider contract exists. Once HuleEdu closes the blocker:
-
-1. Replace old Skriptoteket lifecycle links with provider-approved browser ceremony URLs.
-2. Add or restore top-level Skriptoteket compatibility routes only as transition/handoff surfaces.
-3. Share the safe route-level `next` sanitizer used by the login ceremony helper.
+1. Replace old Skriptoteket lifecycle links with provider-approved browser ceremony URLs. Done.
+2. Keep top-level Skriptoteket lifecycle routes only as transition/handoff surfaces. Done.
+3. Share the safe route-level `next` sanitizer used by the login ceremony helper. Done.
 4. Add focused Vitest coverage for register/reset/verify handoff URLs, hostile `next`, token-link
    continuation, and no local form/API revival.
 5. Add backend route/OpenAPI contract scans proving local register/reset/verify browser endpoints
@@ -126,14 +119,27 @@ This PR stays blocked until the provider contract exists. Once HuleEdu closes th
 7. Update `ST-28-09` only after lifecycle outputs provide sufficient signed claims for projection
    provisioning.
 
+## Implementation Closeout (2026-04-12)
+
+Skriptoteket now consumes the HuleEdu `TASK-0318` lifecycle ceremony contract:
+
+- `frontend/apps/skriptoteket/src/api/sharedAuth.ts` builds lifecycle ceremony URLs for register,
+  password reset, and email verification while preserving the existing login ceremony helper.
+- `frontend/apps/skriptoteket/src/views/AuthLifecycleHandoffView.vue` replaces the retired local
+  lifecycle page with route-specific HuleEdu Gateway handoffs.
+- `/register`, `/forgot-password`, `/reset-password`, and `/verify-email` route to the handoff
+  view; reset and verification tokens are preserved as provider ceremony query parameters.
+- `AuthLoginPanel` now points users to the standalone registration and password-reset handoff
+  surfaces instead of saying access requires an administrator.
+- `tests/unit/web/test_pr_0253_auth_retirement_contracts.py` also guards against direct browser
+  calls to HuleEdu lifecycle POST APIs.
+- `scripts/playwright_pr_0257_auth_lifecycle.py` provides the live route proof for the old
+  lifecycle URLs.
+
+Lifecycle completion still does not create a Skriptoteket projection by itself. `ST-28-09` remains
+the owner for realm-aware projection provisioning and local RBAC preservation.
+
 ## Test Plan
-
-Provider contract review while blocked:
-
-- `pdm run docs-validate`
-- `git diff --check`
-
-Implementation close-out after provider clearance:
 
 - focused frontend lifecycle handoff specs
 - focused backend retired-local-auth contract scans
@@ -141,7 +147,7 @@ Implementation close-out after provider clearance:
 - `pdm run typecheck`
 - `pdm run fe-lint`
 - `pdm run lint`
-- live browser lifecycle proof against the approved HuleEdu ceremony
+- `pdm run python -m scripts.playwright_pr_0257_auth_lifecycle --start-vite`
 - `pdm run docs-validate`
 - `git diff --check`
 

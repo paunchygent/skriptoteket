@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0257
 title: "Review: PR-0257 standalone registration/password lifecycle provider contract"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-04-12
 updated: 2026-04-12
@@ -23,10 +23,9 @@ links:
 
 ## TL;DR
 
-`PR-0257` is correctly opened as the next `ST-28-08` slice, but it cannot enter implementation.
-Changes are requested because HuleEdu has not yet published a retained, browser-navigable,
-app/realm-aware provider contract for Skriptoteket standalone registration, password reset, or
-email verification.
+`PR-0257` is approved to enter consumer implementation. HuleEdu `TASK-0318` has published and
+publicly proved the retained, browser-navigable, app/realm-aware provider contract for Skriptoteket
+standalone registration, password reset, and email verification.
 
 ## Problem Statement
 
@@ -35,13 +34,13 @@ meaning still exists under `skriptoteket_standalone`. The review question is whe
 be implemented on the current HuleEdu provider surface without reviving local browser auth or
 collapsing standalone Skriptoteket identity into HuleEdu school registration.
 
-It cannot yet. The current retained HuleEdu contract proves login/session ceremony behavior, not
-the registration/reset/verification lifecycle required by this story.
+It can now proceed. The retained HuleEdu contract proves login/session ceremony behavior and the
+registration/reset/verification lifecycle required by this story.
 
 ## Proposed Solution
 
-Keep `PR-0257` blocked and require HuleEdu provider work before Skriptoteket implements consumer
-redirects. The provider work must publish a retained contract and proof for:
+Implement consumer redirects against the HuleEdu provider contract. HuleEdu `TASK-0318` has
+published a retained contract and proof for:
 
 - standalone registration under `app=skriptoteket` and `product_identity_realm=skriptoteket_standalone`
 - password reset request and token completion with app/realm/return context
@@ -88,7 +87,7 @@ redirects. The provider work must publish a retained contract and proof for:
 
 **Reviewer:** `Codex ruthless-code-review`
 **Date:** `2026-04-12`
-**Verdict:** `changes_requested`
+**Verdict:** `approved`
 
 ### Required Changes
 
@@ -149,6 +148,22 @@ redirects. The provider work must publish a retained contract and proof for:
    reconstructs `app=skriptoteket`, `product_identity_realm=skriptoteket_standalone`, and an
    allowlisted Skriptoteket return target.
 
+### Resolution Update (2026-04-12)
+
+HuleEdu `TASK-0318` closed the provider blocker at commit `cff626aa`:
+
+- Gateway-owned browser lifecycle entries are now retained for `GET /auth/register`,
+  `GET /auth/password-reset`, and `GET /auth/email-verification`.
+- The routes accept `app`, `product_identity_realm`, `return_to`, safe route-level `next`, and
+  token continuation for reset/verification completion.
+- Standalone Skriptoteket registration is explicitly no-org and no school-membership.
+- Reset and verification notification links preserve app/realm/return/next context through
+  `https://api.hule.education/auth/password-reset` and
+  `https://api.hule.education/auth/email-verification`.
+- Public lifecycle proof against `https://api.hule.education` returned `status=ok` for
+  `app=skriptoteket` and `product_identity_realm=skriptoteket_standalone`, with rejected
+  untrusted return-origin checks.
+
 ### Suggestions (Optional)
 
 - Model lifecycle entries as the same ceremony family as `GET /auth/login`, for example
@@ -161,7 +176,7 @@ redirects. The provider work must publish a retained contract and proof for:
 ### Decision Approvals
 
 - [x] Create `PR-0257` as the next `ST-28-08` package
-- [x] Keep `PR-0257` blocked pending HuleEdu lifecycle provider contract
+- [x] Move `PR-0257` into consumer implementation after HuleEdu lifecycle provider proof
 - [x] Preserve no-local-browser-auth and no-direct-Identity-Service constraints
 - [x] Defer projection provisioning to `ST-28-09`
 
@@ -173,3 +188,5 @@ redirects. The provider work must publish a retained contract and proof for:
 | 2 | `REV-PR-0257` | Recorded retained `changes_requested` review findings against missing provider lifecycle contract |
 | 3 | `ST-28-08` | Kept blocked and added explicit provider-gate dependencies |
 | 4 | `EPIC-28` | Updated sequencing so PR-0257 precedes ST-28-09 and PR-0254 |
+| 5 | HuleEdu `TASK-0318` | Closed the provider lifecycle blocker with retained public proof |
+| 6 | `PR-0257` | Implemented the Skriptoteket consumer lifecycle handoff surfaces |

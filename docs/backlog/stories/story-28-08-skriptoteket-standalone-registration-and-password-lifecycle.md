@@ -2,7 +2,7 @@
 type: story
 id: ST-28-08
 title: "Skriptoteket standalone registration and password lifecycle"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-04-11
 updated: 2026-04-12
@@ -41,14 +41,37 @@ without merging it into HuleEdu school registration.
 
 ## Provider Contract Gate (2026-04-12)
 
-`PR-0257` is opened as the governing implementation package, but the retained
-review `REV-PR-0257` keeps this story blocked. HuleEdu has proved the
-`app=skriptoteket` login ceremony, but the retained shared browser-session
-contract does not yet define app/realm-aware registration, password reset, or
-email verification ceremonies.
+`PR-0257` is the governing implementation package for this story. HuleEdu
+`TASK-0318` has now published and publicly proved the browser-navigable
+standalone lifecycle contract:
 
-Required unblocker: HuleEdu must publish and prove browser-navigable lifecycle
-surfaces that accept `app=skriptoteket`, `product_identity_realm`, allowed
-Skriptoteket return targets, and safe route-level continuation. Direct Identity
-Service API routes are not enough for this story, and standalone registration
-must not require HuleEdu school organization registration.
+- `GET /auth/register`
+- `GET /auth/password-reset`
+- `GET /auth/email-verification`
+
+Those Gateway-owned browser ceremonies accept `app=skriptoteket`,
+`product_identity_realm=skriptoteket_standalone`, the approved Skriptoteket
+return origin, optional safe route-level `next`, and token continuation for
+reset/verification completion. Direct Identity Service API routes remain
+forbidden for Skriptoteket browser consumers, and standalone registration must
+not require HuleEdu school organization registration.
+
+Consumer implementation added only Skriptoteket handoff surfaces for the old
+lifecycle URLs.
+
+## Implementation Summary (as of 2026-04-12)
+
+`PR-0257` shipped the consumer side for `ST-28-08` after HuleEdu `TASK-0318`
+closed the provider lifecycle gate. Skriptoteket old lifecycle URLs now render
+deliberate HuleEdu Gateway handoff surfaces:
+
+- `/register` -> `GET https://api.hule.education/auth/register`
+- `/forgot-password` and `/reset-password` -> `GET https://api.hule.education/auth/password-reset`
+- `/verify-email` -> `GET https://api.hule.education/auth/email-verification`
+
+All handoffs include `app=skriptoteket`,
+`product_identity_realm=skriptoteket_standalone`, `return_to=/auth/callback`,
+safe route-level `next` when present, and reset/verification `token` when
+present. Focused tests and the live route proof confirm no local form, no local
+browser-auth API revival, and no direct browser calls to HuleEdu lifecycle POST
+APIs.
