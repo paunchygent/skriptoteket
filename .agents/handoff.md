@@ -38,7 +38,9 @@ Keep this file updated so the next session can pick up work quickly.
   Skriptoteket `/api` traffic through Gateway, and local-only Gateway public-key sharing.
   Browser-visible auth URLs use `http://localhost:8080`; host-run Vite may use
   `VITE_DEV_PROXY_TARGET=http://localhost:8080`, while the normal Docker frontend service uses
-  `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` on `hule-network`.
+  `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` on `hule-network` and
+  `VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000` so public
+  `/api/v1/public/...` routes stay direct to Skriptoteket without a HuleEdu session.
 - `PR-0259` implemented public Klassrumskartan Smart `Slumpa` snapshot commits: the public seating
   and grouping Smart flows now commit the visible pre-run workspace and accepted solver workspace
   directly to the browser-owned guest snapshot before success, acknowledge the draft autosave lane,
@@ -75,10 +77,12 @@ Keep this file updated so the next session can pick up work quickly.
   `/smart-run` responses and two `200` grouping `/smart-run` responses at
   `2026-04-12T21:12:45Z`-`2026-04-12T21:12:46Z`; no 409 appears in that proof tail.
 - TASK-0325/PR-0254 local shared-auth live proof after Docker frontend recreate:
-  Playwright clicked `Logga in` on `http://localhost:5173`, confirmed the anchor
-  targets `http://localhost:8080/auth/login`, observed Gateway `303`, and landed
-  on visible HuleEdu login at `http://localhost:5174/login` without the previous
-  `VALIDATION_ERROR` body.
+  persisted script `pdm run pr-0254-auth-cutover` passed. It first asserts public
+  Klassrumskartan bootstrap on `http://localhost:5173/public/apps/classroom.group-seating-studio`
+  stays `200` before login, then clicks `Logga in`, confirms the anchor targets
+  `http://localhost:8080/auth/login`, observes HuleEdu login on `http://localhost:5174/login`,
+  and verifies `/api/v1/profile/app-continuation` `200` with authenticated nav visible.
+  Artifacts: `.artifacts/playwright-pr-0254-auth-cutover/`.
 ## How to Run
 ```bash
 pdm run docs-validate

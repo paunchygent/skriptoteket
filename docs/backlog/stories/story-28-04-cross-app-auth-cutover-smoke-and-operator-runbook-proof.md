@@ -53,6 +53,11 @@ The proof must cover:
 - HuleEdu `TASK-0325` freezes the local proxy contract consumed here:
   browser-visible auth URLs use `http://localhost:8080`; host-run Vite may set
   `VITE_DEV_PROXY_TARGET=http://localhost:8080`, while the normal Docker frontend service sets
-  `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` on `hule-network`; protected
-  browser `/api/...` traffic enters Gateway before forwarding to
-  `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
+  `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` on `hule-network` and
+  `VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000`; protected browser
+  `/api/...` traffic enters Gateway before forwarding to
+  `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`, while public
+  `/api/v1/public/...` remains directly served by Skriptoteket.
+- `PR-0254` persists the auditable live proof as `pdm run pr-0254-auth-cutover`; the
+  proof asserts public Klassrumskartan bootstrap stays `200` before login, then verifies
+  HuleEdu Gateway `:8080`, HuleEdu login UI `:5174`, and app-continuation `200`.

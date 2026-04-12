@@ -44,9 +44,11 @@ Gateway lane with exact dev origins, HuleEdu login UI on `5174`, protected Skrip
 through Gateway at `/api/...`, and local-only Gateway public-key sharing. Skriptoteket consumes it
 with browser-visible auth URLs on `http://localhost:8080`; host-run Vite may proxy `/api` to
 `http://localhost:8080`, while the normal Docker frontend service proxies to
-`http://huleedu_api_gateway_service:8080` over `hule-network`. The host-scoped 127 proof keeps all
-browser-facing origins and host-run proxy targets on `127.0.0.1`. That lane exists so `PR-0254` can
-prove real Gateway semantics locally without weakening public production allowlists.
+`http://huleedu_api_gateway_service:8080` over `hule-network` and sends public
+`/api/v1/public/...` traffic directly to `http://skriptoteket_web:8000`. The
+host-scoped 127 proof keeps all browser-facing origins and host-run proxy targets on
+`127.0.0.1`. That lane exists so `PR-0254` can prove real Gateway semantics locally
+without weakening public production allowlists.
 
 ## Core Concept: Product Identity Realm
 

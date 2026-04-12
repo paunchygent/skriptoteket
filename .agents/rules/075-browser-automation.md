@@ -53,6 +53,7 @@ pkill -TERM -f 'playwright_chromiumdev_profile|Google Chrome.*mcp-chrome|Google 
 ## Repo Smoke Scripts
 
 - `pdm run pr-0253-auth-retirement --start-backend --start-vite` → proves the HuleEdu-owned browser-auth edge and retired local auth surface.
+- `pdm run pr-0254-auth-cutover` → proves the live local Docker cutover through HuleEdu Gateway `:8080`, HuleEdu login UI `:5174`, and Skriptoteket app-continuation `:5173`.
 - `pdm run pr-0255-auth-bootstrap --start-backend --start-vite` → proves shared-session bootstrap against the signed HuleEdu app-continuation path.
 - `pdm run pr-0252-auth-return --start-backend --start-vite` → proves protected-route return-to-origin through `/auth/login`.
 

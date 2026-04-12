@@ -107,8 +107,9 @@ dependencies:
   must consume before local Docker/operator proof: HuleEdu login UI on `5174`, exact dev origins
   only, protected Skriptoteket `/api` traffic through Gateway, browser-visible auth URLs on
   `http://localhost:8080`, Docker frontend proxy target
-  `http://huleedu_api_gateway_service:8080` on `hule-network`, and local-only public signing-key
-  sharing.
+  `http://huleedu_api_gateway_service:8080` on `hule-network`, direct Docker backend target
+  `http://skriptoteket_web:8000` for public `/api/v1/public/...` bootstrap traffic, and
+  local-only public signing-key sharing.
 - The cross-repo launch topology and upstream edge ownership are now recorded in
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 

@@ -26,7 +26,7 @@ _CONTAINER_VAULT_ROOT = Path("/var/lib/skriptoteket/vault")
 _HOST_DEV_ARTIFACTS_ROOT = Path("/tmp/skriptoteket/artifacts")
 _HOST_DEV_VAULT_ROOT = Path("/tmp/skriptoteket/vault")
 _DOCKER_HOST_ALIASES = frozenset({"host.docker.internal", "gateway.docker.internal"})
-_NON_PRODUCTION_ALLOWED_HOSTS = frozenset({"skriptoteket_web"})
+_NON_PRODUCTION_ALLOWED_HOSTS = frozenset({"skriptoteket_web", "skriptoteket-web"})
 
 
 def _is_running_in_container() -> bool:

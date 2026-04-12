@@ -7,7 +7,9 @@ import { defineConfig } from "vite";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const devHost = process.env.VITE_DEV_HOST ?? true;
 const devPort = Number.parseInt(process.env.VITE_DEV_PORT ?? "5173", 10);
-const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET ?? "http://localhost:8000";
+const devBackendProxyTarget = process.env.VITE_DEV_BACKEND_PROXY_TARGET ?? "http://localhost:8000";
+const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET ?? devBackendProxyTarget;
+const devPublicApiProxyTarget = process.env.VITE_DEV_PUBLIC_API_PROXY_TARGET ?? devBackendProxyTarget;
 const usePolling = process.env.VITE_DEV_POLLING === "true";
 const pollingInterval = Number.parseInt(process.env.VITE_DEV_POLLING_INTERVAL ?? "", 10);
 const watch = usePolling
@@ -36,13 +38,17 @@ export default defineConfig(({ command }) => ({
     },
     watch,
     proxy: {
+      "/api/v1/public": {
+        target: devPublicApiProxyTarget,
+        changeOrigin: true,
+      },
       "/api": {
         target: devProxyTarget,
         changeOrigin: true,
       },
       // Proxy non-SPA static assets to backend; SPA assets served by Vite
       "^/static/(?!spa)": {
-        target: devProxyTarget,
+        target: devBackendProxyTarget,
         changeOrigin: true,
       },
     },

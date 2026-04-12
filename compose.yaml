@@ -44,10 +44,15 @@ services:
       - LLM_CHAT_OPS_FALLBACK_BASE_URL=https://api.openai.com
       - LLM_CHAT_OPS_FALLBACK_MODEL=gpt-5.2
       - LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT=low
+      - HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH=/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem
+      - HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID=gateway-identity-rs256-v1
+      - HULEEDU_INTERNAL_IDENTITY_ISSUER=api_gateway_service
+      - HULEEDU_INTERNAL_IDENTITY_AUDIENCE=skriptoteket
     volumes:
       - ./alembic.ini:/app/alembic.ini
       - ./migrations:/app/migrations
       - ./src:/app/src
+      - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-../../huledu-reboot/secrets/local-runtime/internal-identity/gateway-internal-identity-public-key.pem}:/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro
       - vault_data:/var/lib/skriptoteket/vault
     depends_on:
       - db
@@ -113,6 +118,7 @@ services:
       - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
       - VITE_DEV_HOST=0.0.0.0
       - VITE_DEV_PORT=5173
+      - VITE_DEV_BACKEND_PROXY_TARGET=${VITE_DEV_BACKEND_PROXY_TARGET:-http://skriptoteket_web:8000}
       - VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://huleedu_api_gateway_service:8080}
       - VITE_HULEEDU_AUTH_BASE_URL=${VITE_HULEEDU_AUTH_BASE_URL:-http://localhost:8080}
       - VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login}

@@ -169,10 +169,15 @@ the browser ceremony/projection stories below define what is being proved.
 
 Local `ST-28-04` proof must consume the HuleEdu `TASK-0325` local/non-production
 Gateway lane: exact loopback origins, HuleEdu login UI on `5174`, protected
-Skriptoteket `/api` traffic routed through Gateway with
-`VITE_DEV_PROXY_TARGET=http://localhost:8080` or the all-127 equivalent, and
-local-only Gateway public-key verification. Public `https://api.hule.education` rejecting loopback
-`return_to` values remains the correct production behavior.
+Skriptoteket `/api` traffic routed through Gateway, and local-only Gateway
+public-key verification. Host-run Vite may set
+`VITE_DEV_PROXY_TARGET=http://localhost:8080` or the all-127 equivalent; the
+normal Docker frontend service sets
+`VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` and
+`VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000` so public
+`/api/v1/public/...` bootstrap routes remain directly served by Skriptoteket.
+Public `https://api.hule.education` rejecting loopback `return_to` values
+remains the correct production behavior.
 
 Skriptoteket must not reintroduce local browser auth as a bridge. Registration,
 password reset, email verification, and account linking remain Skriptoteket

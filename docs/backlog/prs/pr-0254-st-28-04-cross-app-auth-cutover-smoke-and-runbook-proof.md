@@ -68,6 +68,10 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
    - normal Docker frontend service: `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080`
      on `hule-network`, so existing Vite `/api` proxy traffic enters the HuleEdu Gateway
      local-only `ANY /api/{path:path}` proxy
+   - normal Docker frontend service:
+     `VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000`, so public
+     `/api/v1/public/...` and backend static assets remain directly served by Skriptoteket
+     without a HuleEdu browser session
    - 127 proof equivalents:
      `VITE_HULEEDU_AUTH_BASE_URL=http://127.0.0.1:8080`,
      `VITE_HULEEDU_AUTH_ENTRY_URL=http://127.0.0.1:8080/auth/login`, and
@@ -77,7 +81,8 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
      `API_GATEWAY_SKRIPTOTEKET_PROXY_PREFIX=/api`, and
      `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`
    - a local-only Gateway public signing key mounted or exported for backend verification
-3. Add or update a dedicated Skriptoteket realm-aware auth-cutover Playwright smoke.
+3. Add or update the dedicated Skriptoteket realm-aware auth-cutover Playwright smoke:
+   `pdm run pr-0254-auth-cutover`.
 4. Prove browser ceremony entry, protected-route recovery, signed downstream context, projection
    resolution, CSRF write, websocket/session admission if applicable, and logout invalidation.
 5. Prove both the canonical `localhost` lane and the separate `127.0.0.1` lane where feasible,
@@ -90,7 +95,7 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
 
 ## Test Plan
 
-- Run the new Playwright cutover smoke against the intended local or Hemma target.
+- Run `pdm run pr-0254-auth-cutover` against the intended local or Hemma target.
 - Run the local smoke through the HuleEdu `TASK-0325` Gateway lane, not through public
   `https://api.hule.education` with loopback `return_to`.
 - Run focused auth tests affected by the smoke helper changes.

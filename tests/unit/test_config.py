@@ -80,7 +80,13 @@ def test_non_production_allowed_hosts_include_containerized_dev_backend_alias() 
     )
 
     assert settings.allowed_hosts == frozenset(
-        {"localhost", "127.0.0.1", "skriptoteket.hule.education", "skriptoteket_web"}
+        {
+            "localhost",
+            "127.0.0.1",
+            "skriptoteket.hule.education",
+            "skriptoteket_web",
+            "skriptoteket-web",
+        }
     )
 
 

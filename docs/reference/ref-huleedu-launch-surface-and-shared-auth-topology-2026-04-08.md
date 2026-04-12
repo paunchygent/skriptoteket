@@ -112,6 +112,10 @@ Local proof should mirror ownership without copying production hosts:
   Docker frontend service uses the container-internal target
   `http://huleedu_api_gateway_service:8080` on `hule-network`. Gateway forwards
   to `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
+- Public Skriptoteket APIs remain public in local Docker proof:
+  `VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000` keeps
+  `/api/v1/public/...` and backend static assets off the HuleEdu Gateway.
 - Public `https://api.hule.education` must continue rejecting loopback return origins.
 
-This local lane is owned by HuleEdu `TASK-0325` and consumed by Skriptoteket `PR-0254`.
+This local lane is owned by HuleEdu `TASK-0325` and consumed by Skriptoteket `PR-0254`;
+the auditable local proof is `pdm run pr-0254-auth-cutover`.
