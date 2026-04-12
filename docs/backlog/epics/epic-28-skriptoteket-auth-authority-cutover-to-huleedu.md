@@ -146,16 +146,18 @@ browser lifecycle ceremonies for registration, password reset, and email verific
 without direct browser-to-Identity calls or app-local browser auth: old `/register`,
 `/forgot-password`, `/reset-password`, and `/verify-email` URLs now hand off to the
 provider-approved Gateway ceremonies while preserving app, realm, return, safe `next`, and token
-context. `ST-28-09` is now ready through `PR-0258`: the implementation shape is a dedicated local
-identity projection table keyed by `(product_identity_realm, realm_subject_id)`, removal of
-`users.external_id` rather than repurposing it, first-login provisioning only from sufficient signed
-claims, local `user` as the default role, no email-inferred linking, and local Docker ceremony proof
-through a local/non-production HuleEdu Gateway with exact dev-origin allowlisting. The sequence is
-now explicit: `PR-0255` stays complete as the signed-context/projection foundation; `ST-28-06`,
-`ST-28-07`, and `ST-28-08` are done; `ST-28-09` / `PR-0258` makes projection provisioning
-realm-aware; then `ST-28-04` / `PR-0254` runs as the final realm-aware cross-app proof. `ST-28-10`
-follows with auth outcome observability for gateway/session, realm, projection, and local RBAC
-outcomes.
+context. `ST-28-09` / `PR-0258` is blocked for retained re-review after `REV-PR-0258` requested
+changes, but the target implementation shape is now sharper: dedicated local identity projection
+table keyed by `(product_identity_realm, realm_subject_id)`, preflight/backfill of existing
+`auth_provider=huleedu` + `external_id` rows into `huleedu_school` projections before
+`users.external_id` is removed, first-login provisioning only from concrete signed HuleEdu
+email/verified-email claims, UoW-owned idempotent get-or-create, dedicated projection audit events,
+local `user` as the default role, no email-inferred linking, and local Docker ceremony proof through
+a local/non-production HuleEdu Gateway with exact dev-origin allowlisting. The sequence is now
+explicit: `PR-0255` stays complete as the signed-context/projection foundation; `ST-28-06`,
+`ST-28-07`, and `ST-28-08` are done; `ST-28-09` / `PR-0258` must pass review before implementation;
+then `ST-28-04` / `PR-0254` runs as the final realm-aware cross-app proof. `ST-28-10` follows with
+auth outcome observability for gateway/session, realm, projection, and local RBAC outcomes.
 
 ## Planning note (2026-04-08)
 

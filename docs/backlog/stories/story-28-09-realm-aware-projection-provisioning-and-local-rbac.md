@@ -2,20 +2,20 @@
 type: story
 id: ST-28-09
 title: "Realm-aware projection provisioning and local RBAC"
-status: ready
+status: blocked
 owners: "agents"
 created: 2026-04-11
 updated: 2026-04-12
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given the old provider-subject shape is ambiguous, when this story completes, then Skriptoteket resolves identity through a dedicated local projection table keyed by `(product_identity_realm, realm_subject_id)` and no production lookup depends on `users.external_id` or `(auth_provider, external_id)`."
-  - "Given the legacy `external_id` field exists only because of the old provider-subject model, when the migration lands, then `external_id` is removed rather than renamed, repurposed, or left as loose provider metadata."
+  - "Given the legacy `external_id` field exists only because of the old provider-subject model, when the migration lands, then existing HuleEdu-linked provider-subject rows are preflighted/backfilled before `external_id` is removed rather than renamed, repurposed, or left as loose provider metadata."
   - "Given signed provisioning claims are sufficient, when first-time Skriptoteket standalone or accepted HuleEdu-school login completes for `app=skriptoteket`, then projection creation is safe, idempotent, auditable, and defaults the local Skriptoteket role to `user`."
   - "Given signed provisioning claims are insufficient, when an authenticated identity has no projection, then Skriptoteket fails closed and reaches deliberate local-access-required UX without fabricating a user."
   - "Given local RBAC remains Skriptoteket-owned, when the app authorizes contributor/admin/superuser behavior, then authorization uses local `User.role` and not generic HuleEdu provider roles."
   - "Given local livetests need the real auth ceremony, when Docker/local proof runs, then Skriptoteket uses a local or non-production HuleEdu Gateway whose allowlist includes the exact dev origins instead of widening production Gateway origins to localhost."
-data_impact: "Requires a clean projection migration: create a dedicated projection table, move identity lookup to `(product_identity_realm, realm_subject_id)`, remove `users.external_id`, and avoid email-inferred linking."
-dependencies: ["ST-28-06", "ST-28-07", "ST-28-08", "ADR-0083", "PR-0255", "PR-0256", "PR-0257"]
+data_impact: "Requires a clean projection migration: create a dedicated projection table, backfill existing HuleEdu-linked provider-subject rows, move identity lookup to `(product_identity_realm, realm_subject_id)`, remove `users.external_id`, and avoid email-inferred linking."
+dependencies: ["ST-28-06", "ST-28-07", "ST-28-08", "ADR-0083", "PR-0255", "PR-0256", "PR-0257", "PR-0258", "REV-PR-0258", "HuleEdu signed provisioning claims contract"]
 ---
 
 ## Context
@@ -27,7 +27,9 @@ Skriptoteket standalone identity and future linked identities.
 
 This story owns the app-local projection and authorization work now that the
 identity realm contract, login ceremony, and standalone lifecycle handoff are
-accepted.
+accepted. It remains blocked until the retained `PR-0258` review approves the
+migration/provisioning contract and HuleEdu signs the concrete provisioning
+claims needed for first-login user creation.
 
 ## Notes
 
@@ -35,6 +37,9 @@ accepted.
   keys into `users`.
 - Remove `external_id` now. Do not rename it, repurpose it, or keep it as
   provider metadata.
+- Backfill existing `auth_provider=huleedu` + nonblank `external_id` rows into
+  `huleedu_school` projections before dropping `external_id`; fail the
+  migration on ambiguous provider-subject data.
 - Keep the local `users` record as Skriptoteket-owned profile/RBAC state.
 - Keep contributor/admin/superuser as local promotions. Provider roles are
   metadata only.

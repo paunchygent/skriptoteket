@@ -35,8 +35,8 @@ contract are served by Hule Education infrastructure.
 This began as a reference direction and is now partially implemented: `ADR-0083` froze the
 product-realm contract, HuleEdu `TASK-0313` / `TASK-0314` published and publicly proved the
 provider ceremony/context, Skriptoteket `PR-0256` consumes the login ceremony, and `PR-0257`
-consumes the standalone lifecycle handoff. Realm-aware projection provisioning is now locked for
-`PR-0258`.
+consumes the standalone lifecycle handoff. Realm-aware projection provisioning is scoped to
+`PR-0258`, which is blocked until retained review approves the migration/provisioning contract.
 
 ## Core Concept: Product Identity Realm
 
@@ -147,10 +147,14 @@ The core ceremony/context contract is frozen, the login and lifecycle consumer s
 `ST-28-09` / `PR-0258` now owns the clean projection migration:
 
 - Use a dedicated local projection table keyed by `(product_identity_realm, realm_subject_id)`.
+- Backfill existing HuleEdu-linked `(auth_provider=huleedu, external_id=...)` rows into
+  `huleedu_school` projections before dropping the old field, and fail on ambiguous data.
 - Remove `users.external_id` rather than renaming, repurposing, or leaving it as legacy provider
   metadata.
 - Provision first-time Skriptoteket projections only when signed HuleEdu context includes
   `active_app=skriptoteket`, accepted realm, realm subject, email, and verified email state.
+- Keep provisioning blocked until those email and verification claims are explicit signed fields in
+  `InternalIdentityContextV1`.
 - Default newly provisioned local users to `user`; contributor/admin/superuser remain local
   promotions.
 - Treat matching email as insufficient for account linking; linking must be explicit.
