@@ -17,6 +17,7 @@ links:
   - PR-0256
   - PR-0257
   - PR-0258
+  - HuleEdu TASK-0325
   - REV-PR-0253
   - REV-PR-0256
 ---
@@ -37,6 +38,13 @@ slices: `ADR-0083` froze the product-realm contract, HuleEdu `TASK-0313` / `TASK
 publicly proved the provider ceremony/context, Skriptoteket `PR-0256` consumes the login ceremony,
 `PR-0257` consumes the standalone lifecycle handoff, and `PR-0258` implements realm-aware
 projection provisioning.
+
+The final local proof prerequisite is HuleEdu `TASK-0325`: a local/non-production shared-auth
+Gateway lane with exact dev origins, HuleEdu login UI on `5174`, protected Skriptoteket API traffic
+through Gateway at `/api/...`, and local-only Gateway public-key sharing. Skriptoteket consumes it
+with `VITE_DEV_PROXY_TARGET=http://localhost:8080` for the canonical lane or
+`VITE_DEV_PROXY_TARGET=http://127.0.0.1:8080` for the host-scoped 127 proof. That lane exists so
+`PR-0254` can prove real Gateway semantics locally without weakening public production allowlists.
 
 ## Core Concept: Product Identity Realm
 
@@ -158,8 +166,10 @@ The core ceremony/context contract is frozen, the login and lifecycle consumer s
 - Default newly provisioned local users to `user`; contributor/admin/superuser remain local
   promotions.
 - Treat matching email as insufficient for account linking; linking must be explicit.
-- Prove local Docker auth ceremonies against a local or non-production HuleEdu Gateway with exact
-  dev-origin allowlisting.
+- Prove local Docker auth ceremonies against the HuleEdu `TASK-0325` local/non-production Gateway
+  lane: exact dev-origin allowlisting, HuleEdu login UI on `5174`, protected Skriptoteket `/api`
+  traffic routed through Gateway, local Gateway target config, and local-only Gateway public
+  signing-key verification.
 - Runtime projection events include request correlation ids, concurrent first-login callbacks are
   DB-tested, invalid product context remains a generic auth ceremony/context error, and direct
   user-facing login actions open the HuleEdu ceremony rather than a second app-local login CTA.
@@ -176,6 +186,8 @@ and local RBAC denial?
   explicit for product identity realms and standalone Skriptoteket identity.
 - `PR-0254` should not treat cross-app auth proof as proof that all Skriptoteket users are HuleEdu
   school identities.
+- `PR-0254` should consume HuleEdu `TASK-0325` for local proof rather than pointing loopback
+  callbacks at public production or using a Skriptoteket-only identity-header injector.
 - `ADR-0083` is accepted as the product-identity-realm contract for the implemented consumer path.
 - Follow-up stories now scaffold the sequence:
   - `ST-28-06` accepted the ADR and froze the contract through `REV-ST-28-06`.
@@ -183,5 +195,7 @@ and local RBAC denial?
   - `ST-28-08` shipped standalone registration/password lifecycle handoffs through `PR-0257`.
   - `ST-28-09` shipped realm-aware projection provisioning and local RBAC preservation through
     `PR-0258`.
-  - `ST-28-04` / `PR-0254` becomes the final realm-aware cross-app proof after those stories.
+  - HuleEdu `TASK-0325` provides the local shared-auth Gateway lane before `PR-0254`.
+  - `ST-28-04` / `PR-0254` becomes the final realm-aware cross-app proof after those stories and
+    the local Gateway lane.
   - `ST-28-10` reintroduces auth outcome observability without local session gauges.

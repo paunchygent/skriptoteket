@@ -162,4 +162,42 @@ describe("useDraftPersistenceLane", () => {
 
     expect(applyCommittedWorkspace).not.toHaveBeenCalled();
   });
+
+  it("acknowledges an external commit without replaying an older in-flight save", async () => {
+    vi.useFakeTimers();
+    const saveDeferred = createDeferred<DraftWorkspaceResponse>();
+    const applyCommittedWorkspace = vi.fn();
+    const applyAcknowledgement = vi.fn();
+    const lane = useDraftPersistenceLane({
+      canSchedule: () => true,
+      getSessionToken: () => 0,
+      normalizeErrorMessage: (_error, fallback) => fallback,
+      persistDraft: vi.fn().mockReturnValue(saveDeferred.promise),
+      serializePatch: () => ({
+        expected_revision: 4,
+        smart_enabled: false,
+        use_history: false,
+        grouping_seating_distance_enabled: false,
+        groups: [],
+        group_assignments: [],
+        seat_assignments: [],
+      }),
+      applyCommittedWorkspace,
+      applyAcknowledgement,
+    });
+
+    lane.resetBoundDraft("draft-1");
+    lane.markDirty();
+    await vi.advanceTimersByTimeAsync(900);
+
+    lane.acknowledgeExternalCommit("draft-1");
+    saveDeferred.resolve(createWorkspaceResponse(5));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(lane.hasPendingChanges.value).toBe(false);
+    expect(lane.status.value).toBe("saved");
+    expect(applyCommittedWorkspace).not.toHaveBeenCalled();
+    expect(applyAcknowledgement).not.toHaveBeenCalled();
+  });
 });

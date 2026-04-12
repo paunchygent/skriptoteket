@@ -159,6 +159,16 @@ async def test_run_public_smart_grouping_rejects_guest_use_history_flag() -> Non
 
 
 @pytest.mark.asyncio
+async def test_run_public_smart_grouping_rejects_revision_mismatch() -> None:
+    handler = RunPublicSmartGroupingHandler(
+        clock=FixedClock(datetime(2026, 4, 7, 12, 0, tzinfo=timezone.utc))
+    )
+
+    with pytest.raises(DomainError, match="Draft revision mismatch"):
+        await handler.handle(snapshot=_snapshot(), expected_revision=3)
+
+
+@pytest.mark.asyncio
 async def test_run_public_smart_seating_returns_browser_owned_workspace() -> None:
     handler = RunPublicSmartSeatingHandler(
         clock=FixedClock(datetime(2026, 4, 7, 12, 0, tzinfo=timezone.utc))
@@ -171,6 +181,16 @@ async def test_run_public_smart_seating_returns_browser_owned_workspace() -> Non
     assert result.workspace.draft.revision == 3
     assert len(result.workspace.seat_assignments) == 4
     assert result.message == "Smart placering klar."
+
+
+@pytest.mark.asyncio
+async def test_run_public_smart_seating_rejects_revision_mismatch() -> None:
+    handler = RunPublicSmartSeatingHandler(
+        clock=FixedClock(datetime(2026, 4, 7, 12, 0, tzinfo=timezone.utc))
+    )
+
+    with pytest.raises(DomainError, match="Draft revision mismatch"):
+        await handler.handle(snapshot=_snapshot(), expected_revision=1)
 
 
 @pytest.mark.asyncio

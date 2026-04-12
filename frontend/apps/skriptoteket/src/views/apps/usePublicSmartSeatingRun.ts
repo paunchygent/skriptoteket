@@ -10,6 +10,7 @@
 import { computed, ref, type Ref } from "vue";
 
 import { apiPost } from "../../api/client";
+import { normalizePublicSmartRunError } from "./classroomPlannerPublicSmartRunFeedback";
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import type {
   DraftWorkspaceResponse,
@@ -24,12 +25,13 @@ type UsePublicSmartSeatingRunOptions = {
   draft: Ref<PlanDraft | null>;
   smartRulesHydrated: Ref<boolean>;
   runningState: Ref<boolean>;
-  getSnapshot: () => Promise<ClassroomPlannerGuestSnapshot>;
   flushDraftLane: () => Promise<DraftPersistenceLaneResult>;
   flushSmartRuleLane: () => Promise<RosterSmartRuleLaneResult>;
   getCurrentWorkspace: () => DraftWorkspaceResponse | null;
+  commitWorkspaceToSnapshot: (
+    workspace: DraftWorkspaceResponse,
+  ) => Promise<ClassroomPlannerGuestSnapshot>;
   applyWorkspace: (workspace: DraftWorkspaceResponse) => void;
-  persistAppliedWorkspace: () => Promise<DraftPersistenceLaneResult>;
   normalizeErrorMessage: (error: unknown, fallbackMessage: string) => string;
 };
 
@@ -40,6 +42,13 @@ type PublicSmartSeatingRunOutcome =
 const MISSING_DRAFT_MESSAGE = "Öppna ett sittschema innan du använder Smart slumpa.";
 const SMART_RULES_NOT_READY_MESSAGE = "Smarta regler kunde inte laddas än. Försök igen.";
 const GENERIC_RUN_ERROR_MESSAGE = "Det gick inte att köra smart placering just nu.";
+
+function resolveSeatingRevision(snapshot: ClassroomPlannerGuestSnapshot): number {
+  if (!snapshot.seating_draft) {
+    throw new Error(MISSING_DRAFT_MESSAGE);
+  }
+  return snapshot.seating_draft.revision;
+}
 
 export function usePublicSmartSeatingRun(options: UsePublicSmartSeatingRunOptions) {
   const message = ref<string | null>(null);
@@ -85,18 +94,18 @@ export function usePublicSmartSeatingRun(options: UsePublicSmartSeatingRunOption
         return { status: "blocked", message: draftFlush.message };
       }
 
-      const persistedDraft = options.draft.value;
-      if (!persistedDraft) {
+      const currentWorkspace = options.getCurrentWorkspace();
+      if (!currentWorkspace) {
         message.value = MISSING_DRAFT_MESSAGE;
         tone.value = "warning";
         return { status: "blocked", message: MISSING_DRAFT_MESSAGE };
       }
 
-      const snapshot = await options.getSnapshot();
+      const snapshot = await options.commitWorkspaceToSnapshot(currentWorkspace);
       const result = await apiPost<SmartSeatingRunResponse>(
         options.apiPath,
         {
-          expected_revision: persistedDraft.revision,
+          expected_revision: resolveSeatingRevision(snapshot),
           snapshot,
         },
       );
@@ -106,18 +115,10 @@ export function usePublicSmartSeatingRun(options: UsePublicSmartSeatingRunOption
         return { status: "blocked", message: result.message };
       }
 
-      previousWorkspace = options.getCurrentWorkspace();
+      previousWorkspace = currentWorkspace;
+      await options.commitWorkspaceToSnapshot(result.workspace);
       options.applyWorkspace(result.workspace);
       appliedWorkspace = true;
-      const persistResult = await options.persistAppliedWorkspace();
-      if (persistResult.status === "blocked") {
-        if (previousWorkspace) {
-          options.applyWorkspace(previousWorkspace);
-        }
-        message.value = persistResult.message;
-        tone.value = "warning";
-        return { status: "blocked", message: persistResult.message };
-      }
 
       message.value = result.message ?? null;
       tone.value = "success";
@@ -126,7 +127,11 @@ export function usePublicSmartSeatingRun(options: UsePublicSmartSeatingRunOption
       if (appliedWorkspace && previousWorkspace) {
         options.applyWorkspace(previousWorkspace);
       }
-      const normalizedMessage = options.normalizeErrorMessage(error, GENERIC_RUN_ERROR_MESSAGE);
+      const normalizedMessage = normalizePublicSmartRunError(
+        error,
+        GENERIC_RUN_ERROR_MESSAGE,
+        options.normalizeErrorMessage,
+      );
       message.value = normalizedMessage;
       tone.value = "warning";
       return { status: "blocked", message: normalizedMessage };

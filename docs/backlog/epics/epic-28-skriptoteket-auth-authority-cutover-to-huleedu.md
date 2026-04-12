@@ -18,6 +18,7 @@ dependencies:
   - "REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity"
   - "HuleEdu ADR-0039"
   - "HuleEdu TASK-0308"
+  - "HuleEdu TASK-0325"
 ---
 
 ## Scope
@@ -102,6 +103,11 @@ dependencies:
   consumer conformance handoff, and publicly proved `https://skriptoteket.hule.education` against
   `https://api.hule.education` plus `wss://ws.hule.education/ws`. Skriptoteket ingested that
   provider gate through `PR-0250`; `PR-0251` may now start the consumer implementation.
+- HuleEdu `TASK-0325` now owns the local/non-production shared-auth Gateway lane that `PR-0254`
+  must consume before local Docker/operator proof: HuleEdu login UI on `5174`, exact dev origins
+  only, protected Skriptoteket `/api` traffic through Gateway
+  (`VITE_DEV_PROXY_TARGET=http://localhost:8080`, or the all-127 equivalent), and local-only
+  public signing-key sharing.
 - The cross-repo launch topology and upstream edge ownership are now recorded in
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
@@ -155,9 +161,11 @@ unique-conflict recovery, projection audit events record resolved/provisioned/bl
 request correlation ids, newly provisioned users default to local `user`, matching email is never
 inferred as account linking, and user-facing login actions open the HuleEdu ceremony directly. The
 sequence is now explicit: `PR-0255` stays complete as the signed-context foundation; `ST-28-06`,
-`ST-28-07`, `ST-28-08`, and `ST-28-09` are done; `ST-28-04` / `PR-0254` runs next as the final
-realm-aware cross-app Docker/operator proof; and `ST-28-10` follows with auth outcome observability
-for gateway/session, realm, projection, and local RBAC outcomes.
+`ST-28-07`, `ST-28-08`, and `ST-28-09` are done; HuleEdu `TASK-0325` provides the local
+shared-auth Gateway lane for `localhost`/`127.0.0.1` proof without weakening public production;
+`ST-28-04` / `PR-0254` then runs as the final realm-aware cross-app Docker/operator proof; and
+`ST-28-10` follows with auth outcome observability for gateway/session, realm, projection, and
+local RBAC outcomes.
 
 ## Planning note (2026-04-08)
 
@@ -180,5 +188,8 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 9. restore standalone registration/password lifecycle through the shared identity surface in
    `ST-28-08` / `PR-0257` (done)
 10. make projection provisioning realm-aware through `ST-28-09` (done)
-11. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
-12. reintroduce auth outcome observability through `ST-28-10`
+11. complete HuleEdu `TASK-0325` so local/non-production Gateway proof has exact dev origins,
+    HuleEdu login UI on `5174`, Gateway-proxied Skriptoteket `/api` traffic with exact Gateway
+    target config, and local-only signing-key sharing
+12. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
+13. reintroduce auth outcome observability through `ST-28-10`

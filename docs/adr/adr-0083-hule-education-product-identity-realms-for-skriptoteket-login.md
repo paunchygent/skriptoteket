@@ -17,6 +17,7 @@ links:
   - "ST-28-07"
   - "ST-28-08"
   - "ST-28-09"
+  - "HuleEdu TASK-0325"
 ---
 
 ## Context
@@ -165,6 +166,13 @@ The following options are rejected:
 `ST-28-04` / `PR-0254` must not certify a HuleEdu-school-only login path as the
 final Skriptoteket login proof. It should wait until this ADR is accepted and
 the browser ceremony/projection stories below define what is being proved.
+
+Local `ST-28-04` proof must consume the HuleEdu `TASK-0325` local/non-production
+Gateway lane: exact loopback origins, HuleEdu login UI on `5174`, protected
+Skriptoteket `/api` traffic routed through Gateway with
+`VITE_DEV_PROXY_TARGET=http://localhost:8080` or the all-127 equivalent, and
+local-only Gateway public-key verification. Public `https://api.hule.education` rejecting loopback
+`return_to` values remains the correct production behavior.
 
 Skriptoteket must not reintroduce local browser auth as a bridge. Registration,
 password reset, email verification, and account linking remain Skriptoteket

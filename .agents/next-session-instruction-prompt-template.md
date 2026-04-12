@@ -33,12 +33,17 @@ You are working in the `skriptoteket` repo.
 - Async-first, single container; PostgreSQL repositories behind protocols; UoW controls transactions.
 - Pydantic models cross boundaries; dataclasses only within a single domain.
 
-## Identity constraints (v0.1 + future)
+## Identity constraints
 
-- v0.1: local accounts (admin-provisioned), password auth, server-side sessions in PostgreSQL.
-- Login is required for browsing/running.
-- Future: HuleEdu SSO via identity federation; roles remain local to Skriptoteket.
-- User model must support `external_id` (nullable) and `auth_provider` (e.g., `local`, future `huleedu`).
+- HuleEdu/Hule Education owns browser login, shared browser sessions, CSRF, registration,
+  password-reset, email-verification, and Gateway-signed downstream identity context.
+- Skriptoteket owns local users, identity projections, profiles, and app-local roles/RBAC.
+- Projection lookup uses `(product_identity_realm, realm_subject_id)`; do not reintroduce
+  `users.external_id` as a universal provider key.
+- Public login actions go directly to the HuleEdu `app=skriptoteket` ceremony. `/auth/login`
+  remains an interruption/auto-handoff fallback, not a second local login page.
+- Local full-auth proof must use a local or non-production HuleEdu Gateway with exact dev origins;
+  public production must reject loopback `return_to` values.
 
 ## Docs governance
 
@@ -50,7 +55,8 @@ You are working in the `skriptoteket` repo.
 
 - `docs/index.md`
 - `docs/prd/prd-script-hub-v0.1.md`
-- ADRs: `docs/adr/` (notably `adr-0004-clean-architecture-ddd-di.md`, `adr-0009-auth-local-sessions-admin-provisioned.md`, `adr-0011-huleedu-identity-federation.md`)
+- ADRs: `docs/adr/` (notably `adr-0004-clean-architecture-ddd-di.md`,
+  `adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`)
 - Rules: `.agents/rules/000-rule-index.md`
 
 ## Current code layout

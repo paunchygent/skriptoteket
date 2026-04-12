@@ -1,11 +1,11 @@
 ---
 type: runbook
 id: RUN-user-management
-title: "Runbook: User Management (Local Auth)"
+title: "Runbook: User and Local Role Management"
 status: active
 owners: "system-admin"
 created: 2025-12-16
-updated: 2026-01-12
+updated: 2026-04-12
 system: "skriptoteket-identity"
 ---
 
@@ -14,11 +14,13 @@ system: "skriptoteket-identity"
 Use this runbook when you need to:
 
 - Bootstrap a new deployment with the first Superuser.
-- Create new user accounts manually (since self-signup is disabled).
-- Change a user's password.
-- Grant roles to users.
+- Inspect or repair Skriptoteket-local users, identity projections, and roles.
+- Grant or revoke app-local roles.
 
-**Context:** This applies to the MVP configuration using "Admin-provisioned local accounts".
+**Context:** Browser login, shared session, CSRF, registration, password reset, and email
+verification are HuleEdu/Hule Education-owned ceremonies. Skriptoteket keeps local users,
+identity projections, profiles, and RBAC roles. Do not recreate app-local browser sessions or
+change browser credentials directly in this repo.
 
 ## Prerequisites
 
@@ -51,15 +53,20 @@ cd ~/apps/skriptoteket
 sudo docker compose -f compose.prod.yaml exec -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com'
 ```
 
-### 2. Provision Additional Users
+### 2. Provision Additional Local Users
 
-Use an existing admin/superuser account to create new users.
+Use an existing admin/superuser account to create local app users only when an operational repair
+or bootstrap workflow explicitly requires it. Normal browser onboarding should use the HuleEdu
+`app=skriptoteket` ceremony and the realm-aware projection flow.
 
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --actor-password 'ADMIN_PASSWORD' --email 'newuser@example.com' --password 'USER_PASSWORD' --role user"
 ```
 
 **Available roles:** `user`, `contributor`, `admin`, `superuser`
+
+**Important:** This does not mint a HuleEdu browser session and must not be treated as a browser
+credential ceremony.
 
 **Interactive mode:**
 ```bash
@@ -68,34 +75,14 @@ cd ~/apps/skriptoteket
 sudo docker compose -f compose.prod.yaml exec -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --email 'newuser@example.com' --role user
 ```
 
-### 3. Change User Password
+### 3. Browser Credential Lifecycle
 
-There is no CLI command for password changes. Use direct database update with a new Argon2 hash.
+Do not change browser passwords in the Skriptoteket database. Password reset, registration, and
+email verification are HuleEdu Gateway/Identity lifecycle ceremonies for `app=skriptoteket` and the
+selected product identity realm.
 
-**Step 1: Generate new password and hash**
-```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -c \"
-from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
-import secrets
-import string
-
-chars = string.ascii_letters + string.digits + '!@#'
-password = ''.join(secrets.choice(chars) for _ in range(16))
-
-hasher = Argon2PasswordHasher()
-hash = hasher.hash(password=password)
-
-print(f'NEW_PASSWORD={password}')
-print(f'HASH={hash}')
-\""
-```
-
-**Step 2: Update database** (replace the hash and email)
-```bash
-ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"UPDATE users SET password_hash = 'THE_HASH_FROM_STEP_1' WHERE email = 'user@example.com';\""
-```
-
-**Note:** The hash contains `$` characters that need escaping in shell. Use single quotes and escape `$` as `\$` if needed.
+If a user cannot log in, triage the HuleEdu ceremony and identity lifecycle first, then confirm that
+Skriptoteket has the expected local identity projection for the signed realm subject.
 
 ### 4. List All Users
 
@@ -103,19 +90,27 @@ ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c 
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"SELECT id, email, role, created_at FROM users ORDER BY created_at;\""
 ```
 
-### 5. Change User Role
+### 5. List Identity Projections
+
+```bash
+ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"SELECT user_id, product_identity_realm, realm_subject_id, created_at FROM identity_projections ORDER BY created_at DESC LIMIT 50;\""
+```
+
+### 6. Change User Role
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"UPDATE users SET role = 'admin' WHERE email = 'user@example.com';\""
 ```
 
-### 6. Delete User
+### 7. Delete User
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"DELETE FROM users WHERE email = 'user@example.com';\""
 ```
 
-**Warning:** This may fail if the user has related records (sessions, tool versions, etc.). You may need to delete related records first or use cascading deletes.
+**Warning:** This may fail if the user has related records such as identity projections, tool
+versions, runs, favorites, or profiles. Prefer deliberate migration/repair scripts for anything
+larger than a one-off operator correction.
 
 ## Troubleshooting
 
@@ -132,7 +127,9 @@ The actor must have `ADMIN` or `SUPERUSER` role to provision users.
 
 ### "Invalid admin credentials"
 
-Double-check the password for the actor account.
+The legacy local CLI actor credential may not reflect the browser HuleEdu credential. Prefer
+projection/role inspection and avoid treating local password hashes as the user-facing login
+authority.
 
 ### "No module named 'skriptoteket'"
 
@@ -141,9 +138,7 @@ Missing PYTHONPATH. Always use:
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli ..."
 ```
 
-### Session Issues After Password Change
+### Browser Session Issues
 
-User sessions remain valid after password change. To force re-login, delete sessions:
-```bash
-ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"DELETE FROM sessions WHERE user_id = (SELECT id FROM users WHERE email = 'user@example.com');\""
-```
+Skriptoteket no longer owns browser sessions. Logout, expiry, and session invalidation belong to the
+HuleEdu shared browser-session authority.

@@ -94,6 +94,16 @@ export function useDraftPersistenceLane(options: DraftPersistenceLaneOptions) {
     status.value = "idle";
   }
 
+  function acknowledgeExternalCommit(draftId: string | null): void {
+    clearAutosaveTimer();
+    boundDraftId.value = draftId;
+    hasPendingChanges.value = false;
+    message.value = null;
+    saveQueued = false;
+    mutationVersion += 1;
+    status.value = draftId ? "saved" : "idle";
+  }
+
   function resolveResult(): DraftPersistenceLaneResult {
     if (status.value === "conflict") {
       return {
@@ -166,7 +176,9 @@ export function useDraftPersistenceLane(options: DraftPersistenceLaneOptions) {
         return "cancelled";
       }
       if (mutationVersion !== requestMutationVersion) {
-        options.applyAcknowledgement(workspace);
+        if (hasPendingChanges.value) {
+          options.applyAcknowledgement(workspace);
+        }
         return { status: "saved" };
       }
       options.applyCommittedWorkspace(workspace);
@@ -225,6 +237,7 @@ export function useDraftPersistenceLane(options: DraftPersistenceLaneOptions) {
     resetBoundDraft,
     syncBoundDraft,
     discardPendingChanges,
+    acknowledgeExternalCommit,
     markDirty,
     waitForIdle,
     flushPendingChanges,

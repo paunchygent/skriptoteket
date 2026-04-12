@@ -207,4 +207,87 @@ describe("classroomPlannerGuestDraftWorkspace", () => {
     expect(nextSmartRunPayload.snapshot.ui_state.selected_template_local_id).toBe("template-2");
     expect(nextSmartRunPayload.snapshot.grouping_draft?.template_local_id).toBe("template-2");
   });
+
+  it("directly commits an accepted Smart workspace to the guest snapshot while acknowledging the draft lane", async () => {
+    const template = createTemplate("template-1", "Sal 101");
+    let snapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-1",
+      created_at: "2026-04-07T09:00:00.000Z",
+      updated_at: NOW_ISO,
+      expires_at: "2026-04-21T10:00:00.000Z",
+      rosters: [createRoster()],
+      templates: [template],
+      smart_rule_sets: [],
+      grouping_draft: createGroupingWorkspace(template),
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: "roster-1",
+        selected_template_id: "template-1",
+        current_screen: "planner",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: "old-grouping-draft",
+        dismissed_seating_draft_id: "old-seating-draft",
+      },
+    });
+    const acceptedWorkspace: DraftWorkspaceResponse = {
+      ...createGroupingWorkspace(template),
+      draft: {
+        ...createGroupingWorkspace(template).draft,
+        revision: 5,
+      },
+      group_assignments: [
+        { student_id: "ada", group_id: "group-b" },
+        { student_id: "alan", group_id: "group-a" },
+      ],
+    };
+    const acknowledgeExternalCommit = vi.fn();
+    const markDirty = vi.fn();
+
+    const workspace = createClassroomPlannerGuestDraftWorkspace({
+      options: {
+        getSnapshot: vi.fn(async () => snapshot),
+        persistSnapshotMutation: vi.fn(async ({ mutate }) => {
+          const mutationResult = mutate(snapshot, "2026-04-07T10:05:00.000Z");
+          snapshot = mutationResult.nextSnapshot;
+          return mutationResult.result;
+        }),
+        nowIso: () => NOW_ISO,
+      },
+      draft: ref<PlanDraft | null>(acceptedWorkspace.draft),
+      roster: ref<Roster | null>(acceptedWorkspace.roster),
+      template: ref<RoomTemplate | null>(acceptedWorkspace.template ?? null),
+      groups: ref<DraftGroup[]>(acceptedWorkspace.groups),
+      groupAssignments: computed(() => acceptedWorkspace.group_assignments),
+      seatAssignments: computed(() => acceptedWorkspace.seat_assignments),
+      sessionController: {} as ReturnType<typeof usePlannerSessionController>,
+      draftLane: {
+        acknowledgeExternalCommit,
+        markDirty,
+      } as unknown as ReturnType<typeof useDraftPersistenceLane>,
+      smartRuleLane: {} as ReturnType<typeof useRosterSmartRuleLane>,
+      stateSupport: {} as ReturnType<typeof createClassroomPlannerStateSupport>,
+      persistence: {} as ReturnType<typeof createClassroomPlannerGuestDraftPersistence>,
+      syncWorkspaceHistory: vi.fn(),
+    });
+
+    const committedSnapshot = await workspace.commitWorkspaceToGuestSnapshot(acceptedWorkspace);
+
+    expect(committedSnapshot.grouping_draft?.revision).toBe(5);
+    expect(committedSnapshot.grouping_draft?.group_assignments).toEqual(
+      acceptedWorkspace.group_assignments,
+    );
+    expect(committedSnapshot.ui_state.current_screen).toBe("planner");
+    expect(committedSnapshot.ui_state.planner_initial_view).toBe("groups");
+    expect(committedSnapshot.ui_state.selected_roster_local_id).toBe("roster-1");
+    expect(committedSnapshot.ui_state.selected_template_local_id).toBe("template-1");
+    expect(committedSnapshot.ui_state.dismissed_grouping_draft_local_id).toBe(
+      "old-grouping-draft",
+    );
+    expect(committedSnapshot.ui_state.dismissed_seating_draft_local_id).toBe(
+      "old-seating-draft",
+    );
+    expect(acknowledgeExternalCommit).toHaveBeenCalledWith("grouping-draft-1");
+    expect(markDirty).not.toHaveBeenCalled();
+  });
 });

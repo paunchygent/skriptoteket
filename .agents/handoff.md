@@ -10,7 +10,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-12
 - Branch: `main` + local changes
-- Current lane: `ST-28-04` / `PR-0254` ready next after `PR-0258` remediation.
+- Current lane: HuleEdu `TASK-0325` local shared-auth Gateway prerequisite, then
+  `ST-28-04` / `PR-0254`.
 - Production: Full Vue SPA.
 - Handoff compaction moved previous auth-cutover history into `docs/reference/ref-development-changelog.md`.
 ## Status
@@ -32,6 +33,18 @@ Keep this file updated so the next session can pick up work quickly.
   tests for same-subject, same-email, and projection unique-conflict races.
 - Public "Logga in" actions open the HuleEdu login ceremony directly; `/auth/login?next=...`
   remains only as an auto-handoff/fallback route.
+- HuleEdu `TASK-0325` is scaffolded as the provider-owned local shared-auth Gateway lane for
+  `PR-0254`: local/non-prod exact loopback origins, HuleEdu login UI on `5174`, protected
+  Skriptoteket `/api` traffic through Gateway, and local-only Gateway public-key sharing.
+  Review remediation freezes `VITE_DEV_PROXY_TARGET=http://localhost:8080` or the all-127
+  equivalent and `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
+- `PR-0259` implemented public Klassrumskartan Smart `Slumpa` snapshot commits: the public seating
+  and grouping Smart flows now commit the visible pre-run workspace and accepted solver workspace
+  directly to the browser-owned guest snapshot before success, acknowledge the draft autosave lane,
+  and sanitize raw revision-conflict diagnostics to `Det gick inte att slumpa just nu. Klicka på
+  Slumpa igen.`
+- Shared UI/frontend skills now encode the copy rule from PR-0259: user-facing recovery copy should
+  describe the failed visible action and next visible action, not internal state/revision plumbing.
 ## Verification
 - `pdm run pytest -q tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_context_api.py tests/unit/web/test_profile_app_continuation_dependencies_api.py` (pass; 34 tests).
 - `pdm run pytest -q tests/integration/application/test_huleedu_app_projection_concurrency.py` (pass; 3 tests).
@@ -42,6 +55,24 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`, and `pdm run fe-lint` (pass).
 - `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection --start-backend --start-vite --gateway-base-url http://127.0.0.1:8000` (pass; artifacts in `.artifacts/playwright-pr-0258-auth-projection/`, including `login-auto-handoff.png`).
 - `pdm run docs-validate`, `git diff --check`, and `pdm run precommit-run` (pass).
+- Docker dev logs inspected for public Smart seating mismatch: `/seating/smart-run` returned `200`
+  then later `409 CONFLICT` on 2026-04-12, confirming backend guard sees stale submitted guest
+  snapshot revision after a prior accepted run.
+- `pdm run docs-validate` after approving `REV-PR-0259` (pass).
+- `PR-0259` / `REV-PR-0259` tightened to cover grouping root-cause parity and sanitized public
+  Smart revision-conflict toast copy; `pdm run docs-validate` passed after the update.
+- `pdm run fe-test -- --run src/views/apps/usePublicSmartSeatingRun.spec.ts src/views/apps/usePublicSmartGroupingRun.spec.ts src/views/apps/classroomPlannerGuestDraftWorkspace.spec.ts src/views/apps/useDraftPersistenceLane.spec.ts` (pass; 14 tests).
+- `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_public_smart_run.py` (pass; 6 tests).
+- `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run docs-validate`, and `git diff --check`
+  (pass).
+- Live public-route proof on Docker dev stack at `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`:
+  seeded a public guest snapshot, clicked Smart `Slumpa` twice in `Sittplatser` and twice in
+  `Grupper`; browser observed `/seating/smart-run` `200, 200` and `/grouping/smart-run` `200, 200`,
+  no raw `Draft revision mismatch` visible. Artifacts:
+  `.artifacts/pr-0259-public-smart-proof/`.
+- `docker logs --tail 40 skriptoteket_web` for the same live proof shows two `200` seating
+  `/smart-run` responses and two `200` grouping `/smart-run` responses at
+  `2026-04-12T21:12:45Z`-`2026-04-12T21:12:46Z`; no 409 appears in that proof tail.
 ## How to Run
 ```bash
 pdm run docs-validate
@@ -57,11 +88,18 @@ ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection -
 ## Known Issues / Risks
 - `PR-0254` still owns the final Docker/operator cross-app proof after this remediated realm-aware
   projection slice; do not treat `PR-0258` as the final cross-app certification.
-- Local full-auth ceremony livetests require a local or non-production HuleEdu Gateway whose
-  allowed return origins include the exact dev origin, such as `http://localhost:5173` or
-  `http://127.0.0.1:5173`.
+- `PR-0259` live proof used a seeded public guest snapshot to focus the Smart `Slumpa` regression;
+  it did not rerun the full public roster/template authoring path.
+- Local full-auth ceremony livetests must consume HuleEdu `TASK-0325`: use a local or
+  non-production HuleEdu Gateway whose allowed return origins include exact dev origins such as
+  `http://localhost:5173` and `http://127.0.0.1:5173`; keep public production strict. Do not mix
+  `localhost` and `127.0.0.1` within one browser proof.
 - Do not reintroduce app-local browser auth or direct browser-to-Identity calls.
 ## Next Steps
-- Start `PR-0254` as the final realm-aware cross-app Docker/operator proof.
+- Complete HuleEdu `TASK-0325`, then start `PR-0254` as the final realm-aware cross-app
+  Docker/operator proof consuming that local Gateway lane.
+- Review and ship `PR-0259` implementation; the direct public Smart snapshot commit contract,
+  two-run grouping/seating tests, backend mismatch guard proof, sanitized copy, and live public route
+  verification are in place locally.
 - Follow with `ST-28-10` auth outcome observability for gateway/session, realm, projection, and
   local RBAC outcomes.

@@ -120,6 +120,36 @@ export function createClassroomPlannerGuestDraftWorkspace(
     });
   }
 
+  async function commitPlannerWorkspaceSnapshot(
+    workspace: DraftWorkspaceResponse,
+  ) {
+    return await options.persistSnapshotMutation({
+      mutate(snapshotState, updatedAt) {
+        const nextSnapshot = replaceGuestSnapshotDraft(snapshotState, workspace, {
+          updatedAt,
+          currentScreen: "planner",
+          plannerInitialView: workspace.draft.draft_kind === "grouping" ? "groups" : "seats",
+          selectedRosterId: workspace.roster.id,
+          selectedTemplateId: workspace.template?.id ?? workspace.draft.template_id ?? null,
+          dismissedGroupingDraftId: snapshotState.ui_state.dismissed_grouping_draft_local_id,
+          dismissedSeatingDraftId: snapshotState.ui_state.dismissed_seating_draft_local_id,
+        });
+        return {
+          nextSnapshot,
+          result: nextSnapshot,
+        };
+      },
+    });
+  }
+
+  async function commitWorkspaceToGuestSnapshot(
+    workspace: DraftWorkspaceResponse,
+  ) {
+    const committedSnapshot = await commitPlannerWorkspaceSnapshot(workspace);
+    draftLane.acknowledgeExternalCommit(workspace.draft.id);
+    return committedSnapshot;
+  }
+
   function resolveHydratedTemplate(
     hydrated: ReturnType<typeof hydrateGuestSnapshot>,
     templateId: string | null,
@@ -398,6 +428,7 @@ export function createClassroomPlannerGuestDraftWorkspace(
     prepareForWorkspaceSwitch,
     prepareForPlannerExit,
     prepareForExport,
+    commitWorkspaceToGuestSnapshot,
     persistCurrentWorkspaceToOverview,
     persistOverviewUiState,
   };

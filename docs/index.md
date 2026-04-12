@@ -133,6 +133,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0236-st-32-06-overview-action-capability-test-realignment-and-import-boundary-assertions.md`
 - ST-32-06 guest local draft parity + direct-download export + account-only history polish:
   `docs/backlog/prs/pr-0232-st-32-06-guest-local-draft-parity-direct-download-export-and-account-only-history-affordance-polish.md`
+- ST-32-06 follow-up public Smart Slumpa accepted-workspace snapshot commit contract:
+  `docs/backlog/prs/pr-0259-st-32-06-public-smart-slumpa-accepted-workspace-snapshot-commit-contract.md`
+- Review gate for PR-0259 public Smart Slumpa snapshot commit contract:
+  `docs/backlog/reviews/review-pr-0259-public-smart-slumpa-snapshot-commit-contract.md`
 - ST-32-07 public landing entry hierarchy + mockup-grounded CTA cutover story:
   `docs/backlog/stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md`
 - ST-32-07 landing public-entry information architecture + canonical mockup preview:

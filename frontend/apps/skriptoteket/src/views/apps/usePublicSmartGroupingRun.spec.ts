@@ -10,15 +10,20 @@ import { ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
+import { PUBLIC_SMART_REVISION_CONFLICT_MESSAGE } from "./classroomPlannerPublicSmartRunFeedback";
 import type { DraftWorkspaceResponse } from "./classroomPlannerTypes";
 import { usePublicSmartGroupingRun } from "./usePublicSmartGroupingRun";
 
 const clientMocks = vi.hoisted(() => ({
   apiPost: vi.fn(),
+  isApiError: vi.fn((error: unknown) => {
+    return Boolean(error && typeof error === "object" && "status" in error);
+  }),
 }));
 
 vi.mock("../../api/client", () => ({
   apiPost: clientMocks.apiPost,
+  isApiError: clientMocks.isApiError,
 }));
 
 function createWorkspace(revision = 5): DraftWorkspaceResponse {
@@ -151,9 +156,10 @@ function createSnapshot(): ClassroomPlannerGuestSnapshot {
 describe("usePublicSmartGroupingRun", () => {
   beforeEach(() => {
     clientMocks.apiPost.mockReset();
+    clientMocks.isApiError.mockClear();
   });
 
-  it("submits the browser-owned snapshot to the public helper and persists the accepted workspace", async () => {
+  it("commits the visible workspace before the public helper and the accepted result before success", async () => {
     const snapshot = createSnapshot();
     let currentWorkspace = createWorkspace();
     const draft = ref(currentWorkspace.draft);
@@ -161,7 +167,13 @@ describe("usePublicSmartGroupingRun", () => {
       currentWorkspace = workspace;
       draft.value = workspace.draft;
     });
-    const persistAppliedWorkspace = vi.fn().mockResolvedValue({ status: "saved" });
+    const commitWorkspaceToSnapshot = vi.fn().mockResolvedValueOnce(snapshot).mockResolvedValueOnce({
+      ...snapshot,
+      grouping_draft: {
+        ...snapshot.grouping_draft!,
+        revision: 6,
+      },
+    });
     clientMocks.apiPost.mockResolvedValue({
       status: "applied",
       workspace: createWorkspace(6),
@@ -175,12 +187,11 @@ describe("usePublicSmartGroupingRun", () => {
       draft,
       smartRulesHydrated: ref(true),
       runningState: ref(false),
-      getSnapshot: vi.fn().mockResolvedValue(snapshot),
       flushDraftLane: vi.fn().mockResolvedValue({ status: "saved" }),
       flushSmartRuleLane: vi.fn().mockResolvedValue({ status: "saved" }),
       getCurrentWorkspace: vi.fn(() => currentWorkspace),
       applyWorkspace,
-      persistAppliedWorkspace,
+      commitWorkspaceToSnapshot,
       normalizeErrorMessage: vi.fn(() => "fallback"),
     });
 
@@ -197,15 +208,85 @@ describe("usePublicSmartGroupingRun", () => {
         snapshot,
       },
     );
+    expect(commitWorkspaceToSnapshot).toHaveBeenNthCalledWith(1, createWorkspace(5));
+    expect(commitWorkspaceToSnapshot).toHaveBeenNthCalledWith(2, createWorkspace(6));
+    expect(commitWorkspaceToSnapshot.mock.invocationCallOrder[0]).toBeLessThan(
+      clientMocks.apiPost.mock.invocationCallOrder[0],
+    );
+    expect(commitWorkspaceToSnapshot.mock.invocationCallOrder[1]).toBeLessThan(
+      applyWorkspace.mock.invocationCallOrder[0],
+    );
     expect(applyWorkspace).toHaveBeenCalledWith(createWorkspace(6));
-    expect(persistAppliedWorkspace).toHaveBeenCalledTimes(1);
     expect(smartRun.tone.value).toBe("success");
   });
 
-  it("blocks success when the accepted workspace cannot be persisted back into guest storage", async () => {
+  it("sends the committed snapshot revision on a second Smart Slumpa run", async () => {
+    let snapshot = createSnapshot();
+    let currentWorkspace = createWorkspace(5);
+    const draft = ref(currentWorkspace.draft);
+    const commitWorkspaceToSnapshot = vi.fn(async (workspace: DraftWorkspaceResponse) => {
+      snapshot = {
+        ...snapshot,
+        grouping_draft: {
+          ...snapshot.grouping_draft!,
+          revision: workspace.draft.revision,
+          group_assignments: workspace.group_assignments,
+        },
+      };
+      return snapshot;
+    });
+    clientMocks.apiPost
+      .mockResolvedValueOnce({
+        status: "applied",
+        workspace: createWorkspace(6),
+        used_history: false,
+        used_live_seating: true,
+        message: "Smart gruppindelning klar.",
+      })
+      .mockResolvedValueOnce({
+        status: "applied",
+        workspace: createWorkspace(7),
+        used_history: false,
+        used_live_seating: true,
+        message: "Smart gruppindelning klar.",
+      });
+
+    const smartRun = usePublicSmartGroupingRun({
+      apiPath: "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run",
+      draft,
+      smartRulesHydrated: ref(true),
+      runningState: ref(false),
+      flushDraftLane: vi.fn().mockResolvedValue({ status: "saved" }),
+      flushSmartRuleLane: vi.fn().mockResolvedValue({ status: "saved" }),
+      getCurrentWorkspace: vi.fn(() => currentWorkspace),
+      commitWorkspaceToSnapshot,
+      applyWorkspace: vi.fn((workspace: DraftWorkspaceResponse) => {
+        currentWorkspace = workspace;
+        draft.value = workspace.draft;
+      }),
+      normalizeErrorMessage: vi.fn(() => "fallback"),
+    });
+
+    await smartRun.run();
+    await smartRun.run();
+
+    const secondRequest = clientMocks.apiPost.mock.calls[1]?.[1] as {
+      expected_revision: number;
+      snapshot: ClassroomPlannerGuestSnapshot;
+    };
+    expect(secondRequest.expected_revision).toBe(6);
+    expect(secondRequest.snapshot.grouping_draft?.revision).toBe(6);
+    expect(commitWorkspaceToSnapshot).toHaveBeenCalledTimes(4);
+  });
+
+  it("blocks success when the accepted workspace cannot be committed to guest storage", async () => {
     const initialWorkspace = createWorkspace();
     let currentWorkspace = initialWorkspace;
     const draft = ref(initialWorkspace.draft);
+    const applyWorkspace = vi.fn((workspace: DraftWorkspaceResponse) => {
+      currentWorkspace = workspace;
+      draft.value = workspace.draft;
+    });
     clientMocks.apiPost.mockResolvedValue({
       status: "applied",
       workspace: createWorkspace(6),
@@ -219,31 +300,57 @@ describe("usePublicSmartGroupingRun", () => {
       draft,
       smartRulesHydrated: ref(true),
       runningState: ref(false),
-      getSnapshot: vi.fn().mockResolvedValue(createSnapshot()),
       flushDraftLane: vi.fn().mockResolvedValue({ status: "saved" }),
       flushSmartRuleLane: vi.fn().mockResolvedValue({ status: "saved" }),
       getCurrentWorkspace: vi.fn(() => currentWorkspace),
-      applyWorkspace: vi.fn((workspace: DraftWorkspaceResponse) => {
-        currentWorkspace = workspace;
-        draft.value = workspace.draft;
-      }),
-      persistAppliedWorkspace: vi.fn().mockResolvedValue({
-        status: "blocked",
-        reason: "conflict",
-        message: "Lös sparkonflikten innan du fortsätter.",
-      }),
-      normalizeErrorMessage: vi.fn(() => "fallback"),
+      applyWorkspace,
+      commitWorkspaceToSnapshot: vi.fn()
+        .mockResolvedValueOnce(createSnapshot())
+        .mockRejectedValueOnce(new Error("storage unavailable")),
+      normalizeErrorMessage: vi.fn(() => "Kunde inte spara Smart-resultatet."),
     });
 
     const result = await smartRun.run();
 
     expect(result).toEqual({
       status: "blocked",
-      message: "Lös sparkonflikten innan du fortsätter.",
+      message: "Kunde inte spara Smart-resultatet.",
     });
     expect(currentWorkspace).toEqual(initialWorkspace);
+    expect(applyWorkspace).not.toHaveBeenCalled();
     expect(draft.value.revision).toBe(5);
-    expect(smartRun.message.value).toBe("Lös sparkonflikten innan du fortsätter.");
+    expect(smartRun.message.value).toBe("Kunde inte spara Smart-resultatet.");
     expect(smartRun.tone.value).toBe("warning");
+  });
+
+  it("sanitizes public revision-conflict feedback before it reaches the run message", async () => {
+    const currentWorkspace = createWorkspace();
+    const draft = ref(currentWorkspace.draft);
+    clientMocks.apiPost.mockRejectedValue({
+      status: 409,
+      message: "Draft revision mismatch. Expected 2, got 1.",
+    });
+
+    const smartRun = usePublicSmartGroupingRun({
+      apiPath: "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run",
+      draft,
+      smartRulesHydrated: ref(true),
+      runningState: ref(false),
+      flushDraftLane: vi.fn().mockResolvedValue({ status: "saved" }),
+      flushSmartRuleLane: vi.fn().mockResolvedValue({ status: "saved" }),
+      getCurrentWorkspace: vi.fn(() => currentWorkspace),
+      commitWorkspaceToSnapshot: vi.fn().mockResolvedValue(createSnapshot()),
+      applyWorkspace: vi.fn(),
+      normalizeErrorMessage: vi.fn(() => "Draft revision mismatch. Expected 2, got 1."),
+    });
+
+    const result = await smartRun.run();
+
+    expect(result).toEqual({
+      status: "blocked",
+      message: PUBLIC_SMART_REVISION_CONFLICT_MESSAGE,
+    });
+    expect(smartRun.message.value).toBe(PUBLIC_SMART_REVISION_CONFLICT_MESSAGE);
+    expect(smartRun.message.value).not.toContain("Draft revision mismatch");
   });
 });

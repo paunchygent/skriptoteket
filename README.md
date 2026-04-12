@@ -10,7 +10,7 @@ central logging, approved SMTP relays, strict data retention).
 
 - **UI:** Full **Vue 3 + Vite SPA** served by the FastAPI backend (SPA history fallback in the backend).
 - **Backend:** **FastAPI** monolith with Clean Architecture / DDD layers and protocol-first DI (Dishka).
-- **Database:** **PostgreSQL** (users, sessions, tools, versions, runs, audit-ish event streams).
+- **Database:** **PostgreSQL** (users, identity projections, tools, versions, runs, audit-ish event streams).
 - **Tool execution:** Tools run as **ephemeral sibling Docker containers** (runner image) via the Docker API.
   Runs can be **queue-backed** (recommended; default) or **synchronous** (`RUNNER_QUEUE_ENABLED=false`). When queueing
   is enabled, the execution worker must be running.
@@ -20,12 +20,13 @@ central logging, approved SMTP relays, strict data retention).
 - **Curated apps:** Owner-authored “apps” can be served alongside tools (not managed via the tool editor workflow).
 - **Storage:** Outputs/artifacts + ephemeral session files + editor sandbox snapshots are stored on disk under
   `ARTIFACTS_ROOT` (with retention cleanup commands).
-- **Identity:** Local accounts (email+password) with email verification; future SSO via federation is planned (roles remain
-  local).
+- **Identity:** HuleEdu/Hule Education owns browser login, shared session, CSRF, lifecycle ceremonies, and Gateway-signed
+  downstream identity context. Skriptoteket keeps product identity projections, profiles, and roles local.
 
 ## Using Skriptoteket (end users)
 
-1. **Register** (or get an account provisioned) and verify your email.
+1. **Log in** through the HuleEdu-owned Skriptoteket ceremony, or complete the HuleEdu-hosted
+   Skriptoteket standalone registration/lifecycle flow when needed.
 2. Browse the **catalog** by profession/category and open a tool.
 3. Upload files / fill in fields and **run** the tool.
 4. View results and **download artifacts** (PDF/DOCX/etc. depending on the tool).
@@ -91,6 +92,15 @@ pdm run run-execution-worker
 ```
 
 Open the SPA at `http://127.0.0.1:5173`.
+
+For the realm-aware shared-auth proof lane, do not point local callbacks at public
+`https://api.hule.education`. Use the dedicated local/non-production HuleEdu Gateway lane from
+HuleEdu `TASK-0325`: Skriptoteket stays on `http://localhost:5173`, HuleEdu login UI uses
+`http://localhost:5174`, Gateway runs on `http://localhost:8080`, and protected Skriptoteket API
+traffic routes through Gateway at `/api/...` with `VITE_DEV_PROXY_TARGET=http://localhost:8080`.
+The separate 127 proof uses `http://127.0.0.1:5173`, `http://127.0.0.1:5174`, and
+`http://127.0.0.1:8080` consistently. The backend verifier consumes only the local Gateway public
+signing key mounted or exported from HuleEdu.
 
 ## Deployment guide for municipal IT
 
@@ -183,16 +193,17 @@ labels), create your own `compose.<municipality>.yaml` by copying `compose.prod.
 Common adaptations and where they live in the codebase:
 
 - **Professions & categories (taxonomy)**: seeded by migrations (see `migrations/versions/0002_catalog_taxonomy.py`).
-- **Identity/SSO**: identity is protocol-driven (`src/skriptoteket/protocols/identity.py`). You can add an external IdP
-  integration in `src/skriptoteket/infrastructure/` and wire it in `src/skriptoteket/di/` (roles remain local).
+- **Identity/shared auth**: browser auth is HuleEdu-owned. Skriptoteket verifies Gateway-signed
+  `InternalIdentityContextV1`, resolves local identity projections, and applies local roles. Do not
+  reintroduce app-local browser sessions, CSRF, password collection, or browser-minted identity
+  headers.
 - **Email provider**: protocols in `src/skriptoteket/protocols/email.py`, implementations in
   `src/skriptoteket/infrastructure/email/`.
 - **Tool execution policy** (limits/sandbox): env settings in `src/skriptoteket/config.py` (CPU/mem/pids/timeouts,
   retention).
-- **Registration policy**: SPA route in `frontend/apps/skriptoteket/src/views/RegisterView.vue`, API endpoint in
-  `src/skriptoteket/web/api/v1/auth.py`, and the core rules in
-  `src/skriptoteket/application/identity/handlers/register_user.py` (use this to disable self-registration or enforce a
-  domain allowlist).
+- **Registration and password lifecycle policy**: browser lifecycle surfaces hand off to HuleEdu
+  Gateway/Identity with `app=skriptoteket` and the selected product identity realm. Skriptoteket
+  owns the resulting local projection/profile/RBAC behavior, not the browser credential ceremony.
 - **Branding/UI**: SPA in `frontend/apps/skriptoteket`; tokens/CSS live under
   `src/skriptoteket/web/static/css/` and `frontend/apps/skriptoteket/src/assets/`.
 - **Default tools**: add scripts in `src/skriptoteket/script_bank/` and seed them with `pdm run seed-script-bank` (see

@@ -278,22 +278,20 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
       seatAssignments: seatAssignments.value,
     });
   }
-  async function persistAppliedWorkspace() {
+  async function commitWorkspaceToSnapshot(workspace: DraftWorkspaceResponse) {
     stateSupport.syncVisibleSessionBindings();
-    draftLane.markDirty();
-    return await draftLane.flushPendingChanges();
+    return await workspaceActions.commitWorkspaceToGuestSnapshot(workspace);
   }
   const publicSmartGroupingRun = usePublicSmartGroupingRun({
     apiPath: PUBLIC_GROUPING_SMART_RUN_API_PATH,
     draft,
     smartRulesHydrated,
     runningState: smartGroupingRunInFlight,
-    getSnapshot: options.getSnapshot,
     flushDraftLane: draftLane.flushPendingChanges,
     flushSmartRuleLane: smartRuleLane.flushPendingChanges,
     getCurrentWorkspace,
+    commitWorkspaceToSnapshot,
     applyWorkspace: applyWorkspaceWithHistoryCapture,
-    persistAppliedWorkspace,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
   const publicSmartSeatingRun = usePublicSmartSeatingRun({
@@ -301,12 +299,11 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
     draft,
     smartRulesHydrated,
     runningState: smartSeatingRunInFlight,
-    getSnapshot: options.getSnapshot,
     flushDraftLane: draftLane.flushPendingChanges,
     flushSmartRuleLane: smartRuleLane.flushPendingChanges,
     getCurrentWorkspace,
+    commitWorkspaceToSnapshot,
     applyWorkspace: applyWorkspaceWithHistoryCapture,
-    persistAppliedWorkspace,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
   async function runGroupingShuffle(): Promise<void> {

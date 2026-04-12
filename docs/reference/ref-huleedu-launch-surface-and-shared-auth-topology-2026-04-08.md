@@ -5,7 +5,7 @@ title: "Reference: HuleEdu launch surface and shared auth topology (2026-04-08)"
 status: active
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-12
 topic: "huleedu-launch-topology"
 links:
   - EPIC-28
@@ -93,3 +93,23 @@ Downstream work in `EPIC-35`:
 - `EPIC-35` should narrow further and stop implying that it owns apex-host decisions.
 - The most important near-term decisions are not sitemap polish or metadata copy. They are edge
   ownership, auth authority, and launch sequencing.
+
+## Local Proof Analogue
+
+Local proof should mirror ownership without copying production hosts:
+
+- Skriptoteket Vite remains the app surface on `http://localhost:5173`.
+- HuleEdu Gateway remains the browser auth/API authority on `http://localhost:8080`.
+- HuleEdu login/lifecycle UI uses `http://localhost:5174` when co-running with Skriptoteket.
+- The separate 127 proof keeps all browser-facing origins on 127:
+  `http://127.0.0.1:5173`, `http://127.0.0.1:5174`, and
+  `http://127.0.0.1:8080`.
+- Local/non-production Gateway allowlists may include exact dev origins such as
+  `http://localhost:5173` and `http://127.0.0.1:5173`.
+- Protected Skriptoteket APIs remain `/api/...` in the browser; for local proof
+  `VITE_DEV_PROXY_TARGET` points at the Gateway base (`http://localhost:8080`
+  or `http://127.0.0.1:8080`) and Gateway forwards to
+  `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
+- Public `https://api.hule.education` must continue rejecting loopback return origins.
+
+This local lane is owned by HuleEdu `TASK-0325` and consumed by Skriptoteket `PR-0254`.
