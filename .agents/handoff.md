@@ -36,8 +36,9 @@ Keep this file updated so the next session can pick up work quickly.
 - HuleEdu `TASK-0325` is scaffolded as the provider-owned local shared-auth Gateway lane for
   `PR-0254`: local/non-prod exact loopback origins, HuleEdu login UI on `5174`, protected
   Skriptoteket `/api` traffic through Gateway, and local-only Gateway public-key sharing.
-  Review remediation freezes `VITE_DEV_PROXY_TARGET=http://localhost:8080` or the all-127
-  equivalent and `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
+  Browser-visible auth URLs use `http://localhost:8080`; host-run Vite may use
+  `VITE_DEV_PROXY_TARGET=http://localhost:8080`, while the normal Docker frontend service uses
+  `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` on `hule-network`.
 - `PR-0259` implemented public Klassrumskartan Smart `Slumpa` snapshot commits: the public seating
   and grouping Smart flows now commit the visible pre-run workspace and accepted solver workspace
   directly to the browser-owned guest snapshot before success, acknowledge the draft autosave lane,
@@ -73,6 +74,11 @@ Keep this file updated so the next session can pick up work quickly.
 - `docker logs --tail 40 skriptoteket_web` for the same live proof shows two `200` seating
   `/smart-run` responses and two `200` grouping `/smart-run` responses at
   `2026-04-12T21:12:45Z`-`2026-04-12T21:12:46Z`; no 409 appears in that proof tail.
+- TASK-0325/PR-0254 local shared-auth live proof after Docker frontend recreate:
+  Playwright clicked `Logga in` on `http://localhost:5173`, confirmed the anchor
+  targets `http://localhost:8080/auth/login`, observed Gateway `303`, and landed
+  on visible HuleEdu login at `http://localhost:5174/login` without the previous
+  `VALIDATION_ERROR` body.
 ## How to Run
 ```bash
 pdm run docs-validate

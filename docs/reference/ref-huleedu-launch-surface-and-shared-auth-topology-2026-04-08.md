@@ -107,9 +107,11 @@ Local proof should mirror ownership without copying production hosts:
 - Local/non-production Gateway allowlists may include exact dev origins such as
   `http://localhost:5173` and `http://127.0.0.1:5173`.
 - Protected Skriptoteket APIs remain `/api/...` in the browser; for local proof
-  `VITE_DEV_PROXY_TARGET` points at the Gateway base (`http://localhost:8080`
-  or `http://127.0.0.1:8080`) and Gateway forwards to
-  `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
+  host-run Vite points `VITE_DEV_PROXY_TARGET` at the browser-visible Gateway
+  base (`http://localhost:8080` or `http://127.0.0.1:8080`), while the normal
+  Docker frontend service uses the container-internal target
+  `http://huleedu_api_gateway_service:8080` on `hule-network`. Gateway forwards
+  to `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.
 - Public `https://api.hule.education` must continue rejecting loopback return origins.
 
 This local lane is owned by HuleEdu `TASK-0325` and consumed by Skriptoteket `PR-0254`.

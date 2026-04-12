@@ -105,9 +105,10 @@ dependencies:
   provider gate through `PR-0250`; `PR-0251` may now start the consumer implementation.
 - HuleEdu `TASK-0325` now owns the local/non-production shared-auth Gateway lane that `PR-0254`
   must consume before local Docker/operator proof: HuleEdu login UI on `5174`, exact dev origins
-  only, protected Skriptoteket `/api` traffic through Gateway
-  (`VITE_DEV_PROXY_TARGET=http://localhost:8080`, or the all-127 equivalent), and local-only
-  public signing-key sharing.
+  only, protected Skriptoteket `/api` traffic through Gateway, browser-visible auth URLs on
+  `http://localhost:8080`, Docker frontend proxy target
+  `http://huleedu_api_gateway_service:8080` on `hule-network`, and local-only public signing-key
+  sharing.
 - The cross-repo launch topology and upstream edge ownership are now recorded in
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 

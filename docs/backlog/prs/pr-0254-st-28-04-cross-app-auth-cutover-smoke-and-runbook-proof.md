@@ -64,9 +64,10 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
 2. Configure local proof so Skriptoteket uses:
    - `VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080`
    - `VITE_HULEEDU_AUTH_ENTRY_URL=http://localhost:8080/auth/login`
-   - `VITE_DEV_PROXY_TARGET=http://localhost:8080` so existing Vite `/api`
-     proxy traffic enters the HuleEdu Gateway local-only
-     `ANY /api/{path:path}` proxy
+   - host-run Vite: `VITE_DEV_PROXY_TARGET=http://localhost:8080`
+   - normal Docker frontend service: `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080`
+     on `hule-network`, so existing Vite `/api` proxy traffic enters the HuleEdu Gateway
+     local-only `ANY /api/{path:path}` proxy
    - 127 proof equivalents:
      `VITE_HULEEDU_AUTH_BASE_URL=http://127.0.0.1:8080`,
      `VITE_HULEEDU_AUTH_ENTRY_URL=http://127.0.0.1:8080/auth/login`, and

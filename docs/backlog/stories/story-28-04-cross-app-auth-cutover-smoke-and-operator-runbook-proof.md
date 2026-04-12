@@ -51,7 +51,8 @@ The proof must cover:
   with exact dev origins. Public `https://api.hule.education` rejecting those loopback return
   targets remains correct behavior, not a Skriptoteket defect.
 - HuleEdu `TASK-0325` freezes the local proxy contract consumed here:
-  `VITE_DEV_PROXY_TARGET=http://localhost:8080` for the canonical lane,
-  `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8080` for the separate 127 lane, and
-  protected browser `/api/...` traffic enters Gateway before forwarding to
+  browser-visible auth URLs use `http://localhost:8080`; host-run Vite may set
+  `VITE_DEV_PROXY_TARGET=http://localhost:8080`, while the normal Docker frontend service sets
+  `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080` on `hule-network`; protected
+  browser `/api/...` traffic enters Gateway before forwarding to
   `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`.

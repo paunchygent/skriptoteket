@@ -110,9 +110,12 @@ services:
     ports:
       - "5173:5173"
     environment:
+      - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
       - VITE_DEV_HOST=0.0.0.0
       - VITE_DEV_PORT=5173
-      - VITE_DEV_PROXY_TARGET=http://skriptoteket_web:8000
+      - VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://huleedu_api_gateway_service:8080}
+      - VITE_HULEEDU_AUTH_BASE_URL=${VITE_HULEEDU_AUTH_BASE_URL:-http://localhost:8080}
+      - VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login}
     volumes:
       - ./frontend:/app/frontend
       - ./src:/app/src:cached
@@ -120,6 +123,9 @@ services:
     depends_on:
       - web
     restart: unless-stopped
+    networks:
+      default:
+      hule-network:
 
 networks:
   hule-network:
