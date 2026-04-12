@@ -32,11 +32,11 @@ single HuleEdu school-registration identity. Skriptoteket remains a product with
 meaning, onboarding path, and local authorization model, even when the browser session and gateway
 contract are served by Hule Education infrastructure.
 
-This began as a reference direction and is now partially implemented: `ADR-0083` froze the
-product-realm contract, HuleEdu `TASK-0313` / `TASK-0314` published and publicly proved the
-provider ceremony/context, Skriptoteket `PR-0256` consumes the login ceremony, and `PR-0257`
-consumes the standalone lifecycle handoff. Realm-aware projection provisioning is scoped to
-`PR-0258`, which is blocked until retained review approves the migration/provisioning contract.
+This began as a reference direction and is now implemented through the main realm-auth consumer
+slices: `ADR-0083` froze the product-realm contract, HuleEdu `TASK-0313` / `TASK-0314` published and
+publicly proved the provider ceremony/context, Skriptoteket `PR-0256` consumes the login ceremony,
+`PR-0257` consumes the standalone lifecycle handoff, and `PR-0258` implements realm-aware
+projection provisioning.
 
 ## Core Concept: Product Identity Realm
 
@@ -136,15 +136,15 @@ The accepted additive fields are:
 Skriptoteket should then resolve local projection by a stable product-aware identity key, not by a
 realm-ambiguous `sub` alone.
 
-Current `PR-0256` state: app continuation fails closed unless the signed context carries
+Current `PR-0258` state: app continuation fails closed unless the signed context carries
 `active_app=skriptoteket`, `active_product_identity_realm` in the accepted set, and
-`realm_subject_id`. The projection lookup still uses the existing subject key until `ST-28-09`
-migrates provisioning and persistence to the full realm-aware key.
+`realm_subject_id`. Projection lookup now uses the realm-aware key
+`(product_identity_realm, realm_subject_id)`.
 
 ## Locked Projection Direction
 
 The core ceremony/context contract is frozen, the login and lifecycle consumer slices are done, and
-`ST-28-09` / `PR-0258` now owns the clean projection migration:
+`ST-28-09` / `PR-0258` shipped the clean projection migration:
 
 - Use a dedicated local projection table keyed by `(product_identity_realm, realm_subject_id)`.
 - Backfill existing HuleEdu-linked `(auth_provider=huleedu, external_id=...)` rows into
@@ -153,8 +153,8 @@ The core ceremony/context contract is frozen, the login and lifecycle consumer s
   metadata.
 - Provision first-time Skriptoteket projections only when signed HuleEdu context includes
   `active_app=skriptoteket`, accepted realm, realm subject, email, and verified email state.
-- Keep provisioning blocked until those email and verification claims are explicit signed fields in
-  `InternalIdentityContextV1`.
+- Keep provisioning fail-closed unless those email and verification claims are explicit signed
+  fields in `InternalIdentityContextV1`.
 - Default newly provisioned local users to `user`; contributor/admin/superuser remain local
   promotions.
 - Treat matching email as insufficient for account linking; linking must be explicit.
@@ -173,12 +173,12 @@ and local RBAC denial?
   explicit for product identity realms and standalone Skriptoteket identity.
 - `PR-0254` should not treat cross-app auth proof as proof that all Skriptoteket users are HuleEdu
   school identities.
-- `ADR-0083` is now accepted as the final product-identity-realm contract before implementation.
+- `ADR-0083` is accepted as the product-identity-realm contract for the implemented consumer path.
 - Follow-up stories now scaffold the sequence:
   - `ST-28-06` accepted the ADR and froze the contract through `REV-ST-28-06`.
   - `ST-28-07` implemented the Hule Education-hosted Skriptoteket login ceremony through `PR-0256`.
   - `ST-28-08` shipped standalone registration/password lifecycle handoffs through `PR-0257`.
-  - `ST-28-09` owns realm-aware projection provisioning and local RBAC preservation through
+  - `ST-28-09` shipped realm-aware projection provisioning and local RBAC preservation through
     `PR-0258`.
   - `ST-28-04` / `PR-0254` becomes the final realm-aware cross-app proof after those stories.
   - `ST-28-10` reintroduces auth outcome observability without local session gauges.

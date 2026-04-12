@@ -33,7 +33,6 @@ def make_user(
         email=email,
         role=role,
         auth_provider=AuthProvider.LOCAL,
-        external_id=None,
         is_active=True,
         created_at=timestamp,
         updated_at=timestamp,

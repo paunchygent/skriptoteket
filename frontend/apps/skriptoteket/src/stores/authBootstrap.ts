@@ -52,6 +52,12 @@ export type AppContinuationError = {
   status: number | null;
 };
 
+const PROVISIONING_REQUIRED_REASONS = new Set([
+  "missing_huleedu_app_projection",
+  "identity_linking_required",
+  "inactive_or_missing_local_user",
+]);
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -148,7 +154,11 @@ export async function loadAppContinuation(): Promise<AppContinuationResult> {
   }
 
   const error = await readAppContinuationError(response);
-  if (error.status === 401 && error.reason === "missing_huleedu_app_projection") {
+  if (
+    error.status === 401 &&
+    error.reason !== null &&
+    PROVISIONING_REQUIRED_REASONS.has(error.reason)
+  ) {
     return { kind: "provisioning_required", error };
   }
 

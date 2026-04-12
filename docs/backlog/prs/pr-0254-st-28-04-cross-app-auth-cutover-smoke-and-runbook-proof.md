@@ -2,7 +2,7 @@
 type: pr
 id: PR-0254
 title: "ST-28-04 cross-app auth cutover smoke and runbook proof"
-status: blocked
+status: ready
 owners: "agents"
 created: 2026-04-10
 updated: 2026-04-11
@@ -31,9 +31,8 @@ acceptance_criteria:
 Unit and component tests cannot prove the cross-app browser contract. The cutover needs one retained
 smoke and operator runbook proof that spans Skriptoteket and HuleEdu.
 
-After the `PR-0253` product-identity correction, this PR is blocked until the realm-aware login
-contract is accepted and implemented. It must not certify a HuleEdu-school-only login as final
-Skriptoteket login.
+After the `PR-0258` realm-aware projection implementation, this PR is the next proof lane. It must
+not certify a HuleEdu-school-only login as final Skriptoteket login.
 
 ## Goal
 

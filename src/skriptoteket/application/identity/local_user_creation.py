@@ -1,3 +1,14 @@
+"""Local user creation helper for admin/import flows.
+
+Purpose:
+    Build Skriptoteket-owned local users while browser-session authority lives
+    in HuleEdu and realm subjects live in identity projections.
+
+Relationships:
+    - Shared by identity handlers that create local accounts.
+    - Uses repository protocols and leaves transaction control to handler UoWs.
+"""
+
 from __future__ import annotations
 
 from skriptoteket.application.identity.commands import CreateLocalUserCommand, CreateLocalUserResult
@@ -31,7 +42,6 @@ async def create_local_user(
         email=email,
         role=command.role,
         auth_provider=AuthProvider.LOCAL,
-        external_id=None,
         is_active=True,
         email_verified=email_verified,
         failed_login_attempts=0,

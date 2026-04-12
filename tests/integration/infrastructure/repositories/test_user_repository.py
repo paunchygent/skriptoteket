@@ -25,7 +25,6 @@ async def test_user_repository_crud(db_session: AsyncSession) -> None:
         email="test@example.com",
         role=Role.USER,
         auth_provider=AuthProvider.LOCAL,
-        external_id=None,
         is_active=True,
         created_at=now,
         updated_at=now,
@@ -82,7 +81,6 @@ async def test_user_update(db_session: AsyncSession) -> None:
             "email": "new-email@example.com",
             "role": Role.CONTRIBUTOR,
             "auth_provider": AuthProvider.HULEEDU,
-            "external_id": "ext-123",
             "is_active": False,
             "email_verified": True,
             "failed_login_attempts": 3,
@@ -97,7 +95,6 @@ async def test_user_update(db_session: AsyncSession) -> None:
     assert result.email == "new-email@example.com"
     assert result.role == Role.CONTRIBUTOR
     assert result.auth_provider == AuthProvider.HULEEDU
-    assert result.external_id == "ext-123"
     assert result.is_active is False
     assert result.email_verified is True
     assert result.failed_login_attempts == 3
@@ -110,7 +107,6 @@ async def test_user_update(db_session: AsyncSession) -> None:
     assert fetched is not None
     assert fetched.email == "new-email@example.com"
     assert fetched.role == Role.CONTRIBUTOR
-    assert fetched.external_id == "ext-123"
     assert fetched.is_active is False
     assert fetched.email_verified is True
     assert fetched.failed_login_attempts == 3

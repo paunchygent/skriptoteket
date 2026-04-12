@@ -146,18 +146,17 @@ browser lifecycle ceremonies for registration, password reset, and email verific
 without direct browser-to-Identity calls or app-local browser auth: old `/register`,
 `/forgot-password`, `/reset-password`, and `/verify-email` URLs now hand off to the
 provider-approved Gateway ceremonies while preserving app, realm, return, safe `next`, and token
-context. `ST-28-09` / `PR-0258` is blocked for retained re-review after `REV-PR-0258` requested
-changes, but the target implementation shape is now sharper: dedicated local identity projection
-table keyed by `(product_identity_realm, realm_subject_id)`, preflight/backfill of existing
-`auth_provider=huleedu` + `external_id` rows into `huleedu_school` projections before
-`users.external_id` is removed, first-login provisioning only from concrete signed HuleEdu
-email/verified-email claims, UoW-owned idempotent get-or-create, dedicated projection audit events,
-local `user` as the default role, no email-inferred linking, and local Docker ceremony proof through
-a local/non-production HuleEdu Gateway with exact dev-origin allowlisting. The sequence is now
-explicit: `PR-0255` stays complete as the signed-context/projection foundation; `ST-28-06`,
-`ST-28-07`, and `ST-28-08` are done; `ST-28-09` / `PR-0258` must pass review before implementation;
-then `ST-28-04` / `PR-0254` runs as the final realm-aware cross-app proof. `ST-28-10` follows with
-auth outcome observability for gateway/session, realm, projection, and local RBAC outcomes.
+context. `ST-28-09` / `PR-0258` is now done: Skriptoteket has a dedicated local identity projection
+table keyed by `(product_identity_realm, realm_subject_id)`, legacy
+`auth_provider=huleedu` + `external_id` rows preflight/backfill into `huleedu_school` projections
+before `users.external_id` is removed, first-login provisioning only trusts concrete signed HuleEdu
+email/verified-email claims, UoW-owned idempotent get-or-create protects concurrent callbacks,
+projection audit events record resolved/provisioned/blocked outcomes, newly provisioned users
+default to local `user`, and matching email is never inferred as account linking. The sequence is
+now explicit: `PR-0255` stays complete as the signed-context foundation; `ST-28-06`, `ST-28-07`,
+`ST-28-08`, and `ST-28-09` are done; `ST-28-04` / `PR-0254` runs next as the final realm-aware
+cross-app Docker/operator proof; and `ST-28-10` follows with auth outcome observability for
+gateway/session, realm, projection, and local RBAC outcomes.
 
 ## Planning note (2026-04-08)
 
@@ -179,6 +178,6 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 8. implement the Hule Education-hosted Skriptoteket login ceremony through `ST-28-07` (done)
 9. restore standalone registration/password lifecycle through the shared identity surface in
    `ST-28-08` / `PR-0257` (done)
-10. make projection provisioning realm-aware through `ST-28-09`
+10. make projection provisioning realm-aware through `ST-28-09` (done)
 11. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
 12. reintroduce auth outcome observability through `ST-28-10`

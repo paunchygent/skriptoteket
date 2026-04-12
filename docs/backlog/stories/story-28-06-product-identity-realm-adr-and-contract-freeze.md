@@ -34,7 +34,8 @@ and before `ST-28-04` / `PR-0254` is treated as the final cross-app login proof.
 - The output is an accepted `ADR-0083` plus updated backlog wording.
 - `PR-0255` is already complete and remains the signed-context/projection
   foundation consumed by this story.
-- `PR-0254` should be blocked or reframed until this contract is accepted.
+- `PR-0254` was blocked until this contract and the downstream login/projection
+  stories landed.
 
 ## Implementation Summary (as of 2026-04-12)
 
@@ -45,5 +46,5 @@ identity meaning, local projection, profile, AI preferences, and local RBAC.
 
 The contract freezes `skriptoteket_standalone` and `huleedu_school` as the first accepted realms,
 requires realm-aware signed context before final cross-app proof, rejects local browser-auth bridges
-and provider-role-derived Skriptoteket RBAC, and keeps `PR-0254` blocked until `ST-28-07` through
-`ST-28-09` implement the login/projection path.
+and provider-role-derived Skriptoteket RBAC, and cleared the path for `PR-0254` after `ST-28-07`
+through `ST-28-09` implemented the login/projection path.

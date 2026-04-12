@@ -38,13 +38,13 @@ from skriptoteket.application.identity.commands import (
 )
 from skriptoteket.domain.identity.models import (
     AllowedDomain,
-    AuthProvider,
     BlockedDomain,
     Role,
     User,
     UserAuth,
     UserProfile,
 )
+from skriptoteket.domain.identity.projections import IdentityProjection, IdentityProjectionEvent
 
 if TYPE_CHECKING:
     from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
@@ -53,12 +53,6 @@ if TYPE_CHECKING:
 
 class UserRepositoryProtocol(Protocol):
     async def get_by_id(self, user_id: UUID) -> User | None: ...
-    async def get_by_auth_provider_external_id(
-        self,
-        *,
-        auth_provider: AuthProvider,
-        external_id: str,
-    ) -> User | None: ...
     async def get_auth_by_email(self, email: str) -> UserAuth | None: ...
     async def create(self, *, user: User, password_hash: str | None) -> User: ...
     async def update(self, *, user: User) -> User: ...
@@ -74,6 +68,27 @@ class ProfileRepositoryProtocol(Protocol):
     async def get_by_user_id(self, *, user_id: UUID) -> UserProfile | None: ...
     async def create(self, *, profile: UserProfile) -> UserProfile: ...
     async def update(self, *, profile: UserProfile) -> UserProfile: ...
+
+
+class IdentityProjectionRepositoryProtocol(Protocol):
+    async def lock_realm_subject(
+        self,
+        *,
+        product_identity_realm: str,
+        realm_subject_id: str,
+    ) -> None: ...
+    async def lock_email(self, *, email: str) -> None: ...
+    async def get_by_realm_subject(
+        self,
+        *,
+        product_identity_realm: str,
+        realm_subject_id: str,
+    ) -> IdentityProjection | None: ...
+    async def create(self, *, projection: IdentityProjection) -> IdentityProjection: ...
+
+
+class IdentityProjectionEventRepositoryProtocol(Protocol):
+    async def create(self, *, event: IdentityProjectionEvent) -> IdentityProjectionEvent: ...
 
 
 class AllowedDomainRepositoryProtocol(Protocol):

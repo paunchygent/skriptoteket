@@ -8,7 +8,7 @@
  *
  * Relationships:
  *   - Reached by the router guard when app-continuation returns the
- *     `missing_huleedu_app_projection` reason.
+ *     provisioning-required or linking-required reason.
  *   - Keeps provisioning separate from browser auth ceremony.
  */
 </script>

@@ -201,6 +201,11 @@ def signed_identity_headers(
     subject: str = DEFAULT_PROVIDER_SUBJECT,
     now_ts: int | None = None,
     jti: str = "playwright-huleedu-context",
+    product_identity_realm: str = "skriptoteket_standalone",
+    email: str = "pr-live-huleedu@example.test",
+    email_verified: bool | str | None = True,
+    display_name: str = "Local Teacher",
+    payload_removed_fields: tuple[str, ...] = (),
 ) -> dict[str, str]:
     """Build signed HuleEdu Gateway headers for a local proof request."""
     issued_at = now_ts or int(datetime.now(timezone.utc).timestamp())
@@ -222,10 +227,20 @@ def signed_identity_headers(
         "feature_flags": ["inline-completion"],
         "source_app": "huleedu-browser",
         "active_app": "skriptoteket",
-        "active_product_identity_realm": "skriptoteket_standalone",
+        "active_product_identity_realm": product_identity_realm,
         "realm_subject_id": subject,
-        "linked_identity_ids": {"skriptoteket_standalone": subject},
+        "linked_identity_ids": {product_identity_realm: subject},
+        "email": email,
+        "email_verified": True,
+        "given_name": "Local",
+        "family_name": "Teacher",
+        "display_name": display_name,
+        "locale": "sv-SE",
     }
+    if email_verified is not True:
+        payload["email_verified"] = email_verified
+    for field_name in payload_removed_fields:
+        payload.pop(field_name, None)
     encoded_context = _b64url_encode(
         json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
     )
@@ -256,6 +271,7 @@ async def _seed_huleedu_projection(
 
     from skriptoteket.cli._db import open_session
     from skriptoteket.config import Settings
+    from skriptoteket.infrastructure.db.models.identity_projection import IdentityProjectionModel
     from skriptoteket.infrastructure.db.models.user import UserModel
     from skriptoteket.infrastructure.db.models.user_profile import UserProfileModel
 
@@ -268,7 +284,6 @@ async def _seed_huleedu_projection(
                 email=email,
                 role="contributor",
                 auth_provider="huleedu",
-                external_id=provider_subject,
                 password_hash=None,
                 is_active=True,
                 email_verified=True,
@@ -277,10 +292,11 @@ async def _seed_huleedu_projection(
                 updated_at=now,
             )
             .on_conflict_do_update(
-                constraint="uq_users_auth_provider_external_id",
+                index_elements=[UserModel.email],
                 set_={
                     "email": email,
                     "role": "contributor",
+                    "auth_provider": "huleedu",
                     "is_active": True,
                     "email_verified": True,
                     "failed_login_attempts": 0,
@@ -290,6 +306,24 @@ async def _seed_huleedu_projection(
             .returning(UserModel.id)
         )
         seeded_user_id = (await session.execute(user_stmt)).scalar_one()
+        projection_stmt = (
+            insert(IdentityProjectionModel)
+            .values(
+                user_id=seeded_user_id,
+                product_identity_realm="skriptoteket_standalone",
+                realm_subject_id=provider_subject,
+                created_at=now,
+                updated_at=now,
+            )
+            .on_conflict_do_update(
+                constraint="uq_identity_projections_realm_subject",
+                set_={
+                    "user_id": seeded_user_id,
+                    "updated_at": now,
+                },
+            )
+        )
+        await session.execute(projection_stmt)
         profile_stmt = (
             insert(UserProfileModel)
             .values(

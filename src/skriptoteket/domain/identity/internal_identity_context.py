@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 INTERNAL_IDENTITY_CONTEXT_VERSION = 1
 INTERNAL_IDENTITY_CONTEXT_VERSION_HEADER = "X-Huledu-Identity-Context-Version"
@@ -49,6 +49,12 @@ class InternalIdentityContextV1(BaseModel):
     active_product_identity_realm: str | None = None
     realm_subject_id: str | None = None
     linked_identity_ids: dict[str, str] | None = None
+    email: str | None = None
+    email_verified: StrictBool | None = None
+    given_name: str | None = None
+    family_name: str | None = None
+    display_name: str | None = None
+    locale: str | None = None
 
     @field_validator("iss", "aud", "sub", "session_id", "policy_version", "jti")
     @classmethod
@@ -66,6 +72,11 @@ class InternalIdentityContextV1(BaseModel):
         "active_app",
         "active_product_identity_realm",
         "realm_subject_id",
+        "email",
+        "given_name",
+        "family_name",
+        "display_name",
+        "locale",
     )
     @classmethod
     def validate_optional_non_blank_strings(cls, value: str | None) -> str | None:

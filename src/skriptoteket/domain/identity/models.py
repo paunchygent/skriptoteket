@@ -7,6 +7,8 @@ Purpose:
 Relationships:
   - Consumed by application handlers and repository protocols.
   - Mapped from SQLAlchemy models in `skriptoteket.infrastructure.db.models.*`.
+  - Realm-aware external identity mappings live in
+    `skriptoteket.domain.identity.projections`.
 """
 
 from __future__ import annotations
@@ -72,7 +74,8 @@ class BlockedDomain(BaseModel):
 class User(BaseModel):
     """Identity used across the application.
 
-    For future federation, `external_id` and `auth_provider` are included.
+    `auth_provider` records which authority created the local user state.
+    Realm-aware external subjects are stored in identity projections, not here.
     Authorization (role) remains local to Skriptoteket.
     """
 
@@ -82,7 +85,6 @@ class User(BaseModel):
     email: str
     role: Role
     auth_provider: AuthProvider
-    external_id: str | None = None
     is_active: bool = True
     email_verified: bool = False
     failed_login_attempts: int = 0

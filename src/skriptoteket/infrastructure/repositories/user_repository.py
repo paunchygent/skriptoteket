@@ -1,12 +1,12 @@
 """PostgreSQL-backed user repository.
 
 Purpose:
-    Persist and retrieve Skriptoteket users, including HuleEdu-linked local
-    projections used by the shared-session cutover.
+    Persist and retrieve Skriptoteket-local user state.
 
 Relationships:
     - Implements `UserRepositoryProtocol`.
-    - Used by identity handlers and app-continuation projection resolution.
+    - App-continuation subject mapping is handled by the identity projection
+      repository, not by provider-subject fields on users.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserAuth
+from skriptoteket.domain.identity.models import Role, User, UserAuth
 from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 
@@ -37,20 +37,6 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
         model = result.scalar_one_or_none()
         return User.model_validate(model) if model else None
 
-    async def get_by_auth_provider_external_id(
-        self,
-        *,
-        auth_provider: AuthProvider,
-        external_id: str,
-    ) -> User | None:
-        stmt = select(UserModel).where(
-            UserModel.auth_provider == auth_provider.value,
-            UserModel.external_id == external_id,
-        )
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
-        return User.model_validate(model) if model else None
-
     async def get_auth_by_email(self, email: str) -> UserAuth | None:
         result = await self._session.execute(select(UserModel).where(UserModel.email == email))
         model = result.scalar_one_or_none()
@@ -65,7 +51,6 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
             email=user.email,
             role=user.role.value,
             auth_provider=user.auth_provider.value,
-            external_id=user.external_id,
             password_hash=password_hash,
             is_active=user.is_active,
             email_verified=user.email_verified,
@@ -89,7 +74,6 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
         model.email = user.email
         model.role = user.role.value
         model.auth_provider = user.auth_provider.value
-        model.external_id = user.external_id
         model.is_active = user.is_active
         model.email_verified = user.email_verified
         model.failed_login_attempts = user.failed_login_attempts

@@ -39,6 +39,8 @@ from skriptoteket.protocols.identity import (
     GetProfileHandlerProtocol,
     GetUserHandlerProtocol,
     HuleEduAppProjectionResolverProtocol,
+    IdentityProjectionEventRepositoryProtocol,
+    IdentityProjectionRepositoryProtocol,
     ListUsersHandlerProtocol,
     PasswordHasherProtocol,
     ProfileRepositoryProtocol,
@@ -74,13 +76,19 @@ class IdentityProvider(Provider):
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
+        projections: IdentityProjectionRepositoryProtocol,
+        projection_events: IdentityProjectionEventRepositoryProtocol,
         clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
     ) -> HuleEduAppProjectionResolverProtocol:
         return HuleEduAppProjectionResolver(
             uow=uow,
             users=users,
             profiles=profiles,
+            projections=projections,
+            projection_events=projection_events,
             clock=clock,
+            id_generator=id_generator,
         )
 
     @provide(scope=Scope.REQUEST)

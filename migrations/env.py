@@ -24,6 +24,10 @@ from skriptoteket.infrastructure.db.models.draft_lock import DraftLockModel
 from skriptoteket.infrastructure.db.models.email_verification_token import (
     EmailVerificationTokenModel,
 )
+from skriptoteket.infrastructure.db.models.identity_projection import (
+    IdentityProjectionEventModel,
+    IdentityProjectionModel,
+)
 from skriptoteket.infrastructure.db.models.login_event import LoginEventModel
 from skriptoteket.infrastructure.db.models.profession import ProfessionModel
 from skriptoteket.infrastructure.db.models.profession_category import (
@@ -79,6 +83,8 @@ _MODELS = [
     RosterModel,
     DraftLockModel,
     EmailVerificationTokenModel,
+    IdentityProjectionEventModel,
+    IdentityProjectionModel,
     LoginEventModel,
     ProfessionModel,
     ProfessionCategoryModel,

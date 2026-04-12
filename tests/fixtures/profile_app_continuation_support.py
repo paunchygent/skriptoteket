@@ -15,8 +15,8 @@ import base64
 import json
 from collections.abc import Iterable, Mapping
 from datetime import datetime
-from typing import Literal
-from uuid import UUID
+from typing import Literal, cast
+from uuid import UUID, uuid4
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -32,13 +32,21 @@ from skriptoteket.domain.identity.internal_identity_context import (
     INTERNAL_IDENTITY_SIGNATURE_PREFIX,
 )
 from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserAuth, UserProfile
+from skriptoteket.domain.identity.projections import (
+    IdentityProjection,
+    IdentityProjectionEvent,
+    ProductIdentityRealm,
+)
 from skriptoteket.infrastructure.security.huleedu_internal_identity import (
     HuleEduInternalIdentityVerifier,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     HuleEduAppProjectionResolverProtocol,
     HuleEduInternalIdentityVerifierProtocol,
+    IdentityProjectionEventRepositoryProtocol,
+    IdentityProjectionRepositoryProtocol,
     ProfileRepositoryProtocol,
     UserRepositoryProtocol,
 )
@@ -74,25 +82,66 @@ class ClockStub:
         return self._now
 
 
+class IdGeneratorStub:
+    def new_uuid(self) -> UUID:
+        return uuid4()
+
+
+class IdentityProjectionRepositoryStub:
+    def __init__(self) -> None:
+        self.result: IdentityProjection | None = None
+        self.lookup_calls: list[tuple[str, str]] = []
+        self.realm_locks: list[tuple[str, str]] = []
+        self.email_locks: list[str] = []
+        self.created: list[IdentityProjection] = []
+
+    async def lock_realm_subject(
+        self,
+        *,
+        product_identity_realm: str,
+        realm_subject_id: str,
+    ) -> None:
+        self.realm_locks.append((product_identity_realm, realm_subject_id))
+
+    async def lock_email(self, *, email: str) -> None:
+        self.email_locks.append(email)
+
+    async def get_by_realm_subject(
+        self,
+        *,
+        product_identity_realm: str,
+        realm_subject_id: str,
+    ) -> IdentityProjection | None:
+        self.lookup_calls.append((product_identity_realm, realm_subject_id))
+        if (
+            self.result is None
+            or self.result.product_identity_realm.value != product_identity_realm
+            or self.result.realm_subject_id != realm_subject_id
+        ):
+            return None
+        return self.result
+
+    async def create(self, *, projection: IdentityProjection) -> IdentityProjection:
+        self.created.append(projection)
+        self.result = projection
+        return projection
+
+
+class IdentityProjectionEventRepositoryStub:
+    def __init__(self) -> None:
+        self.created: list[IdentityProjectionEvent] = []
+
+    async def create(self, *, event: IdentityProjectionEvent) -> IdentityProjectionEvent:
+        self.created.append(event)
+        return event
+
+
 class UserRepositoryStub:
     def __init__(self) -> None:
         self.user: User | None = None
-        self.lookup_calls: list[tuple[AuthProvider, str]] = []
-
-    async def get_by_auth_provider_external_id(
-        self,
-        *,
-        auth_provider: AuthProvider,
-        external_id: str,
-    ) -> User | None:
-        self.lookup_calls.append((auth_provider, external_id))
-        if (
-            self.user is None
-            or self.user.auth_provider is not auth_provider
-            or self.user.external_id != external_id
-        ):
-            return None
-        return self.user
+        self.projections = IdentityProjectionRepositoryStub()
+        self.projection_events = IdentityProjectionEventRepositoryStub()
+        self.created: list[User] = []
 
     async def get_by_id(self, user_id: UUID) -> User | None:
         if self.user is None or self.user.id != user_id:
@@ -100,10 +149,14 @@ class UserRepositoryStub:
         return self.user
 
     async def get_auth_by_email(self, email: str) -> UserAuth | None:
-        raise NotImplementedError
+        if self.user is not None and self.user.email == email:
+            return UserAuth(user=self.user, password_hash=None)
+        return None
 
     async def create(self, *, user: User, password_hash: str | None) -> User:
-        raise NotImplementedError
+        self.created.append(user)
+        self.user = user
+        return user
 
     async def update(self, *, user: User) -> User:
         raise NotImplementedError
@@ -151,12 +204,19 @@ class ProfileContinuationApiProvider(Provider):
         clock: ClockProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
+        projections: IdentityProjectionRepositoryProtocol | None = None,
+        projection_events: IdentityProjectionEventRepositoryProtocol | None = None,
+        id_generator: IdGeneratorProtocol | None = None,
     ) -> None:
         super().__init__()
         self._settings = settings
         self._clock = clock
         self._users = users
         self._profiles = profiles
+        stub_users = cast(UserRepositoryStub, users)
+        self._projections = projections or stub_users.projections
+        self._projection_events = projection_events or stub_users.projection_events
+        self._id_generator = id_generator or IdGeneratorStub()
         self._uow = UnitOfWorkStub()
 
     @provide(scope=Scope.APP)
@@ -180,8 +240,20 @@ class ProfileContinuationApiProvider(Provider):
         return self._profiles
 
     @provide(scope=Scope.REQUEST)
+    def projections(self) -> IdentityProjectionRepositoryProtocol:
+        return self._projections
+
+    @provide(scope=Scope.REQUEST)
+    def projection_events(self) -> IdentityProjectionEventRepositoryProtocol:
+        return self._projection_events
+
+    @provide(scope=Scope.REQUEST)
     def uow(self) -> UnitOfWorkProtocol:
         return self._uow
+
+    @provide(scope=Scope.APP)
+    def id_generator(self) -> IdGeneratorProtocol:
+        return self._id_generator
 
     @provide(scope=Scope.REQUEST)
     def huleedu_app_projection_resolver(
@@ -189,13 +261,19 @@ class ProfileContinuationApiProvider(Provider):
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
+        projections: IdentityProjectionRepositoryProtocol,
+        projection_events: IdentityProjectionEventRepositoryProtocol,
         clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
     ) -> HuleEduAppProjectionResolverProtocol:
         return HuleEduAppProjectionResolver(
             uow=uow,
             users=users,
             profiles=profiles,
+            projections=projections,
+            projection_events=projection_events,
             clock=clock,
+            id_generator=id_generator,
         )
 
 
@@ -243,6 +321,12 @@ def _build_context_payload(*, now_ts: int, **overrides: JsonValue) -> JsonObject
         "active_product_identity_realm": "skriptoteket_standalone",
         "realm_subject_id": CONTEXT_SUBJECT,
         "linked_identity_ids": {"skriptoteket_standalone": CONTEXT_SUBJECT},
+        "email": "teacher@example.test",
+        "email_verified": True,
+        "given_name": "Local",
+        "family_name": "Teacher",
+        "display_name": "Local Teacher",
+        "locale": "sv-SE",
     }
     payload.update(overrides)
     return payload
@@ -277,7 +361,6 @@ def huleedu_user(*, user: User | None = None) -> User:
     return base_user.model_copy(
         update={
             "auth_provider": AuthProvider.HULEEDU,
-            "external_id": CONTEXT_SUBJECT,
             "email_verified": True,
         }
     )
@@ -292,7 +375,12 @@ def signed_huleedu_headers(
 ) -> dict[str, str]:
     """Build a signed gateway context for browser API route tests."""
 
-    overrides = {"sub": subject, **dict(payload_overrides or {})}
+    overrides: JsonObject = {
+        "sub": subject,
+        "realm_subject_id": subject,
+        "linked_identity_ids": {"skriptoteket_standalone": subject},
+    }
+    overrides.update(dict(payload_overrides or {}))
     return build_headers(
         private_key=private_key,
         now_ts=int(clock.now().timestamp()),
@@ -313,10 +401,17 @@ def seed_huleedu_projection(
 ) -> User:
     """Seed the local projection expected after HuleEdu gateway verification."""
 
-    user = huleedu_user(user=make_user(role=role, email=email)).model_copy(
-        update={"external_id": subject}
-    )
+    user = huleedu_user(user=make_user(role=role, email=email))
     users.user = user
+    now_value = now or user.created_at
+    users.projections.result = IdentityProjection(
+        id=uuid4(),
+        user_id=user.id,
+        product_identity_realm=ProductIdentityRealm.SKRIPTOTEKET_STANDALONE,
+        realm_subject_id=subject,
+        created_at=now_value,
+        updated_at=now_value,
+    )
     profiles.result = make_user_profile(
         user_id=user.id,
         allow_remote_fallback=allow_remote_fallback,

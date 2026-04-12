@@ -360,7 +360,6 @@ def make_user(*, user_id: UUID, now: datetime = DEFAULT_NOW) -> User:
         email="worker@example.com",
         role=Role.USER,
         auth_provider=AuthProvider.LOCAL,
-        external_id=None,
         is_active=True,
         created_at=now,
         updated_at=now,

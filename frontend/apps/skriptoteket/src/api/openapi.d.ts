@@ -6281,7 +6281,8 @@ export interface components {
          * User
          * @description Identity used across the application.
          *
-         *     For future federation, `external_id` and `auth_provider` are included.
+         *     `auth_provider` records which authority created the local user state.
+         *     Realm-aware external subjects are stored in identity projections, not here.
          *     Authorization (role) remains local to Skriptoteket.
          */
         User: {
@@ -6298,8 +6299,6 @@ export interface components {
              * @default false
              */
             email_verified: boolean;
-            /** External Id */
-            external_id?: string | null;
             /**
              * Failed Login Attempts
              * @default 0

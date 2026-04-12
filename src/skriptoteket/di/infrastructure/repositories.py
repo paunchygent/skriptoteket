@@ -20,6 +20,10 @@ from skriptoteket.infrastructure.repositories.draft_lock_repository import (
 from skriptoteket.infrastructure.repositories.email_verification_token_repository import (
     PostgreSQLEmailVerificationTokenRepository,
 )
+from skriptoteket.infrastructure.repositories.identity_projection_repository import (
+    PostgreSQLIdentityProjectionEventRepository,
+    PostgreSQLIdentityProjectionRepository,
+)
 from skriptoteket.infrastructure.repositories.login_event_repository import (
     PostgreSQLLoginEventRepository,
 )
@@ -88,6 +92,8 @@ from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.identity import (
     AllowedDomainRepositoryProtocol,
     BlockedDomainRepositoryProtocol,
+    IdentityProjectionEventRepositoryProtocol,
+    IdentityProjectionRepositoryProtocol,
     ProfileRepositoryProtocol,
     UserRepositoryProtocol,
 )
@@ -129,6 +135,20 @@ class InfrastructureRepositoryProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def login_event_repo(self, session: AsyncSession) -> LoginEventRepositoryProtocol:
         return PostgreSQLLoginEventRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def identity_projection_repo(
+        self,
+        session: AsyncSession,
+    ) -> IdentityProjectionRepositoryProtocol:
+        return PostgreSQLIdentityProjectionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def identity_projection_event_repo(
+        self,
+        session: AsyncSession,
+    ) -> IdentityProjectionEventRepositoryProtocol:
+        return PostgreSQLIdentityProjectionEventRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def profile_repo(self, session: AsyncSession) -> ProfileRepositoryProtocol:

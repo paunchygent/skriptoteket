@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0258
 title: "Review: PR-0258 realm-aware identity projections and provisioning migration"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-04-12
 updated: 2026-04-12
@@ -22,10 +22,11 @@ links:
 
 ## TL;DR
 
-`PR-0258` has the right direction but is not implementation-ready. The initial slice would have
-removed the only stored legacy HuleEdu subject mapping before defining a backfill/preflight path,
-and it relied on signed provisioning claims that the current `InternalIdentityContextV1` does not
-yet define. The PR is blocked pending retained re-review.
+`PR-0258` has an approved migration/provisioning contract and has now been implemented. The retained
+review was approved after the PR was revised to preserve legacy HuleEdu subject mappings, require
+concrete signed claims, define idempotency/audit behavior, and require the correct proof gates. The
+previous signed-claims blocker is resolved in this slice by explicit `InternalIdentityContextV1`
+fields for signed email, verified-email state, and optional profile/locale claims.
 
 ## Problem Statement
 
@@ -61,11 +62,11 @@ provisioning claims, or treat idempotency/auditability as slogans. The reworked 
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Require legacy HuleEdu projection backfill before dropping `external_id` | Prevents destructive subject-mapping loss | [ ] |
-| Block provisioning until HuleEdu signs concrete email/email-verification fields | Prevents guessing from unsigned or forbidden context data | [ ] |
-| Require UoW-owned idempotent provisioning semantics | Prevents duplicate/orphan users and raw unique-conflict `500`s | [ ] |
-| Require a projection audit/event surface | Makes provisioning and blocked outcomes reviewable and operable | [ ] |
-| Require full migration/API/frontend/live proof gates | Matches the actual blast radius of this slice | [ ] |
+| Require legacy HuleEdu projection backfill before dropping `external_id` | Prevents destructive subject-mapping loss | [x] |
+| Block provisioning until HuleEdu signs concrete email/email-verification fields | Prevents guessing from unsigned or forbidden context data | [x] |
+| Require UoW-owned idempotent provisioning semantics | Prevents duplicate/orphan users and raw unique-conflict `500`s | [x] |
+| Require a projection audit/event surface | Makes provisioning and blocked outcomes reviewable and operable | [x] |
+| Require full migration/API/frontend/live proof gates | Matches the actual blast radius of this slice | [x] |
 
 ## Review Checklist
 
@@ -76,13 +77,14 @@ provisioning claims, or treat idempotency/auditability as slogans. The reworked 
 - [x] Auditability surface gap is named
 - [x] Verification plan gaps are named
 - [x] Retained review dependency gap is named
-- [ ] Re-review confirms the revised PR is implementation-ready
+- [x] Re-review confirmed the revised PR was implementation-ready once the concrete signed claims
+  contract was available
 
 ## Review Feedback
 
 **Reviewer:** `Lead developer`
 **Date:** `2026-04-12`
-**Verdict:** `changes_requested`
+**Initial verdict:** `changes_requested`
 
 ### Required Changes
 
@@ -126,9 +128,9 @@ provisioning claims, or treat idempotency/auditability as slogans. The reworked 
 
 The docs have been revised to address the review's missing contracts:
 
-- `PR-0258` is now `blocked` and depends on `REV-PR-0258`.
-- `ST-28-09` is blocked until retained re-review approves the contract and HuleEdu signed
-  provisioning claims exist.
+- `PR-0258` depended on `REV-PR-0258` before implementation.
+- `ST-28-09` remained fail-closed until concrete signed provisioning claims were available;
+  retained re-review approval is recorded below.
 - The PR now requires backfilling old HuleEdu provider-subject rows into `huleedu_school`
   projections before `users.external_id` is dropped.
 - The PR now names required signed context fields: `email`, `email_verified`, optional
@@ -136,8 +138,30 @@ The docs have been revised to address the review's missing contracts:
 - The PR now requires UoW idempotency, projection audit events, Docker migration proof,
   OpenAPI/frontend type regeneration, frontend gates, and exact live Playwright evidence.
 
-The review remains `changes_requested` until re-review confirms the revised package is
-implementation-ready.
+Re-review confirmed the revised package was implementation-ready once the concrete signed
+provisioning-claims dependency was available.
+
+### Re-review (2026-04-12)
+
+**Reviewer:** `Lead developer`
+**Verdict:** `approved`
+
+The six required changes are satisfied:
+
+- legacy `auth_provider=huleedu` + `external_id` rows must backfill into `huleedu_school`
+  projections before `users.external_id` is dropped
+- provisioning is gated on `email`, `email_verified`, and optional profile/locale claims being
+  explicit signed `InternalIdentityContextV1` fields
+- concurrent first-login callbacks require UoW-owned get-or-create/upsert semantics and regression
+  proof
+- projection outcomes require a dedicated audit/event surface with realm/subject/context metadata
+- the verification plan includes Docker migration proof, OpenAPI/frontend type regeneration,
+  frontend gates, live Playwright proof, and handoff evidence
+- `PR-0258` now depends on this retained review
+
+This approval cleared the retained review gate. The subsequent implementation resolved the
+signed-claims dependency by modeling and verifying the concrete fields in
+`InternalIdentityContextV1`.
 
 ### Suggestions (Optional)
 
@@ -148,18 +172,19 @@ implementation-ready.
 
 ### Decision Approvals
 
-- [ ] Legacy HuleEdu projection backfill before `external_id` removal
-- [ ] Concrete signed provisioning claims before auto-provisioning
-- [ ] UoW-owned idempotent provisioning
-- [ ] Dedicated projection audit/event surface
-- [ ] Full migration/API/frontend/live proof gates
+- [x] Legacy HuleEdu projection backfill before `external_id` removal
+- [x] Concrete signed provisioning claims before auto-provisioning
+- [x] UoW-owned idempotent provisioning
+- [x] Dedicated projection audit/event surface
+- [x] Full migration/API/frontend/live proof gates
 
 ## Changes Made
 
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | `PR-0258` | Marked blocked, added `REV-PR-0258` dependency, and expanded migration/provisioning/idempotency/audit/verification contracts |
-| 2 | `ST-28-09` | Marked blocked pending retained re-review and signed HuleEdu provisioning claims |
-| 3 | `EPIC-28` | Updated sequencing so `PR-0258` must pass re-review before implementation and `PR-0254` |
+| 1 | `PR-0258` | Added the retained review dependency, expanded migration/provisioning/idempotency/audit/verification contracts, and later closed as implemented |
+| 2 | `ST-28-09` | Closed after signed provisioning claims were modeled explicitly and fail-closed behavior was proven |
+| 3 | `EPIC-28` | Updated sequencing so `PR-0254` follows the realm-aware projection implementation |
 | 4 | `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the sharper projection migration constraints |
-| 5 | `.agents/handoff.md` | Updated the current lane and next action to the blocked re-review state |
+| 5 | `.agents/handoff.md` | Updated the current lane and next action to the implemented `PR-0258` state |
+| 6 | `REV-PR-0258` | Re-review approved the revised contract before implementation |

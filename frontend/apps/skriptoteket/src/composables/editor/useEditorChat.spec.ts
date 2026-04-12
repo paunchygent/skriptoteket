@@ -47,7 +47,6 @@ function setupAuth(): void {
     email_verified: true,
     role: "contributor",
     auth_provider: "local",
-    external_id: null,
     is_active: true,
     failed_login_attempts: 0,
     created_at: "2025-01-01T00:00:00Z",

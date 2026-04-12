@@ -2,7 +2,7 @@
 type: story
 id: ST-28-09
 title: "Realm-aware projection provisioning and local RBAC"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-04-11
 updated: 2026-04-12
@@ -14,8 +14,8 @@ acceptance_criteria:
   - "Given signed provisioning claims are insufficient, when an authenticated identity has no projection, then Skriptoteket fails closed and reaches deliberate local-access-required UX without fabricating a user."
   - "Given local RBAC remains Skriptoteket-owned, when the app authorizes contributor/admin/superuser behavior, then authorization uses local `User.role` and not generic HuleEdu provider roles."
   - "Given local livetests need the real auth ceremony, when Docker/local proof runs, then Skriptoteket uses a local or non-production HuleEdu Gateway whose allowlist includes the exact dev origins instead of widening production Gateway origins to localhost."
-data_impact: "Requires a clean projection migration: create a dedicated projection table, backfill existing HuleEdu-linked provider-subject rows, move identity lookup to `(product_identity_realm, realm_subject_id)`, remove `users.external_id`, and avoid email-inferred linking."
-dependencies: ["ST-28-06", "ST-28-07", "ST-28-08", "ADR-0083", "PR-0255", "PR-0256", "PR-0257", "PR-0258", "REV-PR-0258", "HuleEdu signed provisioning claims contract"]
+data_impact: "Clean projection migration shipped: dedicated projection table, HuleEdu-linked provider-subject backfill, identity lookup by `(product_identity_realm, realm_subject_id)`, `users.external_id` removal, and no email-inferred linking."
+dependencies: ["ST-28-06", "ST-28-07", "ST-28-08", "ADR-0083", "PR-0255", "PR-0256", "PR-0257", "PR-0258", "REV-PR-0258"]
 ---
 
 ## Context
@@ -25,11 +25,12 @@ current signed context. The product identity realm direction requires a stronger
 projection contract that can distinguish HuleEdu school identity from
 Skriptoteket standalone identity and future linked identities.
 
-This story owns the app-local projection and authorization work now that the
-identity realm contract, login ceremony, and standalone lifecycle handoff are
-accepted. It remains blocked until the retained `PR-0258` review approves the
-migration/provisioning contract and HuleEdu signs the concrete provisioning
-claims needed for first-login user creation.
+This story implemented the app-local projection and authorization work after the
+identity realm contract, login ceremony, and standalone lifecycle handoff were
+accepted. Retained `REV-PR-0258` approved the migration/provisioning contract;
+`PR-0258` now carries the concrete signed provisioning fields in
+`InternalIdentityContextV1` and keeps first-login creation fail-closed when those
+claims are absent or untrusted.
 
 ## Notes
 
@@ -62,3 +63,20 @@ claims needed for first-login user creation.
 - Local Docker ceremony proof must use a local or non-production HuleEdu
   Gateway configured for exact dev origins such as `http://localhost:5173` and
   `http://127.0.0.1:5173`.
+
+## Implementation Summary (as of 2026-04-12)
+
+`PR-0258` shipped the realm-aware projection model. Skriptoteket now resolves
+app continuation through a dedicated `identity_projections` table keyed by
+`(product_identity_realm, realm_subject_id)`, records projection outcomes in
+`identity_projection_events`, and removes the legacy `users.external_id` field
+after preflight/backfilling old HuleEdu subject rows into `huleedu_school`.
+
+First-login provisioning now creates a local Skriptoteket `user` only when the
+signed context proves `active_app=skriptoteket`, an accepted realm, realm
+subject, nonblank email, and `email_verified=true`. Missing signed claims,
+duplicate email without explicit link, unsupported realm, and missing/inactive
+local projections fail closed into the local access required path. The live
+proof is `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run
+pr-0258-auth-projection --start-backend --start-vite --gateway-base-url
+http://127.0.0.1:8000`.

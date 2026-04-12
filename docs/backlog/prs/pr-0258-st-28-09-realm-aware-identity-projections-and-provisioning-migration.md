@@ -2,7 +2,7 @@
 type: pr
 id: PR-0258
 title: "ST-28-09 realm-aware identity projections and provisioning migration"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-04-12
 updated: 2026-04-12
@@ -18,7 +18,6 @@ dependencies:
   - "PR-0256"
   - "PR-0257"
   - "REV-PR-0258"
-  - "HuleEdu signed provisioning claims contract"
 tags: ["auth", "backend", "huleedu", "identity", "migration", "playwright"]
 acceptance_criteria:
   - "Given the current app continuation still resolves HuleEdu subjects through `(auth_provider, external_id)`, when this PR completes, then production code resolves local users through a dedicated identity projection table keyed by `(product_identity_realm, realm_subject_id)`."
@@ -83,15 +82,15 @@ The PR must remove `external_id` rather than preserve it as legacy provider meta
 | Provider roles | Metadata only; never app authorization |
 | Account linking | Explicit signed/admin link only; never email inference |
 | Lifecycle completion | Does not imply authenticated app state until shared login/context is proven |
-| Provisioning claims | Blocked until HuleEdu signs concrete email/email-verification claims inside `InternalIdentityContextV1` |
+| Provisioning claims | Concrete signed `email`, `email_verified`, and optional profile/locale fields inside `InternalIdentityContextV1`; missing, false, blank, malformed, or unsigned values fail closed |
 | Auditability | Dedicated identity-projection audit/event surface, not an implied login side effect |
 | Local proof | Local/non-production Gateway with exact dev-origin allowlist |
 
 ## Required Signed Context Contract
 
-First-login provisioning remains fail-closed until the HuleEdu Gateway signs concrete provisioning
-claims inside `X-Huledu-Identity-Context` and Skriptoteket extends `InternalIdentityContextV1`
-without weakening `extra="forbid"`.
+First-login provisioning is allowed only from concrete provisioning claims signed by the HuleEdu
+Gateway inside `X-Huledu-Identity-Context`. Skriptoteket models those fields explicitly in
+`InternalIdentityContextV1` without weakening `extra="forbid"`.
 
 Required signed fields:
 
@@ -107,8 +106,8 @@ Required signed fields:
 | `display_name` | Optional signed profile source; blank values normalize to absent |
 | `locale` | Optional signed locale; defaults to `sv-SE` when absent |
 
-The verifier/model work must add explicit Pydantic fields and validators for these claims. It must
-not read provisioning claims from `active_context`, arbitrary extra fields, route query
+The verifier/model work adds explicit Pydantic fields and validators for these claims. It must not
+read provisioning claims from `active_context`, arbitrary extra fields, route query
 parameters, local storage, or a non-signed session response.
 
 ## Implementation Plan
@@ -128,9 +127,7 @@ parameters, local storage, or a non-signed session response.
 5. Only after successful preflight/backfill, remove `users.external_id`, its index, and the old
    provider-subject uniqueness constraint plus the domain/repository protocol lookup.
 6. Extend `InternalIdentityContextV1`, verifier fixtures, and provider-contract tests for signed
-   `email`, `email_verified`, optional profile-name fields, and optional locale. If HuleEdu has not
-   supplied those signed claims, keep first-login provisioning blocked and only resolve existing
-   projections.
+   `email`, `email_verified`, optional profile-name fields, and optional locale.
 7. Add provisioning logic that creates a local user/profile/projection only from sufficient signed
    context: `active_app=skriptoteket`, accepted realm, realm subject, signed email, and signed
    `email_verified=true`.
@@ -160,7 +157,7 @@ parameters, local storage, or a non-signed session response.
 - Alembic migration upgrade/downgrade/idempotency coverage for projection table creation and
   `external_id` removal.
 - Docker migration coverage:
-  `pdm run pytest -q tests/integration/test_migration_<revision>_identity_projections.py -m docker --override-ini addopts=''`
+  `pdm run pytest -q tests/integration/test_migration_e7b3a9c4d1f2_idempotent.py -m docker --override-ini addopts=''`
 - `pdm run python -m scripts.check_migration_test_coverage`
 - Migration tests proving HuleEdu-linked `(auth_provider=huleedu, external_id=...)` users backfill
   into `huleedu_school` projections and still resolve after upgrade.
@@ -187,8 +184,31 @@ parameters, local storage, or a non-signed session response.
 - `pdm run docs-validate`
 - `git diff --check`
 
+## Implementation Closeout (2026-04-12)
+
+`ST-28-09` is implemented through this PR.
+
+- `src/skriptoteket/domain/identity/projections.py` defines the local projection and projection
+  audit domain model.
+- `migrations/versions/e7b3a9c4d1f2_identity_projections.py` creates `identity_projections` and
+  `identity_projection_events`, preflights/backfills legacy HuleEdu `external_id` rows as
+  `huleedu_school`, fails ambiguous data, and removes `users.external_id`.
+- `src/skriptoteket/application/identity/huleedu_app_projection.py` now resolves app continuation
+  through `(product_identity_realm, realm_subject_id)`, provisions only from signed verified email
+  claims, defaults local role to `user`, rejects email-inferred linking, and records projection
+  outcomes.
+- `InternalIdentityContextV1` now explicitly carries signed provisioning fields: `email`,
+  `email_verified`, `given_name`, `family_name`, `display_name`, and `locale`.
+- Frontend auth bootstrap and provisioning UX treat missing projection, linking-required, and
+  inactive/missing local-user outcomes as local access required, without reviving app-local browser
+  auth.
+- `scripts/playwright_pr_0258_auth_projection.py` proves first-login provisioning, idempotent
+  projection reuse, fail-closed missing signed email, duplicate-email linking-required behavior, and
+  SPA bootstrap through the real app-continuation route.
+
 ## Rollback Plan
 
 If the projection migration exposes an unhandled production data shape, stop before running the
-final migration, document the exact rows that need explicit linking, and keep `PR-0254` blocked.
+final cross-app proof, document the exact rows that need explicit linking, and keep `PR-0254`
+paused.
 Do not reintroduce `(auth_provider, external_id)` lookup as a compatibility shim.

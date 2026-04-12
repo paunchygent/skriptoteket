@@ -308,7 +308,6 @@ describe("useAuthStore", () => {
       const mockUser = createTestUser({
         role: "contributor",
         auth_provider: "huleedu",
-        external_id: huleEduUserId,
       });
       const mockProfile = createTestProfile({ user_id: mockUser.id });
 
@@ -345,7 +344,6 @@ describe("useAuthStore", () => {
           email: mockUser.email,
           role: mockUser.role,
           auth_provider: "huleedu",
-          external_id: huleEduUserId,
         }),
       );
       expect(store.user?.id).not.toBe(huleEduUserId);

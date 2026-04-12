@@ -31,7 +31,7 @@ from skriptoteket.domain.identity.internal_identity_context import (
     INTERNAL_IDENTITY_SIGNATURE_HEADER,
     INTERNAL_IDENTITY_SIGNATURE_PREFIX,
 )
-from skriptoteket.domain.identity.models import AuthProvider, User
+from skriptoteket.domain.identity.models import User
 from skriptoteket.web.api.v1 import profile as profile_api
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
@@ -46,6 +46,7 @@ from tests.fixtures.profile_app_continuation_support import (
     b64url_encode,
     build_headers,
     huleedu_user,
+    seed_huleedu_projection,
 )
 
 
@@ -128,13 +129,12 @@ async def test_profile_app_continuation_accepts_valid_huleedu_context_without_lo
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
 ) -> None:
-    user = huleedu_user()
+    user = seed_huleedu_projection(users=users, profiles=profiles)
     profile = make_user_profile(
         user_id=user.id,
         allow_remote_fallback=True,
         inline_completion_provider="external",
     )
-    users.user = user
     profiles.result = profile
 
     response = await client.get(
@@ -157,7 +157,7 @@ async def test_profile_app_continuation_accepts_valid_huleedu_context_without_lo
         "allow_remote_fallback": True,
         "inline_completion_provider": "external",
     }
-    assert users.lookup_calls == [(AuthProvider.HULEEDU, CONTEXT_SUBJECT)]
+    assert users.projections.lookup_calls == [("skriptoteket_standalone", CONTEXT_SUBJECT)]
     assert profiles.get_by_user_id_calls == [user.id]
 
 
@@ -169,8 +169,8 @@ async def test_profile_app_continuation_creates_missing_profile_for_existing_pro
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
 ) -> None:
-    user = huleedu_user()
-    users.user = user
+    user = seed_huleedu_projection(users=users, profiles=profiles)
+    profiles.result = None
 
     response = await client.get(
         "/api/v1/profile/app-continuation",
@@ -189,7 +189,32 @@ async def test_profile_app_continuation_creates_missing_profile_for_existing_pro
 
 
 @pytest.mark.asyncio
-async def test_profile_app_continuation_fails_closed_without_local_projection(
+async def test_profile_app_continuation_provisions_missing_projection_from_signed_claims(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+) -> None:
+    response = await client.get(
+        "/api/v1/profile/app-continuation",
+        headers=build_headers(
+            private_key=private_key,
+            now_ts=int(clock.now().timestamp()),
+        ),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["local_user"]["role"] == "user"
+    assert response.json()["local_user"]["auth_provider"] == "huleedu"
+    assert response.json()["local_user"]["email"] == "teacher@example.test"
+    assert response.json()["profile"]["display_name"] == "Local Teacher"
+    assert users.projections.created[0].realm_subject_id == CONTEXT_SUBJECT
+    assert profiles.created is not None
+
+
+@pytest.mark.asyncio
+async def test_profile_app_continuation_fails_closed_without_signed_provisioning_claims(
     client: httpx.AsyncClient,
     clock: ClockStub,
     private_key: rsa.RSAPrivateKey,
@@ -200,13 +225,17 @@ async def test_profile_app_continuation_fails_closed_without_local_projection(
         headers=build_headers(
             private_key=private_key,
             now_ts=int(clock.now().timestamp()),
+            payload_removed_fields=("email",),
         ),
     )
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == ErrorCode.UNAUTHORIZED.value
-    assert response.json()["error"]["details"]["reason"] == "missing_huleedu_app_projection"
-    assert users.lookup_calls == [(AuthProvider.HULEEDU, CONTEXT_SUBJECT)]
+    assert response.json()["error"]["details"] == {
+        "reason": "missing_huleedu_app_projection",
+        "field": "email",
+    }
+    assert users.projections.lookup_calls == [("skriptoteket_standalone", CONTEXT_SUBJECT)]
 
 
 @pytest.mark.asyncio
@@ -223,7 +252,7 @@ async def test_app_dependency_rejects_stale_csrf_without_signed_huleedu_context(
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == ErrorCode.UNAUTHORIZED.value
-    assert users.lookup_calls == []
+    assert users.projections.lookup_calls == []
 
 
 @pytest.mark.asyncio
@@ -234,9 +263,7 @@ async def test_app_dependency_accepts_signed_context_for_read_and_write_without_
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
 ) -> None:
-    user = huleedu_user()
-    users.user = user
-    profiles.result = make_user_profile(user_id=user.id)
+    user = seed_huleedu_projection(users=users, profiles=profiles)
     headers = build_headers(
         private_key=private_key,
         now_ts=int(clock.now().timestamp()),
@@ -259,9 +286,7 @@ async def test_app_dependency_accepts_standalone_realm_context_without_org_or_te
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
 ) -> None:
-    user = huleedu_user()
-    users.user = user
-    profiles.result = make_user_profile(user_id=user.id)
+    user = seed_huleedu_projection(users=users, profiles=profiles)
     headers = build_headers(
         private_key=private_key,
         now_ts=int(clock.now().timestamp()),
@@ -278,7 +303,7 @@ async def test_app_dependency_accepts_standalone_realm_context_without_org_or_te
 
     assert response.status_code == 200
     assert response.json()["local_user"]["id"] == str(user.id)
-    assert users.lookup_calls == [(AuthProvider.HULEEDU, CONTEXT_SUBJECT)]
+    assert users.projections.lookup_calls == [("skriptoteket_standalone", CONTEXT_SUBJECT)]
 
 
 @pytest.mark.asyncio
@@ -343,7 +368,7 @@ async def test_profile_app_continuation_requires_skriptoteket_product_context(
         "reason": "invalid_huleedu_product_context",
         "field": expected_field,
     }
-    assert users.lookup_calls == []
+    assert users.projections.lookup_calls == []
 
 
 InvalidHeadersBuilder = Callable[[rsa.RSAPrivateKey, int], dict[str, str]]

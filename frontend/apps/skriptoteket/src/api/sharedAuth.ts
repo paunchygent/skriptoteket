@@ -244,7 +244,6 @@ export function mapBrowserSessionToAuthSnapshot(
       email: payload.user.email,
       role: "user" satisfies ApiRole,
       auth_provider: "huleedu",
-      external_id: userId,
       email_verified: payload.user.email_verified ?? false,
       is_active: true,
     },

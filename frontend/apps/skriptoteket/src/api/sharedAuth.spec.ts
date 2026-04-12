@@ -222,7 +222,6 @@ describe("mapBrowserSessionToAuthSnapshot", () => {
         email: "teacher@example.com",
         role: "user",
         auth_provider: "huleedu",
-        external_id: "550e8400-e29b-41d4-a716-446655440000",
         email_verified: true,
       }),
     );

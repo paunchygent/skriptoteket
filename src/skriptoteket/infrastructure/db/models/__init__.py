@@ -38,6 +38,10 @@ from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_webh
     SeatingExportWebhookBindingModel,
 )
 from skriptoteket.infrastructure.db.models.conversion_hub_job import ConversionHubJobModel
+from skriptoteket.infrastructure.db.models.identity_projection import (
+    IdentityProjectionEventModel,
+    IdentityProjectionModel,
+)
 from skriptoteket.infrastructure.db.models.password_reset_token import PasswordResetTokenModel
 from skriptoteket.infrastructure.db.models.user_favorite import (
     UserFavoriteAppModel,
@@ -53,6 +57,8 @@ __all__ = [
     "GroupingExportCheckpointModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",
+    "IdentityProjectionEventModel",
+    "IdentityProjectionModel",
     "PlanDraftModel",
     "PasswordResetTokenModel",
     "RosterRelationshipRuleModel",

@@ -27,8 +27,8 @@ links:
 `ST-28-06` is approved after tightening `ADR-0083` from a direction memo into a contract freeze.
 The accepted contract keeps Hule Education as the browser session, CSRF, gateway, and ceremony
 authority while preserving Skriptoteket standalone product identity, realm-aware projection, and
-local RBAC. `PR-0254` remains blocked until the login, standalone lifecycle, and projection stories
-implement this realm-aware contract.
+local RBAC. `PR-0254` was intentionally held until the login, standalone lifecycle, and projection
+stories implemented this realm-aware contract; after `PR-0258`, that final proof lane is ready.
 
 ## Problem Statement
 
@@ -86,7 +86,7 @@ Accept `ADR-0083` as the governing product identity realm contract after freezin
 - [x] Realm-aware signed context requirements are concrete enough for `ST-28-07` through `ST-28-09`
 - [x] Projection cannot use realm-ambiguous `sub` alone as the final key
 - [x] First-time provisioning fails closed unless signed claims are sufficient
-- [x] `PR-0254` remains blocked until the realm-aware implementation path exists
+- [x] `PR-0254` stayed blocked until the realm-aware implementation path existed
 - [x] Rejected options prevent local browser auth bridges and provider-role RBAC drift
 
 ## Review Feedback

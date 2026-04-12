@@ -297,6 +297,7 @@ ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
 pr-0252-auth-return = "python -m scripts.playwright_pr_0252_auth_return_to_origin"
 pr-0253-auth-retirement = "python -m scripts.playwright_pr_0253_auth_retirement"
 pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
+pr-0258-auth-projection = "python -m scripts.playwright_pr_0258_auth_projection"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",

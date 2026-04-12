@@ -257,3 +257,72 @@ pdm run docs-validate
 - Keep the implementation thin on any follow-up edits: no local deploy-logic duplication, no hidden repo-path discovery, and no second structured log lane beyond the current raw-log + filtered-monitor split.
 - Debug the authenticated guest-upgrade import prompt separately from `PR-0226`; the planner shell/layout work is verified independently of that modal failure.
 - Decide whether `ST-29-11` should now be closed as done or whether more dense-control follow-up remains beyond the implemented `PR-0224` / `PR-0225` / `PR-0226` set.
+
+## 2026-04-12 PR-0258 handoff compaction dump
+
+Moved from `.agents/handoff.md` during `PR-0258` cleanup so the session handoff stays under the
+repo line-count limit.
+
+### Previous Status
+
+- `REV-EPIC-28` approved the auth-cutover spine. `ADR-0076`, `EPIC-28`, and `ST-28-01` through
+  `ST-28-05` remain governing context for the HuleEdu-owned browser session cutover.
+- HuleEdu accepted ADR-0039, completed `TASK-0308`, and publicly proved shared browser-session
+  authority after prod redeploy to `432b25ed`: auth readiness passed with `huleedu_session` /
+  `huleedu_csrf`, and WebSocket origin admission accepted `https://skriptoteket.hule.education`.
+- `PR-0250` / `ST-28-05` shipped as provider conformance ingest; `PR-0251` consumed shared
+  `/v1/auth/session` and CSRF client behavior; `REV-PR-0251` later approved after `PR-0255`.
+- `PR-0255` shipped signed HuleEdu `InternalIdentityContextV1` verification and temporary
+  `(auth_provider, external_id)` projection resolution before the realm-aware migration.
+- `PR-0252` shipped `/auth/login?next=...` interruption and return-to-origin behavior on the
+  shared session model.
+- `PR-0253` / `ST-28-03` shipped local browser-auth authority retirement, removed local session
+  surfaces, and preserved missing-projection fail-closed UX.
+- Product identity realm direction was recorded in
+  `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md`
+  and frozen by `ADR-0083` / `REV-ST-28-06`.
+- `ST-28-07` / `PR-0256` shipped the Hule Education-hosted Skriptoteket login ceremony after
+  HuleEdu `TASK-0313` / `TASK-0314`.
+- `ST-28-08` / `PR-0257` shipped standalone registration, password reset, and email verification
+  handoff surfaces after HuleEdu `TASK-0318`.
+- `REV-PR-0258` approved the realm-aware projection/provisioning contract: dedicated projection
+  table, HuleEdu legacy backfill, concrete signed email/email_verified claims, UoW idempotent
+  provisioning, projection audit events, no email-inferred linking, and local/non-prod Gateway
+  proof.
+
+### Previous Verification
+
+- Repeated `pdm run docs-validate` and `git diff --check` passes recorded the docs gates for
+  `PR-0250` through `REV-PR-0258` planning/review closeouts.
+- `PR-0251` / `PR-0255` frontend gates included `pdm run fe-test -- --run
+  src/api/sharedAuth.spec.ts src/stores/auth.spec.ts src/api/client.spec.ts`, `pdm run
+  fe-type-check`, and `pdm run fe-lint`.
+- `PR-0255` backend/live proof included `pdm run pytest -q
+  tests/unit/web/test_profile_app_continuation_api.py`, `pdm run typecheck`, `pdm run lint`,
+  `docker compose up -d db`, `pdm run db-upgrade`, and `pdm run pr-0255-auth-bootstrap
+  --start-backend --start-vite`.
+- `PR-0252` proof included focused auth-entry Vitest suites, `pdm run python -m py_compile
+  scripts/_playwright_huleedu_auth.py scripts/playwright_pr_0252_auth_return_to_origin.py
+  scripts/playwright_pr_0255_auth_bootstrap.py`, `pdm run db-upgrade`, and
+  `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0252-auth-return --start-backend
+  --start-vite`.
+- `PR-0253` proof included focused backend route/contract tests, frontend auth/router tests,
+  `pdm run pytest tests/unit/web -q`, Docker migration coverage for `c1d2e3f4a5b6`,
+  `pdm run python -m scripts.check_migration_test_coverage`, and
+  `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0253-auth-retirement --start-backend
+  --start-vite`.
+- `ST-28-06` / `ADR-0083` proof included `pdm run docs-validate` and `git diff --check`.
+- `PR-0256` proof included focused auth ceremony Vitest suites, `pdm run test
+  tests/unit/web/test_profile_app_continuation_api.py`, `pdm run fe-type-check`, `pdm run
+  typecheck`, `pdm run fe-lint`, `pdm run lint`, and `pdm run python -m
+  scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite`.
+- `PR-0257` proof included focused lifecycle Vitest suites, `pdm run pytest -q
+  tests/unit/web/test_pr_0253_auth_retirement_contracts.py`, `pdm run python -m py_compile
+  scripts/playwright_pr_0257_auth_lifecycle.py`, `pdm run python -m
+  scripts.playwright_pr_0257_auth_lifecycle --start-vite`, `pdm run fe-type-check`, `pdm run
+  fe-lint`, `pdm run typecheck`, `pdm run lint`, `pdm run docs-validate`, and `git diff --check`.
+
+### Previous Next Steps
+
+- After `REV-PR-0258` approval, `PR-0258` was the next implementation lane.
+- `PR-0254` remained the final Docker/operator cross-app proof after `ST-28-09`.
