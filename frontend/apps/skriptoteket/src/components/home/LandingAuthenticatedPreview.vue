@@ -5,15 +5,23 @@
  * Quiet bordered list placed below the featured public-app showcase. Each row
  * carries an explicit "Kräver konto" / "Kräver ansökan" tag so visitors do not
  * mistake an authenticated capability for another public route. The trailing
- * "Logga in" action routes through the shared `/auth/login` handoff.
+ * "Logga in" action opens the shared HuleEdu login ceremony directly.
  */
 
-import { useRoute, useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 
-import { buildLandingAuthEntryLocation } from "../../composables/auth/authEntryNavigation";
+import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
+import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
 
 const route = useRoute();
-const router = useRouter();
+const loginUrl = computed(() => {
+  const continuation = resolveLandingAuthContinuation(route);
+  return sharedAuthCeremonyUrl({
+    nextPath: continuation.nextPath,
+    origin: window.location.origin,
+  });
+});
 
 const rows = [
   {
@@ -32,9 +40,6 @@ const rows = [
   },
 ] as const;
 
-async function goToAuthEntry(): Promise<void> {
-  await router.push(buildLandingAuthEntryLocation(route));
-}
 </script>
 
 <template>
@@ -75,13 +80,12 @@ async function goToAuthEntry(): Promise<void> {
     </ul>
 
     <p class="mt-8 text-sm leading-6 text-navy/70">
-      <button
-        type="button"
+      <a
+        :href="loginUrl"
         class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
-        @click="void goToAuthEntry()"
       >
         Logga in
-      </button>
+      </a>
       ·
       <RouterLink
         to="/register"

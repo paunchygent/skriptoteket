@@ -4,22 +4,27 @@
  *
  * This layout frames public-entry routes that share the unauthenticated
  * Skriptoteket shell, keeping header actions quiet so route-level hero
- * surfaces can own the strongest next step while all auth entry flows route
- * through the dedicated `/auth/login` page.
+ * surfaces can own the strongest next step while login affordances open the
+ * HuleEdu ceremony directly.
  */
+
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 
 import BrandLogo from "../brand/BrandLogo.vue";
 import HelpButton from "../help/HelpButton.vue";
-import { buildLandingAuthEntryLocation } from "../../composables/auth/authEntryNavigation";
-import { useRoute, useRouter } from "vue-router";
+import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
+import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
 
 const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
 const route = useRoute();
-const router = useRouter();
-
-async function goToAuthEntry(): Promise<void> {
-  await router.push(buildLandingAuthEntryLocation(route));
-}
+const loginUrl = computed(() => {
+  const continuation = resolveLandingAuthContinuation(route);
+  return sharedAuthCeremonyUrl({
+    nextPath: continuation.nextPath,
+    origin: window.location.origin,
+  });
+});
 </script>
 
 <template>
@@ -48,13 +53,12 @@ async function goToAuthEntry(): Promise<void> {
         </div>
 
         <div class="landing-header-actions">
-          <button
-            type="button"
+          <a
+            :href="loginUrl"
             class="landing-header-link"
-            @click="void goToAuthEntry()"
           >
             Logga in
-          </button>
+          </a>
           <HelpButton />
         </div>
       </div>

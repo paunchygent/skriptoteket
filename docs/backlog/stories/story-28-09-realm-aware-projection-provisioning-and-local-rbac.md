@@ -66,8 +66,8 @@ claims are absent or untrusted.
 
 ## Implementation Summary (as of 2026-04-12)
 
-`PR-0258` shipped the realm-aware projection model. Skriptoteket now resolves
-app continuation through a dedicated `identity_projections` table keyed by
+`PR-0258` shipped the realm-aware projection model. Skriptoteket resolves app continuation through
+a dedicated `identity_projections` table keyed by
 `(product_identity_realm, realm_subject_id)`, records projection outcomes in
 `identity_projection_events`, and removes the legacy `users.external_id` field
 after preflight/backfilling old HuleEdu subject rows into `huleedu_school`.
@@ -76,7 +76,8 @@ First-login provisioning now creates a local Skriptoteket `user` only when the
 signed context proves `active_app=skriptoteket`, an accepted realm, realm
 subject, nonblank email, and `email_verified=true`. Missing signed claims,
 duplicate email without explicit link, unsupported realm, and missing/inactive
-local projections fail closed into the local access required path. The live
-proof is `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run
-pr-0258-auth-projection --start-backend --start-vite --gateway-base-url
-http://127.0.0.1:8000`.
+local projections fail closed without inferring account links from email. Runtime projection events
+carry request correlation ids, DB-backed tests prove concurrent provisioning and unique-conflict
+recovery, invalid product context remains a generic auth ceremony/context error, and user-facing
+login actions now open the HuleEdu ceremony directly. The live proof is
+`ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection --start-backend --start-vite --gateway-base-url http://127.0.0.1:8000`.

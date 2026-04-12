@@ -12,6 +12,7 @@ Relationships:
 from __future__ import annotations
 
 from sqlalchemy import select, text
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.identity.projections import IdentityProjection, IdentityProjectionEvent
@@ -69,6 +70,26 @@ class PostgreSQLIdentityProjectionRepository(IdentityProjectionRepositoryProtoco
         await self._session.flush()
         await self._session.refresh(model)
         return IdentityProjection.model_validate(model)
+
+    async def create_if_realm_subject_absent(
+        self, *, projection: IdentityProjection
+    ) -> IdentityProjection | None:
+        stmt = (
+            pg_insert(IdentityProjectionModel)
+            .values(
+                id=projection.id,
+                user_id=projection.user_id,
+                product_identity_realm=projection.product_identity_realm.value,
+                realm_subject_id=projection.realm_subject_id,
+                created_at=projection.created_at,
+                updated_at=projection.updated_at,
+            )
+            .on_conflict_do_nothing(constraint="uq_identity_projections_realm_subject")
+            .returning(IdentityProjectionModel.id)
+        )
+        result = await self._session.execute(stmt)
+        projection_id = result.scalar_one_or_none()
+        return projection if projection_id is not None else None
 
     async def _lock_key(self, key: str) -> None:
         await self._session.execute(

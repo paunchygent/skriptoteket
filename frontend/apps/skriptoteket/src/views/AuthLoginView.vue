@@ -9,12 +9,15 @@
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { sharedAuthCeremonyUrl } from "../api/sharedAuth";
 import AuthLoginPanel from "../components/auth/AuthLoginPanel.vue";
 import {
+  AUTH_LOGIN_PATH,
   isAuthEntryPath,
   readAuthContinuation,
   resolveAuthLoginSuccessLocation,
 } from "../composables/auth/authEntryNavigation";
+import { redirectToSharedAuthCeremony } from "../composables/auth/sharedAuthRedirect";
 import { usePageTransition } from "../composables/usePageTransition";
 import { useAuthStore } from "../stores/auth";
 
@@ -23,9 +26,20 @@ const route = useRoute();
 const router = useRouter();
 const pageTransition = usePageTransition();
 const isCompletingLogin = ref(false);
+const hasStartedLoginHandoff = ref(false);
 
 const continuation = computed(() => readAuthContinuation(route.query, window.history.state));
+const loginUrl = computed(() =>
+  sharedAuthCeremonyUrl({
+    nextPath: continuation.value.nextPath,
+    origin: window.location.origin,
+  }),
+);
 const redirectCopy = computed(() => {
+  if (route.path === AUTH_LOGIN_PATH && !auth.isAuthenticated) {
+    return "Inloggningen öppnas automatiskt.";
+  }
+
   if (continuation.value.nextPath) {
     return "Efter inloggning skickas du vidare till rätt sida i Skriptoteket.";
   }
@@ -48,14 +62,25 @@ async function completeAuthEntry(): Promise<void> {
   }
 }
 
+function startSharedLoginHandoff(): void {
+  if (hasStartedLoginHandoff.value || route.path !== AUTH_LOGIN_PATH || auth.isAuthenticated) {
+    return;
+  }
+
+  hasStartedLoginHandoff.value = true;
+  pageTransition.suppressNext();
+  redirectToSharedAuthCeremony(loginUrl.value);
+}
+
 watch(
-  () => auth.isAuthenticated,
+  () => [auth.isAuthenticated, route.path, loginUrl.value] as const,
   (value) => {
-    if (!value || !isAuthEntryPath(route.path)) {
+    if (value[0] && isAuthEntryPath(route.path)) {
+      void completeAuthEntry();
       return;
     }
 
-    void completeAuthEntry();
+    startSharedLoginHandoff();
   },
   { immediate: true },
 );

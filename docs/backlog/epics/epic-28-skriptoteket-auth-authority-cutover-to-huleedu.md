@@ -150,13 +150,14 @@ context. `ST-28-09` / `PR-0258` is now done: Skriptoteket has a dedicated local 
 table keyed by `(product_identity_realm, realm_subject_id)`, legacy
 `auth_provider=huleedu` + `external_id` rows preflight/backfill into `huleedu_school` projections
 before `users.external_id` is removed, first-login provisioning only trusts concrete signed HuleEdu
-email/verified-email claims, UoW-owned idempotent get-or-create protects concurrent callbacks,
-projection audit events record resolved/provisioned/blocked outcomes, newly provisioned users
-default to local `user`, and matching email is never inferred as account linking. The sequence is
-now explicit: `PR-0255` stays complete as the signed-context foundation; `ST-28-06`, `ST-28-07`,
-`ST-28-08`, and `ST-28-09` are done; `ST-28-04` / `PR-0254` runs next as the final realm-aware
-cross-app Docker/operator proof; and `ST-28-10` follows with auth outcome observability for
-gateway/session, realm, projection, and local RBAC outcomes.
+email/verified-email claims, UoW-owned idempotent get-or-create protects concurrent callbacks and
+unique-conflict recovery, projection audit events record resolved/provisioned/blocked outcomes with
+request correlation ids, newly provisioned users default to local `user`, matching email is never
+inferred as account linking, and user-facing login actions open the HuleEdu ceremony directly. The
+sequence is now explicit: `PR-0255` stays complete as the signed-context foundation; `ST-28-06`,
+`ST-28-07`, `ST-28-08`, and `ST-28-09` are done; `ST-28-04` / `PR-0254` runs next as the final
+realm-aware cross-app Docker/operator proof; and `ST-28-10` follows with auth outcome observability
+for gateway/session, realm, projection, and local RBAC outcomes.
 
 ## Planning note (2026-04-08)
 

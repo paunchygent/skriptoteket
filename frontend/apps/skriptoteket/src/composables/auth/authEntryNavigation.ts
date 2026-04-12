@@ -1,9 +1,10 @@
 /**
  * Auth-entry navigation helpers.
  *
- * This module owns the page-based `/auth/login` handoff contract for signed-out
- * entry surfaces and protected-route interruptions. It keeps the durable
- * redirect destination in the route contract while allowing
+ * This module owns the page-based `/auth/login` fallback contract for
+ * protected-route interruptions. It keeps the durable redirect destination in
+ * the route contract while allowing direct login affordances to open the
+ * HuleEdu ceremony URL without an extra app-local click. It also allows
  * Klassrumskartan's entry-origin state to remain a supplemental route-state
  * hint.
  */
@@ -224,22 +225,26 @@ export function buildSignedOutOnlyAuthEntryLocation(
   });
 }
 
-export function buildLandingAuthEntryLocation(route: RouteLike): RouteLocationRaw {
+export function resolveLandingAuthContinuation(route: RouteLike): AuthContinuation {
   if (route.name === "public-app-detail") {
     const appId = typeof route.params?.appId === "string" ? route.params.appId : null;
 
     if (!appId) {
-      return buildSignedOutOnlyAuthEntryLocation();
+      return { nextPath: "/", classroomPlannerEntryOrigin: null };
     }
 
-    return buildAuthLoginLocation({ nextPath: `/apps/${appId}` });
+    return { nextPath: `/apps/${appId}`, classroomPlannerEntryOrigin: null };
   }
 
   if (route.name && SIGNED_OUT_AUTH_ROUTE_NAMES.has(route.name)) {
-    return buildSignedOutOnlyAuthEntryLocation();
+    return { nextPath: "/", classroomPlannerEntryOrigin: null };
   }
 
-  return buildSignedOutOnlyAuthEntryLocation();
+  return { nextPath: "/", classroomPlannerEntryOrigin: null };
+}
+
+export function buildLandingAuthEntryLocation(route: RouteLike): RouteLocationRaw {
+  return buildSignedOutOnlyAuthEntryLocation(resolveLandingAuthContinuation(route));
 }
 
 export function buildProtectedAuthEntryLocationFromNavigation(

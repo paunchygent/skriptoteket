@@ -20,9 +20,9 @@ dependencies: ["ADR-0076", "ADR-0083", "ST-28-05", "ST-28-01", "ST-28-02", "ST-2
 
 ## Context
 
-This cutover is not complete when unit tests pass. After `PR-0258`, this story is no longer a
-generic HuleEdu-session smoke. It is the final realm-aware proof lane for the product identity realm
-ADR, login ceremony, lifecycle handoff, and projection provisioning contracts.
+This cutover is not complete when unit tests pass. Now that `PR-0258` review remediation is closed,
+this story is the final realm-aware proof lane for the product identity realm ADR, login ceremony,
+lifecycle handoff, and projection provisioning contracts.
 
 The proof must cover:
 
@@ -40,5 +40,5 @@ The proof must cover:
 - Update the operator runbook with the exact public proof steps and failure interpretation.
 - Do not certify the superseded modal-first auth-entry seam as the target contract for this lane.
 - Do not certify a HuleEdu-school-only login path as final Skriptoteket login.
-- `ST-28-06` through `ST-28-09` are complete; this story is ready for the final Docker/operator
-  proof.
+- `ST-28-06` through `ST-28-09` are complete; this story is ready to prove the full
+  realm-aware cross-app behavior through Docker/operator smoke evidence.

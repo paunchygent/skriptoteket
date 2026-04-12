@@ -24,10 +24,11 @@ acceptance_criteria:
   - "Given `users.external_id` is legacy provider-subject state, when the migration lands, then existing `auth_provider=huleedu` rows are preflighted/backfilled into realm-aware projections before the column, index/constraint, domain model field, fixtures, and repository protocol lookup are removed rather than renamed or repurposed."
   - "Given old HuleEdu-linked rows came from the PR-0255 provider-subject bridge, when they are backfilled, then they are written as `product_identity_realm=huleedu_school`, ambiguous rows fail the migration, and upgraded app continuation still resolves those users by the new projection key."
   - "Given HuleEdu signs sufficient app context for `skriptoteket`, when no projection exists for an accepted realm subject, then Skriptoteket idempotently creates a local user/profile/projection with local role `user` and auditably records the provisioning path."
-  - "Given the signed context is missing, blank, false, untrusted, or malformed for `active_app`, accepted `product_identity_realm`, `realm_subject_id`, signed `email`, or signed `email_verified=true`, when no projection exists, then the app fails closed into provisioning-required UX without fabricating or linking a user."
+  - "Given the signed product context is missing, blank, untrusted, or malformed for `active_app`, accepted `product_identity_realm`, or `realm_subject_id`, when app continuation runs, then the app fails closed as a generic auth ceremony/context error without exposing projection internals."
+  - "Given the signed provisioning claims are missing, blank, false, untrusted, or malformed for signed `email` or signed `email_verified=true`, when no projection exists, then the app fails closed into provisioning-required UX without fabricating or linking a user."
   - "Given an existing local user has the same email as a newly signed HuleEdu identity, when no explicit signed/admin link exists, then Skriptoteket does not infer account linking from email and instead fails closed into linking-required/provisioning-required UX."
-  - "Given two callbacks for the same realm subject race, when first-login provisioning runs, then UoW-owned get-or-create/upsert handling returns one local user/projection and never leaves duplicate or orphan rows or a raw unique-conflict `500`."
-  - "Given projection lookup, provisioning, blocked provisioning, duplicate-email, unsupported-realm, and migration-backfill outcomes occur, when this PR records identity events, then the audit surface includes realm, realm subject, user/projection when available, reason code, and correlation/context metadata."
+  - "Given two callbacks for the same realm subject or competing subjects with the same email race, when first-login provisioning runs, then UoW-owned get-or-create/upsert handling returns one local user/projection or a fail-closed linking-required outcome and never leaves duplicate or orphan rows or a raw unique-conflict `500`."
+  - "Given projection lookup, provisioning, blocked provisioning, duplicate-email, unsupported-realm, and migration-backfill outcomes occur, when this PR records identity events, then the audit surface includes realm, realm subject, user/projection when available, reason code, request correlation id when available, and signed context `jti`."
   - "Given HuleEdu provider roles may exist in signed metadata, when Skriptoteket authorizes app behavior, then contributor/admin/superuser decisions still use local `User.role` and newly provisioned users default to local `user`."
   - "Given local Docker livetests must exercise the real ceremony, when the PR proof runs, then it uses a local or non-production HuleEdu Gateway with exact allowed return origins for `http://localhost:5173` and/or `http://127.0.0.1:5173`, not production Gateway localhost allowlisting."
 ---
@@ -186,7 +187,8 @@ parameters, local storage, or a non-signed session response.
 
 ## Implementation Closeout (2026-04-12)
 
-`ST-28-09` is implemented through this PR.
+`ST-28-09` / `PR-0258` is done. The retained implementation review remediation closed the runtime
+proof gaps before `PR-0254` starts.
 
 - `src/skriptoteket/domain/identity/projections.py` defines the local projection and projection
   audit domain model.
@@ -195,16 +197,40 @@ parameters, local storage, or a non-signed session response.
   `huleedu_school`, fails ambiguous data, and removes `users.external_id`.
 - `src/skriptoteket/application/identity/huleedu_app_projection.py` now resolves app continuation
   through `(product_identity_realm, realm_subject_id)`, provisions only from signed verified email
-  claims, defaults local role to `user`, rejects email-inferred linking, and records projection
-  outcomes.
+  claims, defaults local role to `user`, rejects email-inferred linking, records projection
+  outcomes with request correlation ids, and recovers from email/projection unique conflicts with
+  repository-owned no-conflict inserts plus re-read/fail-closed handling.
 - `InternalIdentityContextV1` now explicitly carries signed provisioning fields: `email`,
   `email_verified`, `given_name`, `family_name`, `display_name`, and `locale`.
 - Frontend auth bootstrap and provisioning UX treat missing projection, linking-required, and
   inactive/missing local-user outcomes as local access required, without reviving app-local browser
-  auth.
+  auth. Invalid signed product context remains a generic auth ceremony/context error, not local
+  provisioning UX.
 - `scripts/playwright_pr_0258_auth_projection.py` proves first-login provisioning, idempotent
   projection reuse, fail-closed missing signed email, duplicate-email linking-required behavior, and
-  SPA bootstrap through the real app-continuation route.
+  SPA bootstrap through the real app-continuation route. The proof also verifies that user-facing
+  login actions open the HuleEdu ceremony directly and `/auth/login?next=...` auto-hands off rather
+  than requiring a second CTA.
+
+## Review Remediation Closeout (2026-04-12)
+
+Retained implementation review reopened this PR with `changes_requested`. The remediation is now
+closed:
+
+1. App-continuation now passes the request correlation id into the projection resolver and runtime
+   `identity_projection_events` persist it.
+2. First-login provisioning uses repository-owned no-conflict inserts for user email and projection
+   uniqueness; projection conflicts re-read the winner, email conflicts fail closed into
+   linking-required, and raw unique-conflict `500`s are covered by DB-backed tests.
+3. `tests/integration/application/test_huleedu_app_projection_concurrency.py` proves same-subject
+   concurrent provisioning, same-email competing subjects, and projection unique-conflict recovery.
+4. Invalid signed product context remains a generic auth ceremony/context error in docs and frontend
+   tests; provisioning UX remains reserved for missing projection, linking-required, and
+   inactive/missing local user outcomes.
+5. Normal user-facing "Logga in" actions open the HuleEdu login ceremony directly; `/auth/login`
+   remains only as an auto-handoff/fallback route.
+6. Focused backend, migration, frontend, docs, and live `pr-0258-auth-projection` proof gates passed
+   after remediation.
 
 ## Rollback Plan
 

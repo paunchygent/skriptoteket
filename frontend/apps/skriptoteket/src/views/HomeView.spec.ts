@@ -117,9 +117,10 @@ describe("HomeView", () => {
     expect(showcaseImages[1]?.attributes("src")).toContain("step-02-placera-eleverna");
     expect(showcaseImages[2]?.attributes("src")).toContain("step-03-exportera");
 
-    // Trailing in-place login trigger is a button (not a public route link)
-    const loginButton = wrapper.find('button[type="button"]');
-    expect(loginButton.exists()).toBe(true);
-    expect(loginButton.text()).toContain("Logga in");
+    const loginLink = wrapper.find(
+      'a[href^="https://api.hule.education/auth/login?app=skriptoteket"]',
+    );
+    expect(loginLink.exists()).toBe(true);
+    expect(loginLink.text()).toContain("Logga in");
   });
 });

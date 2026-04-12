@@ -23,6 +23,7 @@ from skriptoteket.protocols.identity import (
     HuleEduInternalIdentityVerifierProtocol,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
+from skriptoteket.web.request_metadata import get_correlation_id
 
 
 async def require_app_user_projection_api(
@@ -36,7 +37,7 @@ async def require_app_user_projection_api(
         headers=request.headers,
         now_ts=int(clock.now().timestamp()),
     )
-    return await resolver.resolve(context=context)
+    return await resolver.resolve(context=context, correlation_id=get_correlation_id(request))
 
 
 async def require_app_user_api(

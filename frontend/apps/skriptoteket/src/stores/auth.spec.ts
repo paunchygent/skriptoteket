@@ -496,6 +496,62 @@ describe("useAuthStore", () => {
       expect(fetch).toHaveBeenCalledTimes(2);
     });
 
+    it("keeps invalid product context as a generic auth error", async () => {
+      const store = useAuthStore();
+
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            authenticated: true,
+            user: {
+              user_id: "huleedu-wrong-context-subject",
+              email: "teacher@example.test",
+              email_verified: true,
+            },
+            profile: { display_name: "Teacher", locale: "sv-SE" },
+            policy: { roles: ["teacher"], grants: [], feature_flags: [] },
+            session: {
+              transport: "cookie",
+              csrf_required: true,
+              expires_at: "2026-04-11T12:00:00Z",
+            },
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockJsonResponse(
+            {
+              error: {
+                code: "UNAUTHORIZED",
+                message: "Inloggningen kunde inte slutföras.",
+                details: {
+                  reason: "invalid_huleedu_product_context",
+                  field: "active_product_identity_realm",
+                },
+              },
+            },
+            401,
+            "Unauthorized",
+          ),
+        );
+
+      await store.bootstrap();
+
+      expect(store.user).toBeNull();
+      expect(store.profile).toBeNull();
+      expect(store.aiPolicy).toBeNull();
+      expect(store.status).toBe("error");
+      expect(store.isProvisioningRequired).toBe(false);
+      expect(store.error).toBe("Inloggningen kunde inte slutföras.");
+      expect(store.appContinuationError).toEqual(
+        expect.objectContaining({
+          code: "UNAUTHORIZED",
+          status: 401,
+          reason: "invalid_huleedu_product_context",
+        }),
+      );
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
     it("skips if already bootstrapped", async () => {
       const store = useAuthStore();
       store.bootstrapped = true;

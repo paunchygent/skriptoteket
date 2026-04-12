@@ -3,8 +3,8 @@
  * Hule Education browser-auth ceremony panel.
  *
  * Purpose:
- *   Send signed-out teachers to the shared browser-navigable inloggning
- *   without collecting local Skriptoteket passwords.
+ *   Provide a fallback link to the shared browser-navigable inloggning without
+ *   collecting local Skriptoteket passwords.
  *
  * Relationships:
  *   - `AuthLoginView` provides the durable auth-entry route.
@@ -31,7 +31,7 @@ const loginUrl = computed(() =>
   <div class="border border-navy bg-canvas p-6 shadow-brutal md:p-8">
     <div class="space-y-4 text-sm leading-6 text-navy/75">
       <p>
-        Logga in för att fortsätta till Skriptoteket.
+        Om inloggningen inte öppnas automatiskt kan du öppna den igen här.
       </p>
       <p>
         Saknar du konto?
@@ -56,7 +56,7 @@ const loginUrl = computed(() =>
       class="btn-primary mt-6 block w-full text-center"
       :href="loginUrl"
     >
-      Fortsätt till inloggning
+      Öppna inloggningen
     </a>
   </div>
 </template>

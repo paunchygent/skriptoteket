@@ -126,6 +126,17 @@ class IdentityProjectionRepositoryStub:
         self.result = projection
         return projection
 
+    async def create_if_realm_subject_absent(
+        self, *, projection: IdentityProjection
+    ) -> IdentityProjection | None:
+        if (
+            self.result is not None
+            and self.result.product_identity_realm == projection.product_identity_realm
+            and self.result.realm_subject_id == projection.realm_subject_id
+        ):
+            return None
+        return await self.create(projection=projection)
+
 
 class IdentityProjectionEventRepositoryStub:
     def __init__(self) -> None:
@@ -157,6 +168,13 @@ class UserRepositoryStub:
         self.created.append(user)
         self.user = user
         return user
+
+    async def create_if_email_available(
+        self, *, user: User, password_hash: str | None
+    ) -> User | None:
+        if await self.get_auth_by_email(user.email) is not None:
+            return None
+        return await self.create(user=user, password_hash=password_hash)
 
     async def update(self, *, user: User) -> User:
         raise NotImplementedError

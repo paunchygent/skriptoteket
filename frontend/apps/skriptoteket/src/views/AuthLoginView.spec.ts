@@ -31,6 +31,10 @@ const viewMocks = vi.hoisted(() => ({
   } | null,
 }));
 
+const redirectMocks = vi.hoisted(() => ({
+  redirectToSharedAuthCeremony: vi.fn(),
+}));
+
 vi.mock("vue-router", () => ({
   useRoute: () => viewMocks.route,
   useRouter: () => viewMocks.router,
@@ -42,6 +46,10 @@ vi.mock("../composables/usePageTransition", () => ({
 
 vi.mock("../stores/auth", () => ({
   useAuthStore: () => viewMocks.auth,
+}));
+
+vi.mock("../composables/auth/sharedAuthRedirect", () => ({
+  redirectToSharedAuthCeremony: redirectMocks.redirectToSharedAuthCeremony,
 }));
 
 describe("AuthLoginView", () => {
@@ -59,9 +67,10 @@ describe("AuthLoginView", () => {
       suppressNext: vi.fn(),
       reset: vi.fn(),
     };
+    redirectMocks.redirectToSharedAuthCeremony.mockReset();
   });
 
-  it("shows the default home-return copy when no next param is present", () => {
+  it("starts the shared auth ceremony when no next param is present", () => {
     const wrapper = mount(AuthLoginView, {
       global: {
         stubs: {
@@ -71,28 +80,14 @@ describe("AuthLoginView", () => {
     });
 
     expect(wrapper.text()).toContain("Logga in");
-    expect(wrapper.text()).toContain("fortsätta till din startsida");
+    expect(wrapper.text()).toContain("Inloggningen öppnas automatiskt");
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback",
+    );
   });
 
-  it("shows preserved-destination copy when a next param is present", () => {
+  it("preserves the destination in the shared auth ceremony URL", () => {
     viewMocks.route.query = { next: "/profile" };
-
-    const wrapper = mount(AuthLoginView, {
-      global: {
-        stubs: {
-          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
-        },
-      },
-    });
-
-    expect(wrapper.text()).toContain("skickas du vidare till rätt sida");
-  });
-
-  it("completes the redirect when shared auth bootstrap marks the user authenticated", async () => {
-    viewMocks.route.query = {
-      next: "/apps/classroom.group-seating-studio",
-      classroomPlannerEntryOrigin: "dashboard",
-    };
 
     mount(AuthLoginView, {
       global: {
@@ -102,10 +97,28 @@ describe("AuthLoginView", () => {
       },
     });
 
-    if (!viewMocks.auth) {
-      throw new Error("Expected auth stub to be initialized.");
-    }
-    viewMocks.auth.isAuthenticated = true;
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fprofile",
+    );
+  });
+
+  it("completes the redirect when shared auth bootstrap has marked the user authenticated", async () => {
+    viewMocks.route.query = {
+      next: "/apps/classroom.group-seating-studio",
+      classroomPlannerEntryOrigin: "dashboard",
+    };
+    viewMocks.auth = reactive({
+      isAuthenticated: true,
+    });
+
+    mount(AuthLoginView, {
+      global: {
+        stubs: {
+          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
+        },
+      },
+    });
+
     await flushPromises();
 
     expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
@@ -116,6 +129,7 @@ describe("AuthLoginView", () => {
         classroomPlannerEntryOrigin: "dashboard",
       },
     });
+    expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
   });
 
   it("completes the redirect from the HuleEdu callback route", async () => {
@@ -139,6 +153,7 @@ describe("AuthLoginView", () => {
 
     expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
     expect(viewMocks.router.push).toHaveBeenCalledWith("/editor");
+    expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
   });
 
   it("preserves query and hash details from the HuleEdu callback route", async () => {
@@ -161,5 +176,6 @@ describe("AuthLoginView", () => {
     await flushPromises();
 
     expect(viewMocks.router.push).toHaveBeenCalledWith("/admin/tools?status=draft#review");
+    expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
   });
 });

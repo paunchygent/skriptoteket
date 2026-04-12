@@ -2,8 +2,8 @@
  * Signed-out landing shell tests.
  *
  * These tests keep the shared signed-out header aligned with the public-entry
- * contract so unauthenticated routes expose Klassrumskartan quietly and route
- * login through the dedicated auth-entry page.
+ * contract so unauthenticated routes expose Klassrumskartan quietly and open
+ * login through the shared HuleEdu ceremony.
  */
 
 import { mount } from "@vue/test-utils";
@@ -19,14 +19,10 @@ const layoutMocks = vi.hoisted(() => ({
     name: string;
     params: Record<string, unknown>;
   },
-  router: {
-    push: vi.fn().mockResolvedValue(undefined),
-  },
 }));
 
 vi.mock("vue-router", () => ({
   useRoute: () => layoutMocks.route,
-  useRouter: () => layoutMocks.router,
 }));
 
 vi.mock("../help/HelpButton.vue", () => ({
@@ -37,13 +33,11 @@ vi.mock("../help/HelpButton.vue", () => ({
 
 describe("LandingLayout", () => {
   beforeEach(() => {
-    layoutMocks.router.push.mockReset();
-    layoutMocks.router.push.mockResolvedValue(undefined);
     layoutMocks.route.name = "home";
     layoutMocks.route.params = {};
   });
 
-  it("shows the quiet public-app link and opens login in place", async () => {
+  it("shows the quiet public-app link and opens login through the HuleEdu ceremony", () => {
     layoutMocks.route.name = "public-app-detail";
     layoutMocks.route.params = {
       appId: "classroom.group-seating-studio",
@@ -65,17 +59,14 @@ describe("LandingLayout", () => {
 
     expect(wrapper.text()).toContain("Klassrumskartan");
     expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
-    expect(wrapper.get("button.landing-header-link").text()).toBe("Logga in");
-
-    await wrapper.get("button.landing-header-link").trigger("click");
-
-    expect(layoutMocks.router.push).toHaveBeenCalledWith({
-      name: "auth-login",
-      query: { next: "/apps/classroom.group-seating-studio" },
-    });
+    const loginLink = wrapper.get("a.landing-header-link");
+    expect(loginLink.text()).toBe("Logga in");
+    expect(loginLink.attributes("href")).toBe(
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",
+    );
   });
 
-  it("opens login with a home redirect on signed-out auth routes", async () => {
+  it("opens login with a home redirect on signed-out auth routes", () => {
     layoutMocks.route.name = "register";
 
     const wrapper = mount(LandingLayout, {
@@ -92,11 +83,8 @@ describe("LandingLayout", () => {
       },
     });
 
-    await wrapper.get("button.landing-header-link").trigger("click");
-
-    expect(layoutMocks.router.push).toHaveBeenCalledWith({
-      name: "auth-login",
-      query: { next: "/" },
-    });
+    expect(wrapper.get("a.landing-header-link").attributes("href")).toBe(
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2F",
+    );
   });
 });

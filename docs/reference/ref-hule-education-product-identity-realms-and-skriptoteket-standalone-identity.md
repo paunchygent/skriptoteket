@@ -160,6 +160,9 @@ The core ceremony/context contract is frozen, the login and lifecycle consumer s
 - Treat matching email as insufficient for account linking; linking must be explicit.
 - Prove local Docker auth ceremonies against a local or non-production HuleEdu Gateway with exact
   dev-origin allowlisting.
+- Runtime projection events include request correlation ids, concurrent first-login callbacks are
+  DB-tested, invalid product context remains a generic auth ceremony/context error, and direct
+  user-facing login actions open the HuleEdu ceremony rather than a second app-local login CTA.
 
 The remaining open question belongs to `ST-28-10`: which metrics should distinguish gateway auth
 success, identity realm selected, projection resolved, projection missing, provisioning blocked,

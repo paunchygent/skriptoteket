@@ -22,11 +22,10 @@ links:
 
 ## TL;DR
 
-`PR-0258` has an approved migration/provisioning contract and has now been implemented. The retained
-review was approved after the PR was revised to preserve legacy HuleEdu subject mappings, require
-concrete signed claims, define idempotency/audit behavior, and require the correct proof gates. The
-previous signed-claims blocker is resolved in this slice by explicit `InternalIdentityContextV1`
-fields for signed email, verified-email state, and optional profile/locale claims.
+`PR-0258` is approved after remediation. The realm-aware projection migration is implemented,
+runtime projection audit events carry request correlation ids, first-login unique conflicts recover
+or fail closed under DB-backed concurrency tests, invalid product context stays a generic
+auth-context error, and login entry UX opens the HuleEdu ceremony directly.
 
 ## Problem Statement
 
@@ -159,9 +158,50 @@ The six required changes are satisfied:
   frontend gates, live Playwright proof, and handoff evidence
 - `PR-0258` now depends on this retained review
 
-This approval cleared the retained review gate. The subsequent implementation resolved the
+This approval cleared the planning review gate. The subsequent implementation resolved the
 signed-claims dependency by modeling and verifying the concrete fields in
-`InternalIdentityContextV1`.
+`InternalIdentityContextV1`, but implementation review below requested remediation before final
+closure.
+
+### Implementation Review (2026-04-12)
+
+**Reviewer:** `Lead developer`
+**Verdict:** `changes_requested`
+
+Required remediation:
+
+1. Runtime `identity_projection_events` must persist the request correlation id so operators can
+   connect projection/provisioning outcomes to headers, logs, and smoke artifacts.
+2. First-login provisioning must recover from email/projection unique conflicts with
+   repository-owned no-conflict insert/get-or-create behavior and DB-backed concurrent regression
+   tests, not only advisory locks.
+3. Invalid or unsupported signed product context belongs to generic auth ceremony/context error
+   handling, not the provisioning/local-access-required UX.
+4. Normal "Logga in" actions must open the HuleEdu login ceremony directly. `/auth/login?next=...`
+   may remain as a protected-route transition/fallback, but it must auto-handoff instead of asking
+   users for a second login CTA.
+5. The focused backend, migration, frontend, docs, and live `pr-0258-auth-projection` proof must be
+   rerun before `PR-0254` starts.
+
+### Implementation Review Remediation (2026-04-12)
+
+**Reviewer:** `Lead developer`
+**Verdict:** `approved`
+
+The requested remediation is complete:
+
+- runtime `identity_projection_events` persist request correlation ids from the app-continuation
+  request metadata
+- user/projection creation now uses no-conflict repository inserts and re-read/fail-closed
+  recovery rather than relying only on advisory locks
+- DB-backed tests cover same-subject concurrent callbacks, same-email competing subjects, and a
+  projection unique-conflict recovery path that rolls back orphan user writes
+- invalid product context remains a generic auth ceremony/context error; local-access UX remains
+  reserved for missing projection, linking-required, and inactive/missing local user outcomes
+- public "Logga in" actions link directly to the HuleEdu login ceremony, while `/auth/login` is an
+  auto-handoff fallback route
+- the live PR-0258 proof now also verifies direct login handoff and writes
+  `.artifacts/playwright-pr-0258-auth-projection/login-auto-handoff.png`
 
 ### Suggestions (Optional)
 
@@ -182,9 +222,9 @@ signed-claims dependency by modeling and verifying the concrete fields in
 
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | `PR-0258` | Added the retained review dependency, expanded migration/provisioning/idempotency/audit/verification contracts, and later closed as implemented |
-| 2 | `ST-28-09` | Closed after signed provisioning claims were modeled explicitly and fail-closed behavior was proven |
-| 3 | `EPIC-28` | Updated sequencing so `PR-0254` follows the realm-aware projection implementation |
-| 4 | `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the sharper projection migration constraints |
-| 5 | `.agents/handoff.md` | Updated the current lane and next action to the implemented `PR-0258` state |
-| 6 | `REV-PR-0258` | Re-review approved the revised contract before implementation |
+| 1 | `PR-0258` | Added the retained review dependency, expanded migration/provisioning/idempotency/audit/verification contracts, implemented the slice, and closed implementation remediation |
+| 2 | `ST-28-09` | Closed after runtime audit correlation, unique-conflict recovery, generic invalid-context handling, and direct login handoff were implemented and proven |
+| 3 | `EPIC-28` | Updated sequencing so `PR-0254` follows the completed realm-aware projection implementation |
+| 4 | `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the projection migration constraints and direct ceremony login direction |
+| 5 | `.agents/handoff.md` | Updated the current lane and next action to the completed `PR-0258` state |
+| 6 | `REV-PR-0258` | Approved the revised contract before implementation and approved the implementation remediation after proof |

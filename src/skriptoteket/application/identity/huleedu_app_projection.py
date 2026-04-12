@@ -15,10 +15,17 @@ Relationships:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.application.identity.email_validation import validate_email
+from skriptoteket.application.identity.huleedu_app_projection_context import (
+    ProjectionKey,
+    ProvisioningClaims,
+    best_effort_projection_key,
+    provisioning_claims_from_context,
+    validate_skriptoteket_product_context,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.internal_identity_context import InternalIdentityContextV1
 from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserProfile
@@ -26,7 +33,6 @@ from skriptoteket.domain.identity.projections import (
     IdentityProjection,
     IdentityProjectionEvent,
     IdentityProjectionEventType,
-    ProductIdentityRealm,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -39,14 +45,6 @@ from skriptoteket.protocols.identity import (
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-ACTIVE_APP_SKRIPTOTEKET = "skriptoteket"
-ACCEPTED_PRODUCT_IDENTITY_REALMS = frozenset(
-    {
-        ProductIdentityRealm.SKRIPTOTEKET_STANDALONE,
-        ProductIdentityRealm.HULEEDU_SCHOOL,
-    }
-)
-
 
 class HuleEduAppUserProjection(BaseModel):
     """Skriptoteket-local user/profile resolved from a verified HuleEdu subject."""
@@ -58,69 +56,17 @@ class HuleEduAppUserProjection(BaseModel):
 
 
 @dataclass(frozen=True, slots=True)
-class _ProjectionKey:
-    realm: ProductIdentityRealm
-    subject_id: str
+class _ProvisioningEmailConflict:
+    pass
 
 
 @dataclass(frozen=True, slots=True)
-class _ProvisioningClaims:
-    email: str
-    first_name: str | None
-    last_name: str | None
-    display_name: str | None
-    locale: str
+class _ProvisioningProjectionConflict:
+    pass
 
 
-def validate_skriptoteket_product_context(*, context: InternalIdentityContextV1) -> _ProjectionKey:
-    """Fail closed when HuleEdu context is not scoped to Skriptoteket."""
-    if context.active_app != ACTIVE_APP_SKRIPTOTEKET:
-        raise DomainError(
-            code=ErrorCode.UNAUTHORIZED,
-            message="Invalid HuleEdu product context for Skriptoteket",
-            details={"reason": "invalid_huleedu_product_context", "field": "active_app"},
-        )
-
-    if context.active_product_identity_realm not in ACCEPTED_PRODUCT_IDENTITY_REALMS:
-        raise DomainError(
-            code=ErrorCode.UNAUTHORIZED,
-            message="Invalid HuleEdu product context for Skriptoteket",
-            details={
-                "reason": "invalid_huleedu_product_context",
-                "field": "active_product_identity_realm",
-            },
-        )
-
-    try:
-        realm = ProductIdentityRealm(context.active_product_identity_realm)
-    except ValueError as exc:
-        raise DomainError(
-            code=ErrorCode.UNAUTHORIZED,
-            message="Invalid HuleEdu product context for Skriptoteket",
-            details={
-                "reason": "invalid_huleedu_product_context",
-                "field": "active_product_identity_realm",
-            },
-        ) from exc
-
-    if realm not in ACCEPTED_PRODUCT_IDENTITY_REALMS:
-        raise DomainError(
-            code=ErrorCode.UNAUTHORIZED,
-            message="Invalid HuleEdu product context for Skriptoteket",
-            details={
-                "reason": "invalid_huleedu_product_context",
-                "field": "active_product_identity_realm",
-            },
-        )
-
-    if context.realm_subject_id is None:
-        raise DomainError(
-            code=ErrorCode.UNAUTHORIZED,
-            message="Invalid HuleEdu product context for Skriptoteket",
-            details={"reason": "invalid_huleedu_product_context", "field": "realm_subject_id"},
-        )
-
-    return _ProjectionKey(realm=realm, subject_id=context.realm_subject_id)
+class _ProjectionAlreadyExists(Exception):
+    """Internal signal used to roll back nested provisioning writes."""
 
 
 class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
@@ -145,7 +91,12 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         self._clock = clock
         self._id_generator = id_generator
 
-    async def resolve(self, *, context: InternalIdentityContextV1) -> HuleEduAppUserProjection:
+    async def resolve(
+        self,
+        *,
+        context: InternalIdentityContextV1,
+        correlation_id: UUID | None = None,
+    ) -> HuleEduAppUserProjection:
         """Resolve the local projection for one verified HuleEdu subject.
 
         Raises:
@@ -154,7 +105,11 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         try:
             projection_key = validate_skriptoteket_product_context(context=context)
         except DomainError as exc:
-            await self._record_invalid_context(context=context, error=exc)
+            await self._record_invalid_context(
+                context=context,
+                error=exc,
+                correlation_id=correlation_id,
+            )
             raise
 
         resolved: HuleEduAppUserProjection | None = None
@@ -170,35 +125,26 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
                 realm_subject_id=projection_key.subject_id,
             )
             if projection is not None:
-                user = await self._users.get_by_id(projection.user_id)
-                if user is None or not user.is_active:
-                    failure = await self._record_failure(
-                        event_type=IdentityProjectionEventType.BLOCKED_PROVISIONING,
-                        projection_key=projection_key,
-                        projection=projection,
-                        context=context,
-                        reason_code="inactive_or_missing_local_user",
-                        message="Missing active Skriptoteket user for HuleEdu identity projection",
-                    )
+                projection_result = await self._resolve_existing_projection(
+                    projection_key=projection_key,
+                    projection=projection,
+                    context=context,
+                    reason_code="projection_resolved",
+                    correlation_id=correlation_id,
+                )
+                if isinstance(projection_result, DomainError):
+                    failure = projection_result
                 else:
-                    profile = await self._ensure_profile(user=user)
-                    await self._record_event(
-                        event_type=IdentityProjectionEventType.RESOLVED,
-                        projection_key=projection_key,
-                        projection=projection,
-                        user=user,
-                        context=context,
-                        reason_code="projection_resolved",
-                    )
-                    resolved = HuleEduAppUserProjection(user=user, profile=profile)
+                    resolved = projection_result
             else:
-                claims_or_error = self._provisioning_claims(context=context)
+                claims_or_error = provisioning_claims_from_context(context=context)
                 if isinstance(claims_or_error, DomainError):
                     failure = await self._record_failure(
                         event_type=IdentityProjectionEventType.BLOCKED_PROVISIONING,
                         projection_key=projection_key,
                         projection=None,
                         context=context,
+                        correlation_id=correlation_id,
                         reason_code=str(
                             claims_or_error.details.get(
                                 "reason",
@@ -217,6 +163,7 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
                             projection_key=projection_key,
                             projection=None,
                             context=context,
+                            correlation_id=correlation_id,
                             reason_code="identity_linking_required",
                             message=(
                                 "Skriptoteket identity linking is required for this HuleEdu email"
@@ -224,11 +171,60 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
                             field="email",
                         )
                     else:
-                        resolved = await self._provision_user_projection(
+                        provisioning_result = await self._provision_user_projection(
                             projection_key=projection_key,
                             claims=claims_or_error,
                             context=context,
+                            correlation_id=correlation_id,
                         )
+                        if isinstance(provisioning_result, _ProvisioningEmailConflict):
+                            failure = await self._record_failure(
+                                event_type=(
+                                    IdentityProjectionEventType.DUPLICATE_EMAIL_LINKING_REQUIRED
+                                ),
+                                projection_key=projection_key,
+                                projection=None,
+                                context=context,
+                                correlation_id=correlation_id,
+                                reason_code="identity_linking_required",
+                                message=(
+                                    "Skriptoteket identity linking is required for this HuleEdu "
+                                    "email"
+                                ),
+                                field="email",
+                            )
+                        elif isinstance(provisioning_result, _ProvisioningProjectionConflict):
+                            projection = await self._projections.get_by_realm_subject(
+                                product_identity_realm=projection_key.realm.value,
+                                realm_subject_id=projection_key.subject_id,
+                            )
+                            if projection is None:
+                                failure = await self._record_failure(
+                                    event_type=IdentityProjectionEventType.BLOCKED_PROVISIONING,
+                                    projection_key=projection_key,
+                                    projection=None,
+                                    context=context,
+                                    correlation_id=correlation_id,
+                                    reason_code="projection_conflict_unresolved",
+                                    message=(
+                                        "Missing Skriptoteket app projection after conflict "
+                                        "recovery"
+                                    ),
+                                )
+                            else:
+                                projection_result = await self._resolve_existing_projection(
+                                    projection_key=projection_key,
+                                    projection=projection,
+                                    context=context,
+                                    reason_code="projection_conflict_recovered",
+                                    correlation_id=correlation_id,
+                                )
+                                if isinstance(projection_result, DomainError):
+                                    failure = projection_result
+                                else:
+                                    resolved = projection_result
+                        else:
+                            resolved = provisioning_result
 
         if failure is not None:
             raise failure
@@ -260,107 +256,115 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
             )
         )
 
-    def _provisioning_claims(
+    async def _resolve_existing_projection(
         self,
         *,
+        projection_key: ProjectionKey,
+        projection: IdentityProjection,
         context: InternalIdentityContextV1,
-    ) -> _ProvisioningClaims | DomainError:
-        if context.email is None:
-            return DomainError(
-                code=ErrorCode.UNAUTHORIZED,
-                message="Missing signed email claim for HuleEdu provisioning",
-                details={"reason": "missing_huleedu_app_projection", "field": "email"},
-            )
-        try:
-            email = validate_email(email=context.email)
-        except DomainError:
-            return DomainError(
-                code=ErrorCode.UNAUTHORIZED,
-                message="Invalid signed email claim for HuleEdu provisioning",
-                details={"reason": "missing_huleedu_app_projection", "field": "email"},
-            )
-
-        if context.email_verified is not True:
-            return DomainError(
-                code=ErrorCode.UNAUTHORIZED,
-                message="Missing verified signed email claim for HuleEdu provisioning",
-                details={
-                    "reason": "missing_huleedu_app_projection",
-                    "field": "email_verified",
-                },
+        reason_code: str,
+        correlation_id: UUID | None,
+    ) -> HuleEduAppUserProjection | DomainError:
+        user = await self._users.get_by_id(projection.user_id)
+        if user is None or not user.is_active:
+            return await self._record_failure(
+                event_type=IdentityProjectionEventType.BLOCKED_PROVISIONING,
+                projection_key=projection_key,
+                projection=projection,
+                context=context,
+                correlation_id=correlation_id,
+                reason_code="inactive_or_missing_local_user",
+                message="Missing active Skriptoteket user for HuleEdu identity projection",
             )
 
-        return _ProvisioningClaims(
-            email=email,
-            first_name=context.given_name,
-            last_name=context.family_name,
-            display_name=context.display_name,
-            locale=context.locale or "sv-SE",
-        )
-
-    async def _provision_user_projection(
-        self,
-        *,
-        projection_key: _ProjectionKey,
-        claims: _ProvisioningClaims,
-        context: InternalIdentityContextV1,
-    ) -> HuleEduAppUserProjection:
-        now = self._clock.now()
-        user = await self._users.create(
-            user=User(
-                id=self._id_generator.new_uuid(),
-                email=claims.email,
-                role=Role.USER,
-                auth_provider=AuthProvider.HULEEDU,
-                is_active=True,
-                email_verified=True,
-                failed_login_attempts=0,
-                locked_until=None,
-                last_login_at=None,
-                last_failed_login_at=None,
-                created_at=now,
-                updated_at=now,
-            ),
-            password_hash=None,
-        )
-        profile = await self._profiles.create(
-            profile=UserProfile(
-                user_id=user.id,
-                first_name=claims.first_name,
-                last_name=claims.last_name,
-                display_name=claims.display_name,
-                allow_remote_fallback=None,
-                inline_completion_provider=None,
-                locale=claims.locale,
-                created_at=now,
-                updated_at=now,
-            )
-        )
-        projection = await self._projections.create(
-            projection=IdentityProjection(
-                id=self._id_generator.new_uuid(),
-                user_id=user.id,
-                product_identity_realm=projection_key.realm,
-                realm_subject_id=projection_key.subject_id,
-                created_at=now,
-                updated_at=now,
-            )
-        )
+        profile = await self._ensure_profile(user=user)
         await self._record_event(
-            event_type=IdentityProjectionEventType.PROVISIONED,
+            event_type=IdentityProjectionEventType.RESOLVED,
             projection_key=projection_key,
             projection=projection,
             user=user,
             context=context,
-            reason_code="projection_provisioned",
+            correlation_id=correlation_id,
+            reason_code=reason_code,
         )
         return HuleEduAppUserProjection(user=user, profile=profile)
+
+    async def _provision_user_projection(
+        self,
+        *,
+        projection_key: ProjectionKey,
+        claims: ProvisioningClaims,
+        context: InternalIdentityContextV1,
+        correlation_id: UUID | None,
+    ) -> HuleEduAppUserProjection | _ProvisioningEmailConflict | _ProvisioningProjectionConflict:
+        now = self._clock.now()
+        try:
+            async with self._uow:
+                user = await self._users.create_if_email_available(
+                    user=User(
+                        id=self._id_generator.new_uuid(),
+                        email=claims.email,
+                        role=Role.USER,
+                        auth_provider=AuthProvider.HULEEDU,
+                        is_active=True,
+                        email_verified=True,
+                        failed_login_attempts=0,
+                        locked_until=None,
+                        last_login_at=None,
+                        last_failed_login_at=None,
+                        created_at=now,
+                        updated_at=now,
+                    ),
+                    password_hash=None,
+                )
+                if user is None:
+                    return _ProvisioningEmailConflict()
+
+                profile = await self._profiles.create(
+                    profile=UserProfile(
+                        user_id=user.id,
+                        first_name=claims.first_name,
+                        last_name=claims.last_name,
+                        display_name=claims.display_name,
+                        allow_remote_fallback=None,
+                        inline_completion_provider=None,
+                        locale=claims.locale,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
+                projection = await self._projections.create_if_realm_subject_absent(
+                    projection=IdentityProjection(
+                        id=self._id_generator.new_uuid(),
+                        user_id=user.id,
+                        product_identity_realm=projection_key.realm,
+                        realm_subject_id=projection_key.subject_id,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
+                if projection is None:
+                    raise _ProjectionAlreadyExists
+
+                await self._record_event(
+                    event_type=IdentityProjectionEventType.PROVISIONED,
+                    projection_key=projection_key,
+                    projection=projection,
+                    user=user,
+                    context=context,
+                    correlation_id=correlation_id,
+                    reason_code="projection_provisioned",
+                )
+                return HuleEduAppUserProjection(user=user, profile=profile)
+        except _ProjectionAlreadyExists:
+            return _ProvisioningProjectionConflict()
 
     async def _record_invalid_context(
         self,
         *,
         context: InternalIdentityContextV1,
         error: DomainError,
+        correlation_id: UUID | None,
     ) -> None:
         field = str(error.details.get("field", "unknown"))
         event_type = (
@@ -371,10 +375,11 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         async with self._uow:
             await self._record_event(
                 event_type=event_type,
-                projection_key=self._best_effort_projection_key(context=context),
+                projection_key=best_effort_projection_key(context=context),
                 projection=None,
                 user=None,
                 context=context,
+                correlation_id=correlation_id,
                 reason_code=f"invalid_{field}",
             )
 
@@ -382,9 +387,10 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         self,
         *,
         event_type: IdentityProjectionEventType,
-        projection_key: _ProjectionKey,
+        projection_key: ProjectionKey,
         projection: IdentityProjection | None,
         context: InternalIdentityContextV1,
+        correlation_id: UUID | None,
         reason_code: str,
         message: str,
         field: object | None = None,
@@ -395,6 +401,7 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
             projection=projection,
             user=None,
             context=context,
+            correlation_id=correlation_id,
             reason_code=reason_code,
         )
         details: dict[str, object] = {"reason": reason_code}
@@ -410,10 +417,11 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         self,
         *,
         event_type: IdentityProjectionEventType,
-        projection_key: _ProjectionKey | None,
+        projection_key: ProjectionKey | None,
         projection: IdentityProjection | None,
         user: User | None,
         context: InternalIdentityContextV1,
+        correlation_id: UUID | None,
         reason_code: str,
     ) -> None:
         now = self._clock.now()
@@ -426,21 +434,8 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
                 product_identity_realm=projection_key.realm if projection_key else None,
                 realm_subject_id=projection_key.subject_id if projection_key else None,
                 reason_code=reason_code,
-                correlation_id=None,
+                correlation_id=correlation_id,
                 context_jti=context.jti,
                 created_at=now,
             )
         )
-
-    def _best_effort_projection_key(
-        self,
-        *,
-        context: InternalIdentityContextV1,
-    ) -> _ProjectionKey | None:
-        if context.active_product_identity_realm is None or context.realm_subject_id is None:
-            return None
-        try:
-            realm = ProductIdentityRealm(context.active_product_identity_realm)
-        except ValueError:
-            return None
-        return _ProjectionKey(realm=realm, subject_id=context.realm_subject_id)

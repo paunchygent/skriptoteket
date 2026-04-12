@@ -8,9 +8,10 @@
  * grouping/seating presentation subtree.
  */
 
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
+import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import CreateRosterModal from "./components/CreateRosterModal.vue";
 import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
@@ -18,6 +19,7 @@ import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
 import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
 import ClassroomPlannerGuestWorkspaceShell from "./ClassroomPlannerGuestWorkspaceShell.vue";
 import { provideClassroomState, type ClassroomStateLike } from "./useClassroomState";
+import { CLASSROOM_PLANNER_APP_ID } from "./classroomPlannerNavigation";
 import { useClassroomPlannerGuestController } from "./useClassroomPlannerGuestController";
 import { usePublicGroupingExportFlow } from "./usePublicGroupingExportFlow";
 import { usePublicSeatingExportFlow } from "./usePublicSeatingExportFlow";
@@ -37,6 +39,12 @@ const seatingExportFlow = usePublicSeatingExportFlow({
 });
 
 provideClassroomState(providedGuestPlannerState as unknown as ClassroomStateLike);
+const loginUrl = computed(() =>
+  sharedAuthCeremonyUrl({
+    nextPath: `/apps/${CLASSROOM_PLANNER_APP_ID}`,
+    origin: window.location.origin,
+  }),
+);
 
 async function exitPublicPlanner(): Promise<void> {
   await router.push({ name: "home" });
@@ -102,13 +110,13 @@ async function exitPublicPlanner(): Promise<void> {
         </div>
 
         <div class="flex flex-col items-stretch justify-center gap-2 sm:flex-row">
-          <RouterLink
-            to="/auth/login"
+          <a
+            :href="loginUrl"
             class="btn-primary min-w-[10rem]"
             data-test="public-guest-authoring-closed-login"
           >
             Logga in
-          </RouterLink>
+          </a>
           <RouterLink
             to="/register"
             class="btn-ghost planner-btn-ghost min-w-[10rem]"

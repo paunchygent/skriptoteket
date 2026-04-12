@@ -15,6 +15,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
@@ -65,6 +66,33 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
         await self._session.flush()
         await self._session.refresh(model)
         return User.model_validate(model)
+
+    async def create_if_email_available(
+        self, *, user: User, password_hash: str | None
+    ) -> User | None:
+        stmt = (
+            pg_insert(UserModel)
+            .values(
+                id=user.id,
+                email=user.email,
+                role=user.role.value,
+                auth_provider=user.auth_provider.value,
+                password_hash=password_hash,
+                is_active=user.is_active,
+                email_verified=user.email_verified,
+                failed_login_attempts=user.failed_login_attempts,
+                locked_until=user.locked_until,
+                last_login_at=user.last_login_at,
+                last_failed_login_at=user.last_failed_login_at,
+                created_at=user.created_at,
+                updated_at=user.updated_at,
+            )
+            .on_conflict_do_nothing(index_elements=["email"])
+            .returning(UserModel.id)
+        )
+        result = await self._session.execute(stmt)
+        user_id = result.scalar_one_or_none()
+        return user if user_id is not None else None
 
     async def update(self, *, user: User) -> User:
         model = await self._session.get(UserModel, user.id)

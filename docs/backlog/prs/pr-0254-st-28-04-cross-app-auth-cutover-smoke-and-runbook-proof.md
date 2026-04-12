@@ -5,7 +5,7 @@ title: "ST-28-04 cross-app auth cutover smoke and runbook proof"
 status: ready
 owners: "agents"
 created: 2026-04-10
-updated: 2026-04-11
+updated: 2026-04-12
 stories:
   - "ST-28-04"
 adrs:
@@ -31,8 +31,9 @@ acceptance_criteria:
 Unit and component tests cannot prove the cross-app browser contract. The cutover needs one retained
 smoke and operator runbook proof that spans Skriptoteket and HuleEdu.
 
-After the `PR-0258` realm-aware projection implementation, this PR is the next proof lane. It must
-not certify a HuleEdu-school-only login as final Skriptoteket login.
+After the remediated `PR-0258` realm-aware projection implementation, this PR is the next proof
+lane. It must not certify a HuleEdu-school-only login as final Skriptoteket login, and it must
+exercise the runtime correlation, projection, and local RBAC behavior that `PR-0258` now provides.
 
 ## Goal
 
@@ -50,8 +51,8 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
 
 ## Implementation Plan
 
-1. Consume accepted `ADR-0083` and the completed `ST-28-07` through `ST-28-09` login/projection
-   contracts.
+1. Consume accepted `ADR-0083` and the completed `ST-28-07` through remediated `ST-28-09`
+   login/projection contracts.
 2. Add or update a dedicated Skriptoteket realm-aware auth-cutover Playwright smoke.
 3. Prove browser ceremony entry, protected-route recovery, signed downstream context, projection
    resolution, CSRF write, websocket/session admission if applicable, and logout invalidation.

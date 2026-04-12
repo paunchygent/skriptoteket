@@ -49,7 +49,7 @@ describe("AuthLoginPanel", () => {
     const wrapper = mountAuthLoginPanel();
     const link = wrapper.get("a.btn-primary");
 
-    expect(link.text()).toContain("Fortsätt till inloggning");
+    expect(link.text()).toContain("Öppna inloggningen");
     expect(link.attributes("href")).toBe(
       "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
     );

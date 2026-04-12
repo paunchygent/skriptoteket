@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from playwright.sync_api import APIRequestContext, Page, expect, sync_playwright
@@ -190,6 +190,121 @@ def _verify_spa_bootstrap(base_url: str, *, private_key: RSAPrivateKey) -> None:
         raise AssertionError(f"Missing expected SPA calls: {sorted(missing)}")
 
 
+def _assert_login_ceremony_url(
+    url: str | None,
+    *,
+    base_url: str,
+    expected_next: str | None,
+) -> None:
+    if not url:
+        raise AssertionError("Expected a browser-navigable HuleEdu login ceremony URL.")
+    if url.startswith(f"{base_url}/auth/login"):
+        raise AssertionError(
+            "Expected direct HuleEdu login ceremony URL, not app-local /auth/login."
+        )
+    if "/v1/auth/login" in url:
+        raise AssertionError("Expected browser ceremony URL, not POST-only /v1/auth/login API.")
+
+    parsed = urlparse(url)
+    if parsed.path != "/auth/login":
+        raise AssertionError(f"Expected /auth/login ceremony path, got {parsed.path!r}.")
+    query = parse_qs(parsed.query)
+    if query.get("app") != ["skriptoteket"]:
+        raise AssertionError(f"Expected app=skriptoteket, got {query.get('app')!r}.")
+    if query.get("product_identity_realm") != ["skriptoteket_standalone"]:
+        raise AssertionError(
+            "Expected product_identity_realm=skriptoteket_standalone, "
+            f"got {query.get('product_identity_realm')!r}."
+        )
+
+    return_to = query.get("return_to", [None])[0]
+    return_to_parsed = urlparse(return_to or "")
+    base_parsed = urlparse(base_url)
+    if (
+        return_to_parsed.scheme != base_parsed.scheme
+        or return_to_parsed.netloc != base_parsed.netloc
+    ):
+        raise AssertionError(f"Expected return_to origin {base_url}, got {return_to!r}.")
+    if return_to_parsed.path != "/auth/callback":
+        raise AssertionError(f"Expected return_to /auth/callback, got {return_to!r}.")
+
+    if expected_next is None:
+        if "next" in query:
+            raise AssertionError(f"Expected no next parameter, got {query['next']!r}.")
+        return
+    if query.get("next") != [expected_next]:
+        raise AssertionError(f"Expected next={expected_next!r}, got {query.get('next')!r}.")
+
+
+def _install_signed_out_auth_routes(page: Page, *, base_url: str) -> None:
+    cors_headers = {
+        "content-type": "application/json",
+        "access-control-allow-origin": base_url,
+        "access-control-allow-credentials": "true",
+    }
+
+    def huleedu_session(route) -> None:
+        route.fulfill(
+            status=200,
+            headers=cors_headers,
+            body=json.dumps(
+                {
+                    "authenticated": False,
+                    "user": None,
+                    "profile": None,
+                    "policy": None,
+                    "session": {
+                        "transport": "cookie",
+                        "csrf_required": True,
+                        "expires_at": None,
+                    },
+                }
+            ),
+        )
+
+    def huleedu_csrf(route) -> None:
+        route.fulfill(status=200, headers=cors_headers, body=json.dumps({"csrf_token": "csrf"}))
+
+    def gateway_login(route) -> None:
+        if route.request.url.startswith(f"{base_url}/auth/login"):
+            route.continue_()
+            return
+        route.fulfill(
+            status=200,
+            headers={"content-type": "text/html"},
+            body="<h1>Gateway login</h1>",
+        )
+
+    page.route("https://api.hule.education/v1/auth/session", huleedu_session)
+    page.route("https://api.hule.education/v1/auth/csrf", huleedu_csrf)
+    page.route("**/auth/login**", gateway_login)
+
+
+def _verify_login_handoff(base_url: str) -> None:
+    with sync_playwright() as playwright:
+        browser = launch_chromium(playwright)
+        context = browser.new_context(viewport={"width": 1280, "height": 720})
+        page = context.new_page()
+        _install_signed_out_auth_routes(page, base_url=base_url)
+
+        page.goto(base_url, wait_until="domcontentloaded")
+        login_href = page.get_by_role("link", name="Logga in").first.get_attribute("href")
+        _assert_login_ceremony_url(login_href, base_url=base_url, expected_next="/")
+
+        page.goto(f"{base_url}/auth/login?next=/browse", wait_until="domcontentloaded")
+        for _ in range(30):
+            if "/auth/login" in page.url and not page.url.startswith(f"{base_url}/"):
+                break
+            page.wait_for_timeout(500)
+        else:
+            raise AssertionError(f"Expected auto-handoff to HuleEdu login, got {page.url!r}.")
+        _assert_login_ceremony_url(page.url, base_url=base_url, expected_next="/browse")
+        page.screenshot(path=str(ARTIFACTS_DIR / "login-auto-handoff.png"), full_page=True)
+
+        context.close()
+        browser.close()
+
+
 def _run(base_url: str, *, backend_url: str, private_key: RSAPrivateKey) -> None:
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
@@ -203,10 +318,12 @@ def _run(base_url: str, *, backend_url: str, private_key: RSAPrivateKey) -> None
             request_context.dispose()
 
     _verify_spa_bootstrap(base_url, private_key=private_key)
+    _verify_login_handoff(base_url)
     print(
         "playwright-pr-0258-auth-projection: ok "
         f"first-login provisioned local user {local_user_id}; repeated callback reused projection; "
-        "missing signed email and duplicate email failed closed"
+        "missing signed email and duplicate email failed closed; login handoff opened the ceremony "
+        "directly"
     )
 
 
