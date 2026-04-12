@@ -65,7 +65,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
     ClassWorkspaceSummaryDto,
     serialize_class_workspace_summary,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
@@ -337,8 +337,7 @@ async def undo_draft(
     handler: FromDishka[UndoDraftHandler],
     rosters: FromDishka[RosterRepositoryProtocol],
     templates: FromDishka[RoomTemplateRepositoryProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> DraftWorkspaceResponse:
     workspace = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
     return _serialize_workspace(
@@ -362,8 +361,7 @@ async def redo_draft(
     handler: FromDishka[RedoDraftHandler],
     rosters: FromDishka[RosterRepositoryProtocol],
     templates: FromDishka[RoomTemplateRepositoryProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> DraftWorkspaceResponse:
     workspace = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
     return _serialize_workspace(
@@ -384,7 +382,7 @@ async def redo_draft(
 @router.get("/rosters", response_model=list[RosterDto])
 async def list_rosters(
     handler: FromDishka[ListRostersHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> list[RosterDto]:
     rosters = await handler.handle(owner_user_id=user.id)
     return [_serialize_roster(roster) for roster in rosters]
@@ -394,7 +392,7 @@ async def list_rosters(
 async def get_roster(
     roster_id: UUID,
     handler: FromDishka[GetRosterHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> RosterDto:
     return _serialize_roster(await handler.handle(roster_id=roster_id, owner_user_id=user.id))
 
@@ -403,7 +401,7 @@ async def get_roster(
 async def get_class_workspace_summary(
     roster_id: UUID,
     handler: FromDishka[GetClassWorkspaceSummaryHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ClassWorkspaceSummaryDto:
     return serialize_class_workspace_summary(
         await handler.handle(roster_id=roster_id, owner_user_id=user.id)
@@ -415,8 +413,7 @@ async def import_preview(
     request: Request,
     file: UploadFile,
     handler: FromDishka[CreateClassListImportPreviewHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ClassListImportPreview:
     content = await file.read()
     correlation_id_uuid = get_correlation_id(request)
@@ -432,8 +429,7 @@ async def import_preview(
 async def create_roster(
     request: CreateRosterRequest,
     handler: FromDishka[CreateRosterHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> RosterDto:
     roster = await handler.handle(
         owner_user_id=user.id, name=request.name, students=request.students
@@ -446,8 +442,7 @@ async def update_roster(
     roster_id: UUID,
     request: UpdateRosterRequest,
     handler: FromDishka[UpdateRosterHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> RosterDto:
     roster = await handler.handle(
         roster_id=roster_id,
@@ -462,8 +457,7 @@ async def update_roster(
 async def delete_roster(
     roster_id: UUID,
     handler: FromDishka[DeleteRosterHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> None:
     await handler.handle(roster_id=roster_id, owner_user_id=user.id)
 
@@ -471,7 +465,7 @@ async def delete_roster(
 @router.get("/templates", response_model=list[RoomTemplateDto])
 async def list_templates(
     handler: FromDishka[ListRoomTemplatesHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> list[RoomTemplateDto]:
     templates = await handler.handle(owner_user_id=user.id)
     return [_serialize_template(template) for template in templates]
@@ -481,7 +475,7 @@ async def list_templates(
 async def get_template(
     template_id: UUID,
     handler: FromDishka[GetRoomTemplateHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> RoomTemplateDto:
     return _serialize_template(await handler.handle(template_id=template_id, owner_user_id=user.id))
 
@@ -490,8 +484,7 @@ async def get_template(
 async def create_template(
     request: CreateRoomTemplateRequest,
     handler: FromDishka[CreateRoomTemplateHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> RoomTemplateDto:
     template = await handler.handle(
         owner_user_id=user.id,
@@ -509,8 +502,7 @@ async def update_template(
     template_id: UUID,
     request: UpdateRoomTemplateRequest,
     handler: FromDishka[UpdateRoomTemplateHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> RoomTemplateDto:
     template = await handler.handle(
         template_id=template_id,
@@ -528,8 +520,7 @@ async def update_template(
 async def delete_template(
     template_id: UUID,
     handler: FromDishka[DeleteRoomTemplateHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> None:
     await handler.handle(template_id=template_id, owner_user_id=user.id)
 
@@ -538,8 +529,7 @@ async def delete_template(
 async def resolve_draft(
     request: ResolvePlanDraftRequest,
     handler: FromDishka[ResolveDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     draft = await handler.handle(
         owner_user_id=user.id,
@@ -554,8 +544,7 @@ async def resolve_draft(
 async def abandon_draft(
     draft_id: UUID,
     handler: FromDishka[AbandonDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     return serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
 
@@ -563,7 +552,7 @@ async def abandon_draft(
 @router.get("/drafts/resumable", response_model=ResumablePlanDraftDto | None)
 async def get_resumable_draft(
     handler: FromDishka[GetResumableDraftHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ResumablePlanDraftDto | None:
     resumable = await handler.handle(owner_user_id=user.id)
     if resumable is None:
@@ -575,7 +564,7 @@ async def get_resumable_draft(
 async def get_draft(
     draft_id: UUID,
     handler: FromDishka[GetDraftHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     return serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
 
@@ -584,7 +573,7 @@ async def get_draft(
 async def get_draft_workspace(
     draft_id: UUID,
     handler: FromDishka[GetDraftWorkspaceHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> DraftWorkspaceResponse:
     workspace = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
     return _serialize_workspace(workspace)
@@ -595,8 +584,7 @@ async def update_draft(
     draft_id: UUID,
     request: UpdatePlanDraftRequest,
     handler: FromDishka[PatchDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> DraftWorkspaceResponse:
     workspace = await handler.handle(
         draft_id=draft_id,

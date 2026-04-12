@@ -43,7 +43,7 @@ from skriptoteket.protocols.tool_settings import (
     UpdateToolSettingsHandlerProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.uploads import read_upload_files
 
@@ -262,7 +262,7 @@ async def get_tool_by_slug(
     sessions: FromDishka[ToolSessionRepositoryProtocol],
     id_generator: FromDishka[IdGeneratorProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ToolMetadataResponse:
     async with uow:
         tool, version = await _load_runnable_tool(tools=tools, versions=versions, slug=slug)
@@ -303,8 +303,7 @@ async def start_tool_run(
     slug: str,
     handler: FromDishka[RunActiveToolHandlerProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
     files: Annotated[list[UploadFile] | None, File()] = None,
     inputs: Annotated[str | None, Form()] = None,
     file_fields: Annotated[str | None, Form()] = None,
@@ -360,7 +359,7 @@ async def start_tool_run(
 async def list_tool_file_refs(
     tool_id: UUID,
     handler: FromDishka[ListToolFileRefsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
     context: str = Query("default"),
     sources: list[str] | None = Query(None),
 ) -> ListToolFileRefsResult:
@@ -379,7 +378,7 @@ async def list_tool_file_refs(
 async def get_tool_settings(
     tool_id: UUID,
     handler: FromDishka[GetToolSettingsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ToolSettingsResponse:
     result = await handler.handle(actor=user, query=GetToolSettingsQuery(tool_id=tool_id))
     settings_state = result.settings
@@ -397,8 +396,7 @@ async def update_tool_settings(
     tool_id: UUID,
     payload: UpdateToolSettingsRequest,
     handler: FromDishka[UpdateToolSettingsHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ToolSettingsResponse:
     result = await handler.handle(
         actor=user,
@@ -429,8 +427,7 @@ async def mark_usage_instructions_seen(
     versions: FromDishka[ToolVersionRepositoryProtocol],
     sessions: FromDishka[ToolSessionRepositoryProtocol],
     id_generator: FromDishka[IdGeneratorProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> MarkUsageInstructionsSeenResponse:
     async with uow:
         tool, version = await _load_runnable_tool_by_id(

@@ -42,7 +42,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner_export_job_contracts import 
     SeatingExportJobDto,
     serialize_seating_export_job,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
@@ -88,8 +88,7 @@ class BlockedSmartSeatingRunResponse(BaseModel):
 async def create_seating_draft(
     request: CreateSeatingDraftRequest,
     handler: FromDishka[CreateSeatingDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     draft = await handler.handle(
         owner_user_id=user.id,
@@ -103,8 +102,7 @@ async def create_seating_draft(
 async def activate_seating_history_draft(
     draft_id: UUID,
     handler: FromDishka[ActivateSeatingHistoryDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     draft = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
     return serialize_plan_draft(draft)
@@ -114,8 +112,7 @@ async def activate_seating_history_draft(
 async def delete_historic_seating_draft(
     draft_id: UUID,
     handler: FromDishka[DeleteHistoricSeatingDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> None:
     await handler.handle(draft_id=draft_id, owner_user_id=user.id)
 
@@ -128,8 +125,7 @@ async def run_smart_seating(
     draft_id: UUID,
     request: SmartSeatingRunRequest,
     handler: FromDishka[RunSmartSeatingHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> AppliedSmartSeatingRunResponse | BlockedSmartSeatingRunResponse:
     result = await handler.handle(
         draft_id=draft_id,
@@ -156,8 +152,7 @@ async def prepare_seating_export(
     draft_id: UUID,
     request: PrepareSeatingExportRequest,
     handler: FromDishka[PrepareSeatingExportHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PreparedSeatingExportDto:
     prepared_export = await handler.handle(
         draft_id=draft_id,
@@ -174,8 +169,7 @@ async def create_seating_export_job(
     request: Request,
     payload: CreateSeatingExportJobRequest,
     handler: FromDishka[CreateSeatingExportJobHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> SeatingExportJobDto:
     correlation_id_uuid = get_correlation_id(request)
     result = await handler.handle(
@@ -197,7 +191,7 @@ async def get_recoverable_seating_export_job_for_draft(
     draft_id: UUID,
     request: Request,
     handler: FromDishka[GetRecoverableSeatingExportJobForDraftHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> SeatingExportJobDto | None:
     correlation_id_uuid = get_correlation_id(request)
     result = await handler.handle(
@@ -213,7 +207,7 @@ async def get_seating_export_job(
     job_id: UUID,
     request: Request,
     handler: FromDishka[GetSeatingExportJobHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> SeatingExportJobDto:
     correlation_id_uuid = get_correlation_id(request)
     result = await handler.handle(
@@ -228,7 +222,7 @@ async def get_seating_export_job(
 async def download_seating_export_job(
     job_id: UUID,
     handler: FromDishka[DownloadSeatingExportJobHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     filename, media_type, content = await handler.handle(actor=user, job_id=job_id)
     return Response(

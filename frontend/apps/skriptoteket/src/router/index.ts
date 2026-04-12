@@ -36,9 +36,25 @@ router.beforeEach(async (to, from) => {
   const rawMinRole = typeof to.meta.minRole === "string" ? to.meta.minRole : null;
   const minRole = rawMinRole && isRole(rawMinRole) ? rawMinRole : null;
   const isAuthEntryPath = isAuthLoginPath(to.path);
+  const isProvisioningRequiredPath = to.name === "auth-provisioning-required";
 
-  if (requiresAuth || minRole || isAuthEntryPath) {
+  if (requiresAuth || minRole || isAuthEntryPath || isProvisioningRequiredPath) {
     await auth.bootstrap();
+  }
+
+  if (auth.isProvisioningRequired) {
+    if (isProvisioningRequiredPath) {
+      return true;
+    }
+
+    return {
+      name: "auth-provisioning-required",
+      query: { from: to.fullPath },
+    };
+  }
+
+  if (isProvisioningRequiredPath) {
+    return buildProtectedAuthEntryLocationFromNavigation(to, from);
   }
 
   if (isAuthEntryPath && auth.isAuthenticated) {

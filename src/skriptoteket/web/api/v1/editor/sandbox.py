@@ -33,9 +33,8 @@ from skriptoteket.protocols.scripting import (
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.uploads import read_upload_files
@@ -180,8 +179,7 @@ async def run_sandbox(
     handler: FromDishka[RunSandboxHandlerProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
     files: Annotated[list[UploadFile] | None, File()] = None,
     inputs: Annotated[str | None, Form()] = None,
     file_fields: Annotated[str | None, Form()] = None,
@@ -264,7 +262,7 @@ async def get_sandbox_session(
     version_id: UUID,
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     sessions: FromDishka[ToolSessionRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
     snapshot_id: UUID | None = Query(None),
 ) -> SandboxSessionResponse:
     """Get sandbox session state for a tool version (ADR-0038)."""
@@ -292,7 +290,7 @@ async def get_sandbox_session(
 async def list_sandbox_file_refs(
     version_id: UUID,
     handler: FromDishka[ListSandboxFileRefsHandlerProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
     snapshot_id: UUID = Query(...),
     sources: list[str] | None = Query(None),
 ) -> ListSandboxFileRefsResult:
@@ -314,7 +312,7 @@ async def list_sandbox_file_refs(
 async def list_sandbox_session_files(
     version_id: UUID,
     handler: FromDishka[ListSandboxSessionFilesHandlerProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
     snapshot_id: UUID = Query(...),
 ) -> ListSandboxSessionFilesResult:
     return await handler.handle(
@@ -334,8 +332,7 @@ async def delete_sandbox_session_files(
     version_id: UUID,
     payload: DeleteSandboxSessionFilesRequest,
     handler: FromDishka[DeleteSandboxSessionFilesHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
     snapshot_id: UUID = Query(...),
 ) -> DeleteSandboxSessionFilesResult:
     return await handler.handle(
@@ -357,8 +354,7 @@ async def start_sandbox_action(
     payload: StartSandboxActionRequest,
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     handler: FromDishka[StartSandboxActionHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> StartSandboxActionResponse:
     """Start a sandbox action for a tool version (ADR-0038)."""
     version = await versions_repo.get_by_id(version_id=version_id)

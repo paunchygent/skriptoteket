@@ -9,9 +9,8 @@ from skriptoteket.protocols.catalog import (
     ListToolTaxonomyHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_admin_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_admin_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -25,7 +24,7 @@ router = APIRouter()
 async def get_tool_taxonomy(
     tool_id: UUID,
     handler: FromDishka[ListToolTaxonomyHandlerProtocol],
-    user: User = Depends(require_admin_api),
+    user: User = Depends(require_app_admin_api),
 ) -> ToolTaxonomyResponse:
     result = await handler.handle(
         actor=user,
@@ -43,8 +42,7 @@ async def update_tool_taxonomy(
     tool_id: UUID,
     payload: ToolTaxonomyRequest,
     handler: FromDishka[UpdateToolTaxonomyHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> ToolTaxonomyResponse:
     result = await handler.handle(
         actor=user,

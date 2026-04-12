@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klassrumskartan — alternativ till &quot;Avsluta&quot;-knappen (v2)</title>
+    <style>
+      :root {
+        --canvas: #f4f1e8;
+        --paper: #ffffff;
+        --navy: #1d2340;
+        --navy-soft: rgba(29, 35, 64, 0.68);
+        --navy-60: rgba(29, 35, 64, 0.6);
+        --navy-70: rgba(29, 35, 64, 0.7);
+        --navy-30: rgba(29, 35, 64, 0.3);
+        --navy-faint: rgba(29, 35, 64, 0.16);
+        --navy-muted: rgba(29, 35, 64, 0.08);
+        --burgundy: #a5352a;
+        --accent: #d84f34;
+        --success: #2f7d5b;
+        --shadow-brutal: 4px 4px 0 rgba(29, 35, 64, 0.9);
+        --shadow-brutal-sm: 3px 3px 0 rgba(29, 35, 64, 0.9);
+        --border: 2px solid var(--navy);
+        --transition: 160ms ease;
+        font-family:
+          "IBM Plex Sans",
+          "Avenir Next",
+          "Segoe UI",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(216, 79, 52, 0.08), transparent 28rem),
+          linear-gradient(180deg, #fbf8f0 0%, var(--canvas) 100%);
+        color: var(--navy);
+        padding: 32px 0 64px;
+      }
+
+      .page {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+
+      .page-intro {
+        border: var(--border);
+        background: var(--paper);
+        box-shadow: var(--shadow-brutal);
+        padding: 22px 26px;
+        margin-bottom: 32px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--navy-soft);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 1.55rem;
+        line-height: 1.15;
+      }
+
+      .intro-body {
+        margin: 0;
+        max-width: 72ch;
+        color: var(--navy-soft);
+        font-size: 0.94rem;
+        line-height: 1.55;
+      }
+
+      .intro-body + .intro-body {
+        margin-top: 10px;
+      }
+
+      .intro-body strong {
+        color: var(--navy);
+      }
+
+      .intro-body code {
+        font-family: "IBM Plex Mono", Menlo, monospace;
+        font-size: 0.82rem;
+        color: var(--navy);
+        background: rgba(29, 35, 64, 0.06);
+        padding: 1px 6px;
+      }
+
+      .constraint-list {
+        margin: 14px 0 0;
+        padding: 14px 18px;
+        border: 2px solid var(--navy-faint);
+        background: var(--canvas);
+      }
+
+      .constraint-list li {
+        margin: 0 0 6px;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        color: var(--navy-70);
+      }
+
+      .constraint-list li:last-child {
+        margin-bottom: 0;
+      }
+
+      .constraint-list strong {
+        color: var(--navy);
+      }
+
+      .variant {
+        margin-bottom: 40px;
+      }
+
+      .variant-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .variant-heading .rubric {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .variant-heading h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        line-height: 1.2;
+      }
+
+      .variant-meta {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 24px;
+        margin-bottom: 16px;
+      }
+
+      .variant-meta p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: var(--navy-soft);
+      }
+
+      .variant-meta p code {
+        font-family: "IBM Plex Mono", Menlo, monospace;
+        font-size: 0.76rem;
+        color: var(--navy);
+        background: rgba(29, 35, 64, 0.06);
+        padding: 1px 6px;
+      }
+
+      .variant-meta .pros-cons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        font-size: 0.82rem;
+      }
+
+      .pros-cons dt {
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        color: var(--navy-soft);
+        margin-bottom: 4px;
+      }
+
+      .pros-cons dd {
+        margin: 0;
+        color: var(--navy-70);
+        line-height: 1.45;
+      }
+
+      .reuse-badge {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .reuse-badge li {
+        font-family: "IBM Plex Mono", Menlo, monospace;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border: 1px solid var(--navy-30);
+        background: var(--canvas);
+        color: var(--navy);
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      /* ═════════ Planner top panel mock (shared base) ═════════ */
+
+      .planner-panel {
+        border: var(--border);
+        background: var(--paper);
+        box-shadow: var(--shadow-brutal);
+        padding: 20px 22px;
+      }
+
+      .panel-header {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding-bottom: 14px;
+        border-bottom: 2px solid var(--navy-faint);
+      }
+
+      .panel-title-group {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .panel-title {
+        margin: 0;
+        font-family: "IBM Plex Serif", Georgia, serif;
+        font-size: 1.4rem;
+        line-height: 1.1;
+        color: var(--navy);
+      }
+
+      .panel-context {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        color: var(--navy-soft);
+      }
+
+      .workspace-toggle {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .workspace-option {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        min-height: 44px;
+        padding: 10px 8px;
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        line-height: 1.1;
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      .workspace-option.is-active {
+        background: var(--navy);
+        color: #fff;
+      }
+
+      .panel-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        font-size: 0.72rem;
+        color: var(--navy-soft);
+      }
+
+      .panel-status .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border: 1px solid rgba(47, 125, 91, 0.5);
+        background: rgba(47, 125, 91, 0.08);
+        color: var(--success);
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 0.66rem;
+      }
+
+      .panel-status .chip::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background: var(--success);
+        border-radius: 999px;
+      }
+
+      /* ═════════ Current (before) button ═════════ */
+
+      .exit-current {
+        border: 1px solid var(--navy-30);
+        background: var(--canvas);
+        color: var(--navy);
+        padding: 8px 12px;
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .before-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        font-size: 0.72rem;
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .before-note::before {
+        content: "";
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background: var(--accent);
+      }
+
+      /* ═════════ Variant A: IconX close-button (canonical dismiss) ═════════ */
+
+      .exit-close-x {
+        /* Mirrors: btn-ghost planner-btn-ghost-canvas planner-btn-icon-md */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: 1px solid var(--navy-30);
+        background: var(--canvas);
+        color: var(--navy);
+        font: inherit;
+        cursor: pointer;
+        transition:
+          background var(--transition),
+          border-color var(--transition);
+      }
+
+      .exit-close-x:hover {
+        background: #ecead8;
+        border-color: var(--navy);
+      }
+
+      .exit-close-x svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* ═════════ Variant B: IconArrow left + "Tillbaka" ghost button ═════════ */
+
+      .exit-back-arrow {
+        /* Mirrors: btn-ghost planner-btn-ghost-canvas planner-btn-ghost-sm */
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid var(--navy-30);
+        background: var(--canvas);
+        color: var(--navy);
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          background var(--transition),
+          border-color var(--transition);
+      }
+
+      .exit-back-arrow:hover {
+        background: #ecead8;
+        border-color: var(--navy);
+      }
+
+      .exit-back-arrow svg {
+        width: 14px;
+        height: 14px;
+        transform: rotate(180deg);
+      }
+
+      /* ═════════ Variant C: planner-text-link-muted text link ═════════ */
+
+      .exit-text-link {
+        /* Mirrors: planner-text-link-muted */
+        background: transparent;
+        border: 0;
+        padding: 10px 0 10px 8px;
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--navy-60);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
+        cursor: pointer;
+        transition: color var(--transition);
+      }
+
+      .exit-text-link:hover {
+        color: var(--burgundy);
+      }
+
+      /* ═════════ Highlight box around the changed element ═════════ */
+
+      .focus-ring {
+        position: relative;
+        display: inline-flex;
+      }
+
+      .focus-ring::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border: 2px dashed var(--accent);
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-intro">
+        <p class="eyebrow">Klassrumskartan · Planner top panel · v2</p>
+        <h1>Alternativ till &quot;Avsluta&quot;-knappen (kontextoberoende)</h1>
+        <p class="intro-body">
+          Efter feedback på v1: knappen måste fungera i <strong>båda</strong> kontexter där
+          Klassrumskartan körs — som en publik &quot;testapp&quot; <em>och</em> inbäddad i
+          Skriptoteket bakom auth. I auth-läget leder <code>exitPlannerApp</code> tillbaka till
+          dashboard eller katalog beroende på vilken sida användaren kom från. Destinationen är
+          alltså <strong>aldrig statisk</strong>, så etiketten får inte namnge ett specifikt mål.
+        </p>
+        <p class="intro-body">
+          Alla tre förslag nedan använder <strong>endast befintliga primitives</strong> i
+          <code>main.css</code> och <strong>återanvänder etablerade ikoner</strong>
+          (<code>IconX</code>, <code>IconArrow</code>). Inga nya klasser, inga stackade rader
+          ovanför panelhuvudet, ingen ny symbolik. Valet av förslag är därmed enbart en fråga om
+          uttryck — implementationen är i alla tre fall ett klass-byte på den existerande
+          <code>&lt;button&gt;</code>-noden i <code>PlannerTopPanel.vue</code>.
+        </p>
+        <ul class="constraint-list">
+          <li>
+            <strong>Kontextoberoende etikett:</strong> &quot;Tillbaka&quot; eller en ikonbaserad
+            stäng-affordans — inget ord som namnger destination.
+          </li>
+          <li>
+            <strong>Återanvänd etablerat:</strong> bara primitives som redan finns i
+            <code>main.css</code> och ikoner som redan används i appen.
+          </li>
+          <li>
+            <strong>Ingen ny rad ovanför panelen:</strong> placeringen stannar i det existerande
+            panelhuvudets högerhörn för att bevara desktop-först-känslan.
+          </li>
+        </ul>
+      </header>
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- Current state reference                                           -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section class="variant">
+        <div class="variant-heading">
+          <span class="rubric">Nuläge</span>
+          <h2>Flat text-knapp utan riktning eller affordans</h2>
+        </div>
+        <article class="planner-panel">
+          <header class="panel-header">
+            <div class="panel-title-group">
+              <h3 class="panel-title">Klass 7B · Klassrumskartan</h3>
+              <p class="panel-context">Höstterminen 2026 · 28 elever</p>
+            </div>
+            <div class="focus-ring">
+              <button type="button" class="exit-current">Avsluta</button>
+            </div>
+          </header>
+          <div class="workspace-toggle">
+            <div class="workspace-option is-active">Översikt</div>
+            <div class="workspace-option">Grupper</div>
+            <div class="workspace-option">Sittplatser</div>
+            <div class="workspace-option">Regler</div>
+          </div>
+          <div class="panel-status">
+            <span class="chip">Sparad</span>
+            <span>Senast ändrad 14:02</span>
+          </div>
+        </article>
+        <p class="before-note">Problem: semantiskt fel, stilmässigt isolerad, destination-obalanserad</p>
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- Variant A — IconX close-button                                    -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section class="variant">
+        <div class="variant-heading">
+          <span class="rubric">Förslag A</span>
+          <h2>IconX stäng-knapp — samma mönster som alla modaler/drawers</h2>
+        </div>
+        <div class="variant-meta">
+          <p>
+            Byt ut text-knappen mot en kvadratisk stäng-knapp med <code>IconX</code>, identisk med
+            hur <strong>varje drawer och modal</strong> i Klassrumskartan redan stängs. Kläd-regeln
+            är exakt densamma som i <code>CreateRosterModal</code>, <code>CreateRoomTemplateModal</code>,
+            <code>PlannerGroupingSettingsDrawer</code>, <code>PlannerSeatingSettingsDrawer</code> och
+            <code>PlannerHistoryDrawer</code>. Ordet &quot;Avsluta&quot; försvinner helt och ersätts
+            av en <code>aria-label</code>. Semantiken blir: Klassrumskartan är en ytan som stängs —
+            precis som en drawer — och användaren återvänder automatiskt till det som låg under.
+          </p>
+          <dl class="pros-cons">
+            <div>
+              <dt>Fördelar</dt>
+              <dd>
+                Kanonisk stängnings-gest som redan finns överallt i appen. Kontextoberoende per
+                definition — X betyder &quot;stäng denna yta&quot;, inte &quot;gå till X&quot;.
+                Minst visuell vikt av alla tre, lämnar fokus på titeln.
+              </dd>
+            </div>
+            <div>
+              <dt>Nackdelar</dt>
+              <dd>
+                Ikon-bara lösningar kräver korrekt <code>aria-label</code>. En mindre klickyta än
+                text-knappen om användare är ovana vid X-mönstret (få är).
+              </dd>
+            </div>
+          </dl>
+          <ul class="reuse-badge">
+            <li>btn-ghost</li>
+            <li>planner-btn-ghost-canvas</li>
+            <li>planner-btn-icon-md</li>
+            <li>IconX size=16</li>
+          </ul>
+        </div>
+
+        <article class="planner-panel">
+          <header class="panel-header">
+            <div class="panel-title-group">
+              <h3 class="panel-title">Klass 7B · Klassrumskartan</h3>
+              <p class="panel-context">Höstterminen 2026 · 28 elever</p>
+            </div>
+            <div class="focus-ring">
+              <button
+                type="button"
+                class="exit-close-x"
+                aria-label="Stäng Klassrumskartan"
+                title="Stäng Klassrumskartan"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </header>
+          <div class="workspace-toggle">
+            <div class="workspace-option is-active">Översikt</div>
+            <div class="workspace-option">Grupper</div>
+            <div class="workspace-option">Sittplatser</div>
+            <div class="workspace-option">Regler</div>
+          </div>
+          <div class="panel-status">
+            <span class="chip">Sparad</span>
+            <span>Senast ändrad 14:02</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- Variant B — IconArrow left + "Tillbaka" text                      -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section class="variant">
+        <div class="variant-heading">
+          <span class="rubric">Förslag B</span>
+          <h2>Pil + &quot;Tillbaka&quot; — direkt text-ersättning</h2>
+        </div>
+        <div class="variant-meta">
+          <p>
+            Behåll samma text-button-form och samma hörn, men addera en vänster-pekande
+            <code>IconArrow direction=&quot;left&quot;</code> framför ordet <code>Tillbaka</code>.
+            Samma <code>planner-btn-ghost-canvas</code>-klass som idag — bara ordbytet plus
+            pil-noden. Inga nya CSS-klasser. Ordet &quot;Tillbaka&quot; fungerar likvärdigt i båda
+            kontexter eftersom det bara anger <em>riktning</em>, inte destination.
+          </p>
+          <dl class="pros-cons">
+            <div>
+              <dt>Fördelar</dt>
+              <dd>
+                Minimal implementation: ett ord byts, en ikon läggs till. Behåller textlabel som
+                kan kännas tryggare än ikon-bara. Riktningspilen ger tydlig &quot;back&quot;-
+                semantik utan att behöva namnge vad man går tillbaka till.
+              </dd>
+            </div>
+            <div>
+              <dt>Nackdelar</dt>
+              <dd>
+                Lite mer visuell vikt än Förslag A. Behåller samma flata <code>ghost-canvas</code>-
+                stil som idag kritiserades — men nu försvarad av att pil+text tillsammans gör
+                funktionen självförklarande.
+              </dd>
+            </div>
+          </dl>
+          <ul class="reuse-badge">
+            <li>btn-ghost</li>
+            <li>planner-btn-ghost-canvas</li>
+            <li>planner-btn-ghost-sm</li>
+            <li>IconArrow direction=&quot;left&quot; size=14</li>
+          </ul>
+        </div>
+
+        <article class="planner-panel">
+          <header class="panel-header">
+            <div class="panel-title-group">
+              <h3 class="panel-title">Klass 7B · Klassrumskartan</h3>
+              <p class="panel-context">Höstterminen 2026 · 28 elever</p>
+            </div>
+            <div class="focus-ring">
+              <button type="button" class="exit-back-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                Tillbaka
+              </button>
+            </div>
+          </header>
+          <div class="workspace-toggle">
+            <div class="workspace-option is-active">Översikt</div>
+            <div class="workspace-option">Grupper</div>
+            <div class="workspace-option">Sittplatser</div>
+            <div class="workspace-option">Regler</div>
+          </div>
+          <div class="panel-status">
+            <span class="chip">Sparad</span>
+            <span>Senast ändrad 14:02</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- Variant C — planner-text-link-muted                               -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section class="variant">
+        <div class="variant-heading">
+          <span class="rubric">Förslag C</span>
+          <h2><code>planner-text-link-muted</code> — befintlig länk-primitive</h2>
+        </div>
+        <div class="variant-meta">
+          <p>
+            Byt ut både <code>btn-ghost</code>- och <code>planner-btn-ghost-canvas</code>-klasserna
+            mot den redan existerande länk-primitiven
+            <code>planner-text-link-muted</code>
+            (<code>@apply text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)]
+            text-navy/60 underline</code>). Den används redan i <code>CreateRosterModal</code> för
+            &quot;töm fält&quot;-länkar och har precis den diskreta, editoriella stilen som
+            Skriptoteket vilar på. Knappen blir en underlinjerad versal text-länk &quot;Tillbaka&quot;
+            — inte en knapp i chrome-mening. Sitter kvar i samma hörn, tar nästan ingen visuell
+            plats.
+          </p>
+          <dl class="pros-cons">
+            <div>
+              <dt>Fördelar</dt>
+              <dd>
+                Mest tidsenligt med Skriptotekets akademiska ethos. Stannar i panelhuvudet (ingen
+                ny rad) men försvinner nästan visuellt. Använder en redan etablerad primitive
+                (inget nytt att underhålla). Samma etikett-logik som Förslag B fungerar här.
+              </dd>
+            </div>
+            <div>
+              <dt>Nackdelar</dt>
+              <dd>
+                Minst &quot;discoverable&quot; av de tre. Känns mer som navigation än som en
+                CTA — vilket den också är, så detta är egentligen en fördel så länge vi litar på
+                att användare hittar tillbaka-länkar som text.
+              </dd>
+            </div>
+          </dl>
+          <ul class="reuse-badge">
+            <li>planner-text-link-muted</li>
+          </ul>
+        </div>
+
+        <article class="planner-panel">
+          <header class="panel-header">
+            <div class="panel-title-group">
+              <h3 class="panel-title">Klass 7B · Klassrumskartan</h3>
+              <p class="panel-context">Höstterminen 2026 · 28 elever</p>
+            </div>
+            <div class="focus-ring">
+              <button type="button" class="exit-text-link">Tillbaka</button>
+            </div>
+          </header>
+          <div class="workspace-toggle">
+            <div class="workspace-option is-active">Översikt</div>
+            <div class="workspace-option">Grupper</div>
+            <div class="workspace-option">Sittplatser</div>
+            <div class="workspace-option">Regler</div>
+          </div>
+          <div class="panel-status">
+            <span class="chip">Sparad</span>
+            <span>Senast ändrad 14:02</span>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

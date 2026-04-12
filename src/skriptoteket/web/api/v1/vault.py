@@ -23,7 +23,7 @@ from skriptoteket.protocols.vault import (
     RestoreVaultFileHandlerProtocol,
     SaveVaultFileHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/vault", tags=["vault"])
@@ -32,7 +32,7 @@ router = APIRouter(prefix="/api/v1/vault", tags=["vault"])
 @router.get("/files", response_model=ListVaultFilesResult)
 async def list_vault_files(
     handler: FromDishka[ListVaultFilesHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
     state: VaultListState = Query(VaultListState.ACTIVE),
     sort: VaultListSort = Query(VaultListSort.NEWEST),
     search: str | None = Query(None),
@@ -55,8 +55,7 @@ async def list_vault_files(
 async def save_vault_file(
     command: SaveVaultFileCommand,
     handler: FromDishka[SaveVaultFileHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> SaveVaultFileResult:
     return await handler.handle(actor=user, command=command)
 
@@ -65,8 +64,7 @@ async def save_vault_file(
 async def delete_vault_file(
     file_id: UUID,
     handler: FromDishka[DeleteVaultFileHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> DeleteVaultFileResult:
     return await handler.handle(actor=user, command=DeleteVaultFileCommand(file_id=file_id))
 
@@ -75,8 +73,7 @@ async def delete_vault_file(
 async def restore_vault_file(
     file_id: UUID,
     handler: FromDishka[RestoreVaultFileHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> RestoreVaultFileResult:
     return await handler.handle(actor=user, command=RestoreVaultFileCommand(file_id=file_id))
 
@@ -85,7 +82,7 @@ async def restore_vault_file(
 async def download_vault_file(
     file_id: UUID,
     handler: FromDishka[DownloadVaultFileHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     filename, content = await handler.handle(actor=user, file_id=file_id)
     safe_filename = filename.replace('"', "")

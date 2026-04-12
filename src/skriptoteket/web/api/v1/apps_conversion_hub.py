@@ -33,7 +33,7 @@ from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
@@ -150,7 +150,7 @@ def _build_v2_job_spec(*, spec: ConversionHubJobSpecV2, filename: str) -> dict[s
 @router.get("/routes", response_model=ConversionHubListRoutesResult)
 async def list_routes(
     registry: FromDishka[CuratedAppRegistryProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ConversionHubListRoutesResult:
     _require_app_access(registry=registry, user=user)
     return ConversionHubListRoutesResult(routes=_list_supported_routes())
@@ -164,8 +164,7 @@ async def submit_jobs(
     job_spec_json: str = Form(..., min_length=2),
     files: list[UploadFile] = File(...),
     wait_seconds: int = Form(0),
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ConversionHubSubmitResult:
     _require_app_access(registry=registry, user=user)
     if wait_seconds < 0 or wait_seconds > _MAX_WAIT_SECONDS:
@@ -208,7 +207,7 @@ async def get_job_status(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[GetConversionHubJobHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ConversionHubJobStatusResult:
     _require_app_access(registry=registry, user=user)
     correlation_id_uuid = get_correlation_id(request)
@@ -222,7 +221,7 @@ async def download_artifact(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[DownloadConversionHubArtifactHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
     correlation_id_uuid = get_correlation_id(request)

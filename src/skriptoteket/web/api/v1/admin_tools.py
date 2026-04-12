@@ -20,7 +20,7 @@ from skriptoteket.protocols.catalog import (
     ListToolsForAdminHandlerProtocol,
     PublishToolHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import require_admin_api, require_csrf_token
+from skriptoteket.web.auth.huleedu_app_projection import require_app_admin_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1", tags=["admin-tools"])
@@ -108,7 +108,7 @@ _PUBLISHABLE_STATS = ToolVersionStats(
 )
 async def list_admin_tools(
     handler: FromDishka[ListToolsForAdminHandlerProtocol],
-    user: User = Depends(require_admin_api),
+    user: User = Depends(require_app_admin_api),
 ) -> ListAdminToolsResponse:
     result = await handler.handle(actor=user, query=ListToolsForAdminQuery())
     return ListAdminToolsResponse(
@@ -126,8 +126,7 @@ async def list_admin_tools(
 async def create_draft_tool(
     payload: CreateDraftToolRequest,
     handler: FromDishka[CreateDraftToolHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> CreateDraftToolResponse:
     result = await handler.handle(
         actor=user,
@@ -146,8 +145,7 @@ async def create_draft_tool(
 async def publish_tool(
     tool_id: UUID,
     handler: FromDishka[PublishToolHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> PublishToolResponse:
     result = await handler.handle(
         actor=user,
@@ -164,8 +162,7 @@ async def publish_tool(
 async def depublish_tool(
     tool_id: UUID,
     handler: FromDishka[DepublishToolHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> DepublishToolResponse:
     result = await handler.handle(
         actor=user,

@@ -1,4 +1,4 @@
-"""Identity domain models for users, sessions, and registration allowlists.
+"""Identity domain models for users, profiles, and registration allowlists.
 
 Purpose:
   Keep framework-agnostic identity state in one place, including the
@@ -116,18 +116,3 @@ class UserAuth(BaseModel):
 
     user: User
     password_hash: str | None = None
-
-
-class Session(BaseModel):
-    """Server-side session stored in PostgreSQL."""
-
-    model_config = ConfigDict(frozen=True, from_attributes=True)
-
-    id: UUID
-    user_id: UUID
-    csrf_token: str
-    allow_remote_fallback: bool | None = None
-    inline_completion_provider: Literal["local", "external"] | None = None
-    created_at: datetime
-    expires_at: datetime
-    revoked_at: datetime | None = None

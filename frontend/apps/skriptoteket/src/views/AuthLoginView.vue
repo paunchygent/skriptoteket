@@ -2,10 +2,8 @@
 /**
  * Dedicated auth-entry page.
  *
- * This view owns the page-based local sign-in handoff used by signed-out entry
- * surfaces and protected-route interruptions. It reads the durable redirect
- * destination from the route contract and resumes the intended destination
- * after login succeeds.
+ * This view owns the HuleEdu sign-in handoff used by signed-out entry
+ * surfaces and protected-route interruptions.
  */
 
 import { computed, ref, watch } from "vue";
@@ -50,10 +48,6 @@ async function completeAuthEntry(): Promise<void> {
   }
 }
 
-async function onLoginSuccess(): Promise<void> {
-  await completeAuthEntry();
-}
-
 watch(
   () => auth.isAuthenticated,
   (value) => {
@@ -82,7 +76,7 @@ watch(
         </p>
       </header>
 
-      <AuthLoginPanel @success="void onLoginSuccess()" />
+      <AuthLoginPanel />
     </section>
   </div>
 </template>

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   mapBrowserSessionToAuthSnapshot,
+  sharedAuthCeremonyUrl,
   sharedAuthUrl,
   SHARED_AUTH_CSRF_PATH,
   SHARED_AUTH_SESSION_PATH,
@@ -58,6 +59,41 @@ describe("sharedAuthUrl", () => {
     vi.stubEnv("VITE_HULEEDU_AUTH_BASE_URL", "http://127.0.0.1:9000/");
 
     expect(sharedAuthUrl(SHARED_AUTH_CSRF_PATH)).toBe("http://127.0.0.1:9000/v1/auth/csrf");
+  });
+});
+
+describe("sharedAuthCeremonyUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses a browser-navigable ceremony URL by default", () => {
+    const url = sharedAuthCeremonyUrl({
+      nextPath: "/editor",
+      origin: "https://skriptoteket.hule.education",
+    });
+
+    expect(url).toBe(
+      "https://api.hule.education/auth/login?app=skriptoteket&next=https%3A%2F%2Fskriptoteket.hule.education%2Feditor",
+    );
+    expect(url).not.toContain("/v1/auth/login");
+  });
+
+  it("lets deployments provide the browser ceremony URL separately from the API base", () => {
+    vi.stubEnv("VITE_HULEEDU_AUTH_BASE_URL", "https://api.example.test/");
+    vi.stubEnv("VITE_HULEEDU_AUTH_ENTRY_URL", "https://identity.example.test/login");
+
+    const url = sharedAuthCeremonyUrl({
+      nextPath: "/admin/tools",
+      origin: "https://skriptoteket.hule.education",
+    });
+
+    expect(sharedAuthUrl(SHARED_AUTH_SESSION_PATH)).toBe(
+      "https://api.example.test/v1/auth/session",
+    );
+    expect(url).toBe(
+      "https://identity.example.test/login?app=skriptoteket&next=https%3A%2F%2Fskriptoteket.hule.education%2Fadmin%2Ftools",
+    );
   });
 });
 

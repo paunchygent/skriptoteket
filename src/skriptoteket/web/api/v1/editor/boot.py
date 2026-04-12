@@ -14,7 +14,7 @@ from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, Too
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
-from skriptoteket.web.auth.api_dependencies import require_contributor_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_contributor_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import (
     DEFAULT_ENTRYPOINT,
@@ -159,7 +159,7 @@ async def get_editor_for_tool(
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     locks: FromDishka[DraftLockRepositoryProtocol],
     clock: FromDishka[ClockProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
 ) -> EditorBootResponse:
     tool = await tools.get_by_id(tool_id=tool_id)
     if tool is None:
@@ -206,7 +206,7 @@ async def get_editor_for_version(
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     locks: FromDishka[DraftLockRepositoryProtocol],
     clock: FromDishka[ClockProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
 ) -> EditorBootResponse:
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:

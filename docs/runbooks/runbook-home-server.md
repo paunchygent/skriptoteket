@@ -758,7 +758,7 @@ ssh hemma /bin/bash -s <<'EOF'
 set -euo pipefail
 sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz
 printf '\n---\n'
-sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_(active_sessions|users_by_role)' || true"
+sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_users_by_role|skriptoteket_active_sessions' || true"
 EOF
 
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs

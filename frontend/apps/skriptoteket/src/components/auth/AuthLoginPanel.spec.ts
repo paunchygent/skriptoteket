@@ -1,173 +1,62 @@
 /**
- * Auth-login panel tests.
+ * Shared inloggning handoff panel tests.
  *
- * These tests keep the page-based login form aligned with the local auth and
- * recovery contract used by the dedicated `/auth/login` route.
+ * Purpose:
+ *   Prove the login entry surface links to a browser ceremony, not an API
+ *   login endpoint, and does not submit local Skriptoteket credentials.
+ *
+ * Relationships:
+ *   - Covers the PR-0253 frontend ceremony replacement.
  */
 
-import { RouterLinkStub, flushPromises, mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mount } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError } from "../../api/client";
 import AuthLoginPanel from "./AuthLoginPanel.vue";
 
-const authState = vi.hoisted(() => ({
-  status: "idle",
-  login: vi.fn(),
-}));
-const apiPostMock = vi.hoisted(() => vi.fn());
-const routeState = vi.hoisted(() => ({
-  query: {} as Record<string, unknown>,
+const route = vi.hoisted(() => ({
+  query: { next: "/editor" },
 }));
 
-vi.mock("../../stores/auth", () => ({
-  useAuthStore: () => authState,
+vi.mock("vue-router", () => ({
+  useRoute: () => route,
 }));
-
-vi.mock("vue-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("vue-router")>();
-  return {
-    ...actual,
-    useRoute: () => routeState,
-  };
-});
-
-vi.mock("../../api/client", async () => {
-  const actual = await vi.importActual<typeof import("../../api/client")>("../../api/client");
-  return {
-    ...actual,
-    apiPost: (...args: unknown[]) => apiPostMock(...args),
-  };
-});
 
 describe("AuthLoginPanel", () => {
   beforeEach(() => {
-    authState.status = "idle";
-    authState.login.mockReset();
-    apiPostMock.mockReset();
-    routeState.query = {};
+    route.query = { next: "/editor" };
+    vi.unstubAllEnvs();
   });
 
-  it("preserves next when the user detours from auth-login to forgot-password", async () => {
-    routeState.query = { next: "/browse" };
-    const wrapper = mount(AuthLoginPanel, {
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
-    });
-
-    const [forgotPasswordLink] = wrapper.findAllComponents(RouterLinkStub);
-    expect(forgotPasswordLink.props("to")).toEqual({
-      name: "forgot-password",
-      query: { next: "/browse" },
-    });
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
-  it("preserves next when the user detours from auth-login to register", async () => {
-    routeState.query = { next: "/browse" };
-    const wrapper = mount(AuthLoginPanel, {
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
-    });
+  it("links to the shared inloggning ceremony with the preserved destination", () => {
+    const wrapper = mount(AuthLoginPanel);
+    const link = wrapper.get("a");
 
-    const [, registerLink] = wrapper.findAllComponents(RouterLinkStub);
-    expect(registerLink.props("to")).toEqual({
-      name: "register",
-      query: { next: "/browse" },
-    });
-  });
-
-  it("preserves classroom planner origin across auth detours", async () => {
-    routeState.query = {
-      next: "/apps/classroom.group-seating-studio",
-      classroomPlannerEntryOrigin: "dashboard",
-    };
-
-    const wrapper = mount(AuthLoginPanel, {
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
-    });
-
-    const [forgotPasswordLink, registerLink] = wrapper.findAllComponents(RouterLinkStub);
-
-    expect(forgotPasswordLink.props("to")).toEqual({
-      name: "forgot-password",
-      query: {
-        next: "/apps/classroom.group-seating-studio",
-        classroomPlannerEntryOrigin: "dashboard",
-      },
-    });
-    expect(registerLink.props("to")).toEqual({
-      name: "register",
-      query: {
-        next: "/apps/classroom.group-seating-studio",
-        classroomPlannerEntryOrigin: "dashboard",
-      },
-    });
-  });
-
-  it("keeps resend-verification available without a client cooldown after EMAIL_NOT_VERIFIED", async () => {
-    routeState.query = {
-      next: "/apps/classroom.group-seating-studio",
-      classroomPlannerEntryOrigin: "dashboard",
-    };
-    authState.login.mockRejectedValue(
-      new ApiError({
-        code: "EMAIL_NOT_VERIFIED",
-        message: "Verifiera din e-postadress innan du loggar in",
-        status: 401,
-      }),
+    expect(link.text()).toContain("Fortsätt till inloggning");
+    expect(link.attributes("href")).toBe(
+      "https://api.hule.education/auth/login?app=skriptoteket&next=http%3A%2F%2Flocalhost%3A3000%2Feditor",
     );
-    apiPostMock
-      .mockResolvedValueOnce({
-        message: "Om kontot finns skickas ett nytt verifieringsmail",
-      })
-      .mockResolvedValueOnce({
-        message: "Om kontot finns skickas ett nytt verifieringsmail",
-      });
+    expect(link.attributes("href")).not.toContain("/v1/auth/login");
+    expect(wrapper.find("form").exists()).toBe(false);
+  });
 
-    const wrapper = mount(AuthLoginPanel, {
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
-    });
+  it("uses the configured browser ceremony URL instead of the auth API base", () => {
+    vi.stubEnv("VITE_HULEEDU_AUTH_BASE_URL", "https://api.example.test/");
+    vi.stubEnv(
+      "VITE_HULEEDU_AUTH_ENTRY_URL",
+      "https://identity.example.test/login?app=skriptoteket",
+    );
 
-    await wrapper.get("#auth-login-email").setValue("olof.larsson@harryda.se");
-    await wrapper.get("#auth-login-password").setValue("hemligt-losenord");
-    await wrapper.get("form").trigger("submit.prevent");
-    await flushPromises();
+    const wrapper = mount(AuthLoginPanel);
+    const href = wrapper.get("a").attributes("href");
 
-    expect(wrapper.text()).toContain("Verifiera din e-postadress innan du loggar in");
-    expect(wrapper.text()).toContain("Skicka nytt verifieringsmejl");
-
-    await wrapper.get("button.btn-secondary").trigger("click");
-    await flushPromises();
-
-    expect(apiPostMock).toHaveBeenCalledWith("/api/v1/auth/resend-verification", {
-      email: "olof.larsson@harryda.se",
-      next: "/apps/classroom.group-seating-studio",
-      classroom_planner_entry_origin: "dashboard",
-    });
-    expect(wrapper.text()).toContain("Om kontot finns skickas ett nytt verifieringsmail");
-    expect(wrapper.text()).not.toContain("Försök igen om");
-
-    await wrapper.get("button.btn-secondary").trigger("click");
-    await flushPromises();
-
-    expect(apiPostMock).toHaveBeenNthCalledWith(2, "/api/v1/auth/resend-verification", {
-      email: "olof.larsson@harryda.se",
-      next: "/apps/classroom.group-seating-studio",
-      classroom_planner_entry_origin: "dashboard",
-    });
+    expect(href).toBe(
+      "https://identity.example.test/login?app=skriptoteket&next=http%3A%2F%2Flocalhost%3A3000%2Feditor",
+    );
+    expect(href).not.toContain("/v1/auth/login");
   });
 });

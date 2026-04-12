@@ -13,9 +13,8 @@ from skriptoteket.protocols.catalog import (
     UpdateToolMetadataHandlerProtocol,
     UpdateToolSlugHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_admin_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_admin_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -31,8 +30,7 @@ async def update_tool_metadata(
     payload: EditorToolMetadataRequest,
     tools: FromDishka[ToolRepositoryProtocol],
     handler: FromDishka[UpdateToolMetadataHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> EditorToolMetadataResponse:
     summary = payload.summary
     if "summary" not in payload.model_fields_set:
@@ -62,8 +60,7 @@ async def update_tool_slug(
     tool_id: UUID,
     payload: EditorToolSlugRequest,
     handler: FromDishka[UpdateToolSlugHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> EditorToolMetadataResponse:
     result = await handler.handle(
         actor=user,

@@ -26,7 +26,6 @@ from skriptoteket.web.api.v1 import (
 from skriptoteket.web.api.v1 import apps_conversion_hub as api_v1_apps_conversion_hub
 from skriptoteket.web.api.v1 import apps_flunk_out_frenzy as api_v1_apps_flunk_out_frenzy
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as api_v1_apps_reagent_prep_chef
-from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
 from skriptoteket.web.api.v1 import editor as api_v1_editor
 from skriptoteket.web.api.v1 import favorites as api_v1_favorites
@@ -52,7 +51,6 @@ from skriptoteket.web.routes import spa_fallback
 
 router = APIRouter()
 
-router.include_router(api_v1_auth.router)
 router.include_router(api_v1_catalog.router)
 router.include_router(api_v1_favorites.router)
 router.include_router(api_v1_me.router)

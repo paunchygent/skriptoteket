@@ -11,9 +11,8 @@ from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -28,8 +27,7 @@ async def create_draft_version(
     tool_id: UUID,
     payload: CreateDraftVersionRequest,
     handler: FromDishka[CreateDraftVersionHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> SaveResult:
     command_payload: dict[str, object] = {
         "tool_id": tool_id,
@@ -59,8 +57,7 @@ async def save_draft_version(
     version_id: UUID,
     payload: SaveDraftVersionRequest,
     handler: FromDishka[SaveDraftVersionHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> SaveResult:
     command_payload: dict[str, object] = {
         "version_id": version_id,

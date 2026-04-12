@@ -216,7 +216,7 @@ async def test_public_import_preview_ignores_ambient_session_cookie(
         ambiguous_rows=[],
     )
 
-    client.cookies.set("skriptoteket_session", "ambient-session-cookie")
+    client.cookies.set("ambient_auth_cookie", "ambient-session-cookie")
     response = await client.post(
         "/api/v1/public/apps/classroom.group-seating-studio/rosters/import-preview",
         files={"file": ("test_class.txt", b"class list", "text/plain")},

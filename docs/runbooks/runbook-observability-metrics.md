@@ -90,13 +90,27 @@ sudo docker logs --since 10m skriptoteket-web | rg -n 'SMTP health check failed|
 | `skriptoteket_http_request_duration_seconds` | Histogram | method, endpoint | Request latency |
 | `skriptoteket_session_files_bytes_total` | Gauge | - | Total bytes of stored session files |
 | `skriptoteket_session_files_count` | Gauge | - | Count of stored session files |
-| `skriptoteket_active_sessions` | Gauge | - | Current count of active user sessions |
 | `skriptoteket_logins_total` | Counter | status | Login attempts (success/failure) |
 | `skriptoteket_users_by_role` | Gauge | role | Active users by role |
 
 Labels use route patterns (e.g., `/tools/{id}`) to avoid high cardinality.
 
 Session file metrics are computed at scrape time by scanning `ARTIFACTS_ROOT/sessions/` (excluding `meta.json`).
+
+### Auth Metrics After PR-0253
+
+`skriptoteket_active_sessions` is retired with the local browser-session table. Do not recreate
+that metric from Skriptoteket-local state in the HuleEdu auth world.
+
+Use these ownership rules for future auth observability:
+
+- HuleEdu Gateway owns browser session counts and shared auth/CSRF ceremony telemetry.
+- Skriptoteket may expose signed-context verification and app-projection counters, for example
+  accepted/rejected gateway context and missing/ready local projection outcomes.
+- Skriptoteket may expose local RBAC inventory gauges such as `skriptoteket_users_by_role` from the
+  `users` table when production identity gauges are explicitly enabled.
+- Skriptoteket must not infer active browser sessions from stale cookies, removed `sessions` rows,
+  or frontend state.
 
 ### Local example
 

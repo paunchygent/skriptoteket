@@ -2,7 +2,7 @@
 
 Purpose:
   Validate a password-reset token, set a new password hash, clear lockout
-  state, and revoke every active session for the affected local user.
+  state, and invalidate pending reset tokens for the affected local user.
 """
 
 from __future__ import annotations
@@ -17,7 +17,6 @@ from skriptoteket.domain.identity.password_reset import hash_password_reset_toke
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
-    SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.password_reset import PasswordResetTokenRepositoryProtocol
@@ -38,14 +37,12 @@ class ResetPasswordHandler(ResetPasswordHandlerProtocol):
         *,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
-        sessions: SessionRepositoryProtocol,
         password_reset_tokens: PasswordResetTokenRepositoryProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
     ) -> None:
         self._uow = uow
         self._users = users
-        self._sessions = sessions
         self._password_reset_tokens = password_reset_tokens
         self._password_hasher = password_hasher
         self._clock = clock
@@ -93,7 +90,6 @@ class ResetPasswordHandler(ResetPasswordHandlerProtocol):
                 password_hash=self._password_hasher.hash(password=command.new_password),
                 updated_at=now,
             )
-            await self._sessions.revoke_all_for_user(user_id=user.id, revoked_at=now)
             await self._password_reset_tokens.mark_used(token_id=token_record.id, used_at=now)
             await self._password_reset_tokens.invalidate_pending_for_user(
                 user_id=user.id,

@@ -49,7 +49,6 @@ async def test_resolve_sandbox_settings_calls_handler() -> None:
         payload=editor.SandboxSettingsResolveRequest(settings_schema=schema),
         handler=handler,
         user=user,
-        _=None,
     )
 
     assert isinstance(result, editor.SandboxSettingsResponse)
@@ -84,7 +83,6 @@ async def test_save_sandbox_settings_calls_handler() -> None:
         ),
         handler=handler,
         user=user,
-        _=None,
     )
 
     assert isinstance(result, editor.SandboxSettingsResponse)

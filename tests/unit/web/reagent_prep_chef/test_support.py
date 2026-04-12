@@ -7,10 +7,9 @@ from uuid import UUID
 from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.curated_apps.reagent_prep_chef.models import SdsCorpusEntry
 from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.identity.models import Session, User
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.protocols.identity import CurrentUserProviderProtocol, SessionRepositoryProtocol
 from skriptoteket.protocols.reagent_prep_chef import ReagentPrepChefSdsStoreProtocol
 
 TResult = TypeVar("TResult")
@@ -23,56 +22,6 @@ class FixedClock(ClockProtocol):
 
     def now(self) -> datetime:
         return self._now
-
-
-class StubCurrentUserProvider(CurrentUserProviderProtocol):
-    def __init__(self) -> None:
-        self.user: User | None = None
-        self.calls: list[UUID | None] = []
-
-    async def get_current_user(self, *, session_id: UUID | None) -> User | None:
-        self.calls.append(session_id)
-        return self.user
-
-
-class StubSessionRepository(SessionRepositoryProtocol):
-    def __init__(self) -> None:
-        self.sessions: dict[UUID, Session] = {}
-
-    async def create(self, *, session: Session) -> None:
-        self.sessions[session.id] = session
-
-    async def get_by_id(self, session_id: UUID) -> Session | None:
-        return self.sessions.get(session_id)
-
-    async def revoke(self, *, session_id: UUID) -> None:
-        self.sessions.pop(session_id, None)
-
-    async def revoke_all_for_user(self, *, user_id: UUID, revoked_at: datetime) -> int:
-        revoked = 0
-        for session in self.sessions.values():
-            if (
-                session.user_id != user_id
-                or session.revoked_at is not None
-                or session.expires_at <= revoked_at
-            ):
-                continue
-            self.sessions[session.id] = session.model_copy(update={"revoked_at": revoked_at})
-            revoked += 1
-        return revoked
-
-    async def count_active(self, *, now: datetime) -> int:
-        return sum(1 for session in self.sessions.values() if session.expires_at > now)
-
-    async def sync_ai_settings_for_user(
-        self,
-        *,
-        user_id: UUID,
-        allow_remote_fallback: bool | None,
-        inline_completion_provider: str | None,
-        now: datetime,
-    ) -> None:
-        return None
 
 
 class StubCuratedAppRegistry(CuratedAppRegistryProtocol):

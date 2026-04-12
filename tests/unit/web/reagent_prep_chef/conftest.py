@@ -5,6 +5,8 @@ from datetime import datetime
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
@@ -30,10 +32,9 @@ from skriptoteket.domain.curated_apps.models import (
     CuratedAppUiMode,
     curated_app_tool_id,
 )
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.protocols.identity import CurrentUserProviderProtocol, SessionRepositoryProtocol
 from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefChemicalsHandlerProtocol,
     ReagentPrepChefExportPdfHandlerProtocol,
@@ -50,14 +51,19 @@ from skriptoteket.protocols.reagent_prep_chef import (
 )
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as reagent_prep_chef_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
+from tests.fixtures.profile_app_continuation_support import (
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 from tests.unit.web.reagent_prep_chef.test_support import (
     FixedClock,
     StubActorCommandHandler,
     StubActorHandler,
     StubCuratedAppRegistry,
-    StubCurrentUserProvider,
     StubSdsStore,
-    StubSessionRepository,
 )
 
 
@@ -65,10 +71,6 @@ class ReagentPrepChefApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        clock: ClockProtocol,
-        current_user_provider: CurrentUserProviderProtocol,
-        sessions: SessionRepositoryProtocol,
         curated_apps: CuratedAppRegistryProtocol,
         chemicals_handler: ReagentPrepChefChemicalsHandlerProtocol,
         prep_handler: ReagentPrepChefPrepHandlerProtocol,
@@ -84,10 +86,6 @@ class ReagentPrepChefApiProvider(Provider):
         load_defaults_handler: ReagentPrepChefLoadDefaultsHandlerProtocol,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._clock = clock
-        self._current_user_provider = current_user_provider
-        self._sessions = sessions
         self._curated_apps = curated_apps
         self._chemicals_handler = chemicals_handler
         self._prep_handler = prep_handler
@@ -101,22 +99,6 @@ class ReagentPrepChefApiProvider(Provider):
         self._update_defaults_handler = update_defaults_handler
         self._save_defaults_handler = save_defaults_handler
         self._load_defaults_handler = load_defaults_handler
-
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.APP)
-    def clock(self) -> ClockProtocol:
-        return self._clock
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return self._current_user_provider
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return self._sessions
 
     @provide(scope=Scope.APP)
     def curated_app_registry(self) -> CuratedAppRegistryProtocol:
@@ -182,8 +164,19 @@ class ReagentPrepChefApiProvider(Provider):
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+
+@pytest.fixture
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
 
 
 @pytest.fixture
@@ -192,13 +185,32 @@ def clock(now: datetime) -> ClockProtocol:
 
 
 @pytest.fixture
-def current_user_provider() -> StubCurrentUserProvider:
-    return StubCurrentUserProvider()
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
 
 
 @pytest.fixture
-def sessions() -> StubSessionRepository:
-    return StubSessionRepository()
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
+
+
+@pytest.fixture
+def auth_user(
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    now: datetime,
+) -> User:
+    return seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
+
+
+@pytest.fixture
+def auth_headers(
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockProtocol,
+    auth_user: User,
+) -> dict[str, str]:
+    del auth_user
+    return signed_huleedu_headers(private_key=private_key, clock=clock)
 
 
 @pytest.fixture
@@ -300,8 +312,8 @@ def load_defaults_handler() -> StubActorCommandHandler[
 def app(
     settings: Settings,
     clock: ClockProtocol,
-    current_user_provider: CurrentUserProviderProtocol,
-    sessions: SessionRepositoryProtocol,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     curated_apps: CuratedAppRegistryProtocol,
     chemicals_handler: ReagentPrepChefChemicalsHandlerProtocol,
     prep_handler: ReagentPrepChefPrepHandlerProtocol,
@@ -321,11 +333,13 @@ def app(
     app.include_router(reagent_prep_chef_api.router)
 
     container = make_async_container(
-        ReagentPrepChefApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
+            profiles=profiles,
+        ),
+        ReagentPrepChefApiProvider(
             curated_apps=curated_apps,
             chemicals_handler=chemicals_handler,
             prep_handler=prep_handler,
@@ -339,7 +353,7 @@ def app(
             update_defaults_handler=update_defaults_handler,
             save_defaults_handler=save_defaults_handler,
             load_defaults_handler=load_defaults_handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app

@@ -15,9 +15,8 @@ from skriptoteket.protocols.catalog import (
     RemoveMaintainerHandlerProtocol,
 )
 from skriptoteket.protocols.identity import UserRepositoryProtocol
-from skriptoteket.web.auth.api_dependencies import (
-    require_admin_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_admin_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -39,7 +38,7 @@ def _to_maintainer_summary(user: User) -> MaintainerSummary:
 async def list_tool_maintainers(
     tool_id: UUID,
     handler: FromDishka[ListMaintainersHandlerProtocol],
-    user: User = Depends(require_admin_api),
+    user: User = Depends(require_app_admin_api),
 ) -> MaintainerListResponse:
     result = await handler.handle(
         actor=user,
@@ -59,8 +58,7 @@ async def assign_tool_maintainer(
     handler: FromDishka[AssignMaintainerHandlerProtocol],
     list_handler: FromDishka[ListMaintainersHandlerProtocol],
     users: FromDishka[UserRepositoryProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> MaintainerListResponse:
     email = payload.email.strip()
     if not email:
@@ -95,8 +93,7 @@ async def remove_tool_maintainer(
     user_id: UUID,
     handler: FromDishka[RemoveMaintainerHandlerProtocol],
     list_handler: FromDishka[ListMaintainersHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> MaintainerListResponse:
     await handler.handle(
         actor=user,

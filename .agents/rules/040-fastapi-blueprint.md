@@ -98,7 +98,10 @@ FastAPI builds OpenAPI from type hints. With postponed evaluation / ForwardRef e
 - Use Dishka injection for HTTP handlers via
   `skriptoteket.web.dishka_dependencies.FromDishka[...]`, which resolves through
   FastAPI `Depends` and `request.state.dishka_container`.
-- For mutating endpoints, enforce CSRF via `require_csrf_token` and auth via `require_user_api`.
+- Browser-facing protected app endpoints must use `require_app_user_api` or one of its
+  role-specific wrappers from `skriptoteket.web.auth.huleedu_app_projection`.
+- Mutating app endpoints rely on signed HuleEdu Gateway context for the browser trust
+  boundary. Do not reintroduce local session CSRF dependencies for Skriptoteket app routes.
 - **FORBIDDEN**: `@inject` on HTTP handlers under `src/skriptoteket/web/**`.
 - **FORBIDDEN**: importing `FromDishka` from `dishka.integrations.fastapi` in router modules.
 
@@ -109,7 +112,7 @@ from fastapi import APIRouter, Depends
 
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListToolsHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1")
@@ -117,7 +120,7 @@ router = APIRouter(prefix="/api/v1")
 @router.get("/tools")
 async def list_tools(
     handler: FromDishka[ListToolsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ):
     return await handler.handle(actor=user, query=...)
 ```

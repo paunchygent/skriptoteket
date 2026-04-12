@@ -430,7 +430,7 @@ async def test_public_grouping_smart_run_succeeds_without_auth_or_csrf(
     grouping_handler: AsyncMock,
 ) -> None:
     grouping_handler.handle.return_value = _grouping_response()
-    client.cookies.set("skriptoteket_session", "ambient-session-cookie")
+    client.cookies.set("ambient_auth_cookie", "ambient-session-cookie")
 
     response = await client.post(
         "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run",

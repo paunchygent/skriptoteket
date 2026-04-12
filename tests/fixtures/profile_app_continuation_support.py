@@ -15,7 +15,7 @@ import base64
 import json
 from collections.abc import Iterable, Mapping
 from datetime import datetime
-from typing import Any, cast
+from typing import Literal
 from uuid import UUID
 
 from cryptography.hazmat.primitives import hashes
@@ -31,7 +31,7 @@ from skriptoteket.domain.identity.internal_identity_context import (
     INTERNAL_IDENTITY_SIGNATURE_HEADER,
     INTERNAL_IDENTITY_SIGNATURE_PREFIX,
 )
-from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserProfile
+from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserAuth, UserProfile
 from skriptoteket.infrastructure.security.huleedu_internal_identity import (
     HuleEduInternalIdentityVerifier,
 )
@@ -43,7 +43,11 @@ from skriptoteket.protocols.identity import (
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from tests.fixtures.identity_fixtures import make_user
+from tests.fixtures.identity_fixtures import make_user, make_user_profile
+
+JsonScalar = str | int | float | bool | None
+JsonValue = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
+JsonObject = dict[str, JsonValue]
 
 CONTEXT_SUBJECT = "huleedu-teacher-subject"
 KEY_ID = "gateway-identity-rs256-v1"
@@ -90,6 +94,34 @@ class UserRepositoryStub:
             return None
         return self.user
 
+    async def get_by_id(self, user_id: UUID) -> User | None:
+        if self.user is None or self.user.id != user_id:
+            return None
+        return self.user
+
+    async def get_auth_by_email(self, email: str) -> UserAuth | None:
+        raise NotImplementedError
+
+    async def create(self, *, user: User, password_hash: str | None) -> User:
+        raise NotImplementedError
+
+    async def update(self, *, user: User) -> User:
+        raise NotImplementedError
+
+    async def update_password_hash(
+        self, *, user_id: UUID, password_hash: str, updated_at: datetime
+    ) -> None:
+        raise NotImplementedError
+
+    async def list_users(self, *, limit: int, offset: int) -> list[User]:
+        raise NotImplementedError
+
+    async def count_all(self) -> int:
+        raise NotImplementedError
+
+    async def count_active_by_role(self) -> dict[Role, int]:
+        raise NotImplementedError
+
 
 class ProfileRepositoryStub:
     def __init__(self) -> None:
@@ -106,6 +138,10 @@ class ProfileRepositoryStub:
         self.result = profile
         return profile
 
+    async def update(self, *, profile: UserProfile) -> UserProfile:
+        self.result = profile
+        return profile
+
 
 class ProfileContinuationApiProvider(Provider):
     def __init__(
@@ -113,8 +149,8 @@ class ProfileContinuationApiProvider(Provider):
         *,
         settings: Settings,
         clock: ClockProtocol,
-        users: object,
-        profiles: object,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -137,11 +173,11 @@ class ProfileContinuationApiProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def users(self) -> UserRepositoryProtocol:
-        return cast(UserRepositoryProtocol, self._users)
+        return self._users
 
     @provide(scope=Scope.REQUEST)
     def profiles(self) -> ProfileRepositoryProtocol:
-        return cast(ProfileRepositoryProtocol, self._profiles)
+        return self._profiles
 
     @provide(scope=Scope.REQUEST)
     def uow(self) -> UnitOfWorkProtocol:
@@ -167,7 +203,7 @@ def b64url_encode(raw: bytes) -> str:
     return base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
 
-def _encode_payload(payload: Mapping[str, Any]) -> str:
+def _encode_payload(payload: Mapping[str, JsonValue]) -> str:
     raw_payload = json.dumps(
         dict(payload),
         separators=(",", ":"),
@@ -185,8 +221,8 @@ def _sign_context(*, encoded_context: str, private_key: rsa.RSAPrivateKey) -> st
     return b64url_encode(signature)
 
 
-def _build_context_payload(*, now_ts: int, **overrides: Any) -> dict[str, Any]:
-    payload: dict[str, Any] = {
+def _build_context_payload(*, now_ts: int, **overrides: JsonValue) -> JsonObject:
+    payload: JsonObject = {
         "context_version": 1,
         "iss": "api_gateway_service",
         "aud": "skriptoteket",
@@ -212,7 +248,7 @@ def build_headers(
     *,
     private_key: rsa.RSAPrivateKey,
     now_ts: int,
-    payload_overrides: Mapping[str, Any] | None = None,
+    payload_overrides: Mapping[str, JsonValue] | None = None,
     payload_removed_fields: Iterable[str] = (),
     header_overrides: Mapping[str, str] | None = None,
     encoded_context: str | None = None,
@@ -241,3 +277,46 @@ def huleedu_user(*, user: User | None = None) -> User:
             "email_verified": True,
         }
     )
+
+
+def signed_huleedu_headers(
+    *,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockProtocol,
+    subject: str = CONTEXT_SUBJECT,
+    payload_overrides: Mapping[str, JsonValue] | None = None,
+) -> dict[str, str]:
+    """Build a signed gateway context for browser API route tests."""
+
+    overrides = {"sub": subject, **dict(payload_overrides or {})}
+    return build_headers(
+        private_key=private_key,
+        now_ts=int(clock.now().timestamp()),
+        payload_overrides=overrides,
+    )
+
+
+def seed_huleedu_projection(
+    *,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    role: Role = Role.CONTRIBUTOR,
+    now: datetime | None = None,
+    subject: str = CONTEXT_SUBJECT,
+    email: str = "teacher@example.test",
+    allow_remote_fallback: bool | None = None,
+    inline_completion_provider: Literal["local", "external"] | None = None,
+) -> User:
+    """Seed the local projection expected after HuleEdu gateway verification."""
+
+    user = huleedu_user(user=make_user(role=role, email=email)).model_copy(
+        update={"external_id": subject}
+    )
+    users.user = user
+    profiles.result = make_user_profile(
+        user_id=user.id,
+        allow_remote_fallback=allow_remote_fallback,
+        inline_completion_provider=inline_completion_provider,
+        now=now,
+    )
+    return user

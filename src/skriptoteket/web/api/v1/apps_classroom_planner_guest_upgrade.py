@@ -17,7 +17,7 @@ from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contr
     ClassroomPlannerGuestUpgradeRequest,
 )
 from skriptoteket.domain.identity.models import User
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(
@@ -38,8 +38,7 @@ class ClassroomPlannerGuestUpgradeConsumptionStatusResponse(BaseModel):
 async def guest_upgrade(
     payload: ClassroomPlannerGuestUpgradeRequest,
     handler: FromDishka[ClassroomPlannerGuestUpgradeHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ClassroomPlannerGuestUpgradeReceipt:
     """Preview or commit one authenticated Klassrumskartan guest upgrade."""
 
@@ -52,7 +51,7 @@ async def guest_upgrade(
 )
 async def get_guest_upgrade_consumption_status(
     handler: FromDishka[GetClassroomPlannerGuestUpgradeConsumptionHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ClassroomPlannerGuestUpgradeConsumptionStatusResponse:
     """Return whether this user's guest-upgrade bridge was already consumed."""
 

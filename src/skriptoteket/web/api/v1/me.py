@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict
 from skriptoteket.application.catalog.queries import CatalogItemKind, ListRecentToolsQuery
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListRecentToolsHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/me", tags=["me"])
@@ -46,7 +46,7 @@ class ListRecentToolsResponse(BaseModel):
 @router.get("/recent-tools", response_model=ListRecentToolsResponse)
 async def list_recent_tools(
     handler: FromDishka[ListRecentToolsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
     limit: int = Query(10, ge=1, le=50),
 ) -> ListRecentToolsResponse:
     result = await handler.handle(actor=user, query=ListRecentToolsQuery(limit=limit))

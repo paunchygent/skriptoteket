@@ -15,11 +15,10 @@ from skriptoteket.protocols.scripting import (
     RollbackVersionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_admin_api,
-    require_contributor_api,
-    require_csrf_token,
-    require_superuser_api,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_admin_api,
+    require_app_contributor_api,
+    require_app_superuser_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -34,8 +33,7 @@ async def submit_review(
     version_id: UUID,
     payload: SubmitReviewRequest,
     handler: FromDishka[SubmitForReviewHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> WorkflowActionResponse:
     result = await handler.handle(
         actor=user,
@@ -55,8 +53,7 @@ async def publish_version(
     version_id: UUID,
     payload: PublishVersionRequest,
     handler: FromDishka[PublishVersionHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> WorkflowActionResponse:
     result = await handler.handle(
         actor=user,
@@ -76,8 +73,7 @@ async def request_changes(
     version_id: UUID,
     payload: RequestChangesRequest,
     handler: FromDishka[RequestChangesHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> WorkflowActionResponse:
     result = await handler.handle(
         actor=user,
@@ -96,8 +92,7 @@ async def request_changes(
 async def rollback_version(
     version_id: UUID,
     handler: FromDishka[RollbackVersionHandlerProtocol],
-    user: User = Depends(require_superuser_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_superuser_api),
 ) -> WorkflowActionResponse:
     result = await handler.handle(
         actor=user,

@@ -103,6 +103,13 @@ def temporary_vite_server() -> Iterator[str]:
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        env={
+            **os.environ,
+            "VITE_DEV_PROXY_TARGET": os.environ.get(
+                "VITE_DEV_PROXY_TARGET",
+                "http://127.0.0.1:8000",
+            ),
+        },
     )
     base_url = f"http://127.0.0.1:{port}"
     try:

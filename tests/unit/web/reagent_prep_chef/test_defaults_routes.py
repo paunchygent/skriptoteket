@@ -15,15 +15,11 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefUpdateDefaultsRequest,
 )
 from skriptoteket.application.scripting.vault import VaultFileInfo
-from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as reagent_prep_chef_api
-from tests.fixtures.identity_fixtures import make_session, make_user
 from tests.unit.web.reagent_prep_chef.test_support import (
     StubActorCommandHandler,
-    StubCurrentUserProvider,
-    StubSessionRepository,
 )
 
 
@@ -34,41 +30,28 @@ async def test_get_defaults_requires_auth(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_update_defaults_requires_csrf(
+async def test_update_defaults_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.put(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/defaults",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={"expected_state_rev": 0, "defaults": None},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_update_defaults_returns_defaults(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
+    auth_user: User,
     update_defaults_handler: StubActorCommandHandler[
         ReagentPrepChefUpdateDefaultsRequest, ReagentPrepChefDefaultsResult
     ],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
     defaults = ReagentPrepChefPrepRequest(
         chemical_formula="NaCl",
         target_molarity="0.1",
@@ -81,16 +64,13 @@ async def test_update_defaults_returns_defaults(
         solute_purity="1.0",
     )
 
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     update_defaults_handler.set_result(
         ReagentPrepChefDefaultsResult(defaults=defaults, state_rev=1)
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.put(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/defaults",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "expected_state_rev": 0,
             "defaults": {
@@ -112,29 +92,19 @@ async def test_update_defaults_returns_defaults(
     assert payload["state_rev"] == 1
     assert update_defaults_handler.calls
     actor_called, command_called = update_defaults_handler.calls[0]
-    assert actor_called == user
+    assert actor_called == auth_user
     assert command_called.expected_state_rev == 0
     assert command_called.defaults is not None
     assert command_called.defaults.chemical_formula == "NaCl"
 
 
 @pytest.mark.asyncio
-async def test_save_defaults_requires_csrf(
+async def test_save_defaults_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/save-defaults",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={
             "defaults": {
                 "chemical_formula": "NaCl",
@@ -150,23 +120,19 @@ async def test_save_defaults_requires_csrf(
         },
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_save_defaults_returns_file_ref(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
+    auth_user: User,
     save_defaults_handler: StubActorCommandHandler[
         ReagentPrepChefSaveDefaultsRequest, ReagentPrepChefSaveDefaultsResult
     ],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
     file_id = UUID("00000000-0000-0000-0000-0000000000ab")
     save_defaults_handler.set_result(
         ReagentPrepChefSaveDefaultsResult(
@@ -181,13 +147,9 @@ async def test_save_defaults_returns_file_ref(
         )
     )
 
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/save-defaults",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "defaults": {
                 "chemical_formula": "NaCl",
@@ -209,47 +171,33 @@ async def test_save_defaults_returns_file_ref(
     assert payload["file"]["ref"].startswith("vault:")
     assert save_defaults_handler.calls
     actor_called, command_called = save_defaults_handler.calls[0]
-    assert actor_called == user
+    assert actor_called == auth_user
     assert command_called.name == "default.json"
 
 
 @pytest.mark.asyncio
-async def test_load_defaults_requires_csrf(
+async def test_load_defaults_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/load-defaults",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={"expected_state_rev": 0, "file_id": "00000000-0000-0000-0000-0000000000ab"},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_load_defaults_returns_defaults(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
+    auth_user: User,
     load_defaults_handler: StubActorCommandHandler[
         ReagentPrepChefLoadDefaultsRequest, ReagentPrepChefDefaultsResult
     ],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
     defaults = ReagentPrepChefPrepRequest(
         chemical_formula="NaCl",
         target_molarity="0.1",
@@ -263,13 +211,9 @@ async def test_load_defaults_returns_defaults(
     )
     load_defaults_handler.set_result(ReagentPrepChefDefaultsResult(defaults=defaults, state_rev=1))
 
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/load-defaults",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={"expected_state_rev": 0, "file_id": "00000000-0000-0000-0000-0000000000ab"},
     )
 
@@ -279,5 +223,5 @@ async def test_load_defaults_returns_defaults(
     assert payload["state_rev"] == 1
     assert load_defaults_handler.calls
     actor_called, command_called = load_defaults_handler.calls[0]
-    assert actor_called == user
+    assert actor_called == auth_user
     assert command_called.file_id == UUID("00000000-0000-0000-0000-0000000000ab")

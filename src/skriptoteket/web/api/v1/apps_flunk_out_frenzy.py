@@ -13,7 +13,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 APP_ID = "games.flunk_out_frenzy"
@@ -34,7 +34,7 @@ def _require_app_access(
 async def get_bootstrap(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[FlunkOutFrenzyBootstrapHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> FlunkOutFrenzyBootstrapResult:
     app = _require_app_access(registry=registry, user=user)
     return await handler.handle(app=app)

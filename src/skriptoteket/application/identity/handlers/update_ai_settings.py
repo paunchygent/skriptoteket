@@ -1,3 +1,14 @@
+"""Profile-backed AI preference update handler.
+
+Purpose:
+    Persist the app-local AI preferences used by editor assistance without
+    caching browser-session state.
+
+Relationships:
+    - Invoked by `/api/v1/profile/ai-settings`.
+    - Read by app-auth dependencies through `UserProfile` after PR-0253.
+"""
+
 from __future__ import annotations
 
 from skriptoteket.application.identity.commands import (
@@ -9,7 +20,6 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     ProfileRepositoryProtocol,
-    SessionRepositoryProtocol,
     UpdateAiSettingsHandlerProtocol,
     UserRepositoryProtocol,
 )
@@ -24,14 +34,12 @@ class UpdateAiSettingsHandler(UpdateAiSettingsHandlerProtocol):
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
-        sessions: SessionRepositoryProtocol,
         clock: ClockProtocol,
     ) -> None:
         self._settings = settings
         self._uow = uow
         self._users = users
         self._profiles = profiles
-        self._sessions = sessions
         self._clock = clock
 
     async def handle(self, command: UpdateAiSettingsCommand) -> UpdateAiSettingsResult:
@@ -105,11 +113,5 @@ class UpdateAiSettingsHandler(UpdateAiSettingsHandlerProtocol):
                 }
             )
             saved_profile = await self._profiles.update(profile=updated_profile)
-            await self._sessions.sync_ai_settings_for_user(
-                user_id=command.user_id,
-                allow_remote_fallback=allow_remote_fallback,
-                inline_completion_provider=inline_completion_provider,
-                now=now,
-            )
 
         return UpdateAiSettingsResult(user=user, profile=saved_profile)

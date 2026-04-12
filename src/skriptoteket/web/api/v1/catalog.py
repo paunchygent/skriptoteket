@@ -23,7 +23,7 @@ from skriptoteket.protocols.catalog import (
     ListToolsByTagsHandlerProtocol,
 )
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/catalog", tags=["catalog"])
@@ -145,7 +145,7 @@ class ListAllToolsResponse(BaseModel):
 @router.get("/professions", response_model=ListProfessionsResponse)
 async def list_professions(
     handler: FromDishka[ListProfessionsHandlerProtocol],
-    _user: User = Depends(require_user_api),
+    _user: User = Depends(require_app_user_api),
 ) -> ListProfessionsResponse:
     result = await handler.handle(ListProfessionsQuery())
     return ListProfessionsResponse(
@@ -164,7 +164,7 @@ async def list_professions(
 @router.get("/categories", response_model=ListAllCategoriesResponse)
 async def list_all_categories(
     handler: FromDishka[ListAllCategoriesHandlerProtocol],
-    _user: User = Depends(require_user_api),
+    _user: User = Depends(require_app_user_api),
 ) -> ListAllCategoriesResponse:
     result = await handler.handle(ListAllCategoriesQuery())
     return ListAllCategoriesResponse(
@@ -186,7 +186,7 @@ async def list_all_categories(
 async def list_categories(
     profession_slug: str,
     handler: FromDishka[ListCategoriesForProfessionHandlerProtocol],
-    _user: User = Depends(require_user_api),
+    _user: User = Depends(require_app_user_api),
 ) -> ListCategoriesResponse:
     result = await handler.handle(ListCategoriesForProfessionQuery(profession_slug=profession_slug))
     return ListCategoriesResponse(
@@ -216,7 +216,7 @@ async def list_tools(
     category_slug: str,
     handler: FromDishka[ListToolsByTagsHandlerProtocol],
     curated_apps: FromDishka[CuratedAppRegistryProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ListToolsResponse:
     result = await handler.handle(
         actor=user,
@@ -270,7 +270,7 @@ async def list_tools(
 @router.get("/tools", response_model=ListAllToolsResponse)
 async def list_all_tools(
     handler: FromDishka[ListAllToolsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
     professions: str | None = None,
     categories: str | None = None,
     q: str | None = None,

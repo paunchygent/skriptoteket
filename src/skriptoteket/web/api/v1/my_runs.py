@@ -14,7 +14,7 @@ from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/my-runs", tags=["my-runs"])
@@ -87,7 +87,7 @@ async def list_my_runs(
     runs: FromDishka[ToolRunRepositoryProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
     curated_apps: FromDishka[CuratedAppRegistryProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ListMyRunsResponse:
     async with uow:
         user_runs = await runs.list_for_user(

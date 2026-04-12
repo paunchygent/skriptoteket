@@ -10,7 +10,7 @@ from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/apps", tags=["apps"])
@@ -32,7 +32,7 @@ class AppDetailResponse(BaseModel):
 async def get_app_by_id(
     app_id: str,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> AppDetailResponse:
     app = registry.get_by_app_id(app_id=app_id)
     if app is None:

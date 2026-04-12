@@ -5,7 +5,7 @@ title: "Skriptoteket auth authority cutover to HuleEdu"
 status: proposed
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-11
+updated: 2026-04-12
 outcome: "Skriptoteket no longer owns browser auth authority locally; it consumes a HuleEdu-owned cookie-session + CSRF browser contract through the intended launch topology where `hule.education` is the HuleEdu landing page, `api.hule.education` is the shared browser auth/API edge, and `skriptoteket.hule.education` remains the Skriptoteket app host while preserving richer bootstrap and dedicated redirect-preserving auth-entry handoff."
 dependencies:
   - "ADR-0009"
@@ -13,7 +13,9 @@ dependencies:
   - "ADR-0030"
   - "ADR-0076"
   - "ADR-0082"
+  - "ADR-0083"
   - "REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08"
+  - "REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity"
   - "HuleEdu ADR-0039"
   - "HuleEdu TASK-0308"
 ---
@@ -34,7 +36,7 @@ dependencies:
 - Remove Skriptoteket-local browser auth ownership and assumptions once the shared contract is in
   place.
 - Add an explicit cross-app smoke lane proving shared login/logout/session behavior across
-  Skriptoteket and HuleEdu.
+  Skriptoteket and HuleEdu after the Skriptoteket product identity realm contract is accepted.
 
 ## Out of scope
 
@@ -56,6 +58,8 @@ dependencies:
   contract.
 - If the cross-repo launch topology is not frozen first, later landing, gateway, SSO, and SEO work
   can harden around contradictory host assumptions.
+- If `ST-28-04` runs before the product identity realm contract is accepted, it can accidentally
+  certify a HuleEdu-school-only login path as final Skriptoteket login.
 
 ## Stories
 
@@ -63,7 +67,12 @@ dependencies:
 - [ST-28-01: Frontend auth store and API client cutover to HuleEdu session contract](../stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md)
 - [ST-28-02: Auth interruption and protected-route handoff on HuleEdu-owned session](../stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md)
 - [ST-28-03: Remove local auth ownership and regenerate client contracts](../stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md)
+- [ST-28-06: Product identity realm ADR and contract freeze](../stories/story-28-06-product-identity-realm-adr-and-contract-freeze.md)
+- [ST-28-07: Hule Education-hosted Skriptoteket login ceremony](../stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md)
+- [ST-28-08: Skriptoteket standalone registration and password lifecycle](../stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md)
+- [ST-28-09: Realm-aware projection provisioning and local RBAC](../stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md)
 - [ST-28-04: Cross-app auth cutover smoke and operator runbook proof](../stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md)
+- [ST-28-10: Auth outcome observability for realm cutover](../stories/story-28-10-auth-outcome-observability-for-realm-cutover.md)
 
 ## Implementation PR Backlog
 
@@ -80,6 +89,9 @@ dependencies:
   contract.
 - ADR-0030 keeps the SPA aligned to cookie-session + CSRF expectations.
 - ADR-0076 defines the new hard-break HuleEdu-owned browser auth target.
+- ADR-0083 is proposed as the product identity realm correction required before final
+  Skriptoteket login proof; it prevents the browser-session cutover from collapsing standalone
+  Skriptoteket identity into HuleEdu school registration.
 - Skriptoteket must land the dedicated `/auth/login` route contract through
   `ST-32-10` / `PR-0242` before `ST-28-02` can complete; this epic consumes that
   route contract rather than owning it.
@@ -90,7 +102,7 @@ dependencies:
 - The cross-repo launch topology and upstream edge ownership are now recorded in
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
-## Implementation Summary (as of 2026-04-11)
+## Implementation Summary (as of 2026-04-12)
 
 `ST-28-05` shipped through `PR-0250` as the HuleEdu provider conformance ingest and cutover
 readiness gate. The upstream HuleEdu `TASK-0308` proof is green, no provider-side blocker remains
@@ -102,8 +114,22 @@ resolves an existing Skriptoteket-local projection, provider roles remain metada
 continuation/bootstrap proof runs through the real backend and Vite `/api` proxy. `ST-28-02` shipped
 through `PR-0252` as the narrow auth-entry return-to-origin slice: direct protected entry,
 app-local `401` recovery, and top-level return to `/auth/login?next=...` preserve the dedicated
-auth-entry contract on the HuleEdu-owned session model while leaving local auth-authority retirement
-to `PR-0253`.
+auth-entry contract on the HuleEdu-owned session model. `ST-28-03` shipped through approved
+`PR-0253` as the hard-retirement slice: local auth routes/contracts, browser-session
+protocols/models/config, local-session CSRF authority, and the `sessions` table are removed;
+browser app APIs now depend on signed HuleEdu-derived `require_app_*` dependencies; app-local RBAC
+remains based on Skriptoteket `User.role`; missing projections fail closed into
+provisioning-required UX; and the live proof exercises the browser `/api` edge through a test
+gateway injector. A new product identity realm reference now corrects the planning direction:
+Hule Education may own the browser edge while Skriptoteket preserves standalone product identity,
+registration meaning, and local authorization. Cross-app Docker/operator proof remains with
+`PR-0254` after the identity-realm follow-up path is clear. The new sequence is now explicit:
+`PR-0255` stays complete as the signed-context/projection foundation; `ST-28-06` must accept
+`ADR-0083`; `ST-28-07` implements the browser-navigable Skriptoteket login ceremony; `ST-28-08`
+restores standalone registration and password lifecycle through shared identity; `ST-28-09` makes
+projection provisioning realm-aware; then `ST-28-04` / `PR-0254` runs as the final realm-aware
+cross-app proof. `ST-28-10` follows with auth outcome observability for gateway/session, realm,
+projection, and local RBAC outcomes.
 
 ## Planning note (2026-04-08)
 
@@ -121,4 +147,10 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 4. consume the shared browser session contract in Skriptoteket through `PR-0251`
 5. preserve `/auth/login` interruption and return-to-origin behavior through `PR-0252`
 6. remove local browser auth ownership through `PR-0253`
-7. prove the cutover cross-app and operator-side through `PR-0254`
+7. accept the product identity realm contract through `ST-28-06` / `ADR-0083`
+8. implement the Hule Education-hosted Skriptoteket login ceremony through `ST-28-07`
+9. restore standalone registration/password lifecycle through the shared identity surface in
+   `ST-28-08`
+10. make projection provisioning realm-aware through `ST-28-09`
+11. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
+12. reintroduce auth outcome observability through `ST-28-10`

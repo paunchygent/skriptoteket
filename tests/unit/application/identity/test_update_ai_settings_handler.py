@@ -13,7 +13,6 @@ from skriptoteket.domain.identity.models import UserProfile
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     ProfileRepositoryProtocol,
-    SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -44,8 +43,6 @@ async def test_update_ai_settings_rejects_allow_when_remote_providers_disabled(
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = profile
 
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
-
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
 
@@ -54,7 +51,6 @@ async def test_update_ai_settings_rejects_allow_when_remote_providers_disabled(
         uow=uow,
         users=users,
         profiles=profiles,
-        sessions=sessions,
         clock=clock,
     )
 
@@ -65,7 +61,6 @@ async def test_update_ai_settings_rejects_allow_when_remote_providers_disabled(
 
     assert exc_info.value.code == ErrorCode.FORBIDDEN
     profiles.update.assert_not_awaited()
-    sessions.sync_ai_settings_for_user.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -92,8 +87,6 @@ async def test_update_ai_settings_rejects_external_completion_when_remote_fallba
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = profile
 
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
-
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
 
@@ -102,7 +95,6 @@ async def test_update_ai_settings_rejects_external_completion_when_remote_fallba
         uow=uow,
         users=users,
         profiles=profiles,
-        sessions=sessions,
         clock=clock,
     )
 
@@ -116,7 +108,6 @@ async def test_update_ai_settings_rejects_external_completion_when_remote_fallba
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
     profiles.update.assert_not_awaited()
-    sessions.sync_ai_settings_for_user.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -143,8 +134,6 @@ async def test_update_ai_settings_can_set_allow_and_external_completion_together
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = profile
 
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
-
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
 
@@ -162,7 +151,6 @@ async def test_update_ai_settings_can_set_allow_and_external_completion_together
         uow=uow,
         users=users,
         profiles=profiles,
-        sessions=sessions,
         clock=clock,
     )
 
@@ -176,12 +164,6 @@ async def test_update_ai_settings_can_set_allow_and_external_completion_together
 
     assert result.profile == expected_profile
     profiles.update.assert_awaited_once()
-    sessions.sync_ai_settings_for_user.assert_awaited_once_with(
-        user_id=user.id,
-        allow_remote_fallback=True,
-        inline_completion_provider="external",
-        now=now,
-    )
 
 
 @pytest.mark.asyncio
@@ -208,8 +190,6 @@ async def test_update_ai_settings_clears_external_completion_when_remote_fallbac
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = profile
 
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
-
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
 
@@ -227,7 +207,6 @@ async def test_update_ai_settings_clears_external_completion_when_remote_fallbac
         uow=uow,
         users=users,
         profiles=profiles,
-        sessions=sessions,
         clock=clock,
     )
 
@@ -237,9 +216,3 @@ async def test_update_ai_settings_clears_external_completion_when_remote_fallbac
 
     assert result.profile == expected_profile
     profiles.update.assert_awaited_once()
-    sessions.sync_ai_settings_for_user.assert_awaited_once_with(
-        user_id=user.id,
-        allow_remote_fallback=False,
-        inline_completion_provider=None,
-        now=now,
-    )

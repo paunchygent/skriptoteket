@@ -213,7 +213,6 @@ async def test_run_sandbox_valid_snapshot_payload_calls_handler() -> None:
         versions_repo=versions_repo,
         settings=Settings(),
         user=user,
-        _=None,
         files=None,
         inputs=None,
         snapshot=_snapshot_payload_json(),
@@ -250,7 +249,6 @@ async def test_run_sandbox_invalid_snapshot_json_raises_domain_error() -> None:
             versions_repo=versions_repo,
             settings=Settings(),
             user=user,
-            _=None,
             files=None,
             inputs=None,
             snapshot="{bad json",
@@ -277,7 +275,6 @@ async def test_run_sandbox_snapshot_schema_error_raises_domain_error() -> None:
             versions_repo=versions_repo,
             settings=Settings(),
             user=user,
-            _=None,
             files=None,
             inputs=None,
             snapshot=_snapshot_payload_json(entrypoint=""),
@@ -304,7 +301,6 @@ async def test_run_sandbox_inputs_invalid_json_raises_domain_error() -> None:
             versions_repo=versions_repo,
             settings=Settings(),
             user=user,
-            _=None,
             files=None,
             inputs="not-json",
             snapshot=_snapshot_payload_json(),
@@ -331,7 +327,6 @@ async def test_run_sandbox_inputs_not_object_raises_domain_error() -> None:
             versions_repo=versions_repo,
             settings=Settings(),
             user=user,
-            _=None,
             files=None,
             inputs='["a"]',
             snapshot=_snapshot_payload_json(),
@@ -368,7 +363,6 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev() -> No
         versions_repo=versions_repo,
         handler=handler,
         user=user,
-        _=None,
     )
 
     assert isinstance(result, editor.StartSandboxActionResponse)

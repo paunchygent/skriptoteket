@@ -1,12 +1,13 @@
 /**
- * Shared HuleEdu browser-session contract helpers.
+ * Shared Hule Education browser-session contract helpers.
  *
  * Purpose:
- *   Centralize the HuleEdu-owned browser session and CSRF endpoint contract so
- *   the SPA auth store can consume it without retaining `/api/v1/auth/me`.
+ *   Centralize the Hule Education-owned browser session, CSRF, logout API
+ *   endpoints, and the separate browser-navigable auth ceremony URL.
  *
  * Relationships:
- *   - `stores/auth.ts` uses this module for session bootstrap and CSRF URLs.
+ *   - `stores/auth.ts` uses this module for session bootstrap and CSRF/logout URLs.
+ *   - `components/auth/AuthLoginPanel.vue` uses the ceremony helper for anchors.
  *   - `docs/backlog/prs/pr-0251-...` defines the cutover acceptance contract.
  */
 
@@ -69,8 +70,15 @@ export type SharedAuthSnapshot = {
 };
 
 export const DEFAULT_SHARED_AUTH_BASE_URL = "https://api.hule.education";
+export const DEFAULT_SHARED_AUTH_ENTRY_URL = "https://api.hule.education/auth/login";
+export const SHARED_AUTH_APP = "skriptoteket";
 export const SHARED_AUTH_SESSION_PATH = "/v1/auth/session";
 export const SHARED_AUTH_CSRF_PATH = "/v1/auth/csrf";
+export const SHARED_AUTH_LOGOUT_PATH = "/v1/auth/logout";
+
+export type SharedCsrfResponse = {
+  csrf_token: string;
+};
 
 function normalizeBaseUrl(value: string | undefined): string {
   const rawValue = value?.trim() || DEFAULT_SHARED_AUTH_BASE_URL;
@@ -80,6 +88,21 @@ function normalizeBaseUrl(value: string | undefined): string {
 export function sharedAuthUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${normalizeBaseUrl(import.meta.env.VITE_HULEEDU_AUTH_BASE_URL)}${normalizedPath}`;
+}
+
+function normalizeEntryUrl(value: string | undefined): string {
+  return value?.trim() || DEFAULT_SHARED_AUTH_ENTRY_URL;
+}
+
+export function sharedAuthCeremonyUrl(params: { nextPath: string | null; origin: string }): string {
+  const url = new URL(normalizeEntryUrl(import.meta.env.VITE_HULEEDU_AUTH_ENTRY_URL));
+  if (!url.searchParams.has("app")) {
+    url.searchParams.set("app", SHARED_AUTH_APP);
+  }
+  if (params.nextPath) {
+    url.searchParams.set("next", new URL(params.nextPath, params.origin).toString());
+  }
+  return url.toString();
 }
 
 function uniqueStrings(values: string[] | undefined): string[] {

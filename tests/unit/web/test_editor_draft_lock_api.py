@@ -50,7 +50,6 @@ async def test_acquire_draft_lock_endpoint_returns_lock_response() -> None:
         payload=editor.DraftLockRequest(draft_head_id=draft_head_id, force=False),
         handler=handler,
         user=user,
-        _=None,
     )
 
     assert isinstance(result, editor.DraftLockResponse)
@@ -78,7 +77,6 @@ async def test_release_draft_lock_endpoint_returns_release_response() -> None:
         tool_id=tool.id,
         handler=handler,
         user=user,
-        _=None,
     )
 
     assert isinstance(result, editor.DraftLockReleaseResponse)

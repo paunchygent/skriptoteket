@@ -18,15 +18,11 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefSavePdfResult,
 )
 from skriptoteket.application.scripting.vault import VaultFileInfo
-from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as reagent_prep_chef_api
-from tests.fixtures.identity_fixtures import make_session, make_user
 from tests.unit.web.reagent_prep_chef.test_support import (
     StubActorCommandHandler,
-    StubCurrentUserProvider,
-    StubSessionRepository,
 )
 
 
@@ -67,23 +63,13 @@ def _sample_prep_result(*, now: datetime) -> ReagentPrepChefPrepResult:
 
 
 @pytest.mark.asyncio
-async def test_prep_requires_csrf(
+async def test_prep_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
     prep_handler: StubActorCommandHandler[ReagentPrepChefPrepRequest, ReagentPrepChefPrepResult],
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/prep",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={
             "chemical_formula": "NaCl",
             "target_molarity": "0.1",
@@ -96,30 +82,23 @@ async def test_prep_requires_csrf(
         },
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert prep_handler.calls == []
 
 
 @pytest.mark.asyncio
 async def test_prep_success_returns_sheet(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
+    auth_user: User,
     prep_handler: StubActorCommandHandler[ReagentPrepChefPrepRequest, ReagentPrepChefPrepResult],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     prep_handler.set_result(_sample_prep_result(now=now))
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/prep",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "chemical_formula": "NaCl",
             "target_molarity": "0.1",
@@ -139,30 +118,21 @@ async def test_prep_success_returns_sheet(
     assert payload["sheet"]["safety"]["level"] == "curated"
     assert prep_handler.calls
     actor_called, command_called = prep_handler.calls[0]
-    assert actor_called == user
+    assert actor_called == auth_user
     assert command_called.chemical_formula == "NaCl"
 
 
 @pytest.mark.asyncio
 async def test_export_pdf_returns_download(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     export_pdf_handler: StubActorCommandHandler[ReagentPrepChefPrepRequest, bytes],
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     export_pdf_handler.set_result(b"%PDF-1.4 stub")
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/export-pdf",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "chemical_formula": "NaCl",
             "target_molarity": "0.1",
@@ -183,22 +153,12 @@ async def test_export_pdf_returns_download(
 
 
 @pytest.mark.asyncio
-async def test_save_pdf_requires_csrf(
+async def test_save_pdf_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/save-pdf",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={
             "prep": {
                 "chemical_formula": "NaCl",
@@ -214,26 +174,20 @@ async def test_save_pdf_requires_csrf(
         },
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_save_pdf_returns_vault_file_info(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     save_pdf_handler: StubActorCommandHandler[
         ReagentPrepChefSavePdfRequest, ReagentPrepChefSavePdfResult
     ],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
     file_id = UUID("00000000-0000-0000-0000-000000000001")
 
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     save_pdf_handler.set_result(
         ReagentPrepChefSavePdfResult(
             file=VaultFileInfo(
@@ -247,10 +201,9 @@ async def test_save_pdf_returns_vault_file_info(
         )
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/save-pdf",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "prep": {
                 "chemical_formula": "NaCl",

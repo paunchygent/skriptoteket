@@ -1,6 +1,6 @@
 """HTTP routes for the Reagent Prep Chef curated app APIs.
 This module exposes app-specific endpoints (prep, defaults, risk draft/export/save, SDS)
-and enforces app access + CSRF at the web boundary.
+and enforces app access through signed HuleEdu-derived web dependencies.
 """
 
 from fastapi import APIRouter, Depends
@@ -42,7 +42,7 @@ from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefSdsStoreProtocol,
     ReagentPrepChefUpdateDefaultsHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 APP_ID = "chemistry.reagent_prep_chef"
@@ -60,7 +60,7 @@ def _require_app_access(*, registry: CuratedAppRegistryProtocol, user: User) -> 
 async def list_chemicals(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefChemicalsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefChemicalsResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user)
@@ -71,8 +71,7 @@ async def prep(
     command: ReagentPrepChefPrepRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefPrepHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefPrepResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -83,8 +82,7 @@ async def risk_assessment(
     command: ReagentPrepChefRiskAssessmentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefRiskAssessmentHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefRiskAssessmentResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -95,8 +93,7 @@ async def export_pdf(
     command: ReagentPrepChefPrepRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefExportPdfHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
     pdf_bytes = await handler.handle(actor=user, command=command)
@@ -112,8 +109,7 @@ async def export_risk_pdf(
     command: ReagentPrepChefRiskAssessmentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefExportRiskPdfHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
     pdf_bytes = await handler.handle(actor=user, command=command)
@@ -129,8 +125,7 @@ async def save_pdf(
     command: ReagentPrepChefSavePdfRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefSavePdfHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefSavePdfResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -141,8 +136,7 @@ async def save_risk_pdf(
     command: ReagentPrepChefRiskAssessmentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefSaveRiskPdfHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefSavePdfResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -153,8 +147,7 @@ async def save_defaults(
     command: ReagentPrepChefSaveDefaultsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefSaveDefaultsHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefSaveDefaultsResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -165,8 +158,7 @@ async def load_defaults(
     command: ReagentPrepChefLoadDefaultsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefLoadDefaultsHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefDefaultsResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -176,7 +168,7 @@ async def load_defaults(
 async def get_defaults(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefGetDefaultsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefDefaultsResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user)
@@ -187,8 +179,7 @@ async def update_defaults(
     command: ReagentPrepChefUpdateDefaultsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefUpdateDefaultsHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefDefaultsResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, command=command)
@@ -199,7 +190,7 @@ async def get_sds(
     sds_ref: str,
     registry: FromDishka[CuratedAppRegistryProtocol],
     store: FromDishka[ReagentPrepChefSdsStoreProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
     filename, content, media_type = store.get_pdf(sds_ref=sds_ref)
@@ -215,7 +206,7 @@ async def get_sds_markdown(
     sds_ref: str,
     registry: FromDishka[CuratedAppRegistryProtocol],
     store: FromDishka[ReagentPrepChefSdsStoreProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ReagentPrepChefSdsMarkdownResult:
     _require_app_access(registry=registry, user=user)
     entry, markdown = store.get_markdown(sds_ref=sds_ref)

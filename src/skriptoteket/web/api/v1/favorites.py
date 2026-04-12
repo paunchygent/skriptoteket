@@ -13,7 +13,7 @@ from skriptoteket.protocols.favorites import (
     ListFavoritesHandlerProtocol,
     RemoveFavoriteHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/favorites", tags=["favorites"])
@@ -54,8 +54,7 @@ class ListFavoritesResponse(BaseModel):
 async def add_favorite(
     catalog_item_id: UUID,
     handler: FromDishka[AddFavoriteHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> FavoriteStatusResponse:
     result = await handler.handle(
         actor=user,
@@ -68,8 +67,7 @@ async def add_favorite(
 async def remove_favorite(
     catalog_item_id: UUID,
     handler: FromDishka[RemoveFavoriteHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> FavoriteStatusResponse:
     result = await handler.handle(
         actor=user,
@@ -81,7 +79,7 @@ async def remove_favorite(
 @router.get("", response_model=ListFavoritesResponse)
 async def list_favorites(
     handler: FromDishka[ListFavoritesHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
     limit: int | None = None,
 ) -> ListFavoritesResponse:
     result = await handler.handle(actor=user, query=ListFavoritesQuery(limit=limit))

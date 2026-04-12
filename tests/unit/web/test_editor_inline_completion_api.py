@@ -14,23 +14,18 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import cast
 from unittest.mock import AsyncMock
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.identity import (
-    CurrentUserProviderProtocol,
-    ProfileRepositoryProtocol,
-    SessionRepositoryProtocol,
-)
 from skriptoteket.protocols.llm import (
     InlineCompletionHandlerProtocol,
     InlineCompletionResult,
@@ -38,90 +33,59 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.web.api.v1.editor import completions as completions_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from tests.fixtures.identity_fixtures import make_session, make_user, make_user_profile
-
-
-class FixedClock:
-    def __init__(self, now: datetime) -> None:
-        self._now = now
-
-    def now(self) -> datetime:
-        return self._now
+from tests.fixtures.profile_app_continuation_support import (
+    ClockStub,
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 
 
 class EditorCompletionApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        clock: ClockProtocol,
-        current_user_provider: AsyncMock,
-        sessions: AsyncMock,
-        profiles: AsyncMock,
-        handler: AsyncMock,
+        handler: InlineCompletionHandlerProtocol,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._clock = clock
-        self._current_user_provider = current_user_provider
-        self._sessions = sessions
-        self._profiles = profiles
         self._handler = handler
-
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.APP)
-    def clock(self) -> ClockProtocol:
-        return self._clock
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return cast(CurrentUserProviderProtocol, self._current_user_provider)
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return cast(SessionRepositoryProtocol, self._sessions)
-
-    @provide(scope=Scope.REQUEST)
-    def profiles(self) -> ProfileRepositoryProtocol:
-        return cast(ProfileRepositoryProtocol, self._profiles)
 
     @provide(scope=Scope.REQUEST)
     def inline_completion_handler(self) -> InlineCompletionHandlerProtocol:
-        return cast(InlineCompletionHandlerProtocol, self._handler)
+        return self._handler
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture
-def clock(now: datetime) -> ClockProtocol:
-    return FixedClock(now=now)
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
 
 
 @pytest.fixture
-def current_user_provider() -> AsyncMock:
-    provider = AsyncMock(spec=CurrentUserProviderProtocol)
-    provider.get_current_user.return_value = None
-    return provider
+def clock(now: datetime) -> ClockStub:
+    return ClockStub(now=now)
 
 
 @pytest.fixture
-def sessions() -> AsyncMock:
-    repo = AsyncMock(spec=SessionRepositoryProtocol)
-    repo.get_by_id.return_value = None
-    return repo
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
 
 
 @pytest.fixture
-def profiles() -> AsyncMock:
-    repo = AsyncMock(spec=ProfileRepositoryProtocol)
-    repo.get_by_user_id.return_value = None
-    return repo
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
 
 
 @pytest.fixture
@@ -132,10 +96,9 @@ def handler() -> AsyncMock:
 @pytest.fixture
 def app(
     settings: Settings,
-    clock: ClockProtocol,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
-    profiles: AsyncMock,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
 ) -> FastAPI:
     app = FastAPI()
@@ -143,14 +106,15 @@ def app(
     app.include_router(completions_api.router, prefix="/api/v1/editor", tags=["editor"])
 
     container = make_async_container(
-        EditorCompletionApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
             profiles=profiles,
+        ),
+        EditorCompletionApiProvider(
             handler=handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app
@@ -176,48 +140,34 @@ async def test_inline_completion_requires_auth(client: httpx.AsyncClient) -> Non
 
 
 @pytest.mark.asyncio
-async def test_inline_completion_requires_csrf(
+async def test_inline_completion_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/editor/completions",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_inline_completion_success(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
     handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
@@ -230,27 +180,23 @@ async def test_inline_completion_success(
 @pytest.mark.asyncio
 async def test_inline_completion_includes_replace_suffix_chars(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
     handler.handle.return_value = InlineCompletionResult(
         completion="rn",
         enabled=True,
         replace_suffix_chars=2,
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={"prefix": "retu", "suffix": "rn"},
     )
 
@@ -261,36 +207,27 @@ async def test_inline_completion_includes_replace_suffix_chars(
 @pytest.mark.asyncio
 async def test_inline_completion_passes_ai_settings_to_handler(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
-    profiles: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(
-        user_id=user.id,
-        now=now,
-        allow_remote_fallback=False,
-        inline_completion_provider="local",
-    )
-    profile = make_user_profile(
-        user_id=user.id,
+    seed_huleedu_projection(
+        users=users,
+        profiles=profiles,
+        role=Role.CONTRIBUTOR,
         now=now,
         allow_remote_fallback=True,
         inline_completion_provider="external",
     )
 
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-    profiles.get_by_user_id.return_value = profile
     handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={
             "prefix": "def x():\n    ",
             "suffix": "",
@@ -307,17 +244,14 @@ async def test_inline_completion_passes_ai_settings_to_handler(
 @pytest.mark.asyncio
 async def test_inline_completion_includes_notice_fields_when_present(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
     handler.handle.return_value = InlineCompletionResult(
         completion="",
         enabled=True,
@@ -326,10 +260,9 @@ async def test_inline_completion_includes_notice_fields_when_present(
         notice_message="Enable external AI",
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
@@ -346,24 +279,19 @@ async def test_inline_completion_includes_notice_fields_when_present(
 @pytest.mark.asyncio
 async def test_inline_completion_eval_headers_require_admin(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(user_id=user.id, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
 
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Skriptoteket-Eval"] = "1"
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={
-            "X-CSRF-Token": session.csrf_token,
-            "X-Skriptoteket-Eval": "1",
-        },
+        headers=headers,
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
@@ -373,17 +301,14 @@ async def test_inline_completion_eval_headers_require_admin(
 @pytest.mark.asyncio
 async def test_inline_completion_includes_eval_headers_for_superuser(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.SUPERUSER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.SUPERUSER, now=now)
     handler.handle.return_value = InlineCompletionResult(
         completion="pass\n",
         enabled=True,
@@ -404,13 +329,11 @@ async def test_inline_completion_includes_eval_headers_for_superuser(
         ),
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Skriptoteket-Eval"] = "1"
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={
-            "X-CSRF-Token": session.csrf_token,
-            "X-Skriptoteket-Eval": "1",
-        },
+        headers=headers,
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
@@ -434,25 +357,21 @@ async def test_inline_completion_includes_eval_headers_for_superuser(
 async def test_inline_completion_eval_headers_denied_in_production(
     client: httpx.AsyncClient,
     settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     now: datetime,
 ) -> None:
     settings.ENVIRONMENT = "production"
 
-    user = make_user(role=Role.SUPERUSER)
-    session = make_session(user_id=user.id, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.SUPERUSER, now=now)
 
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Skriptoteket-Eval"] = "1"
     response = await client.post(
         "/api/v1/editor/completions",
-        headers={
-            "X-CSRF-Token": session.csrf_token,
-            "X-Skriptoteket-Eval": "1",
-        },
+        headers=headers,
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 

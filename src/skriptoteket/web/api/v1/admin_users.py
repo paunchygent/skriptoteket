@@ -14,7 +14,7 @@ from skriptoteket.protocols.identity import (
     ListUsersHandlerProtocol,
 )
 from skriptoteket.protocols.login_events import ListLoginEventsHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_superuser_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_superuser_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1", tags=["admin-users"])
@@ -40,7 +40,7 @@ class AdminUserLoginEventsResponse(BaseModel):
 @router.get("/admin/users", response_model=ListAdminUsersResponse)
 async def list_admin_users(
     handler: FromDishka[ListUsersHandlerProtocol],
-    user: User = Depends(require_superuser_api),
+    user: User = Depends(require_app_superuser_api),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
 ) -> ListAdminUsersResponse:
@@ -55,7 +55,7 @@ async def list_admin_users(
 async def get_admin_user(
     user_id: UUID,
     handler: FromDishka[GetUserHandlerProtocol],
-    user: User = Depends(require_superuser_api),
+    user: User = Depends(require_app_superuser_api),
 ) -> AdminUserResponse:
     result = await handler.handle(actor=user, query=GetUserQuery(user_id=user_id))
     return AdminUserResponse(user=result.user)
@@ -66,7 +66,7 @@ async def get_admin_user_login_events(
     user_id: UUID,
     handler: FromDishka[ListLoginEventsHandlerProtocol],
     user_handler: FromDishka[GetUserHandlerProtocol],
-    user: User = Depends(require_superuser_api),
+    user: User = Depends(require_app_superuser_api),
     limit: int = Query(50, ge=1, le=200),
 ) -> AdminUserLoginEventsResponse:
     user_result = await user_handler.handle(actor=user, query=GetUserQuery(user_id=user_id))

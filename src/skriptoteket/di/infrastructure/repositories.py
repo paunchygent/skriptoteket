@@ -41,7 +41,6 @@ from skriptoteket.infrastructure.repositories.script_suggestion_decision_reposit
 from skriptoteket.infrastructure.repositories.script_suggestion_repository import (
     PostgreSQLScriptSuggestionRepository,
 )
-from skriptoteket.infrastructure.repositories.session_repository import PostgreSQLSessionRepository
 from skriptoteket.infrastructure.repositories.tool_maintainer_audit_repository import (
     PostgreSQLToolMaintainerAuditRepository,
 )
@@ -90,7 +89,6 @@ from skriptoteket.protocols.identity import (
     AllowedDomainRepositoryProtocol,
     BlockedDomainRepositoryProtocol,
     ProfileRepositoryProtocol,
-    SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.login_events import LoginEventRepositoryProtocol
@@ -131,10 +129,6 @@ class InfrastructureRepositoryProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def login_event_repo(self, session: AsyncSession) -> LoginEventRepositoryProtocol:
         return PostgreSQLLoginEventRepository(session)
-
-    @provide(scope=Scope.REQUEST)
-    def session_repo(self, session: AsyncSession) -> SessionRepositoryProtocol:
-        return PostgreSQLSessionRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def profile_repo(self, session: AsyncSession) -> ProfileRepositoryProtocol:

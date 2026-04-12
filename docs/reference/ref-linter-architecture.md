@@ -182,7 +182,7 @@ The new architecture allows deterministic testing:
 - **Action:** Run specific Rule.
 - **Assert:** Expected diagnostics (line number, message).
 
-### Smoke Tests
+### Live Proofs
 
-- Run `pdm run ui-editor-smoke` to ensure CodeMirror integration remains stable.
+- Run the current editor/auth live proof required by the active PR lane.
 - Manual check of "broken" scripts that previously triggered false positives.

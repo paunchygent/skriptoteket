@@ -30,19 +30,6 @@ type UpdateProfilePayload = {
   locale?: string | null;
 };
 
-type ChangePasswordPayload = {
-  current_password: string;
-  new_password: string;
-};
-
-type ChangeEmailPayload = {
-  email: string;
-};
-
-type ChangeEmailResponse = {
-  user: ApiUser;
-};
-
 export function useProfile() {
   const auth = useAuthStore();
   const profile = ref<UserProfile | null>(null);
@@ -68,27 +55,9 @@ export function useProfile() {
     return response;
   }
 
-  async function changePassword(payload: ChangePasswordPayload): Promise<void> {
-    await apiFetch<void>("/api/v1/profile/password", {
-      method: "POST",
-      body: payload,
-    });
-  }
-
-  async function changeEmail(payload: ChangeEmailPayload): Promise<ApiUser> {
-    const response = await apiFetch<ChangeEmailResponse>("/api/v1/profile/email", {
-      method: "PATCH",
-      body: payload,
-    });
-    auth.user = response.user;
-    return response.user;
-  }
-
   return {
     profile,
     load,
     updateProfile,
-    changePassword,
-    changeEmail,
   };
 }

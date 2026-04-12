@@ -24,7 +24,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner import (
     StudentSeatingPreferenceDto,
     _assert_unique,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(
@@ -79,7 +79,7 @@ def _serialize_roster_smart_rules(rules: RosterSmartRules) -> RosterSmartRulesRe
 async def get_roster_smart_rules(
     roster_id: UUID,
     handler: FromDishka[GetRosterSmartRulesHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> RosterSmartRulesResponse:
     return _serialize_roster_smart_rules(
         await handler.handle(roster_id=roster_id, owner_user_id=user.id)
@@ -91,8 +91,7 @@ async def update_roster_smart_rules(
     roster_id: UUID,
     request: UpdateRosterSmartRulesRequest,
     handler: FromDishka[PatchRosterSmartRulesHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> RosterSmartRulesResponse:
     rules = await handler.handle(
         roster_id=roster_id,

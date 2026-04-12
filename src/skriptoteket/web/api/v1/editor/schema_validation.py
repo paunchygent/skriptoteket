@@ -5,7 +5,9 @@ from fastapi import APIRouter, Depends
 from skriptoteket.application.scripting.commands import ValidateToolSchemasCommand
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.scripting import ValidateToolSchemasHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
+)
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import ValidateToolSchemasRequest
@@ -19,8 +21,7 @@ async def validate_schemas(
     tool_id: UUID,
     payload: ValidateToolSchemasRequest,
     handler: FromDishka[ValidateToolSchemasHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> ValidateToolSchemasResponse:
     result = await handler.handle(
         actor=user,

@@ -8,10 +8,16 @@
 
 import { defineStore } from "pinia";
 
-import { fetchWithTimeout, readAuthError, readErrorMessage } from "../api/authHttp";
+import { fetchWithTimeout, readErrorMessage } from "../api/authHttp";
 import type { components } from "../api/openapi";
-import { type AuthProfile, type AuthUser } from "../api/sharedAuth";
 import {
+  type AuthProfile,
+  type AuthUser,
+  sharedAuthUrl,
+  SHARED_AUTH_LOGOUT_PATH,
+} from "../api/sharedAuth";
+import {
+  type AppContinuationError,
   loadAppContinuation as requestAppContinuation,
   loadSharedCsrfToken,
   loadSharedSessionSnapshot,
@@ -19,10 +25,8 @@ import {
 
 type ApiRole = components["schemas"]["Role"];
 type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
-type LoginResponse = components["schemas"]["LoginResponse"];
-type RegisterResponse = components["schemas"]["RegisterResponse"];
 
-type AuthStatus = "idle" | "loading" | "ready" | "error";
+type AuthStatus = "idle" | "loading" | "ready" | "error" | "provisioning_required";
 
 const ROLE_RANK: Record<ApiRole, number> = {
   user: 0,
@@ -47,6 +51,7 @@ type AuthState = {
   bootstrapped: boolean;
   status: AuthStatus;
   error: string | null;
+  appContinuationError: AppContinuationError | null;
 };
 
 export const useAuthStore = defineStore("auth", {
@@ -60,9 +65,11 @@ export const useAuthStore = defineStore("auth", {
     bootstrapped: false,
     status: "idle",
     error: null,
+    appContinuationError: null,
   }),
   getters: {
     isAuthenticated: (state) => state.user !== null,
+    isProvisioningRequired: (state) => state.status === "provisioning_required",
     role: (state) => state.user?.role ?? null,
     hasAtLeastRole: (state) => {
       return (minRole: ApiRole): boolean => {
@@ -95,6 +102,7 @@ export const useAuthStore = defineStore("auth", {
       this.csrfToken = null;
       this.status = "ready";
       this.error = null;
+      this.appContinuationError = null;
       this.bootstrapped = true;
     },
     async bootstrap(): Promise<void> {
@@ -109,6 +117,7 @@ export const useAuthStore = defineStore("auth", {
 
       this.status = "loading";
       this.error = null;
+      this.appContinuationError = null;
 
       bootstrapPromise = (async () => {
         try {
@@ -123,7 +132,15 @@ export const useAuthStore = defineStore("auth", {
             this.featureFlags = snapshot.featureFlags;
 
             if (snapshot.user) {
-              await this.loadAppContinuation();
+              const continuation = await this.loadAppContinuation();
+              if (continuation === "provisioning_required") {
+                this.status = "provisioning_required";
+                return;
+              }
+              if (continuation === "error") {
+                this.status = "error";
+                return;
+              }
               if (!this.csrfToken) {
                 await this.ensureCsrfToken();
               }
@@ -142,6 +159,7 @@ export const useAuthStore = defineStore("auth", {
             this.csrfToken = null;
             this.status = "ready";
             this.error = null;
+            this.appContinuationError = null;
             return;
           }
 
@@ -153,6 +171,7 @@ export const useAuthStore = defineStore("auth", {
           this.csrfToken = null;
           this.status = "error";
           this.error = sharedSession.message;
+          this.appContinuationError = null;
         } catch (error: unknown) {
           this.user = null;
           this.profile = null;
@@ -162,6 +181,7 @@ export const useAuthStore = defineStore("auth", {
           this.csrfToken = null;
           this.status = "error";
           this.error = error instanceof Error ? error.message : "Failed to bootstrap session";
+          this.appContinuationError = null;
         }
       })();
 
@@ -172,8 +192,9 @@ export const useAuthStore = defineStore("auth", {
         bootstrapPromise = null;
       }
     },
-    async loadAppContinuation(): Promise<void> {
+    async loadAppContinuation(): Promise<"ready" | "error" | "provisioning_required"> {
       this.aiPolicy = null;
+      this.appContinuationError = null;
 
       try {
         const result = await requestAppContinuation();
@@ -183,17 +204,25 @@ export const useAuthStore = defineStore("auth", {
           this.aiPolicy = result.continuation.ai_policy;
           this.profile = result.profile;
           this.error = null;
-          return;
+          this.appContinuationError = null;
+          return "ready";
         }
 
         this.user = null;
         this.profile = null;
-        this.error = result.message;
+        this.error = result.error.message;
+        this.appContinuationError = result.error;
+        if (result.kind === "provisioning_required") {
+          return "provisioning_required";
+        }
+        return "error";
       } catch (error: unknown) {
         this.user = null;
         this.profile = null;
         this.error =
           error instanceof Error ? error.message : "Failed to load app continuation";
+        this.appContinuationError = null;
+        return "error";
       }
     },
     async ensureCsrfToken(): Promise<string | null> {
@@ -228,111 +257,6 @@ export const useAuthStore = defineStore("auth", {
         return null;
       }
     },
-    async login(params: { email: string; password: string }): Promise<void> {
-      this.status = "loading";
-      this.error = null;
-
-      try {
-        const response = await fetchWithTimeout(
-          "/api/v1/auth/login",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: params.email, password: params.password }),
-          },
-          {
-            timeoutMs: 15000,
-            timeoutMessage: "Inloggningen tog för lång tid. Kontrollera anslutningen och försök igen.",
-          },
-        );
-
-        if (!response.ok) {
-          this.status = "error";
-          const error = await readAuthError(response);
-          this.error = error.message;
-          throw error;
-        }
-
-        const payload: LoginResponse = await response.json();
-        this.user = payload.user;
-        this.profile = payload.profile ?? null;
-        this.aiPolicy = payload.ai_policy ?? null;
-        this.grants = [];
-        this.featureFlags = [];
-        this.csrfToken = payload.csrf_token;
-        this.bootstrapped = true;
-        this.status = "ready";
-        this.error = null;
-      } catch (error: unknown) {
-        if (!this.error) {
-          this.error = error instanceof Error ? error.message : "Login failed";
-        }
-        this.status = "error";
-        throw error;
-      }
-    },
-    async register(params: {
-      email: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-      next?: string;
-      classroom_planner_entry_origin?: "dashboard" | "catalog";
-    }): Promise<RegisterResponse> {
-      this.status = "loading";
-      this.error = null;
-
-      try {
-        const response = await fetchWithTimeout(
-          "/api/v1/auth/register",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: params.email,
-              password: params.password,
-              first_name: params.firstName,
-              last_name: params.lastName,
-              next: params.next,
-              classroom_planner_entry_origin: params.classroom_planner_entry_origin,
-            }),
-          },
-          { timeoutMs: 20000, timeoutMessage: "Registreringen tog för lång tid. Försök igen." },
-        );
-
-        if (!response.ok) {
-          this.status = "error";
-          this.error = await readErrorMessage(response);
-          throw new Error(this.error);
-        }
-
-        const payload = await response.json() as RegisterResponse;
-        this.user = null;
-        this.profile = null;
-        this.aiPolicy = null;
-        this.grants = [];
-        this.featureFlags = [];
-        this.csrfToken = null;
-        this.bootstrapped = true;
-        this.status = "ready";
-        this.error = null;
-        return payload;
-      } catch (error: unknown) {
-        if (!this.error) {
-          this.error = error instanceof Error ? error.message : "Registration failed";
-        }
-        this.status = "error";
-        throw error;
-      }
-    },
     async logout(): Promise<void> {
       this.status = "loading";
       this.error = null;
@@ -341,19 +265,13 @@ export const useAuthStore = defineStore("auth", {
         await this.bootstrap();
       }
 
-      const csrfToken = await this.ensureCsrfToken();
-      const headers: Record<string, string> = { Accept: "application/json" };
-      if (csrfToken) {
-        headers["X-CSRF-Token"] = csrfToken;
-      }
-
       try {
         const response = await fetchWithTimeout(
-          "/api/v1/auth/logout",
+          sharedAuthUrl(SHARED_AUTH_LOGOUT_PATH),
           {
             method: "POST",
             credentials: "include",
-            headers,
+            headers: { Accept: "application/json" },
           },
           { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
         );
@@ -361,31 +279,6 @@ export const useAuthStore = defineStore("auth", {
         if (response.status === 204 || response.status === 401) {
           this.clear();
           return;
-        }
-
-        if (response.status === 403 && this.user) {
-          this.csrfToken = null;
-          const refreshedToken = await this.ensureCsrfToken();
-          if (!refreshedToken) {
-            this.status = "error";
-            this.error = await readErrorMessage(response);
-            throw new Error(this.error);
-          }
-
-          const retry = await fetchWithTimeout(
-            "/api/v1/auth/logout",
-            {
-              method: "POST",
-              credentials: "include",
-              headers: { ...headers, "X-CSRF-Token": refreshedToken },
-            },
-            { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
-          );
-
-          if (retry.status === 204 || retry.status === 401) {
-            this.clear();
-            return;
-          }
         }
 
         this.status = "error";

@@ -20,7 +20,7 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import make_async_container
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
@@ -31,8 +31,9 @@ from skriptoteket.domain.identity.internal_identity_context import (
     INTERNAL_IDENTITY_SIGNATURE_HEADER,
     INTERNAL_IDENTITY_SIGNATURE_PREFIX,
 )
-from skriptoteket.domain.identity.models import AuthProvider
+from skriptoteket.domain.identity.models import AuthProvider, User
 from skriptoteket.web.api.v1 import profile as profile_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_user_profile
 from tests.fixtures.profile_app_continuation_support import (
@@ -88,6 +89,14 @@ def app(
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
     app.include_router(profile_api.router)
+
+    @app.get("/api/v1/pr-0253/protected-read")
+    async def protected_read(user: User = Depends(require_app_user_api)) -> dict[str, str]:
+        return {"user_id": str(user.id)}
+
+    @app.post("/api/v1/pr-0253/protected-write")
+    async def protected_write(user: User = Depends(require_app_user_api)) -> dict[str, str]:
+        return {"user_id": str(user.id)}
 
     container = make_async_container(
         ProfileContinuationApiProvider(
@@ -197,6 +206,48 @@ async def test_profile_app_continuation_fails_closed_without_local_projection(
     assert response.json()["error"]["code"] == ErrorCode.UNAUTHORIZED.value
     assert response.json()["error"]["details"]["reason"] == "missing_huleedu_app_projection"
     assert users.lookup_calls == [(AuthProvider.HULEEDU, CONTEXT_SUBJECT)]
+
+
+@pytest.mark.asyncio
+async def test_app_dependency_rejects_stale_csrf_without_signed_huleedu_context(
+    client: httpx.AsyncClient,
+    users: UserRepositoryStub,
+) -> None:
+    users.user = huleedu_user()
+
+    response = await client.post(
+        "/api/v1/pr-0253/protected-write",
+        headers={"X-CSRF-Token": "stale-local-token"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == ErrorCode.UNAUTHORIZED.value
+    assert users.lookup_calls == []
+
+
+@pytest.mark.asyncio
+async def test_app_dependency_accepts_signed_context_for_read_and_write_without_local_session(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+) -> None:
+    user = huleedu_user()
+    users.user = user
+    profiles.result = make_user_profile(user_id=user.id)
+    headers = build_headers(
+        private_key=private_key,
+        now_ts=int(clock.now().timestamp()),
+    )
+
+    read_response = await client.get("/api/v1/pr-0253/protected-read", headers=headers)
+    write_response = await client.post("/api/v1/pr-0253/protected-write", headers=headers)
+
+    assert read_response.status_code == 200
+    assert write_response.status_code == 200
+    assert read_response.json() == {"user_id": str(user.id)}
+    assert write_response.json() == {"user_id": str(user.id)}
 
 
 InvalidHeadersBuilder = Callable[[rsa.RSAPrivateKey, int], dict[str, str]]

@@ -24,8 +24,7 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.observability.health import build_health_response, check_database, check_smtp
 from skriptoteket.observability.metrics import get_identity_metrics, get_metrics
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.identity import SessionRepositoryProtocol, UserRepositoryProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(tags=["observability"])
@@ -63,9 +62,7 @@ async def healthz(
 @router.get("/metrics", response_class=Response)
 async def metrics(
     settings: FromDishka[Settings],
-    sessions: FromDishka[SessionRepositoryProtocol],
     users: FromDishka[UserRepositoryProtocol],
-    clock: FromDishka[ClockProtocol],
 ) -> Response:
     """Prometheus metrics endpoint for scraping."""
     metrics = get_metrics()
@@ -74,10 +71,7 @@ async def metrics(
     metrics["session_files_count"].set(usage.files)
     if settings.metrics_identity_gauges_enabled:
         identity_metrics = get_identity_metrics()
-        now = clock.now()
-        active_sessions = await sessions.count_active(now=now)
         users_by_role = await users.count_active_by_role()
-        identity_metrics["active_sessions"].set(active_sessions)
         for role in Role:
             identity_metrics["users_by_role"].labels(role=role.value).set(
                 users_by_role.get(role, 0)

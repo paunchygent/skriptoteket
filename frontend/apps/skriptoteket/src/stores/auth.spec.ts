@@ -72,6 +72,7 @@ describe("useAuthStore", () => {
       expect(store.bootstrapped).toBe(false);
       expect(store.status).toBe("idle");
       expect(store.error).toBeNull();
+      expect(store.appContinuationError).toBeNull();
     });
   });
 
@@ -192,6 +193,13 @@ describe("useAuthStore", () => {
       store.csrfToken = "token";
       store.status = "loading";
       store.error = "Some error";
+      store.appContinuationError = {
+        code: "APP_CONTINUATION_FAILED",
+        details: null,
+        message: "Some error",
+        reason: null,
+        status: 503,
+      };
 
       store.clear();
 
@@ -200,6 +208,7 @@ describe("useAuthStore", () => {
       expect(store.csrfToken).toBeNull();
       expect(store.status).toBe("ready");
       expect(store.error).toBeNull();
+      expect(store.appContinuationError).toBeNull();
       expect(store.bootstrapped).toBe(true);
     });
   });
@@ -258,113 +267,6 @@ describe("useAuthStore", () => {
       expect(token).toBeNull();
       expect(store.user).toBeNull();
       expect(store.csrfToken).toBeNull();
-    });
-  });
-
-  describe("login()", () => {
-    it("sets user and profile on success", async () => {
-      const store = useAuthStore();
-      const mockUser = createTestUser();
-      const mockProfile = createTestProfile({ display_name: "Test User" });
-
-      vi.mocked(fetch).mockResolvedValueOnce(
-        mockJsonResponse({
-          user: mockUser,
-          profile: mockProfile,
-          csrf_token: "new-csrf-token",
-        }),
-      );
-
-      await store.login({ email: "test@test.com", password: "password" });
-
-      expect(store.user).toEqual(mockUser);
-      expect(store.profile).toEqual(mockProfile);
-      expect(store.csrfToken).toBe("new-csrf-token");
-      expect(store.status).toBe("ready");
-      expect(store.bootstrapped).toBe(true);
-    });
-
-    it("throws and sets error on failure", async () => {
-      const store = useAuthStore();
-
-      vi.mocked(fetch).mockResolvedValueOnce(
-        mockJsonResponse(
-          {
-            error: { code: "INVALID_CREDENTIALS", message: "Invalid email or password" },
-          },
-          401,
-          "Unauthorized",
-        ),
-      );
-
-      await expect(store.login({ email: "test@test.com", password: "wrong" })).rejects.toThrow(
-        "Invalid email or password"
-      );
-
-      expect(store.status).toBe("error");
-      expect(store.error).toBe("Invalid email or password");
-      expect(store.user).toBeNull();
-    });
-
-    it("preserves api error codes for unverified email login failures", async () => {
-      const store = useAuthStore();
-
-      vi.mocked(fetch).mockResolvedValueOnce(
-        mockJsonResponse(
-          {
-            error: {
-              code: "EMAIL_NOT_VERIFIED",
-              message: "Verifiera din e-postadress innan du loggar in",
-            },
-            correlation_id: "corr-123",
-          },
-          401,
-          "Unauthorized",
-        ),
-      );
-
-      await expect(store.login({ email: "test@test.com", password: "password" })).rejects.toEqual(
-        expect.objectContaining({
-          code: "EMAIL_NOT_VERIFIED",
-          message: "Verifiera din e-postadress innan du loggar in",
-          correlationId: "corr-123",
-          status: 401,
-        }),
-      );
-
-      expect(store.status).toBe("error");
-      expect(store.error).toBe("Verifiera din e-postadress innan du loggar in");
-    });
-  });
-
-  describe("register()", () => {
-    it("keeps the client unauthenticated after successful registration", async () => {
-      const store = useAuthStore();
-      const mockUser = createTestUser({ email_verified: false });
-      const mockProfile = createTestProfile({ first_name: "Test" });
-
-      vi.mocked(fetch).mockResolvedValueOnce(
-        mockJsonResponse({
-          user: mockUser,
-          profile: mockProfile,
-          message: "Konto skapat! Kontrollera din e-post för att verifiera kontot.",
-        }),
-      );
-
-      const result = await store.register({
-        email: "test@test.com",
-        password: "password-123",
-        firstName: "Test",
-        lastName: "User",
-      });
-
-      expect(result.message).toBe("Konto skapat! Kontrollera din e-post för att verifiera kontot.");
-      expect(store.user).toBeNull();
-      expect(store.profile).toBeNull();
-      expect(store.csrfToken).toBeNull();
-      expect(store.isAuthenticated).toBe(false);
-      expect(store.status).toBe("ready");
-      expect(store.bootstrapped).toBe(true);
     });
   });
 
@@ -535,7 +437,64 @@ describe("useAuthStore", () => {
       expect(store.aiPolicy).toBeNull();
       expect(store.profile).toBeNull();
       expect(store.error).toBe("Local app state unavailable");
-      expect(store.status).toBe("ready");
+      expect(store.status).toBe("error");
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("preserves missing-projection app-continuation errors for deliberate routing", async () => {
+      const store = useAuthStore();
+      const huleEduUserId = "huleedu-unprovisioned-subject";
+
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            authenticated: true,
+            user: {
+              user_id: huleEduUserId,
+              email: "teacher@example.test",
+              email_verified: true,
+            },
+            profile: { display_name: "Teacher", locale: "sv-SE" },
+            policy: { roles: ["teacher"], grants: [], feature_flags: [] },
+            session: {
+              transport: "cookie",
+              csrf_required: true,
+              expires_at: "2026-04-11T12:00:00Z",
+            },
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockJsonResponse(
+            {
+              error: {
+                code: "UNAUTHORIZED",
+                message: "Skriptoteket-kontot är inte aktiverat.",
+                details: {
+                  reason: "missing_huleedu_app_projection",
+                  subject: huleEduUserId,
+                },
+              },
+            },
+            401,
+            "Unauthorized",
+          ),
+        );
+
+      await store.bootstrap();
+
+      expect(store.user).toBeNull();
+      expect(store.profile).toBeNull();
+      expect(store.aiPolicy).toBeNull();
+      expect(store.status).toBe("provisioning_required");
+      expect(store.isProvisioningRequired).toBe(true);
+      expect(store.error).toBe("Skriptoteket-kontot är inte aktiverat.");
+      expect(store.appContinuationError).toEqual(
+        expect.objectContaining({
+          code: "UNAUTHORIZED",
+          status: 401,
+          reason: "missing_huleedu_app_projection",
+        }),
+      );
       expect(fetch).toHaveBeenCalledTimes(2);
     });
 

@@ -5,7 +5,7 @@ Purpose:
     the SPA editor and application-layer editing workflows.
 
 Relationships:
-    - Maintainer access and CSRF checks stay in web dependencies.
+    - Maintainer and signed HuleEdu-derived access checks stay in web dependencies.
     - Remote AI fallback consent comes from request-scoped profile preferences.
 """
 
@@ -25,10 +25,9 @@ from skriptoteket.protocols.llm import (
     EditOpsPreviewHandlerProtocol,
     EditOpsSelection,
 )
-from skriptoteket.web.auth.ai_preferences import AiPreferences, require_ai_preferences
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import require_tool_access
@@ -57,9 +56,8 @@ async def create_edit_ops(
     handler: FromDishka[EditOpsHandlerProtocol],
     settings: FromDishka[Settings],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
-    ai_preferences: AiPreferences = Depends(require_ai_preferences),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
+    ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorEditOpsResponse:
     if eval_mode == "1":
@@ -117,8 +115,7 @@ async def preview_edit_ops(
     payload: EditorEditOpsPreviewRequest,
     handler: FromDishka[EditOpsPreviewHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> EditorEditOpsPreviewResponse:
     await require_tool_access(actor=user, tool_id=payload.tool_id, maintainers=maintainers)
     selection = (
@@ -156,8 +153,7 @@ async def apply_edit_ops(
     payload: EditorEditOpsApplyRequest,
     handler: FromDishka[EditOpsApplyHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> EditorEditOpsPreviewResponse:
     await require_tool_access(actor=user, tool_id=payload.tool_id, maintainers=maintainers)
     selection = (

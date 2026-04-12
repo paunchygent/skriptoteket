@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
 from skriptoteket.application.identity.admin_users import (
@@ -27,9 +27,6 @@ from skriptoteket.application.identity.commands import (
     CreateLocalUserResult,
     GetProfileCommand,
     GetProfileResult,
-    LoginCommand,
-    LoginResult,
-    LogoutCommand,
     RegisterUserCommand,
     RegisterUserResult,
     UpdateAiSettingsCommand,
@@ -44,7 +41,6 @@ from skriptoteket.domain.identity.models import (
     AuthProvider,
     BlockedDomain,
     Role,
-    Session,
     User,
     UserAuth,
     UserProfile,
@@ -80,22 +76,6 @@ class ProfileRepositoryProtocol(Protocol):
     async def update(self, *, profile: UserProfile) -> UserProfile: ...
 
 
-class SessionRepositoryProtocol(Protocol):
-    async def create(self, *, session: Session) -> None: ...
-    async def get_by_id(self, session_id: UUID) -> Session | None: ...
-    async def revoke(self, *, session_id: UUID) -> None: ...
-    async def revoke_all_for_user(self, *, user_id: UUID, revoked_at: datetime) -> int: ...
-    async def count_active(self, *, now: datetime) -> int: ...
-    async def sync_ai_settings_for_user(
-        self,
-        *,
-        user_id: UUID,
-        allow_remote_fallback: bool | None,
-        inline_completion_provider: str | None,
-        now: datetime,
-    ) -> None: ...
-
-
 class AllowedDomainRepositoryProtocol(Protocol):
     async def get_by_domain(self, domain: str) -> AllowedDomain | None: ...
     async def upsert(self, *, domain: AllowedDomain) -> AllowedDomain: ...
@@ -119,15 +99,11 @@ class PasswordHasherProtocol(Protocol):
     def verify(self, *, password: str, password_hash: str) -> bool: ...
 
 
-class CurrentUserProviderProtocol(Protocol):
-    async def get_current_user(self, *, session_id: UUID | None) -> User | None: ...
-
-
 class HuleEduInternalIdentityVerifierProtocol(Protocol):
     def verify(
         self,
         *,
-        headers: Mapping[str, Any],
+        headers: Mapping[str, object],
         now_ts: int,
     ) -> InternalIdentityContextV1: ...
 
@@ -138,14 +114,6 @@ class HuleEduAppProjectionResolverProtocol(Protocol):
         *,
         context: InternalIdentityContextV1,
     ) -> HuleEduAppUserProjection: ...
-
-
-class LoginHandlerProtocol(Protocol):
-    async def handle(self, command: LoginCommand) -> LoginResult: ...
-
-
-class LogoutHandlerProtocol(Protocol):
-    async def handle(self, command: LogoutCommand) -> None: ...
 
 
 class CreateLocalUserHandlerProtocol(Protocol):

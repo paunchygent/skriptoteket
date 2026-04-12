@@ -9,6 +9,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
@@ -42,62 +44,32 @@ from skriptoteket.protocols.classroom_planner_exports import (
 from skriptoteket.protocols.classroom_planner_guest_upgrade import (
     ClassroomPlannerGuestUpgradeRepositoryProtocol,
 )
-from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.identity import (
-    CurrentUserProviderProtocol,
-    SessionRepositoryProtocol,
-)
 from skriptoteket.web.api.v1 import (
     apps_classroom_planner_guest_upgrade as guest_upgrade_api,
 )
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.application_fixtures import FakeUow
-from tests.fixtures.identity_fixtures import make_session, make_user
-
-
-class FixedClock:
-    def __init__(self, now: datetime) -> None:
-        self._now = now
-
-    def now(self) -> datetime:
-        return self._now
+from tests.fixtures.profile_app_continuation_support import (
+    ClockStub,
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 
 
 class GuestUpgradeApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        clock: ClockProtocol,
-        current_user_provider: CurrentUserProviderProtocol,
-        sessions: SessionRepositoryProtocol,
         guest_upgrade_handler: ClassroomPlannerGuestUpgradeHandler,
         guest_upgrade_consumption_handler: GetClassroomPlannerGuestUpgradeConsumptionHandler,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._clock = clock
-        self._current_user_provider = current_user_provider
-        self._sessions = sessions
         self._guest_upgrade_handler = guest_upgrade_handler
         self._guest_upgrade_consumption_handler = guest_upgrade_consumption_handler
-
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.APP)
-    def clock(self) -> ClockProtocol:
-        return self._clock
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return self._current_user_provider
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return self._sessions
 
     @provide(scope=Scope.REQUEST)
     def guest_upgrade_handler(self) -> ClassroomPlannerGuestUpgradeHandler:
@@ -116,27 +88,34 @@ def now() -> datetime:
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture
-def clock(now: datetime) -> ClockProtocol:
-    return FixedClock(now=now)
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
 
 
 @pytest.fixture
-def current_user_provider() -> AsyncMock:
-    provider = AsyncMock(spec=CurrentUserProviderProtocol)
-    provider.get_current_user.return_value = None
-    return provider
+def clock(now: datetime) -> ClockStub:
+    return ClockStub(now=now)
 
 
 @pytest.fixture
-def sessions() -> AsyncMock:
-    repository = AsyncMock(spec=SessionRepositoryProtocol)
-    repository.get_by_id.return_value = None
-    return repository
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
+
+
+@pytest.fixture
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
 
 
 @pytest.fixture
@@ -152,9 +131,9 @@ def guest_upgrade_consumption_handler() -> AsyncMock:
 @pytest.fixture
 def app(
     settings: Settings,
-    clock: ClockProtocol,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     guest_upgrade_handler: AsyncMock,
     guest_upgrade_consumption_handler: AsyncMock,
 ) -> FastAPI:
@@ -163,14 +142,16 @@ def app(
     app.include_router(guest_upgrade_api.router)
 
     container = make_async_container(
-        GuestUpgradeApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
+            profiles=profiles,
+        ),
+        GuestUpgradeApiProvider(
             guest_upgrade_handler=guest_upgrade_handler,
             guest_upgrade_consumption_handler=guest_upgrade_consumption_handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app
@@ -302,40 +283,29 @@ async def test_guest_upgrade_consumption_requires_auth(client: httpx.AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_guest_upgrade_requires_csrf(
+async def test_guest_upgrade_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/apps/classroom.group-seating-studio/guest-upgrade",
         json=_request_payload().model_dump(mode="json"),
+        headers={"X-CSRF-Token": "stale-local-csrf"},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_guest_upgrade_returns_receipt(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     guest_upgrade_handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    user = seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     payload = _request_payload()
     guest_upgrade_handler.handle.return_value = ClassroomPlannerGuestUpgradeReceipt(
         mode="preview",
@@ -345,11 +315,10 @@ async def test_guest_upgrade_returns_receipt(
         server_snapshot_content_hash="sha256:server",
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         "/api/v1/apps/classroom.group-seating-studio/guest-upgrade",
         json=payload.model_dump(mode="json"),
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
     )
 
     assert response.status_code == 200
@@ -362,21 +331,19 @@ async def test_guest_upgrade_returns_receipt(
 @pytest.mark.asyncio
 async def test_guest_upgrade_consumption_status_returns_backend_truth(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     guest_upgrade_consumption_handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    user = seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     guest_upgrade_consumption_handler.handle.return_value = True
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.get(
         "/api/v1/apps/classroom.group-seating-studio/guest-upgrade/consumption",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
     )
 
     assert response.status_code == 200
@@ -387,15 +354,13 @@ async def test_guest_upgrade_consumption_status_returns_backend_truth(
 @pytest.mark.asyncio
 async def test_guest_upgrade_preview_handles_template_bearing_snapshot_without_500(
     settings: Settings,
-    clock: ClockProtocol,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    user = seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
 
     rosters = AsyncMock(spec=RosterRepositoryProtocol)
     rosters.list_by_owner.return_value = []
@@ -444,16 +409,18 @@ async def test_guest_upgrade_preview_handles_template_bearing_snapshot_without_5
     app.middleware("http")(error_handler_middleware)
     app.include_router(guest_upgrade_api.router)
     container = make_async_container(
-        GuestUpgradeApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
+            profiles=profiles,
+        ),
+        GuestUpgradeApiProvider(
             guest_upgrade_handler=real_handler,
             guest_upgrade_consumption_handler=AsyncMock(
                 spec=GetClassroomPlannerGuestUpgradeConsumptionHandler
             ),
-        )
+        ),
     )
     setup_dishka(container, app)
 
@@ -461,11 +428,10 @@ async def test_guest_upgrade_preview_handles_template_bearing_snapshot_without_5
         transport=httpx.ASGITransport(app=app),
         base_url="http://test",
     ) as client:
-        client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
         response = await client.post(
             "/api/v1/apps/classroom.group-seating-studio/guest-upgrade",
             json=_template_bearing_request_payload().model_dump(mode="json"),
-            headers={"X-CSRF-Token": session.csrf_token},
+            headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         )
 
     assert response.status_code == 200

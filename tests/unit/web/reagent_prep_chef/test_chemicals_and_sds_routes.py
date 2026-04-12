@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
-
 import httpx
 import pytest
 
@@ -9,15 +7,11 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefChemicalOption,
     ReagentPrepChefChemicalsResult,
 )
-from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as reagent_prep_chef_api
-from tests.fixtures.identity_fixtures import make_session, make_user
 from tests.unit.web.reagent_prep_chef.test_support import (
     StubActorHandler,
-    StubCurrentUserProvider,
     StubSdsStore,
-    StubSessionRepository,
 )
 
 
@@ -30,17 +24,10 @@ async def test_list_chemicals_requires_auth(client: httpx.AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_list_chemicals_returns_items(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
+    auth_user: User,
     chemicals_handler: StubActorHandler[ReagentPrepChefChemicalsResult],
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     chemicals_handler.set_result(
         ReagentPrepChefChemicalsResult(
             chemicals=[
@@ -51,36 +38,32 @@ async def test_list_chemicals_returns_items(
         )
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
-    response = await client.get(f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/chemicals")
+    response = await client.get(
+        f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/chemicals",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     assert response.json()["chemicals"][0]["key"] == "NaCl"
-    assert chemicals_handler.calls == [user]
+    assert chemicals_handler.calls == [auth_user]
 
 
 @pytest.mark.asyncio
 async def test_get_sds_returns_content(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     sds_store: StubSdsStore,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     sds_store.add(
         sds_ref="NaCl",
         pdf_file_name="NaCl.pdf",
         pdf_bytes=b"%PDF-1.4\n%test\n",
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
-    response = await client.get(f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/NaCl")
+    response = await client.get(
+        f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/NaCl",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("application/pdf")
@@ -92,20 +75,12 @@ async def test_get_sds_returns_content(
 @pytest.mark.asyncio
 async def test_get_sds_returns_404_for_missing(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
-    sds_store: StubSdsStore,
-    now: datetime,
+    auth_headers: dict[str, str],
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
-    response = await client.get(f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/Unknown")
+    response = await client.get(
+        f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/Unknown",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 404
 
@@ -113,17 +88,9 @@ async def test_get_sds_returns_404_for_missing(
 @pytest.mark.asyncio
 async def test_get_sds_markdown_returns_payload(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     sds_store: StubSdsStore,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     sds_store.add(
         sds_ref="NaCl",
         md_file_name="NaCl.md",
@@ -133,8 +100,10 @@ async def test_get_sds_markdown_returns_payload(
         pdf_file_name=None,
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
-    response = await client.get(f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/NaCl/markdown")
+    response = await client.get(
+        f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/NaCl/markdown",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     payload = response.json()

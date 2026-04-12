@@ -15,7 +15,6 @@ ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.FORBIDDEN: 403,
     ErrorCode.NOT_FOUND: 404,
     ErrorCode.USER_NOT_FOUND: 404,
-    ErrorCode.SESSION_NOT_FOUND: 404,
     ErrorCode.CONFLICT: 409,
     ErrorCode.DUPLICATE_ENTRY: 409,
     ErrorCode.TOO_MANY_REQUESTS: 429,

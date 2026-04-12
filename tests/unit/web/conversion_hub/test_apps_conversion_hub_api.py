@@ -96,7 +96,6 @@ async def test_submit_jobs_returns_local_job_ids_from_handler() -> None:
         files=[UploadFile(filename="in.html", file=io.BytesIO(b"<h1>Hej</h1>"))],
         wait_seconds=0,
         user=user,
-        _=None,
     )
 
     assert result.jobs[0].job_id == local_job_id
@@ -165,7 +164,6 @@ async def test_submit_jobs_rejects_wait_seconds_above_upstream_cap() -> None:
             files=[UploadFile(filename="in.html", file=io.BytesIO(b"<p>Hej</p>"))],
             wait_seconds=21,
             user=user,
-            _=None,
         )
 
     assert excinfo.value.code is ErrorCode.VALIDATION_ERROR
@@ -190,7 +188,6 @@ async def test_submit_jobs_rejects_invalid_pdf_layout_before_handler_call() -> N
             files=[UploadFile(filename="in.html", file=io.BytesIO(b"<p>Hej</p>"))],
             wait_seconds=0,
             user=user,
-            _=None,
         )
 
     assert excinfo.value.code is ErrorCode.VALIDATION_ERROR

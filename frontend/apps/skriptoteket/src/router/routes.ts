@@ -17,6 +17,11 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("../views/AuthLoginView.vue"),
   },
   {
+    path: "/auth/provisioning-required",
+    name: "auth-provisioning-required",
+    component: () => import("../views/AuthProvisioningRequiredView.vue"),
+  },
+  {
     path: "/",
     name: "home",
     component: () => import("../views/HomeView.vue"),
@@ -24,22 +29,22 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/forgot-password",
     name: "forgot-password",
-    component: () => import("../views/ForgotPasswordView.vue"),
+    component: () => import("../views/AuthRetiredView.vue"),
   },
   {
     path: "/register",
     name: "register",
-    component: () => import("../views/RegisterView.vue"),
+    component: () => import("../views/AuthRetiredView.vue"),
   },
   {
     path: "/reset-password",
     name: "reset-password",
-    component: () => import("../views/ResetPasswordView.vue"),
+    component: () => import("../views/AuthRetiredView.vue"),
   },
   {
     path: "/verify-email",
     name: "verify-email",
-    component: () => import("../views/VerifyEmailView.vue"),
+    component: () => import("../views/AuthRetiredView.vue"),
   },
   {
     path: "/profile",

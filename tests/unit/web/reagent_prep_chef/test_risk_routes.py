@@ -22,15 +22,10 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefSdsSnapshot,
 )
 from skriptoteket.application.scripting.vault import VaultFileInfo
-from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as reagent_prep_chef_api
-from tests.fixtures.identity_fixtures import make_session, make_user
 from tests.unit.web.reagent_prep_chef.test_support import (
     StubActorCommandHandler,
-    StubCurrentUserProvider,
-    StubSessionRepository,
 )
 
 
@@ -107,25 +102,15 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
 
 
 @pytest.mark.asyncio
-async def test_risk_assessment_requires_csrf(
+async def test_risk_assessment_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
     risk_assessment_handler: StubActorCommandHandler[
         ReagentPrepChefRiskAssessmentRequest, ReagentPrepChefRiskAssessmentResult
     ],
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/risk-assessment",
+        headers={"X-CSRF-Token": "stale-local-csrf"},
         json={
             "prep": {
                 "chemical_formula": "NaCl",
@@ -142,32 +127,24 @@ async def test_risk_assessment_requires_csrf(
         },
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert risk_assessment_handler.calls == []
 
 
 @pytest.mark.asyncio
 async def test_risk_assessment_returns_draft(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     risk_assessment_handler: StubActorCommandHandler[
         ReagentPrepChefRiskAssessmentRequest, ReagentPrepChefRiskAssessmentResult
     ],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     risk_assessment_handler.set_result(_sample_risk_result(now=now))
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/risk-assessment",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "prep": {
                 "chemical_formula": "NaCl",
@@ -195,23 +172,14 @@ async def test_risk_assessment_returns_draft(
 @pytest.mark.asyncio
 async def test_export_risk_pdf_returns_download(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     export_risk_pdf_handler: StubActorCommandHandler[ReagentPrepChefRiskAssessmentRequest, bytes],
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
     export_risk_pdf_handler.set_result(b"%PDF-1.4 stub")
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/export-risk-pdf",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "prep": {
                 "chemical_formula": "NaCl",
@@ -238,17 +206,12 @@ async def test_export_risk_pdf_returns_download(
 @pytest.mark.asyncio
 async def test_save_risk_pdf_returns_vault_ref(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: StubCurrentUserProvider,
-    sessions: StubSessionRepository,
+    auth_headers: dict[str, str],
     save_risk_pdf_handler: StubActorCommandHandler[
         ReagentPrepChefRiskAssessmentRequest, ReagentPrepChefSavePdfResult
     ],
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
     file_id = UUID("00000000-0000-0000-0000-000000000002")
     save_risk_pdf_handler.set_result(
         ReagentPrepChefSavePdfResult(
@@ -263,13 +226,9 @@ async def test_save_risk_pdf_returns_vault_ref(
         )
     )
 
-    current_user_provider.user = user
-    sessions.sessions[session.id] = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/save-risk-pdf",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=auth_headers,
         json={
             "prep": {
                 "chemical_formula": "NaCl",

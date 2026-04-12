@@ -60,4 +60,4 @@ Keep quick geometry/unit smoke checks unmarked so they still run in the normal c
 ## 5. Frontend tests
 
 - Vitest: `pdm run fe-test`
-- Playwright smokes: `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`
+- Playwright proofs: `pdm run pr-0253-auth-retirement --start-backend --start-vite` / `pdm run pr-0255-auth-bootstrap --start-backend --start-vite`

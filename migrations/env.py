@@ -38,7 +38,6 @@ from skriptoteket.infrastructure.db.models.script_suggestion import (
 from skriptoteket.infrastructure.db.models.script_suggestion_decision import (
     ScriptSuggestionDecisionModel,
 )
-from skriptoteket.infrastructure.db.models.session import SessionModel
 from skriptoteket.infrastructure.db.models.tool import ToolModel
 from skriptoteket.infrastructure.db.models.tool_category import ToolCategoryModel
 from skriptoteket.infrastructure.db.models.tool_maintainer import (
@@ -86,7 +85,6 @@ _MODELS = [
     SandboxSnapshotModel,
     ScriptSuggestionModel,
     ScriptSuggestionDecisionModel,
-    SessionModel,
     ToolModel,
     ToolCategoryModel,
     ToolMaintainerModel,

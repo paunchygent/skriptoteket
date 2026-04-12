@@ -16,8 +16,8 @@ import {
   APP_CONTINUATION_PATH,
   type AppContinuationResponse,
 } from "../api/appContinuation";
-import { fetchWithTimeout, readErrorMessage } from "../api/authHttp";
-import type { components } from "../api/openapi";
+import { fetchWithTimeout, readAuthError, readErrorMessage } from "../api/authHttp";
+import { isApiError } from "../api/client";
 import {
   mapBrowserSessionToAuthSnapshot,
   sharedAuthUrl,
@@ -25,10 +25,9 @@ import {
   SHARED_AUTH_SESSION_PATH,
   type AuthProfile,
   type BrowserSessionResponse,
+  type SharedCsrfResponse,
   type SharedAuthSnapshot,
 } from "../api/sharedAuth";
-
-type CsrfResponse = components["schemas"]["CsrfResponse"];
 
 export type SharedSessionBootstrapResult =
   | { kind: "authenticated"; snapshot: SharedAuthSnapshot }
@@ -37,12 +36,56 @@ export type SharedSessionBootstrapResult =
 
 export type AppContinuationResult =
   | { kind: "ready"; continuation: AppContinuationResponse; profile: AuthProfile }
-  | { kind: "error"; message: string };
+  | { kind: "provisioning_required"; error: AppContinuationError }
+  | { kind: "error"; error: AppContinuationError };
 
 export type CsrfTokenResult =
   | { kind: "ready"; token: string }
   | { kind: "anonymous" }
   | { kind: "error"; message: string };
+
+export type AppContinuationError = {
+  code: string | null;
+  details: unknown;
+  message: string;
+  reason: string | null;
+  status: number | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function readReason(details: unknown): string | null {
+  if (!isRecord(details)) {
+    return null;
+  }
+
+  const reason = details.reason;
+  return typeof reason === "string" ? reason : null;
+}
+
+async function readAppContinuationError(response: Response): Promise<AppContinuationError> {
+  const error = await readAuthError(response);
+
+  if (isApiError(error)) {
+    return {
+      code: error.code,
+      details: error.details,
+      message: error.message,
+      reason: readReason(error.details),
+      status: error.status,
+    };
+  }
+
+  return {
+    code: null,
+    details: null,
+    message: error.message,
+    reason: null,
+    status: response.status,
+  };
+}
 
 function mergeAppContinuationProfile(continuation: AppContinuationResponse): AuthProfile {
   return {
@@ -104,10 +147,12 @@ export async function loadAppContinuation(): Promise<AppContinuationResult> {
     };
   }
 
-  return {
-    kind: "error",
-    message: await readErrorMessage(response),
-  };
+  const error = await readAppContinuationError(response);
+  if (error.status === 401 && error.reason === "missing_huleedu_app_projection") {
+    return { kind: "provisioning_required", error };
+  }
+
+  return { kind: "error", error };
 }
 
 export async function loadSharedCsrfToken(): Promise<CsrfTokenResult> {
@@ -122,7 +167,7 @@ export async function loadSharedCsrfToken(): Promise<CsrfTokenResult> {
   );
 
   if (response.status === 200) {
-    const payload: CsrfResponse = await response.json();
+    const payload: SharedCsrfResponse = await response.json();
     return { kind: "ready", token: payload.csrf_token };
   }
 

@@ -30,10 +30,9 @@ from skriptoteket.web.api.v1.suggestions_dto import (
     to_detail,
     to_summary,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_admin_api,
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_admin_api,
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -48,8 +47,7 @@ router = APIRouter(prefix="/api/v1", tags=["suggestions"])
 async def submit_suggestion(
     request: SubmitSuggestionRequest,
     handler: FromDishka[SubmitSuggestionHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> SubmitSuggestionResponse:
     result = await handler.handle(
         actor=user,
@@ -69,7 +67,7 @@ async def submit_suggestion(
 )
 async def list_suggestions_for_review(
     handler: FromDishka[ListSuggestionsForReviewHandlerProtocol],
-    user: User = Depends(require_admin_api),
+    user: User = Depends(require_app_admin_api),
 ) -> ListSuggestionsResponse:
     result = await handler.handle(actor=user, query=ListSuggestionsForReviewQuery())
     return ListSuggestionsResponse(suggestions=[to_summary(s) for s in result.suggestions])
@@ -82,7 +80,7 @@ async def list_suggestions_for_review(
 async def get_suggestion_for_review(
     suggestion_id: UUID,
     handler: FromDishka[GetSuggestionForReviewHandlerProtocol],
-    user: User = Depends(require_admin_api),
+    user: User = Depends(require_app_admin_api),
 ) -> SuggestionDetailResponse:
     result = await handler.handle(
         actor=user,
@@ -102,8 +100,7 @@ async def decide_suggestion(
     suggestion_id: UUID,
     request: DecideSuggestionRequest,
     handler: FromDishka[DecideSuggestionHandlerProtocol],
-    user: User = Depends(require_admin_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_admin_api),
 ) -> DecideSuggestionResponse:
     result = await handler.handle(
         actor=user,

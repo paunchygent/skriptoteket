@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timedelta, timezone
-from typing import Protocol, TypeVar, cast, runtime_checkable
+from datetime import datetime, timezone
+from typing import Protocol, TypeVar, runtime_checkable
 
 from starlette.requests import Request
 
 from skriptoteket.domain.catalog.models import Tool
-from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
+from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState, compute_content_hash
 
 T = TypeVar("T")
@@ -25,7 +25,7 @@ class _DishkaWrappedHandler(Protocol[T]):
 
 def _original[T](fn: _AsyncHandler[T] | _DishkaWrappedHandler[T]) -> _AsyncHandler[T]:
     if isinstance(fn, _DishkaWrappedHandler):
-        return cast(_AsyncHandler[T], fn.__dishka_orig_func__)
+        return fn.__dishka_orig_func__
     return fn
 
 
@@ -57,17 +57,6 @@ def _user(*, role: Role) -> User:
         auth_provider=AuthProvider.LOCAL,
         created_at=now,
         updated_at=now,
-    )
-
-
-def _session(*, user_id: uuid.UUID) -> Session:
-    now = _now()
-    return Session(
-        id=uuid.uuid4(),
-        user_id=user_id,
-        csrf_token="csrf",
-        created_at=now,
-        expires_at=now + timedelta(days=1),
     )
 
 

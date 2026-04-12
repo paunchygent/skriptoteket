@@ -23,7 +23,6 @@ class Metrics(TypedDict):
 
 
 class IdentityMetrics(TypedDict):
-    active_sessions: Gauge
     users_by_role: Gauge
 
 
@@ -100,11 +99,6 @@ def _create_metrics() -> Metrics:
 def _create_identity_metrics() -> IdentityMetrics:
     try:
         metrics: IdentityMetrics = {
-            "active_sessions": Gauge(
-                "skriptoteket_active_sessions",
-                "Current count of active user sessions",
-                registry=REGISTRY,
-            ),
             "users_by_role": Gauge(
                 "skriptoteket_users_by_role",
                 "Active users by role",
@@ -170,21 +164,16 @@ def _get_existing_metrics() -> Metrics:
 
 
 def _get_existing_identity_metrics() -> IdentityMetrics:
-    active_sessions: Gauge | None = None
     users_by_role: Gauge | None = None
 
     for collector in REGISTRY._names_to_collectors.values():
         name = getattr(collector, "_name", None)
-        if name == "skriptoteket_active_sessions" and isinstance(collector, Gauge):
-            active_sessions = collector
-            continue
         if name == "skriptoteket_users_by_role" and isinstance(collector, Gauge):
             users_by_role = collector
 
-    if active_sessions is None or users_by_role is None:
+    if users_by_role is None:
         raise RuntimeError("Identity metrics already registered but could not be retrieved.")
 
     return {
-        "active_sessions": active_sessions,
         "users_by_role": users_by_role,
     }

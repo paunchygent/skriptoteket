@@ -25,9 +25,8 @@ pdm run fe-lint
 pdm run fe-test
 
 # UI smoke (Playwright)
-pdm run ui-smoke
-pdm run ui-editor-smoke
-pdm run ui-runtime-smoke
+pdm run pr-0253-auth-retirement --start-backend --start-vite
+pdm run pr-0255-auth-bootstrap --start-backend --start-vite
 ```
 
 ## Backend (Pytest)
@@ -102,9 +101,9 @@ Use Playwright for browser-level flows and regressions (never Vitest).
 Commands:
 
 ```bash
-pdm run ui-smoke
-pdm run ui-editor-smoke
-pdm run ui-runtime-smoke
+pdm run pr-0253-auth-retirement --start-backend --start-vite
+pdm run pr-0255-auth-bootstrap --start-backend --start-vite
+pdm run pr-0252-auth-return --start-backend --start-vite
 ```
 
 Reference:

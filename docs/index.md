@@ -29,6 +29,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
 - HuleEdu launch surface + shared auth topology:
   `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md`
+- Hule Education product identity realms + Skriptoteket standalone identity:
+  `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md`
+- ADR-0083 Hule Education product identity realms for Skriptoteket login:
+  `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`
 - Launch SEO and indexing readiness assessment:
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
@@ -159,8 +163,18 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md`
 - ST-28-03 remove local auth ownership + regenerate client contracts:
   `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`
+- ST-28-06 product identity realm ADR + contract freeze:
+  `docs/backlog/stories/story-28-06-product-identity-realm-adr-and-contract-freeze.md`
+- ST-28-07 Hule Education-hosted Skriptoteket login ceremony:
+  `docs/backlog/stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md`
+- ST-28-08 Skriptoteket standalone registration + password lifecycle:
+  `docs/backlog/stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md`
+- ST-28-09 realm-aware projection provisioning + local RBAC:
+  `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md`
 - ST-28-04 cross-app auth cutover smoke + operator runbook proof:
   `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
+- ST-28-10 auth outcome observability for realm cutover:
+  `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md`
 - ST-28-05 HuleEdu provider conformance ingest + cutover readiness:
   `docs/backlog/prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md`
 - ST-28-01 session bootstrap API client cutover:

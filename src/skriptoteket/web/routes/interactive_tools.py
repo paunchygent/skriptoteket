@@ -36,7 +36,7 @@ from skriptoteket.protocols.interactive_tools import (
     StartActionHandlerProtocol,
 )
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1")
@@ -90,8 +90,7 @@ def _resolve_artifact_path(
 async def start_action(
     command: StartActionCommand,
     handler: FromDishka[StartActionHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> StartActionResult:
     return await handler.handle(actor=user, command=command)
 
@@ -101,7 +100,7 @@ async def get_session_state(
     tool_id: UUID,
     context: str,
     handler: FromDishka[GetSessionStateHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> GetSessionStateResult:
     return await handler.handle(
         actor=user,
@@ -113,7 +112,7 @@ async def get_session_state(
 async def list_session_files(
     tool_id: UUID,
     handler: FromDishka[ListSessionFilesHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
     context: str = Query("default"),
 ) -> ListSessionFilesResult:
     return await handler.handle(
@@ -127,8 +126,7 @@ async def delete_session_files(
     tool_id: UUID,
     payload: DeleteSessionFilesRequest,
     handler: FromDishka[DeleteSessionFilesHandlerProtocol],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
     context: str = Query("default"),
 ) -> DeleteSessionFilesResult:
     return await handler.handle(
@@ -145,7 +143,7 @@ async def delete_session_files(
 async def get_run(
     run_id: UUID,
     handler: FromDishka[GetRunHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> GetRunResult:
     return await handler.handle(actor=user, query=GetRunQuery(run_id=run_id))
 
@@ -154,7 +152,7 @@ async def get_run(
 async def list_artifacts(
     run_id: UUID,
     handler: FromDishka[ListArtifactsHandlerProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> ListArtifactsResult:
     return await handler.handle(actor=user, query=ListArtifactsQuery(run_id=run_id))
 
@@ -166,7 +164,7 @@ async def download_artifact(
     artifact_id: str,
     settings: FromDishka[Settings],
     runs: FromDishka[ToolRunRepositoryProtocol],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     del request
     run = await _load_production_run_for_user(runs=runs, run_id=run_id, actor=user)

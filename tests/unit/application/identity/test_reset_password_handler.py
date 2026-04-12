@@ -17,7 +17,6 @@ from skriptoteket.domain.identity.password_reset import (
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
-    SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.password_reset import PasswordResetTokenRepositoryProtocol
@@ -26,7 +25,7 @@ from tests.fixtures.identity_fixtures import make_user
 
 
 @pytest.mark.asyncio
-async def test_reset_password_updates_hash_and_revokes_all_sessions(now: datetime) -> None:
+async def test_reset_password_updates_hash_and_invalidates_pending_tokens(now: datetime) -> None:
     user = make_user(email="teacher@example.com").model_copy(
         update={
             "email_verified": True,
@@ -51,7 +50,6 @@ async def test_reset_password_updates_hash_and_revokes_all_sessions(now: datetim
     users = AsyncMock(spec=UserRepositoryProtocol)
     users.get_by_id.return_value = user
 
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
     password_reset_tokens = AsyncMock(spec=PasswordResetTokenRepositoryProtocol)
     password_reset_tokens.get_by_token_hash.return_value = token_record
 
@@ -64,7 +62,6 @@ async def test_reset_password_updates_hash_and_revokes_all_sessions(now: datetim
     handler = ResetPasswordHandler(
         uow=uow,
         users=users,
-        sessions=sessions,
         password_reset_tokens=password_reset_tokens,
         password_hasher=password_hasher,
         clock=clock,
@@ -85,7 +82,6 @@ async def test_reset_password_updates_hash_and_revokes_all_sessions(now: datetim
         password_hash="new-password-hash",
         updated_at=now,
     )
-    sessions.revoke_all_for_user.assert_awaited_once_with(user_id=user.id, revoked_at=now)
     password_reset_tokens.mark_used.assert_awaited_once_with(token_id=token_record.id, used_at=now)
     password_reset_tokens.invalidate_pending_for_user.assert_awaited_once_with(
         user_id=user.id,
@@ -100,7 +96,6 @@ async def test_reset_password_raises_for_invalid_token(now: datetime) -> None:
     uow.__aexit__.return_value = None
 
     users = AsyncMock(spec=UserRepositoryProtocol)
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
     password_reset_tokens = AsyncMock(spec=PasswordResetTokenRepositoryProtocol)
     password_reset_tokens.get_by_token_hash.return_value = None
     password_hasher = Mock(spec=PasswordHasherProtocol)
@@ -110,7 +105,6 @@ async def test_reset_password_raises_for_invalid_token(now: datetime) -> None:
     handler = ResetPasswordHandler(
         uow=uow,
         users=users,
-        sessions=sessions,
         password_reset_tokens=password_reset_tokens,
         password_hasher=password_hasher,
         clock=clock,
@@ -123,7 +117,6 @@ async def test_reset_password_raises_for_invalid_token(now: datetime) -> None:
 
     assert exc_info.value.code == ErrorCode.INVALID_PASSWORD_RESET_TOKEN
     users.update.assert_not_awaited()
-    sessions.revoke_all_for_user.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -143,7 +136,6 @@ async def test_reset_password_raises_for_expired_token(now: datetime) -> None:
     uow.__aexit__.return_value = None
 
     users = AsyncMock(spec=UserRepositoryProtocol)
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
     password_reset_tokens = AsyncMock(spec=PasswordResetTokenRepositoryProtocol)
     password_reset_tokens.get_by_token_hash.return_value = token_record
     password_hasher = Mock(spec=PasswordHasherProtocol)
@@ -153,7 +145,6 @@ async def test_reset_password_raises_for_expired_token(now: datetime) -> None:
     handler = ResetPasswordHandler(
         uow=uow,
         users=users,
-        sessions=sessions,
         password_reset_tokens=password_reset_tokens,
         password_hasher=password_hasher,
         clock=clock,
@@ -185,7 +176,6 @@ async def test_reset_password_raises_for_used_token(now: datetime) -> None:
     uow.__aexit__.return_value = None
 
     users = AsyncMock(spec=UserRepositoryProtocol)
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
     password_reset_tokens = AsyncMock(spec=PasswordResetTokenRepositoryProtocol)
     password_reset_tokens.get_by_token_hash.return_value = token_record
     password_hasher = Mock(spec=PasswordHasherProtocol)
@@ -195,7 +185,6 @@ async def test_reset_password_raises_for_used_token(now: datetime) -> None:
     handler = ResetPasswordHandler(
         uow=uow,
         users=users,
-        sessions=sessions,
         password_reset_tokens=password_reset_tokens,
         password_hasher=password_hasher,
         clock=clock,
@@ -227,7 +216,6 @@ async def test_reset_password_raises_for_non_local_user(now: datetime) -> None:
 
     users = AsyncMock(spec=UserRepositoryProtocol)
     users.get_by_id.return_value = user
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
     password_reset_tokens = AsyncMock(spec=PasswordResetTokenRepositoryProtocol)
     password_reset_tokens.get_by_token_hash.return_value = token_record
     password_hasher = Mock(spec=PasswordHasherProtocol)
@@ -237,7 +225,6 @@ async def test_reset_password_raises_for_non_local_user(now: datetime) -> None:
     handler = ResetPasswordHandler(
         uow=uow,
         users=users,
-        sessions=sessions,
         password_reset_tokens=password_reset_tokens,
         password_hasher=password_hasher,
         clock=clock,
@@ -267,7 +254,6 @@ async def test_reset_password_raises_for_weak_password(now: datetime) -> None:
 
     users = AsyncMock(spec=UserRepositoryProtocol)
     users.get_by_id.return_value = user
-    sessions = AsyncMock(spec=SessionRepositoryProtocol)
     password_reset_tokens = AsyncMock(spec=PasswordResetTokenRepositoryProtocol)
     password_reset_tokens.get_by_token_hash.return_value = token_record
     password_hasher = Mock(spec=PasswordHasherProtocol)
@@ -277,7 +263,6 @@ async def test_reset_password_raises_for_weak_password(now: datetime) -> None:
     handler = ResetPasswordHandler(
         uow=uow,
         users=users,
-        sessions=sessions,
         password_reset_tokens=password_reset_tokens,
         password_hasher=password_hasher,
         clock=clock,
@@ -288,4 +273,3 @@ async def test_reset_password_raises_for_weak_password(now: datetime) -> None:
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
     users.update.assert_not_awaited()
-    sessions.revoke_all_for_user.assert_not_awaited()

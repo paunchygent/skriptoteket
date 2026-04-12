@@ -19,12 +19,11 @@ const emit = defineEmits<{
   profileUpdated: [];
 }>();
 
-const { updateProfile, changeEmail } = useProfile();
+const { updateProfile } = useProfile();
 const toast = useToast();
 
 // Section-level edit states (toggle behavior)
 const isEditingPersonal = ref(false);
-const isEditingKonto = ref(false);
 const isSaving = ref(false);
 
 // Ref to AI settings component
@@ -38,16 +37,6 @@ const personalForm = reactive({
   display_name: "",
   locale: "sv-SE",
 });
-
-// Edit form data for Konto section
-const kontoForm = reactive({
-  email: "",
-  currentPassword: "",
-  newPassword: "",
-  confirmPassword: "",
-});
-const showPasswordForm = ref(false);
-const passwordError = ref<string | null>(null);
 
 const initials = computed(() => {
   const first = props.profile?.first_name?.[0] ?? "";
@@ -113,88 +102,6 @@ async function savePersonalInfo(): Promise<void> {
   }
 }
 
-// Toggle Konto section editing
-function toggleEditingKonto(): void {
-  if (!isEditingKonto.value) {
-    kontoForm.email = props.email;
-    showPasswordForm.value = false;
-  }
-  isEditingKonto.value = !isEditingKonto.value;
-}
-
-const { changePassword } = useProfile();
-
-async function saveKontoEmail(): Promise<void> {
-  const trimmed = kontoForm.email.trim().toLowerCase();
-  if (!trimmed) {
-    toast.warning("Ange en e-postadress.");
-    return;
-  }
-  if (trimmed === props.email.toLowerCase()) {
-    toast.info("E-postadressen är oförändrad.");
-    return;
-  }
-
-  if (isSaving.value) return;
-  isSaving.value = true;
-  try {
-    await changeEmail({ email: trimmed });
-    toast.success("E-postadressen uppdaterades.");
-    emit("profileUpdated");
-  } catch (err: unknown) {
-    const message = isApiError(err) ? err.message : "Kunde inte uppdatera e-postadressen.";
-    toast.failure(message);
-  } finally {
-    isSaving.value = false;
-  }
-}
-
-function clearPasswordForm(): void {
-  kontoForm.currentPassword = "";
-  kontoForm.newPassword = "";
-  kontoForm.confirmPassword = "";
-  passwordError.value = null;
-}
-
-function cancelPasswordForm(): void {
-  clearPasswordForm();
-  showPasswordForm.value = false;
-}
-
-async function savePassword(): Promise<void> {
-  passwordError.value = null;
-
-  if (!kontoForm.currentPassword) {
-    passwordError.value = "Ange ditt nuvarande lösenord.";
-    return;
-  }
-  if (kontoForm.newPassword.length < 8) {
-    passwordError.value = "Lösenordet måste vara minst 8 tecken.";
-    return;
-  }
-  if (kontoForm.newPassword !== kontoForm.confirmPassword) {
-    passwordError.value = "Lösenorden matchar inte.";
-    return;
-  }
-
-  if (isSaving.value) return;
-  isSaving.value = true;
-  try {
-    await changePassword({
-      current_password: kontoForm.currentPassword,
-      new_password: kontoForm.newPassword,
-    });
-    clearPasswordForm();
-    showPasswordForm.value = false;
-    toast.success("Lösenordet uppdaterades.");
-    emit("profileUpdated");
-  } catch (err: unknown) {
-    passwordError.value = isApiError(err) ? err.message : "Kunde inte uppdatera lösenordet.";
-  } finally {
-    isSaving.value = false;
-  }
-}
-
 // Toggle AI settings editing - sync with child component
 function toggleEditingAi(): void {
   isEditingAi.value = !isEditingAi.value;
@@ -215,11 +122,6 @@ watch(() => props.profile, () => {
   }
 }, { immediate: true });
 
-watch(() => props.email, () => {
-  if (!isEditingKonto.value) {
-    kontoForm.email = props.email;
-  }
-}, { immediate: true });
 </script>
 
 <template>
@@ -374,198 +276,21 @@ watch(() => props.email, () => {
     <section class="border-b border-navy/20">
       <div class="section-header">
         <h3 class="section-title">Konto</h3>
-        <button
-          type="button"
-          class="btn-inline-edit"
-          @click="toggleEditingKonto"
-        >
-          <svg
-            class="w-3 h-3 mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
-          {{ isEditingKonto ? 'Stäng' : 'Ändra' }}
-        </button>
       </div>
 
-      <!-- Read-only view -->
-      <dl
-        v-if="!isEditingKonto"
-        class="section-fields"
-      >
+      <dl class="section-fields">
         <div class="field-row">
           <dt class="field-label">E-post</dt>
           <dd class="field-value">{{ email }}</dd>
         </div>
         <div class="field-row">
-          <dt class="field-label">
-            Lösenord
-            <svg
-              class="inline-block w-3.5 h-3.5 ml-1.5 opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </dt>
-          <dd class="field-value">••••••••</dd>
+          <dt class="field-label">Inloggning</dt>
+          <dd class="field-value">
+            Hanteras via inloggningen för Skriptoteket. Kontakta administratören
+            för Skriptoteket vid ändringar.
+          </dd>
         </div>
       </dl>
-
-      <!-- Edit form -->
-      <div
-        v-else
-        class="section-edit-form"
-      >
-        <!-- Email edit -->
-        <div class="edit-field">
-          <label
-            for="edit-email"
-            class="edit-field-label"
-          >E-post</label>
-          <div class="flex items-center gap-2">
-            <input
-              id="edit-email"
-              v-model="kontoForm.email"
-              type="email"
-              class="input-inline"
-              :disabled="isSaving"
-            >
-            <button
-              type="button"
-              class="btn-inline-primary"
-              :disabled="isSaving || kontoForm.email === email"
-              @click="saveKontoEmail"
-            >
-              {{ isSaving ? 'Sparar...' : 'Spara' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Password change -->
-        <div class="edit-field">
-          <span class="edit-field-label">
-            Lösenord
-            <svg
-              class="inline-block w-3.5 h-3.5 ml-1.5 opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </span>
-          <div>
-            <button
-              v-if="!showPasswordForm"
-              type="button"
-              class="btn-inline-edit"
-              @click="showPasswordForm = true"
-            >
-              Byt lösenord
-            </button>
-
-            <!-- Inline password form -->
-            <div
-              v-else
-              class="space-y-3"
-            >
-              <div
-                v-if="passwordError"
-                class="text-xs text-red-600 border-l-2 border-red-500 pl-2 py-1 bg-red-50"
-              >
-                {{ passwordError }}
-              </div>
-
-              <div>
-                <label
-                  for="pw-current"
-                  class="block text-[11px] font-semibold uppercase tracking-wide text-navy/60 mb-1"
-                >Nuvarande lösenord</label>
-                <input
-                  id="pw-current"
-                  v-model="kontoForm.currentPassword"
-                  type="password"
-                  autocomplete="current-password"
-                  placeholder="Ange nuvarande lösenord"
-                  class="input-inline"
-                  :disabled="isSaving"
-                >
-              </div>
-
-              <div>
-                <label
-                  for="pw-new"
-                  class="block text-[11px] font-semibold uppercase tracking-wide text-navy/60 mb-1"
-                >Nytt lösenord</label>
-                <input
-                  id="pw-new"
-                  v-model="kontoForm.newPassword"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="Minst 8 tecken"
-                  class="input-inline"
-                  :disabled="isSaving"
-                >
-              </div>
-
-              <div>
-                <label
-                  for="pw-confirm"
-                  class="block text-[11px] font-semibold uppercase tracking-wide text-navy/60 mb-1"
-                >Bekräfta nytt lösenord</label>
-                <input
-                  id="pw-confirm"
-                  v-model="kontoForm.confirmPassword"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="Upprepa det nya lösenordet"
-                  class="input-inline"
-                  :disabled="isSaving"
-                >
-              </div>
-
-              <div class="flex items-center gap-2 pt-1">
-                <button
-                  type="button"
-                  class="btn-inline-primary"
-                  :disabled="isSaving"
-                  @click="savePassword"
-                >
-                  {{ isSaving ? 'Sparar...' : 'Uppdatera lösenord' }}
-                </button>
-                <button
-                  type="button"
-                  class="btn-inline-cancel"
-                  :disabled="isSaving"
-                  @click="cancelPasswordForm"
-                >
-                  Avbryt
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- AI Settings section -->

@@ -11,7 +11,7 @@ from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
-from skriptoteket.web.auth.api_dependencies import require_contributor_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_contributor_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.responses import ArtifactEntry, EditorRunDetails
@@ -123,7 +123,7 @@ async def get_run(
     run_id: UUID,
     runs: FromDishka[ToolRunRepositoryProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
 ) -> EditorRunDetails:
     run = await _load_run_for_actor(runs=runs, run_id=run_id, actor=user)
     return _build_run_details(run=run, settings=settings)
@@ -135,7 +135,7 @@ async def download_artifact(
     artifact_id: str,
     settings: FromDishka[Settings],
     runs: FromDishka[ToolRunRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
 ):
     run = await _load_run_for_actor(runs=runs, run_id=run_id, actor=user)
     manifest = ArtifactsManifest.model_validate(run.artifacts_manifest or {"artifacts": []})

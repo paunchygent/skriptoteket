@@ -26,10 +26,9 @@ from skriptoteket.protocols.llm import (
     EditorChatHistoryQuery,
     EditorChatStreamEvent,
 )
-from skriptoteket.web.auth.ai_preferences import AiPreferences, require_ai_preferences
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import require_tool_access
@@ -55,9 +54,8 @@ async def stream_editor_chat(
     payload: EditorChatRequest,
     handler: FromDishka[EditorChatHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
-    ai_preferences: AiPreferences = Depends(require_ai_preferences),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
+    ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
     command = EditorChatCommand(
@@ -90,7 +88,7 @@ async def get_editor_chat_history(
     tool_id: UUID,
     handler: FromDishka[EditorChatHistoryHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
     limit: int = Query(60, ge=1, le=200),
 ) -> EditorChatHistoryResponse:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
@@ -122,8 +120,7 @@ async def clear_editor_chat(
     tool_id: UUID,
     handler: FromDishka[EditorChatClearHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
     await handler.handle(

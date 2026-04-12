@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import cast
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
@@ -17,94 +18,71 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.identity import (
-    CurrentUserProviderProtocol,
-    SessionRepositoryProtocol,
-)
 from skriptoteket.protocols.llm import (
     EditorChatHistoryHandlerProtocol,
     EditorChatHistoryResult,
 )
 from skriptoteket.web.api.v1.editor import chat as chat_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from tests.fixtures.identity_fixtures import make_session, make_user
-
-
-class FixedClock:
-    def __init__(self, now: datetime) -> None:
-        self._now = now
-
-    def now(self) -> datetime:
-        return self._now
+from tests.fixtures.profile_app_continuation_support import (
+    ClockStub,
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 
 
 class EditorChatHistoryApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        clock: ClockProtocol,
-        current_user_provider: AsyncMock,
-        sessions: AsyncMock,
-        maintainers: AsyncMock,
-        handler: AsyncMock,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        handler: EditorChatHistoryHandlerProtocol,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._clock = clock
-        self._current_user_provider = current_user_provider
-        self._sessions = sessions
         self._maintainers = maintainers
         self._handler = handler
 
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.APP)
-    def clock(self) -> ClockProtocol:
-        return self._clock
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return cast(CurrentUserProviderProtocol, self._current_user_provider)
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return cast(SessionRepositoryProtocol, self._sessions)
-
     @provide(scope=Scope.REQUEST)
     def maintainers(self) -> ToolMaintainerRepositoryProtocol:
-        return cast(ToolMaintainerRepositoryProtocol, self._maintainers)
+        return self._maintainers
 
     @provide(scope=Scope.REQUEST)
     def editor_chat_history_handler(self) -> EditorChatHistoryHandlerProtocol:
-        return cast(EditorChatHistoryHandlerProtocol, self._handler)
+        return self._handler
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture
-def clock(now: datetime) -> ClockProtocol:
-    return FixedClock(now=now)
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
 
 
 @pytest.fixture
-def current_user_provider() -> AsyncMock:
-    provider = AsyncMock(spec=CurrentUserProviderProtocol)
-    provider.get_current_user.return_value = None
-    return provider
+def clock(now: datetime) -> ClockStub:
+    return ClockStub(now=now)
 
 
 @pytest.fixture
-def sessions() -> AsyncMock:
-    repo = AsyncMock(spec=SessionRepositoryProtocol)
-    repo.get_by_id.return_value = None
-    return repo
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
+
+
+@pytest.fixture
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
 
 
 @pytest.fixture
@@ -122,9 +100,9 @@ def handler() -> AsyncMock:
 @pytest.fixture
 def app(
     settings: Settings,
-    clock: ClockProtocol,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     maintainers: AsyncMock,
     handler: AsyncMock,
 ) -> FastAPI:
@@ -133,14 +111,16 @@ def app(
     app.include_router(chat_api.router, prefix="/api/v1/editor", tags=["editor"])
 
     container = make_async_container(
-        EditorChatHistoryApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
+            profiles=profiles,
+        ),
+        EditorChatHistoryApiProvider(
             maintainers=maintainers,
             handler=handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app
@@ -164,17 +144,14 @@ async def test_editor_chat_history_requires_auth(client: httpx.AsyncClient) -> N
 @pytest.mark.asyncio
 async def test_editor_chat_history_returns_messages(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.CONTRIBUTOR)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
 
     tool_id = uuid4()
     base_version_id = uuid4()
@@ -224,8 +201,11 @@ async def test_editor_chat_history_returns_messages(
         base_version_id=base_version_id,
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
-    response = await client.get(f"/api/v1/editor/tools/{tool_id}/chat", params={"limit": 2})
+    response = await client.get(
+        f"/api/v1/editor/tools/{tool_id}/chat",
+        params={"limit": 2},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+    )
 
     assert response.status_code == 200
     payload = response.json()

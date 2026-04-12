@@ -11,9 +11,8 @@ from skriptoteket.protocols.tool_settings import (
     ResolveSandboxSettingsHandlerProtocol,
     SaveSandboxSettingsHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -31,8 +30,7 @@ async def resolve_sandbox_settings(
     version_id: UUID,
     payload: SandboxSettingsResolveRequest,
     handler: FromDishka[ResolveSandboxSettingsHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> SandboxSettingsResponse:
     result = await handler.handle(
         actor=user,
@@ -59,8 +57,7 @@ async def save_sandbox_settings(
     version_id: UUID,
     payload: SandboxSettingsSaveRequest,
     handler: FromDishka[SaveSandboxSettingsHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> SandboxSettingsResponse:
     result = await handler.handle(
         actor=user,

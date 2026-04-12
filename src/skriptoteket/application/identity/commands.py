@@ -5,34 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserProfile
-
-
-class LoginCommand(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    email: str
-    password: str
-    ip_address: str | None = None
-    user_agent: str | None = None
-    correlation_id: UUID | None = None
-    auth_provider: AuthProvider = AuthProvider.LOCAL
-
-
-class LoginResult(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    session_id: UUID
-    csrf_token: str
-    user: User
-    profile: UserProfile | None = None
-
-
-class LogoutCommand(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    session_id: UUID
-    csrf_token: str
+from skriptoteket.domain.identity.models import Role, User, UserProfile
 
 
 class CreateLocalUserCommand(BaseModel):

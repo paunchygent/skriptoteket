@@ -25,10 +25,12 @@ vi.mock("../stores/auth", () => ({
 
 function createAuth(overrides?: {
   isAuthenticated?: boolean;
+  isProvisioningRequired?: boolean;
   hasAtLeastRole?: (role: string) => boolean;
 }) {
   return {
     isAuthenticated: overrides?.isAuthenticated ?? false,
+    isProvisioningRequired: overrides?.isProvisioningRequired ?? false,
     hasAtLeastRole: overrides?.hasAtLeastRole ?? vi.fn().mockReturnValue(false),
     bootstrap: vi.fn().mockResolvedValue(undefined),
   };
@@ -62,6 +64,72 @@ describe("router guards", () => {
     expect(result).toEqual({
       name: "auth-login",
       query: { next: "/browse" },
+    });
+  });
+
+  it("redirects authenticated HuleEdu users without a local projection to provisioning-required", async () => {
+    const auth = createAuth({ isProvisioningRequired: true });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/editor",
+      fullPath: "/editor",
+      meta: { requiresAuth: true, minRole: "contributor" },
+      query: {},
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toEqual({
+      name: "auth-provisioning-required",
+      query: { from: "/editor" },
+    });
+  });
+
+  it("keeps missing-projection users on the provisioning-required route", async () => {
+    const auth = createAuth({ isProvisioningRequired: true });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: "auth-provisioning-required",
+      path: "/auth/provisioning-required",
+      fullPath: "/auth/provisioning-required?from=/editor",
+      meta: {},
+      query: { from: "/editor" },
+    }, {
+      name: "editor-hub",
+      fullPath: "/editor",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it("sends direct provisioning-required visits without that state through auth-login", async () => {
+    const auth = createAuth();
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: "auth-provisioning-required",
+      path: "/auth/provisioning-required",
+      fullPath: "/auth/provisioning-required?from=/editor",
+      meta: {},
+      query: { from: "/editor" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toEqual({
+      name: "auth-login",
+      query: { next: "/auth/provisioning-required?from=/editor" },
     });
   });
 

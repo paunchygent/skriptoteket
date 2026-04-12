@@ -7,6 +7,8 @@ from uuid import UUID
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
@@ -20,56 +22,26 @@ from skriptoteket.application.curated_apps.classroom_planner.import_contracts im
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.identity import (
-    CurrentUserProviderProtocol,
-    SessionRepositoryProtocol,
-)
 from skriptoteket.web.api.v1 import apps_classroom_planner as planner_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from tests.fixtures.identity_fixtures import make_session, make_user
-
-
-class FixedClock:
-    def __init__(self, now: datetime) -> None:
-        self._now = now
-
-    def now(self) -> datetime:
-        return self._now
+from tests.fixtures.profile_app_continuation_support import (
+    ClockStub,
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 
 
 class PlannerImportsApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        clock: ClockProtocol,
-        current_user_provider: CurrentUserProviderProtocol,
-        sessions: SessionRepositoryProtocol,
         import_handler: CreateClassListImportPreviewHandler,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._clock = clock
-        self._current_user_provider = current_user_provider
-        self._sessions = sessions
         self._import_handler = import_handler
-
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.APP)
-    def clock(self) -> ClockProtocol:
-        return self._clock
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return self._current_user_provider
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return self._sessions
 
     @provide(scope=Scope.REQUEST)
     def import_handler(self) -> CreateClassListImportPreviewHandler:
@@ -77,27 +49,34 @@ class PlannerImportsApiProvider(Provider):
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture
-def clock(now: datetime) -> ClockProtocol:
-    return FixedClock(now=now)
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
 
 
 @pytest.fixture
-def current_user_provider() -> AsyncMock:
-    provider = AsyncMock(spec=CurrentUserProviderProtocol)
-    provider.get_current_user.return_value = None
-    return provider
+def clock(now: datetime) -> ClockStub:
+    return ClockStub(now=now)
 
 
 @pytest.fixture
-def sessions() -> AsyncMock:
-    repo = AsyncMock(spec=SessionRepositoryProtocol)
-    repo.get_by_id.return_value = None
-    return repo
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
+
+
+@pytest.fixture
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
 
 
 @pytest.fixture
@@ -108,9 +87,9 @@ def import_handler() -> AsyncMock:
 @pytest.fixture
 def app(
     settings: Settings,
-    clock: ClockProtocol,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     import_handler: AsyncMock,
 ) -> FastAPI:
     app = FastAPI()
@@ -126,13 +105,15 @@ def app(
     app.include_router(planner_api.router)
 
     container = make_async_container(
-        PlannerImportsApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
+            profiles=profiles,
+        ),
+        PlannerImportsApiProvider(
             import_handler=import_handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app
@@ -157,42 +138,30 @@ async def test_import_preview_requires_auth(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_import_preview_requires_csrf(
+async def test_import_preview_rejects_stale_csrf_without_signed_context(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
-    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     files = {"file": ("test.txt", b"content", "text/plain")}
     response = await client.post(
-        "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview", files=files
+        "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview",
+        files=files,
+        headers={"X-CSRF-Token": "stale-local-csrf"},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_import_preview_success(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     import_handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
-
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
 
     file_name = "test_class.txt"
     import_handler.handle.return_value = ClassListImportPreview(
@@ -203,12 +172,13 @@ async def test_import_preview_success(
     )
 
     correlation_id = "53f6d262-789c-4af4-a2c2-5ff5044d452f"
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     files = {"file": (file_name, b"1. Alice Andersson", "text/plain")}
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Correlation-ID"] = correlation_id
     response = await client.post(
         "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview",
         files=files,
-        headers={"X-CSRF-Token": session.csrf_token, "X-Correlation-ID": correlation_id},
+        headers=headers,
     )
 
     assert response.status_code == 200

@@ -3,7 +3,7 @@
  *
  * Purpose:
  *   Centralize the post-HuleEdu-session endpoint that hydrates local AI policy
- *   and profile AI preferences without restoring `/api/v1/auth/me`.
+ *   and profile AI preferences without restoring a local current-user endpoint.
  *
  * Relationships:
  *   - `stores/auth.ts` calls this endpoint after the shared HuleEdu session.

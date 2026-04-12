@@ -5,7 +5,7 @@ Purpose:
     application-layer AI completion commands.
 
 Relationships:
-    - Authentication and CSRF checks stay in web dependencies.
+    - Signed HuleEdu-derived authentication stays in web dependencies.
     - AI consent/provider preferences come from request-scoped profile state.
 """
 
@@ -15,10 +15,9 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.protocols.llm import InlineCompletionCommand, InlineCompletionHandlerProtocol
-from skriptoteket.web.auth.ai_preferences import AiPreferences, require_ai_preferences
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -39,9 +38,8 @@ async def create_inline_completion(
     response: Response,
     handler: FromDishka[InlineCompletionHandlerProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_contributor_api),
-    ai_preferences: AiPreferences = Depends(require_ai_preferences),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
+    ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorInlineCompletionResponse:
     if eval_mode == "1":

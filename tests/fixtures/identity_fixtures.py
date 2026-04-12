@@ -1,7 +1,7 @@
 """Identity test fixture factories.
 
 Purpose:
-    Provide small domain-model factories for user, profile, and session tests.
+    Provide small domain-model factories for user and profile tests.
 
 Relationships:
     - Unit web tests use these helpers to keep auth and profile setup compact.
@@ -10,13 +10,13 @@ Relationships:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Literal
 from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User, UserProfile
+from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserProfile
 
 
 @pytest.fixture
@@ -58,27 +58,4 @@ def make_user_profile(
         locale="sv-SE",
         created_at=ts,
         updated_at=ts,
-    )
-
-
-def make_session(
-    *,
-    session_id: UUID | None = None,
-    user_id: UUID,
-    allow_remote_fallback: bool | None = None,
-    inline_completion_provider: Literal["local", "external"] | None = None,
-    now: datetime | None = None,
-    expires_in: timedelta = timedelta(hours=1),
-    revoked: bool = False,
-) -> Session:
-    ts = now or datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-    return Session(
-        id=session_id or uuid4(),
-        user_id=user_id,
-        csrf_token="csrf-token",
-        allow_remote_fallback=allow_remote_fallback,
-        inline_completion_provider=inline_completion_provider,
-        created_at=ts,
-        expires_at=ts + expires_in,
-        revoked_at=ts if revoked else None,
     )

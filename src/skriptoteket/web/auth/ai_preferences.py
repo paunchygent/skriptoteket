@@ -5,7 +5,7 @@ Purpose:
     UserProfile data instead of browser session rows.
 
 Relationships:
-    - Editor AI API routes use `require_ai_preferences` when constructing
+    - Editor AI API routes use `require_app_ai_preferences` when constructing
       application-layer AI commands.
     - Profile continuation APIs reuse `load_ai_preferences_for_user` to return
       the app-local bootstrap continuation contract.
@@ -19,10 +19,9 @@ from uuid import UUID
 from fastapi import Depends
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.identity.models import User
+from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
 from skriptoteket.protocols.identity import ProfileRepositoryProtocol
-from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_dependencies import FromDishka
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_projection_api
 
 
 class AiPreferences(BaseModel):
@@ -45,8 +44,10 @@ async def load_ai_preferences_for_user(
     )
 
 
-async def require_ai_preferences(
-    profiles: FromDishka[ProfileRepositoryProtocol],
-    user: User = Depends(require_user_api),
+async def require_app_ai_preferences(
+    projection: HuleEduAppUserProjection = Depends(require_app_user_projection_api),
 ) -> AiPreferences:
-    return await load_ai_preferences_for_user(profiles=profiles, user_id=user.id)
+    return AiPreferences(
+        allow_remote_fallback=projection.profile.allow_remote_fallback,
+        inline_completion_provider=projection.profile.inline_completion_provider,
+    )

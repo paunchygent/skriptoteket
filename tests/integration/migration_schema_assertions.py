@@ -52,6 +52,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "a1e4d6c8b2f0",
     "b7f9c2d4e1a6",
     "d3a9f6b2c4e7",
+    "c1d2e3f4a5b6",
 )
 
 
@@ -225,6 +226,13 @@ async def _assert_d3a9_guest_upgrade_identity(engine: AsyncEngine) -> None:
     }.issubset(columns)
     indexes = await _index_names(engine, "classroom_planner_plan_drafts")
     assert "uq_cp_guest_import_identity" in indexes
+
+
+async def _assert_c1d2_drop_browser_auth_sessions(engine: AsyncEngine) -> None:
+    await _assert_d3a9_guest_upgrade_identity(engine)
+    tables = await _table_names(engine)
+    assert "sessions" not in tables
+    assert "tool_sessions" in tables
 
 
 async def _assert_0032_user_file_vault(engine: AsyncEngine) -> None:
@@ -565,6 +573,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "a1e4d6c8b2f0": _assert_a1e4_default_klassrumskartan_favorite,
     "b7f9c2d4e1a6": _assert_b7f9_drop_legacy_student_notes,
     "d3a9f6b2c4e7": _assert_d3a9_guest_upgrade_identity,
+    "c1d2e3f4a5b6": _assert_c1d2_drop_browser_auth_sessions,
 }
 
 

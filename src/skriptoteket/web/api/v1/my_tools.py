@@ -9,7 +9,7 @@ from skriptoteket.application.catalog.queries import ListToolsForContributorQuer
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListToolsForContributorHandlerProtocol
-from skriptoteket.web.auth.api_dependencies import require_contributor_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_contributor_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/my-tools", tags=["my-tools"])
@@ -42,7 +42,7 @@ def to_my_tool_item(tool: Tool) -> MyToolItem:
 @router.get("", response_model=ListMyToolsResponse)
 async def list_my_tools(
     handler: FromDishka[ListToolsForContributorHandlerProtocol],
-    user: User = Depends(require_contributor_api),
+    user: User = Depends(require_app_contributor_api),
 ) -> ListMyToolsResponse:
     result = await handler.handle(actor=user, query=ListToolsForContributorQuery())
     return ListMyToolsResponse(tools=[to_my_tool_item(tool) for tool in result.tools])

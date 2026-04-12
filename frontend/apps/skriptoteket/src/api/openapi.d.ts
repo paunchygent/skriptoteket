@@ -1057,186 +1057,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/csrf": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Csrf */
-        get: operations["csrf_api_v1_auth_csrf_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/forgot-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Forgot Password */
-        post: operations["forgot_password_api_v1_auth_forgot_password_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Login */
-        post: operations["login_api_v1_auth_login_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Logout */
-        post: operations["logout_api_v1_auth_logout_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Me */
-        get: operations["me_api_v1_auth_me_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Register
-         * @description Register a new user account.
-         */
-        post: operations["register_api_v1_auth_register_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/register/validate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Validate Registration */
-        post: operations["validate_registration_api_v1_auth_register_validate_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/resend-verification": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Resend Verification
-         * @description Resend verification email.
-         *     Always returns success for security (doesn't reveal if email exists).
-         */
-        post: operations["resend_verification_api_v1_auth_resend_verification_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/reset-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reset Password */
-        post: operations["reset_password_api_v1_auth_reset_password_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/verify-email": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Verify Email
-         * @description Verify email with token from verification link.
-         */
-        post: operations["verify_email_api_v1_auth_verify_email_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/catalog/categories": {
         parameters: {
             query?: never;
@@ -1981,40 +1801,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/profile/email": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Change Email */
-        patch: operations["change_email_api_v1_profile_email_patch"];
-        trace?: never;
-    };
-    "/api/v1/profile/password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Change Password */
-        post: operations["change_password_api_v1_profile_password_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/public/apps/classroom.group-seating-studio/grouping/export": {
         parameters: {
             query?: never;
@@ -2690,22 +2476,6 @@ export interface components {
             /** Slug */
             slug: string;
         };
-        /** ChangeEmailRequest */
-        ChangeEmailRequest: {
-            /** Email */
-            email: string;
-        };
-        /** ChangeEmailResponse */
-        ChangeEmailResponse: {
-            user: components["schemas"]["User"];
-        };
-        /** ChangePasswordRequest */
-        ChangePasswordRequest: {
-            /** Current Password */
-            current_password: string;
-            /** New Password */
-            new_password: string;
-        };
         /** ClassListImportPreview */
         ClassListImportPreview: {
             /** Ambiguous Rows */
@@ -3024,11 +2794,6 @@ export interface components {
             export_kind: components["schemas"]["SeatingExportKind"];
             layout_id?: components["schemas"]["SeatingExportLayoutId"] | null;
             paper_size?: components["schemas"]["SeatingExportPaperSize"] | null;
-        };
-        /** CsrfResponse */
-        CsrfResponse: {
-            /** Csrf Token */
-            csrf_token: string;
         };
         /**
          * CuratedAppItem
@@ -3720,20 +3485,6 @@ export interface components {
             /** Score Submission Enabled */
             score_submission_enabled: boolean;
         };
-        /** ForgotPasswordRequest */
-        ForgotPasswordRequest: {
-            /** Classroom Planner Entry Origin */
-            classroom_planner_entry_origin?: string | null;
-            /** Email */
-            email?: string | null;
-            /** Next */
-            next?: string | null;
-        };
-        /** ForgotPasswordResponse */
-        ForgotPasswordResponse: {
-            /** Message */
-            message: string;
-        };
         /** GetRunResult */
         GetRunResult: {
             run: components["schemas"]["RunDetails"];
@@ -4258,21 +4009,6 @@ export interface components {
          * @enum {string}
          */
         LoginEventStatus: "success" | "failure";
-        /** LoginRequest */
-        LoginRequest: {
-            /** Email */
-            email: string;
-            /** Password */
-            password: string;
-        };
-        /** LoginResponse */
-        LoginResponse: {
-            ai_policy: components["schemas"]["AiPolicyResponse"];
-            /** Csrf Token */
-            csrf_token: string;
-            profile?: components["schemas"]["UserProfile"] | null;
-            user: components["schemas"]["User"];
-        };
         /** MaintainerListResponse */
         MaintainerListResponse: {
             /** Maintainers */
@@ -4310,14 +4046,6 @@ export interface components {
             tool_id: string;
             /** Usage Instructions Seen */
             usage_instructions_seen: boolean;
-        };
-        /** MeResponse */
-        MeResponse: {
-            ai_policy: components["schemas"]["AiPolicyResponse"];
-            /** Authenticated */
-            authenticated: boolean;
-            profile?: components["schemas"]["UserProfile"] | null;
-            user?: components["schemas"]["User"] | null;
         };
         /** MyRunItem */
         MyRunItem: {
@@ -5244,38 +4972,6 @@ export interface components {
             /** Title */
             title: string;
         };
-        /** RegisterRequest */
-        RegisterRequest: {
-            /** Classroom Planner Entry Origin */
-            classroom_planner_entry_origin?: string | null;
-            /** Email */
-            email: string;
-            /** First Name */
-            first_name: string;
-            /** Last Name */
-            last_name: string;
-            /** Next */
-            next?: string | null;
-            /** Password */
-            password: string;
-        };
-        /** RegisterResponse */
-        RegisterResponse: {
-            /**
-             * Message
-             * @default Konto skapat! Kontrollera din e-post för att verifiera kontot.
-             */
-            message: string;
-            profile: components["schemas"]["UserProfile"];
-            user: components["schemas"]["User"];
-        };
-        /** RegistrationValidationFieldResponse */
-        RegistrationValidationFieldResponse: {
-            /** Message */
-            message?: string | null;
-            /** Status */
-            status: string;
-        };
         /**
          * RelationshipKind
          * @description Enumerate supported relationship rule types.
@@ -5309,32 +5005,6 @@ export interface components {
         RequestChangesRequest: {
             /** Message */
             message?: string | null;
-        };
-        /** ResendVerificationRequest */
-        ResendVerificationRequest: {
-            /** Classroom Planner Entry Origin */
-            classroom_planner_entry_origin?: string | null;
-            /** Email */
-            email: string;
-            /** Next */
-            next?: string | null;
-        };
-        /** ResendVerificationResponse */
-        ResendVerificationResponse: {
-            /** Message */
-            message: string;
-        };
-        /** ResetPasswordRequest */
-        ResetPasswordRequest: {
-            /** New Password */
-            new_password?: string | null;
-            /** Token */
-            token?: string | null;
-        };
-        /** ResetPasswordResponse */
-        ResetPasswordResponse: {
-            /** Message */
-            message: string;
         };
         /**
          * ResolvePlanDraftRequest
@@ -6694,18 +6364,6 @@ export interface components {
              */
             user_id: string;
         };
-        /** ValidateRegistrationRequest */
-        ValidateRegistrationRequest: {
-            /** Email */
-            email?: string | null;
-            /** Password */
-            password?: string | null;
-        };
-        /** ValidateRegistrationResponse */
-        ValidateRegistrationResponse: {
-            email: components["schemas"]["RegistrationValidationFieldResponse"];
-            password: components["schemas"]["RegistrationValidationFieldResponse"];
-        };
         /** ValidateToolSchemasRequest */
         ValidateToolSchemasRequest: {
             input_schema?: components["schemas"]["JsonValue"] | null;
@@ -6781,17 +6439,6 @@ export interface components {
             max_file_bytes: number;
             /** Max Total Bytes */
             max_total_bytes: number;
-        };
-        /** VerifyEmailRequest */
-        VerifyEmailRequest: {
-            /** Token */
-            token: string;
-        };
-        /** VerifyEmailResponse */
-        VerifyEmailResponse: {
-            /** Message */
-            message: string;
-            user: components["schemas"]["User"];
         };
         /**
          * VersionState
@@ -6871,9 +6518,7 @@ export interface operations {
     decide_suggestion_api_v1_admin_suggestions__suggestion_id__decide_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 suggestion_id: string;
             };
@@ -6928,9 +6573,7 @@ export interface operations {
     create_draft_tool_api_v1_admin_tools_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -6963,9 +6606,7 @@ export interface operations {
     depublish_tool_api_v1_admin_tools__tool_id__depublish_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -6996,9 +6637,7 @@ export interface operations {
     publish_tool_api_v1_admin_tools__tool_id__publish_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -7165,9 +6804,7 @@ export interface operations {
     update_defaults_api_v1_apps_chemistry_reagent_prep_chef_defaults_put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7200,9 +6837,7 @@ export interface operations {
     export_pdf_api_v1_apps_chemistry_reagent_prep_chef_export_pdf_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7235,9 +6870,7 @@ export interface operations {
     export_risk_pdf_api_v1_apps_chemistry_reagent_prep_chef_export_risk_pdf_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7270,9 +6903,7 @@ export interface operations {
     load_defaults_api_v1_apps_chemistry_reagent_prep_chef_load_defaults_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7305,9 +6936,7 @@ export interface operations {
     prep_api_v1_apps_chemistry_reagent_prep_chef_prep_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7340,9 +6969,7 @@ export interface operations {
     risk_assessment_api_v1_apps_chemistry_reagent_prep_chef_risk_assessment_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7375,9 +7002,7 @@ export interface operations {
     save_defaults_api_v1_apps_chemistry_reagent_prep_chef_save_defaults_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7410,9 +7035,7 @@ export interface operations {
     save_pdf_api_v1_apps_chemistry_reagent_prep_chef_save_pdf_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7445,9 +7068,7 @@ export interface operations {
     save_risk_pdf_api_v1_apps_chemistry_reagent_prep_chef_save_risk_pdf_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7542,9 +7163,7 @@ export interface operations {
     create_grouping_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping_new_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7577,9 +7196,7 @@ export interface operations {
     delete_historic_grouping_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7608,9 +7225,7 @@ export interface operations {
     activate_grouping_history_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__activate_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7641,9 +7256,7 @@ export interface operations {
     prepare_grouping_export_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7678,9 +7291,7 @@ export interface operations {
     create_grouping_export_job_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_jobs_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7746,9 +7357,7 @@ export interface operations {
     run_smart_grouping_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__smart_run_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7783,9 +7392,7 @@ export interface operations {
     resolve_draft_api_v1_apps_classroom_group_seating_studio_drafts_resolve_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7838,9 +7445,7 @@ export interface operations {
     create_seating_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating_new_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -7873,9 +7478,7 @@ export interface operations {
     delete_historic_seating_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7904,9 +7507,7 @@ export interface operations {
     activate_seating_history_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__activate_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7937,9 +7538,7 @@ export interface operations {
     prepare_seating_export_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -7974,9 +7573,7 @@ export interface operations {
     create_seating_export_job_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_jobs_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -8042,9 +7639,7 @@ export interface operations {
     run_smart_seating_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__smart_run_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -8110,9 +7705,7 @@ export interface operations {
     update_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -8147,9 +7740,7 @@ export interface operations {
     abandon_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__abandon_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -8180,9 +7771,7 @@ export interface operations {
     redo_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__redo_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -8213,9 +7802,7 @@ export interface operations {
     undo_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__undo_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 draft_id: string;
             };
@@ -8401,9 +7988,7 @@ export interface operations {
     guest_upgrade_api_v1_apps_classroom_group_seating_studio_guest_upgrade_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -8476,9 +8061,7 @@ export interface operations {
     create_roster_api_v1_apps_classroom_group_seating_studio_rosters_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -8511,9 +8094,7 @@ export interface operations {
     import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -8577,9 +8158,7 @@ export interface operations {
     update_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 roster_id: string;
             };
@@ -8614,9 +8193,7 @@ export interface operations {
     delete_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 roster_id: string;
             };
@@ -8676,9 +8253,7 @@ export interface operations {
     update_roster_smart_rules_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__smart_rules_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 roster_id: string;
             };
@@ -8764,9 +8339,7 @@ export interface operations {
     create_template_api_v1_apps_classroom_group_seating_studio_templates_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -8830,9 +8403,7 @@ export interface operations {
     update_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 template_id: string;
             };
@@ -8867,9 +8438,7 @@ export interface operations {
     delete_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 template_id: string;
             };
@@ -8898,9 +8467,7 @@ export interface operations {
     submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -9063,306 +8630,6 @@ export interface operations {
             };
         };
     };
-    csrf_api_v1_auth_csrf_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CsrfResponse"];
-                };
-            };
-        };
-    };
-    forgot_password_api_v1_auth_forgot_password_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ForgotPasswordRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ForgotPasswordResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    login_api_v1_auth_login_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LoginRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LoginResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    logout_api_v1_auth_logout_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    me_api_v1_auth_me_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MeResponse"];
-                };
-            };
-        };
-    };
-    register_api_v1_auth_register_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegisterResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    validate_registration_api_v1_auth_register_validate_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ValidateRegistrationRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidateRegistrationResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    resend_verification_api_v1_auth_resend_verification_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResendVerificationRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ResendVerificationResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reset_password_api_v1_auth_reset_password_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResetPasswordRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ResetPasswordResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    verify_email_api_v1_auth_verify_email_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VerifyEmailRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VerifyEmailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     list_all_categories_api_v1_catalog_categories_get: {
         parameters: {
             query?: never;
@@ -9504,7 +8771,6 @@ export interface operations {
             query?: never;
             header?: {
                 "X-Skriptoteket-Eval"?: string | null;
-                "X-CSRF-Token"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9540,7 +8806,6 @@ export interface operations {
             query?: never;
             header?: {
                 "X-Skriptoteket-Eval"?: string | null;
-                "X-CSRF-Token"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9574,9 +8839,7 @@ export interface operations {
     apply_edit_ops_api_v1_editor_edit_ops_apply_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -9609,9 +8872,7 @@ export interface operations {
     preview_edit_ops_api_v1_editor_edit_ops_preview_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -9772,9 +9033,7 @@ export interface operations {
     publish_version_api_v1_editor_tool_versions__version_id__publish_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -9809,9 +9068,7 @@ export interface operations {
     request_changes_api_v1_editor_tool_versions__version_id__request_changes_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -9846,9 +9103,7 @@ export interface operations {
     rollback_version_api_v1_editor_tool_versions__version_id__rollback_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -9879,9 +9134,7 @@ export interface operations {
     run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -9916,9 +9169,7 @@ export interface operations {
     save_sandbox_settings_api_v1_editor_tool_versions__version_id__sandbox_settings_put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -9953,9 +9204,7 @@ export interface operations {
     resolve_sandbox_settings_api_v1_editor_tool_versions__version_id__sandbox_settings_resolve_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -9990,9 +9239,7 @@ export interface operations {
     save_draft_version_api_v1_editor_tool_versions__version_id__save_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -10095,9 +9342,7 @@ export interface operations {
             query: {
                 snapshot_id: string;
             };
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -10132,9 +9377,7 @@ export interface operations {
     start_sandbox_action_api_v1_editor_tool_versions__version_id__start_action_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -10169,9 +9412,7 @@ export interface operations {
     submit_review_api_v1_editor_tool_versions__version_id__submit_review_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 version_id: string;
             };
@@ -10270,9 +9511,7 @@ export interface operations {
     stream_editor_chat_api_v1_editor_tools__tool_id__chat_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10305,9 +9544,7 @@ export interface operations {
     clear_editor_chat_api_v1_editor_tools__tool_id__chat_delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10336,9 +9573,7 @@ export interface operations {
     create_draft_version_api_v1_editor_tools__tool_id__draft_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10373,9 +9608,7 @@ export interface operations {
     acquire_draft_lock_api_v1_editor_tools__tool_id__draft_lock_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10410,9 +9643,7 @@ export interface operations {
     release_draft_lock_api_v1_editor_tools__tool_id__draft_lock_delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10474,9 +9705,7 @@ export interface operations {
     assign_tool_maintainer_api_v1_editor_tools__tool_id__maintainers_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10511,9 +9740,7 @@ export interface operations {
     remove_tool_maintainer_api_v1_editor_tools__tool_id__maintainers__user_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
                 user_id: string;
@@ -10545,9 +9772,7 @@ export interface operations {
     update_tool_metadata_api_v1_editor_tools__tool_id__metadata_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10582,9 +9807,7 @@ export interface operations {
     update_tool_slug_api_v1_editor_tools__tool_id__slug_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10650,9 +9873,7 @@ export interface operations {
     update_tool_taxonomy_api_v1_editor_tools__tool_id__taxonomy_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10687,9 +9908,7 @@ export interface operations {
     validate_schemas_api_v1_editor_tools__tool_id__validate_schemas_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -10755,9 +9974,7 @@ export interface operations {
     add_favorite_api_v1_favorites__catalog_item_id__post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 catalog_item_id: string;
             };
@@ -10788,9 +10005,7 @@ export interface operations {
     remove_favorite_api_v1_favorites__catalog_item_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 catalog_item_id: string;
             };
@@ -10912,9 +10127,7 @@ export interface operations {
     update_profile_api_v1_profile_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -10947,9 +10160,7 @@ export interface operations {
     update_ai_settings_api_v1_profile_ai_settings_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -10995,74 +10206,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileAppContinuationResponse"];
-                };
-            };
-        };
-    };
-    change_email_api_v1_profile_email_patch: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChangeEmailRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChangeEmailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    change_password_api_v1_profile_password_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChangePasswordRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -11308,9 +10451,7 @@ export interface operations {
     start_action_api_v1_start_action_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -11343,9 +10484,7 @@ export interface operations {
     submit_suggestion_api_v1_suggestions_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -11409,9 +10548,7 @@ export interface operations {
     start_tool_run_api_v1_tools__slug__run_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 slug: string;
             };
@@ -11515,9 +10652,7 @@ export interface operations {
             query?: {
                 context?: string;
             };
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -11615,9 +10750,7 @@ export interface operations {
     update_tool_settings_api_v1_tools__tool_id__settings_put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -11652,9 +10785,7 @@ export interface operations {
     mark_usage_instructions_seen_api_v1_tools__tool_id__usage_instructions_seen_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 tool_id: string;
             };
@@ -11720,9 +10851,7 @@ export interface operations {
     save_vault_file_api_v1_vault_files_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -11755,9 +10884,7 @@ export interface operations {
     delete_vault_file_api_v1_vault_files__file_id__delete_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 file_id: string;
             };
@@ -11819,9 +10946,7 @@ export interface operations {
     restore_vault_file_api_v1_vault_files__file_id__restore_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-CSRF-Token"?: string | null;
-            };
+            header?: never;
             path: {
                 file_id: string;
             };

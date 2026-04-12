@@ -5,20 +5,21 @@ title: "Reference: Home Server Security Hardening"
 status: active
 owners: "olof"
 created: 2026-01-02
-updated: 2026-03-30
+updated: 2026-04-11
 topic: "SSH + Fail2ban hardening for Hemma"
 ---
 
 Security hardening details for the home server. Use this for audits or when applying changes.
 
-## Skriptoteket edge/runtime hardening (verified 2026-03-30)
+## Skriptoteket edge/runtime hardening (verified 2026-04-11)
 
 Current production policy for `skriptoteket.hule.education`:
 
 - `/docs` and `/openapi.json` stay disabled in production
 - public `/healthz` stays available but only returns the minimal safe payload
 - public `/metrics` is blocked at nginx; internal metrics remain available to Prometheus on `hule-network`
-- `skriptoteket_active_sessions` and `skriptoteket_users_by_role` stay disabled in production metrics
+- the retired browser-session metric `skriptoteket_active_sessions` is absent
+- `skriptoteket_users_by_role` stays disabled in production metrics
 - forwarded headers are trusted only from the exact current `nginx-proxy` CIDR
 - reserved HuleEdu hosts must be owned by the explicit placeholder or the real gateway, never by Skriptoteket fallthrough
 
@@ -48,7 +49,7 @@ ssh hemma /bin/bash -s <<'EOF'
 set -euo pipefail
 sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz
 printf '\n---\n'
-sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_(active_sessions|users_by_role)' || true"
+sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_users_by_role|skriptoteket_active_sessions' || true"
 EOF
 
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs

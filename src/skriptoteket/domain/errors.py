@@ -27,7 +27,6 @@ class ErrorCode(StrEnum):
     # Not Found (404)
     NOT_FOUND = "NOT_FOUND"
     USER_NOT_FOUND = "USER_NOT_FOUND"
-    SESSION_NOT_FOUND = "SESSION_NOT_FOUND"
 
     # Conflict (409)
     CONFLICT = "CONFLICT"

@@ -7,6 +7,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
@@ -33,56 +35,27 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.identity import (
-    CurrentUserProviderProtocol,
-    SessionRepositoryProtocol,
-)
 from skriptoteket.web.api.v1 import apps_classroom_planner_seating as api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from tests.fixtures.identity_fixtures import make_session, make_user
-
-
-class FixedClock:
-    def __init__(self, now: datetime) -> None:
-        self._now = now
-
-    def now(self) -> datetime:
-        return self._now
+from tests.fixtures.identity_fixtures import make_user
+from tests.fixtures.profile_app_continuation_support import (
+    ClockStub,
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 
 
 class SmartSeatingApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        clock: ClockProtocol,
-        current_user_provider: CurrentUserProviderProtocol,
-        sessions: SessionRepositoryProtocol,
         handler: RunSmartSeatingHandler,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._clock = clock
-        self._current_user_provider = current_user_provider
-        self._sessions = sessions
         self._handler = handler
-
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.APP)
-    def clock(self) -> ClockProtocol:
-        return self._clock
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return self._current_user_provider
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return self._sessions
 
     @provide(scope=Scope.REQUEST)
     def run_smart_seating_handler(self) -> RunSmartSeatingHandler:
@@ -90,27 +63,34 @@ class SmartSeatingApiProvider(Provider):
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture
-def clock(now: datetime) -> ClockProtocol:
-    return FixedClock(now=now)
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
 
 
 @pytest.fixture
-def current_user_provider() -> AsyncMock:
-    provider = AsyncMock(spec=CurrentUserProviderProtocol)
-    provider.get_current_user.return_value = None
-    return provider
+def clock(now: datetime) -> ClockStub:
+    return ClockStub(now=now)
 
 
 @pytest.fixture
-def sessions() -> AsyncMock:
-    repo = AsyncMock(spec=SessionRepositoryProtocol)
-    repo.get_by_id.return_value = None
-    return repo
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
+
+
+@pytest.fixture
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
 
 
 @pytest.fixture
@@ -121,9 +101,9 @@ def handler() -> AsyncMock:
 @pytest.fixture
 def app(
     settings: Settings,
-    clock: ClockProtocol,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
 ) -> FastAPI:
     app = FastAPI()
@@ -131,13 +111,15 @@ def app(
     app.include_router(api.router)
 
     container = make_async_container(
-        SmartSeatingApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
-            current_user_provider=current_user_provider,
-            sessions=sessions,
+            users=users,
+            profiles=profiles,
+        ),
+        SmartSeatingApiProvider(
             handler=handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app
@@ -281,24 +263,21 @@ async def test_run_smart_seating_returns_blocked_payload_for_no_history() -> Non
 @pytest.mark.asyncio
 async def test_run_smart_seating_route_returns_not_found_for_missing_draft(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     draft_id = uuid4()
 
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
     handler.handle.side_effect = not_found("PlanDraft", str(draft_id))
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={"expected_revision": 4},
     )
 
@@ -310,27 +289,24 @@ async def test_run_smart_seating_route_returns_not_found_for_missing_draft(
 @pytest.mark.asyncio
 async def test_run_smart_seating_route_returns_conflict_for_stale_revision(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     draft_id = uuid4()
 
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
     handler.handle.side_effect = DomainError(
         code=ErrorCode.CONFLICT,
         message="Draft revision mismatch.",
     )
 
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={"expected_revision": 4},
     )
 
@@ -342,23 +318,19 @@ async def test_run_smart_seating_route_returns_conflict_for_stale_revision(
 @pytest.mark.asyncio
 async def test_run_smart_seating_route_returns_422_for_malformed_payload(
     client: httpx.AsyncClient,
-    settings: Settings,
-    current_user_provider: AsyncMock,
-    sessions: AsyncMock,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
-    session = make_session(user_id=user.id, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     draft_id = uuid4()
 
-    current_user_provider.get_current_user.return_value = user
-    sessions.get_by_id.return_value = session
-
-    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
     response = await client.post(
         f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run",
-        headers={"X-CSRF-Token": session.csrf_token},
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={},
     )
 

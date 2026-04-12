@@ -11,9 +11,8 @@ from skriptoteket.protocols.draft_locks import (
     AcquireDraftLockHandlerProtocol,
     ReleaseDraftLockHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import (
-    require_contributor_api,
-    require_csrf_token,
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -28,8 +27,7 @@ async def acquire_draft_lock(
     tool_id: UUID,
     payload: DraftLockRequest,
     handler: FromDishka[AcquireDraftLockHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> DraftLockResponse:
     result = await handler.handle(
         actor=user,
@@ -52,8 +50,7 @@ async def acquire_draft_lock(
 async def release_draft_lock(
     tool_id: UUID,
     handler: FromDishka[ReleaseDraftLockHandlerProtocol],
-    user: User = Depends(require_contributor_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_contributor_api),
 ) -> DraftLockReleaseResponse:
     result = await handler.handle(
         actor=user,

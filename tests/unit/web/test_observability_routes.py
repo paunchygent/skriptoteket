@@ -25,7 +25,7 @@ from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.identity import SessionRepositoryProtocol, UserRepositoryProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.routes import observability as observability_routes
 
@@ -44,14 +44,12 @@ class ObservabilityProvider(Provider):
         *,
         settings: Settings,
         engine: AsyncEngine,
-        sessions: SessionRepositoryProtocol,
         users: UserRepositoryProtocol,
         clock: ClockProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
         self._engine = engine
-        self._sessions = sessions
         self._users = users
         self._clock = clock
 
@@ -62,10 +60,6 @@ class ObservabilityProvider(Provider):
     @provide(scope=Scope.APP)
     def engine(self) -> AsyncEngine:
         return self._engine
-
-    @provide(scope=Scope.REQUEST)
-    def sessions(self) -> SessionRepositoryProtocol:
-        return self._sessions
 
     @provide(scope=Scope.REQUEST)
     def users(self) -> UserRepositoryProtocol:
@@ -95,13 +89,6 @@ def engine() -> AsyncMock:
 
 
 @pytest.fixture
-def sessions() -> AsyncMock:
-    repo = AsyncMock(spec=SessionRepositoryProtocol)
-    repo.count_active.return_value = 3
-    return repo
-
-
-@pytest.fixture
 def users() -> AsyncMock:
     repo = AsyncMock(spec=UserRepositoryProtocol)
     repo.count_active_by_role.return_value = {}
@@ -118,7 +105,6 @@ def app(
     monkeypatch: pytest.MonkeyPatch,
     settings: Settings,
     engine: AsyncMock,
-    sessions: AsyncMock,
     users: AsyncMock,
     clock: ClockProtocol,
 ) -> FastAPI:
@@ -140,7 +126,6 @@ def app(
     return _build_app(
         settings=settings,
         engine=engine,
-        sessions=sessions,
         users=users,
         clock=clock,
     )
@@ -169,14 +154,12 @@ async def test_healthz_uses_public_request_state_adapter(
 @pytest.mark.asyncio
 async def test_metrics_uses_public_request_state_adapter(
     client: httpx.AsyncClient,
-    sessions: AsyncMock,
     users: AsyncMock,
 ) -> None:
     response = await client.get("/metrics")
 
     assert response.status_code == 200
     assert "session_files_bytes_total" in response.text
-    sessions.count_active.assert_awaited_once()
     users.count_active_by_role.assert_awaited_once()
 
 
@@ -184,7 +167,6 @@ async def test_metrics_uses_public_request_state_adapter(
 async def test_healthz_minimizes_public_payload_in_production(
     monkeypatch: pytest.MonkeyPatch,
     engine: AsyncMock,
-    sessions: AsyncMock,
     users: AsyncMock,
     clock: ClockProtocol,
 ) -> None:
@@ -211,7 +193,6 @@ async def test_healthz_minimizes_public_payload_in_production(
     app = _build_app(
         settings=production_settings,
         engine=engine,
-        sessions=sessions,
         users=users,
         clock=clock,
     )
@@ -233,7 +214,6 @@ async def test_healthz_minimizes_public_payload_in_production(
 async def test_metrics_skip_identity_gauges_in_production(
     monkeypatch: pytest.MonkeyPatch,
     engine: AsyncMock,
-    sessions: AsyncMock,
     users: AsyncMock,
     clock: ClockProtocol,
 ) -> None:
@@ -304,7 +284,6 @@ async def test_metrics_skip_identity_gauges_in_production(
     app = _build_app(
         settings=production_settings,
         engine=engine,
-        sessions=sessions,
         users=users,
         clock=clock,
     )
@@ -319,7 +298,6 @@ async def test_metrics_skip_identity_gauges_in_production(
     assert "skriptoteket_session_files_bytes_total" in response.text
     assert "skriptoteket_active_sessions" not in response.text
     assert "skriptoteket_users_by_role" not in response.text
-    sessions.count_active.assert_not_awaited()
     users.count_active_by_role.assert_not_awaited()
 
 
@@ -327,7 +305,6 @@ def _build_app(
     *,
     settings: Settings,
     engine: AsyncEngine,
-    sessions: SessionRepositoryProtocol,
     users: UserRepositoryProtocol,
     clock: ClockProtocol,
 ) -> FastAPI:
@@ -339,7 +316,6 @@ def _build_app(
         ObservabilityProvider(
             settings=settings,
             engine=engine,
-            sessions=sessions,
             users=users,
             clock=clock,
         )

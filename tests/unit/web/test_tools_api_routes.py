@@ -7,6 +7,8 @@ from uuid import UUID, uuid4
 
 import httpx
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
@@ -27,7 +29,6 @@ from skriptoteket.domain.scripting.tool_usage_instructions import (
 )
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.identity import CurrentUserProviderProtocol
 from skriptoteket.protocols.interactive_tools import ListSessionFilesHandlerProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
@@ -36,6 +37,14 @@ from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
+from tests.fixtures.profile_app_continuation_support import (
+    ClockStub,
+    ProfileContinuationApiProvider,
+    ProfileRepositoryStub,
+    UserRepositoryStub,
+    seed_huleedu_projection,
+    signed_huleedu_headers,
+)
 from tests.unit.web.admin_scripting_test_support import _tool, _version
 
 
@@ -66,15 +75,6 @@ def _make_tool_session(
     )
 
 
-class _CurrentUserProviderStub(CurrentUserProviderProtocol):
-    def __init__(self) -> None:
-        self.mock = AsyncMock(spec=CurrentUserProviderProtocol)
-
-    async def get_current_user(self, *, session_id: UUID | None) -> User | None:
-        user: User | None = await self.mock.get_current_user(session_id=session_id)
-        return user
-
-
 class _ListSessionFilesHandlerStub(ListSessionFilesHandlerProtocol):
     def __init__(self) -> None:
         self.mock = AsyncMock(spec=ListSessionFilesHandlerProtocol)
@@ -96,22 +96,10 @@ class InteractiveToolsApiProvider(Provider):
     def __init__(
         self,
         *,
-        settings: Settings,
-        current_user_provider: CurrentUserProviderProtocol,
         list_session_files_handler: ListSessionFilesHandlerProtocol,
     ) -> None:
         super().__init__()
-        self._settings = settings
-        self._current_user_provider = current_user_provider
         self._list_session_files_handler = list_session_files_handler
-
-    @provide(scope=Scope.APP)
-    def settings(self) -> Settings:
-        return self._settings
-
-    @provide(scope=Scope.REQUEST)
-    def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return self._current_user_provider
 
     @provide(scope=Scope.REQUEST)
     def list_session_files_handler(self) -> ListSessionFilesHandlerProtocol:
@@ -119,15 +107,34 @@ class InteractiveToolsApiProvider(Provider):
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings()
+def private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture
-def current_user_provider() -> _CurrentUserProviderStub:
-    provider = _CurrentUserProviderStub()
-    provider.mock.get_current_user.return_value = None
-    return provider
+def settings(private_key: rsa.RSAPrivateKey) -> Settings:
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    settings = Settings()
+    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
+    return settings
+
+
+@pytest.fixture
+def clock(now: datetime) -> ClockStub:
+    return ClockStub(now=now)
+
+
+@pytest.fixture
+def users() -> UserRepositoryStub:
+    return UserRepositoryStub()
+
+
+@pytest.fixture
+def profiles() -> ProfileRepositoryStub:
+    return ProfileRepositoryStub()
 
 
 @pytest.fixture
@@ -138,7 +145,9 @@ def list_session_files_handler() -> _ListSessionFilesHandlerStub:
 @pytest.fixture
 def app(
     settings: Settings,
-    current_user_provider: _CurrentUserProviderStub,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     list_session_files_handler: _ListSessionFilesHandlerStub,
 ) -> FastAPI:
     app = FastAPI()
@@ -146,11 +155,15 @@ def app(
     app.include_router(interactive_tools_routes.router)
 
     container = make_async_container(
-        InteractiveToolsApiProvider(
+        ProfileContinuationApiProvider(
             settings=settings,
-            current_user_provider=current_user_provider,
+            clock=clock,
+            users=users,
+            profiles=profiles,
+        ),
+        InteractiveToolsApiProvider(
             list_session_files_handler=list_session_files_handler,
-        )
+        ),
     )
     setup_dishka(container, app)
     return app
@@ -384,20 +397,26 @@ async def test_list_session_files_calls_handler_with_context() -> None:
 @pytest.mark.asyncio
 async def test_list_session_files_defaults_context(
     client: httpx.AsyncClient,
-    current_user_provider: _CurrentUserProviderStub,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
     list_session_files_handler: _ListSessionFilesHandlerStub,
+    now: datetime,
 ) -> None:
-    user = make_user(role=Role.USER)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     tool_id = uuid4()
 
-    current_user_provider.mock.get_current_user.return_value = user
     list_session_files_handler.mock.handle.return_value = ListSessionFilesResult(
         tool_id=tool_id,
         context="default",
         files=[SessionFileInfo(name="input.txt", bytes=12, ref="session:input.txt")],
     )
 
-    response = await client.get(f"/api/v1/tools/{tool_id}/session-files")
+    response = await client.get(
+        f"/api/v1/tools/{tool_id}/session-files",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+    )
 
     assert response.status_code == 200
     assert response.json() == {

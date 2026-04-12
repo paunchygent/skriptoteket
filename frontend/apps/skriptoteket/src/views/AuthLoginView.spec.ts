@@ -1,8 +1,9 @@
 /**
  * Dedicated auth-login view tests.
  *
- * These tests verify that the page-based auth-entry route resumes the intended
- * destination after local login succeeds.
+ * These tests verify that the page-based auth-entry route hands signed-out
+ * users to HuleEdu and resumes the intended destination when shared auth
+ * bootstrap later marks the user authenticated.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -71,60 +72,21 @@ describe("AuthLoginView", () => {
     expect(wrapper.text()).toContain("fortsätta till din startsida");
   });
 
-  it("pushes the preserved destination after login succeeds", async () => {
+  it("shows preserved-destination copy when a next param is present", () => {
     viewMocks.route.query = { next: "/profile" };
 
     const wrapper = mount(AuthLoginView, {
       global: {
         stubs: {
-          AuthLoginPanel: {
-            emits: ["success"],
-            template:
-              "<button type='button' data-test='auth-success' @click=\"$emit('success')\">Success</button>",
-          },
+          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
         },
       },
     });
 
-    await wrapper.get("[data-test='auth-success']").trigger("click");
-    await flushPromises();
-
-    expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
-    expect(viewMocks.router.push).toHaveBeenCalledWith({ path: "/profile" });
+    expect(wrapper.text()).toContain("skickas du vidare till rätt sida");
   });
 
-  it("restores the classroom planner entry-origin hint when login succeeds", async () => {
-    viewMocks.route.query = {
-      next: "/apps/classroom.group-seating-studio",
-      classroomPlannerEntryOrigin: "dashboard",
-    };
-
-    const wrapper = mount(AuthLoginView, {
-      global: {
-        stubs: {
-          AuthLoginPanel: {
-            emits: ["success"],
-            template:
-              "<button type='button' data-test='auth-success' @click=\"$emit('success')\">Success</button>",
-          },
-        },
-      },
-    });
-
-    await wrapper.get("[data-test='auth-success']").trigger("click");
-    await flushPromises();
-
-    expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
-    expect(viewMocks.router.push).toHaveBeenCalledWith({
-      name: "app-detail",
-      params: { appId: "classroom.group-seating-studio" },
-      state: {
-        classroomPlannerEntryOrigin: "dashboard",
-      },
-    });
-  });
-
-  it("still completes the redirect if auth flips before the success event returns", async () => {
+  it("completes the redirect when shared auth bootstrap marks the user authenticated", async () => {
     viewMocks.route.query = {
       next: "/apps/classroom.group-seating-studio",
       classroomPlannerEntryOrigin: "dashboard",

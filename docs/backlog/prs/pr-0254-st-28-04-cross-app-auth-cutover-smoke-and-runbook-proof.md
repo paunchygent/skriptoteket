@@ -2,18 +2,28 @@
 type: pr
 id: PR-0254
 title: "ST-28-04 cross-app auth cutover smoke and runbook proof"
-status: ready
+status: blocked
 owners: "agents"
 created: 2026-04-10
-updated: 2026-04-10
+updated: 2026-04-11
 stories:
   - "ST-28-04"
+adrs:
+  - "ADR-0083"
+dependencies:
+  - "REV-PR-0253"
+  - "PR-0253"
+  - "ST-28-06"
+  - "ST-28-07"
+  - "ST-28-08"
+  - "ST-28-09"
 tags: ["auth", "playwright", "runbook", "smoke"]
 acceptance_criteria:
-  - "Given the shared auth cutover is implemented, when the retained smoke runs against the target environment, then a browser can authenticate through the canonical Skriptoteket `/auth/login` handoff or HuleEdu-owned equivalent and open HuleEdu authenticated from the same session."
-  - "Given the shared session is active, when Skriptoteket performs a CSRF-protected write, then the write succeeds through the shared session and CSRF contract."
-  - "Given logout is session-authority behavior, when the user logs out from either app, then both Skriptoteket and HuleEdu become unauthenticated after refresh."
-  - "Given operators need repeatable proof, when this PR completes, then the runbook records commands, environment assumptions, artifacts, failure interpretation, and links to the HuleEdu teacher-dashboard smoke evidence."
+  - "Given `ADR-0083` and the realm-aware login/projection stories are complete, when the retained smoke runs against the target environment, then a browser can authenticate through the Hule Education `app=skriptoteket` ceremony and open Skriptoteket from the returned shared session."
+  - "Given Skriptoteket standalone identity is supported, when the smoke uses that realm, then protected Skriptoteket reads and writes succeed through gateway-signed context and local RBAC without HuleEdu school registration."
+  - "Given HuleEdu school identity is supported for Skriptoteket, when the smoke uses that realm, then the proof distinguishes school identity, Skriptoteket projection, and local authorization."
+  - "Given logout is session-authority behavior, when the user logs out from either app, then both Skriptoteket and HuleEdu become unauthenticated after refresh without recreating local Skriptoteket browser sessions."
+  - "Given operators need repeatable proof, when this PR completes, then the runbook records commands, environment assumptions, artifacts, identity realm coverage, failure interpretation, and links to the HuleEdu teacher-dashboard smoke evidence."
 ---
 
 ## Problem
@@ -21,24 +31,36 @@ acceptance_criteria:
 Unit and component tests cannot prove the cross-app browser contract. The cutover needs one retained
 smoke and operator runbook proof that spans Skriptoteket and HuleEdu.
 
+After the `PR-0253` product-identity correction, this PR is blocked until the realm-aware login
+contract is accepted and implemented. It must not certify a HuleEdu-school-only login as final
+Skriptoteket login.
+
 ## Goal
 
-Add the final Playwright and runbook proof lane for the shared browser-session cutover.
+Add the final Playwright and runbook proof lane for the shared browser-session cutover, including
+the Skriptoteket product identity realm behavior defined by `ADR-0083`.
 
 ## Non-goals
 
 - Implementing earlier bootstrap, handoff, or deletion work.
 - Certifying the superseded modal-first auth-entry surface.
+- Implementing the Hule Education-hosted Skriptoteket login ceremony.
+- Implementing standalone registration/password lifecycle.
+- Implementing realm-aware projection provisioning.
 - Treating the smoke as a replacement for focused tests in `PR-0251` through `PR-0253`.
 
 ## Implementation Plan
 
-1. Add or update a dedicated Skriptoteket auth-cutover Playwright smoke.
-2. Prove bootstrap, protected-route recovery, CSRF write, websocket/session admission if applicable,
-   and logout invalidation.
-3. Update the operator runbook with exact commands, required hosts, expected artifacts, and failure
-   triage.
-4. Record the HuleEdu teacher smoke evidence that pairs with the Skriptoteket proof.
+1. Consume accepted `ADR-0083` and the completed `ST-28-07` through `ST-28-09` login/projection
+   contracts.
+2. Add or update a dedicated Skriptoteket realm-aware auth-cutover Playwright smoke.
+3. Prove browser ceremony entry, protected-route recovery, signed downstream context, projection
+   resolution, CSRF write, websocket/session admission if applicable, and logout invalidation.
+4. Cover Skriptoteket standalone identity and HuleEdu school identity according to the implemented
+   realm matrix; explicitly record any unsupported realm as blocked rather than silently passing.
+5. Update the operator runbook with exact commands, required hosts, expected artifacts, identity
+   realm coverage, metrics/logs to inspect, and failure triage.
+6. Record the HuleEdu teacher smoke evidence that pairs with the Skriptoteket proof.
 
 ## Test Plan
 

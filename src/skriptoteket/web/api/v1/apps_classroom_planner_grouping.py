@@ -40,7 +40,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner_export_job_contracts import 
     GroupingExportJobDto,
     serialize_grouping_export_job,
 )
-from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(
@@ -87,8 +87,7 @@ class BlockedSmartGroupingRunResponse(BaseModel):
 async def create_grouping_draft(
     request: CreateGroupingDraftRequest,
     handler: FromDishka[CreateGroupingDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     draft = await handler.handle(
         owner_user_id=user.id,
@@ -102,8 +101,7 @@ async def create_grouping_draft(
 async def activate_grouping_history_draft(
     draft_id: UUID,
     handler: FromDishka[ActivateGroupingHistoryDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
     draft = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
     return serialize_plan_draft(draft)
@@ -113,8 +111,7 @@ async def activate_grouping_history_draft(
 async def delete_historic_grouping_draft(
     draft_id: UUID,
     handler: FromDishka[DeleteHistoricGroupingDraftHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> None:
     await handler.handle(draft_id=draft_id, owner_user_id=user.id)
 
@@ -127,8 +124,7 @@ async def run_smart_grouping(
     draft_id: UUID,
     request: SmartGroupingRunRequest,
     handler: FromDishka[RunSmartGroupingHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> AppliedSmartGroupingRunResponse | BlockedSmartGroupingRunResponse:
     result = await handler.handle(
         draft_id=draft_id,
@@ -157,8 +153,7 @@ async def prepare_grouping_export(
     draft_id: UUID,
     request: PrepareGroupingExportRequest,
     handler: FromDishka[PrepareGroupingExportHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> PreparedGroupingExportDto:
     prepared_export = await handler.handle(
         draft_id=draft_id,
@@ -175,8 +170,7 @@ async def create_grouping_export_job(
     _request: Request,
     payload: CreateGroupingExportJobRequest,
     handler: FromDishka[CreateGroupingExportJobHandler],
-    user: User = Depends(require_user_api),
-    _: None = Depends(require_csrf_token),
+    user: User = Depends(require_app_user_api),
 ) -> GroupingExportJobDto:
     result = await handler.handle(
         actor=user,
@@ -194,7 +188,7 @@ async def create_grouping_export_job(
 async def get_recoverable_grouping_export_job_for_draft(
     draft_id: UUID,
     handler: FromDishka[GetRecoverableGroupingExportJobForDraftHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> GroupingExportJobDto | None:
     result = await handler.handle(
         actor=user,
@@ -207,7 +201,7 @@ async def get_recoverable_grouping_export_job_for_draft(
 async def get_grouping_export_job(
     job_id: UUID,
     handler: FromDishka[GetGroupingExportJobHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> GroupingExportJobDto:
     result = await handler.handle(
         actor=user,
@@ -220,7 +214,7 @@ async def get_grouping_export_job(
 async def download_grouping_export_job(
     job_id: UUID,
     handler: FromDishka[DownloadGroupingExportJobHandler],
-    user: User = Depends(require_user_api),
+    user: User = Depends(require_app_user_api),
 ) -> Response:
     filename, media_type, content = await handler.handle(actor=user, job_id=job_id)
     return Response(
