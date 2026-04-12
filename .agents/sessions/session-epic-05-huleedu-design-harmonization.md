@@ -35,7 +35,7 @@ From repo root, read:
 
 **BEFORE planning or executing any design work:**
 
-1. Load skill: `.claude/skills/brutalist-academic-ui` — Contains authoritative brutalist design patterns
+1. Load skill: `/Users/olofs_mba/Documents/Repos/skill-repository/skills/brutalist-academic-ui` — Contains authoritative brutalist design patterns
 
 ## Agent Orchestration (MUST follow)
 
@@ -73,7 +73,7 @@ For each story, spawn the frontend specialist:
 Execute agent: .claude/agents/frontend-specialist.md
 
 Prompt: "Implement ST-05-0X: [story title].
-Load .claude/skills/brutalist-academic-ui first.
+Load /Users/olofs_mba/Documents/Repos/skill-repository/skills/brutalist-academic-ui first.
 Files to modify: [list specific files].
 Acceptance criteria: [paste from EPIC-05].
 Do not modify any other files."
@@ -222,7 +222,7 @@ At each story completion, you MUST:
 Start by:
 
 1. Read the required docs listed above (AGENTS.md, rules, ADR-0017, EPIC-05)
-2. Load `.claude/skills/brutalist-academic-ui`
+2. Load `/Users/olofs_mba/Documents/Repos/skill-repository/skills/brutalist-academic-ui`
 3. Read `src/skriptoteket/web/templates/base.html` to understand current state
 4. Present your plan for **ST-05-01 only** to the user
 5. **WAIT** for user approval

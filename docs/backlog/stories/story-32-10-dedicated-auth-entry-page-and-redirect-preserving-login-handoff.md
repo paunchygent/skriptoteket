@@ -12,7 +12,7 @@ dependencies:
 acceptance_criteria:
   - "Given a signed-out visitor starts auth from `/`, `/public/apps/classroom.group-seating-studio`, or the signed-out auth routes, when auth entry begins, then Skriptoteket navigates to the canonical dedicated auth-entry page `/auth/login` instead of opening an in-place modal on the current page."
   - "Given the auth-entry page replaces the overloaded signed-out modal seam, when it renders, then it preserves an explicit intended post-login destination through a route-level contract without depending on route-local modal state."
-  - "Given Skriptoteket still needs launch-ready local auth now and HuleEdu SSO later, when this story ships, then the page-based auth-entry contract remains compatible with a future top-level HuleEdu-owned auth ceremony while keeping `/auth/login` as the only auth-entry route."
+  - "Given Skriptoteket now uses the HuleEdu shared browser-session/product-realm ceremony, when this story ships, then the page-based auth-entry contract remains compatible with a future top-level HuleEdu-owned auth ceremony while keeping `/auth/login` as the only auth-entry route."
   - "Given this story changes the signed-out auth contract, when implementation begins and ships, then the landing shell, public-entry surfaces, and signed-out auth pages all use the same dedicated auth-entry handoff instead of mixing modal-first and page-first entry patterns."
 ui_impact: "Yes (signed-out auth entry, redirect handoff, and login/start-auth page)"
 data_impact: "No"
@@ -27,7 +27,7 @@ too many responsibilities:
 - public-app upgrade entry
 - signed-out auth-route recovery
 - redirect preservation
-- future SSO handoff pressure
+- HuleEdu provider-ceremony handoff pressure
 
 That coupling makes the current contract harder to reason about and less suitable for launch.
 
@@ -50,7 +50,7 @@ handoff contract.
 - The important invariant is destination preservation and auth-handoff clarity, not keeping every
   auth step inside a modal forever.
 - The page must be usable for current local auth while staying structurally compatible with a future
-  HuleEdu-owned top-level SSO ceremony.
+  HuleEdu-owned top-level product-realm ceremony.
 - If richer app-specific route state is still needed for a polished return path, treat it as
   supplemental to the durable route-level destination rather than the only redirect truth.
 - Keep route recovery and auth-entry redesign in separate PR slices; `PR-0240` should land first.
@@ -76,7 +76,7 @@ handoff contract.
   [ST-32-08](story-32-08-featured-public-app-showcase-and-authenticated-value-previews.md)
 - Legacy modal-only login decision being superseded:
   [ST-11-22](story-11-22-remove-login-route.md)
-- Future SSO-compatible auth interruption constraints:
+- Product-realm ceremony-compatible auth interruption constraints:
   [ST-28-02](story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md)
-- Federation direction:
-  [ADR-0011](../../adr/adr-0011-huleedu-identity-federation.md)
+- Product-realm ceremony direction:
+  [ADR-0083](../../adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md)

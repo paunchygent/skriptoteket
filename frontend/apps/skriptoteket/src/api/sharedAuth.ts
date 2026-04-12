@@ -72,9 +72,18 @@ export type SharedAuthSnapshot = {
 export const DEFAULT_SHARED_AUTH_BASE_URL = "https://api.hule.education";
 export const DEFAULT_SHARED_AUTH_ENTRY_URL = "https://api.hule.education/auth/login";
 export const SHARED_AUTH_APP = "skriptoteket";
+export const SHARED_AUTH_DEFAULT_PRODUCT_IDENTITY_REALM = "skriptoteket_standalone";
+export const SHARED_AUTH_CALLBACK_PATH = "/auth/callback";
 export const SHARED_AUTH_SESSION_PATH = "/v1/auth/session";
 export const SHARED_AUTH_CSRF_PATH = "/v1/auth/csrf";
 export const SHARED_AUTH_LOGOUT_PATH = "/v1/auth/logout";
+const SHARED_AUTH_LOGIN_PATH = "/auth/login";
+const AUTH_ENTRY_LOOP_PATHS = new Set([
+  SHARED_AUTH_LOGIN_PATH,
+  SHARED_AUTH_CALLBACK_PATH,
+  "/login",
+]);
+const CEREMONY_NEXT_URL_BASE = "https://skriptoteket.local";
 
 export type SharedCsrfResponse = {
   csrf_token: string;
@@ -94,13 +103,48 @@ function normalizeEntryUrl(value: string | undefined): string {
   return value?.trim() || DEFAULT_SHARED_AUTH_ENTRY_URL;
 }
 
-export function sharedAuthCeremonyUrl(params: { nextPath: string | null; origin: string }): string {
+export type SharedAuthCeremonyParams = {
+  nextPath: string | null;
+  origin: string;
+  productIdentityRealm?: string | null;
+};
+
+function callbackUrl(origin: string): string {
+  return new URL(SHARED_AUTH_CALLBACK_PATH, origin).toString();
+}
+
+function sanitizeCeremonyNextPath(value: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(value, CEREMONY_NEXT_URL_BASE);
+    if (AUTH_ENTRY_LOOP_PATHS.has(parsed.pathname)) {
+      return null;
+    }
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+export function sharedAuthCeremonyUrl(params: SharedAuthCeremonyParams): string {
   const url = new URL(normalizeEntryUrl(import.meta.env.VITE_HULEEDU_AUTH_ENTRY_URL));
   if (!url.searchParams.has("app")) {
     url.searchParams.set("app", SHARED_AUTH_APP);
   }
-  if (params.nextPath) {
-    url.searchParams.set("next", new URL(params.nextPath, params.origin).toString());
+  if (!url.searchParams.has("product_identity_realm")) {
+    url.searchParams.set(
+      "product_identity_realm",
+      params.productIdentityRealm?.trim() || SHARED_AUTH_DEFAULT_PRODUCT_IDENTITY_REALM,
+    );
+  }
+  url.searchParams.set("return_to", callbackUrl(params.origin));
+  url.searchParams.delete("next");
+  const nextPath = sanitizeCeremonyNextPath(params.nextPath);
+  if (nextPath) {
+    url.searchParams.set("next", nextPath);
   }
   return url.toString();
 }

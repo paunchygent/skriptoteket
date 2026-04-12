@@ -108,7 +108,7 @@ different PR or should be marked superseded/dropped.
 - Story parent: [ST-24-04](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 - Room-editor modularization baseline: [PR-0116](pr-0116-klassrumskartan-room-template-editor-modularization-and-shared-room-scene.md)
 - Student-pool seating workspace baseline: [PR-0128](pr-0128-klassrumskartan-grouping-and-seating-student-pool-split-pane-scrolling.md)
-- Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)
+- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
 - Browser automation skill: [playwright-testing](../../../.claude/skills/playwright-testing/SKILL.md)
 - Design-system rule: [045-huleedu-design-system](../../../.agents/rules/045-huleedu-design-system.md)
 - Browser automation rule: [075-browser-automation](../../../.agents/rules/075-browser-automation.md)

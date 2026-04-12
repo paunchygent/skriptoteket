@@ -260,7 +260,7 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
-    expect(result).toEqual({ path: "/profile" });
+    expect(result).toBe("/profile");
   });
 
   it("resumes the next route when auth-login bootstrap finds a HuleEdu session", async () => {
@@ -282,7 +282,51 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
-    expect(result).toEqual({ path: "/editor" });
+    expect(result).toBe("/editor");
+  });
+
+  it("resumes the next route when auth-callback bootstrap finds a HuleEdu session", async () => {
+    const auth = createAuth();
+    auth.bootstrap.mockImplementation(async () => {
+      auth.isAuthenticated = true;
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/auth/callback",
+      fullPath: "/auth/callback?next=/editor",
+      meta: {},
+      query: { next: "/editor" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toBe("/editor");
+  });
+
+  it("preserves callback query and hash destinations as a route string", async () => {
+    const auth = createAuth();
+    auth.bootstrap.mockImplementation(async () => {
+      auth.isAuthenticated = true;
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/auth/callback",
+      fullPath: "/auth/callback?next=/admin/tools?status=draft%23review",
+      meta: {},
+      query: { next: "/admin/tools?status=draft#review" },
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toBe("/admin/tools?status=draft#review");
   });
 
   it("keeps anonymous HuleEdu sessions on auth-login with next intact", async () => {

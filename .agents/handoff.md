@@ -10,9 +10,9 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-12
 - Branch: `main` + local changes
-- Current lane: `PR-0253` / `ST-28-03` is done after `REV-PR-0253` retained implementation re-review approved the remediation evidence.
+- Current lane: `ST-28-08` / `PR-0257` is prepared as the standalone lifecycle provider-contract gate; `REV-PR-0257` is `changes_requested` pending HuleEdu lifecycle proof.
 - Production: Full Vue SPA.
-- Dirty worktree before this lane: `frontend/apps/skriptoteket/src/views/HomeView.vue` and `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`; do not overwrite them unless the lane explicitly takes ownership.
+- Dirty worktree before this lane included docs from `ST-28-06` / `ST-28-07`; preserve unrelated user changes if any appear.
 ## Status
 - `REV-EPIC-28` is approved. `ADR-0076`, `EPIC-28`, and `ST-28-01` through `ST-28-05` remain the governing Skriptoteket auth-cutover spine.
 - `ST-32-10` / `PR-0242` is the owner of the dedicated `/auth/login` route contract. `ST-28-02` consumes that route contract under the HuleEdu-owned session model.
@@ -20,24 +20,22 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0250` / `ST-28-05` are done. Readiness verdict: no remaining provider-side blocker for Skriptoteket consumer implementation; `PR-0251` may start from the retained HuleEdu shared browser-session conformance contract.
 - `PR-0251` first frontend slice is implemented: `frontend/apps/skriptoteket/src/api/sharedAuth.ts` owns HuleEdu session/CSRF URLs and maps shared session policy, `useAuthStore.bootstrap()` no longer calls `/api/v1/auth/me`, and unsafe API writes fetch shared CSRF without bearer headers.
 - `REV-PR-0251` now approves the retained implementation re-review after `PR-0255`; the app-local continuation remediation is review-clean.
-- `PR-0255` is done after implementation review fixes: app continuation verifies signed HuleEdu `InternalIdentityContextV1` headers with required `org_id`, `tenant_id`, `roles`, and `grants`, resolves existing local HuleEdu projections by `(auth_provider, external_id)`, returns `local_user` + `profile`, and keeps user auto-provisioning blocked until HuleEdu provides signed email claims.
+- `PR-0255` is done after implementation review fixes: app continuation verifies signed HuleEdu `InternalIdentityContextV1` headers, resolves existing local HuleEdu projections by `(auth_provider, external_id)`, returns `local_user` + `profile`, and keeps user auto-provisioning blocked until HuleEdu provides signed email claims.
 - `PR-0253` / `ST-28-03` is done. `REV-PR-0253` approved the retained implementation re-review on 2026-04-12 after checking removed zombie browser-session protocol/model/config/fixture surfaces, provisioning-required UX for authenticated HuleEdu subjects without local projections, strengthened live browser `/api` edge proof with a test gateway injector, and docs/rules updated away from removed local password-form smoke commands.
-- Product identity realm correction is now recorded in `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md`: Hule Education owns the shared browser edge/session ceremony, but Skriptoteket standalone identity must remain a product realm with explicit ADR/story follow-up.
+- Product identity realm correction is recorded in `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md` and frozen by `ADR-0083` / `REV-ST-28-06`: Hule Education owns the shared browser edge/session ceremony, but Skriptoteket standalone identity remains a product realm.
 - `PR-0253` follow-up boundary refinement is implemented: login anchors use a dedicated browser ceremony helper (`VITE_HULEEDU_AUTH_ENTRY_URL`) instead of `/v1/auth/login`, user-facing copy says `inloggning`/Skriptoteket access, and docs preserve `AuthProvider.LOCAL` / local identity data as product-domain concepts rather than browser-session authority.
-- Post-`PR-0253` login planning is scaffolded: `ADR-0083` plus `ST-28-06` through `ST-28-10`. `PR-0255` stays complete as foundation; `ST-28-04` / `PR-0254` is now blocked behind `ADR-0083`, login ceremony, standalone lifecycle, and realm-aware projection, then becomes the final realm-aware cross-app proof.
-- Reviewer advice acted on: `frontend/apps/skriptoteket/src/stores/ai.ts` now fails closed while `auth.aiPolicy` is missing, and `frontend/apps/skriptoteket/src/stores/ai.spec.ts` freezes that missing app-local AI bootstrap does not allow remote providers.
-- `PR-0251` continuation slice is implemented: `GET /api/v1/profile/app-continuation` returns runtime `ai_policy` plus profile AI preferences, `useAuthStore.bootstrap()` performs HuleEdu session first and app-local continuation second, and editor AI chat/completions/edit-ops no longer read AI preferences from local `Session` fields.
-- `PR-0252` is implemented: direct protected entry, app-local `401` recovery, and top-level `/auth/login?next=...` return preserve the dedicated auth-entry contract on the HuleEdu-owned session model. Live proof uses the real backend app-continuation route, signed HuleEdu request context, DB projection, and Vite `/api` proxy. Shared proof helpers now live in `scripts/_playwright_huleedu_auth.py`.
-- Independent `skriptoteket_reviewer` pass for `PR-0252` approved the implementation with no actionable findings. Residual note: the live proof covers canonical `/editor`; richer query/hash destinations are covered by focused Vitest.
-- `PR-0253` preserved local RBAC by resolving signed HuleEdu subjects to existing Skriptoteket `User` projections and enforcing local `User.role`; HuleEdu roles/grants remain context metadata, not Skriptoteket admin/contributor/superuser assignment.
-- Post-`PR-0253` auth observability rule: do not recreate `skriptoteket_active_sessions` from local state. Future gauges/counters should measure HuleEdu signed-context verification/projection outcomes or local RBAC inventory such as `skriptoteket_users_by_role` when explicitly enabled.
+- `ST-28-06` / `REV-ST-28-06` are done: `ADR-0083` is accepted and freezes the product identity realm contract. First accepted realms are `skriptoteket_standalone` and `huleedu_school`; browser login must use a Hule Education-hosted `app=skriptoteket` ceremony; final proof requires realm-aware signed context and projection keyed by `(product_identity_realm, realm_subject_id)`; local RBAC remains `User.role`-driven.
+- `ST-28-07` / `PR-0256` are done after review remediation. HuleEdu `TASK-0313` / `TASK-0314` cleared the provider blocker; Skriptoteket now sends `/auth/login` to HuleEdu `GET /auth/login` with `app=skriptoteket`, default `product_identity_realm=skriptoteket_standalone`, `return_to=/auth/callback`, and safe route-level `next`; `/auth/callback` preserves query/hash continuation; helper-level `next` drops hostile/loop values; app continuation requires `active_app=skriptoteket`, supported realm, and `realm_subject_id` before existing subject-key projection lookup.
+- `ST-28-08` / `PR-0257` is now opened but blocked by retained review `REV-PR-0257`: HuleEdu has not yet published app/realm-aware browser ceremonies for standalone registration, password reset, or email verification. Direct Identity Service APIs are not an acceptable browser-consumer contract, and standalone registration must not require HuleEdu school organization registration.
 - Skriptoteket should not create a second integration epic. Implementation now lives as PR-sized tasks under existing `EPIC-28`:
   - `PR-0250` ingests HuleEdu provider conformance and records cutover readiness.
   - `PR-0251` cuts the SPA auth store/API client over to `GET https://api.hule.education/v1/auth/session` plus CSRF.
   - `PR-0255` remediates `REV-PR-0251` implementation findings before `PR-0251` close-out; retained `REV-PR-0251` re-review is approved.
   - `PR-0252` preserves `/auth/login?next=...` interruption and return-to-origin behavior on the shared session.
   - `PR-0253` removes obsolete Skriptoteket-local browser auth ownership and regenerates/realigns contracts; retained implementation review is approved.
-  - `PR-0254` adds the realm-aware cross-app Playwright smoke and operator runbook proof after `ADR-0083` / `ST-28-07` through `ST-28-09`.
+  - `PR-0256` implements `ST-28-07` and is approved after HuleEdu provider proof.
+  - `PR-0257` prepares `ST-28-08` and is blocked pending HuleEdu standalone lifecycle provider proof.
+  - `PR-0254` adds the realm-aware cross-app Playwright smoke and operator runbook proof after `ST-28-07` through `ST-28-09`.
 - `EPIC-35` remains downstream of the shared launch topology and should consume the same `api.hule.education` / `skriptoteket.hule.education` assumptions, not recreate them.
 ## Verification
 - `pdm run docs-validate` (pass on 2026-04-11 after `PR-0250` rereview close-out).
@@ -140,6 +138,34 @@ Keep this file updated so the next session can pick up work quickly.
 - `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0253-auth-retirement --start-backend --start-vite` (pass on 2026-04-12 during retained `REV-PR-0253` re-review; signed read/write `200`, stale-CSRF missing-context `401`, missing projection `401`, `/auth/login` ceremony handoff, browser gateway-injected `/editor`, and provisioning-required UX).
 - `pdm run lint` (pass on 2026-04-12 during retained `REV-PR-0253` re-review).
 - `git diff --check` (pass on 2026-04-12 during retained `REV-PR-0253` re-review).
+- `pdm run docs-validate` (pass on 2026-04-12 after `ST-28-06` / `ADR-0083` contract freeze).
+- `git diff --check` (pass on 2026-04-12 after `ST-28-06` / `ADR-0083` contract freeze).
+- `pdm run docs-validate` (pass on 2026-04-12 after `PR-0256` provider-contract blocker review).
+- `git diff --check` (pass on 2026-04-12 after `PR-0256` provider-contract blocker review).
+- `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/router/index.spec.ts` (pass on 2026-04-12 after `PR-0256`; 35 tests).
+- `pdm run test tests/unit/web/test_profile_app_continuation_api.py` (pass on 2026-04-12 after `PR-0256`; 26 tests).
+- `pdm run python -m py_compile scripts/playwright_pr_0256_auth_ceremony.py` (pass on 2026-04-12 after `PR-0256` proof script).
+- `docker compose up -d db` (db already running on 2026-04-12 before `PR-0256` live proof).
+- `pdm run fe-type-check` (pass on 2026-04-12 after `PR-0256`).
+- `pdm run typecheck` (pass on 2026-04-12 after `PR-0256`).
+- `pdm run fe-lint` (pass on 2026-04-12 after `PR-0256`).
+- `pdm run python -m scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite` (pass on 2026-04-12; verified provider-approved ceremony href and `/auth/callback` resumed `/editor`).
+- `pdm run lint` (pass on 2026-04-12 after `PR-0256`).
+- `pdm run docs-validate` (pass on 2026-04-12 after `PR-0256`).
+- `git diff --check` (pass on 2026-04-12 after `PR-0256`).
+- `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/router/index.spec.ts` (pass on 2026-04-12 after `PR-0256` review remediation; 40 tests).
+- `pdm run test tests/unit/web/test_profile_app_continuation_api.py` (pass on 2026-04-12 after `PR-0256` review remediation; 31 tests).
+- `pdm run python -m py_compile scripts/playwright_pr_0256_auth_ceremony.py` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `pdm run fe-type-check` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `pdm run typecheck` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `pdm run fe-lint` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `pdm run python -m scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite` (pass on 2026-04-12 after review remediation; verified ceremony href and callback resumed `/editor?draft=head#debug`).
+- `pdm run lint` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `pdm run docs-validate` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `git diff --check` (pass on 2026-04-12 after `PR-0256` review remediation).
+- `pdm run docs-validate` (pass on 2026-04-12 after preparing `PR-0257` / `REV-PR-0257`).
+- `git diff --check` (pass on 2026-04-12 after preparing `PR-0257` / `REV-PR-0257`).
+- `wc -l .agents/handoff.md` (`190` lines after handoff compaction for `PR-0257`).
 ## How to Run
 ```bash
 pdm run docs-validate
@@ -151,17 +177,14 @@ pdm run pytest -q tests/unit/web/test_profile_app_continuation_api.py tests/unit
 pdm run pr-0253-auth-retirement --start-backend --start-vite
 pdm run pr-0252-auth-return --start-backend --start-vite
 pdm run pr-0255-auth-bootstrap --start-backend --start-vite
+pdm run python -m scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite
 pdm run fe-test -- --run src/router/index.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/views/AuthLoginView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/App.spec.ts
 ```
 ## Known Issues / Risks
-- `PR-0251` must preserve Skriptoteket-local role, profile, AI policy, and app authorization semantics without reinstating local browser auth authority, bearer storage, or direct HuleEdu Identity calls.
-- `REV-PR-0251` retained re-review is approved; `PR-0254` remains for Docker-first realm-aware cross-app proof after the new identity-realm path.
 - Canonical Docker-first live testing after the auth switch belongs to `PR-0254` after `ADR-0083` / realm stories; do not resurrect local password-form smoke scripts for that lane.
-- `HomeView.vue` / `HomeView.spec.ts` had pre-existing local changes before this docs lane; keep them separate from EPIC-28 scaffolding.
-- Public guest mode remains browser-owned and route-sensitive; clear local public guest storage before treating a stale guest state as an auth-cutover regression.
-- `REV-PR-0253` is approved; `PR-0253` / `ST-28-03` are done.
-- `REV-PR-0253` now has an additional product identity realm concern: do not treat local browser-session retirement as removal of standalone Skriptoteket identity.
+- Product identity realm concern is now closed through `ADR-0083` / `REV-ST-28-06`: do not treat local browser-session retirement as removal of standalone Skriptoteket identity.
+- `PR-0257` provider blocker: HuleEdu must publish browser-navigable `app=skriptoteket` lifecycle ceremonies for registration, reset, and verification before Skriptoteket adds consumer handoff links.
 - `PR-0254` owns Docker-first cross-app auth proof after the `ADR-0083` realm/login/projection path; do not resurrect removed local password-form smoke commands for that lane.
 ## Next Steps
-- Review and approve `ADR-0083`, then plan implementation PRs for `ST-28-07` through `ST-28-09` before taking `PR-0254`.
-- Start the agreed next auth lane from `ST-28-06` / `ADR-0083`; keep `PR-0254` blocked until the realm-aware login/projection path is implemented.
+- Hand `PR-0257` / `REV-PR-0257` to HuleEdu as the standalone registration/password lifecycle provider blocker.
+- Keep `ST-28-09` and `PR-0254` blocked until `ST-28-08` has a provider-approved lifecycle output contract.

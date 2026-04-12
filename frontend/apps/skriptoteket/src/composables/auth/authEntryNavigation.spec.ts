@@ -6,9 +6,11 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
+import { createMemoryHistory, createRouter } from "vue-router";
 
 import {
   buildLandingAuthEntryLocation,
+  isAuthEntryPath,
   readAuthContinuation,
   resolveAuthLoginSuccessLocation,
   sanitizeAuthNextPath,
@@ -23,8 +25,15 @@ describe("authEntryNavigation", () => {
     expect(sanitizeAuthNextPath("https://example.com/phish")).toBeNull();
     expect(sanitizeAuthNextPath("//example.com/phish")).toBeNull();
     expect(sanitizeAuthNextPath("/auth/login")).toBeNull();
+    expect(sanitizeAuthNextPath("/auth/callback")).toBeNull();
     expect(sanitizeAuthNextPath("/login")).toBeNull();
     expect(sanitizeAuthNextPath("/browse?profession=svenska")).toBe("/browse?profession=svenska");
+  });
+
+  it("treats login and callback as the auth-entry surface", () => {
+    expect(isAuthEntryPath("/auth/login")).toBe(true);
+    expect(isAuthEntryPath("/auth/callback")).toBe(true);
+    expect(isAuthEntryPath("/auth/callback/extra")).toBe(false);
   });
 
   it("preserves same-origin route search and hash details", () => {
@@ -72,6 +81,28 @@ describe("authEntryNavigation", () => {
         classroomPlannerEntryOrigin: "dashboard",
       },
     });
+  });
+
+  it("preserves query and hash when Vue Router normalizes auth success", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/", component: { template: "<div />" } },
+        { path: "/admin/tools", component: { template: "<div />" } },
+      ],
+    });
+
+    await router.push("/");
+    await router.push(
+      resolveAuthLoginSuccessLocation(
+        {
+          nextPath: "/admin/tools?status=draft#review",
+        },
+        null,
+      ),
+    );
+
+    expect(router.currentRoute.value.fullPath).toBe("/admin/tools?status=draft#review");
   });
 
   it("keeps classroom-planner origin in the route contract across auth detours", () => {

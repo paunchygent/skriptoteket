@@ -5,7 +5,7 @@ title: "Development changelog"
 status: active
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-10
+updated: 2026-04-12
 topic: "development-changelog"
 ---
 
@@ -14,6 +14,43 @@ Append-only development log and repo long-term memory for compacted handoff hist
 Rule:
 - When compacting `.agents/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
+
+## 2026-04-12 handoff compaction dump
+
+Moved from `.agents/handoff.md` while preparing `ST-28-08` / `PR-0257` as the next
+provider-contract gate after approved `PR-0256`.
+
+- Reviewer advice acted on: `frontend/apps/skriptoteket/src/stores/ai.ts` now fails closed while
+  `auth.aiPolicy` is missing, and `frontend/apps/skriptoteket/src/stores/ai.spec.ts` freezes that
+  missing app-local AI bootstrap does not allow remote providers.
+- `PR-0251` continuation slice is implemented: `GET /api/v1/profile/app-continuation` returns
+  runtime `ai_policy` plus profile AI preferences, `useAuthStore.bootstrap()` performs HuleEdu
+  session first and app-local continuation second, and editor AI chat/completions/edit-ops no
+  longer read AI preferences from local `Session` fields.
+- `PR-0252` is implemented: direct protected entry, app-local `401` recovery, and top-level
+  `/auth/login?next=...` return preserve the dedicated auth-entry contract on the HuleEdu-owned
+  session model. Live proof uses the real backend app-continuation route, signed HuleEdu request
+  context, DB projection, and Vite `/api` proxy. Shared proof helpers now live in
+  `scripts/_playwright_huleedu_auth.py`.
+- Independent `skriptoteket_reviewer` pass for `PR-0252` approved the implementation with no
+  actionable findings. Residual note: the live proof covers canonical `/editor`; richer query/hash
+  destinations are covered by focused Vitest.
+- `PR-0253` preserved local RBAC by resolving signed HuleEdu subjects to existing Skriptoteket
+  `User` projections and enforcing local `User.role`; HuleEdu roles/grants remain context metadata,
+  not Skriptoteket admin/contributor/superuser assignment.
+- Post-`PR-0253` auth observability rule: do not recreate `skriptoteket_active_sessions` from local
+  state. Future gauges/counters should measure HuleEdu signed-context verification/projection
+  outcomes or local RBAC inventory such as `skriptoteket_users_by_role` when explicitly enabled.
+- `PR-0251` must preserve Skriptoteket-local role, profile, AI policy, and app authorization
+  semantics without reinstating local browser auth authority, bearer storage, or direct HuleEdu
+  Identity calls.
+- `REV-PR-0251` retained re-review is approved; `PR-0254` remains for Docker-first realm-aware
+  cross-app proof after the new identity-realm path.
+- `HomeView.vue` / `HomeView.spec.ts` had pre-existing local changes before this docs lane; keep
+  them separate from EPIC-28 scaffolding.
+- Public guest mode remains browser-owned and route-sensitive; clear local public guest storage
+  before treating a stale guest state as an auth-cutover regression.
+- `REV-PR-0253` is approved; `PR-0253` / `ST-28-03` are done.
 
 ## 2026-04-10 handoff compaction dump
 

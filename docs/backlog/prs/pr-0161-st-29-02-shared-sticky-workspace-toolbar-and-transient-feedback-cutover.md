@@ -185,5 +185,5 @@ Current code seams that matter:
 - Export-flow baseline: [PR-0153](pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md)
 - Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
 - Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-shared-tool-control-language-v1.md)
-- Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)
+- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
 - Browser automation rule: [075-browser-automation](../../../.agents/rules/075-browser-automation.md)

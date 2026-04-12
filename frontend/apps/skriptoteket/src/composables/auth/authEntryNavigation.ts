@@ -26,6 +26,7 @@ import {
 
 export const AUTH_LOGIN_PATH = "/auth/login";
 export const AUTH_LOGIN_ROUTE_NAME = "auth-login";
+export const AUTH_CALLBACK_PATH = "/auth/callback";
 export const CLASSROOM_PLANNER_ENTRY_ORIGIN_QUERY_KEY = "classroomPlannerEntryOrigin";
 
 const SIGNED_OUT_AUTH_ROUTE_NAMES = new Set<RouteRecordNameGeneric>([
@@ -34,7 +35,8 @@ const SIGNED_OUT_AUTH_ROUTE_NAMES = new Set<RouteRecordNameGeneric>([
   "reset-password",
   "verify-email",
 ]);
-const AUTH_ENTRY_LOOP_PATHS = new Set([AUTH_LOGIN_PATH, "/login"]);
+const AUTH_ENTRY_LOOP_PATHS = new Set([AUTH_LOGIN_PATH, AUTH_CALLBACK_PATH, "/login"]);
+const AUTH_ENTRY_PATHS = new Set([AUTH_LOGIN_PATH, AUTH_CALLBACK_PATH]);
 const AUTH_LOGIN_FALLBACK: RouteLocationRaw = { name: "home" };
 const CLASSROOM_PLANNER_AUTHENTICATED_PATH = `/apps/${CLASSROOM_PLANNER_APP_ID}`;
 const AUTH_ENTRY_URL_BASE = "https://skriptoteket.local";
@@ -64,8 +66,8 @@ function isClassroomPlannerAppRoute(route: RouteLike): boolean {
   return route.name === "app-detail" && route.params?.appId === CLASSROOM_PLANNER_APP_ID;
 }
 
-export function isAuthLoginPath(path: string): boolean {
-  return path === AUTH_LOGIN_PATH;
+export function isAuthEntryPath(path: string): boolean {
+  return AUTH_ENTRY_PATHS.has(path);
 }
 
 export function sanitizeAuthNextPath(value: unknown): string | null {
@@ -287,5 +289,5 @@ export function resolveAuthLoginSuccessLocation(
     return buildClassroomPlannerEntryTarget(preservedOrigin);
   }
 
-  return { path: sanitizedNextPath };
+  return sanitizedNextPath;
 }

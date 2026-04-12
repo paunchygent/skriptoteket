@@ -115,9 +115,9 @@ Use these files as the practical source material for the mockup:
 - Shared design rule:
   `.agents/rules/045-huleedu-design-system.md`
 - Frontend implementation skill:
-  `/Users/olofs_mba/.codex/skills/skriptoteket-frontend-specialist/SKILL.md`
+  `/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md`
 - Brutalist/academic layout skill:
-  `/Users/olofs_mba/Documents/Repos/huledu-reboot/.agents/skills/brutalist-academic-ui/SKILL.md`
+  `/Users/olofs_mba/Documents/Repos/skill-repository/skills/brutalist-academic-ui/SKILL.md`
 - Canonical mockup precedent:
   `docs/backlog/prs/pr-0184-st-29-10-canonical-mockup-folder-and-first-run-preview.md`
 - Canonical mockup location precedent:

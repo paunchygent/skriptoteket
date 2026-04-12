@@ -10,6 +10,11 @@ topic: "architecture"
 
 ## Executive Summary
 
+Note: the identity recommendations in this 2025 post-MVP review predate the
+ADR-0083 product-realm ceremony. Treat generic legacy identity-federation
+language below as superseded by the shared browser-session/product-realm
+architecture.
+
 Skriptoteket's architecture is already set up for a clean post-MVP evolution: protocol-first DDD/Clean Architecture, clear bounded contexts (catalog, identity, suggestions, scripting), and an explicit DI composition root make deferred items straightforward to add without structural rewrites. The most "natural" next two epics are (1) finishing real-world identity/governance and adding operational visibility, followed by (2) scaling and hardening execution through policy, queueing, and runner isolation.
 
 ---
@@ -21,7 +26,7 @@ Skriptoteket's architecture is already set up for a clean post-MVP evolution: pr
 - **Strong separation of concerns with clear dependency direction.** The repo consistently leans on protocols (`typing.Protocol`) for repositories and handlers, with an explicit Dishka composition root wiring implementations (`di.py`). This supports testability, swap-in integrations (SSO, runner service), and avoids framework bleed into domain logic.
 - **Well-formed scripting domain foundations.** The scripting domain models and state transitions (draft → in_review → active → archived) are explicit and immutable, with copy-on-activate publishing semantics and a stable runner contract defined (`result.json`, contract_version, artifact safety rules). This is the correct base for future scaling (queue/worker) without changing business invariants.
 - **Pragmatic "MVP-safe" execution policy for v0.1.** ADR-0016's global concurrency cap + reject behavior avoids hidden queues and prevents event-loop blocking when Docker SDK calls are thread-offloaded. It is operationally safe for early adoption and sets a clear upgrade path to persistent queueing later.
-- **Federation-ready identity model.** Identity already anticipates external identities (`auth_provider`, `external_id`) while keeping roles local, which makes HuleEdu SSO an additive change rather than a rewrite.
+- **Provider-ready identity model.** Identity already anticipates external identities (`auth_provider`, `external_id`) while keeping roles local. ADR-0083 now realizes that direction through the HuleEdu shared browser-session/product-realm ceremony rather than a generic SSO/OIDC bridge.
 
 ### Areas of Concern and Technical Debt
 
@@ -41,7 +46,7 @@ If deferred items are implemented in the wrong order, the main risks are:
 1. **Security regression** (network/secrets added without a policy model + auditing + sanitization hardening).
 2. **Operational instability** (queue introduced without clear scheduling/fairness/backpressure semantics).
 3. **Compliance risk** (artifact/input retention defaults not explicit; inability to purge sensitive inputs/outputs predictably).
-4. **Identity confusion** (SSO account-linking mistakes leading to wrong-user access if matching rules are not explicit).
+4. **Identity confusion** (provider projection or realm-subject matching mistakes leading to wrong-user access if matching rules are not explicit).
 
 ---
 
@@ -49,19 +54,22 @@ If deferred items are implemented in the wrong order, the main risks are:
 
 ### EPIC-05 Outcome
 
-Skriptoteket is "production-ready for a real school environment": users authenticate via HuleEdu SSO (while keeping local roles), admin governance (nomination/approval) is complete, and operators/admins have baseline visibility and controls (metrics + retention/cleanup) to run the platform safely day-to-day.
+Skriptoteket is "production-ready for a real school environment": users authenticate via the HuleEdu shared browser-session/product-realm ceremony while keeping local roles, admin governance (nomination/approval) is complete, and operators/admins have baseline visibility and controls (metrics + retention/cleanup) to run the platform safely day-to-day.
 
 ### EPIC-05 Proposed Stories
 
-#### ST-05-01: HuleEdu SSO Integration (Federated Identity, Local Authorization)
+#### ST-05-01: HuleEdu Product-Realm Ceremony (External Identity, Local Authorization)
 
-- Implement HuleEdu login flow behind protocols consistent with ADR-0011: external identity provider supplies identity; Skriptoteket assigns/maintains roles locally.
+- Implement the HuleEdu login ceremony behind protocols consistent with ADR-0083: external provider supplies signed identity context; Skriptoteket assigns/maintains roles locally.
 - Recommended implementation shape (fits current architecture):
-  - Add an `OidcProviderProtocol` (or `FederatedAuthProviderProtocol`) in `protocols/identity.py`.
-  - Implement `HuleEduOidcProvider` in infrastructure.
-  - Add a dedicated handler (e.g., `BeginOidcLoginHandler`, `CompleteOidcLoginHandler`) that creates a standard Skriptoteket server-side session after successful OIDC callback.
-  - JIT provisioning rules (explicit and testable): if `(auth_provider=HULEEDU, external_id)` not found, create user with role `user` and `is_active=true`, leaving role promotion to admins/superusers.
-- Deliverable UX: "Login with HuleEdu" button, plus local login for break-glass admin/superuser accounts.
+  - Add provider/context protocols in `protocols/identity.py`.
+  - Implement HuleEdu signed-context continuation in infrastructure/application services.
+  - Add dedicated handlers for ceremony callback and app continuation.
+  - Projection rules (explicit and testable): accept only supported product
+    realms and map signed realm subject context into local Skriptoteket user
+    projection state, leaving role promotion to admins/superusers.
+- Deliverable UX: a single HuleEdu ceremony handoff, without a separate local
+  browser credential form.
 
 #### ST-05-02: External Account Linking and Safe Matching Rules
 
@@ -117,7 +125,7 @@ Skriptoteket is "production-ready for a real school environment": users authenti
 
 - **Account matching mistakes** (email-based merges): mitigate by using immutable `external_id` as primary key and making linking explicit/admin-mediated.
 - **Operational drift** (cleanup not actually running): mitigate by making retention observable (dashboard shows disk usage/oldest artifact age).
-- **Security regressions** (SSO misconfiguration): mitigate via strict configuration validation at startup and integration tests against a mocked OIDC provider.
+- **Security regressions** (provider ceremony misconfiguration): mitigate via strict configuration validation at startup and integration tests against signed context and allowlist boundaries.
 
 ---
 
@@ -204,9 +212,10 @@ Tool execution becomes robust under increased usage and stricter security needs:
 
 These decisions are large enough to deserve formal ADRs before implementation:
 
-1. **ADR: HuleEdu OIDC integration shape (session bridge vs stateless)**
+1. **ADR: HuleEdu product-realm ceremony shape**
 
-   Define whether HuleEdu auth results in Skriptoteket server-side sessions (recommended for consistency with the current UI/CSRF model) and define account matching/linking rules.
+   ADR-0083 now owns this decision: define product identity realms, signed
+   context, app continuation, and account projection rules.
 
 2. **ADR: Artifact retention, data classification, and purge semantics**
 
@@ -240,9 +249,11 @@ The PRD is directionally correct, but post-MVP reality benefits from making a fe
 
    Add explicit statements for sandbox vs production retention, production input-file handling defaults, and a purge mechanism expectation.
 
-2. **Add an "Identity integration milestone" and define the default role for new SSO users.**
+2. **Add an "Identity integration milestone" and define the default role for new provider-projected users.**
 
-   The PRD already anticipates federation; it should explicitly state whether first-time HuleEdu users are auto-provisioned and what role they get by default (recommend: `user`).
+   The PRD already anticipates external identity; it should explicitly state
+   whether first-time HuleEdu users are projected automatically and what role
+   they get by default (recommend: `user`).
 
 3. **Clarify the long-running execution experience.**
 
@@ -256,4 +267,4 @@ The PRD is directionally correct, but post-MVP reality benefits from making a fe
 
 ## Roadmap Alignment
 
-This EPIC-05/EPIC-06 roadmap stays aligned with the PRD's core intent—**a teacher-first, curated script execution platform**—by prioritizing friction removal (SSO), governance completeness (admin nomination approval), and operational safety (metrics + retention) before introducing heavier scalability mechanisms. When scale/security work arrives (queue, runner service, network/secrets), it is framed as enabling broader tool value while preserving the product's safety constraints ("do not execute uploaded code," default isolation, and user-safe outputs).
+This EPIC-05/EPIC-06 roadmap stays aligned with the PRD's core intent—**a teacher-first, curated script execution platform**—by prioritizing friction removal through the HuleEdu provider ceremony, governance completeness (admin nomination approval), and operational safety (metrics + retention) before introducing heavier scalability mechanisms. When scale/security work arrives (queue, runner service, network/secrets), it is framed as enabling broader tool value while preserving the product's safety constraints ("do not execute uploaded code," default isolation, and user-safe outputs).

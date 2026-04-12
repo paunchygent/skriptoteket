@@ -10,7 +10,10 @@ created: 2025-12-17
 
 # Research for DevOps Skill Construction
 
-Research document for creating the `skriptoteket-devops` Claude skill.
+Research document for the legacy repo-local Skriptoteket DevOps Claude skill.
+The active replacement is the canonical
+`/Users/olofs_mba/Documents/Repos/skill-repository/skills/hemma-devops/SKILL.md`
+skill plus its Skriptoteket reference.
 
 **Created:** 2025-12-17
 **Sources:** Runbooks, ADRs, Docker configs, CLI code, pyproject.toml
@@ -417,7 +420,9 @@ ssh hemma "curl -s http://localhost:8000/health | jq"
 ### Authentication (ADR-0006, ADR-0009)
 - Local admin-provisioned accounts with server-side sessions in PostgreSQL
 - No self-signup in v0.1
-- User model includes `external_id` and `auth_provider` for future HuleEdu SSO
+- User model includes `external_id` and `auth_provider`; ADR-0083 now realizes
+  external identity through the HuleEdu shared browser-session/product-realm
+  ceremony
 
 ### Script Execution (ADR-0013, ADR-0016)
 - Sibling container model via docker.sock mount

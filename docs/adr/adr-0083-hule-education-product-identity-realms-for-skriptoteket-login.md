@@ -2,15 +2,17 @@
 type: adr
 id: ADR-0083
 title: "Hule Education product identity realms for Skriptoteket login"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-04-11
+updated: 2026-04-12
 links:
   - "EPIC-28"
   - "ADR-0076"
   - "ADR-0082"
   - "REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity"
+  - "REV-ST-28-06"
   - "ST-28-06"
   - "ST-28-07"
   - "ST-28-08"
@@ -37,14 +39,13 @@ should turn that direction into an implementation contract before `ST-28-04` /
 
 ## Decision
 
-Hule Education Gateway/Identity will be the browser session and login ceremony
-authority for Skriptoteket, but it must support product identity realms.
+Hule Education Gateway/Identity is the browser session and login ceremony authority for
+Skriptoteket, but it must support product identity realms.
 
-For Skriptoteket, the target model is:
+For Skriptoteket, the accepted model is:
 
 - `skriptoteket_standalone` is a distinct product identity realm.
-- HuleEdu school identity is a separate realm, not the only Skriptoteket login
-  identity.
+- HuleEdu school identity is a separate realm, not the only Skriptoteket login identity.
 - A user may authenticate through the shared Hule Education ceremony for
   Skriptoteket without completing HuleEdu school registration.
 - Account linking between HuleEdu school identity and Skriptoteket standalone
@@ -59,15 +60,105 @@ For Skriptoteket, the target model is:
   valid product-domain concepts until a later data migration explicitly replaces
   them.
 
-The signed downstream context should define, at minimum:
+### Frozen Terms
+
+The following terms are frozen for downstream stories and PRs:
+
+| Term | Meaning | Owner |
+|------|---------|-------|
+| Browser session | The umbrella Hule Education browser session and CSRF authority | Hule Education Gateway/Identity |
+| Product identity realm | Product account namespace selected for the active login | Hule Education Identity with product input from Skriptoteket |
+| Active app | The app that initiated or consumes the ceremony, currently `skriptoteket` | Hule Education Gateway plus downstream app validation |
+| Realm subject | Stable subject id inside one product identity realm | Hule Education Identity |
+| Skriptoteket projection | Local `User` / `UserProfile` record used by app APIs | Skriptoteket |
+| Skriptoteket RBAC | Contributor/admin/superuser authorization decision | Skriptoteket |
+
+The first accepted realms are:
+
+- `skriptoteket_standalone`
+- `huleedu_school`
+
+Additional realms or renamed vocabulary require a follow-up ADR or an explicit ADR update before
+implementation treats them as stable.
+
+### Browser Ceremony Contract
+
+Skriptoteket browser login actions must target a browser-navigable Hule Education ceremony URL,
+not `/v1/auth/login` or any other POST-only JSON/API route.
+
+The ceremony contract must include:
+
+- `app=skriptoteket`, or an equivalent signed/app-registered input understood by the gateway
+- a return target that is restricted to allowed Skriptoteket origins and preserves `next`
+- a selected or defaulted product identity realm
+- explicit account-linking behavior when a browser session can represent more than one realm
+
+Skriptoteket may keep `/auth/login?next=...` as an app-local interruption or transition route, but
+it must not collect passwords or become a second local browser-auth ceremony.
+
+### Realm-Aware Signed Context Contract
+
+The current `InternalIdentityContextV1` accepted for `PR-0255` remains valid only as the
+HuleEdu-context foundation for existing HuleEdu-linked projections. Realm-aware implementation must
+extend or version that context before `ST-28-04` / `PR-0254` can claim final login proof.
+
+The realm-aware signed downstream context must define:
 
 - stable subject id
-- active product identity realm
 - active app, such as `skriptoteket`
+- active product identity realm
+- stable realm subject id, which is the subject inside the active product identity realm
 - optional linked identity ids
 - optional tenant/org context when the user operates inside a school context
-- claims trusted enough for safe first-time Skriptoteket projection creation, if
-  the login ceremony provisions access
+- claims trusted enough for safe first-time Skriptoteket projection creation, if the login ceremony
+  provisions access
+
+The gateway context must keep verification semantics from `PR-0255`: signed payload, issuer,
+audience, key id, expiry, clock skew, and fail-closed handling remain required.
+
+`org_id` and `tenant_id` cannot remain globally required for the `skriptoteket_standalone` realm
+unless the provider explicitly supplies neutral standalone values with documented semantics. School
+context is optional product context, not a prerequisite for Skriptoteket standalone login.
+
+### Projection and RBAC Contract
+
+Skriptoteket must resolve projections by a realm-aware identity key, not by realm-ambiguous `sub`
+alone. The target projection key is:
+
+```text
+(product_identity_realm, realm_subject_id)
+```
+
+Until the data model is migrated, existing `AuthProvider.HULEEDU` plus `external_id=<sub>` lookup
+may remain as the `huleedu_school` compatibility path accepted by `PR-0255`, but new
+Skriptoteket-standalone implementation must not encode `sub` as a universal projection key.
+
+First-time projection creation is allowed only when the signed context carries sufficient
+provisioning claims, including at minimum:
+
+- verified email or an explicitly non-email subject policy accepted by the product owner
+- email verification or equivalent assurance state
+- display/profile fields needed for the local `UserProfile`
+- active product identity realm
+- active app
+- realm subject id
+
+If those claims are missing or untrusted, Skriptoteket must fail closed into deliberate
+local-access-required UX and must not fabricate a local user.
+
+Hule Education roles, grants, feature flags, tenant, and org context remain provider/session
+metadata unless a later ADR explicitly maps them into Skriptoteket authorization. Contributor,
+admin, and superuser checks continue to use local `User.role`.
+
+### Rejected Options
+
+The following options are rejected:
+
+- certifying a HuleEdu-school-only login path as final Skriptoteket login
+- reintroducing Skriptoteket-local browser sessions, CSRF, or password collection as a bridge
+- using browser bearer storage or direct browser calls to Identity
+- linking HuleEdu school and Skriptoteket standalone identities by matching email alone
+- deriving Skriptoteket RBAC from generic Hule Education provider roles
 
 ## Consequences
 

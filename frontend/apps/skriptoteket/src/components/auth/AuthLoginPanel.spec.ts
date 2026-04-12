@@ -38,7 +38,7 @@ describe("AuthLoginPanel", () => {
 
     expect(link.text()).toContain("Fortsätt till inloggning");
     expect(link.attributes("href")).toBe(
-      "https://api.hule.education/auth/login?app=skriptoteket&next=http%3A%2F%2Flocalhost%3A3000%2Feditor",
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
     );
     expect(link.attributes("href")).not.toContain("/v1/auth/login");
     expect(wrapper.find("form").exists()).toBe(false);
@@ -55,7 +55,7 @@ describe("AuthLoginPanel", () => {
     const href = wrapper.get("a").attributes("href");
 
     expect(href).toBe(
-      "https://identity.example.test/login?app=skriptoteket&next=http%3A%2F%2Flocalhost%3A3000%2Feditor",
+      "https://identity.example.test/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
     );
     expect(href).not.toContain("/v1/auth/login");
   });

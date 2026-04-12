@@ -11,7 +11,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import AuthLoginPanel from "../components/auth/AuthLoginPanel.vue";
 import {
-  AUTH_LOGIN_ROUTE_NAME,
+  isAuthEntryPath,
   readAuthContinuation,
   resolveAuthLoginSuccessLocation,
 } from "../composables/auth/authEntryNavigation";
@@ -51,7 +51,7 @@ async function completeAuthEntry(): Promise<void> {
 watch(
   () => auth.isAuthenticated,
   (value) => {
-    if (!value || route.name !== AUTH_LOGIN_ROUTE_NAME) {
+    if (!value || !isAuthEntryPath(route.path)) {
       return;
     }
 

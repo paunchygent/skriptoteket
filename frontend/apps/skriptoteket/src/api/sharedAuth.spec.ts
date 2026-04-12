@@ -74,9 +74,22 @@ describe("sharedAuthCeremonyUrl", () => {
     });
 
     expect(url).toBe(
-      "https://api.hule.education/auth/login?app=skriptoteket&next=https%3A%2F%2Fskriptoteket.hule.education%2Feditor",
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=https%3A%2F%2Fskriptoteket.hule.education%2Fauth%2Fcallback&next=%2Feditor",
     );
     expect(url).not.toContain("/v1/auth/login");
+  });
+
+  it("uses a callback return URL and keeps next as a same-origin path", () => {
+    const url = new URL(
+      sharedAuthCeremonyUrl({
+        nextPath: "/tools?filter=mine",
+        origin: "http://127.0.0.1:5173",
+      }),
+    );
+
+    expect(url.searchParams.get("return_to")).toBe("http://127.0.0.1:5173/auth/callback");
+    expect(url.searchParams.get("next")).toBe("/tools?filter=mine");
+    expect(url.searchParams.get("product_identity_realm")).toBe("skriptoteket_standalone");
   });
 
   it("lets deployments provide the browser ceremony URL separately from the API base", () => {
@@ -92,8 +105,60 @@ describe("sharedAuthCeremonyUrl", () => {
       "https://api.example.test/v1/auth/session",
     );
     expect(url).toBe(
-      "https://identity.example.test/login?app=skriptoteket&next=https%3A%2F%2Fskriptoteket.hule.education%2Fadmin%2Ftools",
+      "https://identity.example.test/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=https%3A%2F%2Fskriptoteket.hule.education%2Fauth%2Fcallback&next=%2Fadmin%2Ftools",
     );
+  });
+
+  it("preserves an explicitly configured realm while refreshing return and next", () => {
+    vi.stubEnv(
+      "VITE_HULEEDU_AUTH_ENTRY_URL",
+      "https://identity.example.test/login?app=skriptoteket&product_identity_realm=huleedu_school&next=/stale",
+    );
+
+    const url = new URL(
+      sharedAuthCeremonyUrl({
+        nextPath: "/editor",
+        origin: "https://skriptoteket.hule.education",
+      }),
+    );
+
+    expect(url.searchParams.get("product_identity_realm")).toBe("huleedu_school");
+    expect(url.searchParams.get("return_to")).toBe(
+      "https://skriptoteket.hule.education/auth/callback",
+    );
+    expect(url.searchParams.get("next")).toBe("/editor");
+  });
+
+  it("drops hostile or looping next values at the ceremony helper boundary", () => {
+    const hostileValues = [
+      "https://evil.example/tools",
+      "//evil.example/tools",
+      "/auth/login",
+      "/auth/callback",
+      "/login",
+    ];
+
+    for (const nextPath of hostileValues) {
+      const url = new URL(
+        sharedAuthCeremonyUrl({
+          nextPath,
+          origin: "https://skriptoteket.hule.education",
+        }),
+      );
+
+      expect(url.searchParams.has("next")).toBe(false);
+    }
+  });
+
+  it("normalizes safe next values at the ceremony helper boundary", () => {
+    const url = new URL(
+      sharedAuthCeremonyUrl({
+        nextPath: "/editor?draft=head#debug",
+        origin: "https://skriptoteket.hule.education",
+      }),
+    );
+
+    expect(url.searchParams.get("next")).toBe("/editor?draft=head#debug");
   });
 });
 

@@ -10,7 +10,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import {
   buildProtectedAuthEntryLocationFromNavigation,
-  isAuthLoginPath,
+  isAuthEntryPath,
   readAuthContinuation,
   resolveAuthLoginSuccessLocation,
 } from "../composables/auth/authEntryNavigation";
@@ -35,10 +35,10 @@ router.beforeEach(async (to, from) => {
   const requiresAuth = Boolean(to.meta.requiresAuth);
   const rawMinRole = typeof to.meta.minRole === "string" ? to.meta.minRole : null;
   const minRole = rawMinRole && isRole(rawMinRole) ? rawMinRole : null;
-  const isAuthEntryPath = isAuthLoginPath(to.path);
+  const isAuthEntryRoute = isAuthEntryPath(to.path);
   const isProvisioningRequiredPath = to.name === "auth-provisioning-required";
 
-  if (requiresAuth || minRole || isAuthEntryPath || isProvisioningRequiredPath) {
+  if (requiresAuth || minRole || isAuthEntryRoute || isProvisioningRequiredPath) {
     await auth.bootstrap();
   }
 
@@ -57,7 +57,7 @@ router.beforeEach(async (to, from) => {
     return buildProtectedAuthEntryLocationFromNavigation(to, from);
   }
 
-  if (isAuthEntryPath && auth.isAuthenticated) {
+  if (isAuthEntryRoute && auth.isAuthenticated) {
     return resolveAuthLoginSuccessLocation(
       readAuthContinuation(to.query, window.history.state),
       window.history.state,

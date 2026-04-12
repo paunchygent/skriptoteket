@@ -1,18 +1,29 @@
 ---
 type: adr
 id: ADR-0011
-title: "Future HuleEdu integration: identity federation without shared authorization"
-status: accepted
+title: "Superseded future HuleEdu integration: identity federation without shared authorization"
+status: superseded
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-13
+superseded_by: ADR-0083
 ---
+
+## Supersession
+
+ADR-0083 supersedes this earlier future-SSO plan. The current architecture is
+the HuleEdu shared browser-session/product-realm ceremony: HuleEdu owns browser
+login, session/CSRF, Gateway ceremony validation, and signed identity context;
+Skriptoteket owns app continuation, local projection, and local roles/RBAC.
+This document remains as historical context for the protocol-first and
+local-authorization decisions.
 
 ## Context
 
 Skriptoteket launches as a standalone service with its own PostgreSQL and local accounts (session auth). In a later phase,
-HuleEdu users should automatically get access to Skriptoteket via HuleEdu SSO, while Skriptoteket may still keep local
-accounts for admins/legacy cases.
+HuleEdu users should automatically get access to Skriptoteket via a HuleEdu-owned
+login ceremony, while Skriptoteket may still keep local roles and projection
+state.
 
 We must avoid coupling domain/application logic to *how* authentication happens and keep authorization rules local.
 
@@ -29,11 +40,12 @@ We must avoid coupling domain/application logic to *how* authentication happens 
 2. **Roles are local.** HuleEdu provides identity, not authorization. A user’s role in Skriptoteket (`user`/`contributor`/
    `admin`/`superuser`) is always determined by Skriptoteket’s own role management.
 
-3. **Prepare for two auth flows.**
+3. **Prepare for external identity without shared authorization.**
    - v0.1: local email+password → server-side session (PostgreSQL)
-   - future: HuleEdu OIDC/JWT → (a) server-side session bridge or (b) stateless verification, without changing business logic
+   - current cutover: HuleEdu shared browser-session/product-realm ceremony,
+     without changing business logic
 
-4. **User model is federation-ready.** Include nullable `external_id` and `auth_provider` to support future HuleEdu users:
+4. **User model is provider-ready.** Include nullable `external_id` and `auth_provider` to support external HuleEdu identities:
 
    ```py
    class User:
@@ -46,11 +58,12 @@ We must avoid coupling domain/application logic to *how* authentication happens 
 
 ## Not in scope now
 
-- Implementing SSO/IdP integration
+- Implementing the ADR-0083 product-realm ceremony
 - Kafka/event integration with HuleEdu
 - Shared database between systems
 
 ## Consequences
 
-- We can add HuleEdu SSO later by swapping identity/adapters and keeping domain/application unchanged.
-- v0.1 data model includes fields needed for future federation, reducing migration risk.
+- ADR-0083 replaced the speculative SSO/OIDC shape with the product-realm
+  shared browser-session ceremony.
+- The protocol and local-role decisions still hold.

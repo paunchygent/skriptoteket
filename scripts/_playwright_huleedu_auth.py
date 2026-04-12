@@ -221,6 +221,10 @@ def signed_identity_headers(
         "active_context": {"org_id": "org-1", "tenant_id": "tenant-1"},
         "feature_flags": ["inline-completion"],
         "source_app": "huleedu-browser",
+        "active_app": "skriptoteket",
+        "active_product_identity_realm": "skriptoteket_standalone",
+        "realm_subject_id": subject,
+        "linked_identity_ids": {"skriptoteket_standalone": subject},
     }
     encoded_context = _b64url_encode(
         json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")

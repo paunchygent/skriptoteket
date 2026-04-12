@@ -80,4 +80,4 @@ old generic value highlights with:
 The authenticated preview footer intentionally reused the shipped in-place login modal contract from
 `PR-0238` so this slice stayed inside the approved landing-content boundary. A follow-up PR slice
 should replace that overloaded signed-out modal entry with a dedicated auth redirect page that keeps
-redirect targets explicit and is better suited to launch-readiness and future HuleEdu SSO work.
+redirect targets explicit and is better suited to launch-readiness and the HuleEdu shared browser-session/product-realm ceremony.

@@ -8,7 +8,7 @@ Target Python is **3.13–3.14**.
 
 - Roles: **users → contributors → admins → superuser**
 - Findability: tools are tagged by **profession** and **category**; a tool can belong to multiple professions/categories
-- Future: HuleEdu SSO is planned via identity federation (identity external; **roles remain local**)
+- Current auth cutover: HuleEdu owns the shared browser-session/product-realm login ceremony and identity context; Skriptoteket keeps **roles local**.
 - Curated apps are **first-class application modules** (shipped code), not tools.
 - Curated apps MUST use bespoke UX + app-specific APIs; shared tool/runner infrastructure is internal-only.
 
@@ -95,6 +95,7 @@ Switch to run bash on hemma via heredocs to avoid nested quoting issues.
 
 - Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
 - Load the relevant repo/domain skill before planning or implementation work. Treat skills as the procedural layer and keep `AGENTS.md` focused on repo policy.
+- Shared skills that have been migrated to `/Users/olofs_mba/Documents/Repos/skill-repository/skills/` must be authored there first; do not recreate repo-local copies for `local-devops`, `hemma-devops`, `skriptoteket-frontend-specialist`, or `brutalist-academic-ui`.
 - Minimum expected defaults:
   - global `local-devops` for local development, DB/migrations, and dev-runtime troubleshooting; use this repo's docs, rules, and runbooks for Skriptoteket-specific commands and verification.
   - global `hemma-devops` for Hemma deploys, remote operations, and host/runtime troubleshooting; use this repo's docs, rules, and runbooks for Skriptoteket-specific Hemma commands and verification.

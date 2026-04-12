@@ -80,6 +80,8 @@ dependencies:
 - [PR-0251: ST-28-01 session bootstrap API client cutover](../prs/pr-0251-st-28-01-session-bootstrap-api-client-cutover.md)
 - [PR-0252: ST-28-02 auth entry return-to-origin on HuleEdu session](../prs/pr-0252-st-28-02-auth-entry-return-to-origin-on-huleedu-session.md)
 - [PR-0253: ST-28-03 local auth authority retirement and contract regeneration](../prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md)
+- [PR-0256: ST-28-07 Hule Education-hosted Skriptoteket login ceremony provider contract](../prs/pr-0256-st-28-07-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md)
+- [PR-0257: ST-28-08 standalone registration/password lifecycle provider contract](../prs/pr-0257-st-28-08-standalone-registration-password-lifecycle-provider-contract.md)
 - [PR-0254: ST-28-04 cross-app auth cutover smoke and runbook proof](../prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md)
 
 ## Dependencies
@@ -122,12 +124,26 @@ remains based on Skriptoteket `User.role`; missing projections fail closed into
 provisioning-required UX; and the live proof exercises the browser `/api` edge through a test
 gateway injector. A new product identity realm reference now corrects the planning direction:
 Hule Education may own the browser edge while Skriptoteket preserves standalone product identity,
-registration meaning, and local authorization. Cross-app Docker/operator proof remains with
-`PR-0254` after the identity-realm follow-up path is clear. The new sequence is now explicit:
-`PR-0255` stays complete as the signed-context/projection foundation; `ST-28-06` must accept
-`ADR-0083`; `ST-28-07` implements the browser-navigable Skriptoteket login ceremony; `ST-28-08`
-restores standalone registration and password lifecycle through shared identity; `ST-28-09` makes
-projection provisioning realm-aware; then `ST-28-04` / `PR-0254` runs as the final realm-aware
+registration meaning, and local authorization. `ST-28-06` is now done through retained review
+`REV-ST-28-06`, and `ADR-0083` is accepted as the contract freeze: first accepted realms are
+`skriptoteket_standalone` and `huleedu_school`; browser login must use a Hule Education-hosted
+`app=skriptoteket` ceremony; final proof requires realm-aware signed context and a projection key
+based on `(product_identity_realm, realm_subject_id)`; and local RBAC remains `User.role`-driven.
+Cross-app Docker/operator proof remains with `PR-0254` after the identity-realm implementation path
+is clear. `PR-0256` / `ST-28-07` are now done after HuleEdu `TASK-0313` / `TASK-0314` cleared the
+provider blocker: Skriptoteket points signed-out users at HuleEdu `GET /auth/login` with
+`app=skriptoteket`, default `product_identity_realm=skriptoteket_standalone`, callback
+`return_to=/auth/callback`, and safe route-level `next`; `/auth/callback` resumes protected routes;
+query/hash continuation survives Vue Router normalization; helper-level `next` drops hostile or
+looping values; and app continuation requires `active_app=skriptoteket`, a supported realm, and
+`realm_subject_id` before projection lookup. Realm-aware projection keys still belong to `ST-28-09`.
+`PR-0257` now opens `ST-28-08` as a provider-contract gate rather than a consumer implementation:
+HuleEdu's retained browser contract proves login/session behavior but does not yet publish
+app/realm-aware registration, password reset, or email verification ceremonies for
+`skriptoteket_standalone`. The new sequence is now explicit: `PR-0255` stays complete as the
+signed-context/projection foundation; `ST-28-06` and `ST-28-07` are done; `ST-28-08` remains blocked
+on HuleEdu lifecycle provider proof; `ST-28-09` makes projection provisioning realm-aware after the
+lifecycle output contract is clear; then `ST-28-04` / `PR-0254` runs as the final realm-aware
 cross-app proof. `ST-28-10` follows with auth outcome observability for gateway/session, realm,
 projection, and local RBAC outcomes.
 
@@ -147,10 +163,10 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 4. consume the shared browser session contract in Skriptoteket through `PR-0251`
 5. preserve `/auth/login` interruption and return-to-origin behavior through `PR-0252`
 6. remove local browser auth ownership through `PR-0253`
-7. accept the product identity realm contract through `ST-28-06` / `ADR-0083`
-8. implement the Hule Education-hosted Skriptoteket login ceremony through `ST-28-07`
+7. accept the product identity realm contract through `ST-28-06` / `ADR-0083` (done)
+8. implement the Hule Education-hosted Skriptoteket login ceremony through `ST-28-07` (done)
 9. restore standalone registration/password lifecycle through the shared identity surface in
-   `ST-28-08`
+   `ST-28-08` / `PR-0257` after HuleEdu publishes the lifecycle provider contract
 10. make projection provisioning realm-aware through `ST-28-09`
 11. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
 12. reintroduce auth outcome observability through `ST-28-10`

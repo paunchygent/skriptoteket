@@ -17,7 +17,7 @@ acceptance_criteria:
   - "Given a signed-out visitor starts auth from the landing shell or public curated-app entry surfaces, when they choose `Logga in`, then Skriptoteket routes them to the canonical dedicated auth-entry page `/auth/login` instead of opening an in-place modal on the current page."
   - "Given the auth-entry page receives an intended destination, when login succeeds, then the visitor lands on the correct authenticated destination through an explicit route-level redirect contract rather than transient modal-local state."
   - "Given the current signed-out auth surfaces include `/`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`, and `/public/apps/classroom.group-seating-studio`, when this slice ships, then those entry points share the same auth-entry page contract instead of each wiring modal behavior independently."
-  - "Given future HuleEdu SSO may require a top-level redirect or hosted ceremony, when this slice is implemented, then the new auth-entry contract is page-based and redirect-friendly rather than modal-coupled."
+  - "Given the HuleEdu shared browser-session/product-realm ceremony requires a top-level redirect or hosted ceremony, when this slice is implemented, then the new auth-entry contract is page-based and redirect-friendly rather than modal-coupled."
   - "Given the old `/login` route was deliberately removed, when this slice ships, then it does not act as any auth alias or compatibility path and instead falls through normal SPA recovery/not-found behavior."
 ---
 
@@ -41,7 +41,7 @@ The current signed-out auth-entry behavior is spread across an overloaded modal 
 handles too many route-specific and redirect-specific concerns.
 
 That was acceptable when the product was still in a more prototype-like phase, but it is becoming a
-liability as launch approaches and as future HuleEdu SSO needs come into view.
+liability as launch approaches and as the HuleEdu shared browser-session/product-realm ceremony needs come into view.
 
 ## Goal
 
@@ -75,7 +75,7 @@ HuleEdu-session cutover work consumes.
 - Reopening `PR-0240` route recovery work in the same slice.
 - Reintroducing the old legacy `/login` route/page as it existed before `ST-11-22`.
 - Changing authenticated dashboard behavior beyond what is needed for redirect completion.
-- Implementing HuleEdu SSO itself in this slice.
+- Implementing the HuleEdu provider ceremony itself in this slice.
 
 ## Implementation plan
 
@@ -90,7 +90,7 @@ HuleEdu-session cutover work consumes.
    - reject auth-entry loops and malformed values
    - default to the safe authenticated home destination when no valid target remains
 5. Keep current local auth fully working through the new page while making the handoff contract
-   compatible with a future HuleEdu-owned SSO ceremony.
+   compatible with a HuleEdu-owned product-realm ceremony.
 6. Preserve any still-needed richer app-specific route state only as a supplemental layer on top of
    the route-level destination contract, not as the sole redirect truth.
 7. Keep `/auth/login` as the only auth-entry route and let exact `/login` fall through normal SPA

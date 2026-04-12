@@ -5,7 +5,7 @@ title: "Reference: Hule Education product identity realms and Skriptoteket stand
 status: active
 owners: "agents"
 created: 2026-04-11
-updated: 2026-04-11
+updated: 2026-04-12
 topic: "hule-education-product-identity-realms"
 links:
   - ADR-0083
@@ -14,7 +14,9 @@ links:
   - EPIC-28
   - PR-0253
   - PR-0254
+  - PR-0256
   - REV-PR-0253
+  - REV-PR-0256
 ---
 
 ## Purpose
@@ -28,9 +30,10 @@ single HuleEdu school-registration identity. Skriptoteket remains a product with
 meaning, onboarding path, and local authorization model, even when the browser session and gateway
 contract are served by Hule Education infrastructure.
 
-This is a reference direction, not a completed implementation plan. It should inform
-`REV-PR-0253`, `PR-0253`, `EPIC-28`, and the next ADR/story work. The final shape needs explicit
-research and coordination with the Hule Education API Gateway and Identity service.
+This began as a reference direction and is now partially implemented: `ADR-0083` froze the
+product-realm contract, HuleEdu `TASK-0313` / `TASK-0314` published and publicly proved the
+provider ceremony/context, and Skriptoteket `PR-0256` consumes the login ceremony. Standalone
+registration/password lifecycle and realm-aware projection provisioning remain follow-up work.
 
 ## Core Concept: Product Identity Realm
 
@@ -95,13 +98,18 @@ UX if it becomes a second login page that asks users to click onward to another 
 Target direction:
 
 - User-facing login actions should begin one clear Hule Education-hosted login ceremony.
-- The ceremony should be product-aware, for example `app=skriptoteket`.
+- The ceremony is product-aware: `GET https://api.hule.education/auth/login` with
+  `app=skriptoteket`.
 - The ceremony should allow the user to choose or use an existing identity realm:
   - HuleEdu school identity
   - Skriptoteket standalone identity
   - future explicit account-linking path
 - Skriptoteket `/auth/login?next=...` may remain as an app-local interruption/fallback route, but
   it should behave like a transition page or auto-handoff, not a second login form/page.
+- Skriptoteket uses `/auth/callback` as the HuleEdu return route; the ceremony sends that callback
+  as `return_to` and keeps the route continuation in safe same-origin `next`.
+- Auth success returns normal continuation targets as route strings so Vue Router preserves query
+  and hash details.
 - The browser handoff URL must be a browser-navigable Hule Education ceremony URL. It must not be a
   POST-only JSON/API route that returns `405 Method Not Allowed` when opened by an anchor.
 - In `PR-0253`, the SPA must keep API endpoint helpers and browser ceremony helpers separate:
@@ -110,28 +118,31 @@ Target direction:
 
 ## Signed Context Direction
 
-Downstream signed identity context should distinguish the umbrella session from the product realm.
-The exact fields require ADR work, but likely concepts include:
+Downstream signed identity context distinguishes the umbrella session from the product realm.
+The accepted additive fields are:
 
 - stable subject id
-- product identity realm, such as `huleedu_school` or `skriptoteket_standalone`
-- optional linked identity ids
-- active app, such as `skriptoteket`
-- current tenant/org context when the user is operating in a school-owned HuleEdu context
+- `active_product_identity_realm`, such as `huleedu_school` or `skriptoteket_standalone`
+- optional `linked_identity_ids`
+- `active_app`, such as `skriptoteket`
+- `realm_subject_id`
+- optional current tenant/org context when the user is operating in a school-owned HuleEdu context
 - claims that are trusted enough to create or activate a Skriptoteket projection, if signup is part
   of the shared identity ceremony
 
 Skriptoteket should then resolve local projection by a stable product-aware identity key, not by a
 realm-ambiguous `sub` alone.
 
-## Research Questions
+Current `PR-0256` state: app continuation fails closed unless the signed context carries
+`active_app=skriptoteket`, `active_product_identity_realm` in the accepted set, and
+`realm_subject_id`. The projection lookup still uses the existing subject key until `ST-28-09`
+migrates provisioning and persistence to the full realm-aware key.
 
-This direction needs at least one retained ADR and likely one or two stories before implementation:
+## Remaining Questions
 
-- What is the canonical vocabulary: product identity realm, identity namespace, or app realm?
-- Does the Hule Education Identity service already support multiple product realms, or does it need
-  schema/API work?
-- What is the browser-navigable login ceremony URL separate from session/login API endpoints?
+The core ceremony/context contract is frozen and the first consumer slice is done. Remaining
+questions belong to `ST-28-08`, `ST-28-09`, and `ST-28-10`:
+
 - How should standalone Skriptoteket registration, password reset, verification, and account
   linking be hosted by Hule Education while preserving Skriptoteket product ownership?
 - What signed claims are sufficient for safe first-time Skriptoteket projection creation?
@@ -142,16 +153,16 @@ This direction needs at least one retained ADR and likely one or two stories bef
 
 ## Planning Consequences
 
-- `REV-PR-0253` should remain `changes_requested` until the reviewer accepts that the PR preserves
-  this architectural direction and does not document a HuleEdu-only identity future.
+- `REV-PR-0253` is approved; local browser-session retirement must continue to preserve this
+  architectural direction and avoid documenting a HuleEdu-only identity future.
 - `PR-0253` can still retire local browser-session authority, but it should leave follow-up work
   explicit for product identity realms and standalone Skriptoteket identity.
 - `PR-0254` should not treat cross-app auth proof as proof that all Skriptoteket users are HuleEdu
   school identities.
-- `ADR-0083` should set the final product-identity-realm contract before implementation.
+- `ADR-0083` is now accepted as the final product-identity-realm contract before implementation.
 - Follow-up stories now scaffold the sequence:
-  - `ST-28-06` accepts the ADR and freezes the contract.
-  - `ST-28-07` owns the Hule Education-hosted Skriptoteket login ceremony.
+  - `ST-28-06` accepted the ADR and froze the contract through `REV-ST-28-06`.
+  - `ST-28-07` implemented the Hule Education-hosted Skriptoteket login ceremony through `PR-0256`.
   - `ST-28-08` owns standalone registration/password lifecycle on the shared identity surface.
   - `ST-28-09` owns realm-aware projection provisioning and local RBAC preservation.
   - `ST-28-04` / `PR-0254` becomes the final realm-aware cross-app proof after those stories.

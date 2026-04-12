@@ -58,10 +58,13 @@ The identity subsystem must be minimal but robust:
 
 - Authentication and “current user” resolution must be isolated behind protocols (testable via DI).
 - Authorization checks are enforced at the interface layer (web/api), while application/domain logic relies on role/actor abstractions (no framework coupling).
-- No self-signup and no external IdP/SSO in v0.1 by default; keep the design extensible for future SSO integration.
+- No self-signup and no external IdP in v0.1 by default; keep the design
+  extensible for HuleEdu-owned identity.
 - Chosen v0.1 mechanism: **admin-provisioned local accounts + password auth + server-side sessions in PostgreSQL**.
 - Access policy (v0.1): **browse/run requires login** (no anonymous catalog access).
-- Future integration constraint: if/when HuleEdu SSO is added, Skriptoteket keeps **local roles** and stores `external_id` + `auth_provider` on users (ADR-0011).
+- Current integration constraint: the HuleEdu shared browser-session/product-realm
+  ceremony owns browser login and identity context, while Skriptoteket keeps
+  **local roles** and projection state (ADR-0083; ADR-0011 is superseded).
 
 ## Findability (Taxonomy)
 

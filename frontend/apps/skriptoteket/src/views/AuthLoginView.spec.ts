@@ -15,6 +15,7 @@ import AuthLoginView from "./AuthLoginView.vue";
 const viewMocks = vi.hoisted(() => ({
   route: {
     name: "auth-login",
+    path: "/auth/login",
     query: {} as Record<string, unknown>,
   },
   router: {
@@ -46,6 +47,7 @@ vi.mock("../stores/auth", () => ({
 describe("AuthLoginView", () => {
   beforeEach(() => {
     viewMocks.route.name = "auth-login";
+    viewMocks.route.path = "/auth/login";
     viewMocks.route.query = {};
     viewMocks.router.push.mockReset();
     viewMocks.router.push.mockResolvedValue(undefined);
@@ -114,5 +116,50 @@ describe("AuthLoginView", () => {
         classroomPlannerEntryOrigin: "dashboard",
       },
     });
+  });
+
+  it("completes the redirect from the HuleEdu callback route", async () => {
+    viewMocks.route.name = "auth-callback";
+    viewMocks.route.path = "/auth/callback";
+    viewMocks.route.query = { next: "/editor" };
+
+    mount(AuthLoginView, {
+      global: {
+        stubs: {
+          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
+        },
+      },
+    });
+
+    if (!viewMocks.auth) {
+      throw new Error("Expected auth stub to be initialized.");
+    }
+    viewMocks.auth.isAuthenticated = true;
+    await flushPromises();
+
+    expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
+    expect(viewMocks.router.push).toHaveBeenCalledWith("/editor");
+  });
+
+  it("preserves query and hash details from the HuleEdu callback route", async () => {
+    viewMocks.route.name = "auth-callback";
+    viewMocks.route.path = "/auth/callback";
+    viewMocks.route.query = { next: "/admin/tools?status=draft#review" };
+
+    mount(AuthLoginView, {
+      global: {
+        stubs: {
+          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
+        },
+      },
+    });
+
+    if (!viewMocks.auth) {
+      throw new Error("Expected auth stub to be initialized.");
+    }
+    viewMocks.auth.isAuthenticated = true;
+    await flushPromises();
+
+    expect(viewMocks.router.push).toHaveBeenCalledWith("/admin/tools?status=draft#review");
   });
 });

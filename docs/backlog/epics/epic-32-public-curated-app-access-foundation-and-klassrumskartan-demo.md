@@ -159,7 +159,8 @@ dependencies:
     - the authenticated preview footer still reuses the current in-place login
       modal seam for this launch slice, but a follow-up PR task should replace
       that overloaded signed-out auth entry with a dedicated redirect-friendly
-      auth page that is better aligned with future HuleEdu SSO needs
+      auth page that is better aligned with the HuleEdu shared
+      browser-session/product-realm ceremony
   - `ST-32-09` is now implemented locally through `PR-0240`:
     - malformed `/public/<app-id>` paths now recover through an explicit SPA
       route that points visitors to `/public/apps/<app-id>`

@@ -25,7 +25,8 @@ dependencies: ["ADR-0006", "ADR-0011", "ADR-0034", "ADR-0078"]
 ## Out of scope
 
 - Admin user management UI (admins use CLI for now).
-- HuleEdu SSO integration (ADR-0011, future).
+- HuleEdu shared browser-session/product-realm ceremony (ADR-0083; ADR-0011
+  superseded).
 - Password reset for federated/HuleEdu identities.
 - Magic-link login.
 

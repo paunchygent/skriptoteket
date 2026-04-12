@@ -27,6 +27,9 @@ from skriptoteket.protocols.identity import (
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
+ACTIVE_APP_SKRIPTOTEKET = "skriptoteket"
+ACCEPTED_PRODUCT_IDENTITY_REALMS = frozenset({"skriptoteket_standalone", "huleedu_school"})
+
 
 class HuleEduAppUserProjection(BaseModel):
     """Skriptoteket-local user/profile resolved from a verified HuleEdu subject."""
@@ -35,6 +38,33 @@ class HuleEduAppUserProjection(BaseModel):
 
     user: User
     profile: UserProfile
+
+
+def validate_skriptoteket_product_context(*, context: InternalIdentityContextV1) -> None:
+    """Fail closed when HuleEdu context is not scoped to Skriptoteket."""
+    if context.active_app != ACTIVE_APP_SKRIPTOTEKET:
+        raise DomainError(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Invalid HuleEdu product context for Skriptoteket",
+            details={"reason": "invalid_huleedu_product_context", "field": "active_app"},
+        )
+
+    if context.active_product_identity_realm not in ACCEPTED_PRODUCT_IDENTITY_REALMS:
+        raise DomainError(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Invalid HuleEdu product context for Skriptoteket",
+            details={
+                "reason": "invalid_huleedu_product_context",
+                "field": "active_product_identity_realm",
+            },
+        )
+
+    if context.realm_subject_id is None:
+        raise DomainError(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Invalid HuleEdu product context for Skriptoteket",
+            details={"reason": "invalid_huleedu_product_context", "field": "realm_subject_id"},
+        )
 
 
 class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
@@ -59,6 +89,8 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         Raises:
             DomainError: If no active local projection exists for the HuleEdu subject.
         """
+        validate_skriptoteket_product_context(context=context)
+
         async with self._uow:
             user = await self._users.get_by_auth_provider_external_id(
                 auth_provider=AuthProvider.HULEEDU,

@@ -39,6 +39,7 @@ from tests.fixtures.identity_fixtures import make_user_profile
 from tests.fixtures.profile_app_continuation_support import (
     CONTEXT_SUBJECT,
     ClockStub,
+    JsonValue,
     ProfileContinuationApiProvider,
     ProfileRepositoryStub,
     UserRepositoryStub,
@@ -250,6 +251,101 @@ async def test_app_dependency_accepts_signed_context_for_read_and_write_without_
     assert write_response.json() == {"user_id": str(user.id)}
 
 
+@pytest.mark.asyncio
+async def test_app_dependency_accepts_standalone_realm_context_without_org_or_tenant(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+) -> None:
+    user = huleedu_user()
+    users.user = user
+    profiles.result = make_user_profile(user_id=user.id)
+    headers = build_headers(
+        private_key=private_key,
+        now_ts=int(clock.now().timestamp()),
+        payload_removed_fields=("org_id", "tenant_id", "active_context"),
+        payload_overrides={
+            "active_app": "skriptoteket",
+            "active_product_identity_realm": "skriptoteket_standalone",
+            "realm_subject_id": CONTEXT_SUBJECT,
+            "linked_identity_ids": {"skriptoteket_standalone": CONTEXT_SUBJECT},
+        },
+    )
+
+    response = await client.get("/api/v1/profile/app-continuation", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["local_user"]["id"] == str(user.id)
+    assert users.lookup_calls == [(AuthProvider.HULEEDU, CONTEXT_SUBJECT)]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("payload_overrides", "payload_removed_fields", "expected_field"),
+    [
+        pytest.param(
+            {"active_app": "huledu"},
+            (),
+            "active_app",
+            id="wrong-active-app",
+        ),
+        pytest.param(
+            {},
+            ("active_app",),
+            "active_app",
+            id="missing-active-app",
+        ),
+        pytest.param(
+            {"active_product_identity_realm": "unknown_realm"},
+            (),
+            "active_product_identity_realm",
+            id="unsupported-realm",
+        ),
+        pytest.param(
+            {},
+            ("active_product_identity_realm",),
+            "active_product_identity_realm",
+            id="missing-realm",
+        ),
+        pytest.param(
+            {},
+            ("realm_subject_id",),
+            "realm_subject_id",
+            id="missing-realm-subject",
+        ),
+    ],
+)
+async def test_profile_app_continuation_requires_skriptoteket_product_context(
+    payload_overrides: dict[str, JsonValue],
+    payload_removed_fields: tuple[str, ...],
+    expected_field: str,
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+) -> None:
+    users.user = huleedu_user()
+    response = await client.get(
+        "/api/v1/profile/app-continuation",
+        headers=build_headers(
+            private_key=private_key,
+            now_ts=int(clock.now().timestamp()),
+            payload_overrides=payload_overrides,
+            payload_removed_fields=payload_removed_fields,
+        ),
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == ErrorCode.UNAUTHORIZED.value
+    assert response.json()["error"]["details"] == {
+        "reason": "invalid_huleedu_product_context",
+        "field": expected_field,
+    }
+    assert users.lookup_calls == []
+
+
 InvalidHeadersBuilder = Callable[[rsa.RSAPrivateKey, int], dict[str, str]]
 
 
@@ -330,15 +426,6 @@ InvalidHeadersBuilder = Callable[[rsa.RSAPrivateKey, int], dict[str, str]]
             id="wrong-audience",
         ),
         pytest.param(
-            "missing_org_id",
-            lambda private_key, now_ts: build_headers(
-                private_key=private_key,
-                now_ts=now_ts,
-                payload_removed_fields=("org_id",),
-            ),
-            id="missing-org-id",
-        ),
-        pytest.param(
             "blank_org_id",
             lambda private_key, now_ts: build_headers(
                 private_key=private_key,
@@ -348,15 +435,6 @@ InvalidHeadersBuilder = Callable[[rsa.RSAPrivateKey, int], dict[str, str]]
             id="blank-org-id",
         ),
         pytest.param(
-            "missing_tenant_id",
-            lambda private_key, now_ts: build_headers(
-                private_key=private_key,
-                now_ts=now_ts,
-                payload_removed_fields=("tenant_id",),
-            ),
-            id="missing-tenant-id",
-        ),
-        pytest.param(
             "blank_tenant_id",
             lambda private_key, now_ts: build_headers(
                 private_key=private_key,
@@ -364,6 +442,33 @@ InvalidHeadersBuilder = Callable[[rsa.RSAPrivateKey, int], dict[str, str]]
                 payload_overrides={"tenant_id": " "},
             ),
             id="blank-tenant-id",
+        ),
+        pytest.param(
+            "blank_active_app",
+            lambda private_key, now_ts: build_headers(
+                private_key=private_key,
+                now_ts=now_ts,
+                payload_overrides={"active_app": " "},
+            ),
+            id="blank-active-app",
+        ),
+        pytest.param(
+            "blank_realm_subject_id",
+            lambda private_key, now_ts: build_headers(
+                private_key=private_key,
+                now_ts=now_ts,
+                payload_overrides={"realm_subject_id": " "},
+            ),
+            id="blank-realm-subject-id",
+        ),
+        pytest.param(
+            "blank_linked_identity",
+            lambda private_key, now_ts: build_headers(
+                private_key=private_key,
+                now_ts=now_ts,
+                payload_overrides={"linked_identity_ids": {"skriptoteket_standalone": " "}},
+            ),
+            id="blank-linked-identity",
         ),
         pytest.param(
             "missing_roles",

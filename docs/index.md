@@ -165,10 +165,20 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`
 - ST-28-06 product identity realm ADR + contract freeze:
   `docs/backlog/stories/story-28-06-product-identity-realm-adr-and-contract-freeze.md`
+- Review gate for ST-28-06 product identity realm ADR + contract freeze:
+  `docs/backlog/reviews/review-st-28-06-product-identity-realm-contract-freeze.md`
 - ST-28-07 Hule Education-hosted Skriptoteket login ceremony:
   `docs/backlog/stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md`
+- ST-28-07 Hule Education-hosted Skriptoteket login ceremony provider contract:
+  `docs/backlog/prs/pr-0256-st-28-07-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md`
+- Review gate for PR-0256 Hule Education-hosted Skriptoteket login ceremony provider contract:
+  `docs/backlog/reviews/review-pr-0256-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md`
 - ST-28-08 Skriptoteket standalone registration + password lifecycle:
   `docs/backlog/stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md`
+- ST-28-08 standalone registration/password lifecycle provider contract:
+  `docs/backlog/prs/pr-0257-st-28-08-standalone-registration-password-lifecycle-provider-contract.md`
+- Review gate for PR-0257 standalone registration/password lifecycle provider contract:
+  `docs/backlog/reviews/review-pr-0257-standalone-registration-password-lifecycle-provider-contract.md`
 - ST-28-09 realm-aware projection provisioning + local RBAC:
   `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md`
 - ST-28-04 cross-app auth cutover smoke + operator runbook proof:

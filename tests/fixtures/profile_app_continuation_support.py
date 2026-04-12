@@ -239,6 +239,10 @@ def _build_context_payload(*, now_ts: int, **overrides: JsonValue) -> JsonObject
         "active_context": {"org_id": "org-1", "tenant_id": "tenant-1"},
         "feature_flags": ["inline-completion"],
         "source_app": "huleedu-browser",
+        "active_app": "skriptoteket",
+        "active_product_identity_realm": "skriptoteket_standalone",
+        "realm_subject_id": CONTEXT_SUBJECT,
+        "linked_identity_ids": {"skriptoteket_standalone": CONTEXT_SUBJECT},
     }
     payload.update(overrides)
     return payload
