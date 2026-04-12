@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-04-12
 - Branch: `main` + local changes
-- Current lane: `ST-28-08` / `PR-0257` is done; standalone lifecycle URLs now hand off to HuleEdu Gateway ceremonies.
+- Current lane: `ST-28-09` / `PR-0258` is ready; realm-aware projection shape is locked for implementation.
 - Production: Full Vue SPA.
 - Dirty worktree before this lane included docs from `ST-28-06` / `ST-28-07`; preserve unrelated user changes if any appear.
 ## Status
@@ -27,6 +27,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `ST-28-06` / `REV-ST-28-06` are done: `ADR-0083` is accepted and freezes the product identity realm contract. First accepted realms are `skriptoteket_standalone` and `huleedu_school`; browser login must use a Hule Education-hosted `app=skriptoteket` ceremony; final proof requires realm-aware signed context and projection keyed by `(product_identity_realm, realm_subject_id)`; local RBAC remains `User.role`-driven.
 - `ST-28-07` / `PR-0256` are done after review remediation. HuleEdu `TASK-0313` / `TASK-0314` cleared the provider blocker; Skriptoteket now sends `/auth/login` to HuleEdu `GET /auth/login` with `app=skriptoteket`, default `product_identity_realm=skriptoteket_standalone`, `return_to=/auth/callback`, and safe route-level `next`; `/auth/callback` preserves query/hash continuation; helper-level `next` drops hostile/loop values; app continuation requires `active_app=skriptoteket`, supported realm, and `realm_subject_id` before existing subject-key projection lookup.
 - `ST-28-08` / `PR-0257` is done after HuleEdu `TASK-0318` closed the provider gate: `/register`, `/forgot-password`, `/reset-password`, and `/verify-email` render HuleEdu Gateway handoff links for `app=skriptoteket`, `product_identity_realm=skriptoteket_standalone`, `return_to=/auth/callback`, safe `next`, and reset/verification `token`; no local form, local browser-auth API, or direct lifecycle POST API is introduced.
+- `ST-28-09` is ready through `PR-0258`: use a dedicated projection table keyed by `(product_identity_realm, realm_subject_id)`, remove `users.external_id`, provision only from sufficient signed app/realm/subject/email/verified-email context, default new local roles to `user`, never link by matching email, and prove local Docker auth through a local/non-production HuleEdu Gateway with exact dev-origin allowlisting.
 - Skriptoteket should not create a second integration epic. Implementation now lives as PR-sized tasks under existing `EPIC-28`:
   - `PR-0250` ingests HuleEdu provider conformance and records cutover readiness.
   - `PR-0251` cuts the SPA auth store/API client over to `GET https://api.hule.education/v1/auth/session` plus CSRF.
@@ -35,6 +36,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0253` removes obsolete Skriptoteket-local browser auth ownership and regenerates/realigns contracts; retained implementation review is approved.
   - `PR-0256` implements `ST-28-07` and is approved after HuleEdu provider proof.
   - `PR-0257` implements `ST-28-08` consumer lifecycle handoffs after HuleEdu `TASK-0318`.
+  - `PR-0258` implements `ST-28-09` realm-aware projections/provisioning and local Docker ceremony proof.
   - `PR-0254` adds the realm-aware cross-app Playwright smoke and operator runbook proof after `ST-28-07` through `ST-28-09`.
 - `EPIC-35` remains downstream of the shared launch topology and should consume the same `api.hule.education` / `skriptoteket.hule.education` assumptions, not recreate them.
 ## Verification
@@ -185,8 +187,8 @@ pdm run python -m scripts.playwright_pr_0257_auth_lifecycle --start-vite
 ## Known Issues / Risks
 - Canonical Docker-first live testing after the auth switch belongs to `PR-0254` after `ADR-0083` / realm stories; do not resurrect local password-form smoke scripts for that lane.
 - Product identity realm concern is now closed through `ADR-0083` / `REV-ST-28-06`: do not treat local browser-session retirement as removal of standalone Skriptoteket identity.
-- `ST-28-09` still owns realm-aware projection provisioning; lifecycle completion does not create a Skriptoteket projection by itself.
+- `ST-28-09` / `PR-0258` owns realm-aware projection provisioning; lifecycle completion does not create a Skriptoteket projection by itself.
 - `PR-0254` owns Docker-first cross-app auth proof after the `ADR-0083` realm/login/projection path; do not resurrect removed local password-form smoke commands for that lane.
 ## Next Steps
-- Start `ST-28-09`: migrate projection lookup/provisioning toward `(product_identity_realm, realm_subject_id)` after consuming the lifecycle output contract.
+- Start `ST-28-09` / `PR-0258`: implement the dedicated projection table, remove `users.external_id`, provision from sufficient signed context only, and add local/non-production Gateway Docker ceremony proof.
 - Keep `PR-0254` as the final Docker/operator cross-app proof after `ST-28-09`.

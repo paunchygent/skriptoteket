@@ -181,6 +181,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0257-standalone-registration-password-lifecycle-provider-contract.md`
 - ST-28-09 realm-aware projection provisioning + local RBAC:
   `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md`
+- ST-28-09 realm-aware identity projections + provisioning migration:
+  `docs/backlog/prs/pr-0258-st-28-09-realm-aware-identity-projections-and-provisioning-migration.md`
 - ST-28-04 cross-app auth cutover smoke + operator runbook proof:
   `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
 - ST-28-10 auth outcome observability for realm cutover:

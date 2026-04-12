@@ -15,6 +15,8 @@ links:
   - PR-0253
   - PR-0254
   - PR-0256
+  - PR-0257
+  - PR-0258
   - REV-PR-0253
   - REV-PR-0256
 ---
@@ -32,8 +34,9 @@ contract are served by Hule Education infrastructure.
 
 This began as a reference direction and is now partially implemented: `ADR-0083` froze the
 product-realm contract, HuleEdu `TASK-0313` / `TASK-0314` published and publicly proved the
-provider ceremony/context, and Skriptoteket `PR-0256` consumes the login ceremony. Standalone
-registration/password lifecycle and realm-aware projection provisioning remain follow-up work.
+provider ceremony/context, Skriptoteket `PR-0256` consumes the login ceremony, and `PR-0257`
+consumes the standalone lifecycle handoff. Realm-aware projection provisioning is now locked for
+`PR-0258`.
 
 ## Core Concept: Product Identity Realm
 
@@ -138,18 +141,25 @@ Current `PR-0256` state: app continuation fails closed unless the signed context
 `realm_subject_id`. The projection lookup still uses the existing subject key until `ST-28-09`
 migrates provisioning and persistence to the full realm-aware key.
 
-## Remaining Questions
+## Locked Projection Direction
 
-The core ceremony/context contract is frozen and the first consumer slice is done. Remaining
-questions belong to `ST-28-08`, `ST-28-09`, and `ST-28-10`:
+The core ceremony/context contract is frozen, the login and lifecycle consumer slices are done, and
+`ST-28-09` / `PR-0258` now owns the clean projection migration:
 
-- How should standalone Skriptoteket registration, password reset, verification, and account
-  linking be hosted by Hule Education while preserving Skriptoteket product ownership?
-- What signed claims are sufficient for safe first-time Skriptoteket projection creation?
-- How does RBAC remain local when a user has both HuleEdu school and Skriptoteket standalone
-  identities?
-- What metrics should distinguish gateway auth success, identity realm selected, projection
-  resolved, projection missing, and local RBAC denial?
+- Use a dedicated local projection table keyed by `(product_identity_realm, realm_subject_id)`.
+- Remove `users.external_id` rather than renaming, repurposing, or leaving it as legacy provider
+  metadata.
+- Provision first-time Skriptoteket projections only when signed HuleEdu context includes
+  `active_app=skriptoteket`, accepted realm, realm subject, email, and verified email state.
+- Default newly provisioned local users to `user`; contributor/admin/superuser remain local
+  promotions.
+- Treat matching email as insufficient for account linking; linking must be explicit.
+- Prove local Docker auth ceremonies against a local or non-production HuleEdu Gateway with exact
+  dev-origin allowlisting.
+
+The remaining open question belongs to `ST-28-10`: which metrics should distinguish gateway auth
+success, identity realm selected, projection resolved, projection missing, provisioning blocked,
+and local RBAC denial?
 
 ## Planning Consequences
 
@@ -163,7 +173,8 @@ questions belong to `ST-28-08`, `ST-28-09`, and `ST-28-10`:
 - Follow-up stories now scaffold the sequence:
   - `ST-28-06` accepted the ADR and froze the contract through `REV-ST-28-06`.
   - `ST-28-07` implemented the Hule Education-hosted Skriptoteket login ceremony through `PR-0256`.
-  - `ST-28-08` owns standalone registration/password lifecycle on the shared identity surface.
-  - `ST-28-09` owns realm-aware projection provisioning and local RBAC preservation.
+  - `ST-28-08` shipped standalone registration/password lifecycle handoffs through `PR-0257`.
+  - `ST-28-09` owns realm-aware projection provisioning and local RBAC preservation through
+    `PR-0258`.
   - `ST-28-04` / `PR-0254` becomes the final realm-aware cross-app proof after those stories.
   - `ST-28-10` reintroduces auth outcome observability without local session gauges.
