@@ -5,7 +5,7 @@ title: "Reference: HuleEdu launch surface and shared auth topology (2026-04-08)"
 status: active
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-12
+updated: 2026-04-13
 topic: "huleedu-launch-topology"
 links:
   - EPIC-28
@@ -119,3 +119,10 @@ Local proof should mirror ownership without copying production hosts:
 
 This local lane is owned by HuleEdu `TASK-0325` and consumed by Skriptoteket `PR-0254`;
 the auditable local proof is `pdm run pr-0254-auth-cutover`.
+
+As of the 2026-04-13 `PR-0254` + `PR-0263` closeout, both local loopback lanes are green and
+retained at
+`.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260413T160856Z/manifest.redacted.json`.
+The fix treats `localhost` and `127.0.0.1` as distinct browser proof lanes: browser-visible HuleEdu
+ceremony/session/CSRF/logout URLs match the current loopback app host, while protected Skriptoteket
+`/api/...` traffic remains Gateway-proxied.

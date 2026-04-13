@@ -98,6 +98,7 @@ const AUTH_ENTRY_LOOP_PATHS = new Set([
   "/login",
 ]);
 const CEREMONY_NEXT_URL_BASE = "https://skriptoteket.local";
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 export type SharedAuthCeremonyKind =
   | "login"
@@ -116,14 +117,20 @@ export type SharedCsrfResponse = {
   csrf_token: string;
 };
 
-function normalizeBaseUrl(value: string | undefined): string {
+function normalizeBaseUrl(value: string | undefined, origin: string | null = null): string {
   const rawValue = value?.trim() || DEFAULT_SHARED_AUTH_BASE_URL;
-  return rawValue.endsWith("/") ? rawValue.slice(0, -1) : rawValue;
+  const normalized = rawValue.endsWith("/") ? rawValue.slice(0, -1) : rawValue;
+  const aligned = origin ? alignLoopbackUrlHost(normalized, origin) : normalized;
+  return aligned.endsWith("/") ? aligned.slice(0, -1) : aligned;
 }
 
-export function sharedAuthUrl(path: string): string {
+function currentBrowserOrigin(): string | null {
+  return typeof window === "undefined" ? null : window.location.origin;
+}
+
+export function sharedAuthUrl(path: string, origin: string | null = currentBrowserOrigin()): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${normalizeBaseUrl(import.meta.env.VITE_HULEEDU_AUTH_BASE_URL)}${normalizedPath}`;
+  return `${normalizeBaseUrl(import.meta.env.VITE_HULEEDU_AUTH_BASE_URL, origin)}${normalizedPath}`;
 }
 
 function buildSiblingCeremonyEntryUrl(loginEntryUrl: string, path: string): string {
@@ -132,17 +139,30 @@ function buildSiblingCeremonyEntryUrl(loginEntryUrl: string, path: string): stri
   return url.toString();
 }
 
-function normalizeEntryUrl(kind: SharedAuthCeremonyKind): string {
+function isLoopbackHost(hostname: string): boolean {
+  return LOOPBACK_HOSTS.has(hostname);
+}
+
+function alignLoopbackUrlHost(url: string, origin: string): string {
+  const parsedUrl = new URL(url);
+  const parsedOrigin = new URL(origin);
+  if (isLoopbackHost(parsedUrl.hostname) && isLoopbackHost(parsedOrigin.hostname)) {
+    parsedUrl.hostname = parsedOrigin.hostname;
+  }
+  return parsedUrl.toString();
+}
+
+function normalizeEntryUrl(kind: SharedAuthCeremonyKind, origin: string): string {
   const loginEntryUrl = import.meta.env.VITE_HULEEDU_AUTH_ENTRY_URL?.trim();
+  let entryUrl: string;
   if (kind === "login" && loginEntryUrl) {
-    return loginEntryUrl;
+    entryUrl = loginEntryUrl;
+  } else if (kind !== "login" && loginEntryUrl) {
+    entryUrl = buildSiblingCeremonyEntryUrl(loginEntryUrl, SHARED_AUTH_ENTRY_PATHS[kind]);
+  } else {
+    entryUrl = DEFAULT_SHARED_AUTH_ENTRY_URLS[kind];
   }
-
-  if (kind !== "login" && loginEntryUrl) {
-    return buildSiblingCeremonyEntryUrl(loginEntryUrl, SHARED_AUTH_ENTRY_PATHS[kind]);
-  }
-
-  return DEFAULT_SHARED_AUTH_ENTRY_URLS[kind];
+  return alignLoopbackUrlHost(entryUrl, origin);
 }
 
 export type SharedAuthCeremonyParams = {
@@ -174,7 +194,7 @@ function sanitizeCeremonyNextPath(value: string | null): string | null {
 }
 
 export function sharedAuthCeremonyUrl(params: SharedAuthCeremonyParams): string {
-  const url = new URL(normalizeEntryUrl(params.kind ?? "login"));
+  const url = new URL(normalizeEntryUrl(params.kind ?? "login", params.origin));
   if (!url.searchParams.has("app")) {
     url.searchParams.set("app", SHARED_AUTH_APP);
   }

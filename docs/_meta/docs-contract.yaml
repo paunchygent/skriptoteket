@@ -9,6 +9,7 @@ allowed_top_level:
   - runbooks
   - reference
   - guides
+  - mockups
   - templates
   - _meta
 
@@ -16,6 +17,7 @@ allowed_top_level:
 frontmatter_exempt:
   - docs/index.md
   - docs/README.md
+  - docs/mockups/INDEX.md
   - docs/_meta/README.md
 
 frontmatter:
@@ -129,6 +131,14 @@ types:
     required: ["topic"]
     optional: []
 
+  mockup:
+    folder: docs/mockups
+    filename_regex: "^(README|INDEX|[a-z0-9-]+)\\.md$"
+    id_regex: "^MOCK-[a-z0-9-]+$"
+    status_allowed: ["proposed", "approved", "superseded", "archived"]
+    required: ["summary"]
+    optional: ["canonical_preview", "submission_policy", "winner_policy"]
+
   codemap:
     folder: docs/reference/reports/codemaps
     filename_regex: "^[a-z0-9-]+\\.md$"
@@ -136,3 +146,30 @@ types:
     status_allowed: ["active", "deprecated"]
     required: ["topic"]
     optional: ["links"]
+
+mockup_resources:
+  folder: docs/mockups
+  policy: "Non-Markdown files under docs/mockups are design/proofing resources, not docs frontmatter records."
+  enforcement: "Markdown files are contract-validated; non-Markdown resource files are intentionally permissive."
+  allowed_resource_examples:
+    - ".html"
+    - ".css"
+    - ".js"
+    - ".ts"
+    - ".mjs"
+    - ".json"
+    - ".svg"
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+    - ".gif"
+    - ".webp"
+    - ".avif"
+    - ".ico"
+    - ".woff"
+    - ".woff2"
+    - ".ttf"
+    - ".otf"
+    - ".txt"
+    - ".md"
+  note: "The examples are intentionally broad and not a closed allowlist; the folder is a creative test, contest, and proofing ground."

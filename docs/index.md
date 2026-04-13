@@ -36,6 +36,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Launch SEO and indexing readiness assessment:
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
+- Mockup bundle index: `docs/mockups/INDEX.md`
+- Docs mockup bundle contract and existing preview indexes:
+  `docs/backlog/prs/pr-0265-docs-mockup-bundle-contract-and-existing-preview-indexes.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
 - Runner Contract V3 (Structured Results, State & Promotions): `docs/reference/ref-runner-contract-v3.md`
@@ -209,6 +212,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
 - ST-28-10 auth outcome observability for realm cutover:
   `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md`
+- ST-28-10 auth outcome observability for HuleEdu cutover:
+  `docs/backlog/prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md`
+- Review gate for PR-0264 auth outcome observability for HuleEdu cutover:
+  `docs/backlog/reviews/review-pr-0264-auth-outcome-observability-for-huleedu-cutover.md`
 - ST-28-05 HuleEdu provider conformance ingest + cutover readiness:
   `docs/backlog/prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md`
 - ST-28-01 session bootstrap API client cutover:
@@ -229,6 +236,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
 - Review gate for PR-0254 cross-app auth cutover smoke + runbook proof:
   `docs/backlog/reviews/review-pr-0254-cross-app-auth-cutover-smoke-and-runbook-proof.md`
+- ST-28-04 loopback origin parity for auth cutover closeout:
+  `docs/backlog/prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md`
+- Review gate for PR-0263 loopback origin parity for auth cutover closeout:
+  `docs/backlog/reviews/review-pr-0263-loopback-origin-parity-for-auth-cutover-closeout.md`
 - EPIC-35 launch SEO + search indexing readiness:
   `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`
 - Review gate for EPIC-35 launch SEO + search indexing readiness:

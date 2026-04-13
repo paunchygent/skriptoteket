@@ -39,6 +39,29 @@ function hasAtLeastRole(params: { actual: ApiRole; minRole: ApiRole }): boolean 
   return ROLE_RANK[params.actual] >= ROLE_RANK[params.minRole];
 }
 
+function buildSharedLogoutHeaders(csrfToken: string): Record<string, string> {
+  return {
+    Accept: "application/json",
+    "X-CSRF-Token": csrfToken,
+  };
+}
+
+async function postSharedLogout(csrfToken: string): Promise<Response> {
+  return fetchWithTimeout(
+    sharedAuthUrl(SHARED_AUTH_LOGOUT_PATH),
+    {
+      method: "POST",
+      credentials: "include",
+      headers: buildSharedLogoutHeaders(csrfToken),
+    },
+    { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
+  );
+}
+
+function isSharedLogoutComplete(response: Response): boolean {
+  return response.ok || response.status === 401;
+}
+
 let bootstrapPromise: Promise<void> | null = null;
 
 type AuthState = {
@@ -266,19 +289,35 @@ export const useAuthStore = defineStore("auth", {
       }
 
       try {
-        const response = await fetchWithTimeout(
-          sharedAuthUrl(SHARED_AUTH_LOGOUT_PATH),
-          {
-            method: "POST",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-          },
-          { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
-        );
+        const csrfToken = await this.ensureCsrfToken();
+        if (!csrfToken) {
+          if (!this.user) {
+            this.clear();
+            return;
+          }
+          throw new Error(this.error ?? "Det gick inte att hämta CSRF-token.");
+        }
 
-        if (response.status === 204 || response.status === 401) {
+        const response = await postSharedLogout(csrfToken);
+
+        if (isSharedLogoutComplete(response)) {
           this.clear();
           return;
+        }
+
+        if (response.status === 403 && this.user) {
+          this.csrfToken = null;
+          const refreshedToken = await this.ensureCsrfToken();
+          if (refreshedToken) {
+            const retry = await postSharedLogout(refreshedToken);
+            if (isSharedLogoutComplete(retry)) {
+              this.clear();
+              return;
+            }
+            this.status = "error";
+            this.error = await readErrorMessage(retry);
+            throw new Error(this.error);
+          }
         }
 
         this.status = "error";

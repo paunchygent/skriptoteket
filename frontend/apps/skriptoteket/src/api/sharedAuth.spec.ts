@@ -58,7 +58,25 @@ describe("sharedAuthUrl", () => {
   it("normalizes an explicit auth base URL", () => {
     vi.stubEnv("VITE_HULEEDU_AUTH_BASE_URL", "http://127.0.0.1:9000/");
 
-    expect(sharedAuthUrl(SHARED_AUTH_CSRF_PATH)).toBe("http://127.0.0.1:9000/v1/auth/csrf");
+    expect(sharedAuthUrl(SHARED_AUTH_CSRF_PATH, null)).toBe(
+      "http://127.0.0.1:9000/v1/auth/csrf",
+    );
+  });
+
+  it("matches local loopback auth API host to the current app origin", () => {
+    vi.stubEnv("VITE_HULEEDU_AUTH_BASE_URL", "http://localhost:8080/");
+
+    expect(sharedAuthUrl(SHARED_AUTH_SESSION_PATH, "http://127.0.0.1:5173")).toBe(
+      "http://127.0.0.1:8080/v1/auth/session",
+    );
+  });
+
+  it("does not rewrite non-loopback auth API hosts", () => {
+    vi.stubEnv("VITE_HULEEDU_AUTH_BASE_URL", "https://api.example.test/");
+
+    expect(sharedAuthUrl(SHARED_AUTH_SESSION_PATH, "http://127.0.0.1:5173")).toBe(
+      "https://api.example.test/v1/auth/session",
+    );
   });
 });
 
@@ -106,6 +124,32 @@ describe("sharedAuthCeremonyUrl", () => {
     );
     expect(url).toBe(
       "https://identity.example.test/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=https%3A%2F%2Fskriptoteket.hule.education%2Fauth%2Fcallback&next=%2Fadmin%2Ftools",
+    );
+  });
+
+  it("matches local loopback ceremony host to the current app origin", () => {
+    vi.stubEnv("VITE_HULEEDU_AUTH_ENTRY_URL", "http://localhost:8080/auth/login");
+
+    const loginUrl = new URL(
+      sharedAuthCeremonyUrl({
+        nextPath: "/editor",
+        origin: "http://127.0.0.1:5173",
+      }),
+    );
+    const registerUrl = new URL(
+      sharedAuthCeremonyUrl({
+        kind: "register",
+        nextPath: "/editor",
+        origin: "http://127.0.0.1:5173",
+      }),
+    );
+
+    expect(`${loginUrl.origin}${loginUrl.pathname}`).toBe("http://127.0.0.1:8080/auth/login");
+    expect(loginUrl.searchParams.get("return_to")).toBe(
+      "http://127.0.0.1:5173/auth/callback",
+    );
+    expect(`${registerUrl.origin}${registerUrl.pathname}`).toBe(
+      "http://127.0.0.1:8080/auth/register",
     );
   });
 

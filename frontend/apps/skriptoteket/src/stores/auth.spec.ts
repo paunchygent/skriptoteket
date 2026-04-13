@@ -1,60 +1,24 @@
+/**
+ * Auth store bootstrap and state tests.
+ *
+ * Purpose:
+ *   Verify Pinia auth-store state transitions, getters, and HuleEdu app
+ *   continuation bootstrap behavior.
+ *
+ * Relationships:
+ *   - `auth.csrf.spec.ts` covers shared CSRF token caching.
+ *   - `auth.logout.spec.ts` covers shared HuleEdu logout behavior.
+ */
+
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useAuthStore } from "./auth";
-import type { components } from "../api/openapi";
-
-type ApiUser = components["schemas"]["User"];
-type ApiUserProfile = components["schemas"]["UserProfile"];
-
-function createTestUser(overrides: Partial<ApiUser> = {}): ApiUser {
-  return {
-    id: "550e8400-e29b-41d4-a716-446655440000",
-    email: "test@test.com",
-    role: "user",
-    auth_provider: "local",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    email_verified: true,
-    failed_login_attempts: 0,
-    is_active: true,
-    ...overrides,
-  };
-}
-
-function createTestProfile(overrides: Partial<ApiUserProfile> = {}): ApiUserProfile {
-  return {
-    user_id: "550e8400-e29b-41d4-a716-446655440000",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    locale: "sv-SE",
-    display_name: null,
-    first_name: null,
-    last_name: null,
-    ...overrides,
-  };
-}
-
-const TEST_AI_POLICY = {
-  remote_providers_enabled: true,
-  completion_external_available: true,
-  completion_local_available: true,
-};
-
-function mockJsonResponse(
-  payload: unknown,
-  status = 200,
-  statusText?: string,
-): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    statusText,
-    headers: { "content-type": "application/json" },
-  });
-}
-
-function mockEmptyResponse(status: number, statusText?: string): Response {
-  return new Response(null, { status, statusText });
-}
+import {
+  createTestProfile,
+  createTestUser,
+  mockJsonResponse,
+  TEST_AI_POLICY,
+} from "./authTestHelpers";
 
 describe("useAuthStore", () => {
   beforeEach(() => {
@@ -210,94 +174,6 @@ describe("useAuthStore", () => {
       expect(store.error).toBeNull();
       expect(store.appContinuationError).toBeNull();
       expect(store.bootstrapped).toBe(true);
-    });
-  });
-
-  describe("ensureCsrfToken()", () => {
-    it("returns cached token if available", async () => {
-      const store = useAuthStore();
-      store.user = createTestUser();
-      store.csrfToken = "cached-token";
-
-      const token = await store.ensureCsrfToken();
-
-      expect(token).toBe("cached-token");
-      expect(fetch).not.toHaveBeenCalled();
-    });
-
-    it("returns null if no user", async () => {
-      const store = useAuthStore();
-
-      const token = await store.ensureCsrfToken();
-
-      expect(token).toBeNull();
-      expect(fetch).not.toHaveBeenCalled();
-    });
-
-    it("fetches token from API if not cached", async () => {
-      const store = useAuthStore();
-      store.user = createTestUser();
-
-      vi.mocked(fetch).mockResolvedValueOnce(
-        mockJsonResponse({ csrf_token: "new-token" }),
-      );
-
-      const token = await store.ensureCsrfToken();
-
-      expect(token).toBe("new-token");
-      expect(store.csrfToken).toBe("new-token");
-      expect(fetch).toHaveBeenCalledWith(
-        "https://api.hule.education/v1/auth/csrf",
-        expect.objectContaining({
-          method: "GET",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        }),
-      );
-    });
-
-    it("clears user on 401 response", async () => {
-      const store = useAuthStore();
-      store.user = createTestUser();
-
-      vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(401));
-
-      const token = await store.ensureCsrfToken();
-
-      expect(token).toBeNull();
-      expect(store.user).toBeNull();
-      expect(store.csrfToken).toBeNull();
-    });
-  });
-
-  describe("logout()", () => {
-    it("clears state on 204 response", async () => {
-      const store = useAuthStore();
-      store.user = createTestUser();
-      store.csrfToken = "token";
-      store.bootstrapped = true;
-
-      vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(204));
-
-      await store.logout();
-
-      expect(store.user).toBeNull();
-      expect(store.csrfToken).toBeNull();
-      expect(store.status).toBe("ready");
-    });
-
-    it("clears state on 401 response (already logged out)", async () => {
-      const store = useAuthStore();
-      store.user = createTestUser();
-      store.csrfToken = "token";
-      store.bootstrapped = true;
-
-      vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(401));
-
-      await store.logout();
-
-      expect(store.user).toBeNull();
-      expect(store.status).toBe("ready");
     });
   });
 

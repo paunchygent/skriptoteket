@@ -97,6 +97,8 @@ dependencies:
 - [PR-0261: ST-28-12 login register reset affordance and redirect contract](../prs/pr-0261-st-28-12-login-register-reset-affordance-and-redirect-contract.md)
 - [PR-0262: ST-28-12 real lifecycle proof smoke and runbook](../prs/pr-0262-st-28-12-real-lifecycle-proof-smoke-and-runbook.md)
 - [PR-0254: ST-28-04 cross-app auth cutover smoke and runbook proof](../prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md)
+- [PR-0263: ST-28-04 loopback origin parity for auth cutover closeout](../prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md)
+- [PR-0264: ST-28-10 auth outcome observability for HuleEdu cutover](../prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md)
 
 ## Dependencies
 
@@ -215,7 +217,23 @@ chain for real standalone lifecycle entry: HuleEdu owns provider lifecycle and
 session proof, Skriptoteket exposes only the sanitized consumer diagnostics
 surface, and the final local proof demonstrates callback continuation,
 realm-aware projection reuse, local contributor role observation, and artifact
-redaction. Final cross-app Docker/operator proof can proceed through `PR-0254`.
+redaction.
+
+`ST-28-04` / `PR-0254` / `PR-0263` are now done on both required local loopback lanes. The
+final proof consumes retained upstream artifacts, then certifies the browser path
+from Skriptoteket public route and auth entry through HuleEdu Gateway/login,
+Gateway-proxied protected read/write, signed app-continuation, local projection,
+local `User.role` RBAC, CSRF, and shared logout invalidation. The latest retained
+manifest is
+`.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260413T160856Z/manifest.redacted.json`.
+It records both `localhost` and `127` lane summaries as `status=ok`. `ST-28-10` is now the next epic
+lane for auth outcome observability.
+
+`ST-28-10` is open through review-backed `PR-0264`. The first slice is deliberately
+Skriptoteket-owned: signed-context verification, app-continuation/projection outcomes,
+provisioning-required/linking-required outcomes, local RBAC decisions, and correlation/runbook
+handoff back to HuleEdu Gateway/session logs. It does not attempt to instrument HuleEdu-owned
+browser sessions, provider lifecycle, CSRF authority, or logout authority from this repo.
 
 ## Planning note (2026-04-08)
 
@@ -253,5 +271,6 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
     without retaining raw signed-context identity values
 16. complete retained Skriptoteket lifecycle proof through `ST-28-12` / `PR-0262`
     for callback continuation, local projection, and local role observation
-17. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
+17. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`, then close the
+    required 127 lane through `PR-0263` (done; both loopback lanes green)
 18. reintroduce auth outcome observability through `ST-28-10`

@@ -2,7 +2,7 @@
 type: story
 id: ST-28-04
 title: "Cross-app auth cutover smoke and operator runbook proof"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
 updated: 2026-04-13
@@ -74,3 +74,27 @@ The proof must cover:
   that consumes HuleEdu `TASK-0326`.
 - `ST-28-12` / `PR-0261` / `PR-0262` now own the user-facing auth entry and real lifecycle proof
   that consumes HuleEdu `TASK-0327`.
+
+## Implementation Summary (as of 2026-04-13)
+
+`ST-28-04` is complete through `PR-0254` and `PR-0263` on both required local loopback lanes. The
+retained proof
+first validates HuleEdu `TASK-0326`, HuleEdu `TASK-0327`, Skriptoteket `PR-0261`, and Skriptoteket
+`PR-0262` artifacts, then runs the final cross-process smoke through Skriptoteket SPA, HuleEdu
+Gateway auth entry, HuleEdu login UI/session, Gateway-proxied protected `/api` calls, signed
+app-continuation, local identity projection, local `User.role` RBAC, CSRF-protected write, and
+shared logout invalidation.
+
+Latest retained canonical artifact:
+
+```text
+.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260413T154741Z/manifest.redacted.json
+```
+
+Final two-lane retained artifact after `PR-0263` loopback-origin parity:
+
+```text
+.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260413T160856Z/manifest.redacted.json
+```
+
+The final manifest records both `localhost` and `127` lane summaries as `status=ok`.

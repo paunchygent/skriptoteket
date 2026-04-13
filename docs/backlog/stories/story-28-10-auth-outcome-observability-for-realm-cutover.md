@@ -2,7 +2,7 @@
 type: story
 id: ST-28-10
 title: "Auth outcome observability for realm cutover"
-status: blocked
+status: in_progress
 owners: "agents"
 created: 2026-04-11
 updated: 2026-04-13
@@ -33,3 +33,11 @@ monitor.
 - Prefer low-cardinality counters and gauges that reflect product boundaries.
 - Coordinate with the Hule Education gateway/identity observability story if it
   exists.
+
+## PR Slices
+
+- `PR-0264` opens this story as a planning/review-backed Skriptoteket-owned
+  observability slice. It is limited to signed-context verification,
+  app-continuation/projection outcomes, local RBAC decisions, and consumer-side
+  runbook correlation. HuleEdu Gateway/session/lifecycle telemetry remains
+  upstream-owned.
