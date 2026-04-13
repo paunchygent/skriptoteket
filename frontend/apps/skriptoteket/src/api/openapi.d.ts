@@ -1142,6 +1142,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/diagnostics/huleedu-internal-identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Probe Huleedu Internal Identity
+         * @description Return sanitized signed-context proof without local projection side effects.
+         */
+        get: operations["probe_huleedu_internal_identity_api_v1_diagnostics_huleedu_internal_identity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/completions": {
         parameters: {
             query?: never;
@@ -3768,6 +3788,75 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * HuleEduInternalIdentityProbeClaims
+         * @description Sanitized decoded signed-context claims for provider proof.
+         */
+        HuleEduInternalIdentityProbeClaims: {
+            /** Active App */
+            active_app: string;
+            /** Active Context Keys */
+            active_context_keys: string[];
+            /** Active Product Identity Realm */
+            active_product_identity_realm: string;
+            /** Audience */
+            audience: string;
+            /** Context Version */
+            context_version: number;
+            /** Email Present */
+            email_present: boolean;
+            /** Email Verified */
+            email_verified: boolean | null;
+            /** Expires At */
+            expires_at: number;
+            /** Feature Flags */
+            feature_flags: string[];
+            /** Grants */
+            grants: string[];
+            /** Issued At */
+            issued_at: number;
+            /** Issuer */
+            issuer: string;
+            /** Linked Identity Matches Realm Subject */
+            linked_identity_matches_realm_subject: boolean | null;
+            /** Linked Identity Realm Present */
+            linked_identity_realm_present: boolean;
+            /** Org Id Present */
+            org_id_present: boolean;
+            /** Policy Version */
+            policy_version: string;
+            /** Realm Subject Id Present */
+            realm_subject_id_present: boolean;
+            /** Roles */
+            roles: string[];
+            /** Source App */
+            source_app: string | null;
+            /** Subject Claim Present */
+            subject_claim_present: boolean;
+            /** Subject Matches Realm Subject */
+            subject_matches_realm_subject: boolean | null;
+            /** Tenant Id Present */
+            tenant_id_present: boolean;
+        };
+        /**
+         * HuleEduInternalIdentityProbeResponse
+         * @description No-secret diagnostic response for HuleEdu live apply artifacts.
+         */
+        HuleEduInternalIdentityProbeResponse: {
+            /**
+             * App
+             * @constant
+             */
+            app: "skriptoteket";
+            claims: components["schemas"]["HuleEduInternalIdentityProbeClaims"];
+            /** Product Identity Realm */
+            product_identity_realm: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "ok";
         };
         /**
          * InputFileSummary
@@ -8761,6 +8850,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    probe_huleedu_internal_identity_api_v1_diagnostics_huleedu_internal_identity_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HuleEduInternalIdentityProbeResponse"];
                 };
             };
         };

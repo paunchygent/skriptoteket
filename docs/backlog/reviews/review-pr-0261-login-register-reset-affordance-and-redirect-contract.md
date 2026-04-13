@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0261
 title: "Review: PR-0261 login register reset affordance and redirect contract"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-04-13
 updated: 2026-04-13
@@ -18,8 +18,9 @@ links:
 
 ## TL;DR
 
-Review the product-facing auth-entry and redirect slice for real Skriptoteket
-standalone account use.
+Approved for implementation after the scope refinement that adds the
+Skriptoteket no-side-effect consumer probe route required by HuleEdu
+`TASK-0327` final live apply.
 
 ## Problem Statement
 
@@ -32,6 +33,12 @@ through unsafe continuation URLs.
 Keep HuleEdu as lifecycle authority and update Skriptoteket's visible auth
 choices, generated URLs, callback handling, and failure copy around user tasks:
 sign in, create account, reset password, continue.
+
+This approval also covers the smallest hidden diagnostic route needed by
+HuleEdu `TASK-0327`: a same-origin Skriptoteket API endpoint that verifies the
+Gateway-signed `InternalIdentityContextV1`, validates the Skriptoteket product
+context, returns only sanitized decoded claim proof, and performs no local
+projection/provisioning side effects.
 
 ## Artifacts to Review
 
@@ -51,6 +58,7 @@ sign in, create account, reset password, continue.
 | Links land on direct action pages | Deliberate clicks should not make users pass through a generic HuleEdu stopover | [x] |
 | Visible copy uses user tasks | Users do not need to understand realms or projections | [x] |
 | All auth URLs keep safe continuation | Prevent hostile or looping return paths | [x] |
+| Consumer probe is no-side-effect and sanitized | HuleEdu needs live signed-context proof without exposing raw token/header material or mutating local users | [x] |
 
 ## Review Checklist
 
@@ -59,6 +67,8 @@ sign in, create account, reset password, continue.
 - [x] User-facing copy avoids internals
 - [x] `app` and product realm parameters are explicit
 - [x] Safe `next` behavior is preserved
+- [x] Consumer probe returns sanitized signed-context claim proof only
+- [x] Consumer probe avoids projection/provisioning side effects
 - [x] Live UI verification is required
 
 ## Review Feedback
@@ -130,7 +140,7 @@ None.
 ### Decision Approvals
 
 - [x] HuleEdu-owned lifecycle
-- [ ] Direct-action links
+- [x] Direct-action links
 - [x] User-task copy
 - [x] Safe continuation
 
@@ -143,6 +153,24 @@ None.
 | 3 | `PR-0261` | Added a concrete consumer action matrix for login, registration, password-reset request, password-reset completion, and email verification |
 | 4 | `PR-0261` | Froze required `app`, `product_identity_realm`, `return_to`, safe `next`, token, and first-interactive-page rules for each action |
 | 5 | `PR-0261` | Added exact focused Vitest command, `fe-type-check`, `fe-lint`, docs/diff gates, expected `pr-0261-auth-action-matrix` live proof command, and sanitized artifact directory |
+| 6 | `PR-0261` / `ST-28-12` | Replaced the old "wait until HuleEdu TASK-0327 is done" block with the accepted provider-contract gate: `REV-TASK-0327-01` is approved, `TASK-0327` remains in progress until the Skriptoteket probe route exists and HuleEdu reruns final live apply |
+| 7 | `PR-0261` | Added the hidden no-side-effect consumer probe route contract for sanitized decoded `InternalIdentityContextV1` claim proof through the HuleEdu Gateway proxy |
+| 8 | `PR-0261` | Required direct external action anchors and auto-handoff compatibility lifecycle routes so local Skriptoteket pages are not the first interactive action page |
+
+## Approval 2026-04-13
+
+**Reviewer:** lead-developer
+**Verdict:** approved
+
+`REV-TASK-0327-01` is approved, so the HuleEdu provider implementation
+contract is accepted. `PR-0261` may now start and must implement both the
+original auth-entry/direct-action URL contract and the hidden no-side-effect
+consumer probe route.
+
+That downstream rerun is now complete. HuleEdu `TASK-0327` retained its final
+`status=ok` artifact after calling the new Skriptoteket diagnostics route, so
+`PR-0261` can hand off to `PR-0262` for Skriptoteket-side projection and local
+role proof.
 
 ## Re-review Request 2026-04-13
 
@@ -166,3 +194,13 @@ The requested local corrections have been applied:
 - Verification now names focused frontend test files, frontend type/lint gates,
   `pdm run docs-validate`, `git diff --check`, the expected live proof command,
   and the sanitized artifact directory.
+
+## Closeout Note 2026-04-13
+
+HuleEdu reran `TASK-0327` live apply against
+`/api/v1/diagnostics/huleedu-internal-identity` and retained a final
+`status=ok` artifact. The HuleEdu runner now accepts the approved sanitized
+diagnostics shape without requiring raw signed-context email or raw
+`realm_subject_id` in retained signed-context proof. This closes the provider
+runner blocker that `PR-0261` existed to unblock; `PR-0262` now consumes that
+artifact as upstream proof.

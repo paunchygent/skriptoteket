@@ -2,13 +2,13 @@
 type: story
 id: ST-28-12
 title: "Real standalone lifecycle and auth entry proof"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-04-13
 updated: 2026-04-13
 epic: "EPIC-28"
 acceptance_criteria:
-  - "Given `PR-0260` or HuleEdu `TASK-0327` is not done, when this story is scheduled for implementation, then it remains blocked until local role bootstrap and provider lifecycle routes are available."
+  - "Given `PR-0260` is done and HuleEdu `REV-TASK-0327-01` is approved, when `PR-0261` starts, then the story may move in progress while the Skriptoteket probe route enables HuleEdu to retain its final live `status=ok` artifact."
   - "Given a real controlled account is used, when the user creates an account for Skriptoteket, then HuleEdu owns registration, verification, password storage, and browser session creation."
   - "Given the account is verified, when the user returns to Skriptoteket, then the app resolves or creates the local projection and opens the intended route without local browser-auth endpoints."
   - "Given the user has forgotten the password, when they use the reset affordance, then HuleEdu owns the email/reset flow and Skriptoteket only preserves safe app continuation."
@@ -44,11 +44,26 @@ Skriptoteket users.
   recovery for interruptions, expired links, or invalid contexts.
 - Avoid wording that describes implementation internals such as provider
   ceremony, realm mismatch, projection, bootstrap, or Smart needing to restart.
-- HuleEdu `TASK-0327` owns the provider-side real-inbox lifecycle proof.
-- Do not implement `PR-0261` or `PR-0262` until `PR-0260` has created the local
-  projection/role matrix and HuleEdu `TASK-0327` has implemented the
-  direct-action lifecycle route matrix. `PR-0261` must consume that implemented
-  matrix and update its local table if any path, required field, or token rule
-  changes.
+- HuleEdu `TASK-0327` owns the provider-side real-inbox lifecycle proof and is
+  now done after rerunning live apply against the `PR-0261` Skriptoteket
+  consumer probe route.
+- The final HuleEdu artifact is
+  `/Users/olofs_mba/Documents/Repos/huledu-reboot/.artifacts/skriptoteket-lifecycle-proof/dev/skriptoteket-lifecycle-proof-apply-20260413T125336Z.json`.
+- The accepted signed-context diagnostic proof is sanitized: it retains
+  presence/match booleans and does not require raw signed-context email or raw
+  `realm_subject_id`.
 - Skriptoteket `PR-0261` owns the auth-entry UI and redirect contract.
-- Skriptoteket `PR-0262` owns retained end-to-end proof and runbook evidence.
+- Skriptoteket `PR-0262` owns the corresponding Skriptoteket-side retained
+  proof: validate the HuleEdu artifact, then prove callback continuation, local
+  projection, and local role observation without retaining raw identity or token
+  material.
+
+## Implementation Summary (as of 2026-04-13)
+
+`ST-28-12` is complete through `PR-0261` and `PR-0262`. `PR-0261` implemented
+direct-action HuleEdu auth links, auto-handoff compatibility routes, and the
+hidden sanitized diagnostics endpoint that HuleEdu needed for final live apply.
+HuleEdu then reran `TASK-0327` and retained a final `status=ok` provider
+artifact. `PR-0262` consumes that artifact and retains the Skriptoteket-side
+proof for callback continuation, local projection resolution, local role
+observation, and redaction checks.

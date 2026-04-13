@@ -326,3 +326,65 @@ repo line-count limit.
 
 - After `REV-PR-0258` approval, `PR-0258` was the next implementation lane.
 - `PR-0254` remained the final Docker/operator cross-app proof after `ST-28-09`.
+
+## 2026-04-13 PR-0262 handoff compaction dump
+
+Moved from `.agents/handoff.md` while closing `ST-28-12` so the session handoff stays under the
+repo line-count limit.
+
+### Previous Status
+
+- `ST-28-06`, `ST-28-07`, `ST-28-08`, and `ST-28-09` were done under `EPIC-28`.
+- `PR-0258` replaced the temporary `(auth_provider, external_id)` bridge with
+  `identity_projections(product_identity_realm, realm_subject_id)` and removed `users.external_id`.
+- App continuation requires signed `active_app=skriptoteket`, accepted realm, and
+  `realm_subject_id`; invalid product context remains a generic auth ceremony/context error.
+- First-login provisioning requires signed `email` and strict `email_verified=true`; newly
+  provisioned Skriptoteket users default to local role `user`.
+- Matching email without an explicit link fails closed into linking/provisioning-required UX; local
+  contributor/admin/superuser remain app-local promotions.
+- HuleEdu `TASK-0325` scaffolded the local shared-auth Gateway lane for `PR-0254` with
+  Skriptoteket SPA on `5173`, Gateway on `8080`, HuleEdu login UI on `5174`, protected
+  Skriptoteket `/api` traffic through Gateway, and local-only signing-key sharing.
+- HuleEdu `TASK-0326` was done and deployed at merge commit `92419293`; Hemma production
+  bootstrap/export proof verified the Skriptoteket proof user/admin/superuser accounts.
+- Skriptoteket `ST-28-11` / `PR-0260` were done and approved after remediation: production code
+  consumes sanitized HuleEdu subject exports into local users, `identity_projections`, and
+  `User.role`, with strict versioned input and durable blocked-mapping audit events.
+- HuleEdu `REV-TASK-0327-01` was approved, then HuleEdu `TASK-0327` reran live apply against the
+  `PR-0261` Skriptoteket probe route and retained a final `status=ok` artifact.
+- `PR-0261` implemented direct-action auth URLs, auto-handoff lifecycle compatibility routes, and
+  the hidden no-side-effect sanitized diagnostics route.
+- `PR-0262` implemented the retained Skriptoteket-side lifecycle proof by consuming the HuleEdu
+  artifact, validating sanitized claims, proving callback continuation, local projection, local
+  role observation, and redaction.
+
+### Previous Verification
+
+- `pdm run fe-gen-api-types` (pass during PR-0261).
+- `pdm run fe-test -- --run src/router/index.spec.ts src/views/AuthLoginView.spec.ts
+  src/components/auth/AuthLoginPanel.spec.ts src/components/layout/LandingLayout.spec.ts
+  src/views/HomeView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts
+  src/composables/auth/authEntryNavigation.spec.ts src/stores/auth.spec.ts` (pass; 66 tests).
+- `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`, and `pdm run fe-lint` (pass
+  during the auth-cutover chain).
+- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection
+  --start-backend --start-vite --gateway-base-url http://127.0.0.1:8000` (pass; artifacts in
+  `.artifacts/playwright-pr-0258-auth-projection/`).
+- `pdm run pr-0261-auth-action-matrix` (pass; actions=5 and sanitized manifest under
+  `.artifacts/playwright-pr-0261-auth-action-matrix/`).
+- `pdm run pr-0262-real-lifecycle --huleedu-artifact
+  /Users/olofs_mba/Documents/Repos/huledu-reboot/.artifacts/skriptoteket-lifecycle-proof/dev/skriptoteket-lifecycle-proof-apply-20260413T125336Z.json
+  --artifact-dir .artifacts/playwright-pr-0262-real-lifecycle/local-nonprod` (pass; manifest at
+  `.artifacts/playwright-pr-0262-real-lifecycle/local-nonprod/20260413T132801Z/manifest.redacted.json`).
+- Focused backend/proof tests passed:
+  `pdm run pytest -q tests/unit/application/auth/test_pr_0262_lifecycle_manifest.py
+  tests/unit/web/test_huleedu_identity_context_probe_api.py
+  tests/unit/web/test_profile_app_continuation_api.py
+  tests/unit/web/test_profile_app_continuation_context_api.py` (38 tests).
+
+### Previous Next Steps
+
+- `PR-0254` is now the next auth-cutover proof lane.
+- `ST-28-10` follows with auth outcome observability for gateway/session, realm, lifecycle,
+  projection, and local RBAC outcomes.

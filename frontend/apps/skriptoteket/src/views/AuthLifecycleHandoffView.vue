@@ -12,11 +12,12 @@
  *   - `sharedAuth.ts` builds the provider-approved app/realm/return URLs.
  */
 
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import { sharedAuthCeremonyUrl, type SharedAuthCeremonyKind } from "../api/sharedAuth";
 import { readAuthContinuation } from "../composables/auth/authEntryNavigation";
+import { redirectToSharedAuthCeremony } from "../composables/auth/sharedAuthRedirect";
 
 type LifecycleRouteName = "register" | "forgot-password" | "reset-password" | "verify-email";
 
@@ -65,6 +66,7 @@ const LIFECYCLE_COPY: Record<LifecycleRouteName, LifecycleCopy> = {
 };
 
 const route = useRoute();
+const hasStartedHandoff = ref(false);
 
 const lifecycleCopy = computed(() => {
   const routeName = route.name;
@@ -92,6 +94,19 @@ const loginLocation = computed(() => ({
   name: "auth-login",
   query: continuation.value.nextPath ? { next: continuation.value.nextPath } : undefined,
 }));
+
+watch(
+  handoffUrl,
+  (url) => {
+    if (hasStartedHandoff.value) {
+      return;
+    }
+
+    hasStartedHandoff.value = true;
+    redirectToSharedAuthCeremony(url);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -107,6 +122,9 @@ const loginLocation = computed(() => ({
       </h1>
       <p class="text-sm leading-6 text-navy/70">
         {{ lifecycleCopy.body }}
+      </p>
+      <p class="text-sm leading-6 text-navy/70">
+        Sidan öppnas automatiskt. Om inget händer kan du använda knappen.
       </p>
       <a
         class="btn-primary inline-block"

@@ -81,7 +81,7 @@ def wait_http(url: str, *, timeout_seconds: float = 20.0) -> None:
 
 
 @contextmanager
-def temporary_vite_server() -> Iterator[str]:
+def temporary_vite_server(*, proxy_target: str | None = None) -> Iterator[str]:
     """Start a temporary Vite dev server and stop it when the check ends."""
     port = _free_port()
     process = subprocess.Popen(
@@ -105,10 +105,8 @@ def temporary_vite_server() -> Iterator[str]:
         text=True,
         env={
             **os.environ,
-            "VITE_DEV_PROXY_TARGET": os.environ.get(
-                "VITE_DEV_PROXY_TARGET",
-                "http://127.0.0.1:8000",
-            ),
+            "VITE_DEV_PROXY_TARGET": proxy_target
+            or os.environ.get("VITE_DEV_PROXY_TARGET", "http://127.0.0.1:8000"),
         },
     )
     base_url = f"http://127.0.0.1:{port}"
@@ -130,6 +128,7 @@ def temporary_backend_server(
     *,
     artifacts_dir: Path,
     signing_key_id: str = DEFAULT_SIGNING_KEY_ID,
+    port: int | None = 8000,
 ) -> Iterator[str]:
     """Start the repo's real dev backend with the HuleEdu verifier key."""
     artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -146,15 +145,28 @@ def temporary_backend_server(
         }
     )
     Path(env["ARTIFACTS_ROOT"]).mkdir(parents=True, exist_ok=True)
+    live_port = _free_port() if port is None else port
     process = subprocess.Popen(
-        ["pdm", "run", "dev"],
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "--app-dir",
+            "src",
+            "skriptoteket.web.app:app",
+            "--reload",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(live_port),
+        ],
         cwd=repo_root(),
         stdout=log_handle,
         stderr=subprocess.STDOUT,
         text=True,
         env=env,
     )
-    base_url = "http://127.0.0.1:8000"
+    base_url = f"http://127.0.0.1:{live_port}"
     try:
         try:
             wait_http(f"{base_url}/openapi.json", timeout_seconds=45)
@@ -263,6 +275,7 @@ async def _seed_huleedu_projection(
     provider_subject: str,
     email: str,
     display_name: str,
+    role: str = "contributor",
 ) -> UUID:
     """Seed a deterministic local projection through the real database schema."""
     _ensure_src_import_path()
@@ -282,7 +295,7 @@ async def _seed_huleedu_projection(
             .values(
                 id=UUID(local_user_id),
                 email=email,
-                role="contributor",
+                role=role,
                 auth_provider="huleedu",
                 password_hash=None,
                 is_active=True,
@@ -295,7 +308,7 @@ async def _seed_huleedu_projection(
                 index_elements=[UserModel.email],
                 set_={
                     "email": email,
-                    "role": "contributor",
+                    "role": role,
                     "auth_provider": "huleedu",
                     "is_active": True,
                     "email_verified": True,
@@ -357,6 +370,7 @@ def seed_huleedu_projection(
     provider_subject: str = DEFAULT_PROVIDER_SUBJECT,
     email: str = "pr-live-huleedu@example.test",
     display_name: str = "Local Teacher",
+    role: str = "contributor",
 ) -> UUID:
     """Synchronously seed the local HuleEdu-linked projection for Playwright."""
     return asyncio.run(
@@ -365,6 +379,7 @@ def seed_huleedu_projection(
             provider_subject=provider_subject,
             email=email,
             display_name=display_name,
+            role=role,
         )
     )
 

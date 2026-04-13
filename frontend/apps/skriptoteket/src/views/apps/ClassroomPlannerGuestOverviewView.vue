@@ -9,7 +9,7 @@
  */
 
 import { computed, reactive } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
@@ -45,6 +45,13 @@ const loginUrl = computed(() =>
     origin: window.location.origin,
   }),
 );
+const registerUrl = computed(() =>
+  sharedAuthCeremonyUrl({
+    kind: "register",
+    nextPath: `/apps/${CLASSROOM_PLANNER_APP_ID}`,
+    origin: window.location.origin,
+  }),
+);
 
 async function exitPublicPlanner(): Promise<void> {
   await router.push({ name: "home" });
@@ -73,12 +80,12 @@ async function exitPublicPlanner(): Promise<void> {
       data-test="public-guest-system-message"
     >
       Vissa funktioner kräver att du registrerar ett konto. Tryck
-      <RouterLink
-        to="/register"
+      <a
+        :href="registerUrl"
         class="font-semibold underline"
       >
         här
-      </RouterLink>
+      </a>
       för att skapa ett.
     </SystemMessage>
 
@@ -117,13 +124,13 @@ async function exitPublicPlanner(): Promise<void> {
           >
             Logga in
           </a>
-          <RouterLink
-            to="/register"
+          <a
+            :href="registerUrl"
             class="btn-ghost planner-btn-ghost min-w-[10rem]"
             data-test="public-guest-authoring-closed-register"
           >
             Skapa konto
-          </RouterLink>
+          </a>
         </div>
       </div>
     </section>

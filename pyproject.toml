@@ -299,6 +299,8 @@ pr-0253-auth-retirement = "python -m scripts.playwright_pr_0253_auth_retirement"
 pr-0254-auth-cutover = "python -m scripts.playwright_pr_0254_auth_cutover"
 pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
 pr-0258-auth-projection = "python -m scripts.playwright_pr_0258_auth_projection"
+pr-0261-auth-action-matrix = "python -m scripts.playwright_pr_0261_auth_action_matrix --start-backend --start-vite"
+pr-0262-real-lifecycle = "python -m scripts.playwright_pr_0262_real_lifecycle --start-backend --start-vite"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",

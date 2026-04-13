@@ -20,8 +20,16 @@ const route = vi.hoisted(() => ({
   query: {} as Record<string, unknown>,
 }));
 
+const redirectMocks = vi.hoisted(() => ({
+  redirectToSharedAuthCeremony: vi.fn(),
+}));
+
 vi.mock("vue-router", () => ({
   useRoute: () => route,
+}));
+
+vi.mock("../composables/auth/sharedAuthRedirect", () => ({
+  redirectToSharedAuthCeremony: redirectMocks.redirectToSharedAuthCeremony,
 }));
 
 function mountLifecycleHandoffView() {
@@ -41,6 +49,7 @@ describe("AuthLifecycleHandoffView", () => {
   beforeEach(() => {
     route.name = "register";
     route.query = {};
+    redirectMocks.redirectToSharedAuthCeremony.mockReset();
     vi.unstubAllEnvs();
   });
 
@@ -59,6 +68,9 @@ describe("AuthLifecycleHandoffView", () => {
     expect(link.attributes("href")).toBe(
       "https://api.hule.education/auth/register?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",
     );
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(
+      "https://api.hule.education/auth/register?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",
+    );
     expect(wrapper.find("form").exists()).toBe(false);
   });
 
@@ -72,6 +84,7 @@ describe("AuthLifecycleHandoffView", () => {
     expect(href).toContain("https://api.hule.education/auth/password-reset?");
     expect(href).not.toContain("token=");
     expect(href).not.toContain("/v1/auth/request-password-reset");
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(href);
   });
 
   it("preserves reset tokens through the HuleEdu password reset ceremony", () => {
@@ -87,6 +100,7 @@ describe("AuthLifecycleHandoffView", () => {
     expect(`${url.origin}${url.pathname}`).toBe("https://api.hule.education/auth/password-reset");
     expect(url.searchParams.get("token")).toBe("reset-token");
     expect(url.searchParams.get("next")).toBe("/editor?draft=head#debug");
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(url.toString());
   });
 
   it("preserves verification tokens and drops hostile next values", () => {
@@ -104,6 +118,7 @@ describe("AuthLifecycleHandoffView", () => {
     );
     expect(url.searchParams.get("token")).toBe("verification-token");
     expect(url.searchParams.has("next")).toBe(false);
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(url.toString());
     expect(wrapper.find("form").exists()).toBe(false);
   });
 });

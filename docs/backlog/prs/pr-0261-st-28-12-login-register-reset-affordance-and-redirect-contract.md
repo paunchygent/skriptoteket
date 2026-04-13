@@ -2,7 +2,7 @@
 type: pr
 id: PR-0261
 title: "ST-28-12 login register reset affordance and redirect contract"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-04-13
 updated: 2026-04-13
@@ -19,10 +19,11 @@ dependencies:
   - "REV-TASK-0327-01"
 tags: ["auth", "frontend", "redirects", "lifecycle"]
 acceptance_criteria:
-  - "Given `PR-0260` or HuleEdu `TASK-0327` is not done, when implementation is considered, then this PR remains blocked and no auth-entry redirect code starts."
+  - "Given `PR-0260` is done and HuleEdu `REV-TASK-0327-01` is approved, when implementation starts, then this PR consumes the accepted provider contract and exposes the Skriptoteket consumer probe route needed by HuleEdu `TASK-0327` final live apply."
   - "Given a signed-out user opens Skriptoteket, when they reach the auth entry page, then they can choose to sign in, create an account, or reset a password using clear user-facing Swedish copy."
   - "Given the user chooses any auth action, when Skriptoteket builds the HuleEdu URL, then it targets the action-specific page directly, sends `app=skriptoteket`, `product_identity_realm=skriptoteket_standalone`, the approved callback, and a safe `next` value."
   - "Given the user clicks login, create account, forgot password, verification, or reset links, when the first interactive page loads, then it is the requested action page and not a generic HuleEdu landing, product hub, or chooser page."
+  - "Given HuleEdu Gateway calls the Skriptoteket consumer probe through the same-origin Gateway proxy, when signed `InternalIdentityContextV1` headers are valid, then Skriptoteket returns only sanitized decoded claim proof and never echoes raw signed headers, signatures, cookies, CSRF, session ids, JWT material, or token-bearing values."
   - "Given a hostile, looping, or cross-origin `next` is supplied, when the auth URL is built, then Skriptoteket drops it and returns to a safe app route."
   - "Given HuleEdu completes registration, verification, login, or reset, when the browser returns to `/auth/callback`, then Skriptoteket resumes the intended route through shared-session bootstrap."
   - "Given the UI communicates failures, when continuation cannot complete, then the message tells the user what to try next without exposing realm, projection, token, or provider diagnostics."
@@ -49,16 +50,29 @@ HuleEdu-owned standalone lifecycle while preserving safe `next` continuation.
 
 ## Implementation Gate
 
-Implementation MUST NOT start until:
+Implementation started because:
 
 - Skriptoteket `PR-0260` is implemented and its local proof role matrix exists.
-- HuleEdu `TASK-0327` is implemented and its direct-action lifecycle route
-  matrix/proof artifacts are available.
+- HuleEdu `REV-TASK-0327-01` is approved, so the provider implementation
+  contract is accepted.
 
-`REV-TASK-0327-01` is approved, so the provider task contract is accepted, but
-the provider lifecycle implementation still belongs before this consumer UI
-slice. If the implemented provider matrix changes any path, required field, or
-token rule below, update this PR and request re-review before implementation.
+This gate is now resolved. HuleEdu reran `TASK-0327` live apply against the
+Skriptoteket probe route added by this PR and retained a final `status=ok`
+artifact:
+
+```text
+/Users/olofs_mba/Documents/Repos/huledu-reboot/.artifacts/skriptoteket-lifecycle-proof/dev/skriptoteket-lifecycle-proof-apply-20260413T125336Z.json
+```
+
+The HuleEdu artifact covers rerun-safe account handling, reset delivery and
+consumption, login, `GET /v1/auth/session`, direct action landing, and the
+approved sanitized signed-context probe shape from
+`/api/v1/diagnostics/huleedu-internal-identity`. It does not require raw
+signed-context email or raw `realm_subject_id` in the retained signed-context
+proof.
+
+If the final HuleEdu rerun changes any path, required field, or token rule
+below, update this PR and request re-review before closing it.
 
 ## HuleEdu Action Matrix
 
@@ -84,6 +98,38 @@ No canonical link in this matrix may target local browser endpoints under
 landing pages, product hubs, or chooser pages are fallback-only for
 interruptions, invalid context, expired links, or unsupported actions.
 
+## Consumer Probe Route
+
+Add a hidden diagnostic API endpoint under the normal Skriptoteket API surface:
+
+```text
+GET /api/v1/diagnostics/huleedu-internal-identity
+```
+
+The route exists only so HuleEdu `TASK-0327` can prove the accepted provider
+contract against a real Skriptoteket consumer route through the Gateway proxy.
+It is not a product feature and must not be linked from user-facing UI.
+
+The endpoint must:
+
+- use the same HuleEdu signed internal identity verifier as protected
+  Skriptoteket APIs
+- validate `active_app=skriptoteket`, an accepted product identity realm, and a
+  nonblank `realm_subject_id`
+- avoid local projection resolution, user provisioning, local role mutation, or
+  any other persistence side effect
+- return only decoded sanitized claim proof, such as status, context version,
+  issuer, audience, active app, active product identity realm, booleans for
+  subject/email/session claim presence, `email_verified`, roles, grants, feature
+  flags, policy version, and issued/expires timestamps
+- never return raw signed headers, raw encoded context, raw signatures, cookies,
+  CSRF values, session ids, `jti`, raw `sub`, raw `realm_subject_id`, raw
+  email addresses, verification/reset tokens, magic links, or other
+  token-bearing values
+
+Invalid or unsupported context must fail through the normal unauthorized error
+mapping; it must not downgrade into a public fallback response.
+
 ## Implementation Plan
 
 1. Audit the current auth-entry, callback, and legacy lifecycle route surfaces.
@@ -94,14 +140,21 @@ interruptions, invalid context, expired links, or unsupported actions.
    `product_identity_realm=skriptoteket_standalone`; do not send deliberate
    clicks to a generic HuleEdu landing, product hub, chooser page, local
    `/api/v1/auth/*`, or provider `/v1/auth/*` endpoint.
-4. Preserve the existing safe `next` sanitizer and extend tests for register
+4. Make direct action anchors external HuleEdu action URLs. Compatibility
+   routes such as `/register`, `/forgot-password`, `/reset-password`, and
+   `/verify-email` may remain, but they must auto-handoff so the first
+   interactive page for the deliberate action is the HuleEdu action page, not a
+   local Skriptoteket interstitial.
+5. Add the no-side-effect consumer probe route described above so HuleEdu can
+   rerun `TASK-0327` live apply against real signed context.
+6. Preserve the existing safe `next` sanitizer and extend tests for register
    and reset continuation where needed.
-5. Ensure callback recovery opens the intended Skriptoteket route through the
+7. Ensure callback recovery opens the intended Skriptoteket route through the
    shared session and local projection flow.
-6. Replace user-facing failure copy that names internal mechanics with plain
+8. Replace user-facing failure copy that names internal mechanics with plain
    action guidance, for example: "Inloggningen kunde inte slutföras. Försök igen
    eller ladda om sidan."
-7. Add focused frontend tests and, where backend callback behavior is touched,
+9. Add focused frontend tests and, where backend callback behavior is touched,
    focused backend tests.
 
 ## Test Plan
@@ -109,9 +162,12 @@ interruptions, invalid context, expired links, or unsupported actions.
 - Run the focused frontend URL-builder, lifecycle handoff, auth-entry, router,
   and recovery tests:
   `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/views/AuthLifecycleHandoffView.spec.ts src/views/AuthLoginView.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/router/index.spec.ts`.
-- Run affected backend callback/auth tests if backend code changes.
+- Run the focused backend probe and signed-context tests:
+  `pdm run pytest -q tests/unit/web/test_huleedu_identity_context_probe_api.py tests/unit/web/test_profile_app_continuation_context_api.py`.
 - Run `pdm run fe-type-check` if frontend types change.
 - Run `pdm run fe-lint` if frontend code changes.
+- Run `pdm run typecheck` and `pdm run lint` because this PR adds a backend API
+  route.
 - Run `pdm run docs-validate`.
 - Run `git diff --check`.
 - Implementation must add or update a live Playwright proof exposed through a
@@ -127,6 +183,9 @@ interruptions, invalid context, expired links, or unsupported actions.
 - Inspect retained screenshots/manifests to confirm no raw verification tokens,
   reset tokens, magic links, cookies, credentials, or signed identity payloads
   are retained.
+- HuleEdu `TASK-0327` final live apply has passed against this route. Before
+  this PR closes, confirm the retained HuleEdu artifact above remains the
+  accepted upstream input for `PR-0262`.
 
 ## Rollback Plan
 

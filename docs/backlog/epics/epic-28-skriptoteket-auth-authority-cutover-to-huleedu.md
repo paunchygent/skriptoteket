@@ -127,9 +127,12 @@ dependencies:
   assignment local. `TASK-0326` is done and deployed at HuleEdu merge commit `92419293`;
   Skriptoteket `PR-0260` is approved after remediation of the stricter export boundary and
   blocked-audit behavior.
-- HuleEdu `TASK-0327` now owns the provider-side real-inbox lifecycle proof for
-  `skriptoteket_standalone`. Skriptoteket consumes that proof in `ST-28-12` / `PR-0261` /
-  `PR-0262`.
+- HuleEdu `REV-TASK-0327-01` is approved and HuleEdu `TASK-0327` is done after
+  rerunning live apply against the `PR-0261` Skriptoteket diagnostics route.
+  The final retained HuleEdu artifact has `status=ok` and proves direct-action
+  lifecycle, session, and sanitized signed-context diagnostics for
+  `skriptoteket_standalone`. Skriptoteket consumes that contract in `ST-28-12`
+  / `PR-0261` / `PR-0262`.
 - The 2026-04-13 product decision is to avoid bulk importing fake old education-domain alpha
   accounts. One-off legacy linking can be planned later, but it is not a prerequisite for launch
   proof.
@@ -199,9 +202,20 @@ application service and operator command, creates local HuleEdu-owned users with
 hashes, creates `identity_projections` by `(product_identity_realm, realm_subject_id)`, applies
 the explicit local role matrix without bulk alpha import or email-inferred linking, requires
 explicit versioned export payloads, and persists blocked apply outcomes in
-`identity_projection_events`. HuleEdu `TASK-0327` is now the next provider lifecycle proof; then
-`ST-28-12` / `PR-0261` / `PR-0262` owns user-facing auth entry and retained real-account lifecycle
-proof before final `PR-0254`.
+`identity_projection_events`. HuleEdu `REV-TASK-0327-01` is approved, and
+HuleEdu `TASK-0327` is now done after rerunning live apply against the `PR-0261`
+no-side-effect consumer probe route. `PR-0261` owns the user-facing
+direct-action auth entry and hidden sanitized diagnostics endpoint. `PR-0262`
+now consumes the final HuleEdu artifact as upstream provider proof, then retains
+Skriptoteket-side evidence for callback continuation, local projection, and
+local role observation before final `PR-0254`.
+
+`ST-28-12` is now done. `PR-0261` and `PR-0262` produced the retained evidence
+chain for real standalone lifecycle entry: HuleEdu owns provider lifecycle and
+session proof, Skriptoteket exposes only the sanitized consumer diagnostics
+surface, and the final local proof demonstrates callback continuation,
+realm-aware projection reuse, local contributor role observation, and artifact
+redaction. Final cross-app Docker/operator proof can proceed through `PR-0254`.
 
 ## Planning note (2026-04-08)
 
@@ -232,9 +246,12 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 13. consume that export in Skriptoteket through `ST-28-11` / `PR-0260`, creating local
     projections and the explicit local role matrix without bulk alpha import
     (done)
-14. complete HuleEdu `TASK-0327` so real controlled accounts prove registration, verification,
-    login, forgot password, reset, and app continuation for `skriptoteket_standalone`
-15. consume that lifecycle in Skriptoteket through `ST-28-12` / `PR-0261` / `PR-0262`, including
-    humane auth-entry copy and retained sanitized proof
-16. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
-17. reintroduce auth outcome observability through `ST-28-10`
+14. consume approved HuleEdu `REV-TASK-0327-01` in Skriptoteket `PR-0261`, including humane
+    direct-action auth-entry copy and the hidden no-side-effect consumer probe route
+    (implemented; HuleEdu final rerun completed)
+15. consume the final HuleEdu `TASK-0327` `status=ok` artifact in `PR-0262`
+    without retaining raw signed-context identity values
+16. complete retained Skriptoteket lifecycle proof through `ST-28-12` / `PR-0262`
+    for callback continuation, local projection, and local role observation
+17. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
+18. reintroduce auth outcome observability through `ST-28-10`

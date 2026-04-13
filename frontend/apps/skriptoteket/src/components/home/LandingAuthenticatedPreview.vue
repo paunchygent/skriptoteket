@@ -5,7 +5,7 @@
  * Quiet bordered list placed below the featured public-app showcase. Each row
  * carries an explicit "Kräver konto" / "Kräver ansökan" tag so visitors do not
  * mistake an authenticated capability for another public route. The trailing
- * "Logga in" action opens the shared HuleEdu login ceremony directly.
+ * "Logga in" / "Skapa konto" actions open shared HuleEdu ceremonies directly.
  */
 
 import { computed } from "vue";
@@ -18,6 +18,14 @@ const route = useRoute();
 const loginUrl = computed(() => {
   const continuation = resolveLandingAuthContinuation(route);
   return sharedAuthCeremonyUrl({
+    nextPath: continuation.nextPath,
+    origin: window.location.origin,
+  });
+});
+const registerUrl = computed(() => {
+  const continuation = resolveLandingAuthContinuation(route);
+  return sharedAuthCeremonyUrl({
+    kind: "register",
     nextPath: continuation.nextPath,
     origin: window.location.origin,
   });
@@ -87,12 +95,12 @@ const rows = [
         Logga in
       </a>
       ·
-      <RouterLink
-        to="/register"
+      <a
+        :href="registerUrl"
         class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
       >
         Skapa konto
-      </RouterLink>
+      </a>
     </p>
   </section>
 </template>

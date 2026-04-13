@@ -76,7 +76,7 @@ describe("HomeView", () => {
     expect(wrapper.text()).toContain("Öppna Klassrumskartan");
     expect(wrapper.text()).toContain("skapa ett konto");
     expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
-    expect(wrapper.html()).toContain('href="/register"');
+    expect(wrapper.html()).toContain("https://api.hule.education/auth/register");
     expect(homeMocks.dashboard.loadDashboard).not.toHaveBeenCalled();
   });
 
@@ -122,5 +122,11 @@ describe("HomeView", () => {
     );
     expect(loginLink.exists()).toBe(true);
     expect(loginLink.text()).toContain("Logga in");
+
+    const registerLinks = wrapper.findAll(
+      'a[href^="https://api.hule.education/auth/register?app=skriptoteket"]',
+    );
+    expect(registerLinks.length).toBeGreaterThan(0);
+    expect(registerLinks.some((link) => link.text().toLowerCase().includes("skapa"))).toBe(true);
   });
 });

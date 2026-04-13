@@ -23,16 +23,15 @@ vi.mock("vue-router", () => ({
 }));
 
 function mountAuthLoginPanel() {
-  return mount(AuthLoginPanel, {
-    global: {
-      stubs: {
-        RouterLink: {
-          props: ["to"],
-          template: "<a><slot /></a>",
-        },
-      },
-    },
-  });
+  return mount(AuthLoginPanel);
+}
+
+function getLinkByText(wrapper: ReturnType<typeof mountAuthLoginPanel>, text: string) {
+  const link = wrapper.findAll("a").find((item) => item.text().includes(text));
+  if (!link) {
+    throw new Error(`Expected link containing ${text}.`);
+  }
+  return link;
 }
 
 describe("AuthLoginPanel", () => {
@@ -56,6 +55,12 @@ describe("AuthLoginPanel", () => {
     expect(link.attributes("href")).not.toContain("/v1/auth/login");
     expect(wrapper.text()).toContain("Skapa ett Skriptoteket-konto");
     expect(wrapper.text()).toContain("Glömt lösenordet?");
+    expect(getLinkByText(wrapper, "Skapa ett Skriptoteket-konto").attributes("href")).toBe(
+      "https://api.hule.education/auth/register?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
+    );
+    expect(getLinkByText(wrapper, "Glömt lösenordet?").attributes("href")).toBe(
+      "https://api.hule.education/auth/password-reset?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
+    );
     expect(wrapper.find("form").exists()).toBe(false);
   });
 
@@ -73,5 +78,11 @@ describe("AuthLoginPanel", () => {
       "https://identity.example.test/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
     );
     expect(href).not.toContain("/v1/auth/login");
+    expect(getLinkByText(wrapper, "Skapa ett Skriptoteket-konto").attributes("href")).toBe(
+      "https://identity.example.test/auth/register?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
+    );
+    expect(getLinkByText(wrapper, "Glömt lösenordet?").attributes("href")).toBe(
+      "https://identity.example.test/auth/password-reset?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
+    );
   });
 });

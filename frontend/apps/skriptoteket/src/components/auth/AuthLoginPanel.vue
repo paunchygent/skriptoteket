@@ -25,6 +25,20 @@ const loginUrl = computed(() =>
     origin: window.location.origin,
   }),
 );
+const registerUrl = computed(() =>
+  sharedAuthCeremonyUrl({
+    kind: "register",
+    nextPath: continuation.value.nextPath,
+    origin: window.location.origin,
+  }),
+);
+const passwordResetUrl = computed(() =>
+  sharedAuthCeremonyUrl({
+    kind: "password-reset",
+    nextPath: continuation.value.nextPath,
+    origin: window.location.origin,
+  }),
+);
 </script>
 
 <template>
@@ -35,20 +49,20 @@ const loginUrl = computed(() =>
       </p>
       <p>
         Saknar du konto?
-        <RouterLink
+        <a
           class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
-          to="/register"
+          :href="registerUrl"
         >
           Skapa ett Skriptoteket-konto
-        </RouterLink>.
+        </a>.
       </p>
       <p>
-        <RouterLink
+        <a
           class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
-          to="/forgot-password"
+          :href="passwordResetUrl"
         >
           Glömt lösenordet?
-        </RouterLink>
+        </a>
       </p>
     </div>
 

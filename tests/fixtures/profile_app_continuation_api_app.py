@@ -2,7 +2,7 @@
 
 Purpose:
     Provide the FastAPI/Dishka test app used by HuleEdu app-continuation route,
-    context-validation, and dependency-guard tests.
+    context-validation, diagnostic probe, and dependency-guard tests.
 
 Relationships:
     - Uses the real verifier and projection resolver with protocol stubs.
@@ -24,6 +24,7 @@ from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
+from skriptoteket.web.api.v1 import diagnostics as diagnostics_api
 from skriptoteket.web.api.v1 import profile as profile_api
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
@@ -79,6 +80,7 @@ def app(
     app = FastAPI()
     app.add_middleware(CorrelationMiddleware)
     app.middleware("http")(error_handler_middleware)
+    app.include_router(diagnostics_api.router)
     app.include_router(profile_api.router)
 
     @app.get("/api/v1/pr-0253/protected-read")

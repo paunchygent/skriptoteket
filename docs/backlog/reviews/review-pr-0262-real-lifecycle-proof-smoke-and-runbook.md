@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0262
 title: "Review: PR-0262 real lifecycle proof smoke and runbook"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-04-13
 updated: 2026-04-13
@@ -20,7 +20,9 @@ links:
 
 ## TL;DR
 
-Review the retained real-account lifecycle proof lane before implementation.
+Approved for implementation after adapting the proof lane to consume the final
+HuleEdu `TASK-0327` `status=ok` artifact and retain only sanitized
+Skriptoteket-side projection/role evidence.
 
 ## Problem Statement
 
@@ -48,18 +50,18 @@ provider lifecycle routes and Skriptoteket projection/role behavior.
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
 | Separate lifecycle proof from final cutover smoke | Keeps failures easier to diagnose | [x] |
-| Use controlled real inbox accounts | Proves launch behavior without bulk alpha import | [ ] |
-| Prove direct-action link landing | Product and email links must open the requested action page directly | [ ] |
-| Sanitize retained artifacts | Proof must not leak credentials or tokens | [ ] |
+| Use controlled real inbox accounts | Proves launch behavior without bulk alpha import | [x] |
+| Prove direct-action link landing | Product and email links must open the requested action page directly | [x] |
+| Sanitize retained artifacts | Proof must not leak credentials or tokens | [x] |
 
 ## Review Checklist
 
-- [ ] Proof covers register, verify, login, forgot, reset, callback, projection, and role
-- [ ] Product and email links land directly on their requested action pages
+- [x] Proof covers register, verify, login, forgot, reset, callback, projection, and role
+- [x] Product and email links land directly on their requested action pages
 - [x] Side-effecting production proof is explicit
-- [ ] Artifact redaction is mandatory
-- [ ] `PR-0254` dependency handoff is clear
-- [ ] Dev and production proof models are aligned
+- [x] Artifact redaction is mandatory
+- [x] `PR-0254` dependency handoff is clear
+- [x] Dev and production proof models are aligned
 
 ## Review Feedback
 
@@ -148,9 +150,29 @@ None.
 ### Decision Approvals
 
 - [x] Separate lifecycle smoke
-- [ ] Controlled real inbox account
-- [ ] Direct-action link landing
-- [ ] Sanitized artifacts
+- [x] Controlled real inbox account
+- [x] Direct-action link landing
+- [x] Sanitized artifacts
+
+### Re-review
+
+**Reviewer:** lead-developer
+**Date:** 2026-04-13
+**Verdict:** approved
+
+The previous blocker is resolved. HuleEdu `TASK-0327` now has a final
+`status=ok` live apply artifact against the new `PR-0261` Skriptoteket
+diagnostics route, and the HuleEdu runner accepts the approved sanitized
+diagnostics shape from `/api/v1/diagnostics/huleedu-internal-identity`.
+
+`PR-0262` is approved with one explicit adaptation: Skriptoteket must consume
+the HuleEdu artifact as upstream provider proof rather than re-drive the
+real-inbox lifecycle. The retained Skriptoteket proof must validate the
+upstream direct-action/session/signed-context evidence, then prove
+Skriptoteket callback continuation, local projection, and local role
+observation. Raw signed-context email, raw `realm_subject_id`, raw signed
+headers, tokens, cookies, CSRF, and magic links remain forbidden in retained
+Skriptoteket artifacts.
 
 ## Changes Made
 
@@ -162,3 +184,4 @@ None.
 | 4 | `PR-0262` | Added the concrete `manifest.redacted.json` artifact contract, default `.artifacts/playwright-pr-0262-real-lifecycle/...` path, allowed evidence types, and forbidden retained fields |
 | 5 | `PR-0262` | Named the future `scripts/playwright_pr_0262_real_lifecycle.py` module, `pdm run pr-0262-real-lifecycle` proof command, required validation gates, HuleEdu local non-production lane, and failure-triage interpretation |
 | 6 | `REV-PR-0262` | Requested re-review of the revised proof plan; final approval remains gated by approved `REV-TASK-0326-01`, `REV-TASK-0327-01`, `REV-PR-0260`, and `REV-PR-0261` |
+| 7 | `PR-0262` / `REV-PR-0262` | Approved the adapted proof shape after HuleEdu `TASK-0327` final live apply succeeded against the `PR-0261` sanitized diagnostics route |

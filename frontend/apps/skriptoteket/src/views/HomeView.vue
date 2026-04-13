@@ -9,6 +9,7 @@
 
 import { computed, onMounted } from "vue";
 
+import { sharedAuthCeremonyUrl } from "../api/sharedAuth";
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import HomeCreateDraftTool from "../components/home/HomeCreateDraftTool.vue";
 import LandingAuthenticatedPreview from "../components/home/LandingAuthenticatedPreview.vue";
@@ -44,6 +45,13 @@ const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
 const userName = computed(() => auth.displayName);
+const registerUrl = computed(() =>
+  sharedAuthCeremonyUrl({
+    kind: "register",
+    nextPath: "/apps/classroom.group-seating-studio",
+    origin: window.location.origin,
+  }),
+);
 
 onMounted(async () => {
   if (!isAuthenticated.value) return;
@@ -94,12 +102,12 @@ onMounted(async () => {
 
             <p class="mt-5 text-sm leading-6 text-navy/70">
               eller
-              <RouterLink
-                to="/register"
+              <a
+                :href="registerUrl"
                 class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
               >
                 skapa ett konto
-              </RouterLink>
+              </a>
               för att spara ditt arbete.
             </p>
           </div>

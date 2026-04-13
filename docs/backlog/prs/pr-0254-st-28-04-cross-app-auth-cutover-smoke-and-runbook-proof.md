@@ -132,10 +132,13 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
 
 - HuleEdu `TASK-0326` is done and deployed at merge commit `92419293`; production
   bootstrap/export proof verified the three approved proof accounts on Hemma.
-- Skriptoteket `PR-0260` is the current ready prerequisite and must create the
-  local projection/role matrix before this final proof.
-- HuleEdu `TASK-0327`, Skriptoteket `PR-0261`, and Skriptoteket `PR-0262` still
-  remain ahead of this PR.
+- Skriptoteket `PR-0260` is done and created the local projection/role matrix
+  consumed by the lifecycle proof chain.
+- HuleEdu `TASK-0327` is done after the final live apply against the
+  Skriptoteket `PR-0261` diagnostics route.
+- Skriptoteket `PR-0261` and `PR-0262` are done. The retained PR-0262 manifest
+  is
+  `.artifacts/playwright-pr-0262-real-lifecycle/local-nonprod/20260413T132801Z/manifest.redacted.json`.
 - The separate per-account public browser ceremony/Gateway profile proof has
   not run yet; it must be covered by the lifecycle/final proof chain before
   `PR-0254` closes.
