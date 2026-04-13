@@ -5,7 +5,7 @@ title: "Cross-app auth cutover smoke and operator runbook proof"
 status: ready
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-12
+updated: 2026-04-13
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given `ADR-0083` is accepted and the realm-aware login stories are implemented, when a user starts auth from Skriptoteket, then the proof uses the browser-navigable Hule Education `app=skriptoteket` ceremony and never a POST-only `/v1/auth/login` API link."
@@ -14,9 +14,12 @@ acceptance_criteria:
   - "Given the shared browser session is active, when Skriptoteket performs a protected read and write, then the requests succeed through the shared session, CSRF, gateway, projection, and local RBAC contracts."
   - "Given a user logs out from either app, when the browser state refreshes, then both Skriptoteket and HuleEdu become unauthenticated without reviving local Skriptoteket browser sessions."
   - "Given local Docker proof uses loopback origins, when the smoke runs locally, then it targets the HuleEdu `TASK-0325` local/non-production Gateway lane with exact dev origins, HuleEdu login UI on `5174`, Gateway-proxied Skriptoteket APIs, and a local-only Gateway public signing key."
+  - "Given HuleEdu proof identities are bootstrapped, when the smoke runs by role, then Skriptoteket resolves each required local role through `identity_projections` and local `User.role` without local password ownership."
+  - "Given real standalone lifecycle proof is complete, when final cutover proof is reviewed, then account creation, email verification, login, forgot-password, reset, callback continuation, projection, and local RBAC have already been proven through sanitized artifacts."
+  - "Given a deliberate auth or lifecycle link is clicked, when the browser leaves Skriptoteket or opens from email, then the canonical route lands directly on the requested action page; generic HuleEdu pages are allowed only for fallback or interruption recovery."
   - "Given the shared browser session cutover ships, when operator proof is reviewed, then HuleEdu teacher smoke and a dedicated Skriptoteket realm-aware Playwright auth-cutover smoke are both green and documented in the runbook."
 ui_impact: "Adds explicit cross-app auth proof and operator verification guidance."
-dependencies: ["ADR-0076", "ADR-0083", "ST-28-05", "ST-28-01", "ST-28-02", "ST-28-03", "ST-28-06", "ST-28-07", "ST-28-08", "ST-28-09", "HuleEdu TASK-0325"]
+dependencies: ["ADR-0076", "ADR-0083", "ST-28-05", "ST-28-01", "ST-28-02", "ST-28-03", "ST-28-06", "ST-28-07", "ST-28-08", "ST-28-09", "ST-28-11", "ST-28-12", "HuleEdu TASK-0325", "HuleEdu TASK-0326", "HuleEdu TASK-0327"]
 ---
 
 ## Context
@@ -25,9 +28,11 @@ This cutover is not complete when unit tests pass. Now that `PR-0258` review rem
 this story is the final realm-aware proof lane for the product identity realm ADR, login ceremony,
 lifecycle handoff, and projection provisioning contracts.
 
-Local proof now has an explicit provider prerequisite: HuleEdu `TASK-0325` must provide the
-local/non-production shared-auth Gateway lane. `PR-0254` consumes that lane instead of pointing
-loopback callbacks at public production or adding a Skriptoteket-only identity-header injector.
+Local proof now has explicit provider prerequisites: HuleEdu `TASK-0325` must provide the
+local/non-production shared-auth Gateway lane, `TASK-0326` must provide the proof identity subject
+export, and `TASK-0327` must prove the real standalone lifecycle with controlled accounts.
+`PR-0254` consumes those lanes instead of pointing loopback callbacks at public production, adding
+a Skriptoteket-only identity-header injector, or turning fake alpha users into a launch blocker.
 
 The proof must cover:
 
@@ -38,6 +43,10 @@ The proof must cover:
 - CSRF-protected write behavior through Gateway
 - signed downstream context and local projection resolution
 - logout invalidation across both apps
+- proof-role coverage through local `User.role`
+- prior real-account lifecycle proof for create account, verify email, login, forgot password,
+  reset password, and continuation
+- direct-action landing for login, registration, forgot password, verification, and reset links
 
 ## Notes
 
@@ -61,3 +70,7 @@ The proof must cover:
 - `PR-0254` persists the auditable live proof as `pdm run pr-0254-auth-cutover`; the
   proof asserts public Klassrumskartan bootstrap stays `200` before login, then verifies
   HuleEdu Gateway `:8080`, HuleEdu login UI `:5174`, and app-continuation `200`.
+- `ST-28-11` / `PR-0260` now own the Skriptoteket projection and local role matrix bootstrap
+  that consumes HuleEdu `TASK-0326`.
+- `ST-28-12` / `PR-0261` / `PR-0262` now own the user-facing auth entry and real lifecycle proof
+  that consumes HuleEdu `TASK-0327`.

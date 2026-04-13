@@ -5,7 +5,7 @@ title: "Skriptoteket auth authority cutover to HuleEdu"
 status: proposed
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-12
+updated: 2026-04-13
 outcome: "Skriptoteket no longer owns browser auth authority locally; it consumes a HuleEdu-owned cookie-session + CSRF browser contract through the intended launch topology where `hule.education` is the HuleEdu landing page, `api.hule.education` is the shared browser auth/API edge, and `skriptoteket.hule.education` remains the Skriptoteket app host while preserving richer bootstrap and dedicated redirect-preserving auth-entry handoff."
 dependencies:
   - "ADR-0009"
@@ -19,6 +19,8 @@ dependencies:
   - "HuleEdu ADR-0039"
   - "HuleEdu TASK-0308"
   - "HuleEdu TASK-0325"
+  - "HuleEdu TASK-0326"
+  - "HuleEdu TASK-0327"
 ---
 
 ## Scope
@@ -38,6 +40,8 @@ dependencies:
   place.
 - Add an explicit cross-app smoke lane proving shared login/logout/session behavior across
   Skriptoteket and HuleEdu after the Skriptoteket product identity realm contract is accepted.
+- Add explicit bootstrap proof identity and lifecycle proof lanes so final cutover does not depend
+  on bulk importing fake alpha users.
 
 ## Out of scope
 
@@ -46,6 +50,7 @@ dependencies:
 - a permanent app-local auth proxy or bridge in Skriptoteket
 - keeping two browser auth contracts alive indefinitely
 - implementing the HuleEdu landing page or gateway itself inside this repo
+- bulk importing the old Skriptoteket alpha education-domain users as a launch blocker
 
 ## Risks
 
@@ -61,6 +66,8 @@ dependencies:
   can harden around contradictory host assumptions.
 - If `ST-28-04` runs before the product identity realm contract is accepted, it can accidentally
   certify a HuleEdu-school-only login path as final Skriptoteket login.
+- If final proof lacks provider-owned bootstrap identities and a Skriptoteket-owned local role
+  matrix, operators can pass a login-only smoke while admin/superuser access remains unproven.
 
 ## Stories
 
@@ -72,6 +79,8 @@ dependencies:
 - [ST-28-07: Hule Education-hosted Skriptoteket login ceremony](../stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md)
 - [ST-28-08: Skriptoteket standalone registration and password lifecycle](../stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md)
 - [ST-28-09: Realm-aware projection provisioning and local RBAC](../stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md)
+- [ST-28-11: Bootstrap proof identities and projection role matrix](../stories/story-28-11-bootstrap-proof-identities-and-projection-role-matrix.md)
+- [ST-28-12: Real standalone lifecycle and auth entry proof](../stories/story-28-12-real-standalone-lifecycle-and-auth-entry-proof.md)
 - [ST-28-04: Cross-app auth cutover smoke and operator runbook proof](../stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md)
 - [ST-28-10: Auth outcome observability for realm cutover](../stories/story-28-10-auth-outcome-observability-for-realm-cutover.md)
 
@@ -84,6 +93,9 @@ dependencies:
 - [PR-0256: ST-28-07 Hule Education-hosted Skriptoteket login ceremony provider contract](../prs/pr-0256-st-28-07-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md)
 - [PR-0257: ST-28-08 standalone registration/password lifecycle provider contract](../prs/pr-0257-st-28-08-standalone-registration-password-lifecycle-provider-contract.md)
 - [PR-0258: ST-28-09 realm-aware identity projections and provisioning migration](../prs/pr-0258-st-28-09-realm-aware-identity-projections-and-provisioning-migration.md)
+- [PR-0260: ST-28-11 bootstrap projection role matrix contract](../prs/pr-0260-st-28-11-bootstrap-projection-role-matrix-contract.md)
+- [PR-0261: ST-28-12 login register reset affordance and redirect contract](../prs/pr-0261-st-28-12-login-register-reset-affordance-and-redirect-contract.md)
+- [PR-0262: ST-28-12 real lifecycle proof smoke and runbook](../prs/pr-0262-st-28-12-real-lifecycle-proof-smoke-and-runbook.md)
 - [PR-0254: ST-28-04 cross-app auth cutover smoke and runbook proof](../prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md)
 
 ## Dependencies
@@ -110,10 +122,20 @@ dependencies:
   `http://huleedu_api_gateway_service:8080` on `hule-network`, direct Docker backend target
   `http://skriptoteket_web:8000` for public `/api/v1/public/...` bootstrap traffic, and
   local-only public signing-key sharing.
+- HuleEdu `TASK-0326` now owns provider proof identity bootstrap and sanitized subject export for
+  Skriptoteket. Skriptoteket consumes that export in `ST-28-11` / `PR-0260` and keeps role
+  assignment local. `TASK-0326` is done and deployed at HuleEdu merge commit `92419293`;
+  `PR-0260` is now the current ready Skriptoteket implementation slice.
+- HuleEdu `TASK-0327` now owns the provider-side real-inbox lifecycle proof for
+  `skriptoteket_standalone`. Skriptoteket consumes that proof in `ST-28-12` / `PR-0261` /
+  `PR-0262`.
+- The 2026-04-13 product decision is to avoid bulk importing fake old education-domain alpha
+  accounts. One-off legacy linking can be planned later, but it is not a prerequisite for launch
+  proof.
 - The cross-repo launch topology and upstream edge ownership are now recorded in
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
-## Implementation Summary (as of 2026-04-12)
+## Implementation Summary (as of 2026-04-13)
 
 `ST-28-05` shipped through `PR-0250` as the HuleEdu provider conformance ingest and cutover
 readiness gate. The upstream HuleEdu `TASK-0308` proof is green, no provider-side blocker remains
@@ -167,7 +189,13 @@ sequence is now explicit: `PR-0255` stays complete as the signed-context foundat
 shared-auth Gateway lane for `localhost`/`127.0.0.1` proof without weakening public production;
 `ST-28-04` / `PR-0254` then runs as the final realm-aware cross-app Docker/operator proof; and
 `ST-28-10` follows with auth outcome observability for gateway/session, realm, projection, and
-local RBAC outcomes.
+local RBAC outcomes. On 2026-04-13 the plan was simplified: launch proof no longer depends on
+bulk importing old fake alpha education-domain users. HuleEdu `TASK-0326` is now done and
+deployed at merge commit `92419293`; its production bootstrap/export proof created and verified
+the three approved proof accounts on Hemma. `ST-28-11` / `PR-0260` is therefore the current
+Skriptoteket slice. HuleEdu `TASK-0327` remains the next provider lifecycle proof after
+`PR-0260`, while `ST-28-12` / `PR-0261` / `PR-0262` owns user-facing auth entry and retained
+real-account lifecycle proof before final `PR-0254`.
 
 ## Planning note (2026-04-08)
 
@@ -175,7 +203,7 @@ The old modal-first auth-entry language is now superseded for new work by the de
 direction planned in `ST-32-10` / `PR-0242`. This epic should be read with that updated
 page-based handoff contract, not with the older modal-only assumption from `ST-11-22`.
 
-## Sequencing note (2026-04-10)
+## Sequencing note (2026-04-13)
 
 `ST-28-05` is now the cross-repo gating story for this epic. The paced order is:
 
@@ -193,5 +221,13 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 11. complete HuleEdu `TASK-0325` so local/non-production Gateway proof has exact dev origins,
     HuleEdu login UI on `5174`, Gateway-proxied Skriptoteket `/api` traffic with exact Gateway
     target config, and local-only signing-key sharing
-12. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
-13. reintroduce auth outcome observability through `ST-28-10`
+12. complete HuleEdu `TASK-0326` so provider-owned proof identities and sanitized subject exports
+    exist for dev and production (done at HuleEdu merge commit `92419293`)
+13. consume that export in Skriptoteket through `ST-28-11` / `PR-0260` (current), creating local
+    projections and the explicit local role matrix without bulk alpha import
+14. complete HuleEdu `TASK-0327` so real controlled accounts prove registration, verification,
+    login, forgot password, reset, and app continuation for `skriptoteket_standalone`
+15. consume that lifecycle in Skriptoteket through `ST-28-12` / `PR-0261` / `PR-0262`, including
+    humane auth-entry copy and retained sanitized proof
+16. prove the cutover cross-app and operator-side through `ST-28-04` / `PR-0254`
+17. reintroduce auth outcome observability through `ST-28-10`

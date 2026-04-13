@@ -189,6 +189,22 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0258-st-28-09-realm-aware-identity-projections-and-provisioning-migration.md`
 - Review gate for PR-0258 realm-aware identity projections + provisioning migration:
   `docs/backlog/reviews/review-pr-0258-realm-aware-identity-projections-and-provisioning-migration.md`
+- ST-28-11 bootstrap proof identities + projection role matrix:
+  `docs/backlog/stories/story-28-11-bootstrap-proof-identities-and-projection-role-matrix.md`
+- ST-28-11 bootstrap projection role matrix contract:
+  `docs/backlog/prs/pr-0260-st-28-11-bootstrap-projection-role-matrix-contract.md`
+- Review gate for PR-0260 bootstrap projection role matrix contract:
+  `docs/backlog/reviews/review-pr-0260-bootstrap-projection-role-matrix-contract.md`
+- ST-28-12 real standalone lifecycle + auth entry proof:
+  `docs/backlog/stories/story-28-12-real-standalone-lifecycle-and-auth-entry-proof.md`
+- ST-28-12 login/register/reset affordance + redirect contract:
+  `docs/backlog/prs/pr-0261-st-28-12-login-register-reset-affordance-and-redirect-contract.md`
+- Review gate for PR-0261 login/register/reset affordance + redirect contract:
+  `docs/backlog/reviews/review-pr-0261-login-register-reset-affordance-and-redirect-contract.md`
+- ST-28-12 real lifecycle proof smoke + runbook:
+  `docs/backlog/prs/pr-0262-st-28-12-real-lifecycle-proof-smoke-and-runbook.md`
+- Review gate for PR-0262 real lifecycle proof smoke + runbook:
+  `docs/backlog/reviews/review-pr-0262-real-lifecycle-proof-smoke-and-runbook.md`
 - ST-28-04 cross-app auth cutover smoke + operator runbook proof:
   `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
 - ST-28-10 auth outcome observability for realm cutover:
@@ -211,6 +227,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0253-local-auth-authority-retirement-and-contract-regeneration.md`
 - ST-28-04 cross-app auth cutover smoke + runbook proof:
   `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
+- Review gate for PR-0254 cross-app auth cutover smoke + runbook proof:
+  `docs/backlog/reviews/review-pr-0254-cross-app-auth-cutover-smoke-and-runbook-proof.md`
 - EPIC-35 launch SEO + search indexing readiness:
   `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`
 - Review gate for EPIC-35 launch SEO + search indexing readiness:

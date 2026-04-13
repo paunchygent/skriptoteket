@@ -8,10 +8,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history into repo long-term memory at `docs/reference/ref-development-changelog.md` first.
 ## Snapshot
-- Date: 2026-04-12
+- Date: 2026-04-13
 - Branch: `main` + local changes
-- Current lane: HuleEdu `TASK-0325` local shared-auth Gateway prerequisite, then
-  `ST-28-04` / `PR-0254`.
+- Current lane: Cross-repo EPIC-28 auth bootstrap/lifecycle docs scaffold before
+  final `ST-28-04` / `PR-0254` proof.
 - Production: Full Vue SPA.
 - Handoff compaction moved previous auth-cutover history into `docs/reference/ref-development-changelog.md`.
 ## Status
@@ -48,6 +48,24 @@ Keep this file updated so the next session can pick up work quickly.
   Slumpa igen.`
 - Shared UI/frontend skills now encode the copy rule from PR-0259: user-facing recovery copy should
   describe the failed visible action and next visible action, not internal state/revision plumbing.
+- New 2026-04-13 auth-cutover planning decision: do not bulk import old fake alpha
+  education-domain Skriptoteket users as a launch blocker. Focus on provider-owned bootstrap
+  identities, real controlled-account lifecycle proof, local projections, and local roles.
+- HuleEdu `TASK-0326` is done and deployed at merge commit `92419293`; Hemma production
+  bootstrap/export proof verified `skriptoteket-proof-user@hule.education`,
+  `skriptoteket-proof-admin@hule.education`, and
+  `skriptoteket-proof-superuser@hule.education`.
+- Skriptoteket `ST-28-11` / `PR-0260` are now ready/current: consume the verified HuleEdu
+  subject export into local users, `identity_projections`, and `User.role`.
+- HuleEdu `TASK-0327` is ready and should follow `PR-0260`; it owns real-inbox
+  register/verify/login/forgot/reset/direct-action proof.
+- Skriptoteket `ST-28-12` / `PR-0261` / `PR-0262` remain blocked until `PR-0260` and
+  HuleEdu `TASK-0327` are done.
+- Direct-action auth links are now an explicit contract in `ST-28-12`, `PR-0261`, `PR-0262`, and
+  `PR-0254`: login, create-account, forgot-password, verification, and reset links must land
+  directly on the requested action page. Generic HuleEdu pages are fallback-only.
+- `PR-0254` remains the final cross-app proof, now gated behind HuleEdu `TASK-0325` through
+  `TASK-0327` plus Skriptoteket `PR-0260` through `PR-0262`; `REV-PR-0254` is approved.
 ## Verification
 - `pdm run pytest -q tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_context_api.py tests/unit/web/test_profile_app_continuation_dependencies_api.py` (pass; 34 tests).
 - `pdm run pytest -q tests/integration/application/test_huleedu_app_projection_concurrency.py` (pass; 3 tests).
@@ -83,6 +101,24 @@ Keep this file updated so the next session can pick up work quickly.
   `http://localhost:8080/auth/login`, observes HuleEdu login on `http://localhost:5174/login`,
   and verifies `/api/v1/profile/app-continuation` `200` with authenticated nav visible.
   Artifacts: `.artifacts/playwright-pr-0254-auth-cutover/`.
+- Auth bootstrap/lifecycle docs scaffold validation: Skriptoteket `pdm run docs-validate` and
+  `git diff --check` passed. HuleEdu `pdm run run-local-pdm docs-sync`, `docs-validate`,
+  `validate-docs`, `validate-backlog`, `index-backlog`, final `docs-validate`, and
+  `git diff --check` passed.
+- Direct-action link amendment validation: Skriptoteket `pdm run docs-validate` and
+  `git diff --check` passed; HuleEdu `docs-sync`, `docs-validate`, `validate-docs`,
+  `validate-backlog`, and `git diff --check` passed; skill-repository `pdm run docs-validate` and
+  `git diff --check` passed.
+- `REV-PR-0254` approval validation: `pdm run docs-validate`, `git diff --check`, and
+  `.agents/handoff.md` line-count check passed.
+- `REV-PR-0260` / `REV-PR-0261` re-review amendment validation:
+  `pdm run docs-validate`, `git diff --check`, and `.agents/handoff.md` line-count check
+  passed (`154` lines).
+- `REV-PR-0262` requested-change remediation: updated `PR-0262` and review record with exact
+  prerequisite gates, identity/projection assertions, `manifest.redacted.json` artifact contract,
+  future `scripts/playwright_pr_0262_real_lifecycle.py` / `pdm run pr-0262-real-lifecycle`
+  command, HuleEdu local non-production lane, and re-review request; `pdm run docs-validate`,
+  `git diff --check`, and `.agents/handoff.md` line-count check passed.
 ## How to Run
 ```bash
 pdm run docs-validate
@@ -96,8 +132,9 @@ pdm run pytest -q tests/integration/test_migration_e7b3a9c4d1f2_idempotent.py -m
 ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection --start-backend --start-vite --gateway-base-url http://127.0.0.1:8000
 ```
 ## Known Issues / Risks
-- `PR-0254` still owns the final Docker/operator cross-app proof after this remediated realm-aware
-  projection slice; do not treat `PR-0258` as the final cross-app certification.
+- `PR-0254` still owns the final Docker/operator cross-app proof, but should now wait for
+  Skriptoteket `PR-0260`, HuleEdu `TASK-0327`, Skriptoteket `PR-0261`, and Skriptoteket
+  `PR-0262` implementation.
 - `PR-0259` live proof used a seeded public guest snapshot to focus the Smart `Slumpa` regression;
   it did not rerun the full public roster/template authoring path.
 - Local full-auth ceremony livetests must consume HuleEdu `TASK-0325`: use a local or
@@ -106,10 +143,8 @@ ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection -
   `localhost` and `127.0.0.1` within one browser proof.
 - Do not reintroduce app-local browser auth or direct browser-to-Identity calls.
 ## Next Steps
-- Complete HuleEdu `TASK-0325`, then start `PR-0254` as the final realm-aware cross-app
-  Docker/operator proof consuming that local Gateway lane.
-- Review and ship `PR-0259` implementation; the direct public Smart snapshot commit contract,
-  two-run grouping/seating tests, backend mismatch guard proof, sanitized copy, and live public route
-  verification are in place locally.
-- Follow with `ST-28-10` auth outcome observability for gateway/session, realm, projection, and
-  local RBAC outcomes.
+- Start Skriptoteket `PR-0260` as the current implementation slice.
+- Then implement HuleEdu `TASK-0327`, followed by Skriptoteket `PR-0261`, Skriptoteket
+  `PR-0262`, and final `PR-0254`.
+- Follow with `ST-28-10` auth outcome observability for gateway/session, realm, lifecycle,
+  projection, and local RBAC outcomes.
