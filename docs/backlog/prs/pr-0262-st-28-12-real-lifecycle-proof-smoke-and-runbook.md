@@ -61,7 +61,8 @@ and their retained reviews are approved:
 - Skriptoteket `REV-PR-0261`, which freezes the Skriptoteket auth-entry URL builder and
   direct-action continuation contract.
 - HuleEdu `TASK-0327` done, so the lifecycle/direct-action routes exist.
-- Skriptoteket `PR-0260` done, so the proof role matrix and local projections exist.
+- Skriptoteket `PR-0260` done and accepted, so the proof role matrix and local
+  projections exist.
 - Skriptoteket `PR-0261` done, so product links target the accepted HuleEdu action routes.
 
 After approval, this PR must consume the exact accepted contracts. If any approved upstream review

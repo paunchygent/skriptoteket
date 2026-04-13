@@ -5,7 +5,7 @@ title: "Runbook: User and Local Role Management"
 status: active
 owners: "system-admin"
 created: 2025-12-16
-updated: 2026-04-12
+updated: 2026-04-13
 system: "skriptoteket-identity"
 ---
 
@@ -84,25 +84,94 @@ selected product identity realm.
 If a user cannot log in, triage the HuleEdu ceremony and identity lifecycle first, then confirm that
 Skriptoteket has the expected local identity projection for the signed realm subject.
 
-### 4. List All Users
+### 4. Consume HuleEdu Subject Export
+
+Use this for approved sanitized HuleEdu subject exports that seed or repair local
+Skriptoteket projections and roles. The current launch input is the `TASK-0326`
+proof export. The consumer validates `schema_version=skriptoteket-proof-subject-export-v1`,
+`active_app=skriptoteket`, `active_product_identity_realm=skriptoteket_standalone`,
+verified email, explicit `stable_account_key`, and the local `skriptoteket_role_hint`
+matrix before writing anything.
+
+The command keys projections by `(active_product_identity_realm, realm_subject_id)`.
+`huleedu_subject_id` is diagnostic only and must never be used as a projection key.
+
+Accepted input is either the HuleEdu provider envelope with `status=ok`, no
+`errors`, and an `export` object, or the fully versioned export object itself.
+Do not pass bare account arrays or unversioned `{"accounts": [...]}` payloads;
+the consumer rejects them instead of synthesizing schema/app/realm values.
+
+Local dry-run against the retained sanitized fixture:
+
+```bash
+pdm run consume-huleedu-subject-export \
+  --export-json tests/fixtures/identity/huleedu_subject_export_v1.json \
+  --output-json .artifacts/skriptoteket-auth-bootstrap/local-consume-dry-run.json \
+  --dry-run
+```
+
+Dry-run summaries report planned actions with `would_create_users`,
+`would_create_projections`, and `would_update_users`. Concrete `created_*` and
+`updated_*` counters remain actual write counters and should stay `0` in
+dry-run artifacts.
+
+Local apply:
+
+```bash
+pdm run consume-huleedu-subject-export \
+  --export-json tests/fixtures/identity/huleedu_subject_export_v1.json \
+  --output-json .artifacts/skriptoteket-auth-bootstrap/local-consume-apply.json \
+  --apply
+```
+
+Production handoff from HuleEdu should copy only the sanitized export JSON into the
+Skriptoteket artifact volume, then run a dry-run first:
+
+```bash
+ssh hemma
+cd ~/apps/skriptoteket
+sudo docker compose -f compose.prod.yaml cp \
+  .artifacts/skriptoteket-auth-bootstrap/hemma-verify-export.json \
+  web:/app/.artifacts/skriptoteket-auth-bootstrap/subject-export.json
+sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web \
+  pdm run python -m skriptoteket.cli consume-huleedu-subject-export \
+  --export-json /app/.artifacts/skriptoteket-auth-bootstrap/subject-export.json \
+  --output-json /app/.artifacts/skriptoteket-auth-bootstrap/skriptoteket-consume-dry-run.json \
+  --dry-run
+```
+
+Apply only after the dry-run output is reviewed:
+
+```bash
+sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web \
+  pdm run python -m skriptoteket.cli consume-huleedu-subject-export \
+  --export-json /app/.artifacts/skriptoteket-auth-bootstrap/subject-export.json \
+  --output-json /app/.artifacts/skriptoteket-auth-bootstrap/skriptoteket-consume-apply.json \
+  --apply
+```
+
+Retain only sanitized command output. Do not paste credentials, cookies, reset links,
+verification links, token-bearing URLs, or raw signed identity payloads into docs.
+
+### 5. List All Users
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"SELECT id, email, role, created_at FROM users ORDER BY created_at;\""
 ```
 
-### 5. List Identity Projections
+### 6. List Identity Projections
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"SELECT user_id, product_identity_realm, realm_subject_id, created_at FROM identity_projections ORDER BY created_at DESC LIMIT 50;\""
 ```
 
-### 6. Change User Role
+### 7. Change User Role
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"UPDATE users SET role = 'admin' WHERE email = 'user@example.com';\""
 ```
 
-### 7. Delete User
+### 8. Delete User
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"DELETE FROM users WHERE email = 'user@example.com';\""

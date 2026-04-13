@@ -125,7 +125,8 @@ dependencies:
 - HuleEdu `TASK-0326` now owns provider proof identity bootstrap and sanitized subject export for
   Skriptoteket. Skriptoteket consumes that export in `ST-28-11` / `PR-0260` and keeps role
   assignment local. `TASK-0326` is done and deployed at HuleEdu merge commit `92419293`;
-  `PR-0260` is now the current ready Skriptoteket implementation slice.
+  Skriptoteket `PR-0260` is approved after remediation of the stricter export boundary and
+  blocked-audit behavior.
 - HuleEdu `TASK-0327` now owns the provider-side real-inbox lifecycle proof for
   `skriptoteket_standalone`. Skriptoteket consumes that proof in `ST-28-12` / `PR-0261` /
   `PR-0262`.
@@ -192,10 +193,15 @@ shared-auth Gateway lane for `localhost`/`127.0.0.1` proof without weakening pub
 local RBAC outcomes. On 2026-04-13 the plan was simplified: launch proof no longer depends on
 bulk importing old fake alpha education-domain users. HuleEdu `TASK-0326` is now done and
 deployed at merge commit `92419293`; its production bootstrap/export proof created and verified
-the three approved proof accounts on Hemma. `ST-28-11` / `PR-0260` is therefore the current
-Skriptoteket slice. HuleEdu `TASK-0327` remains the next provider lifecycle proof after
-`PR-0260`, while `ST-28-12` / `PR-0261` / `PR-0262` owns user-facing auth entry and retained
-real-account lifecycle proof before final `PR-0254`.
+the three approved proof accounts on Hemma. `ST-28-11` / `PR-0260` is now done:
+Skriptoteket consumes sanitized HuleEdu subject exports through a production
+application service and operator command, creates local HuleEdu-owned users without password
+hashes, creates `identity_projections` by `(product_identity_realm, realm_subject_id)`, applies
+the explicit local role matrix without bulk alpha import or email-inferred linking, requires
+explicit versioned export payloads, and persists blocked apply outcomes in
+`identity_projection_events`. HuleEdu `TASK-0327` is now the next provider lifecycle proof; then
+`ST-28-12` / `PR-0261` / `PR-0262` owns user-facing auth entry and retained real-account lifecycle
+proof before final `PR-0254`.
 
 ## Planning note (2026-04-08)
 
@@ -223,8 +229,9 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
     target config, and local-only signing-key sharing
 12. complete HuleEdu `TASK-0326` so provider-owned proof identities and sanitized subject exports
     exist for dev and production (done at HuleEdu merge commit `92419293`)
-13. consume that export in Skriptoteket through `ST-28-11` / `PR-0260` (current), creating local
+13. consume that export in Skriptoteket through `ST-28-11` / `PR-0260`, creating local
     projections and the explicit local role matrix without bulk alpha import
+    (done)
 14. complete HuleEdu `TASK-0327` so real controlled accounts prove registration, verification,
     login, forgot password, reset, and app continuation for `skriptoteket_standalone`
 15. consume that lifecycle in Skriptoteket through `ST-28-12` / `PR-0261` / `PR-0262`, including

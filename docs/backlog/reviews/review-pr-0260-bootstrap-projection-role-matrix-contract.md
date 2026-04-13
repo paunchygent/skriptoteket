@@ -152,10 +152,10 @@ None.
 | 5 | `PR-0260` | Added concrete focused backend test commands, type/lint/docs/diff gates, and the gitignored sanitized artifact directory `.artifacts/skriptoteket-auth-bootstrap/` |
 | 6 | `PR-0260` | Recorded HuleEdu `TASK-0326` completion/deployment/proof state and marked the provider gate resolved |
 
-## Re-review Decision 2026-04-13
+## Planning Re-review Decision 2026-04-13
 
-Approved. `PR-0260` is now ready to implement. The provider gate has cleared and
-the requested local clarifications are present:
+Approved for implementation planning. The provider gate had cleared and the
+requested local clarifications were present:
 
 - Provider approval and production bootstrap/export proof are recorded.
 - The exact realm-aware input schema is now frozen locally.
@@ -164,3 +164,69 @@ the requested local clarifications are present:
   and inferred email linking all fail closed.
 - Verification now names focused backend paths, type/lint/docs gates,
   `git diff --check`, and the sanitized artifact directory.
+
+## Implementation Review Decision 2026-04-13
+
+Changes requested. The implementation is close and the layering is mostly
+healthy: the application service owns the mutation, the CLI is only a
+composition entrypoint, and Unit of Work commit semantics stay on the
+application boundary. Two issues must be remediated before `PR-0260` can be
+accepted:
+
+1. The export boundary must not accept synthesized or unversioned input. Bare
+   arrays and `{"accounts": [...]}` payloads must be rejected instead of being
+   filled with default schema/app/realm values.
+2. Blocked mapping audit behavior must be durable. Unsafe apply paths must roll
+   back user/projection mutations but still record a sanitized local
+   `identity_projection_events` audit row for the blocked outcome.
+
+**Implementation review verification:** `pdm run pytest -q
+tests/unit/application/identity/test_bootstrap_subject_export_schema.py
+tests/unit/application/identity/test_bootstrap_projection_role_matrix.py`
+passed; `pdm run consume-huleedu-subject-export --help` confirmed command
+registration; `pdm run typecheck` passed. The reviewer did not run
+`pdm run lint`, `pdm run docs-validate`, or `git diff --check` in that pass.
+
+## Changes Made For Implementation Review
+
+| Change | Artifact | Description |
+|--------|----------|-------------|
+| 7 | `huleedu_subject_export_contract.py` | Made `schema_version`, `active_app`, and `active_product_identity_realm` required top-level export fields; stopped synthesizing them from defaults |
+| 8 | schema tests | Added rejection coverage for bare arrays, unversioned accounts objects, missing contract fields, and failed provider envelopes |
+| 9 | `huleedu_subject_export_consumer.py` | Added blocked-mapping handling that rolls back unsafe apply mutations and then records a sanitized local audit event in a clean Unit of Work |
+| 10 | projection-role matrix tests | Asserted duplicate email/linking failures persist the expected `DUPLICATE_EMAIL_LINKING_REQUIRED` event |
+| 11 | audit integration test | Added DB-backed proof that a blocked email-linking apply creates no user/projection mutation but does commit the audit event |
+
+## Remediation Re-review Request 2026-04-13
+
+`PR-0260` is ready for re-review after changes-requested remediation. The
+consumer now accepts only either the HuleEdu provider envelope with
+`status=ok`, no errors, and a versioned export object, or a fully versioned
+export object. It rejects bare arrays, unversioned account objects, missing
+top-level contract fields, failed provider envelopes, and any export whose app
+or realm does not match the frozen Skriptoteket contract.
+
+Blocked apply outcomes now align with the local projection event ledger model:
+the unsafe mutation transaction rolls back, then a separate clean Unit of Work
+records a sanitized `identity_projection_events` row for the blocked reason.
+This keeps user/projection state all-or-nothing while preserving the operator
+audit trail for fail-closed identity decisions.
+
+## Remediation Re-review Decision 2026-04-13
+
+Approved. The two required implementation-review changes are resolved:
+
+- The export contract no longer synthesizes schema/app/realm values from bare
+  arrays or unversioned `{"accounts": [...]}` payloads. `schema_version`,
+  `active_app`, and `active_product_identity_realm` are required top-level
+  fields, and focused schema tests prove those invalid shapes fail closed.
+- Blocked apply paths now roll back unsafe user/projection mutations and then
+  persist a sanitized local `identity_projection_events` row in a clean Unit of
+  Work. The new DB-backed integration test proves the email-linking conflict
+  retains the audit event without creating a projection or extra user row.
+
+Dry-run reporting polish completed after the re-review discussion: result
+artifacts now include explicit `would_create_users`,
+`would_create_projections`, and `would_update_users` summary counters. The CLI
+dry-run line reports those planned counters, while apply mode reports concrete
+`created_users`, `created_projections`, and `updated_users` write counters.

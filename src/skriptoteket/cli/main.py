@@ -1,4 +1,13 @@
-"""Typer entrypoint for Skriptoteket operational and maintenance commands."""
+"""Typer entrypoint for Skriptoteket operational and maintenance commands.
+
+Purpose:
+    Register CLI commands used by operators, workers, and docs-as-code
+    verification scripts.
+
+Relationships:
+    - Command implementations live under `skriptoteket.cli.commands`.
+    - Application services and repositories stay outside this composition file.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +19,9 @@ from skriptoteket.cli.commands.cleanup_sandbox_snapshots import cleanup_sandbox_
 from skriptoteket.cli.commands.cleanup_session_files import cleanup_session_files
 from skriptoteket.cli.commands.cleanup_vault_files import cleanup_vault_files
 from skriptoteket.cli.commands.clear_all_session_files import clear_all_session_files
+from skriptoteket.cli.commands.consume_huleedu_subject_export import (
+    consume_huleedu_subject_export,
+)
 from skriptoteket.cli.commands.healthcheck_execution_worker import healthcheck_execution_worker
 from skriptoteket.cli.commands.import_domain_allowlist import (
     import_domain_allowlist,
@@ -28,6 +40,7 @@ app = typer.Typer(no_args_is_help=True)
 
 app.command()(bootstrap_superuser)
 app.command()(provision_user)
+app.command()(consume_huleedu_subject_export)
 app.command()(prune_artifacts)
 app.command()(cleanup_session_files)
 app.command()(cleanup_vault_files)

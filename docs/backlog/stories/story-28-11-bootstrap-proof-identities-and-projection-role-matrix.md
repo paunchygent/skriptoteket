@@ -2,7 +2,7 @@
 type: story
 id: ST-28-11
 title: "Bootstrap proof identities and projection role matrix"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-13
 updated: 2026-04-13
@@ -29,7 +29,7 @@ The corrected responsibility split is:
 - HuleEdu creates or verifies the small provider-owned proof identity set and
   exports stable subject IDs through `TASK-0326`.
 - Skriptoteket creates or updates local `User` rows, local roles, and
-  `identity_projections` for the proof role matrix.
+  `identity_projections` for the explicit local role matrix.
 - Existing local alpha users can stay as historical data until a later explicit
   cleanup or one-off linking task is approved.
 
@@ -38,10 +38,28 @@ The corrected responsibility split is:
 - Keep local authorization in Skriptoteket. HuleEdu role or group claims are not
   product authorization for this app.
 - Treat the HuleEdu subject export as input, not as a source of secrets.
-- Do not implement until HuleEdu `REV-TASK-0326-01` approves the corrected
-  `TASK-0326` schema. This gate is now resolved: HuleEdu `REV-TASK-0326-01` is
+- Implementation waited until HuleEdu `REV-TASK-0326-01` approved the corrected
+  `TASK-0326` schema. That gate is resolved: HuleEdu `REV-TASK-0326-01` is
   approved, `TASK-0326` is done, deployed at merge commit `92419293`, and the
   production proof accounts were verified on Hemma.
 - The role matrix must cover at least `user`, `admin`, and `superuser`; include
   `contributor` if the active final proof still exercises that role.
 - This story unlocks `PR-0254` but does not replace the final cross-app smoke.
+
+## Implementation Summary (as of 2026-04-13)
+
+`ST-28-11` shipped through approved `PR-0260`. Skriptoteket now has a production
+application-layer HuleEdu subject export consumer plus an operator command that
+validates the sanitized provider export, creates missing HuleEdu-owned local
+users without password ownership, creates `identity_projections` keyed by
+`(product_identity_realm, realm_subject_id)`, and assigns or promotes
+`User.role` only from the explicit local role matrix.
+
+The implementation fails closed for duplicate subjects, duplicate emails,
+unsupported role matrix keys, missing/false verified email, missing realm
+subject, local-password ownership conflicts, and email-only linking attempts.
+Task/proof ceremony remains in tests, runbooks, fixtures, and retained
+artifacts; the production modules are named for the durable export-consumption
+capability. The accepted remediation tightens the export boundary so no
+synthesized or unversioned input is accepted and persists blocked apply outcomes
+as local `identity_projection_events`.

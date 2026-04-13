@@ -1,0 +1,43 @@
+{
+  "status": "ok",
+  "errors": [],
+  "mode": "verify",
+  "export": {
+    "schema_version": "skriptoteket-proof-subject-export-v1",
+    "active_app": "skriptoteket",
+    "active_product_identity_realm": "skriptoteket_standalone",
+    "generated_at": "2026-04-13T05:06:54+00:00",
+    "accounts": [
+      {
+        "stable_account_key": "skriptoteket-proof-user",
+        "active_app": "skriptoteket",
+        "active_product_identity_realm": "skriptoteket_standalone",
+        "realm_subject_id": "fixture-proof-user-subject",
+        "email": "skriptoteket-pr0260-fixture-user@hule.education",
+        "email_verified": true,
+        "skriptoteket_role_hint": "user",
+        "huleedu_subject_id": "fixture-diagnostic-huleedu-user-subject"
+      },
+      {
+        "stable_account_key": "skriptoteket-proof-admin",
+        "active_app": "skriptoteket",
+        "active_product_identity_realm": "skriptoteket_standalone",
+        "realm_subject_id": "fixture-proof-admin-subject",
+        "email": "skriptoteket-pr0260-fixture-admin@hule.education",
+        "email_verified": true,
+        "skriptoteket_role_hint": "admin",
+        "huleedu_subject_id": "fixture-diagnostic-huleedu-admin-subject"
+      },
+      {
+        "stable_account_key": "skriptoteket-proof-superuser",
+        "active_app": "skriptoteket",
+        "active_product_identity_realm": "skriptoteket_standalone",
+        "realm_subject_id": "fixture-proof-superuser-subject",
+        "email": "skriptoteket-pr0260-fixture-superuser@hule.education",
+        "email_verified": true,
+        "skriptoteket_role_hint": "superuser",
+        "huleedu_subject_id": "fixture-diagnostic-huleedu-superuser-subject"
+      }
+    ]
+  }
+}
