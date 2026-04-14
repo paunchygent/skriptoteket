@@ -66,6 +66,10 @@ Keep this file updated so the next session can pick up work quickly.
   `/auth/callback?next=/` now auto-retries HuleEdu login once and then shows explicit
   `Inloggningen slutfördes inte` / `Logga in igen` recovery copy instead of the generic
   auth-entry fallback.
+- `PR-0266` consolidated pyproject tooling: Docker dev operations now use
+  `pdm run dev-stack <subcommand>`, observability operations use
+  `pdm run obs-stack <subcommand>`, and obsolete `dev-*`/`obs-*` variants plus `kill-dev` were
+  removed from the script table.
 ## Verification
 - `pdm run db-upgrade` (pass).
 - `pdm run docs-validate` (pass after independent `REV-PR-0263` review update).
@@ -133,6 +137,9 @@ Keep this file updated so the next session can pick up work quickly.
   explicit recovery assertions for `/auth/callback?next=/`).
 - `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run lint`, `pdm run typecheck`, and
   `pdm run docs-validate` (pass for `PR-0261` callback remediation).
+- `PR-0266` checks passed: focused dev/obs stack dispatch pytest, PR-0254 provider preflight
+  pytest, `scripts.dev_stack --help`, `scripts.obs_stack --help`, focused Ruff check/format,
+  `pdm run docs-validate`, pyproject stale-alias scan, and `git diff --check`.
 - `git diff --check` (pass).
 ## How to Run
 ```bash

@@ -26,16 +26,16 @@ Prefer the repo scripts over ad-hoc commands:
 
 ```bash
 # Start dev stack (db + web + worker + frontend)
-pdm run dev-start
+pdm run dev-stack start
 
 # Stop dev stack
-pdm run dev-stop
+pdm run dev-stack stop
 
 # Rebuild + start (when deps or Dockerfile changes)
-pdm run dev-build-start
+pdm run dev-stack build-start
 
 # Clean rebuild (when you need to blow away cache/volumes)
-pdm run dev-build-start-clean
+pdm run dev-stack build-start-clean
 ```
 
 ### Edit-ops Context Probe (dev, docker backend only)
@@ -43,7 +43,7 @@ pdm run dev-build-start-clean
 When validating chat/edit-ops virtual file alignment, run the probe against the docker dev stack:
 
 ```bash
-pdm run dev-start
+pdm run dev-stack start
 pdm run python scripts/chat_edit_ops_context_probe.py \
   --scenario scripts/edit_ops_scenarios/chat_edit_ops_context_example.json
 ```

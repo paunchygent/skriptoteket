@@ -61,8 +61,8 @@ Target Python is **3.13–3.14**.
 - SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
 - SPA tests (Vitest): `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
-- Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-rebuild` / `pdm run dev-db-reset`
-- Docker dev logs (web + frontend): `pdm run dev-containers-logs`
+- Docker dev workflow: `pdm run dev-stack <start|stop|restart|recreate|build-start|rebuild|build-start-clean|db-upgrade|db-reset|logs|ps>`
+- Docker dev logs (web + frontend): `pdm run dev-stack logs`
 - **Docker image builds (REQUIRED)**: run in background, log to `.artifacts/`, and give the user the `tail -f` command.
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`

@@ -19,11 +19,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, Sequence
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 from scripts._pr_0254_auth_cutover_browser import LoopbackLane, run_lane
 from scripts._pr_0254_auth_cutover_manifest import (
@@ -48,6 +51,10 @@ DEFAULT_HULEEDU_TASK_0327_ROOT = "../../huledu-reboot/.artifacts/skriptoteket-li
 DEFAULT_PR_0261_ARTIFACT = ".artifacts/playwright-pr-0261-auth-action-matrix/manifest.redacted.json"
 DEFAULT_PR_0262_ROOT = ".artifacts/playwright-pr-0262-real-lifecycle/local-nonprod"
 LocalRole = Literal["user", "contributor", "admin", "superuser"]
+
+
+class ProviderLanePreflightError(RuntimeError):
+    """Raised when the HuleEdu provider lane is not ready for browser proof."""
 
 
 @dataclass(frozen=True)
@@ -333,6 +340,52 @@ def _run_id() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
+def _http_status(url: str, *, timeout_seconds: float = 3.0) -> int:
+    """Return the HTTP status for a provider-lane readiness URL."""
+    request = Request(url, method="GET", headers={"Accept": "application/json,text/html"})
+    try:
+        with urlopen(request, timeout=timeout_seconds) as response:
+            return int(response.status)
+    except HTTPError as exc:
+        return int(exc.code)
+    except URLError as exc:
+        raise ProviderLanePreflightError(f"{url} failed: {exc.reason}") from exc
+
+
+def _assert_provider_surface(lane: LoopbackLane) -> None:
+    """Fail fast when the HuleEdu provider lane cannot serve this loopback host."""
+    checks = (
+        (f"{lane.huleedu_auth_origin}/v1/auth/session", 200, "Gateway session surface"),
+        (f"{lane.huleedu_login_origin}/login", 200, "login/lifecycle UI"),
+    )
+    for url, expected_status, label in checks:
+        status = _http_status(url)
+        if status != expected_status:
+            raise ProviderLanePreflightError(
+                f"{label} for lane {lane.name} returned {status}, expected {expected_status}: {url}"
+            )
+
+
+def _preflight_provider_lanes(lanes: Iterable[LoopbackLane]) -> None:
+    """Validate HuleEdu provider surfaces before opening Playwright."""
+    failures: list[str] = []
+    for lane in lanes:
+        try:
+            _assert_provider_surface(lane)
+        except ProviderLanePreflightError as exc:
+            failures.append(str(exc))
+    if failures:
+        detail = "\n".join(f"- {failure}" for failure in failures)
+        raise ProviderLanePreflightError(
+            "HuleEdu provider regression: required local shared-auth provider "
+            "surface is unavailable before browser launch.\n"
+            f"{detail}\n"
+            "Expected HuleEdu auth integration lane: "
+            "`pdm run run-local-pdm auth-integration start` and "
+            "`pdm run run-local-pdm auth-integration fe-dev`."
+        )
+
+
 def _artifact_list(result: dict[str, object]) -> list[str]:
     """Extract retained artifact paths from a lane result."""
     artifacts = result.get("artifacts")
@@ -359,6 +412,10 @@ def _run(config: AuthCutoverConfig) -> Path:
         pr_0261_path=config.artifacts.pr_0261,
         pr_0262_path=config.artifacts.pr_0262,
     )
+    provider_lanes = [config.primary_lane]
+    if config.include_127_lane:
+        provider_lanes.append(config.secondary_127_lane)
+    _preflight_provider_lanes(provider_lanes)
 
     primary, forbidden_values = run_lane(
         lane=config.primary_lane,

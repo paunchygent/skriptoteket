@@ -50,7 +50,7 @@ runner contract intact.
 - This change requires the execution worker to be running when `RUNNER_QUEUE_ENABLED=true`.
 - Production: `compose.prod.yaml` runs `worker` as a sibling container; its healthcheck command is
   `python -m skriptoteket.cli healthcheck-execution-worker`.
-- Development: `compose.yaml` includes a `worker` service for parity (run `pdm run dev-start`).
+- Development: `compose.yaml` includes a `worker` service for parity (run `pdm run dev-stack start`).
 
 ## Test plan
 

@@ -348,7 +348,7 @@ The review-remediation solution for the smart-rule ownership reset is now:
   - `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[5f2c7d1a9b8e]' -q`
 - Live schema repair:
   - `pdm run db-upgrade`
-  - `pdm run dev-db-upgrade`
+  - `pdm run dev-stack db-upgrade`
 - Docs:
   - `pdm run docs-validate`
 - Live planner smoke on `5173`:

@@ -26,26 +26,26 @@ The observability stack runs separately from the application:
 
 ```bash
 # Start observability stack
-docker compose -f compose.observability.yaml up -d
+pdm run obs-stack start
 
 # Check status
-docker compose -f compose.observability.yaml ps
+pdm run obs-stack status
 
 # View logs
-docker compose -f compose.observability.yaml logs -f
+pdm run obs-stack logs
 
 # Stop stack
-docker compose -f compose.observability.yaml down
+pdm run obs-stack stop
 ```
 
-### PDM Scripts
+### PDM Script
 
 ```bash
-pdm run obs-start    # Start stack
-pdm run obs-stop     # Stop stack
-pdm run obs-restart  # Restart stack
-pdm run obs-logs     # Follow logs
-pdm run obs-status   # Check status
+pdm run obs-stack start    # Start stack
+pdm run obs-stack stop     # Stop stack
+pdm run obs-stack restart  # Restart stack
+pdm run obs-stack logs     # Follow logs
+pdm run obs-stack status   # Check status
 ```
 
 ## 3. Access URLs (Home Server)

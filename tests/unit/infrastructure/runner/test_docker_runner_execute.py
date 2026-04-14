@@ -390,5 +390,5 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
         )
 
     assert exc_info.value.code is ErrorCode.SERVICE_UNAVAILABLE
-    assert "pdm run dev-start" in exc_info.value.message
+    assert "pdm run dev-stack start" in exc_info.value.message
     mock_capacity.release.assert_awaited_once()

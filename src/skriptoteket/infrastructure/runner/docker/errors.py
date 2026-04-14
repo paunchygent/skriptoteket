@@ -16,7 +16,7 @@ def raise_docker_client_unavailable(*, exc: DockerException) -> NoReturn:
             code=ErrorCode.SERVICE_UNAVAILABLE,
             message=(
                 "Tool execution is unavailable: Docker socket /var/run/docker.sock is not "
-                "mounted. Start dev with: `pdm run dev-start` "
+                "mounted. Start dev with: `pdm run dev-stack start` "
                 "(uses compose.dev.yaml)."
             ),
             details={

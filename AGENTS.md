@@ -67,8 +67,8 @@ Target Python is **3.13–3.14**.
 - SPA tests (Vitest): `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
 - SPA typecheck: `pdm run fe-type-check`
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
-- Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-rebuild` / `pdm run dev-db-reset`
-- Docker dev logs (web + worker + frontend): `pdm run dev-containers-logs`
+- Docker dev workflow: `pdm run dev-stack <start|stop|restart|recreate|build-start|rebuild|build-start-clean|db-upgrade|db-reset|logs|ps>`
+- Docker dev logs (web + worker + frontend): `pdm run dev-stack logs`
 - **Docker image builds (REQUIRED)**: run in background, log to `.artifacts/`, and give the user the `tail -f` command.
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
 - Shell quality: `pdm run shellcheck <paths...>` while iterating on shell scripts; `pdm run lint` is the required final close-out gate and includes repo-wide `pdm run shellcheck-all`

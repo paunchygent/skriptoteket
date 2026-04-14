@@ -43,7 +43,7 @@ Make the SDS corpus available to the web container in both dev and production Do
    - Bake the index + markdown into the `production` stage in `Dockerfile` (so both prod and `development` inherit it).
 3. Optional dev DX improvement:
    - Mount `./data/reagent_prep_chef/sds/` into the dev web container so corpus changes are picked up without rebuild.
-4. Rebuild + restart dev containers (`pdm run dev-build-start` or `pdm run dev-rebuild`).
+4. Rebuild + restart dev containers (`pdm run dev-stack build-start` or `pdm run dev-stack rebuild`).
 5. Verify inside the running web container:
    - `test -f /app/data/reagent_prep_chef/sds/index.json`
    - `test -d /app/data/reagent_prep_chef/sds/markdown`
@@ -54,7 +54,7 @@ Make the SDS corpus available to the web container in both dev and production Do
 
 - Local: `pdm run docs-validate`
 - Local Docker:
-  - `pdm run dev-build-start`
+  - `pdm run dev-stack build-start`
   - `docker exec skriptoteket_web test -f /app/data/reagent_prep_chef/sds/index.json`
 - Manual: open Riskbedömning and confirm “Öppna SDS” works for a known key.
 
