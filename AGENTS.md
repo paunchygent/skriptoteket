@@ -46,7 +46,8 @@ Target Python is **3.13–3.14**.
 - **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agents/rules/096-review-workflow.md`
 - `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
 - `.agents/`: agent workflow helpers (`.agents/handoff.md`, next-session prompt template) + coding rules (`.agents/rules/`)
-- `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
+- `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers);
+  observability lives in the shared `observability-stack` skill.
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
 
 ## Key Commands
@@ -95,13 +96,15 @@ Switch to run bash on hemma via heredocs to avoid nested quoting issues.
 
 - Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
 - Load the relevant repo/domain skill before planning or implementation work. Treat skills as the procedural layer and keep `AGENTS.md` focused on repo policy.
-- Shared skills that have been migrated to `/Users/olofs_mba/Documents/Repos/skill-repository/skills/` must be authored there first; do not recreate repo-local copies for `local-devops`, `hemma-devops`, `skriptoteket-frontend-specialist`, or `brutalist-academic-ui`.
+- Shared skills that have been migrated to `/Users/olofs_mba/Documents/Repos/skill-repository/skills/` must be authored there first; do not recreate repo-local copies for `local-devops`, `hemma-devops`, `skriptoteket-frontend-specialist`, `brutalist-academic-ui`, or `observability-stack`.
 - Minimum expected defaults:
   - global `local-devops` for local development, DB/migrations, and dev-runtime troubleshooting; use this repo's docs, rules, and runbooks for Skriptoteket-specific commands and verification.
   - global `hemma-devops` for Hemma deploys, remote operations, and host/runtime troubleshooting; use this repo's docs, rules, and runbooks for Skriptoteket-specific Hemma commands and verification.
   - `skriptoteket-frontend-specialist` for SPA and curated-app frontend work
   - `playwright-testing` before planning, writing, running, or reviewing Playwright automation
-  - the relevant observability skill when debugging Grafana/Prometheus/Loki/Jaeger/structured logging. Live baseline is always on <http://127.0.0.1:5173> for dev.
+  - global `observability-stack` for Grafana, Prometheus, Loki, Jaeger,
+    structured logging, and correlation debugging. Live baseline is always on
+    <http://127.0.0.1:5173> for dev.
 
 ## Tool Execution (Local Dev Only)
 
@@ -157,7 +160,8 @@ Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
 - <https://prometheus.hemma.hule.education> (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
 
 Reset Grafana password: `ssh hemma "sudo docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
-Use the appropriate observability skill when troubleshooting (metrics/logs/traces/structured logging).
+Use global `observability-stack` when troubleshooting metrics, logs, traces, or
+structured logging.
 
 ## AI Inference Infrastructure
 

@@ -329,9 +329,9 @@ Items marked **(generated/binary)** are not candidates for SRP refactor.
 31. `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-20260105T012947Z/diff.telemetry.txt` (2220) — artifact
 32. `doc_structure_requirements.md` (596) — legacy doc; consider archiving/pruning separately
 33. `observability/grafana/provisioning/dashboards/skriptoteket-nginx-proxy-security.json` (567) — dashboard config
-34. `.claude/skills/distributed-tracing/reference.md` (564) — skill reference
-35. `.claude/skills/structlog-logging/reference.md` (544) — skill reference
-36. `.claude/skills/loki-logql/reference.md` (528) — skill reference
+34. `/Users/olofs_mba/Documents/Repos/skill-repository/skills/observability-stack/references/opentelemetry-jaeger.md` — canonical tracing skill reference
+35. `/Users/olofs_mba/Documents/Repos/skill-repository/skills/observability-stack/references/structured-logging.md` — canonical structured logging skill reference
+36. `/Users/olofs_mba/Documents/Repos/skill-repository/skills/observability-stack/references/loki-logql.md` — canonical LogQL skill reference
 37. `stakeholders/tooleditor_flow.html` (1417) — stakeholder artifact
 38. `stakeholders/server_runbook_pdf.html` (912) — stakeholder artifact
 39. `stakeholders/sommarskuggan.html` (662) — stakeholder artifact

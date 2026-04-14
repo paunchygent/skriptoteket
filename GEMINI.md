@@ -78,7 +78,7 @@ Target Python is **3.13–3.14**.
 ## Skill Usage (REQUIRED)
 
 - Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
-- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
+- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and global `observability-stack` for Grafana/Prometheus/Loki/Jaeger/structlog.
 
 ## Tool Execution (Local Dev Only)
 
@@ -139,7 +139,8 @@ Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
 - https://prometheus.hemma.hule.education (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
 
 Reset Grafana password: `ssh hemma "sudo docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
-Use the appropriate observability skill when troubleshooting (metrics/logs/traces/structured logging).
+Use global `observability-stack` when troubleshooting metrics, logs, traces, or
+structured logging.
 
 ## AI Inference Infrastructure
 
