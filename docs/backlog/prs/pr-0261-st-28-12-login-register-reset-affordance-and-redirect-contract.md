@@ -5,7 +5,7 @@ title: "ST-28-12 login register reset affordance and redirect contract"
 status: done
 owners: "agents"
 created: 2026-04-13
-updated: 2026-04-13
+updated: 2026-04-14
 stories:
   - "ST-28-12"
 adrs:
@@ -26,6 +26,7 @@ acceptance_criteria:
   - "Given HuleEdu Gateway calls the Skriptoteket consumer probe through the same-origin Gateway proxy, when signed `InternalIdentityContextV1` headers are valid, then Skriptoteket returns only sanitized decoded claim proof and never echoes raw signed headers, signatures, cookies, CSRF, session ids, JWT material, or token-bearing values."
   - "Given a hostile, looping, or cross-origin `next` is supplied, when the auth URL is built, then Skriptoteket drops it and returns to a safe app route."
   - "Given HuleEdu completes registration, verification, login, or reset, when the browser returns to `/auth/callback`, then Skriptoteket resumes the intended route through shared-session bootstrap."
+  - "Given an anonymous or interrupted browser lands directly on `/auth/callback`, when no HuleEdu session is present, then Skriptoteket retries the HuleEdu login handoff once and then shows explicit recovery copy with a primary `Logga in igen` action instead of the generic auth-entry fallback."
   - "Given the UI communicates failures, when continuation cannot complete, then the message tells the user what to try next without exposing realm, projection, token, or provider diagnostics."
 ---
 
@@ -162,6 +163,10 @@ mapping; it must not downgrade into a public fallback response.
 - Run the focused frontend URL-builder, lifecycle handoff, auth-entry, router,
   and recovery tests:
   `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/views/AuthLifecycleHandoffView.spec.ts src/views/AuthLoginView.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/router/index.spec.ts`.
+- The retained `pdm run pr-0261-auth-action-matrix` proof must also assert
+  anonymous `/auth/callback?next=/`: first entry auto-retries HuleEdu login
+  once, and a repeated anonymous callback shows `Inloggningen slutfördes inte`
+  with only the primary `Logga in igen` recovery action.
 - Run the focused backend probe and signed-context tests:
   `pdm run pytest -q tests/unit/web/test_huleedu_identity_context_probe_api.py tests/unit/web/test_profile_app_continuation_context_api.py`.
 - Run `pdm run fe-type-check` if frontend types change.
@@ -186,6 +191,22 @@ mapping; it must not downgrade into a public fallback response.
 - HuleEdu `TASK-0327` final live apply has passed against this route. Before
   this PR closes, confirm the retained HuleEdu artifact above remains the
   accepted upstream input for `PR-0262`.
+
+## Production Callback Remediation 2026-04-14
+
+Production investigation found that the normal `Logga in` link still targets
+the correct HuleEdu login ceremony, but stale or interrupted direct entry to
+`/auth/callback?next=/` could render the same generic auth-entry page while
+`GET /v1/auth/session` was anonymous. That made the callback fallback look like
+an obsolete local login surface.
+
+The remediation keeps `/auth/login` as the explicit HuleEdu handoff route and
+treats `/auth/callback` as completion/recovery. Anonymous callback entry now
+auto-retries HuleEdu login once with session-scoped loop protection. If the
+browser returns anonymous again, Skriptoteket shows explicit recovery copy:
+`Inloggningen slutfördes inte. Logga in igen för att fortsätta.` The retained
+PR-0261 Playwright proof now records this anonymous callback assertion in
+`manifest.redacted.json`.
 
 ## Rollback Plan
 

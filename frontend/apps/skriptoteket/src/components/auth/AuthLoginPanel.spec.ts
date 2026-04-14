@@ -85,4 +85,19 @@ describe("AuthLoginPanel", () => {
       "https://identity.example.test/auth/password-reset?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Feditor",
     );
   });
+
+  it("can render a callback recovery panel with one primary login action", () => {
+    const wrapper = mount(AuthLoginPanel, {
+      props: {
+        introCopy: "Inloggningen blev inte klar. Logga in igen för att fortsätta.",
+        primaryLabel: "Logga in igen",
+        showAccountLinks: false,
+      },
+    });
+
+    expect(wrapper.text()).toContain("Inloggningen blev inte klar");
+    expect(wrapper.get("a.btn-primary").text()).toContain("Logga in igen");
+    expect(wrapper.text()).not.toContain("Skapa ett Skriptoteket-konto");
+    expect(wrapper.text()).not.toContain("Glömt lösenordet?");
+  });
 });

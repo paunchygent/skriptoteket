@@ -12,6 +12,12 @@ import { useRoute, useRouter } from "vue-router";
 import { sharedAuthCeremonyUrl } from "../api/sharedAuth";
 import AuthLoginPanel from "../components/auth/AuthLoginPanel.vue";
 import {
+  clearAuthCallbackRetry,
+  hasAuthCallbackRetry,
+  rememberAuthCallbackRetry,
+} from "../composables/auth/authCallbackRetry";
+import {
+  AUTH_CALLBACK_PATH,
   AUTH_LOGIN_PATH,
   isAuthEntryPath,
   readAuthContinuation,
@@ -35,7 +41,21 @@ const loginUrl = computed(() =>
     origin: window.location.origin,
   }),
 );
+const isAnonymousCallback = computed(
+  () => route.path === AUTH_CALLBACK_PATH && !auth.isAuthenticated,
+);
+const isCallbackRecovery = computed(
+  () => isAnonymousCallback.value && hasAuthCallbackRetry(continuation.value.nextPath),
+);
 const redirectCopy = computed(() => {
+  if (isCallbackRecovery.value) {
+    return "Inloggningen slutfördes inte. Logga in igen för att fortsätta.";
+  }
+
+  if (isAnonymousCallback.value) {
+    return "Vi försöker öppna inloggningen igen.";
+  }
+
   if (route.path === AUTH_LOGIN_PATH && !auth.isAuthenticated) {
     return "Inloggningen öppnas automatiskt.";
   }
@@ -46,6 +66,15 @@ const redirectCopy = computed(() => {
 
   return "Logga in för att fortsätta till din startsida i Skriptoteket.";
 });
+const panelIntroCopy = computed(() =>
+  isCallbackRecovery.value
+    ? "Inloggningen blev inte klar. Logga in igen för att fortsätta."
+    : "Om inloggningen inte öppnas automatiskt kan du öppna den igen här.",
+);
+const primaryActionLabel = computed(() =>
+  isCallbackRecovery.value ? "Logga in igen" : "Öppna inloggningen",
+);
+const showAccountLinks = computed(() => !isCallbackRecovery.value);
 
 async function completeAuthEntry(): Promise<void> {
   if (isCompletingLogin.value) {
@@ -56,6 +85,7 @@ async function completeAuthEntry(): Promise<void> {
   pageTransition.suppressNext();
 
   try {
+    clearAuthCallbackRetry(continuation.value.nextPath);
     await router.push(resolveAuthLoginSuccessLocation(continuation.value, window.history.state));
   } finally {
     isCompletingLogin.value = false;
@@ -63,11 +93,22 @@ async function completeAuthEntry(): Promise<void> {
 }
 
 function startSharedLoginHandoff(): void {
-  if (hasStartedLoginHandoff.value || route.path !== AUTH_LOGIN_PATH || auth.isAuthenticated) {
+  const shouldStartLoginHandoff = route.path === AUTH_LOGIN_PATH;
+  const shouldRetryAnonymousCallback =
+    isAnonymousCallback.value && !hasAuthCallbackRetry(continuation.value.nextPath);
+
+  if (
+    hasStartedLoginHandoff.value ||
+    auth.isAuthenticated ||
+    (!shouldStartLoginHandoff && !shouldRetryAnonymousCallback)
+  ) {
     return;
   }
 
   hasStartedLoginHandoff.value = true;
+  if (shouldRetryAnonymousCallback) {
+    rememberAuthCallbackRetry(continuation.value.nextPath);
+  }
   pageTransition.suppressNext();
   redirectToSharedAuthCeremony(loginUrl.value);
 }
@@ -101,7 +142,11 @@ watch(
         </p>
       </header>
 
-      <AuthLoginPanel />
+      <AuthLoginPanel
+        :intro-copy="panelIntroCopy"
+        :primary-label="primaryActionLabel"
+        :show-account-links="showAccountLinks"
+      />
     </section>
   </div>
 </template>

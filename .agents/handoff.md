@@ -8,7 +8,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history into repo long-term memory at `docs/reference/ref-development-changelog.md` first.
 ## Snapshot
-- Date: 2026-04-13
+- Date: 2026-04-14
 - Branch: `main` + local changes
 - Current lane: `ST-28-10` / `PR-0264` auth outcome observability planning is open; `PR-0264`
   is review-ready and blocked from implementation until `REV-PR-0264` is approved.
@@ -62,6 +62,10 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0265` is done and ports the HuleEdu mockup-bundle docs-as-code contract into Skriptoteket:
   `docs/mockups/INDEX.md`, typed bundle `README.md` docs, and bundle-local `submissions/` /
   `winner/` folders while preserving existing HTML/SVG preview paths.
+- `PR-0261` received production callback remediation: anonymous direct entry to
+  `/auth/callback?next=/` now auto-retries HuleEdu login once and then shows explicit
+  `Inloggningen slutfördes inte` / `Logga in igen` recovery copy instead of the generic
+  auth-entry fallback.
 ## Verification
 - `pdm run db-upgrade` (pass).
 - `pdm run docs-validate` (pass after independent `REV-PR-0263` review update).
@@ -123,6 +127,12 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run fe-lint` (pass).
 - `pdm run docs-validate` (pass for `PR-0264`/`REV-PR-0264` planning docs).
 - `pdm run docs-validate` (pass for `PR-0265` mockup bundle docs-as-code port).
+- `pdm run fe-test -- --run src/views/AuthLoginView.spec.ts src/components/auth/AuthLoginPanel.spec.ts`
+  (pass; 10 tests).
+- `pdm run pr-0261-auth-action-matrix` (pass; manifest now includes anonymous callback retry and
+  explicit recovery assertions for `/auth/callback?next=/`).
+- `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run lint`, `pdm run typecheck`, and
+  `pdm run docs-validate` (pass for `PR-0261` callback remediation).
 - `git diff --check` (pass).
 ## How to Run
 ```bash

@@ -5,7 +5,7 @@ title: "Real standalone lifecycle and auth entry proof"
 status: done
 owners: "agents"
 created: 2026-04-13
-updated: 2026-04-13
+updated: 2026-04-14
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given `PR-0260` is done and HuleEdu `REV-TASK-0327-01` is approved, when `PR-0261` starts, then the story may move in progress while the Skriptoteket probe route enables HuleEdu to retain its final live `status=ok` artifact."
@@ -14,6 +14,7 @@ acceptance_criteria:
   - "Given the user has forgotten the password, when they use the reset affordance, then HuleEdu owns the email/reset flow and Skriptoteket only preserves safe app continuation."
   - "Given the user clicks login, create account, forgot password, verification, or reset links from Skriptoteket or email, when the browser opens the target, then the first interactive page is the exact action page and not a generic HuleEdu landing or chooser step."
   - "Given signed-out users reach the auth entry page, when they choose to sign in, create an account, or reset a password, then the copy speaks in user terms and does not expose provider internals."
+  - "Given an anonymous browser reaches `/auth/callback` without a completed HuleEdu session, when callback recovery runs, then Skriptoteket retries HuleEdu login once and then shows explicit `Logga in igen` recovery copy instead of the generic auth-entry message."
   - "Given final proof is retained, when operators review it, then register, verify, login, forgot-password, reset, projection, local role, and redirect behavior are all covered with sanitized evidence."
 ui_impact: "Auth entry affordances become ready for real users."
 dependencies: ["ADR-0083", "ST-28-08", "ST-28-09", "ST-28-11", "HuleEdu TASK-0327", "REV-TASK-0327-01"]
@@ -67,3 +68,11 @@ HuleEdu then reran `TASK-0327` and retained a final `status=ok` provider
 artifact. `PR-0262` consumes that artifact and retains the Skriptoteket-side
 proof for callback continuation, local projection resolution, local role
 observation, and redaction checks.
+
+## Remediation Note 2026-04-14
+
+Anonymous direct entry to `/auth/callback?next=/` is now covered as a product
+recovery state. The app retries HuleEdu login once and then shows explicit
+recovery copy with a single primary `Logga in igen` action if the HuleEdu
+session remains anonymous. The retained `PR-0261` Playwright proof records the
+first anonymous callback retry and the second explicit recovery state.

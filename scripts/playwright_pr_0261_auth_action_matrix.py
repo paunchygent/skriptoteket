@@ -41,6 +41,7 @@ ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0261-auth-action-matrix")
 DEFAULT_REALM = "skriptoteket_standalone"
 DEFAULT_HULEEDU_ENTRY_URL = "https://api.hule.education/auth/login"
 PROOF_NEXT_PATH = "/editor?draft=head#debug"
+ANONYMOUS_CALLBACK_NEXT_PATH = "/"
 PROOF_TOKEN = "pr-0261-token"
 PROBE_PATH = "/api/v1/diagnostics/huleedu-internal-identity"
 
@@ -160,6 +161,37 @@ def _install_huleedu_action_page_mock(page: Page, *, entry_url: str) -> None:
     page.route(f"{origin}/auth/**", fulfill_action)
 
 
+def _install_anonymous_huleedu_session_mock(page: Page, *, base_url: str, entry_url: str) -> None:
+    parsed = urlparse(entry_url)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+
+    def fulfill_session(route: Route) -> None:
+        route.fulfill(
+            status=200,
+            headers={
+                "content-type": "application/json",
+                "access-control-allow-origin": base_url,
+                "access-control-allow-credentials": "true",
+            },
+            body=json.dumps(
+                {
+                    "authenticated": False,
+                    "user": None,
+                    "profile": None,
+                    "context": None,
+                    "policy": None,
+                    "session": {
+                        "transport": "cookie",
+                        "csrf_required": True,
+                        "expires_at": None,
+                    },
+                }
+            ),
+        )
+
+    page.route(f"{origin}/v1/auth/session", fulfill_session)
+
+
 def _redacted_url_summary(url: str) -> dict[str, object]:
     parsed = urlparse(url)
     query = parse_qs(parsed.query)
@@ -171,6 +203,60 @@ def _redacted_url_summary(url: str) -> dict[str, object]:
         "return_to_path": urlparse(query.get("return_to", [""])[0]).path,
         "next": query.get("next", [None])[0],
         "token": "present_redacted" if query.get("token") else "absent",
+    }
+
+
+def _assert_anonymous_callback_recovery(
+    page: Page,
+    *,
+    base_url: str,
+    entry_url: str,
+) -> dict[str, object]:
+    parsed_entry = urlparse(entry_url)
+    expected_origin = f"{parsed_entry.scheme}://{parsed_entry.netloc}"
+    encoded_next = quote(ANONYMOUS_CALLBACK_NEXT_PATH, safe="")
+    callback_url = f"{base_url}/auth/callback?next={encoded_next}"
+
+    try:
+        page.goto(callback_url, wait_until="domcontentloaded")
+    except PlaywrightError as exc:
+        if "ERR_ABORTED" not in str(exc):
+            raise
+    expect(page).to_have_url(
+        re.compile(rf"^{re.escape(expected_origin + '/auth/login')}(?:\?|$)"),
+        timeout=15_000,
+    )
+    expect(page.get_by_role("heading", name="HuleEdu login")).to_be_visible(timeout=10_000)
+    retry_provider = _redacted_url_summary(page.url)
+    if retry_provider["next"] != ANONYMOUS_CALLBACK_NEXT_PATH:
+        raise AssertionError("Anonymous callback retry did not preserve safe next=/")
+
+    retry_screenshot = ARTIFACTS_DIR / "anonymous-callback-auto-retry.png"
+    page.screenshot(path=str(retry_screenshot), full_page=True)
+
+    page.goto(callback_url, wait_until="domcontentloaded")
+    expect(page).to_have_url(callback_url, timeout=15_000)
+    expect(
+        page.get_by_text("Inloggningen slutfördes inte. Logga in igen för att fortsätta.")
+    ).to_be_visible(timeout=10_000)
+    expect(page.get_by_role("link", name="Logga in igen")).to_be_visible(timeout=10_000)
+    expect(page.get_by_text("Efter inloggning skickas du vidare")).not_to_be_visible()
+
+    recovery_screenshot = ARTIFACTS_DIR / "anonymous-callback-recovery.png"
+    page.screenshot(path=str(recovery_screenshot), full_page=True)
+    return {
+        "source_path": "/auth/callback?next=/",
+        "first_anonymous_callback": {
+            "auto_retry_started": True,
+            "provider": retry_provider,
+            "screenshot": str(retry_screenshot),
+        },
+        "second_anonymous_callback": {
+            "explicit_recovery_copy": True,
+            "primary_action": "Logga in igen",
+            "generic_auth_entry_copy_absent": True,
+            "screenshot": str(recovery_screenshot),
+        },
     }
 
 
@@ -261,13 +347,19 @@ def _verify_probe(
         request_context.dispose()
 
 
-def _write_manifest(*, actions: list[dict[str, object]], probe: dict[str, object]) -> Path:
+def _write_manifest(
+    *,
+    actions: list[dict[str, object]],
+    anonymous_callback: dict[str, object],
+    probe: dict[str, object],
+) -> Path:
     manifest = {
         "status": "ok",
         "command": "pdm run pr-0261-auth-action-matrix",
         "app": "skriptoteket",
         "product_identity_realm": DEFAULT_REALM,
         "actions": actions,
+        "anonymous_callback": anonymous_callback,
         "consumer_probe": probe,
         "redaction_checks": {
             "raw_tokens_retained": False,
@@ -298,10 +390,16 @@ def _run(
         context = browser.new_context(viewport={"width": 1280, "height": 720})
         page = context.new_page()
         _install_huleedu_action_page_mock(page, entry_url=entry_url)
+        _install_anonymous_huleedu_session_mock(page, base_url=base_url, entry_url=entry_url)
         action_results = [
             _assert_action_case(page, base_url=base_url, entry_url=entry_url, case=case)
             for case in ACTION_CASES
         ]
+        anonymous_callback = _assert_anonymous_callback_recovery(
+            page,
+            base_url=base_url,
+            entry_url=entry_url,
+        )
         probe_payload = _verify_probe(
             playwright,
             backend_url=backend_url,
@@ -310,7 +408,11 @@ def _run(
         context.close()
         browser.close()
 
-    manifest_path = _write_manifest(actions=action_results, probe=probe_payload)
+    manifest_path = _write_manifest(
+        actions=action_results,
+        anonymous_callback=anonymous_callback,
+        probe=probe_payload,
+    )
     print(
         "playwright-pr-0261-auth-action-matrix: ok "
         f"actions={len(action_results)} manifest={manifest_path}"

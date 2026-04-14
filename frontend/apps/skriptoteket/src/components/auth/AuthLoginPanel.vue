@@ -17,6 +17,19 @@ import { useRoute } from "vue-router";
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { readAuthContinuation } from "../../composables/auth/authEntryNavigation";
 
+withDefaults(
+  defineProps<{
+    introCopy?: string;
+    primaryLabel?: string;
+    showAccountLinks?: boolean;
+  }>(),
+  {
+    introCopy: "Om inloggningen inte öppnas automatiskt kan du öppna den igen här.",
+    primaryLabel: "Öppna inloggningen",
+    showAccountLinks: true,
+  },
+);
+
 const route = useRoute();
 const continuation = computed(() => readAuthContinuation(route.query, window.history.state));
 const loginUrl = computed(() =>
@@ -45,9 +58,9 @@ const passwordResetUrl = computed(() =>
   <div class="border border-navy bg-canvas p-6 shadow-brutal md:p-8">
     <div class="space-y-4 text-sm leading-6 text-navy/75">
       <p>
-        Om inloggningen inte öppnas automatiskt kan du öppna den igen här.
+        {{ introCopy }}
       </p>
-      <p>
+      <p v-if="showAccountLinks">
         Saknar du konto?
         <a
           class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
@@ -56,7 +69,7 @@ const passwordResetUrl = computed(() =>
           Skapa ett Skriptoteket-konto
         </a>.
       </p>
-      <p>
+      <p v-if="showAccountLinks">
         <a
           class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
           :href="passwordResetUrl"
@@ -70,7 +83,7 @@ const passwordResetUrl = computed(() =>
       class="btn-primary mt-6 block w-full text-center"
       :href="loginUrl"
     >
-      Öppna inloggningen
+      {{ primaryLabel }}
     </a>
   </div>
 </template>

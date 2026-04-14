@@ -10,6 +10,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { reactive, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { rememberAuthCallbackRetry } from "../composables/auth/authCallbackRetry";
 import AuthLoginView from "./AuthLoginView.vue";
 
 const viewMocks = vi.hoisted(() => ({
@@ -68,6 +69,7 @@ describe("AuthLoginView", () => {
       reset: vi.fn(),
     };
     redirectMocks.redirectToSharedAuthCeremony.mockReset();
+    window.sessionStorage.clear();
   });
 
   it("starts the shared auth ceremony when no next param is present", () => {
@@ -136,6 +138,9 @@ describe("AuthLoginView", () => {
     viewMocks.route.name = "auth-callback";
     viewMocks.route.path = "/auth/callback";
     viewMocks.route.query = { next: "/editor" };
+    viewMocks.auth = reactive({
+      isAuthenticated: true,
+    });
 
     mount(AuthLoginView, {
       global: {
@@ -145,10 +150,6 @@ describe("AuthLoginView", () => {
       },
     });
 
-    if (!viewMocks.auth) {
-      throw new Error("Expected auth stub to be initialized.");
-    }
-    viewMocks.auth.isAuthenticated = true;
     await flushPromises();
 
     expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
@@ -160,6 +161,9 @@ describe("AuthLoginView", () => {
     viewMocks.route.name = "auth-callback";
     viewMocks.route.path = "/auth/callback";
     viewMocks.route.query = { next: "/admin/tools?status=draft#review" };
+    viewMocks.auth = reactive({
+      isAuthenticated: true,
+    });
 
     mount(AuthLoginView, {
       global: {
@@ -169,13 +173,42 @@ describe("AuthLoginView", () => {
       },
     });
 
-    if (!viewMocks.auth) {
-      throw new Error("Expected auth stub to be initialized.");
-    }
-    viewMocks.auth.isAuthenticated = true;
     await flushPromises();
 
     expect(viewMocks.router.push).toHaveBeenCalledWith("/admin/tools?status=draft#review");
+    expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
+  });
+
+  it("retries shared auth once when the callback has no HuleEdu session", () => {
+    viewMocks.route.name = "auth-callback";
+    viewMocks.route.path = "/auth/callback";
+    viewMocks.route.query = { next: "/" };
+
+    mount(AuthLoginView, {
+      global: {
+        stubs: {
+          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
+        },
+      },
+    });
+
+    expect(viewMocks.pageTransition?.suppressNext).toHaveBeenCalled();
+    expect(redirectMocks.redirectToSharedAuthCeremony).toHaveBeenCalledWith(
+      "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2F",
+    );
+  });
+
+  it("shows explicit recovery copy after the anonymous callback retry has already run", () => {
+    viewMocks.route.name = "auth-callback";
+    viewMocks.route.path = "/auth/callback";
+    viewMocks.route.query = { next: "/" };
+    rememberAuthCallbackRetry("/");
+
+    const wrapper = mount(AuthLoginView);
+
+    expect(wrapper.text()).toContain("Inloggningen slutfördes inte");
+    expect(wrapper.text()).toContain("Logga in igen");
+    expect(wrapper.text()).not.toContain("Saknar du konto?");
     expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
   });
 });
