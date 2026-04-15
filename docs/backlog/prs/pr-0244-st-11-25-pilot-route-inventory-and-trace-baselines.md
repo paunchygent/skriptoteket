@@ -71,7 +71,7 @@ The route-inventory script must resolve the tool id by slug and fail clearly if 
 5. Capture per-route request ledgers, duplicate classification, and byte summaries.
 6. Capture one raw Chromium performance trace artifact per pilot route.
 7. Emit one short route note per pilot route.
-8. Record exact artifact paths in `.agents/handoff.md`.
+8. Record exact artifact paths in `.codex/handoff.md`.
 
 ## Concrete command surface
 
@@ -157,4 +157,4 @@ This slice should produce, at minimum:
 - Review gate:
   [REV-ST-11-25](../reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - Browser automation rule:
-  [075-browser-automation](../../../.agents/rules/075-browser-automation.md)
+  [075-browser-automation](../../../.codex/rules/075-browser-automation.md)

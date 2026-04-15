@@ -179,7 +179,7 @@ Create an explicit, reviewable breach inventory and truth-gate audit so the team
   - direct non-null `seam_transition` rows present:
     - `overhead -> endpoint-bridge`
     - `endpoint-bridge -> descent`
-- Latest focused verification outputs recorded in `.agents/handoff.md` for the same lane:
+- Latest focused verification outputs recorded in `.codex/handoff.md` for the same lane:
   - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts` -> `pass`
   - `pdm run fe-type-check` -> `pass`
   - `pdm run fe-build` -> `pass`

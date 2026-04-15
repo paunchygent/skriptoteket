@@ -39,7 +39,7 @@ workflow.
 
 ## Status note (2026-03-31)
 
-Focused Vitest coverage and a live Playwright proof are already recorded in `.agents/handoff.md`,
+Focused Vitest coverage and a live Playwright proof are already recorded in `.codex/handoff.md`,
 but this doc still stops short of an explicit shipped/done callout. Its `in_progress` status is
 left unchanged for now so that a human can decide whether the slice is fully closed.
 
@@ -81,7 +81,7 @@ left unchanged for now so that a human can decide whether the slice is fully clo
   - open `Ny klasslista`
   - open `Redigera klasslista`
   - drop a supported file and verify the preview prefills as before
-- Record the exact live verification command/manual proof in `.agents/handoff.md` when the
+- Record the exact live verification command/manual proof in `.codex/handoff.md` when the
   implementation lands.
 
 ## Rollback plan

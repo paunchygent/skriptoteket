@@ -206,8 +206,8 @@ This checklist is owned by the main reviewer. Implementers may add evidence note
 4. **medium - current runbooks point at removed smoke commands**
 
    File references:
-   `.agents/rules/075-browser-automation.md:55`,
-   `.agents/rules/070-testing-standards.md:63`,
+   `.codex/rules/075-browser-automation.md:55`,
+   `.codex/rules/070-testing-standards.md:63`,
    `docs/runbooks/runbook-testing.md:28`
 
    `PR-0253` removed `ui-smoke`, `ui-editor-smoke`, and `ui-runtime-smoke` from the active PDM
@@ -363,7 +363,7 @@ revision.
    `ADR-0076` is still proposed while the task treats the decision as settled, and `PR-0253`
    explicitly requires review. Keep this `REV-PR-0253` record, record the feedback here, reconcile
    `ADR-0076` status or cite approved `REV-EPIC-28` as the governing backlog approval, update
-   `.agents/handoff.md`, and run `pdm run docs-validate`.
+   `.codex/handoff.md`, and run `pdm run docs-validate`.
 
 2. **blocker - deleting local registration/password paths can strand HuleEdu users**
 
@@ -405,7 +405,7 @@ revision.
    to depend on `require_app_*_api`, which verifies signed gateway context. Tests must prove missing
    signed context returns `401` even if `X-CSRF-Token` is present, valid signed context succeeds
    without `skriptoteket_session`, and stale local CSRF no longer grants anything. Also update
-   `.agents/rules/040-fastapi-blueprint.md` so future agents do not reintroduce the old dependency.
+   `.codex/rules/040-fastapi-blueprint.md` so future agents do not reintroduce the old dependency.
 
 5. **high - frontend auth ceremony replacement is under-scoped**
 

@@ -93,7 +93,7 @@ that this is a loopback-origin policy fix, not a local-auth workaround.
 7. Rerun `pdm run pr-0254-auth-cutover --include-127-lane --require-127-lane` and retain the new
    `manifest.redacted.json` with both lane summaries green.
 8. Update `PR-0254`, `ST-28-04`, EPIC-28, the HuleEdu launch/auth topology reference, and
-   `.agents/handoff.md` only after the two-lane proof is green.
+   `.codex/handoff.md` only after the two-lane proof is green.
 
 ## Test Plan
 

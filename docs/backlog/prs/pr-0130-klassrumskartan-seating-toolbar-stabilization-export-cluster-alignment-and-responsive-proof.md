@@ -39,7 +39,7 @@ and intentional.
 This slice is effectively implemented in practice through the later planner toolbar cutovers:
 
 - [PlannerSeatingWorkspaceToolbar.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue) already keeps the classroom selector, primary seating actions, export cluster, and overflow actions in a stable compact row.
-- The later live proof trail in [.agents/handoff.md](../../../.agents/handoff.md) and [scripts/playwright_pr_0167_smart_grouping_cutover_check.py](../../../scripts/playwright_pr_0167_smart_grouping_cutover_check.py) already verifies that shipped user-facing seating toolbar behavior.
+- The later live proof trail in [.codex/handoff.md](../../../.codex/handoff.md) and [scripts/playwright_pr_0167_smart_grouping_cutover_check.py](../../../scripts/playwright_pr_0167_smart_grouping_cutover_check.py) already verifies that shipped user-facing seating toolbar behavior.
 
 The remaining `ST-29-03` gap is the reusable shared zoning contract beneath that toolbar, tracked
 under `PR-0129`, not the seating toolbar behavior itself.
@@ -91,7 +91,7 @@ under `PR-0129`, not the seating toolbar behavior itself.
 - Story parent: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Export action baseline: [PR-0120](pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md)
 - Grouping zoning baseline: [PR-0129](pr-0129-klassrumskartan-shared-planner-action-bar-zoning-and-grouping-toolbar-stabilization.md)
-- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
-- Browser automation skill: [playwright-testing](../../../.claude/skills/playwright-testing/SKILL.md)
-- Design-system rule: [045-huleedu-design-system](../../../.agents/rules/045-huleedu-design-system.md)
-- Browser automation rule: [075-browser-automation](../../../.agents/rules/075-browser-automation.md)
+- Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)
+- Browser automation skill: [playwright-testing](../../..//Users/olofs_mba/.codex/skills/playwright-testing/SKILL.md)
+- Design-system rule: [045-huleedu-design-system](../../../.codex/rules/045-huleedu-design-system.md)
+- Browser automation rule: [075-browser-automation](../../../.codex/rules/075-browser-automation.md)

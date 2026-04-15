@@ -14,7 +14,7 @@ dependencies:
 acceptance_criteria:
   - "Given several older review families still reuse the same epic review id across multiple files, when this story is complete, then the touched records are migrated to unique target-based review docs or explicitly preserved as legacy with corrected links and no active ambiguity about which review governs which target."
   - "Given the docs contract and validator now enforce primary-target review semantics, when the migrated review records are validated, then `pdm run docs-validate` passes without review-target drift introduced by the migration."
-  - "Given the repo should expose one discoverable planning trail, when this story is complete, then `docs/index.md`, `.agents/handoff.md`, and touched backlog docs point to the migrated target-based review records instead of implying live supplemental epic-ledger reviews or sprint-led planning."
+  - "Given the repo should expose one discoverable planning trail, when this story is complete, then `docs/index.md`, `.codex/handoff.md`, and touched backlog docs point to the migrated target-based review records instead of implying live supplemental epic-ledger reviews or sprint-led planning."
 ---
 
 ## Context

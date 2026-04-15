@@ -100,7 +100,7 @@ teacher-approved export history honestly:
 - [x] Add ORM model + Alembic revision
 - [x] Add migration schema assertion coverage
 - [x] Wire seating export completion to checkpoint recording
-- [x] Run verification and record it in `.agents/handoff.md`
+- [x] Run verification and record it in `.codex/handoff.md`
 
 ## Test plan
 

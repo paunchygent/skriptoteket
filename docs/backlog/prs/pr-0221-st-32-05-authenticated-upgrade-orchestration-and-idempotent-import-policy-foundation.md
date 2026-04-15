@@ -402,7 +402,7 @@ repeat-commit idempotency claim honest.
 - [ ] Add targeted backend tests for preview, commit, idempotency, conflict policy, auth/CSRF
       negatives, and registration-without-session no-op behavior
 - [ ] Add targeted frontend tests for prompt behavior and local-clear policy
-- [ ] Run targeted verification and record it in `.agents/handoff.md`
+- [ ] Run targeted verification and record it in `.codex/handoff.md`
 - [ ] Run independent `skriptoteket_reviewer` on the implemented slice before close-out
 
 ## Test plan

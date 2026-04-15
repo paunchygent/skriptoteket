@@ -169,7 +169,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`
   - `migrations/versions/`
   - `pyproject.toml`
-  - `.agents/rules/054-alembic-migrations.md`
+  - `.codex/rules/054-alembic-migrations.md`
 
 ## PR-sized execution checklist
 
@@ -182,11 +182,11 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
 - [x] Remove draft-owned smart-rule serialization from draft load/save paths
 - [x] Retarget the current local `PR-0149` store/components to the roster-global contract
 - [x] Re-run the existing seating smart-rule UI tests after retargeting
-- [x] Re-run live planner verification on `http://127.0.0.1:5173` after the schema-aligned dev lane is recovered, then record the result in `.agents/handoff.md`
+- [x] Re-run live planner verification on `http://127.0.0.1:5173` after the schema-aligned dev lane is recovered, then record the result in `.codex/handoff.md`
 - [x] Add roster smart-rule optimistic concurrency and stale-write conflict handling
 - [x] Keep draft autosave and smart-rule autosave retry state independent on partial failure
 - [x] Prevent stale smart rules from rendering during workspace switches or second-request failure
-- [x] Re-run targeted backend/frontend verification for the remediation slice and update `.agents/handoff.md`
+- [x] Re-run targeted backend/frontend verification for the remediation slice and update `.codex/handoff.md`
 - [x] Add fail-fast startup checking for stale host DB revisions
 - [x] Add a forward repair migration for impossible roster smart-rule drift states
 - [x] Move planner export hydration onto one explicit owner-scoped workspace loader

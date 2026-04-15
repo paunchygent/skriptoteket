@@ -43,7 +43,7 @@ Freeze a desktop-only rule set:
 |------|-------|------|
 | `docs/backlog/prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md` | Exactness contract | 5 min |
 | `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md` | Story boundary | 3 min |
-| `.agents/handoff.md` | Proof expectations | 2 min |
+| `.codex/handoff.md` | Proof expectations | 2 min |
 
 **Total estimated time:** ~10 minutes
 

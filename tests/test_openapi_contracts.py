@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-_RULE_REF = ".agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing)"
+_RULE_REF = ".codex/rules/040-fastapi-blueprint.md (OpenAPI-safe typing)"
 _ROUTE_MODULE_DIRS = (
     "src/skriptoteket/web/api/v1",
     "src/skriptoteket/web/routes",

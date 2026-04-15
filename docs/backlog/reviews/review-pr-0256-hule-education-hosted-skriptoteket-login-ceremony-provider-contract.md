@@ -181,4 +181,4 @@ Approve the consumer implementation because it:
 | 3 | Review remediation | Preserved query/hash auth continuation, hardened helper-level `next`, and enforced app/realm context before projection lookup |
 | 4 | `ST-28-07` | Marked the story done after focused tests and live Playwright proof |
 | 5 | `EPIC-28` | Updated the implementation summary and next sequence |
-| 6 | `.agents/handoff.md` | Updated current lane, verification, known risk, and next step |
+| 6 | `.codex/handoff.md` | Updated current lane, verification, known risk, and next step |

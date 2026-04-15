@@ -147,7 +147,7 @@ If the reviewer finds structural issues:
 2. Update the governed backlog item status if approval unblocks it.
 3. Update linked story/epic notes or implementation summaries if the approved review changes the
    canonical direction.
-4. Update `.agents/handoff.md`.
+4. Update `.codex/handoff.md`.
 5. Run `pdm run docs-validate`.
 
 ### If changes are requested

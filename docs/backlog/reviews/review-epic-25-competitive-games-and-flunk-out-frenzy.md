@@ -152,8 +152,8 @@ None. The proposal is thorough and aligns with the project's architectural princ
 ### Scope Reviewed
 
 - `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
-- `.agents/repomix_packages/repomix-flunk-out-frenzy-pr-0212-shortcut-audit-brief.md`
-- `.agents/repomix_packages/repomix-flunk-out-frenzy-pr-0212-shortcut-audit-review.xml`
+- `.codex/repomix_packages/repomix-flunk-out-frenzy-pr-0212-shortcut-audit-brief.md`
+- `.codex/repomix_packages/repomix-flunk-out-frenzy-pr-0212-shortcut-audit-review.xml`
 
 ### Required Review Outputs
 

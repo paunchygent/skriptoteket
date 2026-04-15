@@ -11,8 +11,6 @@ Relationships:
       projections, so provider proof cannot mutate Skriptoteket users.
 """
 
-from __future__ import annotations
-
 from typing import Literal
 
 from fastapi import APIRouter, Request

@@ -12,7 +12,7 @@ acceptance_criteria:
   - "Given the code editor switches between `Källkod`, `Diff`, `Metadata`, and `Testkör`, when this story ships, then the editor keeps its stable shell and uses a retained-surface overlap transition instead of a visible teardown/rebuild swap."
   - "Given the rules map, tool file picker, and Vault panel each keep one persistent local shell while their main body changes, when this story ships, then those selector-driven surfaces preserve continuity instead of flashing to blank or abrupt body replacement."
   - "Given the SPA still contains older `out-in` transitions outside the main selector-shell scope, when this story is implemented, then those surfaces are explicitly audited and only the ones that still create visible continuity problems are changed."
-  - "Given this is a UI/route-affecting slice, when implementation is verified, then focused frontend tests, live browser proof, and `.agents/handoff.md` are updated."
+  - "Given this is a UI/route-affecting slice, when implementation is verified, then focused frontend tests, live browser proof, and `.codex/handoff.md` are updated."
 ui_impact: "Yes (editor, planner rules map, tool-run file picker, Vault, and transition audit surfaces)"
 data_impact: "No"
 ---

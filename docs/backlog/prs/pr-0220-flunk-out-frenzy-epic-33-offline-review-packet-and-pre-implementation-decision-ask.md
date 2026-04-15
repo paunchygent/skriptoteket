@@ -17,8 +17,8 @@ acceptance_criteria:
   - "Given `EPIC-33` is now the approved prerequisite before any further physical cut-over continuation, when this task is complete, then the repo contains a new offline-review packet grounded in the approved epic, story, and planned PR sequence rather than in the earlier pre-approval planning state."
   - "Given the next implementation step is `PR-0217`, when this task is complete, then the offline reviewer is asked to assess the implementation order and advise on the exact pre-cut-over uncertainties that still need explicit decisions before code changes begin."
   - "Given the remaining uncertainties are architectural rather than cosmetic, when this task is complete, then the packet asks for explicit guidance on carrier schema shape, launcher-world ownership, donor-to-collider representation, Rapier stability policy, observer semantics, temporary correction policy, and future baseline-repin criteria."
-  - "Given this is an external review/decision packet, when this task is complete, then a targeted repomix package, reviewer brief, context note, and exact file list exist under `.agents/repomix_packages/` and are validated against the current repo state."
-  - "Given docs-as-code must remain the source of truth, when this task is complete, then `docs/index.md` and `.agents/handoff.md` reflect that `PR-0220` now sits ahead of `PR-0217` as the last planning/review checkpoint before implementation."
+  - "Given this is an external review/decision packet, when this task is complete, then a targeted repomix package, reviewer brief, context note, and exact file list exist under `.codex/repomix_packages/` and are validated against the current repo state."
+  - "Given docs-as-code must remain the source of truth, when this task is complete, then `docs/index.md` and `.codex/handoff.md` reflect that `PR-0220` now sits ahead of `PR-0217` as the last planning/review checkpoint before implementation."
 ---
 
 ## Problem
@@ -92,7 +92,7 @@ This slice should:
    - `PR-0215`, `PR-0216`, `PR-0217`, `PR-0218`, `PR-0219`, and this task
    - the core launcher/compiler/runtime files implicated by the open questions
    - the `PR-0214` truth-surface docs/tooling plus the current trace summary
-2. Generate a new `.xml` repomix package under `.agents/repomix_packages/`.
+2. Generate a new `.xml` repomix package under `.codex/repomix_packages/`.
 
 ### Checkpoint D. Route the outcome into the implementation order
 
@@ -105,7 +105,7 @@ This slice should:
 ## Test plan
 
 - `pdm run docs-validate`
-- `repomix --style xml --no-gitignore --output .agents/repomix_packages/repomix-flunk-out-frenzy-epic-33-foundation-review.xml --include "<targeted file list>"`
+- `repomix --style xml --no-gitignore --output .codex/repomix_packages/repomix-flunk-out-frenzy-epic-33-foundation-review.xml --include "<targeted file list>"`
 
 ## Rollback plan
 

@@ -126,7 +126,7 @@ enforcement thresholds.
 - `pdm run docs-validate`
 - reviewer approval on the retained story review record before implementation
 - when implementation eventually begins, record the exact measurement commands,
-  artifacts, and live verification notes in `.agents/handoff.md`
+  artifacts, and live verification notes in `.codex/handoff.md`
 
 ## References
 

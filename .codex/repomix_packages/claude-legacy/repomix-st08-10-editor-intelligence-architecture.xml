@@ -1,0 +1,2615 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: docs/backlog/stories/story-08-10-script-editor-intelligence.md, docs/backlog/epics/epic-08-contextual-help-and-onboarding.md, docs/reference/ref-ai-script-generation-kb.md, .agents/handoff.md, .agents/readme-first.md, frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue, frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue, frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts, runner/_runner.py, runner/pdf_helper.py, runner/tool_errors.py, runner/README.md, docs/backlog/stories/story-11-12-script-editor-migration.md
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.agents/
+  handoff.md
+  readme-first.md
+docs/
+  backlog/
+    epics/
+      epic-08-contextual-help-and-onboarding.md
+    stories/
+      story-08-10-script-editor-intelligence.md
+      story-11-12-script-editor-migration.md
+  reference/
+    ref-ai-script-generation-kb.md
+frontend/
+  apps/
+    skriptoteket/
+      src/
+        components/
+          editor/
+            CodeMirrorEditor.vue
+        composables/
+          editor/
+            useScriptEditor.ts
+        views/
+          admin/
+            ScriptEditorView.vue
+runner/
+  _runner.py
+  pdf_helper.py
+  README.md
+  tool_errors.py
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="docs/backlog/epics/epic-08-contextual-help-and-onboarding.md">
+---
+type: epic
+id: EPIC-08
+title: "Contextual help (Hjälp) and onboarding"
+status: proposed
+owners: "agents"
+created: 2025-12-17
+outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
+---
+
+## Scope
+
+- Add a **global, collapsible** “Hjälp” entry point that is available both **before and after login**.
+- Provide **context-aware help content** per page (and per role where relevant).
+- Provide a **help index** with navigation back to the index from any page’s help (“Till hjälpindex”).
+- Add **field-level micro-help**:
+  - discrete help icons next to non-trivial fields
+  - short, action-focused explanations (Swedish, no technical jargon)
+  - examples via placeholder/ghost text that disappears as the user types
+- Keep the implementation **vanilla** (server-rendered templates + HTMX where helpful, plain CSS/JS, no new dependencies).
+- Accessibility baseline: keyboard operable, reasonable ARIA, close-on-escape, does not trap focus.
+
+## Stories
+
+- [ST-08-01: Help framework (toggle + index + behavior)](../stories/story-08-01-help-framework.md)
+- [ST-08-02: Login help + micro-help](../stories/story-08-02-login-help.md)
+- [ST-08-03: Post-login home help index (site map)](../stories/story-08-03-home-help-index.md)
+- [ST-08-04: Catalog help (browse + run)](../stories/story-08-04-catalog-help.md)
+- [ST-08-05: Tool results + downloads help](../stories/story-08-05-results-and-downloads-help.md)
+- [ST-08-06: Contributor help (Mina verktyg + Föreslå skript)](../stories/story-08-06-contributor-help.md)
+- [ST-08-07: Admin help (Förslag + Verktyg)](../stories/story-08-07-admin-dashboard-help.md)
+- [ST-08-08: Script editor help (overview + versioning)](../stories/story-08-08-editor-help-overview.md)
+- [ST-08-09: Script editor help (test runner + run result)](../stories/story-08-09-editor-help-test-area.md)
+- [ST-08-10: Script editor intelligence (CodeMirror 6 linting and suggestions)](../stories/story-08-10-script-editor-intelligence.md)
+
+## Risks
+
+- Help becomes too verbose or visually noisy (mitigate: short copy, progressive disclosure, discrete icons).
+- Copy drift across pages (mitigate: centralized patterns + “source of truth” per story).
+- Accessibility regressions (mitigate: keyboard/escape/outside-click close, aria-controls/expanded).
+- Maintenance overhead as features evolve (mitigate: keep help content near templates/routes it describes).
+
+## Dependencies
+
+- EPIC-05 (HuleEdu design system) for consistent styling.
+- ST-05-07 for stabilized layout primitives (panel width + dvh fallback) if needed before polishing the help drawer.
+</file>
+
+<file path="docs/backlog/stories/story-08-10-script-editor-intelligence.md">
+---
+type: story
+id: ST-08-10
+title: "Script editor intelligence (CodeMirror 6 linting and suggestions)"
+status: ready
+owners: "agents"
+created: 2025-12-24
+epic: "EPIC-08"
+acceptance_criteria:
+  - "Given the editor loads, when typing 'from ', then Skriptoteket helpers appear in autocomplete (pdf_helper, tool_errors)"
+  - "Given a script missing 'def run_tool', when linting runs, then a warning diagnostic appears"
+  - "Given a script uses 'requests' or 'subprocess', when linting runs, then a security warning appears"
+  - "Given a script returns a dict missing 'outputs', when linting runs, then an info diagnostic appears"
+  - "Given the user hovers over 'save_as_pdf' or 'ToolUserError', then inline documentation tooltip appears"
+ui_impact: "Adds in-editor code intelligence to help script authors discover available helpers and catch common errors."
+data_impact: "None - client-side only."
+dependencies: ["ST-11-12"]
+---
+
+## Context
+
+Script authors need to discover Skriptoteket-specific helpers (pdf_helper, tool_errors) and follow the runner contract.
+Currently, this information exists in the KB (ref-ai-script-generation-kb.md) but isn't surfaced in the editor.
+
+## Scope
+
+- Custom autocompletions for Skriptoteket imports and contract v2 keys
+- Lint diagnostics:
+  - Entrypoint rules (missing/wrong signature)
+  - Contract validation (outputs structure, kind values, notice fields)
+  - Security warnings (network APIs, subprocess)
+  - Best practices (encoding, use pdf_helper, mkdir before write)
+- Hover tooltips with inline documentation for helper functions
+
+## Technical Notes
+
+Uses CodeMirror 6 extension APIs:
+
+- `@codemirror/autocomplete` for completion sources
+- `@codemirror/lint` for diagnostic callbacks
+- `@codemirror/view` (Tooltip) for hover docs
+
+## Lint Rules
+
+### Entrypoint rules
+
+- Missing `def run_tool` (warning)
+- Wrong signature (missing `input_path` or `output_dir` params) (warning)
+
+### Contract validation
+
+- Return dict missing `outputs`, `next_actions`, or `state` (info)
+- `outputs` not a list (error)
+- Output dict missing `kind` key (warning)
+- Invalid `kind` value (warning)
+- `notice` missing `level` or `message` (warning)
+- `level` not one of `info`, `warning`, `error` (warning)
+
+### Security warnings
+
+- Using `requests`, `urllib`, `httpx`, `aiohttp` (blocked by `--network none`) (error)
+- Using `subprocess`, `os.system`, `os.popen` (sandboxed) (warning)
+- Writing outside `output_dir` (warning)
+
+### Best practices
+
+- `raise ToolUserError` without import (error)
+- Missing `encoding` param in `open()`, `read_text()`, `write_text()` (info)
+- Using `weasyprint.HTML` directly instead of `pdf_helper.save_as_pdf` (info)
+- Missing `Path(output_dir).mkdir(parents=True, exist_ok=True)` before writing (info)
+
+## Files
+
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketCompletions.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketHover.ts`
+- `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`
+</file>
+
+<file path="frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue">
+<template>
+  <div
+    ref="container"
+    class="h-full w-full"
+  />
+</template>
+
+<script setup lang="ts">
+import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  completionKeymap,
+} from "@codemirror/autocomplete";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+import { EditorState } from "@codemirror/state";
+import {
+  bracketMatching,
+  defaultHighlightStyle,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  syntaxHighlighting,
+} from "@codemirror/language";
+import { python } from "@codemirror/lang-python";
+import { lintKeymap } from "@codemirror/lint";
+import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  keymap,
+  lineNumbers,
+  rectangularSelection,
+} from "@codemirror/view";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+
+const props = defineProps<{ modelValue: string }>();
+const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+
+const container = ref<HTMLDivElement | null>(null);
+
+let view: EditorView | null = null;
+let suppressEmit = false;
+
+const editorLayoutTheme = EditorView.theme(
+  {
+    "&": {
+      height: "100%",
+      fontSize: "14px",
+    },
+    ".cm-scroller": {
+      overflow: "auto",
+    },
+  },
+  { dark: false },
+);
+
+onMounted(() => {
+  const parent = container.value;
+  if (!parent) {
+    throw new Error("CodeMirror mount element is missing");
+  }
+
+  const updateListener = EditorView.updateListener.of((update) => {
+    if (!update.docChanged) return;
+    if (suppressEmit) return;
+    emit("update:modelValue", update.state.doc.toString());
+  });
+
+  view = new EditorView({
+    state: EditorState.create({
+      doc: props.modelValue,
+      extensions: [
+        lineNumbers(),
+        highlightActiveLineGutter(),
+        highlightSpecialChars(),
+        history(),
+        foldGutter(),
+        drawSelection(),
+        dropCursor(),
+        EditorState.allowMultipleSelections.of(true),
+        indentOnInput(),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        bracketMatching(),
+        closeBrackets(),
+        autocompletion(),
+        rectangularSelection(),
+        crosshairCursor(),
+        highlightActiveLine(),
+        highlightSelectionMatches(),
+        keymap.of([
+          indentWithTab,
+          ...closeBracketsKeymap,
+          ...defaultKeymap,
+          ...searchKeymap,
+          ...historyKeymap,
+          ...foldKeymap,
+          ...completionKeymap,
+          ...lintKeymap,
+        ]),
+        python(),
+        EditorState.tabSize.of(4),
+        editorLayoutTheme,
+        updateListener,
+      ],
+    }),
+    parent,
+  });
+});
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (!view) return;
+
+    const current = view.state.doc.toString();
+    if (value === current) return;
+
+    suppressEmit = true;
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: value },
+    });
+    suppressEmit = false;
+  },
+);
+
+onBeforeUnmount(() => {
+  view?.destroy();
+  view = null;
+});
+</script>
+</file>
+
+<file path="runner/_runner.py">
+from __future__ import annotations
+
+import json
+import os
+import sys
+import traceback
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+from typing import Literal, TypedDict
+
+from tool_errors import ToolUserError
+
+
+class RunnerArtifact(TypedDict):
+    path: str
+    bytes: int
+
+
+JsonPrimitive = str | int | float | bool | None
+JsonValue = JsonPrimitive | dict[str, "JsonValue"] | list["JsonValue"]
+RunnerUiObject = dict[str, JsonValue]
+
+RunnerStatus = Literal["succeeded", "failed", "timed_out"]
+
+
+class RunnerResultPayloadV2(TypedDict):
+    contract_version: Literal[2]
+    status: RunnerStatus
+    error_summary: str | None
+    outputs: list[RunnerUiObject]
+    next_actions: list[RunnerUiObject]
+    state: dict[str, JsonValue] | None
+    artifacts: list[RunnerArtifact]
+
+
+def _stable_json_sort_key(value: JsonValue) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _to_json_value(value: object, *, depth: int = 0, max_depth: int = 50) -> JsonValue:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+
+    if depth >= max_depth:
+        return str(value)
+
+    if isinstance(value, dict):
+        result: dict[str, JsonValue] = {}
+        for key, raw in value.items():
+            if not isinstance(key, str):
+                continue
+            result[key] = _to_json_value(raw, depth=depth + 1, max_depth=max_depth)
+        return result
+
+    if isinstance(value, (list, tuple)):
+        return [_to_json_value(item, depth=depth + 1, max_depth=max_depth) for item in value]
+
+    if isinstance(value, (set, frozenset)):
+        converted = [_to_json_value(item, depth=depth + 1, max_depth=max_depth) for item in value]
+        converted.sort(key=_stable_json_sort_key)
+        return converted
+
+    return str(value)
+
+
+def _coerce_ui_object(value: object) -> RunnerUiObject | None:
+    if not isinstance(value, dict):
+        return None
+    json_value = _to_json_value(value)
+    if isinstance(json_value, dict):
+        return json_value
+    return None
+
+
+def _coerce_ui_object_list(value: object) -> list[RunnerUiObject]:
+    if not isinstance(value, list):
+        return []
+    result: list[RunnerUiObject] = []
+    for item in value:
+        obj = _coerce_ui_object(item)
+        if obj is not None:
+            result.append(obj)
+    return result
+
+
+def _coerce_state(value: object) -> dict[str, JsonValue] | None:
+    if value is None:
+        return None
+    json_value = _to_json_value(value)
+    if isinstance(json_value, dict):
+        return json_value
+    return None
+
+
+def _to_contract_v2_ui_fields(
+    result: object,
+) -> tuple[list[RunnerUiObject], list[RunnerUiObject], dict[str, JsonValue] | None]:
+    """Convert a script return value into contract v2 UI fields.
+
+    Supported tool return shapes:
+    - str: treated as a single `html_sandboxed` output (backwards compatible)
+    - dict: treated as a partial contract payload containing optional `outputs`, `next_actions`,
+      and `state`
+    """
+
+    if isinstance(result, str):
+        html = result
+        outputs: list[RunnerUiObject] = []
+        if html:
+            outputs.append({"kind": "html_sandboxed", "html": html})
+        return outputs, [], None
+
+    if isinstance(result, dict):
+        outputs = _coerce_ui_object_list(result.get("outputs"))
+        next_actions = _coerce_ui_object_list(result.get("next_actions"))
+        state = _coerce_state(result.get("state"))
+        return outputs, next_actions, state
+
+    raise TypeError("Entrypoint must return a str (HTML) or a dict (contract v2 payload)")
+
+
+def _load_module_from_path(*, module_path: Path) -> object:
+    spec = spec_from_file_location("tool_script", module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Failed to load tool script (invalid spec)")
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _safe_error_summary(*, error: BaseException) -> str:
+    if isinstance(error, ToolUserError):
+        return error.safe_message
+    return f"Tool execution failed ({type(error).__name__})."
+
+
+def _collect_artifacts(*, work_dir: Path, output_dir: Path) -> list[RunnerArtifact]:
+    artifacts: list[RunnerArtifact] = []
+    for file_path in output_dir.rglob("*"):
+        if not file_path.is_file():
+            continue
+        relative_to_work = file_path.relative_to(work_dir).as_posix()
+        artifacts.append({"path": relative_to_work, "bytes": file_path.stat().st_size})
+    artifacts.sort(key=lambda a: a["path"])
+    return artifacts
+
+
+def main() -> int:
+    work_dir = Path("/work")
+
+    script_path = Path(os.getenv("SKRIPTOTEKET_SCRIPT_PATH", "/work/script.py"))
+    entrypoint = os.getenv("SKRIPTOTEKET_ENTRYPOINT", "run_tool").strip()
+    input_path = Path(os.getenv("SKRIPTOTEKET_INPUT_PATH", "/work/input"))
+    output_dir = Path(os.getenv("SKRIPTOTEKET_OUTPUT_DIR", "/work/output"))
+    result_path = Path(os.getenv("SKRIPTOTEKET_RESULT_PATH", "/work/result.json"))
+
+    status: RunnerStatus = "failed"
+    error_summary: str | None = None
+    artifacts: list[RunnerArtifact] = []
+    outputs: list[RunnerUiObject] = []
+    next_actions: list[RunnerUiObject] = []
+    state: dict[str, JsonValue] | None = None
+
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        module = _load_module_from_path(module_path=script_path)
+
+        func = getattr(module, entrypoint, None)
+        if func is None or not callable(func):
+            raise RuntimeError(f"Entrypoint not found: {entrypoint}")
+
+        result = func(str(input_path), str(output_dir))
+
+        outputs, next_actions, state = _to_contract_v2_ui_fields(result)
+        status = "succeeded"
+        artifacts = _collect_artifacts(work_dir=work_dir, output_dir=output_dir)
+
+    except BaseException as e:  # noqa: BLE001 - runner boundary; writes a safe result.json
+        error_summary = _safe_error_summary(error=e)
+        traceback.print_exc(file=sys.stderr)
+
+    payload: RunnerResultPayloadV2 = {
+        "contract_version": 2,
+        "status": status,
+        "error_summary": error_summary,
+        "outputs": outputs,
+        "next_actions": next_actions,
+        "state": state,
+        "artifacts": artifacts,
+    }
+    result_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</file>
+
+<file path="runner/pdf_helper.py">
+from __future__ import annotations
+
+from pathlib import Path, PurePosixPath
+
+from tool_errors import ToolUserError
+
+_WORK_DIR = "/work/"
+
+
+def _validate_relative_pdf_path(relative_path: str) -> PurePosixPath:
+    candidate = relative_path.strip()
+    if not candidate:
+        raise ToolUserError("Ogiltigt filnamn. Filnamnet måste sluta med .pdf.")
+    if "\x00" in candidate:
+        raise ToolUserError("Ogiltigt filnamn. Filnamnet innehåller ogiltiga tecken.")
+
+    candidate = candidate.replace("\\", "/")
+    path = PurePosixPath(candidate)
+
+    if path.is_absolute():
+        raise ToolUserError("Ogiltigt filnamn. Filnamnet måste vara relativt under output.")
+    if any(part in {"..", "."} for part in path.parts):
+        raise ToolUserError("Ogiltigt filnamn. Filnamnet får inte innehålla '..' eller '.'.")
+    if path.suffix.lower() != ".pdf":
+        raise ToolUserError("Ogiltigt filnamn. Filnamnet måste sluta med .pdf.")
+
+    return path
+
+
+def _safe_join_output_dir(*, output_dir: str, relative_path: PurePosixPath) -> Path:
+    output_root = Path(output_dir)
+    try:
+        output_root.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:  # noqa: BLE001 - boundary helper
+        raise ToolUserError("Kunde inte skapa output-katalogen för PDF.") from exc
+
+    output_root_resolved = output_root.resolve()
+    output_path = output_root.joinpath(*relative_path.parts)
+    output_path_resolved = output_path.resolve()
+    if (
+        output_root_resolved != output_path_resolved
+        and output_root_resolved not in output_path_resolved.parents
+    ):
+        raise ToolUserError("Ogiltigt filnamn. PDF måste sparas under output-katalogen.")
+    return output_path
+
+
+def save_as_pdf(html: str, output_dir: str, filename: str) -> str:
+    """Render HTML to a PDF under output_dir so it becomes a normal artifact."""
+
+    relative_pdf_path = _validate_relative_pdf_path(filename)
+    pdf_path = _safe_join_output_dir(output_dir=output_dir, relative_path=relative_pdf_path)
+
+    try:
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:  # noqa: BLE001 - boundary helper
+        raise ToolUserError("Kunde inte skapa undermappar för PDF-utdata.") from exc
+
+    try:
+        from weasyprint import HTML  # imported lazily; tool scripts may not need PDF support
+
+        HTML(string=html, base_url=_WORK_DIR).write_pdf(
+            target=str(pdf_path),
+            pdf_identifier=None,
+            uncompressed_pdf=False,
+        )
+    except ToolUserError:
+        raise
+    except Exception as exc:  # noqa: BLE001 - boundary helper
+        raise ToolUserError(
+            "PDF-rendering misslyckades. Kontrollera att HTML/CSS är giltig och "
+            "att filnamnet slutar med .pdf."
+        ) from exc
+
+    return str(pdf_path)
+</file>
+
+<file path="runner/README.md">
+# Runner Helpers
+
+Moduler tillgängliga för verktygs-skript i körmiljön.
+
+## pdf_helper
+
+Renderar HTML till PDF med WeasyPrint.
+
+```python
+from pdf_helper import save_as_pdf
+
+pdf_path = save_as_pdf(html_content, output_dir, "rapport.pdf")
+```
+
+**Parametrar:**
+
+- `html` - HTML-sträng att rendera
+- `output_dir` - Katalog för artefakter (från `run_tool`-signaturen)
+- `filename` - Relativ sökväg, måste sluta med `.pdf`
+
+**Returnerar:** Absolut sökväg till skapad PDF.
+
+## tool_errors
+
+Undantag för användarvänliga felmeddelanden.
+
+```python
+from tool_errors import ToolUserError
+
+raise ToolUserError("Filtypen stöds inte.")
+```
+
+Meddelandet visas som `error_summary` utan stacktrace.
+
+---
+
+Se `docs/reference/ref-ai-script-generation-kb.md` för fullständig dokumentation.
+</file>
+
+<file path="runner/tool_errors.py">
+from __future__ import annotations
+
+
+class ToolUserError(Exception):
+    """A safe, user-facing error raised by tool scripts.
+
+    The message is returned as `error_summary` in the runner result contract and
+    MUST be safe for end-user display (no stack traces, no host paths, no secrets).
+    """
+
+    def __init__(self, message: str) -> None:
+        safe_message = message.strip() or "Ett fel inträffade."
+        super().__init__(safe_message)
+        self.safe_message = safe_message
+</file>
+
+<file path="docs/backlog/stories/story-11-12-script-editor-migration.md">
+---
+type: story
+id: ST-11-12
+title: "Script editor migration (CodeMirror 6)"
+status: done
+owners: "agents"
+created: 2025-12-21
+epic: "EPIC-11"
+acceptance_criteria:
+  - "Given a contributor/admin visits the editor route, when the SPA loads, then CodeMirror 6 renders and supports save + draft workflows via the API"
+  - "Given a user runs a sandbox test, when the run completes, then the SPA renders outputs/logs and allows artifact download"
+ui_impact: "Replaces the current server-rendered editor and island surfaces with a unified SPA editor."
+dependencies: ["ST-11-01", "ST-11-04", "ST-11-05"]
+---
+
+## Context
+
+The script editor is the highest-complexity admin surface and benefits strongly from SPA state management and component
+composition.
+</file>
+
+<file path="docs/reference/ref-ai-script-generation-kb.md">
+---
+type: reference
+id: REF-ai-script-generation-kb
+title: "AI Script Generation Knowledge Base"
+status: active
+owners: "agents"
+created: 2025-12-20
+topic: "scripting"
+---
+
+Detta dokument innehåller all information som en AI-assistent behöver för att hjälpa användare skapa skript enligt Skriptotekets datakontrakt.
+
+---
+
+## 1. Översikt
+
+Skriptoteket är en plattform för att köra Python-skript som bearbetar uppladdade filer (CSV, XLSX, PDF, DOCX, etc.) och returnerar strukturerade resultat till användaren.
+
+**Nyckelkoncept:**
+
+- Användaren laddar upp en fil
+- Skriptet bearbetar filen
+- Skriptet returnerar UI-element (tabeller, meddelanden, markdown) och/eller nedladdningsbara artefakter
+- Skriptet körs i en isolerad Docker-container utan nätverksåtkomst
+
+---
+
+## 2. Skriptets grundstruktur
+
+### 2.1 Entrypoint-funktionen
+
+Varje skript MÅSTE definiera en funktion med denna signatur:
+
+```python
+def run_tool(input_path: str, output_dir: str) -> str | dict:
+    """
+    Parametrar:
+    - input_path: Absolut sökväg till den uppladdade filen
+    - output_dir: Katalog där skriptet kan skriva artefakter (filer att ladda ner)
+
+    Returnerar:
+    - En HTML-sträng (äldre format, renderas i sandboxad iframe)
+    - ELLER en dict enligt Contract v2 (rekommenderat, se nedan)
+    """
+```
+
+**Viktigt:** Funktionsnamnet är konfigurerat till `run_tool` som standard, men kan ändras i verktygets inställningar.
+
+### 2.2 Minimal skriptmall
+
+```python
+from pathlib import Path
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    """Bearbeta den uppladdade filen och returnera resultat."""
+
+    # Läs input
+    path = Path(input_path)
+
+    # Bearbeta...
+
+    # Returnera resultat enligt Contract v2
+    return {
+        "outputs": [
+            {
+                "kind": "notice",
+                "level": "info",
+                "message": "Bearbetningen lyckades!"
+            }
+        ],
+        "next_actions": [],
+        "state": None
+    }
+```
+
+---
+
+## 3. Output-kontrakt (Contract v2)
+
+Skriptet returnerar en dict med tre fält:
+
+```python
+{
+    "outputs": [...],      # Lista med UI-element
+    "next_actions": [...], # Lista med formulär för uppföljningsåtgärder
+    "state": {...}         # Valfritt state att spara mellan körningar
+}
+```
+
+### 3.1 Output-typer (outputs)
+
+#### 3.1.1 Notice (meddelanden)
+
+```python
+{
+    "kind": "notice",
+    "level": "info",      # "info" | "warning" | "error"
+    "message": "Texten som visas för användaren"
+}
+```
+
+**Begränsningar:**
+- `message`: Max 8 KB
+
+#### 3.1.2 Markdown
+
+```python
+{
+    "kind": "markdown",
+    "markdown": "## Rubrik\n\nVanlig text med **fetstil** och *kursiv*."
+}
+```
+
+**Begränsningar:**
+- `markdown`: Max 64 KB
+
+#### 3.1.3 Tabell
+
+```python
+{
+    "kind": "table",
+    "title": "Statistik per kolumn",  # Valfritt
+    "columns": [
+        {"key": "column", "label": "Kolumn"},
+        {"key": "count", "label": "Antal"}
+    ],
+    "rows": [
+        {"column": "Namn", "count": 42},
+        {"column": "E-post", "count": 38}
+    ]
+}
+```
+
+**Begränsningar:**
+- Max 40 kolumner
+- Max 750 rader
+- Varje cell: Max 512 bytes
+
+#### 3.1.4 JSON
+
+```python
+{
+    "kind": "json",
+    "title": "Diagnostik",  # Valfritt
+    "value": {"any": "json", "data": [1, 2, 3]}
+}
+```
+
+**Begränsningar:**
+- `value`: Max 96 KB
+- Max djup: 10 nivåer
+- Max 1000 nycklar per objekt
+- Max 2000 element per array
+
+#### 3.1.5 HTML (sandboxad)
+
+```python
+{
+    "kind": "html_sandboxed",
+    "html": "<p>Renderas i en sandboxad iframe</p>"
+}
+```
+
+**Begränsningar:**
+- `html`: Max 96 KB
+- Renderas i iframe utan JavaScript-åtkomst till huvudsidan
+
+### 3.2 Globala begränsningar för outputs
+
+| Begränsning | Standardprofil | Kuraterad profil |
+|-------------|----------------|------------------|
+| Max antal outputs | 50 | 150 |
+| UI payload total | 256 KB | 512 KB |
+
+---
+
+## 4. Artefakter (nedladdningsbara filer)
+
+### 4.1 Skapa artefakter
+
+Skriv filer till `output_dir`:
+
+```python
+from pathlib import Path
+from datetime import datetime, timezone
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+
+    # Skapa en artefakt
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    artifact_path = output / f"rapport_{timestamp}.txt"
+    artifact_path.write_text("Innehållet i filen", encoding="utf-8")
+
+    return {
+        "outputs": [
+            {
+                "kind": "notice",
+                "level": "info",
+                "message": "Rapporten skapades!"
+            }
+        ],
+        "next_actions": [],
+        "state": None
+    }
+```
+
+### 4.2 Artefaktregler
+
+- **Sökväg:** Alla artefakter måste ligga under `output_dir`
+- **Ingen path traversal:** `..` är inte tillåtet i sökvägar
+- **Retention:** Artefakter sparas i 7 dagar som standard
+- **Automatisk upptäckt:** Runner samlar automatiskt in alla filer under `output_dir`
+
+---
+
+## 5. Tillgängliga bibliotek
+
+Följande Python-bibliotek finns förinstallerade i körmiljön:
+
+### 5.1 Databearbetning
+
+| Bibliotek | Användning |
+|-----------|------------|
+| `pandas` | Läsa/manipulera CSV, Excel-data |
+| `openpyxl` | Läsa/skriva XLSX-filer |
+| `pypdf` | Läsa PDF-filer |
+| `python-docx` | Läsa/skriva Word-dokument |
+
+### 5.2 Dokumentgenerering
+
+| Bibliotek | Användning |
+|-----------|------------|
+| `pypandoc` | Konvertera mellan dokumentformat |
+| `weasyprint` | Skapa PDF från HTML/CSS |
+| `jinja2` | Template-rendering |
+
+### 5.3 Verktyg
+
+| Bibliotek | Användning |
+|-----------|------------|
+| `pydantic` | Datavalidering |
+| `aiohttp` | HTTP-klient (BLOCKERAD: nätverket är avstängt) |
+| `structlog` | Strukturerad loggning |
+| `pyyaml` | YAML-parsing |
+
+### 5.4 Systemverktyg (via apt)
+
+- `pandoc` - Dokumentkonvertering
+- `libcairo2` - 2D-grafik (används av weasyprint)
+
+---
+
+## 6. Körmiljöns begränsningar
+
+### 6.1 Resursbegränsningar
+
+| Resurs | Sandbox | Produktion |
+|--------|---------|------------|
+| Timeout | 60 sekunder | 120 sekunder |
+| CPU | 1 kärna | 1 kärna |
+| Minne | 1 GB | 1 GB |
+| Max processer | 256 | 256 |
+| Tmpfs | 256 MB | 256 MB |
+
+### 6.2 Säkerhetsbegränsningar
+
+| Begränsning | Status |
+|-------------|--------|
+| Nätverksåtkomst | **BLOCKERAD** (`--network none`) |
+| Läs filsystem | Read-only (utom /work, /tmp) |
+| Root-privilegier | Körs som `runner`-användare |
+| Capabilities | Alla droppade (`--cap-drop ALL`) |
+
+### 6.3 Filsystemlayout i containern
+
+```
+/work/
+├── script.py          # Ditt skript
+├── input/
+│   ├── <filnamn>      # Uppladdad fil (kan vara flera)
+│   └── <filnamn-2>
+├── output/            # Artefakter sparas här
+└── result.json        # Genereras av runner
+
+/tmp/                  # Skrivbar tmpfs (256 MB)
+/app/.venv/            # Python-miljön
+```
+
+**Miljövariabler:**
+- `SKRIPTOTEKET_SCRIPT_PATH`: Sökväg till skriptet
+- `SKRIPTOTEKET_ENTRYPOINT`: Funktionsnamnet att anropa
+- `SKRIPTOTEKET_INPUT_PATH`: Sökväg till indata
+- `SKRIPTOTEKET_INPUT_MANIFEST`: JSON med metadata för alla uppladdade filer
+- `SKRIPTOTEKET_OUTPUT_DIR`: Katalog för artefakter
+- `SKRIPTOTEKET_RESULT_PATH`: Där result.json skrivs
+
+---
+
+## 7. Vanliga mönster
+
+### 7.1 Läsa CSV-fil
+
+```python
+import csv
+from pathlib import Path
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    path = Path(input_path)
+
+    # Läs med autodetektering av separator
+    content = path.read_text(encoding="utf-8-sig")
+
+    for delimiter in [",", ";", "\t"]:
+        reader = csv.reader(content.splitlines(), delimiter=delimiter)
+        rows = list(reader)
+        if rows and len(rows[0]) > 1:
+            break
+
+    if not rows:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Filen är tom"}],
+            "next_actions": [],
+            "state": None
+        }
+
+    headers = rows[0]
+    data = rows[1:]
+
+    # Bearbeta...
+```
+
+### 7.2 Läsa Excel-fil
+
+```python
+from pathlib import Path
+import warnings
+from openpyxl import load_workbook
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    path = Path(input_path)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        wb = load_workbook(path, read_only=True, data_only=True)
+
+    ws = wb.active
+    if ws is None:
+        wb.close()
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen aktiv sida i Excel-filen"}],
+            "next_actions": [],
+            "state": None
+        }
+
+    rows = [[str(cell.value or "") for cell in row] for row in ws.iter_rows()]
+    wb.close()
+
+    # Bearbeta...
+```
+
+### 7.3 Multi-fil indata (manifest)
+
+```python
+import json
+import os
+from pathlib import Path
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+
+    # Alternativ: lista alla filer i input-katalogen
+    input_dir = Path(input_path).parent
+    all_files = list(input_dir.iterdir())
+
+    return {
+        "outputs": [
+            {"kind": "notice", "level": "info", "message": f"Filer: {len(files)}"},
+            {"kind": "json", "title": "input_manifest", "value": manifest},
+        ],
+        "next_actions": [],
+        "state": None,
+    }
+```
+
+### 7.3 Skapa PDF från HTML
+
+```python
+from pathlib import Path
+from pdf_helper import save_as_pdf
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><title>Rapport</title></head>
+    <body>
+        <h1>Min rapport</h1>
+        <p>Innehåll här...</p>
+    </body>
+    </html>
+    """
+
+    pdf_path = save_as_pdf(html_content, output_dir, "rapport.pdf")
+
+    return {
+        "outputs": [
+            {"kind": "notice", "level": "info", "message": "PDF skapad!"},
+            {"kind": "markdown", "markdown": f"Ladda ner **{Path(pdf_path).name}** ovan."}
+        ],
+        "next_actions": [],
+        "state": None
+    }
+```
+
+### 7.4 Använda pandas
+
+```python
+import pandas as pd
+from pathlib import Path
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    path = Path(input_path)
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+
+    # Läs baserat på filtyp
+    suffix = path.suffix.lower()
+    if suffix == ".xlsx":
+        df = pd.read_excel(path)
+    elif suffix in {".csv", ".txt"}:
+        df = pd.read_csv(path, encoding="utf-8-sig")
+    else:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": f"Okänd filtyp: {suffix}"}],
+            "next_actions": [],
+            "state": None
+        }
+
+    # Visa statistik
+    stats_rows = [{"kolumn": col, "unika": int(df[col].nunique())} for col in df.columns]
+
+    return {
+        "outputs": [
+            {"kind": "notice", "level": "info", "message": f"Läste {len(df)} rader"},
+            {
+                "kind": "table",
+                "title": "Kolumnstatistik",
+                "columns": [
+                    {"key": "kolumn", "label": "Kolumn"},
+                    {"key": "unika", "label": "Unika värden"}
+                ],
+                "rows": stats_rows
+            }
+        ],
+        "next_actions": [],
+        "state": None
+    }
+```
+
+---
+
+## 8. Felhantering
+
+### 8.1 Användarfel (förväntat)
+
+Returnera ett felmeddelande via outputs:
+
+```python
+def run_tool(input_path: str, output_dir: str) -> dict:
+    path = Path(input_path)
+    suffix = path.suffix.lower()
+
+    if suffix not in {".csv", ".xlsx"}:
+        return {
+            "outputs": [
+                {
+                    "kind": "notice",
+                    "level": "error",
+                    "message": f"Filtypen '{suffix}' stöds inte. Använd .csv eller .xlsx."
+                }
+            ],
+            "next_actions": [],
+            "state": None
+        }
+
+    # Fortsätt bearbetning...
+```
+
+### 8.2 Oväntat fel (exception)
+
+Om skriptet kastar ett undantag:
+- Körstatus sätts till `"failed"`
+- `error_summary` sätts till `"Tool execution failed ({ExceptionType})."`
+- Stacktrace skrivs till `stderr` (synlig i admin-vyn)
+
+```python
+def run_tool(input_path: str, output_dir: str) -> dict:
+    try:
+        # Riskabel operation
+        result = risky_operation()
+    except SpecificError as e:
+        # Fånga specifika fel och ge användarvänligt meddelande
+        return {
+            "outputs": [
+                {"kind": "notice", "level": "error", "message": f"Kunde inte bearbeta: {e}"}
+            ],
+            "next_actions": [],
+            "state": None
+        }
+    # Låt andra fel bubbla upp för att loggas i stderr
+```
+
+### 8.3 Timeout
+
+Om skriptet överskrider tidsgränsen:
+- Körstatus: `"timed_out"`
+- `error_summary`: `"Execution timed out."`
+
+### 8.4 ToolUserError (dedikerat undantag)
+
+För rena felmeddelanden som inte behöver ett `outputs`-svar kan du använda `ToolUserError`:
+
+```python
+from tool_errors import ToolUserError
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    path = Path(input_path)
+
+    if path.stat().st_size > 10_000_000:
+        raise ToolUserError("Filen är för stor (max 10 MB).")
+
+    # Fortsätt bearbetning...
+```
+
+**Skillnad mot notice-error:**
+
+| Metod | Status | Användning |
+|-------|--------|------------|
+| `raise ToolUserError(msg)` | `failed` | Avbryt körningen helt |
+| Return med notice `level: error` | `succeeded` | Rapportera fel men fortsätt (t.ex. validera fler rader) |
+
+**Regler:**
+
+- Meddelandet visas som `error_summary` i resultatet
+- Inga stacktraces, sökvägar eller hemligheter i meddelandet
+- Använd svenska, tydliga meddelanden
+
+---
+
+## 9. Felmeddelanden och felsökning
+
+### 9.1 Vanliga felmeddelanden
+
+| Meddelande | Orsak | Lösning |
+|------------|-------|---------|
+| `Runner contract violation: empty path` | Artefakt med tom sökväg | Kontrollera att alla filer har giltiga namn |
+| `Runner contract violation: absolute paths are not allowed` | Absolut sökväg i artefakt | Använd relativa sökvägar under output_dir |
+| `Runner contract violation: path traversal is not allowed` | `..` i sökväg | Ta bort path traversal |
+| `Runner contract violation: artifact paths must be under output/` | Artefakt utanför output/ | Skriv alla filer till output_dir |
+| `Runner at capacity; retry.` | För många samtidiga körningar | Vänta och försök igen |
+| `Entrypoint not found: run_tool` | Funktionen saknas | Definiera `def run_tool(input_path, output_dir)` |
+
+### 9.2 Felsökning via loggar
+
+- **stdout**: Synlig i admin-vyn, dold för vanliga användare
+- **stderr**: Synlig i admin-vyn, innehåller exception stacktraces
+
+```python
+import sys
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    # Debug-utskrift (synlig i admin-vyn)
+    print(f"Input: {input_path}", file=sys.stdout)
+    print(f"Output dir: {output_dir}", file=sys.stderr)
+
+    # ...
+```
+
+### 9.3 Kör lokalt för testning
+
+```bash
+# Från skript-filen direkt
+python script.py /path/to/testfile.csv /tmp/output
+
+# Visa result.json manuellt
+cat /tmp/output/result.json | python -m json.tool
+```
+
+---
+
+## 10. Checklista för skriptskapande
+
+### 10.1 Innan du börjar
+
+- [ ] Vilken filtyp ska skriptet hantera? (CSV, XLSX, PDF, etc.)
+- [ ] Vad är det önskade resultatet? (Statistik, konverterad fil, extraherad data)
+- [ ] Behövs artefakter (nedladdningsbara filer)?
+
+### 10.2 Under utveckling
+
+- [ ] Definiera `run_tool(input_path: str, output_dir: str) -> dict`
+- [ ] Hantera filtypsvalidering tidigt
+- [ ] Returnera alltid en giltig dict med `outputs`, `next_actions`, `state`
+- [ ] Skriv artefakter till `Path(output_dir)`
+- [ ] Fånga förväntade fel och ge användarvänliga meddelanden
+
+### 10.3 Innan publicering
+
+- [ ] Testa med sandbox-körning
+- [ ] Verifiera att artefakter skapas korrekt
+- [ ] Kontrollera att alla outputs följer storleksbegränsningarna
+- [ ] Granska felhantering för kantfall
+
+---
+
+## 11. Snabbreferens: Contract v2 typer
+
+```python
+# Output-typer
+OutputKind = Literal["notice", "markdown", "table", "json", "html_sandboxed"]
+NoticeLevel = Literal["info", "warning", "error"]
+
+# Notice
+{"kind": "notice", "level": NoticeLevel, "message": str}
+
+# Markdown
+{"kind": "markdown", "markdown": str}
+
+# Table
+{
+    "kind": "table",
+    "title": str | None,
+    "columns": [{"key": str, "label": str}, ...],
+    "rows": [{"key1": value1, "key2": value2}, ...]  # value: str | int | float | bool | None
+}
+
+# JSON
+{"kind": "json", "title": str | None, "value": JsonValue}
+
+# HTML
+{"kind": "html_sandboxed", "html": str}
+
+# Returformat
+{
+    "outputs": list[Output],
+    "next_actions": list[FormAction],  # Framtida: interaktiva formulär
+    "state": dict | None               # Framtida: spara state mellan körningar
+}
+```
+
+---
+
+## 12. Fullständigt exempelskript
+
+```python
+"""
+Extrahera e-postadresser från en CSV/XLSX-fil.
+
+Användning:
+1. Ladda upp en fil med kolumner som innehåller e-postadresser
+2. Skriptet returnerar en semikolonseparerad lista
+
+Runner-kontrakt:
+- Entrypoint: run_tool(input_path: str, output_dir: str) -> dict
+- Input: CSV eller XLSX
+- Output: Notice + artefakt med e-postlista
+"""
+
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+
+EMAIL_RE = re.compile(r"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,15})")
+
+
+def read_file(path: Path) -> tuple[list[str], list[list[str]]]:
+    """Läs CSV eller XLSX och returnera (headers, data_rows)."""
+    suffix = path.suffix.lower()
+
+    if suffix == ".xlsx":
+        import warnings
+        from openpyxl import load_workbook
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            wb = load_workbook(path, read_only=True, data_only=True)
+        ws = wb.active
+        if ws is None:
+            wb.close()
+            return [], []
+        rows = [[str(cell.value or "") for cell in row] for row in ws.iter_rows()]
+        wb.close()
+        return (rows[0], rows[1:]) if rows else ([], [])
+
+    elif suffix in {".csv", ".txt"}:
+        import csv
+        content = path.read_text(encoding="utf-8-sig")
+        for delimiter in [",", ";", "\t"]:
+            reader = csv.reader(content.splitlines(), delimiter=delimiter)
+            rows = list(reader)
+            if rows and len(rows[0]) > 1:
+                return rows[0], rows[1:]
+        return (rows[0], rows[1:]) if rows else ([], [])
+
+    return [], []
+
+
+def harvest_emails(cells: list[str]) -> list[str]:
+    """Extrahera unika e-postadresser från en lista med celler."""
+    seen = set()
+    result = []
+    for cell in cells:
+        for match in EMAIL_RE.findall(str(cell)):
+            email = match.lower()
+            if email not in seen:
+                seen.add(email)
+                result.append(email)
+    return result
+
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    """Entrypoint: extrahera e-postadresser från uppladdad fil."""
+    path = Path(input_path)
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+
+    # Validera filtyp
+    suffix = path.suffix.lower()
+    if suffix not in {".csv", ".xlsx", ".txt"}:
+        return {
+            "outputs": [
+                {
+                    "kind": "notice",
+                    "level": "error",
+                    "message": f"Filtypen '{suffix}' stöds inte. Använd .csv eller .xlsx."
+                }
+            ],
+            "next_actions": [],
+            "state": None
+        }
+
+    # Läs fil
+    headers, data_rows = read_file(path)
+
+    if not headers:
+        return {
+            "outputs": [
+                {
+                    "kind": "notice",
+                    "level": "error",
+                    "message": "Filen verkar tom eller saknar kolumnrubriker."
+                }
+            ],
+            "next_actions": [],
+            "state": None
+        }
+
+    # Samla e-postadresser från alla kolumner
+    all_cells = []
+    for row in data_rows:
+        all_cells.extend(row)
+
+    emails = harvest_emails(all_cells)
+
+    if not emails:
+        return {
+            "outputs": [
+                {"kind": "notice", "level": "warning", "message": "Inga e-postadresser hittades."},
+                {
+                    "kind": "markdown",
+                    "markdown": (
+                        f"Filen innehöll **{len(data_rows)}** rader men inga giltiga "
+                        f"e-postadresser kunde extraheras.\n\n"
+                        f"*Tips: Kontrollera att filen innehåller e-postadresser.*"
+                    )
+                }
+            ],
+            "next_actions": [],
+            "state": None
+        }
+
+    # Skapa artefakt
+    email_string = ";".join(emails)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    artifact_name = f"emails_{timestamp}.txt"
+    artifact_path = output / artifact_name
+    artifact_path.write_text(email_string, encoding="utf-8")
+
+    return {
+        "outputs": [
+            {
+                "kind": "notice",
+                "level": "info",
+                "message": f"{len(emails)} unika e-postadresser extraherades från {len(data_rows)} rader."
+            },
+            {
+                "kind": "markdown",
+                "markdown": f"Ladda ner **{artifact_name}** och klistra in i BCC-fältet."
+            }
+        ],
+        "next_actions": [],
+        "state": None
+    }
+
+
+if __name__ == "__main__":
+    import json
+    import sys
+
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} <input_file> <output_dir>")
+        raise SystemExit(1)
+
+    result = run_tool(sys.argv[1], sys.argv[2])
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+```
+
+---
+
+## 13. Frågor att ställa användaren
+
+När en användare vill skapa ett nytt skript, ställ följande frågor:
+
+1. **Filtyp:** Vilken typ av fil ska skriptet bearbeta? (CSV, XLSX, PDF, Word, annat)
+2. **Syfte:** Vad är målet med bearbetningen? (Extrahera data, transformera, analysera, generera rapport)
+3. **Output-format:** Hur vill användaren se resultatet? (Tabell, nedladdningsbar fil, statistik)
+4. **Kolumner/fält:** Finns det specifika kolumner eller fält som är viktiga?
+5. **Valideringsregler:** Finns det kriterier för vad som är giltigt/ogiltigt data?
+6. **Felhantering:** Hur ska skriptet hantera problem (tomma filer, felaktigt format)?
+</file>
+
+<file path="frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts">
+import { computed, onMounted, ref, watch, type Ref } from "vue";
+import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
+
+import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
+import type { components } from "../../api/openapi";
+
+type EditorBootResponse = components["schemas"]["EditorBootResponse"];
+type EditorToolMetadataResponse = components["schemas"]["EditorToolMetadataResponse"];
+type SaveResult = components["schemas"]["SaveResult"];
+
+type UseScriptEditorOptions = {
+  toolId: Readonly<Ref<string>>;
+  versionId: Readonly<Ref<string>>;
+  route: RouteLocationNormalizedLoaded;
+  router: Router;
+};
+
+export function useScriptEditor({
+  toolId,
+  versionId,
+  route,
+  router,
+}: UseScriptEditorOptions) {
+  const editor = ref<EditorBootResponse | null>(null);
+  const entrypoint = ref("");
+  const sourceCode = ref("");
+  const changeSummary = ref("");
+  const metadataTitle = ref("");
+  const metadataSummary = ref("");
+
+  const isLoading = ref(true);
+  const isSaving = ref(false);
+  const isMetadataSaving = ref(false);
+  const errorMessage = ref<string | null>(null);
+  const successMessage = ref<string | null>(null);
+
+  const initialSnapshot = ref<{ entrypoint: string; sourceCode: string } | null>(null);
+
+  const selectedVersion = computed(() => editor.value?.selected_version ?? null);
+  const editorToolId = computed(() => editor.value?.tool.id ?? "");
+
+  const saveButtonLabel = computed(() => {
+    if (isSaving.value) return "Sparar...";
+    return "Spara";
+  });
+
+  const hasDirtyChanges = computed(() => {
+    if (!initialSnapshot.value) return false;
+    return (
+      initialSnapshot.value.entrypoint !== entrypoint.value ||
+      initialSnapshot.value.sourceCode !== sourceCode.value
+    );
+  });
+
+  function normalizedOptionalString(value: string): string | null {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  function resolveEditorPath(): { path: string | null; soft: boolean } {
+    const queryVersion =
+      typeof route.query.version === "string" ? route.query.version.trim() : "";
+    if (queryVersion) {
+      return {
+        path: `/api/v1/editor/tool-versions/${encodeURIComponent(queryVersion)}`,
+        soft: Boolean(editor.value),
+      };
+    }
+
+    if (toolId.value !== "") {
+      return {
+        path: `/api/v1/editor/tools/${encodeURIComponent(toolId.value)}`,
+        soft: false,
+      };
+    }
+    if (versionId.value !== "") {
+      return {
+        path: `/api/v1/editor/tool-versions/${encodeURIComponent(versionId.value)}`,
+        soft: false,
+      };
+    }
+    return { path: null, soft: false };
+  }
+
+  function applyEditorResponse(response: EditorBootResponse): void {
+    editor.value = response;
+    entrypoint.value = response.entrypoint;
+    sourceCode.value = response.source_code;
+    changeSummary.value = "";
+    metadataTitle.value = response.tool.title;
+    metadataSummary.value = response.tool.summary ?? "";
+    initialSnapshot.value = {
+      entrypoint: response.entrypoint,
+      sourceCode: response.source_code,
+    };
+  }
+
+  async function loadEditorFromPath(
+    path: string,
+    options: { soft?: boolean } = {},
+  ): Promise<void> {
+    const soft = options.soft ?? false;
+    if (!soft) {
+      isLoading.value = true;
+    }
+    errorMessage.value = null;
+    successMessage.value = null;
+
+    try {
+      const response = await apiGet<EditorBootResponse>(path);
+      applyEditorResponse(response);
+    } catch (error: unknown) {
+      editor.value = null;
+      if (isApiError(error)) {
+        errorMessage.value = error.message;
+      } else if (error instanceof Error) {
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = "Det gick inte att ladda editorn.";
+      }
+    } finally {
+      if (!soft) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  async function loadEditor(): Promise<void> {
+    const { path, soft } = resolveEditorPath();
+
+    if (!path) {
+      errorMessage.value = "Ingen editor hittades.";
+      isLoading.value = false;
+      editor.value = null;
+      return;
+    }
+
+    await loadEditorFromPath(path, { soft });
+  }
+
+  async function loadEditorForVersion(versionIdValue: string): Promise<void> {
+    if (!versionIdValue) {
+      return;
+    }
+    const path = `/api/v1/editor/tool-versions/${encodeURIComponent(versionIdValue)}`;
+    await loadEditorFromPath(path, { soft: true });
+  }
+
+  async function navigateAfterSave(path: string): Promise<void> {
+    if (!path) {
+      await loadEditor();
+      return;
+    }
+
+    if (path === route.path) {
+      await loadEditor();
+      return;
+    }
+
+    await router.push(path);
+  }
+
+  async function save(): Promise<void> {
+    if (!editor.value || isSaving.value) return;
+
+    const entrypointValue = entrypoint.value.trim();
+    if (!entrypointValue) {
+      errorMessage.value = "Startfunktion krävs.";
+      return;
+    }
+
+    isSaving.value = true;
+    errorMessage.value = null;
+    successMessage.value = null;
+
+    try {
+      const summaryValue = normalizedOptionalString(changeSummary.value);
+
+      if (editor.value.save_mode === "snapshot") {
+        const version = selectedVersion.value;
+        if (!version) {
+          errorMessage.value = "Versionen stämmer inte längre. Ladda om och försök igen.";
+          return;
+        }
+
+        const response = await apiPost<SaveResult>(
+          `/api/v1/editor/tool-versions/${version.id}/save`,
+          {
+            entrypoint: entrypointValue,
+            source_code: sourceCode.value,
+            change_summary: summaryValue,
+            expected_parent_version_id: version.id,
+          },
+        );
+
+        successMessage.value = "Sparat.";
+        await navigateAfterSave(response.redirect_url);
+        return;
+      }
+
+      const response = await apiPost<SaveResult>(
+        `/api/v1/editor/tools/${editor.value.tool.id}/draft`,
+        {
+          entrypoint: entrypointValue,
+          source_code: sourceCode.value,
+          change_summary: summaryValue,
+          derived_from_version_id: editor.value.derived_from_version_id,
+        },
+      );
+
+      successMessage.value = "Utkast skapat.";
+      await navigateAfterSave(response.redirect_url);
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        errorMessage.value = error.message;
+      } else if (error instanceof Error) {
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = "Det gick inte att spara just nu.";
+      }
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  async function saveToolMetadata(): Promise<void> {
+    if (!editor.value || isMetadataSaving.value) return;
+
+    const normalizedTitle = metadataTitle.value.trim();
+    if (!normalizedTitle) {
+      errorMessage.value = "Titel krävs.";
+      return;
+    }
+
+    isMetadataSaving.value = true;
+    errorMessage.value = null;
+    successMessage.value = null;
+
+    try {
+      const response = await apiFetch<EditorToolMetadataResponse>(
+        `/api/v1/editor/tools/${encodeURIComponent(editor.value.tool.id)}/metadata`,
+        {
+          method: "PATCH",
+          body: {
+            title: normalizedTitle,
+            summary: normalizedOptionalString(metadataSummary.value),
+          },
+        },
+      );
+
+      editor.value = {
+        ...editor.value,
+        tool: {
+          ...editor.value.tool,
+          title: response.title,
+          summary: response.summary,
+        },
+      };
+      metadataTitle.value = response.title;
+      metadataSummary.value = response.summary ?? "";
+      successMessage.value = "Metadata sparad.";
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        errorMessage.value = error.message;
+      } else if (error instanceof Error) {
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = "Det gick inte att spara metadata just nu.";
+      }
+    } finally {
+      isMetadataSaving.value = false;
+    }
+  }
+
+  onMounted(() => {
+    void loadEditor();
+  });
+
+  watch(
+    () => route.fullPath,
+    () => {
+      void loadEditor();
+    },
+  );
+
+  return {
+    editor,
+    entrypoint,
+    sourceCode,
+    changeSummary,
+    isLoading,
+    isSaving,
+    isMetadataSaving,
+    errorMessage,
+    successMessage,
+    selectedVersion,
+    editorToolId,
+    saveButtonLabel,
+    hasDirtyChanges,
+    loadEditor,
+    loadEditorForVersion,
+    save,
+    metadataTitle,
+    metadataSummary,
+    saveToolMetadata,
+  };
+}
+</file>
+
+<file path=".agents/readme-first.md">
+# Read Me First (Agents)
+
+Use this file as the starting point when you begin a new session.
+
+## Behavioral Rules (must follow)
+
+- **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims.
+- **Preserve template structure**: when editing `.agents/handoff.md` or the next-session prompt template, keep headings and section order unchanged; only fill in content.
+- **No secrets**: never include API keys/tokens, passwords, or personal data in `.agents/` or `docs/`.
+- **Use the prompt template for new agents/devs**: if the user asks for a “message to a new developer/agent”, generate it by filling `.agents/next-session-instruction-prompt-template.md` (address the recipient as “you”).
+- **Pre-commit required**: run `pdm run precommit-install` once, then `pdm run precommit-run` before pushing.
+- **Admin editor features**: extract logic into `frontend/apps/skriptoteket/src/composables/editor/`
+  (views stay UI-only).
+- **Agent-doc size budgets**: keep `.agents/readme-first.md` ≤ 300 lines and `.agents/handoff.md` ≤ 200 lines (enforced by pre-commit).
+
+## Pre-commit & quality gates (required)
+
+- Install hooks: `pdm install -G monorepo-tools` then `pdm run precommit-install`
+- Run before push: `pdm run precommit-run`
+- Quick local gate: `pdm run lint` (Ruff + agent-doc budgets + docs contract)
+
+## What this repo is
+
+Skriptoteket is a teacher-first Script Hub: users log in, browse tools by profession/category, upload files, and receive results.
+Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future HuleEdu SSO is planned via identity federation.
+
+## Current sprint dashboard (keep current only)
+
+- Sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration) — cutover deployed 2025-12-23 (ST-11-13)
+- Production: Full Vue SPA (SSR/HTMX removed)
+- Done: Route parity + admin/editor flows (ST-11-01..22)
+- Next: EPIC-12 is unblocked; pick next SPA UX story (ST-12-02/03/04)
+
+## Current EPIC-04 decisions (dynamic scripts)
+
+- **Execution**: run scripts in hardened *sibling* Docker containers via `docker.sock` + Python Docker SDK (no host-path bind mounts; archive copy or scoped volumes for I/O). See `docs/adr/adr-0013-execution-ephemeral-docker.md`.
+- **Storage**: hybrid: source + logs/HTML in DB; binary artifacts on disk with retention cleanup; production inputs not retained by default. See `docs/adr/adr-0012-script-source-storage.md`.
+- **Versioning**: append-only; publish is copy-on-activate and archives the reviewed `in_review` version (publish “consumes” it). See `docs/adr/adr-0014-versioning-and-single-active.md`.
+- **Governance**: Admins can publish script versions and tools; Superusers can rollback. “Published implies runnable” (requires `tools.active_version_id`). See `docs/reference/ref-dynamic-tool-scripts.md`.
+
+## Read order (mandatory)
+
+1. `docs/index.md` (PRD/ADRs/backlog entrypoint)
+2. `.agents/rules/000-rule-index.md` (engineering rules and patterns)
+3. `AGENTS.md` (repo contributor guide)
+4. `doc_structure_requirements.md` (docs-contract governance)
+5. `docs/prd/prd-spa-frontend-v0.1.md` (SPA migration PRD)
+6. `docs/backlog/epics/epic-11-full-vue-spa-migration.md` (epic + story index)
+7. `docs/backlog/sprints/sprint-2025-12-21-spa-migration-foundations.md` (current sprint plan)
+
+## Where to work
+
+- Production code lives in `src/skriptoteket/` (DDD/Clean layers).
+- `docs/` is contract-governed; do not add new top-level folders under `docs/` without updating the contract.
+
+## Key commands
+
+- Docs contract: `pdm run docs-validate`
+- Format/lint/typecheck: `pdm run format` / `pdm run lint` / `pdm run typecheck`
+- Tests: `pdm run test`
+- DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
+- Bootstrap first superuser: `pdm run bootstrap-superuser`
+
+## Session handoff
+
+Before ending a session, update `.agents/handoff.md` with what changed, decisions, and next steps.
+
+Completed/older stories belong in story docs + link index here (not in `.agents/handoff.md`):
+
+- ST-07-02: `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`
+- ST-07-04: `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
+- ST-05-12: `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
+- ST-05-11: `docs/backlog/stories/story-05-11-hamburger-htmx-bug.md`
+- ST-04-04: `docs/backlog/stories/story-04-04-governance-audit-rollback.md`
+</file>
+
+<file path="frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue">
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
+import type { components } from "../../api/openapi";
+import CodeMirrorEditor from "../../components/editor/CodeMirrorEditor.vue";
+import EntrypointDropdown from "../../components/editor/EntrypointDropdown.vue";
+import InlineEditableText from "../../components/editor/InlineEditableText.vue";
+import MaintainersDrawer from "../../components/editor/MaintainersDrawer.vue";
+import MetadataDrawer from "../../components/editor/MetadataDrawer.vue";
+import SandboxRunner from "../../components/editor/SandboxRunner.vue";
+import VersionHistoryDrawer from "../../components/editor/VersionHistoryDrawer.vue";
+import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
+import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
+import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
+import { useScriptEditor } from "../../composables/editor/useScriptEditor";
+import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
+import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
+import { useAuthStore } from "../../stores/auth";
+type VersionState = components["schemas"]["VersionState"];
+const route = useRoute();
+const router = useRouter();
+const auth = useAuthStore();
+
+const toolId = computed(() => {
+  const param = route.params.toolId;
+  return typeof param === "string" ? param : "";
+});
+const versionId = computed(() => {
+  const param = route.params.versionId;
+  return typeof param === "string" ? param : "";
+});
+const canEditTaxonomy = computed(() => auth.hasAtLeastRole("admin"));
+const canEditMaintainers = computed(() => auth.hasAtLeastRole("admin"));
+const canRollbackVersions = computed(() => auth.hasAtLeastRole("superuser"));
+const {
+  editor,
+  entrypoint,
+  sourceCode,
+  changeSummary,
+  metadataTitle,
+  metadataSummary,
+  isLoading,
+  isSaving,
+  isMetadataSaving,
+  errorMessage,
+  successMessage,
+  selectedVersion,
+  editorToolId,
+  hasDirtyChanges,
+  save,
+  saveToolMetadata,
+  loadEditor,
+} = useScriptEditor({
+  toolId,
+  versionId,
+  route,
+  router,
+});
+const {
+  isModalOpen: isWorkflowModalOpen,
+  activeAction: activeWorkflowAction,
+  actionMeta: workflowActionMeta,
+  showNoteField: showWorkflowNoteField,
+  note: workflowNote,
+  workflowError,
+  workflowSuccess,
+  isSubmitting: isWorkflowSubmitting,
+  canSubmitReview,
+  canPublish,
+  canRequestChanges,
+  canRollback,
+  openRollbackForVersion,
+  openAction: openWorkflowAction,
+  closeAction: closeWorkflowModal,
+  submitAction: submitWorkflowAction,
+} = useEditorWorkflowActions({
+  selectedVersion,
+  route,
+  router,
+  reloadEditor: loadEditor,
+});
+const {
+  professions,
+  categories,
+  selectedProfessionIds,
+  selectedCategoryIds,
+  taxonomyError,
+  taxonomySuccess,
+  isTaxonomyLoading,
+  isTaxonomySaving,
+  saveTaxonomy,
+} = useToolTaxonomy({
+  toolId: editorToolId,
+  canEdit: canEditTaxonomy,
+});
+const {
+  maintainers,
+  ownerUserId,
+  isLoading: isMaintainersLoading,
+  isSaving: isMaintainersSaving,
+  error: maintainersError,
+  success: maintainersSuccess,
+  loadMaintainers,
+  addMaintainer,
+  removeMaintainer,
+} = useToolMaintainers({
+  toolId: editorToolId,
+  canEdit: canEditMaintainers,
+});
+const entrypointOptions = ["run_tool", "main", "run", "execute"];
+const activeDrawer = ref<"history" | "metadata" | "maintainers" | null>(null);
+
+const isSavingAllMetadata = computed(() => isMetadataSaving.value || isTaxonomySaving.value);
+
+async function saveAllMetadata(): Promise<void> {
+  await saveToolMetadata();
+  if (canEditTaxonomy.value) {
+    await saveTaxonomy();
+  }
+}
+const isHistoryDrawerOpen = computed(() => activeDrawer.value === "history");
+const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
+const isMaintainersDrawerOpen = computed(() => activeDrawer.value === "maintainers");
+const isDrawerOpen = computed(() => activeDrawer.value !== null);
+
+function openHistoryDrawer(): void {
+  activeDrawer.value = activeDrawer.value === "history" ? null : "history";
+}
+
+function openMetadataDrawer(): void {
+  if (!canEditTaxonomy.value) return;
+  activeDrawer.value = activeDrawer.value === "metadata" ? null : "metadata";
+}
+
+function openMaintainersDrawer(): void {
+  if (!canEditMaintainers.value) return;
+  const next = activeDrawer.value === "maintainers" ? null : "maintainers";
+  activeDrawer.value = next;
+  if (next === "maintainers" && editorToolId.value) {
+    void loadMaintainers(editorToolId.value);
+  }
+}
+
+function closeDrawer(): void {
+  activeDrawer.value = null;
+}
+
+function handleHistorySelect(versionIdValue: string): void {
+  if (hasDirtyChanges.value && !isSaving.value) {
+    const confirmed = window.confirm("Du har osparade ändringar. Vill du byta version?");
+    if (!confirmed) {
+      return;
+    }
+  }
+  void router.replace({
+    query: {
+      ...route.query,
+      version: versionIdValue,
+    },
+  });
+}
+
+function updateProfessionIds(value: string[]): void {
+  selectedProfessionIds.value = value;
+}
+
+function updateCategoryIds(value: string[]): void {
+  selectedCategoryIds.value = value;
+}
+
+const confirmButtonClass = computed(() => {
+  switch (activeWorkflowAction.value) {
+    case "publish":
+      return "bg-burgundy text-canvas border-navy btn-secondary-hover";
+    case "submit_review":
+      return "bg-navy text-canvas border-navy btn-secondary-hover";
+    case "request_changes":
+      return "bg-white text-navy border-navy hover:bg-canvas btn-secondary-hover";
+    case "rollback":
+      return "bg-white text-burgundy border-burgundy hover:bg-burgundy/10";
+    default:
+      return "bg-navy text-canvas border-navy btn-secondary-hover";
+  }
+});
+
+function versionLabel(state: VersionState): string {
+  const labels: Record<VersionState, string> = {
+    draft: "Utkast",
+    in_review: "Granskning",
+    active: "Publicerad",
+    archived: "Arkiverad",
+  };
+  return labels[state] ?? state;
+}
+
+const statusLine = computed(() => {
+  if (!editor.value) return "";
+  const publication = editor.value.tool.is_published ? "Publicerad" : "Ej publicerad";
+  const versionSegment = selectedVersion.value
+    ? `v${selectedVersion.value.version_number} · ${versionLabel(selectedVersion.value.state)}`
+    : "Nytt utkast";
+  return `${publication} · ${versionSegment}`;
+});
+
+const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+  if (!hasDirtyChanges.value || isSaving.value) return;
+  event.preventDefault();
+  event.returnValue = "";
+};
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === "Escape" && isDrawerOpen.value) {
+    closeDrawer();
+  }
+}
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (!hasDirtyChanges.value || isSaving.value) {
+    next();
+    return;
+  }
+
+  if (window.confirm("Du har osparade ändringar. Vill du lämna sidan?")) {
+    next();
+  } else {
+    next(false);
+  }
+});
+
+onMounted(() => {
+  window.addEventListener("beforeunload", beforeUnloadHandler);
+  window.addEventListener("keydown", handleKeydown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("beforeunload", beforeUnloadHandler);
+  window.removeEventListener("keydown", handleKeydown);
+});
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (activeDrawer.value && activeDrawer.value !== "history") {
+      closeDrawer();
+    }
+  },
+);
+</script>
+
+<template>
+  <div class="space-y-6">
+    <RouterLink
+      to="/admin/tools"
+      class="text-sm text-navy/70 underline hover:text-burgundy"
+    >
+      ← Tillbaka till verktyg
+    </RouterLink>
+
+    <!-- Success/Error messages -->
+    <div
+      v-if="successMessage || workflowSuccess"
+      class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
+    >
+      {{ successMessage || workflowSuccess }}
+    </div>
+    <div
+      v-if="errorMessage || workflowError"
+      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+    >
+      {{ errorMessage || workflowError }}
+    </div>
+
+    <!-- Loading state -->
+    <div
+      v-if="isLoading"
+      class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+    >
+      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <span>Laddar editorn...</span>
+    </div>
+
+    <!-- Error state -->
+    <div
+      v-else-if="!editor"
+      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+    >
+      Det gick inte att ladda editorn.
+    </div>
+
+    <!-- Main content -->
+    <template v-else>
+      <!-- PANEL 1: Title + Workflow -->
+      <div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
+        <!-- Title and summary section -->
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div class="space-y-2 flex-1">
+            <InlineEditableText
+              v-model="metadataTitle"
+              tag="h1"
+              display-class="text-2xl font-semibold text-navy"
+              input-class="text-2xl font-semibold"
+              placeholder="Verktygets titel"
+            />
+            <p class="text-sm text-navy/70">
+              <span class="font-mono">{{ editor.tool.slug }}</span>
+            </p>
+            <InlineEditableText
+              v-model="metadataSummary"
+              tag="p"
+              display-class="text-sm text-navy/70"
+              input-class="text-sm"
+              placeholder="Lägg till en sammanfattning..."
+            />
+          </div>
+
+          <div class="text-sm font-medium text-navy/70 shrink-0">
+            {{ statusLine }}
+          </div>
+        </div>
+
+        <!-- Workflow context buttons -->
+        <div class="border-t border-navy/20 pt-4">
+          <WorkflowContextButtons
+            :can-submit-review="canSubmitReview"
+            :can-publish="canPublish"
+            :can-request-changes="canRequestChanges"
+            :can-rollback="canRollback"
+            :is-submitting="isWorkflowSubmitting"
+            @action="openWorkflowAction"
+          />
+        </div>
+      </div>
+
+      <!-- PANEL 2: Editor + Test -->
+      <div class="border border-navy bg-white shadow-brutal-sm">
+        <!-- Control row -->
+        <div class="p-4 border-b border-navy/20">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <!-- Save group: Spara + Osparat + Ändringssammanfattning -->
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  :disabled="isSaving"
+                  class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  @click="save"
+                >
+                  <span
+                    v-if="isSaving"
+                    class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+                  />
+                  <span v-else>Spara</span>
+                </button>
+                <span
+                  v-if="hasDirtyChanges"
+                  class="text-xs text-burgundy font-semibold uppercase tracking-wide"
+                >
+                  Osparat
+                </span>
+              </div>
+
+              <div class="min-w-[180px] max-w-xs space-y-1">
+                <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                  Ändringssammanfattning
+                </label>
+                <input
+                  v-model="changeSummary"
+                  class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                  placeholder="T.ex. fixade bugg..."
+                >
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                @click="openHistoryDrawer"
+              >
+                Öppna sparade
+              </button>
+              <button
+                v-if="canEditTaxonomy"
+                type="button"
+                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                @click="openMetadataDrawer"
+              >
+                Metadata
+              </button>
+              <button
+                v-if="canEditMaintainers"
+                type="button"
+                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                @click="openMaintainersDrawer"
+              >
+                Redigeringsbehörigheter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          :class="[
+            'grid',
+            isDrawerOpen
+              ? 'md:grid-cols-[minmax(0,1fr)_400px]'
+              : 'md:grid-cols-[minmax(0,1fr)]',
+          ]"
+        >
+          <div class="p-4 space-y-4 min-w-0">
+            <!-- Source code -->
+            <div class="space-y-3">
+              <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                Källkod
+              </h2>
+              <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
+                <CodeMirrorEditor v-model="sourceCode" />
+              </div>
+            </div>
+
+            <!-- Test section -->
+            <div class="border-t border-navy/20 pt-4 space-y-3">
+              <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                Testkör kod
+              </h2>
+
+              <!-- Entrypoint + file picker + run button -->
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <EntrypointDropdown
+                  v-model="entrypoint"
+                  :options="entrypointOptions"
+                />
+              </div>
+
+              <SandboxRunner
+                v-if="selectedVersion"
+                :version-id="selectedVersion.id"
+                :tool-id="editor.tool.id"
+              />
+              <p
+                v-else
+                class="text-sm text-navy/60"
+              >
+                Spara ett utkast för att kunna testa.
+              </p>
+            </div>
+          </div>
+
+          <!-- Drawers -->
+          <VersionHistoryDrawer
+            v-if="isHistoryDrawerOpen"
+            :is-open="isHistoryDrawerOpen"
+            :versions="editor.versions"
+            :active-version-id="selectedVersion?.id"
+            :can-rollback="canRollbackVersions"
+            :is-submitting="isWorkflowSubmitting"
+            @close="closeDrawer"
+            @select="handleHistorySelect"
+            @rollback="openRollbackForVersion"
+          />
+
+          <MetadataDrawer
+            v-if="isMetadataDrawerOpen"
+            :is-open="isMetadataDrawerOpen"
+            :metadata-title="metadataTitle"
+            :metadata-summary="metadataSummary"
+            :professions="professions"
+            :categories="categories"
+            :selected-profession-ids="selectedProfessionIds"
+            :selected-category-ids="selectedCategoryIds"
+            :taxonomy-error="taxonomyError"
+            :taxonomy-success="taxonomySuccess"
+            :is-loading="isTaxonomyLoading"
+            :is-saving="isSavingAllMetadata"
+            @close="closeDrawer"
+            @save="saveAllMetadata"
+            @update:metadata-title="metadataTitle = $event"
+            @update:metadata-summary="metadataSummary = $event"
+            @update:selected-profession-ids="updateProfessionIds"
+            @update:selected-category-ids="updateCategoryIds"
+          />
+
+          <MaintainersDrawer
+            v-if="isMaintainersDrawerOpen"
+            :is-open="isMaintainersDrawerOpen"
+            :maintainers="maintainers"
+            :owner-user-id="ownerUserId"
+            :is-superuser="canRollbackVersions"
+            :is-loading="isMaintainersLoading"
+            :is-saving="isMaintainersSaving"
+            :error="maintainersError"
+            :success="maintainersSuccess"
+            @close="closeDrawer"
+            @add="addMaintainer"
+            @remove="removeMaintainer"
+          />
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <WorkflowActionModal
+    :is-open="isWorkflowModalOpen"
+    :action-meta="workflowActionMeta"
+    :note="workflowNote"
+    :show-note-field="showWorkflowNoteField"
+    :error="workflowError"
+    :is-submitting="isWorkflowSubmitting"
+    :confirm-button-class="confirmButtonClass"
+    @close="closeWorkflowModal"
+    @submit="submitWorkflowAction"
+    @update:note="workflowNote = $event"
+  />
+</template>
+</file>
+
+<file path=".agents/handoff.md">
+# Session Handoff
+
+Keep this file updated so the next session can pick up work quickly.
+
+## Editing Rules (do not break structure)
+
+- Keep the headings and section order exactly as-is; only fill in content.
+- Use short bullets; include key file paths (e.g., `src/...`, `docs/...`) and exact commands.
+- Do not paste large code blocks; link to files instead.
+- Never include secrets/tokens/passwords or personal data.
+- Keep this file under 200 lines; move history to `.agents/readme-first.md` + `docs/`.
+
+## Snapshot
+
+- Date: 2025-12-23
+- Branch / commit: `main` (`813da05`)
+- Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
+- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22/23, ST-12-02
+- Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
+
+## Current Session (2025-12-23)
+
+### ST-12-02 Native PDF output helper (implemented)
+
+- Runner helper module: `runner/pdf_helper.py` + safe exception `runner/tool_errors.py` (API: `save_as_pdf(html, output_dir, filename) -> str`).
+- Runner error summary: `runner/_runner.py` returns safe message for `ToolUserError` (no traceback in `error_summary`).
+- Runner image ships helper: `Dockerfile.runner` now copies `runner/` to `/runner/` so scripts can `import pdf_helper`.
+- Script author docs updated: `docs/reference/ref-ai-script-generation-kb.md` uses `pdf_helper.save_as_pdf(...)`.
+- SPA verification (Playwright): `pdm run python -m scripts.playwright_st_12_02_native_pdf_output_helper_e2e` (artifacts: `.artifacts/st-12-02-native-pdf-output-helper-e2e/`).
+
+### EPIC-02 Phase 2: Self-Registration & User Profiles (implemented)
+
+- Migration + schema: `migrations/versions/0013_user_profiles_and_security.py`, `src/skriptoteket/infrastructure/db/models/user.py`, new `user_profiles` table/model (`src/skriptoteket/infrastructure/db/models/user_profile.py`).
+- Domain/app: `UserProfile` + lockout helpers (`src/skriptoteket/domain/identity/models.py`, `src/skriptoteket/domain/identity/lockout.py`); new handlers for register/profile/password/email; login lockout updates (`src/skriptoteket/application/identity/handlers/*`).
+- Infra/DI: profile repo + user repo updates + DI wiring (`src/skriptoteket/infrastructure/repositories/profile_repository.py`, `src/skriptoteket/di/infrastructure.py`, `src/skriptoteket/di/identity.py`); CLI provisioning creates profiles (`src/skriptoteket/cli/main.py`).
+- API: `/api/v1/auth/register` + `/api/v1/profile` (GET/PATCH) + `/api/v1/profile/password` + `/api/v1/profile/email` (`src/skriptoteket/web/api/v1/auth.py`, `src/skriptoteket/web/api/v1/profile.py`, `src/skriptoteket/web/router.py`).
+- SPA: register/profile views + composable + auth store action + routes/links (`frontend/apps/skriptoteket/src/views/RegisterView.vue`, `frontend/apps/skriptoteket/src/views/ProfileView.vue`, `frontend/apps/skriptoteket/src/composables/useProfile.ts`, `frontend/apps/skriptoteket/src/stores/auth.ts`, `frontend/apps/skriptoteket/src/router/routes.ts`, layout/login modal links).
+
+### Mobile Sidebar Right-Side Positioning
+
+- Moved mobile sidebar drawer to slide from right (matches hamburger button position)
+- File: `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`
+- Changes: `right: 0` + `translateX(100%)` for mobile; desktop unchanged (left sidebar)
+- Verified: typecheck + lint pass
+
+### HuleEdu Design Alignment (layout + dashboard)
+
+- SPA layout + dashboard aligned with HuleEdu tokens (grid bg, transparent frame, landing/auth layouts, role-guarded dashboard); key files: `frontend/apps/skriptoteket/src/assets/main.css`, `src/skriptoteket/web/static/css/app/layout.css`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/views/HomeView.vue`.
+
+### App.vue Refactor (694 → 119 LoC)
+
+- Extracted layout components (login modal + landing/auth layouts + sidebar/topbar) to keep `App.vue` small; verified via frontend typecheck + lint.
+
+### ST-11-16 (editor workflow actions)
+
+- Workflow actions (submit review/publish/request changes/rollback): API in `src/skriptoteket/web/api/v1/editor.py`, SPA in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, tests + Playwright.
+
+### ST-11-18 (maintainers + editor UX)
+
+- Editor API: maintainer list/add/remove endpoints in `src/skriptoteket/web/api/v1/editor.py`; tests in `tests/unit/web/test_editor_api_routes.py`.
+- SPA: drawer-based maintainer management (`MaintainersDrawer.vue`, `useToolMaintainers.ts`) with button “Redigeringsbehörigheter” and title “Ändra redigeringsbehörigheter”.
+- History drawer: rollback button for archived versions (superuser) + soft-load version switch via `?version=` (no refresh).
+- Script bank seeding now dedupes on normalized title+summary and reuses existing tool (`src/skriptoteket/cli/main.py`).
+- Follow-up ST-11-23: persisted `owner_user_id` on tools + stricter permissions (admins can’t remove owner; only superuser can add/remove superuser maintainers); maintainer API exposes `owner_user_id` and UI disables invalid removals.
+- Policy documented in ADRs: `docs/adr/adr-0005-user-roles-and-script-governance.md`, `docs/adr/adr-0006-identity-and-authorization-mvp.md`.
+
+### ST-11-06 (catalog browse views)
+
+- SPA browse views + API in `src/skriptoteket/web/api/v1/catalog.py` (`/browse`, `/browse/:profession`, `/browse/:category`)
+
+### ST-11-07 (tool run + results)
+
+- Tool run API + SPA views (`src/skriptoteket/web/api/v1/tools.py`, `ToolRunFormView.vue`, `ToolRunResultView.vue`); Playwright `scripts/playwright_st_11_07_spa_tool_run_e2e.py`
+
+### ST-11-08 (my-runs)
+
+- My-runs API + SPA views (`src/skriptoteket/web/api/v1/my_runs.py`, `MyRunsListView.vue`, `MyRunsDetailView.vue`); Playwright `scripts/playwright_st_11_08_spa_my_runs_e2e.py`
+
+### ST-11-09 (curated apps)
+
+- Curated apps API + SPA view (`src/skriptoteket/web/api/v1/apps.py`, `AppDetailView.vue`); Playwright `scripts/playwright_st_11_09_curated_app_e2e.py`
+
+### ST-11-10 (suggestions flows SPA)
+
+- Suggestions API + DTOs in `src/skriptoteket/web/api/v1/suggestions.py` + `suggestions_dto.py` (contributor/admin flows).
+- SPA views: `SuggestionNewView.vue`, `AdminSuggestionsListView.vue`, `AdminSuggestionDetailView.vue`.
+- Types regenerated: `pdm run fe-gen-api-types`.
+
+### ST-11-11 (admin tools management)
+
+- Admin tools API in `src/skriptoteket/web/api/v1/admin_tools.py` (list + publish/depublish) + router registration.
+- SPA view: `AdminToolsView.vue` (`/admin/tools`, minRole admin).
+
+### ST-11-12 (editor migration foundation)
+
+- Editor foundation: `src/skriptoteket/web/api/v1/editor.py`, `src/skriptoteket/web/editor_support.py`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+
+### ST-11-14 (admin tools status enrichment)
+
+- ADR-0033; `AdminToolItem` enriched with version status; `AdminToolsView.vue` split into Pågående/Klara with badges.
+
+### ST-11-15 (my-tools contributor dashboard)
+
+- My tools view: `src/skriptoteket/web/api/v1/my_tools.py`, `frontend/apps/skriptoteket/src/views/MyToolsView.vue`, shared `frontend/apps/skriptoteket/src/components/tools/ToolListRow.vue`.
+
+### ST-11-21 (unified landing page + modal-first login)
+
+- Unified landing + modal login: `frontend/apps/skriptoteket/src/views/HomeView.vue`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/router/index.ts` (ST-11-22 removes `/login` route).
+
+### Phase 4 story review (ST-11-15..19)
+
+- ST-11-17/19 done + help panel wired in SPA (help button moved into mobile hamburger; `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`, `frontend/apps/skriptoteket/src/components/help/HelpButton.vue`, `frontend/apps/skriptoteket/src/components/help/useHelp.ts`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`, `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue`); story docs updated (`docs/backlog/stories/story-11-17-tool-metadata-editor.md`, `docs/backlog/stories/story-11-19-help-framework.md`).
+- Docs contract check: `pdm run docs-validate` (pass).
+
+### ST-11-20 (taxonomy editor wiring)
+
+- Taxonomy editor: API in `src/skriptoteket/web/api/v1/editor.py`, SPA in `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue` + `frontend/apps/skriptoteket/src/composables/editor/useToolTaxonomy.ts`.
+
+### Verification
+
+- EPIC-02: `pdm run pytest -m docker --override-ini addopts=''`, `pdm run test tests/unit/application/identity/`, `pdm run db-upgrade`, `pdm run docs-validate`.
+- Live check (2025-12-23): `pdm run dev` + `pdm run fe-dev` (left running); `curl http://127.0.0.1:5173/register`, `curl http://127.0.0.1:5173/profile`, `curl http://127.0.0.1:8000/healthz`.
+- Quality: `pdm run precommit-run` (pass), `pdm run fe-gen-api-types`, `pdm run db-upgrade` (0012).
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-11-18-editor-maintainers/`).
+- Live check (2025-12-23): `docker build -f Dockerfile.runner -t skriptoteket-runner:latest .`, `pdm run db-upgrade` (0013), `pdm run python -m scripts.playwright_st_12_02_native_pdf_output_helper_e2e`.
+- Prod deploy (2025-12-23): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run db-upgrade"`.
+
+## Key Architecture
+
+- Full SPA migration: ADR-0027..0030 + EPIC-11
+- Contract v2 (ADR-0022): outputs `notice|markdown|table|json|html_sandboxed` (+ `vega_lite` curated-only)
+- Sessions + optimistic concurrency (ADR-0024): `expected_state_rev` on actions
+- UI paradigm: Vue 3 + Vite + Tailwind 4 with `@theme` design tokens (ADR-0032)
+
+## How to Run
+
+```bash
+# Setup
+docker compose up -d db && pdm run db-upgrade
+
+# Development
+pdm run dev                 # Backend 127.0.0.1:8000
+pdm run fe-dev              # SPA 127.0.0.1:5173
+
+# Quality gates
+pdm run precommit-run
+
+# Playwright e2e
+pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://127.0.0.1:5173
+```
+
+## Known Issues / Risks
+
+- `vega_lite` restrictions not implemented; do not render until restrictions exist (ADR-0024)
+- **Rule**: All Vue files must be <500 LoC. Use composables for logic, components for UI.
+
+## Next Steps
+
+### EPIC-11 Complete
+- ST-11-13 cutover deployed (2025-12-23)
+- All SSR/HTMX code deleted, SPA serving all routes
+
+### Later
+- EPIC-12: Start SPA-only UX stories (ST-12-02/03/04) now that ST-11-13 is deployed
+
+## Historical (2025-12-21)
+
+Completed in prior sessions (see `.agents/readme-first.md` for details):
+
+- SPA migration stories and older work: see `.agents/readme-first.md` + story docs under `docs/backlog/stories/`.
+</file>
+
+</files>

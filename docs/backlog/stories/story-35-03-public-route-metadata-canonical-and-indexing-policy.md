@@ -2,10 +2,10 @@
 type: story
 id: ST-35-03
 title: "Public-route metadata, canonical, and indexing policy"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-15
 epic: "EPIC-35"
 dependencies:
   - "ST-35-01"
@@ -14,10 +14,10 @@ dependencies:
   - "ST-32-08"
   - "REF-launch-seo-and-search-indexing-readiness-2026-04-08"
 acceptance_criteria:
-  - "Given `/` and `/public/apps/classroom.group-seating-studio` are the current public entry points, when this story ships, then each route exposes a unique title, meta description, canonical URL, and share metadata aligned with the chosen canonical host."
+  - "Given `/` and `/public/apps/classroom.group-seating-studio` are the current public entry points, when this story ships, then each route exposes a unique title, meta description, canonical URL, robots policy, and share metadata in the backend-served initial HTML."
   - "Given Skriptoteket is a mixed public/private SPA, when this story ships, then the indexing policy is explicit per route family instead of relying on one generic HTML shell for every page."
   - "Given authenticated and private teacher routes should not become search results, when this story ships, then those routes are excluded from sitemap coverage and receive the appropriate indexing policy."
-  - "Given full SSR or prerender may not be required for launch, when this story is reviewed, then it records whether route-level head management alone is sufficient for the current launch goals or whether public-page prerender becomes a required follow-on."
+  - "Given client-only head management is not a sufficient launch proof, when this story ships, then backend initial-HTML tests and a browser hydration check prove the runtime head still matches the static launch-visible contract."
 ui_impact: "Yes (public page titles/snippets/share cards and route-level indexing semantics)"
 data_impact: "No"
 ---
@@ -40,6 +40,43 @@ needs predictable snippets, canonicalization, and indexing behavior.
   canonical content contract.
 - The current public copy and CTA hierarchy from `ST-32-07` / `ST-32-08` should remain the product
   source while this story adds search-facing metadata discipline.
+- The launch-visible contract is static backend-served initial HTML for the approved public URLs,
+  implemented either by build-time prerender or edge/head injection. A Vue-only head manager may
+  keep hydration in sync, but it cannot be the only proof for launch metadata.
+
+## Metadata Delivery Contract
+
+| Route | Initial HTML head contract | Runtime hydration contract | Search/share contract |
+|---|---|---|---|
+| `/` | Unique title, meta description, self-canonical `https://skriptoteket.hule.education/`, `index,follow` robots policy, Open Graph URL/title/description/type, and equivalent share-card metadata | Vue runtime leaves the same values in place after hydration | Indexable, listed in sitemap |
+| `/public/apps/classroom.group-seating-studio` | Unique Klassrumskartan title and description, self-canonical `https://skriptoteket.hule.education/public/apps/classroom.group-seating-studio`, `index,follow` robots policy, Open Graph URL/title/description/type, and equivalent share-card metadata | Vue runtime leaves the same values in place after hydration | Indexable, listed in sitemap |
+| Auth entry and lifecycle routes | `noindex,follow` in initial HTML when served by the fallback | Vue runtime may update visible page titles but must not make these routes indexable | Excluded from sitemap |
+| Authenticated/private app routes | `noindex,follow` in initial HTML when served by the fallback | Vue runtime may update visible page titles but must not make these routes indexable | Excluded from sitemap |
+| Malformed public-app and unknown routes | `noindex,follow` or `noindex,nofollow` with the honest `404` or `410` status from `ST-35-02` | Recovery UX may render client-side, but the status/indexing contract is server-owned | Excluded from sitemap |
+
+## Proof Requirements
+
+- Add backend tests that fetch `/` and `/public/apps/classroom.group-seating-studio` and inspect
+  the returned initial HTML for title, description, canonical URL, robots policy, and share tags.
+- Add backend tests that prove representative auth/private/malformed routes are not exposed as
+  indexable initial HTML.
+- Add a browser check for both approved public URLs proving the hydrated document head still
+  matches the backend-served metadata contract.
+- Keep full SSR or whole-SPA prerendering out of scope unless the implementation cannot satisfy
+  the initial-HTML contract with a smaller edge/head-injection lane.
+
+## Implementation Summary (as of 2026-04-15)
+
+- Shipped via `PR-0268`.
+- The backend SPA fallback now injects route-specific launch metadata into the initial HTML for `/`
+  and `/public/apps/classroom.group-seating-studio`, including title, description, canonical URL,
+  robots policy, Open Graph tags, and share-card metadata.
+- Auth and private SPA fallback routes receive explicit `noindex,follow` metadata and remain
+  excluded from the sitemap.
+- Malformed public-app paths and unknown routes keep honest `404` status semantics with
+  `noindex,nofollow` metadata.
+- `scripts/playwright_pr_0268_spa_metadata_hydration.py` proves the two public route heads still
+  match after Vue hydration.
 
 ## References
 

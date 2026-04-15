@@ -108,5 +108,5 @@ pdm run pr-0252-auth-return --start-backend --start-vite
 
 Reference:
 
-- `.agents/rules/075-browser-automation.md`
+- `.codex/rules/075-browser-automation.md`
 - `docs/runbooks/runbook-agent-browser-automation.md`

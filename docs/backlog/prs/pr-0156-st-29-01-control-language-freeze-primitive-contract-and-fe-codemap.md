@@ -14,7 +14,7 @@ dependencies:
 acceptance_criteria:
   - "Given ST-29-01 now has a locked control-language v1, when implementation planning starts, then the story exposes one explicit PR-sized sequence instead of an implied redesign lane."
   - "Given a frontend designer or implementer needs to understand the design system, when they read the new codemap, then they can locate the governing docs, token pipeline, primitive files, icon assets, editor examples, planner examples, and current structural gaps from one canonical reference."
-  - "Given repo-shared planning/docs skills are consulted from this repository, when they are used after this slice, then they do not direct agents to dead paths such as `.agents/session/handoff.md` or missing `run-local-pdm` wrappers."
+  - "Given repo-shared planning/docs skills are consulted from this repository, when they are used after this slice, then they do not direct agents to dead paths such as `.codex/session/handoff.md` or missing `run-local-pdm` wrappers."
 ---
 
 ## Problem

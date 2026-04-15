@@ -80,6 +80,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if settings.enable_docs else None,
         lifespan=_build_lifespan(settings=settings),
     )
+    app.state.public_app_base_url = settings.PUBLIC_APP_BASE_URL.strip().rstrip("/")
 
     # Middleware execution order:
     #   correlation (ASGI) → security_headers (ASGI) → trusted_hosts

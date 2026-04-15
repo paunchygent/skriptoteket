@@ -154,7 +154,7 @@ Current code seams that matter:
 - [ ] Keep the `Regler` rail locally sticky without regressing the map-dominant layout
 - [ ] Add or update focused frontend tests
 - [ ] Re-run browser proof and laptop manual verification
-- [ ] Record the live UI verification in `.agents/handoff.md` if implementation proceeds
+- [ ] Record the live UI verification in `.codex/handoff.md` if implementation proceeds
 
 ## Test plan
 
@@ -185,5 +185,5 @@ Current code seams that matter:
 - Export-flow baseline: [PR-0153](pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md)
 - Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
 - Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-shared-tool-control-language-v1.md)
-- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
-- Browser automation rule: [075-browser-automation](../../../.agents/rules/075-browser-automation.md)
+- Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)
+- Browser automation rule: [075-browser-automation](../../../.codex/rules/075-browser-automation.md)

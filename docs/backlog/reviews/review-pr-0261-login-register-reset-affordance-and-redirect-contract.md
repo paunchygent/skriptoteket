@@ -127,7 +127,7 @@ direct-action landing behavior.
 
    **Fix:** name the focused Vitest files once implementation scope is known and include
    `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run docs-validate`, and `git diff --check`.
-   The live check must record, in `.agents/handoff.md`, the observed first interactive page for
+   The live check must record, in `.codex/handoff.md`, the observed first interactive page for
    login, create-account, forgot-password, verification, and reset.
 
    **Proof requirement:** retain screenshots or sanitized Playwright artifacts for the live

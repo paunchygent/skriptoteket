@@ -57,7 +57,7 @@ the current product truth:
    - add the migration that drops `classroom_planner_student_planning_meta`
    - delete the related SQLAlchemy model and repository mapping
 5. Update docs/handoff:
-   - keep `EPIC-27`, the new story, `docs/index.md`, and `.agents/handoff.md` aligned with the
+   - keep `EPIC-27`, the new story, `docs/index.md`, and `.codex/handoff.md` aligned with the
      removal decision and verification evidence
 
 ## Test plan

@@ -46,7 +46,7 @@ Primary edit scope (tests/telemetry/docs only):
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts`
-- `.agents/handoff.md`
+- `.codex/handoff.md`
 
 Secondary proof scope:
 
@@ -114,7 +114,7 @@ Explicit out-of-scope clarification:
 - Retain artifacts under:
   - `.artifacts/flunk-out-frenzy-launcher-root-cause-proof/`
 - Record commands and observed results in:
-  - `.agents/handoff.md`
+  - `.codex/handoff.md`
 
 ## Reviewer checklist
 

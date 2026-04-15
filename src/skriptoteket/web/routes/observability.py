@@ -9,7 +9,7 @@ Relationships:
     - Uses `skriptoteket.observability.metrics` for shared Prometheus collectors.
 
 NOTE: Do NOT use `from __future__ import annotations` in router modules.
-See .agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
+See .codex/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 """
 
 import asyncio

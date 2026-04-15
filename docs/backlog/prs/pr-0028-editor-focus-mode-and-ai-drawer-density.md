@@ -88,7 +88,7 @@ Principer:
 
 6) **Verifiering + docs-as-code**
    - Uppdatera Playwright smoke(s) med nya assertions/screenshots för fokusläge + chat-drawer.
-   - Uppdatera `.agents/handoff.md` med exakta commands + artifacts (inga påståenden utan screenshot).
+   - Uppdatera `.codex/handoff.md` med exakta commands + artifacts (inga påståenden utan screenshot).
 
 ## Test plan
 
@@ -151,7 +151,7 @@ Detta avsnitt måste uppdateras efter varje delsteg (1-6) nedan. När alla check
 - [x] 3. Flytta remote-fallback samtycke till profil (serverpersistens + API), ta bort checkbox i chat-drawer, och lägg till “first remote attempt” prompt när valet är unset.
 - [x] 4. Composer: Chat/Redigera toggle + sänd-ikon i input; Enter skickar, Shift+Enter ny rad (a11y).
 - [x] 5. Performance: verifiera att initial editor-load inte regresserar (lazy-load där relevant).
-- [x] 6. Quality gates + handoff: `pdm run fe-type-check`, `pdm run fe-test` och Playwright-smokes; uppdatera `.agents/handoff.md` med artifacts.
+- [x] 6. Quality gates + handoff: `pdm run fe-type-check`, `pdm run fe-test` och Playwright-smokes; uppdatera `.codex/handoff.md` med artifacts.
 
 ### Verification (2026-01-14)
 

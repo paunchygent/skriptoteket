@@ -127,7 +127,7 @@ projection resolution, local role observation, and handoff into final `PR-0254`.
    identity payloads).
 
    **Proof requirement:** add redaction tests or artifact-inspection checks and record the
-   sanitized artifact path in `.agents/handoff.md`.
+   sanitized artifact path in `.codex/handoff.md`.
 
 4. **medium: Verification commands are still placeholders.**
 

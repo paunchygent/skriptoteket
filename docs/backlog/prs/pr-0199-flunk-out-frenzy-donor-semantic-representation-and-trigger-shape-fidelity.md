@@ -16,7 +16,7 @@ acceptance_criteria:
   - "Given the donor map must stay inspectable, when this task is complete, then donor-backed trigger and gate definitions in `prototypeAlphaVpwDonorDevices.ts` and `prototypeAlphaTableSpec.ts` cite the intended donor source objects explicitly."
   - "Given launcher lanes and other donor lane corridors are shaped semantic regions, when this task is complete, then every remaining `laneBounds` or AABB-style lane containment seam is replaced with donor-shaped lane-region semantics instead of approximate local bounds."
   - "Focused compile and physics regressions prove the donor right-return footprint keeps donor rotation, the launch-lane donor trigger maps to the intended shooter/plunger donor objects, and a served ball does not self-fire launch semantics while resting in the lane."
-  - "The donor reference docs, pinball authoring skill, and `.agents/handoff.md` explicitly forbid semantic flattening or 'good enough' vibe-porting when a richer donor representation exists."
+  - "The donor reference docs, pinball authoring skill, and `.codex/handoff.md` explicitly forbid semantic flattening or 'good enough' vibe-porting when a richer donor representation exists."
 ---
 
 ## Problem

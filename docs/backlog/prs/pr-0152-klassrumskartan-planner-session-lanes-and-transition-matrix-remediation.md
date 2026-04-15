@@ -145,7 +145,7 @@ Replace the shared planner persistence contract with an explicit, ownership-hone
 - [x] Implement one timer per lane
 - [x] Move route-shell transitions onto explicit lane policies
 - [x] Add dedicated specs for the new controller/lane/UI modules
-- [x] Re-run verification and record it in `.agents/handoff.md`
+- [x] Re-run verification and record it in `.codex/handoff.md`
 
 ## Implementation Summary
 

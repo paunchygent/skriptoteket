@@ -19,7 +19,7 @@ acceptance_criteria:
   - "Given donor seam invariants are non-negotiable, when this task is complete, then endpoint-bridge authoring remains exact `[overheadExitAnchor, descentEntryAnchor]`, seam continuity remains `xy<=1/z<=1`, and no helper/freehand seam geometry is added."
   - "Given launcher semantics must remain explicit, when this task is complete, then `swplunger` remains feed/rest anchor and `sw16` remains real exit anchor with physical transition semantics."
   - "Given this is a bounded launcher seam fix, when this task is complete, then implementation scope is limited to launcher-chain release/contact mechanics plus focused proof/spec updates needed to keep contract checks strict and typed."
-  - "Given UI/route workflow rules require evidence, when this task is complete, then focused verification and live launcher route checks are recorded in `.agents/handoff.md`."
+  - "Given UI/route workflow rules require evidence, when this task is complete, then focused verification and live launcher route checks are recorded in `.codex/handoff.md`."
 ---
 
 ## Problem
@@ -54,7 +54,7 @@ Primary implementation scope:
 Focused proof/support scope:
 
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
-- `.agents/handoff.md`
+- `.codex/handoff.md`
 
 Out of scope:
 
@@ -111,7 +111,7 @@ Out of scope:
   - visible ball response
   - lane progression to real `sw16` exit semantics
   - no false gate at served rest
-- Record exact commands and observations in `.agents/handoff.md`.
+- Record exact commands and observations in `.codex/handoff.md`.
 
 ## Non-negotiable stop conditions
 
@@ -122,4 +122,4 @@ Do not mark complete if any remain true:
 - any direct launch velocity shortcut is introduced
 - any seam tolerance/bridge contract is relaxed
 - `sw16` gate semantics are synthesized from route start
-- verification evidence is missing from `.agents/handoff.md`
+- verification evidence is missing from `.codex/handoff.md`

@@ -8,13 +8,13 @@ You are the Skriptoteket lint and typechecking specialist. Your job is to make t
 
 Before working, load and follow:
 - AGENTS.md
-- .agents/handoff.md
-- .agents/rules/000-rule-index.md
-- .agents/rules/050-python-standards.md
-- .agents/rules/070-testing-standards.md
-- .claude/skills/skriptoteket-backend-dev/SKILL.md for backend or API files
-- .claude/skills/skriptoteket-frontend-specialist/SKILL.md for frontend or SPA files
-- .claude/skills/skriptoteket-local-devops/SKILL.md when running repo commands or troubleshooting local verification
+- .codex/handoff.md
+- .codex/rules/000-rule-index.md
+- .codex/rules/050-python-standards.md
+- .codex/rules/070-testing-standards.md
+- .codex/skills/skriptoteket-backend-dev/SKILL.md for backend or API files
+- integrated-frontend-stack for frontend or SPA files
+- local-devops when running repo commands or troubleshooting local verification
 
 Primary goals:
 - Fix Python Ruff issues and Python mypy issues.

@@ -17,7 +17,7 @@ acceptance_criteria:
   - "Given `PR-0209` requires per-step phase and seam visibility, when this task is complete, then qualifying live cases no longer claim `route_endpoint_bridge`, `handoff_to_board`, or `board_drop_preimpact` solely through post-hoc insertion when the raw live rows do not expose those steps."
   - "Given focused and live artifacts are currently not contract-equivalent, when this task is complete, then they either share one explicit row/summary contract (field names, cadence semantics, seam markers) or `PR-0209` plus downstream docs are narrowed so the live contract is intentionally weaker and cannot be misread as parity."
   - "Given this slice owns only proof-surface mismatch, when this task is complete, then no launcher geometry changes, no release-speed tuning, no route-transport behavior changes, and no new gameplay heuristics are introduced."
-  - "Given reviewability depends on retained evidence, when this task is complete, then `.agents/handoff.md` records the exact focused and live commands, artifact paths, and a short note explaining whether parity was achieved or the live contract was explicitly narrowed."
+  - "Given reviewability depends on retained evidence, when this task is complete, then `.codex/handoff.md` records the exact focused and live commands, artifact paths, and a short note explaining whether parity was achieved or the live contract was explicitly narrowed."
 ---
 
 ## Problem
@@ -71,7 +71,7 @@ Proof/contract scope:
 
 - `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`
 - `docs/backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md`
-- `.agents/handoff.md`
+- `.codex/handoff.md`
 
 Out of scope:
 
@@ -156,7 +156,7 @@ this slice is closed as done with reservations.
 5. Update docs and handoff evidence:
    - refresh `PR-0209` only if parity is achieved in this slice
    - record exact commands, artifact paths, and parity outcome in
-     `.agents/handoff.md`
+     `.codex/handoff.md`
 
 ## Test plan
 

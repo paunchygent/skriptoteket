@@ -20,7 +20,7 @@ acceptance_criteria:
   - "Given route progression currently advances the ball by direct `setTranslation(...)` and `setLinvel(...)` writes along authored route points, when this checkpoint is complete, then any remaining transport shortcut is treated as explicit blocked debt rather than being narrated as a completed physical rail."
   - "Given `handoffVelocity` is the only acceptable declared bounded heuristic from `PR-0212`, when this task is complete, then any remaining non-simulated behavior is isolated to the terminal board handoff and is never overstated as continuous route physics."
   - "Given the proof surface is now truthful and operational through `PR-0213` and `PR-0214`, when this task is complete, then the canonical focused tests and live Playwright trace continue to serve as the decision gate for whether runtime remediation actually improved physical truth."
-  - "Given automated traces can still mask the known inert-launch false-green risk, when this task is complete, then acceptance remains blocked until a manual launcher matrix check for `rest`, `short`, `medium`, `full`, and `relaunch` is recorded in `.agents/handoff.md` alongside the automated evidence."
+  - "Given automated traces can still mask the known inert-launch false-green risk, when this task is complete, then acceptance remains blocked until a manual launcher matrix check for `rest`, `short`, `medium`, `full`, and `relaunch` is recorded in `.codex/handoff.md` alongside the automated evidence."
   - "Given this slice is now a bounded runtime-honesty checkpoint rather than the physical-carrier cut-over itself, when this task is complete, then no new carrier-role schema, donor overhead collider cut-over, or baseline repin is smuggled into the slice."
 ---
 
@@ -100,7 +100,7 @@ Proof/verification scope:
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts`
-- `.agents/handoff.md`
+- `.codex/handoff.md`
 
 Reference-but-not-rewrite scope:
 
@@ -306,7 +306,7 @@ into an oversized mixed-responsibility class.
 - Blocking manual gate:
   - run one headed local launcher matrix pass covering `rest`, `short`,
     `medium`, `full`, and `relaunch`
-  - record the outcome in `.agents/handoff.md`
+  - record the outcome in `.codex/handoff.md`
   - do not mark `PR-0215` accepted while this manual matrix remains pending or
     contradictory to the automated trace
 

@@ -20,10 +20,10 @@ tags: ["frontend", "ai", "refactor", "srp", "testing"]
 links: ["EPIC-08"]
 acceptance_criteria:
   - "Editor AI UI + composables follow SRP boundaries: API calls/helpers/state are separated and easier to test."
-  - "No Vue SFC touched in this PR exceeds 500 LoC (per `.agents/rules/045-huleedu-design-system.md`)."
+  - "No Vue SFC touched in this PR exceeds 500 LoC (per `.codex/rules/045-huleedu-design-system.md`)."
   - "AI edit-ops composable is split into smaller modules/composables (request/preview/apply/undo helpers + API client), without behavior changes."
   - "AI chat composable is split into smaller modules (SSE streaming client + reducer/state + API helpers), without behavior changes."
-  - "AI-related test files stay <400–500 LoC (per `.agents/rules/070-testing-standards.md`)."
+  - "AI-related test files stay <400–500 LoC (per `.codex/rules/070-testing-standards.md`)."
   - "`pdm run fe-test` passes (and `pdm run fe-lint`/`pdm run fe-type-check` if configured)."
 ---
 
@@ -167,4 +167,4 @@ This section must be updated after each subtask (1-6) below. When all checkboxes
 - [x] 3. Extract AI orchestration out of `ScriptEditorView.vue` into `ScriptEditorAiPanel.vue` (or equivalent).
 - [x] 4. Make AI UI lazy where possible (edit-ops panel, diff viewer, optional chat drawer).
 - [x] 5. Split AI-related tests into smaller specs aligned with new modules.
-- [x] 6. Verify and record: `pdm run fe-test` (+ lint/typecheck if configured) and manual editor AI smoke in `.agents/handoff.md`.
+- [x] 6. Verify and record: `pdm run fe-test` (+ lint/typecheck if configured) and manual editor AI smoke in `.codex/handoff.md`.

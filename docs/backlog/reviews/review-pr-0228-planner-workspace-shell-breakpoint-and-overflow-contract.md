@@ -92,7 +92,7 @@ Review `PR-0228` as one structural shell contract:
 
 ### Mandatory Repomix Package (External Review)
 
-- Package: `.agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml`
+- Package: `.codex/repomix_packages/repomix-pr-0228-workspace-contract-review.xml`
 - Template: `code-review`
 - Included files: `27`
 
@@ -192,5 +192,5 @@ trail:
    chosen proof boundary for close-out.
 2. The retained review now approves the slice on one live-proof lane plus focused guest/auth shell
    specs instead of leaving parity obligations implicit.
-3. `ST-29-11`, `EPIC-29`, and `.agents/handoff.md` can now treat `PR-0228` as closed and move the
+3. `ST-29-11`, `EPIC-29`, and `.codex/handoff.md` can now treat `PR-0228` as closed and move the
    remaining planner follow-up work into the separate `PR-0229` lane.

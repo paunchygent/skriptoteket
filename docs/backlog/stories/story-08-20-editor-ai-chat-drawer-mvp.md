@@ -148,4 +148,4 @@ proxy-and-config.md`
 ### Session rule (required)
 
 - Any UI/drawer change must be verified with live dev (backend + Vite) and
-  recorded in `.agents/handoff.md`.
+  recorded in `.codex/handoff.md`.

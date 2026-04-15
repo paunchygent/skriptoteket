@@ -297,4 +297,4 @@ Frontend:
 - [ ] Consolidate consent evaluation + notice selection helpers (SRP direction; no AI service introduced).
 - [ ] Verification: `pdm run test`, `pdm run fe-test`, `pdm run typecheck`, `pdm run lint`.
 - [ ] Documentation: update PR-0041 and/or ADR-0043 if behavior/semantics change; run `pdm run docs-validate`.
-- [ ] If UI changes: perform live UI functional check and record in `.agents/handoff.md`.
+- [ ] If UI changes: perform live UI functional check and record in `.codex/handoff.md`.

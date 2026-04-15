@@ -52,7 +52,7 @@ Harden the Flunk-Out Frenzy local slice so that:
 One earlier review observation is already resolved and should not be reopened as
 an issue in this PR:
 
-- `.agents/handoff.md` now includes Flunk-Out Frenzy verification commands and
+- `.codex/handoff.md` now includes Flunk-Out Frenzy verification commands and
   live browser proof entries for `PR-0094` through `PR-0100`.
 
 This remediation task focuses only on the still-open issues below.
@@ -185,7 +185,7 @@ Manual/live:
 - Verify a forced runtime boot failure shows a visible error state
 - Verify mute state does not leak after route leave/re-entry
 - Verify audio-disabled bootstrap configuration suppresses live audio behavior
-- Record the route check in `.agents/handoff.md`
+- Record the route check in `.codex/handoff.md`
 
 ## Rollback plan
 

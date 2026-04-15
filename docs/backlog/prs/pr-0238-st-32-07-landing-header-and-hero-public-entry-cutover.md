@@ -54,7 +54,7 @@ public app first, account paths second.
    copy only; do not treat any sentence as final until user sign-off.
 5. Add or update focused frontend specs in the visible-contract layers, including `HomeView.spec.ts`
    plus at least one shared-shell assertion in `LandingLayout` or `App`, and record a live landing
-   check in `.agents/handoff.md`.
+   check in `.codex/handoff.md`.
 6. Preserve post-login destination semantics for the new in-place login affordances:
    - from `/public/apps/classroom.group-seating-studio`, successful login must land on the
      authenticated planner route rather than leave the user on the public host

@@ -14,7 +14,7 @@ acceptance_criteria:
   - "Given donor geometry fidelity and donor device-semantic fidelity are separate risks, when this story is complete, then topology cutover and semantic-representation follow-up stay explicit in linked tasks instead of being blurred together."
   - "Given donor lanes and launcher corridors are shaped board regions rather than local bounding boxes, when this story is complete, then all remaining lane flattening seams and `laneBounds` shortcuts are either replaced with donor-shaped lane-region semantics or kept open as explicit linked follow-up debt."
   - "Given future mechanics slices depend on a sane board, when this story is complete, then the donor-based board can be inspected manually in-browser before `PR-0193` through `PR-0195` continue."
-  - "Given this corrective work will span sessions, when the story is updated, then the linked PR task and `.agents/handoff.md` keep the current donor-integration progress explicit."
+  - "Given this corrective work will span sessions, when the story is updated, then the linked PR task and `.codex/handoff.md` keep the current donor-integration progress explicit."
 ui_impact: "Yes (the playable board topology is rebuilt around donor geometry)"
 data_impact: "No (reference donor assets only)"
 ---

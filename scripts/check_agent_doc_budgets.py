@@ -17,7 +17,7 @@ def _count_lines(*, path: Path) -> int:
 
 def main() -> int:
     budgets = [
-        Budget(path=Path(".agents/handoff.md"), max_lines=200),
+        Budget(path=Path(".codex/handoff.md"), max_lines=200),
     ]
 
     failures: list[str] = []
@@ -43,7 +43,7 @@ def main() -> int:
     for failure in failures:
         print(f"- {failure}")
     print(
-        "\nHint: `.agents/handoff.md` is the live session handoff only. "
+        "\nHint: `.codex/handoff.md` is the live session handoff only. "
         "Dump non-session-vital history to repo long-term memory in "
         "`docs/reference/ref-development-changelog.md` before trimming the handoff back under budget.",
     )

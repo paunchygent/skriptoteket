@@ -15,7 +15,7 @@ acceptance_criteria:
   - "Systemprompter (chat + edit + completion) nämner inte interna termer som 'Contract v2'."
   - "\"Skapa nytt skript\"-mallen visar korrekt inputs/outputs/next_actions/state enligt gällande UI payload."
   - "Chat + Edit-svar känns mjukt 'skrivna' (jämn reveal + subtil fade-in) utan batchiga hopp."
-  - "Verifiering körd och loggad i `.agents/handoff.md` inkl. Playwright artifacts under `.artifacts/`."
+  - "Verifiering körd och loggad i `.codex/handoff.md` inkl. Playwright artifacts under `.artifacts/`."
 ---
 
 ## Problem

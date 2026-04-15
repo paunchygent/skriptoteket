@@ -175,7 +175,7 @@ parameters, local storage, or a non-signed session response.
   realm_subject_id)` and unsupported/missing realm fields fail closed.
 - Frontend/store tests for provisioning-required or linking-required UX.
 - Local Docker or local/non-production Gateway Playwright proof for the full auth ceremony.
-- Exact live proof command and artifacts path must be recorded in `.agents/handoff.md`; expected
+- Exact live proof command and artifacts path must be recorded in `.codex/handoff.md`; expected
   shape: `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection --start-backend --start-vite --gateway-base-url <local-or-nonprod-gateway>`.
 - `pdm run fe-gen-api-types`
 - `pdm run fe-type-check`

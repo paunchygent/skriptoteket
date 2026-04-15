@@ -375,10 +375,10 @@ Reference Documentation
 | 6b   | Mandates HuleEdu tokens      | `docs/adr/adr-0017-huleedu-design-system-adoption.md:15`                          |
 | 6c   | Tailwind 4 @theme decision   | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:33`                                 |
 | 6d   | CSS-first token bridge       | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:23`                                 |
-| 6e   | Design system rules          | `.agents/rules/045-huleedu-design-system.md:14`                                   |
-| 6f   | Design system principles     | `.agents/rules/045-huleedu-design-system.md:16`                                   |
-| 6g   | Physical feedback rule       | `.agents/rules/045-huleedu-design-system.md:23`                                   |
-| 6h   | 4px press behavior           | `.agents/rules/045-huleedu-design-system.md:25`                                   |
+| 6e   | Design system rules          | `.codex/rules/045-huleedu-design-system.md:14`                                   |
+| 6f   | Design system principles     | `.codex/rules/045-huleedu-design-system.md:16`                                   |
+| 6g   | Physical feedback rule       | `.codex/rules/045-huleedu-design-system.md:23`                                   |
+| 6h   | 4px press behavior           | `.codex/rules/045-huleedu-design-system.md:25`                                   |
 | 6i   | Design system codemap        | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:119`             |
 | 6j   | Token pipeline mapping       | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:120`             |
 | 6k   | Dense primitive implementation | `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md:34` |
@@ -540,7 +540,7 @@ When adopting this design system in another repo, verify:
 
 - `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
 
-- `.agents/rules/045-huleedu-design-system.md`
+- `.codex/rules/045-huleedu-design-system.md`
 
 ### Reference
 

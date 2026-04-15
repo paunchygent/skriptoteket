@@ -47,7 +47,7 @@ and record the before/after evidence.
 4. Add placeholder ownership for the reserved hosts so they do not route to the
    Skriptoteket container by accident.
 5. Re-run the original public-edge verification curls and record the results in
-   `.agents/handoff.md`.
+   `.codex/handoff.md`.
 
 ## Test plan
 

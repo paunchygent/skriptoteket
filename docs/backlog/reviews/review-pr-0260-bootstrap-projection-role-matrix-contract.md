@@ -129,7 +129,7 @@ Resolved.
    `git diff --check`, and the gitignored artifact directory for sanitized bootstrap evidence.
 
    **Proof requirement:** record those command results and artifact redaction checks in
-   `.agents/handoff.md` before requesting re-review.
+   `.codex/handoff.md` before requesting re-review.
 
 ### Suggestions (Optional)
 

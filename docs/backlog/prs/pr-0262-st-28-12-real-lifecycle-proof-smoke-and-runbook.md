@@ -250,7 +250,7 @@ Failure triage must preserve these interpretations:
 - Inspect `manifest.redacted.json` and retained artifact paths for forbidden fields before
   requesting re-review.
 - Run production proof only with explicit operator credentials and record the sanitized artifact
-  path in `.agents/handoff.md`.
+  path in `.codex/handoff.md`.
 
 ## Rollback Plan
 

@@ -210,7 +210,7 @@ This PR should still avoid:
 - [ ] Update the primitive contract docs if implementation reveals a mismatch
 - [ ] Add Vitest coverage for the new shared controls
 - [ ] Run a live check on the planner and editor toolbars
-- [ ] Record verification in `.agents/handoff.md` if implementation proceeds
+- [ ] Record verification in `.codex/handoff.md` if implementation proceeds
 
 ## Ship gate
 

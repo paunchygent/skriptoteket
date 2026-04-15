@@ -11,7 +11,7 @@ dependencies:
   - "REF-sprint-planning-workflow"
 acceptance_criteria:
   - "Given the repo now uses a retained review model, when authors create or update review docs, then epic/story/PR target-based review records, primary-target id rules, and governed `adrs:` usage are documented consistently across `REF-review-workflow`, the review template, the review rule, the docs contract, and docs validation."
-  - "Given sprint docs are no longer a live planning shape, when authors follow the current planning docs, then `REF-sprint-planning-workflow`, the sprint template, `docs/index.md`, and `.agents/handoff.md` treat sprint docs as deprecated historical archive and direct planning through epic/story/PR + target-based review docs."
+  - "Given sprint docs are no longer a live planning shape, when authors follow the current planning docs, then `REF-sprint-planning-workflow`, the sprint template, `docs/index.md`, and `.codex/handoff.md` treat sprint docs as deprecated historical archive and direct planning through epic/story/PR + target-based review docs."
   - "Given the active backlog already uses dedicated follow-up review records, when this backfill story is read, then it records the shipped split of current review gates into `REV-PR-*` docs and the governing role of `REF-review-workflow` for future migrations."
 ---
 

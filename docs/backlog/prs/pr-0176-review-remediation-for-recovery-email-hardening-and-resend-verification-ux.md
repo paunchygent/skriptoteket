@@ -68,7 +68,7 @@ Ship the narrow remediation that:
 
 ### 3. Verification trail
 
-- Replace the abbreviated auth-recovery live-check placeholder in `.agents/handoff.md` with an
+- Replace the abbreviated auth-recovery live-check placeholder in `.codex/handoff.md` with an
   exact command or a named script path plus artifact location.
 - Keep the handoff within the enforced line budget.
 

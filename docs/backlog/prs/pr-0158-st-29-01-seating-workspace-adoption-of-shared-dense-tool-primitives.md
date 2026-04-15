@@ -69,7 +69,7 @@ shell overhaul from later stories.
 - [ ] Replace or retire planner-local primitive stopgaps that become redundant
 - [ ] Add or update seating Vitest coverage
 - [ ] Run live proof on the local planner route
-- [ ] Record verification in `.agents/handoff.md` if implementation proceeds
+- [ ] Record verification in `.codex/handoff.md` if implementation proceeds
 
 ## Test plan
 

@@ -16,7 +16,7 @@ dependencies:
 acceptance_criteria:
   - "Given the remaining duplicate review-id families still conflict with the current docs-as-code contract, when this task is complete, then the touched review records have unique target-based ids/filenames or explicit legacy framing with corrected crosslinks."
   - "Given the migration changes retained decision records rather than product behavior, when this task is complete, then the scope is limited to review docs, supporting backlog/index references, and related docs-governance surfaces needed to keep the planning trail coherent."
-  - "Given the target-based review workflow is the canonical rule now, when this task is complete, then `docs/index.md`, `.agents/handoff.md`, and the touched backlog docs all point to the migrated review records consistently and `pdm run docs-validate` passes."
+  - "Given the target-based review workflow is the canonical rule now, when this task is complete, then `docs/index.md`, `.codex/handoff.md`, and the touched backlog docs all point to the migrated review records consistently and `pdm run docs-validate` passes."
 ---
 
 ## Problem
@@ -305,7 +305,7 @@ classifications, update this checklist in the same PR so the repo records why.
 ### Checkpoint C. Repair crosslinks and planning surfaces
 
 1. Update `docs/index.md` so it points to the migrated review docs.
-2. Update touched backlog docs and `.agents/handoff.md` so active planning notes stop implying the
+2. Update touched backlog docs and `.codex/handoff.md` so active planning notes stop implying the
    older bundled-review shape.
 3. Keep [REF-review-workflow](../../reference/ref-review-workflow.md) as the governing migration
    reference throughout the slice.

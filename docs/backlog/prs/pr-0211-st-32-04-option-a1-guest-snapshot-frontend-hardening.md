@@ -101,8 +101,8 @@ identity is strong enough for later ST-32-05 import/idempotency work.
 ## Reviewer Notes
 
 - first sole-reviewer pass found two docs-trail issues:
-  - stale PR path in `docs/index.md` and `.agents/handoff.md`
-  - stale digest-format note in `.agents/handoff.md`
+  - stale PR path in `docs/index.md` and `.codex/handoff.md`
+  - stale digest-format note in `.codex/handoff.md`
 - both findings were fixed in-slice and `pdm run docs-validate` was rerun successfully
 - second and final sole-reviewer pass returned no actionable findings
 

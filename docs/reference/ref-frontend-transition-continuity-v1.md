@@ -106,4 +106,4 @@ For any implementation slice under this pattern:
 - verify there is no blank frame between outgoing and incoming surfaces
 - verify shell labels/status do not flash to fallback copy
 - run a live browser proof on `http://127.0.0.1:5173` when UI behavior changes
-- record the proof in `.agents/handoff.md`
+- record the proof in `.codex/handoff.md`

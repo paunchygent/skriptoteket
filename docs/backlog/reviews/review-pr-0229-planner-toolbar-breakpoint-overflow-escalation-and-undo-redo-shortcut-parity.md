@@ -102,7 +102,7 @@ Review and freeze one shared shell and toolbar breakpoint doctrine:
 
 ### Mandatory Repomix Package (External Review)
 
-- Package: `.agents/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml`
+- Package: `.codex/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml`
 - Template: `code-review`
 - Included files: `25`
 

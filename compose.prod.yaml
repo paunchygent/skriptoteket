@@ -25,6 +25,7 @@ services:
       ENVIRONMENT: production
       COOKIE_SECURE: "true"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,::1,skriptoteket.hule.education}
+      PUBLIC_APP_BASE_URL: ${PUBLIC_APP_BASE_URL:-https://skriptoteket.hule.education}
       TRUST_PROXY_HEADERS: "true"
       # Fail closed until nginx-proxy's exact bridge IP/CIDR is configured in the deployment env.
       TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}

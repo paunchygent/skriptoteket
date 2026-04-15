@@ -20,7 +20,7 @@ acceptance_criteria:
   - "Given semantic separation is hard-required, when this task is complete, then traces keep `swplunger` feed/rest and `sw16` exit semantics explicit and independently testable."
   - "Given route-chain correctness is the seam contract, when this task is complete, then artifacts and tests prove the path order `overhead -> endpoint-bridge -> descent -> board handoff -> board drop` for qualifying launch cases."
   - "Given this is an observability/proof slice, when this task is complete, then production gameplay tuning/geometry edits are out of scope and any new behavior fix is blocked until this telemetry contract is green and reviewed."
-  - "Given workflow requires auditable evidence, when this task is complete, then focused command results plus live route-check outputs are recorded in `.agents/handoff.md` with artifact paths."
+  - "Given workflow requires auditable evidence, when this task is complete, then focused command results plus live route-check outputs are recorded in `.codex/handoff.md` with artifact paths."
 ---
 
 ## Problem
@@ -55,7 +55,7 @@ Proof/contract scope:
 
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts`
-- `.agents/handoff.md`
+- `.codex/handoff.md`
 
 Out of scope:
 
@@ -250,7 +250,7 @@ Forbidden artifact behavior:
   - `sw16_exit_observed`
   - `handoff_to_board_step`
   - `first_board_collision_step`
-- Record in `.agents/handoff.md`:
+- Record in `.codex/handoff.md`:
   - exact command
   - artifact folder paths
   - summary of observed phase progression and `sw16` semantics
@@ -264,4 +264,4 @@ Do not mark complete if any remain true:
 - handoff and first board-impact steps are absent from traces
 - `swplunger` and `sw16` semantics are conflated in artifacts/tests
 - any seam tolerance/bridge contract is weakened
-- focused verification or live evidence is not recorded in `.agents/handoff.md`
+- focused verification or live evidence is not recorded in `.codex/handoff.md`

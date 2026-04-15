@@ -12,12 +12,12 @@ topic: "development-changelog"
 Append-only development log and repo long-term memory for compacted handoff history.
 
 Rule:
-- When compacting `.agents/handoff.md`, move non-session-vital handoff history here first.
+- When compacting `.codex/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
 
 ## 2026-04-12 handoff compaction dump
 
-Moved from `.agents/handoff.md` while preparing `ST-28-08` / `PR-0257` as the next
+Moved from `.codex/handoff.md` while preparing `ST-28-08` / `PR-0257` as the next
 provider-contract gate after approved `PR-0256`.
 
 - Reviewer advice acted on: `frontend/apps/skriptoteket/src/stores/ai.ts` now fails closed while
@@ -54,12 +54,12 @@ provider-contract gate after approved `PR-0256`.
 
 ## 2026-04-10 handoff compaction dump
 
-Moved from `.agents/handoff.md` during EPIC-28 shared-auth consumer migration scaffolding.
+Moved from `.codex/handoff.md` during EPIC-28 shared-auth consumer migration scaffolding.
 
 - The previous handoff contained the full `PR-0231` through `PR-0249` implementation and proof
   history. That history remains durable in this changelog and in the corresponding backlog records;
   the active handoff was reduced back to the current decision points and executable next steps.
-- Before compaction, `.agents/handoff.md` recorded that `REV-EPIC-28` is approved, `ST-32-10` /
+- Before compaction, `.codex/handoff.md` recorded that `REV-EPIC-28` is approved, `ST-32-10` /
   `PR-0242` owns the dedicated `/auth/login` route contract, and the remaining runtime blocker for
   EPIC-28 was HuleEdu host/session truth.
 - The active state changed on 2026-04-10: HuleEdu has accepted ADR-0039 and created the
@@ -68,7 +68,7 @@ Moved from `.agents/handoff.md` during EPIC-28 shared-auth consumer migration sc
 
 ## 2026-04-09 handoff compaction dump
 
-Moved from `.agents/handoff.md` during task-draft bookkeeping for `PR-0248` / `PR-0249`.
+Moved from `.codex/handoff.md` during task-draft bookkeeping for `PR-0248` / `PR-0249`.
 
 - `Keep PR-0232 scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.`
 - `Preserve the PR-0233 seam shape while implementing PR-0232: later guest export/checkpoint continuity should keep feeding the existing authenticated import / discard / postpone prompt instead of adding a new compatibility lane.`
@@ -78,7 +78,7 @@ Moved from `.agents/handoff.md` during task-draft bookkeeping for `PR-0248` / `P
 
 ## 2026-04-07 handoff compaction dump
 
-Moved from `.agents/handoff.md` during handoff cleanup.
+Moved from `.codex/handoff.md` during handoff cleanup.
 
 ### Previous Snapshot
 
@@ -108,12 +108,12 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 - `PR-0229` is now the next active `ST-29-11` toolbar follow-up: freeze deliberate desktop-first breakpoint behavior for the shared planner toolbar, keep the bar one row, move `undo` / `redo` into overflow first, move `Börja om` next, and add canonical undo/redo keyboard shortcuts so lost always-visible buttons do not become lost capabilities.
 - Review docs now use the new target-based shape from the `skill-repository` model: `REV-EPIC-29` is back to the epic decision record, while `PR-0226`, `PR-0227`, `PR-0228`, and `PR-0229` each have their own retained review doc under `docs/backlog/reviews/`.
 - The retained review workflow docs are now explicit that ADRs are reviewed through the governing epic/story/PR review record via `adrs:`, while one primary target still drives the review filename and id.
-- The planner follow-up review gates now live at `docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md` and `docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`, with the existing repomix bundles still at `.agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml` and `.agents/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml`.
+- The planner follow-up review gates now live at `docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md` and `docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`, with the existing repomix bundles still at `.codex/repomix_packages/repomix-pr-0228-workspace-contract-review.xml` and `.codex/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml`.
 - Legacy planning docs are now deprecated and treated as historical records only.
 - The shared planner geometry is now expressed through named CSS primitives in `frontend/apps/skriptoteket/src/assets/main.css` and consumed from `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts`. `PlannerWorkspaceShell.vue`, `ClassroomPlannerGuestWorkspaceShell.vue`, `PlannerStudentPool.vue`, `GroupBoard.vue`, `GroupCard.vue`, and `RoomCanvas.vue` now consume those shared primitives instead of carrying the old mixed `xl:` utility contract.
 - Grouping now matches the corrected product shape locally: the board stays on the main page/workspace scroll path, the left rail stays a `480px` working surface, the student list scrolls inside that rail, and the rail remains visually attached below the sticky toolbar as the page scrolls.
 - Seating now follows the same high-level contract locally: the top panel can scroll away, the toolbar becomes sticky, the class-list rail is capped at `480px` with internal list-body overflow, and the room canvas remains the primary seating surface inside the page/workspace scroll path.
-- The external review package for that task now lives at `.agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml` and bundles the current docs, shared planner shell files, pane/layout seams, focused specs, and the existing Playwright proof lane.
+- The external review package for that task now lives at `.codex/repomix_packages/repomix-pr-0228-workspace-contract-review.xml` and bundles the current docs, shared planner shell files, pane/layout seams, focused specs, and the existing Playwright proof lane.
 - The docs are now explicit about the geometry/proof guardrails too: `EPIC-29`, `ST-29-03`, `ST-29-11`, and `PR-0228` now state that planner-family geometry is CSS-owned, that `PR-0228` must prove the failing pre-`xl` band, and that the seating proof must verify rail-to-right-lane alignment during deeper canvas scrolling.
 - The remaining risk surface is no longer “make the pane taller”; it is keeping the new page-scroll model stable across resize bands and toolbar/rail stickiness without reintroducing nested board scrollers or brittle wrapper math.
 - Older story ownership is now explicit in docs: `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md` now freezes the desktop student-pool/class-list rail as a locally sticky side surface with a fixed header and scrolling list body, and `docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md` now reinforces that the sticky rail is part of the shipped grouping/seating desktop composition rather than an incidental implementation detail.
@@ -130,9 +130,9 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 
 ### Previous Verification
 
-- `pdm run docs-validate` (pass after adding and approving `REV-EPIC-34`, and updating `EPIC-34`, `docs/index.md`, and `.agents/handoff.md`)
-- `pdm run docs-validate` (pass after scaffolding `EPIC-34`, `ST-34-01`, `ST-34-02`, and `PR-0230`, and updating `docs/index.md` plus `.agents/handoff.md`)
-- `pdm run docs-validate` (pass after reconciling `docs/reference/ref-review-workflow.md`, `docs/templates/template-review.md`, `.agents/rules/096-review-workflow.md`, `.agents/rules/000-rule-index.md`, and `.agents/handoff.md` around primary-target semantics and ADR handling)
+- `pdm run docs-validate` (pass after adding and approving `REV-EPIC-34`, and updating `EPIC-34`, `docs/index.md`, and `.codex/handoff.md`)
+- `pdm run docs-validate` (pass after scaffolding `EPIC-34`, `ST-34-01`, `ST-34-02`, and `PR-0230`, and updating `docs/index.md` plus `.codex/handoff.md`)
+- `pdm run docs-validate` (pass after reconciling `docs/reference/ref-review-workflow.md`, `docs/templates/template-review.md`, `.codex/rules/096-review-workflow.md`, `.codex/rules/000-rule-index.md`, and `.codex/handoff.md` around primary-target semantics and ADR handling)
 - `pdm run docs-validate` (pass after migrating `REV-EPIC-08` / `REV-EPIC-14` / `REV-EPIC-23` family records to canonical target-based review docs, preserving the legacy patch-workflow brief as linked support material, and repairing the backlog/index crosslinks)
 - `pdm run docs-validate` (pass after normalizing the retained review section shape, preserving the PR-0031 support brief, and cleaning the remaining placeholder-heavy review bodies)
 - `pdm run fe-test src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` (pass; 5 files / 48 tests after restoring page-scroll ownership and the `480px` grouping + seating rails)
@@ -154,10 +154,10 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 - `pdm run docs-validate` (pass after tightening `EPIC-29`, `ST-29-03`, `ST-29-11`, and `PR-0228` so CSS-owned geometry and the missing `PR-0228` proof path are explicit in docs)
 - `pdm run docs-validate` (pass after reconciling `PR-0228`, `REV-EPIC-29`, `ST-29-11`, and `EPIC-29` to the corrected page/workspace-scroll model while keeping the slice open pending a guest/auth parity close-out decision)
 - `pdm run docs-validate` (pass after adding `PR-0229` for desktop-first toolbar breakpoint overflow escalation and undo/redo shortcut parity, and updating `ST-29-11`, `docs/index.md`, and handoff)
-- `pdm run docs-validate` (pass after adding `ADR-0080`, creating `PR-0231` and `PR-0232`, trimming `PR-0223` to the shipped baseline, and updating `ST-32-06`, `EPIC-32`, `docs/index.md`, and `.agents/handoff.md`)
-- `pdm run docs-validate` (pass after adding `REV-PR-0231`, linking it from `PR-0231` / `PR-0232`, and updating `docs/index.md` plus `.agents/handoff.md`)
+- `pdm run docs-validate` (pass after adding `ADR-0080`, creating `PR-0231` and `PR-0232`, trimming `PR-0223` to the shipped baseline, and updating `ST-32-06`, `EPIC-32`, `docs/index.md`, and `.codex/handoff.md`)
+- `pdm run docs-validate` (pass after adding `REV-PR-0231`, linking it from `PR-0231` / `PR-0232`, and updating `docs/index.md` plus `.codex/handoff.md`)
 - `pdm run docs-validate` (pass after addressing `REV-PR-0231` findings by tightening `PR-0231` and `PR-0232` around mandatory public Smart/export route families and explicit abuse-control requirements)
-- `pdm run docs-validate` (pass after re-reviewing `REV-PR-0231`, approving the retained guest-boundary planning gate, and updating `.agents/handoff.md`)
+- `pdm run docs-validate` (pass after re-reviewing `REV-PR-0231`, approving the retained guest-boundary planning gate, and updating `.codex/handoff.md`)
 - `pdm run fe-test -- --run src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/usePublicSmartGroupingRun.spec.ts src/views/apps/usePublicSmartSeatingRun.spec.ts` (pass; 4 files / 10 tests for guest overview/shell parity plus the new public Smart composables)
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; 7 tests for stateless public smart handlers and public helper routes)
 - `pdm run fe-type-check` (pass)
@@ -173,8 +173,8 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 - `pdm run fe-test src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts` (pass; 4 files / 42 tests for the shared guest/auth shell and grouping/seating pane contract used to close `PR-0228`)
 - `pdm run fe-type-check` (pass)
 - `pdm run python -m scripts.playwright_pr_0227_group_board_height_contract_check --base-url http://127.0.0.1:5173` (pass; authenticated `SA24D` / `G20` retained live proof for the corrected `PR-0228` shell contract)
-- `pdm run docs-validate` (pass after closing `PR-0228`, approving `REV-PR-0228`, and updating `ST-29-11`, `EPIC-29`, and `.agents/handoff.md`)
-- `repomix --style xml --no-gitignore --output .agents/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml --include "AGENTS.md,.agents/rules/000-rule-index.md,.agents/rules/045-huleedu-design-system.md,.agents/rules/070-testing-standards.md,.agents/rules/075-browser-automation.md,.agents/handoff.md,docs/reference/ref-review-workflow.md,docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md,docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md,docs/backlog/prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md,docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md,docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md,docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md,frontend/apps/skriptoteket/src/assets/main.css,frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/components/ui/useDenseMenuSurface.ts"` (pass; 26 files, 66,084 tokens, output `.agents/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml`)
+- `pdm run docs-validate` (pass after closing `PR-0228`, approving `REV-PR-0228`, and updating `ST-29-11`, `EPIC-29`, and `.codex/handoff.md`)
+- `repomix --style xml --no-gitignore --output .codex/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml --include "AGENTS.md,.codex/rules/000-rule-index.md,.codex/rules/045-huleedu-design-system.md,.codex/rules/070-testing-standards.md,.codex/rules/075-browser-automation.md,.codex/handoff.md,docs/reference/ref-review-workflow.md,docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md,docs/backlog/reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md,docs/backlog/prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md,docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md,docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md,docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md,frontend/apps/skriptoteket/src/assets/main.css,frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/components/ui/useDenseMenuSurface.ts"` (pass; 26 files, 66,084 tokens, output `.codex/repomix_packages/repomix-pr-0229-toolbar-breakpoint-overflow-review.xml`)
 - `pdm run docs-validate` (pass after planning `PR-0228` and clarifying sticky student-pool ownership in `ST-29-03` / `ST-29-05`)
 - `pdm run fe-test src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` (pass; 4 files / 42 tests)
 - `pdm run fe-type-check` (pass)
@@ -182,7 +182,7 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 
 ## 2026-04-08 handoff compaction dump
 
-Moved from `.agents/handoff.md` during handoff cleanup.
+Moved from `.codex/handoff.md` during handoff cleanup.
 
 ### Previous Status
 
@@ -203,9 +203,9 @@ Moved from `.agents/handoff.md` during handoff cleanup.
 - `pdm run fe-type-check` (pass after the `PR-0236` spec realignment)
 - `pdm run fe-test` (pass; 149 files, 771 tests)
 - Live local browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` (pass for `PR-0235`; public builder modal rendered `builder-zoom-percent = 100%` and `room-builder-scroll-frame[data-overflow-anchor] = center` for a fresh small-room state; Playwright Chrome session was explicitly closed after the check)
-- `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.agents/handoff.md`)
+- `pdm run docs-validate` (pass after implementing `PR-0236`, updating remediation task statuses, and refreshing `.codex/handoff.md`)
 - `pdm run docs-validate` (pass after scaffolding `ST-32-07` and `PR-0237` through `PR-0240`)
-- `repomix --style xml --no-gitignore --output .agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml --include "AGENTS.md,.agents/rules/000-rule-index.md,.agents/rules/075-browser-automation.md,.agents/handoff.md,docs/reference/ref-review-workflow.md,docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md,docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md,docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md,docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md,docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerTopPanel.vue,frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue,frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue,frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts,scripts/playwright_pr_0227_group_board_height_contract_check.py"` (pass; 28 files, 72,943 tokens, output `.agents/repomix_packages/repomix-pr-0228-workspace-contract-review.xml`)
+- `repomix --style xml --no-gitignore --output .codex/repomix_packages/repomix-pr-0228-workspace-contract-review.xml --include "AGENTS.md,.codex/rules/000-rule-index.md,.codex/rules/075-browser-automation.md,.codex/handoff.md,docs/reference/ref-review-workflow.md,docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md,docs/backlog/reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md,docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md,docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md,docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue,frontend/apps/skriptoteket/src/views/apps/components/PlannerTopPanel.vue,frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue,frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue,frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts,frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts,frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts,scripts/playwright_pr_0227_group_board_height_contract_check.py"` (pass; 28 files, 72,943 tokens, output `.codex/repomix_packages/repomix-pr-0228-workspace-contract-review.xml`)
 - `pdm run fe-test -- --run src/views/apps/classroomPlannerGuestDraftWorkspace.spec.ts` (pass; 1 test proving reused guest grouping drafts persist the newly selected classroom into the browser snapshot and next public Smart payload)
 - `pdm run pytest tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; 4 tests including the oversized streamed-body `413` guard that never reaches the anonymous Smart handler)
 - `pdm run pytest tests/unit/web/test_public_apps_classroom_planner_smart.py` (pass; 5 tests including a real-provider DI regression that proves smart routes honor `PUBLIC_HELPER_SMART_RUN_*` even when `PUBLIC_HELPER_RATE_LIMIT_*` is stricter)
@@ -260,7 +260,7 @@ pdm run docs-validate
 
 ## 2026-04-12 PR-0258 handoff compaction dump
 
-Moved from `.agents/handoff.md` during `PR-0258` cleanup so the session handoff stays under the
+Moved from `.codex/handoff.md` during `PR-0258` cleanup so the session handoff stays under the
 repo line-count limit.
 
 ### Previous Status
@@ -329,7 +329,7 @@ repo line-count limit.
 
 ## 2026-04-13 PR-0262 handoff compaction dump
 
-Moved from `.agents/handoff.md` while closing `ST-28-12` so the session handoff stays under the
+Moved from `.codex/handoff.md` while closing `ST-28-12` so the session handoff stays under the
 repo line-count limit.
 
 ### Previous Status

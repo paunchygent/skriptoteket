@@ -68,7 +68,7 @@ adoption surfaces away from browser-native `title` handling.
 - [ ] Integrate the custom tooltip path into shared dense primitives
 - [ ] Adopt the tooltip system on planner/editor dense-toolbar controls first
 - [ ] Add Vitest coverage for accessibility and dismissal behavior
-- [ ] Run live planner/editor proof and record it in `.agents/handoff.md`
+- [ ] Run live planner/editor proof and record it in `.codex/handoff.md`
 
 ## Test plan
 

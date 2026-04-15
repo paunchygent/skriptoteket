@@ -2,10 +2,10 @@
 type: epic
 id: EPIC-35
 title: "Launch SEO and search indexing readiness"
-status: proposed
+status: active
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-15
 outcome: "Skriptoteket can launch under the intended HuleEdu domain topology: `hule.education` serves the HuleEdu landing layer, `api.hule.education` becomes the shared browser auth/API edge, `skriptoteket.hule.education` remains the canonical public Skriptoteket app host for its crawlable surfaces, and the current public pages gain valid crawler-facing files, honest HTTP status semantics, route-level metadata, and operator-ready search verification."
 dependencies:
   - "ADR-0027"
@@ -123,4 +123,26 @@ dependencies:
 - `ST-35-02` is the launch-critical technical truth gate. If `/robots.txt`,
   `/sitemap.xml`, and unmatched URLs are still wrong at the backend edge, the
   rest of the lane is only partial polish.
-- This epic requires review approval before implementation begins.
+- The April 15 `REV-EPIC-35` requested changes were addressed in the story package by making the
+  metadata delivery contract backend-visible, adding a route-family matrix for honest status
+  semantics, and assigning the account-bound search-operator proof to a human operator lane.
+- `REV-EPIC-35` was approved on 2026-04-15. Implementation can now start with the ordered
+  `ST-35-01` / `ST-35-02` slices, while production remains known-bad for crawler files and unknown
+  route status semantics until those slices ship.
+
+## Implementation Summary (as of 2026-04-15)
+
+- `ST-35-01` shipped via `PR-0267`: the Skriptoteket canonical public app host is now captured in
+  `PUBLIC_APP_BASE_URL`, defaulting to `https://skriptoteket.hule.education`.
+- `ST-35-02` shipped via `PR-0267`: `/robots.txt` and `/sitemap.xml` are backend-owned crawler
+  files, the sitemap lists only approved public launch URLs, and malformed/unknown routes return
+  honest `404` responses instead of a generic SPA `200 OK` shell.
+- `ST-35-03` shipped via `PR-0268`: the backend SPA fallback now injects public-route title,
+  description, canonical, robots, Open Graph, and share-card metadata into initial HTML, keeps
+  private fallback routes non-indexable, and returns non-indexable `404` HTML for malformed or
+  unknown routes.
+- `ST-35-04` agent-owned prep shipped via `PR-0269`: the launch search operations runbook now
+  covers DNS/TLS/redirect/crawler checks, Google Search Console, Bing Webmaster Tools, sitemap
+  submission, URL inspection, redacted evidence, and host-migration reruns. The story remains
+  blocked on a product owner or deployment operator with account access completing the external
+  console verification steps.

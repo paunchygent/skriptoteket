@@ -79,7 +79,7 @@ Treat these as profile/session-collision signals first:
 
 - Existing Skriptoteket Playwright scripts already avoid depending on a shared Chrome profile and
   are the preferred proof lane for this repo.
-- See `.agents/rules/075-browser-automation.md` for repo Playwright patterns and
+- See `.codex/rules/075-browser-automation.md` for repo Playwright patterns and
   `docs/runbooks/runbook-testing.md` for the main testing entry points.
 
 ## External references

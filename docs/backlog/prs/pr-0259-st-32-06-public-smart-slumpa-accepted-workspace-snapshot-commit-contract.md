@@ -231,7 +231,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
   - Repeat in `Grupper` with Smart enabled and confirm two successful
     `/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run`
     requests with `200`, not `409`.
-  - Record the verification in `.agents/handoff.md`.
+  - Record the verification in `.codex/handoff.md`.
 
 ## Rollback plan
 

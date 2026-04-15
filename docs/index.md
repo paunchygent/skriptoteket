@@ -246,6 +246,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`
 - Review gate for EPIC-35 launch SEO + search indexing readiness:
   `docs/backlog/reviews/review-epic-35-launch-seo-and-search-indexing-readiness.md`
+- ST-35-01/ST-35-02 canonical host + crawler edge truth:
+  `docs/backlog/prs/pr-0267-st-35-01-st-35-02-canonical-host-and-crawler-edge-truth.md`
+- ST-35-03 public route initial HTML metadata:
+  `docs/backlog/prs/pr-0268-st-35-03-public-route-initial-html-metadata.md`
+- ST-35-04 search console + launch SEO operations:
+  `docs/backlog/prs/pr-0269-st-35-04-search-console-bing-launch-ops.md`
 - ST-35-01 canonical public host + edge indexability decision package:
   `docs/backlog/stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md`
 - ST-35-02 crawler surfaces + honest HTTP status semantics:
@@ -254,6 +260,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-35-03-public-route-metadata-canonical-and-indexing-policy.md`
 - ST-35-04 Search Console + Bing + launch-day SEO operations:
   `docs/backlog/stories/story-35-04-search-console-bing-and-launch-day-seo-operations.md`
+- Launch SEO search operations runbook:
+  `docs/runbooks/runbook-launch-seo-search-operations.md`
 - ST-11-25 Playwright tree normalization under `scripts/playwright`:
   `docs/backlog/prs/pr-0241-st-11-25-playwright-tree-normalization.md`
 - ST-11-25 LHCI + bundle-visualizer toolchain wiring:
@@ -1311,6 +1319,6 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ## Agent support
 
 - Start-here: `AGENTS.md`
-- Session handoff: `.agents/handoff.md`
+- Session handoff: `.codex/handoff.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
-- Next-session prompt template: `.agents/next-session-instruction-prompt-template.md`
+- Next-session prompt template: `.codex/next-session-instruction-prompt-template.md`

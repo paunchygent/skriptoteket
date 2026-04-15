@@ -2,10 +2,10 @@
 type: review
 id: REV-EPIC-35
 title: "Review: Launch SEO and search indexing readiness"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-15
 reviewer: "lead-developer"
 epic: EPIC-35
 stories:
@@ -94,24 +94,48 @@ as the canonical evidence record.
 ## Review Feedback
 
 **Reviewer:** `lead-developer`
-**Date:** `2026-04-08`
-**Verdict:** pending
+**Date:** `2026-04-15`
+**Verdict:** `approved`
+
+### Review Evidence
+
+- Live edge re-check on 2026-04-15 confirmed the 2026-04-08 crawler defects still exist:
+  `/`, `/robots.txt`, `/sitemap.xml`, and an arbitrary missing path all returned the same
+  HTML shell with `200 OK` and `content-type: text/html; charset=utf-8`.
+- Official crawler behavior still makes this a real contract issue: Google can consider `2xx`
+  responses for indexing, treats `4xx` responses as missing content, and reports soft-404-like
+  content separately; Bing Webmaster Tools expects verified site ownership before sitemap,
+  URL-inspection, and robots validation workflows are available.
 
 ### Required Changes
 
-- Pending review.
+- None. Re-review confirms the previous requested changes are resolved:
+  - `ST-35-03` now makes backend-served initial HTML the launch-visible metadata contract for `/`
+    and `/public/apps/classroom.group-seating-studio`, keeps client-only head management out of the
+    proof path, and requires both backend HTML assertions and browser hydration checks.
+  - `ST-35-02` now includes an explicit route-family matrix covering crawler files,
+    launch-indexable public pages, non-indexable public app pages, auth/lifecycle routes,
+    authenticated/private routes, malformed public-app routes, unknown routes, and backend-owned
+    non-SPA paths.
+  - `ST-35-04` now assigns Search Console / Bing verification to account-owning product/deployment
+    operators, allows a blocked state when account access is missing, and defines redacted evidence
+    fields plus post-deploy revalidation.
 
 ### Suggestions (Optional)
 
-- Pending review.
+- Keep the first implementation slices small: `ST-35-01` should freeze host policy and `ST-35-02`
+  should repair crawler files/status semantics before metadata work starts.
+- Treat dynamic `/public/apps/{appId}` handling carefully during implementation. If the backend
+  cannot safely resolve public app IDs without muddying fallback boundaries, keep the initial
+  allowlist narrow and explicit for launch.
 
 ### Decision Approvals
 
-- [ ] Create `EPIC-35` as a dedicated launch SEO lane
-- [ ] Consume the upstream topology from `EPIC-28` before deeper SEO work
-- [ ] Treat crawler files and honest HTTP semantics as the first technical truth gate
-- [ ] Keep SSR/prerender as a follow-on decision rather than a day-one blocker
-- [ ] Include an explicit operator submission and verification story
+- [x] Create `EPIC-35` as a dedicated launch SEO lane
+- [x] Consume the upstream topology from `EPIC-28` before deeper SEO work
+- [x] Treat crawler files and honest HTTP semantics as the first technical truth gate
+- [x] Keep SSR/prerender as a follow-on decision rather than a day-one blocker
+- [x] Include an explicit operator submission and verification story
 
 ## Changes Made
 
@@ -121,3 +145,16 @@ as the canonical evidence record.
 | 2 | `EPIC-35` | Added the canonical launch SEO and indexing-readiness epic |
 | 3 | `ST-35-01` to `ST-35-04` | Added the bounded story scaffolds for host policy, crawler semantics, metadata, and search operations |
 | 4 | `REV-EPIC-35` | Opened the required retained review gate for the proposed epic package |
+| 5 | `ST-35-03` | Chose backend-served initial HTML as the launch-visible metadata contract and required backend plus hydration proof |
+| 6 | `ST-35-02` | Added the explicit server-side route-family matrix and proof requirements for crawler files, valid SPA routes, malformed public routes, and unknown routes |
+| 7 | `ST-35-04` | Assigned account-bound verification to product/deployment operators and added allowed verification methods, redacted evidence fields, blocked-state handling, and a post-deploy checklist |
+| 8 | `REF-launch-seo-and-search-indexing-readiness-2026-04-08` | Refreshed the canonical evidence record with the 2026-04-15 live re-check and official crawler-reference links |
+| 9 | `EPIC-35` | Updated the epic notes to record the April 15 changes-requested remediation before re-review |
+
+## Approval Notes
+
+- 2026-04-15 re-review approved the package after the three prior findings were addressed in the
+  governed stories.
+- The approval is for the documentation package and implementation governance. Live production
+  still has the known crawler defects until the follow-on `ST-35-01` / `ST-35-02` implementation
+  slices ship and are verified.

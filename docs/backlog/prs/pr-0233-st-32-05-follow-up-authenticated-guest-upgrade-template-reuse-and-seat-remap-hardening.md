@@ -121,7 +121,7 @@ the already approved route shape, import policy, and guest/public separation.
      - a seating draft
      - at least one export-backed checkpoint descriptor
    - Record the exact route and live verification evidence in
-     `.agents/handoff.md`.
+     `.codex/handoff.md`.
 
 ## Test plan
 

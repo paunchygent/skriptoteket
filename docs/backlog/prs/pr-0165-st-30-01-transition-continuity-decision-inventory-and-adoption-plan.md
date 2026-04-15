@@ -49,7 +49,7 @@ Turn the planner continuity fix into:
 4. Create the first PR task doc for the planning/inventory slice.
 5. Update the frontend design-system references and `docs/index.md` so the new rule is easy to
    find.
-6. Update `.agents/handoff.md` because the backlog surface changes in this session.
+6. Update `.codex/handoff.md` because the backlog surface changes in this session.
 
 ## Test plan
 

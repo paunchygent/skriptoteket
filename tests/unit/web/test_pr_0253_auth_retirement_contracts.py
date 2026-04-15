@@ -28,7 +28,7 @@ WEB_SOURCE_ROOTS = (
 FRONTEND_SOURCE_ROOT = ROOT / "frontend" / "apps" / "skriptoteket" / "src"
 PYPROJECT_PATH = ROOT / "pyproject.toml"
 RETIRED_DOC_COMMAND_SCAN_ROOTS = (
-    ROOT / ".agents" / "rules",
+    ROOT / ".codex" / "rules",
     ROOT / "docs" / "runbooks",
     ROOT / "docs" / "reference",
 )

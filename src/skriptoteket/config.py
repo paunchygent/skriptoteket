@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     ALLOWED_HOSTS: str = "localhost,127.0.0.1,::1,skriptoteket.hule.education"
     TRUST_PROXY_HEADERS: bool = False
     TRUSTED_PROXY_CIDRS: str = "127.0.0.1/32,::1/128"
+    PUBLIC_APP_BASE_URL: str = "https://skriptoteket.hule.education"
     CURATED_APPS_PRODUCTION_ALLOWLIST: str = (
         "chemistry.reagent_prep_chef,documents.conversion_hub,classroom.group-seating-studio"
     )

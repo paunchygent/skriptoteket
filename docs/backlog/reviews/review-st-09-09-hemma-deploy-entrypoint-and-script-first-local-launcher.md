@@ -96,7 +96,7 @@ Approve a script-first two-layer deploy model:
 - [x] The story makes the canonical local path, the direct on-host fallback, and the detached remote-start contract explicit
 - [x] The raw log remains the deploy truth and any follow/monitor path is documented as best-effort only
 - [x] The review surface names the historical `PR-0122` assumption it is superseding so implementation does not inherit contradictory guidance
-- [x] Verification requires a real Hemma launch through `pdm run hemma-deploy` plus recorded evidence in `.agents/handoff.md`
+- [x] Verification requires a real Hemma launch through `pdm run hemma-deploy` plus recorded evidence in `.codex/handoff.md`
 
 ## Review Feedback
 
@@ -162,7 +162,7 @@ operator model:
   - confirm the runbook points to `pdm run hemma-deploy` as the canonical local
     path and keeps direct on-host script execution as fallback/debug only
   - record the exact verification method and any log/artifact path in
-    `.agents/handoff.md`
+    `.codex/handoff.md`
 
 ### Pass Means
 

@@ -128,7 +128,7 @@ Implemented on 2026-04-12:
    so query/hash survive Vue Router normalization, sanitizing unsafe `next` values inside the
    exported ceremony helper, and requiring `active_app=skriptoteket`, supported realm, and
    `realm_subject_id` before app continuation projection lookup.
-8. Updated `.agents/handoff.md` with the live check result because this PR changes auth UI/route
+8. Updated `.codex/handoff.md` with the live check result because this PR changes auth UI/route
    behavior.
 
 ## Test Plan

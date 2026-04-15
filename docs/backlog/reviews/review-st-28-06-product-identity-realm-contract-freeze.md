@@ -149,4 +149,4 @@ Resolved during review:
 | 2 | `ST-28-06` | Moved the story to done and recorded the contract-freeze implementation summary |
 | 3 | `EPIC-28` | Updated the implementation summary to show `ST-28-06` / `ADR-0083` are complete |
 | 4 | `ST-28-07` | Moved the next login-ceremony story to ready after the ADR contract freeze unblocked it |
-| 5 | `.agents/handoff.md` | Updated the current lane, status, verification, and next step |
+| 5 | `.codex/handoff.md` | Updated the current lane, status, verification, and next step |

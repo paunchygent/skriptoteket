@@ -72,4 +72,4 @@ Reference context:
 - `pdm run lint`
 - `pdm run test`
 - `pdm run fe-gen-api-types` (if OpenAPI types change)
-- Live functional check (backend + SPA dev); record steps in `.agents/handoff.md`.
+- Live functional check (backend + SPA dev); record steps in `.codex/handoff.md`.

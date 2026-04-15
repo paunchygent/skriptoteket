@@ -47,7 +47,7 @@ Port the HuleEdu mockup-bundle system into Skriptoteket:
 2. Add typed `mockup` frontmatter rules for bundle README docs.
 3. Add `docs/mockups/INDEX.md` as the mockup lane doorway.
 4. Add `README.md` entry docs plus `submissions/` and `winner/` placeholders to existing bundles.
-5. Update `docs/index.md` and `.agents/handoff.md` with the new contract.
+5. Update `docs/index.md` and `.codex/handoff.md` with the new contract.
 
 ## Test plan
 
@@ -57,4 +57,4 @@ Port the HuleEdu mockup-bundle system into Skriptoteket:
 ## Rollback plan
 
 Remove the mockup type from `docs/_meta/docs-contract.yaml`, delete the added bundle README/index
-docs and placeholder folders, and restore `docs/index.md` / `.agents/handoff.md` references.
+docs and placeholder folders, and restore `docs/index.md` / `.codex/handoff.md` references.

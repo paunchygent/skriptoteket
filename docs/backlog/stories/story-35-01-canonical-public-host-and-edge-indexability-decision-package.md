@@ -2,10 +2,10 @@
 type: story
 id: ST-35-01
 title: "Canonical public host and edge indexability decision package"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-15
 epic: "EPIC-35"
 dependencies:
   - "ST-28-05"
@@ -64,4 +64,11 @@ and indexability policy.
 - Production host wiring:
   [compose.prod.yaml](../../../compose.prod.yaml)
 - Hemma deploy rule:
-  [080-home-server-deployment.md](../../../.agents/rules/080-home-server-deployment.md)
+  [080-home-server-deployment.md](../../../.codex/rules/080-home-server-deployment.md)
+
+## Implementation Summary (as of 2026-04-15)
+
+- `PR-0267` shipped the Skriptoteket-side canonical public app host setting
+  `PUBLIC_APP_BASE_URL=https://skriptoteket.hule.education`.
+- Production compose now exposes the same default for crawler file generation.
+- The remaining Search Console/Bing account verification belongs to `ST-35-04`.

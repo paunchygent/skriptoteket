@@ -22,7 +22,7 @@ acceptance_criteria:
   - "Given the verified HuleEdu subject has an existing Skriptoteket projection at `(auth_provider=huleedu, external_id=<context.sub>)`, when app continuation succeeds, then the response carries `local_user` equivalent to the local `User` contract plus the matching `profile`, `ai_policy`, `allow_remote_fallback`, and `inline_completion_provider`."
   - "Given HuleEdu `user.user_id` differs from the Skriptoteket-local `local_user.id`, when the SPA bootstrap completes, then `auth.user.id` is the Skriptoteket-local UUID used by app APIs and ownership comparisons, while shared `policy.grants` and `policy.feature_flags` remain preserved as shared-session metadata."
   - "Given HuleEdu shared-session `policy.roles` is absent, foreign, or tenant-scoped, when the SPA bootstrap completes, then Skriptoteket role-aware getters use `local_user.role` from app continuation rather than inferring authorization from HuleEdu provider roles."
-  - "Given this remediation changes an API route and SPA bootstrap path, when implementation is complete, then focused backend/frontend tests, type/lint/docs gates, and a live continuation/bootstrap check are recorded in `PR-0255`, `REV-PR-0251`, and `.agents/handoff.md`."
+  - "Given this remediation changes an API route and SPA bootstrap path, when implementation is complete, then focused backend/frontend tests, type/lint/docs gates, and a live continuation/bootstrap check are recorded in `PR-0255`, `REV-PR-0251`, and `.codex/handoff.md`."
 ---
 
 ## Problem

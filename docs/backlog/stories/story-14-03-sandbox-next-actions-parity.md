@@ -106,4 +106,4 @@ With session-scoped file persistence (ADR-0039 / ST-12-05), sandbox action runs 
 - Manual: run `demo_next_actions.py` and `html_to_pdf_preview.py` in the editor sandbox and verify action loops.
 - Automated (recommended): add a focused Playwright check for sandbox next_actions rendering + one action submit.
 - Live functional check (REQUIRED for UI/route changes): run backend + SPA dev and verify the editor sandbox flow in a
-  browser, then record verification steps in `.agents/handoff.md`.
+  browser, then record verification steps in `.codex/handoff.md`.

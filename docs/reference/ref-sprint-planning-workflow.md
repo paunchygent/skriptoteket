@@ -27,7 +27,7 @@ Planning should now flow through:
 - Use epics and stories to describe the backlog.
 - Use PR backlog docs to define narrow implementation slices.
 - Use `docs/reference/ref-review-workflow.md` for the retained review model.
-- Keep `.agents/handoff.md` current instead of maintaining a separate sprint plan.
+- Keep `.codex/handoff.md` current instead of maintaining a separate sprint plan.
 
 ## Legacy sprint docs
 

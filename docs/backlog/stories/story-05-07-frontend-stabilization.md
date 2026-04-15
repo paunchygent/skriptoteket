@@ -17,7 +17,7 @@ acceptance_criteria:
 
 Frontend-expert analys identifierade bräcklighet och inkonsistens i Skriptotekets CSS/JS-arkitektur. Denna story adresserar de mest kritiska problemen utan att introducera nya beroenden eller ramverk.
 
-**Källa:** `.claude/repomix_packages/TASK-frontend-review.md` och `.claude/plans/vast-sprouting-locket.md`
+**Källa:** `.codex/repomix_packages/claude-legacy/TASK-frontend-review.md` och `.codex/plans/vast-sprouting-locket.md`
 
 ## Tasks
 
@@ -138,7 +138,7 @@ Stödjer: Safari 15+, Chrome 90+, Firefox 90+
 Nästa session ska:
 
 1. Implementera editor-stabilisering (inre layout + scroll + CodeMirror refresh)
-2. Live-check: verifiera editor-sidan efter ändringar (session rule) och logga i `.agents/handoff.md`
+2. Live-check: verifiera editor-sidan efter ändringar (session rule) och logga i `.codex/handoff.md`
 
 ## Exakta patch-förslag (för nästa session)
 

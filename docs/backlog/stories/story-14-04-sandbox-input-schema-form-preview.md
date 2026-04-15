@@ -94,7 +94,7 @@ ST-14-09 removed the legacy `input_schema == null` “upload-first” mode; file
 
 ## Test plan
 
-- Live functional check (REQUIRED): run backend + SPA dev and verify in browser; record steps in `.agents/handoff.md`.
+- Live functional check (REQUIRED): run backend + SPA dev and verify in browser; record steps in `.codex/handoff.md`.
 - Manual:
   - In the editor, select a draft tool version with `input_schema` containing string/enum/boolean fields and verify the
     form renders and blocks invalid inputs.

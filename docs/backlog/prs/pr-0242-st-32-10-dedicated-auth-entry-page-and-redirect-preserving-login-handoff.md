@@ -32,7 +32,7 @@ plus backend-generated verification/reset links, and keeps Klassrumskartan's
 redirect truth.
 
 The canonical frontend/browser verification trail for this slice is now also green and recorded in
-`.agents/handoff.md`, including the focused auth Vitest sweep plus the canonical `ui-smoke`,
+`.codex/handoff.md`, including the focused auth Vitest sweep plus the canonical `ui-smoke`,
 `ui-editor-smoke`, `ui-runtime-smoke`, and Flunk-Out Frenzy route proof on `http://127.0.0.1:5173`.
 
 ## Problem
@@ -128,7 +128,7 @@ HuleEdu-session cutover work consumes.
   forgot/register continuation links.
 - Remove modal-era wording and breadcrumbs that will confuse future developers.
 - Clean modal/compatibility wording out of `AuthLoginPanel.spec.ts`.
-- Clean stale modal-auth notes out of `.agents/handoff.md`, including references to in-place modal
+- Clean stale modal-auth notes out of `.codex/handoff.md`, including references to in-place modal
   login and the deleted `loginRedirects.ts`.
 - Keep `/auth/login` as the single auth-entry contract. If `/login` compatibility is removed in
   code, keep that removal reflected in this PR doc and in `ST-32-10`.
@@ -144,7 +144,7 @@ HuleEdu-session cutover work consumes.
   - `pdm run fe-type-check`
   - focused Vitest for router/auth-entry/auth views
   - live browser proof for `/auth/login`, protected-route interruption, and return-to-origin
-  - verification recorded in `.agents/handoff.md`
+  - verification recorded in `.codex/handoff.md`
 
 ## Test plan
 

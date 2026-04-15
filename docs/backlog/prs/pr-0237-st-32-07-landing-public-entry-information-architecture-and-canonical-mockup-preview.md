@@ -17,7 +17,7 @@ acceptance_criteria:
   - "Given `ST-32-07` needs layout and CTA-hierarchy alignment before production code, when this slice lands, then the repo has one story-scoped mockup under `docs/mockups/` for the public landing discoverability flow."
   - "Given this slice is assigned to multiple lead web designers as a competitive mockup round, when they work in parallel, then each designer posts independent mockup files under `docs/mockups/st-32-07-public-landing-discoverability/` without editing or reacting to another designer's contribution unless explicitly directed to do so."
   - "Given the mockup round is competitive rather than collaborative, when the submissions are reviewed, then the strongest overall direction is promoted to the canonical blueprint for later implementation."
-  - "Given the new landing direction must stay grounded in the actual Skriptoteket design language, when the mockup is authored, then the work explicitly references `.agents/rules/045-huleedu-design-system.md`, the `skriptoteket-frontend-specialist` skill, and the `brutalist-academic-ui` skill before any layout decisions are frozen."
+  - "Given the new landing direction must stay grounded in the actual Skriptoteket design language, when the mockup is authored, then the work explicitly references `.codex/rules/045-huleedu-design-system.md`, the `integrated-frontend-stack` skill, and the `brutalist-academic-ui` skill before any layout decisions are frozen."
   - "Given the mockup exists to align the first-screen landing direction, when it is opened, then it demonstrates the intended header link treatment, hero CTA hierarchy, and below-the-fold section order without mixing in malformed-route recovery or not-found guidance."
   - "Given header and hero both appear above the fold, when the mockup is reviewed, then the header-level `Klassrumskartan` affordance reads as quiet discoverability nav and the hero reads as the single primary action."
   - "Given the top header should stay calm, when the mockup is reviewed, then `Logga in` is not duplicated as a competing strong header action above the fold."
@@ -71,8 +71,8 @@ Blueprint caveats to carry into `PR-0238` polish:
 ## Implementation plan
 
 1. Review the current landing and design doctrine first:
-   - `.agents/rules/045-huleedu-design-system.md`
-   - `skriptoteket-frontend-specialist`
+   - `.codex/rules/045-huleedu-design-system.md`
+   - `integrated-frontend-stack`
    - `brutalist-academic-ui`
 2. Create a canonical mockup folder for this story under `docs/mockups/`.
 3. Run this slice as a competitive mockup round:
@@ -113,9 +113,9 @@ Use these files as the practical source material for the mockup:
 - Current landing behavior tests:
   `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`
 - Shared design rule:
-  `.agents/rules/045-huleedu-design-system.md`
+  `.codex/rules/045-huleedu-design-system.md`
 - Frontend implementation skill:
-  `/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md`
+  `/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md`
 - Brutalist/academic layout skill:
   `/Users/olofs_mba/Documents/Repos/skill-repository/skills/brutalist-academic-ui/SKILL.md`
 - Canonical mockup precedent:

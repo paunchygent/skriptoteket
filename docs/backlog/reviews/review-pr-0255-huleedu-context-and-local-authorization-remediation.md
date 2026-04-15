@@ -135,10 +135,10 @@ than `policy.roles`.
    Concrete fix: add a live verification step that starts the local API/SPA as appropriate and
    proves app continuation returns `200` for a valid HuleEdu context without a Skriptoteket session
    cookie, returns `401` without that context, and the SPA bootstraps through HuleEdu session plus
-   app continuation with local RBAC hydrated. Record the check in `.agents/handoff.md`.
+   app continuation with local RBAC hydrated. Record the check in `.codex/handoff.md`.
 
    Proof requirement: run the live probe after implementation and include the exact command and
-   result in `PR-0255`, `REV-PR-0251`, and `.agents/handoff.md`.
+   result in `PR-0255`, `REV-PR-0251`, and `.codex/handoff.md`.
 
 ### Suggestions (Optional)
 

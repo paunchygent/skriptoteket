@@ -26,8 +26,8 @@ acceptance_criteria:
 ## Problem
 
 Multiple Flunk-Out Frenzy frontend files violate the repo's hard file size limit
-(<400-500 LoC per `.agents/rules/010-foundational-principles.md` and
-`.agents/rules/050-python-standards.md`):
+(<400-500 LoC per `.codex/rules/010-foundational-principles.md` and
+`.codex/rules/050-python-standards.md`):
 
 | File | Lines | Over Limit |
 |------|-------|------------|
@@ -296,8 +296,8 @@ Manual/live:
 
 ## Related documentation
 
-- `.agents/rules/010-foundational-principles.md` - File size limits and "no vibe coding"
-- `.agents/rules/050-python-standards.md` - Style and formatting rules
-- `.agents/rules/025-curated-apps.md` - Curated app architecture
+- `.codex/rules/010-foundational-principles.md` - File size limits and "no vibe coding"
+- `.codex/rules/050-python-standards.md` - Style and formatting rules
+- `.codex/rules/025-curated-apps.md` - Curated app architecture
 - `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md` - Parent story
 - `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md` - Parent epic

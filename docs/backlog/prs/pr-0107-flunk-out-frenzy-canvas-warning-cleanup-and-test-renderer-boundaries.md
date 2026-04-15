@@ -125,7 +125,7 @@ Actual result:
 
 - [x] Keep at least one live/browser verification step proving the real route
       still boots the runtime canvas correctly after the cleanup.
-- [x] Record the browser proof in `.agents/handoff.md`.
+- [x] Record the browser proof in `.codex/handoff.md`.
 
 Suggested solution:
 
@@ -161,7 +161,7 @@ Manual/live:
 
 - Open `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`
 - Verify the route still mounts the runtime canvas and reaches a playable state
-- Record the proof and artifact path in `.agents/handoff.md`
+- Record the proof and artifact path in `.codex/handoff.md`
 
 ## Rollback plan
 

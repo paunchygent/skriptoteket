@@ -58,5 +58,5 @@ assets are now present in the repo and underpin the current desktop-first Klassr
 - Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-frontend-design-system-codemap-2026-03-28.md)
 - Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
 - Product direction: [REF-group-seating-studio-product-direction-2026-03-21](../../reference/ref-group-seating-studio-product-direction-2026-03-21.md)
-- Design-system rule: [045-huleedu-design-system](../../../.agents/rules/045-huleedu-design-system.md)
-- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
+- Design-system rule: [045-huleedu-design-system](../../../.codex/rules/045-huleedu-design-system.md)
+- Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)

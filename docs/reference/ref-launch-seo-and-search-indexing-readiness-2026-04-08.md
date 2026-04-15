@@ -5,7 +5,7 @@ title: "Reference: Launch SEO and search indexing readiness assessment (2026-04-
 status: active
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-15
 topic: "launch-seo-and-search-indexing"
 links:
   - EPIC-35
@@ -71,6 +71,40 @@ Planning note after the initial assessment:
 | Public route inventory | The current public, index-candidate routes are effectively `/` and `/public/apps/:appId`; the SPA also has explicit client-side recovery routes for malformed public URLs and generic unmatched URLs | [routes.ts](../../frontend/apps/skriptoteket/src/router/routes.ts) |
 | Backend fallback behavior | The FastAPI SPA fallback excludes API, static, and observability paths, but it does not exclude `/robots.txt`, `/sitemap.xml`, or arbitrary unmatched public paths; it returns the SPA HTML file for everything else | [spa_fallback.py](../../src/skriptoteket/web/routes/spa_fallback.py) |
 | Client-side not-found handling | The SPA now renders a human-friendly recovery view for unmatched routes, but that is a client UX improvement, not a crawler-safe HTTP status contract | [RouteRecoveryView.vue](../../frontend/apps/skriptoteket/src/views/RouteRecoveryView.vue) |
+
+### Live edge re-check on 2026-04-15
+
+The retained `REV-EPIC-35` review re-checked the same public edge before approval. `/`,
+`/robots.txt`, `/sitemap.xml`, and an arbitrary missing path still returned the same HTML shell
+with `200 OK` and `content-type: text/html; charset=utf-8`.
+
+That re-check keeps the April 8 findings current: the package must still repair crawler files,
+unmatched-route status semantics, and launch-visible initial HTML metadata before the epic can be
+approved for implementation.
+
+### Official crawler guidance checked on 2026-04-15
+
+The implementation stories should keep their proof requirements aligned with current official
+guidance rather than relying on memory:
+
+- Google documents that `2xx` content may be considered for indexing and that soft-404-like
+  content can still be reported when a successful response body looks like an error page.
+- Google documents that `4xx` responses are treated as missing content for Search indexing.
+- Google Search Console ownership verification is account-bound and supports methods such as DNS,
+  HTML file upload, and homepage meta tags depending on the property shape.
+- Google's robots and sitemap guidance require crawler files to be real fetchable resources, not
+  arbitrary SPA HTML fallback content.
+- Bing Webmaster Tools verification and sitemap/URL-inspection work is likewise account-bound and
+  must be performed by an operator with access to the relevant site/property.
+
+Reference links used for the April 15 update:
+
+- Google Search Central: `https://developers.google.com/search/docs/crawling-indexing/http-network-errors`
+- Google Search Central: `https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics`
+- Google Search Central: `https://developers.google.com/search/docs/crawling-indexing/robots/intro`
+- Google Search Central: `https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap`
+- Google Search Console Help: `https://support.google.com/webmasters/answer/9008080`
+- Bing Webmaster Blog: `https://blogs.bing.com/webmaster/August-2024/Bing-Webmaster-Tools-or-Google-Search-Console-A-Comparison`
 
 ## Analysis
 

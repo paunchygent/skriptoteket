@@ -68,7 +68,7 @@ Operational/docs scope:
 
 - a runbook or reference doc describing the canonical command, output files, and
   interpretation workflow
-- `.agents/handoff.md`
+- `.codex/handoff.md`
 - `docs/index.md`
 
 Out of scope:
@@ -294,7 +294,7 @@ review comments.
 5. Document the operating method:
    - add a short runbook/reference explaining how to use the trace for live
      testing, debugging, and decision making
-   - update `.agents/handoff.md` with the canonical command and artifact set
+   - update `.codex/handoff.md` with the canonical command and artifact set
 
 ## Test plan
 

@@ -103,13 +103,13 @@ and provides a reliable undo path when no additional edits have occurred.
    - Show “Regenerate” CTA when stale/invalid.
 
 6) **Session rule**
-   - Run live UI check (backend + Vite) and record in `.agents/handoff.md`.
+   - Run live UI check (backend + Vite) and record in `.codex/handoff.md`.
 
 ## Test plan
 
 - Unit tests for `applyEditOpsToVirtualFiles(...)`.
 - Unit tests for `useEditorEditOps` state transitions (proposal set/reset, stale detection, undo availability).
-- Manual live check: request proposal → preview → apply → undo; record in `.agents/handoff.md`.
+- Manual live check: request proposal → preview → apply → undo; record in `.codex/handoff.md`.
 
 ## Rollback plan
 

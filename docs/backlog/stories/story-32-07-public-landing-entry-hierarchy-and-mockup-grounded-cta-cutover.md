@@ -11,7 +11,7 @@ dependencies:
   ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06"]
 acceptance_criteria:
   - "Given an unauthenticated visitor opens `/`, when the landing page renders, then the header and hero expose one obvious public entry into Klassrumskartan at `/public/apps/classroom.group-seating-studio` without forcing login first."
-  - "Given this story contains layout-heavy landing-page changes, when any implementation slice starts, then the assigned developer has first reviewed `.agents/rules/045-huleedu-design-system.md`, the `skriptoteket-frontend-specialist` skill, and the `brutalist-academic-ui` skill, and has iterated on a story-scoped mockup under `docs/mockups/` before production Vue code changes."
+  - "Given this story contains layout-heavy landing-page changes, when any implementation slice starts, then the assigned developer has first reviewed `.codex/rules/045-huleedu-design-system.md`, the `integrated-frontend-stack` skill, and the `brutalist-academic-ui` skill, and has iterated on a story-scoped mockup under `docs/mockups/` before production Vue code changes."
   - "Given the public Klassrumskartan route is the strongest public entry Skriptoteket currently has, when the hero CTA row renders, then the public app is the primary action while `Skapa konto` and `Logga in` remain available as clearly secondary paths."
   - "Given both the header and hero render above the fold, when this story ships, then the header-level `Klassrumskartan` affordance remains a quiet discoverability/navigation link while the hero remains the single primary action surface."
   - "Given the landing page must stay within the established product language, when the header and hero are redesigned, then the implementation follows the approved mockup and preserves the existing Skriptoteket/HuleEdu brutalist-academic design primitives rather than inventing a separate marketing-site aesthetic."
@@ -78,4 +78,4 @@ Klassrumskartan obvious before the visitor is asked to create an account or log 
 - Follow-on route recovery:
   [ST-32-09](story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md)
 - Design-system rule:
-  [045-huleedu-design-system.md](../../../.agents/rules/045-huleedu-design-system.md)
+  [045-huleedu-design-system.md](../../../.codex/rules/045-huleedu-design-system.md)

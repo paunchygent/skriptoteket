@@ -53,7 +53,7 @@ Perform a mechanical placement refactor only:
    - `ui-runtime-smoke`
    - `ui-hmr-probe`
 6. Update any runbooks or docs that point at the old module paths.
-7. Record the normalized tree in `.agents/handoff.md`.
+7. Record the normalized tree in `.codex/handoff.md`.
 
 ## Proposed file layout
 
@@ -90,4 +90,4 @@ new audit-specific logic yet.
 - Review gate:
   [REV-ST-11-25](../reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - Browser automation rule:
-  [075-browser-automation](../../../.agents/rules/075-browser-automation.md)
+  [075-browser-automation](../../../.codex/rules/075-browser-automation.md)

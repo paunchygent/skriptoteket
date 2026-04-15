@@ -107,7 +107,7 @@ the ownership correction. It still needs the `PR-0151` boundary reset so the exi
   - any new seating smart-rule toolbar/summary component files created for this slice
 - [ ] Retarget API/store serialization through `PR-0151` so this UI no longer depends on draft-owned rule persistence
 - [ ] Run frontend verification plus live Playwright proof
-- [ ] Record verification in `.agents/handoff.md`
+- [ ] Record verification in `.codex/handoff.md`
 
 ## Test plan
 

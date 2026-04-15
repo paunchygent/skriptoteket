@@ -315,7 +315,7 @@ small while making smart seating real end-to-end:
 - [x] Show short teacher-facing success/block messages in the seating workspace
 - [x] Regression-verify the already-shipped smart-rule authoring surface, overlap blocking, and
   cross-draft roster-global rule reuse
-- [x] Re-run verification and record manual proof steps in `.agents/handoff.md`
+- [x] Re-run verification and record manual proof steps in `.codex/handoff.md`
 
 ## Test plan
 

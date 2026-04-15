@@ -36,9 +36,9 @@ acceptance_criteria:
 ## Required Reading (Before Starting)
 
 ### Architecture & Rules
-1. **`.agents/rules/000-rule-index.md`** - Master index of all project rules
-2. **`.agents/rules/011-frontend-architecture.md`** - Vue 3 SPA architecture patterns
-3. **`.agents/rules/012-frontend-components.md`** - Component conventions
+1. **`.codex/rules/000-rule-index.md`** - Master index of all project rules
+2. **`.codex/rules/011-frontend-architecture.md`** - Vue 3 SPA architecture patterns
+3. **`.codex/rules/012-frontend-components.md`** - Component conventions
 4. **`docs/adr/adr-0027-full-vue-vite-spa.md`** - SPA migration decision
 5. **`docs/adr/adr-0040-profile-view-edit-separation.md`** - Profile UX decisions
 
@@ -247,7 +247,7 @@ Current backend endpoints (no changes needed):
 ## Handoff Requirements
 
 Upon completion, update:
-1. **`.agents/handoff.md`** - Add profile redesign to completed work
+1. **`.codex/handoff.md`** - Add profile redesign to completed work
 2. **Create PR** with before/after screenshots
 3. **Update this story** with implementation notes
 

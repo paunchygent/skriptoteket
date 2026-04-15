@@ -56,7 +56,7 @@ Add only the standard measurement toolchain and its command surface:
    - `fe-perf-lhci`
    - `fe-perf-bundle`
 6. Add `docs/runbooks/runbook-frontend-performance-baseline.md` with operator instructions.
-7. Record the exact commands and artifact paths in `.agents/handoff.md`.
+7. Record the exact commands and artifact paths in `.codex/handoff.md`.
 
 ## Required LHCI config shape
 

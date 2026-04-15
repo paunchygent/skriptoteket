@@ -118,7 +118,7 @@ ownership reset to roster-global smart rules is tracked separately in `PR-0151`.
 - [x] Update frontend contract sync only:
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`
   - `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`
-- [x] Run verification and record it in `.agents/handoff.md`
+- [x] Run verification and record it in `.codex/handoff.md`
 
 ## Test plan
 

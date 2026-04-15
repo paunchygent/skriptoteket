@@ -18,7 +18,7 @@ acceptance_criteria:
   - "`frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.ts` is reduced below 200 LOC by reusing that shared export-flow module instead of carrying a second near-duplicate state machine."
   - "The shared export-flow module preserves the current teacher-visible semantics: pending-save flush before export, bounded foreground polling with background recovery, draft-scoped reload restoration, and explicit later-download affordances."
   - "Route-shell call sites and frontend flow specs keep the same public API and teacher copy unless the PR doc explicitly records an approved wording change."
-  - "Focused frontend verification and a live planner smoke are re-run and recorded in `.agents/handoff.md`."
+  - "Focused frontend verification and a live planner smoke are re-run and recorded in `.codex/handoff.md`."
 ---
 
 ## Problem

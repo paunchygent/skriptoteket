@@ -256,7 +256,7 @@ modify, or reject:
 - Docs/package validation:
   - `pdm run docs-validate`
 - Repomix packaging validation:
-  - `repomix --style xml --no-gitignore --output .agents/repomix_packages/repomix-flunk-out-frenzy-physical-rail-architect-guidance.xml --include "<targeted file list>"`
+  - `repomix --style xml --no-gitignore --output .codex/repomix_packages/repomix-flunk-out-frenzy-physical-rail-architect-guidance.xml --include "<targeted file list>"`
 - Optional evidence refresh before external review:
   - `pdm run python -m scripts.playwright_flunk_out_frenzy_launch_trace_parity_check --base-url http://127.0.0.1:5173 --artifact-dir .artifacts/flunk-out-frenzy-launch-to-drop`
 

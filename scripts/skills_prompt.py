@@ -13,7 +13,7 @@ import yaml
 type YamlMapping = dict[str, object]
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
-DEFAULT_SKILLS_ROOTS = (Path(".claude/skills"),)
+DEFAULT_SKILLS_ROOTS = (Path(".codex/skills"),)
 IGNORE_DIR_NAMES = {".git", ".venv", "__pycache__", "node_modules"}
 
 
@@ -172,7 +172,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         dest="roots",
         action="append",
         default=[],
-        help="Skills root directory to scan (repeatable). Default: .claude/skills",
+        help="Skills root directory to scan (repeatable). Default: .codex/skills",
     )
     parser.add_argument(
         "--format",

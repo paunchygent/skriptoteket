@@ -94,7 +94,7 @@ These are the first files a designer or frontend implementer should read.
 - `docs/reference/ref-shared-tool-control-language-v1.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-tool-editor-framework-codemap.md`
-- `.agents/rules/045-huleedu-design-system.md`
+- `.codex/rules/045-huleedu-design-system.md`
 
 ## Workspace, build, and app entrypoints
 

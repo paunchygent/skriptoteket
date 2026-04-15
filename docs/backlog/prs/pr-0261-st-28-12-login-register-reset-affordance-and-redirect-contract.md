@@ -179,7 +179,7 @@ mapping; it must not downgrade into a public fallback response.
   named PDM command, expected as `pdm run pr-0261-auth-action-matrix`, that
   uses the local non-production HuleEdu Gateway lane and stores sanitized
   browser evidence under `.artifacts/playwright-pr-0261-auth-action-matrix/`.
-- Live-check the auth entry in the dev SPA and record in `.agents/handoff.md`
+- Live-check the auth entry in the dev SPA and record in `.codex/handoff.md`
   the observed first interactive page for login, create account,
   forgot-password, verification, and reset.
 - Browser-check that login, create account, forgot password, verification, and

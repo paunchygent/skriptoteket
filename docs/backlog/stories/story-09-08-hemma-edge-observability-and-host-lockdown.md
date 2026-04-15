@@ -13,7 +13,7 @@ acceptance_criteria:
   - "Given Hemma keeps `/healthz` public, when the route is requested from the internet after deploy, then it returns only the public-safe minimal payload defined by the app/runtime hardening story."
   - "Given `hule.education`, `api.hule.education`, and `ws.hule.education` are reserved hosts, when those hosts are requested at the public edge, then they no longer fall through to the Skriptoteket backend and instead resolve to explicit placeholder ownership or another fail-closed edge behavior."
   - "Given Hemma trusts forwarded client IPs, when nginx-proxy forwards requests to Skriptoteket, then `TRUSTED_PROXY_CIDRS` is set to the exact proxy bridge IP/CIDR rather than a broad RFC1918 range."
-  - "Given the deploy is complete, when the March 29, 2026 UTC reproduction curls are rerun against the live edge, then the current results and any residual risks are recorded in `.agents/handoff.md`."
+  - "Given the deploy is complete, when the March 29, 2026 UTC reproduction curls are rerun against the live edge, then the current results and any residual risks are recorded in `.codex/handoff.md`."
 ---
 
 ## Context

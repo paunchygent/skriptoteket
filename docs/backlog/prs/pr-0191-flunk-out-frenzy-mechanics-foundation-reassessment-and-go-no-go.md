@@ -79,7 +79,7 @@ Insert a formal go or no-go checkpoint after the foundation tranche:
 - Update `ST-25-05`, `EPIC-25`, and the follow-on PR docs if the tranche
   reveals that any downstream slice should be split, merged, or delayed.
 - Record the explicit go or no-go decision and the reasons for it in the
-  planning docs and `.agents/handoff.md`.
+  planning docs and `.codex/handoff.md`.
 
 ## Test plan
 

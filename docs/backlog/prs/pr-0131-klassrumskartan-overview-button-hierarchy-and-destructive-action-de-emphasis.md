@@ -72,5 +72,5 @@ existing compact card layout.
 - Story parent: [ST-29-04](../stories/story-29-04-klassrumskartan-overview-hierarchy-and-class-first-dashboard-redesign.md)
 - Overview management baseline: [PR-0110](pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md)
 - Overview simplification baseline: [PR-0112](pr-0112-klassrumskartan-overview-design-simplification-and-seamless-workspace-transitions.md)
-- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
-- Design-system rule: [045-huleedu-design-system](../../../.agents/rules/045-huleedu-design-system.md)
+- Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)
+- Design-system rule: [045-huleedu-design-system](../../../.codex/rules/045-huleedu-design-system.md)

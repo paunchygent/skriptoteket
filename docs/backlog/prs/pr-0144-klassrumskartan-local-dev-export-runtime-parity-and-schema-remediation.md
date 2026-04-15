@@ -73,7 +73,7 @@ lane differs from the Docker stack.
    - apply or document the required migration path so resumable draft bootstrap matches the checked
      out code
 5. Re-run live export verification on the repaired local lane and record the exact commands and
-   manual proof in `.agents/handoff.md`
+   manual proof in `.codex/handoff.md`
 
 ## Test plan
 

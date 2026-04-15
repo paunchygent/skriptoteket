@@ -18,7 +18,7 @@ dependencies:
   review-template/rule/reference alignment, docs-contract support for review primary targets, and
   sprint-plan retirement.
 - Create canonical backlog ownership for those shipped changes instead of leaving them implied only
-  through `.agents/handoff.md`, rule updates, and point-in-time review cleanup.
+  through `.codex/handoff.md`, rule updates, and point-in-time review cleanup.
 - Migrate the remaining legacy duplicate review families that still reuse the same epic review id
   across multiple files, especially the current `REV-EPIC-08`, `REV-EPIC-14`, and `REV-EPIC-23`
   clusters. `ST-34-02` / `PR-0230` now complete that lane by retargeting the remaining legacy

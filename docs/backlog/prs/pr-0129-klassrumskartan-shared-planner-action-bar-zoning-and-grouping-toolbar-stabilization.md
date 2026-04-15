@@ -97,5 +97,5 @@ This slice is now implemented locally through the shared planner toolbar seam:
 - Planner shell/shared primitive baseline: [PR-0114](pr-0114-klassrumskartan-planner-shell-decomposition-and-shared-ui-primitives.md)
 - Overview/shell simplification baseline: [PR-0112](pr-0112-klassrumskartan-overview-design-simplification-and-seamless-workspace-transitions.md)
 - Rules-workspace follow-up consumer: [ST-29-06](../stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md)
-- Frontend skill: [skriptoteket-frontend-specialist](/Users/olofs_mba/Documents/Repos/skill-repository/skills/skriptoteket-frontend-specialist/SKILL.md)
-- Design-system rule: [045-huleedu-design-system](../../../.agents/rules/045-huleedu-design-system.md)
+- Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)
+- Design-system rule: [045-huleedu-design-system](../../../.codex/rules/045-huleedu-design-system.md)

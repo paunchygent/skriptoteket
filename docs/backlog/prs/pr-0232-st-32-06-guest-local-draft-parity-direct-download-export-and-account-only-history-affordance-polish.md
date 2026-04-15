@@ -353,7 +353,7 @@ Minimum manual gate:
 Verification evidence requirement:
 
 - Record the exact command(s), URLs, fixture names, and route families checked
-  in `.agents/handoff.md`.
+  in `.codex/handoff.md`.
 - The authenticated transport audit must explicitly name the canonical
   `/api/v1/apps/...` seam and state that it remained unchanged for the logged-in
   `SA24D` / `G20` pass.

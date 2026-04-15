@@ -53,7 +53,7 @@ provisioning claims, or treat idempotency/auditability as slogans. The reworked 
 | `docs/backlog/prs/pr-0258-st-28-09-realm-aware-identity-projections-and-provisioning-migration.md` | PR scope, migration contract, provisioning contract, verification | 25 min |
 | `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md` | Parent story status, acceptance criteria, dependencies | 10 min |
 | `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md` | Product realm direction and remaining provider obligations | 8 min |
-| `.agents/handoff.md` | Current-session blocked state and next action | 5 min |
+| `.codex/handoff.md` | Current-session blocked state and next action | 5 min |
 
 **Total estimated time:** ~48 minutes
 
@@ -115,7 +115,7 @@ provisioning claims, or treat idempotency/auditability as slogans. The reworked 
 5. **P2 - Verification plan misses repo-required gates**
 
    Add Docker migration tests, frontend type/lint gates, OpenAPI/client regeneration proof, and the
-   required `.agents/handoff.md` live-check evidence with an exact Playwright command/artifacts
+   required `.codex/handoff.md` live-check evidence with an exact Playwright command/artifacts
    path.
 
 6. **P2 - Retained review gate is absent from dependencies**
@@ -226,5 +226,5 @@ The requested remediation is complete:
 | 2 | `ST-28-09` | Closed after runtime audit correlation, unique-conflict recovery, generic invalid-context handling, and direct login handoff were implemented and proven |
 | 3 | `EPIC-28` | Updated sequencing so `PR-0254` follows the completed realm-aware projection implementation |
 | 4 | `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the projection migration constraints and direct ceremony login direction |
-| 5 | `.agents/handoff.md` | Updated the current lane and next action to the completed `PR-0258` state |
+| 5 | `.codex/handoff.md` | Updated the current lane and next action to the completed `PR-0258` state |
 | 6 | `REV-PR-0258` | Approved the revised contract before implementation and approved the implementation remediation after proof |

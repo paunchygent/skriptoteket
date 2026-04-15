@@ -124,7 +124,7 @@ Suggested solution:
       - Start/Pause/Restart/Mute
       - route leave cleanup
 - [ ] Record both build verification and live browser proof in
-      `.agents/handoff.md`.
+      `.codex/handoff.md`.
 
 Suggested solution:
 
@@ -146,7 +146,7 @@ Manual/live:
 - Verify shell-first load still resolves into a playable runtime
 - Verify Start/Pause/Restart/Mute still work
 - Verify route leave still disposes the runtime cleanly
-- Record artifact paths and observations in `.agents/handoff.md`
+- Record artifact paths and observations in `.codex/handoff.md`
 
 ## Rollback plan
 
