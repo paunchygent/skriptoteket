@@ -22,6 +22,7 @@ from skriptoteket.domain.errors import ErrorCode
 from tests.fixtures.identity_fixtures import make_user_profile
 from tests.fixtures.profile_app_continuation_support import (
     CONTEXT_SUBJECT,
+    AuthOutcomeRecorderStub,
     ClockStub,
     ProfileRepositoryStub,
     UserRepositoryStub,
@@ -40,6 +41,7 @@ async def test_profile_app_continuation_accepts_valid_huleedu_context_without_lo
     private_key: rsa.RSAPrivateKey,
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
+    auth_outcomes: AuthOutcomeRecorderStub,
 ) -> None:
     correlation_id = UUID("3fa85f64-5717-4562-b3fc-2c963f66afa6")
     user = seed_huleedu_projection(users=users, profiles=profiles)
@@ -72,6 +74,13 @@ async def test_profile_app_continuation_accepts_valid_huleedu_context_without_lo
     assert users.projections.lookup_calls == [("skriptoteket_standalone", CONTEXT_SUBJECT)]
     assert profiles.get_by_user_id_calls == [user.id]
     assert users.projection_events.created[-1].correlation_id == correlation_id
+    assert auth_outcomes.context_verifications == [("accepted", "ok", correlation_id)]
+    assert auth_outcomes.projection_outcomes[-1] == (
+        "skriptoteket_standalone",
+        "resolved",
+        "projection_resolved",
+        correlation_id,
+    )
 
 
 @pytest.mark.asyncio
@@ -137,6 +146,7 @@ async def test_profile_app_continuation_fails_closed_without_signed_provisioning
     clock: ClockStub,
     private_key: rsa.RSAPrivateKey,
     users: UserRepositoryStub,
+    auth_outcomes: AuthOutcomeRecorderStub,
 ) -> None:
     correlation_id = UUID("ab91e1c1-36eb-4936-a7da-790713808722")
     response = await client.get(
@@ -159,6 +169,12 @@ async def test_profile_app_continuation_fails_closed_without_signed_provisioning
     }
     assert users.projections.lookup_calls == [("skriptoteket_standalone", CONTEXT_SUBJECT)]
     assert users.projection_events.created[-1].correlation_id == correlation_id
+    assert auth_outcomes.projection_outcomes[-1] == (
+        "skriptoteket_standalone",
+        "missing",
+        "missing_huleedu_app_projection",
+        correlation_id,
+    )
 
 
 @pytest.mark.asyncio
@@ -223,3 +239,67 @@ async def test_profile_app_continuation_invalid_product_context_records_correlat
         "invalid_active_product_identity_realm"
     )
     assert users.projection_events.created[-1].correlation_id == correlation_id
+
+
+@pytest.mark.asyncio
+async def test_admin_guard_records_local_rbac_denial_without_changing_response(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    auth_outcomes: AuthOutcomeRecorderStub,
+) -> None:
+    correlation_id = UUID("95673ce3-a092-4eb9-a9e2-36bf54b05dbc")
+    seed_huleedu_projection(users=users, profiles=profiles)
+
+    response = await client.get(
+        "/api/v1/pr-0264/admin-only",
+        headers={
+            **build_headers(
+                private_key=private_key,
+                now_ts=int(clock.now().timestamp()),
+            ),
+            "X-Correlation-ID": str(correlation_id),
+        },
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == "contributor"
+    assert auth_outcomes.rbac_decisions == [
+        ("denied", "admin_or_superuser", "contributor", "api", correlation_id)
+    ]
+
+
+@pytest.mark.asyncio
+async def test_application_rbac_denial_records_after_user_dependency(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    auth_outcomes: AuthOutcomeRecorderStub,
+) -> None:
+    correlation_id = UUID("3db46dd4-948f-4644-aef5-617cb2a9caec")
+    seed_huleedu_projection(users=users, profiles=profiles)
+
+    response = await client.get(
+        "/api/v1/pr-0264/application-admin-only",
+        headers={
+            **build_headers(
+                private_key=private_key,
+                now_ts=int(clock.now().timestamp()),
+            ),
+            "X-Correlation-ID": str(correlation_id),
+        },
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == "contributor"
+    assert auth_outcomes.rbac_decisions == [
+        ("denied", "admin_or_superuser", "contributor", "api", correlation_id)
+    ]

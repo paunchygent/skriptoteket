@@ -40,6 +40,12 @@ from skriptoteket.domain.identity.projections import (
 from skriptoteket.infrastructure.security.huleedu_internal_identity import (
     HuleEduInternalIdentityVerifier,
 )
+from skriptoteket.protocols.auth_outcomes import (
+    AuthContextVerificationOutcome,
+    AuthOutcomeRecorderProtocol,
+    AuthProjectionOutcome,
+    AuthRbacDecision,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -85,6 +91,49 @@ class ClockStub:
 class IdGeneratorStub:
     def new_uuid(self) -> UUID:
         return uuid4()
+
+
+class AuthOutcomeRecorderStub:
+    def __init__(self) -> None:
+        self.context_verifications: list[
+            tuple[AuthContextVerificationOutcome, str, UUID | None]
+        ] = []
+        self.projection_outcomes: list[
+            tuple[str | None, AuthProjectionOutcome, str, UUID | None]
+        ] = []
+        self.rbac_decisions: list[tuple[AuthRbacDecision, str, str, str, UUID | None]] = []
+
+    def record_context_verification(
+        self,
+        *,
+        outcome: AuthContextVerificationOutcome,
+        reason: str,
+        correlation_id: UUID | None,
+    ) -> None:
+        self.context_verifications.append((outcome, reason, correlation_id))
+
+    def record_projection_outcome(
+        self,
+        *,
+        realm: str | None,
+        outcome: AuthProjectionOutcome,
+        reason: str,
+        correlation_id: UUID | None,
+    ) -> None:
+        self.projection_outcomes.append((realm, outcome, reason, correlation_id))
+
+    def record_rbac_decision(
+        self,
+        *,
+        decision: AuthRbacDecision,
+        required_role: str,
+        actual_role: str,
+        route_family: str,
+        correlation_id: UUID | None,
+    ) -> None:
+        self.rbac_decisions.append(
+            (decision, required_role, actual_role, route_family, correlation_id)
+        )
 
 
 class IdentityProjectionRepositoryStub:
@@ -225,6 +274,7 @@ class ProfileContinuationApiProvider(Provider):
         projections: IdentityProjectionRepositoryProtocol | None = None,
         projection_events: IdentityProjectionEventRepositoryProtocol | None = None,
         id_generator: IdGeneratorProtocol | None = None,
+        auth_outcomes: AuthOutcomeRecorderProtocol | None = None,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -235,6 +285,7 @@ class ProfileContinuationApiProvider(Provider):
         self._projections = projections or stub_users.projections
         self._projection_events = projection_events or stub_users.projection_events
         self._id_generator = id_generator or IdGeneratorStub()
+        self._auth_outcomes = auth_outcomes or AuthOutcomeRecorderStub()
         self._uow = UnitOfWorkStub()
 
     @provide(scope=Scope.APP)
@@ -248,6 +299,10 @@ class ProfileContinuationApiProvider(Provider):
     @provide(scope=Scope.APP)
     def huleedu_internal_identity_verifier(self) -> HuleEduInternalIdentityVerifierProtocol:
         return HuleEduInternalIdentityVerifier(self._settings)
+
+    @provide(scope=Scope.APP)
+    def auth_outcomes(self) -> AuthOutcomeRecorderProtocol:
+        return self._auth_outcomes
 
     @provide(scope=Scope.REQUEST)
     def users(self) -> UserRepositoryProtocol:
@@ -283,6 +338,7 @@ class ProfileContinuationApiProvider(Provider):
         projection_events: IdentityProjectionEventRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        auth_outcomes: AuthOutcomeRecorderProtocol,
     ) -> HuleEduAppProjectionResolverProtocol:
         return HuleEduAppProjectionResolver(
             uow=uow,
@@ -292,6 +348,7 @@ class ProfileContinuationApiProvider(Provider):
             projection_events=projection_events,
             clock=clock,
             id_generator=id_generator,
+            auth_outcomes=auth_outcomes,
         )
 
 

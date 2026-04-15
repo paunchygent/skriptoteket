@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, Header, Response
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
+from skriptoteket.domain.identity.role_guards import require_any_role
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
     EditOpsApplyCommand,
@@ -66,8 +67,7 @@ async def create_edit_ops(
                 code=ErrorCode.FORBIDDEN,
                 message="Eval mode is not available in production",
             )
-        if user.role not in {Role.ADMIN, Role.SUPERUSER}:
-            raise DomainError(code=ErrorCode.FORBIDDEN, message="Eval mode requires admin access")
+        require_any_role(user=user, roles=(Role.ADMIN, Role.SUPERUSER))
     await require_tool_access(actor=user, tool_id=payload.tool_id, maintainers=maintainers)
     selection = (
         EditOpsSelection(start=payload.selection.start, end=payload.selection.end)

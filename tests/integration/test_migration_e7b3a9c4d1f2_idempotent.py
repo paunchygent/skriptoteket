@@ -38,6 +38,7 @@ from skriptoteket.infrastructure.repositories.identity_projection_repository imp
 )
 from skriptoteket.infrastructure.repositories.profile_repository import PostgreSQLProfileRepository
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+from skriptoteket.observability.auth_outcomes import NoopAuthOutcomeRecorder
 from tests.fixtures.database_fixtures import _to_async_database_url
 
 _REVISION = "e7b3a9c4d1f2"
@@ -183,6 +184,7 @@ async def _assert_resolver_uses_backfilled_projection(
                 projection_events=PostgreSQLIdentityProjectionEventRepository(session),
                 clock=UTCClock(),
                 id_generator=UUID4Generator(),
+                auth_outcomes=NoopAuthOutcomeRecorder(),
             )
             projection = await resolver.resolve(
                 context=InternalIdentityContextV1.model_validate(_context_payload(subject=subject))

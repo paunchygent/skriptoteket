@@ -1,3 +1,16 @@
+"""Draft-lock acquisition application handler.
+
+Purpose:
+    Coordinate draft-head lock acquisition, refresh, expiry, and admin force
+    takeover for editor sessions.
+
+Relationships:
+    - Uses role guard helpers for contributor/admin RBAC checks so central web
+      observability can record bounded denial metadata.
+    - Persists lock state through `DraftLockRepositoryProtocol` inside the
+      application Unit of Work.
+"""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -9,7 +22,7 @@ from skriptoteket.application.scripting.draft_locks import (
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.identity.role_guards import require_any_role, require_at_least_role
 from skriptoteket.domain.scripting.draft_locks import DraftLock
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import (
@@ -65,12 +78,7 @@ class AcquireDraftLockHandler(AcquireDraftLockHandlerProtocol):
                         },
                     )
 
-                if actor.role not in {Role.ADMIN, Role.SUPERUSER}:
-                    raise DomainError(
-                        code=ErrorCode.FORBIDDEN,
-                        message="Force takeover requires admin access",
-                        details={"tool_id": str(command.tool_id)},
-                    )
+                require_any_role(user=actor, roles=(Role.ADMIN, Role.SUPERUSER))
 
             forced_by_user_id = (
                 actor.id

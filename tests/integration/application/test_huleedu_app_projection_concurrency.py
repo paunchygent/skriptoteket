@@ -44,6 +44,7 @@ from skriptoteket.infrastructure.repositories.identity_projection_repository imp
 )
 from skriptoteket.infrastructure.repositories.profile_repository import PostgreSQLProfileRepository
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+from skriptoteket.observability.auth_outcomes import NoopAuthOutcomeRecorder
 
 pytestmark = pytest.mark.asyncio(loop_scope="module")
 
@@ -118,6 +119,7 @@ def _resolver(
         projection_events=PostgreSQLIdentityProjectionEventRepository(session),
         clock=UTCClock(),
         id_generator=UUID4Generator(),
+        auth_outcomes=NoopAuthOutcomeRecorder(),
     )
 
 

@@ -296,6 +296,9 @@ async def test_inline_completion_eval_headers_require_admin(
     )
 
     assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == "contributor"
 
 
 @pytest.mark.asyncio

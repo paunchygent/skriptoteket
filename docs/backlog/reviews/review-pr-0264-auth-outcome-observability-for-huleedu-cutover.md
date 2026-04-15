@@ -2,10 +2,10 @@
 type: review
 id: REV-PR-0264
 title: "Review: PR-0264 auth outcome observability for HuleEdu cutover"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-04-13
-updated: 2026-04-13
+updated: 2026-04-15
 reviewer: "lead-developer"
 prs:
   - PR-0264
@@ -65,45 +65,56 @@ authority, and logout authority remain upstream observability responsibilities.
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Keep HuleEdu Gateway/session/lifecycle observability upstream-owned | Prevents Skriptoteket from recreating auth authority | [ ] |
-| Add Skriptoteket-owned auth outcome counters/logs only at app-continuation, projection, and RBAC boundaries | Keeps the first slice diagnosable and bounded | [ ] |
-| Use bounded enum-like metric labels and sanitized structured log fields | Prevents high cardinality and identity leakage | [ ] |
-| Prefer a small protocol-first recorder over scattered logger/metric calls | Keeps tests behavior-focused and preserves clean architecture boundaries | [ ] |
-| Update runbooks with correlation handoff across HuleEdu Gateway and Skriptoteket | Makes the signal usable in normal operations | [ ] |
+| Keep HuleEdu Gateway/session/lifecycle observability upstream-owned | Prevents Skriptoteket from recreating auth authority | [x] |
+| Add Skriptoteket-owned auth outcome counters/logs only at app-continuation, projection, and RBAC boundaries | Keeps the first slice diagnosable and bounded | [x] |
+| Use bounded enum-like metric labels and sanitized structured log fields | Prevents high cardinality and identity leakage | [x] |
+| Prefer a small protocol-first recorder over scattered logger/metric calls | Keeps tests behavior-focused and preserves clean architecture boundaries | [x] |
+| Update runbooks with correlation handoff across HuleEdu Gateway and Skriptoteket | Makes the signal usable in normal operations | [x] |
 
 ## Review Checklist
 
-- [ ] Scope is bounded to `ST-28-10` and does not reopen auth behavior.
-- [ ] No metric recreates `skriptoteket_active_sessions` or local browser-session state.
-- [ ] Proposed labels cannot contain user ids, raw realm subjects, emails, raw URLs, tokens,
+- [x] Scope is bounded to `ST-28-10` and does not reopen auth behavior.
+- [x] No metric recreates `skriptoteket_active_sessions` or local browser-session state.
+- [x] Proposed labels cannot contain user ids, raw realm subjects, emails, raw URLs, tokens,
       signed headers, CSRF values, or exception text.
-- [ ] HuleEdu-owned Gateway/session/lifecycle outcomes are separated from Skriptoteket-owned
+- [x] HuleEdu-owned Gateway/session/lifecycle outcomes are separated from Skriptoteket-owned
       app-continuation/projection/RBAC outcomes.
-- [ ] The planned recorder shape preserves protocol-first DI and keeps domain code pure.
-- [ ] Tests assert behavior and redaction without patching implementation-private dependencies.
-- [ ] Runbook requirements include correlation-id handoff and failure interpretation.
+- [x] The planned recorder shape preserves protocol-first DI and keeps domain code pure.
+- [x] Tests assert behavior and redaction without patching implementation-private dependencies.
+- [x] Runbook requirements include correlation-id handoff and failure interpretation.
 
 ## Review Feedback
 
 **Reviewer:** lead-developer
-**Date:** 2026-04-13
-**Verdict:** pending
+**Date:** 2026-04-15
+**Initial Verdict:** approved
+**Implementation Follow-up Verdict:** approved on re-review 2026-04-15.
 
 ### Required Changes
 
-Pending review.
+- Addressed 2026-04-15: RBAC observability must cover non-dependency local RBAC denials as
+  well as `require_app_*` dependency denials. RBAC recording now happens at the central web
+  `DomainError` boundary, and eval-mode plus draft-lock force-takeover role denials use role guard
+  metadata so they emit bounded `required_role` / `actual_role` labels and `auth.rbac.denied`.
+- Addressed 2026-04-15: new auth observability code must avoid `Any` and `cast(...)`.
+  The recorder now uses a logger protocol, the error boundary uses a request-container protocol,
+  and Prometheus duplicate-registration recovery uses typed collector helpers.
+- Final re-review 2026-04-15: no required changes remain. `PR-0264` can stay `done`, and
+  `ST-28-10` / `EPIC-28` remain justified as done because the auth cutover now has bounded
+  Skriptoteket-owned observability without restoring local browser-session ownership.
 
 ### Suggestions (Optional)
 
-Pending review.
+- Keep the first implementation focused on counters, structured logs, and runbook triage.
+- Defer dashboards/alerts until real auth outcome rates exist after launch proof.
 
 ### Decision Approvals
 
-- [ ] HuleEdu ownership split
-- [ ] Skriptoteket-owned signal boundaries
-- [ ] Bounded labels and sanitized logs
-- [ ] Protocol-first recorder
-- [ ] Correlation handoff runbook
+- [x] HuleEdu ownership split
+- [x] Skriptoteket-owned signal boundaries
+- [x] Bounded labels and sanitized logs
+- [x] Protocol-first recorder
+- [x] Correlation handoff runbook
 
 ## Changes Made
 
@@ -111,3 +122,8 @@ Pending review.
 |--------|----------|-------------|
 | 1 | `PR-0264` | Created the review-ready auth outcome observability slice for `ST-28-10`. |
 | 2 | `REV-PR-0264` | Created the retained review gate that must approve the signal contract before implementation. |
+| 3 | `REV-PR-0264` | Approved the bounded signal contract for implementation after lead-architect/CTO review. |
+| 4 | `REV-PR-0264` | Recorded the implementation follow-up `changes_requested` decision: dependency-only RBAC observability was too narrow. |
+| 5 | `PR-0264` | Resolved the follow-up by centralizing RBAC denial recording in the web `DomainError` boundary and adding non-dependency RBAC tests. |
+| 6 | `PR-0264` | Addressed the latest `changes_requested` findings by routing eval-mode and force-takeover role denials through role guards, adding direct-route/application-handler regression checks, and replacing new `Any` / `cast(...)` usage with protocols and typed helpers. |
+| 7 | `REV-PR-0264` | Re-reviewed the latest fixes and approved the retained implementation record; downstream `PR-0264`, `ST-28-10`, and `EPIC-28` done statuses remain valid. |

@@ -11,6 +11,8 @@ Relationships:
 
 from __future__ import annotations
 
+from uuid import UUID
+
 import httpx
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -24,6 +26,7 @@ from skriptoteket.domain.identity.internal_identity_context import (
 )
 from tests.fixtures.profile_app_continuation_api_app import InvalidHeadersBuilder
 from tests.fixtures.profile_app_continuation_support import (
+    AuthOutcomeRecorderStub,
     ClockStub,
     JsonValue,
     UserRepositoryStub,
@@ -98,6 +101,27 @@ async def test_profile_app_continuation_requires_skriptoteket_product_context(
         "field": expected_field,
     }
     assert users.projections.lookup_calls == []
+
+
+@pytest.mark.asyncio
+async def test_profile_app_continuation_records_signed_context_rejection(
+    client: httpx.AsyncClient,
+    auth_outcomes: AuthOutcomeRecorderStub,
+) -> None:
+    correlation_id = "d2481ff5-d4c7-43c3-81fc-b20f728ba8a4"
+
+    response = await client.get(
+        "/api/v1/profile/app-continuation",
+        headers={"X-Correlation-ID": correlation_id},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["details"] == {
+        "reason": "missing_internal_identity_headers",
+    }
+    assert auth_outcomes.context_verifications == [
+        ("rejected", "missing_internal_identity_headers", UUID(correlation_id))
+    ]
 
 
 @pytest.mark.asyncio

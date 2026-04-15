@@ -29,6 +29,7 @@ from skriptoteket.application.identity.huleedu_app_projection import (
     HuleEduAppProjectionResolver,
 )
 from skriptoteket.config import Settings
+from skriptoteket.protocols.auth_outcomes import AuthOutcomeRecorderProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -80,6 +81,7 @@ class IdentityProvider(Provider):
         projection_events: IdentityProjectionEventRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        auth_outcomes: AuthOutcomeRecorderProtocol,
     ) -> HuleEduAppProjectionResolverProtocol:
         return HuleEduAppProjectionResolver(
             uow=uow,
@@ -89,6 +91,7 @@ class IdentityProvider(Provider):
             projection_events=projection_events,
             clock=clock,
             id_generator=id_generator,
+            auth_outcomes=auth_outcomes,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -160,6 +160,7 @@ async def test_metrics_uses_public_request_state_adapter(
 
     assert response.status_code == 200
     assert "session_files_bytes_total" in response.text
+    assert "skriptoteket_auth_context_verifications_total" in response.text
     users.count_active_by_role.assert_awaited_once()
 
 

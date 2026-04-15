@@ -23,13 +23,15 @@ from fastapi import Depends, FastAPI
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.identity.models import Role, User
+from skriptoteket.domain.identity.role_guards import require_any_role
 from skriptoteket.web.api.v1 import diagnostics as diagnostics_api
 from skriptoteket.web.api.v1 import profile as profile_api
-from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_admin_api, require_app_user_api
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.profile_app_continuation_support import (
+    AuthOutcomeRecorderStub,
     ClockStub,
     ProfileContinuationApiProvider,
     ProfileRepositoryStub,
@@ -71,11 +73,17 @@ def profiles() -> ProfileRepositoryStub:
 
 
 @pytest.fixture
+def auth_outcomes() -> AuthOutcomeRecorderStub:
+    return AuthOutcomeRecorderStub()
+
+
+@pytest.fixture
 def app(
     settings: Settings,
     clock: ClockStub,
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
+    auth_outcomes: AuthOutcomeRecorderStub,
 ) -> FastAPI:
     app = FastAPI()
     app.add_middleware(CorrelationMiddleware)
@@ -91,12 +99,24 @@ def app(
     async def protected_write(user: User = Depends(require_app_user_api)) -> dict[str, str]:
         return {"user_id": str(user.id)}
 
+    @app.get("/api/v1/pr-0264/admin-only")
+    async def admin_only(user: User = Depends(require_app_admin_api)) -> dict[str, str]:
+        return {"user_id": str(user.id)}
+
+    @app.get("/api/v1/pr-0264/application-admin-only")
+    async def application_admin_only(
+        user: User = Depends(require_app_user_api),
+    ) -> dict[str, str]:
+        require_any_role(user=user, roles=(Role.ADMIN, Role.SUPERUSER))
+        return {"user_id": str(user.id)}
+
     container = make_async_container(
         ProfileContinuationApiProvider(
             settings=settings,
             clock=clock,
             users=users,
             profiles=profiles,
+            auth_outcomes=auth_outcomes,
         )
     )
     setup_dishka(container, app)

@@ -5,7 +5,7 @@ title: "Runbook: Observability Metrics (Prometheus)"
 status: active
 owners: "olof"
 created: 2025-12-29
-updated: 2026-01-01
+updated: 2026-04-15
 system: "skriptoteket"
 ---
 
@@ -92,6 +92,9 @@ sudo docker logs --since 10m skriptoteket-web | rg -n 'SMTP health check failed|
 | `skriptoteket_session_files_count` | Gauge | - | Count of stored session files |
 | `skriptoteket_logins_total` | Counter | status | Login attempts (success/failure) |
 | `skriptoteket_users_by_role` | Gauge | role | Active users by role |
+| `skriptoteket_auth_context_verifications_total` | Counter | outcome, reason | HuleEdu signed internal identity verification outcomes |
+| `skriptoteket_auth_projection_outcomes_total` | Counter | realm, outcome, reason | Realm-aware projection and provisioning outcomes |
+| `skriptoteket_auth_rbac_decisions_total` | Counter | decision, required_role, actual_role, route_family | Local RBAC decisions after shared-auth success |
 
 Labels use route patterns (e.g., `/tools/{id}`) to avoid high cardinality.
 
@@ -111,6 +114,37 @@ Use these ownership rules for future auth observability:
   `users` table when production identity gauges are explicitly enabled.
 - Skriptoteket must not infer active browser sessions from stale cookies, removed `sessions` rows,
   or frontend state.
+
+### Auth outcome metrics after PR-0264
+
+`PR-0264` adds the first bounded auth outcome metric surface for the HuleEdu cutover:
+
+| Metric | Labels | Expected values |
+|---|---|---|
+| `skriptoteket_auth_context_verifications_total` | `outcome`, `reason` | `outcome=accepted|rejected`; reason is a bounded verification code such as `ok`, `missing_internal_identity_headers`, `invalid_internal_identity_signature`, or `internal_identity_expired` |
+| `skriptoteket_auth_projection_outcomes_total` | `realm`, `outcome`, `reason` | `realm=skriptoteket_standalone|huleedu_school|unknown`; `outcome=resolved|provisioned|missing|blocked_provisioning|linking_required|unsupported_realm` |
+| `skriptoteket_auth_rbac_decisions_total` | `decision`, `required_role`, `actual_role`, `route_family` | `decision=denied`; roles are bounded local role names; route family is a coarse API family such as `admin`, `editor`, `curated_app`, or `profile` |
+
+Forbidden labels remain forbidden here: no user id, email, raw realm subject id, raw URL, path
+parameter, correlation id, trace id, signed header payload, cookie, CSRF token, or exception text.
+
+Useful PromQL checks:
+
+```promql
+# Signed-context rejection rate by bounded reason
+sum by (reason) (rate(skriptoteket_auth_context_verifications_total{outcome="rejected"}[5m]))
+
+# Projection/provisioning failures by outcome
+sum by (outcome, reason) (rate(skriptoteket_auth_projection_outcomes_total{outcome!="resolved",outcome!="provisioned"}[5m]))
+
+# Local RBAC denials by coarse API family
+sum by (route_family, required_role, actual_role) (rate(skriptoteket_auth_rbac_decisions_total{decision="denied"}[5m]))
+```
+
+If an auth incident starts from a browser symptom, use logs with `X-Correlation-ID` for the
+individual request, then use these counters to decide whether the failure is systemic. HuleEdu
+Gateway/session metrics remain the owner for browser-session counts, CSRF ceremony, logout, and
+provider lifecycle outcomes.
 
 ### Local example
 

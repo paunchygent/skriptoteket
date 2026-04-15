@@ -8,10 +8,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history into repo long-term memory at `docs/reference/ref-development-changelog.md` first.
 ## Snapshot
-- Date: 2026-04-14
+- Date: 2026-04-15
 - Branch: `main` + local changes
-- Current lane: `ST-28-10` / `PR-0264` auth outcome observability planning is open; `PR-0264`
-  is review-ready and blocked from implementation until `REV-PR-0264` is approved.
+- Current lane: `EPIC-28` auth authority cutover is done locally through `ST-28-10` /
+  `PR-0264`; next strategic lane is `EPIC-35` launch SEO/indexing review.
 - Production: Full Vue SPA.
 - Handoff compaction moved the older auth-cutover verification ledger into
   `docs/reference/ref-development-changelog.md`.
@@ -54,11 +54,16 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0263` + `REV-PR-0263` closed the required 127 closeout fix. The approved design treats the
   failure as loopback-origin parity across HuleEdu ceremony/session/CSRF/logout surfaces, while
   keeping protected Skriptoteket `/api` calls Gateway-proxied and avoiding local API auth.
-- `PR-0264` now defines the first `ST-28-10` slice: Skriptoteket-owned auth outcome logs/metrics
-  for signed-context verification, app-continuation/projection, provisioning-required/linking
-  outcomes, local RBAC decisions, and correlation/runbook handoff to HuleEdu Gateway/session logs.
-- `REV-PR-0264` is pending. Do not implement auth observability code until the review approves the
-  signal contract and confirms no local browser-session metric is being reintroduced.
+- `PR-0264` is implemented. Skriptoteket now records bounded auth outcome metrics/logs for
+  signed-context verification, projection/provisioning outcomes, and local RBAC denials without
+  restoring local browser-session metrics.
+- `REV-PR-0264` is approved after the 2026-04-15 re-review. The implementation follow-up is
+  resolved: RBAC denial recording now happens in the central web `DomainError` boundary, eval-mode
+  and draft-lock force-takeover role denials carry role guard metadata, and the new observability
+  typing no longer uses `Any` / `cast(...)`.
+- `ST-28-10` and `EPIC-28` are marked done. Observability runbooks now describe correlation-id
+  triage and HuleEdu Gateway/session handoff for browser-session, CSRF, logout, and provider
+  lifecycle failures.
 - `PR-0265` is done and ports the HuleEdu mockup-bundle docs-as-code contract into Skriptoteket:
   `docs/mockups/INDEX.md`, typed bundle `README.md` docs, and bundle-local `submissions/` /
   `winner/` folders while preserving existing HTML/SVG preview paths.
@@ -130,6 +135,30 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run fe-type-check` (pass).
 - `pdm run fe-lint` (pass).
 - `pdm run docs-validate` (pass for `PR-0264`/`REV-PR-0264` planning docs).
+- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py
+  tests/unit/web/test_profile_app_continuation_api.py
+  tests/unit/web/test_profile_app_continuation_context_api.py
+  tests/unit/web/test_observability_routes.py
+  tests/unit/web/test_error_handler_middleware.py` (pass; 48 tests, including non-dependency RBAC
+  denial coverage).
+- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py
+  tests/unit/web/test_error_handler_middleware.py tests/unit/web/test_profile_app_continuation_api.py
+  tests/unit/web/test_editor_inline_completion_api.py
+  tests/unit/web/test_editor_edit_ops_preview_apply_api.py
+  tests/unit/application/scripting/handlers/test_draft_lock_handler.py` (pass; 38 tests).
+- `pdm run pytest -q tests/unit/web -x` (pass; 294 tests).
+- `pdm run pytest -q tests/unit/observability` (pass; 49 tests).
+- Focused `pdm run ruff check` on touched auth outcome implementation/test files (pass).
+- Live backend check after review follow-up: `docker compose up -d db`, `pdm run db-upgrade`,
+  `pdm run dev`; `curl http://127.0.0.1:8000/healthz` returned `200` with healthy DB, and
+  `POST /api/v1/editor/completions` with `X-Skriptoteket-Eval: 1` returned expected `401`
+  `missing_internal_identity_headers` through the live app/error boundary.
+- `pdm run docs-validate` (pass for `PR-0264` implementation closeout).
+- `pdm run typecheck` (pass; 993 source files).
+- `pdm run lint` (pass; includes format, Ruff, migration coverage, hazard guard).
+- `git diff --check` (pass).
+- `pdm run pr-0254-auth-cutover --include-127-lane --require-127-lane` (pass; retained
+  `.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260415T092404Z/manifest.redacted.json`).
 - `pdm run docs-validate` (pass for `PR-0265` mockup bundle docs-as-code port).
 - `pdm run fe-test -- --run src/views/AuthLoginView.spec.ts src/components/auth/AuthLoginPanel.spec.ts`
   (pass; 10 tests).
@@ -156,13 +185,11 @@ pdm run pytest -q tests/unit/application/auth/test_pr_0262_lifecycle_manifest.py
 ```
 ## Known Issues / Risks
 - Do not reintroduce app-local browser auth, browser-to-Identity calls, raw signed-context echo
-  routes, retained token/session artifacts, or direct backend shortcuts for protected `/api`.
-- Do not reintroduce app-local browser auth, browser-to-Identity calls, raw signed-context echo
   routes, or retained token/session artifacts.
 - The PR-0262 proof uses transient raw session subject/email from the HuleEdu artifact only to seed
   and verify local projection; retained Skriptoteket artifacts must stay sanitized.
 - For `PR-0264`, keep metric labels enum-like and bounded. Never label by user id, email, raw
   realm subject id, raw URL, signed header payload, cookie, CSRF token, or exception text.
 ## Next Steps
-- Review `REV-PR-0264`; after approval, implement the narrow Skriptoteket-owned auth outcome
-  recorder/metrics/logs and update the observability runbooks.
+- Review `REV-EPIC-35`; after approval, start `ST-35-01` / `ST-35-02` to freeze canonical public
+  host policy and repair crawler file/status semantics for launch indexing.

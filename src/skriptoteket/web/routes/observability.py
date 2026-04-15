@@ -23,7 +23,11 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.observability.health import build_health_response, check_database, check_smtp
-from skriptoteket.observability.metrics import get_identity_metrics, get_metrics
+from skriptoteket.observability.metrics import (
+    get_auth_outcome_metrics,
+    get_identity_metrics,
+    get_metrics,
+)
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -66,6 +70,7 @@ async def metrics(
 ) -> Response:
     """Prometheus metrics endpoint for scraping."""
     metrics = get_metrics()
+    get_auth_outcome_metrics()
     usage = await asyncio.to_thread(get_session_file_usage, artifacts_root=settings.ARTIFACTS_ROOT)
     metrics["session_files_bytes_total"].set(usage.bytes_total)
     metrics["session_files_count"].set(usage.files)

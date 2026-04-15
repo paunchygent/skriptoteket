@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, Header, Response
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
+from skriptoteket.domain.identity.role_guards import require_any_role
 from skriptoteket.protocols.llm import InlineCompletionCommand, InlineCompletionHandlerProtocol
 from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
 from skriptoteket.web.auth.huleedu_app_projection import (
@@ -48,8 +49,7 @@ async def create_inline_completion(
                 code=ErrorCode.FORBIDDEN,
                 message="Eval mode is not available in production",
             )
-        if user.role not in {Role.ADMIN, Role.SUPERUSER}:
-            raise DomainError(code=ErrorCode.FORBIDDEN, message="Eval mode requires admin access")
+        require_any_role(user=user, roles=(Role.ADMIN, Role.SUPERUSER))
     result = await handler.handle(
         actor=user,
         command=InlineCompletionCommand(

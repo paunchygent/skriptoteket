@@ -1,3 +1,15 @@
+"""Editor edit-ops route tests.
+
+Purpose:
+    Verify edit-op generation, preview, apply, and eval-mode authorization
+    mapping at the FastAPI boundary.
+
+Relationships:
+    - Exercises `skriptoteket.web.api.v1.editor.edit_ops` with Dishka protocol
+      stubs.
+    - Reuses HuleEdu app-projection fixtures so route tests match cutover auth.
+"""
+
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
@@ -170,6 +182,36 @@ def _virtual_files(tool_py: str) -> dict[str, str]:
         "input_schema.json": "{}",
         "usage_instructions.md": "",
     }
+
+
+@pytest.mark.asyncio
+async def test_edit_ops_eval_headers_require_admin_role_metadata(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Skriptoteket-Eval"] = "1"
+
+    response = await client.post(
+        "/api/v1/editor/edit-ops",
+        headers=headers,
+        json={
+            "tool_id": str(uuid4()),
+            "message": "Patch this",
+            "active_file": "tool.py",
+            "virtual_files": _virtual_files("print('hi')\n"),
+        },
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == "contributor"
 
 
 @pytest.mark.asyncio

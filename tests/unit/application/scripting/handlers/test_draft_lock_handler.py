@@ -1,3 +1,14 @@
+"""Draft-lock handler tests.
+
+Purpose:
+    Verify draft-lock acquisition, refresh, expiry, force takeover, and release
+    behavior at the application-handler boundary.
+
+Relationships:
+    - Exercises draft-lock handlers with protocol mocks and a fake Unit of Work.
+    - Freezes role-denial metadata used by central RBAC observability.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -174,6 +185,10 @@ async def test_acquire_draft_lock_force_requires_admin(now: datetime) -> None:
         )
 
     assert exc_info.value.code is ErrorCode.FORBIDDEN
+    required_roles = exc_info.value.details["required_roles"]
+    assert isinstance(required_roles, list)
+    assert set(required_roles) == {"admin", "superuser"}
+    assert exc_info.value.details["actual_role"] == "contributor"
     locks.upsert.assert_not_called()
 
 

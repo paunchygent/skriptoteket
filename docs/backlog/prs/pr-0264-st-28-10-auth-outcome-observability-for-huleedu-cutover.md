@@ -2,10 +2,10 @@
 type: pr
 id: PR-0264
 title: "ST-28-10 auth outcome observability for HuleEdu cutover"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-13
-updated: 2026-04-13
+updated: 2026-04-15
 stories:
   - "ST-28-10"
 adrs:
@@ -132,8 +132,9 @@ details or explicit constants, then be normalized into a bounded allowlist.
    Preserve the verifier's fail-closed `DomainError` behavior.
 5. Record projection/provisioning outcomes near the application resolver branch that already
    creates `identity_projection_events`, without duplicating raw identity data in logs or labels.
-6. Record local RBAC denials in the app auth dependency layer so protected routes remain thin and
-   domain role guards stay pure.
+6. Record local RBAC denials at the central web `DomainError` boundary so dependency-level and
+   route/application-handler role guard failures are both observed while domain role guards stay
+   pure.
 7. Update observability runbooks so the operator triage flow starts from a known
    `X-Correlation-ID`, then separates HuleEdu Gateway/session/lifecycle signals from
    Skriptoteket app-continuation/projection/RBAC signals.
@@ -188,6 +189,50 @@ Before this PR can close, update the relevant observability runbooks with:
 - failure interpretation for signed-context verification, unsupported realm, missing projection,
   provisioning blocked, linking required, local RBAC denial, CSRF write rejection, and logout
   invalidation
+
+## Implementation Summary
+
+Implemented on 2026-04-15 after `REV-PR-0264` approval.
+
+- Added `AuthOutcomeRecorderProtocol` and a Prometheus/Structlog implementation.
+- Added bounded counters:
+  `skriptoteket_auth_context_verifications_total`,
+  `skriptoteket_auth_projection_outcomes_total`, and
+  `skriptoteket_auth_rbac_decisions_total`.
+- Added sanitized structured events for signed-context verification, projection/provisioning
+  outcomes, and local RBAC denials.
+- Wired the recorder through Dishka into the app auth dependency, central `DomainError` middleware,
+  and projection resolver without changing auth behavior.
+- Resolved the 2026-04-15 `changes_requested` follow-up by moving RBAC denial recording out of the
+  dependency-only guard path and into the error boundary that also catches route/application-handler
+  role guard failures after `require_app_user_api`.
+- Addressed the latest 2026-04-15 review findings locally by routing eval-mode and draft-lock
+  force-takeover role denials through role guard metadata, adding regression coverage for the
+  direct route/application-handler RBAC path, and replacing new `Any` / `cast(...)` usage with
+  narrow protocols and typed metric collector helpers.
+- Updated logging and metrics runbooks with correlation-id triage and HuleEdu handoff guidance.
+
+Verification:
+
+- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py
+  tests/unit/web/test_profile_app_continuation_api.py
+  tests/unit/web/test_profile_app_continuation_context_api.py
+  tests/unit/web/test_observability_routes.py
+  tests/unit/web/test_error_handler_middleware.py` (pass; 48 tests).
+- `pdm run pytest -q tests/unit/observability` (pass; 49 tests).
+- `pdm run ruff check ...` on the touched implementation/test files (pass).
+- `pdm run docs-validate` (pass).
+- `pdm run typecheck` (pass).
+- `pdm run lint` (pass).
+- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py
+  tests/unit/web/test_error_handler_middleware.py tests/unit/web/test_profile_app_continuation_api.py
+  tests/unit/web/test_editor_inline_completion_api.py
+  tests/unit/web/test_editor_edit_ops_preview_apply_api.py
+  tests/unit/application/scripting/handlers/test_draft_lock_handler.py` (pass; 38 tests).
+- `pdm run pytest -q tests/unit/web -x` (pass; 294 tests).
+- `git diff --check` (pass).
+- `pdm run pr-0254-auth-cutover --include-127-lane --require-127-lane` (pass; retained
+  `.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260415T092404Z/manifest.redacted.json`).
 
 ## Rollback Plan
 

@@ -15,8 +15,10 @@ from __future__ import annotations
 from fastapi import Depends, Request
 
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
+from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_any_role, require_at_least_role
+from skriptoteket.protocols.auth_outcomes import AuthOutcomeRecorderProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     HuleEduAppProjectionResolverProtocol,
@@ -31,13 +33,29 @@ async def require_app_user_projection_api(
     verifier: FromDishka[HuleEduInternalIdentityVerifierProtocol],
     resolver: FromDishka[HuleEduAppProjectionResolverProtocol],
     clock: FromDishka[ClockProtocol],
+    auth_outcomes: FromDishka[AuthOutcomeRecorderProtocol],
 ) -> HuleEduAppUserProjection:
     """Return the local app projection proved by HuleEdu request context."""
-    context = verifier.verify(
-        headers=request.headers,
-        now_ts=int(clock.now().timestamp()),
+    correlation_id = get_correlation_id(request)
+    try:
+        context = verifier.verify(
+            headers=request.headers,
+            now_ts=int(clock.now().timestamp()),
+        )
+    except DomainError as exc:
+        auth_outcomes.record_context_verification(
+            outcome="rejected",
+            reason=_domain_error_reason(exc),
+            correlation_id=correlation_id,
+        )
+        raise
+
+    auth_outcomes.record_context_verification(
+        outcome="accepted",
+        reason="ok",
+        correlation_id=correlation_id,
     )
-    return await resolver.resolve(context=context, correlation_id=get_correlation_id(request))
+    return await resolver.resolve(context=context, correlation_id=correlation_id)
 
 
 async def require_app_user_api(
@@ -47,19 +65,30 @@ async def require_app_user_api(
     return projection.user
 
 
-async def require_app_admin_api(user: User = Depends(require_app_user_api)) -> User:
+async def require_app_admin_api(
+    user: User = Depends(require_app_user_api),
+) -> User:
     """Return an app-local admin or superuser proved by signed HuleEdu context."""
     require_any_role(user=user, roles={Role.ADMIN, Role.SUPERUSER})
     return user
 
 
-async def require_app_contributor_api(user: User = Depends(require_app_user_api)) -> User:
+async def require_app_contributor_api(
+    user: User = Depends(require_app_user_api),
+) -> User:
     """Return an app-local contributor-or-above proved by signed HuleEdu context."""
     require_at_least_role(user=user, role=Role.CONTRIBUTOR)
     return user
 
 
-async def require_app_superuser_api(user: User = Depends(require_app_user_api)) -> User:
+async def require_app_superuser_api(
+    user: User = Depends(require_app_user_api),
+) -> User:
     """Return an app-local superuser proved by signed HuleEdu context."""
     require_any_role(user=user, roles={Role.SUPERUSER})
     return user
+
+
+def _domain_error_reason(error: DomainError) -> str:
+    reason = error.details.get("reason")
+    return str(reason) if reason else "unknown"

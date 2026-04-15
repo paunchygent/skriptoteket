@@ -2,10 +2,10 @@
 type: story
 id: ST-28-10
 title: "Auth outcome observability for realm cutover"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-04-11
-updated: 2026-04-13
+updated: 2026-04-15
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given local browser sessions are retired, when auth monitoring is restored, then no metric recreates `skriptoteket_active_sessions` from local session state."
@@ -41,3 +41,12 @@ monitor.
   app-continuation/projection outcomes, local RBAC decisions, and consumer-side
   runbook correlation. HuleEdu Gateway/session/lifecycle telemetry remains
   upstream-owned.
+
+## Implementation Summary (as of 2026-04-15)
+
+`PR-0264` is done. Skriptoteket now records bounded auth outcome metrics and sanitized structured
+logs for signed-context verification, realm-aware projection/provisioning outcomes, and local RBAC
+denials. The RBAC recorder now runs from the central web error boundary, so denials raised by
+route/application handlers after `require_app_user_api` are covered alongside dependency guard
+denials. The observability runbooks now document correlation-id triage and the HuleEdu
+Gateway/session handoff boundary without restoring local browser-session metrics.

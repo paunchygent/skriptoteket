@@ -5,7 +5,7 @@ title: "Runbook: Observability Logging"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-11
+updated: 2026-04-15
 system: "skriptoteket"
 ---
 
@@ -45,6 +45,54 @@ Search logs for the correlation id:
 ```bash
 docker logs skriptoteket_web | rg "${CID}"
 ```
+
+## Auth Outcome Triage After HuleEdu Cutover
+
+Skriptoteket no longer owns browser sessions, CSRF ceremony, logout authority, provider
+registration, password reset, or email verification telemetry. Start with one known
+`X-Correlation-ID`, then decide whether the signal belongs to Skriptoteket or must be handed to
+HuleEdu Gateway/session logs.
+
+### Local correlation-first check
+
+```bash
+CID="$(python -c 'import uuid; print(uuid.uuid4())')"
+curl -i -H "X-Correlation-ID: ${CID}" http://127.0.0.1:8000/api/v1/profile/app-continuation
+docker logs skriptoteket_web | rg "${CID}"
+```
+
+If running the host dev backend with log piping:
+
+```bash
+rg "${CID}" .artifacts/dev-backend.log
+```
+
+### Skriptoteket-owned auth log events
+
+| Event | Meaning | Safe fields |
+|---|---|---|
+| `auth.internal_identity.verified` | HuleEdu signed internal identity context was accepted by Skriptoteket | `outcome`, `reason`, `correlation_id` |
+| `auth.internal_identity.rejected` | HuleEdu signed internal identity context failed closed at Skriptoteket | `outcome`, `reason`, `correlation_id` |
+| `auth.projection.resolved` | Realm-aware local projection resolved or provisioned | `realm`, `outcome`, `reason`, `correlation_id` |
+| `auth.projection.rejected` | Projection/provisioning was missing, blocked, linking-required, or unsupported | `realm`, `outcome`, `reason`, `correlation_id` |
+| `auth.rbac.denied` | Skriptoteket-local `User.role` blocked a protected API route | `decision`, `required_role`, `actual_role`, `route_family`, `correlation_id` |
+
+### Failure interpretation
+
+- `auth.internal_identity.rejected`: inspect `reason`. Missing, expired, invalid, unknown-key, or
+  trust-not-configured outcomes are Skriptoteket-side verification symptoms, but the upstream
+  Gateway may need to confirm which key/session request produced the signed context.
+- `auth.projection.rejected` with `outcome=missing`: the HuleEdu context reached Skriptoteket, but
+  no local projection existed and trusted provisioning claims were insufficient.
+- `auth.projection.rejected` with `outcome=linking_required`: local email collision requires an
+  explicit account-linking decision; do not infer linking from email.
+- `auth.projection.rejected` with `outcome=blocked_provisioning`: provisioning was refused by a
+  bounded local policy reason such as missing verified email or inactive local user.
+- `auth.projection.rejected` with `outcome=unsupported_realm`: the signed context selected a realm
+  Skriptoteket does not accept.
+- `auth.rbac.denied`: shared auth succeeded; the failure is Skriptoteket-local authorization.
+- CSRF write rejection, logout invalidation, provider lifecycle, and browser-session validity are
+  HuleEdu-owned. Hand off the same correlation id and time window to HuleEdu Gateway/session logs.
 
 ## JSON log shape (HuleEdu)
 

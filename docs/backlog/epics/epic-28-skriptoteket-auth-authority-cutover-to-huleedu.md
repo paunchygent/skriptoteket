@@ -2,10 +2,10 @@
 type: epic
 id: EPIC-28
 title: "Skriptoteket auth authority cutover to HuleEdu"
-status: proposed
+status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-13
+updated: 2026-04-15
 outcome: "Skriptoteket no longer owns browser auth authority locally; it consumes a HuleEdu-owned cookie-session + CSRF browser contract through the intended launch topology where `hule.education` is the HuleEdu landing page, `api.hule.education` is the shared browser auth/API edge, and `skriptoteket.hule.education` remains the Skriptoteket app host while preserving richer bootstrap and dedicated redirect-preserving auth-entry handoff."
 dependencies:
   - "ADR-0009"
@@ -141,7 +141,7 @@ dependencies:
 - The cross-repo launch topology and upstream edge ownership are now recorded in
   [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
-## Implementation Summary (as of 2026-04-13)
+## Implementation Summary (as of 2026-04-15)
 
 `ST-28-05` shipped through `PR-0250` as the HuleEdu provider conformance ingest and cutover
 readiness gate. The upstream HuleEdu `TASK-0308` proof is green, no provider-side blocker remains
@@ -226,14 +226,22 @@ Gateway-proxied protected read/write, signed app-continuation, local projection,
 local `User.role` RBAC, CSRF, and shared logout invalidation. The latest retained
 manifest is
 `.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260413T160856Z/manifest.redacted.json`.
-It records both `localhost` and `127` lane summaries as `status=ok`. `ST-28-10` is now the next epic
-lane for auth outcome observability.
+It records both `localhost` and `127` lane summaries as `status=ok`.
 
-`ST-28-10` is open through review-backed `PR-0264`. The first slice is deliberately
-Skriptoteket-owned: signed-context verification, app-continuation/projection outcomes,
-provisioning-required/linking-required outcomes, local RBAC decisions, and correlation/runbook
-handoff back to HuleEdu Gateway/session logs. It does not attempt to instrument HuleEdu-owned
-browser sessions, provider lifecycle, CSRF authority, or logout authority from this repo.
+`ST-28-10` shipped through approved `PR-0264`. Skriptoteket now emits bounded auth outcome
+counters and sanitized structured logs for signed internal identity verification,
+realm-aware projection/provisioning outcomes, and local RBAC denials. The 2026-04-15
+`changes_requested` follow-up is resolved: local RBAC denial recording now lives at the central web
+`DomainError` boundary, covering dependency guards and route/application-handler role guards after
+`require_app_user_api` without changing authorization behavior. The logging and metrics runbooks
+now start auth triage from a known `X-Correlation-ID` and explicitly hand
+HuleEdu-owned browser session, CSRF, logout, and provider lifecycle failures back to the Gateway
+and session logs. With `ST-28-04`, `ST-28-10`, and the loopback closeout complete, `EPIC-28` is
+done as a launch-ready auth authority cutover: Skriptoteket consumes the HuleEdu-owned browser
+session/product-realm ceremony while keeping local projection and RBAC ownership observable.
+The final post-observability proof retained
+`.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260415T092404Z/manifest.redacted.json`
+with both loopback lanes required and passing.
 
 ## Planning note (2026-04-08)
 

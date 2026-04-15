@@ -34,6 +34,7 @@ from skriptoteket.domain.identity.projections import (
     IdentityProjectionEvent,
     IdentityProjectionEventType,
 )
+from skriptoteket.protocols.auth_outcomes import AuthOutcomeRecorderProtocol, AuthProjectionOutcome
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -82,6 +83,7 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         projection_events: IdentityProjectionEventRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        auth_outcomes: AuthOutcomeRecorderProtocol,
     ) -> None:
         self._uow = uow
         self._users = users
@@ -90,6 +92,7 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
         self._projection_events = projection_events
         self._clock = clock
         self._id_generator = id_generator
+        self._auth_outcomes = auth_outcomes
 
     async def resolve(
         self,
@@ -439,3 +442,27 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
                 created_at=now,
             )
         )
+        self._auth_outcomes.record_projection_outcome(
+            realm=projection_key.realm.value if projection_key else None,
+            outcome=_projection_outcome(event_type=event_type, reason_code=reason_code),
+            reason=reason_code,
+            correlation_id=correlation_id,
+        )
+
+
+def _projection_outcome(
+    *,
+    event_type: IdentityProjectionEventType,
+    reason_code: str,
+) -> AuthProjectionOutcome:
+    if event_type is IdentityProjectionEventType.RESOLVED:
+        return "resolved"
+    if event_type is IdentityProjectionEventType.PROVISIONED:
+        return "provisioned"
+    if event_type is IdentityProjectionEventType.UNSUPPORTED_REALM:
+        return "unsupported_realm"
+    if event_type is IdentityProjectionEventType.DUPLICATE_EMAIL_LINKING_REQUIRED:
+        return "linking_required"
+    if reason_code == "missing_huleedu_app_projection":
+        return "missing"
+    return "blocked_provisioning"

@@ -21,6 +21,8 @@ from skriptoteket.infrastructure.security.public_helper_request_throttle import 
 )
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
+from skriptoteket.observability.auth_outcomes import PrometheusAuthOutcomeRecorder
+from skriptoteket.protocols.auth_outcomes import AuthOutcomeRecorderProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -63,6 +65,10 @@ class InfrastructureServicesProvider(Provider):
         settings: Settings,
     ) -> HuleEduInternalIdentityVerifierProtocol:
         return HuleEduInternalIdentityVerifier(settings)
+
+    @provide(scope=Scope.APP)
+    def auth_outcome_recorder(self) -> AuthOutcomeRecorderProtocol:
+        return PrometheusAuthOutcomeRecorder()
 
     @provide(scope=Scope.APP)
     def password_reset_request_throttle(
