@@ -1,3 +1,11 @@
+"""Validate small agent-facing document budgets.
+
+This module backs the repo-local docs validation gate for volatile agent
+handoff files. It keeps `.codex/handoff.md` short by directing durable session
+history to `.codex/long-term-memory/` and durable policy/procedure to governed
+docs.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -33,7 +41,7 @@ def main() -> int:
         failures.append(
             f"{budget.path} is {lines} lines (limit: {budget.max_lines}). "
             "Compress non-session-vital handoff content into repo long-term memory at "
-            "`docs/reference/ref-development-changelog.md`, then keep only current/next-session-critical info here.",
+            "`.codex/long-term-memory/entries/`, then keep only current-session-critical info here.",
         )
 
     if not failures:
@@ -45,7 +53,7 @@ def main() -> int:
     print(
         "\nHint: `.codex/handoff.md` is the live session handoff only. "
         "Dump non-session-vital history to repo long-term memory in "
-        "`docs/reference/ref-development-changelog.md` before trimming the handoff back under budget.",
+        "`.codex/long-term-memory/entries/` before trimming the handoff back under budget.",
     )
     return 1
 

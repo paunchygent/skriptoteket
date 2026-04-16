@@ -72,12 +72,14 @@ repo-local skills.
 - `.codex/skills/`: truly Skriptoteket-specific skills only.
 - `.codex/rules/`: targeted repo rules.
 - `.codex/handoff.md`: volatile current-state handoff; keep it under 200 lines.
-- `.codex/next-session-instruction-prompt-template.md`: template for new
-  developer/agent handoff messages.
+- `.codex/long-term-memory/index.md`: durable session-history doorway.
+- `.codex/long-term-memory/entries/`: retained session-history entries.
 - `CLAUDE.md`: Claude specialist memory only.
 
-When compacting `.codex/handoff.md`, move durable history to
-`docs/reference/ref-development-changelog.md` first.
+When compacting `.codex/handoff.md`, move durable session history to
+`.codex/long-term-memory/entries/` first. Promote policy, procedure,
+acceptance criteria, and implementation doctrine to governed docs instead of
+burying them in handoff or long-term memory.
 
 ## Durable Docs
 

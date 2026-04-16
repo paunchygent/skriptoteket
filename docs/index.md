@@ -1320,5 +1320,6 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - Start-here: `AGENTS.md`
 - Session handoff: `.codex/handoff.md`
+- Long-term memory index: `.codex/long-term-memory/index.md`
+- Long-term memory entries: `.codex/long-term-memory/entries/`
 - Development changelog: `docs/reference/ref-development-changelog.md`
-- Next-session prompt template: `.codex/next-session-instruction-prompt-template.md`
