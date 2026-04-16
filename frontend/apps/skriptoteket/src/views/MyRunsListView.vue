@@ -1,7 +1,19 @@
 <script setup lang="ts">
+/**
+ * User run history view.
+ *
+ * Purpose:
+ *   List the current user's previous tool runs and expose generated downloads
+ *   through the same protected API edge used by the typed client helpers.
+ *
+ * Relationships:
+ *   - `api/client.ts` fetches run history and resolves protected download URLs.
+ *   - The backend `my-runs` API supplies run and artifact metadata.
+ */
+
 import { computed, onMounted, ref } from "vue";
 
-import { apiGet, isApiError } from "../api/client";
+import { apiGet, isApiError, resolveProtectedApiUrl } from "../api/client";
 import type { components } from "../api/openapi";
 
 type ListMyRunsResponse = components["schemas"]["ListMyRunsResponse"];
@@ -195,7 +207,7 @@ onMounted(() => {
                     <a
                       v-for="file in run.output_files"
                       :key="file.artifact_id"
-                      :href="file.download_url"
+                      :href="resolveProtectedApiUrl(file.download_url)"
                       download
                       class="download-link"
                     >

@@ -1,6 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { afterEach, describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
-import { ApiError, isApiError, apiFetch, apiGet, apiPost } from "./client";
+import {
+  ApiError,
+  DEFAULT_PROTECTED_API_BASE_URL,
+  apiFetch,
+  apiFetchBlob,
+  apiGet,
+  apiPost,
+  isApiError,
+  resolveProtectedApiUrl,
+} from "./client";
 import { useAuthStore } from "../stores/auth";
 import type { components } from "./openapi";
 
@@ -26,6 +35,42 @@ describe("client", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.mocked(fetch).mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  describe("resolveProtectedApiUrl()", () => {
+    it("keeps protected app API paths relative in local development", () => {
+      expect(resolveProtectedApiUrl("/api/v1/profile/app-continuation")).toBe(
+        "/api/v1/profile/app-continuation",
+      );
+    });
+
+    it("resolves protected app API paths through the configured edge", () => {
+      vi.stubEnv("VITE_HULEEDU_PROTECTED_API_BASE_URL", `${DEFAULT_PROTECTED_API_BASE_URL}/`);
+
+      expect(resolveProtectedApiUrl("/api/v1/profile/app-continuation")).toBe(
+        `${DEFAULT_PROTECTED_API_BASE_URL}/v1/profile/app-continuation`,
+      );
+    });
+
+    it("keeps public app API paths app-hosted even when a protected edge is configured", () => {
+      vi.stubEnv("VITE_HULEEDU_PROTECTED_API_BASE_URL", DEFAULT_PROTECTED_API_BASE_URL);
+
+      expect(resolveProtectedApiUrl("/api/v1/public/apps/example")).toBe(
+        "/api/v1/public/apps/example",
+      );
+    });
+
+    it("leaves non-app API URLs unchanged", () => {
+      vi.stubEnv("VITE_HULEEDU_PROTECTED_API_BASE_URL", DEFAULT_PROTECTED_API_BASE_URL);
+
+      expect(resolveProtectedApiUrl("https://files.example.test/download")).toBe(
+        "https://files.example.test/download",
+      );
+    });
   });
 
   describe("ApiError", () => {
@@ -118,6 +163,18 @@ describe("client", () => {
 
       const headers = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].headers as Headers;
       expect(headers.get("Accept")).toBe("application/json");
+    });
+
+    it("uses the configured protected API edge for app API requests", async () => {
+      vi.stubEnv("VITE_HULEEDU_PROTECTED_API_BASE_URL", DEFAULT_PROTECTED_API_BASE_URL);
+      mockResponse({ result: "ok" });
+
+      await apiFetch("/api/test");
+
+      expect(fetch).toHaveBeenCalledWith(
+        `${DEFAULT_PROTECTED_API_BASE_URL}/test`,
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      );
     });
 
     it("returns parsed JSON on success", async () => {
@@ -353,7 +410,28 @@ describe("client", () => {
         expect.objectContaining({
           method: "POST",
           body: '{"input":"value"}',
-        })
+        }),
+      );
+    });
+  });
+
+  describe("apiFetchBlob()", () => {
+    it("uses the configured protected API edge for artifact downloads", async () => {
+      vi.stubEnv("VITE_HULEEDU_PROTECTED_API_BASE_URL", DEFAULT_PROTECTED_API_BASE_URL);
+      const blob = new Blob(["artifact"]);
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        blob: () => Promise.resolve(blob),
+      } as Response);
+
+      const result = await apiFetchBlob("/api/v1/runs/run-1/artifacts/artifact-1/download");
+
+      expect(result).toBe(blob);
+      expect(fetch).toHaveBeenCalledWith(
+        `${DEFAULT_PROTECTED_API_BASE_URL}/v1/runs/run-1/artifacts/artifact-1/download`,
+        expect.objectContaining({ method: "GET", credentials: "include" }),
       );
     });
   });

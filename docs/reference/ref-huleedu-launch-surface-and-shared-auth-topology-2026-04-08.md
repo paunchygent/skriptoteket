@@ -65,9 +65,32 @@ Decisions and rollout gates that must come first:
 Downstream work in `EPIC-28`:
 
 - Skriptoteket auth bootstrap moves to `https://api.hule.education`
+- protected Skriptoteket browser app APIs move to the HuleEdu Gateway-owned
+  production base `https://api.hule.education/api/...`
 - `/auth/login` handoff and return-to-origin behavior are preserved
 - local browser auth ownership is removed
 - cross-app smoke proof is recorded
+
+## Production Protected API Contract
+
+The production invariant is that HuleEdu Gateway is the only browser-facing
+auth/API edge for protected Skriptoteket API routes. Browser traffic that needs
+Skriptoteket-local projection or RBAC must enter through:
+
+```text
+https://api.hule.education/api/...
+```
+
+Gateway validates the HuleEdu browser session and CSRF contract, strips
+browser-supplied identity material, signs `InternalIdentityContextV1` with the
+Skriptoteket audience, and forwards to the Skriptoteket backend. Skriptoteket
+then resolves the local projection, profile, `User.role`, and RBAC decision.
+
+`https://skriptoteket.hule.education` is the app host and public product
+origin. It is not the production protected API edge for routes such as
+`/api/v1/profile/app-continuation`. A same-origin production alias under
+`skriptoteket.hule.education/api` would be a new externally visible edge
+contract and needs a separate ADR/task before implementation.
 
 ### Phase 3: Skriptoteket app-host SEO hardening
 
@@ -119,6 +142,12 @@ Local proof should mirror ownership without copying production hosts:
 
 This local lane is owned by HuleEdu `TASK-0325` and consumed by Skriptoteket `PR-0254`;
 the auditable local proof is `pdm run pr-0254-auth-cutover`.
+
+Do not read this local relative `/api` proof lane as production host policy.
+For production, protected Skriptoteket app API calls must target the HuleEdu
+Gateway edge at `https://api.hule.education/api/...`. The local lane keeps
+browser-relative `/api` only so Vite/local Docker can proxy it into Gateway
+while preserving the same signed downstream identity semantics.
 
 As of the 2026-04-13 `PR-0254` + `PR-0263` closeout, both local loopback lanes are green and
 retained at

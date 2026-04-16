@@ -1,6 +1,19 @@
 <script setup lang="ts">
+/**
+ * Tool run result panel.
+ *
+ * Purpose:
+ *   Render run outputs, follow-up actions, and artifact download links while
+ *   keeping protected artifact downloads on the configured HuleEdu API edge.
+ *
+ * Relationships:
+ *   - `api/client.ts` resolves protected API URLs for production.
+ *   - `UiActionForm` and `UiOutputRenderer` render server-provided UI payloads.
+ */
+
 import { computed } from "vue";
 
+import { resolveProtectedApiUrl } from "../../api/client";
 import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { UiActionForm } from "../ui-actions";
@@ -147,7 +160,7 @@ function onSubmitAction(payload: SubmitPayload): void {
         >
           <div class="min-w-0">
             <a
-              :href="a.download_url"
+              :href="resolveProtectedApiUrl(a.download_url)"
               class="underline text-burgundy hover:text-navy break-all"
               download
             >{{ a.path }}</a>

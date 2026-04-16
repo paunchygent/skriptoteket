@@ -1,3 +1,17 @@
+/**
+ * Skriptoteket protected API client.
+ *
+ * Purpose:
+ *   Centralize browser calls to Skriptoteket app APIs, including the
+ *   production HuleEdu Gateway protected API base and app-hosted public API
+ *   exceptions.
+ *
+ * Relationships:
+ *   - `stores/auth.ts` provides CSRF/session state for protected calls.
+ *   - `api/sharedAuth.ts` owns HuleEdu session/csrf/logout endpoints.
+ *   - Public `/api/v1/public/...` app APIs remain app-hosted.
+ */
+
 import { useAuthStore } from "../stores/auth";
 
 export type ApiErrorEnvelope = {
@@ -46,6 +60,44 @@ export type ApiBlobResponse = {
   contentType: string | null;
   filename: string | null;
 };
+
+export const DEFAULT_PROTECTED_API_BASE_URL = "https://api.hule.education/api";
+const APP_API_PREFIX = "/api/";
+const PUBLIC_APP_API_PREFIX = "/api/v1/public/";
+
+function isProtectedAppApiPath(path: string): boolean {
+  return path.startsWith(APP_API_PREFIX) && !path.startsWith(PUBLIC_APP_API_PREFIX);
+}
+
+function normalizeBaseUrl(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+}
+
+function configuredProtectedApiBaseUrl(): string | null {
+  const configured = import.meta.env.VITE_HULEEDU_PROTECTED_API_BASE_URL?.trim();
+  if (configured) {
+    return normalizeBaseUrl(configured);
+  }
+  if (import.meta.env.PROD) {
+    return DEFAULT_PROTECTED_API_BASE_URL;
+  }
+  return null;
+}
+
+export function resolveProtectedApiUrl(path: string): string {
+  if (!isProtectedAppApiPath(path)) {
+    return path;
+  }
+
+  const baseUrl = configuredProtectedApiBaseUrl();
+  if (!baseUrl) {
+    return path;
+  }
+
+  const suffix = baseUrl.endsWith("/api") ? path.slice("/api".length) : path;
+  return `${baseUrl}${suffix}`;
+}
 
 function isJsonSerializableBody(body: unknown): body is Record<string, unknown> {
   if (body === null) {
@@ -141,7 +193,7 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     }
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(resolveProtectedApiUrl(path), {
     ...options,
     method,
     headers,
@@ -224,7 +276,7 @@ export async function apiFetchBlob(path: string, options: ApiRequestOptions = {}
     }
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(resolveProtectedApiUrl(path), {
     ...options,
     method,
     headers,
@@ -304,7 +356,7 @@ export async function apiFetchBlobResponse(
     }
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(resolveProtectedApiUrl(path), {
     ...options,
     method,
     headers,

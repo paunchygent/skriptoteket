@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { apiFetch, apiGet } from "../../../api/client";
+import { apiFetch, apiGet, resolveProtectedApiUrl } from "../../../api/client";
 import { clearChatHistory, fetchChatHistory, postChatStream, readChatErrorMessage } from "./editorChatApi";
 
 const originalFetch = globalThis.fetch;
@@ -8,6 +8,7 @@ const originalFetch = globalThis.fetch;
 vi.mock("../../../api/client", () => ({
   apiFetch: vi.fn(),
   apiGet: vi.fn(),
+  resolveProtectedApiUrl: vi.fn((path: string) => path),
 }));
 
 afterEach(() => {
@@ -37,6 +38,9 @@ describe("editorChatApi", () => {
   });
 
   it("posts chat stream with csrf + correlation headers", async () => {
+    vi.mocked(resolveProtectedApiUrl).mockReturnValueOnce(
+      "https://api.hule.education/api/v1/editor/tools/tool%2F1/chat",
+    );
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValue(new Response(null, { status: 200 }));
@@ -53,7 +57,8 @@ describe("editorChatApi", () => {
     });
 
     const call = fetchMock.mock.calls[0];
-    expect(call?.[0]).toBe("/api/v1/editor/tools/tool%2F1/chat");
+    expect(resolveProtectedApiUrl).toHaveBeenCalledWith("/api/v1/editor/tools/tool%2F1/chat");
+    expect(call?.[0]).toBe("https://api.hule.education/api/v1/editor/tools/tool%2F1/chat");
     const init = call?.[1];
     const headers = new Headers(init?.headers);
     expect(headers.get("Accept")).toBe("text/event-stream");

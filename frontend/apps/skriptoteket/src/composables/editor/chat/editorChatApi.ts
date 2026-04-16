@@ -1,4 +1,18 @@
-import { apiFetch, apiGet } from "../../../api/client";
+/**
+ * Editor chat API transport.
+ *
+ * Purpose:
+ *   Centralize editor chat history and streaming calls so protected chat
+ *   endpoints share the same HuleEdu Gateway production edge as the main API
+ *   client.
+ *
+ * Relationships:
+ *   - `api/client.ts` owns protected API base resolution and CSRF-aware
+ *     non-streaming helpers.
+ *   - `useEditorChat.ts` owns chat UI state and stream consumption.
+ */
+
+import { apiFetch, apiGet, resolveProtectedApiUrl } from "../../../api/client";
 import type { EditorChatHistoryResponse, EditorChatRequest } from "./editorChatTypes";
 
 type ApiErrorEnvelope = {
@@ -45,7 +59,9 @@ export async function postChatStream({
   }
   headers.set("X-Correlation-ID", correlationId);
 
-  return await fetch(`/api/v1/editor/tools/${encodeURIComponent(toolId)}/chat`, {
+  const path = `/api/v1/editor/tools/${encodeURIComponent(toolId)}/chat`;
+
+  return await fetch(resolveProtectedApiUrl(path), {
     method: "POST",
     headers,
     body: JSON.stringify(body),

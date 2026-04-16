@@ -50,6 +50,14 @@ host-scoped 127 proof keeps all browser-facing origins and host-run proxy target
 `127.0.0.1`. That lane exists so `PR-0254` can prove real Gateway semantics locally
 without weakening public production allowlists.
 
+For production, the same authority split must be expressed with production
+hosts: protected Skriptoteket browser API calls use the HuleEdu Gateway edge at
+`https://api.hule.education/api/...`. `https://skriptoteket.hule.education`
+is the Skriptoteket app host and public product origin, not the protected API
+edge for signed-context routes. Direct browser calls to protected
+`https://skriptoteket.hule.education/api/...` bypass the component that mints
+`InternalIdentityContextV1` and are outside the accepted auth cutover contract.
+
 ## Core Concept: Product Identity Realm
 
 A **product identity realm** is a distinct product account namespace authenticated through the

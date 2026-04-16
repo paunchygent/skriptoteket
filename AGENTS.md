@@ -43,6 +43,9 @@ Target Python is 3.13-3.14.
 
 | Task | Start Here |
 |---|---|
+| Docs-as-code, backlog contracts, scaffolding, governed docs | `agent-docs-governance` |
+| Planning, decomposition, tranche sequencing | `agent-planning` |
+| Next-session or developer handoff messages | `agent-session-handoff` |
 | Backend architecture, DDD/Clean boundaries, FastAPI, UoW, migrations, runner contracts | `.codex/skills/skriptoteket-backend-dev/SKILL.md` |
 | Local dev, DB setup, dev stack, command wrappers, local logs | `local-devops` plus its Skriptoteket reference |
 | Hemma deploys, remote operations, shared host runtime, GPU/offload lanes | `hemma-devops` plus its Skriptoteket reference |
@@ -58,6 +61,10 @@ Shared skills migrated to
 `/Users/olofs_mba/Documents/Repos/skill-repository/skills/` are authored there
 first. Repo facts belong in shared-skill references or leaves, not in copied
 repo-local skills.
+
+- For any skill creation or update, use the system `skill-creator` skill first.
+  Keep `SKILL.md` concise; route examples, patterns, rationale, and behavior
+  detail into the reference/resource structure recommended there.
 
 ## Agent Surface
 

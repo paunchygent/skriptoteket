@@ -1,7 +1,19 @@
 <script setup lang="ts">
+/**
+ * Tool run artifact list.
+ *
+ * Purpose:
+ *   Present generated run artifacts with download and vault actions while
+ *   routing protected artifact URLs through the shared protected API resolver.
+ *
+ * Relationships:
+ *   - `api/client.ts` resolves production HuleEdu Gateway API URLs.
+ *   - `useVaultFiles` persists generated artifacts into the user vault.
+ */
+
 import { computed, ref } from "vue";
 import type { components } from "../../api/openapi";
-import { isApiError } from "../../api/client";
+import { isApiError, resolveProtectedApiUrl } from "../../api/client";
 import { useVaultFiles } from "../../composables/vault/useVaultFiles";
 import { useToastStore } from "../../stores/toast";
 
@@ -99,7 +111,7 @@ async function saveToVault(artifact: RunArtifact | ArtifactEntry): Promise<void>
         :class="[isCompact ? 'flex items-center gap-3 text-[11px]' : 'flex items-center gap-3 text-sm']"
       >
         <a
-          :href="artifact.download_url"
+          :href="resolveProtectedApiUrl(artifact.download_url)"
           class="underline text-burgundy hover:text-navy"
           download
         >

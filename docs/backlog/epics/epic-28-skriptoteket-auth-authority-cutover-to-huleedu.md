@@ -243,6 +243,14 @@ The final post-observability proof retained
 `.artifacts/playwright-pr-0254-auth-cutover/local-nonprod/20260415T092404Z/manifest.redacted.json`
 with both loopback lanes required and passing.
 
+Post-closeout production edge clarification (2026-04-16): the local proof's
+relative `/api` proxy lane is not production host policy. Production protected
+Skriptoteket app APIs must enter through the HuleEdu Gateway-owned browser
+auth/API edge at `https://api.hule.education/api/...`. The public
+`https://skriptoteket.hule.education` host remains the Skriptoteket app and
+public product origin; it must not serve signed-context protected API routes
+directly unless a future ADR deliberately defines a same-origin Gateway alias.
+
 ## Planning note (2026-04-08)
 
 The old modal-first auth-entry language is now superseded for new work by the dedicated `/auth/login`

@@ -233,6 +233,12 @@ Skriptoteket logout invalidates the shared HuleEdu session. `PR-0263` closed the
 loopback-origin parity gap so the 127 lane now proves the same contract instead of being recorded as
 blocked.
 
+Production edge note: the Gateway-proxied relative `/api` path in this smoke is
+the local/non-production proof analogue. The production protected API base is
+`https://api.hule.education/api/...`; direct protected browser calls to
+`https://skriptoteket.hule.education/api/...` bypass the HuleEdu Gateway
+identity signer and are not part of the accepted cutover contract.
+
 The retained canonical artifact is:
 
 ```text
