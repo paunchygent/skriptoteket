@@ -18,6 +18,7 @@ import {
 } from "../api/appContinuation";
 import { fetchWithTimeout, readAuthError, readErrorMessage } from "../api/authHttp";
 import { isApiError } from "../api/client";
+import { resolveProtectedApiUrl } from "../api/protectedApiBase";
 import {
   mapBrowserSessionToAuthSnapshot,
   sharedAuthUrl,
@@ -132,7 +133,7 @@ export async function loadSharedSessionSnapshot(): Promise<SharedSessionBootstra
 
 export async function loadAppContinuation(): Promise<AppContinuationResult> {
   const response = await fetchWithTimeout(
-    APP_CONTINUATION_PATH,
+    resolveProtectedApiUrl(APP_CONTINUATION_PATH),
     {
       method: "GET",
       credentials: "include",

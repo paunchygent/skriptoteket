@@ -13,6 +13,11 @@
  */
 
 import { useAuthStore } from "../stores/auth";
+import { resolveProtectedApiUrl } from "./protectedApiBase";
+export {
+  DEFAULT_PROTECTED_API_BASE_URL,
+  resolveProtectedApiUrl,
+} from "./protectedApiBase";
 
 export type ApiErrorEnvelope = {
   error: { code: string; message: string; details?: unknown };
@@ -60,44 +65,6 @@ export type ApiBlobResponse = {
   contentType: string | null;
   filename: string | null;
 };
-
-export const DEFAULT_PROTECTED_API_BASE_URL = "https://api.hule.education/api";
-const APP_API_PREFIX = "/api/";
-const PUBLIC_APP_API_PREFIX = "/api/v1/public/";
-
-function isProtectedAppApiPath(path: string): boolean {
-  return path.startsWith(APP_API_PREFIX) && !path.startsWith(PUBLIC_APP_API_PREFIX);
-}
-
-function normalizeBaseUrl(value: string): string {
-  const trimmed = value.trim();
-  return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
-}
-
-function configuredProtectedApiBaseUrl(): string | null {
-  const configured = import.meta.env.VITE_HULEEDU_PROTECTED_API_BASE_URL?.trim();
-  if (configured) {
-    return normalizeBaseUrl(configured);
-  }
-  if (import.meta.env.PROD) {
-    return DEFAULT_PROTECTED_API_BASE_URL;
-  }
-  return null;
-}
-
-export function resolveProtectedApiUrl(path: string): string {
-  if (!isProtectedAppApiPath(path)) {
-    return path;
-  }
-
-  const baseUrl = configuredProtectedApiBaseUrl();
-  if (!baseUrl) {
-    return path;
-  }
-
-  const suffix = baseUrl.endsWith("/api") ? path.slice("/api".length) : path;
-  return `${baseUrl}${suffix}`;
-}
 
 function isJsonSerializableBody(body: unknown): body is Record<string, unknown> {
   if (body === null) {

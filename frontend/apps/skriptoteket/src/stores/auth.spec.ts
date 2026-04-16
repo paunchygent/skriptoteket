@@ -10,9 +10,10 @@
  *   - `auth.logout.spec.ts` covers shared HuleEdu logout behavior.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { afterEach, describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useAuthStore } from "./auth";
+import { DEFAULT_PROTECTED_API_BASE_URL } from "../api/protectedApiBase";
 import {
   createTestProfile,
   createTestUser,
@@ -24,6 +25,10 @@ describe("useAuthStore", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.mocked(fetch).mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   describe("initial state", () => {
@@ -250,6 +255,58 @@ describe("useAuthStore", () => {
         expect.objectContaining({ method: "GET", credentials: "include" }),
       );
       expect(store.bootstrapped).toBe(true);
+      expect(store.status).toBe("ready");
+    });
+
+    it("routes app-continuation through the configured protected API edge", async () => {
+      vi.stubEnv("VITE_HULEEDU_PROTECTED_API_BASE_URL", DEFAULT_PROTECTED_API_BASE_URL);
+      const store = useAuthStore();
+      const mockUser = createTestUser({
+        role: "contributor",
+        auth_provider: "huleedu",
+      });
+      const mockProfile = createTestProfile({ user_id: mockUser.id });
+
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            authenticated: true,
+            user: {
+              user_id: "huleedu-provider-subject",
+              email: mockUser.email,
+              email_verified: true,
+            },
+            profile: { display_name: mockProfile.display_name, locale: mockProfile.locale },
+            policy: {
+              roles: ["teacher"],
+              grants: [],
+              feature_flags: [],
+            },
+            session: {
+              transport: "cookie",
+              csrf_required: true,
+              expires_at: "2026-04-11T12:00:00Z",
+            },
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            local_user: mockUser,
+            profile: mockProfile,
+            ai_policy: TEST_AI_POLICY,
+            allow_remote_fallback: true,
+            inline_completion_provider: "external",
+          }),
+        )
+        .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }));
+
+      await store.bootstrap();
+
+      expect(fetch).toHaveBeenNthCalledWith(
+        2,
+        `${DEFAULT_PROTECTED_API_BASE_URL}/v1/profile/app-continuation`,
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      );
       expect(store.status).toBe("ready");
     });
 
