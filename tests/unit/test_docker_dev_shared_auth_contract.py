@@ -22,6 +22,16 @@ HULEEDU_PUBLIC_KEY_VOLUME = (
     "gateway-internal-identity-public-key.pem}:"
     "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro"
 )
+HULEEDU_PROD_PUBLIC_KEY_VOLUME = (
+    "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-"
+    "/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity/"
+    "gateway-internal-identity-public-key.pem}:"
+    "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro"
+)
+HULEEDU_CONTAINER_PUBLIC_KEY_PATH = (
+    "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH:-"
+    "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem}"
+)
 
 
 def _service_environment(compose_path: Path, service_name: str) -> dict[str, str]:
@@ -79,3 +89,27 @@ def test_vite_dev_proxy_keeps_public_api_off_huleedu_gateway() -> None:
     assert vite_config.index('"/api/v1/public"') < vite_config.index('"/api"')
     assert "target: devPublicApiProxyTarget" in vite_config
     assert "target: devBackendProxyTarget" in vite_config
+
+
+def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api() -> None:
+    compose_payload = yaml.safe_load((ROOT / "compose.prod.yaml").read_text(encoding="utf-8"))
+    web_service = compose_payload["services"]["web"]
+    web_environment = web_service["environment"]
+
+    assert HULEEDU_PROD_PUBLIC_KEY_VOLUME in web_service["volumes"]
+    assert (
+        web_environment["HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH"]
+        == HULEEDU_CONTAINER_PUBLIC_KEY_PATH
+    )
+    assert (
+        web_environment["HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID"]
+        == "${HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID:-gateway-identity-rs256-v1}"
+    )
+    assert (
+        web_environment["HULEEDU_INTERNAL_IDENTITY_ISSUER"]
+        == "${HULEEDU_INTERNAL_IDENTITY_ISSUER:-api_gateway_service}"
+    )
+    assert (
+        web_environment["HULEEDU_INTERNAL_IDENTITY_AUDIENCE"]
+        == "${HULEEDU_INTERNAL_IDENTITY_AUDIENCE:-skriptoteket}"
+    )

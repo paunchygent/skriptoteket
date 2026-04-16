@@ -64,6 +64,12 @@ require_env "BOOTSTRAP_SUPERUSER_PASSWORD"
 require_env "SKRIPTOTEKET_DB_PASSWORD"
 require_env "SECRET_KEY"
 
+export HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH="${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity/gateway-internal-identity-public-key.pem}"
+if [[ ! -r "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH}" ]]; then
+  echo "Missing readable HuleEdu internal identity public key: ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH}" >&2
+  exit 1
+fi
+
 mkdir -p "$ARTIFACT_DIR"
 echo "==> Writing PR-0146 cutover artifacts to ${ARTIFACT_DIR}"
 

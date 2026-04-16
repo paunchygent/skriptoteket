@@ -29,6 +29,11 @@ services:
       TRUST_PROXY_HEADERS: "true"
       # Fail closed until nginx-proxy's exact bridge IP/CIDR is configured in the deployment env.
       TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}
+      # HuleEdu Gateway signed internal identity verification for protected app APIs.
+      HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH: ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH:-/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem}
+      HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID: ${HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID:-gateway-identity-rs256-v1}
+      HULEEDU_INTERNAL_IDENTITY_ISSUER: ${HULEEDU_INTERNAL_IDENTITY_ISSUER:-api_gateway_service}
+      HULEEDU_INTERNAL_IDENTITY_AUDIENCE: ${HULEEDU_INTERNAL_IDENTITY_AUDIENCE:-skriptoteket}
       RUNNER_IMAGE: skriptoteket-runner:latest
       RUNNER_QUEUE_ENABLED: "true"
       ARTIFACTS_ROOT: /app/.artifacts
@@ -113,6 +118,7 @@ services:
       - artifacts_data:/app/.artifacts
       - vault_data:/var/lib/skriptoteket/vault
       - /home/paunchygent/models/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
+      - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity/gateway-internal-identity-public-key.pem}:/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro
     networks:
       - hule-network
     healthcheck:

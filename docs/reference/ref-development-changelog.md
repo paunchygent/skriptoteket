@@ -388,3 +388,33 @@ repo line-count limit.
 - `PR-0254` is now the next auth-cutover proof lane.
 - `ST-28-10` follows with auth outcome observability for gateway/session, realm, lifecycle,
   projection, and local RBAC outcomes.
+
+## 2026-04-16 TASK-0376 handoff compaction dump
+
+Moved from `.codex/handoff.md` while closing HuleEdu TASK-0376 live production proof so the
+session handoff stays under the repo line-count limit.
+
+### Previous Status
+
+- `PR-0254`, `PR-0261`, `PR-0262`, `PR-0263`, and `PR-0264` completed the local HuleEdu
+  browser-session cutover, lifecycle proof, loopback parity remediation, and auth outcome
+  observability work for `EPIC-28`.
+- `ST-28-10` and `EPIC-28` were marked done after signed-context verification, projection,
+  provisioning, and local RBAC metrics/logging landed.
+- `PR-0265` ported the HuleEdu mockup-bundle docs-as-code contract into Skriptoteket.
+- `PR-0266` consolidated pyproject dev/observability tooling around `pdm run dev-stack` and
+  `pdm run obs-stack`.
+- `PR-0267` / `PR-0268` implemented launch/SEO public route hardening, and `PR-0269` added the
+  search-operations runbook.
+- Protected Skriptoteket app APIs must use `https://api.hule.education/api/...`; direct protected
+  calls to `https://skriptoteket.hule.education/api/...` bypass HuleEdu Gateway signing.
+
+### Previous Verification
+
+- Auth-cutover and lifecycle proofs retained sanitized manifests under
+  `.artifacts/playwright-pr-0254-auth-cutover/`, `.artifacts/playwright-pr-0261-auth-action-matrix/`,
+  and `.artifacts/playwright-pr-0262-real-lifecycle/`.
+- Focused auth, observability, web, frontend, docs, lint, typecheck, and browser proof commands
+  listed in the previous handoff passed for their respective PRs.
+- SEO lane verification passed with focused pytest/Ruff, frontend checks, docs validation,
+  `git diff --check`, temp curl checklist, PR-0268 Playwright proof, and diagnostics closeout.
