@@ -22,11 +22,10 @@ HULEEDU_PUBLIC_KEY_VOLUME = (
     "gateway-internal-identity-public-key.pem}:"
     "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro"
 )
-HULEEDU_PROD_PUBLIC_KEY_VOLUME = (
-    "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-"
-    "/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity/"
-    "gateway-internal-identity-public-key.pem}:"
-    "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro"
+HULEEDU_PROD_PUBLIC_KEY_DIR_VOLUME = (
+    "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR:-"
+    "/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity}:"
+    "/run/huleedu/internal-identity:ro"
 )
 HULEEDU_CONTAINER_PUBLIC_KEY_PATH = (
     "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH:-"
@@ -96,7 +95,7 @@ def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api(
     web_service = compose_payload["services"]["web"]
     web_environment = web_service["environment"]
 
-    assert HULEEDU_PROD_PUBLIC_KEY_VOLUME in web_service["volumes"]
+    assert HULEEDU_PROD_PUBLIC_KEY_DIR_VOLUME in web_service["volumes"]
     assert (
         web_environment["HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH"]
         == HULEEDU_CONTAINER_PUBLIC_KEY_PATH

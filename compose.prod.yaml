@@ -118,7 +118,7 @@ services:
       - artifacts_data:/app/.artifacts
       - vault_data:/var/lib/skriptoteket/vault
       - /home/paunchygent/models/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
-      - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity/gateway-internal-identity-public-key.pem}:/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro
+      - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR:-/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity}:/run/huleedu/internal-identity:ro
     networks:
       - hule-network
     healthcheck:
