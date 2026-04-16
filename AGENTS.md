@@ -104,6 +104,7 @@ Default close-out:
 
 - Docs-only change: `pdm run docs-validate`
 - Skill-surface change: `pdm run skills-validate` and `pdm run docs-validate`
+- Handoff update: `pdm run handoff-validate` and `pdm run docs-validate`
 - Backend change: `pdm run lint`, `pdm run typecheck`, and focused tests
 - Frontend change: use `integrated-frontend-stack` for the focused
   Vitest/typecheck/build/browser proof

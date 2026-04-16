@@ -366,6 +366,7 @@ test-simulations = "pytest -m simulation -s -v --durations=10 --log-cli-level=IN
 
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"
+handoff-validate = "python -m scripts.check_agent_doc_budgets"
 
 # Hemma production operator commands
 hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"

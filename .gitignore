@@ -57,6 +57,7 @@ frontend/apps/skriptoteket/openapi.json
 # Local artifacts (runner output)
 .artifacts/
 .vault/
+**/repomix_packages/
 
 # Local scratch PDFs (not part of repo data fixtures)
 data/pdfs/
