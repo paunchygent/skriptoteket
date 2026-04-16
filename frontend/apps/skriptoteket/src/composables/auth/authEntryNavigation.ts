@@ -36,7 +36,13 @@ const SIGNED_OUT_AUTH_ROUTE_NAMES = new Set<RouteRecordNameGeneric>([
   "reset-password",
   "verify-email",
 ]);
-const AUTH_ENTRY_LOOP_PATHS = new Set([AUTH_LOGIN_PATH, AUTH_CALLBACK_PATH, "/login"]);
+const AUTH_PROVISIONING_REQUIRED_PATH = "/auth/provisioning-required";
+const AUTH_ENTRY_LOOP_PATHS = new Set([
+  AUTH_LOGIN_PATH,
+  AUTH_CALLBACK_PATH,
+  AUTH_PROVISIONING_REQUIRED_PATH,
+  "/login",
+]);
 const AUTH_ENTRY_PATHS = new Set([AUTH_LOGIN_PATH, AUTH_CALLBACK_PATH]);
 const AUTH_LOGIN_FALLBACK: RouteLocationRaw = { name: "home" };
 const CLASSROOM_PLANNER_AUTHENTICATED_PATH = `/apps/${CLASSROOM_PLANNER_APP_ID}`;
@@ -295,4 +301,8 @@ export function resolveAuthLoginSuccessLocation(
   }
 
   return sanitizedNextPath;
+}
+
+export function resolveProvisioningRequiredExitPath(query: LocationQuery): string {
+  return sanitizeAuthNextPath(query.from) ?? "/";
 }

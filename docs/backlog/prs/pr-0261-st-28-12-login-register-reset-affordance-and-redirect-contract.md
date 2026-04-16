@@ -5,7 +5,7 @@ title: "ST-28-12 login register reset affordance and redirect contract"
 status: done
 owners: "agents"
 created: 2026-04-13
-updated: 2026-04-14
+updated: 2026-04-16
 stories:
   - "ST-28-12"
 adrs:
@@ -207,6 +207,22 @@ browser returns anonymous again, Skriptoteket shows explicit recovery copy:
 `Inloggningen slutfördes inte. Logga in igen för att fortsätta.` The retained
 PR-0261 Playwright proof now records this anonymous callback assertion in
 `manifest.redacted.json`.
+
+## Production Provisioning-Route Remediation 2026-04-16
+
+Production logs for a freshly recreated standalone account showed successful
+HuleEdu login, `auth.projection.resolved` with `provisioned` and then
+`resolved`, and `GET /api/v1/profile/app-continuation` returning `200`. The
+browser was still carrying the stale continuation
+`/auth/provisioning-required?from=/`, which could loop between
+`/auth/provisioning-required` and `/auth/login` after the local projection was
+ready.
+
+The remediation makes `/auth/provisioning-required` a transient recovery page,
+not a valid auth `next` destination. Once the user is no longer in
+`provisioning_required`, the router exits to the sanitized `from` route or `/`.
+Anonymous direct visits still go through `/auth/login`, but with the original
+sanitized `from` route instead of the recovery route itself.
 
 ## Rollback Plan
 

@@ -13,6 +13,7 @@ import {
   isAuthEntryPath,
   readAuthContinuation,
   resolveAuthLoginSuccessLocation,
+  resolveProvisioningRequiredExitPath,
   sanitizeAuthNextPath,
 } from "./authEntryNavigation";
 
@@ -26,6 +27,7 @@ describe("authEntryNavigation", () => {
     expect(sanitizeAuthNextPath("//example.com/phish")).toBeNull();
     expect(sanitizeAuthNextPath("/auth/login")).toBeNull();
     expect(sanitizeAuthNextPath("/auth/callback")).toBeNull();
+    expect(sanitizeAuthNextPath("/auth/provisioning-required?from=/editor")).toBeNull();
     expect(sanitizeAuthNextPath("/login")).toBeNull();
     expect(sanitizeAuthNextPath("/browse?profession=svenska")).toBe("/browse?profession=svenska");
   });
@@ -103,6 +105,18 @@ describe("authEntryNavigation", () => {
     );
 
     expect(router.currentRoute.value.fullPath).toBe("/admin/tools?status=draft#review");
+  });
+
+  it("resolves stale provisioning-required exits through the original route", () => {
+    expect(resolveProvisioningRequiredExitPath({ from: "/editor?pick=1" })).toBe(
+      "/editor?pick=1",
+    );
+    expect(resolveProvisioningRequiredExitPath({ from: "/auth/provisioning-required" })).toBe(
+      "/",
+    );
+    expect(resolveProvisioningRequiredExitPath({ from: "https://example.com/phish" })).toBe(
+      "/",
+    );
   });
 
   it("keeps classroom-planner origin in the route contract across auth detours", () => {

@@ -9,10 +9,12 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import {
+  buildAuthLoginLocation,
   buildProtectedAuthEntryLocationFromNavigation,
   isAuthEntryPath,
   readAuthContinuation,
   resolveAuthLoginSuccessLocation,
+  resolveProvisioningRequiredExitPath,
 } from "../composables/auth/authEntryNavigation";
 import { useAuthStore } from "../stores/auth";
 import { routes } from "./routes";
@@ -54,7 +56,13 @@ router.beforeEach(async (to, from) => {
   }
 
   if (isProvisioningRequiredPath) {
-    return buildProtectedAuthEntryLocationFromNavigation(to, from);
+    const nextPath = resolveProvisioningRequiredExitPath(to.query);
+
+    if (!auth.isAuthenticated) {
+      return buildAuthLoginLocation({ nextPath });
+    }
+
+    return nextPath;
   }
 
   if (isAuthEntryRoute && auth.isAuthenticated) {

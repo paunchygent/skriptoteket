@@ -110,7 +110,7 @@ describe("router guards", () => {
     expect(result).toBe(true);
   });
 
-  it("sends direct provisioning-required visits without that state through auth-login", async () => {
+  it("sends anonymous provisioning-required visits through auth-login with the original route", async () => {
     const auth = createAuth();
     mockUseAuthStore.mockReturnValue(auth);
 
@@ -129,8 +129,56 @@ describe("router guards", () => {
     expect(auth.bootstrap).toHaveBeenCalled();
     expect(result).toEqual({
       name: "auth-login",
-      query: { next: "/auth/provisioning-required?from=/editor" },
+      query: { next: "/editor" },
     });
+  });
+
+  it("resumes the original route when a ready user revisits provisioning-required", async () => {
+    const auth = createAuth({
+      isAuthenticated: true,
+      hasAtLeastRole: vi.fn().mockReturnValue(true),
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: "auth-provisioning-required",
+      path: "/auth/provisioning-required",
+      fullPath: "/auth/provisioning-required?from=/editor",
+      meta: {},
+      query: { from: "/editor" },
+    }, {
+      name: "auth-login",
+      fullPath: "/auth/login?next=/auth/provisioning-required?from=/editor",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toBe("/editor");
+  });
+
+  it("falls home when a ready user revisits provisioning-required without a safe from route", async () => {
+    const auth = createAuth({
+      isAuthenticated: true,
+      hasAtLeastRole: vi.fn().mockReturnValue(true),
+    });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: "auth-provisioning-required",
+      path: "/auth/provisioning-required",
+      fullPath: "/auth/provisioning-required?from=https://example.com/phish",
+      meta: {},
+      query: { from: "https://example.com/phish" },
+    }, {
+      name: "auth-login",
+      fullPath: "/auth/login?next=/auth/provisioning-required",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(result).toBe("/");
   });
 
   it("preserves full protected route destinations through auth-login", async () => {

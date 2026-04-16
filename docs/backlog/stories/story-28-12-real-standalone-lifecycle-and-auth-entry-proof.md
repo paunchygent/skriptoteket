@@ -5,7 +5,7 @@ title: "Real standalone lifecycle and auth entry proof"
 status: done
 owners: "agents"
 created: 2026-04-13
-updated: 2026-04-14
+updated: 2026-04-16
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given `PR-0260` is done and HuleEdu `REV-TASK-0327-01` is approved, when `PR-0261` starts, then the story may move in progress while the Skriptoteket probe route enables HuleEdu to retain its final live `status=ok` artifact."
@@ -76,3 +76,12 @@ recovery state. The app retries HuleEdu login once and then shows explicit
 recovery copy with a single primary `Logga in igen` action if the HuleEdu
 session remains anonymous. The retained `PR-0261` Playwright proof records the
 first anonymous callback retry and the second explicit recovery state.
+
+## Remediation Note 2026-04-16
+
+Fresh-account production debugging found that local projection provisioning was
+succeeding, but a stale `/auth/provisioning-required?from=/` continuation could
+loop after the account became ready. `PR-0261` now treats the provisioning page
+as transient recovery state: ready users exit to the sanitized `from` route or
+home, and anonymous users authenticate against that original route instead of
+persisting the recovery page as `next`.
