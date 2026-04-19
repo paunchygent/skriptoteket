@@ -5,7 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-03-29
+updated: 2026-04-20
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -62,8 +62,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-32: AI: inline completion harness (gpt-5-nano logic validation)](../stories/story-08-32-ai-inline-completion-harness.md)
 - [ST-08-33: AI: inline completion normalization + 32-token caps](../stories/story-08-33-ai-inline-completion-normalization-and-caps.md)
 - [ST-08-34: Klassrumskartan contextual help (overview + workspace modes)](../stories/story-08-34-klassrumskartan-contextual-help.md)
+- [ST-08-35: Help completion: route coverage, behavior hardening, and copy signoff](../stories/story-08-35-help-completion-route-coverage-and-copy-signoff.md)
 
-## Implementation Summary (as of 2026-03-29)
+## Implementation Summary (as of 2026-04-20)
 
 - AI inline completions (ghost text) are live with backend LLM proxy and CodeMirror integration (ST-08-14).
 - AI edit suggestions MVP (ST-08-16) shipped, then the legacy edit-suggestion flow was removed after cutover to
@@ -87,6 +88,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
   selection for `Översikt`, `Grupper`, `Sittplatser`, and `Regler`, plus focused SPA tests for render
   and context switching (ST-08-34).
 - Remaining work:
+  - SPA help completion: route coverage catalog, drawer behavior hardening, shared micro-help pattern,
+    and exact Swedish copy signoff through `docs/reference/ref-skriptoteket-help-copy-signoff.md`
+    before word-by-word topic implementation (ST-08-35 / PR-0271).
   - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
   - Editor chat virtual file context retention + tokenizer budgeting research and review (ST-08-27).
 

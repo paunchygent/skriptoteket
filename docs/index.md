@@ -37,6 +37,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Public landing copy lock:
   `docs/reference/ref-public-landing-copy-lock.md`
+- Contextual help epic:
+  `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
+- Help completion route coverage + copy signoff story:
+  `docs/backlog/stories/story-08-35-help-completion-route-coverage-and-copy-signoff.md`
+- Help completion PR slice:
+  `docs/backlog/prs/pr-0271-st-08-35-help-completion-route-coverage-and-copy-signoff.md`
+- Help copy signoff reference:
+  `docs/reference/ref-skriptoteket-help-copy-signoff.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
 - Mockup bundle index: `docs/mockups/INDEX.md`
 - Docs mockup bundle contract and existing preview indexes:
