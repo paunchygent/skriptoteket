@@ -1,3 +1,9 @@
+/**
+ * Help panel route and context behavior tests.
+ *
+ * These checks keep the global drawer aligned with the SPA route model,
+ * including the dual public/authenticated behavior of the `/` route.
+ */
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
@@ -99,6 +105,85 @@ describe("HelpPanel", () => {
     expect(document.body.textContent).toContain("Översikt: klass och klassrum");
     expect(document.body.textContent).toContain("Steg 1 -- Skapa din första klass");
     expect(document.body.textContent).not.toContain("Hjälpindex");
+
+    wrapper.unmount();
+  });
+
+  it("does not show authenticated Start help on the signed-out public landing route", async () => {
+    routeMocks.route.name = "home";
+    routeMocks.route.fullPath = "/";
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(document.body.textContent).toContain("Hjälpindex");
+    expect(document.body.textContent).toContain("Logga in");
+    expect(document.body.textContent).toContain("Konto och lösenord");
+    expect(document.body.textContent).not.toContain("Start samlar");
+
+    wrapper.unmount();
+  });
+
+  it("uses public Klassrumskartan copy on the public app route", async () => {
+    routeMocks.route.name = "public-app-detail";
+    routeMocks.route.fullPath = "/public/apps/classroom.group-seating-studio";
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(document.body.textContent).toContain(
+      "Detta är en fullständig förhandsvisning av vad Klassrumskartan gör.",
+    );
+    expect(document.body.textContent).toContain("Logga in för att spara ditt arbete");
+    expect(document.body.textContent).not.toContain("Klicka Starta");
+    expect(document.body.textContent).not.toContain("Klicka på appen för att öppna arbetsytan.");
+
+    wrapper.unmount();
+  });
+
+  it("uses authenticated app workspace copy on the app detail route", async () => {
+    routeMocks.route.name = "app-detail";
+    routeMocks.route.fullPath = "/apps/classroom.group-seating-studio";
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(document.body.textContent).toContain("Klicka på appen för att öppna arbetsytan.");
+    expect(document.body.textContent).toContain("När du är inloggad sparas arbetet i appen");
+    expect(document.body.textContent).not.toContain("Detta är en fullständig förhandsvisning");
+
+    wrapper.unmount();
+  });
+
+  it("keeps the help index link lists border-only inside the shadowed drawer", async () => {
+    routeMocks.route.name = "home";
+    routeMocks.route.fullPath = "/";
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    await flushPromises();
+
+    const lists = Array.from(document.body.querySelectorAll('[data-test="help-index-list"]'));
+    expect(lists.length).toBeGreaterThan(0);
+    for (const list of lists) {
+      expect(list.classList.contains("shadow-brutal")).toBe(false);
+      expect(list.classList.contains("shadow-brutal-sm")).toBe(false);
+    }
 
     wrapper.unmount();
   });

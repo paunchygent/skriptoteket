@@ -11,8 +11,15 @@ const { showIndex } = useHelp();
     @back="showIndex"
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
-      <li>Här ser du verktyg du underhåller.</li>
-      <li>Klicka <strong>Redigera</strong> för att öppna skripteditorn.</li>
+      <li>
+        Här ligger de verktyg du ansvarar för som bidragsgivare. Klicka på ett
+        verktyg för att se versioner, beskrivning och metadata.
+      </li>
+      <li>
+        Klicka <strong>Redigera</strong> för att öppna skripteditorn och jobba
+        vidare på en ny version.
+      </li>
+      <li>Behöver du lämna över ansvaret för ett verktyg? Hör av dig till en administratör.</li>
     </ul>
   </HelpTopicLayout>
 </template>

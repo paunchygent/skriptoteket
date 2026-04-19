@@ -116,17 +116,17 @@ async function exitPublicPlanner(): Promise<void> {
           </p>
         </div>
 
-        <div class="flex flex-col items-stretch justify-center gap-2 sm:flex-row">
+        <div class="public-guest-authoring-actions">
           <a
             :href="loginUrl"
-            class="btn-primary min-w-[10rem]"
+            class="btn-primary public-guest-authoring-action"
             data-test="public-guest-authoring-closed-login"
           >
             Logga in
           </a>
           <a
             :href="registerUrl"
-            class="btn-ghost planner-btn-ghost min-w-[10rem]"
+            class="btn-ghost planner-btn-ghost public-guest-authoring-action"
             data-test="public-guest-authoring-closed-register"
           >
             Skapa konto
@@ -259,3 +259,28 @@ async function exitPublicPlanner(): Promise<void> {
     />
   </div>
 </template>
+
+<style scoped>
+.public-guest-authoring-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--huleedu-space-2);
+}
+
+.public-guest-authoring-action {
+  width: 100%;
+  min-height: calc(var(--huleedu-space-10) + var(--huleedu-space-1));
+}
+
+@media (min-width: 640px) {
+  .public-guest-authoring-actions {
+    flex-direction: row;
+  }
+
+  .public-guest-authoring-action {
+    width: 10.5rem;
+  }
+}
+</style>

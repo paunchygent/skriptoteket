@@ -15,6 +15,7 @@ acceptance_criteria:
   - "Given a user opens the help panel, when they press Escape, click outside, navigate, or continue interacting with the app, then help closes or resynchronizes according to the documented drawer behavior without trapping focus."
   - "Given logged-in roles differ, when the help index renders, then users only see topics relevant to their available role surfaces."
   - "Given high-traffic routes such as auth lifecycle, catalog, tool runs/results, profile, vault, my runs, contributor, admin, and recovery pages, when help opens, then the topic content is concise, Swedish, action-focused, and matches the approved copy reference."
+  - "Given the help drawer is opened, when the index renders inside it, then the drawer uses a calm design-system off-white surface and nested link lists do not add brutal shadows."
   - "Given non-trivial fields need contextual help, when micro-help is added, then it uses one shared accessible pattern instead of one-off popovers."
 ui_impact: "Yes (global help drawer content, behavior, index coverage, and field-level micro-help)"
 data_impact: "No"
@@ -39,6 +40,7 @@ closing the gaps:
 - several topics are only shallow placeholders
 - field-level micro-help is inconsistent across surfaces
 - drawer close/focus behavior needs explicit tests
+- drawer visual treatment needs to stay calm and avoid nested brutal shadows
 - older EPIC-08 help docs still reference retired SSR templates and do not
   reflect the SPA route table
 - exact Swedish copy needs product-owner signoff before being baked into Vue
@@ -53,6 +55,8 @@ closing the gaps:
   contributor, admin, public, and recovery surfaces.
 - Harden drawer behavior for Escape, outside interaction, route changes, focus
   restoration, and mobile layout.
+- Keep the help drawer surface visually quiet and apply brutal shadow only to
+  the outer drawer, not nested index lists.
 - Extract a shared field-level micro-help pattern and migrate the first
   high-value fields onto it.
 - Keep Klassrumskartan mode help generated from the existing getting-started

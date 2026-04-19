@@ -19,27 +19,23 @@ const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
       <li>
-        <strong>Katalog</strong>: hitta verktyg via yrke → kategori → verktyg,
-        och kör dem när du behöver.
+        Start samlar de vanligaste vägarna vidare: katalogen, dina körningar och
+        de bidrags- eller adminvyer du har behörighet till.
       </li>
       <li>
-        <strong>Kör ett verktyg</strong>: ladda upp fil när verktyget ber om det
-        och klicka Kör. Om verktyget behöver fler saker, visas de under resultatet.
+        Välj <strong>Katalog</strong> när du vill hitta ett verktyg eller en app.
+        Välj <strong>Mina körningar</strong> när du vill gå tillbaka till ett
+        tidigare resultat.
+      </li>
+      <li>
+        Om en genväg eller sektion saknas beror det oftast på din roll eller på
+        att du inte är inloggad.
       </li>
       <li v-if="canSeeContributor">
-        <strong>Mina verktyg</strong>: se och öppna verktyg du underhåller.
-      </li>
-      <li v-if="canSeeContributor">
-        <strong>Föreslå skript</strong>: skicka in idéer och behov (välj yrke/kategori).
+        <strong>Bidra</strong>: syns bara om du får föreslå eller bygga verktyg.
       </li>
       <li v-if="canSeeAdmin">
-        <strong>Förslag</strong>: granska inkomna förslag och fatta beslut.
-      </li>
-      <li v-if="canSeeAdmin">
-        <strong>Hantera verktyg</strong>: publicera, avpublicera och hantera verktyg.
-      </li>
-      <li v-if="canSeeAdmin">
-        <strong>Skripteditorn</strong>: redigera skript och spara versioner.
+        <strong>Admin</strong>: syns bara om du har en administratörsroll.
       </li>
     </ul>
   </HelpTopicLayout>

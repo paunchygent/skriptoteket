@@ -208,8 +208,14 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     expect(wrapper.get("[data-test='public-guest-authoring-closed-login']").attributes("href")).toBe(
       "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",
     );
+    expect(wrapper.get("[data-test='public-guest-authoring-closed-login']").classes()).toContain(
+      "public-guest-authoring-action",
+    );
     expect(wrapper.get("[data-test='public-guest-authoring-closed-register']").attributes("href")).toBe(
       "https://api.hule.education/auth/register?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",
+    );
+    expect(wrapper.get("[data-test='public-guest-authoring-closed-register']").classes()).toContain(
+      "public-guest-authoring-action",
     );
   });
 

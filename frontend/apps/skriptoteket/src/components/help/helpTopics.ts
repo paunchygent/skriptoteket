@@ -6,7 +6,7 @@ import {
   type Component,
 } from "vue";
 
-import type { HelpTopicId } from "./useHelp";
+import type { HelpTopicId } from "./helpTopicCatalog";
 import HelpTopicLoadError from "./topics/HelpTopicLoadError.vue";
 import HelpTopicLoading from "./topics/HelpTopicLoading.vue";
 
@@ -31,18 +31,27 @@ function plannerSectionLoader(section: string): HelpTopicLoader {
 
 const helpTopicLoaders: Record<HelpTopicId, HelpTopicLoader> = {
   login: () => import("./topics/HelpTopicLogin.vue"),
+  auth_lifecycle: () => import("./topics/HelpTopicAuthLifecycle.vue"),
+  provisioning_required: () => import("./topics/HelpTopicProvisioningRequired.vue"),
   home: () => import("./topics/HelpTopicHome.vue"),
   browse_professions: () => import("./topics/HelpTopicBrowseProfessions.vue"),
   browse_categories: () => import("./topics/HelpTopicBrowseCategories.vue"),
   browse_tools: () => import("./topics/HelpTopicBrowseTools.vue"),
   tools_run: () => import("./topics/HelpTopicToolsRun.vue"),
   tools_result: () => import("./topics/HelpTopicToolsResult.vue"),
+  my_runs: () => import("./topics/HelpTopicMyRuns.vue"),
+  vault: () => import("./topics/HelpTopicVault.vue"),
+  profile: () => import("./topics/HelpTopicProfile.vue"),
   my_tools: () => import("./topics/HelpTopicMyTools.vue"),
+  editor_hub: () => import("./topics/HelpTopicEditorHub.vue"),
   apps_detail: () => import("./topics/HelpTopicAppsDetail.vue"),
   suggestions_new: () => import("./topics/HelpTopicSuggestionsNew.vue"),
   admin_suggestions: () => import("./topics/HelpTopicAdminSuggestions.vue"),
   admin_tools: () => import("./topics/HelpTopicAdminTools.vue"),
   admin_editor: () => import("./topics/HelpTopicAdminEditor.vue"),
+  admin_users: () => import("./topics/HelpTopicAdminUsers.vue"),
+  forbidden: () => import("./topics/HelpTopicForbidden.vue"),
+  route_recovery: () => import("./topics/HelpTopicRouteRecovery.vue"),
   planner_overview: plannerSectionLoader("planner_overview"),
   planner_seating: plannerSectionLoader("planner_seating"),
   planner_grouping: plannerSectionLoader("planner_grouping"),
@@ -61,18 +70,27 @@ function createAsyncTopic(loader: HelpTopicLoader): Component {
 
 const helpTopicComponents: Record<HelpTopicId, Component> = {
   login: createAsyncTopic(helpTopicLoaders.login),
+  auth_lifecycle: createAsyncTopic(helpTopicLoaders.auth_lifecycle),
+  provisioning_required: createAsyncTopic(helpTopicLoaders.provisioning_required),
   home: createAsyncTopic(helpTopicLoaders.home),
   browse_professions: createAsyncTopic(helpTopicLoaders.browse_professions),
   browse_categories: createAsyncTopic(helpTopicLoaders.browse_categories),
   browse_tools: createAsyncTopic(helpTopicLoaders.browse_tools),
   tools_run: createAsyncTopic(helpTopicLoaders.tools_run),
   tools_result: createAsyncTopic(helpTopicLoaders.tools_result),
+  my_runs: createAsyncTopic(helpTopicLoaders.my_runs),
+  vault: createAsyncTopic(helpTopicLoaders.vault),
+  profile: createAsyncTopic(helpTopicLoaders.profile),
   my_tools: createAsyncTopic(helpTopicLoaders.my_tools),
+  editor_hub: createAsyncTopic(helpTopicLoaders.editor_hub),
   apps_detail: createAsyncTopic(helpTopicLoaders.apps_detail),
   suggestions_new: createAsyncTopic(helpTopicLoaders.suggestions_new),
   admin_suggestions: createAsyncTopic(helpTopicLoaders.admin_suggestions),
   admin_tools: createAsyncTopic(helpTopicLoaders.admin_tools),
   admin_editor: createAsyncTopic(helpTopicLoaders.admin_editor),
+  admin_users: createAsyncTopic(helpTopicLoaders.admin_users),
+  forbidden: createAsyncTopic(helpTopicLoaders.forbidden),
+  route_recovery: createAsyncTopic(helpTopicLoaders.route_recovery),
   planner_overview: createAsyncTopic(helpTopicLoaders.planner_overview),
   planner_seating: createAsyncTopic(helpTopicLoaders.planner_seating),
   planner_grouping: createAsyncTopic(helpTopicLoaders.planner_grouping),

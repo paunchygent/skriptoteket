@@ -19,6 +19,7 @@ acceptance_criteria:
   - "Given the help drawer is opened from authenticated and unauthenticated chrome, when Escape, backdrop click, route changes, and opener focus restoration are tested, then behavior is deterministic and accessible."
   - "Given role-specific navigation, when the help index renders under user, contributor, admin, and superuser roles, then topics match available surfaces and do not expose unavailable admin/contributor entries."
   - "Given the first approved copy batch exists, when topic components are updated, then implemented Swedish copy matches the approved reference without ad hoc wording changes."
+  - "Given the help drawer is a secondary reading surface, when it renders, then it uses a calm design-system off-white surface and nested help-index link lists use borders/dividers without their own brutal shadows."
   - "Given field-level help is added, when suggestion, tool-run, admin-decision, and editor fields need explanations, then they share one reusable micro-help component/pattern."
 ---
 
@@ -76,6 +77,9 @@ Create a durable SPA help completion plan and implementation lane:
    - Restore focus to the opener when the drawer closes.
    - Decide and test the non-modal drawer behavior for outside click/focus and
      route changes.
+   - Keep the drawer visually calm: one outer shadow only, design-system
+     off-white surface, and border/divider treatment for nested help-index
+     lists.
    - Keep `Teleport` and async topics; no new dependency is needed.
 
 4. **Approved topic coverage**

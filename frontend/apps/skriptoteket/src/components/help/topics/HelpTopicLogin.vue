@@ -11,11 +11,15 @@ const { showIndex } = useHelp();
     @back="showIndex"
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
-      <li>Logga in för att komma till startsidan.</li>
-      <li>Använd din skol-/arbets-e-post.</li>
-      <li>Om det inte går: kontrollera stavning och Caps Lock.</li>
-      <li>Glömt lösenord? Använd länken i inloggningen för att begära en återställningslänk.</li>
-      <li>Har du inte verifierat kontot än kan du begära ett nytt verifieringsmejl.</li>
+      <li>
+        Logga in med ditt skolkonto. HuleEdu sköter själva inloggningen och
+        skickar dig tillbaka till Skriptoteket när du är klar.
+      </li>
+      <li>
+        Kommer du inte vidare? Gå tillbaka till Skriptotekets startsida och välj
+        <strong>Logga in</strong> igen.
+      </li>
+      <li>Kvarstår problemet, be skolans HuleEdu-kontakt eller support om hjälp.</li>
     </ul>
   </HelpTopicLayout>
 </template>

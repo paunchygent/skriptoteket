@@ -1,16 +1,30 @@
 <script setup lang="ts">
+/**
+ * Global contextual help drawer.
+ *
+ * This component resolves the currently visible help topic from the active SPA
+ * route and nested workspace context, while keeping the signed-out public
+ * landing page on the logged-out index instead of authenticated dashboard help.
+ */
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import HelpIndex from "./HelpIndex.vue";
 import { prefetchHelpTopics, resolveHelpTopicComponent } from "./helpTopics";
 import { resolveHelpTopic, useHelp } from "./useHelp";
+import { useAuthStore } from "../../stores/auth";
 
 const route = useRoute();
+const auth = useAuthStore();
 const { isOpen, activeTopic, helpContext, close, showIndex, showTopic } = useHelp();
 const hasPrefetched = ref(false);
 
-const routeTopic = computed(() => resolveHelpTopic(route.name, helpContext.value));
+const routeTopic = computed(() => {
+  if (route.name === "home" && !auth.isAuthenticated && !helpContext.value) {
+    return null;
+  }
+  return resolveHelpTopic(route.name, helpContext.value);
+});
 const activeTopicComponent = computed(() => resolveHelpTopicComponent(activeTopic.value));
 
 function syncToRoute(): void {
@@ -79,7 +93,7 @@ watch(
       <aside
         v-if="isOpen"
         id="help-panel"
-        class="help-panel border border-navy bg-canvas shadow-brutal flex flex-col text-navy"
+        class="help-panel border border-navy shadow-brutal flex flex-col text-navy"
         role="dialog"
         aria-modal="false"
         aria-labelledby="help-panel-title"
@@ -125,6 +139,8 @@ watch(
   right: var(--huleedu-space-4);
   bottom: var(--huleedu-space-4);
   width: min(420px, calc(100vw - var(--huleedu-space-8)));
+  background-color: var(--huleedu-canvas);
+  background-color: color-mix(in srgb, var(--huleedu-canvas) 55%, white);
   z-index: var(--huleedu-z-modal);
 }
 

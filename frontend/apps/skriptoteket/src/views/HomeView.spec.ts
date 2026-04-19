@@ -136,7 +136,7 @@ describe("HomeView", () => {
     );
     expect(wrapper.text()).toContain("Spara arbetet över tid");
     expect(wrapper.text()).toContain(
-      "Kom tillbaka till klasser, filer, inställningar och placeringar.",
+      "Kom tillbaka till dina klasser, filer, inställningar och placeringar.",
     );
     expect(wrapper.text()).toContain("Kräver konto");
     expect(wrapper.text()).not.toContain("Kräver ansökan");

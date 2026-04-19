@@ -15,8 +15,6 @@ defineProps<{ title: string }>();
     </button>
     <h3 class="text-lg font-semibold text-navy">{{ title }}</h3>
     <slot />
-    <slot name="footer">
-      <p class="text-sm text-navy/60">Mer hjälp kommer snart.</p>
-    </slot>
+    <slot name="footer" />
   </section>
 </template>

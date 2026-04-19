@@ -47,33 +47,33 @@ Use these states per copy block:
 
 | Route name | Topic id | Current state | Copy signoff state | Notes |
 |---|---|---:|---:|---|
-| `home` | `home` | Implemented | revise | Expand only if role-aware home copy changes. |
-| `auth-login`, `auth-callback` | `login` or new auth topic | Partial | draft | Align with HuleEdu-owned login ceremony. |
-| `register`, `forgot-password`, `reset-password`, `verify-email` | new lifecycle topic | Missing | draft | Explain lifecycle handoff without app-local auth wording. |
-| `auth-provisioning-required` | new provisioning topic | Missing | draft | Explain activation path and who to contact. |
-| `browse`, `browse-professions` | `browse_professions` | Partial | draft | Route map must cover both route names. |
-| `browse-categories` | `browse_categories` | Partial | draft | Keep category navigation short. |
-| `browse-tools` | `browse_tools` | Partial | draft | Explain apps vs tools without implementation detail. |
-| `tool-run` | `tools_run` | Partial | draft | Add input/file help and run-state expectations. |
-| `my-runs` | new runs list topic | Missing | draft | Explain history, statuses, and downloads. |
-| `my-runs-detail` | `tools_result` | Partial | draft | Explain result status, files, and recovery actions. |
-| `vault` | new vault topic | Missing | draft | Explain saved files, restore/delete, quota. |
-| `profile` | new profile topic | Missing | draft | Explain profile preferences and account links. |
-| `app-detail` | `apps_detail` plus app contexts | Partial | draft | Generic app help should remain a fallback. |
-| `public-app-detail` | `apps_detail` or public app topic | Missing | draft | Distinguish public guest capability from account-only features. |
+| `home` | `home` | Implemented | approved | Expand only if role-aware home copy changes. |
+| `auth-login`, `auth-callback` | `login` or new auth topic | Partial | approved | Align with HuleEdu-owned login ceremony. |
+| `register`, `forgot-password`, `reset-password`, `verify-email` | new lifecycle topic | Missing | approved | Explain lifecycle handoff without app-local auth wording. |
+| `auth-provisioning-required` | new provisioning topic | Missing | approved | Explain activation path and who to contact. |
+| `browse`, `browse-professions` | `browse_professions` | Partial | approved | Route map must cover both route names. |
+| `browse-categories` | `browse_categories` | Partial | approved | Keep category navigation short. |
+| `browse-tools` | `browse_tools` | Partial | approved | Explain apps vs tools without implementation detail. |
+| `tool-run` | `tools_run` | Partial | approved | Add input/file help and run-state expectations. |
+| `my-runs` | new runs list topic | Missing | approved | Explain history, statuses, and downloads. |
+| `my-runs-detail` | `tools_result` | Partial | approved | Explain result status, files, and recovery actions. |
+| `vault` | new vault topic | Missing | approved | Explain saved files, restore/delete, quota. |
+| `profile` | new profile topic | Missing | approved | Explain profile preferences and account links. |
+| `app-detail` | `apps_detail` plus app contexts | Partial | approved | Generic app help should remain a fallback. |
+| `public-app-detail` | `apps_detail` or public app topic | Missing | approved | Distinguish public guest capability from account-only features. |
 | Klassrumskartan overview | `planner_overview` | Implemented | approved | Generated from the approved getting-started guide. |
 | Klassrumskartan grouping | `planner_grouping` | Implemented | approved | Generated from the approved getting-started guide. |
 | Klassrumskartan seating | `planner_seating` | Implemented | approved | Generated from the approved getting-started guide. |
 | Klassrumskartan rules | `planner_rules` | Implemented | approved | Generated from the approved getting-started guide. |
-| `my-tools` | `my_tools` | Partial | draft | Explain maintainer responsibilities. |
-| `editor-hub` | new editor hub topic | Missing | draft | Explain where contributors start. |
-| `suggestion-new` | `suggestions_new` | Partial | draft | Include title, description, profession/category micro-help. |
-| `admin-suggestions`, `admin-suggestion-detail` | `admin_suggestions` | Partial | draft | Include decision statuses and rationale guidance. |
-| `admin-tools` | `admin_tools` | Partial | draft | Include publish/unpublish consequences. |
-| `admin-tool-editor`, `admin-tool-version-editor` | `admin_editor` | Partial | draft | Split overview/test/run-result guidance if needed. |
-| `admin-users`, `admin-user-detail` | new user admin topic | Missing | draft | Superuser-only, local role/projection wording must be clear. |
-| `forbidden` | new access topic | Missing | draft | Explain role/access mismatch without blame. |
-| `public-app-route-recovery`, `not-found` | new recovery topic | Missing | draft | Match route recovery copy and next actions. |
+| `my-tools` | `my_tools` | Partial | approved | Explain maintainer responsibilities. |
+| `editor-hub` | new editor hub topic | Missing | approved | Explain where contributors start. |
+| `suggestion-new` | `suggestions_new` | Partial | approved | Include title, description, profession/category micro-help. |
+| `admin-suggestions`, `admin-suggestion-detail` | `admin_suggestions` | Partial | approved | Include decision statuses and rationale guidance. |
+| `admin-tools` | `admin_tools` | Partial | approved | Include publish/unpublish consequences. |
+| `admin-tool-editor`, `admin-tool-version-editor` | `admin_editor` | Partial | approved | Split overview/test/run-result guidance if needed. |
+| `admin-users`, `admin-user-detail` | new user admin topic | Missing | approved | Superuser-only, local role/projection wording must be clear. |
+| `forbidden` | new access topic | Missing | approved | Explain role/access mismatch without blame. |
+| `public-app-route-recovery`, `not-found` | new recovery topic | Missing | approved | Match route recovery copy and next actions. |
 
 ## Copy Blocks
 
@@ -83,7 +83,7 @@ components. Keep each block in this shape:
 ```markdown
 ### Topic title
 
-State: draft
+State: approved
 Routes:
 
 - `route-name`
@@ -103,16 +103,16 @@ Approval notes:
 
 ### Start
 
-State: draft
+State: approved
 Routes:
 
-- `home`
+- `home` for authenticated users. The signed-out public landing page should open the logged-out help index, not this topic.
 
 Drawer copy:
 
-- Startsidan är din utgångspunkt. Härifrån når du katalogen, dina pågående körningar och -- om du har behörighet -- bidrags- och adminvyerna.
-- Klicka dig vidare till **Katalog** för att hitta ett verktyg, eller till **Mina körningar** om du vill se en tidigare körning.
-- Är något nedtonat har du inte åtkomst till det just nu. Det är ingenting som är trasigt.
+- Start samlar de vanligaste vägarna vidare: katalogen, dina körningar och de bidrags- eller adminvyer du har behörighet till.
+- Välj **Katalog** när du vill hitta ett verktyg eller en app. Välj **Mina körningar** när du vill gå tillbaka till ett tidigare resultat.
+- Om en genväg eller sektion saknas beror det oftast på din roll eller på att du inte är inloggad.
 
 Micro-help:
 
@@ -124,11 +124,12 @@ Micro-help:
 Approval notes:
 
 - Ersätter tidigare formulering "kör dem när du behöver" och det otydliga "Om verktyget behöver fler saker, visas de under resultatet".
+- Ersätter den för försvarande formuleringen "Det är ingenting som är trasigt" och undviker ASCII-inskottet kring behörighet.
 - Nämn inte rolltekniska begrepp som "projection" eller "scope".
 
 ### App-detaljer
 
-State: draft
+State: approved
 Routes:
 
 - `app-detail`
@@ -136,24 +137,27 @@ Routes:
 
 Drawer copy:
 
-- Appar är större arbetsytor -- som Klassrumskartan -- där du jobbar i flera steg inuti själva appen.
-- Klicka **Starta** för att öppna appen. Det du gör där sparas i appen och följer med nästa gång du öppnar den.
-- Är du inte inloggad ser du en förhandsvisning av vad appen gör. Logga in för att spara ditt arbete och kunna fortsätta där du slutade nästa gång.
+- Inloggad appvy: Appar är större arbetsytor, som Klassrumskartan, där du jobbar i flera steg inuti själva appen.
+- Inloggad appvy: Klicka på appen för att öppna arbetsytan.
+- Inloggad appvy: När du är inloggad sparas arbetet i appen, så att du kan fortsätta där du slutade nästa gång.
+- Publik Klassrumskartan: Detta är en fullständig förhandsvisning av vad Klassrumskartan gör. Du kan prova arbetsytan direkt i webbläsaren.
+- Publik Klassrumskartan: Logga in för att spara ditt arbete och kunna fortsätta där du slutade nästa gång.
+- Publik Klassrumskartan: Om appen säger att du ska logga in beror det på att den här webbläsaren redan har använt Klassrumskartan med konto.
 
 Micro-help:
 
-- Starta-knappen: Öppnar appens egen arbetsyta.
+- Appen: Öppnar appens egen arbetsyta.
 - Beskrivning: Kort om vad appen är till för och vilka steg som ingår.
-- Inloggning krävs: Vissa funktioner syns först när du är inloggad.
+- Inloggning krävs: Sparat arbete och fortsatt arbete mellan besök hör till den inloggade appvyn.
 
 Approval notes:
 
 - Ersätter "Resultat och nästa steg visas under" som var otydligt ("under vad?").
-- Samma block ska gälla både inloggad och publik vy; skillnaden framgår av texten.
+- `app-detail` och `public-app-detail` behöver auth-/route-medveten copy eftersom den publika Klassrumskartan är en fullständig förhandsvisning och kan visa en inloggningsuppmaning i webbläsare som redan använt appen med konto.
 
 ### Mina verktyg
 
-State: draft
+State: approved
 Routes:
 
 - `my-tools`
@@ -175,7 +179,7 @@ Approval notes:
 
 ### Inloggning
 
-State: draft
+State: approved
 Routes:
 
 - `auth-login`
@@ -183,9 +187,9 @@ Routes:
 
 Drawer copy:
 
-- Logga in med ditt skolkonto. Det är HuleEdu som sköter själva inloggningen åt oss -- du skickas dit och kommer tillbaka hit när du är klar.
-- Kommer du inte vidare? Stäng fliken, öppna Skriptoteket igen och försök på nytt. Det räcker nästan alltid.
-- Om du hamnar i en loop: rensa cookies för sidan eller prova ett annat webbläsarfönster.
+- Logga in med ditt skolkonto. HuleEdu sköter själva inloggningen och skickar dig tillbaka till Skriptoteket när du är klar.
+- Kommer du inte vidare? Gå tillbaka till Skriptotekets startsida och välj **Logga in** igen.
+- Kvarstår problemet, be skolans HuleEdu-kontakt eller support om hjälp.
 
 Micro-help:
 
@@ -194,10 +198,11 @@ Micro-help:
 Approval notes:
 
 - Nämn inte "token", "session" eller "redirect" i användartext.
+- Undvik teknisk webbläsarfelsökning i normal hjälptext.
 
 ### Skapa konto, glömt lösenord och bekräfta e-post
 
-State: draft
+State: approved
 Routes:
 
 - `register`
@@ -222,7 +227,7 @@ Approval notes:
 
 ### Kontot behöver aktiveras
 
-State: draft
+State: approved
 Routes:
 
 - `auth-provisioning-required`
@@ -243,7 +248,7 @@ Approval notes:
 
 ### Bläddra bland yrken
 
-State: draft
+State: approved
 Routes:
 
 - `browse`
@@ -265,7 +270,7 @@ Approval notes:
 
 ### Bläddra bland kategorier
 
-State: draft
+State: approved
 Routes:
 
 - `browse-categories`
@@ -286,7 +291,7 @@ Approval notes:
 
 ### Bläddra bland verktyg
 
-State: draft
+State: approved
 Routes:
 
 - `browse-tools`
@@ -308,7 +313,7 @@ Approval notes:
 
 ### Kör ett verktyg
 
-State: draft
+State: approved
 Routes:
 
 - `tool-run`
@@ -331,7 +336,7 @@ Approval notes:
 
 ### Mina körningar
 
-State: draft
+State: approved
 Routes:
 
 - `my-runs`
@@ -353,7 +358,7 @@ Approval notes:
 
 ### Körningsresultat
 
-State: draft
+State: approved
 Routes:
 
 - `my-runs-detail`
@@ -376,7 +381,7 @@ Approval notes:
 
 ### Kassaskåpet
 
-State: draft
+State: approved
 Routes:
 
 - `vault`
@@ -399,7 +404,7 @@ Approval notes:
 
 ### Min profil
 
-State: draft
+State: approved
 Routes:
 
 - `profile`
@@ -421,7 +426,7 @@ Approval notes:
 
 ### Föreslå ett nytt verktyg
 
-State: draft
+State: approved
 Routes:
 
 - `suggestion-new`
@@ -430,7 +435,7 @@ Drawer copy:
 
 - Saknar du ett verktyg? Beskriv det här så tar vi en titt.
 - Var konkret om vad du vill kunna göra och i vilket sammanhang -- det gör det mycket lättare att bedöma och bygga.
-- Du kan följa ditt förslag under **Mina förslag** och se vad som händer med det.
+- När du skickar in förslaget får du en bekräftelse direkt på sidan.
 
 Micro-help:
 
@@ -445,7 +450,7 @@ Approval notes:
 
 ### Administrera förslag
 
-State: draft
+State: approved
 Routes:
 
 - `admin-suggestions`
@@ -468,7 +473,7 @@ Approval notes:
 
 ### Administrera verktyg
 
-State: draft
+State: approved
 Routes:
 
 - `admin-tools`
@@ -490,7 +495,7 @@ Approval notes:
 
 ### Redigera verktyg
 
-State: draft
+State: approved
 Routes:
 
 - `admin-tool-editor`
@@ -514,7 +519,7 @@ Approval notes:
 
 ### Administrera användare
 
-State: draft
+State: approved
 Routes:
 
 - `admin-users`
@@ -537,7 +542,7 @@ Approval notes:
 
 ### Åtkomst saknas
 
-State: draft
+State: approved
 Routes:
 
 - `forbidden`
@@ -558,7 +563,7 @@ Approval notes:
 
 ### Sidan hittades inte
 
-State: draft
+State: approved
 Routes:
 
 - `not-found`

@@ -51,7 +51,7 @@ const rows = [
     index: "III",
     term: "Spara arbetet över tid",
     description:
-      "Kom tillbaka till klasser, filer, inställningar och placeringar.",
+      "Kom tillbaka till dina klasser, filer, inställningar och placeringar.",
     tag: "Kräver konto",
   },
 ] as const;

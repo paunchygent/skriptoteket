@@ -12,9 +12,16 @@ const { showIndex } = useHelp();
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
       <li>
-        Öppna ett förslag och läs igenom titel, beskrivning, yrken och kategorier.
+        Här hanterar du inkomna förslag. Öppna ett förslag för att läsa det i
+        sin helhet och sätta ett beslut.
       </li>
-      <li>Fatta beslut och skriv en kort motivering.</li>
+      <li>
+        Statusarna betyder: <strong>nytt</strong> -- oöppnat,
+        <strong>under översyn</strong> -- någon tittar på det,
+        <strong>godkänt</strong> -- ska byggas,
+        <strong>avvisat</strong> -- byggs inte just nu.
+      </li>
+      <li>Skriv alltid en kort motivering vid beslutet. Det är den texten användaren ser.</li>
     </ul>
   </HelpTopicLayout>
 </template>

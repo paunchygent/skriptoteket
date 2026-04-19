@@ -7,16 +7,16 @@ const { showIndex } = useHelp();
 
 <template>
   <HelpTopicLayout
-    title="Katalog: välj kategori"
+    title="Åtkomst saknas"
     @back="showIndex"
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
+      <li>Den här sidan kräver en roll eller behörighet som ditt konto inte har just nu.</li>
       <li>
-        Kategorierna grupperar verktyg efter vad de gör -- till exempel
-        planering, bedömning eller elevkommunikation.
+        Det är inget fel på dig -- det kan handla om att du behöver tilldelas en
+        roll eller logga in med rätt konto.
       </li>
-      <li>Välj en kategori för att se alla verktyg som hör dit.</li>
-      <li>Samma verktyg kan dyka upp under flera kategorier om det passar på fler ställen.</li>
+      <li>Vet du inte vem du ska fråga? Börja med din skoladministratör.</li>
     </ul>
   </HelpTopicLayout>
 </template>

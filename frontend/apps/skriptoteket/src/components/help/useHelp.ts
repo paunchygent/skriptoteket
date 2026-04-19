@@ -7,78 +7,9 @@
  * second help surface.
  */
 import { ref } from "vue";
-import type { RouteRecordName } from "vue-router";
+import type { HelpTopicId } from "./helpTopicCatalog";
 
-export type HelpTopicId =
-  | "home"
-  | "login"
-  | "browse_professions"
-  | "browse_categories"
-  | "browse_tools"
-  | "tools_run"
-  | "tools_result"
-  | "my_tools"
-  | "apps_detail"
-  | "suggestions_new"
-  | "admin_suggestions"
-  | "admin_tools"
-  | "admin_editor"
-  | "planner_overview"
-  | "planner_seating"
-  | "planner_grouping"
-  | "planner_rules";
-
-const ROUTE_TOPIC_MAP: Record<string, HelpTopicId> = {
-  home: "home",
-  login: "login",
-  browse: "browse_professions",
-  "browse-categories": "browse_categories",
-  "browse-tools": "browse_tools",
-  "tool-run": "tools_run",
-  "my-runs-detail": "tools_result",
-  "my-tools": "my_tools",
-  "app-detail": "apps_detail",
-  "suggestion-new": "suggestions_new",
-  "admin-suggestions": "admin_suggestions",
-  "admin-suggestion-detail": "admin_suggestions",
-  "admin-tools": "admin_tools",
-  "admin-tool-editor": "admin_editor",
-  "admin-tool-version-editor": "admin_editor",
-};
-
-/**
- * Context-based topic map.  When a component sets a help context string
- * (e.g. ``planner_seating``), this map takes priority over the route-
- * based resolution so that sub-views within a single route can show
- * mode-specific help content.
- */
-const CONTEXT_TOPIC_MAP: Record<string, HelpTopicId> = {
-  planner_overview: "planner_overview",
-  planner_seating: "planner_seating",
-  planner_grouping: "planner_grouping",
-  planner_rules: "planner_rules",
-};
-
-/**
- * Resolve the help topic for the current route and optional context.
- * Context (set by sub-views like the planner) takes priority over route.
- */
-export function resolveHelpTopic(
-  routeName: RouteRecordName | null | undefined,
-  context?: string | null,
-): HelpTopicId | null {
-  if (context) {
-    const contextTopic = CONTEXT_TOPIC_MAP[context];
-    if (contextTopic) {
-      return contextTopic;
-    }
-  }
-  if (!routeName) {
-    return null;
-  }
-  const key = typeof routeName === "string" ? routeName : routeName.toString();
-  return ROUTE_TOPIC_MAP[key] ?? null;
-}
+export { resolveHelpTopic, type HelpTopicId } from "./helpTopicCatalog";
 
 const isOpen = ref(false);
 const activeTopic = ref<HelpTopicId | null>(null);
