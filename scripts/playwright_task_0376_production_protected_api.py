@@ -37,6 +37,7 @@ PUBLIC_CLASSROOM_APP_PATH = "/public/apps/classroom.group-seating-studio"
 APP_CONTINUATION_PATH = "/api/v1/profile/app-continuation"
 AI_SETTINGS_PATH = "/api/v1/profile/ai-settings"
 PROTECTED_NEXT_PATH = "/editor"
+PROTECTED_FORBIDDEN_PATH = "/forbidden"
 
 
 @dataclass(frozen=True)
@@ -350,10 +351,22 @@ def _login(page: Page, *, config: ProofConfig) -> None:
         timeout=60_000,
     )
     page.wait_for_url(
-        re.compile(rf"^{re.escape(config.base_url + PROTECTED_NEXT_PATH)}(?:$|\?)"),
+        re.compile(
+            rf"^{re.escape(config.base_url)}"
+            rf"(?:{re.escape(PROTECTED_NEXT_PATH)}|{re.escape(PROTECTED_FORBIDDEN_PATH)})"
+            r"(?:$|\?)"
+        ),
         timeout=60_000,
     )
-    expect(page.get_by_role("heading", name="Kodredigeraren")).to_be_visible(timeout=20_000)
+    final_path = urlparse(page.url).path
+    if final_path == PROTECTED_NEXT_PATH:
+        expect(page.get_by_role("heading", name="Kodredigeraren")).to_be_visible(timeout=20_000)
+    elif final_path == PROTECTED_FORBIDDEN_PATH:
+        query = parse_qs(urlparse(page.url).query)
+        if query.get("required") != ["contributor"] or query.get("from") != [PROTECTED_NEXT_PATH]:
+            raise AssertionError(f"Unexpected forbidden redirect after login: {page.url}")
+    else:
+        raise AssertionError(f"Unexpected login destination: {page.url}")
     try:
         page.wait_for_load_state("networkidle", timeout=10_000)
     except PlaywrightTimeoutError:
@@ -469,7 +482,7 @@ def _run(config: ProofConfig) -> Path:
     run_dir = config.artifact_root / _run_id()
     run_dir.mkdir(parents=True, exist_ok=True)
     observed: list[dict[str, object]] = []
-    screenshot_path = run_dir / "editor-after-production-gateway-bootstrap.png"
+    screenshot_path = run_dir / "post-login-production-gateway-bootstrap.png"
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)

@@ -1,25 +1,20 @@
 ---
 type: agent_session_long_term_memory_entry
-id: skriptoteket-legacy-st08-10-script-editor-intelligence-review
+id: skriptoteket-session-2026-04-16-st08-10-script-editor-intelligence-review
 status: active
 created: '2026-04-16'
 last_updated: '2026-04-16'
 ---
 
-# Legacy ST-08-10 Script Editor Intelligence Review
-
-## Source
-
-Former file:
-`.codex/sessions/session-st08-10-script-editor-intelligence-review.md`
+# ST-08-10 Script Editor Intelligence Review Session
 
 ## Durable Summary
 
-The retired session prompt prepared a technical review of the CodeMirror 6
-script editor intelligence design before implementation. The intended review
-scope was ADR-0035, the ST-08-10/11/12 story breakdown, lint rules,
-completion sources, hover documentation, performance assumptions, and the
-`CodeMirrorEditor.vue` extension integration point.
+This entry retains prompt content that prepared a technical review of the
+CodeMirror 6 script editor intelligence design before implementation. The
+intended review scope was ADR-0035, the ST-08-10/11/12 story breakdown, lint
+rules, completion sources, hover documentation, performance assumptions, and
+the `CodeMirrorEditor.vue` extension integration point.
 
 The reusable workflow expectation was:
 

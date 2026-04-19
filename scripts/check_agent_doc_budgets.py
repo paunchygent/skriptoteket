@@ -11,6 +11,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+LTM_ENTRIES_DIR = Path(".codex/long-term-memory/entries")
+LTM_ENTRY_FILENAME_PREFIX = "session-"
+
 
 @dataclass(frozen=True, slots=True)
 class Budget:
@@ -29,6 +32,14 @@ def main() -> int:
     ]
 
     failures: list[str] = []
+    if LTM_ENTRIES_DIR.exists():
+        for entry in sorted(LTM_ENTRIES_DIR.glob("*.md")):
+            if not entry.name.startswith(LTM_ENTRY_FILENAME_PREFIX):
+                failures.append(
+                    f"{entry}: long-term-memory entries must use session-*.md filenames. "
+                    "Rename the entry and update .codex/long-term-memory/index.md.",
+                )
+
     for budget in budgets:
         if not budget.path.exists():
             failures.append(f"Missing required file: {budget.path}")

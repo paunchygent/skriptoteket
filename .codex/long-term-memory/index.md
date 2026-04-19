@@ -18,6 +18,6 @@ criteria, and implementation doctrine in governed docs.
 
 | Session Date | Entry File | Scope |
 | --- | --- | --- |
-| 2026-04-16 | `entries/session-2026-04-16-task-0042.md` | TASK-0042 long-term memory cutover and retired session/template lanes |
-| legacy | `entries/legacy-st08-10-script-editor-intelligence-review.md` | Former `.codex/sessions/session-st08-10-script-editor-intelligence-review.md` |
-| legacy | `entries/legacy-epic-05-huleedu-design-harmonization.md` | Former `.codex/sessions/session-epic-05-huleedu-design-harmonization.md` |
+| 2026-04-16 | `entries/session-2026-04-16-task-0042.md` | TASK-0042 long-term memory cutover and template-lane retirement |
+| 2026-04-16 | `entries/session-2026-04-16-st08-10-script-editor-intelligence-review.md` | Retained ST-08-10 script editor intelligence review prompt content |
+| 2026-04-16 | `entries/session-2026-04-16-epic-05-huleedu-design-harmonization.md` | Retained EPIC-05 HuleEdu design harmonization prompt content |
