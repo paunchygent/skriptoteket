@@ -15,9 +15,9 @@ import stepExportUrl from "../../assets/home/klassrumskartan/landing/redesign-v5
 const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
 
 const steps = [
-  { index: "01", title: "Skapa salen", imageSrc: stepCreateRoomUrl },
-  { index: "02", title: "Placera eleverna", imageSrc: stepPlaceStudentsUrl },
-  { index: "03", title: "Exportera", imageSrc: stepExportUrl },
+  { index: "I", title: "Skapa salen", imageSrc: stepCreateRoomUrl },
+  { index: "II", title: "Placera eleverna", imageSrc: stepPlaceStudentsUrl },
+  { index: "III", title: "Exportera", imageSrc: stepExportUrl },
 ] as const;
 </script>
 
@@ -33,7 +33,8 @@ const steps = [
           aria-hidden="true"
         />
         <p class="mt-6 text-base leading-7 text-navy">
-          Skapa salen, placera eleverna, spara som PDF. Allt i webbläsaren.
+          Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad är alla dina
+          klasser, grupperingar och klassrumsplaceringar sparade.
         </p>
         <RouterLink
           :to="publicClassroomPlannerPath"

@@ -35,6 +35,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`
 - Launch SEO and indexing readiness assessment:
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
+- Public landing copy lock:
+  `docs/reference/ref-public-landing-copy-lock.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
 - Mockup bundle index: `docs/mockups/INDEX.md`
 - Docs mockup bundle contract and existing preview indexes:
@@ -154,6 +156,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0239-st-32-08-featured-public-app-showcase-and-authenticated-value-preview-surfaces.md`
 - ST-32-08 landing showcase SVG asset cutover + backup preservation:
   `docs/backlog/prs/pr-0247-st-32-08-landing-showcase-svg-asset-cutover-and-backup-preservation.md`
+- ST-32-08 landing authenticated-value copy alternatives mockup:
+  `docs/mockups/st-32-08-landing-authenticated-value-copy-alternatives/README.md`
+- ST-32-08 landing authenticated-value copy refresh:
+  `docs/backlog/prs/pr-0270-st-32-08-landing-authenticated-value-copy-refresh.md`
 - ST-32-09 canonical public-route recovery + SPA unmatched state story:
   `docs/backlog/stories/story-32-09-canonical-public-route-recovery-and-spa-unmatched-state.md`
 - ST-32-09 SPA catch-all route + malformed public-route recovery:

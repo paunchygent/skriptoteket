@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ST-32-08 mockup - landing authenticated-value copy alternatives</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #fafaf6;
+        --paper: #fffef8;
+        --navy: #1c2e4a;
+        --burgundy: #4d1521;
+        --line: #1c2e4a;
+        --muted: rgba(28, 46, 74, 0.68);
+        --faint: rgba(28, 46, 74, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--navy);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1160px, calc(100vw - 40px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        border-bottom: 2px solid var(--line);
+        background: var(--paper);
+      }
+
+      .topbar__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
+        gap: 24px;
+      }
+
+      .brand {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 25px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .intro {
+        padding: 56px 0 36px;
+        border-bottom: 2px solid var(--line);
+      }
+
+      .intro h1,
+      .variant h2,
+      .feature h3,
+      .account h3 {
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: 0;
+      }
+
+      .intro h1 {
+        max-width: 860px;
+        margin: 0;
+        font-size: clamp(38px, 6vw, 76px);
+        line-height: 0.94;
+      }
+
+      .intro p {
+        max-width: 690px;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.65;
+      }
+
+      .variant {
+        padding: 68px 0;
+        border-bottom: 2px solid var(--line);
+      }
+
+      .variant__kicker {
+        margin: 0 0 18px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .variant h2 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(32px, 4vw, 52px);
+        line-height: 1.02;
+      }
+
+      .variant__note {
+        max-width: 720px;
+        margin: 18px 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .feature {
+        display: grid;
+        grid-template-columns: 5fr 7fr;
+        gap: 48px;
+        align-items: start;
+        margin-top: 42px;
+        padding-top: 42px;
+        border-top: 2px solid var(--line);
+      }
+
+      .feature h3,
+      .account h3 {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.05;
+      }
+
+      .feature p {
+        max-width: 46ch;
+        margin: 20px 0 0;
+        font-size: 17px;
+        line-height: 1.65;
+      }
+
+      .text-link {
+        display: inline-flex;
+        margin-top: 22px;
+        font-weight: 800;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border: 2px solid var(--line);
+        background: var(--paper);
+      }
+
+      .step {
+        min-height: 260px;
+        padding: 26px;
+      }
+
+      .step + .step {
+        border-left: 2px solid var(--line);
+      }
+
+      .step__index,
+      .item__index {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--muted);
+      }
+
+      .step__title {
+        margin: 14px 0 24px;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .diagram {
+        display: grid;
+        min-height: 118px;
+        place-items: center;
+        border: 1px solid rgba(28, 46, 74, 0.42);
+        background: var(--canvas);
+      }
+
+      .account {
+        margin-top: 46px;
+        padding-top: 42px;
+        border-top: 2px solid var(--line);
+      }
+
+      .account__head {
+        display: grid;
+        grid-template-columns: 5fr 7fr;
+        gap: 48px;
+        align-items: start;
+      }
+
+      .account__head p {
+        max-width: 58ch;
+        margin: 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.65;
+      }
+
+      .ledger {
+        margin: 34px 0 0;
+        padding: 0;
+        list-style: none;
+        border-top: 2px solid var(--line);
+        border-bottom: 2px solid var(--line);
+      }
+
+      .ledger__row {
+        display: grid;
+        grid-template-columns: 4rem 1fr 12rem;
+        gap: 28px;
+        align-items: start;
+        padding: 24px 0;
+      }
+
+      .ledger__row + .ledger__row {
+        border-top: 1px solid rgba(28, 46, 74, 0.24);
+      }
+
+      .item__term {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 850;
+      }
+
+      .item__desc {
+        max-width: 58ch;
+        margin: 7px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .tag {
+        justify-self: end;
+        border: 1px solid var(--line);
+        padding: 7px 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        margin-top: 34px;
+        border: 2px solid var(--line);
+        background: var(--paper);
+      }
+
+      .split__panel {
+        padding: 30px;
+      }
+
+      .split__panel + .split__panel {
+        border-left: 2px solid var(--line);
+      }
+
+      .split__panel h4 {
+        margin: 0 0 16px;
+        font-size: 20px;
+      }
+
+      .split__panel p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .decision {
+        margin-top: 24px;
+        padding: 18px 20px;
+        border-left: 6px solid var(--burgundy);
+        background: var(--faint);
+        line-height: 1.55;
+      }
+
+      @media (max-width: 860px) {
+        .shell {
+          width: min(100% - 28px, 1160px);
+        }
+
+        .topbar__inner,
+        .nav {
+          align-items: flex-start;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .feature,
+        .account__head,
+        .split {
+          grid-template-columns: 1fr;
+        }
+
+        .steps {
+          grid-template-columns: 1fr;
+        }
+
+        .step + .step,
+        .split__panel + .split__panel {
+          border-left: 0;
+          border-top: 2px solid var(--line);
+        }
+
+        .ledger__row {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .tag {
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="shell topbar__inner">
+        <a class="brand" href="../st-32-07-public-landing-discoverability/index.html">Skriptoteket</a>
+        <nav class="nav" aria-label="Alternativ">
+          <a href="#alt-a">Alternativ A</a>
+          <a href="#alt-b">Alternativ B</a>
+          <a href="#alt-c">Alternativ C</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div class="shell">
+          <h1>Landingcopy för mer än Klassrumskartan.</h1>
+          <p>
+            Tre små riktningar för samma ändring: tydligare exportcopy, romerska stegmarkörer och
+            en inloggad yta som berättar att Skriptoteket också ger fler appar, arbetsverktyg och
+            en väg att föreslå nya appar.
+          </p>
+        </div>
+      </section>
+
+      <section class="variant" id="alt-a">
+        <div class="shell">
+          <p class="variant__kicker">Alternativ A</p>
+          <h2>Behåll dagens rytm, bredda inloggat värde.</h2>
+          <p class="variant__note">
+            Minsta visuella förändringen. Passar om vi vill godkänna copy snabbt och inte öppna
+            layoutfrågan igen.
+          </p>
+
+          <div class="feature">
+            <div>
+              <h3>Klassrumskartan</h3>
+              <p>
+                Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad är alla
+                dina klasser, grupperingar och klassrumsplaceringar sparade.
+              </p>
+              <a class="text-link" href="/public/apps/classroom.group-seating-studio">Öppna appen →</a>
+            </div>
+
+            <div class="steps" aria-label="Tre steg i Klassrumskartan">
+              <article class="step">
+                <p class="step__index">I</p>
+                <h4 class="step__title">Skapa salen</h4>
+                <div class="diagram" aria-hidden="true">
+                  <svg width="150" height="90" viewBox="0 0 150 90">
+                    <rect x="8" y="8" width="134" height="74" fill="none" stroke="#1c2e4a" stroke-width="3"></rect>
+                    <rect x="22" y="18" width="34" height="12" fill="rgba(28,46,74,0.10)" stroke="#1c2e4a" stroke-width="2"></rect>
+                    <rect x="96" y="18" width="30" height="12" fill="rgba(28,46,74,0.10)" stroke="#1c2e4a" stroke-width="2"></rect>
+                  </svg>
+                </div>
+              </article>
+              <article class="step">
+                <p class="step__index">II</p>
+                <h4 class="step__title">Placera eleverna</h4>
+                <div class="diagram" aria-hidden="true">
+                  <svg width="150" height="90" viewBox="0 0 150 90">
+                    <rect x="8" y="8" width="134" height="74" fill="none" stroke="#1c2e4a" stroke-width="3"></rect>
+                    <g fill="#fafaf6" stroke="#1c2e4a" stroke-width="2">
+                      <rect x="24" y="34" width="24" height="15"></rect>
+                      <rect x="56" y="34" width="24" height="15"></rect>
+                      <rect x="88" y="34" width="24" height="15"></rect>
+                      <rect x="24" y="58" width="24" height="15"></rect>
+                      <rect x="56" y="58" width="24" height="15"></rect>
+                      <rect x="88" y="58" width="24" height="15"></rect>
+                    </g>
+                  </svg>
+                </div>
+              </article>
+              <article class="step">
+                <p class="step__index">III</p>
+                <h4 class="step__title">Exportera</h4>
+                <div class="diagram" aria-hidden="true">
+                  <svg width="150" height="90" viewBox="0 0 150 90">
+                    <rect x="34" y="14" width="46" height="60" fill="#fafaf6" stroke="#1c2e4a" stroke-width="3"></rect>
+                    <path d="M44 30h26M44 42h26M44 54h20" stroke="#1c2e4a" stroke-width="2"></path>
+                    <text x="98" y="43" font-family="monospace" font-size="13" font-weight="900" fill="#1c2e4a">PDF</text>
+                    <text x="94" y="60" font-family="monospace" font-size="13" font-weight="900" fill="#1c2e4a">XLS</text>
+                  </svg>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="account">
+            <div class="account__head">
+              <h3>Mer när du loggar in</h3>
+              <p>
+                Logga in för att spara ditt arbete, komma åt fler appar och arbetsverktyg, och
+                föreslå nya appar som skulle underlätta din vardag.
+              </p>
+            </div>
+            <ul class="ledger">
+              <li class="ledger__row">
+                <span class="item__index">I</span>
+                <div>
+                  <p class="item__term">Spara dina inställningar och filer</p>
+                  <p class="item__desc">Behåll dina klasser, grupperingar och klassrumsplaceringar mellan besök.</p>
+                </div>
+                <span class="tag">Kräver konto</span>
+              </li>
+              <li class="ledger__row">
+                <span class="item__index">II</span>
+                <div>
+                  <p class="item__term">Få fler appar och arbetsverktyg</p>
+                  <p class="item__desc">Använd fler lärarverktyg och föreslå nya appar som du saknar i arbetet.</p>
+                </div>
+                <span class="tag">Kräver konto</span>
+              </li>
+              <li class="ledger__row">
+                <span class="item__index">III</span>
+                <div>
+                  <p class="item__term">Ansök om kodredigeraren</p>
+                  <p class="item__desc">Bygg egna små appar när du behöver ett verktyg som ännu inte finns.</p>
+                </div>
+                <span class="tag">Kräver ansökan</span>
+              </li>
+            </ul>
+          </div>
+          <p class="decision">Rekommendation om ändringen ska kännas trygg och nära dagens sida.</p>
+        </div>
+      </section>
+
+      <section class="variant" id="alt-b">
+        <div class="shell">
+          <p class="variant__kicker">Alternativ B</p>
+          <h2>Låt fler appar vara huvudpoängen med inloggning.</h2>
+          <p class="variant__note">
+            Starkare om problemet är att sidan i dag låter som om kontot nästan bara handlar om
+            sparning och kodredigering.
+          </p>
+
+          <div class="feature">
+            <div>
+              <h3>Klassrumskartan</h3>
+              <p>
+                Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad är alla
+                dina klasser, grupperingar och klassrumsplaceringar sparade.
+              </p>
+              <a class="text-link" href="/public/apps/classroom.group-seating-studio">Öppna appen →</a>
+            </div>
+            <div class="steps" aria-label="Tre steg i Klassrumskartan">
+              <article class="step"><p class="step__index">I</p><h4 class="step__title">Skapa salen</h4><div class="diagram">Rita klassrummet</div></article>
+              <article class="step"><p class="step__index">II</p><h4 class="step__title">Placera eleverna</h4><div class="diagram">Flytta och slumpa</div></article>
+              <article class="step"><p class="step__index">III</p><h4 class="step__title">Exportera</h4><div class="diagram">PDF eller Excel</div></article>
+            </div>
+          </div>
+
+          <div class="account">
+            <div class="account__head">
+              <h3>Mer när du loggar in</h3>
+              <p>
+                Få tillgång till fler appar och arbetsverktyg. Du kan också ge förslag på nya
+                appar som du anser skulle underlätta ditt arbete.
+              </p>
+            </div>
+            <ul class="ledger">
+              <li class="ledger__row">
+                <span class="item__index">I</span>
+                <div>
+                  <p class="item__term">Fler färdiga lärarverktyg</p>
+                  <p class="item__desc">Öppna fler appar när de blir tillgängliga för ditt konto.</p>
+                </div>
+                <span class="tag">Kräver konto</span>
+              </li>
+              <li class="ledger__row">
+                <span class="item__index">II</span>
+                <div>
+                  <p class="item__term">Dina förslag kan bli nya appar</p>
+                  <p class="item__desc">Berätta vilka arbetsmoment du vill slippa göra för hand.</p>
+                </div>
+                <span class="tag">Kräver konto</span>
+              </li>
+              <li class="ledger__row">
+                <span class="item__index">III</span>
+                <div>
+                  <p class="item__term">Spara arbetet över tid</p>
+                  <p class="item__desc">Kom tillbaka till klasser, filer, inställningar och placeringar.</p>
+                </div>
+                <span class="tag">Kräver konto</span>
+              </li>
+            </ul>
+          </div>
+          <p class="decision">Bästa riktningen om sidan ska signalera att Skriptoteket är större än den publika appen.</p>
+        </div>
+      </section>
+
+      <section class="variant" id="alt-c">
+        <div class="shell">
+          <p class="variant__kicker">Alternativ C</p>
+          <h2>Dela upp kontot i vardagsnytta och medskapande.</h2>
+          <p class="variant__note">
+            Mer strukturerat än en lång lista. Bra om vi vill tona ned kodredigeraren utan att ta
+            bort den.
+          </p>
+
+          <div class="feature">
+            <div>
+              <h3>Klassrumskartan</h3>
+              <p>
+                Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad är alla
+                dina klasser, grupperingar och klassrumsplaceringar sparade.
+              </p>
+              <a class="text-link" href="/public/apps/classroom.group-seating-studio">Öppna appen →</a>
+            </div>
+            <div class="steps" aria-label="Tre steg i Klassrumskartan">
+              <article class="step"><p class="step__index">I</p><h4 class="step__title">Skapa salen</h4><div class="diagram">Klassrum</div></article>
+              <article class="step"><p class="step__index">II</p><h4 class="step__title">Placera eleverna</h4><div class="diagram">Elever</div></article>
+              <article class="step"><p class="step__index">III</p><h4 class="step__title">Exportera</h4><div class="diagram">PDF / Excel</div></article>
+            </div>
+          </div>
+
+          <div class="account">
+            <div class="account__head">
+              <h3>Mer när du loggar in</h3>
+              <p>
+                Som inloggad får du en arbetsyta som sparar dina val, öppnar fler verktyg och ger
+                dig en enkel väg att föreslå appar som skulle hjälpa i undervisningen.
+              </p>
+            </div>
+            <div class="split">
+              <div class="split__panel">
+                <p class="item__index">I</p>
+                <h4>För ditt eget arbete</h4>
+                <p>Spara klasser, grupperingar, klassrumsplaceringar, filer och inställningar.</p>
+                <p>Få tillgång till fler appar och arbetsverktyg när de öppnas för ditt konto.</p>
+              </div>
+              <div class="split__panel">
+                <p class="item__index">II</p>
+                <h4>För nästa verktyg</h4>
+                <p>Föreslå nya appar som du anser skulle underlätta ditt arbete.</p>
+                <p>Ansök om kodredigeraren om du vill bygga egna små verktyg.</p>
+              </div>
+            </div>
+          </div>
+          <p class="decision">Bästa riktningen om vi vill ha ett mer redaktionellt avsnitt och färre list-rader.</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

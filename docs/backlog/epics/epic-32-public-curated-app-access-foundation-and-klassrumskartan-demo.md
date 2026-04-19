@@ -5,7 +5,7 @@ title: "Public curated-app access foundation and Klassrumskartan demo"
 status: active
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-08
+updated: 2026-04-19
 outcome: "Skriptoteket gains a reusable public curated-app access model with explicit per-app access profiles, separate public/authenticated seams, browser-owned guest-state rules, and authenticated upgrade boundaries; Klassrumskartan becomes the first approved `public_browser_workspace_with_upgrade` consumer without weakening the existing authenticated curated-app host or owner-scoped APIs."
 dependencies:
   [
@@ -156,6 +156,15 @@ dependencies:
       SPA asset files, keeping the original shipped inline drawings as backup
       SVG assets beside the approved redesign-v5 set so future iteration and
       revert work no longer depends on reconstructing inline markup
+    - `PR-0270` is now shipped as the narrow copy-refresh follow-up grounded
+      in
+      `docs/mockups/st-32-08-landing-authenticated-value-copy-alternatives/`.
+      Alternative B was selected with a product-owner row I description tweak.
+      The featured `Klassrumskartan` copy now names PDF-or-Excel export and
+      signed-in persistence, step markers are `I`/`II`/`III`, signed-in value
+      now leads with more apps, work tools, and teacher-suggested future apps,
+      and the approved copy is locked in
+      `docs/reference/ref-public-landing-copy-lock.md`.
     - the authenticated preview footer still reuses the current in-place login
       modal seam for this launch slice, but a follow-up PR task should replace
       that overloaded signed-out auth entry with a dedicated redirect-friendly

@@ -48,6 +48,7 @@ vi.mock("vue-router", () => ({
   useRoute: () => ({
     name: "home",
     params: {},
+    query: {},
   }),
 }));
 
@@ -94,18 +95,52 @@ describe("HomeView", () => {
 
     // Featured Klassrumskartan showcase
     expect(wrapper.text()).toContain("Klassrumskartan");
-    expect(wrapper.text()).toContain("Skapa salen, placera eleverna, spara som PDF.");
+    expect(wrapper.text()).toContain(
+      "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
+    );
+    expect(wrapper.text()).toContain(
+      "Som inloggad är alla dina klasser, grupperingar och klassrumsplaceringar sparade.",
+    );
     expect(wrapper.text()).toContain("Öppna appen");
     expect(wrapper.text()).toContain("Skapa salen");
     expect(wrapper.text()).toContain("Placera eleverna");
     expect(wrapper.text()).toContain("Exportera");
 
-    // Authenticated-only preview ledger
+    // Roman-numeral step markers (I, II, III) replace the former 01/02/03.
+    const showcaseIndices = wrapper.findAll(
+      'section[class*="border-b"] p.font-mono',
+    );
+    const showcaseIndexLabels = showcaseIndices
+      .slice(0, 3)
+      .map((node) => node.text());
+    expect(showcaseIndexLabels).toEqual(["I", "II", "III"]);
+    expect(wrapper.text()).not.toContain("01");
+    expect(wrapper.text()).not.toContain("02");
+    expect(wrapper.text()).not.toContain("03");
+
+    // Authenticated-only preview — Alternative B: leads with access to more
+    // apps and work tools, surfaces that teacher suggestions can become new
+    // apps, and keeps saved work as the persistence guarantee. The code
+    // editor is no longer a ledger row on the landing page.
     expect(wrapper.text()).toContain("Mer när du loggar in");
-    expect(wrapper.text()).toContain("Spara dina inställningar och filer");
-    expect(wrapper.text()).toContain("Bygg egna verktyg i kodredigeraren");
+    expect(wrapper.text()).toContain(
+      "Få tillgång till fler appar och arbetsverktyg.",
+    );
+    expect(wrapper.text()).toContain("Fler färdiga lärarverktyg");
+    expect(wrapper.text()).toContain(
+      "Använd alla Skriptotekets appar och verktyg som finns tillgängliga.",
+    );
+    expect(wrapper.text()).toContain("Dina förslag kan bli nya appar");
+    expect(wrapper.text()).toContain(
+      "Berätta vilka arbetsmoment du vill slippa göra för hand.",
+    );
+    expect(wrapper.text()).toContain("Spara arbetet över tid");
+    expect(wrapper.text()).toContain(
+      "Kom tillbaka till klasser, filer, inställningar och placeringar.",
+    );
     expect(wrapper.text()).toContain("Kräver konto");
-    expect(wrapper.text()).toContain("Kräver ansökan");
+    expect(wrapper.text()).not.toContain("Kräver ansökan");
+    expect(wrapper.text()).not.toContain("kodredigeraren");
     expect(wrapper.text()).toContain("Skapa konto");
 
     const heroPreview = wrapper.get('img[alt="Klassrum med tavla, dörr och placerade elever"]');

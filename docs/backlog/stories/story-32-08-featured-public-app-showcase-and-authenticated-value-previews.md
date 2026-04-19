@@ -5,7 +5,7 @@ title: "Featured public-app showcase and authenticated-value previews"
 status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-08
+updated: 2026-04-19
 epic: "EPIC-32"
 dependencies:
   ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06", "ST-32-07"]
@@ -36,7 +36,9 @@ surface.
   or hero structure debates.
 - Do not use cards as the default organizing device, and do not stack or nest them. The landing
   page should feel editorial and structural rather than mobile-first/generic.
-- All Swedish copy remains provisional until the user signs it off sentence by sentence.
+- The `PR-0270` Swedish landing copy is user-approved and locked in
+  `docs/reference/ref-public-landing-copy-lock.md`; future copy changes must update that reference
+  and the focused landing tests in the same docs-as-code slice.
 - Keep the page compact and product-grounded. One strong featured public-app section plus one
   authenticated-value preview section is enough.
 - `PR-0239` shipped the current landing showcase and authenticated-preview baseline, but it
@@ -46,11 +48,17 @@ surface.
 - `PR-0247` is the narrow follow-up that converts the shipped landing showcase artwork from inline
   SVG markup into versioned SPA asset files while preserving the original shipped drawings as
   revertable backup assets next to the approved redesign set.
+- `PR-0270` is now shipped as the signed-out landing copy refresh. It selected Alternative B from
+  `docs/mockups/st-32-08-landing-authenticated-value-copy-alternatives/`, changed the
+  Klassrumskartan showcase to PDF-or-Excel export plus signed-in persistence, changed step markers
+  to `I` / `II` / `III`, and locked the current copy in
+  `docs/reference/ref-public-landing-copy-lock.md`.
 
 ## Planned PR slices
 
 - [PR-0239: ST-32-08 featured public-app showcase and authenticated-value preview surfaces](../prs/pr-0239-st-32-08-featured-public-app-showcase-and-authenticated-value-preview-surfaces.md)
 - [PR-0247: ST-32-08 landing showcase SVG asset cutover and backup preservation](../prs/pr-0247-st-32-08-landing-showcase-svg-asset-cutover-and-backup-preservation.md)
+- [PR-0270: ST-32-08 landing authenticated-value copy refresh](../prs/pr-0270-st-32-08-landing-authenticated-value-copy-refresh.md)
 
 ## References
 

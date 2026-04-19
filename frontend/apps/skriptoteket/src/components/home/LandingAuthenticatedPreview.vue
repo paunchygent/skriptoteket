@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Authenticated-only value preview ledger.
+ * Authenticated-only value preview section (ST-32-08, Alternative B).
  *
- * Quiet bordered list placed below the featured public-app showcase. Each row
- * carries an explicit "Kräver konto" / "Kräver ansökan" tag so visitors do not
- * mistake an authenticated capability for another public route. The trailing
+ * Placed below the featured public-app showcase. Leads with access to more
+ * apps and work tools as the primary signed-in value, surfaces that teacher
+ * suggestions can become new apps, and keeps saved work (classes, files,
+ * settings, classroom placements) as the persistence guarantee. The trailing
  * "Logga in" / "Skapa konto" actions open shared HuleEdu ceremonies directly.
  */
 
@@ -15,6 +16,7 @@ import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
 
 const route = useRoute();
+
 const loginUrl = computed(() => {
   const continuation = resolveLandingAuthContinuation(route);
   return sharedAuthCeremonyUrl({
@@ -33,21 +35,26 @@ const registerUrl = computed(() => {
 
 const rows = [
   {
-    index: "01",
-    term: "Spara dina inställningar och filer",
+    index: "I",
+    term: "Fler färdiga lärarverktyg",
     description:
-      "Behåll dina val och dokument mellan besök, så att du hittar tillbaka till dem.",
+      "Använd alla Skriptotekets appar och verktyg som finns tillgängliga.",
     tag: "Kräver konto",
   },
   {
-    index: "02",
-    term: "Bygg egna verktyg i kodredigeraren",
+    index: "II",
+    term: "Dina förslag kan bli nya appar",
+    description: "Berätta vilka arbetsmoment du vill slippa göra för hand.",
+    tag: "Kräver konto",
+  },
+  {
+    index: "III",
+    term: "Spara arbetet över tid",
     description:
-      "Skriv egna små appar i Skriptoteket. Åtkomsten ansöker du om efter registreringen.",
-    tag: "Kräver ansökan",
+      "Kom tillbaka till klasser, filer, inställningar och placeringar.",
+    tag: "Kräver konto",
   },
 ] as const;
-
 </script>
 
 <template>
@@ -61,8 +68,8 @@ const rows = [
         aria-hidden="true"
       />
       <p class="mt-6 text-base leading-7 text-navy">
-        Logga in om du vill spara dina inställningar och filer. Du kan också ansöka om att bygga
-        egna verktyg i kodredigeraren.
+        Få tillgång till fler appar och arbetsverktyg. Du kan också ge förslag på nya appar som du
+        anser skulle underlätta ditt arbete.
       </p>
     </div>
 
