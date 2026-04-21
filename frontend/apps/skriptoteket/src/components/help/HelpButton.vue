@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * Shared help drawer opener.
+ *
+ * Relationships:
+ * - records the triggering button for drawer focus restoration
+ * - delegates global open/close state to `useHelp`
+ */
 import { useHelp } from "./useHelp";
 
 const props = withDefaults(
@@ -11,6 +18,11 @@ const props = withDefaults(
 );
 
 const { isOpen, toggle } = useHelp();
+
+function onToggle(event: MouseEvent): void {
+  const opener = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+  toggle(opener);
+}
 </script>
 
 <template>
@@ -20,7 +32,7 @@ const { isOpen, toggle } = useHelp();
     :aria-expanded="isOpen"
     aria-controls="help-panel"
     aria-haspopup="dialog"
-    @click="toggle"
+    @click="onToggle"
   >
     {{ props.label }}
   </button>

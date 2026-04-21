@@ -6,7 +6,7 @@
  * can temporarily override the route via `helpContext` without introducing a
  * second help surface.
  */
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import type { HelpTopicId } from "./helpTopicCatalog";
 
 export { resolveHelpTopic, type HelpTopicId } from "./helpTopicCatalog";
@@ -14,18 +14,65 @@ export { resolveHelpTopic, type HelpTopicId } from "./helpTopicCatalog";
 const isOpen = ref(false);
 const activeTopic = ref<HelpTopicId | null>(null);
 const helpContext = ref<string | null>(null);
+const openerElement = ref<HTMLElement | null>(null);
+let focusRestoreGeneration = 0;
+
+type CloseHelpOptions = {
+  restoreFocus?: boolean;
+};
+
+function rememberOpener(opener?: HTMLElement | null): void {
+  focusRestoreGeneration += 1;
+
+  if (opener) {
+    openerElement.value = opener;
+    return;
+  }
+
+  if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+    openerElement.value = document.activeElement;
+  }
+}
+
+async function restoreOpenerFocus(generation: number): Promise<void> {
+  const opener = openerElement.value;
+  openerElement.value = null;
+
+  await nextTick();
+
+  if (
+    generation === focusRestoreGeneration &&
+    opener &&
+    typeof document !== "undefined" &&
+    document.contains(opener)
+  ) {
+    opener.focus({ preventScroll: true });
+  }
+}
 
 export function useHelp() {
-  function open(): void {
+  function open(opener?: HTMLElement | null): void {
+    rememberOpener(opener);
     isOpen.value = true;
   }
 
-  function close(): void {
+  function close(options: CloseHelpOptions = {}): void {
+    const restoreGeneration = focusRestoreGeneration + 1;
+    focusRestoreGeneration = restoreGeneration;
     isOpen.value = false;
+    if (options.restoreFocus ?? true) {
+      void restoreOpenerFocus(restoreGeneration);
+    } else {
+      openerElement.value = null;
+    }
   }
 
-  function toggle(): void {
-    isOpen.value = !isOpen.value;
+  function toggle(opener?: HTMLElement | null): void {
+    if (isOpen.value) {
+      close();
+      return;
+    }
+    open(opener);
   }
 
   function showIndex(): void {

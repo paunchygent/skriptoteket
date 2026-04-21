@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+/**
+ * Suggestion submission view.
+ *
+ * Relationships:
+ * - loads catalog taxonomy for profession/category targeting
+ * - submits new tool suggestions through the protected suggestions API
+ * - uses shared micro-help for field-level approved guidance
+ */
+import { onMounted, ref } from "vue";
 
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import { useToast } from "../composables/useToast";
+import MicroHelp from "../components/help/MicroHelp.vue";
 import SystemMessage from "../components/ui/SystemMessage.vue";
-import { IconHelp, IconX } from "../components/icons";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -16,9 +24,6 @@ const categories = ref<CategoryItem[]>([]);
 
 const title = ref("");
 const description = ref("");
-const showHelp = ref(false);
-const helpTriggerRef = ref<HTMLButtonElement | null>(null);
-const helpPopoverRef = ref<HTMLDivElement | null>(null);
 const selectedProfessions = ref<string[]>([]);
 const selectedCategories = ref<string[]>([]);
 
@@ -28,32 +33,6 @@ const loadErrorMessage = ref<string | null>(null);
 const formErrorMessage = ref<string | null>(null);
 
 const toast = useToast();
-
-function closeHelp(): void {
-  showHelp.value = false;
-}
-
-function toggleHelp(): void {
-  showHelp.value = !showHelp.value;
-}
-
-function handleClickOutside(event: MouseEvent): void {
-  if (!showHelp.value) return;
-  const target = event.target as Node;
-  if (
-    helpTriggerRef.value?.contains(target) ||
-    helpPopoverRef.value?.contains(target)
-  ) {
-    return;
-  }
-  closeHelp();
-}
-
-function handleEscape(event: KeyboardEvent): void {
-  if (event.key === "Escape" && showHelp.value) {
-    closeHelp();
-  }
-}
 
 async function loadTaxonomy(): Promise<void> {
   isLoading.value = true;
@@ -137,13 +116,6 @@ function toggleSelection(list: string[], value: string): string[] {
 
 onMounted(() => {
   void loadTaxonomy();
-  document.addEventListener("click", handleClickOutside);
-  document.addEventListener("keydown", handleEscape);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", handleClickOutside);
-  document.removeEventListener("keydown", handleEscape);
 });
 </script>
 
@@ -201,48 +173,14 @@ onUnmounted(() => {
               class="text-sm font-semibold text-navy"
             >Beskrivning</label>
 
-            <button
-              ref="helpTriggerRef"
-              type="button"
-              class="help-trigger"
-              aria-label="Visa hjälp"
-              :aria-expanded="showHelp"
-              aria-controls="suggestion-description-help"
-              @click.stop="toggleHelp"
+            <MicroHelp
+              id="suggestion-description-help"
+              label="Visa hjälp för beskrivning"
+              title="Beskrivning"
             >
-              <IconHelp :size="16" />
-            </button>
-
-            <Transition name="popover">
-              <div
-                v-if="showHelp"
-                id="suggestion-description-help"
-                ref="helpPopoverRef"
-                class="help-popover"
-                role="tooltip"
-              >
-                <button
-                  type="button"
-                  class="help-popover-close"
-                  aria-label="Stäng hjälp"
-                  @click="closeHelp"
-                >
-                  <IconX :size="14" />
-                </button>
-
-                <p class="font-semibold text-navy mb-2">Tips för en bra beskrivning:</p>
-                <ul class="list-disc pl-4 space-y-1">
-                  <li>Vilket problem vill du lösa?</li>
-                  <li>Vilken typ av material matar du in?</li>
-                  <li>Vad vill du få tillbaka?</li>
-                  <li>Hur gör du uppgiften idag?</li>
-                </ul>
-
-                <p class="mt-3 pt-3 border-t border-navy/10 text-navy/60 italic">
-                  Exempel: "Jag vill kunna ladda upp en klasslista och få ut slumpmässiga grupper."
-                </p>
-              </div>
-            </Transition>
+              Vad ska verktyget göra, för vem, och när i arbetet används det?
+              Exempel på indata och förväntat resultat hjälper mycket.
+            </MicroHelp>
           </div>
 
           <textarea
@@ -327,86 +265,3 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.help-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
-  color: var(--huleedu-navy-60);
-  border-radius: var(--huleedu-radius-sm);
-  transition:
-    color var(--huleedu-duration-default) var(--huleedu-ease-default),
-    background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
-}
-
-.help-trigger:hover {
-  color: var(--huleedu-burgundy);
-  background-color: var(--huleedu-burgundy-10);
-}
-
-.help-trigger:focus-visible {
-  outline: 2px solid var(--huleedu-burgundy-40);
-  outline-offset: 2px;
-}
-
-.help-popover {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
-  z-index: 50;
-  width: max-content;
-  max-width: min(20rem, calc(100vw - 2rem));
-  padding: 1rem;
-  padding-right: 2.5rem;
-  background-color: #fff;
-  border: 1px solid var(--huleedu-navy);
-  box-shadow: 4px 4px 0 var(--huleedu-navy);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--huleedu-navy-80);
-}
-
-.help-popover-close {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  display: grid;
-  place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--huleedu-radius-sm);
-  background: transparent;
-  color: var(--huleedu-navy-60);
-  cursor: pointer;
-  transition:
-    color var(--huleedu-duration-default) var(--huleedu-ease-default),
-    border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
-}
-
-.help-popover-close:hover {
-  color: var(--huleedu-burgundy);
-  border-color: var(--huleedu-navy);
-}
-
-.help-popover-close:focus-visible {
-  outline: 2px solid var(--huleedu-burgundy-40);
-  outline-offset: 2px;
-}
-
-.popover-enter-active,
-.popover-leave-active {
-  transition:
-    opacity 150ms var(--huleedu-ease-default),
-    transform 150ms var(--huleedu-ease-default);
-}
-
-.popover-enter-from,
-.popover-leave-to {
-  opacity: 0;
-  transform: translateY(-0.25rem);
-}
-</style>

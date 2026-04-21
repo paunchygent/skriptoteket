@@ -42,7 +42,7 @@ def main() -> None:
         expect(help_btn).to_be_visible()
         help_btn.click()
 
-        note = page.locator("#suggestion-description-help")
+        note = page.locator("#suggestion-description-help-panel")
         expect(note).to_be_visible()
         page.screenshot(path=str(artifacts_dir / "suggestion-new-help.png"), full_page=True)
 

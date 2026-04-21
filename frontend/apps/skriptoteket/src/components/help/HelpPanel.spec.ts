@@ -167,6 +167,68 @@ describe("HelpPanel", () => {
     wrapper.unmount();
   });
 
+  it("closes deterministically when Escape is pressed", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await flushPromises();
+
+    expect(help.isOpen.value).toBe(false);
+    expect(document.body.querySelector("#help-panel")).toBeNull();
+
+    wrapper.unmount();
+  });
+
+  it("keeps backdrop click closing the drawer", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    const backdrop = document.body.querySelector(".help-backdrop");
+    expect(backdrop).not.toBeNull();
+    backdrop?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await flushPromises();
+
+    expect(help.isOpen.value).toBe(false);
+    expect(document.body.querySelector("#help-panel")).toBeNull();
+
+    wrapper.unmount();
+  });
+
+  it("returns focus to the opener when Escape closes the drawer", async () => {
+    const help = useHelp();
+    help.isOpen.value = false;
+
+    const opener = document.createElement("button");
+    opener.type = "button";
+    opener.textContent = "Hjälp";
+    document.body.appendChild(opener);
+    opener.focus();
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    help.open(opener);
+    await flushPromises();
+    expect(document.body.querySelector("#help-panel")).not.toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await flushPromises();
+
+    expect(help.isOpen.value).toBe(false);
+    expect(document.activeElement).toBe(opener);
+
+    wrapper.unmount();
+    opener.remove();
+  });
+
   it("keeps the help index link lists border-only inside the shadowed drawer", async () => {
     routeMocks.route.name = "home";
     routeMocks.route.fullPath = "/";

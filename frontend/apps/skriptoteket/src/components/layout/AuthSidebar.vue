@@ -38,9 +38,10 @@ function onLogout(): void {
 
 const { open: openHelp } = useHelp();
 
-function onHelp(): void {
+function onHelp(event: MouseEvent): void {
+  const opener = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
   emit("close");
-  openHelp();
+  openHelp(opener);
 }
 </script>
 

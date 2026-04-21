@@ -6,7 +6,7 @@
  * route and nested workspace context, while keeping the signed-out public
  * landing page on the logged-out index instead of authenticated dashboard help.
  */
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import HelpIndex from "./HelpIndex.vue";
@@ -43,11 +43,23 @@ function prefetchDefaultTopics(): void {
   prefetchHelpTopics(["home", "browse_professions", "browse_categories", "browse_tools"]);
 }
 
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === "Escape" && isOpen.value) {
+    event.stopPropagation();
+    close();
+  }
+}
+
 onMounted(() => {
+  document.addEventListener("keydown", handleKeydown);
   if (isOpen.value) {
     syncToRoute();
     prefetchDefaultTopics();
   }
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeydown);
 });
 
 watch(
@@ -85,7 +97,7 @@ watch(
       <div
         v-if="isOpen"
         class="help-backdrop fixed inset-0 bg-navy/40"
-        @click="close"
+        @click="close()"
       />
     </Transition>
 
@@ -109,7 +121,7 @@ watch(
             type="button"
             class="w-10 h-10 border border-navy text-navy text-xl leading-none flex items-center justify-center hover:bg-navy hover:text-canvas transition-colors"
             aria-label="Stäng"
-            @click="close"
+            @click="close()"
           >
             &times;
           </button>
