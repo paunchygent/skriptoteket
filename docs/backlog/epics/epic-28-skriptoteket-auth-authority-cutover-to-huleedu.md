@@ -99,6 +99,7 @@ dependencies:
 - [PR-0254: ST-28-04 cross-app auth cutover smoke and runbook proof](../prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md)
 - [PR-0263: ST-28-04 loopback origin parity for auth cutover closeout](../prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md)
 - [PR-0264: ST-28-10 auth outcome observability for HuleEdu cutover](../prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md)
+- [PR-0272: ST-28-04 HuleEdu internal identity header spelling remediation](../prs/pr-0272-st-28-04-huleedu-internal-identity-header-spelling-remediation.md)
 
 ## Dependencies
 

@@ -98,3 +98,12 @@ Final two-lane retained artifact after `PR-0263` loopback-origin parity:
 ```
 
 The final manifest records both `localhost` and `127` lane summaries as `status=ok`.
+
+## Production Regression Follow-up (2026-04-25)
+
+`PR-0272` is a post-closeout remediation slice for a signed internal identity
+transport spelling drift found in production after HuleEdu corrected its header
+names from `X-Huledu-Identity-*` to `X-HuleEdu-Identity-*`. The follow-up is
+scoped to Skriptoteket's verifier, proof helpers, tests, and docs inventory. It
+must not change projection keys, local RBAC, provisioning policy, CSRF/logout
+ownership, or production protected API host policy.
