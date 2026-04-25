@@ -129,3 +129,19 @@ boundary. The dangerous failure modes are:
 - docs continue to instruct operators to look for the old header names;
 - a broad compatibility fix accepts arbitrary browser-supplied identity headers;
 - a same-origin direct protected API route is accidentally certified as production policy.
+
+## Implementation Notes
+
+Runtime and active proof-helper inventory after the remediation:
+
+- `src/`, active app-continuation route tests, and active Playwright signing helpers now use
+  corrected `X-HuleEdu-Identity-*` transport names.
+- `tests/unit/web/test_profile_app_continuation_context_api.py` intentionally retains
+  `X-Huledu-Identity-*` only inside a regression that remaps an otherwise valid signed context to
+  the old spelling and proves the verifier rejects it before projection lookup.
+- Lowercase `huledu-reboot` and `/home/paunchygent/apps/huledu/...` occurrences remain historical
+  checkout/key-mount path defaults in `.env.example`, compose files, proof scripts, and matching
+  unit tests. They are not header spellings and have no runtime transport-header effect.
+- Completed historical docs and reviews for `PR-0253`, `PR-0255`, `PR-0258`, and `PR-0262` still
+  quote the spelling that existed when those slices shipped. `PR-0272` and `ST-28-04` now carry
+  the corrective current-state note.

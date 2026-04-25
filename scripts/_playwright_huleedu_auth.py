@@ -262,10 +262,10 @@ def signed_identity_headers(
         hashes.SHA256(),
     )
     return {
-        "X-Huledu-Identity-Context-Version": "1",
-        "X-Huledu-Identity-Context": encoded_context,
-        "X-Huledu-Identity-Key-Id": DEFAULT_SIGNING_KEY_ID,
-        "X-Huledu-Identity-Signature": f"rs256={_b64url_encode(signature)}",
+        "X-HuleEdu-Identity-Context-Version": "1",
+        "X-HuleEdu-Identity-Context": encoded_context,
+        "X-HuleEdu-Identity-Key-Id": DEFAULT_SIGNING_KEY_ID,
+        "X-HuleEdu-Identity-Signature": f"rs256={_b64url_encode(signature)}",
     }
 
 
