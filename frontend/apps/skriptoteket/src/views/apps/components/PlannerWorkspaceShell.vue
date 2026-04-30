@@ -19,7 +19,6 @@ import PlannerRulesWorkspacePane from "./PlannerRulesWorkspacePane.vue";
 import PlannerSeatingSettingsDrawer from "./PlannerSeatingSettingsDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
-import PlannerShareLinksPanel from "./PlannerShareLinksPanel.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import PlannerWorkspaceModeSurface from "./PlannerWorkspaceModeSurface.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
@@ -542,8 +541,11 @@ watch(
             :export-status-label="groupingExportStatusLabel"
             :export-error-message="groupingExportErrorMessage"
             :share-busy="groupingShareBusy"
+            :share-loading="groupingShareLoading"
             :share-status-label="groupingShareStatusLabel"
             :share-error-message="groupingShareErrorMessage"
+            :revoking-share-id="groupingShareRevokingId"
+            :shares="groupingShares"
             :show-share-link-action="true"
             @change-grouping-roster="changeGroupingRoster($event)"
             @new-grouping-draft="startNewGroupingDraft"
@@ -554,14 +556,6 @@ watch(
             @export-default="emit('export-grouping-default')"
             @export-option="emit('export-grouping-option', $event)"
             @share-link="emit('share-grouping-link')"
-          />
-        </template>
-        <template #after-toolbar>
-          <PlannerShareLinksPanel
-            :shares="groupingShares"
-            :loading="groupingShareLoading"
-            :copied-share-id="groupingShareCopiedId"
-            :revoking-share-id="groupingShareRevokingId"
             @copy-share="emit('copy-grouping-share', $event)"
             @revoke-share="emit('revoke-grouping-share', $event)"
           />
@@ -584,14 +578,19 @@ watch(
             :export-status-label="seatingExportStatusLabel"
             :export-error-message="seatingExportErrorMessage"
             :share-busy="seatingShareBusy"
+            :share-loading="seatingShareLoading"
             :share-status-label="seatingShareStatusLabel"
             :share-error-message="seatingShareErrorMessage"
+            :revoking-share-id="seatingShareRevokingId"
+            :shares="seatingShares"
             :show-share-link-action="true"
             @change-seating-template="changeSeatingTemplate($event)"
             @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
             @export-default="emit('export-seating-default')"
             @export-option="emit('export-seating-option', $event)"
             @share-link="emit('share-seating-link')"
+            @copy-share="emit('copy-seating-share', $event)"
+            @revoke-share="emit('revoke-seating-share', $event)"
             @edit-roster="emit('edit-roster')"
             @edit-current-template="editCurrentTemplate"
             @open-settings="openSeatingSettingsDrawer"
@@ -602,16 +601,6 @@ watch(
         <PlannerSeatingWorkspacePane
           :selected-template-id="pendingSeatingTemplateId"
         />
-        <template #after-toolbar>
-          <PlannerShareLinksPanel
-            :shares="seatingShares"
-            :loading="seatingShareLoading"
-            :copied-share-id="seatingShareCopiedId"
-            :revoking-share-id="seatingShareRevokingId"
-            @copy-share="emit('copy-seating-share', $event)"
-            @revoke-share="emit('revoke-seating-share', $event)"
-          />
-        </template>
       </PlannerWorkspaceModeSurface>
 
       <PlannerRulesWorkspacePane

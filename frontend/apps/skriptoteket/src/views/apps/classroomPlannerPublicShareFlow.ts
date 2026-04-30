@@ -13,6 +13,7 @@ import { isApiError } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
+import type { ClassroomPlannerShareArtifact } from "./classroomPlannerShareApi";
 import type { PlanDraft, PlanDraftKind } from "./classroomPlannerTypes";
 import type { PlannerTransitionResult } from "./plannerTransitionPolicies";
 import type { CreatedPublicGuestShare } from "./classroomPlannerPublicShareApi";
@@ -213,6 +214,7 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
   const isBusy = ref(false);
   const statusLabel = ref<string | null>(null);
   const errorMessage = ref<string | null>(null);
+  const shares = ref<ClassroomPlannerShareArtifact[]>([]);
 
   const isDraftInScope = computed(() => {
     return unref(options.plannerState.draft)?.draft_kind === options.draftKind;
@@ -280,6 +282,13 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
         revokeSecret: created.public_revoke_secret,
       });
       clearPendingOperation(snapshot, options.draftKind, draftAfterFlush.revision);
+      shares.value = [
+        {
+          ...created.artifact,
+          public_path: created.artifact.public_path ?? created.public_path,
+          public_url: created.artifact.public_url ?? created.public_url,
+        },
+      ];
 
       const copied = await copyTextToClipboard(created.public_url);
       statusLabel.value = copied ? null : created.public_url;
@@ -297,11 +306,32 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
     }
   }
 
+  async function copyShareLink(share: ClassroomPlannerShareArtifact): Promise<void> {
+    if (!share.public_url) {
+      errorMessage.value = options.messages.fallbackMessage;
+      toast.warning(options.messages.fallbackMessage);
+      return;
+    }
+
+    try {
+      const copied = await copyTextToClipboard(share.public_url);
+      statusLabel.value = copied ? null : share.public_url;
+      errorMessage.value = null;
+      toast.success(options.messages.copiedMessage);
+    } catch (error: unknown) {
+      const message = normalizeShareError(error, options.messages.fallbackMessage);
+      errorMessage.value = message;
+      toast.warning(message);
+    }
+  }
+
   return {
     isBusy,
     statusLabel,
     errorMessage,
     isDraftInScope,
+    shares,
     startShare,
+    copyShareLink,
   };
 }

@@ -1,8 +1,8 @@
 ---
 type: pr
 id: PR-0273
-title: "ST-26-06 public guest Klassrumskartan share links with TTL and supersede"
-status: done
+title: "ST-26-06 public guest Klassrumskartan share links with TTL, supersede, and browser-owned revoke"
+status: in_progress
 owners: "agents"
 created: 2026-04-30
 updated: 2026-04-30
@@ -29,6 +29,9 @@ acceptance_criteria:
   - "Given a guest later signs in, when authenticated guest-upgrade runs, then guest share links do not silently become account-owned artifacts unless a later explicit story adds that migration."
   - "Given public share creation stores anonymous artifacts, when limits are enforced, then share-specific request-byte caps, rendered-size caps, creation rate limits, active-share ceilings, purge cadence, and redacted metrics/log fields are tested."
   - "Given a browser retries or double-clicks `Dela länk`, when the same client operation is replayed, then share creation and previous-link supersede behavior are idempotent and race-safe."
+  - "Given the browser still holds the current public guest share path and revoke secret, when the guest chooses remove/revoke from the public share popover, then the public helper revokes only that browser-owned link and the link disappears from the active popover list."
+  - "Given public guest revoke/remove is implemented, when API routes are registered, then it stays on a narrow cookie-agnostic public helper route and does not add account-style share listing, dashboards, owner-scoped APIs, or server-side discovery of other guest links."
+  - "Given the public guest removes a share link, when the public token URL is opened afterward, then the route handles it as revoked/unavailable and no longer renders the shared classroom artifact as active."
 ---
 
 ## Problem
@@ -44,6 +47,12 @@ boundary, reusing the authenticated share artifact/read model while applying a
 guest-safe TTL ceiling, abuse controls, and browser-held supersede/revoke
 behavior. `ADR-0084` is accepted; implementation must stay inside that accepted
 exception and the retained `REV-ST-26-06` guardrails.
+
+Reopened 2026-04-30 after the share-management UI review: the original
+implementation shipped create/supersede but did not expose a current-link
+remove/revoke action for public guest users. That gap is not a defensible UX
+decision; it is a missing public helper lifecycle action under the same
+browser-held revoke-secret model.
 
 ## Non-goals
 
@@ -69,15 +78,23 @@ exception and the retained `REV-ST-26-06` guardrails.
    snapshot/draft kind so the server can revoke/supersede the older guest link.
 6. Store latest public guest share metadata locally in the browser per snapshot
    plus draft kind.
-7. Add guest export-menu UI for `Dela länk`, copy-link feedback, expiry
+7. Add a narrow public guest revoke helper that accepts the current
+   `public_path` plus browser-held `revoke_secret`, hashes both values
+   server-side, revokes only the matching active `public_guest` artifact, and
+   ignores ambient cookies or account identity.
+8. Add guest export-menu UI for `Dela länk`, copy-link feedback, expiry
    messaging, and newest-link replacement behavior.
-8. Add client operation ids or idempotency keys so retries, double-clicks, and
+9. Wire the public share popover to the browser-owned active share artifact:
+   created links appear immediately, copy uses the same row affordance as the
+   authenticated popover, remove/revoke calls the public helper, and successful
+   removal clears the row instead of showing an archive of dead links.
+10. Add client operation ids or idempotency keys so retries, double-clicks, and
    two-tab races do not create contradictory "newest link" state.
-9. Model previous-link supersede as an atomic conditional update keyed by
+11. Model previous-link supersede as an atomic conditional update keyed by
    previous token hash plus revoke-secret hash. Invalid previous secrets should
    not block new share creation, but must be logged through redacted reason
    codes and must not claim the older link was revoked.
-10. Add share-specific abuse-control settings and repository constraints:
+12. Add share-specific abuse-control settings and repository constraints:
     - maximum request bytes
     - maximum rendered artifact bytes
     - maximum share creations per IP/window
@@ -85,9 +102,9 @@ exception and the retained `REV-ST-26-06` guardrails.
       where feasible
     - expired-row purge command or scheduled operator path
     - metrics/log counters that avoid raw class, room, group, or student values
-11. Ensure public helper logging/metrics use `public_helper_*` reason codes and
+13. Ensure public helper logging/metrics use `public_helper_*` reason codes and
    do not retain raw student payloads.
-12. Render from the canonical validated presentation model created by the
+14. Render from the canonical validated presentation model created by the
     export/snapshot materialization path. Persist renderer version,
     presentation schema version, presentation hash or immutable provenance, and
     content hash; never accept browser-supplied HTML, CSS, or preview metadata
@@ -112,11 +129,21 @@ exception and the retained `REV-ST-26-06` guardrails.
 - Backend tests for retry idempotency, invalid previous secret fallback,
   double-create races, and active-link counting for the same snapshot/draft
   kind.
+- Backend/web tests for public guest current-link revoke: matching
+  `public_path + revoke_secret` revokes the active public guest artifact,
+  invalid secrets do not revoke, ambient sessions are ignored, authenticated or
+  owner-scoped APIs are not used, and revoked token URLs no longer render as
+  active.
 - Frontend tests for guest export menu placement, snapshot flush before share
   creation, copy-link UI, previous-link revoke payload, and
   missing-revoke-secret fallback.
+- Frontend tests for the public share popover showing the newly created share
+  immediately, using the aligned authenticated popover row/action layout,
+  invoking public remove/revoke for the current browser-owned link, and removing
+  the row after success without archive/dead-link UI.
 - Anonymous browser proof for public grouping and seating share creation,
-  opening links, and confirming no authenticated API calls occur.
+  popover copy/remove, opening links before and after revoke, and confirming no
+  authenticated API calls occur.
 - Regression proof that public PDF/Excel export behavior is unchanged.
 - `pdm run lint`
 - `pdm run typecheck`
@@ -125,6 +152,11 @@ exception and the retained `REV-ST-26-06` guardrails.
 - `git diff --check`
 
 ## Implementation Notes
+
+Reopen note (2026-04-30): the shipped state below remains the baseline for
+create/supersede, but the slice is reopened to add explicit public
+current-link revoke/remove. The follow-up must not create a public guest share
+dashboard or server-side listing surface.
 
 - Added dedicated public guest share helper routes for grouping and seating under
   `/api/v1/public/apps/classroom.group-seating-studio/*/share`.
@@ -143,12 +175,9 @@ exception and the retained `REV-ST-26-06` guardrails.
 
 ## Verification
 
-- Retained implementation review: `REV-PR-0273` requests changes until a
-  reviewer accepts the added PostgreSQL integration proof for the advisory-lock
-  create/reuse/supersede path under real concurrent sessions. The original
-  unit/flow-level remediation for race-safe create/reuse/supersede semantics,
-  previous-link metadata across edits, retry idempotency, and public guest
-  provenance validation is in place.
+- Retained implementation review: `REV-PR-0273` approved the remediation,
+  including PostgreSQL integration proof for the advisory-lock
+  create/reuse/supersede path under independent concurrent sessions.
 - `pdm run lint`
 - `pdm run typecheck`
 - `pdm run fe-type-check`

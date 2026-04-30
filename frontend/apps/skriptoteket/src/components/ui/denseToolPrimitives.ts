@@ -115,7 +115,7 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
   } = options;
 
   const base =
-    "inline-flex items-center justify-center gap-1.5 border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
   const sizeClass =
     size === "icon"
       ? "h-9 w-9 p-0 text-[12px]"

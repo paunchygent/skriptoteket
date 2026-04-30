@@ -20,12 +20,14 @@ import {
   type DenseStatusTone,
 } from "../../../components/ui";
 import type { SeatingExportOption } from "../classroomPlannerExportApi";
+import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerExportActionGroup, {
   type PlannerExportOption,
   type PlannerExportOptionValue,
 } from "./PlannerExportActionGroup.vue";
+import PlannerShareLinksPanel from "./PlannerShareLinksPanel.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
@@ -42,12 +44,16 @@ const props = withDefaults(
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
     shareBusy?: boolean;
+    shareLoading?: boolean;
     shareStatusLabel?: string | null;
     shareErrorMessage?: string | null;
+    revokingShareId?: string | null;
+    shares?: ClassroomPlannerShareArtifact[];
     showHistoryAction?: boolean;
     showSmartControls?: boolean;
     showExportActions?: boolean;
     showShareLinkAction?: boolean;
+    showShareRevokeAction?: boolean;
   }>(),
   {
     availableTemplates: () => [],
@@ -58,12 +64,16 @@ const props = withDefaults(
     exportStatusLabel: null,
     exportErrorMessage: null,
     shareBusy: false,
+    shareLoading: false,
     shareStatusLabel: null,
     shareErrorMessage: null,
+    revokingShareId: null,
+    shares: () => [],
     showHistoryAction: true,
     showSmartControls: true,
     showExportActions: true,
     showShareLinkAction: false,
+    showShareRevokeAction: true,
   },
 );
 
@@ -77,6 +87,8 @@ const emit = defineEmits<{
   (e: "export-default"): void;
   (e: "export-option", option: SeatingExportOption): void;
   (e: "share-link"): void;
+  (e: "copy-share", share: ClassroomPlannerShareArtifact): void;
+  (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
 }>();
 
 const plannerState = useClassroomState();
@@ -162,15 +174,6 @@ const exportOptions = computed<PlannerExportOption[]>(() => [
     label: "Excel (.xlsx)",
     option: "xlsx",
   },
-  ...(props.showShareLinkAction
-    ? [
-        {
-          id: "share",
-          label: "Dela länk",
-          action: "share-link",
-        } satisfies PlannerExportOption,
-      ]
-    : []),
 ]);
 const {
   hiddenContributionIds,
@@ -509,11 +512,25 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       <template #secondary>
         <PlannerExportActionGroup
           v-if="showExportActions"
-          :busy="exportBusy || shareBusy"
+          :busy="exportBusy"
           :options="exportOptions"
           @export-default="emit('export-default')"
           @export-option="handleExportOption"
-          @share-link="emit('share-link')"
+        />
+        <PlannerShareLinksPanel
+          v-if="showShareLinkAction"
+          :shares="shares"
+          :loading="shareLoading"
+          :busy="shareBusy"
+          :status-label="shareStatusLabel"
+          :error-message="shareErrorMessage"
+          :revoking-share-id="revokingShareId"
+          :show-revoke-action="showShareRevokeAction"
+          trigger-test-id="seating-share-trigger"
+          panel-test-id="seating-share-management"
+          @create-share="emit('share-link')"
+          @copy-share="emit('copy-share', $event)"
+          @revoke-share="emit('revoke-share', $event)"
         />
         <UiDenseStatusPill
           v-if="showExportActions && exportStatus"

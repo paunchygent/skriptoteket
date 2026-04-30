@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0273
 title: "Review: PR-0273 public guest share links implementation"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-04-30
 updated: 2026-04-30
@@ -22,12 +22,11 @@ links:
 
 ## TL;DR
 
-`PR-0273` is not implementation-approved yet. The original four blockers around
-race-safe share creation, previous-link supersede after edits, frontend retry
-idempotency, and public guest provenance validation are remediated, and the
-PostgreSQL advisory-lock path now has independent-session integration proof.
-The retained review remains `changes_requested` until that remediation is
-independently re-reviewed.
+`PR-0273` is implementation-approved after re-review. The original four
+blockers around race-safe share creation, previous-link supersede after edits,
+frontend retry idempotency, and public guest provenance validation are
+remediated, and the PostgreSQL advisory-lock path now has accepted
+independent-session integration proof.
 
 ## Problem Statement
 
@@ -43,8 +42,7 @@ runtime guarantees, not whether the planning surface was approved.
 
 ## Proposed Solution
 
-Keep the public guest helper/read model. The required remediation is implemented
-and ready for independent re-review:
+Keep the public guest helper/read model. The required remediation is accepted:
 
 - make create-or-reuse, active-limit enforcement, and previous-link supersede a
   single race-safe persistence operation
@@ -82,7 +80,7 @@ and ready for independent re-review:
 | Accept remediated public guest artifact validation | `PUBLIC_GUEST` commands reject owner, draft, roster, and template provenance ids. | [x] |
 | Keep the public helper route family as the right boundary | Dedicated public helper routes are the correct route family for this slice | [x] |
 | Keep the 60-day TTL and hashed revoke-secret model | The model matches the accepted `ADR-0084` exception when fixed | [x] |
-| Accept PostgreSQL advisory-lock proof coverage | The implementation depends on `pg_advisory_xact_lock(...)`; independent-session PostgreSQL proof has been added and is pending reviewer acceptance. | [ ] |
+| Accept PostgreSQL advisory-lock proof coverage | The implementation depends on `pg_advisory_xact_lock(...)`; independent-session PostgreSQL proof now covers replay, supersede, and active-limit enforcement. | [x] |
 
 ## Review Checklist
 
@@ -216,7 +214,7 @@ and ready for independent re-review:
 - [x] Accept remediated public guest artifact validation
 - [x] Keep the public helper route family as the right boundary
 - [x] Keep the 60-day TTL and hashed revoke-secret model
-- [ ] Accept PostgreSQL advisory-lock proof coverage
+- [x] Accept PostgreSQL advisory-lock proof coverage
 
 ### Verification Run During Review
 
@@ -353,3 +351,38 @@ Verification:
 
 - `pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py`
   - passed, 5 tests
+
+## Final Re-Review Feedback
+
+**Reviewer:** `lead-developer`
+**Date:** `2026-04-30`
+**Verdict:** `approved`
+
+### Findings
+
+None. The PostgreSQL advisory-lock proof blocker is closed.
+
+### Closure Notes
+
+- `tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py`
+  uses the migrated PostgreSQL test fixture and independent `AsyncSession`
+  transactions for concurrent repository calls.
+- The integration proof covers same-client-operation replay, two-tab supersede
+  with the same previous token/revoke secret, and active-limit enforcement for
+  the same guest snapshot fingerprint.
+- The earlier unit and frontend flow proofs remain green.
+
+### Final Verification
+
+- `pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py`
+  - passed, 5 tests
+- `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/web/test_public_apps_classroom_planner_shares.py`
+  - passed, 18 tests
+- `pdm run fe-test -- --run src/views/apps/classroomPlannerPublicShareFlow.spec.ts src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/usePublicGroupingExportFlow.spec.ts src/views/apps/usePublicSeatingExportFlow.spec.ts`
+  - passed, 14 tests
+- `pdm run typecheck`
+  - passed
+- `pdm run fe-type-check`
+  - passed
+- `pdm run fe-lint`
+  - passed

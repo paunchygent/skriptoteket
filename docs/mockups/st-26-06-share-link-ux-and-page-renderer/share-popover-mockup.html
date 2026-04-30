@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delade länkar – ST-26-06 Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Serif:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       HuleEdu Design Tokens (inlined subset)
+       Source: huleedu-design-tokens.css
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --canvas: #FAFAF6;
+      --navy: #1C2E4A;
+      --burgundy: #4D1521;
+      --success: #059669;
+      --warning: #D97706;
+      --error: #DC2626;
+
+      --navy-05: rgba(28,46,74,.05);
+      --navy-10: rgba(28,46,74,.10);
+      --navy-15: rgba(28,46,74,.15);
+      --navy-20: rgba(28,46,74,.20);
+      --navy-25: rgba(28,46,74,.25);
+      --navy-30: rgba(28,46,74,.30);
+      --navy-40: rgba(28,46,74,.40);
+      --navy-50: rgba(28,46,74,.50);
+      --navy-60: rgba(28,46,74,.60);
+      --navy-70: rgba(28,46,74,.70);
+      --burgundy-05: rgba(77,21,33,.05);
+      --burgundy-30: rgba(77,21,33,.30);
+      --burgundy-40: rgba(77,21,33,.40);
+      --success-10: rgba(5,150,105,.10);
+      --success-45: rgba(5,150,105,.45);
+
+      --font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+
+      --text-xs: .75rem;
+      --text-sm: .875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-2xl: 1.5rem;
+
+      --tracking-label: .08em;
+      --tracking-wide: .10em;
+
+      --radius-sm: 2px;
+      --radius-md: 4px;
+      --radius-full: 9999px;
+
+      --shadow-brutal-sm: 4px 4px 0 0 var(--navy);
+      --shadow-brutal-xs: 2px 2px 0 0 var(--navy);
+
+      --grid-size: 24px;
+      --bp-md: 768px;
+    }
+
+    /* ── Reset ─────────────────────────────────────────────── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    button{font-family:inherit;cursor:pointer}
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--canvas);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+    body::before {
+      content:'';position:fixed;inset:0;
+      background-image:
+        linear-gradient(var(--navy) 1px,transparent 1px),
+        linear-gradient(90deg,var(--navy) 1px,transparent 1px);
+      background-size:var(--grid-size) var(--grid-size);
+      opacity:.04;pointer-events:none;z-index:-1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOOLBAR CONTEXT STUB
+       Matches PlannerWorkspaceActionBar shell pattern
+       ═══════════════════════════════════════════════════════════════ */
+    .toolbar-context {
+      max-width: 900px;
+      margin: 2rem auto 0;
+      padding: 0 1rem;
+    }
+    .toolbar-context__eyebrow {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: var(--tracking-wide);
+      color: var(--navy-50); margin-bottom: .75rem;
+    }
+    .planner-action-bar {
+      display: flex; align-items: center; gap: .75rem;
+      border: 1px solid var(--navy); background: white;
+      padding: .5rem .75rem;
+      box-shadow: var(--shadow-brutal-sm);
+      overflow: visible; position: relative;
+      flex-wrap: wrap;
+    }
+    .planner-action-bar__spacer { flex: 1 1 0; min-width: 0; }
+
+    /* Toolbar stub buttons (non-interactive decoration) */
+    .stub-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 4px; height: 28px; padding: 0 10px;
+      border: 1px solid var(--navy-20); border-radius: var(--radius-md);
+      background: white; color: var(--navy);
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: var(--tracking-label);
+      line-height: 1; white-space: nowrap; cursor: default;
+      opacity: .55; pointer-events: none;
+    }
+    .stub-btn--icon { width: 28px; padding: 0; }
+    .stub-btn-group {
+      display: flex; align-items: center;
+    }
+    .stub-btn-group > .stub-btn:not(:first-child) { margin-left: -1px; }
+    .stub-btn-group > .stub-btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+    .stub-btn-group > .stub-btn:last-child  { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+    .stub-btn-group > .stub-btn:not(:first-child):not(:last-child) { border-radius: 0; }
+    .stub-divider {
+      width: 1px; height: 20px; background: var(--navy-15); flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DELA TRIGGER BUTTON
+       matches UiDenseActionButton default tone
+       ═══════════════════════════════════════════════════════════════ */
+    .btn-dela {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 28px; padding: 0 10px;
+      border: 1px solid var(--navy-20); border-radius: var(--radius-md);
+      background: white; color: var(--navy);
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: var(--tracking-label);
+      line-height: 1; white-space: nowrap;
+      transition: background .1s;
+    }
+    .btn-dela:hover { background: var(--canvas); }
+    .btn-dela[aria-expanded="true"] {
+      border-color: var(--navy-25); background: var(--canvas);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SHARED PANEL INTERNALS
+       (used by both popover and bottom sheet)
+       ═══════════════════════════════════════════════════════════════ */
+    .share-panel__header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: .75rem;
+      padding: .75rem .875rem .625rem;
+      border-bottom: 1px solid var(--navy-15);
+    }
+    .share-panel__title {
+      font-size: var(--text-sm); font-weight: 700;
+      color: var(--navy); line-height: 1.2;
+    }
+    .share-panel__subtitle {
+      font-size: 11px; color: var(--navy-60);
+      margin-top: 3px; line-height: 1.4;
+    }
+
+    /* + Skapa länk */
+    .btn-create {
+      display: inline-flex; align-items: center; gap: 4px;
+      height: 26px; padding: 0 10px;
+      border: 1px solid var(--navy); border-radius: var(--radius-sm);
+      background: var(--navy); color: white;
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: var(--tracking-label);
+      line-height: 1; white-space: nowrap; flex-shrink: 0;
+      box-shadow: var(--shadow-brutal-xs);
+      transition: background .1s;
+    }
+    .btn-create:hover { background: rgba(28,46,74,.88); }
+    .btn-create:active { transform: translate(2px,2px); box-shadow: none; }
+
+    /* Close (mobile header) */
+    .btn-close-sheet {
+      display: none; /* shown only <768 */
+      align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border: 1px solid var(--navy-20); border-radius: var(--radius-sm);
+      background: transparent; color: var(--navy-50);
+      flex-shrink: 0;
+    }
+
+    /* Column header */
+    .share-cols {
+      display: grid;
+      grid-template-columns: 1fr 84px 1fr;
+      padding: .3rem .875rem;
+      border-bottom: 1px solid var(--navy-10);
+    }
+    .share-cols__cell {
+      font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: var(--tracking-wide);
+      color: var(--navy-50);
+    }
+    .share-cols__cell--end { text-align: right; }
+
+    /* Row */
+    .share-row {
+      display: grid;
+      grid-template-columns: 1fr 84px 1fr;
+      align-items: center;
+      padding: .5625rem .875rem;
+      border-bottom: 1px solid var(--navy-10);
+      transition: background .08s;
+    }
+    .share-row:last-of-type { border-bottom: none; }
+    .share-row:hover { background: rgba(250,250,246,.7); }
+
+    .share-row__name {
+      font-size: var(--text-sm); font-weight: 600;
+      color: var(--navy); line-height: 1.2;
+    }
+    .share-row__meta {
+      font-size: 10px; color: var(--navy-50);
+      font-family: var(--font-mono); margin-top: 2px;
+    }
+
+    /* Status pills */
+    .pill {
+      display: inline-flex; align-items: center;
+      height: 22px; border-radius: var(--radius-full);
+      border: 1px solid; padding: 0 7px;
+      font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: var(--tracking-wide);
+      line-height: 1; white-space: nowrap;
+    }
+    .pill--aktiv  { border-color: var(--success-45); background: var(--success-10); color: var(--success); }
+    .pill--copied { border-color: var(--navy-30); background: rgba(250,250,246,.4); color: var(--navy-70); }
+    .pill--revoked{ border-color: var(--navy-20); background: transparent; color: var(--navy-40); }
+
+    /* Dense action buttons */
+    .btn-act {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 4px; height: 26px; padding: 0 8px;
+      border: 1px solid; border-radius: var(--radius-md);
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: var(--tracking-label);
+      line-height: 1; white-space: nowrap; transition: background .1s;
+    }
+    .btn-act:active { transform: translate(1px,1px); }
+    .btn-act--copy   { border-color: var(--navy-20); background: white; color: var(--navy); }
+    .btn-act--copy:hover { background: var(--canvas); }
+    .btn-act--revoke { border-color: var(--burgundy-30); background: white; color: var(--burgundy); }
+    .btn-act--revoke:hover { background: var(--burgundy-05); }
+
+    .actions-cell { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+
+    /* Archive accordion */
+    .archive-trigger {
+      display: flex; align-items: center;
+      justify-content: space-between; width: 100%;
+      padding: .5rem .875rem; border: none;
+      border-top: 1px solid var(--navy-15);
+      background: transparent; transition: background .1s;
+    }
+    .archive-trigger:hover { background: rgba(250,250,246,.8); }
+    .archive-trigger__label {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: var(--tracking-label);
+      color: var(--navy-60);
+    }
+    .archive-trigger__chevron {
+      width: 14px; height: 14px; color: var(--navy-40);
+      transition: transform .15s;
+    }
+    .archive-trigger[aria-expanded="true"] .archive-trigger__chevron {
+      transform: rotate(180deg);
+    }
+    .archive-items { display: none; border-top: 1px solid var(--navy-10); background: var(--navy-05); }
+    .archive-items--open { display: block; }
+    .archive-row {
+      display: grid;
+      grid-template-columns: 1fr 84px 1fr;
+      align-items: center;
+      padding: .4375rem .875rem;
+      border-bottom: 1px solid var(--navy-10);
+      opacity: .6;
+    }
+    .archive-row:last-child { border-bottom: none; }
+    .archive-row__name-label { color: var(--navy-50); }
+    .pill--sm { font-size: 9px; height: 19px; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DESKTOP ≥ 768px  →  POPOVER
+       ═══════════════════════════════════════════════════════════════ */
+    .share-surface { display: none; }
+    .share-surface--open { display: block; }
+
+    .share-backdrop {
+      display: none; /* no backdrop on desktop */
+    }
+
+    .share-panel {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      width: 420px; z-index: 50;
+      border: 1px solid var(--navy); background: white;
+      box-shadow: var(--shadow-brutal-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MOBILE < 768px  →  BOTTOM SHEET
+       ═══════════════════════════════════════════════════════════════ */
+    @media (max-width: 767px) {
+      .share-backdrop {
+        display: block; position: fixed; inset: 0;
+        background: rgba(28,46,74,.70); z-index: 39;
+      }
+      .share-panel {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        top: auto; width: 100%; max-height: 85vh;
+        overflow-y: auto; z-index: 40;
+        border: none; border-top: 2px solid var(--navy);
+        box-shadow: 0 -4px 12px rgba(0,0,0,.12);
+        border-radius: 12px 12px 0 0;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .btn-close-sheet { display: flex; }
+      .btn-create { display: none; }
+
+      .share-cols { display: none; }
+      .share-row {
+        grid-template-columns: 1fr auto auto;
+        gap: 6px;
+      }
+      .btn-act__label { display: none; }
+      .btn-act { width: 32px; height: 32px; padding: 0; }
+
+      .archive-trigger { border-top: 1px solid var(--navy-15); }
+      .archive-row { grid-template-columns: 1fr auto; }
+
+      .sheet-handle {
+        display: flex; justify-content: center; padding: 10px 0 6px;
+      }
+      .sheet-handle__bar {
+        width: 36px; height: 4px; border-radius: 2px; background: var(--navy-20);
+      }
+    }
+    @media (min-width: 768px) {
+      .sheet-handle { display: none; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOAST (matches production toast primitives)
+       ═══════════════════════════════════════════════════════════════ */
+    .toast-host {
+      position: fixed; z-index: 60;
+      bottom: calc(1rem + env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%);
+      width: max-content; max-width: calc(100vw - 2rem);
+      pointer-events: none;
+    }
+    @media (min-width: 768px) {
+      .toast-host {
+        left: auto; transform: none;
+        right: 1.5rem;
+      }
+    }
+    .toast {
+      pointer-events: auto;
+      display: none; align-items: center; gap: .75rem;
+      padding: .75rem; border: 1px solid currentColor;
+      font-size: var(--text-sm); line-height: 1.35;
+    }
+    .toast--visible { display: flex; }
+    .toast--success { background: rgba(5,150,105,.90); color: var(--canvas); }
+    .toast--info    { background: rgba(28,46,74,.90); color: var(--canvas); }
+    .toast__icon { flex-shrink: 0; margin-top: 1px; }
+    .toast__msg  { word-break: break-word; }
+    .toast__dismiss {
+      margin-left: auto; flex-shrink: 0;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; border: 0; padding: 0;
+      color: inherit; opacity: .65; cursor: pointer;
+    }
+    .toast__dismiss:hover { opacity: 1; }
+
+    /* ── Inline Lucide SVG icon helper ────────────────────── */
+    .icon { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TOOLBAR CONTEXT (realistic PlannerWorkspaceActionBar stub)
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="toolbar-context">
+    <p class="toolbar-context__eyebrow">
+      Klassrumskartan · Sittplatser · HELENA71 / G20
+    </p>
+
+    <div class="planner-action-bar">
+      <!-- Stub primary actions -->
+      <div class="stub-btn-group">
+        <button class="stub-btn stub-btn--icon" aria-hidden="true" tabindex="-1">
+          <!-- Lucide Undo2 -->
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+        </button>
+        <button class="stub-btn stub-btn--icon" aria-hidden="true" tabindex="-1">
+          <!-- Lucide Redo2 -->
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></svg>
+        </button>
+      </div>
+      <button class="stub-btn" aria-hidden="true" tabindex="-1">Nytt sittschema</button>
+      <button class="stub-btn" aria-hidden="true" tabindex="-1">
+        <!-- Lucide Shuffle -->
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
+        Slumpa
+      </button>
+      <button class="stub-btn" aria-hidden="true" tabindex="-1">Smart</button>
+      <button class="stub-btn" aria-hidden="true" tabindex="-1">Börja om</button>
+
+      <div class="planner-action-bar__spacer"></div>
+      <div class="stub-divider"></div>
+
+      <!-- Exportera stub -->
+      <button class="stub-btn" aria-hidden="true" tabindex="-1">
+        <!-- Lucide Download -->
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportera
+      </button>
+
+      <!-- ★ DELA TRIGGER ★ -->
+      <button
+        class="btn-dela"
+        id="delaTrigger"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="sharePanel"
+        onclick="togglePanel()"
+      >
+        <!-- Lucide Link2 (stroke-width 2.25 per IconLink2.vue) -->
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Dela
+      </button>
+
+      <!-- Overflow menu stub (PlannerToolbarOverflowMenu) -->
+      <button class="stub-btn stub-btn--icon" aria-hidden="true" tabindex="-1" title="Fler åtgärder">
+        <!-- Lucide MoreVertical (stroke-width 2.5 per IconMoreVertical.vue) -->
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </button>
+
+      <!-- ═══════════════════════════════════════════════════════
+           SHARE SURFACE (popover on md+, bottom sheet on <md)
+           ═══════════════════════════════════════════════════════ -->
+      <div class="share-surface" id="shareSurface">
+        <div class="share-backdrop" id="shareBackdrop" onclick="closePanel()"></div>
+        <div
+          class="share-panel"
+          id="sharePanel"
+          role="dialog"
+          aria-modal="false"
+          aria-label="Delade länkar"
+        >
+          <!-- Drag handle (mobile only) -->
+          <div class="sheet-handle"><div class="sheet-handle__bar"></div></div>
+
+          <!-- Header -->
+          <div class="share-panel__header">
+            <div>
+              <div class="share-panel__title">Delade länkar</div>
+              <div class="share-panel__subtitle">
+                Aktiva länkar visas här. Återkallade flyttas till arkiv.
+              </div>
+            </div>
+            <!-- + Skapa länk (desktop) -->
+            <button class="btn-create" type="button" onclick="handleCreate()">
+              <!-- Lucide Plus (stroke-width 2.5 per IconPlus.vue) -->
+              <svg class="icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Skapa länk
+            </button>
+            <!-- Close (mobile) -->
+            <button class="btn-close-sheet" type="button" onclick="closePanel()" aria-label="Stäng">
+              <!-- Lucide X (stroke-width 2.5 per IconX.vue) -->
+              <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Column headers (desktop only) -->
+          <div class="share-cols" aria-hidden="true">
+            <span class="share-cols__cell">Namn</span>
+            <span class="share-cols__cell">Status</span>
+            <span class="share-cols__cell share-cols__cell--end">Åtgärder</span>
+          </div>
+
+          <!-- Row: Sittschema – AKTIV -->
+          <div class="share-row">
+            <div>
+              <div class="share-row__name">Sittschema</div>
+              <div class="share-row__meta">Kopierad 21:27</div>
+            </div>
+            <div><span class="pill pill--aktiv">Aktiv</span></div>
+            <div class="actions-cell">
+              <button class="btn-act btn-act--copy" type="button" onclick="handleCopy('Sittschema')" title="Kopiera länk till urklipp">
+                <!-- Lucide Copy (clipboard rect + doc) -->
+                <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span class="btn-act__label">Kopiera</span>
+              </button>
+              <button class="btn-act btn-act--revoke" type="button" onclick="handleRevoke('Sittschema')" title="Återkalla – länken slutar fungera">
+                <!-- Lucide Trash2 (stroke-width 2.5 per IconTrash.vue) -->
+                <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                <span class="btn-act__label">Återkalla</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Archive accordion -->
+          <button
+            class="archive-trigger"
+            id="archiveTrigger"
+            type="button"
+            aria-expanded="false"
+            aria-controls="archiveItems"
+            onclick="toggleArchive()"
+          >
+            <span class="archive-trigger__label">Visa arkiv (1)</span>
+            <svg class="archive-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="archive-items" id="archiveItems" aria-hidden="true">
+            <div class="archive-row">
+              <div>
+                <div class="share-row__name archive-row__name-label">Sittschema G20 (rev 3)</div>
+                <div class="share-row__meta">Återkallad 09:15</div>
+              </div>
+              <div><span class="pill pill--revoked pill--sm">Återkallad</span></div>
+              <div></div>
+            </div>
+          </div>
+
+        </div><!-- /share-panel -->
+      </div><!-- /share-surface -->
+
+    </div><!-- /planner-action-bar -->
+  </div><!-- /toolbar-context -->
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TOAST HOST (matches production .toast-container)
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="toast-host" id="toastHost">
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+      <span class="toast__icon" aria-hidden="true">
+        <!-- Lucide Check (stroke-width 2.5 per IconCheck.vue) -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </span>
+      <p class="toast__msg" id="toastMsg">Länk kopierad</p>
+      <button class="toast__dismiss" aria-label="Stäng" onclick="hideToast()">&times;</button>
+    </div>
+  </div>
+
+  <script>
+    /* ── State ───────────────────────────────────────────────── */
+    let toastTimer = null;
+
+    /* ── Panel open/close ────────────────────────────────────── */
+    function togglePanel() {
+      const surface = document.getElementById('shareSurface');
+      const trigger = document.getElementById('delaTrigger');
+      const open = surface.classList.toggle('share-surface--open');
+      trigger.setAttribute('aria-expanded', String(open));
+
+      if (open) {
+        /* On mobile, prevent body scroll when sheet is open */
+        if (window.innerWidth < 768) {
+          document.body.style.overflow = 'hidden';
+        }
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+
+    function closePanel() {
+      const surface = document.getElementById('shareSurface');
+      const trigger = document.getElementById('delaTrigger');
+      surface.classList.remove('share-surface--open');
+      trigger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    /* Close on Escape */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closePanel();
+    });
+
+    /* ── Toast ────────────────────────────────────────────────── */
+    function showToast(msg, variant) {
+      const el = document.getElementById('toast');
+      const msgEl = document.getElementById('toastMsg');
+      msgEl.textContent = msg;
+      el.className = 'toast toast--visible toast--' + (variant || 'success');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, 3500);
+    }
+
+    function hideToast() {
+      document.getElementById('toast').classList.remove('toast--visible');
+    }
+
+    /* ── Actions ──────────────────────────────────────────────── */
+    function handleCopy(name) {
+      showToast('Länk kopierad', 'success');
+    }
+
+    function handleRevoke(name) {
+      showToast('Länken är återkallad.', 'success');
+    }
+
+    function handleCreate() {
+      showToast('Ny länk skapad (stub)', 'info');
+    }
+
+    /* ── Archive accordion ────────────────────────────────────── */
+    function toggleArchive() {
+      const trigger = document.getElementById('archiveTrigger');
+      const items = document.getElementById('archiveItems');
+      const open = trigger.getAttribute('aria-expanded') === 'true';
+      trigger.setAttribute('aria-expanded', String(!open));
+      items.setAttribute('aria-hidden', String(open));
+      items.classList.toggle('archive-items--open', !open);
+    }
+  </script>
+</body>
+</html>

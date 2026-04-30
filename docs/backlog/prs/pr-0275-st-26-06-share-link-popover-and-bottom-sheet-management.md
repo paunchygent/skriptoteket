@@ -14,7 +14,7 @@ dependencies:
 acceptance_criteria:
   - "Given the authenticated teacher is in `Grupper` or `Sittplatser`, when they open share-link management on desktop, then `Dela` opens an anchored popover matching the approved mockup rather than rendering detached stacked panels above the workspace."
   - "Given the authenticated teacher is on a phone-sized viewport, when they open share-link management, then the same information model opens as a bottom sheet with mobile-sized touch targets."
-  - "Given active owned links exist for the current draft, when the popover or bottom sheet opens, then active links are listed compactly with status, copy, revoke, and collapsed archive affordances."
+  - "Given active owned links exist for the current draft, when the popover or bottom sheet opens, then active links are listed compactly with copy and revoke actions."
   - "Given a link is revoked, when the revoke succeeds, then the link leaves the active list immediately and user feedback is delivered through a toast/snackbar affordance rather than a persistent dead row."
   - "Given share-link management changes visible workspace layout, when the slice is reviewed, then visual inspection compares desktop and mobile screenshots against `docs/mockups/st-26-06-share-link-ux-and-page-renderer/share-popover-and-bottom-sheet-mockup.png`."
 ---
@@ -31,9 +31,9 @@ workspace feel stale and contradicts the desired active-list mental model.
 ## Goal
 
 Replace the detached share panels with a compact `Dela` management surface:
-desktop uses an anchored popover and mobile uses a bottom sheet. Keep active
-links visible by default, move revoked links out of the active list, and use
-toast/snackbar feedback for copy and revoke outcomes.
+desktop uses an anchored popover and mobile uses a bottom sheet. Keep only
+active links visible and use toast/snackbar feedback for copy and revoke
+outcomes.
 
 ## Non-goals
 
@@ -47,25 +47,39 @@ toast/snackbar feedback for copy and revoke outcomes.
 
 1. Remove the default `PlannerShareLinksPanel` after-toolbar placement from the
    grouping and seating workspace surfaces.
-2. Add a share-management trigger to the export/action cluster with active-link
-   count feedback.
+2. Add a share-management trigger to the export/action cluster without a
+   notification/count badge; link state belongs inside the management surface.
 3. Implement one shared management component that renders as an anchored
    popover on desktop and a bottom sheet on small screens.
-4. Filter revoked links out of the active list and expose them only through a
-   collapsed archive row.
+4. Filter revoked links out of the visible management list.
 5. Replace persistent copied/revoked rows with toast/snackbar feedback.
 6. Preserve existing create/list/copy/revoke API contracts from `PR-0274`.
 
 ## Test plan
 
-- Focused frontend tests for open/close, active-link filtering, copy/revoke
-  intents, and archive visibility.
+- Focused frontend tests for open/close, active-link filtering, and copy/revoke
+  intents.
 - Browser screenshots at desktop and phone widths for visual inspection against
   the approved mockup.
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
 - `pdm run docs-validate`
 - `git diff --check`
+
+## Implementation notes
+
+- `PlannerShareLinksPanel` is now the shared `Dela` management trigger plus
+  surface: desktop renders an anchored popover, and mobile renders the same
+  information model as a bottom sheet.
+- The active-link list is row-based, not table-like: no `Namn`/`Status`/
+  `Åtgärder` header labels and no copied/status pill competing with toast
+  feedback.
+- Grouping and seating toolbars keep `Dela` in the secondary action cluster
+  beside export while the existing overflow ladder still moves lower-priority
+  setup/smart controls into the overflow menu under width pressure.
+- Revoked shares are filtered out of the visible management list; no archive
+  of dead links is shown.
+- The toolbar trigger intentionally has no count/notification badge.
 
 ## Rollback plan
 

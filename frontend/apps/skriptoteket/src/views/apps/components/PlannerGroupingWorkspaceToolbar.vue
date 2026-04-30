@@ -29,12 +29,14 @@ import {
   type DenseStatusTone,
 } from "../../../components/ui";
 import type { GroupingExportOption } from "../classroomPlannerExportApi";
+import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type { Roster } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerExportActionGroup, {
   type PlannerExportOption,
   type PlannerExportOptionValue,
 } from "./PlannerExportActionGroup.vue";
+import PlannerShareLinksPanel from "./PlannerShareLinksPanel.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
@@ -50,12 +52,16 @@ const props = withDefaults(
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
     shareBusy?: boolean;
+    shareLoading?: boolean;
     shareStatusLabel?: string | null;
     shareErrorMessage?: string | null;
+    revokingShareId?: string | null;
+    shares?: ClassroomPlannerShareArtifact[];
     showHistoryAction?: boolean;
     showSmartControls?: boolean;
     showExportActions?: boolean;
     showShareLinkAction?: boolean;
+    showShareRevokeAction?: boolean;
   }>(),
   {
     availableRosters: () => [],
@@ -65,12 +71,16 @@ const props = withDefaults(
     exportStatusLabel: null,
     exportErrorMessage: null,
     shareBusy: false,
+    shareLoading: false,
     shareStatusLabel: null,
     shareErrorMessage: null,
+    revokingShareId: null,
+    shares: () => [],
     showHistoryAction: true,
     showSmartControls: true,
     showExportActions: true,
     showShareLinkAction: false,
+    showShareRevokeAction: true,
   },
 );
 
@@ -83,6 +93,8 @@ const emit = defineEmits<{
   (e: "export-default"): void;
   (e: "export-option", option: GroupingExportOption): void;
   (e: "share-link"): void;
+  (e: "copy-share", share: ClassroomPlannerShareArtifact): void;
+  (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
 }>();
 
 const state = useClassroomState();
@@ -154,15 +166,6 @@ const exportOptions = computed<PlannerExportOption[]>(() => [
     label: "PDF (A4 stående)",
     option: "pdf_a4_portrait",
   },
-  ...(props.showShareLinkAction
-    ? [
-        {
-          id: "share",
-          label: "Dela länk",
-          action: "share-link",
-        } satisfies PlannerExportOption,
-      ]
-    : []),
 ]);
 const {
   hiddenContributionIds,
@@ -495,7 +498,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       <template #secondary>
         <PlannerExportActionGroup
           v-if="showExportActions"
-          :busy="exportBusy || shareBusy"
+          :busy="exportBusy"
           :options="exportOptions"
           group-test-id="grouping-export-group"
           default-button-test-id="grouping-export-default"
@@ -503,7 +506,21 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
           option-test-id-prefix="grouping-export-option"
           @export-default="emit('export-default')"
           @export-option="handleExportOption"
-          @share-link="emit('share-link')"
+        />
+        <PlannerShareLinksPanel
+          v-if="showShareLinkAction"
+          :shares="shares"
+          :loading="shareLoading"
+          :busy="shareBusy"
+          :status-label="shareStatusLabel"
+          :error-message="shareErrorMessage"
+          :revoking-share-id="revokingShareId"
+          :show-revoke-action="showShareRevokeAction"
+          trigger-test-id="grouping-share-trigger"
+          panel-test-id="grouping-share-management"
+          @create-share="emit('share-link')"
+          @copy-share="emit('copy-share', $event)"
+          @revoke-share="emit('revoke-share', $event)"
         />
         <UiDenseStatusPill
           v-if="showExportActions && exportStatus"

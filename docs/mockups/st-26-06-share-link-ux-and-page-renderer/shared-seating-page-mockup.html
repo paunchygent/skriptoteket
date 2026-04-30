@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>HELENA71 – Sittschema</title>
+  <meta name="description" content="Sittschema för HELENA71 i G20." />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Serif:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       HuleEdu Design Tokens (inlined subset)
+       Source: huleedu-design-tokens.css
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --canvas: #FAFAF6;
+      --navy: #1C2E4A;
+      --navy-05: rgba(28,46,74,.05);
+      --navy-10: rgba(28,46,74,.10);
+      --navy-15: rgba(28,46,74,.15);
+      --navy-20: rgba(28,46,74,.20);
+      --navy-30: rgba(28,46,74,.30);
+      --navy-40: rgba(28,46,74,.40);
+      --navy-50: rgba(28,46,74,.50);
+      --navy-60: rgba(28,46,74,.60);
+      --navy-70: rgba(28,46,74,.70);
+
+      --font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+
+      --text-xs: .75rem;
+      --text-sm: .875rem;
+      --text-base: 1rem;
+
+      --tracking-label: .08em;
+      --tracking-wide: .10em;
+
+      --shadow-brutal-sm: 4px 4px 0 0 var(--navy);
+    }
+
+    /* ── Reset ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--canvas);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SHARE PAGE SHELL
+       Matches the production share_renderer.py _document layout
+       ═══════════════════════════════════════════════════════════════ */
+    .share-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .share-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--navy-60);
+    }
+
+    .share-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 700;
+      line-height: 1.05;
+      margin: 6px 0 4px;
+      color: var(--navy);
+    }
+
+    .share-subtitle {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+
+    .share-description {
+      font-size: var(--text-sm);
+      color: var(--navy-60);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SPATIAL CLASSROOM MAP
+       Coordinate system mirrors RoomCanvas.vue / roomFixturePresentation.ts:
+       - ROOM_GRID_UNIT = 96px per grid cell
+       - ROOM_WALL_BAND = 28px outside the floor on each side
+       - ROOM_WALL_THICKNESS = 18px for wall fixture rendering
+       - RoomTemplate: grid_cols=14, grid_rows=9 (default)
+       - Surface = floor + 2×wall_band per axis
+       - Floor fixtures (kateder, bench) at absolute px inside floor
+       - Wall fixtures (whiteboard, door) on the 18px wall band
+       - Seats at absolute px inside floor
+       ═══════════════════════════════════════════════════════════════ */
+
+    .room-frame {
+      border: 1px solid var(--navy);
+      background: white;
+      box-shadow: var(--shadow-brutal-sm);
+    }
+
+    .room-viewport {
+      overflow-x: auto;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /*
+     * Room surface dimensions (at 1× scale):
+     *   floor = 14 × 96 = 1344px wide, 9 × 96 = 864px tall
+     *   surface = 1344 + 2×28 = 1400px wide, 864 + 2×28 = 920px tall
+     * CSS transform: scale() shrinks it to fit the viewport.
+     */
+    .room-surface {
+      position: relative;
+      width: 1400px;
+      height: 920px;
+      flex-shrink: 0;
+      transform-origin: top left;
+    }
+
+    /* Outer wall area (entire surface bg) */
+    .room-outer {
+      position: absolute; inset: 0;
+      border: 1px solid var(--navy-40);
+      background: var(--canvas);
+    }
+
+    /* Floor area: 28px inset from each edge */
+    .room-floor {
+      position: absolute;
+      left: 28px; top: 28px;
+      width: 1344px; height: 864px;
+      border: 1px solid var(--navy);
+      background: white;
+    }
+
+    .room-floor::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--navy) 1px, transparent 1px),
+        linear-gradient(90deg, var(--navy) 1px, transparent 1px);
+      background-size: 96px 96px;
+      opacity: .08;
+    }
+
+    /* ── Fixtures ─────────────────────────────────────────────── */
+    .fixture {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .fixture__label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--navy-50);
+      white-space: nowrap;
+    }
+
+    .fixture--outline {
+      border: 1px solid var(--navy-30);
+      background: white;
+    }
+
+    .fixture--strong {
+      border: 1px solid var(--navy);
+      background: var(--navy-05);
+    }
+
+    .fixture--muted {
+      border: 1px solid var(--navy-20);
+      background: var(--navy-05);
+    }
+
+    .fixture__label--vertical {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+
+    /* ── Seats ────────────────────────────────────────────────── */
+    .seat {
+      position: absolute;
+      z-index: 3;
+      width: 96px;
+      height: 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .seat__circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 2px solid var(--navy);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .seat__initials {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .seat__number {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--navy-50);
+      margin-top: 2px;
+      line-height: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE SCALING
+       The surface is 1400px at native resolution. We use CSS transform
+       to scale it into the available viewport, same approach as
+       useRoomViewportZoom / RoomCanvas.vue scaledSurfaceStyle.
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* Desktop: scale ~65% to fit inside 960px max-width */
+    .room-surface-scale-shell {
+      width: 910px;
+      height: 598px;
+    }
+    .room-surface { transform: scale(0.65); }
+
+    /* Mobile < 768px: scale to fit viewport width minus padding */
+    @media (max-width: 767px) {
+      .share-page { padding: 20px 12px 32px; }
+      .share-title { font-size: 1.5rem; }
+      .room-viewport { padding: 12px; justify-content: flex-start; }
+
+      .room-surface-scale-shell {
+        width: calc(100vw - 50px);
+        height: auto;
+        aspect-ratio: 1400 / 920;
+      }
+      .room-surface {
+        transform: scale(calc((100vw - 50px) / 1400));
+      }
+    }
+
+    /* Very small screens */
+    @media (max-width: 420px) {
+      .room-surface-scale-shell {
+        width: calc(100vw - 32px);
+      }
+      .room-surface {
+        transform: scale(calc((100vw - 32px) / 1400));
+      }
+    }
+
+    /* ── Print ────────────────────────────────────────────────── */
+    @media print {
+      body { background: white; }
+      .share-page { max-width: none; padding: 0; }
+      .room-frame { box-shadow: none; border: 1px solid #000; }
+      .room-surface { transform: scale(0.55); }
+      .room-surface-scale-shell { width: 770px; height: 506px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="share-page">
+    <!-- ═══════════════════════════════════════════════════════════
+         SHARE PAGE HEADER
+         Fields from RenderedClassroomPlannerShare:
+         - title (roster_name + " – Sittschema")
+         - template_name (PosterSceneRoom)
+         - preview_description
+         ═══════════════════════════════════════════════════════════ -->
+    <p class="share-kicker">Klassrumskartan</p>
+    <h1 class="share-title">HELENA71 – Sittschema</h1>
+    <p class="share-subtitle">G20</p>
+    <p class="share-description">Delad sittschema – endast för visning.</p>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SPATIAL CLASSROOM MAP
+         RoomTemplate "G20": grid_cols=14, grid_rows=9
+         Surface = (14×96 + 2×28) × (9×96 + 2×28) = 1400 × 920 px
+
+         Fixtures (from RoomFixture model, pixel coords):
+           whiteboard  x=288 y=0   w=288 h=96  wall=top    tone=outline
+           kateder     x=576 y=0   w=192 h=96  wall=none   tone=strong
+           door        x=1248 y=288 w=96 h=96  wall=right  tone=outline
+           bench rows  (3 rows × 3 clusters of 4 benches)  tone=muted
+
+         Seats (from Seat model, pixel coords inside floor):
+           33 occupied seats with display_name initials
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="room-frame">
+      <div class="room-viewport">
+        <div class="room-surface-scale-shell">
+          <div class="room-surface">
+            <div class="room-outer"></div>
+            <div class="room-floor"></div>
+
+            <!-- ═══════ WALL FIXTURES ═══════
+                 Wall fixtures render on the wall band (18px thick strip).
+                 Position: wall_band_offset + fixture.x from floor edge.
+                 Per getWallFixtureFrameStyle() in roomFixturePresentation.ts -->
+
+            <!-- Whiteboard: top wall, x=288 w=288 (3 grid units merged) -->
+            <div class="fixture fixture--outline"
+              style="left: calc(28px + 288px); top: calc(28px - 18px); width: 288px; height: 18px;">
+              <span class="fixture__label">Whiteboard</span>
+            </div>
+
+            <!-- Door: right wall, y=288 h=96 -->
+            <div class="fixture fixture--outline"
+              style="left: calc(28px + 1344px); top: calc(28px + 288px); width: 18px; height: 96px;">
+              <span class="fixture__label fixture__label--vertical">Dörr</span>
+            </div>
+
+            <!-- ═══════ FLOOR FIXTURES ═══════
+                 Floor fixtures position inside the floor layer.
+                 Position: wall_band + fixture.x/y
+                 Per getFloorFixtureFrameStyle() offset by floor origin. -->
+
+            <!-- Kateder: teacher_desk at grid (6,0) → x=576 y=0, w=192 h=96 -->
+            <div class="fixture fixture--strong"
+              style="left: calc(28px + 576px); top: calc(28px + 0px); width: 192px; height: 96px;">
+              <span class="fixture__label">Kateder</span>
+            </div>
+
+            <!-- ── Bench row 1 (y=192, 3 clusters of 4 benches) ── -->
+            <!-- Bench cluster L: grid (1,2)-(4,2) merged → x=96 w=384 -->
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 96px); top: calc(28px + 192px); width: 384px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+            <!-- Bench cluster M: grid (6,2)-(9,2) merged → x=576 w=384 -->
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 576px); top: calc(28px + 192px); width: 384px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+            <!-- Bench cluster R: grid (10,2)-(13,2) merged → x=960 w=384 -->
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 960px); top: calc(28px + 192px); width: 384px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+
+            <!-- ── Bench row 2 (y=480) ── -->
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 96px); top: calc(28px + 480px); width: 384px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 576px); top: calc(28px + 480px); width: 384px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 960px); top: calc(28px + 480px); width: 384px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+
+            <!-- ── Bench row 3 (y=672) ── -->
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 96px); top: calc(28px + 672px); width: 288px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 576px); top: calc(28px + 672px); width: 288px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+            <div class="fixture fixture--muted"
+              style="left: calc(28px + 960px); top: calc(28px + 672px); width: 288px; height: 96px;">
+              <span class="fixture__label">Bänk</span>
+            </div>
+
+            <!-- ═══════ SEATS ═══════
+                 Each seat is 1 grid unit (96×96px).
+                 Position: wall_band + seat.x, wall_band + seat.y
+                 Seats sit IN FRONT OF benches (one row below each bench row).
+                 Row 1 benches at y=192, seats at y=288.
+                 Row 2 benches at y=480, seats at y=576.
+                 Row 3 benches at y=672, seats at y=768.
+
+                 (Not shown below bench because seats are IN FRONT of the
+                 teacher in a traditional layout — student faces whiteboard,
+                 sits in front of the bench.) -->
+
+            <!-- ── Seat row 1 (y=288, in front of bench row 1) ── -->
+            <!-- Cluster L (x: 96, 192, 288, 384) -->
+            <div class="seat" style="left: calc(28px + 96px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">LC</span></div>
+              <span class="seat__number">1.1</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 192px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">MJ</span></div>
+              <span class="seat__number">1.2</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 288px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">MA</span></div>
+              <span class="seat__number">1.3</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 384px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">CB</span></div>
+              <span class="seat__number">1.4</span>
+            </div>
+
+            <!-- Cluster M (x: 576, 672, 768, 864) -->
+            <div class="seat" style="left: calc(28px + 576px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">ME</span></div>
+              <span class="seat__number">1.5</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 672px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">KF</span></div>
+              <span class="seat__number">1.6</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 768px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">EE</span></div>
+              <span class="seat__number">1.7</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 864px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">HJ</span></div>
+              <span class="seat__number">1.8</span>
+            </div>
+
+            <!-- Cluster R (x: 960, 1056, 1152, 1248) -->
+            <div class="seat" style="left: calc(28px + 960px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">JD</span></div>
+              <span class="seat__number">1.9</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1056px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">HA</span></div>
+              <span class="seat__number">1.10</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1152px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">JB</span></div>
+              <span class="seat__number">1.11</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1248px); top: calc(28px + 288px);">
+              <div class="seat__circle"><span class="seat__initials">JA</span></div>
+              <span class="seat__number">1.12</span>
+            </div>
+
+            <!-- ── Seat row 2 (y=576) ── -->
+            <div class="seat" style="left: calc(28px + 96px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">ME</span></div>
+              <span class="seat__number">2.1</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 192px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">II</span></div>
+              <span class="seat__number">2.2</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 288px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">AF</span></div>
+              <span class="seat__number">2.3</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 384px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">JE</span></div>
+              <span class="seat__number">2.4</span>
+            </div>
+
+            <div class="seat" style="left: calc(28px + 576px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">RE</span></div>
+              <span class="seat__number">2.5</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 672px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">MR</span></div>
+              <span class="seat__number">2.6</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 768px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">NI</span></div>
+              <span class="seat__number">2.7</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 864px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">IE</span></div>
+              <span class="seat__number">2.8</span>
+            </div>
+
+            <div class="seat" style="left: calc(28px + 960px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">PE</span></div>
+              <span class="seat__number">2.9</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1056px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">VI</span></div>
+              <span class="seat__number">2.10</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1152px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">UH</span></div>
+              <span class="seat__number">2.11</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1248px); top: calc(28px + 576px);">
+              <div class="seat__circle"><span class="seat__initials">MC</span></div>
+              <span class="seat__number">2.12</span>
+            </div>
+
+            <!-- ── Seat row 3 (y=768, 3 clusters of 3 seats) ── -->
+            <div class="seat" style="left: calc(28px + 96px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">AG</span></div>
+              <span class="seat__number">3.1</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 192px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">VA</span></div>
+              <span class="seat__number">3.2</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 288px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">SB</span></div>
+              <span class="seat__number">3.3</span>
+            </div>
+
+            <div class="seat" style="left: calc(28px + 576px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">LN</span></div>
+              <span class="seat__number">3.5</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 672px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">FN</span></div>
+              <span class="seat__number">3.6</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 768px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">EA</span></div>
+              <span class="seat__number">3.7</span>
+            </div>
+
+            <div class="seat" style="left: calc(28px + 960px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">MA</span></div>
+              <span class="seat__number">3.9</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1056px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">KA</span></div>
+              <span class="seat__number">3.10</span>
+            </div>
+            <div class="seat" style="left: calc(28px + 1152px); top: calc(28px + 768px);">
+              <div class="seat__circle"><span class="seat__initials">PA</span></div>
+              <span class="seat__number">3.11</span>
+            </div>
+
+          </div><!-- /room-surface -->
+        </div><!-- /room-surface-scale-shell -->
+      </div><!-- /room-viewport -->
+    </div><!-- /room-frame -->
+  </main>
+</body>
+</html>

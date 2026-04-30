@@ -1,9 +1,9 @@
 /**
- * Planner share-link panel tests.
+ * Planner share-link management tests.
  *
- * These tests keep the modest owned-link management surface focused on public
- * outcomes: existing links can be copied, active links can be revoked, and
- * unavailable links do not offer a broken copy action.
+ * These tests keep the compact owned-link management surface focused on public
+ * outcomes: the Dela trigger opens management, active links can be copied or
+ * revoked, and revoked links stay out of the visible management list.
  */
 
 import { mount } from "@vue/test-utils";
@@ -42,7 +42,7 @@ function makeShare(params: {
 }
 
 describe("PlannerShareLinksPanel", () => {
-  it("emits copy and revoke intents for active share links", async () => {
+  it("opens from the Dela trigger and emits create, copy, and revoke intents", async () => {
     const share = makeShare({
       id: "share-1",
       publicUrl: "https://skriptoteket.hule.education/share/classroom/public-token/klass-7a",
@@ -53,14 +53,19 @@ describe("PlannerShareLinksPanel", () => {
       },
     });
 
+    expect(wrapper.find('[data-test="planner-share-links-panel"]').exists()).toBe(false);
+
+    await wrapper.get('[data-test="planner-share-links-trigger"]').trigger("click");
+    await wrapper.get('[data-test="planner-share-create"]').trigger("click");
     await wrapper.get('[data-test="planner-share-copy-share-1"]').trigger("click");
     await wrapper.get('[data-test="planner-share-revoke-share-1"]').trigger("click");
 
+    expect(wrapper.emitted("create-share")).toEqual([[]]);
     expect(wrapper.emitted("copy-share")).toEqual([[share]]);
     expect(wrapper.emitted("revoke-share")).toEqual([[share]]);
   });
 
-  it("disables copy for metadata that lacks a public URL", () => {
+  it("disables copy for metadata that lacks a public URL", async () => {
     const share = makeShare({
       id: "share-2",
       publicUrl: null,
@@ -71,8 +76,33 @@ describe("PlannerShareLinksPanel", () => {
       },
     });
 
+    await wrapper.get('[data-test="planner-share-links-trigger"]').trigger("click");
+
     expect(wrapper.get('[data-test="planner-share-copy-share-2"]').attributes("disabled"))
       .toBeDefined();
-    expect(wrapper.text()).toContain("Länken saknar kopierbar adress.");
+  });
+
+  it("keeps revoked links out of the visible management list", async () => {
+    const activeShare = makeShare({
+      id: "share-3",
+      publicUrl: "https://skriptoteket.hule.education/share/classroom/active/klass-7a",
+    });
+    const revokedShare = makeShare({
+      id: "share-4",
+      publicUrl: "https://skriptoteket.hule.education/share/classroom/revoked/klass-7a",
+      revokedAt: "2026-04-30T11:00:00Z",
+    });
+    const wrapper = mount(PlannerShareLinksPanel, {
+      props: {
+        shares: [activeShare, revokedShare],
+      },
+    });
+
+    await wrapper.get('[data-test="planner-share-links-trigger"]').trigger("click");
+
+    expect(wrapper.find('[data-test="planner-share-link-share-3"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="planner-share-link-share-4"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="planner-share-archive-link-share-4"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="planner-share-archive-toggle"]').exists()).toBe(false);
   });
 });

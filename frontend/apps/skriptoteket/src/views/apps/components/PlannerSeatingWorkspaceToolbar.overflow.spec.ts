@@ -136,6 +136,22 @@ describe("PlannerSeatingWorkspaceToolbar overflow", () => {
     expect(wrapper.find('[data-test="seating-overflow-new-draft"]').exists()).toBe(false);
   });
 
+  it("keeps share management in the secondary action cluster while lower-priority controls overflow", async () => {
+    const wrapper = await mountToolbarForHidden(["undo-redo", "reset", "new-draft", "context", "smart"]);
+    await wrapper.setProps({
+      showShareLinkAction: true,
+      shares: [],
+    });
+
+    expect(wrapper.find('[data-test="seating-share-trigger"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-workspace-setup"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(false);
+
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+    expect(wrapper.find('[data-test="seating-overflow-template-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
+  });
+
   it("moves seating undo/redo into overflow before reset", async () => {
     const wrapper = await mountToolbarForHidden(["undo-redo"]);
 

@@ -13,6 +13,7 @@ import { computed, onUnmounted, ref, watch } from "vue";
 import { useHelp } from "../../components/help/useHelp";
 import { useToast } from "../../composables/useToast";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
+import type { ClassroomPlannerShareArtifact } from "./classroomPlannerShareApi";
 import PlannerGroupingSettingsDrawer from "./components/PlannerGroupingSettingsDrawer.vue";
 import PlannerGroupingWorkspacePane from "./components/PlannerGroupingWorkspacePane.vue";
 import PlannerGroupingWorkspaceToolbar from "./components/PlannerGroupingWorkspaceToolbar.vue";
@@ -45,12 +46,14 @@ const props = withDefaults(
     groupingShareBusy?: boolean;
     groupingShareStatusLabel?: string | null;
     groupingShareErrorMessage?: string | null;
+    groupingShares?: ClassroomPlannerShareArtifact[];
     seatingExportBusy?: boolean;
     seatingExportStatusLabel?: string | null;
     seatingExportErrorMessage?: string | null;
     seatingShareBusy?: boolean;
     seatingShareStatusLabel?: string | null;
     seatingShareErrorMessage?: string | null;
+    seatingShares?: ClassroomPlannerShareArtifact[];
   }>(),
   {
     availableRosters: () => [],
@@ -64,12 +67,14 @@ const props = withDefaults(
     groupingShareBusy: false,
     groupingShareStatusLabel: null,
     groupingShareErrorMessage: null,
+    groupingShares: () => [],
     seatingExportBusy: false,
     seatingExportStatusLabel: null,
     seatingExportErrorMessage: null,
     seatingShareBusy: false,
     seatingShareStatusLabel: null,
     seatingShareErrorMessage: null,
+    seatingShares: () => [],
   },
 );
 
@@ -83,9 +88,11 @@ const emit = defineEmits<{
   (e: "export-grouping-default"): void;
   (e: "export-grouping-option", option: GroupingExportOption): void;
   (e: "share-grouping-link"): void;
+  (e: "copy-grouping-share", share: ClassroomPlannerShareArtifact): void;
   (e: "export-seating-default"): void;
   (e: "export-seating-option", option: SeatingExportOption): void;
   (e: "share-seating-link"): void;
+  (e: "copy-seating-share", share: ClassroomPlannerShareArtifact): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;
   (e: "exit-app"): void;
@@ -388,10 +395,12 @@ watch(
           :share-busy="groupingShareBusy"
           :share-status-label="groupingShareStatusLabel"
           :share-error-message="groupingShareErrorMessage"
+          :shares="groupingShares"
           :show-history-action="false"
           :show-smart-controls="true"
           :show-export-actions="true"
           :show-share-link-action="true"
+          :show-share-revoke-action="false"
           @change-grouping-roster="changeGroupingRoster($event)"
           @new-grouping-draft="startNewGroupingDraft"
           @open-settings="openGroupingSettingsDrawer"
@@ -399,6 +408,7 @@ watch(
           @export-default="emit('export-grouping-default')"
           @export-option="emit('export-grouping-option', $event)"
           @share-link="emit('share-grouping-link')"
+          @copy-share="emit('copy-grouping-share', $event)"
         />
       </template>
 
@@ -420,10 +430,12 @@ watch(
           :share-busy="seatingShareBusy"
           :share-status-label="seatingShareStatusLabel"
           :share-error-message="seatingShareErrorMessage"
+          :shares="seatingShares"
           :show-history-action="false"
           :show-smart-controls="true"
           :show-export-actions="true"
           :show-share-link-action="true"
+          :show-share-revoke-action="false"
           @change-seating-template="changeSeatingTemplate($event)"
           @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
           @edit-roster="emit('edit-roster')"
@@ -432,6 +444,7 @@ watch(
           @export-default="emit('export-seating-default')"
           @export-option="emit('export-seating-option', $event)"
           @share-link="emit('share-seating-link')"
+          @copy-share="emit('copy-seating-share', $event)"
         />
       </template>
 
