@@ -12,6 +12,7 @@ vi.mock("../../api/client", () => ({
   apiFetch: vi.fn(),
   apiGet: vi.fn(),
   isApiError: (error: unknown) => error instanceof Error,
+  resolveProtectedApiUrl: vi.fn((path: string) => path),
 }));
 
 function createControlledStream() {

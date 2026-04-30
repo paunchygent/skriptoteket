@@ -354,6 +354,8 @@ export function useClassroomPlannerGuestController(options?: {
         resolveGuestGroupingTemplateContext(selectedTemplateId.value),
         "grouping",
       );
+      currentScreen.value = "planner";
+      plannerInitialView.value = "groups";
     } catch (error: unknown) {
       plannerActionError.value = error instanceof Error
         ? error.message
@@ -369,6 +371,8 @@ export function useClassroomPlannerGuestController(options?: {
     plannerActionError.value = null;
     try {
       await guestPlannerState.resolveDraft(selectedRosterId.value, templateId, "seating");
+      currentScreen.value = "planner";
+      plannerInitialView.value = "seats";
     } catch (error: unknown) {
       plannerActionError.value = error instanceof Error
         ? error.message

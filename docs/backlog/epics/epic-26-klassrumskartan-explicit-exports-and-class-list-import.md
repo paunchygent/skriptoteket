@@ -116,7 +116,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   `A4` portrait.
 - `ST-26-06` adds the next governed export variant: immutable shareable
   HTML/CSS links for grouping and seating, with authenticated durable shares
-  first (`PR-0272`) and public guest shares with 60-day TTL and browser-held
+  first (`PR-0274`) and public guest shares with 60-day TTL and browser-held
   supersede/revoke behavior second (`PR-0273`). The lane is now ready after
   `REV-ST-26-06` approval and accepted `ADR-0084` authority; implementation
   must preserve the accepted renderer-provenance, 60-day TTL ceiling, public

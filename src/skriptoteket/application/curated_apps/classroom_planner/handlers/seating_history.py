@@ -10,6 +10,9 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.classroom_planner.handlers.share_artifacts import (
+    ClassroomPlannerShareLifecycleService,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
@@ -104,9 +107,11 @@ class DeleteHistoricSeatingDraftHandler:
         self,
         uow: UnitOfWorkProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService | None = None,
     ) -> None:
         self._uow = uow
         self._drafts = drafts
+        self._share_lifecycle = share_lifecycle
 
     async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> None:
         target = await _get_owned_seating_draft(
@@ -130,4 +135,10 @@ class DeleteHistoricSeatingDraftHandler:
             )
             if current_target.status == PlanDraftStatus.ACTIVE:
                 raise validation_error("Det aktiva sittschemat kan inte tas bort från historiken.")
+            if self._share_lifecycle is not None:
+                await self._share_lifecycle.revoke_for_draft_delete(
+                    owner_user_id=owner_user_id,
+                    draft_id=draft_id,
+                    draft_kind=PlanDraftKind.SEATING,
+                )
             await self._drafts.delete(draft_id=draft_id)

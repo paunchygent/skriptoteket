@@ -18,6 +18,8 @@ import { createClassroomPlannerOverviewCrudFlow } from "./classroomPlannerRouteS
 import { createClassroomPlannerWorkspaceFlow } from "./classroomPlannerRouteShellWorkspace";
 import { useGroupingExportFlow } from "./useGroupingExportFlow";
 import { useSeatingExportFlow } from "./useSeatingExportFlow";
+import { useGroupingShareFlow } from "./useGroupingShareFlow";
+import { useSeatingShareFlow } from "./useSeatingShareFlow";
 import { useClassroomState } from "./useClassroomState";
 
 export function useClassroomPlannerRouteShell() {
@@ -154,6 +156,12 @@ export function useClassroomPlannerRouteShell() {
   const seatingExportFlow = useSeatingExportFlow({
     plannerState,
   });
+  const groupingShareFlow = useGroupingShareFlow({
+    plannerState,
+  });
+  const seatingShareFlow = useSeatingShareFlow({
+    plannerState,
+  });
 
   onMounted(async () => {
     isBootstrapping.value = true;
@@ -207,6 +215,20 @@ export function useClassroomPlannerRouteShell() {
     isSeatingExportBusy: seatingExportFlow.isBusy,
     seatingExportStatusLabel: seatingExportFlow.statusLabel,
     seatingExportErrorMessage: seatingExportFlow.errorMessage,
+    isGroupingShareBusy: groupingShareFlow.isBusy,
+    isGroupingShareLoading: groupingShareFlow.isLoading,
+    groupingShareStatusLabel: groupingShareFlow.statusLabel,
+    groupingShareErrorMessage: groupingShareFlow.errorMessage,
+    groupingShareCopiedId: groupingShareFlow.copiedShareId,
+    groupingShareRevokingId: groupingShareFlow.revokingShareId,
+    groupingShares: groupingShareFlow.shares,
+    isSeatingShareBusy: seatingShareFlow.isBusy,
+    isSeatingShareLoading: seatingShareFlow.isLoading,
+    seatingShareStatusLabel: seatingShareFlow.statusLabel,
+    seatingShareErrorMessage: seatingShareFlow.errorMessage,
+    seatingShareCopiedId: seatingShareFlow.copiedShareId,
+    seatingShareRevokingId: seatingShareFlow.revokingShareId,
+    seatingShares: seatingShareFlow.shares,
     workspaceTransitionLabel,
     workspaceNotice,
     isExitConfirmationOpen: exitFlow.isExitConfirmationOpen,
@@ -240,6 +262,12 @@ export function useClassroomPlannerRouteShell() {
     startGroupingExportOption: groupingExportFlow.startExportOption,
     startDefaultSeatingExport: seatingExportFlow.startDefaultExport,
     startSeatingExportOption: seatingExportFlow.startExportOption,
+    startGroupingShareLink: groupingShareFlow.startShare,
+    copyGroupingShareLink: groupingShareFlow.copyShareLink,
+    revokeGroupingShareLink: groupingShareFlow.revokeOwnedShare,
+    startSeatingShareLink: seatingShareFlow.startShare,
+    copySeatingShareLink: seatingShareFlow.copyShareLink,
+    revokeSeatingShareLink: seatingShareFlow.revokeOwnedShare,
     selectPlannerWorkspaceMode: workspaceFlow.selectPlannerWorkspaceMode,
     upsertRoster: overviewCrudFlow.upsertRoster,
     removeRosterFromOverview: overviewCrudFlow.removeRosterFromOverview,

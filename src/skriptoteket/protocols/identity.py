@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
 from skriptoteket.application.identity.admin_users import (
+    DeactivateUserCommand,
+    DeactivateUserResult,
     GetUserQuery,
     GetUserResult,
     ListUsersQuery,
@@ -64,6 +66,12 @@ class UserRepositoryProtocol(Protocol):
     ) -> None: ...
     async def list_users(self, *, limit: int, offset: int) -> list[User]: ...
     async def count_all(self) -> int: ...
+    async def count_active_by_role(self) -> dict[Role, int]: ...
+
+
+class UserLifecycleRepositoryProtocol(Protocol):
+    async def get_by_id(self, user_id: UUID) -> User | None: ...
+    async def update(self, *, user: User) -> User: ...
     async def count_active_by_role(self) -> dict[Role, int]: ...
 
 
@@ -182,3 +190,12 @@ class ListUsersHandlerProtocol(Protocol):
 
 class GetUserHandlerProtocol(Protocol):
     async def handle(self, *, actor: User, query: GetUserQuery) -> GetUserResult: ...
+
+
+class DeactivateUserHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: DeactivateUserCommand,
+    ) -> DeactivateUserResult: ...

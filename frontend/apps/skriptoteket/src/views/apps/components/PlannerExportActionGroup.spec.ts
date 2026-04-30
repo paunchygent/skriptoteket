@@ -82,4 +82,30 @@ describe("PlannerExportActionGroup", () => {
       "PDF (A4 stående)",
     );
   });
+
+  it("emits the authenticated share-link action as a menu option", async () => {
+    const wrapper = mount(PlannerExportActionGroup, {
+      props: {
+        options: [
+          {
+            id: "xlsx",
+            label: "Excel (.xlsx)",
+            option: "xlsx",
+            isDefault: true,
+          },
+          {
+            id: "share",
+            label: "Dela länk",
+            action: "share-link",
+          },
+        ],
+      },
+    });
+
+    await wrapper.get('[data-test="seating-export-menu-trigger"]').trigger("click");
+    await wrapper.get('[data-test="seating-export-option-share"]').trigger("click");
+
+    expect(wrapper.emitted("share-link")).toEqual([[]]);
+    expect(wrapper.emitted("export-option")).toBeUndefined();
+  });
 });

@@ -141,6 +141,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{user_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Deactivate Admin User */
+        post: operations["deactivate_admin_user_api_v1_admin_users__user_id__deactivate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{user_id}/login-events": {
         parameters: {
             query?: never;
@@ -465,6 +482,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Grouping Share */
+        post: operations["create_grouping_share_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__share_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Grouping Shares */
+        get: operations["list_grouping_shares_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__shares_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/smart-run": {
         parameters: {
             query?: never;
@@ -610,6 +661,40 @@ export interface paths {
         };
         /** Get Recoverable Seating Export Job For Draft */
         get: operations["get_recoverable_seating_export_job_for_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_jobs_recover_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Seating Share */
+        post: operations["create_seating_share_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__share_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Seating Shares */
+        get: operations["list_seating_shares_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__shares_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -912,6 +997,23 @@ export interface paths {
         get: operations["get_class_workspace_summary_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__workspace_summary_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Classroom Planner Share */
+        post: operations["revoke_classroom_planner_share_api_v1_apps_classroom_group_seating_studio_shares__share_id__revoke_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2255,6 +2357,12 @@ export interface components {
             /** Version Count */
             version_count: number;
         };
+        /** AdminUserDeactivateResponse */
+        AdminUserDeactivateResponse: {
+            /** Share Artifacts Revoked */
+            share_artifacts_revoked: number;
+            user: components["schemas"]["User"];
+        };
         /** AdminUserLoginEventsResponse */
         AdminUserLoginEventsResponse: {
             /** Events */
@@ -2639,6 +2747,65 @@ export interface components {
             snapshot: components["schemas"]["ClassroomPlannerGuestSnapshotPayload"];
         };
         /**
+         * ClassroomPlannerShareArtifactDto
+         * @description Serialize persisted share metadata without exposing token hashes.
+         */
+        ClassroomPlannerShareArtifactDto: {
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Draft Id */
+            draft_id: string | null;
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /** Expires At */
+            expires_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Presentation Hash */
+            presentation_hash: string;
+            /** Presentation Schema Version */
+            presentation_schema_version: string;
+            /** Preview Description */
+            preview_description: string | null;
+            /** Public Path */
+            public_path: string | null;
+            /** Public Url */
+            public_url: string | null;
+            /** Renderer Version */
+            renderer_version: string;
+            /** Revoked At */
+            revoked_at: string | null;
+            /** Roster Id */
+            roster_id: string | null;
+            /** Slug */
+            slug: string;
+            source: components["schemas"]["ClassroomPlannerShareArtifactSource"];
+            /** Source Revision */
+            source_revision: number | null;
+            /** Template Id */
+            template_id: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * ClassroomPlannerShareArtifactSource
+         * @description Enumerate the authority source for one immutable share artifact.
+         * @enum {string}
+         */
+        ClassroomPlannerShareArtifactSource: "authenticated" | "public_guest";
+        /**
          * ClassroomSelectionMode
          * @description Describe how a draft kind relates to classroom selection at entry time.
          * @enum {string}
@@ -2705,6 +2872,14 @@ export interface components {
              */
             job_id: string;
             status: components["schemas"]["ConversionHubJobStatus"];
+        };
+        /**
+         * CreateClassroomPlannerShareRequest
+         * @description Deserialize an authenticated share creation request.
+         */
+        CreateClassroomPlannerShareRequest: {
+            /** Expected Revision */
+            expected_revision: number;
         };
         /** CreateDraftToolRequest */
         CreateDraftToolRequest: {
@@ -2814,6 +2989,17 @@ export interface components {
             export_kind: components["schemas"]["SeatingExportKind"];
             layout_id?: components["schemas"]["SeatingExportLayoutId"] | null;
             paper_size?: components["schemas"]["SeatingExportPaperSize"] | null;
+        };
+        /**
+         * CreatedClassroomPlannerShareDto
+         * @description Serialize a newly created share including the one-time public URL.
+         */
+        CreatedClassroomPlannerShareDto: {
+            artifact: components["schemas"]["ClassroomPlannerShareArtifactDto"];
+            /** Public Path */
+            public_path: string;
+            /** Public Url */
+            public_url: string;
         };
         /**
          * CuratedAppItem
@@ -6816,6 +7002,37 @@ export interface operations {
             };
         };
     };
+    deactivate_admin_user_api_v1_admin_users__user_id__deactivate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDeactivateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_admin_user_login_events_api_v1_admin_users__user_id__login_events_get: {
         parameters: {
             query?: {
@@ -7442,6 +7659,72 @@ export interface operations {
             };
         };
     };
+    create_grouping_share_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__share_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClassroomPlannerShareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedClassroomPlannerShareDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_grouping_shares_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__shares_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassroomPlannerShareArtifactDto"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     run_smart_grouping_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__smart_run_post: {
         parameters: {
             query?: never;
@@ -7711,6 +7994,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SeatingExportJobDto"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_seating_share_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__share_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClassroomPlannerShareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedClassroomPlannerShareDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_seating_shares_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__shares_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassroomPlannerShareArtifactDto"][];
                 };
             };
             /** @description Validation Error */
@@ -8391,6 +8740,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClassWorkspaceSummaryDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_classroom_planner_share_api_v1_apps_classroom_group_seating_studio_shares__share_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                share_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassroomPlannerShareArtifactDto"];
                 };
             };
             /** @description Validation Error */

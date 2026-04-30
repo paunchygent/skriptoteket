@@ -30,7 +30,7 @@ PROTECTED_NEXT_PATH = "/editor"
 APP_CONTINUATION_PATH = "/api/v1/profile/app-continuation"
 AI_SETTINGS_PATH = "/api/v1/profile/ai-settings"
 HULEEDU_SESSION_COOKIE = "huleedu_session"
-SKRIPTOTEKET_SESSION_COOKIE = "skriptoteket_session"
+RETIRED_LOCAL_SESSION_COOKIE = "skriptoteket_session"
 
 
 @dataclass(frozen=True)
@@ -208,7 +208,7 @@ def _cookie_assertions(context: BrowserContext) -> tuple[dict[str, object], list
     names = {str(cookie.get("name")) for cookie in cookies}
     values = [str(cookie.get("value")) for cookie in cookies if cookie.get("value")]
     huleedu_cookie_present = HULEEDU_SESSION_COOKIE in names
-    skriptoteket_cookie_absent = SKRIPTOTEKET_SESSION_COOKIE not in names
+    skriptoteket_cookie_absent = RETIRED_LOCAL_SESSION_COOKIE not in names
     assertions: dict[str, object] = {
         "huleedu_browser_session_cookie_present": huleedu_cookie_present,
         "skriptoteket_local_session_cookie_absent": skriptoteket_cookie_absent,
@@ -356,7 +356,7 @@ def _assert_logout(
         timeout=30_000,
     )
     post_logout_cookies = {str(cookie.get("name")) for cookie in context.cookies()}
-    if SKRIPTOTEKET_SESSION_COOKIE in post_logout_cookies:
+    if RETIRED_LOCAL_SESSION_COOKIE in post_logout_cookies:
         raise AssertionError("Skriptoteket local session cookie revived after logout")
     session_unauthenticated = session_response.status in {401, 403}
     if session_response.status == 200:

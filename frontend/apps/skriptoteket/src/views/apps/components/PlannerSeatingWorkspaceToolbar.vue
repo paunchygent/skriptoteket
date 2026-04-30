@@ -22,7 +22,10 @@ import {
 import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
-import PlannerExportActionGroup, { type PlannerExportOptionValue } from "./PlannerExportActionGroup.vue";
+import PlannerExportActionGroup, {
+  type PlannerExportOption,
+  type PlannerExportOptionValue,
+} from "./PlannerExportActionGroup.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
@@ -38,9 +41,13 @@ const props = withDefaults(
     exportBusy?: boolean;
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
+    shareBusy?: boolean;
+    shareStatusLabel?: string | null;
+    shareErrorMessage?: string | null;
     showHistoryAction?: boolean;
     showSmartControls?: boolean;
     showExportActions?: boolean;
+    showShareLinkAction?: boolean;
   }>(),
   {
     availableTemplates: () => [],
@@ -50,9 +57,13 @@ const props = withDefaults(
     exportBusy: false,
     exportStatusLabel: null,
     exportErrorMessage: null,
+    shareBusy: false,
+    shareStatusLabel: null,
+    shareErrorMessage: null,
     showHistoryAction: true,
     showSmartControls: true,
     showExportActions: true,
+    showShareLinkAction: false,
   },
 );
 
@@ -65,6 +76,7 @@ const emit = defineEmits<{
   (e: "open-settings"): void;
   (e: "export-default"): void;
   (e: "export-option", option: SeatingExportOption): void;
+  (e: "share-link"): void;
 }>();
 
 const plannerState = useClassroomState();
@@ -117,8 +129,49 @@ const exportStatus = computed<{
       title: props.exportErrorMessage,
     };
   }
+  if (props.shareBusy) {
+    return {
+      label: props.shareStatusLabel ?? "Skapar länk…",
+      tone: "neutral",
+      title: props.shareStatusLabel ?? undefined,
+    };
+  }
+  if (props.shareErrorMessage) {
+    return {
+      label: "Delningsproblem",
+      tone: "error",
+      title: props.shareErrorMessage,
+    };
+  }
   return null;
 });
+const exportOptions = computed<PlannerExportOption[]>(() => [
+  {
+    id: "a3",
+    label: "Affisch (A3)",
+    option: "a3_landscape",
+    isDefault: true,
+  },
+  {
+    id: "a4",
+    label: "Affisch (A4)",
+    option: "a4_landscape",
+  },
+  {
+    id: "xlsx",
+    label: "Excel (.xlsx)",
+    option: "xlsx",
+  },
+  ...(props.showShareLinkAction
+    ? [
+        {
+          id: "share",
+          label: "Dela länk",
+          action: "share-link",
+        } satisfies PlannerExportOption,
+      ]
+    : []),
+]);
 const {
   hiddenContributionIds,
   stageLabel,
@@ -456,9 +509,11 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       <template #secondary>
         <PlannerExportActionGroup
           v-if="showExportActions"
-          :busy="exportBusy"
+          :busy="exportBusy || shareBusy"
+          :options="exportOptions"
           @export-default="emit('export-default')"
           @export-option="handleExportOption"
+          @share-link="emit('share-link')"
         />
         <UiDenseStatusPill
           v-if="showExportActions && exportStatus"

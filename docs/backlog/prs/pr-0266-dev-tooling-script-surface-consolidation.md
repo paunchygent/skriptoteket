@@ -5,7 +5,7 @@ title: "Dev tooling script surface consolidation"
 status: done
 owners: "agents"
 created: 2026-04-14
-updated: 2026-04-14
+updated: 2026-04-30
 stories: []
 tags: ["tooling", "local-dev", "docs-as-code"]
 acceptance_criteria:
@@ -67,6 +67,14 @@ part of existing evidence contracts.
 
 ## Audit disposition
 
+- 2026-04-30 hygiene addendum: superseded/myopic `scripts/playwright_pr_*.py` proof
+  entrypoints before the HuleEdu auth-cutover retained proof lane were removed from the runnable
+  script surface. Small iterative UI/design checks now route to the Codex internal browser instead
+  of permanent one-off Playwright scripts.
+- The active PR Playwright allowlist is enforced by
+  `tests/unit/scripts/test_playwright_script_surface.py`.
+- Retained HuleEdu auth/share proof scripts remain only when they are named audit gates, manifest
+  producers, or current governed implementation proof surfaces.
 - Retained PR proof aliases (`pr-0252-*` through `pr-0262-*`) remain because they are named
   evidence surfaces in backlog/review docs and retained manifests. If they are consolidated later,
   do it as a governed proof-runner slice that preserves manifest command semantics.

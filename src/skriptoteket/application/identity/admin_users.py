@@ -31,3 +31,16 @@ class GetUserResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User
+
+
+class DeactivateUserCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user_id: UUID
+
+
+class DeactivateUserResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    share_artifacts_revoked: int

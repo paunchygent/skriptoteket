@@ -68,6 +68,7 @@ REVIEW_PLACEHOLDER_PATTERNS: list[tuple[re.Pattern[str], str]] = [
         "Review doc still contains generic Decision 1/2/3 placeholders.",
     ),
 ]
+GRANDFATHERED_DUPLICATE_PR_IDS = {"PR-0195"}
 
 
 @dataclass(frozen=True)
@@ -557,6 +558,40 @@ def validate_review_targets(
     return violations
 
 
+def validate_unique_frontmatter_ids(
+    known_docs: dict[str, tuple[Path, YamlMapping]],
+) -> list[Violation]:
+    """Validate that non-canceled PR docs do not introduce duplicate ids."""
+
+    violations: list[Violation] = []
+    paths_by_id: dict[str, list[str]] = {}
+    for normalized, (_, frontmatter) in known_docs.items():
+        doc_id = frontmatter.get("id")
+        if not isinstance(doc_id, str):
+            continue
+        if frontmatter.get("type") != "pr":
+            continue
+        if doc_id in GRANDFATHERED_DUPLICATE_PR_IDS:
+            continue
+        if frontmatter.get("status") == "canceled":
+            continue
+        paths_by_id.setdefault(doc_id, []).append(normalized)
+
+    for doc_id, normalized_paths in sorted(paths_by_id.items()):
+        if len(normalized_paths) <= 1:
+            continue
+        joined_paths = ", ".join(sorted(normalized_paths))
+        for normalized in normalized_paths:
+            violations.append(
+                Violation(
+                    normalized,
+                    f"Duplicate active frontmatter id '{doc_id}' also appears in: {joined_paths}",
+                )
+            )
+
+    return violations
+
+
 def iter_docs(files: list[str]) -> list[Path]:
     if files:
         paths: list[Path] = []
@@ -587,6 +622,7 @@ def main(argv: list[str]) -> int:
             continue
         violations.extend(validate_doc(path, contract))
 
+    violations.extend(validate_unique_frontmatter_ids(known_docs))
     violations.extend(validate_review_targets(paths, known_docs))
 
     if violations:

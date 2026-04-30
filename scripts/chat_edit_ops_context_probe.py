@@ -10,6 +10,8 @@ from typing import Any
 
 import httpx
 
+from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
+
 DEFAULT_BASE_URL = "http://127.0.0.1:8000"
 DEFAULT_RECORD_ROOT = Path(".artifacts/chat-edit-ops-context")
 
@@ -130,9 +132,8 @@ def main() -> int:
 
     env = _load_env(Path(".env"))
     email = env.get("BOOTSTRAP_SUPERUSER_EMAIL")
-    password = env.get("BOOTSTRAP_SUPERUSER_PASSWORD")
-    if not email or not password:
-        raise SystemExit("BOOTSTRAP_SUPERUSER_EMAIL/PASSWORD missing in .env")
+    if not email:
+        raise SystemExit("BOOTSTRAP_SUPERUSER_EMAIL missing in .env")
 
     chat_correlation_id = str(uuid.uuid4())
     edit_ops_correlation_id = str(uuid.uuid4())
@@ -140,21 +141,18 @@ def main() -> int:
     output_record_dir = _resolve_record_dir(args.record_dir)
 
     timeout = httpx.Timeout(connect=10.0, read=180.0, write=10.0, pool=10.0)
-    client = httpx.Client(base_url=args.base_url, timeout=timeout)
+    auth = create_signed_huleedu_api_session(
+        email=email,
+        display_name="Chat Edit Ops Probe Teacher",
+        role="superuser",
+        jti=f"chat-edit-ops-context-{chat_correlation_id}",
+    )
+    client = httpx.Client(base_url=args.base_url, timeout=timeout, headers=auth.signed_headers)
     try:
-        login = client.post(
-            "/api/v1/auth/login",
-            json={"email": email, "password": password},
-        )
-        login.raise_for_status()
-        csrf_token = login.json().get("csrf_token")
-        if not csrf_token:
-            raise SystemExit("Login response missing csrf_token")
-
         if scenario.tool_id is None:
             tools_payload = client.get(
                 "/api/v1/admin/tools",
-                headers={"X-CSRF-Token": csrf_token, "X-Correlation-ID": chat_correlation_id},
+                headers={"X-Correlation-ID": chat_correlation_id},
             )
             tools_payload.raise_for_status()
             tools = tools_payload.json().get("tools", [])
@@ -167,7 +165,6 @@ def main() -> int:
             tool_id = scenario.tool_id
 
         boot_headers = {
-            "X-CSRF-Token": csrf_token,
             "X-Correlation-ID": chat_correlation_id,
         }
         boot_payload = client.get(f"/api/v1/editor/tools/{tool_id}", headers=boot_headers)
@@ -182,7 +179,6 @@ def main() -> int:
         }
 
         chat_headers = {
-            "X-CSRF-Token": csrf_token,
             "X-Correlation-ID": chat_correlation_id,
             "Accept": "text/event-stream",
         }
@@ -205,7 +201,6 @@ def main() -> int:
             "virtual_files": virtual_files,
         }
         edit_ops_headers = {
-            "X-CSRF-Token": csrf_token,
             "X-Correlation-ID": edit_ops_correlation_id,
         }
         try:

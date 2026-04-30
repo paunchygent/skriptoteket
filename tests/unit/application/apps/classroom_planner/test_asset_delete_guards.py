@@ -33,6 +33,7 @@ async def test_delete_roster_removes_dependent_drafts_before_roster(now):
     roster_id = uuid4()
     rosters = AsyncMock(spec=RosterRepositoryProtocol)
     drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
+    share_lifecycle = AsyncMock()
     rosters.get_by_id.return_value = Roster(
         id=roster_id,
         owner_user_id=owner_id,
@@ -41,10 +42,14 @@ async def test_delete_roster_removes_dependent_drafts_before_roster(now):
         created_at=now,
         updated_at=now,
     )
-    handler = DeleteRosterHandler(FakeUow(), rosters, drafts)
+    handler = DeleteRosterHandler(FakeUow(), rosters, drafts, share_lifecycle=share_lifecycle)
 
     await handler.handle(roster_id=roster_id, owner_user_id=owner_id)
 
+    share_lifecycle.revoke_for_roster_delete.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+    )
     drafts.delete_for_roster.assert_awaited_once_with(owner_user_id=owner_id, roster_id=roster_id)
     rosters.delete.assert_awaited_once_with(roster_id=roster_id)
 
@@ -55,6 +60,7 @@ async def test_delete_template_removes_dependent_drafts_before_template(now):
     template_id = uuid4()
     templates = AsyncMock(spec=RoomTemplateRepositoryProtocol)
     drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
+    share_lifecycle = AsyncMock()
     templates.get_by_id.return_value = RoomTemplate(
         id=template_id,
         owner_user_id=owner_id,
@@ -64,10 +70,19 @@ async def test_delete_template_removes_dependent_drafts_before_template(now):
         created_at=now,
         updated_at=now,
     )
-    handler = DeleteRoomTemplateHandler(FakeUow(), templates, drafts)
+    handler = DeleteRoomTemplateHandler(
+        FakeUow(),
+        templates,
+        drafts,
+        share_lifecycle=share_lifecycle,
+    )
 
     await handler.handle(template_id=template_id, owner_user_id=owner_id)
 
+    share_lifecycle.revoke_for_template_delete.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        template_id=template_id,
+    )
     drafts.delete_for_template.assert_awaited_once_with(
         owner_user_id=owner_id,
         template_id=template_id,

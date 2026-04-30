@@ -10,6 +10,8 @@ from typing import Any
 
 import httpx
 
+from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
+
 DEFAULT_BASE_URL = "http://127.0.0.1:8000"
 DEFAULT_SCENARIO_DIR = Path("scripts/edit_ops_scenarios")
 DEFAULT_RECORD_ROOT = Path(".artifacts/edit-ops-harness")
@@ -92,26 +94,21 @@ class Scenario:
 
 
 class HarnessClient:
-    def __init__(self, *, base_url: str, email: str, password: str) -> None:
-        self._client = httpx.Client(base_url=base_url, timeout=60.0)
-        self._email = email
-        self._password = password
-        self._csrf_token: str | None = None
+    def __init__(self, *, base_url: str, email: str, correlation_id: str) -> None:
+        auth = create_signed_huleedu_api_session(
+            email=email,
+            display_name="Edit Ops Harness Teacher",
+            role="superuser",
+            jti=f"edit-ops-harness-{correlation_id}",
+        )
+        self._client = httpx.Client(
+            base_url=base_url,
+            timeout=60.0,
+            headers=auth.signed_headers,
+        )
 
     def close(self) -> None:
         self._client.close()
-
-    def login(self) -> None:
-        response = self._client.post(
-            "/api/v1/auth/login",
-            json={"email": self._email, "password": self._password},
-        )
-        response.raise_for_status()
-        payload = response.json()
-        csrf_token = payload.get("csrf_token")
-        if not csrf_token:
-            raise SystemExit("Login response missing csrf_token")
-        self._csrf_token = csrf_token
 
     def request(
         self,
@@ -122,7 +119,6 @@ class HarnessClient:
         correlation_id: str,
     ) -> dict[str, Any]:
         headers = {
-            "X-CSRF-Token": self._csrf_token or "",
             "X-Correlation-ID": correlation_id,
         }
         response = self._client.request(method, path, json=payload, headers=headers)
@@ -131,7 +127,6 @@ class HarnessClient:
 
     def get(self, path: str, *, correlation_id: str) -> dict[str, Any]:
         headers = {
-            "X-CSRF-Token": self._csrf_token or "",
             "X-Correlation-ID": correlation_id,
         }
         response = self._client.get(path, headers=headers)
@@ -216,14 +211,11 @@ def main() -> int:
 
     env = _load_env(Path(".env"))
     email = env.get("BOOTSTRAP_SUPERUSER_EMAIL")
-    password = env.get("BOOTSTRAP_SUPERUSER_PASSWORD")
-    if not email or not password:
-        raise SystemExit("BOOTSTRAP_SUPERUSER_EMAIL/PASSWORD missing in .env")
+    if not email:
+        raise SystemExit("BOOTSTRAP_SUPERUSER_EMAIL missing in .env")
 
-    client = HarnessClient(base_url=args.base_url, email=email, password=password)
+    client = HarnessClient(base_url=args.base_url, email=email, correlation_id=correlation_id)
     try:
-        client.login()
-
         if tool_id is None:
             tools_payload = client.get("/api/v1/admin/tools", correlation_id=correlation_id)
             tools = tools_payload.get("tools", [])
@@ -372,13 +364,11 @@ def _run_replay(
 
     env = _load_env(Path(".env"))
     email = env.get("BOOTSTRAP_SUPERUSER_EMAIL")
-    password = env.get("BOOTSTRAP_SUPERUSER_PASSWORD")
-    if not email or not password:
-        raise SystemExit("BOOTSTRAP_SUPERUSER_EMAIL/PASSWORD missing in .env")
+    if not email:
+        raise SystemExit("BOOTSTRAP_SUPERUSER_EMAIL missing in .env")
 
-    client = HarnessClient(base_url=base_url, email=email, password=password)
+    client = HarnessClient(base_url=base_url, email=email, correlation_id=correlation_id)
     try:
-        client.login()
         preview_response = client.request(
             "POST",
             "/api/v1/editor/edit-ops/preview",

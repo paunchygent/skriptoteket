@@ -53,6 +53,9 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "b7f9c2d4e1a6",
     "d3a9f6b2c4e7",
     "c1d2e3f4a5b6",
+    "a8f5c7d9e2b1",
+    "b4c6d8e1f2a3",
+    "c7d9e3f5a1b2",
 )
 
 
@@ -124,6 +127,31 @@ async def _foreign_key_targets(engine: AsyncEngine, table_name: str) -> dict[str
                 JOIN information_schema.constraint_column_usage ccu
                   ON ccu.constraint_name = tc.constraint_name
                  AND ccu.table_schema = tc.table_schema
+                WHERE tc.constraint_type = 'FOREIGN KEY'
+                  AND tc.table_schema = 'public'
+                  AND tc.table_name = :table_name
+                """
+            ),
+            {"table_name": table_name},
+        )
+        return {row[0]: row[1] for row in result.fetchall()}
+
+
+async def _foreign_key_delete_rules(engine: AsyncEngine, table_name: str) -> dict[str, str]:
+    async with engine.connect() as conn:
+        result = await conn.execute(
+            text(
+                """
+                SELECT
+                    kcu.column_name,
+                    rc.delete_rule
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                 AND tc.table_schema = kcu.table_schema
+                JOIN information_schema.referential_constraints rc
+                  ON rc.constraint_name = tc.constraint_name
+                 AND rc.constraint_schema = tc.table_schema
                 WHERE tc.constraint_type = 'FOREIGN KEY'
                   AND tc.table_schema = 'public'
                   AND tc.table_name = :table_name
@@ -233,6 +261,65 @@ async def _assert_c1d2_drop_browser_auth_sessions(engine: AsyncEngine) -> None:
     tables = await _table_names(engine)
     assert "sessions" not in tables
     assert "tool_sessions" in tables
+
+
+async def _assert_a8f5_classroom_planner_share_artifacts(engine: AsyncEngine) -> None:
+    await _assert_c1d2_drop_browser_auth_sessions(engine)
+    tables = await _table_names(engine)
+    assert "classroom_planner_share_artifacts" in tables
+    columns = await _column_map(engine, "classroom_planner_share_artifacts")
+    assert {
+        "token_hash",
+        "source",
+        "draft_kind",
+        "owner_user_id",
+        "draft_id",
+        "roster_id",
+        "template_id",
+        "source_revision",
+        "renderer_version",
+        "presentation_schema_version",
+        "presentation_hash",
+        "content_hash",
+        "presentation_payload",
+        "rendered_html",
+        "rendered_css",
+        "revoked_at",
+        "expires_at",
+    }.issubset(columns)
+    assert columns["token_hash"]["is_nullable"] == "NO"
+    assert columns["rendered_html"]["is_nullable"] == "NO"
+    assert columns["rendered_css"]["is_nullable"] == "NO"
+    indexes = await _index_names(engine, "classroom_planner_share_artifacts")
+    assert {
+        "ix_classroom_planner_share_artifacts_token_hash",
+        "ix_classroom_planner_share_artifacts_source",
+        "ix_classroom_planner_share_artifacts_owner_user_id",
+        "ix_classroom_planner_share_artifacts_draft_id",
+        "ix_cp_share_artifacts_owner_draft_kind_created",
+        "ix_cp_share_artifacts_expires_at",
+        "ix_cp_share_artifacts_revoked_at",
+    }.issubset(indexes)
+    foreign_keys = await _foreign_key_targets(engine, "classroom_planner_share_artifacts")
+    assert foreign_keys["owner_user_id"] == "users"
+    assert foreign_keys["draft_id"] == "classroom_planner_plan_drafts"
+
+
+async def _assert_b4c6_share_artifact_lifecycle_fks(engine: AsyncEngine) -> None:
+    await _assert_a8f5_classroom_planner_share_artifacts(engine)
+    delete_rules = await _foreign_key_delete_rules(
+        engine,
+        "classroom_planner_share_artifacts",
+    )
+    assert delete_rules["owner_user_id"] == "NO ACTION"
+    assert delete_rules["draft_id"] == "NO ACTION"
+
+
+async def _assert_c7d9_share_artifact_public_path(engine: AsyncEngine) -> None:
+    await _assert_b4c6_share_artifact_lifecycle_fks(engine)
+    columns = await _column_map(engine, "classroom_planner_share_artifacts")
+    assert "public_path" in columns
+    assert columns["public_path"]["is_nullable"] == "YES"
 
 
 async def _assert_0032_user_file_vault(engine: AsyncEngine) -> None:
@@ -574,6 +661,9 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "b7f9c2d4e1a6": _assert_b7f9_drop_legacy_student_notes,
     "d3a9f6b2c4e7": _assert_d3a9_guest_upgrade_identity,
     "c1d2e3f4a5b6": _assert_c1d2_drop_browser_auth_sessions,
+    "a8f5c7d9e2b1": _assert_a8f5_classroom_planner_share_artifacts,
+    "b4c6d8e1f2a3": _assert_b4c6_share_artifact_lifecycle_fks,
+    "c7d9e3f5a1b2": _assert_c7d9_share_artifact_public_path,
 }
 
 

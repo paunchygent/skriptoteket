@@ -5,11 +5,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.application.identity.admin_users import GetUserQuery, ListUsersQuery
+from skriptoteket.application.identity.admin_users import (
+    DeactivateUserCommand,
+    GetUserQuery,
+    ListUsersQuery,
+)
 from skriptoteket.application.identity.login_events import ListLoginEventsQuery
 from skriptoteket.domain.identity.login_events import LoginEvent
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.identity import (
+    DeactivateUserHandlerProtocol,
     GetUserHandlerProtocol,
     ListUsersHandlerProtocol,
 )
@@ -29,6 +34,12 @@ class ListAdminUsersResponse(BaseModel):
 class AdminUserResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
     user: User
+
+
+class AdminUserDeactivateResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    user: User
+    share_artifacts_revoked: int
 
 
 class AdminUserLoginEventsResponse(BaseModel):
@@ -59,6 +70,22 @@ async def get_admin_user(
 ) -> AdminUserResponse:
     result = await handler.handle(actor=user, query=GetUserQuery(user_id=user_id))
     return AdminUserResponse(user=result.user)
+
+
+@router.post("/admin/users/{user_id}/deactivate", response_model=AdminUserDeactivateResponse)
+async def deactivate_admin_user(
+    user_id: UUID,
+    handler: FromDishka[DeactivateUserHandlerProtocol],
+    user: User = Depends(require_app_superuser_api),
+) -> AdminUserDeactivateResponse:
+    result = await handler.handle(
+        actor=user,
+        command=DeactivateUserCommand(user_id=user_id),
+    )
+    return AdminUserDeactivateResponse(
+        user=result.user,
+        share_artifacts_revoked=result.share_artifacts_revoked,
+    )
 
 
 @router.get("/admin/users/{user_id}/login-events", response_model=AdminUserLoginEventsResponse)

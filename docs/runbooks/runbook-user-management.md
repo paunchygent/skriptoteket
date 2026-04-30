@@ -171,15 +171,22 @@ ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c 
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"UPDATE users SET role = 'admin' WHERE email = 'user@example.com';\""
 ```
 
-### 8. Delete User
+### 8. Deactivate or Delete User
+
+Prefer the superuser admin deactivation path for normal account lifecycle work:
+`POST /api/v1/admin/users/{user_id}/deactivate`. This revokes owned
+Klassrumskartan public share artifacts before marking the account inactive.
+
+Raw SQL deletion is only for deliberate operator repair after related lifecycle
+cleanup has been handled:
 
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"DELETE FROM users WHERE email = 'user@example.com';\""
 ```
 
 **Warning:** This may fail if the user has related records such as identity projections, tool
-versions, runs, favorites, or profiles. Prefer deliberate migration/repair scripts for anything
-larger than a one-off operator correction.
+versions, runs, favorites, profiles, or share artifacts. Prefer deliberate migration/repair
+scripts for anything larger than a one-off operator correction.
 
 ## Troubleshooting
 

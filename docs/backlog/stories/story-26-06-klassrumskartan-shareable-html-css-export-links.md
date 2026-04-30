@@ -81,7 +81,7 @@ sharing.
   - never fall back from public helper routes into authenticated owner-scoped
     APIs
 - Planned PR slices:
-  - `PR-0272` for authenticated share links, renderer, storage, read route,
+  - `PR-0274` for authenticated share links, renderer, storage, read route,
     export-menu action, copy-link UX, list/revoke, lifecycle semantics, and
     expected-revision proof.
   - `PR-0273` for public guest share links under accepted `ADR-0084` authority,

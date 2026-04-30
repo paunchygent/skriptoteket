@@ -37,6 +37,9 @@ from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_job 
 from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_webhook_binding import (
     SeatingExportWebhookBindingModel,
 )
+from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact import (
+    ClassroomPlannerShareArtifactModel,
+)
 from skriptoteket.infrastructure.db.models.conversion_hub_job import ConversionHubJobModel
 from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionEventModel,
@@ -52,6 +55,7 @@ __all__ = [
     "AllowedDomainModel",
     "BlockedDomainModel",
     "ClassroomPlannerGuestUpgradeConsumptionModel",
+    "ClassroomPlannerShareArtifactModel",
     "DraftGroupModel",
     "ConversionHubJobModel",
     "GroupingExportCheckpointModel",

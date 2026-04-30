@@ -14,15 +14,18 @@ from pydantic import BaseModel
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     ActivateSeatingHistoryDraftHandler,
+    CreateAuthenticatedSeatingShareHandler,
     CreateSeatingDraftHandler,
     CreateSeatingExportJobHandler,
     DeleteHistoricSeatingDraftHandler,
     DownloadSeatingExportJobHandler,
     GetRecoverableSeatingExportJobForDraftHandler,
     GetSeatingExportJobHandler,
+    ListClassroomPlannerShareArtifactsHandler,
     PrepareSeatingExportHandler,
     RunSmartSeatingHandler,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.identity.models import User
 from skriptoteket.web.api.v1.apps_classroom_planner import (
     DraftWorkspaceResponse,
@@ -41,6 +44,13 @@ from skriptoteket.web.api.v1.apps_classroom_planner_export_job_contracts import 
     CreateSeatingExportJobRequest,
     SeatingExportJobDto,
     serialize_seating_export_job,
+)
+from skriptoteket.web.api.v1.apps_classroom_planner_share_contracts import (
+    ClassroomPlannerShareArtifactDto,
+    CreateClassroomPlannerShareRequest,
+    CreatedClassroomPlannerShareDto,
+    serialize_created_share,
+    serialize_share_artifact,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
@@ -181,6 +191,56 @@ async def create_seating_export_job(
         correlation_id=str(correlation_id_uuid) if correlation_id_uuid is not None else None,
     )
     return serialize_seating_export_job(result)
+
+
+@router.post(
+    "/drafts/seating/{draft_id}/share",
+    response_model=CreatedClassroomPlannerShareDto,
+)
+async def create_seating_share(
+    draft_id: UUID,
+    request: Request,
+    payload: CreateClassroomPlannerShareRequest,
+    handler: FromDishka[CreateAuthenticatedSeatingShareHandler],
+    user: User = Depends(require_app_user_api),
+) -> CreatedClassroomPlannerShareDto:
+    result = await handler.handle(
+        draft_id=draft_id,
+        owner_user_id=user.id,
+        expected_revision=payload.expected_revision,
+    )
+    return serialize_created_share(
+        result,
+        public_app_base_url=_public_app_base_url(request),
+    )
+
+
+@router.get(
+    "/drafts/seating/{draft_id}/shares",
+    response_model=list[ClassroomPlannerShareArtifactDto],
+)
+async def list_seating_shares(
+    draft_id: UUID,
+    request: Request,
+    handler: FromDishka[ListClassroomPlannerShareArtifactsHandler],
+    user: User = Depends(require_app_user_api),
+) -> list[ClassroomPlannerShareArtifactDto]:
+    artifacts = await handler.handle(
+        owner_user_id=user.id,
+        draft_id=draft_id,
+        draft_kind=PlanDraftKind.SEATING,
+    )
+    return [
+        serialize_share_artifact(
+            artifact,
+            public_app_base_url=_public_app_base_url(request),
+        )
+        for artifact in artifacts
+    ]
+
+
+def _public_app_base_url(request: Request) -> str:
+    return str(getattr(request.app.state, "public_app_base_url", ""))
 
 
 @router.get(

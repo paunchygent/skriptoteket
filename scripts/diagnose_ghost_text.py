@@ -11,6 +11,10 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
+from scripts._playwright_huleedu_auth import (
+    create_signed_huleedu_api_session,
+    install_local_huleedu_auth_routes,
+)
 
 
 def _maybe_call(value: object) -> object:
@@ -71,14 +75,11 @@ def _is_completion_request(request: object) -> bool:
 
 def _fetch_tool_id(
     base_url: str,
-    email: str,
-    password: str,
+    signed_headers: dict[str, str],
     *,
     slug: str | None = None,
 ) -> str:
-    client = httpx.Client(base_url=base_url)
-    response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
-    response.raise_for_status()
+    client = httpx.Client(base_url=base_url, headers=signed_headers)
     tools_response = client.get("/api/v1/admin/tools")
     tools_response.raise_for_status()
     payload = tools_response.json()
@@ -141,12 +142,13 @@ def main() -> None:
     artifacts_dir = Path(".artifacts/diagnose-ghost-text")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
-    tool_id = _fetch_tool_id(
-        base_url,
-        config.email,
-        config.password,
-        slug=args.tool_slug or None,
+    auth = create_signed_huleedu_api_session(
+        email=config.email,
+        display_name="Ghost Text Diagnostic Teacher",
+        role="superuser",
+        jti=f"diagnose-ghost-text-{int(time.time())}",
     )
+    tool_id = _fetch_tool_id(base_url, auth.signed_headers, slug=args.tool_slug or None)
     editor_url = f"{base_url}/admin/tools/{tool_id}"
 
     result: dict[str, object] = {
@@ -194,15 +196,16 @@ def main() -> None:
 
         page.on("request", handle_request)
         page.on("response", handle_response)
+        install_local_huleedu_auth_routes(
+            page,
+            base_url=base_url,
+            signed_headers=auth.signed_headers,
+            provider_subject=auth.provider_subject,
+            provider_email=auth.provider_email,
+            display_name=auth.display_name,
+        )
 
         page.goto(editor_url, wait_until="domcontentloaded")
-
-        # Login modal appears automatically for protected routes.
-        expect(page.locator("#login-modal-title")).to_be_visible()
-        page.fill("#modal-email", config.email)
-        page.fill("#modal-password", config.password)
-        page.get_by_role("button", name="Logga in").click()
-        page.wait_for_url("**/admin/tools/**")
 
         # Wait for editor to render.
         expect(page.get_by_text("Källkod")).to_be_visible()

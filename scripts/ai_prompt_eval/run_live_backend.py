@@ -13,6 +13,7 @@ from typing import Any, Literal
 
 import httpx
 
+from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
 from scripts.ai_prompt_eval.fixture_bank import (
     FIXTURES,
     EditSuggestionFixture,
@@ -157,21 +158,6 @@ def _utc_now() -> datetime:
 
 def _run_id(now: datetime) -> str:
     return now.strftime("%Y%m%d-%H%M%S")
-
-
-def _login(*, client: httpx.Client, email: str, password: str) -> str:
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": email, "password": password},
-    )
-    response.raise_for_status()
-    payload = response.json()
-    if not isinstance(payload, dict):
-        raise ValueError("Login response is not an object")
-    csrf_token = payload.get("csrf_token")
-    if not isinstance(csrf_token, str) or not csrf_token:
-        raise ValueError("Login response missing csrf_token")
-    return csrf_token
 
 
 def _coerce_int(value: str | None) -> int | None:
@@ -357,9 +343,14 @@ def run() -> Path:
         timeout=config.timeout_seconds,
     )
     try:
-        csrf_token = _login(client=client, email=config.email, password=config.password)
+        auth = create_signed_huleedu_api_session(
+            email=config.email,
+            display_name="AI Prompt Eval Teacher",
+            role="superuser",
+            jti=f"ai-prompt-eval-{_run_id(started_at)}",
+        )
         common_headers = {
-            "X-CSRF-Token": csrf_token,
+            **auth.signed_headers,
             _EVAL_REQUEST_HEADER: "1",
         }
 

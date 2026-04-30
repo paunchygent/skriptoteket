@@ -34,6 +34,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
+from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session  # noqa: E402
 from scripts._smart_seating_semantics_support import (  # noqa: E402
     KEEP_APART_STUDENT_IDS,
     KEEP_NEAR_STUDENT_IDS,
@@ -63,7 +64,7 @@ def _api_base_url(base_url: str) -> str:
     return base_url.rstrip("/")
 
 
-def _read_bootstrap_credentials() -> tuple[str, str]:
+def _read_bootstrap_email() -> str:
     env_path = REPO_ROOT / ".env"
     values: dict[str, str] = {}
     for line in env_path.read_text(encoding="utf-8").splitlines():
@@ -72,18 +73,16 @@ def _read_bootstrap_credentials() -> tuple[str, str]:
             continue
         key, value = stripped.split("=", 1)
         values[key.strip()] = value.strip().strip('"')
-    return values["BOOTSTRAP_SUPERUSER_EMAIL"], values["BOOTSTRAP_SUPERUSER_PASSWORD"]
+    return values["BOOTSTRAP_SUPERUSER_EMAIL"]
 
 
-def _login_api(*, api_base_url: str, email: str, password: str) -> tuple[requests.Session, str]:
-    session = requests.Session()
-    response = session.post(
-        f"{api_base_url}/api/v1/auth/login",
-        json={"email": email, "password": password},
-        timeout=30,
+def _create_api_session(*, api_base_url: str, email: str) -> tuple[requests.Session, str]:
+    auth = create_signed_huleedu_api_session(
+        email=email,
+        display_name="ST 27-03 Smart Seating Teacher",
+        jti="st-27-03-smart-seating",
     )
-    response.raise_for_status()
-    return session, response.json()["csrf_token"]
+    return auth.api_session, "huleedu-gateway-context"
 
 
 def _api_get(session: requests.Session, *, api_base_url: str, path: str) -> dict[str, Any]:
@@ -307,11 +306,10 @@ def main() -> None:
 
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     api_base_url = _api_base_url(args.base_url)
-    email, password = _read_bootstrap_credentials()
-    session, csrf_token = _login_api(
+    email = _read_bootstrap_email()
+    session, csrf_token = _create_api_session(
         api_base_url=api_base_url,
         email=email,
-        password=password,
     )
 
     template = _get_g20_template(session, api_base_url=api_base_url)

@@ -13,6 +13,10 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
+from scripts._playwright_huleedu_auth import (
+    create_signed_huleedu_api_session,
+    install_local_huleedu_auth_routes,
+)
 
 EDIT_OPS_TIMEOUT_MS = 180_000
 EDIT_OPS_POLL_INTERVAL_MS = 250
@@ -64,20 +68,6 @@ def _select_next_lines(page: object, *, count: int) -> None:
     page.keyboard.up("Shift")
 
 
-def _login(page: object, *, base_url: str, email: str, password: str) -> None:
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-
-    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-    expect(dialog).to_be_visible()
-    dialog.get_by_label(re.compile(r"E-post", re.IGNORECASE)).fill(email)
-    dialog.get_by_label(re.compile(r"L.senord", re.IGNORECASE)).fill(password)
-    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-
-    expect(
-        page.get_by_role("heading", name=re.compile(r"V.lkommen", re.IGNORECASE))
-    ).to_be_visible()
-
-
 def _is_edit_ops_request(request: object) -> bool:
     if not hasattr(request, "url") or not hasattr(request, "method"):
         return False
@@ -90,10 +80,8 @@ def _is_edit_ops_preview_request(request: object) -> bool:
     return "/api/v1/editor/edit-ops/preview" in request.url and request.method == "POST"
 
 
-def _fetch_tool_id(base_url: str, email: str, password: str, *, slug: str) -> str:
-    client = httpx.Client(base_url=base_url.rstrip("/"))
-    response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
-    response.raise_for_status()
+def _fetch_tool_id(base_url: str, signed_headers: dict[str, str], *, slug: str) -> str:
+    client = httpx.Client(base_url=base_url.rstrip("/"), headers=signed_headers)
     tools_response = client.get("/api/v1/admin/tools")
     tools_response.raise_for_status()
     payload = tools_response.json()
@@ -173,7 +161,13 @@ def main() -> None:
     artifacts_dir = Path(".artifacts/diagnose-edit-ops")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
-    tool_id = _fetch_tool_id(api_url, config.email, config.password, slug=args.tool_slug)
+    auth = create_signed_huleedu_api_session(
+        email=config.email,
+        display_name="Edit Ops Diagnostic Teacher",
+        role="superuser",
+        jti=f"diagnose-edit-ops-{int(time.time())}",
+    )
+    tool_id = _fetch_tool_id(api_url, auth.signed_headers, slug=args.tool_slug)
     editor_url = f"{app_url}/admin/tools/{tool_id}"
 
     result: dict[str, object] = {
@@ -247,7 +241,14 @@ def main() -> None:
         page.on("response", handle_response)
 
         try:
-            _login(page, base_url=app_url, email=config.email, password=config.password)
+            install_local_huleedu_auth_routes(
+                page,
+                base_url=app_url,
+                signed_headers=auth.signed_headers,
+                provider_subject=auth.provider_subject,
+                provider_email=auth.provider_email,
+                display_name=auth.display_name,
+            )
 
             page.goto(editor_url, wait_until="domcontentloaded")
 

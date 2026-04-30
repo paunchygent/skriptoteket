@@ -10,7 +10,7 @@ stories:
   - "ST-26-06"
 tags: ["frontend", "backend", "klassrumskartan", "public-access", "sharing"]
 dependencies:
-  - "PR-0272"
+  - "PR-0274"
   - "ADR-0079"
   - "ADR-0080"
   - "ADR-0084"
@@ -59,7 +59,7 @@ exception and the retained `REV-ST-26-06` guardrails.
    - `POST /api/v1/public/apps/classroom.group-seating-studio/seating/share`
 2. Reuse public export snapshot materialization and strict expected-revision
    validation; create no artifact when the revision guard fails.
-3. Reuse the share artifact storage/read route from `PR-0272`, with
+3. Reuse the share artifact storage/read route from `PR-0274`, with
    `owner_user_id = null`, `source = public_guest`, and `expires_at` no later
    than `created_at + 60 days`.
 4. Generate a browser-held revoke secret for public guest shares and store only

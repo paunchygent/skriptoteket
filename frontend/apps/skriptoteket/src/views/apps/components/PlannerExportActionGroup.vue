@@ -14,12 +14,21 @@ import type { GroupingExportOption, SeatingExportOption } from "../classroomPlan
 
 export type PlannerExportOptionValue = SeatingExportOption | GroupingExportOption;
 
-export type PlannerExportOption = {
+export type PlannerExportFileOption = {
   id: string;
   label: string;
   option: PlannerExportOptionValue;
   isDefault?: boolean;
 };
+
+export type PlannerExportShareOption = {
+  id: string;
+  label: string;
+  action: "share-link";
+  isDefault?: false;
+};
+
+export type PlannerExportOption = PlannerExportFileOption | PlannerExportShareOption;
 
 const props = withDefaults(
   defineProps<{
@@ -68,6 +77,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: "export-default"): void;
   (e: "export-option", option: PlannerExportOptionValue): void;
+  (e: "share-link"): void;
 }>();
 
 const exportOptions = computed<PlannerExportOption[]>(() => props.options);
@@ -82,6 +92,10 @@ const splitItems = computed<UiDenseSplitButtonItem[]>(() => {
 function selectOption(optionId: string): void {
   const option = exportOptions.value.find((item) => item.id === optionId);
   if (!option) {
+    return;
+  }
+  if ("action" in option) {
+    emit("share-link");
     return;
   }
   emit("export-option", option.option);

@@ -32,14 +32,24 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "d3a9f6b2c4e7"
+    target_revision = "c7d9e3f5a1b2"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
-    def run_alembic_cmd(cmd_func, *args):
-        thread = threading.Thread(target=cmd_func, args=(alembic_cfg, *args))
+    def run_alembic_cmd(cmd_func, *args) -> None:
+        errors: list[BaseException] = []
+
+        def run_command() -> None:
+            try:
+                cmd_func(alembic_cfg, *args)
+            except BaseException as exc:  # noqa: BLE001 - thread boundary re-raises below.
+                errors.append(exc)
+
+        thread = threading.Thread(target=run_command)
         thread.start()
         thread.join()
+        if errors:
+            raise errors[0]
 
     engine = create_async_engine(_to_async_database_url(database_url))
 
@@ -82,7 +92,6 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                         email,
                         role,
                         auth_provider,
-                        external_id,
                         password_hash,
                         is_active,
                         email_verified,
@@ -93,7 +102,6 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                         :email,
                         'superuser',
                         'local',
-                        :external_id,
                         'hash',
                         true,
                         true,
@@ -104,7 +112,6 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                 {
                     "id": owner_id,
                     "email": f"{owner_id}@example.test",
-                    "external_id": owner_id,
                 },
             )
             await conn.execute(
@@ -301,6 +308,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             "classroom_planner_rosters",
             "classroom_planner_room_templates",
             "classroom_planner_plan_drafts",
+            "classroom_planner_share_artifacts",
             "classroom_planner_group_assignments",
             "classroom_planner_seat_assignments",
             "classroom_planner_draft_groups",
@@ -318,6 +326,26 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             "classroom_planner_plan_drafts"
         )
         assert "guest_import_identity" in await get_columns("classroom_planner_plan_drafts")
+        share_columns = await get_columns("classroom_planner_share_artifacts")
+        assert {
+            "token_hash",
+            "source",
+            "draft_kind",
+            "source_revision",
+            "public_path",
+            "renderer_version",
+            "presentation_schema_version",
+            "presentation_hash",
+            "content_hash",
+            "presentation_payload",
+            "rendered_html",
+            "rendered_css",
+            "revoked_at",
+            "expires_at",
+        }.issubset(share_columns)
+        share_indexes = await get_index_names("classroom_planner_share_artifacts")
+        assert "ix_classroom_planner_share_artifacts_token_hash" in share_indexes
+        assert "ix_cp_share_artifacts_owner_draft_kind_created" in share_indexes
         assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
         assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
         assert "group_count" not in await get_columns("classroom_planner_plan_drafts")
@@ -472,6 +500,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         run_alembic_cmd(command.upgrade, target_revision)
         tables_after_reupgrade = await get_tables()
         assert "classroom_planner_draft_groups" in tables_after_reupgrade
+        assert "classroom_planner_share_artifacts" in tables_after_reupgrade
         assert "classroom_planner_student_planning_meta" not in tables_after_reupgrade
         assert "classroom_planner_arrangement_snapshots" not in tables_after_reupgrade
         assert "classroom_planner_pair_constraints" not in tables_after_reupgrade

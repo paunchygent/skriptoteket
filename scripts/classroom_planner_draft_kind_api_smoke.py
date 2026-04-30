@@ -20,6 +20,7 @@ from typing import Any
 import requests
 
 from scripts._playwright_config import get_config
+from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
 
 
 def _api_base_url(base_url: str) -> str:
@@ -113,17 +114,13 @@ def main() -> None:
 
     suffix = str(int(time.time()))
 
-    session = requests.Session()
-    login = session.post(
-        f"{api_base_url}/api/v1/auth/login",
-        json={"email": config.email, "password": config.password},
-        timeout=30,
+    auth = create_signed_huleedu_api_session(
+        email=config.email,
+        display_name="Draft Kind Smoke Teacher",
+        jti=f"classroom-planner-draft-kind-{suffix}",
     )
-    login.raise_for_status()
-
-    csrf = session.get(f"{api_base_url}/api/v1/auth/csrf", timeout=30)
-    csrf.raise_for_status()
-    csrf_token = csrf.json()["csrf_token"]
+    session = auth.api_session
+    csrf_token = "huleedu-gateway-context"
 
     roster_one_id = _create_roster(
         session,

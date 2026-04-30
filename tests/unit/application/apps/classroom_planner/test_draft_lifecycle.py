@@ -756,7 +756,8 @@ async def test_delete_historic_grouping_draft_deletes_superseded_drafts(uow, dra
     owner_id = uuid4()
     draft_id = uuid4()
     roster_id = uuid4()
-    handler = DeleteHistoricGroupingDraftHandler(uow, drafts)
+    share_lifecycle = AsyncMock()
+    handler = DeleteHistoricGroupingDraftHandler(uow, drafts, share_lifecycle=share_lifecycle)
     historic = PlanDraft(
         id=draft_id,
         owner_user_id=owner_id,
@@ -776,6 +777,11 @@ async def test_delete_historic_grouping_draft_deletes_superseded_drafts(uow, dra
     drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
         owner_user_id=owner_id,
         roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+    )
+    share_lifecycle.revoke_for_draft_delete.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        draft_id=draft_id,
         draft_kind=PlanDraftKind.GROUPING,
     )
     drafts.delete.assert_awaited_once_with(draft_id=draft_id)

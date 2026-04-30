@@ -8,11 +8,19 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.identity.admin_users import GetUserResult, ListUsersResult
+from skriptoteket.application.identity.admin_users import (
+    DeactivateUserResult,
+    GetUserResult,
+    ListUsersResult,
+)
 from skriptoteket.application.identity.login_events import ListLoginEventsResult
 from skriptoteket.domain.identity.login_events import LoginEvent, LoginEventStatus
 from skriptoteket.domain.identity.models import AuthProvider, Role
-from skriptoteket.protocols.identity import GetUserHandlerProtocol, ListUsersHandlerProtocol
+from skriptoteket.protocols.identity import (
+    DeactivateUserHandlerProtocol,
+    GetUserHandlerProtocol,
+    ListUsersHandlerProtocol,
+)
 from skriptoteket.protocols.login_events import ListLoginEventsHandlerProtocol
 from skriptoteket.web.api.v1 import admin_users
 from tests.unit.web.admin_scripting_test_support import _original, _user
@@ -80,3 +88,29 @@ async def test_get_admin_user_login_events_calls_handlers() -> None:
     events_handler.handle.assert_awaited_once()
     assert events_handler.handle.call_args.kwargs["query"].user_id == target_user.id
     assert events_handler.handle.call_args.kwargs["query"].limit == 25
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_deactivate_admin_user_calls_lifecycle_handler() -> None:
+    handler = AsyncMock(spec=DeactivateUserHandlerProtocol)
+    superuser = _user(role=Role.SUPERUSER)
+    target_user = _user(role=Role.USER)
+    deactivated = target_user.model_copy(update={"is_active": False})
+    handler.handle.return_value = DeactivateUserResult(
+        user=deactivated,
+        share_artifacts_revoked=2,
+    )
+
+    result = await _original(admin_users.deactivate_admin_user)(
+        user_id=target_user.id,
+        handler=handler,
+        user=superuser,
+    )
+
+    assert result.user.id == target_user.id
+    assert result.user.is_active is False
+    assert result.share_artifacts_revoked == 2
+    handler.handle.assert_awaited_once()
+    assert handler.handle.call_args.kwargs["actor"].id == superuser.id
+    assert handler.handle.call_args.kwargs["command"].user_id == target_user.id

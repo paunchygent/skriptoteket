@@ -144,7 +144,7 @@ function commitName(): void {
         v-for="student in students"
         :key="student.id"
         :data-test="`group-student-row-${student.id}`"
-        class="flex min-h-[44px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
+        class="flex min-h-[56px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
         :class="'border-navy bg-white text-navy hover:bg-canvas'"
         :draggable="!props.disabled"
         @dragstart="onDragStart($event, student)"

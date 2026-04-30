@@ -12,15 +12,18 @@ from pydantic import BaseModel
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     ActivateGroupingHistoryDraftHandler,
+    CreateAuthenticatedGroupingShareHandler,
     CreateGroupingDraftHandler,
     CreateGroupingExportJobHandler,
     DeleteHistoricGroupingDraftHandler,
     DownloadGroupingExportJobHandler,
     GetGroupingExportJobHandler,
     GetRecoverableGroupingExportJobForDraftHandler,
+    ListClassroomPlannerShareArtifactsHandler,
     PrepareGroupingExportHandler,
     RunSmartGroupingHandler,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.identity.models import User
 from skriptoteket.web.api.v1.apps_classroom_planner import (
     DraftWorkspaceResponse,
@@ -39,6 +42,13 @@ from skriptoteket.web.api.v1.apps_classroom_planner_export_job_contracts import 
     CreateGroupingExportJobRequest,
     GroupingExportJobDto,
     serialize_grouping_export_job,
+)
+from skriptoteket.web.api.v1.apps_classroom_planner_share_contracts import (
+    ClassroomPlannerShareArtifactDto,
+    CreateClassroomPlannerShareRequest,
+    CreatedClassroomPlannerShareDto,
+    serialize_created_share,
+    serialize_share_artifact,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
@@ -179,6 +189,56 @@ async def create_grouping_export_job(
         paper_size=payload.paper_size,
     )
     return serialize_grouping_export_job(result)
+
+
+@router.post(
+    "/drafts/grouping/{draft_id}/share",
+    response_model=CreatedClassroomPlannerShareDto,
+)
+async def create_grouping_share(
+    draft_id: UUID,
+    http_request: Request,
+    payload: CreateClassroomPlannerShareRequest,
+    handler: FromDishka[CreateAuthenticatedGroupingShareHandler],
+    user: User = Depends(require_app_user_api),
+) -> CreatedClassroomPlannerShareDto:
+    result = await handler.handle(
+        draft_id=draft_id,
+        owner_user_id=user.id,
+        expected_revision=payload.expected_revision,
+    )
+    return serialize_created_share(
+        result,
+        public_app_base_url=_public_app_base_url(http_request),
+    )
+
+
+@router.get(
+    "/drafts/grouping/{draft_id}/shares",
+    response_model=list[ClassroomPlannerShareArtifactDto],
+)
+async def list_grouping_shares(
+    draft_id: UUID,
+    request: Request,
+    handler: FromDishka[ListClassroomPlannerShareArtifactsHandler],
+    user: User = Depends(require_app_user_api),
+) -> list[ClassroomPlannerShareArtifactDto]:
+    artifacts = await handler.handle(
+        owner_user_id=user.id,
+        draft_id=draft_id,
+        draft_kind=PlanDraftKind.GROUPING,
+    )
+    return [
+        serialize_share_artifact(
+            artifact,
+            public_app_base_url=_public_app_base_url(request),
+        )
+        for artifact in artifacts
+    ]
+
+
+def _public_app_base_url(request: Request) -> str:
+    return str(getattr(request.app.state, "public_app_base_url", ""))
 
 
 @router.get(

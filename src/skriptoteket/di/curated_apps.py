@@ -13,6 +13,10 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ActivateGroupingHistoryDraftHandler,
     ActivateSeatingHistoryDraftHandler,
     ClassroomPlannerGuestUpgradeHandler,
+    ClassroomPlannerShareLifecycleService,
+    CreateAuthenticatedGroupingShareHandler,
+    CreateAuthenticatedSeatingShareHandler,
+    CreateClassroomPlannerShareArtifactHandler,
     CreateGroupingDraftHandler,
     CreateGroupingExportJobHandler,
     CreateRoomTemplateHandler,
@@ -26,6 +30,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     DownloadGroupingExportJobHandler,
     DownloadSeatingExportJobHandler,
     GetClassroomPlannerGuestUpgradeConsumptionHandler,
+    GetClassroomPlannerShareArtifactByTokenHandler,
     GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
@@ -38,6 +43,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetRosterSmartRulesHandler,
     GetSeatingExportJobHandler,
     GroupingExportJobFinalizer,
+    ListClassroomPlannerShareArtifactsHandler,
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
@@ -46,6 +52,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    RevokeClassroomPlannerShareArtifactHandler,
     RunPublicGroupingExportHandler,
     RunPublicSeatingExportHandler,
     RunPublicSmartGroupingHandler,
@@ -121,6 +128,9 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_pdf
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
     SeatingXlsxRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
+    StaticClassroomPlannerShareRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
@@ -164,6 +174,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner_guest_upgrade im
 from skriptoteket.infrastructure.repositories.classroom_planner_seating_export_checkpoints import (
     PostgreSQLSeatingExportCheckpointRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_share_artifacts import (
+    PostgreSQLClassroomPlannerShareArtifactRepository,
+)
 from skriptoteket.infrastructure.repositories.classroom_planner_smart_rules import (
     PostgreSQLRosterSmartRuleRepository,
 )
@@ -194,6 +207,10 @@ from skriptoteket.protocols.classroom_planner_imports import (
     ClassListHeuristicParserProtocol,
     DocumentTextExtractorProtocol,
 )
+from skriptoteket.protocols.classroom_planner_shares import (
+    ClassroomPlannerShareArtifactRepositoryProtocol,
+    ClassroomPlannerShareRendererProtocol,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -219,6 +236,7 @@ from skriptoteket.protocols.reagent_prep_chef import (
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertALotClientV2Protocol
+from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
@@ -519,8 +537,14 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService,
     ) -> DeleteRosterHandler:
-        return DeleteRosterHandler(uow=uow, rosters=rosters, drafts=drafts)
+        return DeleteRosterHandler(
+            uow=uow,
+            rosters=rosters,
+            drafts=drafts,
+            share_lifecycle=share_lifecycle,
+        )
 
     @provide(scope=Scope.REQUEST)
     def list_room_templates_handler(
@@ -561,8 +585,14 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
         templates: RoomTemplateRepositoryProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService,
     ) -> DeleteRoomTemplateHandler:
-        return DeleteRoomTemplateHandler(uow=uow, templates=templates, drafts=drafts)
+        return DeleteRoomTemplateHandler(
+            uow=uow,
+            templates=templates,
+            drafts=drafts,
+            share_lifecycle=share_lifecycle,
+        )
 
     @provide(scope=Scope.REQUEST)
     def get_draft_handler(self, drafts: PlanDraftRepositoryProtocol) -> GetDraftHandler:
@@ -628,8 +658,13 @@ class CuratedAppsProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService,
     ) -> DeleteHistoricGroupingDraftHandler:
-        return DeleteHistoricGroupingDraftHandler(uow=uow, drafts=drafts)
+        return DeleteHistoricGroupingDraftHandler(
+            uow=uow,
+            drafts=drafts,
+            share_lifecycle=share_lifecycle,
+        )
 
     @provide(scope=Scope.REQUEST)
     def create_seating_draft_handler(
@@ -859,6 +894,86 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def create_classroom_planner_share_artifact_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        token_generator: TokenGeneratorProtocol,
+    ) -> CreateClassroomPlannerShareArtifactHandler:
+        return CreateClassroomPlannerShareArtifactHandler(
+            shares=shares,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            token_generator=token_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_classroom_planner_share_artifacts_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ListClassroomPlannerShareArtifactsHandler:
+        return ListClassroomPlannerShareArtifactsHandler(shares=shares, uow=uow)
+
+    @provide(scope=Scope.REQUEST)
+    def get_classroom_planner_share_artifact_by_token_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> GetClassroomPlannerShareArtifactByTokenHandler:
+        return GetClassroomPlannerShareArtifactByTokenHandler(shares=shares, uow=uow)
+
+    @provide(scope=Scope.REQUEST)
+    def classroom_planner_share_lifecycle_service(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> ClassroomPlannerShareLifecycleService:
+        return ClassroomPlannerShareLifecycleService(shares=shares, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def revoke_classroom_planner_share_artifact_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> RevokeClassroomPlannerShareArtifactHandler:
+        return RevokeClassroomPlannerShareArtifactHandler(
+            shares=shares,
+            uow=uow,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_authenticated_grouping_share_handler(
+        self,
+        prepare_grouping: PrepareGroupingExportHandler,
+        create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        renderer: ClassroomPlannerShareRendererProtocol,
+    ) -> CreateAuthenticatedGroupingShareHandler:
+        return CreateAuthenticatedGroupingShareHandler(
+            prepare_grouping=prepare_grouping,
+            create_artifact=create_artifact,
+            renderer=renderer,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_authenticated_seating_share_handler(
+        self,
+        prepare_seating: PrepareSeatingExportHandler,
+        create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        renderer: ClassroomPlannerShareRendererProtocol,
+    ) -> CreateAuthenticatedSeatingShareHandler:
+        return CreateAuthenticatedSeatingShareHandler(
+            prepare_seating=prepare_seating,
+            create_artifact=create_artifact,
+            renderer=renderer,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def activate_seating_history_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -872,8 +987,13 @@ class CuratedAppsProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService,
     ) -> DeleteHistoricSeatingDraftHandler:
-        return DeleteHistoricSeatingDraftHandler(uow=uow, drafts=drafts)
+        return DeleteHistoricSeatingDraftHandler(
+            uow=uow,
+            drafts=drafts,
+            share_lifecycle=share_lifecycle,
+        )
 
     @provide(scope=Scope.REQUEST)
     def undo_draft_handler(
@@ -1126,6 +1246,13 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLGroupingExportCheckpointRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def classroom_planner_share_artifact_repository(
+        self,
+        session: AsyncSession,
+    ) -> ClassroomPlannerShareArtifactRepositoryProtocol:
+        return PostgreSQLClassroomPlannerShareArtifactRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
     def classroom_planner_guest_upgrade_repository(
         self, session: AsyncSession
     ) -> ClassroomPlannerGuestUpgradeRepositoryProtocol:
@@ -1156,6 +1283,10 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def grouping_pdf_renderer(self) -> GroupingPdfRendererProtocol:
         return GroupingPdfRenderer()
+
+    @provide(scope=Scope.APP)
+    def classroom_planner_share_renderer(self) -> ClassroomPlannerShareRendererProtocol:
+        return StaticClassroomPlannerShareRenderer()
 
     @provide(scope=Scope.APP)
     def class_list_document_extractor(

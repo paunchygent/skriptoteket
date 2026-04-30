@@ -60,6 +60,12 @@ pkill -TERM -f 'playwright_chromiumdev_profile|Google Chrome.*mcp-chrome|Google 
 ## Playwright Strategy (REQUIRED)
 
 - Maintain **one script per operational validation**; avoid overlapping flows between scripts.
+- REQUIRED: Use the Codex internal browser for small iterative UI checks, quick visual/design review, and
+  myopic one-off interaction checks. Do not add a new `scripts/playwright_pr_*.py` file for those cases.
+- REQUIRED: Add or retain Playwright scripts only for complex flows that need repeatable validation,
+  artifacts, or auditability across sessions/environments.
+- REQUIRED: New `scripts/playwright_pr_*.py` entrypoints must be explicitly justified by a governed PR/task
+  and added to the script-surface allowlist in `tests/unit/scripts/test_playwright_script_surface.py`.
 - Inspect the closest existing Playwright scripts in `scripts/` before inventing a new flow, and reuse established
   helpers, selectors, login patterns, and artifact structure unless the new validation clearly needs something else.
 - Prefer extending existing scripts rather than adding new ones unless the flow is distinct and reusable.

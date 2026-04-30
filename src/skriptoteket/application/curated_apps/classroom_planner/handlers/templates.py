@@ -10,6 +10,9 @@ from __future__ import annotations
 from collections import Counter
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.classroom_planner.handlers.share_artifacts import (
+    ClassroomPlannerShareLifecycleService,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DEFAULT_ROOM_GRID_COLS,
     DEFAULT_ROOM_GRID_ROWS,
@@ -165,10 +168,12 @@ class DeleteRoomTemplateHandler:
         uow: UnitOfWorkProtocol,
         templates: RoomTemplateRepositoryProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService | None = None,
     ) -> None:
         self._uow = uow
         self._templates = templates
         self._drafts = drafts
+        self._share_lifecycle = share_lifecycle
 
     async def handle(self, *, template_id: UUID, owner_user_id: UUID) -> None:
         template = await self._templates.get_by_id(template_id=template_id)
@@ -176,6 +181,11 @@ class DeleteRoomTemplateHandler:
             raise not_found("RoomTemplate", str(template_id))
 
         async with self._uow:
+            if self._share_lifecycle is not None:
+                await self._share_lifecycle.revoke_for_template_delete(
+                    owner_user_id=owner_user_id,
+                    template_id=template_id,
+                )
             await self._drafts.delete_for_template(
                 owner_user_id=owner_user_id,
                 template_id=template_id,

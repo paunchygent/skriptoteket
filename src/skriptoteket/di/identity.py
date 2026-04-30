@@ -14,8 +14,12 @@ from __future__ import annotations
 
 from dishka import Provider, Scope, provide
 
+from skriptoteket.application.curated_apps.classroom_planner.handlers.share_artifacts import (
+    ClassroomPlannerShareLifecycleService,
+)
 from skriptoteket.application.identity.domain_validator import TldextractDomainValidator
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
+from skriptoteket.application.identity.handlers.deactivate_user import DeactivateUserHandler
 from skriptoteket.application.identity.handlers.get_profile import GetProfileHandler
 from skriptoteket.application.identity.handlers.get_user import GetUserHandler
 from skriptoteket.application.identity.handlers.list_login_events import ListLoginEventsHandler
@@ -36,6 +40,7 @@ from skriptoteket.protocols.identity import (
     AllowedDomainRepositoryProtocol,
     BlockedDomainRepositoryProtocol,
     CreateLocalUserHandlerProtocol,
+    DeactivateUserHandlerProtocol,
     DomainValidatorProtocol,
     GetProfileHandlerProtocol,
     GetUserHandlerProtocol,
@@ -179,6 +184,21 @@ class IdentityProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_user_handler(self, users: UserRepositoryProtocol) -> GetUserHandlerProtocol:
         return GetUserHandler(users=users)
+
+    @provide(scope=Scope.REQUEST)
+    def deactivate_user_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService,
+        clock: ClockProtocol,
+    ) -> DeactivateUserHandlerProtocol:
+        return DeactivateUserHandler(
+            uow=uow,
+            users=users,
+            share_lifecycle=share_lifecycle,
+            clock=clock,
+        )
 
     @provide(scope=Scope.REQUEST)
     def list_login_events_handler(

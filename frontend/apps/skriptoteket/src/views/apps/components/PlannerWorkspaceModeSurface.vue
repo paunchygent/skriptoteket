@@ -28,6 +28,8 @@ defineProps<{
       <slot name="toolbar" />
     </div>
 
+    <slot name="after-toolbar" />
+
     <div
       :class="PLANNER_WORKSPACE_PANE_SHELL_CLASS"
       data-ui="planner-workspace-pane-shell"

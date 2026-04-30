@@ -46,6 +46,20 @@ const {
   isSeatingExportBusy,
   seatingExportStatusLabel,
   seatingExportErrorMessage,
+  isGroupingShareBusy,
+  isGroupingShareLoading,
+  groupingShareStatusLabel,
+  groupingShareErrorMessage,
+  groupingShareCopiedId,
+  groupingShareRevokingId,
+  groupingShares,
+  isSeatingShareBusy,
+  isSeatingShareLoading,
+  seatingShareStatusLabel,
+  seatingShareErrorMessage,
+  seatingShareCopiedId,
+  seatingShareRevokingId,
+  seatingShares,
   workspaceTransitionLabel,
   workspaceNotice,
   isExitConfirmationOpen,
@@ -79,6 +93,12 @@ const {
   startGroupingExportOption,
   startDefaultSeatingExport,
   startSeatingExportOption,
+  startGroupingShareLink,
+  copyGroupingShareLink,
+  revokeGroupingShareLink,
+  startSeatingShareLink,
+  copySeatingShareLink,
+  revokeSeatingShareLink,
   selectPlannerWorkspaceMode,
   upsertRoster,
   removeRosterFromOverview,
@@ -183,6 +203,20 @@ const {
           :seating-export-busy="isSeatingExportBusy"
           :seating-export-status-label="seatingExportStatusLabel"
           :seating-export-error-message="seatingExportErrorMessage"
+          :grouping-share-busy="isGroupingShareBusy"
+          :grouping-share-loading="isGroupingShareLoading"
+          :grouping-share-status-label="groupingShareStatusLabel"
+          :grouping-share-error-message="groupingShareErrorMessage"
+          :grouping-share-copied-id="groupingShareCopiedId"
+          :grouping-share-revoking-id="groupingShareRevokingId"
+          :grouping-shares="groupingShares"
+          :seating-share-busy="isSeatingShareBusy"
+          :seating-share-loading="isSeatingShareLoading"
+          :seating-share-status-label="seatingShareStatusLabel"
+          :seating-share-error-message="seatingShareErrorMessage"
+          :seating-share-copied-id="seatingShareCopiedId"
+          :seating-share-revoking-id="seatingShareRevokingId"
+          :seating-shares="seatingShares"
           :transition-label="workspaceTransitionLabel"
           :workspace-notice="workspaceNotice"
           @change-grouping-roster="void changeGroupingRoster($event)"
@@ -192,8 +226,14 @@ const {
           @new-seating-draft="void startNewSeatingDraft($event)"
           @export-grouping-default="void startDefaultGroupingExport()"
           @export-grouping-option="void startGroupingExportOption($event)"
+          @share-grouping-link="void startGroupingShareLink()"
+          @copy-grouping-share="void copyGroupingShareLink($event)"
+          @revoke-grouping-share="void revokeGroupingShareLink($event)"
           @export-seating-default="void startDefaultSeatingExport()"
           @export-seating-option="void startSeatingExportOption($event)"
+          @share-seating-link="void startSeatingShareLink()"
+          @copy-seating-share="void copySeatingShareLink($event)"
+          @revoke-seating-share="void revokeSeatingShareLink($event)"
           @edit-roster="openSelectedRosterEdit"
           @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
           @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"

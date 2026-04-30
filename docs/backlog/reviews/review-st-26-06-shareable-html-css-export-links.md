@@ -10,7 +10,7 @@ reviewer: "lead-developer"
 stories:
   - ST-26-06
 prs:
-  - PR-0272
+  - PR-0274
   - PR-0273
 adrs:
   - ADR-0075
@@ -25,7 +25,7 @@ links:
 
 ## TL;DR
 
-`ST-26-06`, `PR-0272`, and `PR-0273` are approved as a ready planning surface
+`ST-26-06`, `PR-0274`, and `PR-0273` are approved as a ready planning surface
 after re-review and user-lead `ADR-0084` acceptance. The docs now keep public
 guest durable share artifacts inside the accepted `ADR-0084` exception, add the
 missing authenticated `expected_revision` contract, and spell out
@@ -41,7 +41,7 @@ while they actually add a durable anonymous public artifact surface.
 
 ## Proposed Solution
 
-- `PR-0272` adds authenticated owned share artifacts, public read links,
+- `PR-0274` adds authenticated owned share artifacts, public read links,
   renderer/storage, export-menu UI, list/copy, and revoke.
 - `PR-0273` reuses that share artifact/read model for public guest snapshots
   with a 60-day TTL ceiling and browser-held revoke/supersede metadata.
@@ -51,7 +51,7 @@ while they actually add a durable anonymous public artifact surface.
 | File | Focus | Time |
 |------|-------|------|
 | `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md` | Parent story, acceptance criteria, export-boundary claims | 12 min |
-| `docs/backlog/prs/pr-0272-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md` | Authenticated implementation plan and proof obligations | 14 min |
+| `docs/backlog/prs/pr-0274-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md` | Authenticated implementation plan and proof obligations | 14 min |
 | `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md` | Public guest implementation plan and public-helper boundary | 14 min |
 | `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md` | Epic-level export contract | 8 min |
 | `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md` | Public guest state and export boundary | 12 min |
@@ -69,9 +69,9 @@ while they actually add a durable anonymous public artifact surface.
 |----------|-----------|----------|
 | Put `Dela länk` in the existing export menu | Matches EPIC-26 and avoids a parallel sharing workflow | [x] |
 | Use unguessable tokens with cosmetic slugs | Correct authority split; slugs must never authorize access | [x] |
-| Store authenticated shares as durable teacher-owned artifacts | `PR-0272` now requires lifecycle/delete/deactivation rules and proof | [x] |
+| Store authenticated shares as durable teacher-owned artifacts | `PR-0274` now requires lifecycle/delete/deactivation rules and proof | [x] |
 | Let public guests create 60-day server-stored share artifacts under ADR-0079 | Not under `ADR-0079` alone; accepted `ADR-0084` is the narrow exception authority for `PR-0273` | [x] |
-| Treat the current PR-0272 endpoint shape as implementation-ready | `PR-0272` now uses kind-specific routes plus typed `expected_revision` proof | [x] |
+| Treat the current PR-0274 endpoint shape as implementation-ready | `PR-0274` now uses kind-specific routes plus typed `expected_revision` proof | [x] |
 | Treat PR-0273 abuse controls as specified enough | `PR-0273` now requires share-specific limits, size caps, purge, metrics/log redaction, and race/idempotency tests | [x] |
 
 ## Review Checklist
@@ -118,7 +118,7 @@ audit trail for what was remediated.
    share creation ignores ambient cookies, creates no owner-scoped rows, and
    rejects attempts to attach account identifiers.
 
-2. **Blocker: `PR-0272` cannot enforce the story's expected-revision export contract as written.**
+2. **Blocker: `PR-0274` cannot enforce the story's expected-revision export contract as written.**
 
    `ST-26-06` requires the same pre-export persistence contract as PDF/Excel,
    including `expected_revision` validation before metadata is created. The
@@ -185,7 +185,7 @@ audit trail for what was remediated.
 
 5. **High: authenticated share lifecycle is missing deletion and ownership semantics.**
 
-   `PR-0272` creates durable teacher-owned shares without default expiry, but it
+   `PR-0274` creates durable teacher-owned shares without default expiry, but it
    does not define what happens when the source draft, roster, room template, or
    owner account is deleted/deactivated. Because the artifact is frozen and
    public, this can leave public roster pages available after the teacher thinks
@@ -240,7 +240,7 @@ audit trail for what was remediated.
 
 ### Suggestions
 
-- Add generated OpenAPI/frontend contract refresh to `PR-0272` and `PR-0273`
+- Add generated OpenAPI/frontend contract refresh to `PR-0274` and `PR-0273`
   closeout if the new endpoints are exposed through OpenAPI.
 - Prefer a dedicated share module (`classroom_planner_shares`) rather than
   extending the existing export-job modules; this is a publish/read/revoke
@@ -258,15 +258,15 @@ audit trail for what was remediated.
 - Finding 1 was originally closed by draft `ADR-0084`, `ST-26-06` blocked
   status, and `PR-0273`'s explicit stop condition. It is now governed by
   accepted `ADR-0084`, and `PR-0273` is ready only within that exception.
-- Finding 2 is closed by `PR-0272`'s kind-specific grouping/seating share routes,
+- Finding 2 is closed by `PR-0274`'s kind-specific grouping/seating share routes,
   required `expected_revision`, immediate pre-render validation, and no-row-on-
   conflict proof.
-- Finding 3 is closed by `ST-26-06` and `PR-0272` privacy-first route metadata
+- Finding 3 is closed by `ST-26-06` and `PR-0274` privacy-first route metadata
   requirements: `noindex,nofollow`, sitemap exclusion, escaped preview tags,
   status semantics, and cache headers.
 - Finding 4 is closed by `PR-0273`'s share-specific request/rendered-size caps,
   rate limits, active-share ceilings, purge path, and redacted metric/log proof.
-- Finding 5 is closed by `PR-0272`'s owned-share lifecycle requirements for
+- Finding 5 is closed by `PR-0274`'s owned-share lifecycle requirements for
   source draft, roster/class, room-template, and account deletion/deactivation.
 - The two medium findings are also closed by the added renderer/provenance
   fields and guest idempotency/race-safety requirements.
@@ -333,10 +333,10 @@ the accepted exception rather than blocked on a proposed decision.
 
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | `REV-ST-26-06` | Recorded a retained changes-requested review for the ST-26-06 / PR-0272 / PR-0273 share-link planning surface. |
+| 1 | `REV-ST-26-06` | Recorded a retained changes-requested review for the ST-26-06 / PR-0274 / PR-0273 share-link planning surface. |
 | 2 | `ADR-0084` | Added the public share artifact exception, later accepted by the user-lead after re-review. |
 | 3 | `ST-26-06` | Added the `ADR-0084` dependency, privacy/indexing requirements, and public-guest authority acceptance criteria; later moved the story to ready after ADR acceptance. |
-| 4 | `PR-0272` | Added kind-specific routes, `expected_revision`, lifecycle, provenance, metadata, and deletion proof requirements; re-review moved the authenticated slice back to ready. |
+| 4 | `PR-0274` | Added kind-specific routes, `expected_revision`, lifecycle, provenance, metadata, and deletion proof requirements; re-review moved the authenticated slice back to ready. |
 | 5 | `PR-0273` | Added concrete abuse-control, purge, idempotency, and race-safety requirements; later moved the public guest slice to ready after accepted `ADR-0084`. |
 | 6 | `REV-ST-26-06` | Re-reviewed the remediation and approved the planning surface while retaining the then-active `ADR-0084` implementation stop condition for public guest shares. |
 | 7 | `ADR-0084`, `ST-26-06`, `PR-0273`, `REV-ST-26-06` | Applied the ADR acceptance review guardrails for renderer provenance, 60-day TTL ceiling, and public helper creation versus anonymous token read route separation. |

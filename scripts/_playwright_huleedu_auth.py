@@ -25,18 +25,36 @@ import time
 import urllib.request
 from collections.abc import Iterator
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 from uuid import UUID
 
+import requests
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from playwright.sync_api import APIRequestContext, Playwright
+from playwright.sync_api import APIRequestContext, Page, Playwright, Route
 
 DEFAULT_PROVIDER_SUBJECT = "huleedu-provider-subject"
+DEFAULT_PROVIDER_EMAIL = "pr-live-huleedu@example.test"
+DEFAULT_PROVIDER_DISPLAY_NAME = "Local Teacher"
 DEFAULT_LOCAL_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
 DEFAULT_SIGNING_KEY_ID = "gateway-identity-rs256-v1"
+DEFAULT_BROWSER_SESSION_EXPIRES_AT = "2026-04-30T12:30:00Z"
+
+
+@dataclass(frozen=True)
+class HuleEduSignedSession:
+    """Signed local proof context for request-level and browser checks."""
+
+    api_session: requests.Session
+    signed_headers: dict[str, str]
+    local_user_id: UUID
+    provider_subject: str
+    provider_email: str
+    display_name: str
+    public_key: str
 
 
 def repo_root() -> Path:
@@ -382,6 +400,124 @@ def seed_huleedu_projection(
             role=role,
         )
     )
+
+
+def create_signed_huleedu_api_session(
+    *,
+    private_key: rsa.RSAPrivateKey | None = None,
+    local_user_id: str = DEFAULT_LOCAL_USER_ID,
+    provider_subject: str = DEFAULT_PROVIDER_SUBJECT,
+    email: str = DEFAULT_PROVIDER_EMAIL,
+    display_name: str = DEFAULT_PROVIDER_DISPLAY_NAME,
+    role: str = "contributor",
+    jti: str = "playwright-local-huleedu-context",
+) -> HuleEduSignedSession:
+    """Create a requests session authenticated by signed HuleEdu context.
+
+    The backend under test must trust the returned ``public_key``. For fully
+    self-contained local proofs, start the backend with ``temporary_backend_server``.
+    """
+    signing_key = private_key or new_private_key()
+    local_projection_id = seed_huleedu_projection(
+        local_user_id=local_user_id,
+        provider_subject=provider_subject,
+        email=email,
+        display_name=display_name,
+        role=role,
+    )
+    signed_headers = signed_identity_headers(
+        private_key=signing_key,
+        subject=provider_subject,
+        email=email,
+        display_name=display_name,
+        jti=jti,
+    )
+    session = requests.Session()
+    session.headers.update(signed_headers)
+    return HuleEduSignedSession(
+        api_session=session,
+        signed_headers=signed_headers,
+        local_user_id=local_projection_id,
+        provider_subject=provider_subject,
+        provider_email=email,
+        display_name=display_name,
+        public_key=public_key_pem(signing_key),
+    )
+
+
+def install_local_huleedu_auth_routes(
+    page: Page,
+    *,
+    base_url: str,
+    signed_headers: dict[str, str],
+    provider_subject: str = DEFAULT_PROVIDER_SUBJECT,
+    provider_email: str = DEFAULT_PROVIDER_EMAIL,
+    display_name: str = DEFAULT_PROVIDER_DISPLAY_NAME,
+    seen: list[str] | None = None,
+) -> None:
+    """Mock HuleEdu browser auth and sign local protected app API requests."""
+    cors_headers = {
+        "content-type": "application/json",
+        "access-control-allow-origin": base_url,
+        "access-control-allow-credentials": "true",
+    }
+
+    def huleedu_session(route: Route) -> None:
+        if seen is not None:
+            seen.append("huleedu-session")
+        route.fulfill(
+            status=200,
+            headers=cors_headers,
+            body=json.dumps(
+                {
+                    "authenticated": True,
+                    "user": {
+                        "user_id": provider_subject,
+                        "email": provider_email,
+                        "email_verified": True,
+                    },
+                    "profile": {"display_name": display_name, "locale": "sv-SE"},
+                    "context": {
+                        "active_app": "skriptoteket",
+                        "active_product_identity_realm": "skriptoteket_standalone",
+                        "realm_subject_id": provider_subject,
+                    },
+                    "policy": {
+                        "roles": ["teacher"],
+                        "grants": ["tools:run"],
+                        "feature_flags": ["inline-completion"],
+                    },
+                    "session": {
+                        "transport": "cookie",
+                        "csrf_required": True,
+                        "expires_at": DEFAULT_BROWSER_SESSION_EXPIRES_AT,
+                    },
+                }
+            ),
+        )
+
+    def huleedu_csrf(route: Route) -> None:
+        if seen is not None:
+            seen.append("huleedu-csrf")
+        route.fulfill(
+            status=200,
+            headers=cors_headers,
+            body=json.dumps({"csrf_token": "csrf-token"}),
+        )
+
+    def protected_app_api(route: Route) -> None:
+        if seen is not None and "/api/v1/profile/app-continuation" in route.request.url:
+            seen.append("app-continuation-live")
+        route.continue_(headers={**route.request.headers, **signed_headers})
+
+    page.route("https://api.hule.education/v1/auth/session", huleedu_session)
+    page.route("https://api.hule.education/v1/auth/csrf", huleedu_csrf)
+    page.route("**/api/v1/**", protected_app_api)
+
+
+def open_local_huleedu_app(page: Page, *, base_url: str, path: str) -> None:
+    """Open a protected SPA path after installing local HuleEdu auth routes."""
+    page.goto(f"{base_url.rstrip('/')}{path}", wait_until="domcontentloaded")
 
 
 def verify_profile_continuation_api(

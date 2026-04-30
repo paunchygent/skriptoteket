@@ -19,9 +19,11 @@ import PlannerRulesWorkspacePane from "./PlannerRulesWorkspacePane.vue";
 import PlannerSeatingSettingsDrawer from "./PlannerSeatingSettingsDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
+import PlannerShareLinksPanel from "./PlannerShareLinksPanel.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import PlannerWorkspaceModeSurface from "./PlannerWorkspaceModeSurface.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
+import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import { PLANNER_WORKSPACE_SHELL_CLASS } from "../plannerWorkspaceLayout";
 import { useClassroomState } from "../useClassroomState";
 import { usePlannerUndoRedoShortcuts } from "../usePlannerUndoRedoShortcuts";
@@ -48,6 +50,20 @@ const props = withDefaults(
     seatingExportBusy?: boolean;
     seatingExportStatusLabel?: string | null;
     seatingExportErrorMessage?: string | null;
+    groupingShareBusy?: boolean;
+    groupingShareLoading?: boolean;
+    groupingShareStatusLabel?: string | null;
+    groupingShareErrorMessage?: string | null;
+    groupingShareCopiedId?: string | null;
+    groupingShareRevokingId?: string | null;
+    groupingShares?: ClassroomPlannerShareArtifact[];
+    seatingShareBusy?: boolean;
+    seatingShareLoading?: boolean;
+    seatingShareStatusLabel?: string | null;
+    seatingShareErrorMessage?: string | null;
+    seatingShareCopiedId?: string | null;
+    seatingShareRevokingId?: string | null;
+    seatingShares?: ClassroomPlannerShareArtifact[];
     transitionLabel?: string | null;
     workspaceNotice?: string | null;
   }>(),
@@ -66,6 +82,20 @@ const props = withDefaults(
     seatingExportBusy: false,
     seatingExportStatusLabel: null,
     seatingExportErrorMessage: null,
+    groupingShareBusy: false,
+    groupingShareLoading: false,
+    groupingShareStatusLabel: null,
+    groupingShareErrorMessage: null,
+    groupingShareCopiedId: null,
+    groupingShareRevokingId: null,
+    groupingShares: () => [],
+    seatingShareBusy: false,
+    seatingShareLoading: false,
+    seatingShareStatusLabel: null,
+    seatingShareErrorMessage: null,
+    seatingShareCopiedId: null,
+    seatingShareRevokingId: null,
+    seatingShares: () => [],
     transitionLabel: null,
     workspaceNotice: null,
   },
@@ -84,8 +114,14 @@ const emit = defineEmits<{
   (e: "delete-seating-history-draft", draftId: string): void;
   (e: "export-grouping-default"): void;
   (e: "export-grouping-option", option: GroupingExportOption): void;
+  (e: "share-grouping-link"): void;
+  (e: "copy-grouping-share", share: ClassroomPlannerShareArtifact): void;
+  (e: "revoke-grouping-share", share: ClassroomPlannerShareArtifact): void;
   (e: "export-seating-default"): void;
   (e: "export-seating-option", option: SeatingExportOption): void;
+  (e: "share-seating-link"): void;
+  (e: "copy-seating-share", share: ClassroomPlannerShareArtifact): void;
+  (e: "revoke-seating-share", share: ClassroomPlannerShareArtifact): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-rules"): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;
@@ -505,6 +541,10 @@ watch(
             :export-busy="groupingExportBusy"
             :export-status-label="groupingExportStatusLabel"
             :export-error-message="groupingExportErrorMessage"
+            :share-busy="groupingShareBusy"
+            :share-status-label="groupingShareStatusLabel"
+            :share-error-message="groupingShareErrorMessage"
+            :show-share-link-action="true"
             @change-grouping-roster="changeGroupingRoster($event)"
             @new-grouping-draft="startNewGroupingDraft"
             @open-settings="openGroupingSettingsDrawer"
@@ -513,6 +553,17 @@ watch(
             @edit-roster="emit('edit-roster')"
             @export-default="emit('export-grouping-default')"
             @export-option="emit('export-grouping-option', $event)"
+            @share-link="emit('share-grouping-link')"
+          />
+        </template>
+        <template #after-toolbar>
+          <PlannerShareLinksPanel
+            :shares="groupingShares"
+            :loading="groupingShareLoading"
+            :copied-share-id="groupingShareCopiedId"
+            :revoking-share-id="groupingShareRevokingId"
+            @copy-share="emit('copy-grouping-share', $event)"
+            @revoke-share="emit('revoke-grouping-share', $event)"
           />
         </template>
 
@@ -532,10 +583,15 @@ watch(
             :export-busy="seatingExportBusy"
             :export-status-label="seatingExportStatusLabel"
             :export-error-message="seatingExportErrorMessage"
+            :share-busy="seatingShareBusy"
+            :share-status-label="seatingShareStatusLabel"
+            :share-error-message="seatingShareErrorMessage"
+            :show-share-link-action="true"
             @change-seating-template="changeSeatingTemplate($event)"
             @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
             @export-default="emit('export-seating-default')"
             @export-option="emit('export-seating-option', $event)"
+            @share-link="emit('share-seating-link')"
             @edit-roster="emit('edit-roster')"
             @edit-current-template="editCurrentTemplate"
             @open-settings="openSeatingSettingsDrawer"
@@ -546,6 +602,16 @@ watch(
         <PlannerSeatingWorkspacePane
           :selected-template-id="pendingSeatingTemplateId"
         />
+        <template #after-toolbar>
+          <PlannerShareLinksPanel
+            :shares="seatingShares"
+            :loading="seatingShareLoading"
+            :copied-share-id="seatingShareCopiedId"
+            :revoking-share-id="seatingShareRevokingId"
+            @copy-share="emit('copy-seating-share', $event)"
+            @revoke-share="emit('revoke-seating-share', $event)"
+          />
+        </template>
       </PlannerWorkspaceModeSurface>
 
       <PlannerRulesWorkspacePane

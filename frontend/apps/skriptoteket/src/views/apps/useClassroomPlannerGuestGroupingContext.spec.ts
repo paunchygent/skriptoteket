@@ -103,6 +103,9 @@ describe("useClassroomPlannerGuestController grouping context", () => {
       }),
     });
     await flushGuestController();
+    await vi.waitFor(() => {
+      expect(harness.getState().selectedRosterId.value).toBe("roster-1");
+    });
 
     await harness.getState().openGroupingWorkspace();
 

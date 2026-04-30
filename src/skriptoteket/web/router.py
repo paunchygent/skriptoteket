@@ -21,6 +21,9 @@ from skriptoteket.web.api.v1 import (
     apps_classroom_planner_seating as api_v1_apps_classroom_planner_seating,
 )
 from skriptoteket.web.api.v1 import (
+    apps_classroom_planner_shares as api_v1_apps_classroom_planner_shares,
+)
+from skriptoteket.web.api.v1 import (
     apps_classroom_planner_smart_rules as api_v1_apps_classroom_planner_smart_rules,
 )
 from skriptoteket.web.api.v1 import apps_conversion_hub as api_v1_apps_conversion_hub
@@ -47,6 +50,9 @@ from skriptoteket.web.api.v1 import (
 from skriptoteket.web.api.v1 import suggestions as api_v1_suggestions
 from skriptoteket.web.api.v1 import tools as api_v1_tools
 from skriptoteket.web.api.v1 import vault as api_v1_vault
+from skriptoteket.web.routes import (
+    classroom_planner_share_pages as classroom_planner_share_pages_routes,
+)
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from skriptoteket.web.routes import spa_fallback
 
@@ -68,6 +74,7 @@ router.include_router(api_v1_apps_classroom_planner_guest_upgrade.router)
 router.include_router(api_v1_apps_classroom_planner_smart_rules.router)
 router.include_router(api_v1_apps_classroom_planner_grouping.router)
 router.include_router(api_v1_apps_classroom_planner_seating.router)
+router.include_router(api_v1_apps_classroom_planner_shares.router)
 router.include_router(api_v1_apps_flunk_out_frenzy.router)
 router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
@@ -79,6 +86,7 @@ router.include_router(api_v1_admin_tools.router)
 router.include_router(api_v1_admin_users.router)
 router.include_router(api_v1_editor.router)
 router.include_router(interactive_tools_routes.router)
+router.include_router(classroom_planner_share_pages_routes.router)
 
 # SPA history fallback - MUST be last to avoid intercepting API routes
 router.include_router(spa_fallback.router)

@@ -10,6 +10,9 @@ from __future__ import annotations
 from collections import Counter
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.classroom_planner.handlers.share_artifacts import (
+    ClassroomPlannerShareLifecycleService,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import Roster, Student
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
@@ -151,10 +154,12 @@ class DeleteRosterHandler:
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        share_lifecycle: ClassroomPlannerShareLifecycleService | None = None,
     ) -> None:
         self._uow = uow
         self._rosters = rosters
         self._drafts = drafts
+        self._share_lifecycle = share_lifecycle
 
     async def handle(self, *, roster_id: UUID, owner_user_id: UUID) -> None:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
@@ -162,6 +167,11 @@ class DeleteRosterHandler:
             raise not_found("Roster", str(roster_id))
 
         async with self._uow:
+            if self._share_lifecycle is not None:
+                await self._share_lifecycle.revoke_for_roster_delete(
+                    owner_user_id=owner_user_id,
+                    roster_id=roster_id,
+                )
             await self._drafts.delete_for_roster(
                 owner_user_id=owner_user_id,
                 roster_id=roster_id,

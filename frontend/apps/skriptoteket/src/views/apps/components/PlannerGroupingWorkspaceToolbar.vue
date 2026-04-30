@@ -49,9 +49,13 @@ const props = withDefaults(
     exportBusy?: boolean;
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
+    shareBusy?: boolean;
+    shareStatusLabel?: string | null;
+    shareErrorMessage?: string | null;
     showHistoryAction?: boolean;
     showSmartControls?: boolean;
     showExportActions?: boolean;
+    showShareLinkAction?: boolean;
   }>(),
   {
     availableRosters: () => [],
@@ -60,9 +64,13 @@ const props = withDefaults(
     exportBusy: false,
     exportStatusLabel: null,
     exportErrorMessage: null,
+    shareBusy: false,
+    shareStatusLabel: null,
+    shareErrorMessage: null,
     showHistoryAction: true,
     showSmartControls: true,
     showExportActions: true,
+    showShareLinkAction: false,
   },
 );
 
@@ -74,6 +82,7 @@ const emit = defineEmits<{
   (e: "edit-roster"): void;
   (e: "export-default"): void;
   (e: "export-option", option: GroupingExportOption): void;
+  (e: "share-link"): void;
 }>();
 
 const state = useClassroomState();
@@ -117,6 +126,20 @@ const exportStatus = computed<{
       title: props.exportErrorMessage,
     };
   }
+  if (props.shareBusy) {
+    return {
+      label: props.shareStatusLabel ?? "Skapar länk…",
+      tone: "neutral",
+      title: props.shareStatusLabel ?? undefined,
+    };
+  }
+  if (props.shareErrorMessage) {
+    return {
+      label: "Delningsproblem",
+      tone: "error",
+      title: props.shareErrorMessage,
+    };
+  }
   return null;
 });
 const exportOptions = computed<PlannerExportOption[]>(() => [
@@ -131,6 +154,15 @@ const exportOptions = computed<PlannerExportOption[]>(() => [
     label: "PDF (A4 stående)",
     option: "pdf_a4_portrait",
   },
+  ...(props.showShareLinkAction
+    ? [
+        {
+          id: "share",
+          label: "Dela länk",
+          action: "share-link",
+        } satisfies PlannerExportOption,
+      ]
+    : []),
 ]);
 const {
   hiddenContributionIds,
@@ -463,7 +495,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       <template #secondary>
         <PlannerExportActionGroup
           v-if="showExportActions"
-          :busy="exportBusy"
+          :busy="exportBusy || shareBusy"
           :options="exportOptions"
           group-test-id="grouping-export-group"
           default-button-test-id="grouping-export-default"
@@ -471,6 +503,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
           option-test-id-prefix="grouping-export-option"
           @export-default="emit('export-default')"
           @export-option="handleExportOption"
+          @share-link="emit('share-link')"
         />
         <UiDenseStatusPill
           v-if="showExportActions && exportStatus"

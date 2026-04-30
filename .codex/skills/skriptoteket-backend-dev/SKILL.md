@@ -88,29 +88,13 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 - Hot reload probe (Playwright): `pdm run ui-hmr-probe`
 - Edit-ops harnesses (ad-hoc): `python -m scripts.edit_ops_harness` and `python -m scripts.chat_edit_ops_context_probe`
 
-## Curl / scripting recipes (sessions + CSRF)
+## Auth and API proof boundary
 
-Suggested env vars:
-
-```bash
-export BASE_URL=http://127.0.0.1:8000
-export COOKIE_JAR=.artifacts/cookies.txt
-export EMAIL="${BOOTSTRAP_SUPERUSER_EMAIL:-superuser@local.dev}"
-export PASSWORD="${BOOTSTRAP_SUPERUSER_PASSWORD:-change-me}"
-```
-
-Login (stores session cookie; returns CSRF token):
-
-```bash
-curl -sS -c "$COOKIE_JAR" -H 'Content-Type: application/json' \
-  -d "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}" \
-  "$BASE_URL/api/v1/auth/login"
-```
-
-Notes:
-
-- Correlation header: `X-Correlation-ID: <uuid>` (echoed back in responses via middleware).
-- CSRF header: `X-CSRF-Token: <token>` (see `src/skriptoteket/web/auth/api_dependencies.py`).
+- HuleEdu owns browser login, session issuance, CSRF, and Gateway ceremony.
+- Protected Skriptoteket app APIs go through HuleEdu Gateway or an explicit signed Gateway-equivalent local harness.
+- Direct Skriptoteket backend calls are for unit tests, integration tests, public routes, health checks, and explicitly scoped backend probes.
+- Do not use retired app-local login endpoints or hand-set local browser-session cookies for browser/protected-API proof.
+- Correlation header: `X-Correlation-ID: <uuid>` (echoed by middleware).
 
 ## Testing protocol (backend)
 

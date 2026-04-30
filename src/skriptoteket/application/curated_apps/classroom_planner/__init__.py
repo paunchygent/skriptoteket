@@ -9,6 +9,10 @@ from .exports import (
     SeatingExportLayoutId,
     SeatingExportPaperSize,
 )
+from .handlers.authenticated_shares import (
+    CreateAuthenticatedGroupingShareHandler,
+    CreateAuthenticatedSeatingShareHandler,
+)
 from .handlers.drafts import (
     AbandonDraftHandler,
     GetDraftHandler,
@@ -62,6 +66,14 @@ from .handlers.seating_history import (
     ActivateSeatingHistoryDraftHandler,
     DeleteHistoricSeatingDraftHandler,
 )
+from .handlers.share_artifacts import (
+    ClassroomPlannerShareLifecycleService,
+    CreateClassroomPlannerShareArtifactCommand,
+    CreateClassroomPlannerShareArtifactHandler,
+    GetClassroomPlannerShareArtifactByTokenHandler,
+    ListClassroomPlannerShareArtifactsHandler,
+    RevokeClassroomPlannerShareArtifactHandler,
+)
 from .handlers.smart_grouping import RunSmartGroupingHandler
 from .handlers.smart_rules import (
     GetRosterSmartRulesHandler,
@@ -76,6 +88,12 @@ from .handlers.templates import (
     UpdateRoomTemplateHandler,
 )
 from .handlers.workspace_summary import GetClassWorkspaceSummaryHandler
+from .shares import (
+    ClassroomPlannerShareArtifact,
+    ClassroomPlannerShareArtifactCreateResult,
+    ClassroomPlannerShareArtifactSource,
+    RenderedClassroomPlannerShare,
+)
 
 __all__ = [
     "AbandonDraftHandler",
@@ -88,7 +106,16 @@ __all__ = [
     "CreateSeatingDraftHandler",
     "CreateSeatingExportJobHandler",
     "ClassroomPlannerGuestUpgradeHandler",
+    "ClassroomPlannerShareArtifact",
+    "ClassroomPlannerShareArtifactCreateResult",
+    "ClassroomPlannerShareArtifactSource",
+    "ClassroomPlannerShareLifecycleService",
+    "CreateAuthenticatedGroupingShareHandler",
+    "CreateAuthenticatedSeatingShareHandler",
+    "CreateClassroomPlannerShareArtifactCommand",
+    "CreateClassroomPlannerShareArtifactHandler",
     "GetClassroomPlannerGuestUpgradeConsumptionHandler",
+    "GetClassroomPlannerShareArtifactByTokenHandler",
     "DeleteHistoricGroupingDraftHandler",
     "DeleteHistoricSeatingDraftHandler",
     "DeleteRoomTemplateHandler",
@@ -112,6 +139,7 @@ __all__ = [
     "GroupingExportPaperSize",
     "ListRoomTemplatesHandler",
     "ListRostersHandler",
+    "ListClassroomPlannerShareArtifactsHandler",
     "PatchDraftHandler",
     "PatchRosterSmartRulesHandler",
     "PrepareGroupingExportHandler",
@@ -123,12 +151,14 @@ __all__ = [
     "RunPublicGroupingExportHandler",
     "RedoDraftHandler",
     "RunPublicSeatingExportHandler",
+    "RenderedClassroomPlannerShare",
     "ResolveDraftHandler",
     "RunSmartGroupingHandler",
     "RunSmartSeatingHandler",
     "SeatingExportKind",
     "SeatingExportLayoutId",
     "SeatingExportPaperSize",
+    "RevokeClassroomPlannerShareArtifactHandler",
     "UndoDraftHandler",
     "UpdateRoomTemplateHandler",
     "UpdateRosterHandler",

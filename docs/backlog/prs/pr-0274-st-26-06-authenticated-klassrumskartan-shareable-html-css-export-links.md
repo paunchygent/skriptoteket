@@ -1,6 +1,6 @@
 ---
 type: pr
-id: PR-0272
+id: PR-0274
 title: "ST-26-06 authenticated Klassrumskartan shareable HTML/CSS export links"
 status: ready
 owners: "agents"
@@ -18,7 +18,7 @@ acceptance_criteria:
   - "Given an authenticated teacher opens the grouping or seating export menu, when they inspect the export actions, then `Dela länk` appears beside PDF/Excel."
   - "Given an authenticated teacher clicks `Dela länk`, when pending draft or smart-rule state exists, then the same export preparation/save guard used by PDF/Excel completes and the post-flush `expected_revision` is sent before share creation."
   - "Given an authenticated share request carries a stale `expected_revision`, when the handler validates the draft immediately before rendering, then it returns `409 CONFLICT` and creates no share artifact row."
-  - "Given the backend creates a share artifact, when the response returns, then the teacher receives a copyable `/share/classroom/{token}/{slug?}` URL."
+  - "Given the backend creates a share artifact, when the response returns, then the teacher receives a copyable public-app `/share/classroom/{token}/{slug?}` URL built from `PUBLIC_APP_BASE_URL`, not the protected API gateway request host."
   - "Given anyone opens the share URL, when the artifact is active, then the response renders immutable responsive HTML/CSS with no app chrome, editor controls, owner-scoped ids, or live API calls."
   - "Given the teacher owns share artifacts, when they view existing shares for a draft, then they can copy and revoke them."
   - "Given a share is revoked, when the public URL is opened, then it returns a calm unavailable/expired page rather than the plan."
@@ -74,12 +74,14 @@ under `PR-0273` and the accepted `ADR-0084` exception.
    for authenticated shares.
 9. Add metadata and responsive/print CSS requirements to the share template.
 10. Add owned-share lifecycle rules:
-    - deleting a draft must either keep shares listable from an archive surface
-      or revoke them; choose one and test it
-    - roster/class or room-template deletion must define whether derived shares
-      are kept as immutable artifacts or revoked
-    - owner account deletion/deactivation must revoke or purge all owned share
-      artifacts through a deterministic service path
+    - deleting a draft revokes affected shares and detaches the deleted draft id
+      before the draft row is removed
+    - roster/class or room-template deletion revokes affected shares and detaches
+      deleted source ids before dependent drafts/source rows are removed
+    - owner account deletion revokes all owned shares and detaches owner/source
+      ids through a deterministic service path before the user row is removed
+    - owner deactivation must use the same revocation semantics without creating
+      new public links for inactive owners
 11. Add route metadata policy for active, revoked, expired, missing-token, and
     stale-slug responses: status semantics, `noindex,nofollow`, sitemap
     exclusion, escaped preview tags, and cache headers.
