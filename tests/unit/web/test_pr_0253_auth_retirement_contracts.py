@@ -214,7 +214,7 @@ def test_frontend_source_does_not_call_local_auth_or_mint_gateway_identity_heade
         "/api/v1/auth/resend-verification",
         "/api/v1/auth/csrf",
         "/api/v1/auth/me",
-        "X-Huledu-Identity-",
+        "X-HuleEdu-Identity-",
     }
     offenders: list[str] = []
     for path in _frontend_source_files():

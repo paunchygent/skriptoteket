@@ -226,6 +226,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0262-real-lifecycle-proof-smoke-and-runbook.md`
 - ST-28-04 cross-app auth cutover smoke + operator runbook proof:
   `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
+- ST-28-04 HuleEdu internal identity header spelling remediation:
+  `docs/backlog/prs/pr-0272-st-28-04-huleedu-internal-identity-header-spelling-remediation.md`
 - ST-28-10 auth outcome observability for realm cutover:
   `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md`
 - ST-28-10 auth outcome observability for HuleEdu cutover:

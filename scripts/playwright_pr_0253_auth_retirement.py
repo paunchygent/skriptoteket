@@ -40,7 +40,7 @@ from scripts._playwright_huleedu_auth import (
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0253-auth-retirement")
 PROVIDER_SUBJECT = DEFAULT_PROVIDER_SUBJECT
 MISSING_PROJECTION_SUBJECT = "missing-pr-0253-projection"
-INTERNAL_IDENTITY_HEADER_PREFIX = "x-huledu-identity-"
+INTERNAL_IDENTITY_HEADER_PREFIX = "x-huleedu-identity-"
 
 
 def _fulfill_json(route: Route, payload: dict[str, object], *, status: int = 200) -> None:

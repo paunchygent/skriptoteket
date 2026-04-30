@@ -337,7 +337,7 @@ def _verify_probe(
             "huleedu-live-session",
             "playwright-huleedu-context",
             "pr-live-huleedu@example.test",
-            "X-Huledu-Identity",
+            "X-HuleEdu-Identity",
         )
         for forbidden in forbidden_values:
             if forbidden in serialized:

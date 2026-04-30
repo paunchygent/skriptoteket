@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from skriptoteket.domain.errors import ErrorCode
 from skriptoteket.domain.identity.internal_identity_context import (
+    INTERNAL_IDENTITY_CONTEXT_HEADER,
     INTERNAL_IDENTITY_CONTEXT_VERSION_HEADER,
     INTERNAL_IDENTITY_KEY_ID_HEADER,
     INTERNAL_IDENTITY_SIGNATURE_HEADER,
@@ -36,6 +37,20 @@ from tests.fixtures.profile_app_continuation_support import (
 )
 
 pytest_plugins = ("tests.fixtures.profile_app_continuation_api_app",)
+
+OLD_INTERNAL_IDENTITY_HEADERS = {
+    INTERNAL_IDENTITY_CONTEXT_VERSION_HEADER: "X-Huledu-Identity-Context-Version",
+    INTERNAL_IDENTITY_CONTEXT_HEADER: "X-Huledu-Identity-Context",
+    INTERNAL_IDENTITY_KEY_ID_HEADER: "X-Huledu-Identity-Key-Id",
+    INTERNAL_IDENTITY_SIGNATURE_HEADER: "X-Huledu-Identity-Signature",
+}
+
+
+def _remap_to_old_header_spelling(headers: dict[str, str]) -> dict[str, str]:
+    return {
+        OLD_INTERNAL_IDENTITY_HEADERS.get(header_name, header_name): header_value
+        for header_name, header_value in headers.items()
+    }
 
 
 @pytest.mark.asyncio
@@ -122,6 +137,35 @@ async def test_profile_app_continuation_records_signed_context_rejection(
     assert auth_outcomes.context_verifications == [
         ("rejected", "missing_internal_identity_headers", UUID(correlation_id))
     ]
+
+
+@pytest.mark.asyncio
+async def test_profile_app_continuation_rejects_old_huledu_header_spelling_only(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    auth_outcomes: AuthOutcomeRecorderStub,
+) -> None:
+    headers = _remap_to_old_header_spelling(
+        build_headers(
+            private_key=private_key,
+            now_ts=int(clock.now().timestamp()),
+        )
+    )
+
+    response = await client.get("/api/v1/profile/app-continuation", headers=headers)
+
+    assert response.status_code == 401
+    assert response.json()["error"]["details"] == {
+        "reason": "missing_internal_identity_headers",
+    }
+    assert users.projections.lookup_calls == []
+    assert len(auth_outcomes.context_verifications) == 1
+    outcome, reason, correlation_id = auth_outcomes.context_verifications[0]
+    assert outcome == "rejected"
+    assert reason == "missing_internal_identity_headers"
+    assert isinstance(correlation_id, UUID)
 
 
 @pytest.mark.asyncio

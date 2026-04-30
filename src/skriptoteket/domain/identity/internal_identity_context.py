@@ -17,10 +17,10 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 INTERNAL_IDENTITY_CONTEXT_VERSION = 1
-INTERNAL_IDENTITY_CONTEXT_VERSION_HEADER = "X-Huledu-Identity-Context-Version"
-INTERNAL_IDENTITY_CONTEXT_HEADER = "X-Huledu-Identity-Context"
-INTERNAL_IDENTITY_KEY_ID_HEADER = "X-Huledu-Identity-Key-Id"
-INTERNAL_IDENTITY_SIGNATURE_HEADER = "X-Huledu-Identity-Signature"
+INTERNAL_IDENTITY_CONTEXT_VERSION_HEADER = "X-HuleEdu-Identity-Context-Version"
+INTERNAL_IDENTITY_CONTEXT_HEADER = "X-HuleEdu-Identity-Context"
+INTERNAL_IDENTITY_KEY_ID_HEADER = "X-HuleEdu-Identity-Key-Id"
+INTERNAL_IDENTITY_SIGNATURE_HEADER = "X-HuleEdu-Identity-Signature"
 INTERNAL_IDENTITY_SIGNATURE_PREFIX = "rs256="
 
 

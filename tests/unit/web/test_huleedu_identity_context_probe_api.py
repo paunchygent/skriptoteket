@@ -87,7 +87,7 @@ async def test_probe_returns_sanitized_decoded_context_without_projection_side_e
     assert "huleedu-session" not in serialized_payload
     assert "ctx-test-1" not in serialized_payload
     assert "teacher@example.test" not in serialized_payload
-    assert "X-Huledu-Identity" not in serialized_payload
+    assert "X-HuleEdu-Identity" not in serialized_payload
     assert users.created == []
     assert users.projections.lookup_calls == []
     assert users.projections.created == []
