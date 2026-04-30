@@ -5,7 +5,7 @@ title: "ST-28-04 HuleEdu internal identity header spelling remediation"
 status: ready
 owners: "agents"
 created: 2026-04-25
-updated: 2026-04-25
+updated: 2026-04-30
 stories:
   - "ST-28-04"
 dependencies:
@@ -139,9 +139,15 @@ Runtime and active proof-helper inventory after the remediation:
 - `tests/unit/web/test_profile_app_continuation_context_api.py` intentionally retains
   `X-Huledu-Identity-*` only inside a regression that remaps an otherwise valid signed context to
   the old spelling and proves the verifier rejects it before projection lookup.
-- Lowercase `huledu-reboot` and `/home/paunchygent/apps/huledu/...` occurrences remain historical
-  checkout/key-mount path defaults in `.env.example`, compose files, proof scripts, and matching
-  unit tests. They are not header spellings and have no runtime transport-header effect.
+- The dev Docker public-key mount default now points at the active adjacent `../../huleedu`
+  checkout. The previous `../../huledu-reboot` default could become a directory mount when the
+  file was missing, leaving `/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem`
+  unreadable as a key file and producing `internal_identity_trust_not_configured` during local
+  app-continuation.
+- Remaining lowercase `huledu-reboot` and `/home/paunchygent/apps/huledu/...` occurrences are
+  historical proof-artifact paths or production host paths outside the dev Docker key-mount
+  contract. They are not header spellings and are not used by the local app-continuation trust
+  mount.
 - Completed historical docs and reviews for `PR-0253`, `PR-0255`, `PR-0258`, and `PR-0262` still
   quote the spelling that existed when those slices shipped. `PR-0272` and `ST-28-04` now carry
   the corrective current-state note.

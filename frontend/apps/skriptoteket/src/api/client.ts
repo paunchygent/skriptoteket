@@ -66,23 +66,20 @@ export type ApiBlobResponse = {
   filename: string | null;
 };
 
-function isJsonSerializableBody(body: unknown): body is Record<string, unknown> {
-  if (body === null) {
-    return false;
+function buildApiRequestBody(body: unknown, headers: Headers): BodyInit | undefined {
+  if (body === undefined) {
+    return undefined;
   }
-  if (typeof body !== "object") {
-    return false;
+  if (
+    body instanceof FormData ||
+    typeof body === "string" ||
+    body instanceof Blob ||
+    body instanceof ArrayBuffer
+  ) {
+    return body;
   }
-  if (body instanceof FormData) {
-    return false;
-  }
-  if (body instanceof Blob) {
-    return false;
-  }
-  if (body instanceof ArrayBuffer) {
-    return false;
-  }
-  return true;
+  headers.set("Content-Type", "application/json");
+  return JSON.stringify(body);
 }
 
 async function toApiError(response: Response): Promise<ApiError> {
@@ -133,25 +130,7 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
   const method = (options.method ?? "GET").toUpperCase();
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
-
-  let body: BodyInit | undefined = undefined;
-  if (options.body !== undefined) {
-    if (options.body instanceof FormData) {
-      body = options.body;
-    } else if (typeof options.body === "string") {
-      body = options.body;
-    } else if (options.body instanceof Blob) {
-      body = options.body;
-    } else if (options.body instanceof ArrayBuffer) {
-      body = options.body;
-    } else if (isJsonSerializableBody(options.body)) {
-      headers.set("Content-Type", "application/json");
-      body = JSON.stringify(options.body);
-    } else {
-      headers.set("Content-Type", "application/json");
-      body = JSON.stringify(options.body);
-    }
-  }
+  const body = buildApiRequestBody(options.body, headers);
 
   if (method !== "GET" && method !== "HEAD") {
     await auth.ensureCsrfToken();
@@ -196,6 +175,43 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return await apiFetch<T>(path, { method: "POST", body });
 }
 
+export async function publicApiFetch<T>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<T> {
+  const method = (options.method ?? "GET").toUpperCase();
+  const headers = new Headers(options.headers);
+  headers.set("Accept", "application/json");
+  const body = buildApiRequestBody(options.body, headers);
+
+  const response = await fetch(path, {
+    ...options,
+    method,
+    headers,
+    body,
+    credentials: "omit",
+  });
+
+  if (response.ok) {
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      return (await response.text()) as unknown as T;
+    }
+
+    return (await response.json()) as T;
+  }
+
+  throw await toApiError(response);
+}
+
+export async function publicApiPost<T>(path: string, body?: unknown): Promise<T> {
+  return await publicApiFetch<T>(path, { method: "POST", body });
+}
+
 export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
   return await apiFetch<T>(path, { method: "PATCH", body });
 }
@@ -216,25 +232,7 @@ export async function apiFetchBlob(path: string, options: ApiRequestOptions = {}
   if (!headers.has("Accept")) {
     headers.set("Accept", "*/*");
   }
-
-  let body: BodyInit | undefined = undefined;
-  if (options.body !== undefined) {
-    if (options.body instanceof FormData) {
-      body = options.body;
-    } else if (typeof options.body === "string") {
-      body = options.body;
-    } else if (options.body instanceof Blob) {
-      body = options.body;
-    } else if (options.body instanceof ArrayBuffer) {
-      body = options.body;
-    } else if (isJsonSerializableBody(options.body)) {
-      headers.set("Content-Type", "application/json");
-      body = JSON.stringify(options.body);
-    } else {
-      headers.set("Content-Type", "application/json");
-      body = JSON.stringify(options.body);
-    }
-  }
+  const body = buildApiRequestBody(options.body, headers);
 
   if (method !== "GET" && method !== "HEAD") {
     await auth.ensureCsrfToken();
@@ -296,25 +294,7 @@ export async function apiFetchBlobResponse(
   if (!headers.has("Accept")) {
     headers.set("Accept", "*/*");
   }
-
-  let body: BodyInit | undefined = undefined;
-  if (options.body !== undefined) {
-    if (options.body instanceof FormData) {
-      body = options.body;
-    } else if (typeof options.body === "string") {
-      body = options.body;
-    } else if (options.body instanceof Blob) {
-      body = options.body;
-    } else if (options.body instanceof ArrayBuffer) {
-      body = options.body;
-    } else if (isJsonSerializableBody(options.body)) {
-      headers.set("Content-Type", "application/json");
-      body = JSON.stringify(options.body);
-    } else {
-      headers.set("Content-Type", "application/json");
-      body = JSON.stringify(options.body);
-    }
-  }
+  const body = buildApiRequestBody(options.body, headers);
 
   if (method !== "GET" && method !== "HEAD") {
     await auth.ensureCsrfToken();
@@ -343,6 +323,38 @@ export async function apiFetchBlobResponse(
 
   if (response.status === 401) {
     auth.clear();
+  }
+
+  throw await toApiError(response);
+}
+
+export async function publicApiFetchBlobResponse(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<ApiBlobResponse> {
+  const method = (options.method ?? "GET").toUpperCase();
+  const headers = new Headers(options.headers);
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "*/*");
+  }
+  const body = buildApiRequestBody(options.body, headers);
+
+  const response = await fetch(path, {
+    ...options,
+    method,
+    headers,
+    body,
+    credentials: "omit",
+  });
+
+  if (response.ok) {
+    return {
+      blob: await response.blob(),
+      contentType: response.headers.get("content-type"),
+      filename: parseContentDispositionFilename(
+        response.headers.get("content-disposition"),
+      ),
+    };
   }
 
   throw await toApiError(response);

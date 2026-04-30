@@ -56,6 +56,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "a8f5c7d9e2b1",
     "b4c6d8e1f2a3",
     "c7d9e3f5a1b2",
+    "e2f4a6b8c9d0",
 )
 
 
@@ -320,6 +321,24 @@ async def _assert_c7d9_share_artifact_public_path(engine: AsyncEngine) -> None:
     columns = await _column_map(engine, "classroom_planner_share_artifacts")
     assert "public_path" in columns
     assert columns["public_path"]["is_nullable"] == "YES"
+
+
+async def _assert_e2f4_public_guest_share_controls(engine: AsyncEngine) -> None:
+    await _assert_c7d9_share_artifact_public_path(engine)
+    columns = await _column_map(engine, "classroom_planner_share_artifacts")
+    assert {
+        "guest_snapshot_fingerprint",
+        "client_operation_id",
+        "revoke_secret_hash",
+    }.issubset(columns)
+    assert columns["guest_snapshot_fingerprint"]["is_nullable"] == "YES"
+    assert columns["client_operation_id"]["is_nullable"] == "YES"
+    assert columns["revoke_secret_hash"]["is_nullable"] == "YES"
+    indexes = await _index_names(engine, "classroom_planner_share_artifacts")
+    assert {
+        "ix_cp_share_artifacts_public_client_op",
+        "ix_cp_share_artifacts_guest_fingerprint",
+    }.issubset(indexes)
 
 
 async def _assert_0032_user_file_vault(engine: AsyncEngine) -> None:
@@ -664,6 +683,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "a8f5c7d9e2b1": _assert_a8f5_classroom_planner_share_artifacts,
     "b4c6d8e1f2a3": _assert_b4c6_share_artifact_lifecycle_fks,
     "c7d9e3f5a1b2": _assert_c7d9_share_artifact_public_path,
+    "e2f4a6b8c9d0": _assert_e2f4_public_guest_share_controls,
 }
 
 

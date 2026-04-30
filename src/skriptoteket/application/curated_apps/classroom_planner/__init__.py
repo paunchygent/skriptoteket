@@ -42,6 +42,12 @@ from .handlers.guest_upgrade_consumption import (
 )
 from .handlers.public_grouping_export import RunPublicGroupingExportHandler
 from .handlers.public_seating_export import RunPublicSeatingExportHandler
+from .handlers.public_shares import (
+    CreatePublicGuestGroupingShareHandler,
+    CreatePublicGuestSeatingShareHandler,
+    PublicGuestSharePolicy,
+    PurgeExpiredPublicGuestShareArtifactsHandler,
+)
 from .handlers.public_smart_grouping import RunPublicSmartGroupingHandler
 from .handlers.public_smart_seating import RunPublicSmartSeatingHandler
 from .handlers.rosters import (
@@ -114,6 +120,8 @@ __all__ = [
     "CreateAuthenticatedSeatingShareHandler",
     "CreateClassroomPlannerShareArtifactCommand",
     "CreateClassroomPlannerShareArtifactHandler",
+    "CreatePublicGuestGroupingShareHandler",
+    "CreatePublicGuestSeatingShareHandler",
     "GetClassroomPlannerGuestUpgradeConsumptionHandler",
     "GetClassroomPlannerShareArtifactByTokenHandler",
     "DeleteHistoricGroupingDraftHandler",
@@ -148,6 +156,8 @@ __all__ = [
     "RunPublicSmartGroupingHandler",
     "RunPublicSmartSeatingHandler",
     "PreparedSeatingExportContract",
+    "PublicGuestSharePolicy",
+    "PurgeExpiredPublicGuestShareArtifactsHandler",
     "RunPublicGroupingExportHandler",
     "RedoDraftHandler",
     "RunPublicSeatingExportHandler",

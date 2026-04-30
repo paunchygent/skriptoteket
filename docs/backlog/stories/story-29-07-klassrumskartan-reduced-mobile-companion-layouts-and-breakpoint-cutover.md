@@ -2,9 +2,10 @@
 type: story
 id: ST-29-07
 title: "Klassrumskartan — Reduced mobile companion layouts and breakpoint cutover"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-03-28
+updated: 2026-04-30
 epic: "EPIC-29"
 dependencies:
   - "ST-29-04"
@@ -26,9 +27,16 @@ This story defines the responsive cutover after the desktop workspace has alread
 
 ## Notes
 
-- This is intentionally last in the sequence.
-- The goal is not parity. The goal is a credible smaller-screen companion experience that protects
-  the desktop product.
+- This broad story is canceled as an implementation surface because the 2026-04-30 product review
+  showed that one generic "mobile companion" slice is too coarse.
+- The replacement lane is split into:
+  - `ST-29-13` for the small-screen shell and `Lägen` bottom-sheet mode switcher.
+  - `ST-29-14` for `Översikt`.
+  - `ST-29-15` for `Grupper`.
+  - `ST-29-16` for `Sittplatser`.
+  - `ST-29-17` for `Regler`.
+- The goal is still not parity. The goal is a credible smaller-screen companion experience that
+  protects the desktop product.
 
 ## References
 

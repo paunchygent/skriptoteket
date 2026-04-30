@@ -25,6 +25,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     RevokeClassroomPlannerShareArtifactHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
+    PublicGuestSharePersistenceResult,
     build_share_content_hash,
     build_share_presentation_hash,
     hash_share_token,
@@ -124,6 +125,107 @@ class _FakeShareRepository:
         revoked = artifact.model_copy(update={"revoked_at": revoked_at, "updated_at": revoked_at})
         self.artifacts_by_id[share_id] = revoked
         return revoked
+
+    async def get_public_guest_by_client_operation_id(
+        self,
+        *,
+        client_operation_id: str,
+    ) -> ClassroomPlannerShareArtifact | None:
+        return next(
+            (
+                artifact
+                for artifact in self.artifacts_by_id.values()
+                if artifact.source is ClassroomPlannerShareArtifactSource.PUBLIC_GUEST
+                and artifact.client_operation_id == client_operation_id
+            ),
+            None,
+        )
+
+    async def count_active_public_guest_shares(
+        self,
+        *,
+        guest_snapshot_fingerprint: str,
+        now: datetime,
+    ) -> int:
+        return len(
+            [
+                artifact
+                for artifact in self.artifacts_by_id.values()
+                if artifact.source is ClassroomPlannerShareArtifactSource.PUBLIC_GUEST
+                and artifact.guest_snapshot_fingerprint == guest_snapshot_fingerprint
+                and artifact.revoked_at is None
+                and (artifact.expires_at is None or artifact.expires_at > now)
+            ]
+        )
+
+    async def find_active_public_guest_by_token_and_secret(
+        self,
+        *,
+        token_hash: str,
+        revoke_secret_hash: str,
+        now: datetime,
+    ) -> ClassroomPlannerShareArtifact | None:
+        return next(
+            (
+                artifact
+                for artifact in self.artifacts_by_id.values()
+                if artifact.source is ClassroomPlannerShareArtifactSource.PUBLIC_GUEST
+                and artifact.token_hash == token_hash
+                and artifact.revoke_secret_hash == revoke_secret_hash
+                and artifact.revoked_at is None
+                and (artifact.expires_at is None or artifact.expires_at > now)
+            ),
+            None,
+        )
+
+    async def revoke_public_guest_by_token_and_secret(
+        self,
+        *,
+        token_hash: str,
+        revoke_secret_hash: str,
+        revoked_at: datetime,
+    ) -> ClassroomPlannerShareArtifact | None:
+        artifact = await self.find_active_public_guest_by_token_and_secret(
+            token_hash=token_hash,
+            revoke_secret_hash=revoke_secret_hash,
+            now=revoked_at,
+        )
+        if artifact is None:
+            return None
+        revoked = artifact.model_copy(update={"revoked_at": revoked_at, "updated_at": revoked_at})
+        self.artifacts_by_id[artifact.id] = revoked
+        return revoked
+
+    async def create_or_reuse_public_guest_share(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        previous_token_hash: str | None,
+        previous_revoke_secret_hash: str | None,
+        now: datetime,
+        max_active_per_snapshot: int,
+    ) -> PublicGuestSharePersistenceResult:
+        del previous_token_hash, previous_revoke_secret_hash, now, max_active_per_snapshot
+        existing = await self.get_public_guest_by_client_operation_id(
+            client_operation_id=artifact.client_operation_id or ""
+        )
+        if existing is not None:
+            return PublicGuestSharePersistenceResult(
+                artifact=existing,
+                reused_client_operation=True,
+            )
+        return PublicGuestSharePersistenceResult(artifact=await self.create(artifact=artifact))
+
+    async def purge_expired_public_guest_shares(self, *, now: datetime) -> int:
+        return self._revoke_matching(
+            revoked_at=now,
+            predicate=lambda artifact: (
+                artifact.source is ClassroomPlannerShareArtifactSource.PUBLIC_GUEST
+                and artifact.expires_at is not None
+                and artifact.expires_at <= now
+            ),
+            updates={"rendered_html": "", "rendered_css": "", "presentation_payload": None},
+        )
 
     async def revoke_for_draft_lifecycle(
         self,
@@ -331,7 +433,7 @@ async def test_authenticated_share_requires_owner_and_revision() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_public_guest_share_creation_waits_for_dedicated_helper_path() -> None:
+async def test_public_guest_share_creation_requires_guest_controls() -> None:
     handler = CreateClassroomPlannerShareArtifactHandler(
         shares=_FakeShareRepository(),
         uow=_DummyUow(),
@@ -354,7 +456,39 @@ async def test_public_guest_share_creation_waits_for_dedicated_helper_path() -> 
         await handler.handle(command=command)
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
-    assert "PR-0273" in exc_info.value.message
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_guest_share_creation_rejects_source_provenance_ids() -> None:
+    handler = CreateClassroomPlannerShareArtifactHandler(
+        shares=_FakeShareRepository(),
+        uow=_DummyUow(),
+        clock=_FixedClock(datetime(2026, 4, 30, tzinfo=timezone.utc)),
+        id_generator=_FixedIdGenerator(uuid4()),
+        token_generator=_FixedTokenGenerator("public-token"),
+    )
+    command = CreateClassroomPlannerShareArtifactCommand(
+        source=ClassroomPlannerShareArtifactSource.PUBLIC_GUEST,
+        draft_kind=PlanDraftKind.SEATING,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        source_revision=1,
+        guest_snapshot_fingerprint="sha256:fingerprint",
+        client_operation_id="operation-123456789",
+        public_revoke_secret="r" * 32,
+        title="Klass 7A",
+        renderer_version="share-renderer-v1",
+        presentation_schema_version="seating-share-v1",
+        rendered_html="<main>Klass 7A</main>",
+        rendered_css="main { color: black; }",
+        expires_at=datetime(2026, 5, 30, tzinfo=timezone.utc),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(command=command)
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
 
 @pytest.mark.unit

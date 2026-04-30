@@ -24,6 +24,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-skriptoteket}
+      - PUBLIC_APP_BASE_URL=${PUBLIC_APP_BASE_URL:-http://localhost:5173}
       # Dev defaults:
       # - Inline completions: OpenAI primary (GPT-5) + local Devstral fallback.
       # - Chat/chat-ops: local Devstral primary + OpenAI fallback.
@@ -52,7 +53,7 @@ services:
       - ./alembic.ini:/app/alembic.ini
       - ./migrations:/app/migrations
       - ./src:/app/src
-      - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-../../huledu-reboot/secrets/local-runtime/internal-identity/gateway-internal-identity-public-key.pem}:/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro
+      - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-../../huleedu/secrets/local-runtime/internal-identity/gateway-internal-identity-public-key.pem}:/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro
       - vault_data:/var/lib/skriptoteket/vault
     depends_on:
       - db

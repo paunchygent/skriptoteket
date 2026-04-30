@@ -19,6 +19,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreateClassroomPlannerShareArtifactHandler,
     CreateGroupingDraftHandler,
     CreateGroupingExportJobHandler,
+    CreatePublicGuestGroupingShareHandler,
+    CreatePublicGuestSeatingShareHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     CreateSeatingDraftHandler,
@@ -50,6 +52,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PatchRosterSmartRulesHandler,
     PrepareGroupingExportHandler,
     PrepareSeatingExportHandler,
+    PublicGuestSharePolicy,
+    PurgeExpiredPublicGuestShareArtifactsHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
     RevokeClassroomPlannerShareArtifactHandler,
@@ -971,6 +975,69 @@ class CuratedAppsProvider(Provider):
             prepare_seating=prepare_seating,
             create_artifact=create_artifact,
             renderer=renderer,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def public_guest_share_policy(self, settings: Settings) -> PublicGuestSharePolicy:
+        return PublicGuestSharePolicy(
+            ttl_days=settings.PUBLIC_HELPER_SHARE_TTL_DAYS,
+            max_rendered_bytes=settings.PUBLIC_HELPER_SHARE_MAX_RENDERED_BYTES,
+            max_active_per_snapshot=settings.PUBLIC_HELPER_SHARE_MAX_ACTIVE_PER_SNAPSHOT,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_public_guest_grouping_share_handler(
+        self,
+        prepare_grouping: PrepareGroupingExportHandler,
+        create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        renderer: ClassroomPlannerShareRendererProtocol,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        policy: PublicGuestSharePolicy,
+    ) -> CreatePublicGuestGroupingShareHandler:
+        return CreatePublicGuestGroupingShareHandler(
+            prepare_grouping=prepare_grouping,
+            create_artifact=create_artifact,
+            renderer=renderer,
+            shares=shares,
+            uow=uow,
+            clock=clock,
+            policy=policy,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_public_guest_seating_share_handler(
+        self,
+        prepare_seating: PrepareSeatingExportHandler,
+        create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        renderer: ClassroomPlannerShareRendererProtocol,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        policy: PublicGuestSharePolicy,
+    ) -> CreatePublicGuestSeatingShareHandler:
+        return CreatePublicGuestSeatingShareHandler(
+            prepare_seating=prepare_seating,
+            create_artifact=create_artifact,
+            renderer=renderer,
+            shares=shares,
+            uow=uow,
+            clock=clock,
+            policy=policy,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def purge_expired_public_guest_share_artifacts_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> PurgeExpiredPublicGuestShareArtifactsHandler:
+        return PurgeExpiredPublicGuestShareArtifactsHandler(
+            shares=shares,
+            uow=uow,
+            clock=clock,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -5,8 +5,8 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-06
-outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, and coherent grouping/seating/rules work surfaces; the remaining EPIC-29 lane is shared site/app primitive, symbol, and discoverability tightening rather than unfinished workspace layout execution."
+updated: 2026-04-30
+outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, coherent grouping/seating/rules work surfaces, and a mockup-first small-screen companion lane that replaces cramped phone rails with mode-specific reduced layouts."
 dependencies:
   [
     "ADR-0069",
@@ -34,7 +34,8 @@ dependencies:
 - Record the now-shipped `Översikt`, `Grupper`, `Sittplatser`, and `Regler` desktop-first behavior
   in one canonical epic and keep any remaining work focused on shared primitive, symbol, and
   discoverability tightening instead of reopening the core workspace layouts.
-- Define reduced mobile companion layouts only after the desktop composition is settled.
+- Define reduced mobile companion layouts through separate mockup-first stories for the shared
+  shell and each workspace rather than one generic phone layout.
 
 ## Out of Scope
 
@@ -74,19 +75,25 @@ into the `laptop` proof width.
 - [ST-29-04: Overview hierarchy and class-first dashboard redesign](../stories/story-29-04-klassrumskartan-overview-hierarchy-and-class-first-dashboard-redesign.md)
 - [ST-29-05: Grouping and seating desktop workspace overhaul](../stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md)
 - [ST-29-06: Rules workspace no-classroom fallback and organized off-map selection](../stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md)
-- [ST-29-07: Reduced mobile companion layouts and breakpoint cutover](../stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md)
+- [ST-29-07: Reduced mobile companion layouts and breakpoint cutover](../stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md) — canceled as a broad implementation surface and split into `ST-29-13` through `ST-29-17`.
 - [ST-29-08: Shared custom tooltip system and global hover contract](../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
 - [ST-29-09: Rule visibility and tool-feedback continuity](../stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
 - [ST-29-10: First-run workspace gating and prerequisite guidance](../stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md)
 - [ST-29-11: Shared site/app dense-control primitive tightening](../stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
 - [ST-29-12: Canonical symbol language and discoverability contract completion](../stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md)
+- [ST-29-13: Small-screen shell and mode-switcher redesign](../stories/story-29-13-klassrumskartan-small-screen-shell-and-mode-switcher-redesign.md)
+- [ST-29-14: Small-screen overview redesign](../stories/story-29-14-klassrumskartan-small-screen-overview-redesign.md)
+- [ST-29-15: Small-screen grouping redesign](../stories/story-29-15-klassrumskartan-small-screen-grouping-redesign.md)
+- [ST-29-16: Small-screen seating redesign](../stories/story-29-16-klassrumskartan-small-screen-seating-redesign.md)
+- [ST-29-17: Small-screen rules redesign](../stories/story-29-17-klassrumskartan-small-screen-rules-redesign.md)
 
 ## Notes
 
 - `EPIC-29` is the canonical story/task hub for the Klassrumskartan UI overhaul.
-- The core desktop-first workspace/layout lane is now represented by shipped behavior in practice;
-  the main remaining active follow-on work is the shared primitive/symbol/discoverability set now
-  tracked in `ST-29-08`, `ST-29-11`, and `ST-29-12`.
+- The core desktop-first workspace/layout lane is represented by shipped behavior in practice.
+  The remaining active follow-on work now has two groups: shared primitive/symbol/discoverability
+  tightening in `ST-29-08`, `ST-29-11`, and `ST-29-12`, plus the mockup-first small-screen
+  companion lane in `ST-29-13` through `ST-29-17`.
 - For planner-family workspace shells, layout geometry remains CSS-owned even in follow-on hardening
   work: shell/pane/rail/board/canvas size, position, sticky behavior, overflow ownership, and
   breakpoint cutover should be restored through shared containment and layout tokens rather than
@@ -95,6 +102,8 @@ into the `laptop` proof width.
   definition/tightening lane rather than a blocker on the already-shipped workspace layouts.
 - `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
   and approved Swedish guidance without adding walkthroughs, modals, or extra onboarding chrome.
+- Approved small-screen workspace direction lives in
+  `docs/mockups/st-29-small-screen-workspace-redesign/`.
 - Applicable task decomposition from the earlier EPIC-26 redesign drafts is reassigned here and
   any conflicting story-level backlog docs should be removed rather than left around as dormant
   alternatives.

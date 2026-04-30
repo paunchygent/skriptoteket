@@ -18,7 +18,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 HULEEDU_PUBLIC_KEY_VOLUME = (
     "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH:-"
-    "../../huledu-reboot/secrets/local-runtime/internal-identity/"
+    "../../huleedu/secrets/local-runtime/internal-identity/"
     "gateway-internal-identity-public-key.pem}:"
     "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem:ro"
 )
@@ -58,6 +58,7 @@ def test_frontend_docker_dev_uses_local_huleedu_gateway_for_shared_auth() -> Non
     )
     assert web_environment["HULEEDU_INTERNAL_IDENTITY_ISSUER"] == "api_gateway_service"
     assert web_environment["HULEEDU_INTERNAL_IDENTITY_AUDIENCE"] == "skriptoteket"
+    assert web_environment["PUBLIC_APP_BASE_URL"] == "${PUBLIC_APP_BASE_URL:-http://localhost:5173}"
     assert frontend_environment["COREPACK_ENABLE_DOWNLOAD_PROMPT"] == "0"
     assert (
         frontend_environment["VITE_DEV_BACKEND_PROXY_TARGET"]
@@ -86,6 +87,7 @@ def test_vite_dev_proxy_keeps_public_api_off_huleedu_gateway() -> None:
         in vite_config
     )
     assert vite_config.index('"/api/v1/public"') < vite_config.index('"/api"')
+    assert vite_config.index('"/share/classroom"') < vite_config.index('"^/static/(?!spa)"')
     assert "target: devPublicApiProxyTarget" in vite_config
     assert "target: devBackendProxyTarget" in vite_config
 

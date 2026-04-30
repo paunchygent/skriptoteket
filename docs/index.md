@@ -386,6 +386,24 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`
 - EPIC-29 canonical symbol language + discoverability completion story:
   `docs/backlog/stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md`
+- EPIC-29 small-screen shell and mode-switcher redesign story:
+  `docs/backlog/stories/story-29-13-klassrumskartan-small-screen-shell-and-mode-switcher-redesign.md`
+- EPIC-29 small-screen overview redesign story:
+  `docs/backlog/stories/story-29-14-klassrumskartan-small-screen-overview-redesign.md`
+- EPIC-29 small-screen grouping redesign story:
+  `docs/backlog/stories/story-29-15-klassrumskartan-small-screen-grouping-redesign.md`
+- EPIC-29 small-screen seating redesign story:
+  `docs/backlog/stories/story-29-16-klassrumskartan-small-screen-seating-redesign.md`
+- EPIC-29 small-screen rules redesign story:
+  `docs/backlog/stories/story-29-17-klassrumskartan-small-screen-rules-redesign.md`
+- ST-26-06 share-link popover and bottom-sheet management task:
+  `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
+- ST-26-06 spatial share-page renderer and grouping polish task:
+  `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`
+- ST-29 small-screen workspace redesign mockup:
+  `docs/mockups/st-29-small-screen-workspace-redesign/README.md`
+- ST-26-06 share link UX and page renderer mockup:
+  `docs/mockups/st-26-06-share-link-ux-and-page-renderer/README.md`
 - Dishka/FastAPI public-API cutover foundation:
   `docs/backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md`
 - Hemma kernel lane recovery + `6.14` freeze / `6.17` cutover task:
@@ -456,6 +474,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/mockups/st-29-10-first-run-workspace-gating/index.html`
 - Klassrumskartan ST-29-06 mockup:
   `docs/mockups/st-29-06-rules-no-classroom-fallback/index.html`
+- Klassrumskartan ST-29 small-screen workspace redesign mockup:
+  `docs/mockups/st-29-small-screen-workspace-redesign/small-screen-workspaces-mode-sheet-mockup.png`
+- Klassrumskartan ST-26-06 share popover mockup:
+  `docs/mockups/st-26-06-share-link-ux-and-page-renderer/share-popover-and-bottom-sheet-mockup.png`
+- Klassrumskartan ST-26-06 shared seating page mockup:
+  `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-seating-page-spatial-map-mockup.png`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -723,6 +747,13 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md`
 - `docs/backlog/stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md`
 - `docs/backlog/stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md`
+- `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`
+- `docs/backlog/stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md`
+- `docs/backlog/stories/story-29-13-klassrumskartan-small-screen-shell-and-mode-switcher-redesign.md`
+- `docs/backlog/stories/story-29-14-klassrumskartan-small-screen-overview-redesign.md`
+- `docs/backlog/stories/story-29-15-klassrumskartan-small-screen-grouping-redesign.md`
+- `docs/backlog/stories/story-29-16-klassrumskartan-small-screen-seating-redesign.md`
+- `docs/backlog/stories/story-29-17-klassrumskartan-small-screen-rules-redesign.md`
 - `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md`
 - `docs/backlog/stories/story-30-02-adopt-transition-continuity-across-editor-and-selector-shells.md`
 - `docs/backlog/stories/story-34-01-docs-as-code-review-workflow-cutover-and-sprint-retirement-backfill.md`
@@ -757,6 +788,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-st-26-06-shareable-html-css-export-links.md`
+- `docs/backlog/reviews/review-pr-0273-public-guest-share-links-implementation.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md`
@@ -826,6 +858,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md`
 - `docs/backlog/prs/pr-0274-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md`
 - `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md`
+- `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
+- `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`
 - `docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md`
 - `docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`

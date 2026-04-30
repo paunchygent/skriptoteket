@@ -22,7 +22,9 @@ import { provideClassroomState, type ClassroomStateLike } from "./useClassroomSt
 import { CLASSROOM_PLANNER_APP_ID } from "./classroomPlannerNavigation";
 import { useClassroomPlannerGuestController } from "./useClassroomPlannerGuestController";
 import { usePublicGroupingExportFlow } from "./usePublicGroupingExportFlow";
+import { usePublicGroupingShareFlow } from "./usePublicGroupingShareFlow";
 import { usePublicSeatingExportFlow } from "./usePublicSeatingExportFlow";
+import { usePublicSeatingShareFlow } from "./usePublicSeatingShareFlow";
 
 const router = useRouter();
 const guestController = useClassroomPlannerGuestController();
@@ -36,6 +38,14 @@ const seatingExportFlow = usePublicSeatingExportFlow({
   plannerState: guestController.guestPlannerState,
   getSnapshot: guestController.ensureReadySnapshot,
   persistSnapshotMutation: guestController.persistSnapshotMutation,
+});
+const groupingShareFlow = usePublicGroupingShareFlow({
+  plannerState: guestController.guestPlannerState,
+  getSnapshot: guestController.ensureReadySnapshot,
+});
+const seatingShareFlow = usePublicSeatingShareFlow({
+  plannerState: guestController.guestPlannerState,
+  getSnapshot: guestController.ensureReadySnapshot,
 });
 
 provideClassroomState(providedGuestPlannerState as unknown as ClassroomStateLike);
@@ -193,9 +203,15 @@ async function exitPublicPlanner(): Promise<void> {
           :grouping-export-busy="groupingExportFlow.isBusy.value"
           :grouping-export-status-label="groupingExportFlow.statusLabel.value"
           :grouping-export-error-message="groupingExportFlow.errorMessage.value"
+          :grouping-share-busy="groupingShareFlow.isBusy.value"
+          :grouping-share-status-label="groupingShareFlow.statusLabel.value"
+          :grouping-share-error-message="groupingShareFlow.errorMessage.value"
           :seating-export-busy="seatingExportFlow.isBusy.value"
           :seating-export-status-label="seatingExportFlow.statusLabel.value"
           :seating-export-error-message="seatingExportFlow.errorMessage.value"
+          :seating-share-busy="seatingShareFlow.isBusy.value"
+          :seating-share-status-label="seatingShareFlow.statusLabel.value"
+          :seating-share-error-message="seatingShareFlow.errorMessage.value"
           @change-grouping-roster="void guestController.changeGroupingRoster($event)"
           @change-grouping-template="void guestController.changeGroupingTemplate($event)"
           @change-seating-template="void guestController.changeSeatingTemplate($event)"
@@ -204,8 +220,10 @@ async function exitPublicPlanner(): Promise<void> {
           @edit-roster="guestController.openSelectedRosterEdit"
           @export-grouping-default="void groupingExportFlow.startDefaultExport()"
           @export-grouping-option="void groupingExportFlow.startExport($event)"
+          @share-grouping-link="void groupingShareFlow.startShare()"
           @export-seating-default="void seatingExportFlow.startDefaultExport()"
           @export-seating-option="void seatingExportFlow.startExport($event)"
+          @share-seating-link="void seatingShareFlow.startShare()"
           @edit-current-template="guestController.openOverviewTemplateEdit"
           @select-workspace-mode="void guestController.selectPlannerWorkspaceMode($event)"
           @exit-app="void exitPublicPlanner()"

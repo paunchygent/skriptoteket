@@ -42,9 +42,15 @@ const props = withDefaults(
     groupingExportBusy?: boolean;
     groupingExportStatusLabel?: string | null;
     groupingExportErrorMessage?: string | null;
+    groupingShareBusy?: boolean;
+    groupingShareStatusLabel?: string | null;
+    groupingShareErrorMessage?: string | null;
     seatingExportBusy?: boolean;
     seatingExportStatusLabel?: string | null;
     seatingExportErrorMessage?: string | null;
+    seatingShareBusy?: boolean;
+    seatingShareStatusLabel?: string | null;
+    seatingShareErrorMessage?: string | null;
   }>(),
   {
     availableRosters: () => [],
@@ -55,9 +61,15 @@ const props = withDefaults(
     groupingExportBusy: false,
     groupingExportStatusLabel: null,
     groupingExportErrorMessage: null,
+    groupingShareBusy: false,
+    groupingShareStatusLabel: null,
+    groupingShareErrorMessage: null,
     seatingExportBusy: false,
     seatingExportStatusLabel: null,
     seatingExportErrorMessage: null,
+    seatingShareBusy: false,
+    seatingShareStatusLabel: null,
+    seatingShareErrorMessage: null,
   },
 );
 
@@ -70,8 +82,10 @@ const emit = defineEmits<{
   (e: "edit-roster"): void;
   (e: "export-grouping-default"): void;
   (e: "export-grouping-option", option: GroupingExportOption): void;
+  (e: "share-grouping-link"): void;
   (e: "export-seating-default"): void;
   (e: "export-seating-option", option: SeatingExportOption): void;
+  (e: "share-seating-link"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;
   (e: "exit-app"): void;
@@ -371,15 +385,20 @@ watch(
           :export-busy="groupingExportBusy"
           :export-status-label="groupingExportStatusLabel"
           :export-error-message="groupingExportErrorMessage"
+          :share-busy="groupingShareBusy"
+          :share-status-label="groupingShareStatusLabel"
+          :share-error-message="groupingShareErrorMessage"
           :show-history-action="false"
           :show-smart-controls="true"
           :show-export-actions="true"
+          :show-share-link-action="true"
           @change-grouping-roster="changeGroupingRoster($event)"
           @new-grouping-draft="startNewGroupingDraft"
           @open-settings="openGroupingSettingsDrawer"
           @edit-roster="emit('edit-roster')"
           @export-default="emit('export-grouping-default')"
           @export-option="emit('export-grouping-option', $event)"
+          @share-link="emit('share-grouping-link')"
         />
       </template>
 
@@ -398,9 +417,13 @@ watch(
           :export-busy="seatingExportBusy"
           :export-status-label="seatingExportStatusLabel"
           :export-error-message="seatingExportErrorMessage"
+          :share-busy="seatingShareBusy"
+          :share-status-label="seatingShareStatusLabel"
+          :share-error-message="seatingShareErrorMessage"
           :show-history-action="false"
           :show-smart-controls="true"
           :show-export-actions="true"
+          :show-share-link-action="true"
           @change-seating-template="changeSeatingTemplate($event)"
           @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
           @edit-roster="emit('edit-roster')"
@@ -408,6 +431,7 @@ watch(
           @open-settings="openSeatingSettingsDrawer"
           @export-default="emit('export-seating-default')"
           @export-option="emit('export-seating-option', $event)"
+          @share-link="emit('share-seating-link')"
         />
       </template>
 

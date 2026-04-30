@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
+    PublicGuestSharePersistenceResult,
     RenderedClassroomPlannerShare,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
@@ -63,6 +64,47 @@ class ClassroomPlannerShareArtifactRepositoryProtocol(Protocol):
         owner_user_id: UUID,
         revoked_at: datetime,
     ) -> ClassroomPlannerShareArtifact | None: ...
+
+    async def get_public_guest_by_client_operation_id(
+        self,
+        *,
+        client_operation_id: str,
+    ) -> ClassroomPlannerShareArtifact | None: ...
+
+    async def count_active_public_guest_shares(
+        self,
+        *,
+        guest_snapshot_fingerprint: str,
+        now: datetime,
+    ) -> int: ...
+
+    async def find_active_public_guest_by_token_and_secret(
+        self,
+        *,
+        token_hash: str,
+        revoke_secret_hash: str,
+        now: datetime,
+    ) -> ClassroomPlannerShareArtifact | None: ...
+
+    async def revoke_public_guest_by_token_and_secret(
+        self,
+        *,
+        token_hash: str,
+        revoke_secret_hash: str,
+        revoked_at: datetime,
+    ) -> ClassroomPlannerShareArtifact | None: ...
+
+    async def create_or_reuse_public_guest_share(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        previous_token_hash: str | None,
+        previous_revoke_secret_hash: str | None,
+        now: datetime,
+        max_active_per_snapshot: int,
+    ) -> PublicGuestSharePersistenceResult: ...
+
+    async def purge_expired_public_guest_shares(self, *, now: datetime) -> int: ...
 
     async def revoke_for_draft_lifecycle(
         self,

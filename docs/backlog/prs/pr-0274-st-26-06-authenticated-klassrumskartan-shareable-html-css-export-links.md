@@ -111,6 +111,17 @@ under `PR-0273` and the accepted `ADR-0084` exception.
 - `pdm run handoff-validate` if `.codex/handoff.md` records live UI proof.
 - `git diff --check`
 
+## Implementation Notes
+
+- Docker dev now sets `PUBLIC_APP_BASE_URL=http://localhost:5173` for the web
+  service, and `.env.example` mirrors that value. Local share pages are served
+  through the Vite app host via the `/share/classroom/*` backend proxy, so
+  dev-created links must not point at `https://skriptoteket.hule.education`
+  unless the artifact is created in the production database.
+- Vite dev proxies `/share/classroom/*` to the backend so a share path opened
+  on `localhost:5173` is not swallowed by the SPA catch-all and routed into
+  normal app/login recovery.
+
 ## Rollback Plan
 
 Disable the `Dela länk` menu action and revoke new share creation while leaving

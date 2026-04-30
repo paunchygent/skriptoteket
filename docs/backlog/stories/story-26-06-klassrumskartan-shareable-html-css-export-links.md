@@ -87,3 +87,9 @@ sharing.
   - `PR-0273` for public guest share links under accepted `ADR-0084` authority,
     60-day TTL ceiling, public helper limits, snapshot revision guard, and
     browser-stored revoke/replace behavior.
+  - `PR-0275` for replacing detached owned-share panels with the approved
+    desktop popover and mobile bottom-sheet management pattern.
+  - `PR-0276` for replacing the seating share row/place directory with a real
+    spatial classroom-map share page and polishing grouping share cards.
+- Approved share UI and share-page visual direction lives in
+  `docs/mockups/st-26-06-share-link-ux-and-page-renderer/`.

@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
@@ -54,6 +55,9 @@ class ClassroomPlannerShareArtifact(BaseModel):
     roster_id: UUID | None = None
     template_id: UUID | None = None
     source_revision: int | None = Field(default=None, ge=0)
+    guest_snapshot_fingerprint: str | None = None
+    client_operation_id: str | None = None
+    revoke_secret_hash: str | None = None
     title: str
     slug: str
     public_path: str | None = None
@@ -84,6 +88,7 @@ class ClassroomPlannerShareArtifactCreateResult(BaseModel):
 
     artifact: ClassroomPlannerShareArtifact
     public_token: str
+    public_revoke_secret: str | None = None
 
     @property
     def public_path(self) -> str:
@@ -93,6 +98,17 @@ class ClassroomPlannerShareArtifactCreateResult(BaseModel):
             public_token=self.public_token,
             slug=self.artifact.slug,
         )
+
+
+@dataclass(frozen=True, slots=True)
+class PublicGuestSharePersistenceResult:
+    """Describe one atomic public guest share persistence outcome."""
+
+    artifact: ClassroomPlannerShareArtifact | None
+    superseded_previous: bool = False
+    reused_client_operation: bool = False
+    active_limit_exceeded: bool = False
+    previous_already_superseded: bool = False
 
 
 class RenderedClassroomPlannerShare(BaseModel):
@@ -113,6 +129,28 @@ def hash_share_token(token: str) -> str:
     """Hash a public share token for durable storage."""
 
     return _hash_text(token)
+
+
+def hash_share_revoke_secret(secret: str) -> str:
+    """Hash a browser-held public guest revoke secret for durable storage."""
+
+    return _hash_text(secret)
+
+
+def extract_share_public_token(public_path: str) -> str | None:
+    """Extract the unguessable share token from a copied public path."""
+
+    path = public_path.strip()
+    if not path:
+        return None
+    if "://" in path:
+        _, _, path = path.partition("://")
+        _, _, path = path.partition("/")
+        path = f"/{path}"
+    parts = [part for part in path.split("/") if part]
+    if len(parts) < 3 or parts[0] != "share" or parts[1] != "classroom":
+        return None
+    return parts[2] or None
 
 
 def build_share_content_hash(*, rendered_html: str, rendered_css: str) -> str:

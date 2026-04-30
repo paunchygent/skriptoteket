@@ -117,10 +117,12 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - `ST-26-06` adds the next governed export variant: immutable shareable
   HTML/CSS links for grouping and seating, with authenticated durable shares
   first (`PR-0274`) and public guest shares with 60-day TTL and browser-held
-  supersede/revoke behavior second (`PR-0273`). The lane is now ready after
-  `REV-ST-26-06` approval and accepted `ADR-0084` authority; implementation
-  must preserve the accepted renderer-provenance, 60-day TTL ceiling, public
-  create/read route split, purge, abuse-control, and no-upgrade-import
+  supersede/revoke behavior second (`PR-0273`). The 2026-04-30 UI assessment
+  added two follow-up slices: `PR-0275` replaces detached share panels with
+  the approved popover/bottom-sheet management pattern, and `PR-0276` replaces
+  the seating share row/place directory with a real spatial classroom-map page.
+  The lane must preserve the accepted renderer-provenance, 60-day TTL ceiling,
+  public create/read route split, purge, abuse-control, and no-upgrade-import
   constraints.
 - The `PR-0122` Hemma deploy gate is now production-proven through the on-host
   callback-capable export smoke and Vault-backed download, while `PR-0125`

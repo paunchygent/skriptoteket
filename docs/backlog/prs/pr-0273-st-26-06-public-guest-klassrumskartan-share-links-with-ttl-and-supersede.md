@@ -2,7 +2,7 @@
 type: pr
 id: PR-0273
 title: "ST-26-06 public guest Klassrumskartan share links with TTL and supersede"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-30
 updated: 2026-04-30
@@ -15,6 +15,7 @@ dependencies:
   - "ADR-0080"
   - "ADR-0084"
   - "REV-ST-26-06"
+  - "REV-PR-0273"
 acceptance_criteria:
   - "Given `ADR-0084` is accepted, when implementation planning starts, then this public guest share slice stays inside the accepted exception and does not create any wider durable anonymous guest artifact path."
   - "Given a public guest opens the grouping or seating export menu, when they inspect export actions, then `Dela länk` appears beside PDF/Excel."
@@ -122,6 +123,47 @@ exception and the retained `REV-ST-26-06` guardrails.
 - `pdm run docs-validate`
 - `pdm run handoff-validate` if `.codex/handoff.md` records live UI proof.
 - `git diff --check`
+
+## Implementation Notes
+
+- Added dedicated public guest share helper routes for grouping and seating under
+  `/api/v1/public/apps/classroom.group-seating-studio/*/share`.
+- Public guest share rows are stored as `source = public_guest` with no owner,
+  draft, roster, or template authority; they persist browser-supplied
+  idempotency/supersede controls only as bounded metadata and hashed revoke
+  secrets.
+- The backend enforces strict snapshot revision matching, a 60-day TTL policy,
+  rendered-size caps, public-helper request caps/rate limits, active-link
+  ceilings, and expired guest-share purge support.
+- The guest UI now exposes `Dela länk` beside PDF/Excel, flushes browser-owned
+  draft state through the same export-preparation path, copies the public URL,
+  and stores latest browser-held revoke metadata per snapshot plus draft kind.
+- Public guest export/share frontend calls use the public API client with
+  `credentials: "omit"` and do not bootstrap shared-auth CSRF.
+
+## Verification
+
+- Retained implementation review: `REV-PR-0273` requests changes until a
+  reviewer accepts the added PostgreSQL integration proof for the advisory-lock
+  create/reuse/supersede path under real concurrent sessions. The original
+  unit/flow-level remediation for race-safe create/reuse/supersede semantics,
+  previous-link metadata across edits, retry idempotency, and public guest
+  provenance validation is in place.
+- `pdm run lint`
+- `pdm run typecheck`
+- `pdm run fe-type-check`
+- `pdm run fe-lint`
+- `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/test_public_apps_classroom_planner_shares.py tests/unit/web/test_public_apps_classroom_planner_exports.py tests/unit/web/apps/classroom_planner/test_share_api.py`
+- `pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py`
+- `pdm run fe-test -- --run src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/usePublicGroupingExportFlow.spec.ts src/views/apps/usePublicSeatingExportFlow.spec.ts`
+- `pdm run dev-stack ps`
+- `curl -sSf http://127.0.0.1:8000/healthz`
+- `curl -sSf http://127.0.0.1:5173/`
+- `pdm run pytest -q tests/unit/test_docker_dev_shared_auth_contract.py tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_context_api.py`
+- In-app browser route check:
+  `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio` loaded
+  the public Klassrumskartan guest page with local HuleEdu login/register links
+  and no app-local login route.
 
 ## Rollback Plan
 

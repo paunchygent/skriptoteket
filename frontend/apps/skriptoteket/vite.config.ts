@@ -46,6 +46,10 @@ export default defineConfig(({ command }) => ({
         target: devProxyTarget,
         changeOrigin: true,
       },
+      "/share/classroom": {
+        target: devBackendProxyTarget,
+        changeOrigin: true,
+      },
       // Proxy non-SPA static assets to backend; SPA assets served by Vite
       "^/static/(?!spa)": {
         target: devBackendProxyTarget,

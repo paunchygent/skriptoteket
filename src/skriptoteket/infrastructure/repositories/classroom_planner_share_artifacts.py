@@ -15,12 +15,13 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
+    PublicGuestSharePersistenceResult,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact import (
@@ -53,6 +54,9 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
             roster_id=artifact.roster_id,
             template_id=artifact.template_id,
             source_revision=artifact.source_revision,
+            guest_snapshot_fingerprint=artifact.guest_snapshot_fingerprint,
+            client_operation_id=artifact.client_operation_id,
+            revoke_secret_hash=artifact.revoke_secret_hash,
             title=artifact.title,
             slug=artifact.slug,
             public_path=artifact.public_path,
@@ -84,6 +88,9 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
             roster_id=model.roster_id,
             template_id=model.template_id,
             source_revision=model.source_revision,
+            guest_snapshot_fingerprint=model.guest_snapshot_fingerprint,
+            client_operation_id=model.client_operation_id,
+            revoke_secret_hash=model.revoke_secret_hash,
             title=model.title,
             slug=model.slug,
             public_path=model.public_path,
@@ -165,6 +172,182 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
         await self._session.flush()
         await self._session.refresh(model)
         return self._to_artifact(model)
+
+    async def get_public_guest_by_client_operation_id(
+        self,
+        *,
+        client_operation_id: str,
+    ) -> ClassroomPlannerShareArtifact | None:
+        result = await self._session.execute(
+            select(ClassroomPlannerShareArtifactModel).where(
+                ClassroomPlannerShareArtifactModel.source
+                == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                ClassroomPlannerShareArtifactModel.client_operation_id == client_operation_id,
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_artifact(model) if model else None
+
+    async def count_active_public_guest_shares(
+        self,
+        *,
+        guest_snapshot_fingerprint: str,
+        now: datetime,
+    ) -> int:
+        result = await self._session.execute(
+            select(ClassroomPlannerShareArtifactModel.id).where(
+                ClassroomPlannerShareArtifactModel.source
+                == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                ClassroomPlannerShareArtifactModel.guest_snapshot_fingerprint
+                == guest_snapshot_fingerprint,
+                ClassroomPlannerShareArtifactModel.revoked_at.is_(None),
+                (
+                    (ClassroomPlannerShareArtifactModel.expires_at.is_(None))
+                    | (ClassroomPlannerShareArtifactModel.expires_at > now)
+                ),
+            )
+        )
+        return len(result.scalars().all())
+
+    async def find_active_public_guest_by_token_and_secret(
+        self,
+        *,
+        token_hash: str,
+        revoke_secret_hash: str,
+        now: datetime,
+    ) -> ClassroomPlannerShareArtifact | None:
+        result = await self._session.execute(
+            select(ClassroomPlannerShareArtifactModel).where(
+                ClassroomPlannerShareArtifactModel.source
+                == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                ClassroomPlannerShareArtifactModel.token_hash == token_hash,
+                ClassroomPlannerShareArtifactModel.revoke_secret_hash == revoke_secret_hash,
+                ClassroomPlannerShareArtifactModel.revoked_at.is_(None),
+                (
+                    (ClassroomPlannerShareArtifactModel.expires_at.is_(None))
+                    | (ClassroomPlannerShareArtifactModel.expires_at > now)
+                ),
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_artifact(model) if model else None
+
+    async def revoke_public_guest_by_token_and_secret(
+        self,
+        *,
+        token_hash: str,
+        revoke_secret_hash: str,
+        revoked_at: datetime,
+    ) -> ClassroomPlannerShareArtifact | None:
+        model = (
+            await self._session.execute(
+                select(ClassroomPlannerShareArtifactModel).where(
+                    ClassroomPlannerShareArtifactModel.source
+                    == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                    ClassroomPlannerShareArtifactModel.token_hash == token_hash,
+                    ClassroomPlannerShareArtifactModel.revoke_secret_hash == revoke_secret_hash,
+                    ClassroomPlannerShareArtifactModel.revoked_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if model is None:
+            return None
+        model.revoked_at = revoked_at
+        model.updated_at = revoked_at
+        await self._session.flush()
+        await self._session.refresh(model)
+        return self._to_artifact(model)
+
+    async def create_or_reuse_public_guest_share(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        previous_token_hash: str | None,
+        previous_revoke_secret_hash: str | None,
+        now: datetime,
+        max_active_per_snapshot: int,
+    ) -> PublicGuestSharePersistenceResult:
+        await self._lock_public_guest_share_keys(
+            artifact=artifact,
+            previous_token_hash=previous_token_hash,
+        )
+        existing = await self.get_public_guest_by_client_operation_id(
+            client_operation_id=artifact.client_operation_id or ""
+        )
+        if existing is not None:
+            return PublicGuestSharePersistenceResult(
+                artifact=existing,
+                reused_client_operation=True,
+            )
+
+        previous = await self._locked_public_guest_by_token_and_secret(
+            previous_token_hash=previous_token_hash,
+            previous_revoke_secret_hash=previous_revoke_secret_hash,
+            now=now,
+        )
+        if previous is _STALE_PREVIOUS_SHARE:
+            return PublicGuestSharePersistenceResult(
+                artifact=None,
+                previous_already_superseded=True,
+            )
+
+        active_count = await self._active_public_guest_share_count_for_update(
+            guest_snapshot_fingerprint=artifact.guest_snapshot_fingerprint or "",
+            now=now,
+        )
+        if active_count >= max_active_per_snapshot and previous is None:
+            return PublicGuestSharePersistenceResult(
+                artifact=None,
+                active_limit_exceeded=True,
+            )
+
+        model = self._to_model(artifact)
+        self._session.add(model)
+        await self._session.flush()
+
+        superseded_previous = False
+        if isinstance(previous, ClassroomPlannerShareArtifactModel):
+            previous.revoked_at = now
+            previous.updated_at = now
+            superseded_previous = True
+            await self._session.flush()
+
+        await self._session.refresh(model)
+        return PublicGuestSharePersistenceResult(
+            artifact=self._to_artifact(model),
+            superseded_previous=superseded_previous,
+        )
+
+    async def purge_expired_public_guest_shares(self, *, now: datetime) -> int:
+        share_ids = list(
+            (
+                await self._session.execute(
+                    select(ClassroomPlannerShareArtifactModel.id).where(
+                        ClassroomPlannerShareArtifactModel.source
+                        == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                        ClassroomPlannerShareArtifactModel.expires_at.is_not(None),
+                        ClassroomPlannerShareArtifactModel.expires_at <= now,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        if not share_ids:
+            return 0
+        await self._session.execute(
+            update(ClassroomPlannerShareArtifactModel)
+            .where(ClassroomPlannerShareArtifactModel.id.in_(share_ids))
+            .values(
+                rendered_html="",
+                rendered_css="",
+                presentation_payload=None,
+                revoked_at=now,
+                updated_at=now,
+            )
+        )
+        await self._session.flush()
+        return len(share_ids)
 
     async def revoke_for_draft_lifecycle(
         self,
@@ -303,3 +486,77 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
             select(ClassroomPlannerShareArtifactModel.id).where(*conditions)
         )
         return list(result.scalars().all())
+
+    async def _lock_public_guest_share_keys(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        previous_token_hash: str | None,
+    ) -> None:
+        lock_keys = {
+            f"public-guest-share:client:{artifact.client_operation_id or ''}",
+            f"public-guest-share:snapshot:{artifact.guest_snapshot_fingerprint or ''}",
+        }
+        if previous_token_hash:
+            lock_keys.add(f"public-guest-share:previous:{previous_token_hash}")
+        for lock_key in sorted(lock_keys):
+            await self._session.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:lock_key, 0))"),
+                {"lock_key": lock_key},
+            )
+
+    async def _locked_public_guest_by_token_and_secret(
+        self,
+        *,
+        previous_token_hash: str | None,
+        previous_revoke_secret_hash: str | None,
+        now: datetime,
+    ) -> ClassroomPlannerShareArtifactModel | object | None:
+        if not previous_token_hash or not previous_revoke_secret_hash:
+            return None
+        model = (
+            await self._session.execute(
+                select(ClassroomPlannerShareArtifactModel)
+                .where(
+                    ClassroomPlannerShareArtifactModel.source
+                    == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                    ClassroomPlannerShareArtifactModel.token_hash == previous_token_hash,
+                    ClassroomPlannerShareArtifactModel.revoke_secret_hash
+                    == previous_revoke_secret_hash,
+                )
+                .with_for_update()
+            )
+        ).scalar_one_or_none()
+        if model is None:
+            return None
+        if model.revoked_at is not None:
+            return _STALE_PREVIOUS_SHARE
+        if model.expires_at is not None and model.expires_at <= now:
+            return None
+        return model
+
+    async def _active_public_guest_share_count_for_update(
+        self,
+        *,
+        guest_snapshot_fingerprint: str,
+        now: datetime,
+    ) -> int:
+        result = await self._session.execute(
+            select(func.count())
+            .select_from(ClassroomPlannerShareArtifactModel)
+            .where(
+                ClassroomPlannerShareArtifactModel.source
+                == ClassroomPlannerShareArtifactSource.PUBLIC_GUEST.value,
+                ClassroomPlannerShareArtifactModel.guest_snapshot_fingerprint
+                == guest_snapshot_fingerprint,
+                ClassroomPlannerShareArtifactModel.revoked_at.is_(None),
+                (
+                    (ClassroomPlannerShareArtifactModel.expires_at.is_(None))
+                    | (ClassroomPlannerShareArtifactModel.expires_at > now)
+                ),
+            )
+        )
+        return int(result.scalar_one())
+
+
+_STALE_PREVIOUS_SHARE = object()

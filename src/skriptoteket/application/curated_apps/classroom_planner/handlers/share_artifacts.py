@@ -30,6 +30,7 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     build_share_presentation_hash,
     build_share_public_path,
     build_share_slug,
+    hash_share_revoke_secret,
     hash_share_token,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
@@ -60,6 +61,9 @@ class CreateClassroomPlannerShareArtifactCommand(BaseModel):
     roster_id: UUID | None = None
     template_id: UUID | None = None
     source_revision: int | None = Field(default=None, ge=0)
+    guest_snapshot_fingerprint: str | None = Field(default=None, max_length=96)
+    client_operation_id: str | None = Field(default=None, max_length=128)
+    public_revoke_secret: str | None = Field(default=None, min_length=32, max_length=256)
     slug: str | None = Field(default=None, max_length=255)
     preview_description: str | None = Field(default=None, max_length=500)
     presentation_payload: JsonObject | None = None
@@ -89,10 +93,27 @@ class CreateClassroomPlannerShareArtifactHandler:
         *,
         command: CreateClassroomPlannerShareArtifactCommand,
     ) -> ClassroomPlannerShareArtifactCreateResult:
+        result = self.build_unsaved(command=command)
+        async with self._uow:
+            persisted = await self._shares.create(artifact=result.artifact)
+        return result.model_copy(update={"artifact": persisted})
+
+    def build_unsaved(
+        self,
+        *,
+        command: CreateClassroomPlannerShareArtifactCommand,
+    ) -> ClassroomPlannerShareArtifactCreateResult:
+        """Build one validated share artifact without persisting it."""
+
         _validate_create_command(command)
 
         now = self._clock.now()
         public_token = self._token_generator.new_token()
+        revoke_secret_hash = (
+            hash_share_revoke_secret(command.public_revoke_secret)
+            if command.public_revoke_secret
+            else None
+        )
         slug = build_share_slug(command.slug or command.title)
         artifact = ClassroomPlannerShareArtifact(
             id=self._id_generator.new_uuid(),
@@ -104,6 +125,9 @@ class CreateClassroomPlannerShareArtifactHandler:
             roster_id=command.roster_id,
             template_id=command.template_id,
             source_revision=command.source_revision,
+            guest_snapshot_fingerprint=command.guest_snapshot_fingerprint,
+            client_operation_id=command.client_operation_id,
+            revoke_secret_hash=revoke_secret_hash,
             title=command.title.strip(),
             slug=slug,
             public_path=build_share_public_path(public_token=public_token, slug=slug),
@@ -122,11 +146,10 @@ class CreateClassroomPlannerShareArtifactHandler:
             updated_at=now,
             expires_at=command.expires_at,
         )
-        async with self._uow:
-            persisted = await self._shares.create(artifact=artifact)
         return ClassroomPlannerShareArtifactCreateResult(
-            artifact=persisted,
+            artifact=artifact,
             public_token=public_token,
+            public_revoke_secret=command.public_revoke_secret,
         )
 
 
@@ -291,6 +314,18 @@ def _validate_authenticated_command(command: CreateClassroomPlannerShareArtifact
 
 
 def _validate_public_guest_command(command: CreateClassroomPlannerShareArtifactCommand) -> None:
-    raise validation_error(
-        "Public guest share artifacts must use the dedicated PR-0273 public helper path."
-    )
+    if (
+        command.owner_user_id is not None
+        or command.draft_id is not None
+        or command.roster_id is not None
+        or command.template_id is not None
+    ):
+        raise validation_error("Public guest share artifacts must not store source ids.")
+    if command.expires_at is None:
+        raise validation_error("Public guest share artifacts require an expiry.")
+    if command.guest_snapshot_fingerprint is None:
+        raise validation_error("Public guest share artifacts require a snapshot fingerprint.")
+    if command.client_operation_id is None:
+        raise validation_error("Public guest share artifacts require a client operation id.")
+    if command.public_revoke_secret is None:
+        raise validation_error("Public guest share artifacts require a browser-held revoke secret.")

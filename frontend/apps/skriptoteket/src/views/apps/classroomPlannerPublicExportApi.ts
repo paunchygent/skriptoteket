@@ -6,7 +6,7 @@
  * payloads out of the authenticated export-job seam.
  */
 
-import { apiFetchBlobResponse } from "../../api/client";
+import { publicApiFetchBlobResponse } from "../../api/client";
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import type {
   GroupingExportKind,
@@ -50,7 +50,7 @@ export async function exportPublicGroupingSnapshot(
   option: GroupingExportOption,
 ): Promise<PublicExportDownload> {
   const body = buildPublicGroupingExportRequest(snapshot, expectedRevision, option);
-  const response = await apiFetchBlobResponse(
+  const response = await publicApiFetchBlobResponse(
     "/api/v1/public/apps/classroom.group-seating-studio/grouping/export",
     {
       method: "POST",
@@ -70,7 +70,7 @@ export async function exportPublicSeatingSnapshot(
   option: SeatingExportOption,
 ): Promise<PublicExportDownload> {
   const body = buildPublicSeatingExportRequest(snapshot, expectedRevision, option);
-  const response = await apiFetchBlobResponse(
+  const response = await publicApiFetchBlobResponse(
     "/api/v1/public/apps/classroom.group-seating-studio/seating/export",
     {
       method: "POST",
