@@ -2,10 +2,10 @@
 type: pr
 id: PR-0211
 title: "ST-32-04: browser-owned guest snapshot contract and storage foundation"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-04-04
-updated: 2026-04-04
+updated: 2026-04-30
 stories:
   - "ST-32-04"
 tags: ["frontend", "klassrumskartan", "guest-state", "public-access"]
@@ -32,6 +32,14 @@ pass established the basic snapshot/storage shape, but review found two boundary
 
 The public shell test coverage also needed broader direct evidence for shell states and orphaned
 pointer repair.
+
+## Status Reconciliation (2026-04-30)
+
+This draft is canceled as an unindexed duplicate of the retained `PR-0211`
+Option A1 implementation record:
+`pr-0211-st-32-04-option-a1-guest-snapshot-frontend-hardening.md`. The
+delivered state and verification belong there; this file should not be treated
+as an open implementation task.
 
 ## Goal
 

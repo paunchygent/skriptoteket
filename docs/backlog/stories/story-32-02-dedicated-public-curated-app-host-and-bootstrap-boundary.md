@@ -2,10 +2,10 @@
 type: story
 id: ST-32-02
 title: "Dedicated public curated-app host and bootstrap boundary"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-30
 epic: "EPIC-32"
 dependencies: ["ST-32-01", "ADR-0079"]
 acceptance_criteria:
@@ -30,3 +30,10 @@ branch inside the authenticated host.
   does not declare a public profile.
 - This story is about entry/bootstrap boundaries, not guest persistence or
   anonymous helper APIs yet.
+
+## Status Reconciliation (2026-04-30)
+
+This story is now marked `done`. The SPA has a dedicated
+`/public/apps/:appId` route, `PublicAppHostView` loads
+`/api/v1/public/apps/{app_id}`, and authenticated `/apps/:appId` remains a
+separate host route.

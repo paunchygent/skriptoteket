@@ -2,10 +2,10 @@
 type: story
 id: ST-32-01
 title: "Curated-app public access profiles and current app matrix"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-30
 epic: "EPIC-32"
 dependencies: ["ADR-0023", "ADR-0079"]
 acceptance_criteria:
@@ -44,3 +44,10 @@ runtime state, and dev/demo surfaces into one vague category.
     - operational note: dev/demo-only, not part of the production public-access rollout
 - This story is deliberately platform-level. It exists so later app work can
   reuse one vocabulary rather than reopening the access model every time.
+
+## Status Reconciliation (2026-04-30)
+
+This story is now marked `done`. `ADR-0079` is accepted, `REV-EPIC-32`
+approved the access-profile matrix, and the implemented curated-app public
+bootstrap returns `public_access_profile` from the public app contract used by
+the SPA host.

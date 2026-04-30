@@ -2,10 +2,10 @@
 type: pr
 id: PR-0232
 title: "ST-32-06: guest local draft parity, direct-download export, and account-only history affordance polish"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-30
 stories:
   - "ST-32-06"
 tags:
@@ -369,3 +369,12 @@ Verification evidence requirement:
 
 - Retained review gate:
   [REV-PR-0231](../reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md)
+
+## Status Reconciliation (2026-04-30)
+
+This PR is now marked `done`. `ST-32-06` and
+`ref-development-changelog.md` already record that guest local undo/redo,
+public direct-download grouping/seating exports, checkpoint persistence, and
+account-only history/recovery boundaries shipped through this slice. The
+retained `REV-PR-0231` review is approved for the combined guest-boundary
+package.

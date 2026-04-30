@@ -414,6 +414,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`
 - Accepted Klassrumskartan guest Smart/history boundary ADR:
   `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
+- Accepted Klassrumskartan public share artifact exception ADR:
+  `docs/adr/adr-0084-klassrumskartan-public-share-artifact-exception.md`
 - Accepted Hemma deploy entrypoint ADR:
   `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - Accepted app-local bootstrap continuation ADR:
@@ -696,6 +698,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`
 - `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md`
 - `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md`
+- `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md`
 - `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md`
 - `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md`
 - `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md`
@@ -751,6 +754,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-st-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - `docs/backlog/reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
+- `docs/backlog/reviews/review-st-26-06-shareable-html-css-export-links.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md`
@@ -818,6 +822,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0139-klassrumskartan-grouping-export-action-hierarchy-and-shared-presentation-contract.md`
 - `docs/backlog/prs/pr-0140-klassrumskartan-grouping-xlsx-workbook-layout-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md`
+- `docs/backlog/prs/pr-0272-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md`
+- `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md`
 - `docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md`
 - `docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`

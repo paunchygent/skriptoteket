@@ -2,10 +2,10 @@
 type: pr
 id: PR-0245
 title: "ST-32-05 follow-up: empty guest snapshot and zero-effect import UI reconciliation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-08
+updated: 2026-04-30
 stories:
   - "ST-32-05"
 tags:
@@ -103,3 +103,11 @@ preview/commit produces an all-zero receipt.
   [PR-0221](pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md)
 - Template-reuse/remap hardening:
   [PR-0233](pr-0233-st-32-05-follow-up-authenticated-guest-upgrade-template-reuse-and-seat-remap-hardening.md)
+
+## Status Reconciliation (2026-04-30)
+
+This PR is now marked `done`. The committed frontend includes
+`classroomPlannerGuestUpgradeOutcome.ts`, clears empty browser-owned snapshots
+before prompting, refuses all-zero commit receipts for non-empty snapshots, and
+keeps the post-import summary hidden for all-zero receipts through focused
+entry-view and guest-upgrade tests.

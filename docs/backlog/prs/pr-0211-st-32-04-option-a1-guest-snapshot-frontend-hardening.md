@@ -2,10 +2,10 @@
 type: pr
 id: PR-0211
 title: "ST-32-04 Option A1: guest snapshot frontend hardening"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-04
-updated: 2026-04-04
+updated: 2026-04-30
 stories:
   - "ST-32-04"
 tags: ["frontend", "klassrumskartan", "public-host", "guest-storage", "review-fixes"]
@@ -105,6 +105,13 @@ identity is strong enough for later ST-32-05 import/idempotency work.
   - stale digest-format note in `.codex/handoff.md`
 - both findings were fixed in-slice and `pdm run docs-validate` was rerun successfully
 - second and final sole-reviewer pass returned no actionable findings
+
+## Status Reconciliation (2026-04-30)
+
+This indexed `PR-0211` record is the retained implementation record for
+`ST-32-04`. The older unindexed `PR-0211` draft is canceled as a stale
+duplicate; this Option A1 record carries the delivered proof and keeps the
+story status closed.
 
 ## Rollback plan
 

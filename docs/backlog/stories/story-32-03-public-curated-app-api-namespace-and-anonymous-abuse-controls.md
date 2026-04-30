@@ -2,10 +2,10 @@
 type: story
 id: ST-32-03
 title: "Public curated-app API namespace and anonymous abuse controls"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-30
 epic: "EPIC-32"
 dependencies: ["ST-32-02", "ADR-0079"]
 acceptance_criteria:
@@ -35,3 +35,11 @@ boundary with explicit abuse controls.
 - Public endpoints must remain guest/public endpoints even if the browser is
   currently logged in.
 - Conversion Hub remains the counterexample that stays authenticated-only.
+
+## Status Reconciliation (2026-04-30)
+
+This story is now marked `done`. Public Klassrumskartan bootstrap, import
+preview, Smart helper, and direct-download export routes live under
+`/api/v1/public/apps/classroom.group-seating-studio/...` with public-helper
+validation, throttling, and reason-code handling separated from authenticated
+owner-scoped APIs.

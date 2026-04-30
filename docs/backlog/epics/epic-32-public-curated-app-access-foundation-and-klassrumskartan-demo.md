@@ -2,10 +2,10 @@
 type: epic
 id: EPIC-32
 title: "Public curated-app access foundation and Klassrumskartan demo"
-status: active
+status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-19
+updated: 2026-04-30
 outcome: "Skriptoteket gains a reusable public curated-app access model with explicit per-app access profiles, separate public/authenticated seams, browser-owned guest-state rules, and authenticated upgrade boundaries; Klassrumskartan becomes the first approved `public_browser_workspace_with_upgrade` consumer without weakening the existing authenticated curated-app host or owner-scoped APIs."
 dependencies:
   [
@@ -191,3 +191,24 @@ dependencies:
       - the canonical Playwright/browser lane is aligned with the real
         `/auth/login` flow through green `ui-smoke`, `ui-editor-smoke`,
         `ui-runtime-smoke`, and Flunk-Out Frenzy route proofs on `5173`
+
+## Status Reconciliation (2026-04-30)
+
+`EPIC-32` is now marked `done`. The lingering `ready` statuses were stale
+against shipped implementation and review evidence:
+
+- `ST-32-01` through `ST-32-04` are closed as platform/foundation work because
+  `ADR-0079`, the public host route, the public API namespace, and the
+  browser-owned guest snapshot contract are all implemented.
+- The unindexed duplicate `PR-0211` draft is canceled; the indexed Option A1
+  `PR-0211` record is the retained implementation proof for `ST-32-04`.
+- `PR-0231` and `PR-0232` are closed as already shipped under `ST-32-06`.
+- `PR-0245` is closed because the empty-snapshot and all-zero receipt guards
+  are present in the committed guest-upgrade code and focused tests.
+- `PR-0259` is closed because the public Smart grouping/seating direct guest
+  snapshot commit path and sanitized conflict feedback are present in the
+  committed composables and focused tests.
+
+There is no remaining `ready` or `in_progress` EPIC-32 implementation slice
+after this reconciliation. Future public-app work should start from a new
+governed story or PR slice instead of reopening this epic.

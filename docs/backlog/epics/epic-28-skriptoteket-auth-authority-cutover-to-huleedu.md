@@ -5,7 +5,7 @@ title: "Skriptoteket auth authority cutover to HuleEdu"
 status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-15
+updated: 2026-04-30
 outcome: "Skriptoteket no longer owns browser auth authority locally; it consumes a HuleEdu-owned cookie-session + CSRF browser contract through the intended launch topology where `hule.education` is the HuleEdu landing page, `api.hule.education` is the shared browser auth/API edge, and `skriptoteket.hule.education` remains the Skriptoteket app host while preserving richer bootstrap and dedicated redirect-preserving auth-entry handoff."
 dependencies:
   - "ADR-0009"
@@ -250,6 +250,14 @@ auth/API edge at `https://api.hule.education/api/...`. The public
 `https://skriptoteket.hule.education` host remains the Skriptoteket app and
 public product origin; it must not serve signed-context protected API routes
 directly unless a future ADR deliberately defines a same-origin Gateway alias.
+
+## Status Reconciliation (2026-04-30)
+
+`EPIC-28` remains `done`. `ST-28-01` and `PR-0251` are now also marked `done`
+because their lingering `in_progress` frontmatter was stale after the retained
+`PR-0251` / `PR-0255` review approval, subsequent login/logout retirement
+slices, final cross-app proof, and auth outcome observability closeout. No
+auth-cutover story or PR remains `ready` or `in_progress` under this epic.
 
 ## Planning note (2026-04-08)
 

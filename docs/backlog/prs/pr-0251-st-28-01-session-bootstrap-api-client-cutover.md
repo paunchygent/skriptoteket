@@ -2,10 +2,10 @@
 type: pr
 id: PR-0251
 title: "ST-28-01 session bootstrap API client cutover"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-04-10
-updated: 2026-04-11
+updated: 2026-04-30
 stories:
   - "ST-28-01"
 adrs:
@@ -81,13 +81,17 @@ while preserving current app semantics.
   `profile`, and the SPA hydrates `auth.user.id` / local RBAC from that app projection rather than
   HuleEdu provider roles or provider subject id.
 
-Remaining before this PR can close:
+Closeout reconciliation (2026-04-30):
 
-- Keep login/logout ceremony cleanup out of this slice unless a final review finds it blocks the
-  continuation; that ownership remains `PR-0252` / `PR-0253`.
-- Carry the remaining login/logout ceremony cleanup through `PR-0252` / `PR-0253` and cross-app
-  browser smoke proof through `PR-0254` unless `PR-0251` close-out review asks for a narrower local
-  proof.
+- `PR-0251` is now marked `done` because the shared-session bootstrap and
+  app-local continuation remediation were review-clean after `PR-0255`.
+- The login/logout ceremony cleanup that this PR intentionally deferred
+  shipped through `PR-0252` and `PR-0253`.
+- The cross-app/browser smoke proof then shipped through `PR-0254` and
+  `PR-0263`, and the auth outcome observability closeout shipped through
+  `PR-0264`.
+- The old `in_progress` frontmatter was stale relative to the already-done
+  `EPIC-28` authority.
 
 ## Test Plan
 

@@ -2,10 +2,10 @@
 type: story
 id: ST-28-01
 title: "Frontend auth store and API client cutover to HuleEdu session contract"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-11
+updated: 2026-04-30
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given the shared browser session contract is available at `https://api.hule.education`, when Skriptoteket boots the SPA, then auth bootstrap is loaded from `GET /v1/auth/session` rather than local `/api/v1/auth/me`."
@@ -44,3 +44,12 @@ authority."
   `local_user` plus profile/AI policy, keeps HuleEdu provider roles as metadata, and
   `REV-PR-0251` approved the retained implementation re-review. Login/logout ceremony retirement
   remains deliberately split to `PR-0252` / `PR-0253`.
+
+## Status Reconciliation (2026-04-30)
+
+This story is now marked `done`. The later `EPIC-28` closeout already records
+that the shared HuleEdu browser-session bootstrap, app-local continuation,
+signed-context projection, login/logout ceremony split, cross-app proof, and
+auth observability chain all shipped. The lingering `in_progress` frontmatter
+was stale after `PR-0255`, `PR-0252`, `PR-0253`, `PR-0254`, `PR-0263`, and
+`PR-0264` closed the dependent auth work.

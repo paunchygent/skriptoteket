@@ -1,0 +1,7 @@
+interface:
+  display_name: "Pinball Board Authoring"
+  short_description: "Author Flunk-Out Frenzy pinball boards."
+  default_prompt: "Use $pinball-board-authoring to author or refactor Flunk-Out Frenzy pinball playfield geometry."
+
+policy:
+  allow_implicit_invocation: true

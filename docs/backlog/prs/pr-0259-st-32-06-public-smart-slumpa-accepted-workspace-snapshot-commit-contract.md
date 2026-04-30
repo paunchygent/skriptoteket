@@ -2,10 +2,10 @@
 type: pr
 id: PR-0259
 title: "ST-32-06 follow-up: public Smart Slumpa accepted-workspace snapshot commit contract"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-12
-updated: 2026-04-12
+updated: 2026-04-30
 stories:
   - "ST-32-06"
 tags:
@@ -246,4 +246,13 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
 
 - Retained review gate:
   [REV-PR-0259](../reviews/review-pr-0259-public-smart-slumpa-snapshot-commit-contract.md)
-- Implementation must not start until the review is `approved`.
+
+## Status Reconciliation (2026-04-30)
+
+This PR is now marked `done`. The committed public Smart grouping/seating
+composables commit the current guest workspace to the browser snapshot before
+calling the public helper, derive `expected_revision` from the committed
+snapshot, commit accepted helper results before surfacing success, acknowledge
+the external draft commit, and map raw `Draft revision mismatch` diagnostics to
+teacher-facing recovery copy. Focused `usePublicSmartGroupingRun` and
+`usePublicSmartSeatingRun` specs cover the regression shape.

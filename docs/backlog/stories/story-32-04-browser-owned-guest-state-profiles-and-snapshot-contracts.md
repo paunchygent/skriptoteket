@@ -2,10 +2,10 @@
 type: story
 id: ST-32-04
 title: "Browser-owned guest-state profiles and snapshot contracts"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-30
 epic: "EPIC-32"
 dependencies: ["ST-32-01", "ST-32-02", "ST-32-03", "ADR-0079"]
 acceptance_criteria:
@@ -35,3 +35,10 @@ living in account tables.
   local draft restore semantics.
 - Snapshot identity must be strong enough to support dedupe, retry safety, and
   authenticated import receipts later.
+
+## Status Reconciliation (2026-04-30)
+
+This story is now marked `done`. The indexed `PR-0211` Option A1 record
+documents the delivered browser-owned guest snapshot storage, lazy public-only
+storage construction, orphaned-pointer repair, and `sha256:` fingerprint/hash
+contract used by later authenticated upgrade and public workspace slices.

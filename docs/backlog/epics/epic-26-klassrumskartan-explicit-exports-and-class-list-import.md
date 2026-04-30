@@ -5,8 +5,8 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-28
-outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
+updated: 2026-04-30
+outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, publish immutable shareable HTML/CSS export links for grouping and seating, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 ---
 
@@ -39,6 +39,18 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   - grouping `XLSX` is the editable collaboration artifact
   - grouping `PDF` is the presentation/share artifact
 - Default the grouping `PDF` lane to `A4` portrait and optimize it first for Teams / Google Classroom style digital sharing rather than for wall-poster display.
+- Treat `Dela länk` as an export variant beside PDF/Excel rather than a separate sharing workflow.
+- Require share links to use the same pre-export persistence contract as PDF/Excel:
+  pending draft changes, relevant smart-rule changes, expected-revision
+  validation, canonical saved snapshot rendering, and share metadata only after
+  successful render.
+- Make share pages immutable public HTML/CSS presentation artifacts with
+  token-hash lookup, cosmetic slugs, responsive/print CSS, and sane link-preview
+  metadata.
+- Keep public guest share persistence inside the accepted `ADR-0084` exception:
+  dedicated public helper creation routes, anonymous token reads, 60-day expiry
+  ceiling, renderer provenance, purgeability, and no automatic guest-upgrade
+  import.
 
 ## Out of scope
 
@@ -53,6 +65,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - `DOCX` export in this epic unless a later approved story explicitly adds it.
 - Executing the broader desktop-first planner redesign once that execution lane is owned by
   `EPIC-29`.
+- Live draft sharing, collaborative editing, or exposing owner-scoped draft APIs
+  through public share links.
+- Using readable slugs as authority for share lookup or authorization.
 
 ## Risks
 
@@ -60,6 +75,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - PDF import could become over-scoped if it tries to perfectly understand arbitrary school documents instead of staying preview-first and teacher-confirmed.
 - Grouping exports could drift into seating-first assumptions if the artifact models are not kept separate.
 - Grouping XLSX could collapse into a backend-shaped dump unless workbook shape, headings, and page setup are specified before implementation starts.
+- Share links could accidentally become live draft links unless artifacts freeze
+  canonical saved state and public reads avoid app APIs.
+- Public guest share creation could weaken `ADR-0079` unless it stays inside a
+  cookie-agnostic public helper namespace with explicit TTL and abuse controls.
 
 ## Stories
 
@@ -68,6 +87,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [x] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
+- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — ready after `REV-ST-26-06` approval and accepted `ADR-0084` authority for public guest persistence.
 
 ## Implementation Summary (as of 2026-03-26)
 
@@ -94,6 +114,14 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   separate `Gruppregister` order table, dropdown-guided small edits, and a
   formula-linked `Dela och exportera` sheet that stays presentation-ready in
   `A4` portrait.
+- `ST-26-06` adds the next governed export variant: immutable shareable
+  HTML/CSS links for grouping and seating, with authenticated durable shares
+  first (`PR-0272`) and public guest shares with 60-day TTL and browser-held
+  supersede/revoke behavior second (`PR-0273`). The lane is now ready after
+  `REV-ST-26-06` approval and accepted `ADR-0084` authority; implementation
+  must preserve the accepted renderer-provenance, 60-day TTL ceiling, public
+  create/read route split, purge, abuse-control, and no-upgrade-import
+  constraints.
 - The `PR-0122` Hemma deploy gate is now production-proven through the on-host
   callback-capable export smoke and Vault-backed download, while `PR-0125`
   now extends that operator flow with review-fixed canonical replacement,
@@ -121,6 +149,12 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   - `A4` portrait by default
   - easy to post in Teams or Google Classroom
   - printable when needed, but not designed as a classroom wall poster
+- Shareable links should read like public presentation pages:
+  - responsive for phone, tablet, desktop, and projector
+  - readable without login, JavaScript, or app chrome
+  - printable through good `@media print`
+  - equipped with OpenGraph/Twitter-style metadata
+  - clear about whether the artifact is a grouping or seating plan
 - PDF import should use the existing Sir Convert-a-Lot service model rather than introducing a bespoke heavy parsing lane inside Klassrumskartan itself.
 - For Klassrumskartan-owned artifacts, export rendering/runtime stays planner-owned inside
   Skriptoteket per `ADR-0075`.

@@ -50,6 +50,7 @@ Target Python is 3.13-3.14.
 | Local dev, DB setup, dev stack, command wrappers, local logs | `local-devops` plus its Skriptoteket reference |
 | Hemma deploys, remote operations, shared host runtime, GPU/offload lanes | `hemma-devops` plus its Skriptoteket reference |
 | SPA, curated-app UI, auth continuation, dense workspaces, frontend tests | `integrated-frontend-stack` plus its Skriptoteket reference |
+| Flunk-Out Frenzy pinball playfield geometry, donor table semantics, board underlays, physics-wall carriers | `.codex/skills/pinball-board-authoring/SKILL.md` |
 | Visual direction, brutalist/academic UI, design resources | `brutalist-academic-ui` |
 | Logs, metrics, traces, dashboards, public-edge logging policy | `observability-stack` plus its Skriptoteket reference |
 | Browser automation, screenshots, Playwright proof | `playwright-testing` |

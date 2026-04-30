@@ -5,7 +5,7 @@ title: "Review: Public curated-app access foundation and Klassrumskartan demo"
 status: approved
 owners: "agents"
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-30
 reviewer: "lead-developer"
 epic: EPIC-32
 adrs:
@@ -138,3 +138,10 @@ Create one proposed ADR plus one proposed epic and story package that:
 - `REV-EPIC-32` is now approved, `ADR-0079` may move to `accepted`, and
   `EPIC-32` may move to `active` while `ST-32-01` through `ST-32-06` remain
   `ready`.
+
+## Status Reconciliation (2026-04-30)
+
+The approval notes above describe the 2026-04-03 planning state. The later
+docs reconciliation closed the already-shipped EPIC-32 work: `EPIC-32` is
+`done`, `ST-32-01` through `ST-32-10` are `done`, and no EPIC-32 PR slice
+remains `ready` or `in_progress`.

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0231
 title: "ST-32-06: guest Regler workspace, solver-Smart parity, and expandable Smart settings drawer"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-30
 stories:
   - "ST-32-06"
 tags:
@@ -158,3 +158,11 @@ Ship the guest Smart-parity slice for Klassrumskartan:
 
 - Retained review gate:
   [REV-PR-0231](../reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md)
+
+## Status Reconciliation (2026-04-30)
+
+This PR is now marked `done`. `ST-32-06` and
+`ref-development-changelog.md` already record that guest `Regler`, public
+Smart grouping/seating helpers, guest Smart drawer parity, and the account-only
+history split shipped through this slice. The retained `REV-PR-0231` review is
+approved.
