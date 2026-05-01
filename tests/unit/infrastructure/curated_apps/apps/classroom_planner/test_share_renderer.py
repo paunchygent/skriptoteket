@@ -185,6 +185,11 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     assert "room-floor" in rendered.rendered_html
     assert "room-fixture--whiteboard" in rendered.rendered_html
     assert "room-fixture--teacher-desk" in rendered.rendered_html
+    assert "background: rgba(28, 46, 74, 0.86);" in rendered.rendered_css
+    assert "background-image:" not in rendered.rendered_css
+    assert ".room-fixture--door::after" not in rendered.rendered_css
+    assert "transform: translateY(-8%);" in rendered.rendered_css
+    assert "inline-size: 90%;" in rendered.rendered_css
     assert "room-seat--empty" in rendered.rendered_html
     empty_seat_markup = rendered.rendered_html.split('class="room-seat room-seat--empty"', 1)[1]
     empty_seat_markup = empty_seat_markup.split("</article>", 1)[0]
@@ -258,19 +263,14 @@ def test_seating_renderer_centers_labeled_merged_bench_overlay() -> None:
     assert 'class="room-fixture room-fixture--bench room-fixture--muted"' in (
         rendered.rendered_html
     )
-    assert (
-        '<div class="room-bench-body"></div><span class="room-fixture__label">Bänk</span>'
-        in rendered.rendered_html
-    )
+    assert '<div class="room-bench-body"></div><span' not in rendered.rendered_html
+    assert ">Bänk<" not in rendered.rendered_html
     assert ".room-fixture--bench {\n  background: transparent;\n  display: block;" in (
         rendered.rendered_css
     )
     assert ".room-fixture--bench .room-bench-body" in rendered.rendered_css
     assert "left: 0.375rem;" in rendered.rendered_css
     assert "right: 0.375rem;" in rendered.rendered_css
-    assert ".room-fixture--bench .room-fixture__label" in rendered.rendered_css
-    assert "left: 50%;" in rendered.rendered_css
-    assert "transform: translate(-50%, -50%);" in rendered.rendered_css
 
 
 @pytest.mark.unit

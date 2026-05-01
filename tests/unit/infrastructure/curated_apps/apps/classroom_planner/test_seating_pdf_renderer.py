@@ -19,7 +19,12 @@ import pytest
 from pypdf import PdfReader
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
+    PosterSceneFixture,
+    PosterSceneFixtureKind,
+    PosterSceneFixturePlacement,
+    PosterSceneFixtureTone,
     PosterSceneRoom,
+    PosterSceneSeat,
     RenderedSeatingPosterBundle,
     SeatingExportPaperSize,
     SeatingPosterRenderRequest,
@@ -60,6 +65,67 @@ def test_seating_pdf_renderer_outputs_pdf_with_expected_teacher_facing_text():
     assert "Klass 7A" in text
     assert "Sal A" in text
     assert "skriptoteket.hule.education" in text
+
+
+@pytest.mark.unit
+def test_seating_poster_renderer_uses_share_inspired_spatial_print_markup():
+    bundle = BrutalistPosterRenderer().render(
+        request=SeatingPosterRenderRequest(
+            roster_name="SA24D",
+            template_name="G20",
+            paper_size=SeatingExportPaperSize.A3_LANDSCAPE,
+            scene=SeatingPosterScene(
+                room=PosterSceneRoom(grid_cols=12, grid_rows=9),
+                seats=[
+                    PosterSceneSeat(
+                        seat_id="seat-1",
+                        x=1,
+                        y=2,
+                        student_id="kerstin-aitman",
+                        label="Kerstin A.",
+                    )
+                ],
+                fixtures=[
+                    PosterSceneFixture(
+                        fixture_id="bench-1",
+                        kind=PosterSceneFixtureKind.BENCH,
+                        x=1,
+                        y=3,
+                        width=2,
+                        height=1,
+                        placement=PosterSceneFixturePlacement.FLOOR,
+                        tone=PosterSceneFixtureTone.MUTED,
+                        label="Bänk",
+                    ),
+                    PosterSceneFixture(
+                        fixture_id="whiteboard",
+                        kind=PosterSceneFixtureKind.WHITEBOARD,
+                        x=1,
+                        y=0,
+                        width=4,
+                        height=1,
+                        placement=PosterSceneFixturePlacement.WALL,
+                        label="Whiteboard",
+                    ),
+                ],
+            ),
+        )
+    )
+
+    assert 'class="poster-seat__token"' in bundle.html_content
+    assert 'class="poster-seat__name-line">Kerstin</span>' in bundle.html_content
+    assert 'class="poster-seat__name-line">A.</span>' in bundle.html_content
+    assert "Whiteboard" in bundle.html_content
+    assert "Bänk" not in bundle.html_content
+    assert 'class="poster-seat__token" style="width:' in bundle.html_content
+    assert "height:" in bundle.html_content
+    assert "font-size: var(--seat-long-font);" in bundle.css_content
+    assert "linear-gradient(to right" not in bundle.css_content
+    assert "transform: translateY(-1.5mm);" in bundle.css_content
+    assert ".poster-fixture--bench::before" in bundle.css_content
+    assert ".poster-fixture--whiteboard::after" in bundle.css_content
+    assert ".poster-fixture--door::after" not in bundle.css_content
+    assert "background: rgba(28, 46, 74, 0.86);" not in bundle.css_content
 
 
 @pytest.mark.unit

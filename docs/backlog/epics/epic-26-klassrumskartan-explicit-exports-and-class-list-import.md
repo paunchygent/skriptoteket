@@ -96,6 +96,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
 - [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — `PR-0276` static share-renderer and share-chrome/PDF remediation is approved after fixing merged-bench label overlay, wall-fixture geometry, owned chrome finalization, and relative public-app attribution proof gaps.
 - [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — blocked pending independent `REV-ST-26-07` approval after the production Teams diagnostic proved renderer-derived `og:image` thumbnails unfurl correctly and the remediation self-check closed the retained findings.
+- [ ] [ST-26-08: Klassrumskartan shared print PDF visual parity](../stories/story-26-08-klassrumskartan-shared-print-pdf-visual-parity.md) — `PR-0278` is ready for pre-implementation review and governs the PDF body redesign across workspace `Exportera PDF` and shared-link `Ladda ner PDF` for both seating and grouping.
 
 ## Implementation Summary (as of 2026-03-26)
 
@@ -148,6 +149,11 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   preserve the accepted renderer-provenance, 60-day TTL ceiling, public
   create/read route split, purge, abuse-control, and no-upgrade-import
   constraints.
+- `ST-26-08` is the follow-up visual parity lane for the actual downloaded PDF
+  artifacts. It keeps share-link PDF downloads export-backed and
+  `presentation_payload`-derived, but redesigns the print-owned grouping and
+  seating PDF bodies so workspace exports and share-link downloads inherit from
+  the approved shared-link renders without adding web action chrome to the PDFs.
 - The `PR-0122` Hemma deploy gate is now production-proven through the on-host
   callback-capable export smoke and Vault-backed download, while `PR-0125`
   now extends that operator flow with review-fixed canonical replacement,

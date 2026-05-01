@@ -26,6 +26,9 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.pdf_brandin
     resolve_local_horizontal_logo_base_dir,
     resolve_local_horizontal_logo_filename,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.print_pdf_primitives import (
+    grouping_member_count_text,
+)
 from skriptoteket.protocols.classroom_planner_exports import GroupingPdfRendererProtocol
 
 _GROUPING_PDF_LOGO_PNG_PATH = HORIZONTAL_LOGO_PNG_PATH
@@ -125,21 +128,26 @@ def _render_card_pairs(
 def _render_card(*, card: grouping_pdf_view_model.GroupingPdfCard) -> str:
     """Render one framed group card."""
 
-    member_rows = "".join(
-        "<tr>"
-        f'<td class="group-card__number">{member.member_order}</td>'
-        f"<td>{escape(member.display_name)}</td>"
-        "</tr>"
-        for member in card.members
-    )
+    member_rows = "".join(_render_member(member=member) for member in card.members)
     return (
         '<article class="group-card">'
+        '<div class="group-card__header">'
         f"<h2>{escape(card.group_label)}</h2>"
-        '<table class="group-card__table">'
-        "<thead><tr><th>Nr</th><th>Elev</th></tr></thead>"
-        f"<tbody>{member_rows}</tbody>"
-        "</table>"
+        f'<span class="group-card__count">{grouping_member_count_text(len(card.members))}</span>'
+        "</div>"
+        f'<ol class="group-card__members">{member_rows}</ol>'
         "</article>"
+    )
+
+
+def _render_member(*, member: grouping_pdf_view_model.GroupingPdfMemberRow) -> str:
+    """Render one numbered group member row."""
+
+    return (
+        '<li class="group-card__member">'
+        f'<span class="group-card__marker">{member.member_order}</span>'
+        f'<span class="group-card__name">{escape(member.display_name)}</span>'
+        "</li>"
     )
 
 
@@ -169,7 +177,7 @@ def _build_css() -> str:
         margin: 0;
         color: #0f172a;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-size: 9.8pt;
+        font-size: 9pt;
         line-height: 1.35;
         background: #ffffff;
       }
@@ -184,8 +192,8 @@ def _build_css() -> str:
         align-items: flex-start;
         justify-content: space-between;
         gap: 10mm;
-        padding-bottom: 5.5mm;
-        margin-bottom: 7mm;
+        padding-bottom: 4.5mm;
+        margin-bottom: 5.5mm;
       }
 
       .letterhead::after {
@@ -266,20 +274,19 @@ def _build_css() -> str:
       .group-row {
         display: flex;
         align-items: flex-start;
-        gap: 5.5mm;
-        margin-bottom: 5.5mm;
+        gap: 4mm;
+        margin-bottom: 4mm;
       }
 
       .group-card {
         flex: 1 1 0;
-        width: calc((100% - 5.5mm) / 2);
+        width: calc((100% - 4mm) / 2);
         min-width: 0;
         break-inside: avoid;
         page-break-inside: avoid;
-        border: 1pt solid #bcc8da;
-        border-top: 2.2pt solid #1c2e4a;
-        border-radius: 1.6mm;
-        padding: 4.2mm 4mm 3.5mm;
+        border: 1.4pt solid #1c2e4a;
+        border-radius: 0;
+        padding: 3mm;
         background: #ffffff;
       }
 
@@ -289,50 +296,73 @@ def _build_css() -> str:
         padding: 0;
       }
 
+      .group-card__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2.4mm;
+        margin-bottom: 2.4mm;
+        padding-bottom: 1.9mm;
+        border-bottom: 0.8pt solid rgba(28, 46, 74, 0.18);
+      }
+
       .group-card h2 {
-        margin: -4.2mm -4mm 3mm;
-        padding: 2.8mm 4mm 2.6mm;
-        border-bottom: 0.8pt solid #d9e0ea;
-        background: #f7f9fc;
+        margin: 0;
         color: #1c2e4a;
         font-family: var(--heading-serif);
-        font-size: 12.1pt;
+        font-size: 11.4pt;
         font-weight: 700;
         letter-spacing: 0.01em;
         line-height: 1.15;
       }
 
-      .group-card__table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      .group-card__table thead th {
-        padding: 0 0 1.8mm;
-        border-bottom: 0.8pt solid #cbd5e1;
-        color: #475569;
-        font-size: 8.2pt;
+      .group-card__count {
+        color: #64748b;
+        font-size: 7.2pt;
         font-weight: 700;
-        letter-spacing: 0.05em;
-        text-align: left;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-      }
-
-      .group-card__table tbody td {
-        padding: 1.4mm 0;
-        border-bottom: 0.4pt solid #e2e8f0;
-        vertical-align: top;
-      }
-
-      .group-card__table tbody tr:last-child td {
-        border-bottom: 0;
-      }
-
-      .group-card__number {
-        width: 10mm;
-        padding-right: 3mm;
-        font-weight: 700;
         white-space: nowrap;
+      }
+
+      .group-card__members {
+        display: flex;
+        flex-direction: column;
+        gap: 1.35mm;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .group-card__member {
+        display: flex;
+        align-items: center;
+        gap: 2.4mm;
+        min-height: 5.8mm;
+      }
+
+      .group-card__marker {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 5.8mm;
+        height: 5.8mm;
+        border-radius: 999px;
+        border: 0.7pt solid #1c2e4a;
+        background: #ffffff;
+        color: #1c2e4a;
+        font-size: 7.2pt;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .group-card__name {
+        min-width: 0;
+        color: #0f172a;
+        font-size: 8.7pt;
+        font-weight: 500;
+        line-height: 1.25;
       }
 """
         + build_pdf_brand_footer_css()

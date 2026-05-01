@@ -20,6 +20,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.jobs import
 )
 from skriptoteket.application.curated_apps.classroom_planner.exports.models import (
     PosterSceneFixture,
+    PosterSceneFixtureKind,
     PosterSceneFixturePlacement,
     PosterSceneLabelOrientation,
     PosterSceneSeat,
@@ -36,6 +37,9 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.pdf_brandin
     build_pdf_brand_footer_margin_box_css,
     render_pdf_brand_footer_markup,
     resolve_bundled_horizontal_logo_filename,
+)
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.print_pdf_primitives import (
+    split_print_student_label,
 )
 from skriptoteket.protocols.classroom_planner_exports import SeatingPosterRendererProtocol
 
@@ -93,7 +97,9 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
         --scene-gap-mm:{layout.scene_gap_mm};
         --scene-border-mm:{layout.scene_border_mm};
         --floor-border-mm:{layout.floor_border_mm};
+        --seat-token-mm:{layout.seat_token_mm};
         --seat-font:{layout.seat_font_pt}pt;
+        --seat-long-font:{layout.long_seat_font_pt}pt;
         --fixture-font:{layout.fixture_font_pt}pt;
       "
     >
@@ -110,7 +116,7 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
       >
         <div class="poster__floor"></div>
         {self._render_floor_fixtures(request.scene.fixtures, grid_cols, grid_rows)}
-        {self._render_seats(request.scene.seats)}
+        {self._render_seats(request.scene.seats, layout=layout)}
         {self._render_wall_fixtures(request.scene.fixtures, grid_cols, grid_rows)}
       </section>
     </main>
@@ -146,15 +152,38 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
             )
         ]
 
-    def _render_seats(self, seats: list[PosterSceneSeat]) -> str:
+    def _render_seats(
+        self,
+        seats: list[PosterSceneSeat],
+        *,
+        layout: _PosterPageLayout,
+    ) -> str:
         rendered: list[str] = []
         for seat in seats:
-            label = escape(seat.label or "Tom plats")
+            classes = ["poster-seat"]
+            token_size_style = f"width:{layout.seat_token_mm}mm;height:{layout.seat_token_mm}mm;"
+            if seat.label is None:
+                classes.append("poster-seat--empty")
+                token_markup = f'<div class="poster-seat__token" style="{token_size_style}"></div>'
+                aria_label = "Tom plats"
+            else:
+                first_line, second_line = split_print_student_label(seat.label)
+                longest_line = max(len(first_line), len(second_line))
+                if longest_line >= 9:
+                    classes.append("poster-seat--long-name")
+                token_markup = (
+                    f'<div class="poster-seat__token" style="{token_size_style}">'
+                    f'<span class="poster-seat__name-line">{escape(first_line)}</span>'
+                    f'<span class="poster-seat__name-line">{escape(second_line)}</span>'
+                    "</div>"
+                )
+                aria_label = escape(seat.label)
             rendered.append(
                 (
-                    '<article class="poster-seat" '
-                    f'style="grid-column:{seat.x + 2};grid-row:{seat.y + 2};">'
-                    f'<span class="poster-seat__label">{label}</span>'
+                    f'<article class="{" ".join(classes)}" '
+                    f'style="grid-column:{seat.x + 2};grid-row:{seat.y + 2};" '
+                    f'aria-label="{aria_label}">'
+                    f"{token_markup}"
                     "</article>"
                 )
             )
@@ -200,7 +229,9 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
     ) -> str:
         rendered: list[str] = []
         for fixture in fixtures:
-            label = escape(fixture.label) if fixture.label else ""
+            label = (
+                "" if fixture.kind is PosterSceneFixtureKind.BENCH else escape(fixture.label or "")
+            )
             label_classes = ["poster-fixture__label"]
             fixture_style = self._build_fixture_grid_style(
                 fixture,
@@ -284,7 +315,9 @@ class _PosterPageLayout:
     scene_gap_mm: float
     scene_border_mm: float
     floor_border_mm: float
+    seat_token_mm: float
     seat_font_pt: float
+    long_seat_font_pt: float
     fixture_font_pt: float
 
 
@@ -326,7 +359,7 @@ def _build_poster_page_layout(
         for fixture in fixtures
     )
     side_wall_band_mm = 12.0 if has_vertical_wall_labels else 6.0
-    top_bottom_wall_band_mm = 6.5 if has_horizontal_wall_labels else 5.0
+    top_bottom_wall_band_mm = 10.0 if has_horizontal_wall_labels else 5.0
 
     cell_mm = min(
         (max_scene_width_mm - (side_wall_band_mm * 2)) / grid_cols,
@@ -334,8 +367,10 @@ def _build_poster_page_layout(
     )
     scene_width_mm = (grid_cols * cell_mm) + (side_wall_band_mm * 2)
     scene_height_mm = (grid_rows * cell_mm) + (top_bottom_wall_band_mm * 2)
-    seat_font_pt = min(18.0, max(8.5, cell_mm * 0.8))
+    seat_font_pt = min(13.0, max(7.6, cell_mm * 0.56))
+    long_seat_font_pt = max(6.7, seat_font_pt * 0.78)
     fixture_font_pt = min(10.5, max(6.2, cell_mm * 0.45))
+    seat_token_mm = max(13.0, cell_mm * 0.86)
 
     return _PosterPageLayout(
         page_width_mm=_round_layout_value(page_width_mm),
@@ -352,7 +387,9 @@ def _build_poster_page_layout(
         scene_gap_mm=0.8,
         scene_border_mm=1.2,
         floor_border_mm=1.0,
+        seat_token_mm=_round_layout_value(seat_token_mm),
         seat_font_pt=_round_layout_value(seat_font_pt),
+        long_seat_font_pt=_round_layout_value(long_seat_font_pt),
         fixture_font_pt=_round_layout_value(fixture_font_pt),
     )
 
@@ -442,7 +479,7 @@ body {{
 .poster__header h1,
 .poster__meta,
 .poster-fixture__label,
-.poster-seat__label {{
+.poster-seat__name-line {{
   margin: 0;
 }}
 .poster__header h1 {{
@@ -491,21 +528,15 @@ body {{
     repeat(var(--grid-rows), 1fr)
     calc(var(--top-bottom-wall-band-mm) * 1mm);
   gap: calc(var(--scene-gap-mm) * 1mm);
-  border: calc(var(--scene-border-mm) * 1mm) solid var(--ink);
-  background: #ffffff;
+  border: calc(var(--scene-border-mm) * 1mm) solid var(--accent);
+  background: #fafaf6;
   overflow: hidden;
 }}
 .poster__floor {{
   grid-column: 2 / span var(--grid-cols);
   grid-row: 2 / span var(--grid-rows);
-  border: calc(var(--floor-border-mm) * 1mm) solid var(--ink);
+  border: calc(var(--floor-border-mm) * 1mm) solid var(--accent);
   background-color: #ffffff;
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size:
-    calc(100% / var(--grid-cols)) 100%,
-    100% calc(100% / var(--grid-rows));
 }}
 .poster-seat,
 .poster-fixture {{
@@ -513,19 +544,48 @@ body {{
   align-items: center;
   justify-content: center;
   padding: 0.8mm;
-  border: calc(var(--floor-border-mm) * 1mm) solid var(--ink);
   text-align: center;
   overflow: hidden;
 }}
 .poster-seat {{
-  background: #ffffff;
+  z-index: 3;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translateY(-1.5mm);
 }}
-.poster-seat__label {{
+.poster-seat__token {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: calc(var(--floor-border-mm) * 1mm) solid var(--accent);
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.7mm;
+}}
+.poster-seat__name-line {{
+  display: block;
+  max-width: 94%;
+  color: var(--accent);
   font-size: var(--seat-font);
-  font-weight: 700;
-  line-height: 1.05;
+  font-weight: 500;
+  line-height: 1.02;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}}
+.poster-seat--long-name .poster-seat__name-line {{
+  font-size: var(--seat-long-font);
+}}
+.poster-seat--empty .poster-seat__token {{
+  border-color: #1c2e4a66;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.72);
 }}
 .poster-fixture {{
+  border: calc(var(--floor-border-mm) * 1mm) solid var(--accent);
   background: #ffffff;
   font-size: var(--fixture-font);
   text-transform: uppercase;
@@ -536,7 +596,7 @@ body {{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  max-inline-size: 100%;
+  max-width: 100%;
   text-align: center;
 }}
 .poster-fixture--outline,
@@ -546,34 +606,85 @@ body {{
 .poster-fixture--table {{
   background: #ffffff;
 }}
+.poster-fixture--bench {{
+  position: relative;
+  display: block;
+  border: 0;
+  background: transparent;
+}}
+.poster-fixture--bench::before {{
+  content: "";
+  position: absolute;
+  left: 1.2mm;
+  right: 1.2mm;
+  top: 33%;
+  bottom: 33%;
+  border: 0.4mm solid rgba(28, 46, 74, 0.25);
+  border-radius: 1mm;
+  background: #ffffff;
+}}
+.poster-fixture--bench .poster-fixture__label {{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: calc(100% - 2mm);
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}}
 .poster-fixture--muted {{
-  background: #d7d7d7;
+  background: rgba(28, 46, 74, 0.12);
+}}
+.poster-fixture--bench.poster-fixture--muted {{
+  background: transparent;
 }}
 .poster-fixture--strong {{
-  background: #222222;
-  color: #ffffff;
+  border-width: calc(var(--scene-border-mm) * 1mm);
+  background: #ffffff;
+  color: var(--accent);
 }}
 .poster-fixture--door,
 .poster-fixture--window {{
   border-style: solid;
 }}
+.poster-fixture--whiteboard {{
+  position: relative;
+  min-height: 5.8mm;
+}}
+.poster-fixture--whiteboard .poster-fixture__label {{
+  position: relative;
+  z-index: 1;
+}}
+.poster-fixture--whiteboard::after {{
+  content: "";
+  position: absolute;
+  left: 1.8mm;
+  right: 1.8mm;
+  bottom: 0.55mm;
+  height: 0.45mm;
+  border-radius: 999px;
+  background: rgba(28, 46, 74, 0.35);
+}}
 .poster-fixture--wall-top,
 .poster-fixture--wall-bottom {{
-  margin-block: 0.6mm;
+  margin-top: 0.6mm;
+  margin-bottom: 0.6mm;
 }}
 .poster-fixture--wall-left,
 .poster-fixture--wall-right {{
-  margin-inline: 0.3mm;
+  margin-left: 0.3mm;
+  margin-right: 0.3mm;
   padding: 0.3mm;
   overflow: visible;
 }}
 .poster-fixture--whiteboard.poster-fixture--wall-top,
 .poster-fixture--whiteboard.poster-fixture--wall-bottom {{
-  margin-block: 1.8mm;
+  margin-top: 1.2mm;
+  margin-bottom: 1.2mm;
 }}
 .poster-fixture--whiteboard.poster-fixture--wall-left,
 .poster-fixture--whiteboard.poster-fixture--wall-right {{
-  margin-inline: 1.2mm;
+  margin-left: 1.2mm;
+  margin-right: 1.2mm;
 }}
 .poster-fixture--teacher_desk {{
   border-width: calc(var(--scene-border-mm) * 1mm);
@@ -591,7 +702,7 @@ body {{
   top: 50%;
   left: 50%;
   white-space: nowrap;
-  max-inline-size: none;
+  max-width: none;
   letter-spacing: 0.04em;
   transform: translate(-50%, -50%) rotate(-90deg);
   transform-origin: center;

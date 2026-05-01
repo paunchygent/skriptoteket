@@ -65,12 +65,6 @@ SEATING_SHARE_CSS = """
 .room-floor {
   position: absolute;
   background-color: #fff;
-  background-image:
-    linear-gradient(rgba(28, 46, 74, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(28, 46, 74, 0.10) 1px, transparent 1px);
-  background-size:
-    calc(100% / var(--room-grid-cols)) calc(100% / var(--room-grid-rows)),
-    calc(100% / var(--room-grid-cols)) calc(100% / var(--room-grid-rows));
   border: 1px solid #1c2e4a;
 }
 .room-fixture,
@@ -109,18 +103,6 @@ SEATING_SHARE_CSS = """
   position: absolute;
   right: 6px;
 }
-.room-fixture--door::after {
-  border: 1px solid rgba(28, 46, 74, 0.70);
-  border-left: none;
-  border-radius: 0 999px 999px 0;
-  content: "";
-  height: min(170%, 5rem);
-  position: absolute;
-  right: -1px;
-  top: 50%;
-  transform: translate(-10%, -50%);
-  width: min(170%, 5rem);
-}
 .room-fixture--teacher-desk,
 .room-fixture--strong {
   background: rgba(28, 46, 74, 0.86);
@@ -147,14 +129,6 @@ SEATING_SHARE_CSS = """
   right: 0.375rem;
   top: 33%;
 }
-.room-fixture--bench .room-fixture__label {
-  left: 50%;
-  max-inline-size: calc(100% - 0.75rem);
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-}
 .room-fixture--table {
   background: rgba(28, 46, 74, 0.04);
   border: 1px solid rgba(28, 46, 74, 0.55);
@@ -170,6 +144,7 @@ SEATING_SHARE_CSS = """
   display: flex;
   flex-direction: column;
   justify-content: center;
+  transform: translateY(-8%);
   z-index: 3;
 }
 .room-seat__token {
@@ -181,14 +156,14 @@ SEATING_SHARE_CSS = """
   display: flex;
   flex-direction: column;
   justify-content: center;
-  inline-size: 82%;
+  inline-size: 90%;
   padding: 0.1rem;
   text-align: center;
 }
 .room-seat__name-line {
   color: #1c2e4a;
   display: block;
-  font-size: clamp(0.56rem, 1.48cqw, 0.86rem);
+  font-size: clamp(0.58rem, 1.58cqw, 0.92rem);
   font-weight: 500;
   line-height: 1.02;
   max-inline-size: 94%;
@@ -318,7 +293,8 @@ def _render_fixture(fixture: PosterSceneFixture, *, surface: _RoomSurface) -> st
         if fixture.kind is PosterSceneFixtureKind.BENCH
         else ""
     )
-    label_markup = f'<span class="room-fixture__label">{label}</span>' if label else ""
+    show_label = fixture.kind is not PosterSceneFixtureKind.BENCH and bool(label)
+    label_markup = f'<span class="room-fixture__label">{label}</span>' if show_label else ""
     return f'<div class="{" ".join(classes)}" style="{style}">{body}{label_markup}</div>'
 
 

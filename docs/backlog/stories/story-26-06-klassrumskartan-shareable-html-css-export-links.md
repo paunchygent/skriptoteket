@@ -95,6 +95,10 @@ sharing.
   - `ST-26-07` / `PR-0277` for turning the 2026-05-01 production Teams
     diagnostic into supported renderer-derived `og:image` thumbnails and full
     link-preview metadata for all active grouping and seating share links.
+  - `ST-26-08` / `PR-0278` for redesigning the actual downloaded PDFs across
+    workspace `Exportera PDF` and shared-link `Ladda ner PDF`, keeping share
+    PDFs export-backed and `presentation_payload`-derived while borrowing the
+    approved shared-link body language.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

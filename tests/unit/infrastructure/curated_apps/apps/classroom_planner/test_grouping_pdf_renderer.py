@@ -145,6 +145,26 @@ def test_grouping_pdf_renderer_html_references_bundled_logo_asset():
 
 
 @pytest.mark.unit
+def test_grouping_pdf_renderer_html_uses_share_inspired_member_markers():
+    view_model = build_grouping_pdf_view_model(
+        presentation=_presentation(),
+        generated_at=datetime(2026, 3, 26, 12, 34, tzinfo=timezone.utc),
+    )
+
+    html = _build_html(
+        view_model=view_model,
+        logo_filename=resolve_local_horizontal_logo_filename(),
+    )
+
+    assert 'class="group-card__header"' in html
+    assert 'class="group-card__count">2 elever</span>' in html
+    assert 'class="group-card__marker">1</span>' in html
+    assert "border: 0.7pt solid #1c2e4a;" in html
+    assert "background: #ffffff;" in html
+    assert "<table" not in html
+
+
+@pytest.mark.unit
 def test_grouping_pdf_renderer_passes_filesystem_base_url_to_weasyprint(monkeypatch):
     captured: dict[str, object] = {}
 
