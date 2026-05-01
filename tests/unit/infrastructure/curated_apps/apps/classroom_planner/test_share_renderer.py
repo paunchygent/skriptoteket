@@ -36,6 +36,11 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportLayoutId,
     SeatingPosterScene,
 )
+from skriptoteket.application.curated_apps.classroom_planner.shares import (
+    CLASSROOM_PLANNER_PUBLIC_APP_PATH,
+    SHARE_CREATED_DATE_CHROME_SLOT,
+    SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
     StaticClassroomPlannerShareRenderer,
 )
@@ -106,6 +111,15 @@ def test_grouping_renderer_escapes_hostile_values_and_records_provenance() -> No
     assert '<meta name="robots" content="noindex,nofollow">' in rendered.rendered_html
     assert '<meta property="og:title"' in rendered.rendered_html
     assert "Ada &" not in rendered.rendered_css
+    assert f"Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}" in rendered.rendered_html
+    assert SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT in rendered.rendered_html
+    assert "Ladda ner PDF" in rendered.rendered_html
+    assert f'href="{CLASSROOM_PLANNER_PUBLIC_APP_PATH}"' in rendered.rendered_html
+    assert "https://skriptoteket.hule.education/public/apps" not in rendered.rendered_html
+    assert "Skapad av Klassrumskartan" in rendered.rendered_html
+    assert ".share-origin-link {\n  border-bottom: 1px solid currentColor;" in (
+        rendered.rendered_css
+    )
 
 
 @pytest.mark.unit
@@ -189,6 +203,16 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     )
     assert '<meta name="robots" content="noindex,nofollow">' in rendered.rendered_html
     assert "Bo <img" not in rendered.rendered_css
+    assert "Delad sittschema - endast för visning." not in rendered.rendered_html
+    assert f"Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}" in rendered.rendered_html
+    assert SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT in rendered.rendered_html
+    assert "Ladda ner PDF" in rendered.rendered_html
+    assert f'href="{CLASSROOM_PLANNER_PUBLIC_APP_PATH}"' in rendered.rendered_html
+    assert "https://skriptoteket.hule.education/public/apps" not in rendered.rendered_html
+    assert "Skapad av Klassrumskartan" in rendered.rendered_html
+    assert ".share-origin-link {\n  border-bottom: 1px solid currentColor;" in (
+        rendered.rendered_css
+    )
 
 
 @pytest.mark.unit

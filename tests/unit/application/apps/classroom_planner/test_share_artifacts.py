@@ -25,6 +25,10 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     RevokeClassroomPlannerShareArtifactHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
+    SHARE_CREATED_DATE_CHROME_SLOT,
+    SHARE_CREATED_DATE_PLACEHOLDER,
+    SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
+    SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER,
     PublicGuestSharePersistenceResult,
     build_share_content_hash,
     build_share_presentation_hash,
@@ -329,7 +333,10 @@ def _command(
         renderer_version="share-renderer-v1",
         presentation_schema_version="grouping-share-v1",
         presentation_payload={"title": "Klass 7A", "student_count": 2},
-        rendered_html="<main>Klass 7A</main>",
+        rendered_html=(
+            f"<main><p>Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}</p>"
+            f"<a {SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT}>PDF</a>Klass 7A</main>"
+        ),
         rendered_css="main { color: black; }",
     )
 
@@ -377,6 +384,12 @@ async def test_create_share_artifact_hashes_public_token_and_content() -> None:
         rendered_html=artifact.rendered_html,
         rendered_css=artifact.rendered_css,
     )
+    assert 'data-skriptoteket-share-created-date="owned">2026-04-30</span>' in (
+        artifact.rendered_html
+    )
+    assert 'href="/share/classroom/public-token/download.pdf"' in artifact.rendered_html
+    assert SHARE_CREATED_DATE_PLACEHOLDER not in artifact.rendered_html
+    assert SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER not in artifact.rendered_html
     assert artifact.expires_at is None
     assert shares.artifacts_by_id[share_id] == artifact
 

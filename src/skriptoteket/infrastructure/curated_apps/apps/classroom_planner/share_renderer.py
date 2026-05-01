@@ -22,6 +22,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     PreparedSeatingExportContract,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
+    CLASSROOM_PLANNER_PUBLIC_APP_PATH,
+    SHARE_CREATED_DATE_CHROME_SLOT,
+    SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
     JsonObject,
     JsonValue,
     RenderedClassroomPlannerShare,
@@ -92,6 +95,16 @@ body {
 .share-page--seating {
   max-width: 1440px;
 }
+.share-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.share-header__main {
+  min-width: 0;
+}
 .share-kicker {
   color: var(--navy-60);
   font-size: var(--text-xs);
@@ -106,7 +119,41 @@ body {
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1.15;
-  margin: 0 0 28px;
+  margin: 0 0 10px;
+}
+.share-created {
+  color: var(--navy-60);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+.share-actions {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+.share-download-pdf,
+.share-origin-link {
+  color: var(--navy);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.share-download-pdf {
+  border: 1px solid var(--navy);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1;
+  padding: 10px 12px;
+}
+.share-origin-link {
+  border-bottom: 1px solid currentColor;
+  color: var(--navy);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding-bottom: 2px;
 }
 @media (min-width: 768px) {
   .share-page {
@@ -120,8 +167,18 @@ body {
   .share-page {
     padding: 18px 12px 28px;
   }
+  .share-header {
+    flex-direction: column;
+    gap: 12px;
+  }
   .share-title {
     font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
+  .share-actions {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-top: 0;
   }
 }
 @media print {
@@ -131,6 +188,9 @@ body {
   .share-page {
     max-width: none;
     padding: 0;
+  }
+  .share-actions {
+    display: none;
   }
 }
 """.strip()
@@ -152,7 +212,12 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         presentation = prepared_export.presentation
         title = f"{presentation.class_name} – {presentation.title}"
         description = f"Gruppindelning för {presentation.class_name}."
-        body = render_grouping_share_body(presentation=presentation)
+        body = "\n".join(
+            [
+                _share_header(title=title, subtitle=None),
+                render_grouping_share_body(presentation=presentation),
+            ]
+        )
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
@@ -177,7 +242,12 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         description = (
             f"Sittschema för {prepared_export.roster_name} i {prepared_export.template_name}."
         )
-        body = render_seating_scene_body(prepared_export=prepared_export)
+        body = "\n".join(
+            [
+                _share_header(title=title, subtitle=prepared_export.template_name),
+                render_seating_scene_body(prepared_export=prepared_export),
+            ]
+        )
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
@@ -244,3 +314,34 @@ def _json_value(value: object) -> JsonValue:
 
 def _escape(value: str) -> str:
     return html.escape(value, quote=True)
+
+
+def _share_header(*, title: str, subtitle: str | None) -> str:
+    """Render common immutable share-page chrome."""
+
+    subtitle_markup = (
+        f'<p class="share-subtitle">{_escape(subtitle)}</p>' if subtitle is not None else ""
+    )
+    return "\n".join(
+        [
+            '<header class="share-header">',
+            '<div class="share-header__main">',
+            '<p class="share-kicker">Klassrumskartan</p>',
+            f'<h1 class="share-title">{_escape(title)}</h1>',
+            subtitle_markup,
+            f'<p class="share-created">Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}</p>',
+            "</div>",
+            '<nav class="share-actions" aria-label="Delningsåtgärder">',
+            (
+                '<a class="share-download-pdf" '
+                f"{SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT} download>Ladda ner PDF</a>"
+            ),
+            (
+                '<a class="share-origin-link" '
+                f'href="{CLASSROOM_PLANNER_PUBLIC_APP_PATH}" rel="noopener">'
+                "Skapad av Klassrumskartan</a>"
+            ),
+            "</nav>",
+            "</header>",
+        ]
+    )

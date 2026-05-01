@@ -245,7 +245,6 @@ SEATING_SHARE_CSS = """
 def render_seating_scene_body(*, prepared_export: PreparedSeatingExportContract) -> str:
     """Render the seating share body as one static spatial classroom map."""
 
-    title = f"{prepared_export.roster_name} - Sittschema"
     scene = prepared_export.poster_scene
     surface = _build_surface(scene.room.grid_cols, scene.room.grid_rows)
     room_style = (
@@ -256,10 +255,6 @@ def render_seating_scene_body(*, prepared_export: PreparedSeatingExportContract)
     )
     return "\n".join(
         [
-            '<p class="share-kicker">Klassrumskartan</p>',
-            f'<h1 class="share-title">{escape(title)}</h1>',
-            f'<p class="share-subtitle">{escape(prepared_export.template_name)}</p>',
-            '<p class="share-description">Delad sittschema - endast för visning.</p>',
             '<section class="room-frame" aria-label="Delat sittschema">',
             '<div class="room-viewport">',
             f'<div class="room-surface" style="{room_style}">',

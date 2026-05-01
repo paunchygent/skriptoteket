@@ -15,6 +15,7 @@ Relationships:
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 from dataclasses import dataclass
@@ -32,6 +33,15 @@ type JsonObject = dict[str, JsonValue]
 
 _HASH_PREFIX = "sha256:"
 _SLUG_PART_PATTERN = re.compile(r"[^a-z0-9]+")
+CLASSROOM_PLANNER_PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
+SHARE_CREATED_DATE_PLACEHOLDER = "__SKRIPTOTEKET_SHARE_CREATED_DATE__"
+SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER = "__SKRIPTOTEKET_SHARE_PDF_DOWNLOAD_PATH__"
+SHARE_CREATED_DATE_CHROME_SLOT = (
+    f'<span data-skriptoteket-share-created-date="owned">{SHARE_CREATED_DATE_PLACEHOLDER}</span>'
+)
+SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT = (
+    f'href="{SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER}" data-skriptoteket-share-pdf-download="owned"'
+)
 
 
 class ClassroomPlannerShareArtifactSource(StrEnum):
@@ -185,6 +195,45 @@ def build_share_public_path(*, public_token: str, slug: str) -> str:
     """Build the anonymous public path that teachers can copy later."""
 
     return f"/share/classroom/{public_token}/{slug}"
+
+
+def build_share_pdf_download_path(*, public_token: str) -> str:
+    """Build the anonymous public PDF download path for one share token."""
+
+    return f"/share/classroom/{public_token}/download.pdf"
+
+
+def finalize_share_rendered_html(
+    *,
+    rendered_html: str,
+    created_at: datetime,
+    pdf_download_path: str,
+) -> str:
+    """Finalize owned share chrome slots before immutable share hashing."""
+
+    created_date = created_at.date().isoformat()
+    if rendered_html.count(SHARE_CREATED_DATE_CHROME_SLOT) != 1:
+        raise ValueError("Rendered share HTML must contain exactly one owned date chrome slot.")
+    if rendered_html.count(SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT) != 1:
+        raise ValueError("Rendered share HTML must contain exactly one owned PDF chrome slot.")
+
+    created_date_slot = SHARE_CREATED_DATE_CHROME_SLOT.replace(
+        SHARE_CREATED_DATE_PLACEHOLDER,
+        created_date,
+    )
+    pdf_download_href_slot = SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT.replace(
+        SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER,
+        html.escape(pdf_download_path, quote=True),
+    )
+    return rendered_html.replace(
+        SHARE_CREATED_DATE_CHROME_SLOT,
+        created_date_slot,
+        1,
+    ).replace(
+        SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
+        pdf_download_href_slot,
+        1,
+    )
 
 
 def _hash_text(value: str) -> str:

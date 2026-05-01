@@ -35,6 +35,8 @@ from skriptoteket.application.curated_apps.classroom_planner.public_share_contra
     PublicGuestShareRevokeRequest,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
+    SHARE_CREATED_DATE_CHROME_SLOT,
+    SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
     PublicGuestSharePersistenceResult,
@@ -336,7 +338,7 @@ async def _create_share(
     shares: _FakeShareRepository,
     request: PublicGuestShareRequest,
     policy: PublicGuestSharePolicy | None = None,
-    rendered_html: str = "<main>Klass 7A</main>",
+    rendered_html: str | None = None,
     token: str = "public-token",
 ) -> PublicGuestShareResult:
     now = datetime(2026, 4, 30, tzinfo=timezone.utc)
@@ -366,8 +368,20 @@ async def _create_share(
         renderer_version="klassrumskartan-share-renderer-v1",
         presentation_schema_version="grouping-share-v1",
         presentation_payload={"title": "Klass 7A"},
-        rendered_html=rendered_html,
+        rendered_html=rendered_html or _share_html_with_owned_chrome("Klass 7A"),
         rendered_css="main { color: black; }",
+    )
+
+
+def _share_html_with_owned_chrome(content: str) -> str:
+    return "\n".join(
+        [
+            "<main>",
+            f'<p class="share-created">Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}</p>',
+            f"<a {SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT}>Ladda ner PDF</a>",
+            f"<section>{content}</section>",
+            "</main>",
+        ]
     )
 
 

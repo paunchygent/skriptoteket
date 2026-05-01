@@ -133,6 +133,9 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_pdf
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
     SeatingXlsxRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_pdf_renderer import (
+    ExportBackedClassroomPlannerSharePdfRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
     StaticClassroomPlannerShareRenderer,
 )
@@ -214,6 +217,7 @@ from skriptoteket.protocols.classroom_planner_imports import (
 )
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareArtifactRepositoryProtocol,
+    ClassroomPlannerSharePdfRendererProtocol,
     ClassroomPlannerShareRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -1368,6 +1372,19 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def classroom_planner_share_renderer(self) -> ClassroomPlannerShareRendererProtocol:
         return StaticClassroomPlannerShareRenderer()
+
+    @provide(scope=Scope.APP)
+    def classroom_planner_share_pdf_renderer(
+        self,
+        seating_poster_renderer: SeatingPosterRendererProtocol,
+        seating_pdf_renderer: SeatingPdfRendererProtocol,
+        grouping_pdf_renderer: GroupingPdfRendererProtocol,
+    ) -> ClassroomPlannerSharePdfRendererProtocol:
+        return ExportBackedClassroomPlannerSharePdfRenderer(
+            seating_poster_renderer=seating_poster_renderer,
+            seating_pdf_renderer=seating_pdf_renderer,
+            grouping_pdf_renderer=grouping_pdf_renderer,
+        )
 
     @provide(scope=Scope.APP)
     def class_list_document_extractor(

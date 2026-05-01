@@ -164,3 +164,9 @@ class ClassroomPlannerShareRendererProtocol(Protocol):
         *,
         prepared_export: PreparedSeatingExportContract,
     ) -> RenderedClassroomPlannerShare: ...
+
+
+class ClassroomPlannerSharePdfRendererProtocol(Protocol):
+    """Render immutable classroom-planner share HTML artifacts into PDF bytes."""
+
+    def render(self, *, artifact: ClassroomPlannerShareArtifact) -> bytes: ...

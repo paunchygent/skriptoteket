@@ -110,5 +110,25 @@ sharing.
     without `wall_side` silently rendered as floor tiles. The renderer now
     fails closed for invalid wall fixtures, tests a valid top whiteboard above
     the floor band, and refreshes visual proof with `wall_side=TOP`.
+- Reopened `PR-0276` follow-up:
+  - Share-page headers for both seating and grouping must show `Skapad:
+    YYYY-MM-DD`, add a PDF download action in the top-right header area, and
+    add the `Skapad av Klassrumskartan` public-app attribution link. Seating
+    pages must no longer show `Delad sittschema - endast för visning.`.
+  - The PDF action must render immutable seating shares as a single A3
+    landscape page that maximizes classroom-map space, and immutable grouping
+    shares as A4 portrait, with screen-only actions omitted from print. PDF
+    attachment filenames must include the share slug and artifact creation date
+    as `YYYY-MM-DD`.
+  - Share PDF downloads are rendered from the stored canonical
+    `presentation_payload` through the existing seating/grouping export PDF
+    renderers, not by printing the responsive public share page. Repeated clicks
+    in one backend process reuse a bounded in-process cache for the same
+    immutable artifact.
+  - The follow-up review also closed two share-chrome defects: date/PDF
+    finalization now targets explicit renderer-owned chrome slots so escaped
+    user content containing placeholder sentinel strings is preserved, and the
+    `Skapad av Klassrumskartan` attribution now uses the same-origin public app
+    path instead of a hard-coded production URL.
 - Approved share UI and share-page visual direction lives in
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/`.

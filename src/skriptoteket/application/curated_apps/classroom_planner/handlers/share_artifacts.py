@@ -27,9 +27,11 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifactSource,
     JsonObject,
     build_share_content_hash,
+    build_share_pdf_download_path,
     build_share_presentation_hash,
     build_share_public_path,
     build_share_slug,
+    finalize_share_rendered_html,
     hash_share_revoke_secret,
     hash_share_token,
 )
@@ -115,6 +117,11 @@ class CreateClassroomPlannerShareArtifactHandler:
             else None
         )
         slug = build_share_slug(command.slug or command.title)
+        rendered_html = finalize_share_rendered_html(
+            rendered_html=command.rendered_html,
+            created_at=now,
+            pdf_download_path=build_share_pdf_download_path(public_token=public_token),
+        )
         artifact = ClassroomPlannerShareArtifact(
             id=self._id_generator.new_uuid(),
             token_hash=hash_share_token(public_token),
@@ -136,11 +143,11 @@ class CreateClassroomPlannerShareArtifactHandler:
             presentation_schema_version=command.presentation_schema_version,
             presentation_hash=build_share_presentation_hash(command.presentation_payload),
             content_hash=build_share_content_hash(
-                rendered_html=command.rendered_html,
+                rendered_html=rendered_html,
                 rendered_css=command.rendered_css,
             ),
             presentation_payload=command.presentation_payload,
-            rendered_html=command.rendered_html,
+            rendered_html=rendered_html,
             rendered_css=command.rendered_css,
             created_at=now,
             updated_at=now,

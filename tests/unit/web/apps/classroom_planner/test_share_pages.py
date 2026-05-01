@@ -25,6 +25,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.protocols.classroom_planner_shares import (
+    ClassroomPlannerSharePdfRendererProtocol,
+)
 from skriptoteket.web.routes import classroom_planner_share_pages as pages
 
 
@@ -128,3 +131,61 @@ async def test_public_share_read_returns_not_found_for_unknown_token() -> None:
 
     assert response.status_code == 404
     assert response.headers["x-robots-tag"] == "noindex, nofollow"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_pdf_download_returns_attachment_with_created_date_filename() -> None:
+    created_at = datetime(2026, 5, 1, tzinfo=timezone.utc)
+    artifact = _artifact(
+        draft_kind=PlanDraftKind.SEATING,
+        slug="klass-7a-sittschema",
+        created_at=created_at,
+        updated_at=created_at,
+    )
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = artifact
+    pdf_renderer = _FakePdfRenderer(pdf_bytes=b"%PDF-share")
+
+    response = await _unwrap_dishka(pages.download_classroom_planner_share_pdf)(
+        public_token="public-token",
+        handler=handler,
+        pdf_renderer=pdf_renderer,
+    )
+
+    assert response.status_code == 200
+    assert response.media_type == "application/pdf"
+    assert response.body == b"%PDF-share"
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
+    assert response.headers["Content-Disposition"] == (
+        'attachment; filename="klass-7a-sittschema-2026-05-01.pdf"'
+    )
+    assert pdf_renderer.rendered_artifact == artifact
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_pdf_download_returns_gone_for_revoked_artifact() -> None:
+    now = datetime.now(timezone.utc)
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = _artifact(revoked_at=now)
+
+    response = await _unwrap_dishka(pages.download_classroom_planner_share_pdf)(
+        public_token="public-token",
+        handler=handler,
+        pdf_renderer=_FakePdfRenderer(),
+    )
+
+    assert response.status_code == 410
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
+
+
+class _FakePdfRenderer(ClassroomPlannerSharePdfRendererProtocol):
+    def __init__(self, *, pdf_bytes: bytes = b"%PDF") -> None:
+        self._pdf_bytes = pdf_bytes
+        self.rendered_artifact: ClassroomPlannerShareArtifact | None = None
+
+    def render(self, *, artifact: ClassroomPlannerShareArtifact) -> bytes:
+        self.rendered_artifact = artifact
+        return self._pdf_bytes

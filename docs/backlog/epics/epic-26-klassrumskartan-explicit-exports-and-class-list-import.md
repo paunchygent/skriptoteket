@@ -94,7 +94,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [x] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
-- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — `PR-0276` static share-renderer remediation is approved after fixing merged-bench label overlay and wall-fixture geometry proof gaps.
+- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — `PR-0276` static share-renderer and share-chrome/PDF remediation is approved after fixing merged-bench label overlay, wall-fixture geometry, owned chrome finalization, and relative public-app attribution proof gaps.
 - [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — blocked pending independent `REV-ST-26-07` approval after the production Teams diagnostic proved renderer-derived `og:image` thumbnails unfurl correctly and the remediation self-check closed the retained findings.
 
 ## Implementation Summary (as of 2026-03-26)
@@ -132,7 +132,14 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   `REV-PR-0276` reopened and approved the spatial share renderer after fixing
   the merged bench label overlay and wall-fixture geometry fallback in the
   static share page, then refreshing renderer tests plus desktop/mobile visual
-  proof. The 2026-05-01 Teams
+  proof. The follow-up share chrome/PDF addendum adds `Skapad: YYYY-MM-DD`,
+  PDF download, and public-app attribution links to share pages; PDF downloads
+  reuse the export-owned seating A3 poster renderer and grouping A4 PDF renderer
+  from immutable share `presentation_payload` rather than printing the
+  responsive share page. The share chrome follow-up now finalizes only owned
+  date/PDF slots and uses a relative public-app attribution path, so placeholder
+  sentinel text in user content is preserved and dev/staging share pages do not
+  point at production. The 2026-05-01 Teams
   diagnostic proved that a share page with complete
   Open Graph/Twitter/schema.org metadata and a renderer-derived 1200x630
   `og:image` thumbnail unfurls with the expected seating arrangement in

@@ -125,11 +125,8 @@ GROUPING_SHARE_CSS = """
 def render_grouping_share_body(*, presentation: GroupingExportPresentation) -> str:
     """Render the grouping share body as the approved card grid."""
 
-    title = f"{presentation.class_name} – {presentation.title}"
     return "\n".join(
         [
-            '<p class="share-kicker">Klassrumskartan</p>',
-            f'<h1 class="share-title">{escape(title)}</h1>',
             '<div class="groups-grid" aria-label="Delad gruppindelning">',
             *[_render_group_card(group=group) for group in presentation.groups],
             "</div>",
