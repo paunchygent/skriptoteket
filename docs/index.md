@@ -17,6 +17,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Technical overview (Klassrumskartan):
   `src/skriptoteket/application/curated_apps/classroom_planner/README.md`
 - Product direction (Klassrumskartan): `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
+- Scoped sharing/import direction (Klassrumskartan):
+  `docs/reference/ref-klassrumskartan-scoped-sharing-and-import-direction-2026-05-01.md`
 - Workspace UI doctrine (Klassrumskartan):
   `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - Shared tool control language:
@@ -400,6 +402,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
 - ST-26-06 spatial share-page renderer and grouping polish task:
   `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`
+- Review gate for PR-0276 spatial share-page renderer and grouping polish:
+  `docs/backlog/reviews/review-pr-0276-spatial-share-page-renderer-and-grouping-polish.md`
+- ST-26-07 share-link Teams preview thumbnails story:
+  `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md`
+- ST-26-07 share-link Teams preview thumbnails task:
+  `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`
+- Review gate for ST-26-07 share-link Teams preview thumbnails:
+  `docs/backlog/reviews/review-st-26-07-share-link-teams-preview-thumbnails.md`
 - ST-29 small-screen workspace redesign mockup:
   `docs/mockups/st-29-small-screen-workspace-redesign/README.md`
 - ST-26-06 share link UX and page renderer mockup:
@@ -725,6 +735,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md`
 - `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md`
 - `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md`
+- `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md`
 - `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md`
 - `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md`
 - `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md`
@@ -788,6 +799,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-st-26-06-shareable-html-css-export-links.md`
+- `docs/backlog/reviews/review-pr-0276-spatial-share-page-renderer-and-grouping-polish.md`
+- `docs/backlog/reviews/review-st-26-07-share-link-teams-preview-thumbnails.md`
 - `docs/backlog/reviews/review-pr-0273-public-guest-share-links-implementation.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
@@ -860,6 +873,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md`
 - `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
 - `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`
+- `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`
 - `docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md`
 - `docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`

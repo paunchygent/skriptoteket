@@ -2,7 +2,7 @@
 type: pr
 id: PR-0276
 title: "ST-26-06 spatial share-page renderer and grouping polish"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-04-30
 updated: 2026-05-01
@@ -18,6 +18,8 @@ acceptance_criteria:
   - "Given grouping share links remain card-based, when grouping pages render, then their cards receive responsive spacing, hierarchy, and print polish consistent with the share-page visual language."
   - "Given hostile class, room, group, fixture, or student text exists, when share pages render metadata and body content, then escaping, no-script behavior, `noindex,nofollow`, and cache policy remain covered by contract tests."
   - "Given this is a visual rendering correction, when the slice is reviewed, then design acceptance is based on visual inspection screenshots against `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-seating-page-spatial-map-mockup.png`, while automated tests cover security/provenance and renderer contracts only."
+  - "Given adjacent benches are coalesced into one merged poster-scene fixture with label `Bänk`, when the static seating share page renders the fixture, then the bench body spans the merged geometry and the label is centered as an overlay over the full bench span."
+  - "Given PR-0276 visual proof is refreshed, when desktop and mobile seating screenshots are saved, then the fixture set includes at least one labeled merged bench so the screenshot evidence covers the centered-label contract."
 ---
 
 ## Problem
@@ -63,14 +65,34 @@ but improve their responsive and print presentation.
   headers, provenance, and content hashes.
 - Contract tests proving seating share HTML is produced from the canonical
   poster/room-scene model.
+- Renderer-level regression test using a normalized merged bench fixture with
+  label `Bänk`; assert the generated markup/CSS supports absolute bench-body
+  geometry and an absolute centered label overlay rather than flex sibling
+  layout.
 - Browser screenshots at desktop and phone widths for visual inspection against
-  the approved mockup, with the rendered artifact asserting no `<script>` tags.
+  the approved mockup, with the rendered artifact asserting no `<script>` tags
+  and the fixture set including the labeled merged bench.
 - `pdm run typecheck`
 - Focused backend renderer/share route tests.
 - `pdm run docs-validate`
 - `git diff --check`
 
 ## Implementation Notes
+
+### Reopened Remediation
+
+- `REV-PR-0276` reopened this slice after review found the data/model path was
+  correct but the static renderer was wrong for labeled merged benches.
+- Fix ownership is `share_scene_renderer.py`: make `.room-bench-body`
+  absolute/inset inside `.room-fixture--bench` and render the fixture label as
+  an absolute centered overlay for bench fixtures.
+- Test ownership is
+  `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`:
+  add a seating renderer case with a normalized merged bench fixture labeled
+  `Bänk`.
+- Visual proof ownership remains `.artifacts/pr-0276-spatial-share-renderer/`:
+  refresh desktop and mobile seating screenshots with the merged labeled bench
+  visible before this slice can be reclosed.
 
 - Added a dedicated static seating share-scene renderer helper:
   `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py`.

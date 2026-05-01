@@ -5,8 +5,8 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-04-30
-outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, publish immutable shareable HTML/CSS export links for grouping and seating, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
+updated: 2026-05-01
+outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, publish immutable shareable HTML/CSS export links for grouping and seating with reliable renderer-derived Teams/social previews, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 ---
 
@@ -47,6 +47,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - Make share pages immutable public HTML/CSS presentation artifacts with
   token-hash lookup, cosmetic slugs, responsive/print CSS, and sane link-preview
   metadata.
+- Add renderer-derived preview thumbnails for share links so Microsoft Teams
+  and similar link unfurlers can show the actual seating or grouping artifact
+  while the opened URL remains the HTML/CSS share page.
 - Keep public guest share persistence inside the accepted `ADR-0084` exception:
   dedicated public helper creation routes, anonymous token reads, 60-day expiry
   ceiling, renderer provenance, purgeability, and no automatic guest-upgrade
@@ -79,6 +82,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   canonical saved state and public reads avoid app APIs.
 - Public guest share creation could weaken `ADR-0079` unless it stays inside a
   cookie-agnostic public helper namespace with explicit TTL and abuse controls.
+- Link-preview thumbnails could drift from the share artifact or leak stale
+  student/class data unless they are generated from the immutable renderer and
+  follow the same revocation, expiry, purge, and noindex boundaries as share
+  HTML/CSS.
 
 ## Stories
 
@@ -87,7 +94,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [x] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
-- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — ready after `REV-ST-26-06` approval and accepted `ADR-0084` authority for public guest persistence.
+- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — reopened for `PR-0276` static share-renderer remediation after `REV-PR-0276` found the merged-bench label overlay proof gap.
+- [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — blocked pending `REV-ST-26-07` re-review after the production Teams diagnostic proved renderer-derived `og:image` thumbnails unfurl correctly.
 
 ## Implementation Summary (as of 2026-03-26)
 
@@ -121,8 +129,18 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   added two follow-up slices: `PR-0275` replaces detached share panels with
   the approved popover/bottom-sheet management pattern, and `PR-0276` replaces
   the seating share row/place directory with a real spatial classroom-map page.
-  The lane must preserve the accepted renderer-provenance, 60-day TTL ceiling,
-  public create/read route split, purge, abuse-control, and no-upgrade-import
+  `REV-PR-0276` reopened the spatial share renderer because merged bench
+  geometry is correct in the export model but the static share page renders the
+  `Bänk` label as a flex sibling instead of a centered overlay; the remediation
+  remains inside `PR-0276` and must refresh renderer tests plus desktop/mobile
+  visual proof before downstream thumbnail work proceeds. The 2026-05-01 Teams
+  diagnostic proved that a share page with complete
+  Open Graph/Twitter/schema.org metadata and a renderer-derived 1200x630
+  `og:image` thumbnail unfurls with the expected seating arrangement in
+  Microsoft Teams; `ST-26-07`/`PR-0277` turns that proof into the supported
+  behavior for all active grouping and seating share links. The lane must
+  preserve the accepted renderer-provenance, 60-day TTL ceiling, public
+  create/read route split, purge, abuse-control, and no-upgrade-import
   constraints.
 - The `PR-0122` Hemma deploy gate is now production-proven through the on-host
   callback-capable export smoke and Vault-backed download, while `PR-0125`
