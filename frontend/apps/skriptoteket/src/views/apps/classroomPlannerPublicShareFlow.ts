@@ -30,6 +30,7 @@ type PublicGuestShareMetadata = {
   publicPath: string;
   revokeSecret: string;
   snapshotContentHash: string;
+  displayShare: ClassroomPlannerShareArtifact | null;
 };
 
 type PendingPublicGuestShareOperation = {
@@ -43,7 +44,9 @@ type PublicGuestShareMessages = {
   missingDraftMessage: string;
   initialStatusLabel: string;
   copiedMessage: string;
+  revokedMessage: string;
   fallbackMessage: string;
+  revokeFallbackMessage: string;
 };
 
 type CreateClassroomPlannerPublicShareFlowOptions<DraftKind extends PlanDraftKind> = {
@@ -58,6 +61,10 @@ type CreateClassroomPlannerPublicShareFlowOptions<DraftKind extends PlanDraftKin
     previousPublicPath: string | null;
     previousRevokeSecret: string | null;
   }) => Promise<CreatedPublicGuestShare>;
+  revokeShare: (params: {
+    publicPath: string;
+    revokeSecret: string;
+  }) => Promise<unknown>;
   messages: PublicGuestShareMessages;
 };
 
@@ -110,7 +117,10 @@ function readPreviousMetadata(
       return null;
     }
     const parsed = JSON.parse(raw) as Partial<PublicGuestShareMetadata>;
-    if (typeof parsed.publicPath !== "string" || typeof parsed.revokeSecret !== "string") {
+    if (
+      typeof parsed.publicPath !== "string" ||
+      typeof parsed.revokeSecret !== "string"
+    ) {
       return null;
     }
     return {
@@ -118,10 +128,24 @@ function readPreviousMetadata(
       revokeSecret: parsed.revokeSecret,
       snapshotContentHash:
         typeof parsed.snapshotContentHash === "string" ? parsed.snapshotContentHash : "",
+      displayShare: isDisplayShareArtifact(parsed.displayShare) ? parsed.displayShare : null,
     };
   } catch {
     return null;
   }
+}
+
+function isDisplayShareArtifact(value: unknown): value is ClassroomPlannerShareArtifact {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const candidate = value as Partial<ClassroomPlannerShareArtifact>;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.public_path === "string" &&
+    typeof candidate.public_url === "string" &&
+    candidate.revoked_at === null
+  );
 }
 
 function writeLatestMetadata(params: {
@@ -129,6 +153,7 @@ function writeLatestMetadata(params: {
   draftKind: PlanDraftKind;
   publicPath: string;
   revokeSecret: string;
+  displayShare: ClassroomPlannerShareArtifact;
 }): void {
   try {
     localStorage.setItem(
@@ -137,8 +162,17 @@ function writeLatestMetadata(params: {
         publicPath: params.publicPath,
         revokeSecret: params.revokeSecret,
         snapshotContentHash: params.snapshot.snapshot_content_hash,
+        displayShare: params.displayShare,
       } satisfies PublicGuestShareMetadata),
     );
+  } catch {
+    return;
+  }
+}
+
+function clearLatestMetadata(snapshot: ClassroomPlannerGuestSnapshot, draftKind: PlanDraftKind): void {
+  try {
+    localStorage.removeItem(metadataStorageKey(snapshot, draftKind));
   } catch {
     return;
   }
@@ -212,6 +246,7 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
 ) {
   const toast = useToast();
   const isBusy = ref(false);
+  const revokingShareId = ref<string | null>(null);
   const statusLabel = ref<string | null>(null);
   const errorMessage = ref<string | null>(null);
   const shares = ref<ClassroomPlannerShareArtifact[]>([]);
@@ -227,6 +262,27 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
     }
     return draft;
   }
+
+  async function hydrateLatestBrowserOwnedShare(): Promise<void> {
+    if (!getActiveDraft() || shares.value.length > 0) {
+      return;
+    }
+    try {
+      const snapshot = await options.getSnapshot();
+      if (shares.value.length > 0) {
+        return;
+      }
+      const metadata = readPreviousMetadata(snapshot, options.draftKind);
+      if (!metadata?.displayShare || metadata.displayShare.public_path !== metadata.publicPath) {
+        return;
+      }
+      shares.value = [metadata.displayShare];
+    } catch {
+      return;
+    }
+  }
+
+  void hydrateLatestBrowserOwnedShare();
 
   async function startShare(): Promise<void> {
     if (isBusy.value) {
@@ -275,20 +331,20 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
         previousPublicPath: previous?.publicPath ?? null,
         previousRevokeSecret: previous?.revokeSecret ?? null,
       });
+      const displayShare = {
+        ...created.artifact,
+        public_path: created.artifact.public_path ?? created.public_path,
+        public_url: created.artifact.public_url ?? created.public_url,
+      };
       writeLatestMetadata({
         snapshot,
         draftKind: options.draftKind,
         publicPath: created.public_path,
         revokeSecret: created.public_revoke_secret,
+        displayShare,
       });
       clearPendingOperation(snapshot, options.draftKind, draftAfterFlush.revision);
-      shares.value = [
-        {
-          ...created.artifact,
-          public_path: created.artifact.public_path ?? created.public_path,
-          public_url: created.artifact.public_url ?? created.public_url,
-        },
-      ];
+      shares.value = [displayShare];
 
       const copied = await copyTextToClipboard(created.public_url);
       statusLabel.value = copied ? null : created.public_url;
@@ -325,13 +381,53 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
     }
   }
 
+  async function revokePublicShare(share: ClassroomPlannerShareArtifact): Promise<void> {
+    if (revokingShareId.value !== null || share.revoked_at) {
+      return;
+    }
+    const publicPath = share.public_path;
+    if (!publicPath) {
+      errorMessage.value = options.messages.revokeFallbackMessage;
+      toast.warning(options.messages.revokeFallbackMessage);
+      return;
+    }
+
+    revokingShareId.value = share.id;
+    errorMessage.value = null;
+    try {
+      const snapshot = await options.getSnapshot();
+      const metadata = readPreviousMetadata(snapshot, options.draftKind);
+      if (!metadata || metadata.publicPath !== publicPath) {
+        errorMessage.value = options.messages.revokeFallbackMessage;
+        toast.warning(options.messages.revokeFallbackMessage);
+        return;
+      }
+      await options.revokeShare({
+        publicPath,
+        revokeSecret: metadata.revokeSecret,
+      });
+      clearLatestMetadata(snapshot, options.draftKind);
+      shares.value = shares.value.filter((item) => item.id !== share.id);
+      statusLabel.value = null;
+      toast.success(options.messages.revokedMessage);
+    } catch (error: unknown) {
+      const message = normalizeShareError(error, options.messages.revokeFallbackMessage);
+      errorMessage.value = message;
+      toast.warning(message);
+    } finally {
+      revokingShareId.value = null;
+    }
+  }
+
   return {
     isBusy,
+    revokingShareId,
     statusLabel,
     errorMessage,
     isDraftInScope,
     shares,
     startShare,
     copyShareLink,
+    revokePublicShare,
   };
 }

@@ -5,7 +5,7 @@ title: "ST-26-06 spatial share-page renderer and grouping polish"
 status: ready
 owners: "agents"
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 stories:
   - "ST-26-06"
 tags: ["backend", "frontend", "renderer", "klassrumskartan", "sharing", "mockup"]
@@ -14,6 +14,7 @@ dependencies:
 acceptance_criteria:
   - "Given anyone opens a seating share link, when the artifact is active, then the page renders a real spatial classroom map with room fixtures, benches, seats, empty seats, and placed students rather than a row/place card grid."
   - "Given the shared seating page is viewed at desktop and phone widths, when visually inspected, then it follows the approved spatial-map mockup and remains readable without editor chrome or app APIs."
+  - "Given the shared seating page must remain a static exported artifact, when responsive layout is implemented, then sizing and fit behavior are CSS-only with no JavaScript calculations, resize listeners, or inline runtime measurement scripts."
   - "Given grouping share links remain card-based, when grouping pages render, then their cards receive responsive spacing, hierarchy, and print polish consistent with the share-page visual language."
   - "Given hostile class, room, group, fixture, or student text exists, when share pages render metadata and body content, then escaping, no-script behavior, `noindex,nofollow`, and cache policy remain covered by contract tests."
   - "Given this is a visual rendering correction, when the slice is reviewed, then design acceptance is based on visual inspection screenshots against `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-seating-page-spatial-map-mockup.png`, while automated tests cover security/provenance and renderer contracts only."
@@ -38,7 +39,7 @@ but improve their responsive and print presentation.
 - No change to share-token authorization, slug semantics, ownership, TTL, or
   revocation rules.
 - No live draft sharing.
-- No SPA/editor controls on share pages.
+- No SPA/editor controls or JavaScript sizing logic on share pages.
 - No visual-quality claims from structural tests alone.
 
 ## Implementation plan
@@ -48,9 +49,9 @@ but improve their responsive and print presentation.
    poster scene.
 2. Replace the seating share card grid with a spatial classroom scene using the
    prepared seating export contract.
-3. Add responsive desktop/mobile CSS for the share page, including controls or
-   display toggles only if they are part of the static shared page and do not
-   call app APIs.
+3. Add responsive desktop/mobile CSS for the share page. Layout fit must be
+   CSS-only: no `<script>`, resize listener, DOM measurement, or runtime scale
+   calculation in the exported artifact.
 4. Preserve renderer provenance, presentation hash, content hash, escaping,
    metadata, and cache behavior.
 5. Polish grouping share card layout so it belongs to the same share-page
@@ -63,11 +64,52 @@ but improve their responsive and print presentation.
 - Contract tests proving seating share HTML is produced from the canonical
   poster/room-scene model.
 - Browser screenshots at desktop and phone widths for visual inspection against
-  the approved mockup.
+  the approved mockup, with the rendered artifact asserting no `<script>` tags.
 - `pdm run typecheck`
 - Focused backend renderer/share route tests.
 - `pdm run docs-validate`
 - `git diff --check`
+
+## Implementation Notes
+
+- Added a dedicated static seating share-scene renderer helper:
+  `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py`.
+- Seating share pages now render from the canonical `poster_scene` as a
+  spatial classroom map with room floor, wall fixtures, teacher desk, benches,
+  occupied seats, and empty seats.
+- Occupied seats render as larger circular tokens centered on first name plus
+  surname when it fits, or surname initial for long surnames. Empty seats render
+  as a plain dashed circle with no visible text. Seat row/place numbering is not
+  shown on the shared page.
+- The seating share artifact emits no JavaScript. Responsive fit is CSS-only
+  through percentage geometry, `aspect-ratio`, `min()`, `clamp()`, and media
+  queries.
+- Added a dedicated static grouping share-card renderer helper:
+  `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_group_renderer.py`.
+- Grouping shares now follow
+  `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-groups-page-mockup.html`:
+  serif page title, two-column desktop card grid, single-column mobile stack,
+  group member counts, and circular numbered student markers.
+- Seating and grouping share pages now use explicit page variant classes so the
+  grouping page keeps the approved `1200px` card shell while seating keeps the
+  wider spatial-map shell.
+
+## Verification
+
+- `pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`
+- `pdm run lint`
+- `pdm run typecheck`
+- `pdm run docs-validate`
+- `git diff --check`
+- Static visual proof generated sample seating share HTML plus desktop/mobile
+  screenshots under `.artifacts/pr-0276-spatial-share-renderer/`; the proof
+  asserted one room surface, expected seats, no `<script>` tags, and no
+  horizontal document overflow at desktop or phone widths.
+- Static visual proof generated sample grouping share HTML plus desktop/mobile
+  screenshots under `.artifacts/pr-0276-spatial-share-renderer/`; the proof
+  asserted four group cards, expected desktop/mobile grid columns, no
+  `<script>` tags, no legacy `group-list` markup, and no horizontal document
+  overflow.
 
 ## Rollback plan
 

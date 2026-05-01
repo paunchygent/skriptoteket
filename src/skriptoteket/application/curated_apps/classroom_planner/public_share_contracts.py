@@ -44,3 +44,21 @@ class PublicGuestShareResult(BaseModel):
     public_revoke_secret: str
     superseded_previous: bool
     reused_client_operation: bool = False
+
+
+class PublicGuestShareRevokeRequest(BaseModel):
+    """Describe a browser-owned public guest share revoke request."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    public_path: str = Field(min_length=1, max_length=512)
+    revoke_secret: str = Field(min_length=32, max_length=256)
+
+
+class PublicGuestShareRevokeResult(BaseModel):
+    """Return the public guest share revoked by browser-held metadata."""
+
+    model_config = ConfigDict(frozen=True)
+
+    artifact: ClassroomPlannerShareArtifact
+    public_path: str

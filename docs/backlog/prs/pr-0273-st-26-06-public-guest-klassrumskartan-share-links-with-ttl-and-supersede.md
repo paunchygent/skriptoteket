@@ -2,10 +2,10 @@
 type: pr
 id: PR-0273
 title: "ST-26-06 public guest Klassrumskartan share links with TTL, supersede, and browser-owned revoke"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 stories:
   - "ST-26-06"
 tags: ["frontend", "backend", "klassrumskartan", "public-access", "sharing"]
@@ -158,6 +158,21 @@ create/supersede, but the slice is reopened to add explicit public
 current-link revoke/remove. The follow-up must not create a public guest share
 dashboard or server-side listing surface.
 
+- 2026-05-01 follow-up implemented the current-link browser-owned revoke path:
+  `POST /api/v1/public/apps/classroom.group-seating-studio/share/revoke`
+  accepts only `public_path` plus browser-held `revoke_secret`, hashes both
+  server-side, revokes the matching active `public_guest` artifact, and returns
+  the revoked artifact without adding any public listing/dashboard surface.
+- The public guest share popover now keeps the authenticated copy/remove row
+  pattern: newly created links appear immediately, copy uses the shared row
+  affordance, remove calls the narrow public helper, and successful remove
+  clears the row plus browser-held newest-link metadata.
+- 2026-05-01 review-gap closure persists the newest browser-owned display row
+  with the revoke metadata, hydrates it after a fresh SPA reload for the same
+  snapshot/draft kind, and keeps old metadata usable for supersede even when it
+  lacks the display row.
+- The public revoke helper keeps capped raw-body parsing while exporting an
+  explicit OpenAPI request body for `public_path` and `revoke_secret`.
 - Added dedicated public guest share helper routes for grouping and seating under
   `/api/v1/public/apps/classroom.group-seating-studio/*/share`.
 - Public guest share rows are stored as `source = public_guest` with no owner,
@@ -185,6 +200,20 @@ dashboard or server-side listing surface.
 - `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/test_public_apps_classroom_planner_shares.py tests/unit/web/test_public_apps_classroom_planner_exports.py tests/unit/web/apps/classroom_planner/test_share_api.py`
 - `pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py`
 - `pdm run fe-test -- --run src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/usePublicGroupingExportFlow.spec.ts src/views/apps/usePublicSeatingExportFlow.spec.ts`
+- `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/test_public_apps_classroom_planner_shares.py`
+- `pdm run fe-test -- --run src/views/apps/classroomPlannerPublicShareFlow.spec.ts src/views/apps/components/PlannerShareLinksPanel.spec.ts src/views/apps/components/PlannerSeatingWorkspaceToolbar.overflow.spec.ts`
+- `pdm run fe-gen-api-types`
+- 2026-05-01 review-gap closure:
+  `pdm run fe-test -- --run src/views/apps/classroomPlannerPublicShareFlow.spec.ts`
+  covered fresh-flow localStorage hydration and revoke after reload;
+  `pdm run pytest -q tests/unit/web/test_public_apps_classroom_planner_shares.py`
+  covered the exported revoke request body; regenerated
+  `frontend/apps/skriptoteket/src/api/openapi.d.ts` now exports
+  `public_path` and `revoke_secret` instead of `requestBody?: never`.
+- In-app browser proof on `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`:
+  created a public seating share, confirmed the active popover row rendered,
+  opened the public URL before revoke, revoked from the popover, confirmed the
+  row disappeared, and reloaded the public URL to the unavailable-link page.
 - `pdm run dev-stack ps`
 - `curl -sSf http://127.0.0.1:8000/healthz`
 - `curl -sSf http://127.0.0.1:5173/`

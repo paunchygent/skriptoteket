@@ -47,6 +47,7 @@ from .handlers.public_shares import (
     CreatePublicGuestSeatingShareHandler,
     PublicGuestSharePolicy,
     PurgeExpiredPublicGuestShareArtifactsHandler,
+    RevokePublicGuestShareHandler,
 )
 from .handlers.public_smart_grouping import RunPublicSmartGroupingHandler
 from .handlers.public_smart_seating import RunPublicSmartSeatingHandler
@@ -158,6 +159,7 @@ __all__ = [
     "PreparedSeatingExportContract",
     "PublicGuestSharePolicy",
     "PurgeExpiredPublicGuestShareArtifactsHandler",
+    "RevokePublicGuestShareHandler",
     "RunPublicGroupingExportHandler",
     "RedoDraftHandler",
     "RunPublicSeatingExportHandler",

@@ -54,9 +54,11 @@
        Matches the production share_renderer.py _document layout
        ═══════════════════════════════════════════════════════════════ */
     .share-page {
-      max-width: 960px;
       margin: 0 auto;
       padding: 32px 20px 48px;
+    }
+    @media (min-width: 768px) {
+      .share-page { padding: 32px 32px 48px; }
     }
 
     .share-kicker {
@@ -106,7 +108,6 @@
     .room-frame {
       border: 1px solid var(--navy);
       background: white;
-      box-shadow: var(--shadow-brutal-sm);
     }
 
     .room-viewport {
@@ -174,27 +175,81 @@
       white-space: nowrap;
     }
 
-    .fixture--outline {
-      border: 1px solid var(--navy-30);
-      background: white;
-    }
+    /* ── Fixture body styles mirroring RoomFixtureArtwork.vue ── */
 
-    .fixture--strong {
+    /* Wall fixtures (whiteboard, window, door) */
+    .fixture--wall {
       border: 1px solid var(--navy);
-      background: var(--navy-05);
+      background: white;
+      border-radius: 2px;
+      overflow: hidden;
     }
 
-    .fixture--muted {
-      border: 1px solid var(--navy-20);
-      background: var(--navy-05);
+    /* Whiteboard tray detail */
+    .fixture--whiteboard::after {
+      content: '';
+      position: absolute;
+      left: 4px; right: 4px;
+      bottom: 1px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--navy-40);
     }
+
+    /* Door swing arc */
+    .fixture--door::after {
+      content: '';
+      position: absolute;
+      inset: 2px 2px 2px auto;
+      width: 8px;
+      border-radius: 9999px 0 0 9999px;
+      border: 1px solid var(--navy-60);
+      border-right: none;
+    }
+
+    /* Teacher desk */
+    .fixture--teacher-desk {
+      border: 2px solid var(--navy);
+      background: rgba(28,46,74,.85);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .fixture--teacher-desk::before {
+      content: '';
+      position: absolute;
+      left: 8px; right: 8px;
+      top: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.25);
+    }
+
+    /* Bench: thin horizontal bar inside the fixture frame */
+    .fixture--bench {
+      background: transparent;
+    }
+    .fixture--bench .bench-body {
+      position: absolute;
+      top: 50%;
+      left: 8px; right: 8px;
+      height: 24px;
+      transform: translateY(-50%);
+      border: 1px solid rgba(28,46,74,.70);
+      background: rgba(28,46,74,.20);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 4px;
+    }
+    /* When benches are merged, flush the inner edges */
+    .fixture--bench-merged-start .bench-body { border-radius: 4px 0 0 4px; left: 8px; }
+    .fixture--bench-merged-mid   .bench-body { border-radius: 0; left: 0; right: 0; }
+    .fixture--bench-merged-end   .bench-body { border-radius: 0 4px 4px 0; right: 8px; }
 
     .fixture__label--vertical {
       writing-mode: vertical-rl;
       text-orientation: mixed;
     }
 
-    /* ── Seats ────────────────────────────────────────────────── */
+    /* ── Seats (mirroring RoomSeatToken.vue) ──────────────────── */
     .seat {
       position: absolute;
       z-index: 3;
@@ -206,71 +261,91 @@
       justify-content: center;
     }
 
-    .seat__circle {
-      width: 54px;
-      height: 54px;
+    /* Occupied seat token: circular, bordered, full-name display */
+    .seat__token {
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      border: 2px solid var(--navy);
+      border: 1px solid var(--navy);
       background: white;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 2px 6px;
+      text-align: center;
     }
 
-    .seat__initials {
-      font-size: 16px;
-      font-weight: 700;
+    .seat__name {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.25;
       color: var(--navy);
-      line-height: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-clamp: 2;
+      overflow: hidden;
+      word-break: break-word;
     }
 
-    .seat__number {
-      font-size: 11px;
+    .seat__id {
+      font-size: 10px;
       font-weight: 600;
       font-family: var(--font-mono);
-      color: var(--navy-50);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-label);
+      color: var(--navy-60);
       margin-top: 2px;
       line-height: 1;
     }
 
+    /* Empty seat token (dashed outline, muted) */
+    .seat--empty .seat__token {
+      border-style: dashed;
+      border-color: rgba(28,46,74,.30);
+      background: rgba(255,255,255,.75);
+      color: rgba(28,46,74,.45);
+    }
+
     /* ═══════════════════════════════════════════════════════════════
        RESPONSIVE SCALING
-       The surface is 1400px at native resolution. We use CSS transform
-       to scale it into the available viewport, same approach as
-       useRoomViewportZoom / RoomCanvas.vue scaledSurfaceStyle.
+       JS writes inline --room-scale on .room-surface and sizes the shell.
+       Mirrors useRoomViewportZoom / computeRoomViewportFitScale logic:
+       fit-to-view with 24px padding, capped at 1.0 (no auto-upscale).
        ═══════════════════════════════════════════════════════════════ */
-
-    /* Desktop: scale ~65% to fit inside 960px max-width */
-    .room-surface-scale-shell {
-      width: 910px;
-      height: 598px;
+    .room-surface {
+      transform: scale(var(--room-scale, 0.65));
     }
-    .room-surface { transform: scale(0.65); }
 
-    /* Mobile < 768px: scale to fit viewport width minus padding */
+    /* Mobile < 768px: simplify layout, focus on seats */
     @media (max-width: 767px) {
-      .share-page { padding: 20px 12px 32px; }
+      .share-page { padding: 16px 12px 24px; }
       .share-title { font-size: 1.5rem; }
-      .room-viewport { padding: 12px; justify-content: flex-start; }
+      .room-viewport { padding: 8px; justify-content: flex-start; }
 
-      .room-surface-scale-shell {
-        width: calc(100vw - 50px);
-        height: auto;
-        aspect-ratio: 1400 / 920;
-      }
-      .room-surface {
-        transform: scale(calc((100vw - 50px) / 1400));
-      }
+      /* Hide wall fixtures and labels on small screens */
+      .fixture--wall,
+      .fixture--wall .fixture__label,
+      .fixture--teacher-desk .fixture__label,
+      .room-floor::before { display: none !important; }
+
+      /* Simplify teacher desk: strip highlight, keep dark block */
+      .fixture--teacher-desk::before { display: none; }
+
+      /* Thinner benches */
+      .fixture--bench .bench-body { height: 14px; }
+
+      /* Hide outer wall band, keep floor border */
+      .room-outer { display: none; }
+      .room-floor { left: 0; top: 0; width: 1344px; height: 864px; }
+      /* Re-position all fixtures/seats: remove 28px wall band offset */
+      /* NOTE: JS also re-calculates scale for the narrower shell */
     }
 
     /* Very small screens */
     @media (max-width: 420px) {
-      .room-surface-scale-shell {
-        width: calc(100vw - 32px);
-      }
-      .room-surface {
-        transform: scale(calc((100vw - 32px) / 1400));
-      }
+      .seat__name { font-size: 10px; }
     }
 
     /* ── Print ────────────────────────────────────────────────── */
@@ -295,7 +370,6 @@
     <p class="share-kicker">Klassrumskartan</p>
     <h1 class="share-title">HELENA71 – Sittschema</h1>
     <p class="share-subtitle">G20</p>
-    <p class="share-description">Delad sittschema – endast för visning.</p>
 
     <!-- ═══════════════════════════════════════════════════════════
          SPATIAL CLASSROOM MAP
@@ -324,15 +398,15 @@
                  Per getWallFixtureFrameStyle() in roomFixturePresentation.ts -->
 
             <!-- Whiteboard: top wall, x=288 w=288 (3 grid units merged) -->
-            <div class="fixture fixture--outline"
+            <div class="fixture fixture--wall fixture--whiteboard"
               style="left: calc(28px + 288px); top: calc(28px - 18px); width: 288px; height: 18px;">
-              <span class="fixture__label">Whiteboard</span>
+              <span class="fixture__label" style="left:50%; top:-20px; transform:translateX(-50%);">Whiteboard</span>
             </div>
 
             <!-- Door: right wall, y=288 h=96 -->
-            <div class="fixture fixture--outline"
+            <div class="fixture fixture--wall fixture--door"
               style="left: calc(28px + 1344px); top: calc(28px + 288px); width: 18px; height: 96px;">
-              <span class="fixture__label fixture__label--vertical">Dörr</span>
+              <span class="fixture__label fixture__label--vertical" style="left:calc(100% + 6px); top:50%; transform:translateY(-50%);">Dörr</span>
             </div>
 
             <!-- ═══════ FLOOR FIXTURES ═══════
@@ -341,213 +415,272 @@
                  Per getFloorFixtureFrameStyle() offset by floor origin. -->
 
             <!-- Kateder: teacher_desk at grid (6,0) → x=576 y=0, w=192 h=96 -->
-            <div class="fixture fixture--strong"
+            <div class="fixture fixture--teacher-desk"
               style="left: calc(28px + 576px); top: calc(28px + 0px); width: 192px; height: 96px;">
-              <span class="fixture__label">Kateder</span>
+              <span class="fixture__label" style="left:50%; top:50%; transform:translate(-50%,-50%); color:white;">Kateder</span>
             </div>
 
             <!-- ── Bench row 1 (y=192, 3 clusters of 4 benches) ── -->
             <!-- Bench cluster L: grid (1,2)-(4,2) merged → x=96 w=384 -->
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 96px); top: calc(28px + 192px); width: 384px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 96px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 192px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 288px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 384px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
             <!-- Bench cluster M: grid (6,2)-(9,2) merged → x=576 w=384 -->
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 576px); top: calc(28px + 192px); width: 384px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 576px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 672px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 768px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 864px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
             <!-- Bench cluster R: grid (10,2)-(13,2) merged → x=960 w=384 -->
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 960px); top: calc(28px + 192px); width: 384px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 960px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 1056px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 1152px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 1248px); top: calc(28px + 192px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
 
             <!-- ── Bench row 2 (y=480) ── -->
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 96px); top: calc(28px + 480px); width: 384px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 96px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 576px); top: calc(28px + 480px); width: 384px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 192px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 960px); top: calc(28px + 480px); width: 384px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 288px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 384px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 576px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 672px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 768px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 864px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 960px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 1056px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 1152px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 1248px); top: calc(28px + 480px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
 
-            <!-- ── Bench row 3 (y=672) ── -->
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 96px); top: calc(28px + 672px); width: 288px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <!-- ── Bench row 3 (y=672, 3 clusters of 3 benches) ── -->
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 96px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 576px); top: calc(28px + 672px); width: 288px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 192px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
-            <div class="fixture fixture--muted"
-              style="left: calc(28px + 960px); top: calc(28px + 672px); width: 288px; height: 96px;">
-              <span class="fixture__label">Bänk</span>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 288px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 576px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 672px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 768px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-start"
+              style="left: calc(28px + 960px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-mid"
+              style="left: calc(28px + 1056px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
+            </div>
+            <div class="fixture fixture--bench fixture--bench-merged-end"
+              style="left: calc(28px + 1152px); top: calc(28px + 672px); width: 96px; height: 96px;">
+              <div class="bench-body"></div>
             </div>
 
             <!-- ═══════ SEATS ═══════
                  Each seat is 1 grid unit (96×96px).
-                 Position: wall_band + seat.x, wall_band + seat.y
+                 Full names rendered inside circular tokens (RoomSeatToken.vue).
                  Seats sit IN FRONT OF benches (one row below each bench row).
                  Row 1 benches at y=192, seats at y=288.
                  Row 2 benches at y=480, seats at y=576.
-                 Row 3 benches at y=672, seats at y=768.
-
-                 (Not shown below bench because seats are IN FRONT of the
-                 teacher in a traditional layout — student faces whiteboard,
-                 sits in front of the bench.) -->
+                 Row 3 benches at y=672, seats at y=768. -->
 
             <!-- ── Seat row 1 (y=288, in front of bench row 1) ── -->
             <!-- Cluster L (x: 96, 192, 288, 384) -->
             <div class="seat" style="left: calc(28px + 96px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">LC</span></div>
-              <span class="seat__number">1.1</span>
+              <div class="seat__token"><span class="seat__name">Lisa Carlsson</span><span class="seat__id">1.1</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 192px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">MJ</span></div>
-              <span class="seat__number">1.2</span>
+              <div class="seat__token"><span class="seat__name">Maria Johansson</span><span class="seat__id">1.2</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 288px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">MA</span></div>
-              <span class="seat__number">1.3</span>
+              <div class="seat__token"><span class="seat__name">Magnus Andersson</span><span class="seat__id">1.3</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 384px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">CB</span></div>
-              <span class="seat__number">1.4</span>
+              <div class="seat__token"><span class="seat__name">Cecilia Berg</span><span class="seat__id">1.4</span></div>
             </div>
 
             <!-- Cluster M (x: 576, 672, 768, 864) -->
             <div class="seat" style="left: calc(28px + 576px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">ME</span></div>
-              <span class="seat__number">1.5</span>
+              <div class="seat__token"><span class="seat__name">Martin Eriksson</span><span class="seat__id">1.5</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 672px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">KF</span></div>
-              <span class="seat__number">1.6</span>
+              <div class="seat__token"><span class="seat__name">Karin Fredriksson</span><span class="seat__id">1.6</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 768px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">EE</span></div>
-              <span class="seat__number">1.7</span>
+              <div class="seat__token"><span class="seat__name">Erik Ekström</span><span class="seat__id">1.7</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 864px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">HJ</span></div>
-              <span class="seat__number">1.8</span>
+              <div class="seat__token"><span class="seat__name">Hanna Johansson</span><span class="seat__id">1.8</span></div>
             </div>
 
             <!-- Cluster R (x: 960, 1056, 1152, 1248) -->
             <div class="seat" style="left: calc(28px + 960px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">JD</span></div>
-              <span class="seat__number">1.9</span>
+              <div class="seat__token"><span class="seat__name">Johan Dahl</span><span class="seat__id">1.9</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1056px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">HA</span></div>
-              <span class="seat__number">1.10</span>
+              <div class="seat__token"><span class="seat__name">Helena Andersson</span><span class="seat__id">1.10</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1152px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">JB</span></div>
-              <span class="seat__number">1.11</span>
+              <div class="seat__token"><span class="seat__name">Jonas Bengtsson</span><span class="seat__id">1.11</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1248px); top: calc(28px + 288px);">
-              <div class="seat__circle"><span class="seat__initials">JA</span></div>
-              <span class="seat__number">1.12</span>
+              <div class="seat__token"><span class="seat__name">Julia Almgren</span><span class="seat__id">1.12</span></div>
             </div>
 
             <!-- ── Seat row 2 (y=576) ── -->
             <div class="seat" style="left: calc(28px + 96px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">ME</span></div>
-              <span class="seat__number">2.1</span>
+              <div class="seat__token"><span class="seat__name">Maja Eriksson</span><span class="seat__id">2.1</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 192px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">II</span></div>
-              <span class="seat__number">2.2</span>
+              <div class="seat__token"><span class="seat__name">Ingrid Ivarsson</span><span class="seat__id">2.2</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 288px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">AF</span></div>
-              <span class="seat__number">2.3</span>
+              <div class="seat__token"><span class="seat__name">Anton Falk</span><span class="seat__id">2.3</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 384px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">JE</span></div>
-              <span class="seat__number">2.4</span>
+              <div class="seat__token"><span class="seat__name">Julia Eriksson</span><span class="seat__id">2.4</span></div>
             </div>
 
             <div class="seat" style="left: calc(28px + 576px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">RE</span></div>
-              <span class="seat__number">2.5</span>
+              <div class="seat__token"><span class="seat__name">Rebecca Eriksson</span><span class="seat__id">2.5</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 672px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">MR</span></div>
-              <span class="seat__number">2.6</span>
+              <div class="seat__token"><span class="seat__name">Markus Rydberg</span><span class="seat__id">2.6</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 768px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">NI</span></div>
-              <span class="seat__number">2.7</span>
+              <div class="seat__token"><span class="seat__name">Nina Isaksson</span><span class="seat__id">2.7</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 864px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">IE</span></div>
-              <span class="seat__number">2.8</span>
+              <div class="seat__token"><span class="seat__name">Isabel Eriksson</span><span class="seat__id">2.8</span></div>
             </div>
 
             <div class="seat" style="left: calc(28px + 960px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">PE</span></div>
-              <span class="seat__number">2.9</span>
+              <div class="seat__token"><span class="seat__name">Peter Ekström</span><span class="seat__id">2.9</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1056px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">VI</span></div>
-              <span class="seat__number">2.10</span>
+              <div class="seat__token"><span class="seat__name">Viktor Ivarsson</span><span class="seat__id">2.10</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1152px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">UH</span></div>
-              <span class="seat__number">2.11</span>
+              <div class="seat__token"><span class="seat__name">Ulf Hedlund</span><span class="seat__id">2.11</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1248px); top: calc(28px + 576px);">
-              <div class="seat__circle"><span class="seat__initials">MC</span></div>
-              <span class="seat__number">2.12</span>
+              <div class="seat__token"><span class="seat__name">Maria Carlsson</span><span class="seat__id">2.12</span></div>
             </div>
 
             <!-- ── Seat row 3 (y=768, 3 clusters of 3 seats) ── -->
             <div class="seat" style="left: calc(28px + 96px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">AG</span></div>
-              <span class="seat__number">3.1</span>
+              <div class="seat__token"><span class="seat__name">Agnes Gustafsson</span><span class="seat__id">3.1</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 192px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">VA</span></div>
-              <span class="seat__number">3.2</span>
+              <div class="seat__token"><span class="seat__name">Viktor Andersson</span><span class="seat__id">3.2</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 288px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">SB</span></div>
-              <span class="seat__number">3.3</span>
+              <div class="seat__token"><span class="seat__name">Sara Bengtsson</span><span class="seat__id">3.3</span></div>
             </div>
 
             <div class="seat" style="left: calc(28px + 576px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">LN</span></div>
-              <span class="seat__number">3.5</span>
+              <div class="seat__token"><span class="seat__name">Linda Nordström</span><span class="seat__id">3.5</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 672px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">FN</span></div>
-              <span class="seat__number">3.6</span>
+              <div class="seat__token"><span class="seat__name">Filip Nordström</span><span class="seat__id">3.6</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 768px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">EA</span></div>
-              <span class="seat__number">3.7</span>
+              <div class="seat__token"><span class="seat__name">Eva Andersson</span><span class="seat__id">3.7</span></div>
             </div>
 
             <div class="seat" style="left: calc(28px + 960px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">MA</span></div>
-              <span class="seat__number">3.9</span>
+              <div class="seat__token"><span class="seat__name">Martin Andersson</span><span class="seat__id">3.9</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1056px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">KA</span></div>
-              <span class="seat__number">3.10</span>
+              <div class="seat__token"><span class="seat__name">Karl Andersson</span><span class="seat__id">3.10</span></div>
             </div>
             <div class="seat" style="left: calc(28px + 1152px); top: calc(28px + 768px);">
-              <div class="seat__circle"><span class="seat__initials">PA</span></div>
-              <span class="seat__number">3.11</span>
+              <div class="seat__token"><span class="seat__name">Pernilla Andersson</span><span class="seat__id">3.11</span></div>
             </div>
 
           </div><!-- /room-surface -->
@@ -555,5 +688,40 @@
       </div><!-- /room-viewport -->
     </div><!-- /room-frame -->
   </main>
+
+  <script>
+    (function() {
+      const SURFACE_W = 1400;
+      const SURFACE_H = 920;
+      const PAD = 24;
+
+      function applyScale() {
+        const viewport = document.querySelector('.room-viewport');
+        const shell = document.querySelector('.room-surface-scale-shell');
+        const surface = document.querySelector('.room-surface');
+        if (!viewport || !shell || !surface) return;
+
+        const availW = viewport.clientWidth - (PAD * 2);
+        const headerOffset = document.querySelector('.share-page')?.offsetTop ?? 0;
+        const availH = window.innerHeight - headerOffset - 120;
+        const scaleW = availW / SURFACE_W;
+        const scaleH = availH / SURFACE_H;
+        let scale = Math.min(scaleW, scaleH, 1.0);
+        if (scale < 0.35) scale = 0.35;
+
+        surface.style.setProperty('--room-scale', scale.toFixed(4));
+        shell.style.width = (SURFACE_W * scale) + 'px';
+        shell.style.height = (SURFACE_H * scale) + 'px';
+      }
+
+      window.addEventListener('resize', applyScale);
+      window.addEventListener('load', applyScale);
+      if (document.readyState !== 'loading') {
+        applyScale();
+      } else {
+        document.addEventListener('DOMContentLoaded', applyScale);
+      }
+    })();
+  </script>
 </body>
 </html>

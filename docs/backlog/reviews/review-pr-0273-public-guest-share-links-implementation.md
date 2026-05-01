@@ -5,7 +5,7 @@ title: "Review: PR-0273 public guest share links implementation"
 status: approved
 owners: "agents"
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 reviewer: "lead-developer"
 prs:
   - PR-0273
@@ -385,4 +385,38 @@ None. The PostgreSQL advisory-lock proof blocker is closed.
 - `pdm run fe-type-check`
   - passed
 - `pdm run fe-lint`
+  - passed
+
+## Current-Link Re-Review Gap Closure
+
+**Implementer:** `codex`
+**Date:** `2026-05-01`
+**Verdict:** `remediated; pending independent re-review`
+
+The later current-link review identified two follow-up gaps after the warm
+same-session revoke path:
+
+- The public share flow now persists the active display row in browser-held
+  metadata, hydrates it into a fresh flow after reload for the same
+  snapshot/draft kind, and can revoke it with the retained secret.
+- The public revoke route keeps the capped raw-body helper but advertises an
+  explicit OpenAPI request body for `public_path` and `revoke_secret`; generated
+  TypeScript no longer emits `requestBody?: never` for this operation.
+
+Verification:
+
+- `pdm run fe-test -- --run src/views/apps/classroomPlannerPublicShareFlow.spec.ts`
+  - passed, 4 tests
+- `pdm run pytest -q tests/unit/web/test_public_apps_classroom_planner_shares.py`
+  - passed, 4 tests
+- `pdm run fe-gen-api-types`
+  - passed; regenerated revoke operation exports `public_path` and
+    `revoke_secret` request-body fields
+- `pdm run fe-type-check`
+  - passed
+- `pdm run fe-lint`
+  - passed
+- `pdm run typecheck`
+  - passed
+- `pdm run lint`
   - passed

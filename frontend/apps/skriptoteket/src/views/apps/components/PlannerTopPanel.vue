@@ -10,6 +10,7 @@
 
 import { computed } from "vue";
 
+import { IconX } from "../../../components/icons";
 import UiSegmentedToggle, {
   type UiSegmentedToggleOption,
 } from "../../../components/ui/UiSegmentedToggle.vue";
@@ -143,10 +144,13 @@ function selectWorkspaceMode(value: string): void {
 
       <button
         type="button"
-        class="btn-ghost planner-btn-ghost-canvas self-start px-3 py-2 text-sm lg:self-auto"
+        class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md self-start lg:self-auto"
+        :aria-label="exitLabel"
+        :title="exitLabel"
+        data-test="planner-exit"
         @click="emit('exit')"
       >
-        {{ exitLabel }}
+        <IconX :size="16" />
       </button>
     </div>
 

@@ -18,15 +18,18 @@ from unittest.mock import ANY, AsyncMock
 from uuid import uuid4
 
 import pytest
+from fastapi import FastAPI
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
     CreatePublicGuestGroupingShareHandler,
     CreatePublicGuestSeatingShareHandler,
+    RevokePublicGuestShareHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.public_share_contracts import (
     PublicGuestShareResult,
+    PublicGuestShareRevokeResult,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     build_share_content_hash,
@@ -90,6 +93,23 @@ def _payload() -> dict[str, object]:
     }
 
 
+def test_public_guest_revoke_openapi_exports_request_body() -> None:
+    app = FastAPI()
+    app.include_router(api.router)
+
+    schema = app.openapi()
+    operation = schema["paths"]["/api/v1/public/apps/classroom.group-seating-studio/share/revoke"][
+        "post"
+    ]
+    request_body = operation["requestBody"]
+    request_schema = request_body["content"]["application/json"]["schema"]
+
+    assert request_body["required"] is True
+    assert set(request_schema["required"]) == {"public_path", "revoke_secret"}
+    assert request_schema["properties"]["public_path"]["type"] == "string"
+    assert request_schema["properties"]["revoke_secret"]["minLength"] == 32
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_public_grouping_share_returns_public_url_and_revoke_secret() -> None:
@@ -144,3 +164,40 @@ async def test_public_seating_share_uses_seating_handler() -> None:
     handler.handle.assert_awaited_once_with(request=ANY)
     assert handler.handle.await_args.kwargs["request"].expected_revision == 2
     assert result.artifact.draft_kind is PlanDraftKind.SEATING
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_guest_revoke_returns_revoked_artifact_and_ignores_ambient_cookies() -> None:
+    handler = AsyncMock(spec=RevokePublicGuestShareHandler)
+    handler.handle.return_value = PublicGuestShareRevokeResult(
+        artifact=_artifact(draft_kind=PlanDraftKind.SEATING).model_copy(
+            update={"revoked_at": datetime(2026, 4, 30, 10, 5, 0, tzinfo=timezone.utc)}
+        ),
+        public_path="/share/classroom/public-token/klass-7a",
+    )
+
+    request = _request(
+        {
+            "public_path": "/share/classroom/public-token/klass-7a",
+            "revoke_secret": "r" * 32,
+        }
+    )
+    request.scope["headers"] = [(b"cookie", b"ambient_authority=ignored")]
+    result = await _unwrap_dishka(api.revoke_public_guest_share)(
+        request=request,
+        registry=_registry(),
+        settings=Settings(PUBLIC_APP_BASE_URL="https://skriptoteket.hule.education"),
+        clock=FixedClock(datetime(2026, 4, 30, 10, 0, 0)),
+        throttle=InMemoryPublicHelperRequestThrottle(),
+        handler=handler,
+    )
+
+    handler.handle.assert_awaited_once_with(request=ANY)
+    request_arg = handler.handle.await_args.kwargs["request"]
+    assert request_arg.public_path == "/share/classroom/public-token/klass-7a"
+    assert request_arg.revoke_secret == "r" * 32
+    assert result.artifact.revoked_at is not None
+    assert result.public_url == (
+        "https://skriptoteket.hule.education/share/classroom/public-token/klass-7a"
+    )

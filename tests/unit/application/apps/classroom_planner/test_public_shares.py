@@ -26,11 +26,13 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PublicGuestSharePolicy,
 )
 from skriptoteket.application.curated_apps.classroom_planner.handlers.public_shares import (
+    RevokePublicGuestShareHandler,
     _create_public_guest_share,
 )
 from skriptoteket.application.curated_apps.classroom_planner.public_share_contracts import (
     PublicGuestShareRequest,
     PublicGuestShareResult,
+    PublicGuestShareRevokeRequest,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
@@ -432,6 +434,88 @@ async def test_public_guest_share_supersedes_previous_when_secret_matches() -> N
 
     assert result.superseded_previous is True
     assert shares.artifacts_by_id[existing.id].revoked_at == now
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_guest_revoke_removes_current_browser_owned_link() -> None:
+    shares = _FakeShareRepository()
+    now = datetime(2026, 4, 30, tzinfo=timezone.utc)
+    existing = _artifact(
+        token="old-token",
+        revoke_secret="browser-secret-value-1234567890x",
+        client_operation_id="previous-operation-1234",
+        fingerprint="sha256:fingerprint",
+        created_at=now,
+    )
+    await shares.create(artifact=existing)
+    handler = RevokePublicGuestShareHandler(
+        shares=shares,
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+    )
+
+    result = await handler.handle(
+        request=PublicGuestShareRevokeRequest(
+            public_path="/share/classroom/old-token/klass-7a",
+            revoke_secret="browser-secret-value-1234567890x",
+        )
+    )
+
+    assert result.artifact.id == existing.id
+    assert result.artifact.revoked_at == now
+    assert shares.artifacts_by_id[existing.id].revoked_at == now
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_guest_revoke_rejects_invalid_secret_without_revoking() -> None:
+    shares = _FakeShareRepository()
+    now = datetime(2026, 4, 30, tzinfo=timezone.utc)
+    existing = _artifact(
+        token="old-token",
+        revoke_secret="browser-secret-value-1234567890x",
+        client_operation_id="previous-operation-1234",
+        fingerprint="sha256:fingerprint",
+        created_at=now,
+    )
+    await shares.create(artifact=existing)
+    handler = RevokePublicGuestShareHandler(
+        shares=shares,
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            request=PublicGuestShareRevokeRequest(
+                public_path="/share/classroom/old-token/klass-7a",
+                revoke_secret="w" * 32,
+            )
+        )
+
+    assert exc_info.value.code is ErrorCode.NOT_FOUND
+    assert shares.artifacts_by_id[existing.id].revoked_at is None
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_guest_revoke_rejects_non_share_path() -> None:
+    handler = RevokePublicGuestShareHandler(
+        shares=_FakeShareRepository(),
+        uow=_DummyUow(),
+        clock=_FixedClock(datetime(2026, 4, 30, tzinfo=timezone.utc)),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            request=PublicGuestShareRevokeRequest(
+                public_path="/not/a/share",
+                revoke_secret="browser-secret-value-1234567890x",
+            )
+        )
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
 
 @pytest.mark.unit

@@ -1940,6 +1940,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/apps/classroom.group-seating-studio/grouping/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Public Guest Grouping Share */
+        post: operations["create_public_guest_grouping_share_api_v1_public_apps_classroom_group_seating_studio_grouping_share_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run": {
         parameters: {
             query?: never;
@@ -1991,6 +2008,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/apps/classroom.group-seating-studio/seating/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Public Guest Seating Share */
+        post: operations["create_public_guest_seating_share_api_v1_public_apps_classroom_group_seating_studio_seating_share_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/apps/classroom.group-seating-studio/seating/smart-run": {
         parameters: {
             query?: never;
@@ -2002,6 +2036,23 @@ export interface paths {
         put?: never;
         /** Run Public Smart Seating */
         post: operations["run_public_smart_seating_api_v1_public_apps_classroom_group_seating_studio_seating_smart_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/classroom.group-seating-studio/share/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Public Guest Share */
+        post: operations["revoke_public_guest_share_api_v1_public_apps_classroom_group_seating_studio_share_revoke_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3000,6 +3051,23 @@ export interface components {
             public_path: string;
             /** Public Url */
             public_url: string;
+        };
+        /**
+         * CreatedPublicGuestShareDto
+         * @description Serialize a newly created public guest share link.
+         */
+        CreatedPublicGuestShareDto: {
+            artifact: components["schemas"]["ClassroomPlannerShareArtifactDto"];
+            /** Public Path */
+            public_path: string;
+            /** Public Revoke Secret */
+            public_revoke_secret: string;
+            /** Public Url */
+            public_url: string;
+            /** Reused Client Operation */
+            reused_client_operation: boolean;
+            /** Superseded Previous */
+            superseded_previous: boolean;
         };
         /**
          * CuratedAppItem
@@ -5309,6 +5377,17 @@ export interface components {
             roster_name: string;
             /** Template Name */
             template_name?: string | null;
+        };
+        /**
+         * RevokedPublicGuestShareDto
+         * @description Serialize a revoked browser-owned public guest share link.
+         */
+        RevokedPublicGuestShareDto: {
+            artifact: components["schemas"]["ClassroomPlannerShareArtifactDto"];
+            /** Public Path */
+            public_path: string;
+            /** Public Url */
+            public_url: string;
         };
         /**
          * Role
@@ -10718,6 +10797,26 @@ export interface operations {
             };
         };
     };
+    create_public_guest_grouping_share_api_v1_public_apps_classroom_group_seating_studio_grouping_share_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedPublicGuestShareDto"];
+                };
+            };
+        };
+    };
     run_public_smart_grouping_api_v1_public_apps_classroom_group_seating_studio_grouping_smart_run_post: {
         parameters: {
             query?: never;
@@ -10791,6 +10890,26 @@ export interface operations {
             };
         };
     };
+    create_public_guest_seating_share_api_v1_public_apps_classroom_group_seating_studio_seating_share_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedPublicGuestShareDto"];
+                };
+            };
+        };
+    };
     run_public_smart_seating_api_v1_public_apps_classroom_group_seating_studio_seating_smart_run_post: {
         parameters: {
             query?: never;
@@ -10807,6 +10926,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicSmartSeatingAppliedResponse"] | components["schemas"]["PublicSmartSeatingBlockedResponse"];
+                };
+            };
+        };
+    };
+    revoke_public_guest_share_api_v1_public_apps_classroom_group_seating_studio_share_revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Public Path */
+                    public_path: string;
+                    /** Revoke Secret */
+                    revoke_secret: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevokedPublicGuestShareDto"];
                 };
             };
         };

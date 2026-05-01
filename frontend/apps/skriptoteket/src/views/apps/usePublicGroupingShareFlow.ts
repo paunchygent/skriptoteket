@@ -7,7 +7,10 @@
 
 import type { Ref } from "vue";
 
-import { createPublicGroupingShare } from "./classroomPlannerPublicShareApi";
+import {
+  createPublicGroupingShare,
+  revokePublicGuestShare,
+} from "./classroomPlannerPublicShareApi";
 import { createClassroomPlannerPublicShareFlow } from "./classroomPlannerPublicShareFlow";
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
 import type { PlanDraft } from "./classroomPlannerTypes";
@@ -32,11 +35,14 @@ export function usePublicGroupingShareFlow(options: UsePublicGroupingShareFlowOp
     getSnapshot: options.getSnapshot,
     draftKind: "grouping",
     createShare: createPublicGroupingShare,
+    revokeShare: revokePublicGuestShare,
     messages: {
       missingDraftMessage: "Öppna en gruppindelning innan du delar länken.",
       initialStatusLabel: "Skapar länk…",
       copiedMessage: "Länken är kopierad.",
+      revokedMessage: "Länken är återkallad.",
       fallbackMessage: "Det gick inte att skapa länken just nu.",
+      revokeFallbackMessage: "Det gick inte att återkalla länken just nu.",
     },
   });
 }

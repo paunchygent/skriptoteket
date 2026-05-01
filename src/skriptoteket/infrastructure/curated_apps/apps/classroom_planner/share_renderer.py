@@ -26,6 +26,14 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     JsonValue,
     RenderedClassroomPlannerShare,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_group_renderer import (
+    GROUPING_SHARE_CSS,
+    render_grouping_share_body,
+)
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_scene_renderer import (
+    SEATING_SHARE_CSS,
+    render_seating_scene_body,
+)
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareRendererProtocol,
 )
@@ -34,67 +42,87 @@ _RENDERER_VERSION = "klassrumskartan-share-renderer-v1"
 _GROUPING_SCHEMA_VERSION = "grouping-share-v1"
 _SEATING_SCHEMA_VERSION = "seating-share-v1"
 
-_SHARE_CSS = """
+_SHARE_CSS = (
+    """
 :root {
   color-scheme: light;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --canvas: #fafaf6;
+  --navy: #1c2e4a;
+  --navy-05: rgba(28, 46, 74, 0.05);
+  --navy-10: rgba(28, 46, 74, 0.10);
+  --navy-15: rgba(28, 46, 74, 0.15);
+  --navy-20: rgba(28, 46, 74, 0.20);
+  --navy-30: rgba(28, 46, 74, 0.30);
+  --navy-40: rgba(28, 46, 74, 0.40);
+  --navy-50: rgba(28, 46, 74, 0.50);
+  --navy-60: rgba(28, 46, 74, 0.60);
+  --navy-70: rgba(28, 46, 74, 0.70);
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  background: #f8f8f1;
-  color: #171714;
+  --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  --tracking-label: 0.08em;
+  --tracking-wide: 0.10em;
+  background: var(--canvas);
+  color: var(--navy);
+  font-family: var(--font-sans);
 }
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 body {
   margin: 0;
-  background: #f8f8f1;
+  background: var(--canvas);
+  min-height: 100vh;
 }
 .share-page {
-  max-width: 960px;
   margin: 0 auto;
+  max-width: 1200px;
   padding: 32px 20px 48px;
 }
+.share-page--seating {
+  max-width: 1440px;
+}
 .share-kicker {
-  color: #5d5b4f;
-  font-size: 0.82rem;
+  color: var(--navy-60);
+  font-size: var(--text-xs);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: 8px;
   text-transform: uppercase;
 }
-h1 {
-  margin: 8px 0 20px;
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  line-height: 1.05;
+.share-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.15;
+  margin: 0 0 28px;
 }
-h2 {
-  margin: 0 0 12px;
-  font-size: 1.15rem;
+@media (min-width: 768px) {
+  .share-page {
+    padding: 40px 32px 56px;
+  }
+  .share-title {
+    font-size: var(--text-4xl);
+  }
 }
-.group-list,
-.seat-list {
-  display: grid;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.share-card {
-  border: 1px solid #2d2b24;
-  background: #fffef8;
-  padding: 16px;
-}
-.member-list {
-  margin: 0;
-  padding-left: 20px;
-}
-.seat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-.seat-meta {
-  color: #5d5b4f;
-  font-size: 0.9rem;
+@media (max-width: 767px) {
+  .share-page {
+    padding: 18px 12px 28px;
+  }
+  .share-title {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
 }
 @media print {
   body {
@@ -106,6 +134,11 @@ h2 {
   }
 }
 """.strip()
+    + "\n"
+    + GROUPING_SHARE_CSS
+    + "\n"
+    + SEATING_SHARE_CSS
+)
 
 
 class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol):
@@ -117,30 +150,21 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         prepared_export: PreparedGroupingExportContract,
     ) -> RenderedClassroomPlannerShare:
         presentation = prepared_export.presentation
-        title = f"{presentation.class_name} - {presentation.title}"
+        title = f"{presentation.class_name} – {presentation.title}"
         description = f"Gruppindelning för {presentation.class_name}."
-        body = "\n".join(
-            [
-                '<p class="share-kicker">Klassrumskartan</p>',
-                f"<h1>{_escape(title)}</h1>",
-                '<ul class="group-list">',
-                *[
-                    _render_group_card(
-                        label=group.group_label,
-                        members=[member.display_name for member in group.members],
-                    )
-                    for group in presentation.groups
-                ],
-                "</ul>",
-            ]
-        )
+        body = render_grouping_share_body(presentation=presentation)
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
             renderer_version=_RENDERER_VERSION,
             presentation_schema_version=_GROUPING_SCHEMA_VERSION,
             presentation_payload=_json_object(presentation),
-            rendered_html=_document(title=title, description=description, body=body),
+            rendered_html=_document(
+                title=title,
+                description=description,
+                body=body,
+                page_modifier="share-page--grouping",
+            ),
             rendered_css=_SHARE_CSS,
         )
 
@@ -149,64 +173,34 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         *,
         prepared_export: PreparedSeatingExportContract,
     ) -> RenderedClassroomPlannerShare:
-        scene = prepared_export.poster_scene
         title = f"{prepared_export.roster_name} - Sittschema"
         description = (
             f"Sittschema för {prepared_export.roster_name} i {prepared_export.template_name}."
         )
-        assigned_seats = [seat for seat in scene.seats if seat.label]
-        body = "\n".join(
-            [
-                '<p class="share-kicker">Klassrumskartan</p>',
-                f"<h1>{_escape(title)}</h1>",
-                f'<p class="seat-meta">{_escape(prepared_export.template_name)}</p>',
-                '<div class="seat-grid">',
-                *[
-                    _render_seat_card(
-                        label=seat.label or "Tom plats",
-                        x=seat.x,
-                        y=seat.y,
-                    )
-                    for seat in assigned_seats
-                ],
-                "</div>",
-            ]
-        )
+        body = render_seating_scene_body(prepared_export=prepared_export)
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
             renderer_version=_RENDERER_VERSION,
             presentation_schema_version=_SEATING_SCHEMA_VERSION,
             presentation_payload=_json_object(prepared_export),
-            rendered_html=_document(title=title, description=description, body=body),
+            rendered_html=_document(
+                title=title,
+                description=description,
+                body=body,
+                page_modifier="share-page--seating",
+            ),
             rendered_css=_SHARE_CSS,
         )
 
 
-def _render_group_card(*, label: str, members: list[str]) -> str:
-    member_items = "\n".join(f"<li>{_escape(member)}</li>" for member in members)
-    return "\n".join(
-        [
-            '<li class="share-card">',
-            f"<h2>{_escape(label)}</h2>",
-            f'<ol class="member-list">{member_items}</ol>',
-            "</li>",
-        ]
-    )
-
-
-def _render_seat_card(*, label: str, x: int, y: int) -> str:
-    return "\n".join(
-        [
-            '<article class="share-card">',
-            f"<h2>{_escape(label)}</h2>",
-            f'<p class="seat-meta">Rad {y + 1}, plats {x + 1}</p>',
-            "</article>",
-        ]
-    )
-
-
-def _document(*, title: str, description: str, body: str) -> str:
+def _document(
+    *,
+    title: str,
+    description: str,
+    body: str,
+    page_modifier: str,
+) -> str:
     escaped_title = _escape(title)
     escaped_description = _escape(description)
     return "\n".join(
@@ -224,7 +218,7 @@ def _document(*, title: str, description: str, body: str) -> str:
             f"<style>{_SHARE_CSS}</style>",
             "</head>",
             "<body>",
-            f'<main class="share-page">{body}</main>',
+            f'<main class="share-page {page_modifier}">{body}</main>',
             "</body>",
             "</html>",
         ]

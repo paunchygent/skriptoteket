@@ -39,6 +39,8 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.share_arti
 from skriptoteket.application.curated_apps.classroom_planner.public_share_contracts import (
     PublicGuestShareRequest,
     PublicGuestShareResult,
+    PublicGuestShareRevokeRequest,
+    PublicGuestShareRevokeResult,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
@@ -50,7 +52,7 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     hash_share_token,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
-from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareArtifactRepositoryProtocol,
     ClassroomPlannerShareRendererProtocol,
@@ -205,6 +207,56 @@ class PurgeExpiredPublicGuestShareArtifactsHandler:
     async def handle(self) -> int:
         async with self._uow:
             return await self._shares.purge_expired_public_guest_shares(now=self._clock.now())
+
+
+class RevokePublicGuestShareHandler:
+    """Revoke the current browser-owned public guest share link."""
+
+    def __init__(
+        self,
+        *,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> None:
+        self._shares = shares
+        self._uow = uow
+        self._clock = clock
+
+    async def handle(
+        self,
+        *,
+        request: PublicGuestShareRevokeRequest,
+    ) -> PublicGuestShareRevokeResult:
+        token = extract_share_public_token(request.public_path)
+        if token is None:
+            raise validation_error(
+                "Invalid public share path.",
+                details={"reason_code": "public_helper_invalid_share_path"},
+            )
+
+        token_hash = hash_share_token(token)
+        revoke_secret_hash = hash_share_revoke_secret(request.revoke_secret)
+        now = self._clock.now()
+        async with self._uow:
+            active = await self._shares.find_active_public_guest_by_token_and_secret(
+                token_hash=token_hash,
+                revoke_secret_hash=revoke_secret_hash,
+                now=now,
+            )
+            if active is None:
+                raise not_found("PublicGuestShare", request.public_path)
+            revoked = await self._shares.revoke_public_guest_by_token_and_secret(
+                token_hash=token_hash,
+                revoke_secret_hash=revoke_secret_hash,
+                revoked_at=now,
+            )
+        if revoked is None:
+            raise not_found("PublicGuestShare", request.public_path)
+        return PublicGuestShareRevokeResult(
+            artifact=revoked,
+            public_path=revoked.public_path or request.public_path,
+        )
 
 
 async def _create_public_guest_share(

@@ -19,10 +19,13 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from skriptoteket.application.curated_apps.classroom_planner import (
     CreatePublicGuestGroupingShareHandler,
     CreatePublicGuestSeatingShareHandler,
+    RevokePublicGuestShareHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.public_share_contracts import (
     PublicGuestShareRequest,
     PublicGuestShareResult,
+    PublicGuestShareRevokeRequest,
+    PublicGuestShareRevokeResult,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
@@ -44,6 +47,7 @@ from skriptoteket.web.spa_metadata import absolute_public_url
 
 GROUPING_SHARE_HELPER_NAME = "grouping_share"
 SEATING_SHARE_HELPER_NAME = "seating_share"
+SHARE_REVOKE_HELPER_NAME = "share_revoke"
 
 router = APIRouter(
     prefix=f"/api/v1/public/apps/{APP_ID}",
@@ -64,12 +68,51 @@ class CreatedPublicGuestShareDto(BaseModel):
     reused_client_operation: bool
 
 
+class RevokedPublicGuestShareDto(BaseModel):
+    """Serialize a revoked browser-owned public guest share link."""
+
+    model_config = ConfigDict(frozen=True)
+
+    artifact: ClassroomPlannerShareArtifactDto
+    public_path: str
+    public_url: str
+
+
+PUBLIC_SHARE_REVOKE_REQUEST_BODY_OPENAPI = {
+    "required": True,
+    "content": {
+        "application/json": {
+            "schema": PublicGuestShareRevokeRequest.model_json_schema(),
+        },
+    },
+}
+
+
 def _parse_public_share_request(*, body: bytes, helper_name: str) -> PublicGuestShareRequest:
     try:
         return PublicGuestShareRequest.model_validate_json(body)
     except ValidationError as exc:
         raise validation_error(
             "Invalid public share payload.",
+            details={
+                "app_id": APP_ID,
+                "helper_name": helper_name,
+                "reason_code": "public_helper_invalid_payload",
+                "validation_error_count": len(exc.errors()),
+            },
+        ) from exc
+
+
+def _parse_public_revoke_request(
+    *,
+    body: bytes,
+    helper_name: str,
+) -> PublicGuestShareRevokeRequest:
+    try:
+        return PublicGuestShareRevokeRequest.model_validate_json(body)
+    except ValidationError as exc:
+        raise validation_error(
+            "Invalid public share revoke payload.",
             details={
                 "app_id": APP_ID,
                 "helper_name": helper_name,
@@ -98,6 +141,25 @@ def _serialize_public_share_result(
         public_revoke_secret=result.public_revoke_secret,
         superseded_previous=result.superseded_previous,
         reused_client_operation=result.reused_client_operation,
+    )
+
+
+def _serialize_public_revoke_result(
+    result: PublicGuestShareRevokeResult,
+    *,
+    public_app_base_url: str,
+) -> RevokedPublicGuestShareDto:
+    public_url = absolute_public_url(
+        public_base_url=public_app_base_url,
+        path=result.public_path,
+    )
+    return RevokedPublicGuestShareDto(
+        artifact=serialize_share_artifact(
+            result.artifact,
+            public_app_base_url=public_app_base_url,
+        ),
+        public_path=result.public_path,
+        public_url=public_url,
     )
 
 
@@ -176,6 +238,77 @@ async def _create_public_share(
     )
 
 
+async def _revoke_public_share(
+    *,
+    request: Request,
+    registry: CuratedAppRegistryProtocol,
+    settings: Settings,
+    clock: ClockProtocol,
+    throttle: PublicHelperThrottleProtocol,
+    handler: RevokePublicGuestShareHandler,
+) -> RevokedPublicGuestShareDto:
+    client_ip, _user_agent, correlation_id = enforce_public_helper_rate_limit(
+        request=request,
+        helper_name=SHARE_REVOKE_HELPER_NAME,
+        max_requests=settings.PUBLIC_HELPER_SHARE_MAX_REQUESTS,
+        window_seconds=settings.PUBLIC_HELPER_SHARE_WINDOW_SECONDS,
+        registry=registry,
+        settings=settings,
+        clock=clock,
+        throttle=throttle,
+    )
+    body = await read_capped_json_body(
+        request=request,
+        max_bytes=settings.PUBLIC_HELPER_SHARE_MAX_REQUEST_BYTES,
+        helper_name=SHARE_REVOKE_HELPER_NAME,
+    )
+    payload = _parse_public_revoke_request(body=body, helper_name=SHARE_REVOKE_HELPER_NAME)
+
+    logger.info(
+        "public_helper_request_started",
+        app_id=APP_ID,
+        helper_name=SHARE_REVOKE_HELPER_NAME,
+        payload_bytes=len(body),
+        correlation_id=correlation_id,
+        client_ip=client_ip,
+    )
+    try:
+        async with asyncio.timeout(settings.PUBLIC_HELPER_SHARE_TIMEOUT_SECONDS):
+            result = await handler.handle(request=payload)
+    except TimeoutError as exc:
+        logger.warning(
+            "public_helper_request_timed_out",
+            app_id=APP_ID,
+            helper_name=SHARE_REVOKE_HELPER_NAME,
+            reason_code="public_helper_time_budget_exceeded",
+            time_budget_seconds=settings.PUBLIC_HELPER_SHARE_TIMEOUT_SECONDS,
+            correlation_id=correlation_id,
+            client_ip=client_ip,
+        )
+        raise DomainError(
+            code=ErrorCode.SERVICE_UNAVAILABLE,
+            message="Public helper time budget exceeded.",
+            details={
+                "app_id": APP_ID,
+                "helper_name": SHARE_REVOKE_HELPER_NAME,
+                "reason_code": "public_helper_time_budget_exceeded",
+                "time_budget_seconds": settings.PUBLIC_HELPER_SHARE_TIMEOUT_SECONDS,
+            },
+        ) from exc
+    logger.info(
+        "public_helper_request_completed",
+        app_id=APP_ID,
+        helper_name=SHARE_REVOKE_HELPER_NAME,
+        payload_bytes=len(body),
+        correlation_id=correlation_id,
+        client_ip=client_ip,
+    )
+    return _serialize_public_revoke_result(
+        result,
+        public_app_base_url=settings.PUBLIC_APP_BASE_URL,
+    )
+
+
 @router.post("/grouping/share", response_model=CreatedPublicGuestShareDto)
 async def create_public_guest_grouping_share(
     request: Request,
@@ -208,6 +341,29 @@ async def create_public_guest_seating_share(
     return await _create_public_share(
         request=request,
         helper_name=SEATING_SHARE_HELPER_NAME,
+        registry=registry,
+        settings=settings,
+        clock=clock,
+        throttle=throttle,
+        handler=handler,
+    )
+
+
+@router.post(
+    "/share/revoke",
+    response_model=RevokedPublicGuestShareDto,
+    openapi_extra={"requestBody": PUBLIC_SHARE_REVOKE_REQUEST_BODY_OPENAPI},
+)
+async def revoke_public_guest_share(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    clock: FromDishka[ClockProtocol],
+    throttle: FromDishka[PublicHelperThrottleProtocol],
+    handler: FromDishka[RevokePublicGuestShareHandler],
+) -> RevokedPublicGuestShareDto:
+    return await _revoke_public_share(
+        request=request,
         registry=registry,
         settings=settings,
         clock=clock,

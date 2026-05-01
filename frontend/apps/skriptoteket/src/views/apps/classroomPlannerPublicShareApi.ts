@@ -19,6 +19,11 @@ type PublicGuestShareRequest = {
   previous_revoke_secret: string | null;
 };
 
+type PublicGuestShareRevokeRequest = {
+  public_path: string;
+  revoke_secret: string;
+};
+
 export type CreatedPublicGuestShare = {
   artifact: ClassroomPlannerShareArtifact;
   public_path: string;
@@ -26,6 +31,12 @@ export type CreatedPublicGuestShare = {
   public_revoke_secret: string;
   superseded_previous: boolean;
   reused_client_operation: boolean;
+};
+
+export type RevokedPublicGuestShare = {
+  artifact: ClassroomPlannerShareArtifact;
+  public_path: string;
+  public_url: string;
 };
 
 export async function createPublicGroupingShare(params: {
@@ -53,6 +64,19 @@ export async function createPublicSeatingShare(params: {
   return await publicApiPost<CreatedPublicGuestShare>(
     "/api/v1/public/apps/classroom.group-seating-studio/seating/share",
     buildPublicGuestShareRequest(params),
+  );
+}
+
+export async function revokePublicGuestShare(params: {
+  publicPath: string;
+  revokeSecret: string;
+}): Promise<RevokedPublicGuestShare> {
+  return await publicApiPost<RevokedPublicGuestShare>(
+    "/api/v1/public/apps/classroom.group-seating-studio/share/revoke",
+    {
+      public_path: params.publicPath,
+      revoke_secret: params.revokeSecret,
+    } satisfies PublicGuestShareRevokeRequest,
   );
 }
 

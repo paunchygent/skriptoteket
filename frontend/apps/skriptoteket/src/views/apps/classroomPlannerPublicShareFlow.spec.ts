@@ -156,11 +156,14 @@ describe("createClassroomPlannerPublicShareFlow", () => {
       getSnapshot: vi.fn(async () => snapshot),
       draftKind: "grouping",
       createShare,
+      revokeShare: vi.fn(),
       messages: {
         missingDraftMessage: "missing",
         initialStatusLabel: "sharing",
         copiedMessage: "copied",
+        revokedMessage: "revoked",
         fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
       },
     });
 
@@ -196,11 +199,14 @@ describe("createClassroomPlannerPublicShareFlow", () => {
       getSnapshot: vi.fn(async () => createSnapshot("sha256:first")),
       draftKind: "grouping",
       createShare,
+      revokeShare: vi.fn(),
       messages: {
         missingDraftMessage: "missing",
         initialStatusLabel: "sharing",
         copiedMessage: "copied",
+        revokedMessage: "revoked",
         fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
       },
     });
 
@@ -212,5 +218,117 @@ describe("createClassroomPlannerPublicShareFlow", () => {
     expect(secondCall?.clientOperationId).toBe(firstCall?.clientOperationId);
     expect(secondCall?.revokeSecret).toBe(firstCall?.revokeSecret);
     expect(Object.keys(localStorage).some((key) => key.includes(":pending:"))).toBe(false);
+  });
+
+  it("shows a created share and revokes it with browser-held metadata", async () => {
+    const createShare = vi
+      .fn()
+      .mockResolvedValue(createdShare("/share/classroom/current/klass-7a", "current-secret"));
+    const revokeShare = vi.fn().mockResolvedValue({
+      artifact: {
+        ...createdShare("/share/classroom/current/klass-7a", "current-secret").artifact,
+        revoked_at: "2026-04-30T11:00:00Z",
+      },
+      public_path: "/share/classroom/current/klass-7a",
+      public_url: "https://skriptoteket.hule.education/share/classroom/current/klass-7a",
+    });
+    const flow = createClassroomPlannerPublicShareFlow({
+      plannerState: {
+        draft: createDraft(),
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      },
+      getSnapshot: vi.fn(async () => createSnapshot("sha256:first")),
+      draftKind: "grouping",
+      createShare,
+      revokeShare,
+      messages: {
+        missingDraftMessage: "missing",
+        initialStatusLabel: "sharing",
+        copiedMessage: "copied",
+        revokedMessage: "revoked",
+        fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
+      },
+    });
+
+    await flow.startShare();
+    expect(flow.shares.value).toHaveLength(1);
+    const currentShare = flow.shares.value[0];
+    expect(currentShare).toBeDefined();
+
+    await flow.revokePublicShare(currentShare!);
+
+    expect(revokeShare).toHaveBeenCalledWith({
+      publicPath: "/share/classroom/current/klass-7a",
+      revokeSecret: "current-secret",
+    });
+    expect(flow.shares.value).toEqual([]);
+    expect(toastMocks.success).toHaveBeenLastCalledWith("revoked");
+  });
+
+  it("hydrates and revokes the browser-owned share after a reload", async () => {
+    const createShare = vi
+      .fn()
+      .mockResolvedValue(createdShare("/share/classroom/current/klass-7a", "current-secret"));
+    const snapshot = createSnapshot("sha256:first");
+    const firstFlow = createClassroomPlannerPublicShareFlow({
+      plannerState: {
+        draft: createDraft(),
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      },
+      getSnapshot: vi.fn(async () => snapshot),
+      draftKind: "grouping",
+      createShare,
+      revokeShare: vi.fn(),
+      messages: {
+        missingDraftMessage: "missing",
+        initialStatusLabel: "sharing",
+        copiedMessage: "copied",
+        revokedMessage: "revoked",
+        fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
+      },
+    });
+    await firstFlow.startShare();
+
+    const revokeShare = vi.fn().mockResolvedValue({
+      artifact: {
+        ...createdShare("/share/classroom/current/klass-7a", "current-secret").artifact,
+        revoked_at: "2026-04-30T11:00:00Z",
+      },
+      public_path: "/share/classroom/current/klass-7a",
+      public_url: "https://skriptoteket.hule.education/share/classroom/current/klass-7a",
+    });
+    const reloadedFlow = createClassroomPlannerPublicShareFlow({
+      plannerState: {
+        draft: createDraft(),
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      },
+      getSnapshot: vi.fn(async () => snapshot),
+      draftKind: "grouping",
+      createShare: vi.fn(),
+      revokeShare,
+      messages: {
+        missingDraftMessage: "missing",
+        initialStatusLabel: "sharing",
+        copiedMessage: "copied",
+        revokedMessage: "revoked",
+        fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
+      },
+    });
+
+    await vi.waitFor(() => {
+      expect(reloadedFlow.shares.value).toHaveLength(1);
+    });
+
+    await reloadedFlow.revokePublicShare(reloadedFlow.shares.value[0]!);
+
+    expect(revokeShare).toHaveBeenCalledWith({
+      publicPath: "/share/classroom/current/klass-7a",
+      revokeSecret: "current-secret",
+    });
+    expect(reloadedFlow.shares.value).toEqual([]);
+    expect(Object.keys(localStorage).some((key) => key.includes("public-share"))).toBe(false);
   });
 });

@@ -57,6 +57,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     RedoDraftHandler,
     ResolveDraftHandler,
     RevokeClassroomPlannerShareArtifactHandler,
+    RevokePublicGuestShareHandler,
     RunPublicGroupingExportHandler,
     RunPublicSeatingExportHandler,
     RunPublicSmartGroupingHandler,
@@ -1035,6 +1036,19 @@ class CuratedAppsProvider(Provider):
         clock: ClockProtocol,
     ) -> PurgeExpiredPublicGuestShareArtifactsHandler:
         return PurgeExpiredPublicGuestShareArtifactsHandler(
+            shares=shares,
+            uow=uow,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def revoke_public_guest_share_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> RevokePublicGuestShareHandler:
+        return RevokePublicGuestShareHandler(
             shares=shares,
             uow=uow,
             clock=clock,
