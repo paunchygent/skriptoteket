@@ -2,7 +2,7 @@
 type: pr
 id: PR-0276
 title: "ST-26-06 spatial share-page renderer and grouping polish"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-04-30
 updated: 2026-05-01
@@ -69,9 +69,13 @@ but improve their responsive and print presentation.
   label `Bänk`; assert the generated markup/CSS supports absolute bench-body
   geometry and an absolute centered label overlay rather than flex sibling
   layout.
+- Renderer-level regression tests for wall fixtures: a top whiteboard must sit
+  above the floor band with wall-band thickness, and `placement=WALL` without
+  `wall_side` must fail closed instead of falling back to floor-tile geometry.
 - Browser screenshots at desktop and phone widths for visual inspection against
   the approved mockup, with the rendered artifact asserting no `<script>` tags
-  and the fixture set including the labeled merged bench.
+  and the fixture set including the labeled merged bench plus a top wall
+  whiteboard with `wall_side=TOP`.
 - `pdm run typecheck`
 - Focused backend renderer/share route tests.
 - `pdm run docs-validate`
@@ -83,16 +87,21 @@ but improve their responsive and print presentation.
 
 - `REV-PR-0276` reopened this slice after review found the data/model path was
   correct but the static renderer was wrong for labeled merged benches.
-- Fix ownership is `share_scene_renderer.py`: make `.room-bench-body`
-  absolute/inset inside `.room-fixture--bench` and render the fixture label as
-  an absolute centered overlay for bench fixtures.
-- Test ownership is
+- Fix applied in `share_scene_renderer.py`: `.room-fixture--bench` is now a
+  positioned block fixture, `.room-bench-body` is absolute/inset, and the
+  fixture label is an absolute centered overlay for bench fixtures.
+- Test added in
   `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`:
-  add a seating renderer case with a normalized merged bench fixture labeled
-  `Bänk`.
-- Visual proof ownership remains `.artifacts/pr-0276-spatial-share-renderer/`:
-  refresh desktop and mobile seating screenshots with the merged labeled bench
-  visible before this slice can be reclosed.
+  a seating renderer case with a normalized merged bench fixture labeled
+  `Bänk` asserts the overlay CSS and merged fixture markup.
+- Visual proof refreshed under `.artifacts/pr-0276-spatial-share-renderer/`:
+  `sample-share.html`, `desktop.png`, and `mobile.png` include the merged
+  labeled bench; the proof asserted no scripts, no horizontal document
+  overflow, centered label geometry, and a body spanning the merged bench.
+- Second renderer defect fixed in `_fixture_frame()`: `placement=WALL` without
+  `wall_side` now raises instead of rendering with floor geometry. The refreshed
+  `sample-share.html` uses `wall_side=TOP` and proves the whiteboard top is
+  above the floor top with wall-band height.
 
 - Added a dedicated static seating share-scene renderer helper:
   `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py`.
@@ -119,6 +128,12 @@ but improve their responsive and print presentation.
 ## Verification
 
 - `pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`
+- `PYTHONPATH=src pdm run python - <<'PY' ...` one-off PR-0276 visual proof:
+  regenerated `.artifacts/pr-0276-spatial-share-renderer/sample-share.html`,
+  `desktop.png`, and `mobile.png` with a merged labeled bench; asserted no
+  `<script>`, no horizontal document overflow, centered label geometry, visible
+  mobile label, bench body span, and top whiteboard geometry above the floor
+  band with wall-band height.
 - `pdm run lint`
 - `pdm run typecheck`
 - `pdm run docs-validate`

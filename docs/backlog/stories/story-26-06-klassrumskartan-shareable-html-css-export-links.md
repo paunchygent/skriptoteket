@@ -2,7 +2,7 @@
 type: story
 id: ST-26-06
 title: "Klassrumskartan shareable HTML/CSS export links"
-status: in_progress
+status: ready
 owners: "agents"
 created: 2026-04-30
 updated: 2026-05-01
@@ -95,15 +95,20 @@ sharing.
   - `ST-26-07` / `PR-0277` for turning the 2026-05-01 production Teams
     diagnostic into supported renderer-derived `og:image` thumbnails and full
     link-preview metadata for all active grouping and seating share links.
-- Reopened remediation:
+- Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but
     `share_scene_renderer.py` lays the bench bar and `Bänk` label out as flex
     siblings, so the label is pushed to the right instead of centered over the
     full merged span.
-  - Remediation stays inside `PR-0276` because that slice owns the static
-    share-page HTML/CSS renderer and its desktop/mobile visual proof.
-  - `ST-26-07` / `PR-0277` remains blocked until `PR-0276` has a refreshed
-    labeled merged-bench renderer test and desktop/mobile visual artifacts.
+  - Remediation stayed inside `PR-0276` because that slice owns the static
+    share-page HTML/CSS renderer and its desktop/mobile visual proof. The fix
+    now positions the bench body and label as absolute overlay elements, adds a
+    renderer test for a normalized merged `Bänk` fixture, and refreshes
+    desktop/mobile visual artifacts with that fixture visible.
+  - A second `PR-0276` renderer defect found that `placement=WALL` fixtures
+    without `wall_side` silently rendered as floor tiles. The renderer now
+    fails closed for invalid wall fixtures, tests a valid top whiteboard above
+    the floor band, and refreshes visual proof with `wall_side=TOP`.
 - Approved share UI and share-page visual direction lives in
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/`.

@@ -133,14 +133,27 @@ SEATING_SHARE_CSS = """
 }
 .room-fixture--bench {
   background: transparent;
+  display: block;
+  position: absolute;
 }
 .room-fixture--bench .room-bench-body {
   background: rgba(28, 46, 74, 0.12);
   border: 1px solid rgba(28, 46, 74, 0.25);
   border-radius: 4px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-  height: 34%;
-  inline-size: calc(100% - 0.75rem);
+  bottom: 33%;
+  left: 0.375rem;
+  position: absolute;
+  right: 0.375rem;
+  top: 33%;
+}
+.room-fixture--bench .room-fixture__label {
+  left: 50%;
+  max-inline-size: calc(100% - 0.75rem);
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 .room-fixture--table {
   background: rgba(28, 46, 74, 0.04);
@@ -210,7 +223,8 @@ SEATING_SHARE_CSS = """
     display: none;
   }
   .room-fixture--bench .room-bench-body {
-    height: 24%;
+    bottom: 38%;
+    top: 38%;
   }
 }
 @media print {
@@ -320,13 +334,16 @@ def _fixture_frame(
 ) -> tuple[int, int, int, int]:
     """Convert grid coordinates into the share-page pixel coordinate system."""
 
-    if fixture.placement is PosterSceneFixturePlacement.FLOOR or fixture.wall_side is None:
+    if fixture.placement is PosterSceneFixturePlacement.FLOOR:
         return (
             ROOM_WALL_BAND_PX + (fixture.x * ROOM_GRID_UNIT_PX),
             ROOM_WALL_BAND_PX + (fixture.y * ROOM_GRID_UNIT_PX),
             fixture.width * ROOM_GRID_UNIT_PX,
             fixture.height * ROOM_GRID_UNIT_PX,
         )
+
+    if fixture.wall_side is None:
+        raise ValueError(f"Wall fixture is missing wall_side: {fixture.fixture_id}")
 
     if fixture.wall_side is PosterSceneWallSide.TOP:
         return (

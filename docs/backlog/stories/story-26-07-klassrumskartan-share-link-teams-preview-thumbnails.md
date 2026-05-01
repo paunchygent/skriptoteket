@@ -60,5 +60,5 @@ Klassrumskartan share links. Retained review gate: `REV-ST-26-07`.
   state, owner-scoped APIs, or a logged-in user.
 - Existing active links matter: the implementation slice must choose and prove
   either a bounded backfill path or lazy generation for active unrevoked shares.
-- This package is blocked pending `REV-ST-26-07` re-review approval. The first
-  implementation slice is `PR-0277`.
+- This package is blocked pending independent `REV-ST-26-07` approval after the
+  remediation self-check. The first implementation slice is `PR-0277`.

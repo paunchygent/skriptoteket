@@ -21,10 +21,11 @@ links:
 ## TL;DR
 
 `ST-26-07` and `PR-0277` are the right follow-up to the successful SA24D/G20
-Teams diagnostic, but the package is blocked pending re-review. The retained
-findings require an explicit review gate, exact preview-asset persistence and
-lifecycle semantics, a production-ready headless rendering runtime contract,
-Teams cache-aware proof, and a strict JSON-LD allowlist.
+Teams diagnostic. Re-review confirms that the five retained findings are
+substantively remediated, but the formal status stays `changes_requested`
+because the same agent authored the remediation and cannot grant the retained
+approval. An independent reviewer can approve this review record and move the
+story/task to `ready` if they agree with the re-review closure below.
 
 ## Problem Statement
 
@@ -59,20 +60,20 @@ as the HTML/CSS share page.
 |----------|-----------|----------|
 | Keep the opened share URL as HTML/CSS | Preserves `ST-26-06`; the image is only for link unfurling | [x] |
 | Require renderer-derived preview images for seating and grouping | The production diagnostic proved Teams uses the preview image reliably | [x] |
-| Store preview assets in a first-class share-preview table | Avoids inventing persistence semantics inside implementation | [ ] |
-| Use a bounded Playwright-backed adapter behind a protocol | Needed because thumbnail generation depends on browser screenshot runtime | [ ] |
-| Use versioned image URLs and never-posted URLs for proof | Teams link unfurl results are cached for 30 minutes | [ ] |
-| Allow only conservative `CreativeWork` JSON-LD fields | Prevents machine-readable roster, placement, or grouping leakage | [ ] |
+| Store preview assets in a first-class share-preview table | Avoids inventing persistence semantics inside implementation | [x] |
+| Use a bounded Playwright-backed adapter behind a protocol | Needed because thumbnail generation depends on browser screenshot runtime | [x] |
+| Use versioned image URLs and never-posted URLs for proof | Teams link unfurl results are cached for 30 minutes | [x] |
+| Allow only conservative `CreativeWork` JSON-LD fields | Prevents machine-readable roster, placement, or grouping leakage | [x] |
 
 ## Review Checklist
 
 - [x] Story is linked to the correct epic
 - [x] Opened URL remains the real HTML/CSS share artifact
-- [ ] Story/task readiness matches review status
-- [ ] Preview asset persistence and lifecycle are exact
-- [ ] Headless renderer runtime is production-defined
-- [ ] Teams cache behavior is reflected in proof obligations
-- [ ] JSON-LD allowed fields and exclusions are explicit
+- [x] Story/task readiness matches review status
+- [x] Preview asset persistence and lifecycle are exact
+- [x] Headless renderer runtime is production-defined
+- [x] Teams cache behavior is reflected in proof obligations
+- [x] JSON-LD allowed fields and exclusions are explicit
 
 ## Review Feedback
 
@@ -155,10 +156,40 @@ as the HTML/CSS share page.
 
 - [x] Keep the opened share URL as HTML/CSS
 - [x] Require renderer-derived preview images for seating and grouping
-- [ ] Store preview assets in a first-class share-preview table
-- [ ] Use a bounded Playwright-backed adapter behind a protocol
-- [ ] Use versioned image URLs and never-posted URLs for proof
-- [ ] Allow only conservative `CreativeWork` JSON-LD fields
+- [x] Store preview assets in a first-class share-preview table
+- [x] Use a bounded Playwright-backed adapter behind a protocol
+- [x] Use versioned image URLs and never-posted URLs for proof
+- [x] Allow only conservative `CreativeWork` JSON-LD fields
+
+### Re-review Closure
+
+**Reviewer:** `codex-self-check`
+**Date:** `2026-05-01`
+**Verdict:** `changes_requested for independent approval only`
+
+No substantive findings remain after the remediation:
+
+- Finding 1 is closed by the target-based `REV-ST-26-07` record and by keeping
+  `ST-26-07` / `PR-0277` blocked instead of ready.
+- Finding 2 is closed by `PR-0277`'s explicit
+  `classroom_planner_share_preview_assets` table, content/source hash fields,
+  renderer-version tie-in, backfill behavior, route identity, and cascade
+  lifecycle.
+- Finding 3 is closed by the named
+  `ClassroomPlannerSharePreviewRendererProtocol`, Playwright-backed adapter,
+  1200x630 viewport, hard timeout, bounded concurrency, deterministic failure
+  semantics, BuildKit dependency-image obligations, and production-like smoke
+  proof.
+- Finding 4 is closed by versioned/hash-based preview URLs, a never-posted
+  Teams proof URL requirement, and explicit wording that already-posted Teams
+  cards may stay cached after backfill or regeneration.
+- Finding 5 is closed by the exact `CreativeWork` JSON-LD allowlist, explicit
+  exclusions for student/member/placement/group relationships, and hostile
+  metadata assertions.
+
+The remaining blocker is review independence: because the same agent applied
+the remediation, a separate reviewer should update this record to `approved`
+and move `ST-26-07` / `PR-0277` to `ready` if they agree with this closure.
 
 ## Changes Made
 
@@ -167,3 +198,4 @@ as the HTML/CSS share page.
 | 1 | `ST-26-07` | Status changed to `blocked`, review pointer added, and runtime/persistence notes tightened. |
 | 2 | `PR-0277` | Status changed to `blocked`; exact preview table, route, renderer protocol, runtime limits, Docker proof, backfill command, Teams cache proof, and JSON-LD allowlist added. |
 | 3 | `docs/index.md` | Review record added to the docs doorway. |
+| 4 | `REV-ST-26-07` | Re-reviewed remediation, closed the five substantive findings, and retained `changes_requested` only for independent approval. |
