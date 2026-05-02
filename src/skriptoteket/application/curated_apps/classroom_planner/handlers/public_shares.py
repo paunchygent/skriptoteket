@@ -306,9 +306,11 @@ async def _create_public_guest_share(
             expires_at=now + timedelta(days=policy.ttl_days),
         )
     )
+    preview_asset = await create_artifact.build_preview_asset(artifact=prepared.artifact)
     async with uow:
         persisted = await shares.create_or_reuse_public_guest_share(
             artifact=prepared.artifact,
+            preview_asset=preview_asset,
             previous_token_hash=previous_token_hash,
             previous_revoke_secret_hash=previous_revoke_secret_hash,
             now=now,

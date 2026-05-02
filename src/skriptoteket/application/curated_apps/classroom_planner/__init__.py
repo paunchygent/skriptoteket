@@ -74,10 +74,13 @@ from .handlers.seating_history import (
     DeleteHistoricSeatingDraftHandler,
 )
 from .handlers.share_artifacts import (
+    BackfillClassroomPlannerSharePreviewsHandler,
     ClassroomPlannerShareLifecycleService,
+    ClassroomPlannerSharePreviewBackfillResult,
     CreateClassroomPlannerShareArtifactCommand,
     CreateClassroomPlannerShareArtifactHandler,
     GetClassroomPlannerShareArtifactByTokenHandler,
+    GetClassroomPlannerSharePreviewAssetHandler,
     ListClassroomPlannerShareArtifactsHandler,
     RevokeClassroomPlannerShareArtifactHandler,
 )
@@ -99,6 +102,7 @@ from .shares import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactCreateResult,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
     RenderedClassroomPlannerShare,
 )
 
@@ -106,6 +110,7 @@ __all__ = [
     "AbandonDraftHandler",
     "ActivateGroupingHistoryDraftHandler",
     "ActivateSeatingHistoryDraftHandler",
+    "BackfillClassroomPlannerSharePreviewsHandler",
     "CreateRoomTemplateHandler",
     "CreateRosterHandler",
     "CreateGroupingDraftHandler",
@@ -117,6 +122,8 @@ __all__ = [
     "ClassroomPlannerShareArtifactCreateResult",
     "ClassroomPlannerShareArtifactSource",
     "ClassroomPlannerShareLifecycleService",
+    "ClassroomPlannerSharePreviewAsset",
+    "ClassroomPlannerSharePreviewBackfillResult",
     "CreateAuthenticatedGroupingShareHandler",
     "CreateAuthenticatedSeatingShareHandler",
     "CreateClassroomPlannerShareArtifactCommand",
@@ -125,6 +132,7 @@ __all__ = [
     "CreatePublicGuestSeatingShareHandler",
     "GetClassroomPlannerGuestUpgradeConsumptionHandler",
     "GetClassroomPlannerShareArtifactByTokenHandler",
+    "GetClassroomPlannerSharePreviewAssetHandler",
     "DeleteHistoricGroupingDraftHandler",
     "DeleteHistoricSeatingDraftHandler",
     "DeleteRoomTemplateHandler",

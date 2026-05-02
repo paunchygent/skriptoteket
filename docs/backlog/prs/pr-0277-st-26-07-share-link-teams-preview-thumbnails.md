@@ -2,10 +2,10 @@
 type: pr
 id: PR-0277
 title: "ST-26-07 share-link Teams preview thumbnails"
-status: blocked
+status: in_progress
 owners: "agents"
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-02
 stories:
   - "ST-26-07"
 tags: ["backend", "renderer", "klassrumskartan", "sharing", "social-preview"]
@@ -154,6 +154,53 @@ public-by-token HTML/CSS share artifact contract.
 - Focused backend tests for the touched share renderer/routes.
 - `pdm run docs-validate`
 - `git diff --check`
+
+## Implementation State (2026-05-02)
+
+Implemented locally, pending retained post-implementation review and fresh Teams
+unfurl proof before this PR is marked `done`.
+
+- Added the PostgreSQL-backed `classroom_planner_share_preview_assets` table
+  with preview/source hashes, renderer provenance, dimensions, PNG bytes, and
+  share-artifact cascade linkage.
+- Added `ClassroomPlannerSharePreviewRendererProtocol`, a bounded
+  Playwright-backed infrastructure adapter, DI wiring, runtime settings, and
+  `pdm run backfill-classroom-share-previews`.
+- Authenticated and public guest share creation now generate preview assets from
+  finalized rendered share HTML/CSS before persistence; preview failure maps to
+  a controlled service-unavailable error and does not commit share/preview rows.
+- Added `GET /share/classroom/{public_token}/preview.png?v=<hash>` and active
+  lifecycle checks so missing, revoked, expired, stale, or purged shares do not
+  leak retained preview bytes.
+- Share pages now emit escaped OG/Twitter metadata and the strict
+  `CreativeWork` JSON-LD allowlist only when a fresh preview asset exists.
+- Visual proof artifacts were generated at
+  `.artifacts/pr-0277-share-previews/grouping-preview.png` and
+  `.artifacts/pr-0277-share-previews/seating-preview.png`; both are 1200x630 and
+  render the complete grouping/seating artifacts.
+
+Verification run:
+
+- `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/apps/classroom_planner/test_share_pages.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`
+- `pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py`
+- `pdm run pytest -q tests/integration/database/test_classroom_planner_migration.py tests/integration/migration_schema_assertions.py --override-ini addopts=''`
+- `pdm run pytest -q tests/unit/web/apps/classroom_planner/test_share_pages.py tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py`
+- `pdm run pytest -q tests/unit/application/apps/classroom_planner/test_authenticated_shares.py tests/unit/web/apps/classroom_planner/test_share_api.py tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/test_public_apps_classroom_planner_shares.py`
+- `pdm run mypy --config-file pyproject.toml src/skriptoteket/application/curated_apps/classroom_planner src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner src/skriptoteket/infrastructure/repositories/classroom_planner_share_artifacts.py src/skriptoteket/web/routes/classroom_planner_share_pages.py src/skriptoteket/protocols/classroom_planner_shares.py`
+- `pdm run alembic heads`
+- `pdm run backfill-classroom-share-previews --help`
+- `pdm run lint`
+- `pdm run typecheck`
+- `pdm run docs-validate`
+- `git diff --check`
+- `docker buildx build --progress=plain --target production --load -t skriptoteket-pr0277-preview-smoke .`
+- `docker run --rm --env PYTHONPATH=src skriptoteket-pr0277-preview-smoke pdm run python -c "<Playwright preview renderer smoke>"`
+  - Output: `container-playwright-smoke: ok size=1200x630 bytes=13329`
+
+Outstanding proof:
+
+- Manual Microsoft Teams proof still requires a never-before-posted production
+  or production-like share URL after deployment/backfill.
 
 ## Rollback plan
 

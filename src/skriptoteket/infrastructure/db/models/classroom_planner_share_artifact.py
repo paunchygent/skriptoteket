@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -86,3 +86,29 @@ class ClassroomPlannerShareArtifactModel(Base):
     )
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ClassroomPlannerSharePreviewAssetModel(Base):
+    """Persist one generated PNG thumbnail for one public share artifact."""
+
+    __tablename__ = "classroom_planner_share_preview_assets"
+    __table_args__ = (
+        Index("ix_cp_share_preview_assets_source_hash", "source_content_hash"),
+        Index("ix_cp_share_preview_assets_preview_hash", "preview_content_hash"),
+    )
+
+    share_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("classroom_planner_share_artifacts.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    content_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    width: Mapped[int] = mapped_column(Integer, nullable=False)
+    height: Mapped[int] = mapped_column(Integer, nullable=False)
+    image_bytes: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    preview_content_hash: Mapped[str] = mapped_column(String(96), nullable=False)
+    source_content_hash: Mapped[str] = mapped_column(String(96), nullable=False)
+    presentation_hash: Mapped[str] = mapped_column(String(96), nullable=False)
+    renderer_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

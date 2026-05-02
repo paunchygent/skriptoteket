@@ -21,6 +21,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -42,6 +43,9 @@ SHARE_CREATED_DATE_CHROME_SLOT = (
 SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT = (
     f'href="{SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER}" data-skriptoteket-share-pdf-download="owned"'
 )
+SHARE_PREVIEW_CONTENT_TYPE: Literal["image/png"] = "image/png"
+SHARE_PREVIEW_WIDTH = 1200
+SHARE_PREVIEW_HEIGHT = 630
 
 
 class ClassroomPlannerShareArtifactSource(StrEnum):
@@ -110,11 +114,30 @@ class ClassroomPlannerShareArtifactCreateResult(BaseModel):
         )
 
 
+class ClassroomPlannerSharePreviewAsset(BaseModel):
+    """Represent one generated social-preview thumbnail for a share artifact."""
+
+    model_config = ConfigDict(frozen=True)
+
+    share_id: UUID
+    content_type: Literal["image/png"] = SHARE_PREVIEW_CONTENT_TYPE
+    width: int = Field(default=SHARE_PREVIEW_WIDTH, ge=1)
+    height: int = Field(default=SHARE_PREVIEW_HEIGHT, ge=1)
+    image_bytes: bytes
+    preview_content_hash: str
+    source_content_hash: str
+    presentation_hash: str
+    renderer_version: str
+    generated_at: datetime
+    updated_at: datetime
+
+
 @dataclass(frozen=True, slots=True)
 class PublicGuestSharePersistenceResult:
     """Describe one atomic public guest share persistence outcome."""
 
     artifact: ClassroomPlannerShareArtifact | None
+    preview_asset: ClassroomPlannerSharePreviewAsset | None = None
     superseded_previous: bool = False
     reused_client_operation: bool = False
     active_limit_exceeded: bool = False
@@ -201,6 +224,18 @@ def build_share_pdf_download_path(*, public_token: str) -> str:
     """Build the anonymous public PDF download path for one share token."""
 
     return f"/share/classroom/{public_token}/download.pdf"
+
+
+def build_share_preview_image_path(*, public_token: str, preview_content_hash: str) -> str:
+    """Build the anonymous public preview-image path for one share token."""
+
+    return f"/share/classroom/{public_token}/preview.png?v={preview_content_hash}"
+
+
+def build_share_preview_content_hash(image_bytes: bytes) -> str:
+    """Hash generated preview image bytes as an immutable asset fingerprint."""
+
+    return _HASH_PREFIX + hashlib.sha256(image_bytes).hexdigest()
 
 
 def finalize_share_rendered_html(

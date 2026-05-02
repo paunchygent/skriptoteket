@@ -17,11 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.application.curated_apps.classroom_planner import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     JsonObject,
     build_share_content_hash,
     build_share_presentation_hash,
+    build_share_preview_content_hash,
     hash_share_token,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
@@ -35,6 +37,7 @@ from skriptoteket.infrastructure.db.models.classroom_planner_room_template impor
 from skriptoteket.infrastructure.db.models.classroom_planner_roster import RosterModel
 from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact import (
     ClassroomPlannerShareArtifactModel,
+    ClassroomPlannerSharePreviewAssetModel,
 )
 from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.repositories.classroom_planner_share_artifacts import (
@@ -148,6 +151,24 @@ def _artifact(
     )
 
 
+def _preview_asset(
+    *,
+    artifact: ClassroomPlannerShareArtifact,
+    now: datetime,
+    image_bytes: bytes = b"\x89PNG\r\npreview",
+) -> ClassroomPlannerSharePreviewAsset:
+    return ClassroomPlannerSharePreviewAsset(
+        share_id=artifact.id,
+        image_bytes=image_bytes,
+        preview_content_hash=build_share_preview_content_hash(image_bytes),
+        source_content_hash=artifact.content_hash,
+        presentation_hash=artifact.presentation_hash,
+        renderer_version=artifact.renderer_version,
+        generated_at=now,
+        updated_at=now,
+    )
+
+
 @pytest.mark.integration
 async def test_share_artifact_repository_create_lookup_list_and_revoke(
     db_session: AsyncSession,
@@ -195,6 +216,50 @@ async def test_share_artifact_repository_create_lookup_list_and_revoke(
         )
         is None
     )
+
+
+@pytest.mark.integration
+async def test_share_artifact_repository_persists_preview_and_finds_stale_rows(
+    db_session: AsyncSession,
+) -> None:
+    now = datetime(2026, 4, 30, tzinfo=timezone.utc)
+    owner_user_id, roster_id, template_id, draft_id = await _seed_owner_and_draft(
+        db_session=db_session,
+        now=now,
+    )
+    repository = PostgreSQLClassroomPlannerShareArtifactRepository(db_session)
+    artifact = _artifact(
+        owner_user_id=owner_user_id,
+        roster_id=roster_id,
+        template_id=template_id,
+        draft_id=draft_id,
+        now=now,
+    )
+    preview = _preview_asset(artifact=artifact, now=now)
+
+    created = await repository.create_with_preview(artifact=artifact, preview_asset=preview)
+    loaded_preview = await repository.get_preview_by_share_id(share_id=artifact.id)
+    missing_or_stale = await repository.list_active_shares_missing_or_stale_preview(
+        now=now,
+        limit=None,
+    )
+    stale_preview = preview.model_copy(update={"source_content_hash": "sha256:stale"})
+    await repository.upsert_preview_asset(preview_asset=stale_preview)
+    stale_rows = await repository.list_active_shares_missing_or_stale_preview(
+        now=now,
+        limit=10,
+    )
+    await repository.upsert_preview_asset(preview_asset=preview)
+    fresh_rows = await repository.list_active_shares_missing_or_stale_preview(
+        now=now,
+        limit=10,
+    )
+
+    assert created == artifact
+    assert loaded_preview == preview
+    assert missing_or_stale == []
+    assert stale_rows == [artifact]
+    assert fresh_rows == []
 
 
 @pytest.mark.integration
@@ -304,3 +369,37 @@ async def test_share_lifecycle_revokes_and_detaches_source_provenance_before_del
     assert owner_revoked is not None
     assert owner_revoked.owner_user_id is None
     assert owner_revoked.revoked_at == revoked_at
+
+
+@pytest.mark.integration
+async def test_share_preview_assets_cascade_when_share_artifact_is_deleted(
+    db_session: AsyncSession,
+) -> None:
+    now = datetime(2026, 4, 30, tzinfo=timezone.utc)
+    owner_user_id, roster_id, template_id, draft_id = await _seed_owner_and_draft(
+        db_session=db_session,
+        now=now,
+    )
+    repository = PostgreSQLClassroomPlannerShareArtifactRepository(db_session)
+    artifact = _artifact(
+        owner_user_id=owner_user_id,
+        roster_id=roster_id,
+        template_id=template_id,
+        draft_id=draft_id,
+        now=now,
+    )
+    await repository.create_with_preview(
+        artifact=artifact,
+        preview_asset=_preview_asset(artifact=artifact, now=now),
+    )
+    await db_session.flush()
+
+    await db_session.execute(
+        delete(ClassroomPlannerShareArtifactModel).where(
+            ClassroomPlannerShareArtifactModel.id == artifact.id
+        )
+    )
+    await db_session.flush()
+    preview_model = await db_session.get(ClassroomPlannerSharePreviewAssetModel, artifact.id)
+
+    assert preview_model is None

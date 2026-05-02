@@ -2,10 +2,10 @@
 type: story
 id: ST-26-07
 title: "Klassrumskartan share-link Teams preview thumbnails"
-status: blocked
+status: in_progress
 owners: "agents"
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-02
 epic: "EPIC-26"
 dependencies:
   - "ST-26-06"
@@ -60,5 +60,10 @@ Klassrumskartan share links. Retained review gate: `REV-ST-26-07`.
   state, owner-scoped APIs, or a logged-in user.
 - Existing active links matter: the implementation slice must choose and prove
   either a bounded backfill path or lazy generation for active unrevoked shares.
-- This package is blocked pending independent `REV-ST-26-07` approval after the
-  remediation self-check. The first implementation slice is `PR-0277`.
+- `REV-ST-26-07` is approved. The first implementation slice is `PR-0277`.
+- `PR-0277` is implemented locally with PostgreSQL preview assets,
+  Playwright-derived 1200x630 thumbnails, active-only preview routes,
+  OG/Twitter/JSON-LD metadata, and the backfill command. It remains
+  `in_progress` until fresh Teams unfurl proof and retained
+  post-implementation review are recorded. Production-like BuildKit Chromium
+  smoke is recorded in `PR-0277`.

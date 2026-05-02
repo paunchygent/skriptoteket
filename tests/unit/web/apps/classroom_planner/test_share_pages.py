@@ -21,8 +21,11 @@ import pytest
 from skriptoteket.application.curated_apps.classroom_planner import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
     GetClassroomPlannerShareArtifactByTokenHandler,
+    GetClassroomPlannerSharePreviewAssetHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner_shares import (
@@ -55,9 +58,29 @@ def _artifact(**updates) -> ClassroomPlannerShareArtifact:
         presentation_hash="sha256:presentation",
         content_hash="sha256:content",
         presentation_payload={"title": "Klass 7A"},
-        rendered_html="<html><body><main>Klass 7A</main></body></html>",
+        rendered_html=(
+            "<!doctype html><html><head><title>Klass 7A</title></head>"
+            "<body><main>Klass 7A</main></body></html>"
+        ),
         rendered_css="body { color: black; }",
         created_at=now,
+        updated_at=now,
+    ).model_copy(update=updates)
+
+
+def _preview_asset(
+    artifact: ClassroomPlannerShareArtifact,
+    **updates,
+) -> ClassroomPlannerSharePreviewAsset:
+    now = datetime.now(timezone.utc)
+    return ClassroomPlannerSharePreviewAsset(
+        share_id=artifact.id,
+        image_bytes=b"\x89PNG\r\npreview",
+        preview_content_hash="sha256:preview",
+        source_content_hash=artifact.content_hash,
+        presentation_hash=artifact.presentation_hash,
+        renderer_version=artifact.renderer_version,
+        generated_at=now,
         updated_at=now,
     ).model_copy(update=updates)
 
@@ -66,19 +89,30 @@ def _artifact(**updates) -> ClassroomPlannerShareArtifact:
 @pytest.mark.asyncio
 async def test_public_share_read_returns_static_html_with_noindex_headers() -> None:
     handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
-    handler.handle.return_value = _artifact()
+    artifact = _artifact()
+    handler.handle.return_value = artifact
+    preview_handler = AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler)
+    preview_handler.handle.return_value = _preview_asset(artifact)
 
     response = await _unwrap_dishka(pages.read_classroom_planner_share)(
         public_token="public-token",
         slug="klass-7a",
         handler=handler,
+        preview_handler=preview_handler,
+        settings=Settings(PUBLIC_APP_BASE_URL="https://skriptoteket.hule.education"),
     )
 
     handler.handle.assert_awaited_once_with(public_token="public-token")
+    preview_handler.handle.assert_awaited_once_with(share_id=artifact.id)
     assert response.status_code == 200
     assert response.headers["cache-control"] == "no-store"
     assert response.headers["x-robots-tag"] == "noindex, nofollow"
     assert b"Klass 7A" in response.body
+    assert b'property="og:image"' in response.body
+    assert b'name="twitter:card" content="summary_large_image"' in response.body
+    assert b'"@type":"CreativeWork"' in response.body
+    assert b"Person" not in response.body
+    assert b"groupMembership" not in response.body
 
 
 @pytest.mark.unit
@@ -91,6 +125,8 @@ async def test_public_share_read_returns_gone_for_revoked_artifact() -> None:
     response = await _unwrap_dishka(pages.read_classroom_planner_share)(
         public_token="public-token",
         handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
     )
 
     assert response.status_code == 410
@@ -109,6 +145,8 @@ async def test_public_share_read_returns_gone_for_expired_artifact() -> None:
     response = await _unwrap_dishka(pages.read_classroom_planner_share)(
         public_token="public-token",
         handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
     )
 
     assert response.status_code == 410
@@ -127,10 +165,115 @@ async def test_public_share_read_returns_not_found_for_unknown_token() -> None:
     response = await _unwrap_dishka(pages.read_classroom_planner_share)(
         public_token="missing-token",
         handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
     )
 
     assert response.status_code == 404
     assert response.headers["x-robots-tag"] == "noindex, nofollow"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_preview_image_returns_png_for_active_matching_asset() -> None:
+    artifact = _artifact()
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = artifact
+    preview_handler = AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler)
+    preview_handler.handle.return_value = _preview_asset(artifact)
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
+        public_token="public-token",
+        handler=handler,
+        preview_handler=preview_handler,
+        v="sha256:preview",
+    )
+
+    assert response.status_code == 200
+    assert response.media_type == "image/png"
+    assert response.body == b"\x89PNG\r\npreview"
+    assert response.headers["cache-control"] == "public, max-age=86400, immutable"
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_preview_image_does_not_serve_stale_hash_url() -> None:
+    artifact = _artifact()
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = artifact
+    preview_handler = AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler)
+    preview_handler.handle.return_value = _preview_asset(artifact)
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
+        public_token="public-token",
+        handler=handler,
+        preview_handler=preview_handler,
+        v="sha256:old-preview",
+    )
+
+    assert response.status_code == 404
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_preview_image_does_not_leak_revoked_thumbnail() -> None:
+    artifact = _artifact(revoked_at=datetime.now(timezone.utc))
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = artifact
+    preview_handler = AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler)
+    preview_handler.handle.return_value = _preview_asset(artifact)
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
+        public_token="public-token",
+        handler=handler,
+        preview_handler=preview_handler,
+        v="sha256:preview",
+    )
+
+    assert response.status_code == 410
+    preview_handler.handle.assert_not_awaited()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_preview_image_returns_not_found_for_missing_token() -> None:
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.side_effect = DomainError(
+        code=ErrorCode.NOT_FOUND,
+        message="Missing share.",
+    )
+    preview_handler = AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler)
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
+        public_token="missing-token",
+        handler=handler,
+        preview_handler=preview_handler,
+        v="sha256:preview",
+    )
+
+    assert response.status_code == 404
+    preview_handler.handle.assert_not_awaited()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_preview_image_does_not_leak_expired_thumbnail() -> None:
+    artifact = _artifact(expires_at=datetime.now(timezone.utc) - timedelta(minutes=1))
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = artifact
+    preview_handler = AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler)
+    preview_handler.handle.return_value = _preview_asset(artifact)
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
+        public_token="public-token",
+        handler=handler,
+        preview_handler=preview_handler,
+        v="sha256:preview",
+    )
+
+    assert response.status_code == 410
+    preview_handler.handle.assert_not_awaited()
 
 
 @pytest.mark.unit

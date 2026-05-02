@@ -66,6 +66,7 @@ dependencies = [
     "mistral-common>=1.5.6",
     "pypandoc",
     "weasyprint",
+    "playwright",
     "markdown>=3.6",
     "molmass>=2026.1.8",
     "starlette-dishka>=1.0.2",
@@ -107,7 +108,6 @@ dev = [
     "coverage>=7.9.2",
     "reportlab",
     "types-reportlab",
-    "playwright",
     "selenium",
     "requests",
     "beautifulsoup4",
@@ -292,6 +292,7 @@ dev-logs = "sh -c 'mkdir -p .artifacts && WATCHFILES_FORCE_POLLING=true WATCHFIL
 dev-local = "sh -c 'pdm run dev-logs & pdm run fe-dev-logs & wait'"
 dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
 serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
+backfill-classroom-share-previews = { cmd = "python -m skriptoteket.cli backfill-classroom-share-previews", env = { PYTHONPATH = "src" } }
 ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
 pr-0252-auth-return = "python -m scripts.playwright_pr_0252_auth_return_to_origin"
 pr-0253-auth-retirement = "python -m scripts.playwright_pr_0253_auth_retirement"

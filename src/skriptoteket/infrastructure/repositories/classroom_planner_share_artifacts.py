@@ -15,17 +15,19 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select, text, update
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
     PublicGuestSharePersistenceResult,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact import (
     ClassroomPlannerShareArtifactModel,
+    ClassroomPlannerSharePreviewAssetModel,
 )
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareArtifactRepositoryProtocol,
@@ -108,6 +110,42 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
             expires_at=model.expires_at,
         )
 
+    def _to_preview_model(
+        self,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerSharePreviewAssetModel:
+        return ClassroomPlannerSharePreviewAssetModel(
+            share_id=preview_asset.share_id,
+            content_type=preview_asset.content_type,
+            width=preview_asset.width,
+            height=preview_asset.height,
+            image_bytes=preview_asset.image_bytes,
+            preview_content_hash=preview_asset.preview_content_hash,
+            source_content_hash=preview_asset.source_content_hash,
+            presentation_hash=preview_asset.presentation_hash,
+            renderer_version=preview_asset.renderer_version,
+            generated_at=preview_asset.generated_at,
+            updated_at=preview_asset.updated_at,
+        )
+
+    def _to_preview_asset(
+        self,
+        model: ClassroomPlannerSharePreviewAssetModel,
+    ) -> ClassroomPlannerSharePreviewAsset:
+        return ClassroomPlannerSharePreviewAsset(
+            share_id=model.share_id,
+            content_type=model.content_type,
+            width=model.width,
+            height=model.height,
+            image_bytes=model.image_bytes,
+            preview_content_hash=model.preview_content_hash,
+            source_content_hash=model.source_content_hash,
+            presentation_hash=model.presentation_hash,
+            renderer_version=model.renderer_version,
+            generated_at=model.generated_at,
+            updated_at=model.updated_at,
+        )
+
     async def create(
         self,
         *,
@@ -115,6 +153,20 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
     ) -> ClassroomPlannerShareArtifact:
         model = self._to_model(artifact)
         self._session.add(model)
+        await self._session.flush()
+        await self._session.refresh(model)
+        return self._to_artifact(model)
+
+    async def create_with_preview(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerShareArtifact:
+        model = self._to_model(artifact)
+        preview_model = self._to_preview_model(preview_asset)
+        self._session.add(model)
+        self._session.add(preview_model)
         await self._session.flush()
         await self._session.refresh(model)
         return self._to_artifact(model)
@@ -135,6 +187,83 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
         )
         model = result.scalar_one_or_none()
         return self._to_artifact(model) if model else None
+
+    async def get_preview_by_share_id(
+        self,
+        *,
+        share_id: UUID,
+    ) -> ClassroomPlannerSharePreviewAsset | None:
+        model = await self._session.get(ClassroomPlannerSharePreviewAssetModel, share_id)
+        return self._to_preview_asset(model) if model else None
+
+    async def upsert_preview_asset(
+        self,
+        *,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerSharePreviewAsset:
+        model = await self._session.get(
+            ClassroomPlannerSharePreviewAssetModel,
+            preview_asset.share_id,
+        )
+        if model is None:
+            model = self._to_preview_model(preview_asset)
+            self._session.add(model)
+        else:
+            model.content_type = preview_asset.content_type
+            model.width = preview_asset.width
+            model.height = preview_asset.height
+            model.image_bytes = preview_asset.image_bytes
+            model.preview_content_hash = preview_asset.preview_content_hash
+            model.source_content_hash = preview_asset.source_content_hash
+            model.presentation_hash = preview_asset.presentation_hash
+            model.renderer_version = preview_asset.renderer_version
+            model.generated_at = preview_asset.generated_at
+            model.updated_at = preview_asset.updated_at
+        await self._session.flush()
+        await self._session.refresh(model)
+        return self._to_preview_asset(model)
+
+    async def list_active_shares_missing_or_stale_preview(
+        self,
+        *,
+        now: datetime,
+        limit: int | None,
+    ) -> list[ClassroomPlannerShareArtifact]:
+        statement = (
+            select(ClassroomPlannerShareArtifactModel)
+            .outerjoin(
+                ClassroomPlannerSharePreviewAssetModel,
+                ClassroomPlannerSharePreviewAssetModel.share_id
+                == ClassroomPlannerShareArtifactModel.id,
+            )
+            .where(
+                ClassroomPlannerShareArtifactModel.revoked_at.is_(None),
+                (
+                    (ClassroomPlannerShareArtifactModel.expires_at.is_(None))
+                    | (ClassroomPlannerShareArtifactModel.expires_at > now)
+                ),
+                (
+                    (ClassroomPlannerSharePreviewAssetModel.share_id.is_(None))
+                    | (
+                        ClassroomPlannerSharePreviewAssetModel.source_content_hash
+                        != ClassroomPlannerShareArtifactModel.content_hash
+                    )
+                    | (
+                        ClassroomPlannerSharePreviewAssetModel.presentation_hash
+                        != ClassroomPlannerShareArtifactModel.presentation_hash
+                    )
+                    | (
+                        ClassroomPlannerSharePreviewAssetModel.renderer_version
+                        != ClassroomPlannerShareArtifactModel.renderer_version
+                    )
+                ),
+            )
+            .order_by(ClassroomPlannerShareArtifactModel.created_at.asc())
+        )
+        if limit is not None:
+            statement = statement.limit(limit)
+        result = await self._session.execute(statement)
+        return [self._to_artifact(model) for model in result.scalars().all()]
 
     async def list_for_owner_draft(
         self,
@@ -262,6 +391,7 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
         self,
         *,
         artifact: ClassroomPlannerShareArtifact,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
         previous_token_hash: str | None,
         previous_revoke_secret_hash: str | None,
         now: datetime,
@@ -275,8 +405,10 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
             client_operation_id=artifact.client_operation_id or ""
         )
         if existing is not None:
+            existing_preview = await self.get_preview_by_share_id(share_id=existing.id)
             return PublicGuestSharePersistenceResult(
                 artifact=existing,
+                preview_asset=existing_preview,
                 reused_client_operation=True,
             )
 
@@ -302,7 +434,9 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
             )
 
         model = self._to_model(artifact)
+        preview_model = self._to_preview_model(preview_asset)
         self._session.add(model)
+        self._session.add(preview_model)
         await self._session.flush()
 
         superseded_previous = False
@@ -315,6 +449,7 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
         await self._session.refresh(model)
         return PublicGuestSharePersistenceResult(
             artifact=self._to_artifact(model),
+            preview_asset=self._to_preview_asset(preview_model),
             superseded_previous=superseded_previous,
         )
 
@@ -335,6 +470,11 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
         )
         if not share_ids:
             return 0
+        await self._session.execute(
+            delete(ClassroomPlannerSharePreviewAssetModel).where(
+                ClassroomPlannerSharePreviewAssetModel.share_id.in_(share_ids)
+            )
+        )
         await self._session.execute(
             update(ClassroomPlannerShareArtifactModel)
             .where(ClassroomPlannerShareArtifactModel.id.in_(share_ids))

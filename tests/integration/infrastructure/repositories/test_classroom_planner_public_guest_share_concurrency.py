@@ -19,12 +19,14 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from skriptoteket.application.curated_apps.classroom_planner import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     JsonObject,
     PublicGuestSharePersistenceResult,
     build_share_content_hash,
     build_share_presentation_hash,
+    build_share_preview_content_hash,
     hash_share_revoke_secret,
     hash_share_token,
 )
@@ -84,6 +86,24 @@ def _public_guest_artifact(
     )
 
 
+def _preview_asset(
+    *,
+    artifact: ClassroomPlannerShareArtifact,
+    now: datetime,
+) -> ClassroomPlannerSharePreviewAsset:
+    image_bytes = b"\x89PNG\r\npreview"
+    return ClassroomPlannerSharePreviewAsset(
+        share_id=artifact.id,
+        image_bytes=image_bytes,
+        preview_content_hash=build_share_preview_content_hash(image_bytes),
+        source_content_hash=artifact.content_hash,
+        presentation_hash=artifact.presentation_hash,
+        renderer_version=artifact.renderer_version,
+        generated_at=now,
+        updated_at=now,
+    )
+
+
 async def _persist_public_guest_share(
     *,
     session_factory: async_sessionmaker[AsyncSession],
@@ -98,6 +118,7 @@ async def _persist_public_guest_share(
             repository = PostgreSQLClassroomPlannerShareArtifactRepository(session)
             return await repository.create_or_reuse_public_guest_share(
                 artifact=artifact,
+                preview_asset=_preview_asset(artifact=artifact, now=now),
                 previous_token_hash=previous_token_hash,
                 previous_revoke_secret_hash=previous_revoke_secret_hash,
                 now=now,

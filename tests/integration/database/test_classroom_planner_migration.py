@@ -32,7 +32,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "c7d9e3f5a1b2"
+    target_revision = "f8a2c6d4e9b1"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 

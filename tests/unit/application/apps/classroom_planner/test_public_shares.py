@@ -39,6 +39,7 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
     PublicGuestSharePersistenceResult,
     build_share_content_hash,
     build_share_presentation_hash,
@@ -82,9 +83,16 @@ class _FixedTokenGenerator:
         return self._values.pop(0)
 
 
+class _FakePreviewRenderer:
+    async def render_png(self, *, artifact: ClassroomPlannerShareArtifact) -> bytes:
+        del artifact
+        return b"\x89PNG\r\npreview"
+
+
 class _FakeShareRepository:
     def __init__(self) -> None:
         self.artifacts_by_id: dict[UUID, ClassroomPlannerShareArtifact] = {}
+        self.preview_assets_by_share_id: dict[UUID, ClassroomPlannerSharePreviewAsset] = {}
         self._lock = asyncio.Lock()
 
     async def create(
@@ -93,6 +101,16 @@ class _FakeShareRepository:
         artifact: ClassroomPlannerShareArtifact,
     ) -> ClassroomPlannerShareArtifact:
         self.artifacts_by_id[artifact.id] = artifact
+        return artifact
+
+    async def create_with_preview(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerShareArtifact:
+        self.artifacts_by_id[artifact.id] = artifact
+        self.preview_assets_by_share_id[artifact.id] = preview_asset
         return artifact
 
     async def get_by_id(self, *, share_id: UUID) -> ClassroomPlannerShareArtifact | None:
@@ -109,6 +127,30 @@ class _FakeShareRepository:
         )
 
     async def list_for_owner_draft(self, **_kwargs: object) -> list[ClassroomPlannerShareArtifact]:
+        return []
+
+    async def get_preview_by_share_id(
+        self,
+        *,
+        share_id: UUID,
+    ) -> ClassroomPlannerSharePreviewAsset | None:
+        return self.preview_assets_by_share_id.get(share_id)
+
+    async def upsert_preview_asset(
+        self,
+        *,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerSharePreviewAsset:
+        self.preview_assets_by_share_id[preview_asset.share_id] = preview_asset
+        return preview_asset
+
+    async def list_active_shares_missing_or_stale_preview(
+        self,
+        *,
+        now: datetime,
+        limit: int | None,
+    ) -> list[ClassroomPlannerShareArtifact]:
+        del now, limit
         return []
 
     async def revoke_owned(self, **_kwargs: object) -> ClassroomPlannerShareArtifact | None:
@@ -187,6 +229,7 @@ class _FakeShareRepository:
         self,
         *,
         artifact: ClassroomPlannerShareArtifact,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
         previous_token_hash: str | None,
         previous_revoke_secret_hash: str | None,
         now: datetime,
@@ -199,6 +242,7 @@ class _FakeShareRepository:
             if existing is not None:
                 return PublicGuestSharePersistenceResult(
                     artifact=existing,
+                    preview_asset=self.preview_assets_by_share_id.get(existing.id),
                     reused_client_operation=True,
                 )
 
@@ -233,7 +277,10 @@ class _FakeShareRepository:
                     active_limit_exceeded=True,
                 )
 
-            created = await self.create(artifact=artifact)
+            created = await self.create_with_preview(
+                artifact=artifact,
+                preview_asset=preview_asset,
+            )
             superseded_previous = False
             if previous is not None:
                 revoked = previous.model_copy(update={"revoked_at": now, "updated_at": now})
@@ -241,6 +288,7 @@ class _FakeShareRepository:
                 superseded_previous = True
             return PublicGuestSharePersistenceResult(
                 artifact=created,
+                preview_asset=preview_asset,
                 superseded_previous=superseded_previous,
             )
 
@@ -348,6 +396,7 @@ async def _create_share(
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([uuid4()]),
         token_generator=_FixedTokenGenerator([token]),
+        preview_renderer=_FakePreviewRenderer(),
     )
     return await _create_public_guest_share(
         shares=shares,

@@ -12,6 +12,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
     ActivateSeatingHistoryDraftHandler,
+    BackfillClassroomPlannerSharePreviewsHandler,
     ClassroomPlannerGuestUpgradeHandler,
     ClassroomPlannerShareLifecycleService,
     CreateAuthenticatedGroupingShareHandler,
@@ -33,6 +34,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     DownloadSeatingExportJobHandler,
     GetClassroomPlannerGuestUpgradeConsumptionHandler,
     GetClassroomPlannerShareArtifactByTokenHandler,
+    GetClassroomPlannerSharePreviewAssetHandler,
     GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
@@ -136,6 +138,10 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xls
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_pdf_renderer import (
     ExportBackedClassroomPlannerSharePdfRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_preview_renderer import (
+    ClassroomPlannerSharePreviewRendererSettings,
+    PlaywrightClassroomPlannerSharePreviewRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
     StaticClassroomPlannerShareRenderer,
 )
@@ -218,6 +224,7 @@ from skriptoteket.protocols.classroom_planner_imports import (
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareArtifactRepositoryProtocol,
     ClassroomPlannerSharePdfRendererProtocol,
+    ClassroomPlannerSharePreviewRendererProtocol,
     ClassroomPlannerShareRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -910,6 +917,7 @@ class CuratedAppsProvider(Provider):
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         token_generator: TokenGeneratorProtocol,
+        preview_renderer: ClassroomPlannerSharePreviewRendererProtocol,
     ) -> CreateClassroomPlannerShareArtifactHandler:
         return CreateClassroomPlannerShareArtifactHandler(
             shares=shares,
@@ -917,6 +925,7 @@ class CuratedAppsProvider(Provider):
             clock=clock,
             id_generator=id_generator,
             token_generator=token_generator,
+            preview_renderer=preview_renderer,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -934,6 +943,29 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
     ) -> GetClassroomPlannerShareArtifactByTokenHandler:
         return GetClassroomPlannerShareArtifactByTokenHandler(shares=shares, uow=uow)
+
+    @provide(scope=Scope.REQUEST)
+    def get_classroom_planner_share_preview_asset_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> GetClassroomPlannerSharePreviewAssetHandler:
+        return GetClassroomPlannerSharePreviewAssetHandler(shares=shares, uow=uow)
+
+    @provide(scope=Scope.REQUEST)
+    def backfill_classroom_planner_share_previews_handler(
+        self,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        create_artifact: CreateClassroomPlannerShareArtifactHandler,
+    ) -> BackfillClassroomPlannerSharePreviewsHandler:
+        return BackfillClassroomPlannerSharePreviewsHandler(
+            shares=shares,
+            uow=uow,
+            clock=clock,
+            create_artifact=create_artifact,
+        )
 
     @provide(scope=Scope.REQUEST)
     def classroom_planner_share_lifecycle_service(
@@ -1372,6 +1404,18 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def classroom_planner_share_renderer(self) -> ClassroomPlannerShareRendererProtocol:
         return StaticClassroomPlannerShareRenderer()
+
+    @provide(scope=Scope.APP)
+    def classroom_planner_share_preview_renderer(
+        self,
+        settings: Settings,
+    ) -> ClassroomPlannerSharePreviewRendererProtocol:
+        return PlaywrightClassroomPlannerSharePreviewRenderer(
+            settings=ClassroomPlannerSharePreviewRendererSettings(
+                timeout_seconds=settings.CLASSROOM_SHARE_PREVIEW_TIMEOUT_SECONDS,
+                max_concurrency=settings.CLASSROOM_SHARE_PREVIEW_MAX_CONCURRENCY,
+            )
+        )
 
     @provide(scope=Scope.APP)
     def classroom_planner_share_pdf_renderer(

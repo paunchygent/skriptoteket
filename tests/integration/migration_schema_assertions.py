@@ -57,6 +57,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "b4c6d8e1f2a3",
     "c7d9e3f5a1b2",
     "e2f4a6b8c9d0",
+    "f8a2c6d4e9b1",
 )
 
 
@@ -338,6 +339,40 @@ async def _assert_e2f4_public_guest_share_controls(engine: AsyncEngine) -> None:
     assert {
         "ix_cp_share_artifacts_public_client_op",
         "ix_cp_share_artifacts_guest_fingerprint",
+    }.issubset(indexes)
+
+
+async def _assert_f8a2_share_preview_assets(engine: AsyncEngine) -> None:
+    await _assert_e2f4_public_guest_share_controls(engine)
+    tables = await _table_names(engine)
+    assert "classroom_planner_share_preview_assets" in tables
+    columns = await _column_map(engine, "classroom_planner_share_preview_assets")
+    assert {
+        "share_id",
+        "content_type",
+        "width",
+        "height",
+        "image_bytes",
+        "preview_content_hash",
+        "source_content_hash",
+        "presentation_hash",
+        "renderer_version",
+        "generated_at",
+        "updated_at",
+    }.issubset(columns)
+    assert columns["share_id"]["is_nullable"] == "NO"
+    assert columns["image_bytes"]["is_nullable"] == "NO"
+    foreign_keys = await _foreign_key_targets(engine, "classroom_planner_share_preview_assets")
+    assert foreign_keys["share_id"] == "classroom_planner_share_artifacts"
+    delete_rules = await _foreign_key_delete_rules(
+        engine,
+        "classroom_planner_share_preview_assets",
+    )
+    assert delete_rules["share_id"] == "CASCADE"
+    indexes = await _index_names(engine, "classroom_planner_share_preview_assets")
+    assert {
+        "ix_cp_share_preview_assets_source_hash",
+        "ix_cp_share_preview_assets_preview_hash",
     }.issubset(indexes)
 
 
@@ -684,6 +719,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "b4c6d8e1f2a3": _assert_b4c6_share_artifact_lifecycle_fks,
     "c7d9e3f5a1b2": _assert_c7d9_share_artifact_public_path,
     "e2f4a6b8c9d0": _assert_e2f4_public_guest_share_controls,
+    "f8a2c6d4e9b1": _assert_f8a2_share_preview_assets,
 }
 
 

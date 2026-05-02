@@ -25,10 +25,12 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactCreateResult,
     ClassroomPlannerShareArtifactSource,
+    ClassroomPlannerSharePreviewAsset,
     JsonObject,
     build_share_content_hash,
     build_share_pdf_download_path,
     build_share_presentation_hash,
+    build_share_preview_content_hash,
     build_share_public_path,
     build_share_slug,
     finalize_share_rendered_html,
@@ -36,9 +38,10 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     hash_share_token,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareArtifactRepositoryProtocol,
+    ClassroomPlannerSharePreviewRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -83,12 +86,14 @@ class CreateClassroomPlannerShareArtifactHandler:
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         token_generator: TokenGeneratorProtocol,
+        preview_renderer: ClassroomPlannerSharePreviewRendererProtocol,
     ) -> None:
         self._shares = shares
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
         self._token_generator = token_generator
+        self._preview_renderer = preview_renderer
 
     async def handle(
         self,
@@ -96,9 +101,43 @@ class CreateClassroomPlannerShareArtifactHandler:
         command: CreateClassroomPlannerShareArtifactCommand,
     ) -> ClassroomPlannerShareArtifactCreateResult:
         result = self.build_unsaved(command=command)
+        preview_asset = await self.build_preview_asset(artifact=result.artifact)
         async with self._uow:
-            persisted = await self._shares.create(artifact=result.artifact)
+            persisted = await self._shares.create_with_preview(
+                artifact=result.artifact,
+                preview_asset=preview_asset,
+            )
         return result.model_copy(update={"artifact": persisted})
+
+    async def build_preview_asset(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+    ) -> ClassroomPlannerSharePreviewAsset:
+        """Generate an unsaved preview asset for one unsaved or persisted share."""
+
+        try:
+            image_bytes = await self._preview_renderer.render_png(artifact=artifact)
+        except DomainError:
+            raise
+        except Exception as exc:
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Could not generate Klassrumskartan share preview image.",
+                details={"reason_code": "classroom_share_preview_generation_failed"},
+            ) from exc
+
+        now = self._clock.now()
+        return ClassroomPlannerSharePreviewAsset(
+            share_id=artifact.id,
+            image_bytes=image_bytes,
+            preview_content_hash=build_share_preview_content_hash(image_bytes),
+            source_content_hash=artifact.content_hash,
+            presentation_hash=artifact.presentation_hash,
+            renderer_version=artifact.renderer_version,
+            generated_at=now,
+            updated_at=now,
+        )
 
     def build_unsaved(
         self,
@@ -207,6 +246,90 @@ class GetClassroomPlannerShareArtifactByTokenHandler:
         if artifact is None:
             raise not_found("ClassroomPlannerShareArtifact", "public-token")
         return artifact
+
+
+class GetClassroomPlannerSharePreviewAssetHandler:
+    """Resolve one generated preview image asset for a share artifact."""
+
+    def __init__(
+        self,
+        *,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> None:
+        self._shares = shares
+        self._uow = uow
+
+    async def handle(
+        self,
+        *,
+        share_id: UUID,
+    ) -> ClassroomPlannerSharePreviewAsset:
+        async with self._uow:
+            preview_asset = await self._shares.get_preview_by_share_id(share_id=share_id)
+        if preview_asset is None:
+            raise not_found("ClassroomPlannerSharePreviewAsset", str(share_id))
+        return preview_asset
+
+
+class BackfillClassroomPlannerSharePreviewsHandler:
+    """Generate or refresh preview assets for active legacy share artifacts."""
+
+    def __init__(
+        self,
+        *,
+        shares: ClassroomPlannerShareArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        create_artifact: CreateClassroomPlannerShareArtifactHandler,
+    ) -> None:
+        self._shares = shares
+        self._uow = uow
+        self._clock = clock
+        self._create_artifact = create_artifact
+
+    async def handle(
+        self,
+        *,
+        limit: int | None = None,
+        fail_fast: bool = False,
+    ) -> "ClassroomPlannerSharePreviewBackfillResult":
+        async with self._uow:
+            shares = await self._shares.list_active_shares_missing_or_stale_preview(
+                now=self._clock.now(),
+                limit=limit,
+            )
+
+        generated = 0
+        failed: list[UUID] = []
+        for artifact in shares:
+            try:
+                preview_asset = await self._create_artifact.build_preview_asset(
+                    artifact=artifact,
+                )
+                async with self._uow:
+                    await self._shares.upsert_preview_asset(preview_asset=preview_asset)
+                generated += 1
+            except Exception:
+                failed.append(artifact.id)
+                if fail_fast:
+                    raise
+
+        return ClassroomPlannerSharePreviewBackfillResult(
+            scanned=len(shares),
+            generated=generated,
+            failed_share_ids=tuple(failed),
+        )
+
+
+class ClassroomPlannerSharePreviewBackfillResult(BaseModel):
+    """Summarize one preview backfill run."""
+
+    model_config = ConfigDict(frozen=True)
+
+    scanned: int
+    generated: int
+    failed_share_ids: tuple[UUID, ...]
 
 
 class RevokeClassroomPlannerShareArtifactHandler:

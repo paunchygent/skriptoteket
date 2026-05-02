@@ -38,7 +38,8 @@ ARG TARGETARCH
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PDM_CHECK_UPDATE=false
+    PDM_CHECK_UPDATE=false \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 WORKDIR /app
 
@@ -134,6 +135,9 @@ RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY --from=builder /app/__pypackages__ /app/__pypackages__
 COPY pyproject.toml pdm.lock ./
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    pdm run playwright install --with-deps chromium
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY src ./src

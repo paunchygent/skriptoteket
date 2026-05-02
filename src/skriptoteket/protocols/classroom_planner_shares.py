@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
+    ClassroomPlannerSharePreviewAsset,
     PublicGuestSharePersistenceResult,
     RenderedClassroomPlannerShare,
 )
@@ -37,6 +38,13 @@ class ClassroomPlannerShareArtifactRepositoryProtocol(Protocol):
         artifact: ClassroomPlannerShareArtifact,
     ) -> ClassroomPlannerShareArtifact: ...
 
+    async def create_with_preview(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerShareArtifact: ...
+
     async def get_by_id(
         self,
         *,
@@ -48,6 +56,25 @@ class ClassroomPlannerShareArtifactRepositoryProtocol(Protocol):
         *,
         token_hash: str,
     ) -> ClassroomPlannerShareArtifact | None: ...
+
+    async def get_preview_by_share_id(
+        self,
+        *,
+        share_id: UUID,
+    ) -> ClassroomPlannerSharePreviewAsset | None: ...
+
+    async def upsert_preview_asset(
+        self,
+        *,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
+    ) -> ClassroomPlannerSharePreviewAsset: ...
+
+    async def list_active_shares_missing_or_stale_preview(
+        self,
+        *,
+        now: datetime,
+        limit: int | None,
+    ) -> list[ClassroomPlannerShareArtifact]: ...
 
     async def list_for_owner_draft(
         self,
@@ -98,6 +125,7 @@ class ClassroomPlannerShareArtifactRepositoryProtocol(Protocol):
         self,
         *,
         artifact: ClassroomPlannerShareArtifact,
+        preview_asset: ClassroomPlannerSharePreviewAsset,
         previous_token_hash: str | None,
         previous_revoke_secret_hash: str | None,
         now: datetime,
@@ -164,6 +192,16 @@ class ClassroomPlannerShareRendererProtocol(Protocol):
         *,
         prepared_export: PreparedSeatingExportContract,
     ) -> RenderedClassroomPlannerShare: ...
+
+
+class ClassroomPlannerSharePreviewRendererProtocol(Protocol):
+    """Render generated PNG social-preview thumbnails from share HTML/CSS."""
+
+    async def render_png(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+    ) -> bytes: ...
 
 
 class ClassroomPlannerSharePdfRendererProtocol(Protocol):

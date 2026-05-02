@@ -22,6 +22,7 @@ from skriptoteket.infrastructure.db.models.classroom_planner_roster import (
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact import (
     ClassroomPlannerShareArtifactModel,
+    ClassroomPlannerSharePreviewAssetModel,
 )
 from skriptoteket.infrastructure.db.models.draft_lock import DraftLockModel
 from skriptoteket.infrastructure.db.models.email_verification_token import (
@@ -83,6 +84,7 @@ _MODELS = [
     BlockedDomainModel,
     CategoryModel,
     ClassroomPlannerShareArtifactModel,
+    ClassroomPlannerSharePreviewAssetModel,
     RoomTemplateModel,
     RosterModel,
     DraftLockModel,

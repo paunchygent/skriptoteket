@@ -2,10 +2,10 @@
 type: review
 id: REV-ST-26-07
 title: "Review: ST-26-07 share-link Teams preview thumbnails"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-05-01
-updated: 2026-05-01
+updated: 2026-05-02
 reviewer: "lead-developer"
 stories:
   - ST-26-07
@@ -20,12 +20,11 @@ links:
 
 ## TL;DR
 
-`ST-26-07` and `PR-0277` are the right follow-up to the successful SA24D/G20
-Teams diagnostic. Re-review confirms that the five retained findings are
-substantively remediated, but the formal status stays `changes_requested`
-because the same agent authored the remediation and cannot grant the retained
-approval. An independent reviewer can approve this review record and move the
-story/task to `ready` if they agree with the re-review closure below.
+`ST-26-07` and `PR-0277` are approved for implementation after the successful
+SA24D/G20 Teams diagnostic and retained re-review. The five retained findings
+are remediated: the package now has an explicit review gate, exact preview-asset
+persistence and lifecycle semantics, a production-ready headless rendering
+runtime contract, Teams cache-aware proof, and a strict JSON-LD allowlist.
 
 ## Problem Statement
 
@@ -187,9 +186,17 @@ No substantive findings remain after the remediation:
   exclusions for student/member/placement/group relationships, and hostile
   metadata assertions.
 
-The remaining blocker is review independence: because the same agent applied
-the remediation, a separate reviewer should update this record to `approved`
-and move `ST-26-07` / `PR-0277` to `ready` if they agree with this closure.
+The remaining blocker was review independence because the same agent applied the
+remediation. The independent approval below closes that blocker.
+
+### Independent Approval
+
+**Reviewer:** `user-lead`
+**Date:** `2026-05-02`
+**Verdict:** `approved`
+
+The retained review is approved and `ST-26-07` / `PR-0277` are unblocked for
+implementation.
 
 ## Changes Made
 
@@ -199,3 +206,4 @@ and move `ST-26-07` / `PR-0277` to `ready` if they agree with this closure.
 | 2 | `PR-0277` | Status changed to `blocked`; exact preview table, route, renderer protocol, runtime limits, Docker proof, backfill command, Teams cache proof, and JSON-LD allowlist added. |
 | 3 | `docs/index.md` | Review record added to the docs doorway. |
 | 4 | `REV-ST-26-07` | Re-reviewed remediation, closed the five substantive findings, and retained `changes_requested` only for independent approval. |
+| 5 | `REV-ST-26-07`, `ST-26-07`, `PR-0277` | Recorded independent approval and moved the story/task to ready. |
