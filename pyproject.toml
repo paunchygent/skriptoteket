@@ -372,6 +372,7 @@ handoff-validate = "python -m scripts.check_agent_doc_budgets"
 # Hemma production operator commands
 hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"
 hemma-deploy-monitor = "bash ./scripts/hemma_deploy_monitor.sh"
+hemma-deploy-share-previews = "bash ./scripts/hemma_deploy_start.sh --script scripts/hemma_deploy_and_verify_share_previews.sh"
 check-migration-test-coverage = "python -m scripts.check_migration_test_coverage"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
