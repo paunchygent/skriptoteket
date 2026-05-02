@@ -70,6 +70,17 @@ if [[ "$script_rel" = /* ]]; then
 fi
 
 if [[ ! -f "$script_path" ]]; then
+  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  if [[ "$current_branch" != "main" ]]; then
+    echo "Requested deploy script is missing; switching remote checkout from ${current_branch} to main."
+    git checkout main
+  fi
+  echo "Requested deploy script is missing; fast-forwarding remote main before retrying."
+  git fetch origin main
+  git pull --ff-only origin main
+fi
+
+if [[ ! -f "$script_path" ]]; then
   echo "Remote deploy script not found: $script_path" >&2
   exit 1
 fi
