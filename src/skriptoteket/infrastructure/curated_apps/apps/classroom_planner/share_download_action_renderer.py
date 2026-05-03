@@ -78,7 +78,7 @@ DOWNLOAD_ACTION_CONTROLLER_SCRIPT = f"""
   var selector = '[data-skriptoteket-share-pdf-download="owned"]';
   var busyTimers = new WeakMap();
   var downloadHrefs = new WeakMap();
-  var busyTimeoutMs = 15000;
+  var browserHandoffGuardMs = 1800;
   var minimumFocusRecoveryMs = 1000;
   function restoreLabel(action) {{
     var idleLabel = action.getAttribute('data-skriptoteket-share-pdf-idle-label');
@@ -144,7 +144,7 @@ DOWNLOAD_ACTION_CONTROLLER_SCRIPT = f"""
     }}
     busyTimers.set(action, window.setTimeout(function () {{
       clearBusy(action);
-    }}, busyTimeoutMs));
+    }}, browserHandoffGuardMs));
     window.setTimeout(function () {{
       if (action.getAttribute('data-skriptoteket-share-pdf-download-state') === 'busy') {{
         action.removeAttribute('href');

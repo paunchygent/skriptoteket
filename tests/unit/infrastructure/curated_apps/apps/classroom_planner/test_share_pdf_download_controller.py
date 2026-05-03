@@ -2,7 +2,8 @@
 
 Purpose:
     Prove the public share-page `Ladda ner PDF` action has one approved
-    controller, canonical disabled/busy affordances, and no API-style behavior.
+    browser-handoff controller, canonical disabled/busy affordances, and no
+    API-style behavior.
 
 Relationships:
     - Exercises `StaticClassroomPlannerShareRenderer` output.
@@ -77,6 +78,7 @@ def test_share_pdf_download_action_has_bounded_disabled_busy_controller() -> Non
         "event.stopImmediatePropagation();",
         "window.addEventListener('pageshow', clearAllBusy);",
         "window.addEventListener('focus', clearRecoveredBusy);",
+        "browserHandoffGuardMs = 1800",
         "minimumFocusRecoveryMs = 1000",
         "document.addEventListener('visibilitychange'",
     )
@@ -93,7 +95,7 @@ def test_share_pdf_download_action_has_bounded_disabled_busy_controller() -> Non
     assert not [expected for expected in expected_html if expected not in rendered.rendered_html]
     assert not [
         forbidden
-        for forbidden in ("fetch(", "XMLHttpRequest", "console.")
+        for forbidden in ("busyTimeoutMs", "fetch(", "XMLHttpRequest", "console.")
         if forbidden in rendered.rendered_html
     ]
     assert not [expected for expected in expected_css if expected not in rendered.rendered_css]

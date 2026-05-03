@@ -77,12 +77,11 @@ instead of treating it as unfinished planner-layout implementation.
   export/share/revoke processing now uses in-place shared spinner affordances, toolbar status pills
   no longer pop into the secondary action row, and browser proof freezes the `Dela` / `Exportera`
   x-position while export is busy.
-- `PR-0282` is closed as the public-share disabled/busy-state counterpart:
-  it reuses the `UiDenseSpinner` visual contract for seating/grouping share-page chrome, and
-  product ownership approved a tiny scoped public-share download controller for persistent
-  in-button busy state without Vue hydration, API calls, token logging, or share/PDF semantic
-  changes. The add-on adds canonical disabled/busy styling plus duplicate-activation suppression
-  while `Ladda ner PDF` is busy, with the action chrome split into an SRP-friendly helper module.
+- `PR-0282` is closed as the public-share disabled/busy-state counterpart after
+  `REV-PR-0282` re-review approved the lifecycle remediation. The action enters
+  canonical busy state, suppresses duplicate activation, then clears through a
+  short browser-handoff guard with restored `href` and cleared busy attributes;
+  retained proof covers grouping/seating at desktop and mobile widths.
 
 ## References
 

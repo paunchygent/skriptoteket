@@ -113,17 +113,15 @@ sharing.
     The production backfill command returned `scanned=0 generated=0 refreshed=0
     failed=0`, confirming no active stale seating preview rows remained after
     deploy, and production health returned healthy.
-  - `PR-0282` closed the shared-link `Ladda ner PDF` action for seating and
-    grouping pages so any spinner/busy affordance aligns with the
-    `UiDenseSpinner` language from `PR-0281`. Product ownership approved a
-    tiny scoped public-share download controller on 2026-05-03 for persistent
-    in-button busy state; the slice must still avoid Vue hydration, API calls,
-    token logging, and share/PDF semantic changes. Browser proof under
-    `.artifacts/pr-0282-share-pdf-spinner-proof` verified desktop/mobile
-    grouping and seating click behavior, visible spinner state, unchanged
-    action geometry, browser download events, canonical disabled/busy styling,
-    and duplicate-activation suppression while the action is busy. The share
-    PDF action chrome now lives in a dedicated SRP helper module.
+  - `PR-0282` is closed after `REV-PR-0282` re-review approved the shared-link
+    `Ladda ner PDF` busy lifecycle remediation. The implemented slice aligns
+    spinner geometry with the `UiDenseSpinner` language from `PR-0281`,
+    suppresses duplicate activation while busy, and keeps the share PDF action
+    chrome in a dedicated SRP helper module. The controller now uses a short
+    browser-handoff guard that clears busy state without waiting for
+    focus/visibility recovery, and retained browser proof asserts idle
+    recovery, restored `href`, cleared busy attributes, duplicate suppression,
+    and stable geometry.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

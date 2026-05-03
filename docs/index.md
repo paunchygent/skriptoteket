@@ -310,6 +310,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md`
 - ST-26-06 shared-link PDF download spinner contract:
   `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
+- Review gate for PR-0282 shared-link PDF download spinner contract:
+  `docs/backlog/reviews/review-pr-0282-shared-link-pdf-download-spinner-contract.md`
 - ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
   `docs/backlog/prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md`
 - Review gate for ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
@@ -829,6 +831,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-pr-0277-share-link-teams-preview-thumbnails-implementation.md`
 - `docs/backlog/reviews/review-pr-0278-shared-print-pdf-visual-redesign.md`
 - `docs/backlog/reviews/review-pr-0279-shared-link-seating-label-typography.md`
+- `docs/backlog/reviews/review-pr-0282-shared-link-pdf-download-spinner-contract.md`
 - `docs/backlog/reviews/review-pr-0273-public-guest-share-links-implementation.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`

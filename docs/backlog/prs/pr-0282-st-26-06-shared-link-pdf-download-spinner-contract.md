@@ -13,14 +13,15 @@ tags: ["frontend", "backend", "ux", "renderer", "klassrumskartan", "sharing", "p
 dependencies:
   - "PR-0276"
   - "PR-0281"
+  - "REV-PR-0282"
 acceptance_criteria:
   - "Given an active seating share link is opened, when the user activates `Ladda ner PDF`, then the download action has a stable processing affordance aligned with the `UiDenseSpinner` visual contract and does not shift the share-page header actions."
   - "Given an active grouping share link is opened, when the user activates `Ladda ner PDF`, then the same stable processing affordance is used without changing grouping share-page layout or PDF download semantics."
-  - "Given product ownership approved scoped public-share JavaScript on 2026-05-03, when the user clicks `Ladda ner PDF`, then a narrowly targeted download controller sets persistent in-button busy state while preserving direct-download fallback when JavaScript is unavailable."
+  - "Given product ownership approved scoped public-share JavaScript on 2026-05-03, when the user clicks `Ladda ner PDF`, then a narrowly targeted download controller sets a short in-button browser-handoff busy guard while preserving direct-download fallback when JavaScript is unavailable."
   - "Given the static share renderer cannot import Vue runtime components, when spinner markup, CSS, or the download controller is added to shared-link pages, then it reuses the `UiDenseSpinner` dimensions, motion, and accessible busy semantics without hydrating the page with Vue."
   - "Given the shared-link PDF action is busy, when the user attempts to activate `Ladda ner PDF` again, then the action presents the canonical disabled/busy visual state and suppresses duplicate activation until the PDF download has either handed off to the browser or the controller has recovered from failure."
   - "Given the public PDF route is requested, when the response is slow, successful, missing, revoked, or expired, then token authorization, slug behavior, cache/noindex policy, filenames, and export-backed PDF rendering remain unchanged."
-  - "Given focused tests and visual proof run, when seating and grouping share pages are inspected at desktop and mobile widths, then the `Ladda ner PDF` action keeps reserved geometry in idle and busy states, contains no unexpected status pill or pop-in sibling, clears busy state on page lifecycle or focus recovery, and keeps public-share action chrome out of generated PDFs."
+  - "Given focused tests and visual proof run, when seating and grouping share pages are inspected at desktop and mobile widths, then the `Ladda ner PDF` action keeps reserved geometry in idle and busy states, contains no unexpected status pill or pop-in sibling, clears busy state after browser handoff without waiting for focus/visibility recovery, and keeps public-share action chrome out of generated PDFs."
 ---
 
 ## Problem
@@ -62,9 +63,11 @@ contracts:
 ## Service-Aligned Assessment
 
 Product ownership approved a tiny public-share download controller on
-2026-05-03 so `Ladda ner PDF` can show a real persistent in-button busy state
-after click. This amends the earlier static/no-script default only for this
-bounded action affordance.
+2026-05-03 so `Ladda ner PDF` can show a real in-button busy state after click.
+`REV-PR-0282` clarified that ordinary anchor downloads do not expose reliable
+completion state to page JavaScript, so the controller is a short
+browser-handoff guard rather than a download-completion tracker. This amends
+the earlier static/no-script default only for this bounded action affordance.
 
 The controller remains renderer-owned public share chrome, not Vue hydration and
 not an application API workflow. It must be scoped to the download action, avoid
@@ -73,12 +76,12 @@ preserve normal anchor behavior when JavaScript is unavailable or fails to load.
 
 ## Decision Checkpoints
 
-1. **Approved path: add a tiny public-share download controller for persistent
-   busy state.**
+1. **Approved path: add a tiny public-share download controller for a short
+   browser-handoff busy guard.**
    The controller must be scoped to the `Ladda ner PDF` action, avoid API calls,
-   avoid logging token-bearing hrefs, clear busy state on page lifecycle/focus
-   recovery, and preserve direct-download fallback when JavaScript is
-   unavailable.
+   avoid logging token-bearing hrefs, clear busy state after the browser
+   handoff guard or page lifecycle/focus recovery, and preserve direct-download
+   fallback when JavaScript is unavailable.
 
 2. **Still forbidden: hydrate the public share page with Vue or introduce a
    broader app script.**
@@ -101,11 +104,12 @@ preserve normal anchor behavior when JavaScript is unavailable or fails to load.
 4. Add the smallest possible public-share download controller, targeted by a
    renderer-owned data attribute on the PDF action. The controller should set
    in-button busy state on click, preserve the anchor download, avoid token
-   logging/API calls, and clear busy state on page lifecycle or focus recovery.
+   logging/API calls, and clear busy state through a short browser-handoff guard
+   plus page lifecycle/focus fallback recovery.
 5. Add canonical disabled/busy styling and controller behavior so a busy
    `Ladda ner PDF` action communicates that it cannot be clicked again and
-   suppresses duplicate activation until browser handoff, lifecycle/focus
-   recovery, or timeout/failure recovery clears the state.
+   suppresses duplicate activation until browser handoff or lifecycle/focus
+   recovery clears the state.
 6. Apply the same action contract to both seating and grouping shared-link
    pages through the shared renderer path.
 7. Extend renderer and route tests so share HTML includes only the approved
@@ -142,10 +146,10 @@ share action presentation.
 
 Status: done as of 2026-05-03.
 
-The first implementation made the spinner persistent and geometry-stable, but
-the busy button still needs to adopt the canonical disabled/busy action state so
-users can see that `Ladda ner PDF` cannot be clicked again while the PDF is
-being generated or while the browser download handoff is in progress.
+The first implementation made the spinner geometry-stable, but the busy button
+still needs to adopt the canonical disabled/busy action state so users can see
+that `Ladda ner PDF` cannot be clicked again while the browser download handoff
+is in progress.
 
 Implementation requirements:
 
@@ -157,14 +161,18 @@ Implementation requirements:
 - Preserve progressive enhancement: if JavaScript is unavailable, the anchor
   must still download normally.
 - Do not add polling, fetch calls, route changes, token logging, or PDF job
-  state APIs. Recovery remains bounded to browser handoff/lifecycle/focus
-  recovery and timeout/failure fallback.
+  state APIs. Recovery remains bounded to the browser-handoff guard and
+  lifecycle/focus fallback cleanup.
 - Update browser proof so a second activation attempt during busy state does
   not trigger another download and the disabled/busy styling is visible without
   geometry shift.
 
 ## Implementation Evidence
 
+- Retained implementation review `REV-PR-0282` was re-reviewed and approved on
+  2026-05-03. The remediation changes the controller contract from a
+  completion-looking timeout to a short browser-handoff guard and adds retained
+  browser proof for post-handoff idle recovery.
 - Added reserved spinner markup to the shared-link `Ladda ner PDF` anchor in
   `share_renderer.py`, including the `UiDenseSpinner`-aligned 12px loader
   geometry, in-button busy state, `aria-busy`, and a stable reserved slot so the
@@ -172,8 +180,9 @@ Implementation requirements:
 - Added one bounded renderer-owned inline controller marked with
   `data-skriptoteket-share-pdf-download-controller="owned"`. It listens only
   for owned PDF-download anchor clicks, preserves normal anchor/download
-  behavior, avoids API calls/fetching/token logging, and clears busy state on
-  `pageshow`, window focus, visibility recovery, or timeout fallback.
+  behavior, avoids API calls/fetching/token logging, and now clears busy state
+  through a 1.8 second browser-handoff guard with `pageshow`, window focus, and
+  visibility recovery as fallback cleanup.
 - Kept public share route, token, slug, cache/noindex, filename, revocation,
   expiry, and export-backed PDF renderer semantics unchanged.
 - Updated renderer tests so hostile user text still cannot create script tags
@@ -194,7 +203,7 @@ Implementation requirements:
   state now sets `aria-disabled="true"`, uses the canonical disabled/busy visual
   treatment, temporarily removes `href` after browser handoff so duplicate
   mouse/keyboard activations cannot trigger a second download, and restores the
-  direct-download link on lifecycle/focus/timeout recovery.
+  direct-download link on browser-handoff guard, lifecycle, or focus recovery.
 - SRP follow-up complete: the shared PDF download action CSS, markup, and
   scoped controller moved out of `share_renderer.py` into
   `share_download_action_renderer.py`, leaving `share_renderer.py` focused on
@@ -214,3 +223,13 @@ Implementation requirements:
   visible spinner, progress cursor), proved unchanged action geometry, and
   confirmed one download event after a duplicate activation attempt. The
   temporary share row was removed after the proof.
+- Remediation proof for `REV-PR-0282` passed:
+  `PYTHONPATH=src:. pdm run python -m scripts.prove_pr_0282_share_pdf_download_handoff`,
+  artifact manifest
+  `.artifacts/pr-0282-share-pdf-download-handoff/20260503T162714829953Z/proof.json`.
+  The proof clicks real renderer-produced grouping and seating `Ladda ner PDF`
+  actions at desktop and mobile widths, observes one Playwright browser download
+  event while duplicate mouse/keyboard activations are attempted during the
+  guard, then asserts recovered idle state with restored `href`, cleared
+  `aria-busy`/`aria-disabled`, hidden spinner, and stable x-position/width. It
+  records browser handoff, not JavaScript-observed download completion.
