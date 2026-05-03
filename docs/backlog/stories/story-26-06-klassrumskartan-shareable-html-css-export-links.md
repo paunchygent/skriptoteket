@@ -106,6 +106,13 @@ sharing.
   - `PR-0279` remains a shared-link HTML/CSS renderer correction rather than a
     PDF visual-redesign slice. It is linked to `ST-26-07` because Teams/social
     preview PNGs are generated from the same immutable seating share artifact.
+    `REV-PR-0279` was re-reviewed and approved on 2026-05-03, then deployed to
+    Hemma as `b7bc5d9d`. The deploy log
+    `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260503-121524.log`
+    shows web/worker rebuild, migrations, and local seating export smoke passed.
+    The production backfill command returned `scanned=0 generated=0 refreshed=0
+    failed=0`, confirming no active stale seating preview rows remained after
+    deploy, and production health returned healthy.
   - `PR-0282` closed the shared-link `Ladda ner PDF` action for seating and
     grouping pages so any spinner/busy affordance aligns with the
     `UiDenseSpinner` language from `PR-0281`. Product ownership approved a

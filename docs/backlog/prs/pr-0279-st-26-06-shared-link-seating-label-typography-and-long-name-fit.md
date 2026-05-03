@@ -2,7 +2,7 @@
 type: pr
 id: PR-0279
 title: "ST-26-06 shared-link seating label typography and long-name fit"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-05-02
 updated: 2026-05-03
@@ -182,15 +182,15 @@ Current implementation changes:
 Latest proof run:
 
 - Proof JSON:
-  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/proof.json`
+  `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/proof.json`
 - Static share HTML:
-  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/share-page.html`
+  `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/share-page.html`
 - Desktop screenshot:
-  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/desktop.png`
+  `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/desktop.png`
 - Mobile screenshot:
-  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/mobile.png`
+  `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/mobile.png`
 - 1200x630 preview screenshot:
-  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/preview-1200x630.png`
+  `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/preview-1200x630.png`
 
 The proof asserts occupied seat tokens across short, `KristofferJonatan`,
 `Alexanderthegreat`, 18-wide-character fallback, long-surname, hyphenated, and
@@ -231,6 +231,31 @@ failure on `2026-05-02`: Playwright in `skriptoteket_web` resolved
 fix and rebuild, the container exposes `/ms-playwright/chromium-1208` and
 `/ms-playwright/chromium_headless_shell-1208`; the in-container smoke returned
 PNG bytes and the app-owned backfill generated one preview with `failed=0`.
+
+## Review And Deployment Closeout
+
+`REV-PR-0279` was re-reviewed and approved on 2026-05-03 after confirming the
+old-active-seating-artifact refresh path and the strengthened map-fit/fixture
+proof. The approved implementation was committed and pushed as `b7bc5d9d`.
+
+Production deploy/backfill evidence:
+
+```bash
+pdm run hemma-deploy
+pdm run hemma-deploy-monitor -- /home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260503-121524.log
+ssh hemma 'cd /home/paunchygent/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run backfill-classroom-share-previews --fail-fast'
+curl -sSf https://skriptoteket.hule.education/healthz
+```
+
+Deploy log `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260503-121524.log`
+shows Hemma fast-forwarded to `b7bc5d9d`, rebuilt and recreated `web` and
+`worker`, applied migrations, and passed the local seating export smoke with
+artifact directory
+`/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260503-121524`.
+Production backfill returned `Backfill classroom share previews complete:
+scanned=0 generated=0 refreshed=0 failed=0 failed_share_ids=`. Production
+`web` and `worker` were healthy, and `https://skriptoteket.hule.education/healthz`
+returned `{"status":"healthy","message":"Service is healthy"}`.
 
 ## Stop Conditions
 

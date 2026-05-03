@@ -5,7 +5,7 @@ title: "Klassrumskartan share-link Teams preview thumbnails"
 status: in_progress
 owners: "agents"
 created: 2026-05-01
-updated: 2026-05-02
+updated: 2026-05-03
 epic: "EPIC-26"
 dependencies:
   - "ST-26-06"
@@ -59,6 +59,10 @@ Klassrumskartan share links. Retained review gate: `REV-ST-26-07`.
   immutable HTML/CSS that preview PNGs are generated from. Any renderer-version
   or output change in that slice must either regenerate/backfill active preview
   assets or prove existing stale-preview detection already forces fresh assets.
+  `PR-0279` closed this contract on 2026-05-03: backfill now refreshes active
+  old seating artifacts from `presentation_payload` before regenerating previews,
+  and the Hemma production rerun after deploy returned `scanned=0 generated=0
+  refreshed=0 failed=0`, so no active stale seating preview rows remained.
 - The thumbnail runtime is a backend infrastructure adapter behind an
   application protocol. It must not depend on SPA hydration, browser-local
   state, owner-scoped APIs, or a logged-in user.
