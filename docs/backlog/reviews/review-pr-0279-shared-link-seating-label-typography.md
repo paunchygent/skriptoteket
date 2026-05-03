@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0279
 title: "Review: PR-0279 shared-link seating label typography"
-status: pending
+status: changes_requested
 owners: "agents"
 created: 2026-05-02
 updated: 2026-05-03
@@ -83,9 +83,9 @@ separate so seating-only typography fixes do not invalidate grouping previews.
 
 **Reviewer:** `lead-developer`
 **Date:** `2026-05-02`
-**Verdict:** pending
+**Verdict:** changes_requested
 
-### Required Changes
+### Prior Required Changes
 
 1. Replace the raw `<= 18 chars` fit rule with a deterministic weighted-width
    budget that treats narrow, wide, uppercase, spaces, and hyphens differently.
@@ -96,6 +96,40 @@ separate so seating-only typography fixes do not invalidate grouping previews.
    `klassrumskartan-share-renderer-v1` for unchanged grouping output and a
    seating-specific v2 renderer for seating label CSS/markup.
 
+### Current Required Changes
+
+1. **Blocker: active seating shares are not actually forced through the new
+   seating renderer/backfill contract.** The implementation moves newly
+   rendered seating artifacts to `klassrumskartan-seating-share-renderer-v2`,
+   but the backfill path only selects rows whose preview asset differs from the
+   currently stored artifact `content_hash`, `presentation_hash`, or
+   `renderer_version`. Existing active seating artifacts created with
+   `klassrumskartan-share-renderer-v1` and matching old preview rows therefore
+   remain fresh by definition, and the backfill command regenerates PNG bytes
+   from the already-stored old `rendered_html` rather than re-rendering the
+   artifact from `presentation_payload` with the new seating renderer. This does
+   not satisfy the `PR-0279` / `ST-26-07` lifecycle requirement that seating
+   renderer output changes either refresh/backfill active preview assets or
+   prove stale-preview detection forces fresh assets. Fix by choosing and
+   implementing one governed path: either explicitly document that PR-0279 is
+   new-share-only and remove the active-link backfill claim from PR/story/handoff
+   docs, or add a seating-only artifact refresh/backfill command that re-renders
+   active seating artifacts from stored presentation payload, updates
+   renderer/content provenance, and then regenerates previews. Add unit and
+   repository tests for an old seating artifact with a matching old preview row
+   so the selected behavior is proved.
+2. **Medium: the visual proof still does not assert the full overlap contract.**
+   The proof script asserts line containment inside each token, first/second-line
+   separation, hidden text clipping, ellipsis absence, fallback accessibility,
+   and token-token overlap. It does not assert the required map-fit or fixture
+   overlap conditions: labels/tokens versus benches, fixtures, rows, or room
+   edge. The PR doc says proof must inspect or assert those conditions, but the
+   retained evidence now only claims that seat tokens did not overlap each
+   other. Extend the Playwright proof to collect room surface and fixture rects,
+   assert token/label rects stay inside the surface, and assert no occupied
+   token/label intersects fixtures that should remain visually separate. Keep
+   the screenshots as review artifacts, but make the failure mode mechanical.
+
 ### Suggestions (Optional)
 
 Pending review.
@@ -104,17 +138,34 @@ Pending review.
 
 Latest proof artifacts:
 
-- `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/proof.json`
-- `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/desktop.png`
-- `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/mobile.png`
-- `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/preview-1200x630.png`
-- `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/share-page.html`
+- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/proof.json`
+- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/desktop.png`
+- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/mobile.png`
+- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/preview-1200x630.png`
+- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/share-page.html`
+
+Remediation evidence to review:
+
+- The preview backfill path now accepts the current seating renderer version,
+  selects active seating artifacts stored with older renderer provenance even
+  when their old preview row matches, re-renders from `presentation_payload`,
+  updates artifact renderer/content/presentation provenance, and then generates
+  the preview from the refreshed artifact.
+- Unit and repository tests cover an active old seating artifact with a matching
+  old preview row so the governed refresh path cannot silently become
+  new-share-only.
+- The Playwright proof now asserts occupied tokens and visible label lines stay
+  within the room surface, that the 1200x630 room surface fits the preview
+  viewport, and that labels/tokens do not intersect fixtures that must remain
+  visually separate. Bench carrier geometry is allowed to underlay seat tokens,
+  but visible label lines are still checked against fixture overlap.
 
 Verification recorded by the implementer:
 
 ```bash
 pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py
 PYTHONPATH=src:. pdm run python -m scripts.prove_pr_0279_share_label_typography
+pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py
 pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/web/apps/classroom_planner/test_share_pages.py
 pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/web/apps/classroom_planner/test_share_pages.py tests/unit/application/apps/classroom_planner/test_authenticated_shares.py tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/apps/classroom_planner/test_share_api.py tests/unit/web/test_public_apps_classroom_planner_shares.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_pdf_renderer.py
 pdm run handoff-validate
@@ -141,3 +192,4 @@ git diff --check
 | 3 | `EPIC-26` / `ST-26-06` / `ST-26-07` | Linked the renderer correction and preview lifecycle implications. |
 | 4 | `PR-0279` | Implemented renderer-versioned seat-label tiers and recorded proof artifacts for review. |
 | 5 | `PR-0279` / `REV-PR-0279` | Added remediation requirements for weighted fit, clipping proof, and share-kind-specific renderer provenance. |
+| 6 | `PR-0279` / `REV-PR-0279` | Added remediation evidence for old active seating artifact refresh/backfill and stronger map-fit/fixture-overlap proof. |

@@ -143,6 +143,7 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_previ
     PlaywrightClassroomPlannerSharePreviewRenderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
+    SEATING_SHARE_RENDERER_VERSION,
     StaticClassroomPlannerShareRenderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
@@ -959,12 +960,15 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        renderer: ClassroomPlannerShareRendererProtocol,
     ) -> BackfillClassroomPlannerSharePreviewsHandler:
         return BackfillClassroomPlannerSharePreviewsHandler(
             shares=shares,
             uow=uow,
             clock=clock,
             create_artifact=create_artifact,
+            renderer=renderer,
+            current_seating_renderer_version=SEATING_SHARE_RENDERER_VERSION,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -13,7 +13,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { Copy } from "lucide-vue-next";
 
 import { IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
-import { UiDenseActionButton } from "../../../components/ui";
+import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
 const props = withDefaults(
@@ -186,6 +186,8 @@ onUnmounted(() => {
             ref="createButtonRef"
             label="Skapa länk"
             :disabled="busy"
+            :busy="busy"
+            busy-label="Skapar länk"
             tone="primary"
             class="min-w-[8.5rem]"
             data-test="planner-share-create"
@@ -213,9 +215,18 @@ onUnmounted(() => {
           class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-navy bg-navy px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-canvas disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="busy"
           data-test="planner-share-create-mobile"
+          :aria-busy="busy ? 'true' : undefined"
+          :aria-label="busy ? 'Skapar länk' : undefined"
           @click="createShare"
         >
-          <IconPlus :size="12" />
+          <UiDenseSpinner
+            v-if="busy"
+            :size="12"
+          />
+          <IconPlus
+            v-else
+            :size="12"
+          />
           Skapa länk
         </button>
       </div>
@@ -290,11 +301,20 @@ onUnmounted(() => {
               :disabled="revokingShareId === share.id"
               :data-test="`planner-share-revoke-${share.id}`"
               title="Återkalla länken"
+              :aria-busy="revokingShareId === share.id ? 'true' : undefined"
+              :aria-label="revokingShareId === share.id ? 'Återkallar länken' : undefined"
               @click="emit('revoke-share', share)"
             >
-              <IconTrash :size="12" />
+              <UiDenseSpinner
+                v-if="revokingShareId === share.id"
+                :size="12"
+              />
+              <IconTrash
+                v-else
+                :size="12"
+              />
               <span class="sr-only md:not-sr-only">
-                {{ revokingShareId === share.id ? "Återkallar" : "Återkalla" }}
+                Återkalla
               </span>
             </button>
           </div>

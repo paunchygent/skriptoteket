@@ -118,6 +118,9 @@ def _artifact(
     draft_id: UUID,
     now: datetime,
     title: str = "Klass 7A",
+    draft_kind: PlanDraftKind = PlanDraftKind.GROUPING,
+    renderer_version: str = "share-renderer-v1",
+    presentation_schema_version: str = "grouping-share-v1",
 ) -> ClassroomPlannerShareArtifact:
     rendered_html = f"<main>{title}</main>"
     rendered_css = "main { color: black; }"
@@ -126,7 +129,7 @@ def _artifact(
         id=uuid4(),
         token_hash=hash_share_token(f"token-{title}"),
         source=ClassroomPlannerShareArtifactSource.AUTHENTICATED,
-        draft_kind=PlanDraftKind.GROUPING,
+        draft_kind=draft_kind,
         owner_user_id=owner_user_id,
         draft_id=draft_id,
         roster_id=roster_id,
@@ -136,8 +139,8 @@ def _artifact(
         slug="klass-7a",
         public_path="/share/classroom/public-token/klass-7a",
         preview_description="Frozen grouping plan",
-        renderer_version="share-renderer-v1",
-        presentation_schema_version="grouping-share-v1",
+        renderer_version=renderer_version,
+        presentation_schema_version=presentation_schema_version,
         presentation_hash=build_share_presentation_hash(presentation_payload),
         content_hash=build_share_content_hash(
             rendered_html=rendered_html,
@@ -242,17 +245,20 @@ async def test_share_artifact_repository_persists_preview_and_finds_stale_rows(
     missing_or_stale = await repository.list_active_shares_missing_or_stale_preview(
         now=now,
         limit=None,
+        current_seating_renderer_version="klassrumskartan-seating-share-renderer-v2",
     )
     stale_preview = preview.model_copy(update={"source_content_hash": "sha256:stale"})
     await repository.upsert_preview_asset(preview_asset=stale_preview)
     stale_rows = await repository.list_active_shares_missing_or_stale_preview(
         now=now,
         limit=10,
+        current_seating_renderer_version="klassrumskartan-seating-share-renderer-v2",
     )
     await repository.upsert_preview_asset(preview_asset=preview)
     fresh_rows = await repository.list_active_shares_missing_or_stale_preview(
         now=now,
         limit=10,
+        current_seating_renderer_version="klassrumskartan-seating-share-renderer-v2",
     )
 
     assert created == artifact
@@ -260,6 +266,53 @@ async def test_share_artifact_repository_persists_preview_and_finds_stale_rows(
     assert missing_or_stale == []
     assert stale_rows == [artifact]
     assert fresh_rows == []
+
+
+@pytest.mark.integration
+async def test_share_artifact_repository_finds_old_seating_renderer_with_fresh_preview(
+    db_session: AsyncSession,
+) -> None:
+    now = datetime(2026, 4, 30, tzinfo=timezone.utc)
+    owner_user_id, roster_id, template_id, draft_id = await _seed_owner_and_draft(
+        db_session=db_session,
+        now=now,
+    )
+    repository = PostgreSQLClassroomPlannerShareArtifactRepository(db_session)
+    artifact = _artifact(
+        owner_user_id=owner_user_id,
+        roster_id=roster_id,
+        template_id=template_id,
+        draft_id=draft_id,
+        now=now,
+        draft_kind=PlanDraftKind.SEATING,
+        renderer_version="klassrumskartan-share-renderer-v1",
+        presentation_schema_version="seating-share-v1",
+    )
+    preview = _preview_asset(artifact=artifact, now=now)
+    await repository.create_with_preview(artifact=artifact, preview_asset=preview)
+
+    rows = await repository.list_active_shares_missing_or_stale_preview(
+        now=now,
+        limit=10,
+        current_seating_renderer_version="klassrumskartan-seating-share-renderer-v2",
+    )
+    refreshed = artifact.model_copy(
+        update={
+            "renderer_version": "klassrumskartan-seating-share-renderer-v2",
+            "rendered_html": "<main>new seating</main>",
+            "rendered_css": "main { color: navy; }",
+            "content_hash": build_share_content_hash(
+                rendered_html="<main>new seating</main>",
+                rendered_css="main { color: navy; }",
+            ),
+            "updated_at": datetime(2026, 5, 1, tzinfo=timezone.utc),
+        }
+    )
+    persisted = await repository.update_rendered_artifact(artifact=refreshed)
+
+    assert rows == [artifact]
+    assert persisted.renderer_version == "klassrumskartan-seating-share-renderer-v2"
+    assert persisted.content_hash == refreshed.content_hash
 
 
 @pytest.mark.integration

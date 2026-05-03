@@ -23,10 +23,8 @@ import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
   UiDenseIconButton,
-  UiDenseStatusPill,
   UiDenseToggle,
   denseActionValueClass,
-  type DenseStatusTone,
 } from "../../../components/ui";
 import type { GroupingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
@@ -111,48 +109,6 @@ const removableGroupId = computed(() => {
     return null;
   }
   return [...state.groups].sort((left, right) => left.sort_order - right.sort_order).at(-1)?.id ?? null;
-});
-const exportStatus = computed<{
-  label: string;
-  tone: DenseStatusTone;
-  title?: string;
-} | null>(() => {
-  if (props.exportBusy) {
-    if (props.exportStatusLabel?.includes("längre tid än väntat")) {
-      return {
-        label: "Kontrollerar export…",
-        tone: "warning",
-        title: props.exportStatusLabel,
-      };
-    }
-    return {
-      label: props.exportStatusLabel ?? "Exporterar…",
-      tone: "neutral",
-      title: props.exportStatusLabel ?? undefined,
-    };
-  }
-  if (props.exportErrorMessage) {
-    return {
-      label: "Exportproblem",
-      tone: "error",
-      title: props.exportErrorMessage,
-    };
-  }
-  if (props.shareBusy) {
-    return {
-      label: props.shareStatusLabel ?? "Skapar länk…",
-      tone: "neutral",
-      title: props.shareStatusLabel ?? undefined,
-    };
-  }
-  if (props.shareErrorMessage) {
-    return {
-      label: "Delningsproblem",
-      tone: "error",
-      title: props.shareErrorMessage,
-    };
-  }
-  return null;
 });
 const exportOptions = computed<PlannerExportOption[]>(() => [
   {
@@ -521,13 +477,6 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
           @create-share="emit('share-link')"
           @copy-share="emit('copy-share', $event)"
           @revoke-share="emit('revoke-share', $event)"
-        />
-        <UiDenseStatusPill
-          v-if="showExportActions && exportStatus"
-          :label="exportStatus.label"
-          :tone="exportStatus.tone"
-          :title="exportStatus.title"
-          data-test="grouping-export-status-pill"
         />
         <PlannerToolbarOverflowMenu
           label="Fler gruppåtgärder"

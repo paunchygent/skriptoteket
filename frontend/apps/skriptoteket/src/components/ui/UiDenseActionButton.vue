@@ -15,6 +15,7 @@ import {
   type DenseActionSize,
   type DenseActionTone,
 } from "./denseToolPrimitives";
+import UiDenseSpinner from "./UiDenseSpinner.vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -34,6 +35,8 @@ const props = withDefaults(
     expanded?: boolean;
     hasPopup?: "menu" | "dialog";
     type?: "button" | "submit" | "reset";
+    busy?: boolean;
+    busyLabel?: string;
   }>(),
   {
     ariaLabel: undefined,
@@ -47,6 +50,8 @@ const props = withDefaults(
     expanded: undefined,
     hasPopup: undefined,
     type: "button",
+    busy: false,
+    busyLabel: undefined,
   },
 );
 
@@ -64,6 +69,9 @@ const buttonClass = computed(() => {
 });
 
 const resolvedAriaLabel = computed(() => {
+  if (props.busy && props.busyLabel) {
+    return props.busyLabel;
+  }
   if (props.iconOnly) {
     return props.ariaLabel ?? props.label;
   }
@@ -71,6 +79,9 @@ const resolvedAriaLabel = computed(() => {
 });
 
 const resolvedTitle = computed(() => {
+  if (props.busy && props.busyLabel) {
+    return props.busyLabel;
+  }
   if (props.title) {
     return props.title;
   }
@@ -96,13 +107,21 @@ defineExpose({
     :disabled="disabled"
     :aria-label="resolvedAriaLabel"
     :title="resolvedTitle"
+    :aria-busy="busy ? 'true' : undefined"
     :aria-pressed="active || undefined"
     :aria-expanded="expanded"
     :aria-haspopup="hasPopup"
     data-ui="dense-action-button"
   >
     <span
-      v-if="$slots.leading"
+      v-if="busy"
+      class="shrink-0"
+      aria-hidden="true"
+    >
+      <UiDenseSpinner :size="iconOnly ? 14 : 12" />
+    </span>
+    <span
+      v-else-if="$slots.leading"
       class="shrink-0"
       aria-hidden="true"
     >

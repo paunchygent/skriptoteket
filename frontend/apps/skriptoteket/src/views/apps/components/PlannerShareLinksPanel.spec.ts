@@ -105,4 +105,30 @@ describe("PlannerShareLinksPanel", () => {
     expect(wrapper.find('[data-test="planner-share-archive-link-share-4"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="planner-share-archive-toggle"]').exists()).toBe(false);
   });
+
+  it("shows create and revoke processing state inside existing controls", async () => {
+    const share = makeShare({
+      id: "share-5",
+      publicUrl: "https://skriptoteket.hule.education/share/classroom/active/klass-7a",
+    });
+    const wrapper = mount(PlannerShareLinksPanel, {
+      props: {
+        busy: true,
+        revokingShareId: "share-5",
+        shares: [share],
+      },
+    });
+
+    await wrapper.get('[data-test="planner-share-links-trigger"]').trigger("click");
+
+    const createButton = wrapper.get('[data-test="planner-share-create"]');
+    expect(createButton.attributes("disabled")).toBeDefined();
+    expect(createButton.find('[data-ui="dense-spinner"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="planner-share-status"]').exists()).toBe(false);
+
+    const revokeButton = wrapper.get('[data-test="planner-share-revoke-share-5"]');
+    expect(revokeButton.attributes("disabled")).toBeDefined();
+    expect(revokeButton.find('[data-ui="dense-spinner"]').exists()).toBe(true);
+    expect(revokeButton.text()).toContain("Återkalla");
+  });
 });

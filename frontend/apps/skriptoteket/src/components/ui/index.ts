@@ -14,6 +14,7 @@ export { default as UiDenseIconButton } from "./UiDenseIconButton.vue";
 export { default as UiDenseMenuButton } from "./UiDenseMenuButton.vue";
 export { default as UiDenseSplitButton } from "./UiDenseSplitButton.vue";
 export { default as UiDenseStatusPill } from "./UiDenseStatusPill.vue";
+export { default as UiDenseSpinner } from "./UiDenseSpinner.vue";
 export { default as UiDenseToggle } from "./UiDenseToggle.vue";
 export { default as UiMarkdown } from "./UiMarkdown.vue";
 export { default as UiSearchBar } from "./UiSearchBar.vue";

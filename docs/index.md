@@ -302,6 +302,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md`
 - ST-29-11 follow-up desktop-first planner toolbar breakpoint overflow escalation + undo/redo shortcut parity:
   `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
+- ST-29-11 toolbar processing spinner and status-pill removal:
+  `docs/backlog/prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md`
 - ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
   `docs/backlog/prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md`
 - Review gate for ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:

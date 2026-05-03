@@ -27,6 +27,10 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_previ
     ClassroomPlannerSharePreviewRendererSettings,
     PlaywrightClassroomPlannerSharePreviewRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
+    SEATING_SHARE_RENDERER_VERSION,
+    StaticClassroomPlannerShareRenderer,
+)
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.classroom_planner_share_artifacts import (
@@ -76,6 +80,8 @@ async def _backfill_async(*, limit: int | None, fail_fast: bool) -> None:
             uow=uow,
             clock=clock,
             create_artifact=create_artifact,
+            renderer=StaticClassroomPlannerShareRenderer(),
+            current_seating_renderer_version=SEATING_SHARE_RENDERER_VERSION,
         )
         result = await handler.handle(limit=limit, fail_fast=fail_fast)
 
@@ -83,5 +89,6 @@ async def _backfill_async(*, limit: int | None, fail_fast: bool) -> None:
     typer.echo(
         "Backfill classroom share previews complete: "
         f"scanned={result.scanned} generated={result.generated} "
+        f"refreshed={result.refreshed} "
         f"failed={len(result.failed_share_ids)} failed_share_ids={failed}"
     )

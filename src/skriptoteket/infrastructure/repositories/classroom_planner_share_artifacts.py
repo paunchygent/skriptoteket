@@ -223,11 +223,34 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
         await self._session.refresh(model)
         return self._to_preview_asset(model)
 
+    async def update_rendered_artifact(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+    ) -> ClassroomPlannerShareArtifact:
+        model = await self._session.get(ClassroomPlannerShareArtifactModel, artifact.id)
+        if model is None:
+            raise ValueError(f"Classroom planner share artifact not found: {artifact.id}")
+        model.title = artifact.title
+        model.preview_description = artifact.preview_description
+        model.renderer_version = artifact.renderer_version
+        model.presentation_schema_version = artifact.presentation_schema_version
+        model.presentation_hash = artifact.presentation_hash
+        model.content_hash = artifact.content_hash
+        model.presentation_payload = artifact.presentation_payload
+        model.rendered_html = artifact.rendered_html
+        model.rendered_css = artifact.rendered_css
+        model.updated_at = artifact.updated_at
+        await self._session.flush()
+        await self._session.refresh(model)
+        return self._to_artifact(model)
+
     async def list_active_shares_missing_or_stale_preview(
         self,
         *,
         now: datetime,
         limit: int | None,
+        current_seating_renderer_version: str,
     ) -> list[ClassroomPlannerShareArtifact]:
         statement = (
             select(ClassroomPlannerShareArtifactModel)
@@ -255,6 +278,16 @@ class PostgreSQLClassroomPlannerShareArtifactRepository(
                     | (
                         ClassroomPlannerSharePreviewAssetModel.renderer_version
                         != ClassroomPlannerShareArtifactModel.renderer_version
+                    )
+                    | (
+                        (
+                            ClassroomPlannerShareArtifactModel.draft_kind
+                            == PlanDraftKind.SEATING.value
+                        )
+                        & (
+                            ClassroomPlannerShareArtifactModel.renderer_version
+                            != current_seating_renderer_version
+                        )
                     )
                 ),
             )

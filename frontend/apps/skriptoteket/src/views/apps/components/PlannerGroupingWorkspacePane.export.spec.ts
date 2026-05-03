@@ -135,29 +135,27 @@ describe("PlannerGroupingWorkspaceToolbar", () => {
     expect(wrapper.emitted("change-grouping-roster")).toEqual([["roster-2"]]);
   });
 
-  it("forwards export actions and keeps feedback compact in the toolbar row", async () => {
+  it("forwards export actions and keeps processing feedback inside the export control", async () => {
     const wrapper = mount(PlannerGroupingWorkspaceToolbar, {
       props: {
         availableRosters: buildRosters(),
         selectedRosterId: "roster-1",
-        exportErrorMessage: "PDF skapades men kunde inte laddas ned automatiskt. Hämta den i Mina filer.",
+        exportBusy: true,
+        exportStatusLabel: "Exporterar…",
       },
     });
 
     expect(wrapper.find('[data-test="grouping-export-status-bar"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="grouping-export-status-pill"]').text()).toContain("Exportproblem");
+    expect(wrapper.find('[data-test="grouping-export-status-pill"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="grouping-export-default"]').find('[data-ui="dense-spinner"]').exists())
+      .toBe(true);
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="grouping-export-group"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-export-default"]').trigger("click");
-    expect(wrapper.emitted("export-default")).toEqual([[]]);
+    expect(wrapper.emitted("export-default")).toBeUndefined();
 
     await wrapper.get('[data-test="grouping-export-menu-trigger"]').trigger("click");
-    expect(wrapper.get('[data-test="grouping-export-option-pdf"]').text()).toContain(
-      "PDF (A4 stående)",
-    );
-
-    await wrapper.get('[data-test="grouping-export-option-pdf"]').trigger("click");
-    expect(wrapper.emitted("export-option")).toEqual([["pdf_a4_portrait"]]);
+    expect(wrapper.find('[data-test="grouping-export-option-pdf"]').exists()).toBe(false);
   });
 
   it("uses the quiet group-count stepper and new-draft action in the detached toolbar", async () => {

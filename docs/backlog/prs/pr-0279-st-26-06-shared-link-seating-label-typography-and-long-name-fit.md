@@ -163,9 +163,16 @@ Current implementation changes:
   `klassrumskartan-share-renderer-v1`, moves seating artifacts to
   `klassrumskartan-seating-share-renderer-v2`, and composes grouping/seating CSS
   separately so grouping previews are not invalidated by seating-only CSS.
+- `backfill-classroom-share-previews` now treats active seating artifacts whose
+  stored renderer version is not `klassrumskartan-seating-share-renderer-v2` as
+  refresh candidates even when an old preview row still matches the old
+  artifact. It re-renders those seating artifacts from stored
+  `presentation_payload`, updates stored renderer/content/presentation
+  provenance, and then regenerates the preview from the refreshed artifact.
 - `scripts/prove_pr_0279_share_label_typography.py` creates the repeatable
   desktop, mobile, and 1200x630 preview proof, including scroll/client width
-  clipping assertions and fallback `aria-label`/`title` checks.
+  clipping assertions, room-surface fit checks, fixture-overlap checks, and
+  fallback `aria-label`/`title` checks.
 - `compose.yaml` now keeps Docker web/worker Playwright execution on the
   Linux browser layer by setting `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` and
   clearing the host-only `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` inherited from
@@ -175,15 +182,15 @@ Current implementation changes:
 Latest proof run:
 
 - Proof JSON:
-  `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/proof.json`
+  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/proof.json`
 - Static share HTML:
-  `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/share-page.html`
+  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/share-page.html`
 - Desktop screenshot:
-  `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/desktop.png`
+  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/desktop.png`
 - Mobile screenshot:
-  `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/mobile.png`
+  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/mobile.png`
 - 1200x630 preview screenshot:
-  `.artifacts/pr-0279-share-label-typography/20260502T235526549245Z/preview-1200x630.png`
+  `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/preview-1200x630.png`
 
 The proof asserts occupied seat tokens across short, `KristofferJonatan`,
 `Alexanderthegreat`, 18-wide-character fallback, long-surname, hyphenated, and
@@ -191,14 +198,17 @@ extreme-fallback cases. For desktop, mobile, and 1200x630 preview viewports,
 all visible label lines were contained inside their seat tokens, first and
 second lines were separated, `scrollWidth <= clientWidth` held within tolerance,
 `textOverflow` computed to `clip` rather than `ellipsis`, no visible line was
-empty, fallback cases preserved full `aria-label`/`title`, and no seat tokens
-overlapped.
+empty, fallback cases preserved full `aria-label`/`title`, occupied tokens and
+visible label lines stayed inside the room surface, the 1200x630 room surface
+fit the preview viewport, token-token overlap was absent, and labels/tokens did
+not intersect fixtures that must remain visually separate.
 
 Verification run:
 
 ```bash
 pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py
 PYTHONPATH=src:. pdm run python -m scripts.prove_pr_0279_share_label_typography
+pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py
 pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/web/apps/classroom_planner/test_share_pages.py
 pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/web/apps/classroom_planner/test_share_pages.py tests/unit/application/apps/classroom_planner/test_authenticated_shares.py tests/unit/application/apps/classroom_planner/test_public_shares.py tests/unit/web/apps/classroom_planner/test_share_api.py tests/unit/web/test_public_apps_classroom_planner_shares.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_pdf_renderer.py
 pdm run handoff-validate

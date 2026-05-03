@@ -144,13 +144,22 @@ class _FakeShareRepository:
         self.preview_assets_by_share_id[preview_asset.share_id] = preview_asset
         return preview_asset
 
+    async def update_rendered_artifact(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+    ) -> ClassroomPlannerShareArtifact:
+        self.artifacts_by_id[artifact.id] = artifact
+        return artifact
+
     async def list_active_shares_missing_or_stale_preview(
         self,
         *,
         now: datetime,
         limit: int | None,
+        current_seating_renderer_version: str,
     ) -> list[ClassroomPlannerShareArtifact]:
-        del now, limit
+        del now, limit, current_seating_renderer_version
         return []
 
     async def revoke_owned(self, **_kwargs: object) -> ClassroomPlannerShareArtifact | None:

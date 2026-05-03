@@ -110,27 +110,55 @@ def _capture_and_assert(
 ) -> dict[str, object]:
     page = browser.new_page(viewport=viewport)
     page.set_content(html, wait_until="load")
+    require_surface_fit = viewport["width"] == 1200 and viewport["height"] == 630
     checks = page.evaluate(
         """() => {
+            const toRect = (element) => {
+              const rect = element.getBoundingClientRect();
+              return {
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+                width: rect.width,
+                height: rect.height,
+              };
+            };
+            const containsRect = (outer, inner, tolerance = 1) =>
+              inner.left >= outer.left - tolerance &&
+              inner.right <= outer.right + tolerance &&
+              inner.top >= outer.top - tolerance &&
+              inner.bottom <= outer.bottom + tolerance;
+            const intersectsRect = (a, b, tolerance = 0.5) =>
+              a.left < b.right - tolerance &&
+              a.right > b.left + tolerance &&
+              a.top < b.bottom - tolerance &&
+              a.bottom > b.top + tolerance;
+            const surfaceRect = toRect(document.querySelector('.room-surface'));
+            const viewportRect = {
+              left: 0,
+              top: 0,
+              right: window.innerWidth,
+              bottom: window.innerHeight,
+              width: window.innerWidth,
+              height: window.innerHeight,
+            };
+            const fixtureRects = [...document.querySelectorAll('.room-fixture')]
+              .map((fixture, index) => ({
+                index,
+                classes: fixture.className,
+                blocksToken: !fixture.classList.contains('room-fixture--bench'),
+                rect: toRect(fixture),
+              }));
             const tokenRects = [...document.querySelectorAll('.room-seat__token')]
-              .map((token) => {
-                const rect = token.getBoundingClientRect();
-                return {
-                  left: rect.left,
-                  top: rect.top,
-                  right: rect.right,
-                  bottom: rect.bottom,
-                  width: rect.width,
-                  height: rect.height,
-                };
-              });
+              .map((token) => toRect(token));
             const lineChecks = [...document.querySelectorAll('.room-seat:not(.room-seat--empty)')]
-              .map((seat) => {
-                const token = seat.querySelector('.room-seat__token').getBoundingClientRect();
+              .map((seat, seatIndex) => {
+                const token = toRect(seat.querySelector('.room-seat__token'));
                 const isFallback = seat.classList.contains('room-seat--name-fallback');
                 const lines = [...seat.querySelectorAll('.room-seat__name-line')]
                   .map((line) => {
-                    const rect = line.getBoundingClientRect();
+                    const rect = toRect(line);
                     const text = line.textContent ?? '';
                     return {
                       text,
@@ -148,19 +176,31 @@ def _capture_and_assert(
                 const visibleText = visibleLines.map((line) => line.text.trim()).join(' ');
                 const title = seat.getAttribute('title') ?? '';
                 const ariaLabel = seat.getAttribute('aria-label') ?? '';
+                const labelFixtureOverlaps = [];
+                for (const fixture of fixtureRects) {
+                  if (fixture.blocksToken && intersectsRect(token, fixture.rect)) {
+                    labelFixtureOverlaps.push({ seatIndex, fixtureIndex: fixture.index, kind: 'token', fixtureClasses: fixture.classes });
+                  }
+                  for (const line of visibleLines) {
+                    if (intersectsRect(line, fixture.rect)) {
+                      labelFixtureOverlaps.push({ seatIndex, fixtureIndex: fixture.index, kind: 'line', fixtureClasses: fixture.classes, text: line.text });
+                    }
+                  }
+                }
                 return {
+                  seatIndex,
                   title,
                   ariaLabel,
                   classes: seat.className,
                   isFallback,
+                  token,
                   lines,
                   visibleText,
                   contained: visibleLines.every((line) =>
-                    line.left >= token.left - 1 &&
-                    line.right <= token.right + 1 &&
-                    line.top >= token.top - 1 &&
-                    line.bottom <= token.bottom + 1
+                    containsRect(token, line)
                   ),
+                  withinSurface: containsRect(surfaceRect, token) &&
+                    visibleLines.every((line) => containsRect(surfaceRect, line)),
                   separated: visibleLines.length < 2 || visibleLines[0].bottom <= visibleLines[1].top + 0.5,
                   noHiddenClip: visibleLines.every((line) => line.scrollWidth <= line.clientWidth + 1),
                   visibleLinesNotEmpty: lines.length > 0 && lines.every((line) => line.text.trim().length > 0),
@@ -175,6 +215,7 @@ def _capture_and_assert(
                     visibleText.length > 0 &&
                     visibleText !== title
                   ),
+                  labelFixtureOverlaps,
                 };
               });
             const overlaps = [];
@@ -188,7 +229,15 @@ def _capture_and_assert(
                 }
               }
             }
-            return { lineChecks, overlaps, tokenCount: tokenRects.length };
+            return {
+              fixtureRects,
+              lineChecks,
+              overlaps,
+              surfaceFitsViewport: containsRect(viewportRect, surfaceRect),
+              surfaceRect,
+              tokenCount: tokenRects.length,
+              viewportRect,
+            };
         }"""
     )
     failures = [
@@ -201,10 +250,17 @@ def _capture_and_assert(
             and check["visibleLinesNotEmpty"]
             and check["noEllipsis"]
             and check["fallbackPreservesFullLabel"]
+            and check["withinSurface"]
+            and not check["labelFixtureOverlaps"]
         )
     ]
     if failures:
         raise AssertionError(f"Seat label layout failures: {failures}")
+    if require_surface_fit and not checks["surfaceFitsViewport"]:
+        raise AssertionError(
+            "Room surface does not fit preview viewport: "
+            f"surface={checks['surfaceRect']} viewport={checks['viewportRect']}"
+        )
     if checks["overlaps"]:
         raise AssertionError(f"Seat token overlap detected: {checks['overlaps']}")
     page.screenshot(path=str(output_path), full_page=False)

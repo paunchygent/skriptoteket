@@ -51,6 +51,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0227: ST-29-11 exact two-row grouping board height contract at desktop baseline](../prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md)
 - [PR-0228: ST-29-11 follow-up: desktop student-pool rail stickiness restoration](../prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md)
 - [PR-0229: ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity](../prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
+- [PR-0281: ST-29-11 toolbar processing spinner and status-pill removal](../prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md)
 
 ## Implementation Summary (as of 2026-04-06)
 

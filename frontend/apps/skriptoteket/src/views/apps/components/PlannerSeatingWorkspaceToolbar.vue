@@ -15,9 +15,7 @@ import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
   UiDenseIconButton,
-  UiDenseStatusPill,
   UiDenseToggle,
-  type DenseStatusTone,
 } from "../../../components/ui";
 import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
@@ -115,48 +113,6 @@ const canRandomizeSeating = computed(() => {
   );
 });
 const hasSeatingAssignments = computed(() => plannerState.seatAssignments.length > 0);
-const exportStatus = computed<{
-  label: string;
-  tone: DenseStatusTone;
-  title?: string;
-} | null>(() => {
-  if (props.exportBusy) {
-    if (props.exportStatusLabel?.includes("längre tid än väntat")) {
-      return {
-        label: "Kontrollerar export…",
-        tone: "warning",
-        title: props.exportStatusLabel,
-      };
-    }
-    return {
-      label: props.exportStatusLabel ?? "Exporterar…",
-      tone: "neutral",
-      title: props.exportStatusLabel ?? undefined,
-    };
-  }
-  if (props.exportErrorMessage) {
-    return {
-      label: "Exportproblem",
-      tone: "error",
-      title: props.exportErrorMessage,
-    };
-  }
-  if (props.shareBusy) {
-    return {
-      label: props.shareStatusLabel ?? "Skapar länk…",
-      tone: "neutral",
-      title: props.shareStatusLabel ?? undefined,
-    };
-  }
-  if (props.shareErrorMessage) {
-    return {
-      label: "Delningsproblem",
-      tone: "error",
-      title: props.shareErrorMessage,
-    };
-  }
-  return null;
-});
 const exportOptions = computed<PlannerExportOption[]>(() => [
   {
     id: "a3",
@@ -531,13 +487,6 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
           @create-share="emit('share-link')"
           @copy-share="emit('copy-share', $event)"
           @revoke-share="emit('revoke-share', $event)"
-        />
-        <UiDenseStatusPill
-          v-if="showExportActions && exportStatus"
-          :label="exportStatus.label"
-          :tone="exportStatus.tone"
-          :title="exportStatus.title"
-          data-test="seating-export-status-pill"
         />
         <PlannerToolbarOverflowMenu
           label="Fler sittplatsåtgärder"

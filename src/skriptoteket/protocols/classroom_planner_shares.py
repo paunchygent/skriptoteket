@@ -69,11 +69,18 @@ class ClassroomPlannerShareArtifactRepositoryProtocol(Protocol):
         preview_asset: ClassroomPlannerSharePreviewAsset,
     ) -> ClassroomPlannerSharePreviewAsset: ...
 
+    async def update_rendered_artifact(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+    ) -> ClassroomPlannerShareArtifact: ...
+
     async def list_active_shares_missing_or_stale_preview(
         self,
         *,
         now: datetime,
         limit: int | None,
+        current_seating_renderer_version: str,
     ) -> list[ClassroomPlannerShareArtifact]: ...
 
     async def list_for_owner_draft(

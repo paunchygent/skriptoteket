@@ -72,7 +72,7 @@ const {
 const hasEnabledItems = computed(() => props.items.some((item) => !item.disabled));
 const mainDisabled = computed(() => props.disabled || props.busy);
 const menuDisabled = computed(() => props.disabled || props.busy || !hasEnabledItems.value);
-const resolvedLabel = computed(() => (props.busy ? props.busyLabel ?? props.label : props.label));
+const resolvedBusyLabel = computed(() => props.busyLabel ?? props.label);
 
 function triggerDefault(): void {
   if (mainDisabled.value) {
@@ -98,7 +98,9 @@ function selectItem(id: string, disabled?: boolean): void {
     :data-test="rootTestId"
   >
     <UiDenseActionButton
-      :label="resolvedLabel"
+      :label="label"
+      :busy="busy"
+      :busy-label="resolvedBusyLabel"
       :disabled="mainDisabled"
       tone="primary"
       group-position="start"

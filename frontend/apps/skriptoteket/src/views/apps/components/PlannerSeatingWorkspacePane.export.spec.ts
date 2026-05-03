@@ -147,29 +147,27 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     expect(wrapper.emitted("open-settings")).toEqual([[]]);
   });
 
-  it("keeps export feedback compact and forwards seating export actions", async () => {
+  it("keeps processing feedback inside the export control and forwards seating export actions", async () => {
     const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
       props: {
         availableTemplates: [buildTemplate()],
         selectedTemplateId: "template-1",
-        exportErrorMessage: "PDF skapades men kunde inte laddas ned automatiskt. Hämta den i Mina filer.",
+        exportBusy: true,
+        exportStatusLabel: "Exporterar…",
       },
     });
 
     expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="seating-export-status-pill"]').text()).toContain("Exportproblem");
+    expect(wrapper.find('[data-test="seating-export-status-pill"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="seating-export-default"]').find('[data-ui="dense-spinner"]').exists())
+      .toBe(true);
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-export-group"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-export-default"]').trigger("click");
-    expect(wrapper.emitted("export-default")).toEqual([[]]);
+    expect(wrapper.emitted("export-default")).toBeUndefined();
 
     await wrapper.get('[data-test="seating-export-menu-trigger"]').trigger("click");
-    expect(wrapper.get('[data-test="seating-export-option-xlsx"]').text()).toContain(
-      "Excel (.xlsx)",
-    );
-
-    await wrapper.get('[data-test="seating-export-option-xlsx"]').trigger("click");
-    expect(wrapper.emitted("export-option")).toEqual([["xlsx"]]);
+    expect(wrapper.find('[data-test="seating-export-option-xlsx"]').exists()).toBe(false);
   });
 
   it("focuses the classroom picker instead of starting a draft without a classroom", async () => {

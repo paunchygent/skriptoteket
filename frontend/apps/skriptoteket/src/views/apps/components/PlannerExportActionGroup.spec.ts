@@ -39,6 +39,12 @@ describe("PlannerExportActionGroup", () => {
     expect(
       wrapper.get('[data-test="seating-export-menu-trigger"]').attributes("disabled"),
     ).toBeDefined();
+    expect(wrapper.get('[data-test="seating-export-default"]').text()).toContain("Exportera");
+    expect(wrapper.get('[data-test="seating-export-default"]').attributes("aria-label")).toBe(
+      "Exporterar…",
+    );
+    expect(wrapper.get('[data-test="seating-export-default"]').find('[data-ui="dense-spinner"]').exists())
+      .toBe(true);
 
     await wrapper.get('[data-test="seating-export-default"]').trigger("click");
     await wrapper.get('[data-test="seating-export-menu-trigger"]').trigger("click");

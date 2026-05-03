@@ -25,13 +25,23 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetClassroomPlannerShareArtifactByTokenHandler,
     GetClassroomPlannerSharePreviewAssetHandler,
     ListClassroomPlannerShareArtifactsHandler,
+    RenderedClassroomPlannerShare,
     RevokeClassroomPlannerShareArtifactHandler,
+)
+from skriptoteket.application.curated_apps.classroom_planner.exports import (
+    PosterSceneRoom,
+    PreparedGroupingExportContract,
+    PreparedSeatingExportContract,
+    SeatingExportKind,
+    SeatingExportLayoutId,
+    SeatingPosterScene,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     SHARE_CREATED_DATE_CHROME_SLOT,
     SHARE_CREATED_DATE_PLACEHOLDER,
     SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
     SHARE_PDF_DOWNLOAD_PATH_PLACEHOLDER,
+    JsonObject,
     PublicGuestSharePersistenceResult,
     build_share_content_hash,
     build_share_presentation_hash,
@@ -82,6 +92,36 @@ class _FakePreviewRenderer:
     async def render_png(self, *, artifact: ClassroomPlannerShareArtifact) -> bytes:
         self.rendered_artifacts.append(artifact)
         return self._image_bytes
+
+
+class _FakeShareRenderer:
+    def render_grouping(
+        self,
+        *,
+        prepared_export: PreparedGroupingExportContract,
+    ) -> RenderedClassroomPlannerShare:
+        raise AssertionError("Grouping shares are outside this test fake.")
+
+    def render_seating(
+        self,
+        *,
+        prepared_export: PreparedSeatingExportContract,
+    ) -> RenderedClassroomPlannerShare:
+        payload = prepared_export.model_dump(mode="json")
+        assert isinstance(payload, dict)
+        return RenderedClassroomPlannerShare(
+            title=f"{prepared_export.roster_name} - Sittschema",
+            preview_description=f"Sittschema för {prepared_export.roster_name}.",
+            renderer_version="klassrumskartan-seating-share-renderer-v2",
+            presentation_schema_version="seating-share-v1",
+            presentation_payload=payload,
+            rendered_html=(
+                f"<main><p>Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}</p>"
+                f"<a {SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT}>PDF</a>"
+                f"{prepared_export.roster_name} refreshed</main>"
+            ),
+            rendered_css="main { color: navy; }",
+        )
 
 
 class _FakeShareRepository:
@@ -141,20 +181,35 @@ class _FakeShareRepository:
         self.preview_assets_by_share_id[preview_asset.share_id] = preview_asset
         return preview_asset
 
+    async def update_rendered_artifact(
+        self,
+        *,
+        artifact: ClassroomPlannerShareArtifact,
+    ) -> ClassroomPlannerShareArtifact:
+        self.artifacts_by_id[artifact.id] = artifact
+        return artifact
+
     async def list_active_shares_missing_or_stale_preview(
         self,
         *,
         now: datetime,
         limit: int | None,
+        current_seating_renderer_version: str,
     ) -> list[ClassroomPlannerShareArtifact]:
         matches = [
             artifact
             for artifact in self.artifacts_by_id.values()
             if artifact.revoked_at is None
             and (artifact.expires_at is None or artifact.expires_at > now)
-            and _is_missing_or_stale_preview(
-                artifact=artifact,
-                preview_asset=self.preview_assets_by_share_id.get(artifact.id),
+            and (
+                _is_missing_or_stale_preview(
+                    artifact=artifact,
+                    preview_asset=self.preview_assets_by_share_id.get(artifact.id),
+                )
+                or (
+                    artifact.draft_kind is PlanDraftKind.SEATING
+                    and artifact.renderer_version != current_seating_renderer_version
+                )
             )
         ]
         return matches[:limit] if limit is not None else matches
@@ -436,6 +491,26 @@ def _command(
     )
 
 
+def _seating_presentation_payload() -> JsonObject:
+    prepared = PreparedSeatingExportContract(
+        seating_draft_id=uuid4(),
+        roster_id=uuid4(),
+        roster_name="Klass 8B",
+        template_id=uuid4(),
+        template_name="Sal A",
+        export_kind=SeatingExportKind.PDF,
+        layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
+        poster_scene=SeatingPosterScene(
+            room=PosterSceneRoom(grid_cols=12, grid_rows=8),
+            seats=[],
+            fixtures=[],
+        ),
+    )
+    payload = prepared.model_dump(mode="json")
+    assert isinstance(payload, dict)
+    return payload
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_create_share_artifact_hashes_public_token_and_content() -> None:
@@ -681,12 +756,15 @@ async def test_backfill_generates_missing_and_stale_preview_rows_only_for_active
         uow=_DummyUow(),
         clock=_FixedClock(now),
         create_artifact=create_handler,
+        renderer=_FakeShareRenderer(),
+        current_seating_renderer_version="klassrumskartan-seating-share-renderer-v2",
     )
 
     result = await backfill.handle()
 
     assert result.scanned == 2
     assert result.generated == 2
+    assert result.refreshed == 0
     assert result.failed_share_ids == ()
     assert (
         shares.preview_assets_by_share_id[active_missing.artifact.id].source_content_hash
@@ -697,6 +775,83 @@ async def test_backfill_generates_missing_and_stale_preview_rows_only_for_active
         == active_stale.artifact.content_hash
     )
     assert revoked.artifact.id not in shares.preview_assets_by_share_id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_backfill_refreshes_old_active_seating_artifact_before_preview() -> None:
+    now = datetime(2026, 4, 30, tzinfo=timezone.utc)
+    shares = _FakeShareRepository()
+    old_payload = _seating_presentation_payload()
+    old_artifact = ClassroomPlannerShareArtifact(
+        id=uuid4(),
+        token_hash=hash_share_token("old-public-token"),
+        source=ClassroomPlannerShareArtifactSource.AUTHENTICATED,
+        draft_kind=PlanDraftKind.SEATING,
+        owner_user_id=uuid4(),
+        draft_id=uuid4(),
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        source_revision=4,
+        title="Klass 8B - Sittschema",
+        slug="klass-8b-sittschema",
+        public_path="/share/classroom/old-public-token/klass-8b-sittschema",
+        preview_description="Old preview",
+        renderer_version="klassrumskartan-share-renderer-v1",
+        presentation_schema_version="seating-share-v1",
+        presentation_hash=build_share_presentation_hash(old_payload),
+        content_hash=build_share_content_hash(
+            rendered_html="<main>old seating</main>",
+            rendered_css="main { color: black; }",
+        ),
+        presentation_payload=old_payload,
+        rendered_html="<main>old seating</main>",
+        rendered_css="main { color: black; }",
+        created_at=now,
+        updated_at=now,
+    )
+    shares.artifacts_by_id[old_artifact.id] = old_artifact
+    shares.preview_assets_by_share_id[old_artifact.id] = ClassroomPlannerSharePreviewAsset(
+        share_id=old_artifact.id,
+        image_bytes=b"old",
+        preview_content_hash=build_share_preview_content_hash(b"old"),
+        source_content_hash=old_artifact.content_hash,
+        presentation_hash=old_artifact.presentation_hash,
+        renderer_version=old_artifact.renderer_version,
+        generated_at=now,
+        updated_at=now,
+    )
+    preview_renderer = _FakePreviewRenderer()
+    backfill = BackfillClassroomPlannerSharePreviewsHandler(
+        shares=shares,
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+        create_artifact=_create_handler(
+            shares=shares,
+            now=now,
+            preview_renderer=preview_renderer,
+        ),
+        renderer=_FakeShareRenderer(),
+        current_seating_renderer_version="klassrumskartan-seating-share-renderer-v2",
+    )
+
+    result = await backfill.handle()
+
+    refreshed = shares.artifacts_by_id[old_artifact.id]
+    preview = shares.preview_assets_by_share_id[old_artifact.id]
+    assert result.scanned == 1
+    assert result.generated == 1
+    assert result.refreshed == 1
+    assert refreshed.renderer_version == "klassrumskartan-seating-share-renderer-v2"
+    assert refreshed.rendered_html != old_artifact.rendered_html
+    assert refreshed.content_hash != old_artifact.content_hash
+    assert 'data-skriptoteket-share-created-date="owned">2026-04-30</span>' in (
+        refreshed.rendered_html
+    )
+    assert 'href="/share/classroom/old-public-token/download.pdf"' in refreshed.rendered_html
+    assert preview.source_content_hash == refreshed.content_hash
+    assert preview.renderer_version == refreshed.renderer_version
+    assert preview_renderer.rendered_artifacts == [refreshed]
 
 
 @pytest.mark.unit

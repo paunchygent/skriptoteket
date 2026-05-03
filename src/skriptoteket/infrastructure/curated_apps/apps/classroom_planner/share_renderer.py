@@ -41,8 +41,8 @@ from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareRendererProtocol,
 )
 
-_GROUPING_RENDERER_VERSION = "klassrumskartan-share-renderer-v1"
-_SEATING_RENDERER_VERSION = "klassrumskartan-seating-share-renderer-v2"
+GROUPING_SHARE_RENDERER_VERSION = "klassrumskartan-share-renderer-v1"
+SEATING_SHARE_RENDERER_VERSION = "klassrumskartan-seating-share-renderer-v2"
 _GROUPING_SCHEMA_VERSION = "grouping-share-v1"
 _SEATING_SCHEMA_VERSION = "seating-share-v1"
 
@@ -219,7 +219,7 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
-            renderer_version=_GROUPING_RENDERER_VERSION,
+            renderer_version=GROUPING_SHARE_RENDERER_VERSION,
             presentation_schema_version=_GROUPING_SCHEMA_VERSION,
             presentation_payload=_json_object(presentation),
             rendered_html=_document(
@@ -250,7 +250,7 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
-            renderer_version=_SEATING_RENDERER_VERSION,
+            renderer_version=SEATING_SHARE_RENDERER_VERSION,
             presentation_schema_version=_SEATING_SCHEMA_VERSION,
             presentation_payload=_json_object(prepared_export),
             rendered_html=_document(

@@ -21,6 +21,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.application.curated_apps.classroom_planner.share_artifact_refresh import (
+    refresh_seating_share_artifact_if_needed,
+)
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactCreateResult,
@@ -42,6 +45,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, valida
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareArtifactRepositoryProtocol,
     ClassroomPlannerSharePreviewRendererProtocol,
+    ClassroomPlannerShareRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -282,11 +286,15 @@ class BackfillClassroomPlannerSharePreviewsHandler:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        renderer: ClassroomPlannerShareRendererProtocol,
+        current_seating_renderer_version: str,
     ) -> None:
         self._shares = shares
         self._uow = uow
         self._clock = clock
         self._create_artifact = create_artifact
+        self._renderer = renderer
+        self._current_seating_renderer_version = current_seating_renderer_version
 
     async def handle(
         self,
@@ -298,16 +306,29 @@ class BackfillClassroomPlannerSharePreviewsHandler:
             shares = await self._shares.list_active_shares_missing_or_stale_preview(
                 now=self._clock.now(),
                 limit=limit,
+                current_seating_renderer_version=self._current_seating_renderer_version,
             )
 
         generated = 0
+        refreshed = 0
         failed: list[UUID] = []
         for artifact in shares:
             try:
-                preview_asset = await self._create_artifact.build_preview_asset(
+                artifact_to_preview = refresh_seating_share_artifact_if_needed(
                     artifact=artifact,
+                    renderer=self._renderer,
+                    current_seating_renderer_version=self._current_seating_renderer_version,
+                    refreshed_at=self._clock.now(),
+                )
+                preview_asset = await self._create_artifact.build_preview_asset(
+                    artifact=artifact_to_preview,
                 )
                 async with self._uow:
+                    if artifact_to_preview != artifact:
+                        artifact_to_preview = await self._shares.update_rendered_artifact(
+                            artifact=artifact_to_preview
+                        )
+                        refreshed += 1
                     await self._shares.upsert_preview_asset(preview_asset=preview_asset)
                 generated += 1
             except Exception:
@@ -318,6 +339,7 @@ class BackfillClassroomPlannerSharePreviewsHandler:
         return ClassroomPlannerSharePreviewBackfillResult(
             scanned=len(shares),
             generated=generated,
+            refreshed=refreshed,
             failed_share_ids=tuple(failed),
         )
 
@@ -329,6 +351,7 @@ class ClassroomPlannerSharePreviewBackfillResult(BaseModel):
 
     scanned: int
     generated: int
+    refreshed: int = 0
     failed_share_ids: tuple[UUID, ...]
 
 
