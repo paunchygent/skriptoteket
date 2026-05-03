@@ -41,6 +41,9 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
     SHARE_CREATED_DATE_CHROME_SLOT,
     SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_label_fit import (
+    build_seat_label_presentation,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
     StaticClassroomPlannerShareRenderer,
 )
@@ -106,6 +109,8 @@ def test_grouping_renderer_escapes_hostile_values_and_records_provenance() -> No
     )
     assert "group-list" not in rendered.rendered_html
     assert "share-card" not in rendered.rendered_html
+    assert "room-seat" not in rendered.rendered_css
+    assert "room-frame" not in rendered.rendered_css
     assert "Klass &lt;7A&gt; &amp; &quot;X&quot;" in rendered.rendered_html
     assert "Ada &amp; &lt;script&gt;alert(2)&lt;/script&gt;" in rendered.rendered_html
     assert '<meta name="robots" content="noindex,nofollow">' in rendered.rendered_html
@@ -172,7 +177,7 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
 
     rendered = StaticClassroomPlannerShareRenderer().render_seating(prepared_export=prepared)
 
-    assert rendered.renderer_version == "klassrumskartan-share-renderer-v1"
+    assert rendered.renderer_version == "klassrumskartan-seating-share-renderer-v2"
     assert rendered.presentation_schema_version == "seating-share-v1"
     assert rendered.presentation_payload["roster_name"] == "Klass <8B>"
     assert "<script" not in rendered.rendered_html.casefold()
@@ -182,6 +187,8 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     assert "resize" not in rendered.rendered_html.casefold()
     assert 'class="share-page share-page--seating"' in rendered.rendered_html
     assert "room-surface" in rendered.rendered_html
+    assert "groups-grid" not in rendered.rendered_css
+    assert "group-card" not in rendered.rendered_css
     assert "room-floor" in rendered.rendered_html
     assert "room-fixture--whiteboard" in rendered.rendered_html
     assert "room-fixture--teacher-desk" in rendered.rendered_html
@@ -190,6 +197,8 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     assert ".room-fixture--door::after" not in rendered.rendered_css
     assert "transform: translateY(-8%);" in rendered.rendered_css
     assert "inline-size: 90%;" in rendered.rendered_css
+    assert "container-type: inline-size;" in rendered.rendered_css
+    assert "text-overflow: ellipsis;" not in rendered.rendered_css
     assert "room-seat--empty" in rendered.rendered_html
     empty_seat_markup = rendered.rendered_html.split('class="room-seat room-seat--empty"', 1)[1]
     empty_seat_markup = empty_seat_markup.split("</article>", 1)[0]
@@ -218,6 +227,132 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     assert ".share-origin-link {\n  border-bottom: 1px solid currentColor;" in (
         rendered.rendered_css
     )
+
+
+@pytest.mark.unit
+def test_seating_label_fit_uses_weighted_width_budget_boundaries() -> None:
+    supported_first = build_seat_label_presentation("KristofferJonatan Lo")
+    supported_single = build_seat_label_presentation("Alexanderthegreat")
+    hyphenated = build_seat_label_presentation("Anna-Karin Olofsson-Reijer")
+    wide_fallback = build_seat_label_presentation("WWWWWWWWWWWWWWWWWW Wide")
+    extreme_fallback = build_seat_label_presentation("Supercalifragilisticexpialidocious Berg")
+
+    assert supported_first.visible_lines == ("KristofferJonatan", "Lo")
+    assert supported_first.is_fallback is False
+    assert "room-seat--name-ultra" in supported_first.css_classes
+    assert supported_single.visible_lines == ("Alexanderthegreat",)
+    assert supported_single.is_fallback is False
+    assert hyphenated.visible_lines == ("Anna-Karin", "Olofsson-Reijer")
+    assert hyphenated.is_fallback is False
+    assert wide_fallback.visible_lines == ("W.", "Wide")
+    assert wide_fallback.is_fallback is True
+    assert "room-seat--name-fallback" in wide_fallback.css_classes
+    assert extreme_fallback.visible_lines == ("S.", "Berg")
+    assert extreme_fallback.is_fallback is True
+
+
+@pytest.mark.unit
+def test_seating_renderer_uses_long_name_fit_tiers_without_default_ellipsis() -> None:
+    prepared = PreparedSeatingExportContract(
+        seating_draft_id=uuid4(),
+        roster_id=uuid4(),
+        roster_name="Klass 9C",
+        template_id=uuid4(),
+        template_name="Sal G20",
+        export_kind=SeatingExportKind.PDF,
+        layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
+        poster_scene=SeatingPosterScene(
+            room=PosterSceneRoom(grid_cols=12, grid_rows=8),
+            seats=[
+                PosterSceneSeat(
+                    seat_id="seat-short",
+                    x=0,
+                    y=1,
+                    student_id="student-short",
+                    label="Moa Ek",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-long-first",
+                    x=1,
+                    y=1,
+                    student_id="student-long-first",
+                    label="Christopher Alm",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-long-last",
+                    x=2,
+                    y=1,
+                    student_id="student-long-last",
+                    label="Margareta Alexandersson",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-hyphen",
+                    x=3,
+                    y=1,
+                    student_id="student-hyphen",
+                    label="Anna-Karin Schwerin",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-compound-surname",
+                    x=4,
+                    y=1,
+                    student_id="student-compound-surname",
+                    label="Otilia Olofsson Reijer",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-extreme",
+                    x=5,
+                    y=1,
+                    student_id="student-extreme",
+                    label="Supercalifragilisticexpialidocious Berg",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-kristoffer",
+                    x=6,
+                    y=1,
+                    student_id="student-kristoffer",
+                    label="KristofferJonatan Lo",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-alexanderthegreat",
+                    x=7,
+                    y=1,
+                    student_id="student-alexanderthegreat",
+                    label="Alexanderthegreat",
+                ),
+                PosterSceneSeat(
+                    seat_id="seat-wide-fallback",
+                    x=8,
+                    y=1,
+                    student_id="student-wide-fallback",
+                    label="WWWWWWWWWWWWWWWWWW Wide",
+                ),
+            ],
+            fixtures=[],
+        ),
+    )
+
+    rendered = StaticClassroomPlannerShareRenderer().render_seating(prepared_export=prepared)
+
+    assert "text-overflow: ellipsis;" not in rendered.rendered_css
+    assert "room-seat--name-compact" in rendered.rendered_html
+    assert "room-seat--name-dense" in rendered.rendered_html
+    assert "room-seat--name-ultra" in rendered.rendered_html
+    assert "room-seat--name-fallback" in rendered.rendered_html
+    assert '<span class="room-seat__name-line">Christopher</span>' in rendered.rendered_html
+    assert '<span class="room-seat__name-line">Alexandersson</span>' in rendered.rendered_html
+    assert '<span class="room-seat__name-line">Anna-Karin</span>' in rendered.rendered_html
+    assert '<span class="room-seat__name-line">Olofsson Reijer</span>' in rendered.rendered_html
+    assert '<span class="room-seat__name-line">KristofferJonatan</span>' in (rendered.rendered_html)
+    assert '<span class="room-seat__name-line">Alexanderthegreat</span>' in (rendered.rendered_html)
+    assert '<span class="room-seat__name-line">S.</span>' in rendered.rendered_html
+    assert '<span class="room-seat__name-line">W.</span>' in rendered.rendered_html
+    assert '<span class="room-seat__name-line"></span>' not in rendered.rendered_html
+    assert "Supercalifragilisticexpialidocious Berg" not in rendered.rendered_css
+    assert 'title="Supercalifragilisticexpialidocious Berg"' in rendered.rendered_html
+    assert 'aria-label="Supercalifragilisticexpialidocious Berg"' in rendered.rendered_html
+    assert 'title="WWWWWWWWWWWWWWWWWW Wide"' in rendered.rendered_html
+    assert 'aria-label="WWWWWWWWWWWWWWWWWW Wide"' in rendered.rendered_html
 
 
 @pytest.mark.unit

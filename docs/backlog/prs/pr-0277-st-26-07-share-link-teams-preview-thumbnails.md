@@ -157,8 +157,10 @@ public-by-token HTML/CSS share artifact contract.
 
 ## Implementation State (2026-05-02)
 
-Implemented locally, pending retained post-implementation review and fresh Teams
-unfurl proof before this PR is marked `done`.
+Implemented and deployed to Hemma production at commit
+`2bae81a615a169aa70e916695cfaf467f5dbc96a`, pending retained
+post-implementation review and fresh Teams unfurl proof before this PR is
+marked `done`.
 
 - Added the PostgreSQL-backed `classroom_planner_share_preview_assets` table
   with preview/source hashes, renderer provenance, dimensions, PNG bytes, and
@@ -178,6 +180,13 @@ unfurl proof before this PR is marked `done`.
   `.artifacts/pr-0277-share-previews/grouping-preview.png` and
   `.artifacts/pr-0277-share-previews/seating-preview.png`; both are 1200x630 and
   render the complete grouping/seating artifacts.
+- Hemma production deployment uses the dedicated
+  `pdm run hemma-deploy-share-previews` command, which runs the BuildKit web
+  image build, Alembic migration, active-share preview backfill, container
+  Playwright PNG smoke, and web health check.
+- Hemma Docker Snap revision `3505` / Docker `29.3.1` failed BuildKit/runc
+  startup with `ld.so` relocation assertions; the host was recovered by
+  reverting the Docker snap to revision `3377` / Docker `28.4.0` before rerun.
 
 Verification run:
 
@@ -196,6 +205,15 @@ Verification run:
 - `docker buildx build --progress=plain --target production --load -t skriptoteket-pr0277-preview-smoke .`
 - `docker run --rm --env PYTHONPATH=src skriptoteket-pr0277-preview-smoke pdm run python -c "<Playwright preview renderer smoke>"`
   - Output: `container-playwright-smoke: ok size=1200x630 bytes=13329`
+- `pdm run hemma-deploy-share-previews`
+  - Remote log:
+    `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260502-122221.log`
+  - Output included: `Backfill classroom share previews complete: scanned=3
+    generated=3 failed=0 failed_share_ids=`, `container-playwright-smoke: ok
+    size=1200x630 bytes=15141`, and web health `200`.
+- Production public metadata proof against the fresh production link returned
+  `200`, OG/Twitter/JSON-LD metadata, and an `image/png` preview at
+  1200x630 with `preview.png?v=sha256:...`.
 
 Outstanding proof:
 

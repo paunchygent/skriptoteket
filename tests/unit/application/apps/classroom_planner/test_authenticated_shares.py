@@ -278,7 +278,12 @@ async def test_create_seating_share_enforces_expected_revision_before_persisting
 async def test_create_seating_share_uses_pretty_brutalist_poster_contract() -> None:
     workspace = _workspace(draft_kind=PlanDraftKind.SEATING, revision=4)
     prepared = _seating_contract(workspace)
-    rendered = _rendered().model_copy(update={"presentation_schema_version": "seating-share-v1"})
+    rendered = _rendered().model_copy(
+        update={
+            "renderer_version": "klassrumskartan-seating-share-renderer-v2",
+            "presentation_schema_version": "seating-share-v1",
+        }
+    )
     prepare = AsyncMock(spec=PrepareSeatingExportHandler)
     prepare.load_workspace.return_value = workspace
     prepare.build_prepared_contract.return_value = prepared

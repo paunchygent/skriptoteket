@@ -41,12 +41,12 @@ from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareRendererProtocol,
 )
 
-_RENDERER_VERSION = "klassrumskartan-share-renderer-v1"
+_GROUPING_RENDERER_VERSION = "klassrumskartan-share-renderer-v1"
+_SEATING_RENDERER_VERSION = "klassrumskartan-seating-share-renderer-v2"
 _GROUPING_SCHEMA_VERSION = "grouping-share-v1"
 _SEATING_SCHEMA_VERSION = "seating-share-v1"
 
-_SHARE_CSS = (
-    """
+_SHARE_BASE_CSS = """
 :root {
   color-scheme: light;
   --canvas: #fafaf6;
@@ -194,11 +194,9 @@ body {
   }
 }
 """.strip()
-    + "\n"
-    + GROUPING_SHARE_CSS
-    + "\n"
-    + SEATING_SHARE_CSS
-)
+
+_GROUPING_SHARE_RENDERED_CSS = _SHARE_BASE_CSS + "\n" + GROUPING_SHARE_CSS
+_SEATING_SHARE_RENDERED_CSS = _SHARE_BASE_CSS + "\n" + SEATING_SHARE_CSS
 
 
 class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol):
@@ -221,7 +219,7 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
-            renderer_version=_RENDERER_VERSION,
+            renderer_version=_GROUPING_RENDERER_VERSION,
             presentation_schema_version=_GROUPING_SCHEMA_VERSION,
             presentation_payload=_json_object(presentation),
             rendered_html=_document(
@@ -229,8 +227,9 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
                 description=description,
                 body=body,
                 page_modifier="share-page--grouping",
+                css=_GROUPING_SHARE_RENDERED_CSS,
             ),
-            rendered_css=_SHARE_CSS,
+            rendered_css=_GROUPING_SHARE_RENDERED_CSS,
         )
 
     def render_seating(
@@ -251,7 +250,7 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         return RenderedClassroomPlannerShare(
             title=title,
             preview_description=description,
-            renderer_version=_RENDERER_VERSION,
+            renderer_version=_SEATING_RENDERER_VERSION,
             presentation_schema_version=_SEATING_SCHEMA_VERSION,
             presentation_payload=_json_object(prepared_export),
             rendered_html=_document(
@@ -259,8 +258,9 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
                 description=description,
                 body=body,
                 page_modifier="share-page--seating",
+                css=_SEATING_SHARE_RENDERED_CSS,
             ),
-            rendered_css=_SHARE_CSS,
+            rendered_css=_SEATING_SHARE_RENDERED_CSS,
         )
 
 
@@ -270,6 +270,7 @@ def _document(
     description: str,
     body: str,
     page_modifier: str,
+    css: str,
 ) -> str:
     escaped_title = _escape(title)
     escaped_description = _escape(description)
@@ -285,7 +286,7 @@ def _document(
             f'<meta name="description" content="{escaped_description}">',
             f'<meta property="og:title" content="{escaped_title}">',
             f'<meta property="og:description" content="{escaped_description}">',
-            f"<style>{_SHARE_CSS}</style>",
+            f"<style>{css}</style>",
             "</head>",
             "<body>",
             f'<main class="share-page {page_modifier}">{body}</main>',

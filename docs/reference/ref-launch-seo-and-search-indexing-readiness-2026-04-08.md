@@ -5,7 +5,7 @@ title: "Reference: Launch SEO and search indexing readiness assessment (2026-04-
 status: active
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-15
+updated: 2026-05-02
 topic: "launch-seo-and-search-indexing"
 links:
   - EPIC-35
@@ -44,7 +44,7 @@ Planning note after the initial assessment:
 
 ## Information Gained
 
-### Live edge findings on 2026-04-08
+### Historical Live Edge Findings on 2026-04-08
 
 | Surface | Observation | Why it matters |
 |---|---|---|
@@ -59,7 +59,12 @@ Planning note after the initial assessment:
 | `https://skriptoteket.hule.education/sitemap.xml` | Returned the SPA HTML shell with `200 OK` | This is a launch blocker for crawler discovery |
 | `https://skriptoteket.hule.education/this-route-should-not-exist` | Returned the SPA HTML shell with `200 OK` | This is soft-404 behavior at the backend edge |
 | `https://skriptoteket.hule.education/public/apps/classroom.group-seating-studio` | Reachable and client-renders the public app host | The public curated-app entry exists and is a real candidate for indexing |
-| `https://hule.education/` | Returned `HuleEdu reserved host placeholder` with `200 OK` | The apex is live but not currently the Skriptoteket product host |
+| `https://hule.education/` | Returned a HuleEdu reserved-host response with `200 OK` | The apex was live but not the Skriptoteket product host |
+
+As of the 2026-05-02 Hemma readiness proof, the old reserved-host placeholder
+expectation is stale: HuleEdu runtime services own `hule.education` and
+`api.hule.education`, while `skriptoteket.hule.education` remains the
+Skriptoteket app host.
 
 ### Repo findings on 2026-04-08
 
@@ -167,9 +172,9 @@ Parallel upstream lane:
 
 - `EPIC-28` should advance the HuleEdu-owned session contract and auth-entry
   handoff so Skriptoteket does not overfit to app-local auth assumptions
-- HuleEdu should bring up the apex landing page and `api.hule.education`
-  gateway/identity edge as explicit host owners rather than leaving them as
-  placeholder-vhost debt
+- HuleEdu owns the apex landing and `api.hule.education` gateway/identity
+  surfaces; Skriptoteket must continue treating them as non-Skriptoteket
+  canonical hosts
 
 ## Decision Trees
 
@@ -177,7 +182,7 @@ Parallel upstream lane:
 
 | Question | If yes | If no | Recommended current branch |
 |---|---|---|---|
-| Is the apex `https://hule.education` becoming the HuleEdu landing page before launch? | Keep the apex HuleEdu-owned, link outward to `https://skriptoteket.hule.education`, and avoid treating the apex as a Skriptoteket canonical host | Keep the placeholder non-competing until the HuleEdu landing page is ready | Yes |
+| Is the apex `https://hule.education` becoming the HuleEdu landing page before launch? | Keep the apex HuleEdu-owned, link outward to `https://skriptoteket.hule.education`, and avoid treating the apex as a Skriptoteket canonical host | Keep the apex HuleEdu-owned and non-competing until the HuleEdu landing page is ready | Yes |
 | Do we need `www.hule.education` for launch? | Add DNS, TLS coverage, and a permanent redirect to the canonical host | Keep `www` out of scope and avoid introducing another public variant | No |
 
 ### 2. Crawlability decision

@@ -5,7 +5,7 @@ title: "Klassrumskartan shareable HTML/CSS export links"
 status: ready
 owners: "agents"
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-05-02
 epic: "EPIC-26"
 dependencies:
   - "ADR-0075"
@@ -91,6 +91,10 @@ sharing.
     desktop popover and mobile bottom-sheet management pattern.
   - `PR-0276` for replacing the seating share row/place directory with a real
     spatial classroom-map share page and polishing grouping share cards.
+  - `PR-0279` for fixing shared-link seating seat-label typography so ordinary
+    long names render without default ellipsis, first/second-line labels do not
+    collide, and renderer-derived preview assets stay lifecycle-safe after the
+    static share renderer changes.
 - Follow-up story:
   - `ST-26-07` / `PR-0277` for turning the 2026-05-01 production Teams
     diagnostic into supported renderer-derived `og:image` thumbnails and full
@@ -99,6 +103,9 @@ sharing.
     workspace `Exportera PDF` and shared-link `Ladda ner PDF`, keeping share
     PDFs export-backed and `presentation_payload`-derived while borrowing the
     approved shared-link body language.
+  - `PR-0279` remains a shared-link HTML/CSS renderer correction rather than a
+    PDF visual-redesign slice. It is linked to `ST-26-07` because Teams/social
+    preview PNGs are generated from the same immutable seating share artifact.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

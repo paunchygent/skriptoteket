@@ -5,13 +5,13 @@ title: "Reference: Home Server Security Hardening"
 status: active
 owners: "olof"
 created: 2026-01-02
-updated: 2026-04-11
+updated: 2026-05-02
 topic: "SSH + Fail2ban hardening for Hemma"
 ---
 
 Security hardening details for the home server. Use this for audits or when applying changes.
 
-## Skriptoteket edge/runtime hardening (verified 2026-04-11)
+## Skriptoteket edge/runtime hardening (verified 2026-05-02)
 
 Current production policy for `skriptoteket.hule.education`:
 
@@ -21,7 +21,8 @@ Current production policy for `skriptoteket.hule.education`:
 - the retired browser-session metric `skriptoteket_active_sessions` is absent
 - `skriptoteket_users_by_role` stays disabled in production metrics
 - forwarded headers are trusted only from the exact current `nginx-proxy` CIDR
-- reserved HuleEdu hosts must be owned by the explicit placeholder or the real gateway, never by Skriptoteket fallthrough
+- reserved HuleEdu hosts are HuleEdu-owned runtime surfaces and must never fall
+  through to Skriptoteket or the nginx-proxy default host
 
 Required app env baseline on Hemma:
 
@@ -56,9 +57,12 @@ curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/openapi.json
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/metrics
 curl -sS https://skriptoteket.hule.education/healthz
-curl -k -sS https://hule.education
-curl -k -sS https://api.hule.education
-curl -k -sS https://ws.hule.education
+echo | openssl s_client -connect hule.education:443 -servername hule.education 2>/dev/null \
+  | openssl x509 -noout -subject -ext subjectAltName
+echo | openssl s_client -connect api.hule.education:443 -servername api.hule.education 2>/dev/null \
+  | openssl x509 -noout -subject -ext subjectAltName
+echo | openssl s_client -connect ws.hule.education:443 -servername ws.hule.education 2>/dev/null \
+  | openssl x509 -noout -subject -ext subjectAltName
 ```
 
 Expected results:
@@ -68,7 +72,8 @@ Expected results:
 - public `/docs` and `/openapi.json` return `404`
 - public `/metrics` returns `403`
 - public `/healthz` returns `{"status":"healthy","message":"Service is healthy"}`
-- reserved hosts return the temporary placeholder until the real HuleEdu edge services ship
+- HuleEdu hosts serve their own certificates and do not inherit the
+  Skriptoteket/default-host certificate or backend
 
 ## SSH Hardening (Checklist)
 

@@ -55,15 +55,20 @@ Klassrumskartan share links. Retained review gate: `REV-ST-26-07`.
 - Generated preview assets are stored in the share-preview asset table defined
   by `PR-0277`, are addressed through the public share token, and must follow
   the same active/revoked/expired/purged lifecycle as the share artifact.
+- `PR-0279` is linked because shared-link seating label typography changes the
+  immutable HTML/CSS that preview PNGs are generated from. Any renderer-version
+  or output change in that slice must either regenerate/backfill active preview
+  assets or prove existing stale-preview detection already forces fresh assets.
 - The thumbnail runtime is a backend infrastructure adapter behind an
   application protocol. It must not depend on SPA hydration, browser-local
   state, owner-scoped APIs, or a logged-in user.
 - Existing active links matter: the implementation slice must choose and prove
   either a bounded backfill path or lazy generation for active unrevoked shares.
 - `REV-ST-26-07` is approved. The first implementation slice is `PR-0277`.
-- `PR-0277` is implemented locally with PostgreSQL preview assets,
-  Playwright-derived 1200x630 thumbnails, active-only preview routes,
-  OG/Twitter/JSON-LD metadata, and the backfill command. It remains
-  `in_progress` until fresh Teams unfurl proof and retained
-  post-implementation review are recorded. Production-like BuildKit Chromium
-  smoke is recorded in `PR-0277`.
+- `PR-0277` is implemented and deployed to Hemma production with PostgreSQL
+  preview assets, Playwright-derived 1200x630 thumbnails, active-only preview
+  routes, OG/Twitter/JSON-LD metadata, and the backfill command. Production
+  backfill generated 3 preview assets and public metadata/image proof succeeded
+  for the current production share URL. It remains `in_progress` until fresh
+  Teams unfurl proof and retained post-implementation review are recorded.
+  Production-like and on-host BuildKit Chromium smoke are recorded in `PR-0277`.

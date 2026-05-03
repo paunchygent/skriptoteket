@@ -81,7 +81,7 @@ def _artifact(*, draft_kind: PlanDraftKind) -> ClassroomPlannerShareArtifact:
         title="Klass 7A",
         slug="klass-7a",
         public_path="/share/classroom/public-token/klass-7a",
-        renderer_version="klassrumskartan-share-renderer-v1",
+        renderer_version=_renderer_version(draft_kind),
         presentation_schema_version=f"{draft_kind.value}-share-v1",
         presentation_hash="sha256:presentation",
         content_hash="sha256:content",
@@ -91,6 +91,12 @@ def _artifact(*, draft_kind: PlanDraftKind) -> ClassroomPlannerShareArtifact:
         created_at=now,
         updated_at=now,
     )
+
+
+def _renderer_version(draft_kind: PlanDraftKind) -> str:
+    if draft_kind is PlanDraftKind.SEATING:
+        return "klassrumskartan-seating-share-renderer-v2"
+    return "klassrumskartan-share-renderer-v1"
 
 
 @pytest.mark.unit

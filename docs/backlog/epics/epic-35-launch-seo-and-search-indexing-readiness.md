@@ -90,7 +90,7 @@ dependencies:
 
 | Decision point | Path A | Path B | Current recommendation |
 |---|---|---|---|
-| Does `https://hule.education` become the HuleEdu landing page before launch? | Keep the apex as HuleEdu-owned, link to `https://skriptoteket.hule.education`, and keep Skriptoteket's own canonical app URLs on the subdomain | Keep the temporary placeholder non-competing until the HuleEdu landing page is ready; do not promote the apex into the Skriptoteket app host | Path A |
+| Does `https://hule.education` become the HuleEdu landing page before launch? | Keep the apex as HuleEdu-owned, link to `https://skriptoteket.hule.education`, and keep Skriptoteket's own canonical app URLs on the subdomain | Keep the apex HuleEdu-owned and non-competing until the HuleEdu landing page is ready; do not promote the apex into the Skriptoteket app host | Path A |
 | Do we need a `www` variant for launch? | Add DNS, TLS coverage, and a permanent redirect to the canonical host | Leave `www` out of scope for launch and avoid introducing another public variant | Path B |
 
 ### 2. Crawl contract

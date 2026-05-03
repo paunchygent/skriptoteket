@@ -657,7 +657,43 @@ Security-specific notes:
 
 - `TRUSTED_PROXY_CIDRS` must be the exact current `nginx-proxy` IP/CIDR on `hule-network`, not a broad private-range fallback.
 - Keep `skriptoteket_web` out of production `ALLOWED_HOSTS`; that host is for containerized dev only.
-- Reserved HuleEdu hosts (`hule.education`, `api.hule.education`, `ws.hule.education`) must be owned by the real gateway or the temporary placeholder, never by Skriptoteket fallthrough.
+- Reserved HuleEdu hosts (`hule.education`, `api.hule.education`, `ws.hule.education`) are HuleEdu-owned runtime surfaces and must never fall through to Skriptoteket or the nginx-proxy default host.
+
+### Hemma Reboot and Auth-Edge Readiness
+
+Docker restart policy is not the Hemma boot-order contract. After HuleEdu
+`TASK-0509`, the expected recovery shape is:
+
+- Tier 0 edge/shared services (`nginx-proxy`, `acme-companion`, `shared-postgres`,
+  `hemma-reserved-default-host`) may auto-recover through `restart: unless-stopped`.
+- Runtime lanes, including `skriptoteket-web` and `skriptoteket-worker`, are
+  normalized to `restart=no` so staged startup is not bypassed after reboot.
+- HuleEdu host-wide startup restores Skriptoteket and then retains
+  `api.hule.education` TLS/SNI, Gateway health, auth ceremony, and protected API
+  proof.
+
+Keep the readiness states separate:
+
+- `https://skriptoteket.hule.education/healthz` proves Skriptoteket self-health
+  only.
+- Public Klassrumskartan app/share routes are direct Skriptoteket public
+  surfaces and must not require a live HuleEdu browser session.
+- Protected Skriptoteket APIs are certified only through
+  `https://api.hule.education/api/...`; a green app-host health check is not
+  auth readiness.
+
+Run HuleEdu-owned post-reboot proof from the HuleEdu repo with its wrapper
+surface:
+
+```bash
+pdm run run-local-pdm hemma-normalize-hostwide-restart-policy --verify
+pdm run run-local-pdm hemma-start-hostwide
+pdm run run-local-pdm hemma-skriptoteket-protected-api-proof
+```
+
+If these commands fail, treat the incident as HuleEdu auth-edge/provider
+readiness until the Gateway, TLS/SNI, and protected-edge proof are healthy.
+Do not replace that with a Skriptoteket direct protected-API shortcut.
 
 ### Canonical Deploy + Readiness Gate
 
@@ -765,9 +801,12 @@ curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/openapi.json
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/metrics
 curl -sS https://skriptoteket.hule.education/healthz
-curl -k -sS https://hule.education
-curl -k -sS https://api.hule.education
-curl -k -sS https://ws.hule.education
+echo | openssl s_client -connect hule.education:443 -servername hule.education 2>/dev/null \
+  | openssl x509 -noout -subject -ext subjectAltName
+echo | openssl s_client -connect api.hule.education:443 -servername api.hule.education 2>/dev/null \
+  | openssl x509 -noout -subject -ext subjectAltName
+echo | openssl s_client -connect ws.hule.education:443 -servername ws.hule.education 2>/dev/null \
+  | openssl x509 -noout -subject -ext subjectAltName
 ```
 
 Expected results:
@@ -776,7 +815,8 @@ Expected results:
 - public `/metrics` returns `403`
 - public `/healthz` returns the minimal healthy payload
 - in-container `/metrics` does not emit `skriptoteket_active_sessions` or `skriptoteket_users_by_role`
-- reserved HuleEdu hosts return the placeholder until the real edge services ship
+- HuleEdu hosts serve their own certificates and do not inherit the
+  Skriptoteket/default-host certificate or backend
 
 ### Deploy with Force Recreate
 

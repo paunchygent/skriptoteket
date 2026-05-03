@@ -235,7 +235,7 @@ def _artifact(
         draft_kind=draft_kind,
         title="Klass 7A",
         slug="klass-7a",
-        renderer_version="klassrumskartan-share-renderer-v1",
+        renderer_version=_renderer_version(draft_kind),
         presentation_schema_version=f"{draft_kind.value}-share-v1",
         presentation_hash="sha256:presentation",
         content_hash="sha256:content",
@@ -245,6 +245,12 @@ def _artifact(
         created_at=now,
         updated_at=now,
     )
+
+
+def _renderer_version(draft_kind: PlanDraftKind) -> str:
+    if draft_kind is PlanDraftKind.SEATING:
+        return "klassrumskartan-seating-share-renderer-v2"
+    return "klassrumskartan-share-renderer-v1"
 
 
 def _json_object(model: BaseModel) -> JsonObject:

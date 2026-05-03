@@ -24,6 +24,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     PosterSceneWallSide,
     PreparedSeatingExportContract,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_label_fit import (
+    build_seat_label_presentation,
+)
 
 ROOM_GRID_UNIT_PX = 96
 ROOM_WALL_BAND_PX = 28
@@ -155,22 +158,36 @@ SEATING_SHARE_CSS = """
   border-radius: 999px;
   display: flex;
   flex-direction: column;
+  gap: 0.04rem;
   justify-content: center;
   inline-size: 90%;
+  overflow: hidden;
   padding: 0.1rem;
   text-align: center;
+  container-type: inline-size;
 }
 .room-seat__name-line {
   color: #1c2e4a;
   display: block;
-  font-size: clamp(0.58rem, 1.58cqw, 0.92rem);
+  font-size: clamp(0.56rem, 17cqw, 0.88rem);
   font-weight: 500;
-  line-height: 1.02;
-  max-inline-size: 94%;
+  line-height: 1.16;
+  max-inline-size: 100%;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+.room-seat--name-dense .room-seat__name-line {
+  font-size: clamp(0.5rem, 13.6cqw, 0.76rem);
+  line-height: 1.13;
+}
+.room-seat--name-ultra .room-seat__name-line {
+  font-size: clamp(0.42rem, 10cqw, 0.62rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+.room-seat--name-fallback .room-seat__name-line {
+  font-size: clamp(0.54rem, 15cqw, 0.82rem);
+  line-height: 1.14;
 }
 .room-seat--empty .room-seat__token {
   background: rgba(255, 255, 255, 0.72);
@@ -387,13 +404,18 @@ def _render_seat(
         )
 
     escaped_label = escape(seat.label)
-    first_name, second_line = _student_name_lines(seat.label)
+    label = build_seat_label_presentation(seat.label)
+    classes.extend(label.css_classes)
+    lines = "".join(
+        f'<span class="room-seat__name-line">{escape(line)}</span>'
+        for line in label.visible_lines
+        if line
+    )
     return (
         f'<article class="{" ".join(classes)}" style="{style}" '
         f'aria-label="{escaped_label}" title="{escaped_label}">'
         '<div class="room-seat__token">'
-        f'<span class="room-seat__name-line">{escape(first_name)}</span>'
-        f'<span class="room-seat__name-line">{escape(second_line)}</span>'
+        f"{lines}"
         "</div>"
         "</article>"
     )
@@ -403,20 +425,3 @@ def _pct(value: int, whole: int) -> str:
     """Return a stable percentage scalar for inline geometry styles."""
 
     return f"{(value / whole) * 100:.6f}".rstrip("0").rstrip(".")
-
-
-def _student_name_lines(value: str) -> tuple[str, str]:
-    """Return first-name plus surname-or-initial lines for one seat token."""
-
-    words = [word for word in value.replace("-", " ").split() if word]
-    if not words:
-        return value, ""
-
-    first_name = words[0]
-    if len(words) == 1:
-        return first_name, ""
-
-    last_name = words[-1]
-    if len(last_name) <= 9:
-        return first_name, last_name
-    return first_name, f"{last_name[0].upper()}."

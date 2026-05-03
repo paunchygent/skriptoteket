@@ -230,6 +230,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
 - ST-28-04 HuleEdu internal identity header spelling remediation:
   `docs/backlog/prs/pr-0272-st-28-04-huleedu-internal-identity-header-spelling-remediation.md`
+- ST-28-04 Hemma reboot auth-edge startup readiness contract:
+  `docs/backlog/prs/pr-0280-st-28-04-hemma-reboot-auth-edge-startup-readiness-contract.md`
 - ST-28-10 auth outcome observability for realm cutover:
   `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md`
 - ST-28-10 auth outcome observability for HuleEdu cutover:
@@ -418,6 +420,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0278-st-26-08-shared-print-pdf-visual-redesign.md`
 - Review gate for PR-0278 shared print PDF visual redesign:
   `docs/backlog/reviews/review-pr-0278-shared-print-pdf-visual-redesign.md`
+- ST-26-06 shared-link seating label typography and long-name fit task:
+  `docs/backlog/prs/pr-0279-st-26-06-shared-link-seating-label-typography-and-long-name-fit.md`
+- Review gate for PR-0279 shared-link seating label typography:
+  `docs/backlog/reviews/review-pr-0279-shared-link-seating-label-typography.md`
 - ST-29 small-screen workspace redesign mockup:
   `docs/mockups/st-29-small-screen-workspace-redesign/README.md`
 - ST-26-06 share link UX and page renderer mockup:
@@ -812,6 +818,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-st-26-07-share-link-teams-preview-thumbnails.md`
 - `docs/backlog/reviews/review-pr-0277-share-link-teams-preview-thumbnails-implementation.md`
 - `docs/backlog/reviews/review-pr-0278-shared-print-pdf-visual-redesign.md`
+- `docs/backlog/reviews/review-pr-0279-shared-link-seating-label-typography.md`
 - `docs/backlog/reviews/review-pr-0273-public-guest-share-links-implementation.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
@@ -886,6 +893,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`
 - `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`
 - `docs/backlog/prs/pr-0278-st-26-08-shared-print-pdf-visual-redesign.md`
+- `docs/backlog/prs/pr-0279-st-26-06-shared-link-seating-label-typography-and-long-name-fit.md`
 - `docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md`
 - `docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`

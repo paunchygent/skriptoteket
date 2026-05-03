@@ -5,7 +5,7 @@ title: "Reference: HuleEdu launch surface and shared auth topology (2026-04-08)"
 status: active
 owners: "agents"
 created: 2026-04-08
-updated: 2026-04-13
+updated: 2026-05-02
 topic: "huleedu-launch-topology"
 links:
   - EPIC-28
@@ -41,13 +41,40 @@ app-host needs.
 
 ## Current Reality vs Target
 
-| Area | Current reality on 2026-04-08 | Target shape |
+| Area | Current reality after 2026-05-02 `TASK-0509` | Target shape |
 |---|---|---|
-| `hule.education` | Placeholder host | Real HuleEdu landing page |
-| `api.hule.education` | Reserved/placeholder-owned at the edge | Real HuleEdu API gateway and browser auth edge |
+| `hule.education` | HuleEdu-owned runtime host on Hemma | Real HuleEdu landing page |
+| `api.hule.education` | HuleEdu-owned Gateway/auth edge with matching TLS/SNI proof | Real HuleEdu API gateway and browser auth edge |
 | `skriptoteket.hule.education` | Real live app host | Canonical public Skriptoteket app host |
-| Skriptoteket browser auth authority | Still local in implementation terms | Consumes HuleEdu-owned session authority via `EPIC-28` |
+| Skriptoteket browser auth authority | Consumes HuleEdu-owned session authority via `EPIC-28` | Consumes HuleEdu-owned session authority via `EPIC-28` |
 | Skriptoteket launch SEO | Mixed with topology ambiguity if left unrefined | Narrowed to app-host crawlability under the frozen topology |
+
+## Production Reality After Hemma Reboot Readiness Proof
+
+HuleEdu `TASK-0509` proved that the old `huleedu-reserved-host-placeholder`
+expectation is stale. The live Tier 0 fallback/default host is
+`hemma-reserved-default-host`; HuleEdu hosts are claimed by HuleEdu runtime
+services on `hule-network`.
+
+Skriptoteket consumes the provider-side proof instead of mutating HuleEdu or
+host/systemd orchestration from this repo:
+
+- `skriptoteket-web`, `skriptoteket-worker`, and `sir_convert_a_lot_prod` are
+  normalized to `restart=no`.
+- Tier 0 services (`nginx-proxy`, `acme-companion`, `shared-postgres`, and
+  `hemma-reserved-default-host`) remain `restart=unless-stopped`.
+- Simulated Docker-runtime restart proof showed runtime lanes stay stopped while
+  Tier 0 recovers.
+- `hemma-start-hostwide` restored Skriptoteket before HuleEdu retained
+  `api.hule.education` TLS/SNI, Gateway `/healthz`, auth ceremony, and
+  protected API proof.
+
+For Skriptoteket, this means public app/share routes remain direct app-host
+surfaces, while protected browser APIs remain certified only through:
+
+```text
+https://api.hule.education/api/...
+```
 
 ## Phased Critical Path
 

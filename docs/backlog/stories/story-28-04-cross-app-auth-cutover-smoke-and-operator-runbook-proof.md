@@ -5,7 +5,7 @@ title: "Cross-app auth cutover smoke and operator runbook proof"
 status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-13
+updated: 2026-05-02
 epic: "EPIC-28"
 acceptance_criteria:
   - "Given `ADR-0083` is accepted and the realm-aware login stories are implemented, when a user starts auth from Skriptoteket, then the proof uses the browser-navigable Hule Education `app=skriptoteket` ceremony and never a POST-only `/v1/auth/login` API link."
@@ -107,3 +107,15 @@ names from `X-Huledu-Identity-*` to `X-HuleEdu-Identity-*`. The follow-up is
 scoped to Skriptoteket's verifier, proof helpers, tests, and docs inventory. It
 must not change projection keys, local RBAC, provisioning policy, CSRF/logout
 ownership, or production protected API host policy.
+
+## Hemma Reboot Readiness Follow-up (2026-05-02)
+
+`PR-0280` is a done post-closeout operational follow-up for Hemma reboot
+behavior. It consumes completed HuleEdu `TASK-0509` evidence that Tier 0
+auto-recovers, runtime lanes stay manual after restart-policy normalization,
+and `hemma-start-hostwide` restores Skriptoteket before retaining HuleEdu
+`api.hule.education` TLS/SNI, Gateway health, auth ceremony, and protected API
+proof. The story now distinguishes Skriptoteket self-health, public
+Klassrumskartan/share availability, and HuleEdu-auth readiness. No separate
+host/systemd task is needed unless future evidence contradicts the
+wrapper/restart-policy contract.

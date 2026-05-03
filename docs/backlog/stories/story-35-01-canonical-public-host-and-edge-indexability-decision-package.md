@@ -17,8 +17,8 @@ dependencies:
   - "REF-launch-seo-and-search-indexing-readiness-2026-04-08"
 acceptance_criteria:
   - "Given `ST-28-05` freezes the broader HuleEdu launch topology, when this story is complete, then the Skriptoteket-side host policy names explicitly the canonical public app host, the behavior of any non-canonical Skriptoteket-owned variants, and the way Skriptoteket links or defers to the HuleEdu-owned landing and gateway surfaces."
-  - "Given the live 2026-04-08 edge state shows `https://skriptoteket.hule.education` serving the real app while `https://hule.education` serves a placeholder and `www.hule.education` does not resolve, when this story is reviewed, then the decision package aligns with the intended HuleEdu landing + gateway direction rather than treating the apex as Skriptoteket vacancy."
-  - "Given canonical host policy affects indexing, certificates, redirects, and operator tooling, when this story is complete, then the expected behavior for `skriptoteket.hule.education`, `hule.education`, `www.hule.education`, and any other public variant is specified as one of: canonical, permanent redirect, placeholder/non-competing, or not in launch scope."
+  - "Given the historical 2026-04-08 edge state showed `https://skriptoteket.hule.education` serving the real app while `https://hule.education` was not yet the HuleEdu landing page and `www.hule.education` did not resolve, when this story is reviewed, then the decision package aligns with the intended HuleEdu landing + gateway direction rather than treating the apex as Skriptoteket vacancy."
+  - "Given canonical host policy affects indexing, certificates, redirects, and operator tooling, when this story is complete, then the expected behavior for `skriptoteket.hule.education`, `hule.education`, `www.hule.education`, and any other public variant is specified as one of: canonical, permanent redirect, HuleEdu-owned/non-competing, or not in launch scope."
   - "Given the host decision may require edge or deployment updates, when this story is complete, then the implementation checklist includes DNS, TLS, redirect, compose/env, search-console verification, and alignment with the HuleEdu identity/gateway rollout."
 ui_impact: "No"
 data_impact: "No"
@@ -29,17 +29,19 @@ data_impact: "No"
 Skriptoteket is close to launch, but the public hostname story is still ambiguous if viewed in
 isolation.
 
-As of April 8, 2026:
+Historical observation from April 8, 2026:
 
 - `https://skriptoteket.hule.education` is the live app host.
-- `https://hule.education` is live but serves a placeholder.
-- `https://api.hule.education` is reserved and already TLS-covered, but still placeholder-owned at
-  the edge.
+- `https://hule.education` was live but was not yet the HuleEdu landing page.
+- `https://api.hule.education` was reserved and already TLS-covered, but was
+  not yet the active HuleEdu Gateway/auth edge.
 - `www.hule.education` does not resolve.
 
 That means this story is no longer the owner of the whole topology decision. The topology is frozen
 upstream in `ST-28-05`; this story consumes it and turns it into the correct Skriptoteket-side host
-and indexability policy.
+and indexability policy. As of the 2026-05-02 Hemma readiness proof, HuleEdu
+runtime services own `hule.education` and `api.hule.education`; the old
+placeholder expectation is stale.
 
 ## Notes
 

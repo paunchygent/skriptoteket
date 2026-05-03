@@ -94,8 +94,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [x] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
-- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — `PR-0276` static share-renderer and share-chrome/PDF remediation is approved after fixing merged-bench label overlay, wall-fixture geometry, owned chrome finalization, and relative public-app attribution proof gaps.
-- [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — `PR-0277` is implemented locally with renderer-derived preview assets, active-only metadata routes, and production-like BuildKit Chromium smoke; retained post-implementation review and fresh Teams unfurl proof remain before closeout.
+- [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — `PR-0276` static share-renderer and share-chrome/PDF remediation is approved after fixing merged-bench label overlay, wall-fixture geometry, owned chrome finalization, and relative public-app attribution proof gaps; `PR-0279` is ready as a narrow follow-up for shared-link seating label typography, long-name fit, and preview-asset lifecycle proof.
+- [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — `PR-0277` is implemented and deployed to Hemma production with renderer-derived preview assets, active-only metadata routes, production backfill, and BuildKit Chromium smoke; retained post-implementation review and fresh Teams unfurl proof remain before closeout.
 - [ ] [ST-26-08: Klassrumskartan shared print PDF visual parity](../stories/story-26-08-klassrumskartan-shared-print-pdf-visual-parity.md) — `PR-0278` is ready for pre-implementation review and governs the PDF body redesign across workspace `Exportera PDF` and shared-link `Ladda ner PDF` for both seating and grouping.
 
 ## Implementation Summary (as of 2026-03-26)
@@ -153,9 +153,17 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   adapter, exposes active-only token-addressed preview images, and emits
   escaped OG/Twitter plus allowlisted `CreativeWork` JSON-LD metadata. The
   production-like BuildKit Chromium smoke now proves the web image can install
-  and launch Playwright Chromium for a 1200x630 render. The story remains open
-  until retained post-implementation review and a never-before-posted Teams
-  unfurl proof are recorded.
+  and launch Playwright Chromium for a 1200x630 render. Hemma production deploy
+  at `2bae81a615a169aa70e916695cfaf467f5dbc96a` ran the dedicated
+  share-preview deploy command, applied the preview-asset migration, backfilled
+  3 active preview assets, passed the on-host Playwright PNG smoke, and proved
+  the current production share URL exposes OG/Twitter/JSON-LD plus a 1200x630
+  PNG preview route. The story remains open until retained post-implementation
+  review and a never-before-posted Teams unfurl proof are recorded. `PR-0279`
+  is the linked static seating share-label correction: it keeps the opened share
+  page as HTML/CSS, removes first/second-line label collision, handles ordinary
+  long names without default ellipsis, and treats renderer-version/backfill
+  implications for persisted preview PNGs as part of the same proof.
 - `ST-26-08` is the follow-up visual parity lane for the actual downloaded PDF
   artifacts. It keeps share-link PDF downloads export-backed and
   `presentation_payload`-derived, but redesigns the print-owned grouping and

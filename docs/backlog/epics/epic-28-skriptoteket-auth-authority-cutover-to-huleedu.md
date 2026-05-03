@@ -100,6 +100,7 @@ dependencies:
 - [PR-0263: ST-28-04 loopback origin parity for auth cutover closeout](../prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md)
 - [PR-0264: ST-28-10 auth outcome observability for HuleEdu cutover](../prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md)
 - [PR-0272: ST-28-04 HuleEdu internal identity header spelling remediation](../prs/pr-0272-st-28-04-huleedu-internal-identity-header-spelling-remediation.md)
+- [PR-0280: ST-28-04 Hemma reboot auth-edge startup readiness contract](../prs/pr-0280-st-28-04-hemma-reboot-auth-edge-startup-readiness-contract.md)
 
 ## Dependencies
 
@@ -252,13 +253,29 @@ auth/API edge at `https://api.hule.education/api/...`. The public
 public product origin; it must not serve signed-context protected API routes
 directly unless a future ADR deliberately defines a same-origin Gateway alias.
 
+Post-closeout Hemma reboot clarification (2026-05-02): `PR-0280` is a done
+post-closeout operational follow-up for the Docker auto-restart gap discovered
+after Hemma reboot/runtime drift. HuleEdu `TASK-0509` proved the current
+wrapper/restart-policy contract: Tier 0 auto-recovers, runtime lanes stay
+manual, `hemma-start-hostwide` restores Skriptoteket before HuleEdu auth/API
+proof, and `api.hule.education` TLS/SNI, Gateway health, auth ceremony, and
+protected API proof are retained in HuleEdu. Skriptoteket now keeps
+self-health, public/share availability, and protected HuleEdu-auth readiness
+separate, and no separate host/systemd task is needed unless future evidence
+contradicts that provider-side contract.
+
 ## Status Reconciliation (2026-04-30)
 
-`EPIC-28` remains `done`. `ST-28-01` and `PR-0251` are now also marked `done`
-because their lingering `in_progress` frontmatter was stale after the retained
-`PR-0251` / `PR-0255` review approval, subsequent login/logout retirement
-slices, final cross-app proof, and auth outcome observability closeout. No
-auth-cutover story or PR remains `ready` or `in_progress` under this epic.
+`EPIC-28` remains `done` for the original auth authority cutover. `ST-28-01`
+and `PR-0251` are now also marked `done` because their lingering `in_progress`
+frontmatter was stale after the retained `PR-0251` / `PR-0255` review approval,
+subsequent login/logout retirement slices, final cross-app proof, and auth
+outcome observability closeout. No original cutover story or PR remains `ready`
+or `in_progress` under this epic.
+
+Post-closeout production follow-ups can still open under `ST-28-04` when they
+clarify or remediate the deployed auth contract. Current follow-up state:
+`PR-0272` and `PR-0280` are done.
 
 ## Planning note (2026-04-08)
 

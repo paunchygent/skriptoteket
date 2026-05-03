@@ -59,6 +59,8 @@ def test_frontend_docker_dev_uses_local_huleedu_gateway_for_shared_auth() -> Non
     assert web_environment["HULEEDU_INTERNAL_IDENTITY_ISSUER"] == "api_gateway_service"
     assert web_environment["HULEEDU_INTERNAL_IDENTITY_AUDIENCE"] == "skriptoteket"
     assert web_environment["PUBLIC_APP_BASE_URL"] == "${PUBLIC_APP_BASE_URL:-http://localhost:5173}"
+    assert web_environment["PLAYWRIGHT_BROWSERS_PATH"] == "/ms-playwright"
+    assert web_environment["PLAYWRIGHT_HOST_PLATFORM_OVERRIDE"] == ""
     assert frontend_environment["COREPACK_ENABLE_DOWNLOAD_PROMPT"] == "0"
     assert (
         frontend_environment["VITE_DEV_BACKEND_PROXY_TARGET"]
@@ -76,6 +78,13 @@ def test_frontend_docker_dev_uses_local_huleedu_gateway_for_shared_auth() -> Non
         frontend_environment["VITE_HULEEDU_AUTH_ENTRY_URL"]
         == "${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login}"
     )
+
+
+def test_docker_dev_worker_does_not_inherit_host_playwright_platform_override() -> None:
+    worker_environment = _service_environment(ROOT / "compose.yaml", "worker")
+
+    assert worker_environment["PLAYWRIGHT_BROWSERS_PATH"] == "/ms-playwright"
+    assert worker_environment["PLAYWRIGHT_HOST_PLATFORM_OVERRIDE"] == ""
 
 
 def test_vite_dev_proxy_keeps_public_api_off_huleedu_gateway() -> None:

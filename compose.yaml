@@ -49,6 +49,8 @@ services:
       - HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID=gateway-identity-rs256-v1
       - HULEEDU_INTERNAL_IDENTITY_ISSUER=api_gateway_service
       - HULEEDU_INTERNAL_IDENTITY_AUDIENCE=skriptoteket
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=
     volumes:
       - ./alembic.ini:/app/alembic.ini
       - ./migrations:/app/migrations
@@ -83,6 +85,8 @@ services:
       - SERVICE_NAME=skriptoteket-worker
       - PYTHONPATH=/app/src
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-skriptoteket}
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=
     command:
       - pdm
       - run

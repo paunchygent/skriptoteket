@@ -5,13 +5,13 @@ title: "Reference: Home Server nginx-proxy"
 status: active
 owners: "olof"
 created: 2026-01-02
-updated: 2026-03-30
+updated: 2026-05-02
 topic: "nginx-proxy routing and edge hardening"
 ---
 
 Details for adding services behind nginx-proxy and maintaining edge hardening.
 
-## Current edge reality (verified 2026-03-30)
+## Current edge reality (verified 2026-05-02)
 
 Hemma's shared edge stack is:
 
@@ -24,20 +24,18 @@ Known active routed hosts on the shared proxy:
 - `skriptoteket.hule.education`
 - `convert.hule.education`
 - `projektveckor.hule.education`
-
-Reserved HuleEdu hostnames currently resolve to Hemma and are claimed by an explicit
-placeholder service:
-
 - `hule.education`
 - `api.hule.education`
 - `ws.hule.education`
 
-Current placeholder behavior:
+The HuleEdu hostnames are claimed by HuleEdu runtime services.
 
-- service: `huleedu-reserved-host-placeholder`
-- compose overlay: `~/infrastructure/docker-compose.huleedu-placeholder.yml`
-- image: `hashicorp/http-echo:1.0.0`
-- response body: `HuleEdu reserved host placeholder`
+Fallback/default host behavior:
+
+- service: `hemma-reserved-default-host`
+- image: `nginx:1.27-alpine`
+- response body/header: `hemma-reserved-default-host`
+- restart policy: `unless-stopped`
 
 Skriptoteket-specific edge hardening now also blocks public `/metrics` at nginx while
 allowing internal Prometheus scrapes to continue directly against `skriptoteket-web:8000`.
@@ -58,10 +56,11 @@ expose:
 Then add a DNS A record for `myservice.hemma` pointing to your public IP.
 The acme-companion will automatically generate SSL certificates.
 
-For the reserved HuleEdu apex/API/WebSocket hosts, the same rule applies: the eventual
-gateway or a temporary placeholder must claim the host with `VIRTUAL_HOST` (and usually
-`LETSENCRYPT_HOST`) on `hule-network`. DNS plus pre-provisioned cert intent is not
-enough on its own.
+For the reserved HuleEdu apex/API/WebSocket hosts, the same rule applies: the
+HuleEdu runtime service must claim the host with `VIRTUAL_HOST` (and usually
+`LETSENCRYPT_HOST`) on `hule-network`. DNS plus pre-provisioned cert intent is
+not enough on its own, and the retired placeholder should not be recreated as
+the normal recovery path.
 
 ## Reserved HuleEdu hostnames
 
@@ -74,8 +73,9 @@ Long-term intent:
 Current reality:
 
 - they resolve publicly to Hemma
-- they are registered by the temporary placeholder service on `hule-network`
-- they no longer inherit the Skriptoteket default cert/backend
+- they are registered by HuleEdu runtime services on `hule-network`
+- `api.hule.education` serves a certificate for `api.hule.education`
+- they must not inherit the Skriptoteket default cert/backend
 
 Verification:
 
@@ -89,29 +89,19 @@ echo | openssl s_client -connect api.hule.education:443 -servername api.hule.edu
 echo | openssl s_client -connect ws.hule.education:443 -servername ws.hule.education 2>/dev/null \
   | openssl x509 -noout -subject -ext subjectAltName
 
-ssh hemma "sudo docker exec nginx-proxy sed -n '1,260p' /etc/nginx/conf.d/default.conf"
+# From the HuleEdu repo:
+pdm run run-local-pdm run-hemma -- sudo docker exec nginx-proxy sed -n '1,260p' /etc/nginx/conf.d/default.conf
 ```
 
-If you need to recreate the temporary ownership pattern before the real HuleEdu gateway ships,
-add a trivial placeholder service that registers `hule.education`, `api.hule.education`, and
-`ws.hule.education` on `hule-network`. Keep the response temporary and obviously non-product.
+If the HuleEdu runtime edge is down, run the HuleEdu host-wide startup and
+readiness proof surfaces from the HuleEdu repo instead of recreating the
+retired placeholder:
 
-Minimal pattern:
-
-```yaml
-services:
-  huleedu-reserved-host-placeholder:
-    image: hashicorp/http-echo:1.0.0
-    command: ["-text=HuleEdu reserved host placeholder"]
-    restart: unless-stopped
-    expose:
-      - "5678"
-    environment:
-      VIRTUAL_HOST: hule.education,api.hule.education,ws.hule.education
-      VIRTUAL_PORT: "5678"
-      LETSENCRYPT_HOST: hule.education,api.hule.education,ws.hule.education
-    networks:
-      - default
+```bash
+# From the HuleEdu repo:
+pdm run run-local-pdm hemma-normalize-hostwide-restart-policy --verify
+pdm run run-local-pdm hemma-start-hostwide
+pdm run run-local-pdm hemma-skriptoteket-protected-api-proof
 ```
 
 ## Skriptoteket public metrics block
