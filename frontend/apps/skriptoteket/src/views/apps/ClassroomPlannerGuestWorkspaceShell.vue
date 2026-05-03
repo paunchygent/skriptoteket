@@ -166,6 +166,21 @@ const workspaceDisabledReasons = computed(() => {
     hasTemplate: liveTemplateId.value !== null,
   });
 });
+const workspaceIdentityKey = computed(() => {
+  const nextView = resolvePlannerView(currentView.value);
+  const nextTemplateId = resolveGuestWorkspaceTemplateContext({
+    currentView: nextView,
+    selectedTemplateId: props.selectedTemplateId,
+    plannerTemplateId: plannerState.template?.id ?? null,
+  }) ?? "none";
+  return [
+    nextView,
+    plannerState.draft?.draft_kind ?? "none",
+    plannerState.template?.id ?? "none",
+    props.selectedTemplateId ?? "none",
+    nextTemplateId,
+  ].join(":");
+});
 const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && selectedPlannerTemplate.value === null;
 });
@@ -301,12 +316,7 @@ watch(
 );
 
 watch(
-  () => ({
-    draftKind: plannerState.draft?.draft_kind ?? null,
-    plannerTemplateId: plannerState.template?.id ?? null,
-    selectedTemplateId: props.selectedTemplateId,
-    currentView: currentView.value,
-  }),
+  workspaceIdentityKey,
   () => {
     const nextView = resolvePlannerView(currentView.value);
     const nextTemplateId = resolveGuestWorkspaceTemplateContext({
@@ -396,7 +406,6 @@ watch(
           :selected-roster-id="selectedRosterId"
           :smart-settings-open="isGroupingSettingsDrawerOpen"
           :export-busy="groupingExportBusy"
-          :export-status-label="groupingExportStatusLabel"
           :export-error-message="groupingExportErrorMessage"
           :share-busy="groupingShareBusy"
           :share-status-label="groupingShareStatusLabel"
@@ -433,7 +442,6 @@ watch(
           :selected-template-id="pendingSeatingTemplateId || null"
           :smart-settings-open="isSeatingSettingsDrawerOpen"
           :export-busy="seatingExportBusy"
-          :export-status-label="seatingExportStatusLabel"
           :export-error-message="seatingExportErrorMessage"
           :share-busy="seatingShareBusy"
           :share-status-label="seatingShareStatusLabel"

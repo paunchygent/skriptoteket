@@ -21,11 +21,11 @@ import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
-import PlannerExportActionGroup, {
-  type PlannerExportOption,
-  type PlannerExportOptionValue,
-} from "./PlannerExportActionGroup.vue";
-import PlannerShareLinksPanel from "./PlannerShareLinksPanel.vue";
+import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
+import type {
+  PlannerExportFileOption,
+  PlannerExportOptionValue,
+} from "./plannerShareExportActions";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
@@ -113,7 +113,7 @@ const canRandomizeSeating = computed(() => {
   );
 });
 const hasSeatingAssignments = computed(() => plannerState.seatAssignments.length > 0);
-const exportOptions = computed<PlannerExportOption[]>(() => [
+const exportOptions = computed<PlannerExportFileOption[]>(() => [
   {
     id: "a3",
     label: "Affisch (A3)",
@@ -466,27 +466,30 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       </template>
 
       <template #secondary>
-        <PlannerExportActionGroup
-          v-if="showExportActions"
-          :busy="exportBusy"
-          :options="exportOptions"
-          @export-default="emit('export-default')"
-          @export-option="handleExportOption"
-        />
-        <PlannerShareLinksPanel
-          v-if="showShareLinkAction"
+        <PlannerShareExportPanel
+          v-if="showExportActions || showShareLinkAction"
+          :file-options="exportOptions"
           :shares="shares"
-          :loading="shareLoading"
-          :busy="shareBusy"
-          :status-label="shareStatusLabel"
-          :error-message="shareErrorMessage"
+          :share-loading="shareLoading"
+          :share-busy="shareBusy"
+          :share-status-label="shareStatusLabel"
+          :share-error-message="shareErrorMessage"
+          :export-busy="exportBusy"
+          :export-error-message="exportErrorMessage"
           :revoking-share-id="revokingShareId"
+          :show-file-actions="showExportActions"
+          :show-share-actions="showShareLinkAction"
           :show-revoke-action="showShareRevokeAction"
           trigger-test-id="seating-share-trigger"
           panel-test-id="seating-share-management"
+          create-share-test-id="seating-share-create"
+          create-share-mobile-test-id="seating-share-create-mobile"
+          file-option-test-id-prefix="seating-export-option"
           @create-share="emit('share-link')"
           @copy-share="emit('copy-share', $event)"
           @revoke-share="emit('revoke-share', $event)"
+          @export-default="emit('export-default')"
+          @export-option="handleExportOption"
         />
         <PlannerToolbarOverflowMenu
           label="Fler sittplatsåtgärder"

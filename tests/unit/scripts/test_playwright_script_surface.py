@@ -27,6 +27,8 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0261_auth_action_matrix.py",
     "playwright_pr_0262_real_lifecycle.py",
     "playwright_pr_0274_authenticated_share_links.py",
+    "playwright_pr_0286_share_export_affordance.py",
+    "playwright_pr_0287_smart_settings_persistence.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

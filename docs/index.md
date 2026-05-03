@@ -308,6 +308,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
 - ST-29-11 toolbar processing spinner and status-pill removal:
   `docs/backlog/prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md`
+- ST-29-11 share/export affordance consolidation:
+  `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
+- ST-29-11 Smart settings popover persistence:
+  `docs/backlog/prs/pr-0287-st-29-11-smart-settings-popover-persistence.md`
 - ST-26-06 shared-link PDF download spinner contract:
   `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
 - Review gate for PR-0282 shared-link PDF download spinner contract:
@@ -410,6 +414,20 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-29-16-klassrumskartan-small-screen-seating-redesign.md`
 - EPIC-29 small-screen rules redesign story:
   `docs/backlog/stories/story-29-17-klassrumskartan-small-screen-rules-redesign.md`
+- ST-29-13 small-screen mode sheet shell task:
+  `docs/backlog/prs/pr-0284-st-29-13-small-screen-mode-sheet-shell.md`
+- ST-29-14 small-screen overview dashboard task:
+  `docs/backlog/prs/pr-0285-st-29-14-small-screen-overview-dashboard.md`
+- ST-29-15 small-screen grouping workspace task:
+  `docs/backlog/prs/pr-0288-st-29-15-small-screen-grouping-workspace.md`
+- ST-29-16 small-screen seating workspace task:
+  `docs/backlog/prs/pr-0289-st-29-16-small-screen-seating-workspace.md`
+- ST-29-17 small-screen rules workspace task:
+  `docs/backlog/prs/pr-0290-st-29-17-small-screen-rules-workspace.md`
+- ST-29-11 share/export affordance consolidation task:
+  `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
+- ST-29-11 Smart settings popover persistence task:
+  `docs/backlog/prs/pr-0287-st-29-11-smart-settings-popover-persistence.md`
 - ST-26-06 share-link popover and bottom-sheet management task:
   `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
 - ST-26-06 spatial share-page renderer and grouping polish task:
@@ -438,6 +456,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
 - ST-29 small-screen workspace redesign mockup:
   `docs/mockups/st-29-small-screen-workspace-redesign/README.md`
+- ST-29-11 share/export affordance consolidation mockup:
+  `docs/mockups/st-29-11-share-export-affordance/README.md`
 - ST-26-06 share link UX and page renderer mockup:
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/README.md`
 - Dishka/FastAPI public-API cutover foundation:
@@ -516,6 +536,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/share-popover-and-bottom-sheet-mockup.png`
 - Klassrumskartan ST-26-06 shared seating page mockup:
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-seating-page-spatial-map-mockup.png`
+- Klassrumskartan ST-29-11 share/export affordance mockup:
+  `docs/mockups/st-29-11-share-export-affordance/share-export-affordance-mockup.png`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:

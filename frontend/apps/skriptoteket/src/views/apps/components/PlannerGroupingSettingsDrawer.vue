@@ -7,7 +7,7 @@
  * influence while leaving rule authoring in the dedicated Regler workspace.
  */
 
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 
 import { IconX } from "../../../components/icons";
 import {
@@ -71,24 +71,46 @@ function openRules(): void {
   emit("open-rules");
   emit("close");
 }
+
+function handleDocumentKeydown(event: KeyboardEvent): void {
+  if (!props.open || event.key !== "Escape") {
+    return;
+  }
+  emit("close");
+}
+
+onMounted(() => {
+  document.addEventListener("keydown", handleDocumentKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleDocumentKeydown);
+});
 </script>
 
 <template>
   <div v-if="open">
     <div
       class="fixed inset-0 z-40 bg-navy/40"
+      data-test="grouping-settings-backdrop"
       @click="emit('close')"
     />
     <aside
       class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-white shadow-brutal"
       data-test="grouping-settings-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="grouping-settings-title"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0 space-y-1">
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
             Smart
           </p>
-          <h3 class="font-serif text-xl text-navy">
+          <h3
+            id="grouping-settings-title"
+            class="font-serif text-xl text-navy"
+          >
             Smart-inställningar
           </h3>
         </div>

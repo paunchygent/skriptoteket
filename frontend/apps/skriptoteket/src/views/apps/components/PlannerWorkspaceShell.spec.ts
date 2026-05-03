@@ -6,6 +6,7 @@
  */
 
 import { mount } from "@vue/test-utils";
+import { nextTick, reactive } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import PlannerWorkspaceShell from "./PlannerWorkspaceShell.vue";
@@ -158,6 +159,8 @@ vi.mock("../useClassroomState", () => ({
 vi.mock("../../../composables/useToast", () => ({
   useToast: () => toastMocks,
 }));
+
+stateMocks.plannerState = reactive(stateMocks.plannerState) as PlannerStateMock;
 
 function buildWorkspaceSummary(): ClassWorkspaceSummary {
   return {
@@ -761,6 +764,15 @@ describe("PlannerWorkspaceShell", () => {
       "Du lägger till och ändrar regler i arbetsytan Regler.",
     );
 
+    await wrapper.get('[data-test="grouping-settings-history-toggle"]').trigger("click");
+    expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(true);
+    stateMocks.plannerState.draft = {
+      ...stateMocks.plannerState.draft,
+      use_history: true,
+    };
+    await nextTick();
+    expect(wrapper.find('[data-test="grouping-settings-drawer"]').exists()).toBe(true);
+
     await wrapper.get('[data-test="grouping-settings-template-select"]').setValue("template-2");
 
     expect(wrapper.emitted("change-grouping-template")).toEqual([[{ templateId: "template-2" }]]);
@@ -769,8 +781,19 @@ describe("PlannerWorkspaceShell", () => {
       "Med Tillämpa sittschema aktiverat försöker algoritmen skapa grupper av de elever som sitter nära varandra samtidigt som den respekterar dina övriga regler, som \"håll ihop\" och \"håll isär\".",
     );
 
+    await wrapper.get('[data-test="grouping-settings-seating-toggle"]').trigger("click");
+    expect(stateMocks.plannerState.setDraftGroupingSeatingDistanceEnabled)
+      .toHaveBeenCalledWith(true);
+    stateMocks.plannerState.draft = {
+      ...stateMocks.plannerState.draft,
+      grouping_seating_distance_enabled: true,
+    };
+    await nextTick();
+    expect(wrapper.find('[data-test="grouping-settings-drawer"]').exists()).toBe(true);
+
     await wrapper.get('[data-test="grouping-settings-open-rules"]').trigger("click");
     expect(wrapper.emitted("open-rules")).toEqual([[]]);
+    expect(wrapper.find('[data-test="grouping-settings-drawer"]').exists()).toBe(false);
   });
 
   it("keeps the seating toolbar focused on actions and moves Smart tuning into the drawer", async () => {
@@ -819,9 +842,16 @@ describe("PlannerWorkspaceShell", () => {
 
     await wrapper.get('[data-test="seating-settings-history-toggle"]').trigger("click");
     expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);
+    stateMocks.plannerState.draft = {
+      ...stateMocks.plannerState.draft,
+      use_history: false,
+    };
+    await nextTick();
+    expect(wrapper.find('[data-test="seating-settings-drawer"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-settings-open-rules"]').trigger("click");
     expect(wrapper.emitted("open-rules")).toEqual([[]]);
+    expect(wrapper.find('[data-test="seating-settings-drawer"]').exists()).toBe(false);
   });
 
   it("forwards the explicit new grouping draft action with the current grouping context", async () => {
@@ -1135,13 +1165,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
-    const exitButton = wrapper.findAll("button").find((button) => button.text() === "Avsluta");
-    expect(exitButton).toBeDefined();
-    if (!exitButton) {
-      throw new Error("Expected the top panel to expose the Avsluta action.");
-    }
-
-    await exitButton.trigger("click");
+    await wrapper.get('[data-test="planner-exit"]').trigger("click");
     expect(wrapper.emitted("exit-app")).toHaveLength(1);
   });
 
@@ -1253,10 +1277,10 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
-    await wrapper.get('[data-test="grouping-export-default"]').trigger("click");
+    await wrapper.get('[data-test="grouping-share-trigger"]').trigger("click");
+    await wrapper.get('[data-test="grouping-export-option-xlsx"]').trigger("click");
     expect(wrapper.emitted("export-grouping-default")).toEqual([[]]);
 
-    await wrapper.get('[data-test="grouping-export-menu-trigger"]').trigger("click");
     await wrapper.get('[data-test="grouping-export-option-pdf"]').trigger("click");
 
     expect(wrapper.emitted("export-grouping-option")).toEqual([["pdf_a4_portrait"]]);

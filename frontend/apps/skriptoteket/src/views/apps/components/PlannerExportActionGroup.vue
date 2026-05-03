@@ -10,25 +10,10 @@
 import { computed } from "vue";
 
 import { UiDenseSplitButton, type UiDenseSplitButtonItem } from "../../../components/ui";
-import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
-
-export type PlannerExportOptionValue = SeatingExportOption | GroupingExportOption;
-
-export type PlannerExportFileOption = {
-  id: string;
-  label: string;
-  option: PlannerExportOptionValue;
-  isDefault?: boolean;
-};
-
-export type PlannerExportShareOption = {
-  id: string;
-  label: string;
-  action: "share-link";
-  isDefault?: false;
-};
-
-export type PlannerExportOption = PlannerExportFileOption | PlannerExportShareOption;
+import type {
+  PlannerExportOption,
+  PlannerExportOptionValue,
+} from "./plannerShareExportActions";
 
 const props = withDefaults(
   defineProps<{

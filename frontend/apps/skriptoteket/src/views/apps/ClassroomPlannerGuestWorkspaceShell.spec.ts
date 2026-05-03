@@ -284,6 +284,16 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
       ),
     ).toBe("false");
 
+    plannerState.draft = {
+      ...plannerState.draft,
+      use_history: true,
+    } as ClassroomStateLike["draft"];
+    await nextTick();
+
+    expect(
+      wrapper.get("[data-test='seating-settings-drawer-stub']").attributes("data-open"),
+    ).toBe("true");
+
     initialView.value = "groups";
     plannerState.draft = {
       id: "draft-grouping-1",
@@ -313,6 +323,17 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
         "data-show-history-setting",
       ),
     ).toBe("false");
+
+    plannerState.draft = {
+      ...plannerState.draft,
+      use_history: true,
+      grouping_seating_distance_enabled: true,
+    } as ClassroomStateLike["draft"];
+    await nextTick();
+
+    expect(
+      wrapper.get("[data-test='grouping-settings-drawer-stub']").attributes("data-open"),
+    ).toBe("true");
   });
 
   it("disables Sittplatser when grouping no longer has a classroom context", async () => {

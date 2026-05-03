@@ -92,6 +92,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/skriptoteket"
     DATABASE_ECHO: bool = False
+    BOOTSTRAP_SUPERUSER_EMAIL: str = ""
+    BOOTSTRAP_SUPERUSER_PASSWORD: str = ""
 
     DRAFT_LOCK_TTL_SECONDS: int = 60 * 10  # 10 minutes (ADR-0046)
 
@@ -220,6 +222,7 @@ class Settings(BaseSettings):
     HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID: str = "gateway-identity-rs256-v1"
     HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY: str | None = None
     HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH: str | None = None
+    HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH: str | None = None
     HULEEDU_INTERNAL_IDENTITY_TRUSTED_PUBLIC_KEYS_JSON: str | None = None
     HULEEDU_INTERNAL_IDENTITY_TTL_SECONDS: int = 60
     HULEEDU_INTERNAL_IDENTITY_ALLOWED_CLOCK_SKEW_SECONDS: int = 5

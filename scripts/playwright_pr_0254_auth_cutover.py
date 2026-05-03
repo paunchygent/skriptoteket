@@ -43,11 +43,11 @@ DEFAULT_HULEEDU_AUTH_ORIGIN = "http://localhost:8080"
 DEFAULT_127_BASE_URL = "http://127.0.0.1:5173"
 DEFAULT_127_HULEEDU_LOGIN_ORIGIN = "http://127.0.0.1:5174"
 DEFAULT_127_HULEEDU_AUTH_ORIGIN = "http://127.0.0.1:8080"
-DEFAULT_DOTENV_PATH = "../../huledu-reboot/.env"
+DEFAULT_DOTENV_PATH = "../../huleedu/.env"
 DEFAULT_HULEEDU_TASK_0326_ARTIFACT = (
-    "../../huledu-reboot/.artifacts/skriptoteket-auth-bootstrap/local-apply-export.json"
+    "../../huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json"
 )
-DEFAULT_HULEEDU_TASK_0327_ROOT = "../../huledu-reboot/.artifacts/skriptoteket-lifecycle-proof/dev"
+DEFAULT_HULEEDU_TASK_0327_ROOT = "../../huleedu/.artifacts/skriptoteket-lifecycle-proof/dev"
 DEFAULT_PR_0261_ARTIFACT = ".artifacts/playwright-pr-0261-auth-action-matrix/manifest.redacted.json"
 DEFAULT_PR_0262_ROOT = ".artifacts/playwright-pr-0262-real-lifecycle/local-nonprod"
 LocalRole = Literal["user", "contributor", "admin", "superuser"]
@@ -448,7 +448,7 @@ def _run(config: AuthCutoverConfig) -> Path:
     manifest = build_manifest(
         environment=config.environment,
         run_id=run_dir.name,
-        command="pdm run pr-0254-auth-cutover",
+        command="pdm run auth-cutover-proof",
         validated_prerequisite_artifacts=prerequisite_artifacts,
         public_route_assertions=_section(primary, "public_route_assertions"),
         auth_entry_assertions=_section(primary, "auth_entry_assertions"),

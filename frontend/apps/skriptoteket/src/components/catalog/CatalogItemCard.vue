@@ -11,6 +11,7 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import classroomPlannerSymbolUrl from "../../assets/home/klassrumskartan/catalog/classroom-map-symbol.png";
 import type { CatalogItem } from "../../types/catalog";
 import { IconBookmark } from "../icons";
 import {
@@ -37,6 +38,15 @@ const isCompact = computed(() => props.variant === "compact");
 const isList = computed(() => props.variant === "list");
 const actionLabel = computed(() => (isCuratedApp.value ? "Öppna" : "Välj"));
 const isInteractive = computed(() => isCompact.value || isList.value);
+const compactCardSymbolUrl = computed(() => {
+  if (!isCompact.value) {
+    return null;
+  }
+  if (props.item.kind === "curated_app" && props.item.app_id === CLASSROOM_PLANNER_APP_ID) {
+    return classroomPlannerSymbolUrl;
+  }
+  return null;
+});
 const router = useRouter();
 const route = useRoute();
 
@@ -92,6 +102,17 @@ function handleCardKeydown(event: KeyboardEvent): void {
       <h3 class="min-w-0 text-sm font-semibold text-navy catalog-title clamp-2 compact-title col-start-1 row-start-1">
         {{ item.title }}
       </h3>
+      <div
+        v-if="compactCardSymbolUrl"
+        class="col-start-2 row-span-2 row-start-2 flex h-16 w-16 items-center justify-center overflow-hidden border border-navy/20 bg-canvas"
+        aria-hidden="true"
+      >
+        <img
+          :src="compactCardSymbolUrl"
+          alt=""
+          class="h-full w-full object-cover"
+        >
+      </div>
       <div class="col-start-1 row-start-2 min-h-5">
         <span
           v-if="isCuratedApp"
@@ -122,13 +143,16 @@ function handleCardKeydown(event: KeyboardEvent): void {
       </button>
       <p
         v-if="item.summary"
-        class="min-w-0 text-xs text-navy/60 break-words clamp-4 compact-summary col-span-2 row-start-3"
+        :class="[
+          'min-w-0 text-xs text-navy/60 break-words clamp-4 compact-summary row-start-3',
+          compactCardSymbolUrl ? 'col-start-1 pr-2' : 'col-span-2',
+        ]"
       >
         {{ item.summary }}
       </p>
       <p
         v-else
-        class="compact-summary col-span-2 row-start-3"
+        :class="['compact-summary row-start-3', compactCardSymbolUrl ? 'col-start-1' : 'col-span-2']"
         aria-hidden="true"
       />
     </div>

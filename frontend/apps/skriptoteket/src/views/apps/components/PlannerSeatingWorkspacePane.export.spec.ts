@@ -147,27 +147,54 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     expect(wrapper.emitted("open-settings")).toEqual([[]]);
   });
 
-  it("keeps processing feedback inside the export control and forwards seating export actions", async () => {
+  it("folds export choices into the Dela panel and forwards seating export actions", async () => {
+    const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
+      props: {
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: "template-1",
+        showShareLinkAction: true,
+      },
+    });
+
+    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-export-status-pill"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-export-group"]').exists()).toBe(false);
+    expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-share-trigger"]').exists()).toBe(true);
+
+    await wrapper.get('[data-test="seating-share-trigger"]').trigger("click");
+    expect(wrapper.get('[data-test="seating-share-management"]').text()).toContain("Dela och exportera");
+    expect(wrapper.get('[data-test="seating-export-option-a3"]').text()).toContain("Standard");
+    expect(wrapper.get('[data-test="seating-export-option-a4"]').text()).toContain("Affisch (A4)");
+    expect(wrapper.get('[data-test="seating-export-option-xlsx"]').text()).toContain("Excel (.xlsx)");
+
+    await wrapper.get('[data-test="seating-export-option-a3"]').trigger("click");
+    await wrapper.get('[data-test="seating-export-option-xlsx"]').trigger("click");
+
+    expect(wrapper.emitted("export-default")).toEqual([[]]);
+    expect(wrapper.emitted("export-option")).toEqual([["xlsx"]]);
+  });
+
+  it("keeps seating export busy feedback inside the Dela panel file action", async () => {
     const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
       props: {
         availableTemplates: [buildTemplate()],
         selectedTemplateId: "template-1",
         exportBusy: true,
         exportStatusLabel: "Exporterar…",
+        showShareLinkAction: true,
       },
     });
 
-    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-export-status-pill"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="seating-export-default"]').find('[data-ui="dense-spinner"]').exists())
-      .toBe(true);
-    expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-export-group"]').exists()).toBe(true);
+    await wrapper.get('[data-test="seating-share-trigger"]').trigger("click");
 
-    await wrapper.get('[data-test="seating-export-default"]').trigger("click");
+    const standardExport = wrapper.get('[data-test="seating-export-option-a3"]');
+    expect(standardExport.attributes("disabled")).toBeDefined();
+    expect(standardExport.find('[data-ui="dense-spinner"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="planner-export-status"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Exporterar…");
+
+    await standardExport.trigger("click");
     expect(wrapper.emitted("export-default")).toBeUndefined();
-
-    await wrapper.get('[data-test="seating-export-menu-trigger"]').trigger("click");
-    expect(wrapper.find('[data-test="seating-export-option-xlsx"]').exists()).toBe(false);
   });
 
   it("focuses the classroom picker instead of starting a draft without a classroom", async () => {

@@ -122,13 +122,17 @@ wrapper/restart-policy contract.
 
 ## Local Bootstrap/Auth-Edge Follow-up (2026-05-03)
 
-`PR-0283` is a blocked post-closeout local-dev follow-up for the `.env`
+`PR-0283` is a ready post-closeout local-dev follow-up for the `.env`
 bootstrap account and authenticated live-proof entrypoint. It keeps the retired
 Skriptoteket-local password login endpoint retired, splits credential truth
 from app-local authorization truth, and requires proof that HuleEdu accepts the
 `.env` credentials while Skriptoteket resolves the resulting Gateway-signed
-context to a projected local `superuser`. It is blocked on HuleEdu `TASK-0380`
-because HuleEdu must own and retain evidence for the `browser-bootstrap`
-Identity seed scope before Skriptoteket can consume those credentials in
-authenticated browser proof. Public and share-route proof remains direct to
-Skriptoteket and must not be made dependent on the HuleEdu auth edge.
+context to a projected local `superuser`. HuleEdu `TASK-0380` now owns and
+retains evidence for the `browser-bootstrap` Identity seed scope, so
+Skriptoteket can consume those credentials in authenticated browser proof.
+PR-0283 also pins the local-only durable account target to
+`superuser@local.dev` / `superuser-password` across the HuleEdu provider and
+Skriptoteket consumer `.env` surfaces, and requires a deterministic local proof
+matrix for every active Skriptoteket RBAC tier (`user`, `contributor`, `admin`,
+`superuser`). Public and share-route proof remains direct to Skriptoteket and
+must not be made dependent on the HuleEdu auth edge.

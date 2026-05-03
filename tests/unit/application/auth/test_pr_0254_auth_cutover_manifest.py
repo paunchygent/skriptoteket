@@ -307,7 +307,7 @@ def test_build_manifest_rejects_raw_url_keys() -> None:
         build_manifest(
             environment="local-nonprod",
             run_id="20260413T140000Z",
-            command="pdm run pr-0254-auth-cutover",
+            command="pdm run auth-cutover-proof",
             validated_prerequisite_artifacts={},
             public_route_assertions={"raw_url": "http://localhost:5173/editor"},
             auth_entry_assertions={},
@@ -328,7 +328,7 @@ def test_build_manifest_rejects_forbidden_marker_values() -> None:
         build_manifest(
             environment="local-nonprod",
             run_id="20260413T140000Z",
-            command="pdm run pr-0254-auth-cutover",
+            command="pdm run auth-cutover-proof",
             validated_prerequisite_artifacts={},
             public_route_assertions={"status": "ok"},
             auth_entry_assertions={},
@@ -348,7 +348,7 @@ def test_build_manifest_accepts_sanitized_final_contract() -> None:
     manifest = build_manifest(
         environment="local-nonprod",
         run_id="20260413T140000Z",
-        command="pdm run pr-0254-auth-cutover",
+        command="pdm run auth-cutover-proof",
         validated_prerequisite_artifacts={
             "pr_0262": {"status": "ok", "validated": True, "redacted": True}
         },

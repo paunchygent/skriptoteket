@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0283
 title: "Review: PR-0283 local auth-edge bootstrap preflight"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-05-03
 updated: 2026-05-03
@@ -24,8 +24,9 @@ links:
 ## TL;DR
 
 `PR-0283` has the right auth-edge shape after splitting HuleEdu credential truth
-from Skriptoteket projection/RBAC truth, but it must stay blocked until the
-provider-side bootstrap account seed authority is concrete and evidenced.
+from Skriptoteket projection/RBAC truth. The provider-side bootstrap account
+seed authority is now concrete through HuleEdu `TASK-0380`, so the slice is
+approved for implementation.
 
 ## Problem Statement
 
@@ -60,7 +61,7 @@ both `localhost` and `127.0.0.1` lanes.
 | Keep HuleEdu as credential authority | Prevents reviving Skriptoteket-local browser passwords. | [x] |
 | Keep Skriptoteket as authorization/projection authority | Local RBAC remains app-owned without credential verification shortcuts. | [x] |
 | Extend `PR-0254` proof instead of adding a parallel browser proof | Reuses the retained auth-cutover proof lane and avoids duplicate semantics. | [x] |
-| Block on HuleEdu `TASK-0380` provider seed evidence | `TASK-0325` proves Gateway lane shape, not the `.env` account seed. | [ ] |
+| Consume HuleEdu `TASK-0380` provider seed evidence | `TASK-0325` proves Gateway lane shape, not the `.env` account seed. | [x] |
 
 ## Review Checklist
 
@@ -70,7 +71,7 @@ both `localhost` and `127.0.0.1` lanes.
 - [x] Key trust parity requires live signed proof or active key/JWKS/fingerprint comparison.
 - [x] Public/share route independence remains explicit.
 - [x] Legacy local password-owner users fail closed instead of auto-linking.
-- [ ] Provider seed authority for `BOOTSTRAP_SUPERUSER_*` has retained evidence.
+- [x] Provider seed authority for `BOOTSTRAP_SUPERUSER_*` has retained evidence.
 - [x] Review gate is retained under `docs/backlog/reviews/`.
 
 ## Review Feedback
@@ -127,6 +128,29 @@ The retained `REV-PR-0283` state remains `changes_requested` while provider
 evidence is missing. Implementation must wait for HuleEdu `TASK-0380` retained
 provider evidence and a later re-review.
 
+### Re-review: Provider Evidence Available
+
+**Reviewer:** lead-developer
+**Date:** 2026-05-03
+**Verdict:** approved for implementation.
+
+No new findings. HuleEdu `TASK-0380` is now `status: done`, and retained
+`REV-TASK-0380-01` is approved after remediation. The provider evidence now
+covers the `browser-bootstrap` Identity seed scope, the non-mutating plan,
+local seed/verify/login proof, production-selector refusal, and the org-less
+Hemma helper payload contract.
+
+`PR-0283` is unblocked for Skriptoteket-owned implementation with these
+guardrails:
+
+- consume HuleEdu provider evidence; do not mutate HuleEdu Identity from this
+  repo;
+- keep local password login retired and never verify `.env` passwords against
+  Skriptoteket password hashes;
+- keep public/share route proof independent of HuleEdu auth readiness;
+- extend the retained `PR-0254` proof lane instead of creating a parallel
+  browser proof.
+
 ## Changes Made
 
 | Change | Artifact | Description |
@@ -134,3 +158,4 @@ provider evidence and a later re-review.
 | 1 | `PR-0283` | Changed status from `ready` to `blocked`, added `HuleEdu TASK-0380` and `REV-PR-0283`, and named the provider seed-scope commands/evidence consumed by Skriptoteket. |
 | 2 | `REV-PR-0283` | Created retained review gate with `changes_requested` status. |
 | 3 | `REV-PR-0283` | Recorded the re-review decision: no new findings; blocked contract shape approved while implementation remains gated on HuleEdu `TASK-0380` evidence. |
+| 4 | `PR-0283` / `REV-PR-0283` | Unblocked the PR after HuleEdu `TASK-0380` close-out and approved the retained review for implementation. |

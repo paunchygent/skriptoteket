@@ -297,6 +297,7 @@ ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
 pr-0252-auth-return = "python -m scripts.playwright_pr_0252_auth_return_to_origin"
 pr-0253-auth-retirement = "python -m scripts.playwright_pr_0253_auth_retirement"
 pr-0254-auth-cutover = "python -m scripts.playwright_pr_0254_auth_cutover"
+auth-cutover-proof = "python -m scripts.playwright_pr_0254_auth_cutover"
 pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
 pr-0258-auth-projection = "python -m scripts.playwright_pr_0258_auth_projection"
 pr-0261-auth-action-matrix = "python -m scripts.playwright_pr_0261_auth_action_matrix --start-backend --start-vite"
@@ -398,6 +399,7 @@ db-upgrade = "alembic upgrade head"
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
 consume-huleedu-subject-export = { cmd = "python -m skriptoteket.cli consume-huleedu-subject-export", env = { PYTHONPATH = "src" } }
+auth-edge-bootstrap-preflight = { cmd = "python -m skriptoteket.cli auth-edge-bootstrap-preflight", env = { PYTHONPATH = "src" } }
 send-feedback-emails = { cmd = "python -m skriptoteket.cli send-feedback-emails", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
 cleanup-session-files = { cmd = "python -m skriptoteket.cli cleanup-session-files", env = { PYTHONPATH = "src" } }

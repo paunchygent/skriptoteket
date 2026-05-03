@@ -124,6 +124,23 @@ pdm run consume-huleedu-subject-export \
   --apply
 ```
 
+Local shared-auth bootstrap preflight:
+
+```bash
+pdm run auth-edge-bootstrap-preflight \
+  --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json \
+  --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json
+```
+
+For the supported local shared-auth lane, HuleEdu owns the browser credential
+seed and Skriptoteket owns projection/RBAC. The durable local bootstrap
+superuser is `superuser@local.dev` with `BOOTSTRAP_SUPERUSER_PASSWORD`, and the
+HuleEdu local export should include deterministic `@local.dev` proof accounts
+for `user`, `contributor`, `admin`, and `superuser`. If the preflight reports
+`bootstrap_identity_conflict`, the local Skriptoteket DB still contains a
+legacy password-owner user for the bootstrap email; reset the local dev DB or
+run an explicit governed migration before applying the HuleEdu export.
+
 Production handoff from HuleEdu should copy only the sanitized export JSON into the
 Skriptoteket artifact volume, then run a dry-run first:
 

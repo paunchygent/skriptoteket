@@ -249,6 +249,12 @@ const isTransitioningBetweenWorkspaces = computed(() => Boolean(props.transition
 const lastWorkspaceNotice = ref<string | null>(null);
 const lastGroupingSmartRunToast = ref<string | null>(null);
 const lastSeatingSmartRunToast = ref<string | null>(null);
+const workspaceIdentityKey = computed(() => {
+  return [
+    plannerState.draft?.draft_kind ?? "none",
+    plannerState.template?.id ?? "none",
+  ].join(":");
+});
 
 watch(
   [
@@ -401,7 +407,7 @@ watch(
 );
 
 watch(
-  () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null],
+  workspaceIdentityKey,
   () => {
     currentView.value = resolvePlannerView(currentView.value);
     isGroupingSettingsDrawerOpen.value = false;
@@ -538,7 +544,6 @@ watch(
             :selected-roster-id="selectedRosterId"
             :smart-settings-open="isGroupingSettingsDrawerOpen"
             :export-busy="groupingExportBusy"
-            :export-status-label="groupingExportStatusLabel"
             :export-error-message="groupingExportErrorMessage"
             :share-busy="groupingShareBusy"
             :share-loading="groupingShareLoading"
@@ -575,7 +580,6 @@ watch(
             :smart-settings-open="isSeatingSettingsDrawerOpen"
             :seating-lifecycle-busy="seatingLifecycleBusy"
             :export-busy="seatingExportBusy"
-            :export-status-label="seatingExportStatusLabel"
             :export-error-message="seatingExportErrorMessage"
             :share-busy="seatingShareBusy"
             :share-loading="seatingShareLoading"

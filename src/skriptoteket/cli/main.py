@@ -13,6 +13,9 @@ from __future__ import annotations
 
 import typer
 
+from skriptoteket.cli.commands.auth_edge_bootstrap_preflight import (
+    auth_edge_bootstrap_preflight,
+)
 from skriptoteket.cli.commands.backfill_classroom_share_previews import (
     backfill_classroom_share_previews,
 )
@@ -42,6 +45,7 @@ from skriptoteket.cli.commands.smoke_seating_export_readiness import (
 app = typer.Typer(no_args_is_help=True)
 
 app.command()(backfill_classroom_share_previews)
+app.command()(auth_edge_bootstrap_preflight)
 app.command()(bootstrap_superuser)
 app.command()(provision_user)
 app.command()(consume_huleedu_subject_export)

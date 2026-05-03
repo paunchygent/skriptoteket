@@ -34,3 +34,7 @@ workspace and open all workspaces through a bottom sheet.
   shell that lets each workspace own a reduced layout.
 - The approved visual direction is retained in
   `docs/mockups/st-29-small-screen-workspace-redesign/`.
+
+## Planned PR Slices
+
+- [PR-0284: ST-29-13 small-screen mode sheet shell](../prs/pr-0284-st-29-13-small-screen-mode-sheet-shell.md)

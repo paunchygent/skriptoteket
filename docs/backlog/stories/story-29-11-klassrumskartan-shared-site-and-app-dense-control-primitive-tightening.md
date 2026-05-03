@@ -53,6 +53,8 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0229: ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity](../prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
 - [PR-0281: ST-29-11 toolbar processing spinner and status-pill removal](../prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md)
 - [PR-0282: ST-26-06 shared-link PDF download spinner contract](../prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md)
+- [PR-0286: ST-29-11 share/export affordance consolidation](../prs/pr-0286-st-29-11-share-export-affordance-consolidation.md)
+- [PR-0287: ST-29-11 Smart settings popover persistence](../prs/pr-0287-st-29-11-smart-settings-popover-persistence.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -82,6 +84,15 @@ instead of treating it as unfinished planner-layout implementation.
   canonical busy state, suppresses duplicate activation, then clears through a
   short browser-handoff guard with restored `href` and cleared busy attributes;
   retained proof covers grouping/seating at desktop and mobile widths.
+- `PR-0286` is closed as the next bounded toolbar/distribution-surface follow-up:
+  it folds file export choices into the single `Dela` affordance as `Dela och
+  exportera`, keeps share and export orchestration as separate state machines,
+  and proves the composition in both `Grupper` and `Sittplatser` at phone and
+  desktop viewports without changing backend or artifact contracts.
+- `PR-0287` is closed as the Smart settings persistence follow-up: grouping and
+  seating settings stay open for internal toggles/selects in authenticated and
+  guest shells, while explicit close, backdrop, Escape, and intentional Rules
+  navigation still close the panel.
 
 ## References
 

@@ -122,6 +122,10 @@ sharing.
     focus/visibility recovery, and retained browser proof asserts idle
     recovery, restored `href`, cleared busy attributes, duplicate suppression,
     and stable geometry.
+  - `PR-0286` is closed as a cross-linked `ST-29-11` toolbar composition slice:
+    it moves file export choices into the workspace `Dela` affordance as
+    `Dela och exportera` while preserving this story's share-artifact,
+    export-preparation, and link-management contracts.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

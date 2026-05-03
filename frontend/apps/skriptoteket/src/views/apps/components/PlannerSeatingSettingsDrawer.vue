@@ -7,11 +7,13 @@
  * in the dedicated Regler workspace.
  */
 
+import { onMounted, onUnmounted } from "vue";
+
 import { IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseToggle } from "../../../components/ui";
 import { useClassroomState } from "../useClassroomState";
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
   showHistorySetting?: boolean;
 }>(), {
@@ -29,24 +31,46 @@ function openRules(): void {
   emit("open-rules");
   emit("close");
 }
+
+function handleDocumentKeydown(event: KeyboardEvent): void {
+  if (!props.open || event.key !== "Escape") {
+    return;
+  }
+  emit("close");
+}
+
+onMounted(() => {
+  document.addEventListener("keydown", handleDocumentKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleDocumentKeydown);
+});
 </script>
 
 <template>
   <div v-if="open">
     <div
       class="fixed inset-0 z-40 bg-navy/40"
+      data-test="seating-settings-backdrop"
       @click="emit('close')"
     />
     <aside
       class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-white shadow-brutal"
       data-test="seating-settings-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="seating-settings-title"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0 space-y-1">
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
             Smart
           </p>
-          <h3 class="font-serif text-xl text-navy">
+          <h3
+            id="seating-settings-title"
+            class="font-serif text-xl text-navy"
+          >
             Smart-inställningar
           </h3>
         </div>

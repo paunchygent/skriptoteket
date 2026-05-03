@@ -28,3 +28,7 @@ desktop split-pane can fit.
 
 - Build after `ST-29-13`.
 - Any deferred action must be explicit in the story task that implements it.
+
+## Planned PR Slices
+
+- [PR-0288: ST-29-15 small-screen grouping workspace](../prs/pr-0288-st-29-15-small-screen-grouping-workspace.md)
