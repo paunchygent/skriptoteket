@@ -37,6 +37,7 @@ const props = withDefaults(
     type?: "button" | "submit" | "reset";
     busy?: boolean;
     busyLabel?: string;
+    reserveBusySlot?: boolean;
   }>(),
   {
     ariaLabel: undefined,
@@ -52,6 +53,7 @@ const props = withDefaults(
     type: "button",
     busy: false,
     busyLabel: undefined,
+    reserveBusySlot: false,
   },
 );
 
@@ -116,6 +118,13 @@ defineExpose({
     <span
       v-if="busy"
       class="shrink-0"
+      aria-hidden="true"
+    >
+      <UiDenseSpinner :size="iconOnly ? 14 : 12" />
+    </span>
+    <span
+      v-else-if="reserveBusySlot"
+      class="invisible shrink-0"
       aria-hidden="true"
     >
       <UiDenseSpinner :size="iconOnly ? 14 : 12" />

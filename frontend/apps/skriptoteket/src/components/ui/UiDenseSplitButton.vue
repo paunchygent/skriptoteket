@@ -101,6 +101,7 @@ function selectItem(id: string, disabled?: boolean): void {
       :label="label"
       :busy="busy"
       :busy-label="resolvedBusyLabel"
+      reserve-busy-slot
       :disabled="mainDisabled"
       tone="primary"
       group-position="start"

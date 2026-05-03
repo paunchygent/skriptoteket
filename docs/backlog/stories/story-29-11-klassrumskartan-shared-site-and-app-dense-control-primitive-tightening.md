@@ -72,6 +72,10 @@ instead of treating it as unfinished planner-layout implementation.
   `480px` rail pattern, the retained live browser proof stays on the authenticated real-data path,
   and guest/auth parity is carried by the shared shell implementation plus focused guest/auth shell
   specs.
+- `PR-0281` is closed as a bounded dense-control processing-feedback follow-up: grouping/seating
+  export/share/revoke processing now uses in-place shared spinner affordances, toolbar status pills
+  no longer pop into the secondary action row, and browser proof freezes the `Dela` / `Exportera`
+  x-position while export is busy.
 
 ## References
 

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0281
 title: "ST-29-11 toolbar processing spinner and status-pill removal"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-05-03
 updated: 2026-05-03
@@ -85,3 +85,20 @@ composition fix, not a share-artifact or export-flow change.
 
 Restore the previous toolbar status-pill rendering and remove the dense spinner
 primitive additions. Share/export service behavior remains unchanged.
+
+## Implementation evidence
+
+- Added `UiDenseSpinner` and extended `UiDenseActionButton` /
+  `UiDenseSplitButton` so dense actions can show in-place busy feedback while
+  preserving control geometry.
+- Split buttons reserve the spinner slot even while idle; browser proof caught
+  and closed the residual `Exportera` x-position shift.
+- Removed grouping/seating toolbar `UiDenseStatusPill` rendering for
+  export/share busy and error state.
+- Updated `PlannerShareLinksPanel` so desktop/mobile `Skapa länk` and row-level
+  `Återkalla` show the shared spinner inside the existing controls.
+- Focused component tests passed:
+  `pdm run fe-test -- --run PlannerExportActionGroup PlannerShareLinksPanel PlannerGroupingWorkspacePane.export PlannerSeatingWorkspacePane.export`.
+- Frontend gates passed: `pdm run fe-type-check`, `pdm run fe-lint`.
+- Browser proof passed against temporary trusted-auth backend/Vite servers:
+  `pr-0281-browser-proof: ok artifacts=.artifacts/pr-0281-toolbar-spinner-proof`.
