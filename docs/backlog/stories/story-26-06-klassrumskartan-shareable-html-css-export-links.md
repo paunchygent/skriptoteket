@@ -5,7 +5,7 @@ title: "Klassrumskartan shareable HTML/CSS export links"
 status: ready
 owners: "agents"
 created: 2026-04-30
-updated: 2026-05-02
+updated: 2026-05-03
 epic: "EPIC-26"
 dependencies:
   - "ADR-0075"
@@ -106,6 +106,17 @@ sharing.
   - `PR-0279` remains a shared-link HTML/CSS renderer correction rather than a
     PDF visual-redesign slice. It is linked to `ST-26-07` because Teams/social
     preview PNGs are generated from the same immutable seating share artifact.
+  - `PR-0282` closed the shared-link `Ladda ner PDF` action for seating and
+    grouping pages so any spinner/busy affordance aligns with the
+    `UiDenseSpinner` language from `PR-0281`. Product ownership approved a
+    tiny scoped public-share download controller on 2026-05-03 for persistent
+    in-button busy state; the slice must still avoid Vue hydration, API calls,
+    token logging, and share/PDF semantic changes. Browser proof under
+    `.artifacts/pr-0282-share-pdf-spinner-proof` verified desktop/mobile
+    grouping and seating click behavior, visible spinner state, unchanged
+    action geometry, browser download events, canonical disabled/busy styling,
+    and duplicate-activation suppression while the action is busy. The share
+    PDF action chrome now lives in a dedicated SRP helper module.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

@@ -232,6 +232,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0272-st-28-04-huleedu-internal-identity-header-spelling-remediation.md`
 - ST-28-04 Hemma reboot auth-edge startup readiness contract:
   `docs/backlog/prs/pr-0280-st-28-04-hemma-reboot-auth-edge-startup-readiness-contract.md`
+- ST-28-04 local auth-edge bootstrap preflight:
+  `docs/backlog/prs/pr-0283-st-28-04-local-auth-edge-bootstrap-preflight.md`
+- Review gate for PR-0283 local auth-edge bootstrap preflight:
+  `docs/backlog/reviews/review-pr-0283-local-auth-edge-bootstrap-preflight.md`
 - ST-28-10 auth outcome observability for realm cutover:
   `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md`
 - ST-28-10 auth outcome observability for HuleEdu cutover:
@@ -304,6 +308,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md`
 - ST-29-11 toolbar processing spinner and status-pill removal:
   `docs/backlog/prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md`
+- ST-26-06 shared-link PDF download spinner contract:
+  `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
 - ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
   `docs/backlog/prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md`
 - Review gate for ST-29-02 follow-up recovered export silence + rules rail stickiness + overview copy cleanup:
@@ -426,6 +432,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0279-st-26-06-shared-link-seating-label-typography-and-long-name-fit.md`
 - Review gate for PR-0279 shared-link seating label typography:
   `docs/backlog/reviews/review-pr-0279-shared-link-seating-label-typography.md`
+- ST-26-06 shared-link PDF download spinner contract:
+  `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
 - ST-29 small-screen workspace redesign mockup:
   `docs/mockups/st-29-small-screen-workspace-redesign/README.md`
 - ST-26-06 share link UX and page renderer mockup:

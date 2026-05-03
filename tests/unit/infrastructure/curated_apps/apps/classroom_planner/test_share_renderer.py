@@ -95,7 +95,10 @@ def test_grouping_renderer_escapes_hostile_values_and_records_provenance() -> No
     assert rendered.renderer_version == "klassrumskartan-share-renderer-v1"
     assert rendered.presentation_schema_version == "grouping-share-v1"
     assert rendered.presentation_payload["class_name"] == 'Klass <7A> & "X"'
-    assert "<script" not in rendered.rendered_html.casefold()
+    assert (
+        rendered.rendered_html.count('data-skriptoteket-share-pdf-download-controller="owned"') == 1
+    )
+    assert "<script>alert" not in rendered.rendered_html.casefold()
     assert "</style><script>" not in rendered.rendered_html
     assert "<script" not in rendered.rendered_css.casefold()
     assert 'class="share-page share-page--grouping"' in rendered.rendered_html
@@ -180,7 +183,10 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     assert rendered.renderer_version == "klassrumskartan-seating-share-renderer-v2"
     assert rendered.presentation_schema_version == "seating-share-v1"
     assert rendered.presentation_payload["roster_name"] == "Klass <8B>"
-    assert "<script" not in rendered.rendered_html.casefold()
+    assert (
+        rendered.rendered_html.count('data-skriptoteket-share-pdf-download-controller="owned"') == 1
+    )
+    assert "<script>alert" not in rendered.rendered_html.casefold()
     assert "<script>" not in rendered.rendered_html.casefold()
     assert "<img" not in rendered.rendered_html.casefold()
     assert "<script" not in rendered.rendered_css.casefold()

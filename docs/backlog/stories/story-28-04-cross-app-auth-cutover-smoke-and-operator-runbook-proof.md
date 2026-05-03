@@ -19,7 +19,7 @@ acceptance_criteria:
   - "Given a deliberate auth or lifecycle link is clicked, when the browser leaves Skriptoteket or opens from email, then the canonical route lands directly on the requested action page; generic HuleEdu pages are allowed only for fallback or interruption recovery."
   - "Given the shared browser session cutover ships, when operator proof is reviewed, then HuleEdu teacher smoke and a dedicated Skriptoteket realm-aware Playwright auth-cutover smoke are both green and documented in the runbook."
 ui_impact: "Adds explicit cross-app auth proof and operator verification guidance."
-dependencies: ["ADR-0076", "ADR-0083", "ST-28-05", "ST-28-01", "ST-28-02", "ST-28-03", "ST-28-06", "ST-28-07", "ST-28-08", "ST-28-09", "ST-28-11", "ST-28-12", "HuleEdu TASK-0325", "HuleEdu TASK-0326", "HuleEdu TASK-0327"]
+dependencies: ["ADR-0076", "ADR-0083", "ST-28-05", "ST-28-01", "ST-28-02", "ST-28-03", "ST-28-06", "ST-28-07", "ST-28-08", "ST-28-09", "ST-28-11", "ST-28-12", "HuleEdu TASK-0325", "HuleEdu TASK-0326", "HuleEdu TASK-0327", "HuleEdu TASK-0380"]
 ---
 
 ## Context
@@ -119,3 +119,16 @@ proof. The story now distinguishes Skriptoteket self-health, public
 Klassrumskartan/share availability, and HuleEdu-auth readiness. No separate
 host/systemd task is needed unless future evidence contradicts the
 wrapper/restart-policy contract.
+
+## Local Bootstrap/Auth-Edge Follow-up (2026-05-03)
+
+`PR-0283` is a blocked post-closeout local-dev follow-up for the `.env`
+bootstrap account and authenticated live-proof entrypoint. It keeps the retired
+Skriptoteket-local password login endpoint retired, splits credential truth
+from app-local authorization truth, and requires proof that HuleEdu accepts the
+`.env` credentials while Skriptoteket resolves the resulting Gateway-signed
+context to a projected local `superuser`. It is blocked on HuleEdu `TASK-0380`
+because HuleEdu must own and retain evidence for the `browser-bootstrap`
+Identity seed scope before Skriptoteket can consume those credentials in
+authenticated browser proof. Public and share-route proof remains direct to
+Skriptoteket and must not be made dependent on the HuleEdu auth edge.

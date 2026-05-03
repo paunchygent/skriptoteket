@@ -24,10 +24,12 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
     CLASSROOM_PLANNER_PUBLIC_APP_PATH,
     SHARE_CREATED_DATE_CHROME_SLOT,
-    SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT,
     JsonObject,
     JsonValue,
     RenderedClassroomPlannerShare,
+)
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner import (
+    share_download_action_renderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_group_renderer import (
     GROUPING_SHARE_CSS,
@@ -141,13 +143,6 @@ body {
   text-decoration: none;
   white-space: nowrap;
 }
-.share-download-pdf {
-  border: 1px solid var(--navy);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  line-height: 1;
-  padding: 10px 12px;
-}
 .share-origin-link {
   border-bottom: 1px solid currentColor;
   color: var(--navy);
@@ -195,8 +190,20 @@ body {
 }
 """.strip()
 
-_GROUPING_SHARE_RENDERED_CSS = _SHARE_BASE_CSS + "\n" + GROUPING_SHARE_CSS
-_SEATING_SHARE_RENDERED_CSS = _SHARE_BASE_CSS + "\n" + SEATING_SHARE_CSS
+_GROUPING_SHARE_RENDERED_CSS = (
+    _SHARE_BASE_CSS
+    + "\n"
+    + share_download_action_renderer.DOWNLOAD_ACTION_CSS
+    + "\n"
+    + GROUPING_SHARE_CSS
+)
+_SEATING_SHARE_RENDERED_CSS = (
+    _SHARE_BASE_CSS
+    + "\n"
+    + share_download_action_renderer.DOWNLOAD_ACTION_CSS
+    + "\n"
+    + SEATING_SHARE_CSS
+)
 
 
 class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol):
@@ -290,6 +297,7 @@ def _document(
             "</head>",
             "<body>",
             f'<main class="share-page {page_modifier}">{body}</main>',
+            share_download_action_renderer.DOWNLOAD_ACTION_CONTROLLER_SCRIPT,
             "</body>",
             "</html>",
         ]
@@ -333,10 +341,7 @@ def _share_header(*, title: str, subtitle: str | None) -> str:
             f'<p class="share-created">Skapad: {SHARE_CREATED_DATE_CHROME_SLOT}</p>',
             "</div>",
             '<nav class="share-actions" aria-label="Delningsåtgärder">',
-            (
-                '<a class="share-download-pdf" '
-                f"{SHARE_PDF_DOWNLOAD_HREF_CHROME_SLOT} download>Ladda ner PDF</a>"
-            ),
+            share_download_action_renderer.render_pdf_download_action(),
             (
                 '<a class="share-origin-link" '
                 f'href="{CLASSROOM_PLANNER_PUBLIC_APP_PATH}" rel="noopener">'

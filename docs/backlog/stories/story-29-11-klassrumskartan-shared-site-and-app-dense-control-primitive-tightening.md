@@ -5,7 +5,7 @@ title: "Klassrumskartan — Shared site/app dense-control primitive tightening"
 status: ready
 owners: "agents"
 created: 2026-04-01
-updated: 2026-04-06
+updated: 2026-05-03
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -52,6 +52,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0228: ST-29-11 follow-up: desktop student-pool rail stickiness restoration](../prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md)
 - [PR-0229: ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity](../prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
 - [PR-0281: ST-29-11 toolbar processing spinner and status-pill removal](../prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md)
+- [PR-0282: ST-26-06 shared-link PDF download spinner contract](../prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -76,6 +77,12 @@ instead of treating it as unfinished planner-layout implementation.
   export/share/revoke processing now uses in-place shared spinner affordances, toolbar status pills
   no longer pop into the secondary action row, and browser proof freezes the `Dela` / `Exportera`
   x-position while export is busy.
+- `PR-0282` is closed as the public-share disabled/busy-state counterpart:
+  it reuses the `UiDenseSpinner` visual contract for seating/grouping share-page chrome, and
+  product ownership approved a tiny scoped public-share download controller for persistent
+  in-button busy state without Vue hydration, API calls, token logging, or share/PDF semantic
+  changes. The add-on adds canonical disabled/busy styling plus duplicate-activation suppression
+  while `Ladda ner PDF` is busy, with the action chrome split into an SRP-friendly helper module.
 
 ## References
 

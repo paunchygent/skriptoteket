@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0279
 title: "Review: PR-0279 shared-link seating label typography"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-05-02
 updated: 2026-05-03
@@ -83,7 +83,7 @@ separate so seating-only typography fixes do not invalidate grouping previews.
 
 **Reviewer:** `lead-developer`
 **Date:** `2026-05-02`
-**Verdict:** changes_requested
+**Verdict:** approved
 
 ### Prior Required Changes
 
@@ -98,37 +98,25 @@ separate so seating-only typography fixes do not invalidate grouping previews.
 
 ### Current Required Changes
 
-1. **Blocker: active seating shares are not actually forced through the new
-   seating renderer/backfill contract.** The implementation moves newly
-   rendered seating artifacts to `klassrumskartan-seating-share-renderer-v2`,
-   but the backfill path only selects rows whose preview asset differs from the
-   currently stored artifact `content_hash`, `presentation_hash`, or
-   `renderer_version`. Existing active seating artifacts created with
-   `klassrumskartan-share-renderer-v1` and matching old preview rows therefore
-   remain fresh by definition, and the backfill command regenerates PNG bytes
-   from the already-stored old `rendered_html` rather than re-rendering the
-   artifact from `presentation_payload` with the new seating renderer. This does
-   not satisfy the `PR-0279` / `ST-26-07` lifecycle requirement that seating
-   renderer output changes either refresh/backfill active preview assets or
-   prove stale-preview detection forces fresh assets. Fix by choosing and
-   implementing one governed path: either explicitly document that PR-0279 is
-   new-share-only and remove the active-link backfill claim from PR/story/handoff
-   docs, or add a seating-only artifact refresh/backfill command that re-renders
-   active seating artifacts from stored presentation payload, updates
-   renderer/content provenance, and then regenerates previews. Add unit and
-   repository tests for an old seating artifact with a matching old preview row
-   so the selected behavior is proved.
-2. **Medium: the visual proof still does not assert the full overlap contract.**
-   The proof script asserts line containment inside each token, first/second-line
-   separation, hidden text clipping, ellipsis absence, fallback accessibility,
-   and token-token overlap. It does not assert the required map-fit or fixture
-   overlap conditions: labels/tokens versus benches, fixtures, rows, or room
-   edge. The PR doc says proof must inspect or assert those conditions, but the
-   retained evidence now only claims that seat tokens did not overlap each
-   other. Extend the Playwright proof to collect room surface and fixture rects,
-   assert token/label rects stay inside the surface, and assert no occupied
-   token/label intersects fixtures that should remain visually separate. Keep
-   the screenshots as review artifacts, but make the failure mode mechanical.
+None. Re-review on 2026-05-03 verified both prior findings as remediated in
+code, repository tests, and the retained Playwright proof.
+
+### Resolved Findings
+
+1. **Resolved: active seating shares are now forced through the new seating
+   renderer/backfill contract.** The repository selector includes active seating
+   artifacts whose stored renderer version differs from
+   `klassrumskartan-seating-share-renderer-v2` even when the old preview row
+   still matches the old artifact. The backfill handler re-renders those seating
+   artifacts from `presentation_payload`, persists refreshed rendered
+   HTML/CSS/content provenance, and regenerates preview bytes from the refreshed
+   artifact. Unit and repository tests cover the old-active-seating-artifact plus
+   matching-old-preview-row case.
+2. **Resolved: the visual proof now mechanically asserts map-fit and fixture
+   overlap constraints.** The proof collects room-surface, fixture, token, and
+   visible-line rects, fails if token/line rects leave the room surface, fails
+   if non-bench fixtures overlap occupied tokens or visible labels, and requires
+   the 1200x630 room surface to fit the preview viewport.
 
 ### Suggestions (Optional)
 
@@ -138,11 +126,11 @@ Pending review.
 
 Latest proof artifacts:
 
-- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/proof.json`
-- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/desktop.png`
-- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/mobile.png`
-- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/preview-1200x630.png`
-- `.artifacts/pr-0279-share-label-typography/20260503T001858584113Z/share-page.html`
+- `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/proof.json`
+- `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/desktop.png`
+- `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/mobile.png`
+- `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/preview-1200x630.png`
+- `.artifacts/pr-0279-share-label-typography/20260503T121230448269Z/share-page.html`
 
 Remediation evidence to review:
 
@@ -175,13 +163,32 @@ pdm run docs-validate
 git diff --check
 ```
 
+### Re-review Closeout
+
+**Reviewer:** `lead-developer`
+**Date:** `2026-05-03`
+**Verdict:** approved
+
+The re-review found no remaining blockers. `PR-0279` keeps the static
+share-artifact boundary intact, keeps grouping renderer provenance unchanged,
+hardens active seating preview refresh behavior, and turns the previously visual
+map-fit concern into a mechanical Playwright failure mode.
+
+Verification rerun during closeout:
+
+```bash
+pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py tests/unit/application/apps/classroom_planner/test_share_artifacts.py tests/unit/web/apps/classroom_planner/test_share_pages.py
+pdm run pytest -q tests/integration/infrastructure/repositories/test_classroom_planner_share_artifacts.py
+PYTHONPATH=src:. pdm run python -m scripts.prove_pr_0279_share_label_typography
+```
+
 ### Decision Approvals
 
-- [ ] Keep the task under `ST-26-06` with `ST-26-07` linked
-- [ ] Use deterministic CSS-owned long-name tiers
-- [ ] Preserve full accessible labels
-- [ ] Split grouping and seating renderer provenance
-- [ ] Treat seating preview asset staleness as in-scope
+- [x] Keep the task under `ST-26-06` with `ST-26-07` linked
+- [x] Use deterministic CSS-owned long-name tiers
+- [x] Preserve full accessible labels
+- [x] Split grouping and seating renderer provenance
+- [x] Treat seating preview asset staleness as in-scope
 
 ## Changes Made
 
