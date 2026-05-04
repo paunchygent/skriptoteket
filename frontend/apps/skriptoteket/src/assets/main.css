@@ -74,8 +74,13 @@ body.app-shell-game-mode::before {
     font-family: var(--huleedu-font-serif);
     font-size: var(--huleedu-text-lg);
     line-height: 1.2;
+    min-height: 1.2em;
     color: var(--huleedu-navy);
     margin: 0;
+  }
+
+  .planner-top-panel-compact-status-message {
+    display: none;
   }
 
   @media (min-width: 768px) {
@@ -313,6 +318,50 @@ body.app-shell-game-mode::before {
   .planner-overview-panel-action {
     @apply h-[2.375rem] w-full justify-center px-3 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] shadow-none;
     @apply active:translate-x-0 active:translate-y-0 active:shadow-none;
+  }
+
+  .planner-overview-setup-panel {
+    @apply grid gap-0 border border-navy bg-white p-3.5 shadow-brutal-sm;
+  }
+
+  .planner-overview-setup-panel-desktop {
+    @apply lg:grid-cols-2;
+  }
+
+  .planner-overview-setup-section {
+    @apply grid content-start gap-2.5;
+  }
+
+  .planner-overview-setup-section + .planner-overview-setup-section {
+    @apply mt-3 border-t border-navy/15 pt-3;
+  }
+
+  .planner-overview-setup-panel-desktop .planner-overview-setup-section + .planner-overview-setup-section {
+    @apply lg:ml-3 lg:mt-0 lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0;
+  }
+
+  .planner-overview-setup-heading {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .planner-overview-setup-select {
+    @apply w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy;
+  }
+
+  .planner-overview-setup-actions {
+    @apply flex flex-wrap items-center gap-1.5;
+  }
+
+  .planner-overview-setup-action {
+    @apply inline-flex min-h-[2.25rem] items-center justify-center gap-1.5 border border-navy bg-white px-3 py-1 text-xs font-semibold text-navy transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .planner-overview-setup-action-danger {
+    @apply border-burgundy text-burgundy hover:bg-burgundy/5;
+  }
+
+  .planner-overview-setup-empty {
+    @apply border border-dashed border-navy/25 bg-canvas px-3 py-2 text-xs text-navy/60;
   }
 
   .planner-modal-footer-button {

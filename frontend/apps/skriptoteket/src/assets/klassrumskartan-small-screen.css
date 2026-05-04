@@ -8,6 +8,38 @@
      trays, and planner workspace breakpoint cutovers
 */
 
+.classroom-planner-stage {
+  padding: var(--huleedu-space-4) var(--huleedu-space-4);
+}
+
+@media (min-width: 768px) {
+  .classroom-planner-stage {
+    padding-right: var(--huleedu-space-6);
+    padding-left: var(--huleedu-space-6);
+  }
+}
+
+@media (max-width: 767px) {
+  .app-layout .auth-main-content.auth-main-content--workspace {
+    --planner-phone-panel-gap: var(--huleedu-space-4);
+    --planner-phone-edge-gutter: calc(var(--planner-phone-panel-gap) / 2);
+
+    padding-right: var(--planner-phone-edge-gutter);
+    padding-left: var(--planner-phone-edge-gutter);
+  }
+
+  .classroom-planner-stage {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
 .planner-phone-mode-switch {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -437,7 +469,11 @@
   .planner-top-panel-status {
     min-height: 0;
     gap: var(--huleedu-space-1);
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+  }
+
+  .planner-top-panel-status:has(.planner-top-panel-compact-status-message) .planner-top-panel-status-copy {
+    display: none;
   }
 
   .planner-top-panel-status-pill {
@@ -465,10 +501,16 @@
   }
 
   .planner-top-panel-status [data-test="planner-top-panel-status-message"],
-  .planner-top-panel-status [data-test="planner-top-panel-supporting-text"] {
+  .planner-top-panel-status [data-test="planner-top-panel-supporting-text"],
+  .planner-top-panel-status [data-test="planner-top-panel-compact-status-message"] {
     min-width: 0;
-    flex: 1 1 auto;
+    flex: 1 1 100%;
     line-height: 1.25;
+  }
+
+  .planner-top-panel-compact-status-message {
+    display: block;
+    white-space: normal;
   }
 
   .planner-share-export-inline-panel {

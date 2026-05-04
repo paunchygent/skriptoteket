@@ -38,6 +38,7 @@ const props = withDefaults(
     seatingDisabledReason?: string | null;
     rulesDisabledReason?: string | null;
     supportingText?: string | null;
+    compactStatusMessage?: string | null;
     statusLabel?: string | null;
     statusMessage?: string | null;
     statusTone?: StatusTone;
@@ -52,6 +53,7 @@ const props = withDefaults(
     seatingDisabledReason: null,
     rulesDisabledReason: null,
     supportingText: null,
+    compactStatusMessage: null,
     statusLabel: null,
     statusMessage: null,
     statusTone: "neutral",
@@ -357,16 +359,23 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
       <span
         v-if="statusMessage"
         data-test="planner-top-panel-status-message"
-        class="text-[11px] text-navy/55"
+        class="planner-top-panel-status-copy text-[11px] text-navy/55"
       >
         {{ statusMessage }}
       </span>
       <span
         v-if="supportingText"
         data-test="planner-top-panel-supporting-text"
-        class="text-[11px] text-navy/55"
+        class="planner-top-panel-status-copy text-[11px] text-navy/55"
       >
         {{ supportingText }}
+      </span>
+      <span
+        v-if="compactStatusMessage"
+        data-test="planner-top-panel-compact-status-message"
+        class="planner-top-panel-compact-status-message text-[11px] text-navy/55"
+      >
+        {{ compactStatusMessage }}
       </span>
     </div>
   </article>

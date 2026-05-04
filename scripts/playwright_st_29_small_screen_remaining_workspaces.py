@@ -319,6 +319,11 @@ def _verify_mobile_prerequisite_blocking(page: Page, *, viewport_label: str) -> 
     page.set_viewport_size({"width": 390, "height": 844})
     page.wait_for_timeout(300)
     _choose_mode(page, mode="overview", label="Översikt")
+    _first_visible(page, '[data-test="phone-overview-setup-panel"]')
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / f"{viewport_label}-no-class-overview.png"),
+        full_page=True,
+    )
 
     trigger = page.locator('[data-test="planner-phone-mode-sheet-trigger"]').first
     expect(trigger).to_be_visible()
@@ -468,6 +473,14 @@ def _verify_viewport(page: Page, *, viewport_label: str, width: int, height: int
     page.set_viewport_size({"width": width, "height": height})
     page.wait_for_timeout(300)
     _choose_mode(page, mode="overview", label="Översikt")
+    _first_visible(
+        page,
+        '[data-test="phone-overview-setup-panel"], [data-test="overview-setup-panel"]',
+    )
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / f"{viewport_label}-overview.png"),
+        full_page=True,
+    )
     _capture_mode_shell(page, viewport_label=viewport_label, width=width)
     _capture_workspace(page, mode="grouping", label="Grupper", viewport_label=viewport_label)
     _capture_workspace(page, mode="seating", label="Sittplatser", viewport_label=viewport_label)

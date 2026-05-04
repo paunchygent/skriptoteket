@@ -25,13 +25,10 @@ import {
   resolvePlannerWorkspaceDisabledReasons,
 } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
-import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
+import PlannerOverviewSetupPanel from "./PlannerOverviewSetupPanel.vue";
 import PlannerPhoneOverviewShareExportRow from "./PlannerPhoneOverviewShareExportRow.vue";
-import PlannerRosterOverviewPanel from "./PlannerRosterOverviewPanel.vue";
-import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
-const CLASS_PREVIEW_NAME_LIMIT = 33;
 type OverviewDistributionScope = "grouping" | "seating";
 
 const props = defineProps<{
@@ -107,42 +104,14 @@ const selectedTemplate = computed(() => {
 });
 const hasSelectedRoster = computed(() => Boolean(selectedRoster.value));
 const hasSelectedTemplate = computed(() => Boolean(selectedTemplate.value));
-const selectedRosterSortedNames = computed(() => {
-  const roster = selectedRoster.value;
-  if (!roster) {
-    return [];
-  }
-
-  const sortedNames = [...roster.students]
-    .map((student) => student.display_name.trim())
-    .filter((displayName) => displayName.length > 0)
-    .sort((left, right) => {
-      const leftFirstName = left.split(/\s+/)[0] ?? left;
-      const rightFirstName = right.split(/\s+/)[0] ?? right;
-      const firstNameComparison = leftFirstName.localeCompare(rightFirstName, "sv");
-      if (firstNameComparison !== 0) {
-        return firstNameComparison;
-      }
-      return left.localeCompare(right, "sv");
-    });
-
-  return sortedNames;
-});
-const selectedRosterPreviewNames = computed(() => {
-  if (selectedRosterSortedNames.value.length <= CLASS_PREVIEW_NAME_LIMIT) {
-    return selectedRosterSortedNames.value;
-  }
-
-  return [...selectedRosterSortedNames.value.slice(0, CLASS_PREVIEW_NAME_LIMIT), "..."];
-});
 const workspaceContextLabel = computed(() => {
   if (!selectedTemplate.value) {
-    return "Inget klassrum valt";
+    return "Klassrum saknas";
   }
   return `Klassrum: ${selectedTemplate.value.name}`;
 });
 const workspaceHomeTitle = computed(() => {
-  return selectedRoster.value?.name ?? activeRosterSummary.value?.name ?? "Planering";
+  return selectedRoster.value?.name ?? activeRosterSummary.value?.name ?? "Klass saknas";
 });
 const selectedRosterCountLabel = computed(() => {
   if (activeRosterSummary.value) {
@@ -176,6 +145,12 @@ const overviewPrerequisiteCopy = computed(() => {
     help: props.overviewCapabilities?.supporting_text ?? baseCopy.help,
   };
 });
+const compactOverviewStatusMessage = computed(() => {
+  if (hasSelectedRoster.value) {
+    return null;
+  }
+  return "Börja med att skapa en klasslista. Tryck på hjälp för vägledning.";
+});
 function selectWorkspaceMode(value: string): void {
   if (value === "overview") {
     workspaceMode.value = value;
@@ -206,22 +181,6 @@ function selectWorkspaceMode(value: string): void {
   }
 }
 
-function selectPhoneRoster(event: Event): void {
-  const target = event.target;
-  if (!(target instanceof HTMLSelectElement) || !target.value) {
-    return;
-  }
-  emit("select-roster", target.value);
-}
-
-function selectPhoneTemplate(event: Event): void {
-  const target = event.target;
-  if (!(target instanceof HTMLSelectElement)) {
-    return;
-  }
-  emit("select-template", target.value || null);
-}
-
 </script>
 
 <template>
@@ -238,6 +197,7 @@ function selectPhoneTemplate(event: Event): void {
       :rules-disabled-reason="workspaceDisabledReasons.rules"
       :status-message="overviewPrerequisiteCopy.guidance"
       :supporting-text="overviewPrerequisiteCopy.help"
+      :compact-status-message="compactOverviewStatusMessage"
       status-tone="neutral"
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('exit-app')"
@@ -255,148 +215,33 @@ function selectPhoneTemplate(event: Event): void {
         class="planner-phone-overview-dashboard"
         data-test="planner-phone-overview-dashboard"
       >
-        <section class="planner-phone-overview-section">
-          <div class="flex items-center justify-between gap-3">
-            <h3 class="text-sm font-semibold text-navy">
-              Klasslista
-            </h3>
-            <span class="text-xs text-navy/65">
-              {{ selectedRosterCountLabel ?? "0 elever" }}
-            </span>
-          </div>
-          <label class="mt-2 block">
-            <select
-              aria-label="Klasslista"
-              class="planner-phone-select"
-              :value="selectedRosterId ?? ''"
-              data-test="phone-overview-roster-select"
-              :disabled="isLoadingWorkspace || availableRosters.length === 0"
-              @change="selectPhoneRoster"
-            >
-              <option value="">
-                Välj klass
-              </option>
-              <option
-                v-for="roster in availableRosters"
-                :key="roster.id"
-                :value="roster.id"
-              >
-                {{ roster.name }}
-              </option>
-            </select>
-          </label>
-          <div
-            v-if="overviewCapabilities?.show_roster_actions !== false"
-            class="mt-2 flex items-center gap-1.5"
-          >
-            <button
-              type="button"
-              class="planner-phone-link-button"
-              data-test="phone-overview-edit-roster"
-              :disabled="Boolean(overviewCapabilities?.roster_actions?.edit_disabled_reason)"
-              @click="emit('edit-roster')"
-            >
-              <IconEdit :size="14" />
-              Ändra
-            </button>
-            <button
-              type="button"
-              class="planner-phone-link-button"
-              data-test="phone-overview-create-roster"
-              :disabled="Boolean(overviewCapabilities?.roster_actions?.create_disabled_reason)"
-              @click="emit('create-roster')"
-            >
-              <IconPlus :size="14" />
-              Ny
-            </button>
-            <button
-              type="button"
-              class="planner-phone-link-button planner-phone-link-button-danger"
-              data-test="phone-overview-delete-roster"
-              :disabled="Boolean(overviewCapabilities?.roster_actions?.delete_disabled_reason)"
-              @click="emit('delete-current-roster')"
-            >
-              <IconTrash :size="14" />
-              Radera
-            </button>
-          </div>
-        </section>
-
-        <section class="planner-phone-overview-section">
-          <div class="flex items-center justify-between gap-3">
-            <h3 class="text-sm font-semibold text-navy">
-              Klassrum
-            </h3>
-            <span class="text-xs text-navy/65">
-              {{ selectedTemplate ? `${selectedTemplate.seats.length} platser` : "Inget valt" }}
-            </span>
-          </div>
-          <label class="mt-2 block">
-            <select
-              aria-label="Klassrum"
-              class="planner-phone-select"
-              :value="selectedTemplateId ?? ''"
-              data-test="phone-overview-template-select"
-              :disabled="isLoadingWorkspace || availableTemplates.length === 0"
-              @change="selectPhoneTemplate"
-            >
-              <option value="">
-                Välj klassrum
-              </option>
-              <option
-                v-for="template in availableTemplates"
-                :key="template.id"
-                :value="template.id"
-              >
-                {{ template.name }}
-              </option>
-            </select>
-          </label>
-          <div
-            v-if="overviewCapabilities?.show_template_actions !== false"
-            class="mt-2 flex items-center gap-1.5"
-          >
-            <button
-              v-if="selectedTemplate"
-              type="button"
-              class="planner-phone-link-button"
-              data-test="phone-overview-edit-template"
-              :disabled="Boolean(overviewCapabilities?.template_actions?.edit_disabled_reason)"
-              @click="emit('edit-current-template', selectedTemplate)"
-            >
-              <IconEdit :size="14" />
-              Ändra
-            </button>
-            <button
-              type="button"
-              class="planner-phone-link-button"
-              data-test="phone-overview-create-template"
-              :disabled="Boolean(overviewCapabilities?.template_actions?.create_disabled_reason)"
-              @click="emit('create-template')"
-            >
-              <IconPlus :size="14" />
-              Ny
-            </button>
-            <button
-              v-if="selectedTemplate"
-              type="button"
-              class="planner-phone-link-button planner-phone-link-button-danger"
-              data-test="phone-overview-delete-template"
-              :disabled="Boolean(overviewCapabilities?.template_actions?.delete_disabled_reason)"
-              @click="emit('delete-current-template')"
-            >
-              <IconTrash :size="14" />
-              Radera
-            </button>
-          </div>
-          <div
-            v-if="!selectedTemplate"
-            class="mt-2 border border-dashed border-navy/25 bg-canvas px-3 py-2 text-xs text-navy/60"
-            data-test="phone-overview-classroom-empty"
-          >
-            Välj ett klassrum.
-          </div>
-        </section>
+        <PlannerOverviewSetupPanel
+          variant="phone"
+          :selected-roster="selectedRoster"
+          :selected-roster-id="selectedRosterId"
+          :selected-roster-count-label="selectedRosterCountLabel"
+          :available-rosters="availableRosters"
+          :selected-template="selectedTemplate"
+          :selected-template-id="selectedTemplateId"
+          :available-templates="availableTemplates"
+          :is-loading-workspace="isLoadingWorkspace"
+          :show-roster-actions="overviewCapabilities?.show_roster_actions !== false"
+          :show-template-actions="overviewCapabilities?.show_template_actions !== false"
+          :roster-create-disabled-reason="overviewCapabilities?.roster_actions?.create_disabled_reason"
+          :roster-edit-disabled-reason="overviewCapabilities?.roster_actions?.edit_disabled_reason"
+          :roster-delete-disabled-reason="overviewCapabilities?.roster_actions?.delete_disabled_reason"
+          :template-create-disabled-reason="overviewCapabilities?.template_actions?.create_disabled_reason"
+          :template-edit-disabled-reason="overviewCapabilities?.template_actions?.edit_disabled_reason"
+          :template-delete-disabled-reason="overviewCapabilities?.template_actions?.delete_disabled_reason"
+          @select-roster="emit('select-roster', $event)"
+          @create-roster="emit('create-roster')"
+          @edit-roster="emit('edit-roster')"
+          @delete-current-roster="emit('delete-current-roster')"
+          @select-template="emit('select-template', $event)"
+          @create-template="emit('create-template')"
+          @edit-current-template="emit('edit-current-template', $event)"
+          @delete-current-template="emit('delete-current-template')"
+        />
 
         <PlannerPhoneOverviewShareExportRow
           :has-roster="Boolean(selectedRoster)"
@@ -433,34 +278,28 @@ function selectPhoneTemplate(event: Event): void {
         />
       </div>
 
-      <div class="planner-desktop-overview-grid grid gap-3 xl:grid-cols-2">
-        <PlannerRosterOverviewPanel
-          :title="selectedRoster?.name ?? activeRosterSummary?.name ?? 'Ingen klass vald'"
-          :count-label="selectedRosterCountLabel"
+      <div class="planner-desktop-overview-grid">
+        <PlannerOverviewSetupPanel
           :selected-roster="selectedRoster"
           :selected-roster-id="selectedRosterId"
           :available-rosters="availableRosters"
-          :selected-roster-preview-names="selectedRosterPreviewNames"
-          :is-loading-workspace="isLoadingWorkspace"
-          :show-actions="overviewCapabilities?.show_roster_actions !== false"
-          :create-disabled-reason="overviewCapabilities?.roster_actions?.create_disabled_reason"
-          :edit-disabled-reason="overviewCapabilities?.roster_actions?.edit_disabled_reason"
-          :delete-disabled-reason="overviewCapabilities?.roster_actions?.delete_disabled_reason"
-          @select-roster="emit('select-roster', $event)"
-          @create-roster="emit('create-roster')"
-          @edit-roster="emit('edit-roster')"
-          @delete-current-roster="emit('delete-current-roster')"
-        />
-
-        <PlannerTemplateOverviewPanel
+          :selected-roster-count-label="selectedRosterCountLabel"
           :selected-template="selectedTemplate"
           :selected-template-id="selectedTemplateId"
           :available-templates="availableTemplates"
           :is-loading-workspace="isLoadingWorkspace"
-          :show-actions="overviewCapabilities?.show_template_actions !== false"
-          :create-disabled-reason="overviewCapabilities?.template_actions?.create_disabled_reason"
-          :edit-disabled-reason="overviewCapabilities?.template_actions?.edit_disabled_reason"
-          :delete-disabled-reason="overviewCapabilities?.template_actions?.delete_disabled_reason"
+          :show-roster-actions="overviewCapabilities?.show_roster_actions !== false"
+          :show-template-actions="overviewCapabilities?.show_template_actions !== false"
+          :roster-create-disabled-reason="overviewCapabilities?.roster_actions?.create_disabled_reason"
+          :roster-edit-disabled-reason="overviewCapabilities?.roster_actions?.edit_disabled_reason"
+          :roster-delete-disabled-reason="overviewCapabilities?.roster_actions?.delete_disabled_reason"
+          :template-create-disabled-reason="overviewCapabilities?.template_actions?.create_disabled_reason"
+          :template-edit-disabled-reason="overviewCapabilities?.template_actions?.edit_disabled_reason"
+          :template-delete-disabled-reason="overviewCapabilities?.template_actions?.delete_disabled_reason"
+          @select-roster="emit('select-roster', $event)"
+          @create-roster="emit('create-roster')"
+          @edit-roster="emit('edit-roster')"
+          @delete-current-roster="emit('delete-current-roster')"
           @select-template="emit('select-template', $event)"
           @create-template="emit('create-template')"
           @edit-current-template="emit('edit-current-template', $event)"

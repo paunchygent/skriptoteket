@@ -125,10 +125,7 @@ describe("PlannerClassWorkspace", () => {
     await editRosterButton.trigger("click");
     expect(wrapper.emitted("edit-roster")).toEqual([[]]);
 
-    const createRosterButton = wrapper.findAll("button").find((button) => button.text() === "Ny klasslista");
-    if (!createRosterButton) {
-      throw new Error("Expected the overview to expose class creation.");
-    }
+    const createRosterButton = wrapper.get("[data-test='overview-create-roster']");
     await createRosterButton.trigger("click");
     expect(wrapper.emitted("create-roster")).toEqual([[]]);
 
@@ -249,6 +246,19 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.get("[data-test='planner-top-panel-supporting-text']").text()).toBe(
       "Behöver du mer vägledning kan du trycka på Hjälp.",
     );
+    expect(wrapper.get("[data-test='planner-top-panel-compact-status-message']").text()).toBe(
+      "Börja med att skapa en klasslista. Tryck på hjälp för vägledning.",
+    );
+    expect(wrapper.text()).toContain("Klass saknas");
+    expect(wrapper.text()).toContain("Klassrum saknas");
+    expect(wrapper.text()).not.toContain("Planering");
+    expect(wrapper.text()).not.toContain("Inget klassrum valt");
+    expect(wrapper.get("[data-test='phone-overview-roster-select']").text()).toContain("Skapa en klasslista");
+    expect(wrapper.get("[data-test='phone-overview-template-select']").text()).toContain("Skapa ett klassrum");
+    expect(wrapper.get("[data-test='phone-overview-edit-roster']").attributes("disabled")).toBeDefined();
+    expect(wrapper.get("[data-test='phone-overview-delete-roster']").attributes("disabled")).toBeDefined();
+    expect(wrapper.get("[data-test='phone-overview-edit-template']").attributes("disabled")).toBeDefined();
+    expect(wrapper.get("[data-test='phone-overview-delete-template']").attributes("disabled")).toBeDefined();
 
     const groupingToggle = findWorkspaceToggle(wrapper, "Grupper");
     const seatingToggle = findWorkspaceToggle(wrapper, "Sittplatser");
@@ -290,7 +300,8 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.emitted("open-seating")).toBeUndefined();
     expect(wrapper.emitted("open-rules")).toBeUndefined();
     const rosterPanelText = wrapper.get('[data-test="overview-roster-panel"]').text();
-    expect(rosterPanelText).toContain("Ingen klass vald");
+    expect(rosterPanelText).toContain("Klasslista");
+    expect(rosterPanelText).toContain("0 elever");
     expect(rosterPanelText).not.toContain("VÄLJ EN KLASSLISTA");
   });
 
@@ -391,10 +402,10 @@ describe("PlannerClassWorkspace", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Inget klassrum valt");
-    expect(wrapper.text()).toContain("Inget klassrum valt");
+    expect(wrapper.text()).toContain("Klassrum saknas");
+    expect(wrapper.text()).not.toContain("Inget klassrum valt");
     expect(wrapper.get("[data-test='overview-classroom-empty']").text()).toContain(
-      "Välj ett klassrum i listan ovan",
+      "Välj klassrum",
     );
     expect(wrapper.text()).not.toContain("Aktiv klass");
     expect(wrapper.text()).not.toContain("Neutral översikt före byte");
@@ -407,7 +418,7 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.text()).not.toContain("Revision 2");
   });
 
-  it("keeps the desktop roster preview compact and removes the phone preview", () => {
+  it("merges class list and classroom setup into one overview panel without roster previews", () => {
     const crowdedRoster = {
       id: "roster-1",
       name: "SA24D",
@@ -420,10 +431,10 @@ describe("PlannerClassWorkspace", () => {
       availableRosters: [crowdedRoster, ...buildRosters().slice(1)],
     });
 
-    const preview = wrapper.get("[data-test='overview-roster-preview']");
-    expect(preview.text()).toContain("Elev01 Andersson");
-    expect(preview.text()).toContain("...");
-
+    expect(wrapper.findAll("[data-test='overview-setup-panel']")).toHaveLength(1);
+    expect(wrapper.get("[data-test='overview-setup-panel']").text()).toContain("Klasslista");
+    expect(wrapper.get("[data-test='overview-setup-panel']").text()).toContain("Klassrum");
+    expect(wrapper.find("[data-test='overview-roster-preview']").exists()).toBe(false);
     expect(wrapper.find("[data-test='phone-overview-roster-preview']").exists()).toBe(false);
     expect(wrapper.find("[data-test='phone-overview-roster-preview-more']").exists()).toBe(false);
   });
