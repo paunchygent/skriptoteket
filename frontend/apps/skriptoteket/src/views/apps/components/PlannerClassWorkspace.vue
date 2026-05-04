@@ -25,7 +25,8 @@ import {
   resolvePlannerWorkspaceDisabledReasons,
 } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
-import PlannerOverviewSetupPanel from "./PlannerOverviewSetupPanel.vue";
+import PlannerDesktopOverviewSetupPanel from "./PlannerDesktopOverviewSetupPanel.vue";
+import PlannerPhoneOverviewSetupPanel from "./PlannerPhoneOverviewSetupPanel.vue";
 import PlannerPhoneOverviewShareExportRow from "./PlannerPhoneOverviewShareExportRow.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
@@ -215,8 +216,7 @@ function selectWorkspaceMode(value: string): void {
         class="planner-phone-overview-dashboard"
         data-test="planner-phone-overview-dashboard"
       >
-        <PlannerOverviewSetupPanel
-          variant="phone"
+        <PlannerPhoneOverviewSetupPanel
           :selected-roster="selectedRoster"
           :selected-roster-id="selectedRosterId"
           :selected-roster-count-label="selectedRosterCountLabel"
@@ -279,7 +279,7 @@ function selectWorkspaceMode(value: string): void {
       </div>
 
       <div class="planner-desktop-overview-grid">
-        <PlannerOverviewSetupPanel
+        <PlannerDesktopOverviewSetupPanel
           :selected-roster="selectedRoster"
           :selected-roster-id="selectedRosterId"
           :available-rosters="availableRosters"

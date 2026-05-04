@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Overview classroom-management panel.
+ * Desktop overview classroom section.
  *
- * This component renders the classroom-side overview controls and compact room
- * preview. It keeps room-preview rendering local to the panel while the
- * parent overview shell owns selection state and modal orchestration.
+ * Relationships:
+ * - used only inside PlannerDesktopOverviewSetupPanel
+ * - owns the large-screen classroom minimap for the selected room template
+ * - keeps room-preview rendering local while the overview shell owns modals
  */
 
 import { computed, type CSSProperties } from "vue";
@@ -88,14 +89,17 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
 </script>
 
 <template>
-  <article
-    class="planner-overview-panel"
+  <section
+    class="planner-desktop-overview-section"
     data-test="overview-template-panel"
   >
     <div class="planner-overview-panel-header">
+      <p class="text-[0.7rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
+        Klassrum
+      </p>
       <div class="flex flex-wrap items-baseline gap-2">
         <p class="text-xl font-semibold text-navy">
-          {{ selectedTemplate?.name ?? "Inget klassrum valt" }}
+          {{ selectedTemplate?.name ?? "Klassrum saknas" }}
         </p>
         <span
           v-if="selectedTemplate"
@@ -161,7 +165,7 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         class="planner-overview-panel-empty"
         data-test="overview-classroom-empty"
       >
-        Välj ett klassrum i listan ovan för att visa en kompakt förhandsgranskning här.
+        Välj klassrum för att visa en kompakt förhandsgranskning här.
       </div>
     </div>
 
@@ -174,6 +178,7 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         class="btn-primary planner-overview-panel-action"
         :disabled="Boolean(createDisabledReason)"
         :title="createDisabledReason ?? undefined"
+        data-test="overview-create-template"
         @click="emit('create-template')"
       >
         <IconPlus :size="14" />
@@ -202,5 +207,5 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         Radera
       </button>
     </div>
-  </article>
+  </section>
 </template>

@@ -418,7 +418,7 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.text()).not.toContain("Revision 2");
   });
 
-  it("merges class list and classroom setup into one overview panel without roster previews", () => {
+  it("keeps desktop overview rich while phone overview stays compact", () => {
     const crowdedRoster = {
       id: "roster-1",
       name: "SA24D",
@@ -434,7 +434,9 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.findAll("[data-test='overview-setup-panel']")).toHaveLength(1);
     expect(wrapper.get("[data-test='overview-setup-panel']").text()).toContain("Klasslista");
     expect(wrapper.get("[data-test='overview-setup-panel']").text()).toContain("Klassrum");
-    expect(wrapper.find("[data-test='overview-roster-preview']").exists()).toBe(false);
+    expect(wrapper.get("[data-test='overview-roster-preview']").text()).toContain("Elev01 Andersson");
+    expect(wrapper.get("[data-test='overview-roster-preview']").text()).toContain("...");
+    expect(wrapper.find("[data-test='overview-classroom-preview']").exists()).toBe(true);
     expect(wrapper.find("[data-test='phone-overview-roster-preview']").exists()).toBe(false);
     expect(wrapper.find("[data-test='phone-overview-roster-preview-more']").exists()).toBe(false);
   });

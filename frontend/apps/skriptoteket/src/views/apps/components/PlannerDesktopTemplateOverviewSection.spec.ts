@@ -1,11 +1,11 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
-import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
+import PlannerDesktopTemplateOverviewSection from "./PlannerDesktopTemplateOverviewSection.vue";
 
-describe("PlannerTemplateOverviewPanel", () => {
+describe("PlannerDesktopTemplateOverviewSection", () => {
   it("renders the compact overview preview through the shared room surface seam", () => {
-    const wrapper = mount(PlannerTemplateOverviewPanel, {
+    const wrapper = mount(PlannerDesktopTemplateOverviewSection, {
       props: {
         selectedTemplate: {
           id: "template-1",

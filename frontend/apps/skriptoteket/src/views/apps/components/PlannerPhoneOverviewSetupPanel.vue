@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * Combined overview setup panel for class list and classroom selection.
+ * Phone overview setup panel for class list and classroom selection.
  *
  * Relationships:
- * - used by the Klassrumskartan overview shell for both desktop and phone
- * - keeps class-list and classroom management in one framed panel instead of
- *   competing overview cards
+ * - used only by the small-screen Klassrumskartan overview
+ * - keeps phone overview management compact and preview-free
+ * - desktop rich previews live in PlannerDesktopOverviewSetupPanel instead
  * - emits only selection and management intents; the parent owns modal and
  *   draft orchestration
  */
@@ -17,7 +17,6 @@ import type { RoomTemplate, Roster } from "../classroomPlannerTypes";
 
 const props = withDefaults(
   defineProps<{
-    variant?: "desktop" | "phone";
     selectedRoster: Roster | null;
     selectedRosterId: string | null;
     selectedRosterCountLabel?: string | null;
@@ -36,7 +35,6 @@ const props = withDefaults(
     templateDeleteDisabledReason?: string | null;
   }>(),
   {
-    variant: "desktop",
     selectedRosterCountLabel: null,
     showRosterActions: true,
     showTemplateActions: true,
@@ -60,32 +58,31 @@ const emit = defineEmits<{
   (e: "delete-current-template"): void;
 }>();
 
-const isPhone = computed(() => props.variant === "phone");
-const testPrefix = computed(() => (isPhone.value ? "phone-overview" : "overview"));
-const rosterPanelTestId = computed(() => `${testPrefix.value}-roster-panel`);
-const templatePanelTestId = computed(() => `${testPrefix.value}-template-panel`);
-const rosterSelectTestId = computed(() => `${testPrefix.value}-roster-select`);
-const templateSelectTestId = computed(() => `${testPrefix.value}-template-select`);
-const editRosterTestId = computed(() => `${testPrefix.value}-edit-roster`);
-const createRosterTestId = computed(() => `${testPrefix.value}-create-roster`);
-const deleteRosterTestId = computed(() => `${testPrefix.value}-delete-roster`);
-const editTemplateTestId = computed(() => `${testPrefix.value}-edit-template`);
-const createTemplateTestId = computed(() => `${testPrefix.value}-create-template`);
-const deleteTemplateTestId = computed(() => `${testPrefix.value}-delete-template`);
-const classroomEmptyTestId = computed(() => `${testPrefix.value}-classroom-empty`);
+const TEST_PREFIX = "phone-overview";
+const rosterPanelTestId = computed(() => `${TEST_PREFIX}-roster-panel`);
+const templatePanelTestId = computed(() => `${TEST_PREFIX}-template-panel`);
+const rosterSelectTestId = computed(() => `${TEST_PREFIX}-roster-select`);
+const templateSelectTestId = computed(() => `${TEST_PREFIX}-template-select`);
+const editRosterTestId = computed(() => `${TEST_PREFIX}-edit-roster`);
+const createRosterTestId = computed(() => `${TEST_PREFIX}-create-roster`);
+const deleteRosterTestId = computed(() => `${TEST_PREFIX}-delete-roster`);
+const editTemplateTestId = computed(() => `${TEST_PREFIX}-edit-template`);
+const createTemplateTestId = computed(() => `${TEST_PREFIX}-create-template`);
+const deleteTemplateTestId = computed(() => `${TEST_PREFIX}-delete-template`);
+const classroomEmptyTestId = computed(() => `${TEST_PREFIX}-classroom-empty`);
 
 const rosterCountLabel = computed(() => props.selectedRosterCountLabel ?? "0 elever");
 const templateCountLabel = computed(() => {
   return props.selectedTemplate ? `${props.selectedTemplate.seats.length} platser` : "Inget valt";
 });
 const rosterPlaceholderLabel = computed(() => {
-  if (isPhone.value && props.availableRosters.length === 0) {
+  if (props.availableRosters.length === 0) {
     return "Skapa en klasslista";
   }
   return "Välj klasslista";
 });
 const templatePlaceholderLabel = computed(() => {
-  if (isPhone.value && props.availableTemplates.length === 0) {
+  if (props.availableTemplates.length === 0) {
     return "Skapa ett klassrum";
   }
   return "Välj klassrum";
@@ -122,11 +119,8 @@ function selectTemplate(event: Event): void {
 
 <template>
   <article
-    :class="[
-      'planner-overview-setup-panel',
-      isPhone ? 'planner-overview-setup-panel-phone' : 'planner-overview-setup-panel-desktop',
-    ]"
-    :data-test="`${testPrefix}-setup-panel`"
+    class="planner-overview-setup-panel planner-overview-setup-panel-phone"
+    data-test="phone-overview-setup-panel"
   >
     <section
       class="planner-overview-setup-section"
@@ -185,7 +179,7 @@ function selectTemplate(event: Event): void {
           @click="emit('create-roster')"
         >
           <IconPlus :size="14" />
-          Ny
+          Ny klass
         </button>
         <button
           type="button"
@@ -258,7 +252,7 @@ function selectTemplate(event: Event): void {
           @click="emit('create-template')"
         >
           <IconPlus :size="14" />
-          Ny
+          Nytt klassrum
         </button>
         <button
           type="button"

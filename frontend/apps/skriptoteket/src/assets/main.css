@@ -285,7 +285,8 @@ body.app-shell-game-mode::before {
     @apply border-burgundy bg-burgundy/5;
   }
 
-  .planner-overview-panel {
+  .planner-overview-panel,
+  .planner-desktop-overview-section {
     @apply grid border border-navy/20 bg-canvas p-3.5;
     grid-template-rows: minmax(3.5rem, auto) minmax(4.75rem, auto) 15rem auto;
     gap: 0.625rem;
@@ -325,7 +326,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-overview-setup-panel-desktop {
-    @apply lg:grid-cols-2;
+    @apply gap-3 lg:grid-cols-2;
   }
 
   .planner-overview-setup-section {

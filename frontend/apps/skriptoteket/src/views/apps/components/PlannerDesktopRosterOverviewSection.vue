@@ -1,14 +1,19 @@
 <script setup lang="ts">
 /**
- * Overview roster-management panel.
+ * Desktop overview roster section.
  *
- * This component renders the class-side overview controls and compact student
- * preview. It stays prop/event-driven so the parent overview shell can own
- * workspace-level state and modal orchestration.
+ * Relationships:
+ * - used only inside PlannerDesktopOverviewSetupPanel
+ * - owns the large-screen student preview for the selected class list
+ * - stays prop/event-driven so the overview shell owns modal orchestration
  */
+
+import { computed } from "vue";
 
 import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import type { Roster } from "../classroomPlannerTypes";
+
+const CLASS_PREVIEW_NAME_LIMIT = 33;
 
 const props = defineProps<{
   title: string;
@@ -17,7 +22,6 @@ const props = defineProps<{
   selectedRoster: Roster | null;
   selectedRosterId: string | null;
   availableRosters: Roster[];
-  selectedRosterPreviewNames: string[];
   isLoadingWorkspace: boolean;
   showActions?: boolean;
   createDisabledReason?: string | null;
@@ -41,14 +45,49 @@ function selectRoster(event: Event): void {
     emit("select-roster", target.value);
   }
 }
+
+const selectedRosterPreviewNames = computed(() => {
+  const roster = props.selectedRoster;
+  if (!roster) {
+    return [];
+  }
+
+  const sortedNames = [...roster.students]
+    .map((student) => student.display_name.trim())
+    .filter((displayName) => displayName.length > 0)
+    .sort((left, right) => {
+      const leftFirstName = left.split(/\s+/)[0] ?? left;
+      const rightFirstName = right.split(/\s+/)[0] ?? right;
+      const firstNameComparison = leftFirstName.localeCompare(rightFirstName, "sv");
+      if (firstNameComparison !== 0) {
+        return firstNameComparison;
+      }
+      return left.localeCompare(right, "sv");
+    });
+
+  if (sortedNames.length <= CLASS_PREVIEW_NAME_LIMIT) {
+    return sortedNames;
+  }
+
+  return [...sortedNames.slice(0, CLASS_PREVIEW_NAME_LIMIT), "..."];
+});
+const countLabel = computed(() => {
+  if (props.countLabel) {
+    return props.countLabel;
+  }
+  return props.selectedRoster ? null : "0 elever";
+});
 </script>
 
 <template>
-  <article
-    class="planner-overview-panel"
+  <section
+    class="planner-desktop-overview-section"
     data-test="overview-roster-panel"
   >
     <div class="planner-overview-panel-header">
+      <p class="text-[0.7rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
+        Klasslista
+      </p>
       <div class="flex flex-wrap items-baseline gap-2">
         <p class="text-xl font-semibold text-navy">
           {{ title }}
@@ -126,10 +165,11 @@ function selectRoster(event: Event): void {
         class="btn-primary planner-overview-panel-action"
         :disabled="Boolean(createDisabledReason)"
         :title="createDisabledReason ?? undefined"
+        data-test="overview-create-roster"
         @click="emit('create-roster')"
       >
         <IconPlus :size="14" />
-        Ny klasslista
+        Ny klass
       </button>
       <button
         type="button"
@@ -154,5 +194,5 @@ function selectRoster(event: Event): void {
         Radera
       </button>
     </div>
-  </article>
+  </section>
 </template>
