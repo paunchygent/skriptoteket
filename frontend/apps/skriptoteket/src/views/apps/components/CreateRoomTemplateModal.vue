@@ -129,16 +129,19 @@ async function removeTemplate(): Promise<void> {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 overflow-y-auto p-4">
+  <div class="room-template-modal-root fixed inset-0 z-50 overflow-y-auto p-4">
     <button
       type="button"
       aria-label="Stäng modal"
       class="planner-overlay-backdrop"
       @click="emit('close')"
     />
-    <div class="relative flex min-h-full items-start justify-center py-4">
-      <div class="flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-white shadow-brutal 2xl:max-w-[1680px]">
-        <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
+    <div class="room-template-modal-positioner relative flex min-h-full items-start justify-center py-4">
+      <div
+        class="room-template-modal-panel flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-white shadow-brutal 2xl:max-w-[1680px]"
+        data-test="room-template-modal-panel"
+      >
+        <div class="room-template-modal-header flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
           <div class="space-y-1 px-6 pt-6 md:px-8 md:pt-8">
             <h2 class="font-serif text-2xl text-navy">
               {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
@@ -157,7 +160,7 @@ async function removeTemplate(): Promise<void> {
           </button>
         </div>
 
-        <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
+        <div class="room-template-modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
           <div
             v-if="error"
             class="system-message system-message-error"
@@ -167,7 +170,7 @@ async function removeTemplate(): Promise<void> {
             </div>
           </div>
 
-          <div class="mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">
+          <div class="room-template-modal-editor-grid mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">
             <RoomTemplateEditorSidebar
               :name="name"
               :selected-tool="selectedTool"
@@ -182,7 +185,7 @@ async function removeTemplate(): Promise<void> {
               @clear-room="clearRoomContents"
             />
 
-            <section class="flex min-h-0 flex-col gap-4">
+            <section class="room-template-modal-builder-column flex min-h-0 min-w-0 flex-col gap-4">
               <RoomTemplateBuilderSurface
                 :room-grid="roomGrid"
                 :seats="parsedSeats"
@@ -211,7 +214,7 @@ async function removeTemplate(): Promise<void> {
           </div>
         </div>
 
-        <div class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div class="room-template-modal-footer sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
           <div>
             <button
               v-if="isEditing"

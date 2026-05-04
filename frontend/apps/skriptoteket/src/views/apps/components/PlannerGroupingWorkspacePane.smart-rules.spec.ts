@@ -132,17 +132,51 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
     );
   });
 
-  it("uses a phone tab strip so only one grouping surface is primary at a time", async () => {
+  it("keeps unassigned students visible while selecting phone group targets", async () => {
     const wrapper = mount(PlannerGroupingWorkspacePane);
 
-    expect(wrapper.get('[data-test="phone-grouping-workspace"]').text()).toContain("1 grupper");
-    expect(wrapper.get('[data-test="phone-grouping-workspace"]').text()).toContain("1 ej grupperade");
     expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="phone-grouping-active-card"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="phone-grouping-active-card"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="phone-grouping-tab-group-1"]').classes()).toContain(
+      "planner-phone-tab-active",
+    );
+    expect(wrapper.get('[data-test="phone-grouping-student-pool-scroll-body"]').classes()).toEqual(
+      expect.arrayContaining([
+        "min-h-0",
+        "flex-1",
+        "overflow-y-auto",
+      ]),
+    );
 
     await wrapper.get('[data-test="phone-grouping-tab-group-1"]').trigger("click");
 
-    expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(true);
     expect(wrapper.get('[data-test="phone-grouping-active-card"]').text()).toContain("Ada Lovelace");
+  });
+
+  it("keeps a stable phone group target while groups are temporarily unavailable", async () => {
+    stateMocks.plannerState.groups = [];
+    stateMocks.plannerState.studentsByGroupId = {};
+
+    const wrapper = mount(PlannerGroupingWorkspacePane);
+
+    expect(wrapper.find('[data-test="phone-grouping-active-card"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="phone-grouping-target-placeholder"]').exists()).toBe(true);
+
+    wrapper.unmount();
+
+    stateMocks.plannerState.groups = [
+      { id: "group-2", name: "Grupp 2", sort_order: 0, name_is_custom: false },
+    ];
+    stateMocks.plannerState.studentsByGroupId = {
+      "group-2": [{ id: "student-2", display_name: "Alan Turing" }],
+    };
+    const reloadedWrapper = mount(PlannerGroupingWorkspacePane);
+
+    expect(reloadedWrapper.find('[data-test="phone-grouping-target-placeholder"]').exists()).toBe(false);
+    expect(reloadedWrapper.get('[data-test="phone-grouping-active-card"]').text()).toContain("Alan Turing");
+    expect(reloadedWrapper.get('[data-test="phone-grouping-tab-group-2"]').classes()).toContain(
+      "planner-phone-tab-active",
+    );
   });
 });

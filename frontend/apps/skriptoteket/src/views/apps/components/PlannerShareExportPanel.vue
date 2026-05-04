@@ -7,16 +7,18 @@
  */
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { Copy } from "lucide-vue-next";
 
-import { IconArrow, IconCheck, IconDownload, IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
-import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
+import { IconArrow, IconLink2, IconX } from "../../../components/icons";
+import { UiDenseActionButton, denseMenuItemClass } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type {
   PlannerExportFileOption,
   PlannerExportOptionValue,
   PlannerShareExportScopeOption,
 } from "./plannerShareExportActions";
+import PlannerShareExportFileSection from "./PlannerShareExportFileSection.vue";
+import PlannerShareExportLinkSection from "./PlannerShareExportLinkSection.vue";
+import PlannerShareExportScopeList from "./PlannerShareExportScopeList.vue";
 const props = withDefaults(
   defineProps<{
     fileOptions?: PlannerExportFileOption[];
@@ -36,7 +38,7 @@ const props = withDefaults(
     createShareTestId?: string;
     createShareMobileTestId?: string;
     fileOptionTestIdPrefix?: string;
-    triggerVariant?: "toolbar" | "phone-row";
+    triggerVariant?: "toolbar" | "phone-row" | "menu-item" | "inline";
     triggerMeta?: string | null;
     scopeValue?: string | null;
     scopeOptions?: PlannerShareExportScopeOption[];
@@ -76,57 +78,86 @@ const emit = defineEmits<{
 }>();
 
 const rootRef = ref<HTMLElement | null>(null);
-const createButtonRef = ref<InstanceType<typeof UiDenseActionButton> | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
+const desktopTriggerRef = ref<InstanceType<typeof UiDenseActionButton> | null>(null);
+const phoneTriggerRef = ref<HTMLButtonElement | null>(null);
 const isOpen = ref(false);
-const dateFormatter = new Intl.DateTimeFormat("sv-SE", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+let previousBodyOverflow: string | null = null;
 
-const activeShares = computed(() => props.shares.filter((share) => !share.revoked_at));
-const activeShareCount = computed(() => activeShares.value.length);
-const defaultFileOption = computed(() => {
-  return props.fileOptions.find((option) => option.isDefault) ?? props.fileOptions[0] ?? null;
-});
+const isInline = computed(() => props.triggerVariant === "inline");
+const isDisabled = computed(() => !props.showFileActions && !props.showShareActions);
+const isPanelVisible = computed(() => isInline.value || isOpen.value);
 
-function formatDate(value: string): string {
-  return dateFormatter.format(new Date(value));
+function restoreTriggerFocus(): void {
+  desktopTriggerRef.value?.focus();
+  phoneTriggerRef.value?.focus();
 }
-function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
-  return `Skapad ${formatDate(share.created_at)}`;
+
+function lockBodyScroll(): void {
+  if (previousBodyOverflow !== null) {
+    return;
+  }
+  previousBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
 }
-function closePanel(): void {
+
+function unlockBodyScroll(): void {
+  if (previousBodyOverflow === null) {
+    return;
+  }
+  document.body.style.overflow = previousBodyOverflow;
+  previousBodyOverflow = null;
+}
+
+function focusablePanelElements(): HTMLElement[] {
+  const panel = panelRef.value;
+  if (!panel) {
+    return [];
+  }
+  const selector = [
+    "a[href]",
+    "button:not([disabled])",
+    "textarea:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])",
+  ].join(",");
+  return [...panel.querySelectorAll<HTMLElement>(selector)]
+    .filter((element) => {
+      const style = window.getComputedStyle(element);
+      return !element.hasAttribute("disabled")
+        && style.display !== "none"
+        && style.visibility !== "hidden";
+    });
+}
+
+function focusInitialPanelAction(): void {
+  focusablePanelElements()[0]?.focus();
+}
+
+function closePanel(options: { returnFocus?: boolean } = {}): void {
   isOpen.value = false;
+  if (options.returnFocus ?? true) {
+    void nextTick(() => {
+      restoreTriggerFocus();
+    });
+  }
 }
 function togglePanel(): void {
+  if (isInline.value) {
+    return;
+  }
   const nextOpen = !isOpen.value;
   isOpen.value = nextOpen;
   if (nextOpen) {
     emit("open");
+    return;
   }
+  void nextTick(() => {
+    restoreTriggerFocus();
+  });
 }
 
-function selectScope(option: PlannerShareExportScopeOption): void {
-  if (option.disabled) {
-    return;
-  }
-  emit("select-scope", option.value);
-}
-
-function createShare(): void {
-  emit("create-share");
-}
-function selectFileOption(option: PlannerExportFileOption): void {
-  if (props.exportBusy) {
-    return;
-  }
-  if (option.id === defaultFileOption.value?.id) {
-    emit("export-default");
-    return;
-  }
-  emit("export-option", option.option);
-}
 function handleDocumentPointerDown(event: PointerEvent): void {
   if (!isOpen.value) {
     return;
@@ -135,10 +166,14 @@ function handleDocumentPointerDown(event: PointerEvent): void {
   if (!(target instanceof Node)) {
     return;
   }
+  if (target instanceof HTMLElement && target.dataset.test === "planner-share-export-backdrop") {
+    closePanel();
+    return;
+  }
   if (rootRef.value?.contains(target)) {
     return;
   }
-  closePanel();
+  closePanel({ returnFocus: false });
 }
 
 function handleEscape(event: KeyboardEvent): void {
@@ -147,12 +182,39 @@ function handleEscape(event: KeyboardEvent): void {
   }
 }
 
-watch(isOpen, async (open) => {
-  if (!open) {
+function handlePanelKeydown(event: KeyboardEvent): void {
+  if (event.key !== "Tab") {
     return;
   }
+  const focusableElements = focusablePanelElements();
+  if (focusableElements.length === 0) {
+    event.preventDefault();
+    return;
+  }
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements.at(-1);
+  if (!lastElement) {
+    return;
+  }
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault();
+    lastElement.focus();
+    return;
+  }
+  if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault();
+    firstElement.focus();
+  }
+}
+
+watch(isOpen, async (open) => {
+  if (!open || isInline.value) {
+    unlockBodyScroll();
+    return;
+  }
+  lockBodyScroll();
   await nextTick();
-  createButtonRef.value?.focus();
+  focusInitialPanelAction();
 });
 
 onMounted(() => {
@@ -163,20 +225,31 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener("pointerdown", handleDocumentPointerDown);
   document.removeEventListener("keydown", handleEscape);
+  unlockBodyScroll();
 });
 </script>
 
 <template>
-  <div
+  <component
+    :is="isInline ? 'fieldset' : 'div'"
     ref="rootRef"
     :class="[
       'relative flex items-stretch',
-      triggerVariant === 'toolbar' ? 'border-l border-navy/15 pl-3' : 'w-full',
+      triggerVariant === 'inline'
+        ? 'planner-share-export-inline w-full'
+        : triggerVariant === 'toolbar'
+          ? 'planner-share-export-toolbar border-l border-navy/15 pl-3'
+          : triggerVariant === 'menu-item'
+            ? 'planner-share-export-menu w-full'
+            : 'planner-share-export-row w-full',
+      isInline && isDisabled ? 'planner-share-export-inline-disabled' : null,
     ]"
-    data-test="planner-share-export-management"
+    :disabled="isInline && isDisabled ? true : undefined"
+    :data-test="triggerVariant === 'inline' ? triggerTestId : 'planner-share-export-management'"
   >
     <UiDenseActionButton
       v-if="triggerVariant === 'toolbar'"
+      ref="desktopTriggerRef"
       label="Dela"
       :data-test="triggerTestId"
       :expanded="isOpen"
@@ -194,7 +267,8 @@ onUnmounted(() => {
       </template>
     </UiDenseActionButton>
     <button
-      v-else
+      v-else-if="triggerVariant === 'phone-row'"
+      ref="phoneTriggerRef"
       type="button"
       class="planner-phone-row-action w-full"
       :data-test="triggerTestId"
@@ -207,285 +281,126 @@ onUnmounted(() => {
         <IconLink2 :size="15" />
         Dela
       </span>
-      <span class="text-xs text-navy/55">{{ triggerMeta ?? "Länk + filer" }}</span>
+      <span
+        v-if="triggerMeta !== ''"
+        class="text-xs text-navy/55"
+      >
+        {{ triggerMeta ?? "Länk + filer" }}
+      </span>
+    </button>
+    <button
+      v-else-if="triggerVariant === 'menu-item'"
+      ref="phoneTriggerRef"
+      type="button"
+      :class="denseMenuItemClass()"
+      :data-test="triggerTestId"
+      :disabled="!showFileActions && !showShareActions"
+      :aria-expanded="isOpen"
+      aria-haspopup="dialog"
+      @click="togglePanel"
+    >
+      <IconLink2 :size="16" />
+      <span>Dela</span>
     </button>
 
+    <div
+      v-if="isOpen && !isInline"
+      class="fixed inset-0 z-[39] bg-navy/70 md:hidden"
+      data-test="planner-share-export-backdrop"
+      @click="() => closePanel()"
+    />
+
     <section
-      v-if="isOpen"
-      class="fixed inset-x-0 bottom-0 z-[40] max-h-[85vh] overflow-y-auto rounded-t-xl border-t-2 border-navy bg-white pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:w-[34rem] md:overflow-visible md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm"
-      role="dialog"
+      v-if="isPanelVisible"
+      ref="panelRef"
+      :class="[
+        isInline
+          ? 'planner-share-export-inline-panel flex w-full flex-col overflow-hidden border border-navy bg-white'
+          : 'fixed inset-x-0 bottom-0 z-[40] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-white pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,42rem)] md:w-[34rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm',
+      ]"
+      :role="isInline ? undefined : 'dialog'"
+      :aria-modal="isInline ? undefined : 'true'"
       aria-label="Dela och exportera"
+      tabindex="-1"
       :data-test="panelTestId"
+      @keydown="handlePanelKeydown"
     >
       <div
+        v-if="!isInline"
         class="flex justify-center px-3 pb-1 pt-2 md:hidden"
         aria-hidden="true"
       >
         <span class="h-1 w-9 rounded-full bg-navy/20" />
       </div>
 
-      <header class="flex items-start justify-between gap-3 border-b border-navy/15 px-3.5 pb-3 pt-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-4 md:pt-3.5">
+      <header
+        :class="[
+          'flex items-start justify-between gap-3 border-b border-navy/15',
+          isInline ? 'px-3 py-3' : 'px-3.5 pb-3 pt-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-4 md:pt-3.5',
+        ]"
+      >
         <div>
           <h2 class="text-sm font-semibold leading-tight text-navy">
             Dela och exportera
           </h2>
-          <p class="mt-1 text-[11px] leading-snug text-navy/60">
+          <p
+            v-if="!isInline"
+            class="mt-1 text-[11px] leading-snug text-navy/60"
+          >
             Skapa länk eller spara en fil från det aktuella utkastet.
           </p>
         </div>
         <button
+          v-if="!isInline"
           type="button"
           class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] border border-navy/20 bg-transparent text-navy/55 md:hidden"
           aria-label="Stäng dela och exportera"
           data-test="planner-share-export-close"
-          @click="closePanel"
+          @click="() => closePanel()"
         >
           <IconX :size="14" />
         </button>
       </header>
 
-      <section
-        v-if="scopeOptions.length > 0"
-        class="border-b border-navy/15 px-3.5 py-3 md:px-4"
-        aria-label="Välj vad som ska delas"
+      <div
+        :class="[
+          'min-h-0 flex-1',
+          isInline ? 'overflow-visible' : 'overflow-y-auto overscroll-contain',
+        ]"
+        data-test="planner-share-export-scroll"
       >
-        <p class="mb-2 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/65">
-          Välj innehåll
-        </p>
-        <div class="grid gap-1.5">
-          <button
-            v-for="option in scopeOptions"
-            :key="option.value"
-            type="button"
-            class="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border px-2.5 text-left text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-            :class="option.value === scopeValue ? 'border-navy/35 bg-canvas' : 'border-navy/20 bg-white hover:border-navy/35 hover:bg-canvas/70'"
-            :disabled="option.disabled"
-            :title="option.disabledReason ?? undefined"
-            :aria-pressed="option.value === scopeValue"
-            :data-test="`planner-share-export-scope-${option.value}`"
-            @click="selectScope(option)"
-          >
-            <IconCheck
-              v-if="option.value === scopeValue"
-              :size="13"
-            />
-            <span
-              v-else
-              class="h-[13px] w-[13px]"
-              aria-hidden="true"
-            />
-            <span class="truncate text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)]">
-              {{ option.label }}
-            </span>
-          </button>
-        </div>
-      </section>
+        <PlannerShareExportScopeList
+          :scope-value="scopeValue"
+          :scope-options="scopeOptions"
+          @select-scope="emit('select-scope', $event)"
+        />
 
-      <section
-        v-if="showShareActions"
-        class="border-b border-navy/15"
-        aria-labelledby="planner-share-export-link-heading"
-      >
-        <div class="grid gap-3 px-3.5 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-4">
-          <div>
-            <h3
-              id="planner-share-export-link-heading"
-              class="text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/65"
-            >
-              Länk
-            </h3>
-            <p class="mt-1 text-[11px] leading-snug text-navy/60">
-              Aktiva länkar visas här. Återkallade länkar tas bort från listan.
-            </p>
-          </div>
-          <div class="hidden md:block">
-            <UiDenseActionButton
-              ref="createButtonRef"
-              label="Skapa länk"
-              :disabled="shareBusy"
-              :busy="shareBusy"
-              busy-label="Skapar länk"
-              tone="primary"
-              class="min-w-[8.5rem]"
-              :data-test="createShareTestId"
-              @click="createShare"
-            >
-              <template #leading>
-                <IconPlus :size="10" />
-              </template>
-            </UiDenseActionButton>
-          </div>
-        </div>
+        <PlannerShareExportLinkSection
+          v-if="showShareActions"
+          :shares="shares"
+          :share-loading="shareLoading"
+          :share-busy="shareBusy"
+          :share-status-label="shareStatusLabel"
+          :share-error-message="shareErrorMessage"
+          :revoking-share-id="revokingShareId"
+          :show-revoke-action="showRevokeAction"
+          :create-share-test-id="createShareTestId"
+          :create-share-mobile-test-id="createShareMobileTestId"
+          @create-share="emit('create-share')"
+          @copy-share="emit('copy-share', $event)"
+          @revoke-share="emit('revoke-share', $event)"
+        />
 
-        <div class="border-t border-navy/10 px-3.5 py-2 md:hidden">
-          <button
-            type="button"
-            class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-navy bg-navy px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-canvas disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="shareBusy"
-            :data-test="createShareMobileTestId"
-            :aria-busy="shareBusy ? 'true' : undefined"
-            :aria-label="shareBusy ? 'Skapar länk' : undefined"
-            @click="createShare"
-          >
-            <UiDenseSpinner
-              v-if="shareBusy"
-              :size="12"
-            />
-            <IconPlus
-              v-else
-              :size="12"
-            />
-            Skapa länk
-          </button>
-        </div>
-
-        <p
-          v-if="shareStatusLabel"
-          class="border-t border-navy/10 px-3.5 py-2 text-[11px] font-semibold text-navy/65"
-          data-test="planner-share-status"
-        >
-          {{ shareStatusLabel }}
-        </p>
-        <p
-          v-if="shareErrorMessage"
-          class="border-t border-burgundy/20 bg-burgundy/5 px-3.5 py-2 text-[11px] font-semibold text-burgundy"
-          data-test="planner-share-error"
-        >
-          {{ shareErrorMessage }}
-        </p>
-
-        <p
-          v-if="shareLoading && activeShareCount === 0"
-          class="px-3.5 py-3 text-sm font-semibold text-navy/65"
-        >
-          Hämtar länkar…
-        </p>
-        <p
-          v-else-if="activeShareCount === 0"
-          class="px-3.5 py-3 text-sm text-navy/65"
-          data-test="planner-share-links-empty"
-        >
-          Inga aktiva delade länkar för det här utkastet.
-        </p>
-
-        <ul
-          v-else
-          class="divide-y divide-navy/10"
-        >
-          <li
-            v-for="share in activeShares"
-            :key="share.id"
-            class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-3"
-            :data-test="`planner-share-link-${share.id}`"
-          >
-            <div class="min-w-0">
-              <p class="truncate text-sm font-semibold leading-tight text-navy">
-                {{ share.title }}
-              </p>
-              <p class="mt-0.5 truncate font-mono text-[10px] text-navy/50">
-                {{ formatActiveMeta(share) }}
-              </p>
-            </div>
-            <div class="flex min-w-max items-center justify-end gap-1.5">
-              <button
-                type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-white text-navy transition-colors hover:border-navy/35 hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
-                :disabled="!share.public_url"
-                :data-test="`planner-share-copy-${share.id}`"
-                title="Kopiera länk till urklipp"
-                @click="emit('copy-share', share)"
-              >
-                <Copy
-                  :size="12"
-                  :stroke-width="2.25"
-                  aria-hidden="true"
-                />
-                <span class="sr-only md:not-sr-only">Kopiera</span>
-              </button>
-              <button
-                v-if="showRevokeAction"
-                type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-burgundy/30 bg-white text-burgundy transition-colors hover:bg-burgundy/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
-                :disabled="revokingShareId === share.id"
-                :data-test="`planner-share-revoke-${share.id}`"
-                title="Återkalla länken"
-                :aria-busy="revokingShareId === share.id ? 'true' : undefined"
-                :aria-label="revokingShareId === share.id ? 'Återkallar länken' : undefined"
-                @click="emit('revoke-share', share)"
-              >
-                <UiDenseSpinner
-                  v-if="revokingShareId === share.id"
-                  :size="12"
-                />
-                <IconTrash
-                  v-else
-                  :size="12"
-                />
-                <span class="sr-only md:not-sr-only">
-                  Återkalla
-                </span>
-              </button>
-            </div>
-          </li>
-        </ul>
-      </section>
-
-      <section
-        v-if="showFileActions && fileOptions.length > 0"
-        class="px-3.5 py-3 md:px-4"
-        aria-labelledby="planner-share-export-files-heading"
-      >
-        <div class="mb-2">
-          <h3
-            id="planner-share-export-files-heading"
-            class="text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/65"
-          >
-            Filer
-          </h3>
-          <p class="mt-1 text-[11px] leading-snug text-navy/60">
-            Filer sparas i Mina filer.
-          </p>
-        </div>
-
-        <p
-          v-if="exportErrorMessage"
-          class="mb-2 border border-burgundy/20 bg-burgundy/5 px-2 py-1.5 text-[11px] font-semibold text-burgundy"
-          data-test="planner-export-error"
-        >
-          {{ exportErrorMessage }}
-        </p>
-
-        <div class="grid gap-1.5">
-          <button
-            v-for="option in fileOptions"
-            :key="option.id"
-            type="button"
-            class="grid h-10 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border border-navy/20 bg-white px-2.5 text-left text-navy transition-colors hover:border-navy/35 hover:bg-canvas/70 disabled:cursor-not-allowed disabled:opacity-55"
-            :disabled="exportBusy"
-            :data-test="`${fileOptionTestIdPrefix}-${option.id}`"
-            :aria-busy="exportBusy && option.id === defaultFileOption?.id ? 'true' : undefined"
-            @click="selectFileOption(option)"
-          >
-            <UiDenseSpinner
-              v-if="exportBusy && option.id === defaultFileOption?.id"
-              :size="12"
-            />
-            <IconDownload
-              v-else
-              :size="13"
-            />
-            <span class="truncate text-[11px] font-semibold leading-none">
-              {{ option.label }}
-            </span>
-            <span
-              v-if="option.isDefault"
-              class="text-[10px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/50"
-            >
-              Standard
-            </span>
-          </button>
-        </div>
-      </section>
+        <PlannerShareExportFileSection
+          v-if="showFileActions"
+          :file-options="fileOptions"
+          :export-busy="exportBusy"
+          :export-error-message="exportErrorMessage"
+          :file-option-test-id-prefix="fileOptionTestIdPrefix"
+          @export-default="emit('export-default')"
+          @export-option="emit('export-option', $event)"
+        />
+      </div>
     </section>
-  </div>
+  </component>
 </template>

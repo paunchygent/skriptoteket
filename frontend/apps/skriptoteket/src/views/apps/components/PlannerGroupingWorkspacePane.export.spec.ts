@@ -125,10 +125,14 @@ describe("PlannerGroupingWorkspaceToolbar", () => {
     expect(wrapper.get('[data-zone="primary"]').find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="context"]').find('[data-test="grouping-roster-control"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="grouping-actions-menu"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="grouping-open-settings"]').attributes("aria-label")).toBe(
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
+
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-label")).toBe(
       "Smart-inställningar",
     );
-    expect(wrapper.get('[data-test="grouping-open-settings"]').attributes("aria-haspopup")).toBe("dialog");
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-haspopup")).toBe(
+      "dialog",
+    );
 
     await wrapper.get('[data-test="grouping-roster-select"]').setValue("roster-2");
 

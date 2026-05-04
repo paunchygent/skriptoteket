@@ -24,7 +24,7 @@ import PlannerStudentPool from "./PlannerStudentPool.vue";
 import { useClassroomState } from "../useClassroomState";
 
 const state = useClassroomState();
-const mobileActiveSurface = ref<string>("ungrouped");
+const mobileActiveGroupId = ref<string | null>(null);
 const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
   return buildSmartRuleMarkersByStudentId(
     state.seatingPreferences,
@@ -33,7 +33,7 @@ const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
 });
 const orderedGroups = computed(() => [...state.groups].sort((left, right) => left.sort_order - right.sort_order));
 const mobileActiveGroup = computed<DraftGroup | null>(() => {
-  return orderedGroups.value.find((group) => group.id === mobileActiveSurface.value) ?? orderedGroups.value[0] ?? null;
+  return orderedGroups.value.find((group) => group.id === mobileActiveGroupId.value) ?? null;
 });
 const mobileActiveGroupIndex = computed(() => {
   if (!mobileActiveGroup.value) {
@@ -43,13 +43,14 @@ const mobileActiveGroupIndex = computed(() => {
 });
 
 watch(orderedGroups, (groups) => {
-  if (mobileActiveSurface.value === "ungrouped") {
+  if (groups.length === 0) {
+    mobileActiveGroupId.value = null;
     return;
   }
-  if (!groups.some((group) => group.id === mobileActiveSurface.value)) {
-    mobileActiveSurface.value = groups[0]?.id ?? "ungrouped";
+  if (!mobileActiveGroupId.value || !groups.some((group) => group.id === mobileActiveGroupId.value)) {
+    mobileActiveGroupId.value = groups[0]?.id ?? null;
   }
-});
+}, { immediate: true });
 
 function onDragStart(event: DragEvent, studentId: string): void {
   if (state.isWorkspaceBusy) {
@@ -82,8 +83,8 @@ function onDragOver(event: DragEvent): void {
   }
 }
 
-function selectMobileSurface(surface: string): void {
-  mobileActiveSurface.value = surface;
+function selectMobileGroup(groupId: string): void {
+  mobileActiveGroupId.value = groupId;
 }
 </script>
 
@@ -113,39 +114,50 @@ function selectMobileSurface(surface: string): void {
       class="planner-phone-grouping-workspace"
       data-test="phone-grouping-workspace"
     >
-      <div class="planner-phone-workspace-strip">
-        <span>{{ state.groups.length }} grupper</span>
-        <span class="text-navy/55">{{ state.ungroupedStudents.length }} ej grupperade</span>
-      </div>
-
       <div
         class="planner-phone-tab-strip"
-        aria-label="Välj gruppyta"
+        aria-label="Välj grupp"
       >
-        <button
-          type="button"
-          class="planner-phone-tab"
-          :class="mobileActiveSurface === 'ungrouped' ? 'planner-phone-tab-active' : ''"
-          data-test="phone-grouping-tab-ungrouped"
-          @click="selectMobileSurface('ungrouped')"
-        >
-          Ej grupperade
-        </button>
         <button
           v-for="group in orderedGroups"
           :key="group.id"
           type="button"
           class="planner-phone-tab"
-          :class="mobileActiveSurface === group.id ? 'planner-phone-tab-active' : ''"
+          :class="mobileActiveGroup?.id === group.id ? 'planner-phone-tab-active' : ''"
           :data-test="`phone-grouping-tab-${group.id}`"
-          @click="selectMobileSurface(group.id)"
+          @click="selectMobileGroup(group.id)"
         >
           {{ group.name }}
         </button>
       </div>
 
+      <div class="planner-phone-grouping-target">
+        <GroupCard
+          v-if="mobileActiveGroup"
+          :group="mobileActiveGroup"
+          :students="state.studentsByGroupId[mobileActiveGroup.id] ?? []"
+          :can-move-up="mobileActiveGroupIndex > 0"
+          :can-move-down="mobileActiveGroupIndex >= 0 && mobileActiveGroupIndex < orderedGroups.length - 1"
+          :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+          :disabled="state.isWorkspaceBusy"
+          data-test="phone-grouping-active-card"
+          @student-dropped="state.assignStudentToGroup"
+          @student-removed="state.removeStudentFromGroup"
+          @group-renamed="state.renameGroup"
+          @group-moved="state.moveGroup"
+          @group-removed="state.removeGroup"
+        />
+        <div
+          v-else
+          class="planner-phone-drop-target"
+          data-test="phone-grouping-target-placeholder"
+        >
+          Förbereder grupper
+          <span>Gruppytan visas här när utkastet är klart.</span>
+        </div>
+      </div>
+
       <PlannerStudentPool
-        v-if="mobileActiveSurface === 'ungrouped'"
         title="Ej grupperade"
         :students="state.ungroupedStudents"
         :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
@@ -155,22 +167,6 @@ function selectMobileSurface(surface: string): void {
         @student-dragstart="onDragStart($event.event, $event.studentId)"
         @pool-dragover="onDragOver"
         @pool-drop="onDropToPool"
-      />
-
-      <GroupCard
-        v-else-if="mobileActiveGroup"
-        :group="mobileActiveGroup"
-        :students="state.studentsByGroupId[mobileActiveGroup.id] ?? []"
-        :can-move-up="mobileActiveGroupIndex > 0"
-        :can-move-down="mobileActiveGroupIndex >= 0 && mobileActiveGroupIndex < orderedGroups.length - 1"
-        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-        :disabled="state.isWorkspaceBusy"
-        data-test="phone-grouping-active-card"
-        @student-dropped="state.assignStudentToGroup"
-        @student-removed="state.removeStudentFromGroup"
-        @group-renamed="state.renameGroup"
-        @group-moved="state.moveGroup"
-        @group-removed="state.removeGroup"
       />
     </div>
 

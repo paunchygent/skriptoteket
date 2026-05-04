@@ -127,7 +127,7 @@ const shouldCenterSurface = computed(() => {
 </script>
 
 <template>
-  <div class="flex min-h-0 flex-1 flex-col border border-navy bg-canvas p-4 shadow-brutal-sm">
+  <div class="flex min-h-0 min-w-0 flex-1 flex-col border border-navy bg-canvas p-4 shadow-brutal-sm">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
       <div>
         <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">

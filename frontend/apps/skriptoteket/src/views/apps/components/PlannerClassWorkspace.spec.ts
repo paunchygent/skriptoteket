@@ -7,7 +7,7 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerClassWorkspace from "./PlannerClassWorkspace.vue";
@@ -94,6 +94,10 @@ function findWorkspaceToggle(
 }
 
 describe("PlannerClassWorkspace", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
   it("opens in a neutral overview instead of expanding both task surfaces", () => {
     const wrapper = mountWorkspace();
 
@@ -148,8 +152,8 @@ describe("PlannerClassWorkspace", () => {
     expect(phoneDashboard.text()).toContain("Klasslista");
     expect(phoneDashboard.text()).toContain("Klassrum");
     expect(phoneDashboard.text()).toContain("Dela");
-    expect(wrapper.get('[data-test="phone-overview-share-export-row"]').text()).toContain("Länk + filer");
-    expect(wrapper.get('[data-test="phone-overview-share-export-row"]').find("svg").exists()).toBe(true);
+    expect(wrapper.get('[data-test="phone-overview-share-export-row"]').text()).toContain("Dela och exportera");
+    expect(wrapper.find('[data-test="phone-overview-share-export-panel"]').exists()).toBe(true);
 
     await wrapper.get("[data-test='phone-overview-roster-select']").setValue("roster-2");
     await wrapper.get("[data-test='phone-overview-template-select']").setValue("template-2");
@@ -181,15 +185,16 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.emitted("delete-current-template")).toEqual([[]]);
   });
 
-  it("opens the phone Dela affordance in place with grouping and seating scopes", async () => {
+  it("renders the phone Dela affordance expanded in place with grouping and seating scopes", async () => {
     const wrapper = mountWorkspace();
-
-    await wrapper.get("[data-test='phone-overview-share-export-row']").trigger("click");
 
     expect(wrapper.find("[data-test='phone-overview-share-export-panel']").exists()).toBe(true);
     expect(wrapper.get("[data-test='planner-share-export-scope-grouping']").text()).toContain("Gruppindelning");
     expect(wrapper.get("[data-test='planner-share-export-scope-seating']").text()).toContain("Sittschema");
     expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Länk, PDF, Excel");
+    expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain(
+      "Aktiva länkar visas här",
+    );
     expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["seating"]]);
     expect(wrapper.emitted("open-seating")).toBeUndefined();
     expect(wrapper.emitted("open-grouping")).toBeUndefined();
@@ -207,8 +212,6 @@ describe("PlannerClassWorkspace", () => {
     const wrapper = mountWorkspace({
       selectedTemplateId: null,
     });
-
-    await wrapper.get("[data-test='phone-overview-share-export-row']").trigger("click");
 
     expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["grouping"]]);
     expect(wrapper.get("[data-test='planner-share-export-scope-seating']").attributes("disabled"))
@@ -258,6 +261,27 @@ describe("PlannerClassWorkspace", () => {
     expect(rulesToggle.attributes("disabled")).toBeDefined();
     expect(rulesToggle.attributes("title")).toBe("Skapa först en klasslista.");
 
+    await wrapper.get("[data-test='planner-phone-mode-sheet-trigger']").trigger("click");
+
+    const phoneGrouping = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-grouping']",
+    );
+    const phoneSeating = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-seating']",
+    );
+    const phoneRules = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-rules']",
+    );
+
+    expect(phoneGrouping?.disabled).toBe(true);
+    expect(phoneGrouping?.title).toBe("Skapa först en klasslista.");
+    expect(phoneSeating?.disabled).toBe(true);
+    expect(phoneSeating?.title).toBe("Skapa först en klasslista.");
+    expect(phoneRules?.disabled).toBe(true);
+    expect(phoneRules?.title).toBe("Skapa först en klasslista.");
+    expect(wrapper.get("[data-test='phone-overview-share-export-row']").attributes("disabled"))
+      .toBeDefined();
+
     await groupingToggle.trigger("click");
     await seatingToggle.trigger("click");
     await rulesToggle.trigger("click");
@@ -290,6 +314,23 @@ describe("PlannerClassWorkspace", () => {
     expect(seatingToggle.attributes("disabled")).toBeDefined();
     expect(seatingToggle.attributes("title")).toBe("Skapa eller välj först ett klassrum.");
     expect(rulesToggle.attributes("disabled")).toBeUndefined();
+
+    await wrapper.get("[data-test='planner-phone-mode-sheet-trigger']").trigger("click");
+
+    const phoneGrouping = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-grouping']",
+    );
+    const phoneSeating = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-seating']",
+    );
+    const phoneRules = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-rules']",
+    );
+
+    expect(phoneGrouping?.disabled).toBe(false);
+    expect(phoneSeating?.disabled).toBe(true);
+    expect(phoneSeating?.title).toBe("Skapa eller välj först ett klassrum.");
+    expect(phoneRules?.disabled).toBe(false);
 
     await groupingToggle.trigger("click");
     await seatingToggle.trigger("click");
@@ -366,7 +407,7 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.text()).not.toContain("Revision 2");
   });
 
-  it("renders a fixed three-column roster preview with ellipsis when not all names fit", () => {
+  it("keeps the desktop roster preview compact and removes the phone preview", () => {
     const crowdedRoster = {
       id: "roster-1",
       name: "SA24D",
@@ -383,12 +424,8 @@ describe("PlannerClassWorkspace", () => {
     expect(preview.text()).toContain("Elev01 Andersson");
     expect(preview.text()).toContain("...");
 
-    const phonePreview = wrapper.get("[data-test='phone-overview-roster-preview']");
-    expect(phonePreview.text()).toContain("Elev01 Andersson");
-    expect(phonePreview.text()).not.toContain("Elev11 Andersson");
-    expect(wrapper.get("[data-test='phone-overview-roster-preview-more']").text()).toBe(
-      "... 30 till",
-    );
+    expect(wrapper.find("[data-test='phone-overview-roster-preview']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='phone-overview-roster-preview-more']").exists()).toBe(false);
   });
 
   it("accepts public capability overrides without changing the shared shell layout", () => {

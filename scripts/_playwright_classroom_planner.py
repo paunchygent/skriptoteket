@@ -55,10 +55,39 @@ def _wait_for_visible_heading_or_text(page: Page, *, label: str) -> None:
     raise AssertionError(f"{label!r} did not become visible in the live planner UI.")
 
 
+def _wait_for_select_option(page: Page, *, selector: str, label: str) -> None:
+    """Wait until a select control contains an option matching the label."""
+
+    selects = page.locator(selector)
+    for _ in range(40):
+        for index in range(selects.count()):
+            select = selects.nth(index)
+            if not select.is_visible():
+                continue
+            option_rows = select.evaluate(
+                """element => Array.from(element.options).map(option => ({
+                    value: option.value,
+                    label: option.label,
+                }))"""
+            )
+            if any(option["value"] and label in option["label"] for option in option_rows):
+                return
+        page.wait_for_timeout(250)
+
+    raise AssertionError(f"{label!r} did not become available in {selector}.")
+
+
 def workspace_toggle(page: Page) -> Locator:
     """Return the planner workspace switch used for mode changes."""
 
-    return page.locator('[data-test="planner-workspace-switch"]').first
+    toggles = page.locator('[data-test="planner-workspace-switch"]')
+    for _ in range(40):
+        for index in range(toggles.count()):
+            toggle = toggles.nth(index)
+            if toggle.is_visible():
+                return toggle
+        page.wait_for_timeout(100)
+    return toggles.first
 
 
 def login_to_app(page: Page, *, base_url: str, email: str, password: str) -> None:
@@ -147,20 +176,46 @@ def create_template(page: Page, *, template_name: str) -> None:
         builder_viewport.get_by_text(re.compile(r"^(seat|plats)-2$", re.IGNORECASE))
     ).to_be_visible()
 
-    page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
-    _wait_for_visible_heading_or_text(page, label=template_name)
+    with page.expect_response(re.compile(r".*/templates$")) as response_info:
+        page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
+    if not response_info.value.ok:
+        raise AssertionError(
+            f"Expected classroom template creation to succeed, got {response_info.value.status}"
+        )
+    page.reload(wait_until="domcontentloaded")
+    wait_for_app_heading(page)
+    _wait_for_select_option(
+        page,
+        selector='[data-test="overview-template-select"], [data-test="phone-overview-template-select"]',
+        label=template_name,
+    )
 
 
 def focus_workspace_mode(page: Page, *, label: str) -> None:
     """Select one compact class-workspace mode through the segmented toggle."""
 
-    toggle = workspace_toggle(page)
     matcher = re.compile(re.escape(label), re.IGNORECASE)
-    radio_option = toggle.get_by_role("radio", name=matcher)
-    if radio_option.count() > 0:
-        radio_option.first.click()
-        return
-    toggle.get_by_role("button", name=matcher).click()
+    desktop_toggles = page.locator('[data-test="planner-workspace-switch"]')
+    for _ in range(10):
+        for index in range(desktop_toggles.count()):
+            toggle = desktop_toggles.nth(index)
+            if not toggle.is_visible():
+                continue
+            radio_option = toggle.get_by_role("radio", name=matcher)
+            if radio_option.count() > 0:
+                radio_option.first.click()
+                return
+            toggle.get_by_role("button", name=matcher).click()
+            return
+        page.wait_for_timeout(100)
+
+    phone_switch = page.locator('[data-test="planner-phone-mode-switch"]')
+    expect(phone_switch).to_be_visible()
+    page.locator('[data-test="planner-phone-mode-sheet-trigger"]').click()
+    phone_sheet = page.locator('[data-test="planner-phone-mode-sheet"]')
+    expect(phone_sheet).to_be_visible()
+    phone_sheet.get_by_role("button", name=matcher).click()
+    expect(phone_sheet).not_to_be_visible()
 
 
 def open_class_workspace(page: Page, *, roster_name: str) -> None:
@@ -217,7 +272,12 @@ def open_grouping_workspace(page: Page, *, template_name: str) -> None:
 
     focus_workspace_mode(page, label="Grupper")
     expect(page.locator('[data-test="grouping-actions-menu"]')).to_be_visible()
-    page.locator('[data-test="grouping-open-settings"]').click()
+    inline_settings = page.locator('[data-test="grouping-open-settings"]')
+    if inline_settings.count() > 0 and inline_settings.first.is_visible():
+        inline_settings.first.click()
+    else:
+        page.locator('[data-test="grouping-actions-menu"]').click()
+        page.locator('[data-test="grouping-overflow-open-settings"]').click()
     settings_drawer = page.locator('[data-test="grouping-settings-drawer"]')
     expect(settings_drawer).to_be_visible()
     template_select = settings_drawer.locator('[data-test="grouping-settings-template-select"]')
@@ -312,7 +372,7 @@ def verify_seating_toolbar(page: Page) -> None:
     expect(seating_actions_menu).to_be_visible()
     new_seating_button = page.locator('[data-test="new-seating-draft"]')
     expect(new_seating_button).to_be_visible()
-    expect(new_seating_button).to_have_text(re.compile(r"Nytt sittschema", re.IGNORECASE))
+    expect(new_seating_button).to_have_text(re.compile(r"Nytt utkast", re.IGNORECASE))
     seating_actions_menu.click()
     edit_classroom_button = page.locator('[data-test="edit-current-template"]')
     expect(edit_classroom_button).to_be_visible()

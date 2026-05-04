@@ -16,7 +16,6 @@ Relationships:
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import time
 from pathlib import Path
@@ -162,10 +161,43 @@ def _open_local_app(page: Page, *, base_url: str) -> None:
     wait_for_app_heading(page)
 
 
+def _persist_workspace_selection(page: Page, *, roster_id: str, template_id: str | None) -> None:
+    """Persist the planner overview selections used by the live proof."""
+
+    page.evaluate(
+        """([rosterId, templateId]) => {
+            window.localStorage.setItem('skriptoteket:classroom-planner:selected-roster-id', rosterId);
+            if (templateId) {
+                window.localStorage.setItem('skriptoteket:classroom-planner:selected-template-id', templateId);
+            } else {
+                window.localStorage.removeItem('skriptoteket:classroom-planner:selected-template-id');
+            }
+        }""",
+        [roster_id, template_id],
+    )
+
+
+def _select_overview_assets(page: Page, *, roster_id: str, template_id: str | None) -> None:
+    """Select the proof class list and classroom through the visible overview controls."""
+
+    roster_select = page.locator(
+        '[data-test="phone-overview-roster-select"], [data-test="overview-roster-select"]'
+    ).first
+    if roster_select.count() > 0 and roster_select.is_visible():
+        roster_select.select_option(roster_id)
+    if template_id is None:
+        return
+    template_select = page.locator(
+        '[data-test="phone-overview-template-select"], [data-test="overview-template-select"]'
+    ).first
+    if template_select.count() > 0 and template_select.is_visible():
+        template_select.select_option(template_id)
+
+
 def _first_visible(page: Page, selector: str) -> Locator:
     """Return the first visible locator matching a selector across transition copies."""
 
-    for _ in range(20):
+    for _ in range(60):
         matches = page.locator(selector)
         for index in range(matches.count()):
             candidate = matches.nth(index)
@@ -244,10 +276,146 @@ def _capture_mode_shell(page: Page, *, viewport_label: str, width: int) -> None:
     )
 
 
+def _assert_greyed_out(locator: Locator, *, label: str) -> None:
+    """Assert a disabled mobile affordance is visually blocked, not merely inert."""
+
+    styles = locator.evaluate(
+        """element => {
+            const style = window.getComputedStyle(element);
+            return {
+                backgroundColor: style.backgroundColor,
+                color: style.color,
+                cursor: style.cursor,
+                disabled: element.matches(':disabled')
+                    || element.hasAttribute('disabled')
+                    || element.getAttribute('aria-disabled') === 'true',
+            };
+        }"""
+    )
+    if not styles["disabled"]:
+        raise AssertionError(f"Expected {label} to be disabled or aria-disabled.")
+    if styles["backgroundColor"] == "rgb(255, 255, 255)":
+        raise AssertionError(f"Expected {label} to use a greyed-out background.")
+    if styles["cursor"] != "not-allowed":
+        raise AssertionError(f"Expected {label} to expose a blocked cursor.")
+
+
+def _assert_fits_viewport(page: Page, locator: Locator, *, label: str) -> None:
+    """Assert a mobile surface does not extend beyond the viewport width."""
+
+    box = locator.bounding_box()
+    if box is None:
+        raise AssertionError(f"Expected {label} to have a visible bounding box.")
+    viewport = page.viewport_size or {"width": 0, "height": 0}
+    if box["x"] < -1 or box["x"] + box["width"] > viewport["width"] + 1:
+        raise AssertionError(
+            f"Expected {label} to fit viewport width {viewport['width']}, got x={box['x']} width={box['width']}."
+        )
+
+
+def _verify_mobile_prerequisite_blocking(page: Page, *, viewport_label: str) -> None:
+    """Verify unavailable phone modes look and behave blocked before setup exists."""
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.wait_for_timeout(300)
+    _choose_mode(page, mode="overview", label="Översikt")
+
+    trigger = page.locator('[data-test="planner-phone-mode-sheet-trigger"]').first
+    expect(trigger).to_be_visible()
+    trigger.click()
+    sheet = page.locator('[data-test="planner-phone-mode-sheet"]').first
+    expect(sheet).to_be_visible()
+    for mode, label in (
+        ("grouping", "Grupper utan klass"),
+        ("seating", "Sittplatser utan klass"),
+        ("rules", "Regler utan klass"),
+    ):
+        mode_row = sheet.locator(f'[data-test="planner-phone-mode-sheet-{mode}"]')
+        _assert_greyed_out(mode_row, label=label)
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / f"{viewport_label}-no-class-mode-sheet-blocked.png"),
+        full_page=True,
+    )
+    sheet.locator('[data-test="planner-phone-mode-sheet-close"]').click()
+    expect(sheet).not_to_be_visible()
+
+    share_row = page.locator('[data-test="phone-overview-share-export-row"]').first
+    _assert_greyed_out(share_row, label="Dela utan klass")
+
+
+def _verify_mobile_no_classroom_blocking(
+    page: Page,
+    *,
+    viewport_label: str,
+) -> None:
+    """Verify seating is visibly blocked when class exists but classroom is unset."""
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.evaluate(
+        """() => {
+            window.localStorage.removeItem('skriptoteket:classroom-planner:selected-template-id');
+        }"""
+    )
+    page.reload(wait_until="domcontentloaded")
+    wait_for_app_heading(page)
+    _first_visible(page, '[data-test="planner-phone-overview-dashboard"]')
+    expect(page.locator('[data-test="phone-overview-roster-select"]').first).not_to_have_value("")
+
+    trigger = page.locator('[data-test="planner-phone-mode-sheet-trigger"]').first
+    expect(trigger).to_be_visible()
+    trigger.click()
+    sheet = page.locator('[data-test="planner-phone-mode-sheet"]').first
+    expect(sheet).to_be_visible()
+    expect(sheet.locator('[data-test="planner-phone-mode-sheet-grouping"]')).to_be_enabled()
+    _assert_greyed_out(
+        sheet.locator('[data-test="planner-phone-mode-sheet-seating"]'),
+        label="Sittplatser utan klassrum",
+    )
+    expect(sheet.locator('[data-test="planner-phone-mode-sheet-rules"]')).to_be_enabled()
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / f"{viewport_label}-no-classroom-mode-sheet-blocked.png"),
+        full_page=True,
+    )
+    sheet.locator('[data-test="planner-phone-mode-sheet-close"]').click()
+    expect(sheet).not_to_be_visible()
+
+    page.locator('[data-test="phone-overview-create-template"]').first.click()
+    modal = page.locator('[data-test="room-template-modal-panel"]').first
+    expect(modal).to_be_visible()
+    _assert_fits_viewport(page, modal, label="create classroom modal")
+    _assert_fits_viewport(
+        page,
+        page.locator('[data-test="room-builder-viewport"]').first,
+        label="create classroom builder viewport",
+    )
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / f"{viewport_label}-create-classroom-modal.png"),
+        full_page=True,
+    )
+    page.get_by_role("button", name=re.compile(r"Stäng modal", re.IGNORECASE)).last.click()
+    expect(modal).not_to_be_visible()
+
+
 def _capture_workspace(page: Page, *, mode: str, label: str, viewport_label: str) -> None:
     """Switch to one workspace, assert its surface, and capture it."""
 
     _choose_mode(page, mode=mode, label=label)
+    transition = page.locator('[data-test="planner-workspace-transition"]')
+    if transition.count() > 0:
+        expect(transition).not_to_be_visible(timeout=15000)
+    if mode in {"grouping", "seating"}:
+        toolbar = _first_visible(page, '[data-ui="planner-workspace-action-bar"]')
+        _assert_fits_viewport(page, toolbar, label=f"{mode} toolbar")
+        if viewport_label == "phone":
+            expected_toolbar_actions = (
+                ("undo-grouping", "redo-grouping", "new-grouping-draft")
+                if mode == "grouping"
+                else ("undo-seating-draft", "redo-seating-draft", "new-seating-draft")
+            )
+            for action_test_id in expected_toolbar_actions:
+                action = page.locator(f'[data-test="{action_test_id}"]').first
+                expect(action).to_be_visible()
+                _assert_fits_viewport(page, action, label=f"{mode} {action_test_id}")
     if mode == "grouping":
         _first_visible(
             page, '[data-test="phone-grouping-workspace"], [data-test="grouping-layout-lane"]'
@@ -274,6 +442,24 @@ def _capture_workspace(page: Page, *, mode: str, label: str, viewport_label: str
                 full_page=True,
             )
             student_toggle.first.click()
+    if viewport_label == "phone" and mode in {"grouping", "seating"}:
+        menu_test_id = "grouping-actions-menu" if mode == "grouping" else "seating-actions-menu"
+        share_test_id = (
+            "grouping-overflow-share-trigger"
+            if mode == "grouping"
+            else "seating-overflow-share-trigger"
+        )
+        page.locator(f'[data-test="{menu_test_id}"]').first.click()
+        share_trigger = page.locator(f'[data-test="{share_test_id}"]').first
+        expect(share_trigger).to_be_visible()
+        share_box = share_trigger.bounding_box()
+        if share_box is None or share_box["height"] > 48:
+            raise AssertionError(f"Expected {mode} overflow Dela to be a compact menu row.")
+        page.screenshot(
+            path=str(ARTIFACTS_DIR / f"{viewport_label}-{mode}-overflow.png"),
+            full_page=True,
+        )
+        page.keyboard.press("Escape")
 
 
 def _verify_viewport(page: Page, *, viewport_label: str, width: int, height: int) -> None:
@@ -300,6 +486,16 @@ def _seed_assets(
     return roster_id, template_id
 
 
+def _seed_roster_only(
+    playwright_request_context: APIRequestContext,
+    *,
+    suffix: str,
+) -> str:
+    """Seed the roster used to prove the no-classroom blocking state."""
+
+    return _create_roster(playwright_request_context, name=f"ST29 Klass {suffix}")
+
+
 def _run(
     *,
     base_url: str,
@@ -311,16 +507,18 @@ def _run(
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 
     suffix = str(int(time.time()))
+    provider_subject = f"{PROVIDER_SUBJECT}-{suffix}"
+    provider_email = f"st-29-remaining-{suffix}@example.test"
     local_user_id = seed_huleedu_projection(
         local_user_id=str(uuid4()),
-        provider_subject=PROVIDER_SUBJECT,
-        email=PROVIDER_EMAIL,
+        provider_subject=provider_subject,
+        email=provider_email,
         display_name=DISPLAY_NAME,
     )
     signed_headers = signed_identity_headers(
         private_key=private_key,
-        subject=PROVIDER_SUBJECT,
-        email=PROVIDER_EMAIL,
+        subject=provider_subject,
+        email=provider_email,
         display_name=DISPLAY_NAME,
         jti=f"st-29-small-screen-remaining-{suffix}",
     )
@@ -332,15 +530,6 @@ def _run(
             signed_headers=signed_headers,
             local_user_id=local_user_id,
         )
-        request_context = playwright.request.new_context(
-            base_url=backend_base_url,
-            extra_http_headers=signed_headers,
-        )
-        try:
-            roster_id, template_id = _seed_assets(request_context, suffix=suffix)
-        finally:
-            request_context.dispose()
-
         browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         page = context.new_page()
@@ -349,19 +538,41 @@ def _run(
                 page,
                 base_url=base_url,
                 signed_headers=signed_headers,
-                provider_subject=PROVIDER_SUBJECT,
-                provider_email=PROVIDER_EMAIL,
+                provider_subject=provider_subject,
+                provider_email=provider_email,
                 display_name=DISPLAY_NAME,
             )
 
-        page.add_init_script(
-            f"""(() => {{
-                const [rosterId, templateId] = {json.dumps([roster_id, template_id])};
-                window.localStorage.setItem('skriptoteket:classroom-planner:selected-roster-id', rosterId);
-                window.localStorage.setItem('skriptoteket:classroom-planner:selected-template-id', templateId);
-            }})()""",
-        )
         _open_local_app(page, base_url=base_url)
+        _verify_mobile_prerequisite_blocking(page, viewport_label="390x844")
+
+        request_context = playwright.request.new_context(
+            base_url=backend_base_url,
+            extra_http_headers=signed_headers,
+        )
+        try:
+            no_classroom_roster_id = _seed_roster_only(
+                request_context,
+                suffix=f"{suffix} utan sal",
+            )
+            roster_id, template_id = _seed_assets(request_context, suffix=suffix)
+        finally:
+            request_context.dispose()
+
+        _persist_workspace_selection(page, roster_id=no_classroom_roster_id, template_id=None)
+        page.reload(wait_until="domcontentloaded")
+        wait_for_app_heading(page)
+        _verify_mobile_no_classroom_blocking(
+            page,
+            viewport_label="390x844",
+        )
+        _persist_workspace_selection(page, roster_id=roster_id, template_id=template_id)
+        page.reload(wait_until="domcontentloaded")
+        wait_for_app_heading(page)
+        _select_overview_assets(page, roster_id=roster_id, template_id=template_id)
+        wait_for_app_heading(page)
+        page.set_viewport_size({"width": 1440, "height": 900})
+        page.wait_for_timeout(300)
         open_class_workspace(page, roster_name=f"ST29 Klass {suffix}")
         open_grouping_workspace(page, template_name=f"ST29 Sal {suffix}")
         _start_grouping_draft(page)

@@ -8,7 +8,7 @@
  * - emits scope-specific actions while the route shell prepares drafts in place
  */
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
@@ -59,6 +59,7 @@ const emit = defineEmits<{
 }>();
 
 const selectedScope = ref<OverviewDistributionScope | null>(null);
+const preparedScope = ref<OverviewDistributionScope | null>(null);
 
 const resolvedScope = computed<OverviewDistributionScope>(() => {
   if (selectedScope.value === "seating" && props.hasTemplate) {
@@ -166,9 +167,10 @@ function isSeatingExportOption(option: PlannerExportOptionValue): option is Seat
   return option === "a3_landscape" || option === "a4_landscape" || option === "xlsx";
 }
 
-function prepare(): void {
+function prepare(scope = resolvedScope.value): void {
   if (props.hasRoster) {
-    emit("prepare", resolvedScope.value);
+    preparedScope.value = scope;
+    emit("prepare", scope);
   }
 }
 
@@ -180,8 +182,26 @@ function selectScope(value: string): void {
     return;
   }
   selectedScope.value = value;
-  prepare();
+  prepare(value);
 }
+
+onMounted(() => {
+  prepare();
+});
+
+watch(resolvedScope, (scope) => {
+  if (preparedScope.value === scope) {
+    return;
+  }
+  prepare(scope);
+});
+
+watch(() => props.hasRoster, (hasRoster) => {
+  if (!hasRoster || preparedScope.value === resolvedScope.value) {
+    return;
+  }
+  prepare();
+});
 
 function exportDefault(): void {
   if (resolvedScope.value === "seating") {
@@ -243,14 +263,12 @@ function revokeShare(share: ClassroomPlannerShareArtifact): void {
     :show-share-actions="hasRoster"
     :scope-value="resolvedScope"
     :scope-options="scopeOptions"
-    trigger-variant="phone-row"
+    trigger-variant="inline"
     trigger-test-id="phone-overview-share-export-row"
-    trigger-meta="Länk + filer"
     panel-test-id="phone-overview-share-export-panel"
     create-share-test-id="phone-overview-share-create"
     create-share-mobile-test-id="phone-overview-share-create-mobile"
     file-option-test-id-prefix="phone-overview-export-option"
-    @open="prepare"
     @select-scope="selectScope"
     @create-share="createShare"
     @copy-share="copyShare"

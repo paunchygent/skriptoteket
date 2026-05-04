@@ -24,7 +24,7 @@ from typing import Sequence
 from uuid import uuid4
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
-from playwright.sync_api import Page, expect, sync_playwright
+from playwright.sync_api import Locator, Page, expect, sync_playwright
 
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import (
@@ -61,6 +61,7 @@ VIEWPORTS = (
     (1366, 768),
     (1440, 900),
 )
+MOBILE_SCROLL_PROOF_SHARE_ROWS = 8
 
 
 def _is_local_vite_url(base_url: str) -> bool:
@@ -113,6 +114,68 @@ def _close_panel(page: Page, *, kind: str) -> None:
     expect(page.locator(f'[data-test="{kind}-share-management"]')).not_to_be_visible()
 
 
+def _ensure_mobile_overflow_content(panel: Locator, *, kind: str) -> None:
+    """Create enough active share rows that the mobile sheet must scroll."""
+
+    link_rows = panel.locator('[data-test^="planner-share-link-"]')
+    create_button = panel.locator(f'[data-test="{kind}-share-create-mobile"]')
+    while link_rows.count() < MOBILE_SCROLL_PROOF_SHARE_ROWS:
+        expected_count = link_rows.count() + 1
+        expect(create_button).to_be_enabled(timeout=30_000)
+        create_button.click()
+        expect(link_rows).to_have_count(expected_count, timeout=30_000)
+
+
+def _wait_for_share_link_state(page: Page, panel: Locator) -> None:
+    """Wait until share-link management has rendered either rows or empty state."""
+
+    link_rows = panel.locator('[data-test^="planner-share-link-"]')
+    empty_state = panel.locator('[data-test="planner-share-links-empty"]')
+    for _ in range(40):
+        if link_rows.count() > 0:
+            expect(link_rows.first).to_be_visible()
+            return
+        if empty_state.count() > 0 and empty_state.first.is_visible():
+            return
+        page.wait_for_timeout(250)
+    raise AssertionError("Share-link section did not render active rows or empty state.")
+
+
+def _assert_mobile_sheet_scroll_is_contained(page: Page, panel: Locator) -> None:
+    """Assert the Dela sheet owns scrolling while background scroll stays fixed."""
+
+    scroller = panel.locator('[data-test="planner-share-export-scroll"]')
+    expect(scroller).to_be_visible()
+    expect(page.locator('[data-test="planner-share-export-backdrop"]')).to_be_visible()
+
+    body_overflow = page.evaluate("() => document.body.style.overflow")
+    if body_overflow != "hidden":
+        raise AssertionError(f"Expected body scroll lock while Dela is open, got {body_overflow!r}")
+
+    initial_window_scroll = page.evaluate("() => window.scrollY")
+    scroll_state = scroller.evaluate(
+        """(element) => {
+            const maxScrollTop = element.scrollHeight - element.clientHeight;
+            element.scrollTop = Math.max(1, Math.floor(maxScrollTop / 2));
+            return {scrollTop: element.scrollTop, maxScrollTop};
+        }"""
+    )
+    if scroll_state["maxScrollTop"] <= 0:
+        raise AssertionError("Expected mobile Dela sheet content to overflow its scroller.")
+    if scroll_state["scrollTop"] <= 0:
+        raise AssertionError("Expected mobile Dela sheet scroller to move.")
+    if page.evaluate("() => window.scrollY") != initial_window_scroll:
+        raise AssertionError("Window scrolled while the Dela sheet scroller moved.")
+
+    scroller.evaluate("(element) => { element.scrollTop = element.scrollHeight; }")
+    bottom_window_scroll = page.evaluate("() => window.scrollY")
+    scroller.hover()
+    page.mouse.wheel(0, 1800)
+    page.wait_for_timeout(150)
+    if page.evaluate("() => window.scrollY") != bottom_window_scroll:
+        raise AssertionError("Wheel scroll bled from the Dela sheet into the workspace.")
+
+
 def _verify_distribution_panel(
     page: Page,
     *,
@@ -127,7 +190,11 @@ def _verify_distribution_panel(
     expect(page.locator(f'[data-test="{kind}-export-default"]')).to_have_count(0)
     expect(page.locator(f'[data-test="{kind}-export-menu-trigger"]')).to_have_count(0)
 
-    trigger = page.locator(f'[data-test="{kind}-share-trigger"]')
+    if width < 1024:
+        page.locator(f'[data-test="{kind}-actions-menu"]').click()
+        trigger = page.locator(f'[data-test="{kind}-overflow-share-trigger"]')
+    else:
+        trigger = page.locator(f'[data-test="{kind}-share-trigger"]')
     expect(trigger).to_be_visible()
     expect(trigger).to_contain_text("Dela")
     trigger.click()
@@ -145,12 +212,16 @@ def _verify_distribution_panel(
     else:
         expect(desktop_create).to_be_visible()
         expect(mobile_create).to_be_hidden()
-    expect(panel.locator('[data-test="planner-share-links-empty"]')).to_be_visible()
+    _wait_for_share_link_state(page, panel)
 
     for option_id in file_option_ids:
         option = panel.locator(f'[data-test="{kind}-export-option-{option_id}"]')
         expect(option).to_be_visible()
         expect(option).to_be_enabled()
+
+    if width < 768:
+        _ensure_mobile_overflow_content(panel, kind=kind)
+        _assert_mobile_sheet_scroll_is_contained(page, panel)
 
     page.screenshot(
         path=str(ARTIFACTS_DIR / f"{kind}-{viewport_label}-share-export-panel.png"),

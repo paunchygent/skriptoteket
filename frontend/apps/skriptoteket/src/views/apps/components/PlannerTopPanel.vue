@@ -197,15 +197,15 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
 </script>
 
 <template>
-  <article class="space-y-3 border border-navy bg-white p-4 shadow-brutal-sm">
-    <div class="flex items-start justify-between gap-3 border-b border-navy/20 pb-3">
+  <article class="planner-top-panel space-y-3 border border-navy bg-white p-4 shadow-brutal-sm">
+    <div class="planner-top-panel-heading flex items-start justify-between gap-3 border-b border-navy/20 pb-3">
       <div class="min-w-0 space-y-1">
         <h2 class="planner-shell-title">
           {{ title }}
         </h2>
         <p
           v-if="contextLabel"
-          class="text-sm text-navy/70"
+          class="planner-top-panel-context text-sm text-navy/70"
         >
           {{ contextLabel }}
         </p>
@@ -213,7 +213,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
 
       <button
         type="button"
-        class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md shrink-0"
+        class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md planner-top-panel-exit shrink-0"
         :aria-label="exitLabel"
         :title="exitLabel"
         data-test="planner-exit"
@@ -338,17 +338,21 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
       </section>
     </Teleport>
 
-    <div class="flex min-h-[2rem] flex-wrap items-center gap-2 text-xs text-navy/65">
+    <div class="planner-top-panel-status flex min-h-[2rem] flex-wrap items-center gap-2 text-xs text-navy/65">
       <span
         v-if="statusLabel"
-        class="inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
+        class="planner-top-panel-status-pill inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
         :class="statusToneClass"
+        :title="statusLabel"
+        data-test="planner-top-panel-status-label"
       >
         <span
           class="h-2 w-2 rounded-full"
           :class="statusDotClass"
         />
-        {{ statusLabel }}
+        <span class="planner-top-panel-status-label-text">
+          {{ statusLabel }}
+        </span>
       </span>
       <span
         v-if="statusMessage"

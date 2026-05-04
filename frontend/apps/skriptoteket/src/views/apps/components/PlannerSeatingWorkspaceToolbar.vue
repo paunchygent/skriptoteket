@@ -8,9 +8,9 @@
  * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, ref, type Component } from "vue";
 
-import { IconAdjustments, IconHistory, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
+import { IconAdjustments, IconHistory, IconPlus, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
@@ -89,23 +89,25 @@ const emit = defineEmits<{
   (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
 }>();
 
+type OverflowActionItem = {
+  id: string;
+  label: string;
+  icon?: Component;
+  disabled: boolean;
+  group?: "primary" | "secondary";
+  responsiveVisibility?: "all" | "phone";
+  tone?: "danger";
+  testId: string;
+  onSelect: () => void;
+};
+
 const plannerState = useClassroomState();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
-const phoneOverflowContributionIds = ref<string[]>([]);
 const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
 const isResetSeatingDialogOpen = ref(false);
-let phoneToolbarQuery: MediaQueryList | null = null;
-
-function syncPhoneOverflowContributions(matches: boolean): void {
-  phoneOverflowContributionIds.value = matches ? ["smart"] : [];
-}
-
-function handlePhoneToolbarQueryChange(event: MediaQueryListEvent): void {
-  syncPhoneOverflowContributions(event.matches);
-}
 
 function isSeatingExportOption(option: PlannerExportOptionValue): option is SeatingExportOption {
   return option === "a3_landscape" || option === "a4_landscape" || option === "xlsx";
@@ -147,93 +149,34 @@ const {
   thresholds,
 } = usePlannerToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
-  alwaysOverflowContributionIds: phoneOverflowContributionIds,
   contributions: [
-    {
-      id: "undo-redo",
-      selector: '[data-overflow-contribution="undo-redo"]',
-    },
     {
       id: "reset",
       selector: '[data-overflow-contribution="reset"]',
     },
     {
-      id: "new-draft",
-      selector: '[data-overflow-contribution="new-draft"]',
-    },
-    {
       id: "context",
       selector: '[data-overflow-contribution="context"]',
     },
-    {
-      id: "smart",
-      selector: '[data-overflow-contribution="smart"]',
-    },
   ],
 });
-
-onMounted(() => {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-    return;
-  }
-  phoneToolbarQuery = window.matchMedia("(max-width: 640px)");
-  syncPhoneOverflowContributions(phoneToolbarQuery.matches);
-  phoneToolbarQuery.addEventListener("change", handlePhoneToolbarQueryChange);
-});
-
-onBeforeUnmount(() => {
-  phoneToolbarQuery?.removeEventListener("change", handlePhoneToolbarQueryChange);
-  phoneToolbarQuery = null;
-});
 const overflowActionItems = computed(() => {
-  const items = [];
-  if (hiddenContributionIds.value.includes("undo-redo")) {
-    items.push({
-      id: "undo-seating",
-      label: "Ångra",
-      icon: IconUndo,
-      disabled: !plannerState.canUndo || props.seatingLifecycleBusy,
-      testId: "seating-overflow-undo",
-      onSelect: () => {
-        void undoSeatingDraft();
-      },
-    });
-    items.push({
-      id: "redo-seating",
-      label: "Gör om",
-      icon: IconRedo,
-      disabled: !plannerState.canRedo || props.seatingLifecycleBusy,
-      testId: "seating-overflow-redo",
-      onSelect: () => {
-        void redoSeatingDraft();
-      },
-    });
-  }
-  if (hiddenContributionIds.value.includes("reset")) {
-    items.push({
+  const isResetOverflowed = hiddenContributionIds.value.includes("reset");
+  return [
+    {
       id: "reset-seating",
       label: "Börja om",
       disabled: props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value,
+      group: "primary" as const,
       tone: "danger" as const,
       testId: "seating-overflow-reset",
+      responsiveVisibility: isResetOverflowed ? "all" as const : "phone" as const,
       onSelect: openResetSeatingDialog,
-    });
-  }
-  if (hiddenContributionIds.value.includes("new-draft")) {
-    items.push({
-      id: "new-seating-draft",
-      label: "Nytt sittschema",
-      disabled: props.seatingLifecycleBusy,
-      testId: "seating-overflow-new-draft",
-      onSelect: () => {
-        void startNewSeatingDraft();
-      },
-    });
-  }
-  return items;
+    },
+  ];
 });
 const secondaryActionItems = computed(() => {
-  const items = [...overflowActionItems.value];
+  const items: OverflowActionItem[] = [...overflowActionItems.value];
   if (props.showHistoryAction) {
     items.push({
       id: "history",
@@ -338,12 +281,16 @@ function handleExportOption(option: PlannerExportOptionValue): void {
   emit("export-option", option);
 }
 
-const isUndoRedoInline = computed(() => !hiddenContributionIds.value.includes("undo-redo"));
+const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
-const isNewDraftInline = computed(() => !hiddenContributionIds.value.includes("new-draft"));
+const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isSmartInline = computed(() => !hiddenContributionIds.value.includes("smart"));
-const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInline.value);
+const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
+const showOverflowPanel = computed(() => (
+  props.showSmartControls
+  || props.availableTemplates.length > 0
+  || showDistributionAction.value
+));
 </script>
 
 <template>
@@ -352,11 +299,8 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       ref="actionBarRef"
       :data-overflow-stage="stageLabel"
       :data-overflow-hidden-actions="hiddenContributionIds.join(',')"
-      :data-overflow-undo-redo-inline-min-width="thresholds['undo-redo']"
-      :data-overflow-reset-inline-min-width="thresholds.reset"
-      :data-overflow-new-draft-inline-min-width="thresholds['new-draft']"
       :data-overflow-context-inline-min-width="thresholds.context"
-      :data-overflow-smart-inline-min-width="thresholds.smart"
+      :data-overflow-reset-inline-min-width="thresholds.reset"
     >
       <template #primary>
         <div
@@ -391,51 +335,29 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
           data-overflow-contribution="new-draft"
         >
           <UiDenseActionButton
-            label="Nytt sittschema"
+            label="Nytt utkast"
             data-test="new-seating-draft"
             :disabled="seatingLifecycleBusy"
             @click="void startNewSeatingDraft()"
-          />
-        </div>
-        <UiDenseActionButton
-          label="Slumpa"
-          data-test="randomize-seating"
-          :disabled="!canRandomizeSeating"
-          @click="void randomizeCurrentSeatingDraft()"
-        >
-          <template #leading>
-            <IconShuffle :size="16" />
-          </template>
-        </UiDenseActionButton>
-        <div
-          v-if="showSmartControls && isSmartInline"
-          class="flex items-center [&>*+*]:-ml-px"
-          data-overflow-contribution="smart"
-          data-test="seating-smart-cluster"
-        >
-          <UiDenseToggle
-            data-test="seating-smart-toggle"
-            label="Smart"
-            group-position="start"
-            :model-value="plannerState.draft?.smart_enabled ?? false"
-            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-            @update:model-value="plannerState.setDraftSmartEnabled($event)"
-          />
-          <UiDenseIconButton
-            data-test="seating-open-settings"
-            label="Smart-inställningar"
-            aria-label="Smart-inställningar"
-            title="Öppna Smart-inställningar"
-            size="utility"
-            group-position="end"
-            :active="smartSettingsOpen"
-            :expanded="smartSettingsOpen"
-            has-popup="dialog"
-            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-            @click="emit('open-settings')"
           >
-            <IconAdjustments :size="14" />
-          </UiDenseIconButton>
+            <template #leading>
+              <IconPlus :size="14" />
+            </template>
+          </UiDenseActionButton>
+        </div>
+        <div
+          data-test="seating-randomize-control"
+        >
+          <UiDenseActionButton
+            label="Slumpa"
+            data-test="randomize-seating"
+            :disabled="!canRandomizeSeating"
+            @click="void randomizeCurrentSeatingDraft()"
+          >
+            <template #leading>
+              <IconShuffle :size="16" />
+            </template>
+          </UiDenseActionButton>
         </div>
         <div
           v-if="isResetInline"
@@ -492,7 +414,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
 
       <template #secondary>
         <PlannerShareExportPanel
-          v-if="showExportActions || showShareLinkAction"
+          v-if="showDistributionAction"
           :file-options="exportOptions"
           :shares="shares"
           :share-loading="shareLoading"
@@ -526,7 +448,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
             #panel
           >
             <label
-              v-if="!isContextInline"
+              v-if="availableTemplates.length > 0"
               class="block space-y-1"
               data-test="seating-overflow-template-control"
             >
@@ -554,8 +476,11 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
               </select>
             </label>
             <div
-              v-if="showSmartControls && !isSmartInline"
-              class="space-y-2"
+              v-if="showSmartControls"
+              :class="[
+                'space-y-2',
+                availableTemplates.length > 0 ? 'border-t border-navy/10 pt-3' : null,
+              ]"
               data-test="seating-overflow-smart-control"
             >
               <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
@@ -587,6 +512,37 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
                 </UiDenseIconButton>
               </div>
             </div>
+          </template>
+          <template
+            v-if="showDistributionAction"
+            #footer
+          >
+            <PlannerShareExportPanel
+              :file-options="exportOptions"
+              :shares="shares"
+              :share-loading="shareLoading"
+              :share-busy="shareBusy"
+              :share-status-label="shareStatusLabel"
+              :share-error-message="shareErrorMessage"
+              :export-busy="exportBusy"
+              :export-error-message="exportErrorMessage"
+              :revoking-share-id="revokingShareId"
+              :show-file-actions="showExportActions"
+              :show-share-actions="showShareLinkAction"
+              :show-revoke-action="showShareRevokeAction"
+              trigger-variant="menu-item"
+              trigger-test-id="seating-overflow-share-trigger"
+              trigger-meta=""
+              panel-test-id="seating-share-management"
+              create-share-test-id="seating-share-create"
+              create-share-mobile-test-id="seating-share-create-mobile"
+              file-option-test-id-prefix="seating-export-option"
+              @create-share="emit('share-link')"
+              @copy-share="emit('copy-share', $event)"
+              @revoke-share="emit('revoke-share', $event)"
+              @export-default="emit('export-default')"
+              @export-option="handleExportOption"
+            />
           </template>
         </PlannerToolbarOverflowMenu>
       </template>

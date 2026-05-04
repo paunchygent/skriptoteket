@@ -6,7 +6,7 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
@@ -83,6 +83,11 @@ function groupingFileOptions(): PlannerExportFileOption[] {
 }
 
 describe("PlannerShareExportPanel", () => {
+  afterEach(() => {
+    document.body.style.overflow = "";
+    document.body.innerHTML = "";
+  });
+
   it("opens one Dela panel with link management and file export actions", async () => {
     const share = makeShare({
       id: "share-1",
@@ -106,7 +111,10 @@ describe("PlannerShareExportPanel", () => {
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Dela och exportera");
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Länk");
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Filer");
-    expect(document.body.querySelector('[data-test="planner-share-export-backdrop"]')).toBeNull();
+    expect(wrapper.get('[data-test="grouping-share-management"]').attributes("aria-modal")).toBe("true");
+    expect(wrapper.get('[data-test="planner-share-export-scroll"]').classes()).toContain("overscroll-contain");
+    expect(wrapper.find('[data-test="planner-share-export-backdrop"]').exists()).toBe(true);
+    expect(document.body.style.overflow).toBe("hidden");
     expect(wrapper.get('[data-test="grouping-export-option-xlsx"]').text()).toContain("Standard");
     expect(wrapper.get('[data-test="grouping-export-option-pdf"]').text()).toContain("PDF (A4 stående)");
 
@@ -121,6 +129,9 @@ describe("PlannerShareExportPanel", () => {
     expect(wrapper.emitted("revoke-share")).toEqual([[share]]);
     expect(wrapper.emitted("export-default")).toEqual([[]]);
     expect(wrapper.emitted("export-option")).toEqual([["pdf_a4_portrait"]]);
+
+    await wrapper.get('[data-test="planner-share-export-close"]').trigger("click");
+    expect(document.body.style.overflow).toBe("");
   });
 
   it("keeps revoked links hidden and disables file actions while export is busy", async () => {

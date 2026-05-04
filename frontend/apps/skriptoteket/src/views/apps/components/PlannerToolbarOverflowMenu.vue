@@ -7,7 +7,7 @@
  * - keeps planner overflow content local while reading shared keyboard/focus behavior
  */
 
-import { computed, ref, type Component } from "vue";
+import { computed, ref, useSlots, type Component } from "vue";
 
 import { IconMoreVertical } from "../../../components/icons";
 import {
@@ -22,6 +22,8 @@ type PlannerToolbarMenuItem = {
   label: string;
   icon?: Component;
   disabled?: boolean;
+  group?: "primary" | "secondary";
+  responsiveVisibility?: "all" | "phone";
   testId?: string;
   tone?: "default" | "danger";
   onSelect: () => void;
@@ -41,13 +43,21 @@ const props = withDefaults(
 
 defineSlots<{
   panel?: () => unknown;
+  footer?: () => unknown;
 }>();
 
+const slots = useSlots();
 const isOpen = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
 const menuRef = ref<HTMLElement | null>(null);
 const triggerRef = ref<HTMLElement | null>(null);
-const hasItems = computed(() => props.items.length > 0);
+const hasMenuContent = computed(() => (
+  props.items.length > 0
+  || Boolean(slots.panel)
+  || Boolean(slots.footer)
+));
+const primaryItems = computed(() => props.items.filter((item) => item.group === "primary"));
+const secondaryItems = computed(() => props.items.filter((item) => item.group !== "primary"));
 const { closeMenu, toggleMenu, onTriggerKeydown, onMenuKeydown } = useDenseMenuSurface({
   isOpen,
   containerRef,
@@ -89,7 +99,7 @@ function handleMenuKeydown(event: KeyboardEvent): void {
       :aria-expanded="isOpen"
       has-popup="menu"
       :data-test="testId"
-      :disabled="!hasItems"
+      :disabled="!hasMenuContent"
       @click.stop="toggleMenu"
       @keydown="onTriggerKeydown"
     >
@@ -108,17 +118,48 @@ function handleMenuKeydown(event: KeyboardEvent): void {
         @keydown="handleMenuKeydown"
       >
         <div
-          v-if="$slots.panel"
-          class="space-y-3 border-b border-navy/10 p-3"
+          v-if="primaryItems.length > 0 || $slots.panel"
+          class="border-b border-navy/10"
         >
-          <slot name="panel" />
+          <button
+            v-for="item in primaryItems"
+            :key="item.id"
+            type="button"
+            role="menuitem"
+            :class="[
+              denseMenuItemClass(item.tone === 'danger' ? 'danger' : 'default'),
+              item.responsiveVisibility === 'phone' ? 'planner-toolbar-menu-item-phone-only' : null,
+            ]"
+            :data-test="item.testId"
+            :disabled="item.disabled"
+            @click="handleSelect(item)"
+          >
+            <component
+              :is="item.icon"
+              v-if="item.icon"
+              :size="16"
+            />
+            <span>{{ item.label }}</span>
+          </button>
+          <div
+            v-if="$slots.panel"
+            :class="[
+              'space-y-3 p-3',
+              primaryItems.length > 0 ? 'border-t border-navy/10' : null,
+            ]"
+          >
+            <slot name="panel" />
+          </div>
         </div>
         <button
-          v-for="item in items"
+          v-for="item in secondaryItems"
           :key="item.id"
           type="button"
           role="menuitem"
-          :class="denseMenuItemClass(item.tone === 'danger' ? 'danger' : 'default')"
+          :class="[
+            denseMenuItemClass(item.tone === 'danger' ? 'danger' : 'default'),
+            item.responsiveVisibility === 'phone' ? 'planner-toolbar-menu-item-phone-only' : null,
+          ]"
           :data-test="item.testId"
           :disabled="item.disabled"
           @click="handleSelect(item)"
@@ -130,6 +171,12 @@ function handleMenuKeydown(event: KeyboardEvent): void {
           />
           <span>{{ item.label }}</span>
         </button>
+        <div
+          v-if="$slots.footer"
+          class="border-t border-navy/10"
+        >
+          <slot name="footer" />
+        </div>
       </div>
     </Transition>
   </div>

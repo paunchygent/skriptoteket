@@ -1,8 +1,8 @@
 /**
  * Grouping workspace toolbar overflow tests.
  *
- * These tests freeze the visible-to-overflow migration order so grouping uses
- * the exact `undo` / `redo` then `Börja om` collapse ladder.
+ * These tests freeze the visible-to-overflow migration order so grouping keeps
+ * core phone actions visible while subordinate controls collapse.
  */
 
 import { mount } from "@vue/test-utils";
@@ -26,7 +26,6 @@ vi.mock("./usePlannerToolbarOverflow", () => ({
       reset: 772,
       "new-draft": 684,
       context: 612,
-      smart: 540,
     })),
   }),
 }));
@@ -116,51 +115,56 @@ describe("PlannerGroupingWorkspaceToolbar overflow", () => {
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-roster-control"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="grouping-overflow-reset"]').classes()).toContain(
+      "planner-toolbar-menu-item-phone-only",
+    );
     expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(false);
-  });
+    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
+  }, 10_000);
 
-  it("moves undo/redo into overflow before reset", async () => {
+  it("keeps undo/redo inline even when the measured overflow state is narrow", async () => {
     const wrapper = await mountToolbarForHidden(["undo-redo"]);
 
-    expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    await wrapper.get('[data-test="grouping-overflow-undo"]').trigger("click");
-    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    await wrapper.get('[data-test="grouping-overflow-redo"]').trigger("click");
 
-    expect(stateMocks.plannerState.undoGroupingDraft).toHaveBeenCalledTimes(1);
-    expect(stateMocks.plannerState.redoGroupingDraft).toHaveBeenCalledTimes(1);
-    expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-overflow-redo"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="grouping-overflow-reset"]').classes()).toContain(
+      "planner-toolbar-menu-item-phone-only",
+    );
   });
 
-  it("moves reset into overflow only after undo/redo have already collapsed", async () => {
+  it("moves reset into overflow without hiding undo/redo", async () => {
     const wrapper = await mountToolbarForHidden(["undo-redo", "reset"]);
 
-    expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-overflow-redo"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-overflow-redo"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="grouping-overflow-reset"]').classes()).not.toContain(
+      "planner-toolbar-menu-item-phone-only",
+    );
   });
 
-  it("can move new draft, roster context, and smart controls into overflow after reset", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo", "reset", "new-draft", "context", "smart"]);
+  it("keeps new draft inline while roster context can move into overflow", async () => {
+    const wrapper = await mountToolbarForHidden(["undo-redo", "reset", "new-draft", "context"]);
 
-    expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-roster-control"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
   });

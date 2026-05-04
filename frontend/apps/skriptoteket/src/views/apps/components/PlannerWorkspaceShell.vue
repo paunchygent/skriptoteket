@@ -154,9 +154,18 @@ const selectedStudentId = ref<string | null>(null);
 const isGroupingSettingsDrawerOpen = ref(false);
 const isSeatingSettingsDrawerOpen = ref(false);
 const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
-const pendingGroupingTemplateId = ref(plannerState.template?.id ?? "");
-const pendingSeatingTemplateId = ref(plannerState.template?.id ?? "");
-const plannerTitle = computed(() => plannerState.roster?.name ?? "Planering");
+const initialSelectedTemplateId = computed(() => {
+  return props.selectedWorkspaceTemplateId ?? plannerState.template?.id ?? "";
+});
+const pendingGroupingTemplateId = ref(initialSelectedTemplateId.value);
+const pendingSeatingTemplateId = ref(initialSelectedTemplateId.value);
+const selectedWorkspaceRoster = computed(() => {
+  return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;
+});
+const hasWorkspaceRoster = computed(() => {
+  return plannerState.roster !== null || props.selectedRosterId !== null;
+});
+const plannerTitle = computed(() => plannerState.roster?.name ?? selectedWorkspaceRoster.value?.name ?? "Planering");
 const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules">(() => {
   if (currentView.value === "groups") {
     return "grouping";
@@ -170,13 +179,15 @@ const resolvedWorkspaceTemplateId = computed(() => {
   return (
     props.selectedWorkspaceTemplateId
     ?? plannerState.template?.id
-    ?? props.workspaceSummary?.active_seating_draft?.template_id
     ?? null
   );
 });
+const selectedWorkspaceTemplate = computed(() => {
+  return props.availableTemplates.find((template) => template.id === resolvedWorkspaceTemplateId.value) ?? null;
+});
 const workspaceDisabledReasons = computed(() => {
   return resolvePlannerWorkspaceDisabledReasons({
-    hasRoster: plannerState.roster !== null,
+    hasRoster: hasWorkspaceRoster.value,
     hasTemplate: resolvedWorkspaceTemplateId.value !== null,
   });
 });
@@ -186,9 +197,11 @@ const { setHelpContext, clearHelpContext } = useHelp();
 watch(workspaceModeValue, (mode) => setHelpContext(`planner_${mode}`), { immediate: true });
 onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
 const isSeatWorkspaceWithoutTemplate = computed(() => {
-  return currentView.value === "seats" && plannerState.template === null;
+  return currentView.value === "seats" && resolvedWorkspaceTemplateId.value === null;
 });
-const workspaceContextLabel = computed(() => plannerState.template?.name ?? "Utan klassrum");
+const workspaceContextLabel = computed(() => {
+  return plannerState.template?.name ?? selectedWorkspaceTemplate.value?.name ?? "Utan klassrum";
+});
 const topPanelContextLabel = computed(() => {
   return isSeatWorkspaceWithoutTemplate.value
     ? "Välj klassrum i sittschemat"
@@ -414,8 +427,18 @@ watch(
     isSeatingSettingsDrawerOpen.value = false;
     openHistoryDrawerKind.value = null;
     selectedStudentId.value = null;
-    pendingGroupingTemplateId.value = plannerState.template?.id ?? "";
-    pendingSeatingTemplateId.value = plannerState.template?.id ?? "";
+    pendingGroupingTemplateId.value = initialSelectedTemplateId.value;
+    pendingSeatingTemplateId.value = initialSelectedTemplateId.value;
+  },
+);
+
+watch(
+  initialSelectedTemplateId,
+  (templateId) => {
+    if (!plannerState.template) {
+      pendingGroupingTemplateId.value = templateId;
+      pendingSeatingTemplateId.value = templateId;
+    }
   },
 );
 

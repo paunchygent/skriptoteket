@@ -32,7 +32,6 @@ import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
 const CLASS_PREVIEW_NAME_LIMIT = 33;
-const PHONE_CLASS_PREVIEW_NAME_LIMIT = 10;
 type OverviewDistributionScope = "grouping" | "seating";
 
 const props = defineProps<{
@@ -106,6 +105,8 @@ const selectedRoster = computed(() => {
 const selectedTemplate = computed(() => {
   return props.availableTemplates.find((template) => template.id === props.selectedTemplateId) ?? null;
 });
+const hasSelectedRoster = computed(() => Boolean(selectedRoster.value));
+const hasSelectedTemplate = computed(() => Boolean(selectedTemplate.value));
 const selectedRosterSortedNames = computed(() => {
   const roster = selectedRoster.value;
   if (!roster) {
@@ -134,12 +135,6 @@ const selectedRosterPreviewNames = computed(() => {
 
   return [...selectedRosterSortedNames.value.slice(0, CLASS_PREVIEW_NAME_LIMIT), "..."];
 });
-const phoneRosterPreviewNames = computed(() => {
-  return selectedRosterSortedNames.value.slice(0, PHONE_CLASS_PREVIEW_NAME_LIMIT);
-});
-const phoneRosterPreviewRemainingCount = computed(() => {
-  return Math.max(0, selectedRosterSortedNames.value.length - PHONE_CLASS_PREVIEW_NAME_LIMIT);
-});
 const workspaceContextLabel = computed(() => {
   if (!selectedTemplate.value) {
     return "Inget klassrum valt";
@@ -160,8 +155,8 @@ const selectedRosterCountLabel = computed(() => {
 });
 const workspaceDisabledReasons = computed(() => {
   const baseReasons = resolvePlannerWorkspaceDisabledReasons({
-    hasRoster: props.selectedRosterId !== null,
-    hasTemplate: props.selectedTemplateId !== null,
+    hasRoster: hasSelectedRoster.value,
+    hasTemplate: hasSelectedTemplate.value,
   });
 
   return {
@@ -172,8 +167,8 @@ const workspaceDisabledReasons = computed(() => {
 });
 const overviewPrerequisiteCopy = computed(() => {
   const baseCopy = resolvePlannerOverviewPrerequisiteCopy({
-    hasRoster: props.selectedRosterId !== null,
-    hasTemplate: props.selectedTemplateId !== null,
+    hasRoster: hasSelectedRoster.value,
+    hasTemplate: hasSelectedTemplate.value,
   });
 
   return {
@@ -188,16 +183,25 @@ function selectWorkspaceMode(value: string): void {
   }
 
   if (value === "grouping") {
+    if (workspaceDisabledReasons.value.grouping) {
+      return;
+    }
     emit("open-grouping", { templateId: null });
     return;
   }
 
   if (value === "seating") {
+    if (workspaceDisabledReasons.value.seating) {
+      return;
+    }
     emit("open-seating", { templateId: props.selectedTemplateId });
     return;
   }
 
   if (value === "rules") {
+    if (workspaceDisabledReasons.value.rules) {
+      return;
+    }
     emit("open-rules");
   }
 }
@@ -281,25 +285,6 @@ function selectPhoneTemplate(event: Event): void {
               </option>
             </select>
           </label>
-          <div
-            class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs leading-snug text-navy/75"
-            data-test="phone-overview-roster-preview"
-          >
-            <span
-              v-for="name in phoneRosterPreviewNames"
-              :key="name"
-              class="truncate"
-            >
-              {{ name }}
-            </span>
-            <span
-              v-if="phoneRosterPreviewRemainingCount > 0"
-              class="col-span-2 font-semibold text-navy/55"
-              data-test="phone-overview-roster-preview-more"
-            >
-              ... {{ phoneRosterPreviewRemainingCount }} till
-            </span>
-          </div>
           <div
             v-if="overviewCapabilities?.show_roster_actions !== false"
             class="mt-2 flex items-center gap-1.5"

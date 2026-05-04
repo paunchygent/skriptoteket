@@ -8,7 +8,7 @@
  * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, ref, type Component } from "vue";
 
 import {
   IconAdjustments,
@@ -95,22 +95,24 @@ const emit = defineEmits<{
   (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
 }>();
 
+type OverflowActionItem = {
+  id: string;
+  label: string;
+  icon?: Component;
+  disabled: boolean;
+  group?: "primary" | "secondary";
+  responsiveVisibility?: "all" | "phone";
+  tone?: "danger";
+  testId: string;
+  onSelect: () => void;
+};
+
 const state = useClassroomState();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
-const phoneOverflowContributionIds = ref<string[]>([]);
 const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
 const groupCount = computed(() => state.groups.length);
-let phoneToolbarQuery: MediaQueryList | null = null;
-
-function syncPhoneOverflowContributions(matches: boolean): void {
-  phoneOverflowContributionIds.value = matches ? ["smart"] : [];
-}
-
-function handlePhoneToolbarQueryChange(event: MediaQueryListEvent): void {
-  syncPhoneOverflowContributions(event.matches);
-}
 const selectedRosterValue = computed(() => {
   return props.selectedRosterId ?? props.availableRosters[0]?.id ?? "";
 });
@@ -139,91 +141,34 @@ const {
   thresholds,
 } = usePlannerToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
-  alwaysOverflowContributionIds: phoneOverflowContributionIds,
   contributions: [
-    {
-      id: "undo-redo",
-      selector: '[data-overflow-contribution="undo-redo"]',
-    },
     {
       id: "reset",
       selector: '[data-overflow-contribution="reset"]',
     },
     {
-      id: "new-draft",
-      selector: '[data-overflow-contribution="new-draft"]',
-    },
-    {
       id: "context",
       selector: '[data-overflow-contribution="context"]',
     },
-    {
-      id: "smart",
-      selector: '[data-overflow-contribution="smart"]',
-    },
   ],
 });
-
-onMounted(() => {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-    return;
-  }
-  phoneToolbarQuery = window.matchMedia("(max-width: 640px)");
-  syncPhoneOverflowContributions(phoneToolbarQuery.matches);
-  phoneToolbarQuery.addEventListener("change", handlePhoneToolbarQueryChange);
-});
-
-onBeforeUnmount(() => {
-  phoneToolbarQuery?.removeEventListener("change", handlePhoneToolbarQueryChange);
-  phoneToolbarQuery = null;
-});
 const overflowActionItems = computed(() => {
-  const items = [];
-  if (hiddenContributionIds.value.includes("undo-redo")) {
-    items.push({
-      id: "undo-grouping",
-      label: "Ångra",
-      icon: IconUndo,
-      disabled: !state.canUndo,
-      testId: "grouping-overflow-undo",
-      onSelect: () => {
-        void state.undoGroupingDraft();
-      },
-    });
-    items.push({
-      id: "redo-grouping",
-      label: "Gör om",
-      icon: IconRedo,
-      disabled: !state.canRedo,
-      testId: "grouping-overflow-redo",
-      onSelect: () => {
-        void state.redoGroupingDraft();
-      },
-    });
-  }
-  if (hiddenContributionIds.value.includes("reset")) {
-    items.push({
+  const isResetOverflowed = hiddenContributionIds.value.includes("reset");
+  return [
+    {
       id: "reset-grouping",
       label: "Börja om",
       disabled: state.isWorkspaceBusy || !hasGroupingAssignments.value,
+      group: "primary" as const,
       tone: "danger" as const,
       testId: "grouping-overflow-reset",
+      responsiveVisibility: isResetOverflowed ? "all" as const : "phone" as const,
       onSelect: openResetGroupingDialog,
-    });
-  }
-  if (hiddenContributionIds.value.includes("new-draft")) {
-    items.push({
-      id: "new-grouping-draft",
-      label: "Nytt utkast",
-      disabled: state.isWorkspaceBusy,
-      testId: "grouping-overflow-new-draft",
-      onSelect: () => emit("new-grouping-draft"),
-    });
-  }
-  return items;
+    },
+  ];
 });
 const secondaryActionItems = computed(() => {
-  const items = [...overflowActionItems.value];
+  const items: OverflowActionItem[] = [...overflowActionItems.value];
   if (props.showHistoryAction) {
     items.push({
       id: "history",
@@ -295,12 +240,16 @@ function incrementGroupCount(): void {
   state.addGroup();
 }
 
-const isUndoRedoInline = computed(() => !hiddenContributionIds.value.includes("undo-redo"));
+const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
-const isNewDraftInline = computed(() => !hiddenContributionIds.value.includes("new-draft"));
+const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isSmartInline = computed(() => !hiddenContributionIds.value.includes("smart"));
-const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInline.value);
+const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
+const showOverflowPanel = computed(() => (
+  props.availableRosters.length > 0
+  || props.showSmartControls
+  || showDistributionAction.value
+));
 </script>
 
 <template>
@@ -309,11 +258,8 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
       ref="actionBarRef"
       :data-overflow-stage="stageLabel"
       :data-overflow-hidden-actions="hiddenContributionIds.join(',')"
-      :data-overflow-undo-redo-inline-min-width="thresholds['undo-redo']"
-      :data-overflow-reset-inline-min-width="thresholds.reset"
-      :data-overflow-new-draft-inline-min-width="thresholds['new-draft']"
       :data-overflow-context-inline-min-width="thresholds.context"
-      :data-overflow-smart-inline-min-width="thresholds.smart"
+      :data-overflow-reset-inline-min-width="thresholds.reset"
     >
       <template #primary>
         <div
@@ -357,45 +303,19 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
             @click="emit('new-grouping-draft')"
           />
         </div>
-        <UiDenseActionButton
-          label="Slumpa"
-          data-test="randomize-groups"
-          :disabled="state.isWorkspaceBusy"
-          @click="void state.runGroupingShuffle()"
-        >
-          <template #leading>
-            <IconShuffle :size="16" />
-          </template>
-        </UiDenseActionButton>
         <div
-          v-if="showSmartControls && isSmartInline"
-          class="flex items-center [&>*+*]:-ml-px"
-          data-overflow-contribution="smart"
-          data-test="grouping-smart-cluster"
+          data-test="grouping-randomize-control"
         >
-          <UiDenseToggle
-            data-test="grouping-smart-toggle"
-            label="Smart"
-            group-position="start"
-            :model-value="state.draft?.smart_enabled ?? false"
+          <UiDenseActionButton
+            label="Slumpa"
+            data-test="randomize-groups"
             :disabled="state.isWorkspaceBusy"
-            @update:model-value="state.setDraftSmartEnabled($event)"
-          />
-          <UiDenseIconButton
-            data-test="grouping-open-settings"
-            label="Smart-inställningar"
-            aria-label="Smart-inställningar"
-            title="Öppna Smart-inställningar"
-            size="utility"
-            group-position="end"
-            :active="smartSettingsOpen"
-            :expanded="smartSettingsOpen"
-            has-popup="dialog"
-            :disabled="state.isWorkspaceBusy"
-            @click="emit('open-settings')"
+            @click="void state.runGroupingShuffle()"
           >
-            <IconAdjustments :size="14" />
-          </UiDenseIconButton>
+            <template #leading>
+              <IconShuffle :size="16" />
+            </template>
+          </UiDenseActionButton>
         </div>
         <div
           v-if="isResetInline"
@@ -478,7 +398,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
 
       <template #secondary>
         <PlannerShareExportPanel
-          v-if="showExportActions || showShareLinkAction"
+          v-if="showDistributionAction"
           :file-options="exportOptions"
           :shares="shares"
           :share-loading="shareLoading"
@@ -512,7 +432,7 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
             #panel
           >
             <label
-              v-if="availableRosters.length > 0 && !isContextInline"
+              v-if="availableRosters.length > 0"
               class="block space-y-1"
               data-test="grouping-overflow-roster-control"
             >
@@ -536,8 +456,11 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
               </select>
             </label>
             <div
-              v-if="showSmartControls && !isSmartInline"
-              class="space-y-2"
+              v-if="showSmartControls"
+              :class="[
+                'space-y-2',
+                availableRosters.length > 0 ? 'border-t border-navy/10 pt-3' : null,
+              ]"
               data-test="grouping-overflow-smart-control"
             >
               <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
@@ -569,6 +492,37 @@ const showOverflowPanel = computed(() => !isContextInline.value || !isSmartInlin
                 </UiDenseIconButton>
               </div>
             </div>
+          </template>
+          <template
+            v-if="showDistributionAction"
+            #footer
+          >
+            <PlannerShareExportPanel
+              :file-options="exportOptions"
+              :shares="shares"
+              :share-loading="shareLoading"
+              :share-busy="shareBusy"
+              :share-status-label="shareStatusLabel"
+              :share-error-message="shareErrorMessage"
+              :export-busy="exportBusy"
+              :export-error-message="exportErrorMessage"
+              :revoking-share-id="revokingShareId"
+              :show-file-actions="showExportActions"
+              :show-share-actions="showShareLinkAction"
+              :show-revoke-action="showShareRevokeAction"
+              trigger-variant="menu-item"
+              trigger-test-id="grouping-overflow-share-trigger"
+              trigger-meta=""
+              panel-test-id="grouping-share-management"
+              create-share-test-id="grouping-share-create"
+              create-share-mobile-test-id="grouping-share-create-mobile"
+              file-option-test-id-prefix="grouping-export-option"
+              @create-share="emit('share-link')"
+              @copy-share="emit('copy-share', $event)"
+              @revoke-share="emit('revoke-share', $event)"
+              @export-default="emit('export-default')"
+              @export-option="handleExportOption"
+            />
           </template>
         </PlannerToolbarOverflowMenu>
       </template>

@@ -750,11 +750,12 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find('[data-test="grouping-template-select"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-active-rule-count"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="grouping-open-settings"]').attributes("aria-label")).toBe(
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-label")).toBe(
       "Smart-inställningar",
     );
 
-    await wrapper.get('[data-test="grouping-open-settings"]').trigger("click");
+    await wrapper.get('[data-test="grouping-overflow-open-settings"]').trigger("click");
 
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Smart-inställningar");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Historik");
@@ -833,11 +834,12 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.get('[data-test="seating-template-select"]').attributes("aria-label")).toBe("Klassrum");
     expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="seating-open-settings"]').attributes("aria-label")).toBe(
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').attributes("aria-label")).toBe(
       "Smart-inställningar",
     );
 
-    await wrapper.get('[data-test="seating-open-settings"]').trigger("click");
+    await wrapper.get('[data-test="seating-overflow-open-settings"]').trigger("click");
 
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Smart-inställningar");
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Historik");
@@ -1031,6 +1033,50 @@ describe("PlannerWorkspaceShell", () => {
 
     await seatingToggle.trigger("click");
     expect(wrapper.emitted("select-workspace-mode")).toEqual([["seating"]]);
+  });
+
+  it("uses the selected class and classroom while seating setup has no loaded draft state", async () => {
+    stateMocks.plannerState.roster = null as unknown as Roster;
+    stateMocks.plannerState.template = null;
+    stateMocks.plannerState.draft = {
+      id: "draft-setup",
+      draft_kind: "seating",
+      revision: 1,
+    };
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableRosters: buildRosters(),
+        availableTemplates: [{ id: "template-2", name: "Sal 202", seats: [], fixtures: [] }],
+        initialView: "seats",
+        selectedRosterId: "roster-1",
+        selectedWorkspaceTemplateId: "template-2",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("SA24D");
+    expect(wrapper.text()).toContain("Sal 202");
+
+    const seatingToggle = findWorkspaceModeToggle(wrapper, "Sittplatser");
+    expect(seatingToggle.attributes("disabled")).toBeUndefined();
+
+    await wrapper.get("[data-test='planner-phone-mode-sheet-trigger']").trigger("click");
+
+    const phoneSeating = document.body.querySelector<HTMLButtonElement>(
+      "[data-test='planner-phone-mode-sheet-seating']",
+    );
+    expect(phoneSeating?.disabled).toBe(false);
   });
 
   it("respects the initial planner view when seating already has a classroom", () => {

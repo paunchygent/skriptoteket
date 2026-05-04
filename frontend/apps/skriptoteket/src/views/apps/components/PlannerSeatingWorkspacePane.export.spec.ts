@@ -111,7 +111,7 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
   });
 
-  it("renders the detached seating selector and smart-settings trigger without a redundant rule pill", () => {
+  it("renders the detached seating selector and subordinate smart-settings trigger without a redundant rule pill", async () => {
     const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
       props: {
         availableTemplates: [buildTemplate()],
@@ -126,7 +126,9 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     expect(wrapper.get('[data-zone="primary"]').find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="context"]').find('[data-test="seating-workspace-setup"]').exists()).toBe(true);
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-actions-menu"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="seating-open-settings"]').attributes("aria-label")).toBe(
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+
+    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').attributes("aria-label")).toBe(
       "Smart-inställningar",
     );
     expect(wrapper.find('[data-test="seating-active-rule-count"]').exists()).toBe(false);
@@ -141,7 +143,8 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     });
 
     await wrapper.get('[data-test="randomize-seating"]').trigger("click");
-    await wrapper.get('[data-test="seating-open-settings"]').trigger("click");
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+    await wrapper.get('[data-test="seating-overflow-open-settings"]').trigger("click");
 
     expect(stateMocks.plannerState.runSeatingShuffle).toHaveBeenCalledTimes(1);
     expect(wrapper.emitted("open-settings")).toEqual([[]]);
