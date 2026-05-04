@@ -138,7 +138,7 @@ async function removeTemplate(): Promise<void> {
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
       <div class="flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-white shadow-brutal 2xl:max-w-[1680px]">
-        <div class="flex flex-col gap-4 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
           <div class="space-y-1 px-6 pt-6 md:px-8 md:pt-8">
             <h2 class="font-serif text-2xl text-navy">
               {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
@@ -149,7 +149,8 @@ async function removeTemplate(): Promise<void> {
           </div>
           <button
             type="button"
-            class="mb-0 mr-6 mt-6 btn-ghost planner-btn-ghost-canvas planner-btn-icon-md self-start md:mr-8 md:mt-8 lg:self-auto"
+            class="mr-6 mt-6 btn-ghost planner-btn-ghost-canvas planner-btn-icon-md shrink-0 md:mr-8 md:mt-8"
+            aria-label="Stäng modal"
             @click="emit('close')"
           >
             ×

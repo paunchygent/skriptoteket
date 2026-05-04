@@ -2,23 +2,21 @@
 /**
  * Combined Klassrumskartan distribution surface.
  *
- * Relationships:
- * - replaces the adjacent workspace `Exportera` and `Dela` toolbar controls
- * - keeps share-link management and file export actions visually grouped while
- *   emitting separate intents to the existing share/export flow composables
+ * Relationships: replaces adjacent export/share toolbar controls and emits
+ * separate intents to the existing share and export flow composables.
  */
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { Copy } from "lucide-vue-next";
 
-import { IconArrow, IconDownload, IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
+import { IconArrow, IconCheck, IconDownload, IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type {
   PlannerExportFileOption,
   PlannerExportOptionValue,
+  PlannerShareExportScopeOption,
 } from "./plannerShareExportActions";
-
 const props = withDefaults(
   defineProps<{
     fileOptions?: PlannerExportFileOption[];
@@ -38,6 +36,10 @@ const props = withDefaults(
     createShareTestId?: string;
     createShareMobileTestId?: string;
     fileOptionTestIdPrefix?: string;
+    triggerVariant?: "toolbar" | "phone-row";
+    triggerMeta?: string | null;
+    scopeValue?: string | null;
+    scopeOptions?: PlannerShareExportScopeOption[];
   }>(),
   {
     fileOptions: () => [],
@@ -57,10 +59,15 @@ const props = withDefaults(
     createShareTestId: "planner-share-create",
     createShareMobileTestId: "planner-share-create-mobile",
     fileOptionTestIdPrefix: "planner-share-export-file",
+    triggerVariant: "toolbar",
+    triggerMeta: null,
+    scopeValue: null,
+    scopeOptions: () => [],
   },
 );
-
 const emit = defineEmits<{
+  (e: "open"): void;
+  (e: "select-scope", value: string): void;
   (e: "create-share"): void;
   (e: "copy-share", share: ClassroomPlannerShareArtifact): void;
   (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
@@ -71,7 +78,6 @@ const emit = defineEmits<{
 const rootRef = ref<HTMLElement | null>(null);
 const createButtonRef = ref<InstanceType<typeof UiDenseActionButton> | null>(null);
 const isOpen = ref(false);
-
 const dateFormatter = new Intl.DateTimeFormat("sv-SE", {
   day: "numeric",
   month: "short",
@@ -87,23 +93,30 @@ const defaultFileOption = computed(() => {
 function formatDate(value: string): string {
   return dateFormatter.format(new Date(value));
 }
-
 function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
   return `Skapad ${formatDate(share.created_at)}`;
 }
-
 function closePanel(): void {
   isOpen.value = false;
 }
-
 function togglePanel(): void {
-  isOpen.value = !isOpen.value;
+  const nextOpen = !isOpen.value;
+  isOpen.value = nextOpen;
+  if (nextOpen) {
+    emit("open");
+  }
+}
+
+function selectScope(option: PlannerShareExportScopeOption): void {
+  if (option.disabled) {
+    return;
+  }
+  emit("select-scope", option.value);
 }
 
 function createShare(): void {
   emit("create-share");
 }
-
 function selectFileOption(option: PlannerExportFileOption): void {
   if (props.exportBusy) {
     return;
@@ -114,7 +127,6 @@ function selectFileOption(option: PlannerExportFileOption): void {
   }
   emit("export-option", option.option);
 }
-
 function handleDocumentPointerDown(event: PointerEvent): void {
   if (!isOpen.value) {
     return;
@@ -135,16 +147,7 @@ function handleEscape(event: KeyboardEvent): void {
   }
 }
 
-function syncBodyScrollLock(): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-  const isMobileSheet = window.matchMedia("(max-width: 767px)").matches;
-  document.body.style.overflow = isOpen.value && isMobileSheet ? "hidden" : "";
-}
-
 watch(isOpen, async (open) => {
-  syncBodyScrollLock();
   if (!open) {
     return;
   }
@@ -155,24 +158,25 @@ watch(isOpen, async (open) => {
 onMounted(() => {
   document.addEventListener("pointerdown", handleDocumentPointerDown);
   document.addEventListener("keydown", handleEscape);
-  window.addEventListener("resize", syncBodyScrollLock);
 });
 
 onUnmounted(() => {
   document.removeEventListener("pointerdown", handleDocumentPointerDown);
   document.removeEventListener("keydown", handleEscape);
-  window.removeEventListener("resize", syncBodyScrollLock);
-  document.body.style.overflow = "";
 });
 </script>
 
 <template>
   <div
     ref="rootRef"
-    class="relative flex items-stretch border-l border-navy/15 pl-3"
+    :class="[
+      'relative flex items-stretch',
+      triggerVariant === 'toolbar' ? 'border-l border-navy/15 pl-3' : 'w-full',
+    ]"
     data-test="planner-share-export-management"
   >
     <UiDenseActionButton
+      v-if="triggerVariant === 'toolbar'"
       label="Dela"
       :data-test="triggerTestId"
       :expanded="isOpen"
@@ -189,15 +193,22 @@ onUnmounted(() => {
         />
       </template>
     </UiDenseActionButton>
-
-    <Teleport to="body">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[39] bg-navy/70 md:hidden"
-        data-test="planner-share-export-backdrop"
-        @click="closePanel"
-      />
-    </Teleport>
+    <button
+      v-else
+      type="button"
+      class="planner-phone-row-action w-full"
+      :data-test="triggerTestId"
+      :disabled="!showFileActions && !showShareActions"
+      :aria-expanded="isOpen"
+      aria-haspopup="dialog"
+      @click="togglePanel"
+    >
+      <span class="inline-flex items-center gap-2">
+        <IconLink2 :size="15" />
+        Dela
+      </span>
+      <span class="text-xs text-navy/55">{{ triggerMeta ?? "Länk + filer" }}</span>
+    </button>
 
     <section
       v-if="isOpen"
@@ -232,6 +243,50 @@ onUnmounted(() => {
           <IconX :size="14" />
         </button>
       </header>
+
+      <section
+        v-if="scopeOptions.length > 0"
+        class="border-b border-navy/15 px-3.5 py-3 md:px-4"
+        aria-label="Välj vad som ska delas"
+      >
+        <p class="mb-2 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/65">
+          Välj innehåll
+        </p>
+        <div class="grid gap-1.5">
+          <button
+            v-for="option in scopeOptions"
+            :key="option.value"
+            type="button"
+            class="grid min-h-10 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border px-2.5 text-left text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            :class="option.value === scopeValue ? 'border-navy/35 bg-canvas' : 'border-navy/20 bg-white hover:border-navy/35 hover:bg-canvas/70'"
+            :disabled="option.disabled"
+            :title="option.disabledReason ?? undefined"
+            :aria-pressed="option.value === scopeValue"
+            :data-test="`planner-share-export-scope-${option.value}`"
+            @click="selectScope(option)"
+          >
+            <IconCheck
+              v-if="option.value === scopeValue"
+              :size="13"
+            />
+            <span
+              v-else
+              class="h-[13px] w-[13px]"
+              aria-hidden="true"
+            />
+            <span class="truncate text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)]">
+              {{ option.label }}
+            </span>
+            <span
+              v-if="option.meta"
+              class="truncate text-[10px] font-semibold leading-none"
+              :class="option.value === scopeValue ? 'text-navy/60' : 'text-navy/50'"
+            >
+              {{ option.meta }}
+            </span>
+          </button>
+        </div>
+      </section>
 
       <section
         v-if="showShareActions"

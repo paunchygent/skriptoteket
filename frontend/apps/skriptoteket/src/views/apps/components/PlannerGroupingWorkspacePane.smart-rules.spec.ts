@@ -131,4 +131,18 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
       ]),
     );
   });
+
+  it("uses a phone tab strip so only one grouping surface is primary at a time", async () => {
+    const wrapper = mount(PlannerGroupingWorkspacePane);
+
+    expect(wrapper.get('[data-test="phone-grouping-workspace"]').text()).toContain("1 grupper");
+    expect(wrapper.get('[data-test="phone-grouping-workspace"]').text()).toContain("1 ej grupperade");
+    expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="phone-grouping-active-card"]').exists()).toBe(false);
+
+    await wrapper.get('[data-test="phone-grouping-tab-group-1"]').trigger("click");
+
+    expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="phone-grouping-active-card"]').text()).toContain("Ada Lovelace");
+  });
 });

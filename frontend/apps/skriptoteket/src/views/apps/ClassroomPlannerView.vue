@@ -89,6 +89,13 @@ const {
   deleteGroupingHistoryDraft,
   openSeatingHistoryDraft,
   deleteSeatingHistoryDraft,
+  prepareOverviewDistributionScope,
+  startOverviewDefaultGroupingExport,
+  startOverviewGroupingExportOption,
+  startOverviewGroupingShareLink,
+  startOverviewDefaultSeatingExport,
+  startOverviewSeatingExportOption,
+  startOverviewSeatingShareLink,
   startDefaultGroupingExport,
   startGroupingExportOption,
   startDefaultSeatingExport,
@@ -169,6 +176,22 @@ const {
           :transition-label="workspaceTransitionLabel"
           :visible-grouping-draft="visibleOverviewGroupingDraft"
           :visible-seating-draft="visibleOverviewSeatingDraft"
+          :grouping-export-busy="isGroupingExportBusy"
+          :grouping-export-error-message="groupingExportErrorMessage"
+          :grouping-share-busy="isGroupingShareBusy"
+          :grouping-share-loading="isGroupingShareLoading"
+          :grouping-share-status-label="groupingShareStatusLabel"
+          :grouping-share-error-message="groupingShareErrorMessage"
+          :grouping-share-revoking-id="groupingShareRevokingId"
+          :grouping-shares="groupingShares"
+          :seating-export-busy="isSeatingExportBusy"
+          :seating-export-error-message="seatingExportErrorMessage"
+          :seating-share-busy="isSeatingShareBusy"
+          :seating-share-loading="isSeatingShareLoading"
+          :seating-share-status-label="seatingShareStatusLabel"
+          :seating-share-error-message="seatingShareErrorMessage"
+          :seating-share-revoking-id="seatingShareRevokingId"
+          :seating-shares="seatingShares"
           @exit-app="void exitPlannerApp()"
           @create-roster="openRosterCreate"
           @edit-roster="openSelectedRosterEdit"
@@ -183,6 +206,17 @@ const {
           @open-rules="void openRulesWorkspace()"
           @dismiss-grouping-draft="dismissOverviewGroupingDraft"
           @dismiss-seating-draft="dismissOverviewSeatingDraft"
+          @prepare-overview-distribution="void prepareOverviewDistributionScope($event)"
+          @export-overview-grouping-default="void startOverviewDefaultGroupingExport()"
+          @export-overview-grouping-option="void startOverviewGroupingExportOption($event)"
+          @share-overview-grouping-link="void startOverviewGroupingShareLink()"
+          @copy-overview-grouping-share="void copyGroupingShareLink($event)"
+          @revoke-overview-grouping-share="void revokeGroupingShareLink($event)"
+          @export-overview-seating-default="void startOverviewDefaultSeatingExport()"
+          @export-overview-seating-option="void startOverviewSeatingExportOption($event)"
+          @share-overview-seating-link="void startOverviewSeatingShareLink()"
+          @copy-overview-seating-share="void copySeatingShareLink($event)"
+          @revoke-overview-seating-share="void revokeSeatingShareLink($event)"
         />
 
         <PlannerWorkspaceShell

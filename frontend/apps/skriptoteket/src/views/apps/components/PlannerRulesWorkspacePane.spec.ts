@@ -270,4 +270,36 @@ describe("PlannerRulesWorkspacePane", () => {
     );
     expect(wrapper.get('[data-test="rules-summary-empty-state"]').classes()).toContain("min-h-full");
   });
+
+  it("renders the phone rules workspace as compact rule rows with map selection subordinate", async () => {
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="phone-rules-workspace"]').text()).toContain(
+      "Reglerna gäller hela klassen.",
+    );
+    expect(wrapper.get('[data-test="phone-rules-tool-keep_apart"]').classes()).toContain(
+      "planner-phone-rule-row-active",
+    );
+    expect(wrapper.get('[data-test="phone-rules-selected-student"]').text()).toContain(
+      "Alan Turing",
+    );
+
+    await wrapper.get('[data-test="phone-rules-tool-keep_near"]').trigger("click");
+    await wrapper.get('[data-test="phone-rules-map-selection-trigger"]').trigger("click");
+    await wrapper.get('[data-test="phone-rules-clear-selection"]').trigger("click");
+    await wrapper.get('[data-test="phone-rules-commit-rule"]').trigger("click");
+
+    expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("keep_near");
+    expect(wrapper.find('[data-test="phone-rules-map-selection"]').exists()).toBe(true);
+    expect(stateMocks.plannerState.clearPendingRelationshipSelection).toHaveBeenCalledWith();
+    expect(stateMocks.plannerState.commitPendingRelationshipRule).toHaveBeenCalledWith();
+  });
 });

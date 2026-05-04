@@ -2,7 +2,7 @@
 type: pr
 id: PR-0285
 title: "ST-29-14 small-screen overview dashboard"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-03
 updated: 2026-05-04
@@ -175,6 +175,41 @@ classroom second, `Dela` reachable for links and files, management subordinate.
   - `tablet`: `768x1024`, reduced companion behavior without desktop bleed
   - `laptop`: `1366x768`, existing desktop overview dashboard still present
   - `desktop`: `1440x900`, existing desktop overview dashboard still present
+
+## Implementation Closeout
+
+Implemented and verified on 2026-05-04 as the first completed small-screen
+implementation slice. This closes only `PR-0285` / `ST-29-14`; the `Grupper`,
+`Sittplatser`, and `Regler` implementation slices remain separate follow-up
+work.
+
+Key outcomes:
+
+- `Översikt` now renders a reduced phone/tablet dashboard with compact
+  `Klasslista`, `Klassrum`, and `Dela` sections while preserving the desktop
+  overview panels at full-composition widths.
+- Phone roster preview shows the first ten sorted student names and an explicit
+  continuation marker such as `... 20 till` instead of silently cutting off a
+  longer class list.
+- `Dela` remains a low-height row with a share icon and `Länk + filer`, opens
+  the merged share/export surface in place, and no longer blocks the screen with
+  a dark overlay.
+- Overview-level share/export preparation uses the existing grouping/seating
+  draft and share/export flow seams; it does not navigate away from `Översikt`
+  and does not fork persistence behavior.
+- Edit/import affordances were normalized for class list and classroom
+  management, including top-right close placement and compact edit/delete/save
+  labels.
+
+Verification:
+
+- `pdm run fe-test -- --run PlannerClassWorkspace PlannerShareExportPanel`
+- `pdm run fe-test -- --run CreateRoomTemplateModal CreateRosterModal PlannerTopPanel PlannerClassWorkspace PlannerGroupingWorkspacePane PlannerSeatingWorkspacePane PlannerRulesWorkspacePane RoomCanvas PlannerShareExportPanel`
+- `pdm run fe-type-check`
+- `pdm run fe-lint`
+- `git diff --check`
+- Signed local HuleEdu browser proof using repo Playwright helpers:
+  `st-29-overview-responsive-proof: ok artifacts=.artifacts/st-29-small-screen-overview-dashboard`
 
 ## Rollback Plan
 

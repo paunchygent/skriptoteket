@@ -183,4 +183,24 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
       ]),
     );
   });
+
+  it("keeps the phone seating workspace map-first with students in a subordinate sheet", async () => {
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+      },
+      global: {
+        stubs: {
+          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="phone-seating-workspace"]').text()).toContain("Visa elever");
+    expect(wrapper.find('[data-test="phone-seating-student-sheet"]').exists()).toBe(false);
+
+    await wrapper.get('[data-test="phone-seating-show-students"]').trigger("click");
+
+    expect(wrapper.get('[data-test="phone-seating-student-sheet"]').text()).toContain("Alan Turing");
+  });
 });

@@ -163,6 +163,52 @@ export function useClassroomPlannerRouteShell() {
     plannerState,
   });
 
+  async function prepareOverviewDistributionScope(
+    scope: "grouping" | "seating",
+  ): Promise<boolean> {
+    return await workspaceFlow.prepareOverviewDistributionScope(scope);
+  }
+
+  async function startOverviewDefaultGroupingExport(): Promise<void> {
+    if (await prepareOverviewDistributionScope("grouping")) {
+      await groupingExportFlow.startDefaultExport();
+    }
+  }
+
+  async function startOverviewGroupingExportOption(
+    option: Parameters<typeof groupingExportFlow.startExportOption>[0],
+  ): Promise<void> {
+    if (await prepareOverviewDistributionScope("grouping")) {
+      await groupingExportFlow.startExportOption(option);
+    }
+  }
+
+  async function startOverviewGroupingShareLink(): Promise<void> {
+    if (await prepareOverviewDistributionScope("grouping")) {
+      await groupingShareFlow.startShare();
+    }
+  }
+
+  async function startOverviewDefaultSeatingExport(): Promise<void> {
+    if (await prepareOverviewDistributionScope("seating")) {
+      await seatingExportFlow.startDefaultExport();
+    }
+  }
+
+  async function startOverviewSeatingExportOption(
+    option: Parameters<typeof seatingExportFlow.startExportOption>[0],
+  ): Promise<void> {
+    if (await prepareOverviewDistributionScope("seating")) {
+      await seatingExportFlow.startExportOption(option);
+    }
+  }
+
+  async function startOverviewSeatingShareLink(): Promise<void> {
+    if (await prepareOverviewDistributionScope("seating")) {
+      await seatingShareFlow.startShare();
+    }
+  }
+
   onMounted(async () => {
     isBootstrapping.value = true;
     bootstrapError.value = null;
@@ -258,6 +304,13 @@ export function useClassroomPlannerRouteShell() {
     deleteGroupingHistoryDraft: workspaceFlow.deleteGroupingHistoryDraft,
     openSeatingHistoryDraft: workspaceFlow.openSeatingHistoryDraft,
     deleteSeatingHistoryDraft: workspaceFlow.deleteSeatingHistoryDraft,
+    prepareOverviewDistributionScope,
+    startOverviewDefaultGroupingExport,
+    startOverviewGroupingExportOption,
+    startOverviewGroupingShareLink,
+    startOverviewDefaultSeatingExport,
+    startOverviewSeatingExportOption,
+    startOverviewSeatingShareLink,
     startDefaultGroupingExport: groupingExportFlow.startDefaultExport,
     startGroupingExportOption: groupingExportFlow.startExportOption,
     startDefaultSeatingExport: seatingExportFlow.startDefaultExport,

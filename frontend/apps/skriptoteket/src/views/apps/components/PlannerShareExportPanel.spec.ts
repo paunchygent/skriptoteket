@@ -106,6 +106,7 @@ describe("PlannerShareExportPanel", () => {
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Dela och exportera");
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Länk");
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Filer");
+    expect(document.body.querySelector('[data-test="planner-share-export-backdrop"]')).toBeNull();
     expect(wrapper.get('[data-test="grouping-export-option-xlsx"]').text()).toContain("Standard");
     expect(wrapper.get('[data-test="grouping-export-option-pdf"]').text()).toContain("PDF (A4 stående)");
 

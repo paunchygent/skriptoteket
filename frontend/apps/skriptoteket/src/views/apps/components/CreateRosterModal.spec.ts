@@ -231,7 +231,7 @@ describe("CreateRosterModal", () => {
 
     await uploadImportFile(wrapper);
 
-    const saveButton = wrapper.findAll("button").find((button) => button.text() === "Spara ändringar");
+    const saveButton = wrapper.findAll("button").find((button) => button.text() === "Spara");
     if (!saveButton) {
       throw new Error("Expected the edit save button to be rendered.");
     }
@@ -280,6 +280,26 @@ describe("CreateRosterModal", () => {
       "Kunde inte radera klasslistan just nu.",
     );
     expect(wrapper.emitted("deleted")).toBeUndefined();
+  });
+
+  it("uses compact edit-mode action labels", () => {
+    const wrapper = mount(CreateRosterModal, {
+      props: {
+        roster: {
+          id: "roster-1",
+          name: "SA24D",
+          students: [{ id: "s1", display_name: "Ada" }],
+        },
+      },
+    });
+
+    const deleteButton = wrapper.get("button.planner-btn-danger");
+
+    expect(deleteButton.text()).toBe("Radera");
+    expect(deleteButton.find("svg").exists()).toBe(true);
+    expect(wrapper.findAll("button").some((button) => button.text() === "Spara")).toBe(true);
+    expect(wrapper.text()).not.toContain("Spara ändringar");
+    expect(wrapper.text()).not.toContain("Radera klasslista");
   });
 
   it("uses injected save and delete handlers when provided", async () => {

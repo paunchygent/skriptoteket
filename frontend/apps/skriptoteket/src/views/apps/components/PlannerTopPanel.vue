@@ -8,9 +8,16 @@
  * between modes.
  */
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
-import { IconX } from "../../../components/icons";
+import {
+  IconCheck,
+  IconMoreVertical,
+  IconPresentation,
+  IconSchool,
+  IconSettings,
+  IconX,
+} from "../../../components/icons";
 import UiSegmentedToggle, {
   type UiSegmentedToggleOption,
 } from "../../../components/ui/UiSegmentedToggle.vue";
@@ -56,6 +63,8 @@ const emit = defineEmits<{
   (e: "exit"): void;
 }>();
 
+const modeSheetOpen = ref(false);
+
 const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => {
   const options: UiSegmentedToggleOption[] = [
     { value: "overview", label: "Översikt", dataTest: "planner-mode-overview" },
@@ -94,6 +103,44 @@ const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => {
   return options;
 });
 
+const modeMetadata: Record<WorkspaceMode, {
+  label: string;
+  subtitle: string;
+  icon: typeof IconPresentation;
+}> = {
+  overview: {
+    label: "Översikt",
+    subtitle: "Snabböversikt",
+    icon: IconPresentation,
+  },
+  grouping: {
+    label: "Grupper",
+    subtitle: "Gruppindelning",
+    icon: IconSchool,
+  },
+  seating: {
+    label: "Sittplatser",
+    subtitle: "Klassrumskarta",
+    icon: IconPresentation,
+  },
+  rules: {
+    label: "Regler",
+    subtitle: "Regler och relationer",
+    icon: IconSettings,
+  },
+};
+const activeModeOption = computed(() => {
+  return workspaceOptions.value.find((option) => option.value === props.modeValue)
+    ?? workspaceOptions.value[0];
+});
+const activeModeLabel = computed(() => {
+  const value = activeModeOption.value?.value;
+  if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
+    return modeMetadata[value].label;
+  }
+  return activeModeOption.value?.label ?? "Översikt";
+});
+
 const statusToneClass = computed(() => {
   switch (props.statusTone) {
     case "success":
@@ -122,14 +169,35 @@ const statusDotClass = computed(() => {
 
 function selectWorkspaceMode(value: string): void {
   if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
+    modeSheetOpen.value = false;
     emit("update:modeValue", value);
   }
+}
+
+function openModeSheet(): void {
+  modeSheetOpen.value = true;
+}
+
+function closeModeSheet(): void {
+  modeSheetOpen.value = false;
+}
+
+function modeOptionMetadata(option: UiSegmentedToggleOption) {
+  const value = option.value;
+  if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
+    return modeMetadata[value];
+  }
+  return {
+    label: option.label,
+    subtitle: option.title ?? "",
+    icon: IconPresentation,
+  };
 }
 </script>
 
 <template>
   <article class="space-y-3 border border-navy bg-white p-4 shadow-brutal-sm">
-    <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex items-start justify-between gap-3 border-b border-navy/20 pb-3">
       <div class="min-w-0 space-y-1">
         <h2 class="planner-shell-title">
           {{ title }}
@@ -144,7 +212,7 @@ function selectWorkspaceMode(value: string): void {
 
       <button
         type="button"
-        class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md self-start lg:self-auto"
+        class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md shrink-0"
         :aria-label="exitLabel"
         :title="exitLabel"
         data-test="planner-exit"
@@ -154,17 +222,120 @@ function selectWorkspaceMode(value: string): void {
       </button>
     </div>
 
-    <UiSegmentedToggle
-      :model-value="modeValue"
-      :options="workspaceOptions"
-      aria-label="Välj arbetsyta i planeringen"
-      data-test="planner-workspace-switch"
-      density="default"
-      variant="workspace"
-      :columns="workspaceOptions.length"
-      width="full"
-      @update:model-value="selectWorkspaceMode"
-    />
+    <div class="planner-desktop-mode-switch">
+      <UiSegmentedToggle
+        :model-value="modeValue"
+        :options="workspaceOptions"
+        aria-label="Välj arbetsyta i planeringen"
+        data-test="planner-workspace-switch"
+        density="default"
+        variant="workspace"
+        :columns="workspaceOptions.length"
+        width="full"
+        @update:model-value="selectWorkspaceMode"
+      />
+    </div>
+
+    <div
+      class="planner-phone-mode-switch"
+      data-test="planner-phone-mode-switch"
+    >
+      <button
+        type="button"
+        class="planner-phone-mode-active"
+        data-test="planner-phone-active-mode"
+        @click="openModeSheet"
+      >
+        {{ activeModeLabel }}
+      </button>
+      <button
+        type="button"
+        class="planner-phone-mode-sheet-trigger"
+        data-test="planner-phone-mode-sheet-trigger"
+        :aria-expanded="modeSheetOpen"
+        aria-haspopup="dialog"
+        @click="openModeSheet"
+      >
+        Lägen
+      </button>
+    </div>
+
+    <Teleport to="body">
+      <div
+        v-if="modeSheetOpen"
+        class="planner-phone-sheet-backdrop"
+        data-test="planner-phone-mode-sheet-backdrop"
+        @click="closeModeSheet"
+      />
+      <section
+        v-if="modeSheetOpen"
+        class="planner-phone-mode-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="planner-phone-mode-sheet-title"
+        data-test="planner-phone-mode-sheet"
+        tabindex="-1"
+        @keydown.esc="closeModeSheet"
+      >
+        <div class="planner-phone-sheet-handle" />
+        <div class="flex items-center justify-between gap-3 border-b border-navy/20 pb-3">
+          <h2
+            id="planner-phone-mode-sheet-title"
+            class="font-serif text-lg text-navy"
+          >
+            Byt läge
+          </h2>
+          <button
+            type="button"
+            class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md"
+            aria-label="Stäng lägesväljaren"
+            data-test="planner-phone-mode-sheet-close"
+            @click="closeModeSheet"
+          >
+            <IconX :size="16" />
+          </button>
+        </div>
+
+        <div class="mt-3 grid gap-2">
+          <button
+            v-for="option in workspaceOptions"
+            :key="option.value"
+            type="button"
+            class="planner-phone-mode-sheet-row"
+            :class="modeValue === option.value ? 'planner-phone-mode-sheet-row-active' : ''"
+            :disabled="option.disabled"
+            :title="option.disabled ? option.title : undefined"
+            :data-test="`planner-phone-mode-sheet-${option.value}`"
+            @click="selectWorkspaceMode(option.value)"
+          >
+            <component
+              :is="modeOptionMetadata(option).icon"
+              :size="18"
+              class="shrink-0"
+            />
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-semibold leading-tight">
+                {{ modeOptionMetadata(option).label }}
+              </span>
+              <span class="block text-xs leading-tight text-navy/60">
+                {{ option.disabled ? option.title : modeOptionMetadata(option).subtitle }}
+              </span>
+            </span>
+            <IconCheck
+              v-if="modeValue === option.value"
+              :size="16"
+              aria-hidden="true"
+            />
+            <IconMoreVertical
+              v-else
+              :size="14"
+              class="text-navy/35"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </section>
+    </Teleport>
 
     <div class="flex min-h-[2rem] flex-wrap items-center gap-2 text-xs text-navy/65">
       <span

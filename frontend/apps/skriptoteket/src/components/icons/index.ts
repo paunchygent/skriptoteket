@@ -4,6 +4,7 @@ export { default as IconBan } from "./IconBan.vue";
 export { default as IconBookmark } from "./IconBookmark.vue";
 export { default as IconCheck } from "./IconCheck.vue";
 export { default as IconDownload } from "./IconDownload.vue";
+export { default as IconEdit } from "./IconEdit.vue";
 export { default as IconFitView } from "./IconFitView.vue";
 export { default as IconHelp } from "./IconHelp.vue";
 export { default as IconHistory } from "./IconHistory.vue";

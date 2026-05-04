@@ -210,6 +210,47 @@ export function createClassroomPlannerWorkspaceFlow(
     );
   }
 
+  async function prepareOverviewDistributionScope(
+    scope: "grouping" | "seating",
+  ): Promise<boolean> {
+    const rosterId = state.selectedRosterId.value;
+    if (!rosterId) {
+      return false;
+    }
+
+    const templateId =
+      scope === "seating"
+        ? resolveSeatingWorkspaceTemplateId({
+          plannerTemplateId: plannerState.template?.id ?? null,
+          activeSeatingTemplateId: state.classWorkspaceSummary.value?.active_seating_draft?.template_id ?? null,
+          selectedWorkspaceTemplateId: state.selectedWorkspaceTemplateId.value,
+        })
+        : null;
+    if (scope === "seating" && !templateId) {
+      return false;
+    }
+
+    state.plannerActionError.value = null;
+    try {
+      const currentDraftId = activeDraftId(state.classWorkspaceSummary.value, scope);
+      if (currentDraftId) {
+        await plannerState.loadWorkspace(currentDraftId);
+      } else {
+        await plannerState.resolveDraft(rosterId, templateId, scope);
+      }
+      await actions.refreshClassWorkspaceSummaryForSelectedRoster();
+      return true;
+    } catch (error: unknown) {
+      state.plannerActionError.value = normalizeClassroomPlannerUiError(
+        error,
+        scope === "seating"
+          ? "Kunde inte förbereda sittplatser för delning just nu."
+          : "Kunde inte förbereda grupper för delning just nu.",
+      );
+      return false;
+    }
+  }
+
   async function returnToClassWorkspace(): Promise<void> {
     const rosterId = plannerState.roster?.id ?? state.selectedRosterId.value;
     if (!rosterId) {
@@ -547,6 +588,7 @@ export function createClassroomPlannerWorkspaceFlow(
     openSeatingHistoryDraft,
     deleteGroupingHistoryDraft,
     deleteSeatingHistoryDraft,
+    prepareOverviewDistributionScope,
     selectPlannerWorkspaceMode,
     dismissWorkspaceNotice,
   };

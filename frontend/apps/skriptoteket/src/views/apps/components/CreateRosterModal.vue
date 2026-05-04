@@ -11,6 +11,7 @@
 import { computed, ref, watch } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import { IconTrash } from "../../../components/icons";
 import type { AmbiguousRow } from "../useClassListImportFlow";
 import { useClassListImportFlow } from "../useClassListImportFlow";
 import type { Roster, Student } from "../classroomPlannerTypes";
@@ -507,28 +508,33 @@ function closeModal(): void {
             <button
               v-if="isEditing"
               type="button"
-              class="btn-ghost planner-btn-danger"
+              class="btn-ghost planner-btn-danger planner-modal-footer-button inline-flex items-center gap-2"
               :disabled="isDeleting"
               @click="removeRoster"
             >
-              {{ isDeleting ? "Raderar..." : "Radera klasslista" }}
+              <IconTrash
+                v-if="!isDeleting"
+                :size="14"
+                aria-hidden="true"
+              />
+              {{ isDeleting ? "Raderar..." : "Radera" }}
             </button>
           </div>
           <div class="flex flex-wrap justify-end gap-3">
             <button
               type="button"
-              class="btn-ghost planner-btn-ghost-canvas"
+              class="btn-ghost planner-btn-ghost-canvas planner-modal-footer-button"
               @click="closeModal"
             >
               Avbryt
             </button>
             <button
               type="button"
-              class="btn-primary"
+              class="btn-primary planner-modal-footer-button"
               :disabled="!isValid || isSubmitting"
               @click="submit"
             >
-              {{ isSubmitting ? "Sparar..." : isEditing ? "Spara ändringar" : "Skapa klasslista" }}
+              {{ isSubmitting ? "Sparar..." : isEditing ? "Spara" : "Skapa klasslista" }}
             </button>
           </div>
         </div>

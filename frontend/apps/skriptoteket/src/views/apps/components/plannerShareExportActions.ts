@@ -25,3 +25,11 @@ export type PlannerExportShareOption = {
 };
 
 export type PlannerExportOption = PlannerExportFileOption | PlannerExportShareOption;
+
+export type PlannerShareExportScopeOption = {
+  value: string;
+  label: string;
+  meta?: string | null;
+  disabled?: boolean;
+  disabledReason?: string | null;
+};

@@ -8,7 +8,7 @@
  * between the toolbar and the seating canvas.
  */
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
@@ -31,6 +31,7 @@ const {
 }>();
 
 const plannerState = useClassroomState();
+const phoneStudentSheetOpen = ref(false);
 
 const isSeatWorkspaceWithoutTemplate = computed(() => plannerState.template === null);
 const seatingRoomGrid = computed(() => normalizeRoomGrid(plannerState.template));
@@ -80,6 +81,10 @@ function onDragOver(event: DragEvent): void {
     event.dataTransfer.dropEffect = "move";
   }
 }
+
+function togglePhoneStudentSheet(): void {
+  phoneStudentSheetOpen.value = !phoneStudentSheetOpen.value;
+}
 </script>
 
 <template>
@@ -101,6 +106,59 @@ function onDragOver(event: DragEvent): void {
         >
           Försök igen
         </button>
+      </div>
+    </div>
+
+    <div
+      class="planner-phone-seating-workspace"
+      data-test="phone-seating-workspace"
+    >
+      <RoomCanvas
+        v-if="!isSeatWorkspaceWithoutTemplate"
+        compact
+        data-test="phone-seating-workspace-canvas"
+        :scale-percent="seatingCanvasScalePercent"
+        :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+        :surface-scale="seatingCanvasScale"
+        @viewport-size="setSeatingCanvasViewportSize"
+        @zoom-fit="resetSeatingCanvasZoom"
+        @zoom-in="zoomInSeatingCanvas"
+        @zoom-out="zoomOutSeatingCanvas"
+      />
+      <div
+        v-else
+        class="border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-sm leading-relaxed text-navy/70"
+      >
+        Välj ett klassrum ovan för att börja placera sittplatser.
+      </div>
+
+      <button
+        type="button"
+        class="planner-phone-row-action"
+        data-test="phone-seating-show-students"
+        :aria-expanded="phoneStudentSheetOpen"
+        @click="togglePhoneStudentSheet"
+      >
+        <span>Visa elever</span>
+        <span class="text-xs text-navy/55">({{ plannerState.unseatedStudents.length }})</span>
+      </button>
+
+      <div
+        v-if="phoneStudentSheetOpen"
+        class="planner-phone-subordinate-surface"
+        data-test="phone-seating-student-sheet"
+      >
+        <PlannerStudentPool
+          title="Ej placerade"
+          :students="plannerState.unseatedStudents"
+          :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+          empty-label="Alla elever har fått plats"
+          root-test-id="phone-seating-student-pool"
+          @student-dragstart="onStudentDragStart($event.event, $event.studentId)"
+          @pool-dragover="onDragOver"
+          @pool-drop="onDropToPool"
+        />
       </div>
     </div>
 

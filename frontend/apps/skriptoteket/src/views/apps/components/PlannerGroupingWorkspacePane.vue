@@ -9,24 +9,46 @@
  * work area.
  */
 
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
+import type { DraftGroup } from "../classroomPlannerTypes";
 import {
   PLANNER_GROUPING_BOARD_LANE_CLASS,
   PLANNER_GROUPING_LAYOUT_ROW_CLASS,
   PLANNER_GROUPING_STUDENT_POOL_LANE_CLASS,
 } from "../plannerWorkspaceLayout";
 import GroupBoard from "./GroupBoard.vue";
+import GroupCard from "./GroupCard.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import { useClassroomState } from "../useClassroomState";
 
 const state = useClassroomState();
+const mobileActiveSurface = ref<string>("ungrouped");
 const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
   return buildSmartRuleMarkersByStudentId(
     state.seatingPreferences,
     state.relationshipRules,
   );
+});
+const orderedGroups = computed(() => [...state.groups].sort((left, right) => left.sort_order - right.sort_order));
+const mobileActiveGroup = computed<DraftGroup | null>(() => {
+  return orderedGroups.value.find((group) => group.id === mobileActiveSurface.value) ?? orderedGroups.value[0] ?? null;
+});
+const mobileActiveGroupIndex = computed(() => {
+  if (!mobileActiveGroup.value) {
+    return -1;
+  }
+  return orderedGroups.value.findIndex((group) => group.id === mobileActiveGroup.value?.id);
+});
+
+watch(orderedGroups, (groups) => {
+  if (mobileActiveSurface.value === "ungrouped") {
+    return;
+  }
+  if (!groups.some((group) => group.id === mobileActiveSurface.value)) {
+    mobileActiveSurface.value = groups[0]?.id ?? "ungrouped";
+  }
 });
 
 function onDragStart(event: DragEvent, studentId: string): void {
@@ -59,6 +81,10 @@ function onDragOver(event: DragEvent): void {
     event.dataTransfer.dropEffect = "move";
   }
 }
+
+function selectMobileSurface(surface: string): void {
+  mobileActiveSurface.value = surface;
+}
 </script>
 
 <template>
@@ -81,6 +107,71 @@ function onDragOver(event: DragEvent): void {
           Försök igen
         </button>
       </div>
+    </div>
+
+    <div
+      class="planner-phone-grouping-workspace"
+      data-test="phone-grouping-workspace"
+    >
+      <div class="planner-phone-workspace-strip">
+        <span>{{ state.groups.length }} grupper</span>
+        <span class="text-navy/55">{{ state.ungroupedStudents.length }} ej grupperade</span>
+      </div>
+
+      <div
+        class="planner-phone-tab-strip"
+        aria-label="Välj gruppyta"
+      >
+        <button
+          type="button"
+          class="planner-phone-tab"
+          :class="mobileActiveSurface === 'ungrouped' ? 'planner-phone-tab-active' : ''"
+          data-test="phone-grouping-tab-ungrouped"
+          @click="selectMobileSurface('ungrouped')"
+        >
+          Ej grupperade
+        </button>
+        <button
+          v-for="group in orderedGroups"
+          :key="group.id"
+          type="button"
+          class="planner-phone-tab"
+          :class="mobileActiveSurface === group.id ? 'planner-phone-tab-active' : ''"
+          :data-test="`phone-grouping-tab-${group.id}`"
+          @click="selectMobileSurface(group.id)"
+        >
+          {{ group.name }}
+        </button>
+      </div>
+
+      <PlannerStudentPool
+        v-if="mobileActiveSurface === 'ungrouped'"
+        title="Ej grupperade"
+        :students="state.ungroupedStudents"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+        :disabled="state.isWorkspaceBusy"
+        empty-label="Alla elever ligger i grupp"
+        root-test-id="phone-grouping-student-pool"
+        @student-dragstart="onDragStart($event.event, $event.studentId)"
+        @pool-dragover="onDragOver"
+        @pool-drop="onDropToPool"
+      />
+
+      <GroupCard
+        v-else-if="mobileActiveGroup"
+        :group="mobileActiveGroup"
+        :students="state.studentsByGroupId[mobileActiveGroup.id] ?? []"
+        :can-move-up="mobileActiveGroupIndex > 0"
+        :can-move-down="mobileActiveGroupIndex >= 0 && mobileActiveGroupIndex < orderedGroups.length - 1"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+        :disabled="state.isWorkspaceBusy"
+        data-test="phone-grouping-active-card"
+        @student-dropped="state.assignStudentToGroup"
+        @student-removed="state.removeStudentFromGroup"
+        @group-renamed="state.renameGroup"
+        @group-moved="state.moveGroup"
+        @group-removed="state.removeGroup"
+      />
     </div>
 
     <div

@@ -141,6 +141,75 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.emitted("delete-current-template")).toEqual([[]]);
   });
 
+  it("renders the phone overview as compact rows with subordinate management actions", async () => {
+    const wrapper = mountWorkspace();
+
+    const phoneDashboard = wrapper.get('[data-test="planner-phone-overview-dashboard"]');
+    expect(phoneDashboard.text()).toContain("Klasslista");
+    expect(phoneDashboard.text()).toContain("Klassrum");
+    expect(phoneDashboard.text()).toContain("Dela");
+    expect(wrapper.get('[data-test="phone-overview-share-export-row"]').text()).toContain("Länk + filer");
+    expect(wrapper.get('[data-test="phone-overview-share-export-row"]').find("svg").exists()).toBe(true);
+
+    await wrapper.get("[data-test='phone-overview-roster-select']").setValue("roster-2");
+    await wrapper.get("[data-test='phone-overview-template-select']").setValue("template-2");
+    await wrapper.get("[data-test='phone-overview-edit-roster']").trigger("click");
+    await wrapper.get("[data-test='phone-overview-create-roster']").trigger("click");
+    await wrapper.get("[data-test='phone-overview-delete-roster']").trigger("click");
+    expect(wrapper.get("[data-test='phone-overview-edit-roster']").text()).toContain("Ändra");
+    expect(wrapper.get("[data-test='phone-overview-edit-roster']").find("svg").exists()).toBe(true);
+    expect(wrapper.get("[data-test='phone-overview-edit-template']").text()).toContain("Ändra");
+    expect(wrapper.get("[data-test='phone-overview-edit-template']").find("svg").exists()).toBe(true);
+
+    expect(wrapper.find("[data-test='phone-overview-template-row']").exists()).toBe(false);
+
+    await wrapper.get("[data-test='phone-overview-edit-template']").trigger("click");
+    await wrapper.get("[data-test='phone-overview-create-template']").trigger("click");
+    await wrapper.get("[data-test='phone-overview-delete-template']").trigger("click");
+
+    expect(wrapper.emitted("select-roster")).toContainEqual(["roster-2"]);
+    expect(wrapper.emitted("select-template")).toContainEqual(["template-2"]);
+    expect(wrapper.emitted("edit-roster")).toEqual([[]]);
+    expect(wrapper.emitted("create-roster")).toEqual([[]]);
+    expect(wrapper.emitted("delete-current-roster")).toEqual([[]]);
+    expect(wrapper.emitted("edit-current-template")).toEqual([[buildTemplates()[0]]]);
+    expect(wrapper.emitted("create-template")).toEqual([[]]);
+    expect(wrapper.emitted("delete-current-template")).toEqual([[]]);
+  });
+
+  it("opens the phone Dela affordance in place with grouping and seating scopes", async () => {
+    const wrapper = mountWorkspace();
+
+    await wrapper.get("[data-test='phone-overview-share-export-row']").trigger("click");
+
+    expect(wrapper.find("[data-test='phone-overview-share-export-panel']").exists()).toBe(true);
+    expect(wrapper.get("[data-test='planner-share-export-scope-grouping']").text()).toContain("Gruppindelning");
+    expect(wrapper.get("[data-test='planner-share-export-scope-seating']").text()).toContain("Sittschema");
+    expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["seating"]]);
+    expect(wrapper.emitted("open-seating")).toBeUndefined();
+    expect(wrapper.emitted("open-grouping")).toBeUndefined();
+
+    await wrapper.get("[data-test='planner-share-export-scope-grouping']").trigger("click");
+    expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["seating"], ["grouping"]]);
+
+    await wrapper.get("[data-test='phone-overview-share-create-mobile']").trigger("click");
+    await wrapper.get("[data-test='phone-overview-export-option-xlsx']").trigger("click");
+    expect(wrapper.emitted("share-overview-grouping-link")).toEqual([[]]);
+    expect(wrapper.emitted("export-overview-grouping-default")).toEqual([[]]);
+  });
+
+  it("keeps seating share disabled in overview until a classroom is selected", async () => {
+    const wrapper = mountWorkspace({
+      selectedTemplateId: null,
+    });
+
+    await wrapper.get("[data-test='phone-overview-share-export-row']").trigger("click");
+
+    expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["grouping"]]);
+    expect(wrapper.get("[data-test='planner-share-export-scope-seating']").attributes("disabled"))
+      .toBeDefined();
+  });
+
   it("uses the top selector as direct task entry and carries the selected classroom only for seating", async () => {
     const wrapper = mountWorkspace({
       selectedTemplateId: "template-2",
@@ -308,6 +377,13 @@ describe("PlannerClassWorkspace", () => {
     const preview = wrapper.get("[data-test='overview-roster-preview']");
     expect(preview.text()).toContain("Elev01 Andersson");
     expect(preview.text()).toContain("...");
+
+    const phonePreview = wrapper.get("[data-test='phone-overview-roster-preview']");
+    expect(phonePreview.text()).toContain("Elev01 Andersson");
+    expect(phonePreview.text()).not.toContain("Elev11 Andersson");
+    expect(wrapper.get("[data-test='phone-overview-roster-preview-more']").text()).toBe(
+      "... 30 till",
+    );
   });
 
   it("accepts public capability overrides without changing the shared shell layout", () => {
