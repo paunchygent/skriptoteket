@@ -257,7 +257,7 @@ onUnmounted(() => {
             v-for="option in scopeOptions"
             :key="option.value"
             type="button"
-            class="grid min-h-10 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border px-2.5 text-left text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            class="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border px-2.5 text-left text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             :class="option.value === scopeValue ? 'border-navy/35 bg-canvas' : 'border-navy/20 bg-white hover:border-navy/35 hover:bg-canvas/70'"
             :disabled="option.disabled"
             :title="option.disabledReason ?? undefined"
@@ -276,13 +276,6 @@ onUnmounted(() => {
             />
             <span class="truncate text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)]">
               {{ option.label }}
-            </span>
-            <span
-              v-if="option.meta"
-              class="truncate text-[10px] font-semibold leading-none"
-              :class="option.value === scopeValue ? 'text-navy/60' : 'text-navy/50'"
-            >
-              {{ option.meta }}
             </span>
           </button>
         </div>

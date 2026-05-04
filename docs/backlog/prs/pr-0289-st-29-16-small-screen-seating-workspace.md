@@ -2,7 +2,7 @@
 type: pr
 id: PR-0289
 title: "ST-29-16 small-screen seating workspace"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-04
 updated: 2026-05-04
@@ -204,6 +204,30 @@ through compact subordinate surfaces.
   - `tablet`: `768x1024`, reduced companion behavior without desktop bleed
   - `laptop`: `1366x768`, existing desktop split workspace still present
   - `desktop`: `1440x900`, existing desktop split workspace still present
+
+## Implementation Closeout
+
+Implemented and verified on 2026-05-04 as the small-screen seating workspace
+slice.
+
+Key outcomes:
+
+- Phone/tablet render a map-first seating body with a compact `Elever` toggle
+  above the room map rather than an unreachable low row below the canvas.
+- Opening `Elever` reveals a bounded student tray while keeping the map
+  available below; the tray is captured in browser proof.
+- The compact room canvas now ignores hidden zero-size canvas measurements so
+  the visible phone map keeps its fit-to-view scale instead of snapping back to
+  `100%`.
+- The shared toolbar no longer pushes the small-screen page wider than the
+  viewport.
+
+Verification:
+
+- `pdm run fe-test -- --run PlannerSeatingWorkspacePane RoomCanvas`
+- `pdm run fe-test -- --run PlannerTopPanel PlannerClassWorkspace PlannerGroupingWorkspacePane PlannerSeatingWorkspacePane PlannerRulesWorkspacePane RoomCanvas PlannerShareExportPanel`
+- Signed local HuleEdu browser proof:
+  `st-29-small-screen-remaining-proof: ok artifacts=.artifacts/st-29-small-screen-remaining-workspaces`
 
 ## Rollback Plan
 

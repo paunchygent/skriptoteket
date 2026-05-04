@@ -8,7 +8,7 @@
  * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import {
   IconAdjustments,
@@ -99,8 +99,18 @@ const state = useClassroomState();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
+const phoneOverflowContributionIds = ref<string[]>([]);
 const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
 const groupCount = computed(() => state.groups.length);
+let phoneToolbarQuery: MediaQueryList | null = null;
+
+function syncPhoneOverflowContributions(matches: boolean): void {
+  phoneOverflowContributionIds.value = matches ? ["smart"] : [];
+}
+
+function handlePhoneToolbarQueryChange(event: MediaQueryListEvent): void {
+  syncPhoneOverflowContributions(event.matches);
+}
 const selectedRosterValue = computed(() => {
   return props.selectedRosterId ?? props.availableRosters[0]?.id ?? "";
 });
@@ -129,6 +139,7 @@ const {
   thresholds,
 } = usePlannerToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
+  alwaysOverflowContributionIds: phoneOverflowContributionIds,
   contributions: [
     {
       id: "undo-redo",
@@ -151,6 +162,20 @@ const {
       selector: '[data-overflow-contribution="smart"]',
     },
   ],
+});
+
+onMounted(() => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return;
+  }
+  phoneToolbarQuery = window.matchMedia("(max-width: 640px)");
+  syncPhoneOverflowContributions(phoneToolbarQuery.matches);
+  phoneToolbarQuery.addEventListener("change", handlePhoneToolbarQueryChange);
+});
+
+onBeforeUnmount(() => {
+  phoneToolbarQuery?.removeEventListener("change", handlePhoneToolbarQueryChange);
+  phoneToolbarQuery = null;
 });
 const overflowActionItems = computed(() => {
   const items = [];

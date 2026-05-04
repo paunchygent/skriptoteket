@@ -25,7 +25,7 @@ import {
   resolvePlannerWorkspaceDisabledReasons,
 } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
-import { IconEdit } from "../../../components/icons";
+import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import PlannerPhoneOverviewShareExportRow from "./PlannerPhoneOverviewShareExportRow.vue";
 import PlannerRosterOverviewPanel from "./PlannerRosterOverviewPanel.vue";
 import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
@@ -321,6 +321,7 @@ function selectPhoneTemplate(event: Event): void {
               :disabled="Boolean(overviewCapabilities?.roster_actions?.create_disabled_reason)"
               @click="emit('create-roster')"
             >
+              <IconPlus :size="14" />
               Ny
             </button>
             <button
@@ -330,6 +331,7 @@ function selectPhoneTemplate(event: Event): void {
               :disabled="Boolean(overviewCapabilities?.roster_actions?.delete_disabled_reason)"
               @click="emit('delete-current-roster')"
             >
+              <IconTrash :size="14" />
               Radera
             </button>
           </div>
@@ -387,6 +389,7 @@ function selectPhoneTemplate(event: Event): void {
               :disabled="Boolean(overviewCapabilities?.template_actions?.create_disabled_reason)"
               @click="emit('create-template')"
             >
+              <IconPlus :size="14" />
               Ny
             </button>
             <button
@@ -397,6 +400,7 @@ function selectPhoneTemplate(event: Event): void {
               :disabled="Boolean(overviewCapabilities?.template_actions?.delete_disabled_reason)"
               @click="emit('delete-current-template')"
             >
+              <IconTrash :size="14" />
               Radera
             </button>
           </div>

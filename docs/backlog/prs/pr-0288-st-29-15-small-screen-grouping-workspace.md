@@ -2,7 +2,7 @@
 type: pr
 id: PR-0288
 title: "ST-29-15 small-screen grouping workspace"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-04
 updated: 2026-05-04
@@ -173,6 +173,26 @@ grouping surface wins; secondary student/group context remains reachable.
   - `tablet`: `768x1024`, reduced companion behavior without desktop bleed
   - `laptop`: `1366x768`, existing desktop split workspace still present
   - `desktop`: `1440x900`, existing desktop split workspace still present
+
+## Implementation Closeout
+
+Implemented and verified on 2026-05-04 as the small-screen grouping workspace
+slice.
+
+Key outcomes:
+
+- Phone/tablet render a reduced grouping body with compact group counts,
+  horizontal group tabs, and one active student/group surface at a time.
+- The existing desktop grouping split remains the full-composition layout at
+  laptop/desktop widths.
+- Toolbar actions remain compact and the shared action bar is width-bounded on
+  small screens so it does not force page-level horizontal overflow.
+
+Verification:
+
+- `pdm run fe-test -- --run PlannerTopPanel PlannerClassWorkspace PlannerGroupingWorkspacePane PlannerSeatingWorkspacePane PlannerRulesWorkspacePane RoomCanvas PlannerShareExportPanel`
+- Signed local HuleEdu browser proof:
+  `st-29-small-screen-remaining-proof: ok artifacts=.artifacts/st-29-small-screen-remaining-workspaces`
 
 ## Rollback Plan
 

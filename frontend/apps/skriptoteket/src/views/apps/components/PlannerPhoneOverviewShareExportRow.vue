@@ -76,7 +76,6 @@ const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
       : [{
         value: "grouping",
         label: "Gruppindelning",
-        meta: "Länk, PDF, Excel",
       }]
   ),
   ...(
@@ -85,7 +84,6 @@ const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
       : [{
         value: "seating",
         label: "Sittschema",
-        meta: "Länk, PDF, Excel",
         disabled: !props.hasTemplate,
         disabledReason: props.hasTemplate ? null : "Välj ett klassrum först.",
       }]

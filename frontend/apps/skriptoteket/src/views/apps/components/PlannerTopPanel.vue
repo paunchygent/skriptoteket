@@ -8,14 +8,15 @@
  * between modes.
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, type Component } from "vue";
 
 import {
+  IconArmchair,
   IconCheck,
+  IconClipboardList,
   IconMoreVertical,
-  IconPresentation,
-  IconSchool,
   IconSettings,
+  IconUsersRound,
   IconX,
 } from "../../../components/icons";
 import UiSegmentedToggle, {
@@ -106,22 +107,22 @@ const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => {
 const modeMetadata: Record<WorkspaceMode, {
   label: string;
   subtitle: string;
-  icon: typeof IconPresentation;
+  icon: Component;
 }> = {
   overview: {
     label: "Översikt",
     subtitle: "Snabböversikt",
-    icon: IconPresentation,
+    icon: IconClipboardList,
   },
   grouping: {
     label: "Grupper",
     subtitle: "Gruppindelning",
-    icon: IconSchool,
+    icon: IconUsersRound,
   },
   seating: {
     label: "Sittplatser",
     subtitle: "Klassrumskarta",
-    icon: IconPresentation,
+    icon: IconArmchair,
   },
   rules: {
     label: "Regler",
@@ -144,11 +145,11 @@ const activeModeLabel = computed(() => {
 const statusToneClass = computed(() => {
   switch (props.statusTone) {
     case "success":
-      return "border-emerald-300/80 bg-emerald-50 text-emerald-800";
+      return "border-success/45 bg-success/10 text-success";
     case "warning":
-      return "border-amber-300/80 bg-amber-50 text-amber-800";
+      return "border-warning/50 bg-warning/15 text-navy";
     case "danger":
-      return "border-rose-300/80 bg-rose-50 text-rose-800";
+      return "border-error/40 bg-error/10 text-error";
     default:
       return "border-navy/15 bg-canvas text-navy/70";
   }
@@ -157,11 +158,11 @@ const statusToneClass = computed(() => {
 const statusDotClass = computed(() => {
   switch (props.statusTone) {
     case "success":
-      return "bg-emerald-600";
+      return "bg-success";
     case "warning":
-      return "bg-amber-500";
+      return "bg-warning";
     case "danger":
-      return "bg-rose-600";
+      return "bg-error";
     default:
       return "bg-navy/35";
   }
@@ -190,7 +191,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
   return {
     label: option.label,
     subtitle: option.title ?? "",
-    icon: IconPresentation,
+    icon: IconClipboardList,
   };
 }
 </script>

@@ -2,7 +2,7 @@
 type: story
 id: ST-29-17
 title: "Klassrumskartan small-screen rules redesign"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-30
 updated: 2026-05-04

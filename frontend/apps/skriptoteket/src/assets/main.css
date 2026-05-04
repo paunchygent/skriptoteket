@@ -751,6 +751,29 @@ body.app-shell-game-mode::before {
   z-index: 20;
 }
 
+.planner-workspace-action-bar {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: visible;
+  overflow-y: visible;
+}
+
+.planner-workspace-action-bar [data-zone="primary"] {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.planner-workspace-action-bar [data-zone="context"],
+.planner-workspace-action-bar [data-zone="secondary"] {
+  min-width: 0;
+}
+
+.planner-workspace-action-bar [data-zone="secondary"] {
+  flex: 0 0 auto;
+}
+
 .planner-workspace-pane-shell {
   min-height: 0;
 }
@@ -944,6 +967,37 @@ body.app-shell-game-mode::before {
   font-weight: 700;
 }
 
+.planner-phone-seating-student-toggle {
+  display: flex;
+  min-height: 2.5rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-3);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: white;
+  padding: 0 var(--huleedu-space-3);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-seating-student-tray {
+  max-height: min(34vh, 18rem);
+  min-height: 0;
+  overflow: hidden;
+  border: var(--huleedu-border-width) solid rgb(28 46 74 / 0.22);
+  background-color: white;
+  padding: var(--huleedu-space-2);
+}
+
+.planner-phone-seating-student-tray .planner-student-pool-surface {
+  max-height: calc(min(34vh, 18rem) - var(--huleedu-space-4));
+  min-height: 0;
+  box-shadow: none;
+}
+
 .planner-phone-workspace-strip,
 .planner-phone-status-row {
   display: flex;
@@ -985,6 +1039,10 @@ body.app-shell-game-mode::before {
 
 .planner-room-canvas-compact {
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  padding: var(--huleedu-space-2);
 }
 
 .planner-room-canvas-compact-toolbar {
@@ -993,8 +1051,16 @@ body.app-shell-game-mode::before {
 }
 
 .planner-room-canvas-compact-viewport {
-  min-height: min(56vh, 30rem);
-  max-height: 58vh;
+  min-height: min(46vh, 22rem);
+  max-height: 46vh;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: var(--huleedu-space-2);
+}
+
+.planner-room-canvas-compact-surface-shell {
+  padding: var(--huleedu-space-2);
 }
 
 .planner-phone-rule-row {
@@ -1008,7 +1074,31 @@ body.app-shell-game-mode::before {
 
 .planner-phone-rule-row-active {
   border-color: var(--huleedu-navy);
-  background-color: var(--huleedu-canvas);
+  background-color: var(--huleedu-navy);
+  color: var(--huleedu-canvas);
+  box-shadow: inset 0 0 0 2px var(--huleedu-canvas);
+}
+
+.planner-phone-rules-selection {
+  position: sticky;
+  top: var(--huleedu-space-2);
+  z-index: 8;
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+.planner-phone-rules-student-tray {
+  max-height: min(46vh, 24rem);
+  min-height: 0;
+  overflow: hidden;
+  border: var(--huleedu-border-width) solid rgb(28 46 74 / 0.22);
+  background-color: white;
+  padding: var(--huleedu-space-2);
+}
+
+.planner-phone-rules-student-tray .planner-student-pool-surface {
+  max-height: calc(min(46vh, 24rem) - var(--huleedu-space-4));
+  min-height: 0;
+  box-shadow: none;
 }
 
 .planner-phone-selected-student-row {
@@ -1052,6 +1142,10 @@ body.app-shell-game-mode::before {
 }
 
 @media (min-width: 1024px) {
+  .planner-workspace-action-bar {
+    overflow: visible;
+  }
+
   .planner-desktop-mode-switch,
   .planner-desktop-overview-grid,
   .planner-desktop-rules-workspace {

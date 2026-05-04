@@ -9,7 +9,7 @@
 
 import { computed, type CSSProperties } from "vue";
 
-import { IconSettings } from "../../../components/icons";
+import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
@@ -176,6 +176,7 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         :title="createDisabledReason ?? undefined"
         @click="emit('create-template')"
       >
+        <IconPlus :size="14" />
         Nytt klassrum
       </button>
       <button
@@ -186,7 +187,7 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         data-test="overview-edit-template"
         @click="emit('edit-current-template', selectedTemplate ?? undefined)"
       >
-        <IconSettings :size="14" />
+        <IconEdit :size="14" />
         Redigera
       </button>
       <button
@@ -197,7 +198,8 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         data-test="overview-delete-template"
         @click="emit('delete-current-template')"
       >
-        Ta bort klassrum
+        <IconTrash :size="14" />
+        Radera
       </button>
     </div>
   </article>

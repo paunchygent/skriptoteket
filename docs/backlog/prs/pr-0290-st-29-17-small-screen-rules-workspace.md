@@ -2,7 +2,7 @@
 type: pr
 id: PR-0290
 title: "ST-29-17 small-screen rules workspace"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-04
 updated: 2026-05-04
@@ -188,6 +188,31 @@ editing remain reachable through subordinate reduced surfaces.
   - `tablet`: `768x1024`, reduced companion behavior without desktop bleed
   - `laptop`: `1366x768`, existing desktop rules workspace still present
   - `desktop`: `1440x900`, existing desktop rules workspace still present
+
+## Implementation Closeout
+
+Implemented and verified on 2026-05-04 as the small-screen rules workspace
+slice.
+
+Key outcomes:
+
+- Phone/tablet render compact rule-authoring rows for `Nära läraren`,
+  `Håll isär`, and `Håll nära` with a strong active state and canonical
+  Lucide-backed symbols.
+- Phone rules opens with `Nära läraren` as the usable default target, keeps the
+  student list open by default, and uses a sticky selected-students drop/select
+  area so scrolling the list does not move the target away.
+- The default phone body avoids the squeezed desktop map; detailed map
+  projection remains part of the desktop/full-composition rules surface.
+- Desktop rules rail/map/inspector composition remains intact at
+  laptop/desktop widths.
+
+Verification:
+
+- `pdm run fe-test -- --run PlannerTopPanel PlannerClassWorkspace PlannerGroupingWorkspacePane PlannerSeatingWorkspacePane PlannerRulesWorkspacePane RoomCanvas PlannerShareExportPanel`
+- `pdm run fe-test -- --run PlannerTopPanel PlannerClassWorkspace PlannerWorkspaceActionBar PlannerSeatingWorkspaceToolbar.overflow PlannerGroupingWorkspaceToolbar.overflow PlannerRulesWorkspacePane PlannerSeatingWorkspacePane.smart-rules`
+- Signed local HuleEdu browser proof:
+  `st-29-small-screen-remaining-proof: ok artifacts=.artifacts/st-29-small-screen-remaining-workspaces`
 
 ## Rollback Plan
 

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0284
 title: "ST-29-13 small-screen mode sheet shell"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-03
-updated: 2026-05-03
+updated: 2026-05-04
 stories:
   - "ST-29-13"
 tags: ["frontend", "ux", "design-system", "klassrumskartan", "small-screen"]
@@ -152,6 +152,26 @@ the live workspace.
   - `tablet`: `768x1024`, reduced companion behavior without desktop bleed
   - `laptop`: `1366x768`, existing desktop selector still present
   - `desktop`: `1440x900`, existing desktop selector still present
+
+## Implementation Closeout
+
+Implemented and verified on 2026-05-04 as the shared small-screen shell slice.
+
+Key outcomes:
+
+- Phone/tablet render a compact active-mode control plus `Lägen`; the four-way
+  segmented selector is retained only at full desktop composition widths.
+- `Lägen` opens a bottom sheet with icon-supported rows for `Översikt`,
+  `Grupper`, `Sittplatser`, and `Regler`, including current-state and
+  disabled-state handling through the existing mode update path.
+- The shell uses Hule design tokens rather than mockup-specific colors or
+  Tailwind default palette classes.
+
+Verification:
+
+- `pdm run fe-test -- --run PlannerTopPanel PlannerClassWorkspace PlannerGroupingWorkspacePane PlannerSeatingWorkspacePane PlannerRulesWorkspacePane RoomCanvas PlannerShareExportPanel`
+- Signed local HuleEdu browser proof:
+  `st-29-small-screen-remaining-proof: ok artifacts=.artifacts/st-29-small-screen-remaining-workspaces`
 
 ## Rollback Plan
 

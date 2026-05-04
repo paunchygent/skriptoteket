@@ -92,9 +92,17 @@ function syncViewportSize(): void {
 }
 
 let canvasViewportObserver: ResizeObserver | null = null;
+let deferredViewportSyncFrame: number | null = null;
+let deferredViewportSyncTimer: number | null = null;
 
 onMounted(() => {
   syncViewportSize();
+  deferredViewportSyncFrame = window.requestAnimationFrame(() => {
+    syncViewportSize();
+  });
+  deferredViewportSyncTimer = window.setTimeout(() => {
+    syncViewportSize();
+  }, 80);
   if (typeof ResizeObserver === "undefined") {
     return;
   }
@@ -109,6 +117,14 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  if (deferredViewportSyncFrame !== null) {
+    window.cancelAnimationFrame(deferredViewportSyncFrame);
+    deferredViewportSyncFrame = null;
+  }
+  if (deferredViewportSyncTimer !== null) {
+    window.clearTimeout(deferredViewportSyncTimer);
+    deferredViewportSyncTimer = null;
+  }
   canvasViewportObserver?.disconnect();
   canvasViewportObserver = null;
 });
@@ -181,7 +197,8 @@ onBeforeUnmount(() => {
         :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
       >
         <div
-          class="shrink-0 px-6 py-6"
+          class="shrink-0"
+          :class="props.compact ? 'planner-room-canvas-compact-surface-shell' : 'px-6 py-6'"
           data-test="room-canvas-surface-shell"
         >
           <div

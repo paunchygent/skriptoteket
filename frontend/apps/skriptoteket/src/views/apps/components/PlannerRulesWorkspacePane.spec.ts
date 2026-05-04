@@ -38,6 +38,7 @@ type PlannerStateMock = {
   deleteRelationshipRule: ReturnType<typeof vi.fn>;
   commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
   replaceNearTeacherPreference: ReturnType<typeof vi.fn>;
+  handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -96,6 +97,7 @@ const stateMocks = vi.hoisted(() => ({
     deleteRelationshipRule: vi.fn(),
     commitPendingRelationshipRule: vi.fn(() => true),
     replaceNearTeacherPreference: vi.fn(),
+    handleSeatingSmartToolStudentSelection: vi.fn(() => true),
   }))(),
 }));
 
@@ -142,6 +144,8 @@ describe("PlannerRulesWorkspacePane", () => {
     stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
     stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
     stateMocks.plannerState.replaceNearTeacherPreference.mockReset();
+    stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReset();
+    stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReturnValue(true);
   });
 
   it("defaults to Planeringskarta and lets teachers switch to Sittschema without clearing the active rule selection", async () => {
@@ -271,7 +275,7 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(wrapper.get('[data-test="rules-summary-empty-state"]').classes()).toContain("min-h-full");
   });
 
-  it("renders the phone rules workspace as compact rule rows with map selection subordinate", async () => {
+  it("renders the phone rules workspace with a default-open student list and sticky drop target", async () => {
     const wrapper = mount(PlannerRulesWorkspacePane, {
       global: {
         stubs: {
@@ -288,18 +292,50 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(wrapper.get('[data-test="phone-rules-tool-keep_apart"]').classes()).toContain(
       "planner-phone-rule-row-active",
     );
+    expect(wrapper.get('[data-test="phone-rules-tool-near_teacher"]').html()).toContain(
+      "lucide-graduation-cap",
+    );
+    expect(wrapper.get('[data-test="phone-rules-tool-near_teacher"]').html()).not.toContain(
+      "lucide-school",
+    );
+    expect(wrapper.get('[data-test="phone-rules-selection"]').classes()).toContain(
+      "planner-phone-rules-selection",
+    );
     expect(wrapper.get('[data-test="phone-rules-selected-student"]').text()).toContain(
       "Alan Turing",
     );
+    expect(wrapper.get('[data-test="phone-rules-student-list"]').text()).toContain("Ada Lovelace");
 
     await wrapper.get('[data-test="phone-rules-tool-keep_near"]').trigger("click");
-    await wrapper.get('[data-test="phone-rules-map-selection-trigger"]').trigger("click");
+    await wrapper.get('[data-test="phone-rules-student-pool"]').trigger("drop", {
+      dataTransfer: { getData: () => "student-1", dropEffect: "move" },
+    });
+    await wrapper.get('[data-test="phone-rules-selection"]').trigger("drop", {
+      dataTransfer: { getData: () => "student-1", dropEffect: "move" },
+    });
     await wrapper.get('[data-test="phone-rules-clear-selection"]').trigger("click");
     await wrapper.get('[data-test="phone-rules-commit-rule"]').trigger("click");
 
     expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("keep_near");
-    expect(wrapper.find('[data-test="phone-rules-map-selection"]').exists()).toBe(true);
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith("student-1");
     expect(stateMocks.plannerState.clearPendingRelationshipSelection).toHaveBeenCalledWith();
     expect(stateMocks.plannerState.commitPendingRelationshipRule).toHaveBeenCalledWith();
+  });
+
+  it("starts the phone rules workspace with a usable near-teacher selection target", () => {
+    stateMocks.plannerState.activeSeatingSmartTool = null;
+    stateMocks.plannerState.pendingRelationshipStudentIds = [];
+
+    mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    expect(stateMocks.plannerState.beginNearTeacherEdit).toHaveBeenCalledWith();
   });
 });

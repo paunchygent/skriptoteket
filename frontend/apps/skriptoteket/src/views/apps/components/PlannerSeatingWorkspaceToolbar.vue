@@ -8,7 +8,7 @@
  * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { IconAdjustments, IconHistory, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
 import {
@@ -93,9 +93,19 @@ const plannerState = useClassroomState();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
+const phoneOverflowContributionIds = ref<string[]>([]);
 const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
 const isResetSeatingDialogOpen = ref(false);
+let phoneToolbarQuery: MediaQueryList | null = null;
+
+function syncPhoneOverflowContributions(matches: boolean): void {
+  phoneOverflowContributionIds.value = matches ? ["smart"] : [];
+}
+
+function handlePhoneToolbarQueryChange(event: MediaQueryListEvent): void {
+  syncPhoneOverflowContributions(event.matches);
+}
 
 function isSeatingExportOption(option: PlannerExportOptionValue): option is SeatingExportOption {
   return option === "a3_landscape" || option === "a4_landscape" || option === "xlsx";
@@ -137,6 +147,7 @@ const {
   thresholds,
 } = usePlannerToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
+  alwaysOverflowContributionIds: phoneOverflowContributionIds,
   contributions: [
     {
       id: "undo-redo",
@@ -159,6 +170,20 @@ const {
       selector: '[data-overflow-contribution="smart"]',
     },
   ],
+});
+
+onMounted(() => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return;
+  }
+  phoneToolbarQuery = window.matchMedia("(max-width: 640px)");
+  syncPhoneOverflowContributions(phoneToolbarQuery.matches);
+  phoneToolbarQuery.addEventListener("change", handlePhoneToolbarQueryChange);
+});
+
+onBeforeUnmount(() => {
+  phoneToolbarQuery?.removeEventListener("change", handlePhoneToolbarQueryChange);
+  phoneToolbarQuery = null;
 });
 const overflowActionItems = computed(() => {
   const items = [];

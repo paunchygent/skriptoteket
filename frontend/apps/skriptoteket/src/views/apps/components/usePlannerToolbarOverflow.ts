@@ -32,6 +32,7 @@ type UsePlannerToolbarOverflowOptions = {
   getRootElement: () => HTMLElement | null;
   contributions: PlannerToolbarOverflowContribution[];
   isEnabled?: Ref<boolean>;
+  alwaysOverflowContributionIds?: Ref<string[]>;
 };
 
 function roundUpPx(value: number): number {
@@ -153,6 +154,7 @@ export function usePlannerToolbarOverflow(options: UsePlannerToolbarOverflowOpti
   const thresholds = ref<PlannerToolbarOverflowThresholds>({});
   const fullyVisibleRequiredWidthPx = ref(0);
   const isEnabled = options.isEnabled ?? computed(() => true);
+  const alwaysOverflowContributionIds = options.alwaysOverflowContributionIds ?? computed<string[]>(() => []);
   const contributionOrder = options.contributions.map((contribution) => contribution.id);
 
   let resizeObserver: ResizeObserver | null = null;
@@ -196,10 +198,14 @@ export function usePlannerToolbarOverflow(options: UsePlannerToolbarOverflowOpti
       contributionOrder,
       contributionWidthsPx: nextContributionWidthsPx,
     });
-    hiddenContributionIds.value = resolveOverflowHiddenContributionIds({
+    const measuredHiddenContributionIds = resolveOverflowHiddenContributionIds({
       availableWidthPx: rootElement.clientWidth,
       contributionOrder,
       thresholds: thresholds.value,
+    });
+    const forcedHiddenContributionIds = new Set(alwaysOverflowContributionIds.value);
+    hiddenContributionIds.value = contributionOrder.filter((id) => {
+      return forcedHiddenContributionIds.has(id) || measuredHiddenContributionIds.includes(id);
     });
   }
 
@@ -238,6 +244,10 @@ export function usePlannerToolbarOverflow(options: UsePlannerToolbarOverflowOpti
   );
 
   watch(isEnabled, () => {
+    scheduleMeasurement();
+  });
+
+  watch(alwaysOverflowContributionIds, () => {
     scheduleMeasurement();
   });
 

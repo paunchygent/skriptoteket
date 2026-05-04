@@ -54,6 +54,7 @@ type PlannerStateMock = {
   canUndo: boolean;
   canRedo: boolean;
   activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
+  beginNearTeacherEdit: ReturnType<typeof vi.fn>;
   setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
   clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
   handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
@@ -125,6 +126,9 @@ const stateMocks = vi.hoisted(() => ({
     canUndo: false,
     canRedo: false,
     activeSeatingSmartTool: null,
+    beginNearTeacherEdit: vi.fn(() => {
+      stateMocks.plannerState.activeSeatingSmartTool = "near_teacher";
+    }),
     setActiveSeatingSmartTool: vi.fn(),
     clearPendingRelationshipSelection: vi.fn(),
     handleSeatingSmartToolStudentSelection: vi.fn(() => false),
@@ -292,6 +296,10 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
     stateMocks.plannerState.activeSeatingSmartTool = null;
+    stateMocks.plannerState.beginNearTeacherEdit.mockReset();
+    stateMocks.plannerState.beginNearTeacherEdit.mockImplementation(() => {
+      stateMocks.plannerState.activeSeatingSmartTool = "near_teacher";
+    });
     stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReset();

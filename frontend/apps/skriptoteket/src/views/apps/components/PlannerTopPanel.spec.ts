@@ -67,4 +67,18 @@ describe("PlannerTopPanel", () => {
     expect(wrapper.emitted("update:modeValue")).toEqual([["rules"]]);
     expect(document.body.querySelector('[data-test="planner-phone-mode-sheet"]')).toBeNull();
   });
+
+  it("uses semantic Lucide symbols for phone workspace choices", async () => {
+    const wrapper = mountTopPanel({
+      modeValue: "overview",
+    });
+
+    await wrapper.get('[data-test="planner-phone-mode-sheet-trigger"]').trigger("click");
+
+    const groupingRow = document.body.querySelector('[data-test="planner-phone-mode-sheet-grouping"]');
+    const seatingRow = document.body.querySelector('[data-test="planner-phone-mode-sheet-seating"]');
+    expect(groupingRow?.innerHTML).toContain("lucide-users-round");
+    expect(seatingRow?.innerHTML).toContain("lucide-armchair");
+    expect(seatingRow?.innerHTML).not.toContain("lucide-presentation");
+  });
 });

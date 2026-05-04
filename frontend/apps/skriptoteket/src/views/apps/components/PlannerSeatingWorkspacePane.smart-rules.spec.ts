@@ -184,7 +184,7 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
     );
   });
 
-  it("keeps the phone seating workspace map-first with students in a subordinate sheet", async () => {
+  it("keeps the phone seating workspace map-first with a compact student tray above the map", async () => {
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
@@ -196,11 +196,23 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="phone-seating-workspace"]').text()).toContain("Visa elever");
+    const phoneWorkspace = wrapper.get('[data-test="phone-seating-workspace"]');
+    const toggle = wrapper.get('[data-test="phone-seating-show-students"]');
+    const canvas = wrapper.get('[data-test="phone-seating-workspace-canvas"]');
+
+    expect(phoneWorkspace.text()).toContain("Elever");
+    expect(toggle.text()).toContain("1 ej placerad");
+    expect(toggle.classes()).toContain("planner-phone-seating-student-toggle");
+    expect(toggle.html()).toContain("lucide-users-round");
+    expect(toggle.html()).not.toContain("lucide-school");
+    expect(toggle.element.compareDocumentPosition(canvas.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(wrapper.find('[data-test="phone-seating-student-sheet"]').exists()).toBe(false);
 
-    await wrapper.get('[data-test="phone-seating-show-students"]').trigger("click");
+    await toggle.trigger("click");
 
     expect(wrapper.get('[data-test="phone-seating-student-sheet"]').text()).toContain("Alan Turing");
+    expect(wrapper.get('[data-test="phone-seating-student-sheet"]').classes()).toContain(
+      "planner-phone-seating-student-tray",
+    );
   });
 });

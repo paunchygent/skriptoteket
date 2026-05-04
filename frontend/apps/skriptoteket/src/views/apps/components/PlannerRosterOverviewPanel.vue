@@ -7,7 +7,7 @@
  * workspace-level state and modal orchestration.
  */
 
-import { IconSettings } from "../../../components/icons";
+import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import type { Roster } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -128,6 +128,7 @@ function selectRoster(event: Event): void {
         :title="createDisabledReason ?? undefined"
         @click="emit('create-roster')"
       >
+        <IconPlus :size="14" />
         Ny klasslista
       </button>
       <button
@@ -138,7 +139,7 @@ function selectRoster(event: Event): void {
         data-test="overview-edit-roster"
         @click="emit('edit-roster')"
       >
-        <IconSettings :size="14" />
+        <IconEdit :size="14" />
         Redigera
       </button>
       <button
@@ -149,7 +150,8 @@ function selectRoster(event: Event): void {
         data-test="overview-delete-roster"
         @click="emit('delete-current-roster')"
       >
-        Ta bort klasslista
+        <IconTrash :size="14" />
+        Radera
       </button>
     </div>
   </article>

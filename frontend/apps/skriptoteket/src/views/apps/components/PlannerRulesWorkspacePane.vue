@@ -10,10 +10,11 @@
 import { computed, ref, watch } from "vue";
 
 import {
+  IconArrow,
   IconBan,
+  IconGraduationCap,
   IconInfo,
   IconLink2,
-  IconSchool,
   IconX,
 } from "../../../components/icons";
 import type { Student } from "../classroomPlannerTypes";
@@ -22,6 +23,7 @@ import {
 } from "../classroomPlannerSmartRulePresentation";
 import PlannerRulesInspector from "./PlannerRulesInspector.vue";
 import PlannerRulesMapPanel from "./PlannerRulesMapPanel.vue";
+import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerRulesToolRail from "./PlannerRulesToolRail.vue";
 import { useClassroomState } from "../useClassroomState";
 
@@ -39,7 +41,7 @@ const emit = defineEmits<{
 
 const plannerState = useClassroomState();
 const mapView = ref<RulesMapView>("planning_map");
-const phoneMapSelectionOpen = ref(false);
+const phoneStudentListOpen = ref(true);
 
 const nearTeacherStudents = computed<Student[]>(() => {
   return plannerState.seatingPreferences
@@ -64,6 +66,10 @@ const pendingRuleStudents = computed(() => {
     })
     .filter((student): student is { id: string; name: string } => student !== null);
 });
+const phoneStudentCountLabel = computed(() => {
+  const count = plannerState.students.length;
+  return count === 1 ? "1 elev" : `${count} elever`;
+});
 const canShowSeatingArrangement = computed(() => plannerState.seatAssignments.length > 0);
 const seatingArrangementUnavailableMessage = computed(() => {
   if (plannerState.template === null) {
@@ -76,7 +82,7 @@ const phoneToolRows = computed(() => [
     id: "near_teacher" as const,
     label: "Nära läraren",
     subtitle: "Placera elever nära katedern.",
-    icon: IconSchool,
+    icon: IconGraduationCap,
   },
   {
     id: "keep_apart" as const,
@@ -94,11 +100,10 @@ const phoneToolRows = computed(() => [
 
 function selectTool(tool: "near_teacher" | "keep_near" | "keep_apart"): void {
   if (tool === "near_teacher") {
-    if (plannerState.activeSeatingSmartTool === "near_teacher") {
-      plannerState.setActiveSeatingSmartTool("near_teacher");
-      return;
-    }
     plannerState.beginNearTeacherEdit();
+    return;
+  }
+  if (plannerState.activeSeatingSmartTool === tool) {
     return;
   }
   plannerState.setActiveSeatingSmartTool(tool);
@@ -116,9 +121,53 @@ function removePendingRelationshipStudent(studentId: string): void {
   plannerState.handleSeatingSmartToolStudentSelection(studentId);
 }
 
-function togglePhoneMapSelection(): void {
-  phoneMapSelectionOpen.value = !phoneMapSelectionOpen.value;
+function togglePhoneStudentList(): void {
+  phoneStudentListOpen.value = !phoneStudentListOpen.value;
 }
+
+function handlePhoneStudentSelection(studentId: string): void {
+  if (plannerState.activeSeatingSmartTool) {
+    plannerState.handleSeatingSmartToolStudentSelection(studentId);
+    return;
+  }
+  emit("student-selected", studentId);
+}
+
+function onPhoneStudentDragStart(event: DragEvent, studentId: string): void {
+  if (!event.dataTransfer) {
+    return;
+  }
+  event.dataTransfer.setData("studentId", studentId);
+  event.dataTransfer.effectAllowed = "move";
+}
+
+function onPhoneSelectionDragOver(event: DragEvent): void {
+  if (!plannerState.activeSeatingSmartTool) {
+    return;
+  }
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "move";
+  }
+}
+
+function onPhoneSelectionDrop(event: DragEvent): void {
+  event.preventDefault();
+  const studentId = event.dataTransfer?.getData("studentId");
+  if (studentId && plannerState.activeSeatingSmartTool) {
+    plannerState.handleSeatingSmartToolStudentSelection(studentId);
+  }
+}
+
+watch(
+  () => plannerState.canEditSeatingSmartRules,
+  (canEdit) => {
+    if (canEdit && !plannerState.activeSeatingSmartTool) {
+      plannerState.beginNearTeacherEdit();
+    }
+  },
+  { immediate: true },
+);
 
 watch(canShowSeatingArrangement, (nextValue) => {
   if (!nextValue && mapView.value === "seating_arrangement") {
@@ -131,7 +180,7 @@ watch(canShowSeatingArrangement, (nextValue) => {
   <div class="space-y-3">
     <div
       v-if="plannerState.smartRuleHydrationStatus === 'error'"
-      class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
+      class="border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-navy shadow-brutal-sm"
       data-test="rules-smart-hydration-error"
     >
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -179,13 +228,23 @@ watch(canShowSeatingArrangement, (nextValue) => {
           />
           <span class="min-w-0 flex-1">
             <span class="block text-sm font-semibold">{{ tool.label }}</span>
-            <span class="block text-xs text-navy/60">{{ tool.subtitle }}</span>
+            <span
+              class="block text-xs"
+              :class="plannerState.activeSeatingSmartTool === tool.id ? 'text-canvas/75' : 'text-navy/60'"
+            >
+              {{ tool.subtitle }}
+            </span>
           </span>
           <span aria-hidden="true">›</span>
         </button>
       </div>
 
-      <div class="planner-phone-rules-selection">
+      <div
+        class="planner-phone-rules-selection"
+        data-test="phone-rules-selection"
+        @dragover="onPhoneSelectionDragOver"
+        @drop="onPhoneSelectionDrop"
+      >
         <div class="flex items-center justify-between gap-3">
           <h3 class="text-sm font-semibold text-navy">
             Valda elever ({{ pendingRuleStudents.length }})
@@ -225,34 +284,39 @@ watch(canShowSeatingArrangement, (nextValue) => {
 
       <button
         type="button"
-        class="planner-phone-drop-target"
-        data-test="phone-rules-map-selection-trigger"
-        :aria-expanded="phoneMapSelectionOpen"
-        @click="togglePhoneMapSelection"
+        class="planner-phone-row-action"
+        data-test="phone-rules-student-list-trigger"
+        :aria-expanded="phoneStudentListOpen"
+        @click="togglePhoneStudentList"
       >
-        Släpp elever här
-        <span>för att planera relationer</span>
+        <span>Elever</span>
+        <span class="flex shrink-0 items-center gap-2 text-xs text-navy/60">
+          {{ phoneStudentCountLabel }}
+          <IconArrow
+            :size="15"
+            :direction="phoneStudentListOpen ? 'up' : 'down'"
+          />
+        </span>
       </button>
 
       <div
-        v-if="phoneMapSelectionOpen"
-        class="planner-phone-subordinate-surface"
-        data-test="phone-rules-map-selection"
+        v-if="phoneStudentListOpen"
+        class="planner-phone-rules-student-tray"
+        data-test="phone-rules-student-list"
       >
-        <PlannerRulesMapPanel
-          :map-view="mapView"
-          :roster-name="plannerState.roster?.name ?? null"
-          :can-show-seating-arrangement="canShowSeatingArrangement"
-          :seating-arrangement-unavailable-message="seatingArrangementUnavailableMessage"
-          :template="plannerState.template"
+        <PlannerStudentPool
+          title="Elever"
           :students="plannerState.students"
-          :students-by-id="plannerState.studentsById"
-          :seat-assignments="plannerState.seatAssignments"
+          :disabled="!plannerState.activeSeatingSmartTool"
           :selected-student-id="selectedStudentId"
-          :pending-selected-student-ids="plannerState.pendingRelationshipStudentIds"
+          :selected-student-ids="plannerState.pendingRelationshipStudentIds"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-          @update:map-view="mapView = $event"
-          @student-selected="emit('student-selected', $event)"
+          empty-label="Inga elever"
+          root-test-id="phone-rules-student-pool"
+          @student-selected="handlePhoneStudentSelection"
+          @student-dragstart="onPhoneStudentDragStart($event.event, $event.studentId)"
+          @pool-dragover="onPhoneSelectionDragOver"
+          @pool-drop="onPhoneSelectionDrop"
         />
       </div>
 

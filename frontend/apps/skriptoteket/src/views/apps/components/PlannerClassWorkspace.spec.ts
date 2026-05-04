@@ -158,8 +158,12 @@ describe("PlannerClassWorkspace", () => {
     await wrapper.get("[data-test='phone-overview-delete-roster']").trigger("click");
     expect(wrapper.get("[data-test='phone-overview-edit-roster']").text()).toContain("Ändra");
     expect(wrapper.get("[data-test='phone-overview-edit-roster']").find("svg").exists()).toBe(true);
+    expect(wrapper.get("[data-test='phone-overview-create-roster']").find("svg").exists()).toBe(true);
+    expect(wrapper.get("[data-test='phone-overview-delete-roster']").find("svg").exists()).toBe(true);
     expect(wrapper.get("[data-test='phone-overview-edit-template']").text()).toContain("Ändra");
     expect(wrapper.get("[data-test='phone-overview-edit-template']").find("svg").exists()).toBe(true);
+    expect(wrapper.get("[data-test='phone-overview-create-template']").find("svg").exists()).toBe(true);
+    expect(wrapper.get("[data-test='phone-overview-delete-template']").find("svg").exists()).toBe(true);
 
     expect(wrapper.find("[data-test='phone-overview-template-row']").exists()).toBe(false);
 
@@ -185,6 +189,7 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.find("[data-test='phone-overview-share-export-panel']").exists()).toBe(true);
     expect(wrapper.get("[data-test='planner-share-export-scope-grouping']").text()).toContain("Gruppindelning");
     expect(wrapper.get("[data-test='planner-share-export-scope-seating']").text()).toContain("Sittschema");
+    expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Länk, PDF, Excel");
     expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["seating"]]);
     expect(wrapper.emitted("open-seating")).toBeUndefined();
     expect(wrapper.emitted("open-grouping")).toBeUndefined();

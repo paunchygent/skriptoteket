@@ -10,6 +10,7 @@
 
 import { computed, ref } from "vue";
 
+import { IconArrow, IconUsersRound } from "../../../components/icons";
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import {
@@ -23,6 +24,7 @@ import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import RoomCanvas from "./RoomCanvas.vue";
 import { useClassroomState } from "../useClassroomState";
+import type { RoomViewportSize } from "../roomBuilderViewport";
 
 const {
   selectedTemplateId = null,
@@ -34,6 +36,10 @@ const plannerState = useClassroomState();
 const phoneStudentSheetOpen = ref(false);
 
 const isSeatWorkspaceWithoutTemplate = computed(() => plannerState.template === null);
+const phoneStudentCountLabel = computed(() => {
+  const count = plannerState.unseatedStudents.length;
+  return count === 1 ? "1 ej placerad" : `${count} ej placerade`;
+});
 const seatingRoomGrid = computed(() => normalizeRoomGrid(plannerState.template));
 const seatingRoomSurfaceMetrics = computed(() => getRoomSurfaceMetrics(seatingRoomGrid.value));
 const {
@@ -85,13 +91,20 @@ function onDragOver(event: DragEvent): void {
 function togglePhoneStudentSheet(): void {
   phoneStudentSheetOpen.value = !phoneStudentSheetOpen.value;
 }
+
+function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
+  if (size.width <= 0 || size.height <= 0) {
+    return;
+  }
+  setSeatingCanvasViewportSize(size);
+}
 </script>
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-3">
     <div
       v-if="plannerState.smartRuleHydrationStatus === 'error'"
-      class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
+      class="border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-navy shadow-brutal-sm"
       data-test="seating-smart-hydration-error"
     >
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -113,40 +126,32 @@ function togglePhoneStudentSheet(): void {
       class="planner-phone-seating-workspace"
       data-test="phone-seating-workspace"
     >
-      <RoomCanvas
-        v-if="!isSeatWorkspaceWithoutTemplate"
-        compact
-        data-test="phone-seating-workspace-canvas"
-        :scale-percent="seatingCanvasScalePercent"
-        :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
-        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-        :surface-scale="seatingCanvasScale"
-        @viewport-size="setSeatingCanvasViewportSize"
-        @zoom-fit="resetSeatingCanvasZoom"
-        @zoom-in="zoomInSeatingCanvas"
-        @zoom-out="zoomOutSeatingCanvas"
-      />
-      <div
-        v-else
-        class="border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-sm leading-relaxed text-navy/70"
-      >
-        Välj ett klassrum ovan för att börja placera sittplatser.
-      </div>
-
       <button
         type="button"
-        class="planner-phone-row-action"
+        class="planner-phone-seating-student-toggle"
         data-test="phone-seating-show-students"
         :aria-expanded="phoneStudentSheetOpen"
         @click="togglePhoneStudentSheet"
       >
-        <span>Visa elever</span>
-        <span class="text-xs text-navy/55">({{ plannerState.unseatedStudents.length }})</span>
+        <span class="flex min-w-0 items-center gap-2">
+          <IconUsersRound
+            :size="17"
+            class="shrink-0"
+          />
+          <span class="truncate">Elever</span>
+        </span>
+        <span class="flex shrink-0 items-center gap-2 text-xs text-navy/60">
+          {{ phoneStudentCountLabel }}
+          <IconArrow
+            :size="15"
+            :direction="phoneStudentSheetOpen ? 'up' : 'down'"
+          />
+        </span>
       </button>
 
       <div
         v-if="phoneStudentSheetOpen"
-        class="planner-phone-subordinate-surface"
+        class="planner-phone-seating-student-tray"
         data-test="phone-seating-student-sheet"
       >
         <PlannerStudentPool
@@ -159,6 +164,26 @@ function togglePhoneStudentSheet(): void {
           @pool-dragover="onDragOver"
           @pool-drop="onDropToPool"
         />
+      </div>
+
+      <RoomCanvas
+        v-if="!isSeatWorkspaceWithoutTemplate"
+        compact
+        data-test="phone-seating-workspace-canvas"
+        :scale-percent="seatingCanvasScalePercent"
+        :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+        :surface-scale="seatingCanvasScale"
+        @viewport-size="setVisibleSeatingCanvasViewportSize"
+        @zoom-fit="resetSeatingCanvasZoom"
+        @zoom-in="zoomInSeatingCanvas"
+        @zoom-out="zoomOutSeatingCanvas"
+      />
+      <div
+        v-else
+        class="border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-sm leading-relaxed text-navy/70"
+      >
+        Välj ett klassrum ovan för att börja placera sittplatser.
       </div>
     </div>
 
@@ -193,7 +218,7 @@ function togglePhoneStudentSheet(): void {
           :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           :surface-scale="seatingCanvasScale"
-          @viewport-size="setSeatingCanvasViewportSize"
+          @viewport-size="setVisibleSeatingCanvasViewportSize"
           @zoom-fit="resetSeatingCanvasZoom"
           @zoom-in="zoomInSeatingCanvas"
           @zoom-out="zoomOutSeatingCanvas"

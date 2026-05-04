@@ -2,7 +2,7 @@
 type: story
 id: ST-29-14
 title: "Klassrumskartan small-screen overview redesign"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-30
 updated: 2026-05-04

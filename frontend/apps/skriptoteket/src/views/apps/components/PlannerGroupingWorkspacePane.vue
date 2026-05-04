@@ -91,7 +91,7 @@ function selectMobileSurface(surface: string): void {
   <div class="flex min-h-0 flex-1 flex-col gap-3">
     <div
       v-if="state.smartRuleHydrationStatus === 'error'"
-      class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
+      class="border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-navy shadow-brutal-sm"
       data-test="grouping-smart-hydration-error"
     >
       <div class="flex flex-wrap items-center justify-between gap-3">

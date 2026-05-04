@@ -2,10 +2,10 @@
 type: story
 id: ST-29-13
 title: "Klassrumskartan small-screen shell and mode-switcher redesign"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-04
 epic: "EPIC-29"
 dependencies:
   - "ST-29-07"
