@@ -43,6 +43,9 @@ importers:
       '@dimforge/rapier3d-compat':
         specifier: ^0.19.3
         version: 0.19.3
+      '@tabler/icons-vue':
+        specifier: ^3.41.1
+        version: 3.41.1(vue@3.5.26(typescript@5.9.3))
       diff:
         specifier: ^8.0.2
         version: 8.0.2
@@ -636,6 +639,14 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@tabler/icons-vue@3.41.1':
+    resolution: {integrity: sha512-OLLWlyrx6HdQpdgnZ8dO8uBGIIZwQDPgE8Gl6tUuAD7AgtfnmtFz8vb7dTEvxddM5CMpPt21ogPpBhJfEjSY+Q==}
+    peerDependencies:
+      vue: '>=3.0.1'
+
+  '@tabler/icons@3.41.1':
+    resolution: {integrity: sha512-OaRnVbRmH2nHtFeg+RmMJ/7m2oBIF9XCJAUD5gQnMrpK9f05ydj8MZrAf3NZQqOXyxGN1UBL0D5IKLLEUfr74Q==}
 
   '@tailwindcss/node@4.1.18':
     resolution: {integrity: sha512-DoR7U1P7iYhw16qJ49fgXUlry1t4CpXeErJHnQ44JgTSKMaZUdf17cfn5mHchfJ4KRBZRFA/Coo+MUF5+gOaCQ==}
@@ -2480,6 +2491,13 @@ snapshots:
     optional: true
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@tabler/icons-vue@3.41.1(vue@3.5.26(typescript@5.9.3))':
+    dependencies:
+      '@tabler/icons': 3.41.1
+      vue: 3.5.26(typescript@5.9.3)
+
+  '@tabler/icons@3.41.1': {}
 
   '@tailwindcss/node@4.1.18':
     dependencies:

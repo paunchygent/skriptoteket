@@ -9,9 +9,8 @@
  */
 
 import { computed } from "vue";
-import { Copy } from "lucide-vue-next";
 
-import { IconPlus, IconTrash } from "../../../components/icons";
+import { IconCopy, IconPlus, IconTrash } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
@@ -219,10 +218,8 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
                 title="Kopiera länk till urklipp"
                 @click="emit('copy-share', share)"
               >
-                <Copy
+                <IconCopy
                   :size="12"
-                  :stroke-width="2.25"
-                  aria-hidden="true"
                 />
                 <span class="sr-only md:not-sr-only">Kopiera</span>
               </button>

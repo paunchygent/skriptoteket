@@ -5,7 +5,7 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-04-30
+updated: 2026-05-04
 outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, coherent grouping/seating/rules work surfaces, and a mockup-first small-screen companion lane that replaces cramped phone rails with mode-specific reduced layouts."
 dependencies:
   [
@@ -100,6 +100,10 @@ into the `laptop` proof width.
   persistent runtime geometry math.
 - `ST-29-08` is intentionally an enhancement follow-up after the remaining primitive and symbol
   definition/tightening lane rather than a blocker on the already-shipped workspace layouts.
+- `ST-29-12` now owns the symbol-semantics inventory and decision lane for both shared site/app
+  controls and Klassrumskartan domain symbols. Its next task sequence starts with
+  `docs/mockups/st-29-12-symbol-inventory/index.html` and continues through `PR-0291` to `PR-0294`
+  before runtime icon changes are made.
 - `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
   and approved Swedish guidance without adding walkthroughs, modals, or extra onboarding chrome.
 - Approved small-screen workspace direction lives in

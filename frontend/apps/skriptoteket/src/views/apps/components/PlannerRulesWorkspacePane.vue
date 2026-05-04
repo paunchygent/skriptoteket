@@ -11,10 +11,10 @@ import { computed, ref, watch } from "vue";
 
 import {
   IconArrow,
-  IconBan,
-  IconGraduationCap,
   IconInfo,
-  IconLink2,
+  IconKeepApart,
+  IconKeepNear,
+  IconTeacherAnchor,
   IconX,
 } from "../../../components/icons";
 import type { Student } from "../classroomPlannerTypes";
@@ -82,19 +82,19 @@ const phoneToolRows = computed(() => [
     id: "near_teacher" as const,
     label: "Nära läraren",
     subtitle: "Placera elever nära katedern.",
-    icon: IconGraduationCap,
+    icon: IconTeacherAnchor,
   },
   {
     id: "keep_apart" as const,
     label: "Håll isär",
     subtitle: "Placera elever på avstånd.",
-    icon: IconBan,
+    icon: IconKeepApart,
   },
   {
     id: "keep_near" as const,
     label: "Håll nära",
     subtitle: "Placera elever tillsammans.",
-    icon: IconLink2,
+    icon: IconKeepNear,
   },
 ]);
 

@@ -68,17 +68,23 @@ describe("PlannerTopPanel", () => {
     expect(document.body.querySelector('[data-test="planner-phone-mode-sheet"]')).toBeNull();
   });
 
-  it("uses semantic Lucide symbols for phone workspace choices", async () => {
+  it("uses canonical symbols for phone workspace choices", async () => {
     const wrapper = mountTopPanel({
       modeValue: "overview",
     });
 
     await wrapper.get('[data-test="planner-phone-mode-sheet-trigger"]').trigger("click");
 
+    const overviewRow = document.body.querySelector('[data-test="planner-phone-mode-sheet-overview"]');
     const groupingRow = document.body.querySelector('[data-test="planner-phone-mode-sheet-grouping"]');
     const seatingRow = document.body.querySelector('[data-test="planner-phone-mode-sheet-seating"]');
-    expect(groupingRow?.innerHTML).toContain("lucide-users-round");
-    expect(seatingRow?.innerHTML).toContain("lucide-armchair");
+    const rulesRow = document.body.querySelector('[data-test="planner-phone-mode-sheet-rules"]');
+    expect(overviewRow?.innerHTML).toContain("lucide-layout-dashboard");
+    expect(groupingRow?.innerHTML).toContain("tabler-icon-users-group");
+    expect(seatingRow?.innerHTML).toContain("lucide-layout-grid");
+    expect(rulesRow?.innerHTML).toContain("lucide-list-checks");
+    expect(overviewRow?.innerHTML).not.toContain("lucide-clipboard-list");
     expect(seatingRow?.innerHTML).not.toContain("lucide-presentation");
+    expect(seatingRow?.innerHTML).not.toContain("lucide-armchair");
   });
 });

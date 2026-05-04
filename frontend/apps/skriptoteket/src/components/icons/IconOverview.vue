@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical overview workspace symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - keeps planner overview distinct from class-list/clipboard semantics
  */
 
-import { Minus } from "lucide-vue-next";
+import { LayoutDashboard } from "lucide-vue-next";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <LayoutDashboard
     :size="size ?? 24"
-    :stroke-width="2.5"
+    :stroke-width="2.25"
     aria-hidden="true"
   />
 </template>

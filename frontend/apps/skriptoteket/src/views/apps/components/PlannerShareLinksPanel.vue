@@ -10,9 +10,8 @@
  */
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { Copy } from "lucide-vue-next";
 
-import { IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
+import { IconCopy, IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
@@ -287,10 +286,8 @@ onUnmounted(() => {
               title="Kopiera länk till urklipp"
               @click="emit('copy-share', share)"
             >
-              <Copy
+              <IconCopy
                 :size="12"
-                :stroke-width="2.25"
-                aria-hidden="true"
               />
               <span class="sr-only md:not-sr-only">Kopiera</span>
             </button>

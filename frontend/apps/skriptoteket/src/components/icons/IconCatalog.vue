@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical catalog/library symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - available for shared site catalog/navigation semantics
  */
 
-import { Minus } from "lucide-vue-next";
+import { Library } from "lucide-vue-next";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <Library
     :size="size ?? 24"
-    :stroke-width="2.5"
+    :stroke-width="2.25"
     aria-hidden="true"
   />
 </template>

@@ -30,6 +30,7 @@ Bundle rules:
 - [ST-29-06 rules no classroom fallback](st-29-06-rules-no-classroom-fallback/README.md)
 - [ST-29-10 first-run workspace gating](st-29-10-first-run-workspace-gating/README.md)
 - [ST-29-11 share/export affordance consolidation](st-29-11-share-export-affordance/README.md)
+- [ST-29-12 symbol inventory and semantic mapping](st-29-12-symbol-inventory/README.md)
 - [ST-29 small-screen workspace redesign](st-29-small-screen-workspace-redesign/README.md)
 - [ST-26-06 share link UX and page renderer](st-26-06-share-link-ux-and-page-renderer/README.md)
 - [ST-32-07 public landing discoverability](st-32-07-public-landing-discoverability/README.md)

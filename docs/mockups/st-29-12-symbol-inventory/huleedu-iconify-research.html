@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HuleEdu Iconify Semantic Fallback Inventory</title>
+  <style>
+    :root { --navy:#1c2e4a; --canvas:#f7f5ef; --line:rgba(28,46,74,.22); --muted:rgba(28,46,74,.68); --soft:rgba(28,46,74,.06); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--navy); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1480px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 48px; }
+    h1, h2 { font-family: Georgia, "Times New Roman", serif; letter-spacing: 0; }
+    h1 { margin: 0 0 8px; font-size: 38px; }
+    h2 { margin: 0; font-size: 25px; text-transform: capitalize; }
+    h3 { margin: 0 0 4px; font-size: 16px; }
+    p { color: var(--muted); line-height: 1.45; }
+    a { color: var(--navy); font-weight: 800; }
+    .meta, .notice { border: 1px solid var(--line); background: white; padding: 14px 16px; margin: 18px 0; }
+    .family { border: 1px solid var(--line); background: white; margin: 18px 0; box-shadow: 4px 4px 0 var(--navy); }
+    .family > header { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .prefix-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .prefix-column { padding: 14px; min-width: 0; }
+    .prefix-column + .prefix-column { border-left: 1px solid var(--line); }
+    .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(142px, 1fr)); gap: 8px; margin-top: 12px; }
+    .icon-card { min-height: 94px; border: 1px solid var(--line); background: var(--soft); padding: 10px; display: grid; grid-template-rows: 28px auto auto; gap: 6px; align-items: center; }
+    .icon-card svg { color: var(--navy); }
+    .icon-card strong { font-size: 12px; line-height: 1.15; word-break: break-word; }
+    .icon-card span, .empty { color: var(--muted); font-size: 11px; }
+    @media (max-width: 760px) { main { width: min(100% - 20px, 1480px); } .prefix-grid { grid-template-columns: 1fr; } .prefix-column + .prefix-column { border-left: 0; border-top: 1px solid var(--line); } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>HuleEdu Iconify Semantic Fallback Inventory</h1>
+    <p>This board uses Iconify as a research/indexing layer for HuleEdu semantic families. It compares <code>lucide-lab</code> and <code>tabler</code> candidates only; it does not approve either set as a runtime dependency.</p>
+    <div class="meta">
+      <p>Generated: 2026-05-04T18:58:04.017Z</p>
+      <p>Sources: Iconify search/SVG API, prefixes <code>lucide-lab</code> and <code>tabler</code>. Return to <a href="index.html">the canonical ST-29-12 symbol inventory</a>.</p>
+    </div>
+    <section class="notice">
+      <strong>Decision policy:</strong> use Lucide proper first, then Lucide Lab, then Tabler as fallback. Iconify remains the comparison/search surface unless a later PR explicitly changes runtime dependency policy.
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>classroom</h2>
+        <p>Queries: classroom, school, chalkboard, presentation</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M8 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a1 1 0 0 1-1 1"/><path d="M11 17a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/></g></svg>
+      <strong>tabler:chalkboard</strong>
+      <span>chalkboard</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 4h18M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4m-8 12v4m-3 0h6"/><path d="m8 12l3-3l2 2l3-3"/></g></svg>
+      <strong>tabler:presentation</strong>
+      <span>presentation</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M22 9L12 5L2 9l10 4zv6"/><path d="M6 10.6V16a6 3 0 0 0 12 0v-5.4"/></g></svg>
+      <strong>tabler:school</strong>
+      <span>school</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 10a6 6 0 1 0 12 0a6 6 0 1 0-12 0"/><path d="M13.5 15h.5a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h.5m9.5 2a5.698 5.698 0 0 0 4.467-7.932L20 8m-10 2v.01"/><path d="M19 8a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/></g></svg>
+      <strong>tabler:bell-school</strong>
+      <span>school</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M8 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a1 1 0 0 1-1 1"/><path d="M12 14a2 2 0 1 0 4.001-.001A2 2 0 0 0 12 14m5 5a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2"/></g></svg>
+      <strong>tabler:chalkboard-teacher</strong>
+      <span>chalkboard</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12V8m6 4v-2m-3 2v-1M3 4h18M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4m-8 12v4m-3 0h6"/></svg>
+      <strong>tabler:presentation-analytics</strong>
+      <span>presentation</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 17a3 3 0 0 0 3 3m7.805-13.63l2.783-2.784a2 2 0 1 1 2.829 2.828L17.633 9.2"/><path d="M16.505 7.495a5.105 5.105 0 0 1 .176 7.035l-.176.184l-1.867 1.867a3.48 3.48 0 0 0-1.013 2.234l-.008.23v.934c0 .327-.13.64-.36.871a.51.51 0 0 1-.652.06l-.07-.06l-9.385-9.384a.51.51 0 0 1 0-.722c.198-.198.456-.322.732-.353l.139-.008h.933c.848 0 1.663-.309 2.297-.864l.168-.157l1.867-1.867l.16-.153a5.105 5.105 0 0 1 7.059.153"/></g></svg>
+      <strong>tabler:school-bell</strong>
+      <span>school</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>maps</h2>
+        <p>Queries: map, map-pin, route, navigation, location</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0"/></g></svg>
+      <strong>tabler:map-pin</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18.5L9 17l-6 3V7l6-3l6 3l6-3v7M9 4v13m6-10v5m6.121 8.121a3 3 0 1 0-4.242 0Q17.506 20.749 19 22q1.577-1.335 2.121-1.879M19 18v.01"/></svg>
+      <strong>tabler:map-pin-2</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 13.591-4.629M19 16l-2 3h4l-2 3"/></g></svg>
+      <strong>tabler:map-pin-bolt</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M12.463 21.431a2 2 0 0 1-1.876-.531l-4.244-4.243a8 8 0 1 1 13.594-4.655M16 19a3 3 0 1 0 6 0a3 3 0 1 0-6 0m1 2l4-4"/></g></svg>
+      <strong>tabler:map-pin-cancel</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M11.87 21.48a2 2 0 0 1-1.283-.58l-4.244-4.243a8 8 0 1 1 13.355-3.474M15 19l2 2l4-4"/></g></svg>
+      <strong>tabler:map-pin-check</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M11.85 21.48a2 2 0 0 1-1.263-.58l-4.244-4.243a8 8 0 1 1 13.385-3.585M20 21l2-2l-2-2m-3 0l-2 2l2 2"/></g></svg>
+      <strong>tabler:map-pin-code</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M12.005 21.485a2 2 0 0 1-1.418-.585l-4.244-4.243a8 8 0 1 1 13.634-5.05M17.001 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0m2-3.5V17m0 4v1.5m3.031-5.25l-1.299.75m-3.463 2l-1.3.75m0-3.5l1.3.75m3.463 2l1.3.75"/></g></svg>
+      <strong>tabler:map-pin-cog</strong>
+      <span>map, map-pin</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M13.02 21.206a2 2 0 0 1-2.433-.306l-4.244-4.243a8 8 0 1 1 13.607-6.555M21 15h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3H17m2 0v1m0-8v1"/></g></svg>
+      <strong>tabler:map-pin-dollar</strong>
+      <span>map, map-pin</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>proximity-distance</h2>
+        <p>Queries: near, close, distance, short-distance, ruler, spacing, minimize, magnet</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v8a2 2 0 0 0 6 0V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v8a8 8 0 0 1-16 0m0-5h5m6 0h4"/></svg>
+      <strong>tabler:magnet</strong>
+      <span>magnet</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19v-2a2 2 0 0 1 2-2h2M15 5v2a2 2 0 0 0 2 2h2M5 15h2a2 2 0 0 1 2 2v2M5 9h2a2 2 0 0 0 2-2V5"/></svg>
+      <strong>tabler:minimize</strong>
+      <span>minimize</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h14a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-7a1 1 0 0 0-1 1v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1M4 8h2m-2 4h3m-3 4h2M8 4v2m4-2v3m4-3v2"/></svg>
+      <strong>tabler:ruler</strong>
+      <span>ruler</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 10h4V6M4 4l6 6m8 4h-4v4m0-4l6 6"/></svg>
+      <strong>tabler:arrows-diagonal-minimize</strong>
+      <span>minimize</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 10h-4V6m6-2l-6 6m-8 4h4v4m0-4l-6 6"/></svg>
+      <strong>tabler:arrows-diagonal-minimize-2</strong>
+      <span>minimize</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4V5M3 3l6 6m-4 6h4v4m-6 2l6-6m10-6h-4V5m0 4l6-6m-2 12h-4v4m0-4l6 6"/></svg>
+      <strong>tabler:arrows-minimize</strong>
+      <span>minimize</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12V6.5a2.5 2.5 0 0 1 5 0V12m0-4H5m8-4l3 8l3-8M5 18h14m-2 2l2-2l-2-2M7 16l-2 2l2 2"/></svg>
+      <strong>tabler:letter-spacing</strong>
+      <span>spacing</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m17 3l4 4L7 21l-4-4zm-1 4l-1.5-1.5M13 10l-1.5-1.5M10 13l-1.5-1.5M7 16l-1.5-1.5"/></svg>
+      <strong>tabler:ruler-2</strong>
+      <span>ruler</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>groups</h2>
+        <p>Queries: group, users, team, network, cluster</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 9a6 6 0 1 0 12 0A6 6 0 0 0 6 9"/><path d="M12 3q2 .5 2 6c0 5.5-.667 5.667-2 6m0-12q-2 .5-2 6c0 5.5.667 5.667 2 6M6 9h12M3 20h7m4 0h7m-11 0a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2-5v3"/></g></svg>
+      <strong>tabler:network</strong>
+      <span>network</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m1-17.87a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
+      <strong>tabler:users</strong>
+      <span>users</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20h7m4 0h7m-11 0a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2-4v2m-4-1.996H6.657C4.085 16 2 13.993 2 11.517s2.085-4.482 4.657-4.482c.393-1.762 1.794-3.2 3.675-3.773c1.88-.572 3.956-.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486s-1.551 3.487-3.465 3.487H16"/></svg>
+      <strong>tabler:cloud-network</strong>
+      <span>network</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0-4 0m-2 8v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1M15 5a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2 5h2a2 2 0 0 1 2 2v1M5 5a2 2 0 1 0 4 0a2 2 0 0 0-4 0m-2 8v-1a2 2 0 0 1 2-2h2"/></svg>
+      <strong>tabler:users-group</strong>
+      <span>group, users</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M3 21v-2a4 4 0 0 1 4-4h4c.948 0 1.818.33 2.504.88M16 3.13a4 4 0 0 1 0 7.75M16 19h6"/></svg>
+      <strong>tabler:users-minus</strong>
+      <span>users</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M3 21v-2a4 4 0 0 1 4-4h4c.96 0 1.84.338 2.53.901M16 3.13a4 4 0 0 1 0 7.75M16 19h6m-3-3v6"/></svg>
+      <strong>tabler:users-plus</strong>
+      <span>users</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>cooperation</h2>
+        <p>Queries: cooperation, collaboration, handshake, helping, together</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19.5 12.572L12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/><path d="M12 6L8.707 9.293a1 1 0 0 0 0 1.414l.543.543c.69.69 1.81.69 2.5 0l1-1a3.18 3.18 0 0 1 4.5 0l2.25 2.25m-7 3l2 2M15 13l2 2"/></g></svg>
+      <strong>tabler:heart-handshake</strong>
+      <span>handshake</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>ideation</h2>
+        <p>Queries: idea, brainstorm, bulb, spark, mind</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7l-.7.7M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0-1 3a2 2 0 0 1-4 0a3.5 3.5 0 0 0-1-3m.7 1h4.6"/></svg>
+      <strong>tabler:bulb</strong>
+      <span>bulb</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2-6v4m0 4v8m7.879-4.688a2 2 0 1 0-2.26 2.652M12 4v10m4-7a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2-3v1m0 4v2.5m1 11a4.75 4.75 0 0 1 3.5-3.5a4.75 4.75 0 0 1-3.5-3.5a4.75 4.75 0 0 1-3.5 3.5a4.75 4.75 0 0 1 3.5 3.5"/></svg>
+      <strong>tabler:adjustments-spark</strong>
+      <span>spark</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v.5a.5.5 0 0 0 .5.5a.5.5 0 0 1 .5.5v1m-1 11a4.75 4.75 0 0 1 3.5-3.5a4.75 4.75 0 0 1-3.5-3.5a4.75 4.75 0 0 1-3.5 3.5a4.75 4.75 0 0 1 3.5 3.5"/></svg>
+      <strong>tabler:battery-spark</strong>
+      <span>spark</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.5 20H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v3"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0-6 0m10 9.5a4.75 4.75 0 0 1 3.5-3.5a4.75 4.75 0 0 1-3.5-3.5a4.75 4.75 0 0 1-3.5 3.5a4.75 4.75 0 0 1 3.5 3.5"/></g></svg>
+      <strong>tabler:camera-spark</strong>
+      <span>spark</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h5m10 0h5M7 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0m1.5-3.5l7 7m0-7l-7 7"/></svg>
+      <strong>tabler:circuit-bulb</strong>
+      <span>bulb</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12V7.99a1.98 1.98 0 0 0-1-1.717l-7-4.008a2.02 2.02 0 0 0-2 0L4 6.273c-.619.355-1 1.01-1 1.718v8.018c0 .709.381 1.363 1 1.717l7 4.008c.62.354 1.38.354 2 0M12 22V12m0 0l8.73-5.04m-17.46 0L12 12m7 10.5a4.75 4.75 0 0 1 3.5-3.5a4.75 4.75 0 0 1-3.5-3.5a4.75 4.75 0 0 1-3.5 3.5a4.75 4.75 0 0 1 3.5 3.5"/></svg>
+      <strong>tabler:cube-spark</strong>
+      <span>spark</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/><path d="M11.669 17.994Q6.489 17.814 3 12q3.6-6 9-6t9 6m-2 10.5a4.75 4.75 0 0 1 3.5-3.5a4.75 4.75 0 0 1-3.5-3.5a4.75 4.75 0 0 1-3.5 3.5a4.75 4.75 0 0 1 3.5 3.5"/></g></svg>
+      <strong>tabler:eye-spark</strong>
+      <span>spark</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 22.5a4.75 4.75 0 0 1 3.5-3.5a4.75 4.75 0 0 1-3.5-3.5a4.75 4.75 0 0 1-3.5 3.5a4.75 4.75 0 0 1 3.5 3.5M14 3v4a1 1 0 0 0 1 1h4"/><path d="M12 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v3.5"/></g></svg>
+      <strong>tabler:file-spark</strong>
+      <span>spark</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>teacher</h2>
+        <p>Queries: teacher, school, presentation, user-star, chalkboard</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M6 21v-2a4 4 0 0 1 4-4h.5m7.3 5.817l-2.172 1.138a.392.392 0 0 1-.568-.41l.415-2.411l-1.757-1.707a.389.389 0 0 1 .217-.665l2.428-.352l1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193l2.428.352a.39.39 0 0 1 .217.665l-1.757 1.707l.414 2.41a.39.39 0 0 1-.567.411z"/></svg>
+      <strong>tabler:user-star</strong>
+      <span>user-star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M8 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a1 1 0 0 1-1 1"/><path d="M11 17a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/></g></svg>
+      <strong>tabler:chalkboard</strong>
+      <span>chalkboard</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 4h18M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4m-8 12v4m-3 0h6"/><path d="m8 12l3-3l2 2l3-3"/></g></svg>
+      <strong>tabler:presentation</strong>
+      <span>presentation</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M22 9L12 5L2 9l10 4zv6"/><path d="M6 10.6V16a6 3 0 0 0 12 0v-5.4"/></g></svg>
+      <strong>tabler:school</strong>
+      <span>school</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 10a6 6 0 1 0 12 0a6 6 0 1 0-12 0"/><path d="M13.5 15h.5a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h.5m9.5 2a5.698 5.698 0 0 0 4.467-7.932L20 8m-10 2v.01"/><path d="M19 8a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/></g></svg>
+      <strong>tabler:bell-school</strong>
+      <span>school</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M8 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a1 1 0 0 1-1 1"/><path d="M12 14a2 2 0 1 0 4.001-.001A2 2 0 0 0 12 14m5 5a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2"/></g></svg>
+      <strong>tabler:chalkboard-teacher</strong>
+      <span>teacher, chalkboard</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12V8m6 4v-2m-3 2v-1M3 4h18M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4m-8 12v4m-3 0h6"/></svg>
+      <strong>tabler:presentation-analytics</strong>
+      <span>presentation</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 17a3 3 0 0 0 3 3m7.805-13.63l2.783-2.784a2 2 0 1 1 2.829 2.828L17.633 9.2"/><path d="M16.505 7.495a5.105 5.105 0 0 1 .176 7.035l-.176.184l-1.867 1.867a3.48 3.48 0 0 0-1.013 2.234l-.008.23v.934c0 .327-.13.64-.36.871a.51.51 0 0 1-.652.06l-.07-.06l-9.385-9.384a.51.51 0 0 1 0-.722c.198-.198.456-.322.732-.353l.139-.008h.933c.848 0 1.663-.309 2.297-.864l.168-.157l1.867-1.867l.16-.153a5.105 5.105 0 0 1 7.059.153"/></g></svg>
+      <strong>tabler:school-bell</strong>
+      <span>school</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>hand-in</h2>
+        <p>Queries: hand-in, submit, upload, turn in, assignment</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5l5 5m-5-5v12"/></svg>
+      <strong>tabler:upload</strong>
+      <span>upload</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12v5"/><path d="M11 16H6a2 2 0 0 0-2 2m11-2l3-3l3 3m-3-3v9"/></g></svg>
+      <strong>tabler:book-upload</strong>
+      <span>upload</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7 18a4.6 4.4 0 0 1 0-9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="m9 15l3-3l3 3m-3-3v9"/></g></svg>
+      <strong>tabler:cloud-upload</strong>
+      <span>upload</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2m-5-10v6"/><path d="M9.5 13.5L12 11l2.5 2.5"/></g></svg>
+      <strong>tabler:file-upload</strong>
+      <span>upload</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 12a9 9 0 1 0-9 9M3.6 9h16.8M3.6 15H12"/><path d="M11.578 3a17 17 0 0 0 0 18M12.5 3c1.719 2.755 2.5 5.876 2.5 9m3 9v-7m3 3l-3-3l-3 3"/></g></svg>
+      <strong>tabler:world-upload</strong>
+      <span>upload</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>bench</h2>
+        <p>Queries: bench, desk, table, seat, chair</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m9-13H3l9-6ZM7 13h10m-9 8v-3a1 1 0 0 0-1-1H3m0-5v9m13 0v-3c0-.5.5-1 1-1h4m0-5v9"/></svg>
+      <strong>lucide-lab:chairs-table-parasol</strong>
+      <span>table, chair</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V5m-4 5a4 4 0 0 1 8 0M6 10h12m-6 0v9m-4 0v-4c0-.6-.4-1-1-1H2m0-6v11m14 0v-4a1 1 0 0 1 1-1h5m0-6v11"/></svg>
+      <strong>lucide-lab:chairs-table-platter</strong>
+      <span>table, chair</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m17 7l1-2m-3 2h4v4h-4zM6 7v4m3-4H3l1-5h4Zm13 15V12c0-.6-.4-1-1-1H3c-.6 0-1 .4-1 1v10m8-7H2m8-4v8m12 0H2"/></svg>
+      <strong>lucide-lab:desk-lamp</strong>
+      <span>desk</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 8H3l9-6Zm-9 0v13m-4-8h8M3 21l.7-2.1c.2-.5.7-.9 1.3-.9h12c.5 0 1.3-.4 1.6-.8L22 13m-1 8l-3.2-3.2"/></svg>
+      <strong>lucide-lab:sunlounger-parasol-table</strong>
+      <span>table</span>
+    </article></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M4 6v13m16 0V6M4 10h16m-5-4v8a2 2 0 0 0 2 2h3"/></svg>
+      <strong>tabler:desk</strong>
+      <span>desk</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm0 5h18M10 3v18"/></svg>
+      <strong>tabler:table</strong>
+      <span>table</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 21l12-9M6 12l12 9M5 12h14M6 3v9m12-9v9M6 8h12M6 5h12"/></svg>
+      <strong>tabler:chair-director</strong>
+      <span>chair</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 18h-.011M12 18h-.011M16 18h-.011M4 3h16M5 3v17a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3m-5 4h-4m-1 8h1m4 0h1m-3-4V7"/></svg>
+      <strong>tabler:eye-table</strong>
+      <span>table</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 7l2 9M8 7l-2 9M5 7h14m2 5H3"/></svg>
+      <strong>tabler:picnic-table</strong>
+      <span>table</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 12V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7M3 10h18M10 3v10"/><path d="M2 17a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></g></svg>
+      <strong>tabler:table-alias</strong>
+      <span>table</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm7 5h11M10 3v18M9 3L3 9m7-2l-7 7m7-2l-7 7m7-2l-4 4"/></svg>
+      <strong>tabler:table-column</strong>
+      <span>table</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm0 5h18M10 3v18"/></svg>
+      <strong>tabler:table-dashed</strong>
+      <span>table</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>homework</h2>
+        <p>Queries: homework, assignment, book, notebook, pencil</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6v13m9-13v13m9-13v13"/></svg>
+      <strong>tabler:book</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1m3 0v18m4-14h2m-2 4h2"/></svg>
+      <strong>tabler:notebook</strong>
+      <span>book, notebook</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h4L18.5 9.5a2.828 2.828 0 1 0-4-4L4 16zm9.5-13.5l4 4"/></svg>
+      <strong>tabler:pencil</strong>
+      <span>pencil</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20 6v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2M10 16h6"/><path d="M11 11a2 2 0 1 0 4 0a2 2 0 1 0-4 0M4 8h3m-3 4h3m-3 4h3"/></g></svg>
+      <strong>tabler:address-book</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 1.006-.5M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6v13m9-13v13m9-13v6m-3.999 7a2 2 0 1 0 4 0a2 2 0 1 0-4 0m2-3.5V17m0 4v1.5m3.031-5.25l-1.299.75m-3.463 2l-1.3.75m0-3.5l1.3.75m3.463 2l1.3.75"/></svg>
+      <strong>tabler:api-book</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 4v16H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M19 16H7a2 2 0 0 0-2 2M9 8h6"/></g></svg>
+      <strong>tabler:book-2</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12v5"/><path d="M13 16H6a2 2 0 0 0-2 2m11 1l3 3l3-3m-3 3v-9"/></g></svg>
+      <strong>tabler:book-download</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12v5"/><path d="M11 16H6a2 2 0 0 0-2 2m11-2l3-3l3 3m-3-3v9"/></g></svg>
+      <strong>tabler:book-upload</strong>
+      <span>book</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>exam</h2>
+        <p>Queries: exam, test, certificate, clipboard-check, file-check</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2m0 9l2 2l4-4"/></g></svg>
+      <strong>tabler:clipboard-check</strong>
+      <span>clipboard-check</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2"/><path d="m9 15l2 2l4-4"/></g></svg>
+      <strong>tabler:file-check</strong>
+      <span>file-check</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 15a3 3 0 1 0 6 0a3 3 0 1 0-6 0"/><path d="M13 17.5V22l2-1.5l2 1.5v-4.5"/><path d="M10 19H5a2 2 0 0 1-2-2V7c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-1 1.73M6 9h12M6 12h3m-3 3h2"/></g></svg>
+      <strong>tabler:certificate</strong>
+      <span>certificate</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 15a3 3 0 1 0 6 0a3 3 0 1 0-6 0m1-8h4"/><path d="M10 18v4l2-1l2 1v-4"/><path d="M10 19H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></g></svg>
+      <strong>tabler:certificate-2</strong>
+      <span>certificate</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 8V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2h-5"/><path d="M3 14a3 3 0 1 0 6 0a3 3 0 1 0-6 0"/><path d="M4.5 17L3 22l3-1.5L9 22l-1.5-5"/></g></svg>
+      <strong>tabler:file-certificate</strong>
+      <span>certificate</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 8.04L7.878 20.164a2.857 2.857 0 1 1-4.041-4.04L15.959 4M7 13h8m4 2l1.5 1.6a2 2 0 1 1-3 0zM15 3l6 6"/></svg>
+      <strong>tabler:test-pipe</strong>
+      <span>test</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3v15a3 3 0 0 1-6 0V3m0 9h6M8 3h8"/></svg>
+      <strong>tabler:test-pipe-2</strong>
+      <span>test</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>grade</h2>
+        <p>Queries: grade, score, star, award, chart</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18m-9-9v18m5-14L7 17M7 7l10 10"/></svg>
+      <strong>lucide-lab:star-north</strong>
+      <span>star</span>
+    </article></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 9a6 6 0 1 0 12 0A6 6 0 1 0 6 9"/><path d="m12 15l3.4 5.89l1.598-3.233l3.598.232l-3.4-5.889M6.802 12l-3.4 5.89L7 17.657l1.598 3.232l3.4-5.889"/></g></svg>
+      <strong>tabler:award</strong>
+      <span>award</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 17.75l-6.172 3.245l1.179-6.873l-5-4.867l6.9-1l3.086-6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/></svg>
+      <strong>tabler:star</strong>
+      <span>star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2-6v4m0 4v8m6-16v9.5M16 7a2 2 0 1 0 4 0a2 2 0 0 0-4 0m2-3v1m-.2 15.817l-2.172 1.138a.392.392 0 0 1-.568-.41l.415-2.411l-1.757-1.707a.389.389 0 0 1 .217-.665l2.428-.352l1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193l2.428.352a.39.39 0 0 1 .217.665l-1.757 1.707l.414 2.41a.39.39 0 0 1-.567.411zM18 9v1"/></svg>
+      <strong>tabler:adjustments-star</strong>
+      <span>star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m17 10l-2-6m-8 6l2-6m1.5 16H7.244a3 3 0 0 1-2.965-2.544l-1.255-7.152A2 2 0 0 1 5.001 8H19a2 2 0 0 1 1.977 2.304l-.133.757"/><path d="M13.596 12.794a2 2 0 0 0-3.377 2.116m7.581 5.907l-2.172 1.138a.392.392 0 0 1-.568-.41l.415-2.411l-1.757-1.707a.389.389 0 0 1 .217-.665l2.428-.352l1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193l2.428.352a.39.39 0 0 1 .217.665l-1.757 1.707l.414 2.41a.39.39 0 0 1-.567.411z"/></g></svg>
+      <strong>tabler:basket-star</strong>
+      <span>star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 17H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6a2 2 0 1 1 4 0a7 7 0 0 1 3.88 5M9 17v1a3 3 0 0 0 2.15 2.878m6.65-.061l-2.172 1.138a.392.392 0 0 1-.568-.41l.415-2.411l-1.757-1.707a.389.389 0 0 1 .217-.665l2.428-.352l1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193l2.428.352a.39.39 0 0 1 .217.665l-1.757 1.707l.414 2.41a.39.39 0 0 1-.567.411z"/></svg>
+      <strong>tabler:bell-star</strong>
+      <span>star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3.5M16 3v4M8 3v4m-4 4h11"/><path d="m17.8 20.817l-2.172 1.138a.392.392 0 0 1-.568-.41l.415-2.411l-1.757-1.707a.389.389 0 0 1 .217-.665l2.428-.352l1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193l2.428.352a.39.39 0 0 1 .217.665l-1.757 1.707l.414 2.41a.39.39 0 0 1-.567.411z"/></g></svg>
+      <strong>tabler:calendar-star</strong>
+      <span>star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10.5 20H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.5"/><path d="M14.569 11.45a3 3 0 1 0-4.518 3.83m7.749 5.537l-2.172 1.138a.392.392 0 0 1-.568-.41l.415-2.411l-1.757-1.707a.389.389 0 0 1 .217-.665l2.428-.352l1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193l2.428.352a.39.39 0 0 1 .217.665l-1.757 1.707l.414 2.41a.39.39 0 0 1-.567.411z"/></g></svg>
+      <strong>tabler:camera-star</strong>
+      <span>star</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/><path d="M16.924 11.132a5 5 0 1 0-4.056 5.792"/><path d="M3 12a9 9 0 1 0 9-9"/></g></svg>
+      <strong>tabler:chart-arcs</strong>
+      <span>chart</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>learning</h2>
+        <p>Queries: learning, book, brain, graduation, school</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6v13m9-13v13m9-13v13"/></svg>
+      <strong>tabler:book</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15.5 13a3.5 3.5 0 0 0-3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1-7 0v-1.8"/><path d="M17.5 16a3.5 3.5 0 0 0 0-7H17"/><path d="M19 9.3V6.5a3.5 3.5 0 0 0-7 0M6.5 16a3.5 3.5 0 0 1 0-7H7"/><path d="M5 9.3V6.5a3.5 3.5 0 0 1 7 0v10"/></g></svg>
+      <strong>tabler:brain</strong>
+      <span>brain</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M22 9L12 5L2 9l10 4zv6"/><path d="M6 10.6V16a6 3 0 0 0 12 0v-5.4"/></g></svg>
+      <strong>tabler:school</strong>
+      <span>school</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20 6v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2M10 16h6"/><path d="M11 11a2 2 0 1 0 4 0a2 2 0 1 0-4 0M4 8h3m-3 4h3m-3 4h3"/></g></svg>
+      <strong>tabler:address-book</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 1.006-.5M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6v13m9-13v13m9-13v6m-3.999 7a2 2 0 1 0 4 0a2 2 0 1 0-4 0m2-3.5V17m0 4v1.5m3.031-5.25l-1.299.75m-3.463 2l-1.3.75m0-3.5l1.3.75m3.463 2l1.3.75"/></svg>
+      <strong>tabler:api-book</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 10a6 6 0 1 0 12 0a6 6 0 1 0-12 0"/><path d="M13.5 15h.5a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h.5m9.5 2a5.698 5.698 0 0 0 4.467-7.932L20 8m-10 2v.01"/><path d="M19 8a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/></g></svg>
+      <strong>tabler:bell-school</strong>
+      <span>school</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 4v16H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M19 16H7a2 2 0 0 0-2 2M9 8h6"/></g></svg>
+      <strong>tabler:book-2</strong>
+      <span>book</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12v5"/><path d="M13 16H6a2 2 0 0 0-2 2m11 1l3 3l3-3m-3 3v-9"/></g></svg>
+      <strong>tabler:book-download</strong>
+      <span>book</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>assessment</h2>
+        <p>Queries: assessment, rubric, checklist, clipboard, chart</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.615 20H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8m-3 5l2 2l4-4M9 8h4m-4 4h2"/></svg>
+      <strong>tabler:checklist</strong>
+      <span>checklist</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2"/></g></svg>
+      <strong>tabler:clipboard</strong>
+      <span>clipboard</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/><path d="M16.924 11.132a5 5 0 1 0-4.056 5.792"/><path d="M3 12a9 9 0 1 0 9-9"/></g></svg>
+      <strong>tabler:chart-arcs</strong>
+      <span>chart</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/><path d="M7 12a5 5 0 1 0 5-5"/><path d="M6.29 18.957A9 9 0 1 0 12 3"/></g></svg>
+      <strong>tabler:chart-arcs-3</strong>
+      <span>chart</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19h16M4 15l4-6l4 2l4-5l4 4v5z"/></svg>
+      <strong>tabler:chart-area</strong>
+      <span>chart</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 19l4-6l4 2l4-5l4 4v5zm0-7l3-4l4 2l5-6l4 4"/></svg>
+      <strong>tabler:chart-area-line</strong>
+      <span>chart</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 18h14M9 9l3 3l-3 3m5 0l3 3l-3 3M3 3v18m0-9h9m6-9l3 3l-3 3M3 6h18"/></svg>
+      <strong>tabler:chart-arrows</strong>
+      <span>chart</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 21V7m-9 8l3-3l3 3m0-5l3-3l3 3M3 21h18m-9 0v-9M3 6l3-3l3 3M6 21V3"/></svg>
+      <strong>tabler:chart-arrows-vertical</strong>
+      <span>chart</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>AI</h2>
+        <p>Queries: sparkles, bot, robot, brain, circuit, cpu</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15.5 13a3.5 3.5 0 0 0-3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1-7 0v-1.8"/><path d="M17.5 16a3.5 3.5 0 0 0 0-7H17"/><path d="M19 9.3V6.5a3.5 3.5 0 0 0-7 0M6.5 16a3.5 3.5 0 0 1 0-7H7"/><path d="M5 9.3V6.5a3.5 3.5 0 0 1 7 0v10"/></g></svg>
+      <strong>tabler:brain</strong>
+      <span>brain</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/><path d="M9 9h6v6H9zm-6 1h2m-2 4h2m5-11v2m4-2v2m7 5h-2m2 4h-2m-5 7v-2m-4 2v-2"/></g></svg>
+      <strong>tabler:cpu</strong>
+      <span>cpu</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zm6-4v2m-3 8v9m6-9v9M5 16l4-2m6 0l4 2M9 18h6M10 8v.01M14 8v.01"/></svg>
+      <strong>tabler:robot</strong>
+      <span>bot, robot</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2m0-12a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2M9 18a6 6 0 0 1 6-6a6 6 0 0 1-6-6a6 6 0 0 1-6 6a6 6 0 0 1 6 6"/></svg>
+      <strong>tabler:sparkles</strong>
+      <span>sparkles</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10.5C7 9.672 7.746 9 8.667 9h6.666c.92 0 1.667.672 1.667 1.5v3c0 .828-.746 1.5-1.667 1.5H8.667C7.747 15 7 14.328 7 13.5zM12 7v2m-2 3v.01m4-.01v.01M4 8V6a2 2 0 0 1 2-2h2M4 16v2a2 2 0 0 0 2 2h2m8-16h2a2 2 0 0 1 2 2v2m-4 12h2a2 2 0 0 0 2-2v-2"/></svg>
+      <strong>tabler:bot-id</strong>
+      <span>bot</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 12a7 7 0 1 0 14 0a7 7 0 1 0-14 0m0 0H2m17 0h3"/><path d="M10 14v-3c0-1.036.895-2 2-2s2 .964 2 2v3m0-2h-4"/></g></svg>
+      <strong>tabler:circuit-ammeter</strong>
+      <span>circuit</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h4m12 0h4m-4-7v14M14 9v6M10 5v14M6 9v6"/></svg>
+      <strong>tabler:circuit-battery</strong>
+      <span>circuit</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h5m10 0h5M7 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0m1.5-3.5l7 7m0-7l-7 7"/></svg>
+      <strong>tabler:circuit-bulb</strong>
+      <span>circuit</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>language</h2>
+        <p>Queries: language, translate, letters, text, speech</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M12 13h6m-6 4h6"/></g></svg>
+      <strong>lucide-lab:copy-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.9 8H9.2m-4.1 4H14l8-8.2c-2.3-2.3-6.1-2.3-8.5 0L2 15m0 4h8m11-2v1c0 1 1 1.5 1 2.5c0 .8-.7 1.5-1.5 1.5h-5c-.8 0-1.5-.7-1.5-1.5c0-1 1-1.5 1-2.5v-1m-1 0h8"/></svg>
+      <strong>lucide-lab:feather-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8h6m-6 4h8m-8 4h6M4 20V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14m2 0H2"/></svg>
+      <strong>lucide-lab:tab-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 12h10M7 16h6M7 8h8"/></g></svg>
+      <strong>lucide-lab:text-square</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m15.8 6l-.5-2.4c-.2-1-1-1.6-2-1.6h-2.7a2 2 0 0 0-2 1.6L8.2 6"/><rect width="12" height="12" x="6" y="6" rx="2"/><path d="m8.2 18l.5 2.4c.2 1 1 1.6 2 1.6h2.7a2 2 0 0 0 2-1.6l.5-2.4M10 10h2m2 4h-4"/></g></svg>
+      <strong>lucide-lab:watch-text</strong>
+      <span>text</span>
+    </article></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 6.371C9 10.789 6.761 13 4 13m0-6.629h7"/><path d="M5 9c0 2.144 2.252 3.908 6 4m1 7l4-9l4 9m-.9-2h-6.2M6.694 3l.793.582"/></g></svg>
+      <strong>tabler:language</strong>
+      <span>language</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8L5 12.5V7l14-4.5zm0 9L5 21.5V16l14-4.5zm0-5.5L5 7m0 5.5L19 17"/></svg>
+      <strong>tabler:brand-sublime-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10h10m-8 4h5M12.4 3a5.34 5.34 0 0 1 4.906 3.239a5.333 5.333 0 0 1-1.195 10.6a4.26 4.26 0 0 1-5.28 1.863L7 21v-3.134a2.668 2.668 0 0 1-1.795-3.773A4.8 4.8 0 0 1 8.113 5.16A5.33 5.33 0 0 1 12.4 3"/></svg>
+      <strong>tabler:bubble-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2m0 7h6m-6 4h6"/></g></svg>
+      <strong>tabler:clipboard-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 12h4M9 4a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3m6-16a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3"/></svg>
+      <strong>tabler:cursor-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2M9 9h1m-1 4h6m-6 4h6"/></g></svg>
+      <strong>tabler:file-text</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M10 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v3.5M9 9h1m-1 4h2.5M9 17h1"/><path d="M14 21v-4a2 2 0 1 1 4 0v4m-4-2h4m3-4v6"/></g></svg>
+      <strong>tabler:file-text-ai</strong>
+      <span>text</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13 3v4a.997.997 0 0 0 1 1h4"/><path d="M11 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v3.5M8 9h1m-1 3.994h3m-3 4.003h2"/><path d="M21 15.994c0 4-2.5 6-3.5 6s-3.5-2-3.5-6c1 0 2.5-.5 3.5-1.5c1 1 2.5 1.5 3.5 1.5"/></g></svg>
+      <strong>tabler:file-text-shield</strong>
+      <span>text</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+
+    <section class="family">
+      <header>
+        <h2>writing</h2>
+        <p>Queries: writing, pencil, pen-line, edit, notebook</p>
+      </header>
+      <div class="prefix-grid">
+
+    <section class="prefix-column">
+      <h3>Lucide Lab</h3>
+      <p>Lucide-family first fallback</p>
+      <div class="icon-grid"><p class="empty">No direct results from this prefix.</p></div>
+    </section>
+
+    <section class="prefix-column">
+      <h3>Tabler Icons</h3>
+      <p>Broader stroke-compatible fallback</p>
+      <div class="icon-grid">
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1"/><path d="M20.385 6.585a2.1 2.1 0 0 0-2.97-2.97L9 12v3h3zM16 5l3 3"/></g></svg>
+      <strong>tabler:edit</strong>
+      <span>edit</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1m3 0v18m4-14h2m-2 4h2"/></svg>
+      <strong>tabler:notebook</strong>
+      <span>notebook</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h4L18.5 9.5a2.828 2.828 0 1 0-4-4L4 16zm9.5-13.5l4 4"/></svg>
+      <strong>tabler:pencil</strong>
+      <span>pencil</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 17V5c0-1.121-.879-2-2-2s-2 .879-2 2v12l2 2zM16 7h4m-2 12H5a2 2 0 1 1 0-4h4a2 2 0 1 0 0-4H6"/></svg>
+      <strong>tabler:writing</strong>
+      <span>writing</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 17l-6 4V7a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v4m.42 4.61a2.1 2.1 0 1 1 2.97 2.97L18 22h-3v-3z"/></svg>
+      <strong>tabler:bookmark-edit</strong>
+      <span>edit</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 18H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0m-3 0h.01m12.41 3.61a2.1 2.1 0 1 1 2.97 2.97L18 22h-3v-3z"/></g></svg>
+      <strong>tabler:cash-banknote-edit</strong>
+      <span>edit</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7 15H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M11 19H8a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v1.25m-2.58 4.36a2.1 2.1 0 1 1 2.97 2.97L18 22h-3v-3z"/></g></svg>
+      <strong>tabler:cash-edit</strong>
+      <span>edit</span>
+    </article>
+
+    <article class="icon-card">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 12a9 9 0 1 0-9.972 8.948q.48.051.972.052"/><path d="M12 7v5l2 2m4.42 1.61a2.1 2.1 0 0 1 2.97 2.97L18 22h-3v-3z"/></g></svg>
+      <strong>tabler:clock-edit</strong>
+      <span>edit</span>
+    </article></div>
+    </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical individual seat/place symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - keeps chair/place semantics separate from the seating-plan workspace
  */
 
-import { Minus } from "lucide-vue-next";
+import { Armchair } from "lucide-vue-next";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <Armchair
     :size="size ?? 24"
-    :stroke-width="2.5"
+    :stroke-width="2.25"
     aria-hidden="true"
   />
 </template>

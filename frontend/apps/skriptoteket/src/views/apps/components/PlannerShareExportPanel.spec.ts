@@ -201,5 +201,9 @@ describe("PlannerShareExportPanel", () => {
     expect(createButton.classes()).toContain("planner-share-export-link-create-button");
     expect(createButton.attributes("data-ui")).toBeUndefined();
     expect(createButton.classes()).not.toContain("h-10");
+    expect(wrapper.get('[data-test="planner-share-export-file-xlsx"]').html())
+      .toContain("lucide-file-spreadsheet");
+    expect(wrapper.get('[data-test="planner-share-export-file-pdf"]').html())
+      .toContain("lucide-file-text");
   });
 });

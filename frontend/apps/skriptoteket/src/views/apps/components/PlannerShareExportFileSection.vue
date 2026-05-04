@@ -8,9 +8,8 @@
  */
 
 import { computed } from "vue";
-import { FileSpreadsheet, FileText } from "lucide-vue-next";
 
-import { IconDownload } from "../../../components/icons";
+import { IconDownload, IconFileSpreadsheet, IconFileText } from "../../../components/icons";
 import { UiDenseSpinner } from "../../../components/ui";
 import type {
   PlannerExportFileOption,
@@ -94,23 +93,17 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
         @click="selectFileOption(option)"
       >
         <template v-if="visualVariant === 'desktop-overview'">
-          <FileSpreadsheet
+          <IconFileSpreadsheet
             v-if="option.option === 'xlsx'"
             :size="14"
-            :stroke-width="2.25"
-            aria-hidden="true"
           />
-          <FileText
+          <IconFileText
             v-else-if="option.option === 'a3_landscape' || option.option === 'a4_landscape'"
             :size="14"
-            :stroke-width="2.25"
-            aria-hidden="true"
           />
-          <FileText
+          <IconFileText
             v-else
             :size="14"
-            :stroke-width="2.25"
-            aria-hidden="true"
           />
         </template>
         <template v-else>

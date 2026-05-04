@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical class-list symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - reserves clipboard/list semantics for class-list surfaces
  */
 
-import { Minus } from "lucide-vue-next";
+import { ClipboardList } from "lucide-vue-next";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <ClipboardList
     :size="size ?? 24"
-    :stroke-width="2.5"
+    :stroke-width="2.25"
     aria-hidden="true"
   />
 </template>

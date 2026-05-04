@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical role/permission symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - available for role and access-control surfaces
  */
 
-import { Minus } from "lucide-vue-next";
+import { ShieldUser } from "lucide-vue-next";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <ShieldUser
     :size="size ?? 24"
-    :stroke-width="2.5"
+    :stroke-width="2.25"
     aria-hidden="true"
   />
 </template>

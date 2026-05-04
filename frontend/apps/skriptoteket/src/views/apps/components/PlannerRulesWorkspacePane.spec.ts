@@ -293,10 +293,16 @@ describe("PlannerRulesWorkspacePane", () => {
       "planner-phone-rule-row-active",
     );
     expect(wrapper.get('[data-test="phone-rules-tool-near_teacher"]').html()).toContain(
-      "lucide-graduation-cap",
+      "lucide-user-star",
     );
     expect(wrapper.get('[data-test="phone-rules-tool-near_teacher"]').html()).not.toContain(
       "lucide-school",
+    );
+    expect(wrapper.get('[data-test="phone-rules-tool-keep_near"]').html()).toContain(
+      "lucide-magnet",
+    );
+    expect(wrapper.get('[data-test="phone-rules-tool-keep_near"]').html()).not.toContain(
+      "lucide-link-2",
     );
     expect(wrapper.get('[data-test="phone-rules-selection"]').classes()).toContain(
       "planner-phone-rules-selection",

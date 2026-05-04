@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical grouping workspace symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - uses the approved Tabler fallback where Lucide lacks the clearer group mark
  */
 
-import { Minus } from "lucide-vue-next";
+import { IconUsersGroup } from "@tabler/icons-vue";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <IconUsersGroup
     :size="size ?? 24"
-    :stroke-width="2.5"
+    stroke-width="2"
     aria-hidden="true"
   />
 </template>

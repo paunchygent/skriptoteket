@@ -9,9 +9,9 @@
 import { computed } from "vue";
 
 import {
-  IconBan,
-  IconLink2,
-  IconSchool,
+  IconKeepApart,
+  IconKeepNear,
+  IconTeacherAnchor,
   IconX,
 } from "../../../components/icons";
 import type { SeatingSmartTool } from "../classroomPlannerTypes";
@@ -46,22 +46,22 @@ const toolButtons = computed(() => [
   {
     id: "near_teacher",
     label: "Nära läraren",
-    icon: IconSchool,
+    icon: IconTeacherAnchor,
   },
   {
     id: "keep_apart",
     label: "Håll isär",
-    icon: IconBan,
+    icon: IconKeepApart,
   },
   {
     id: "keep_near",
     label: "Håll nära",
-    icon: IconLink2,
+    icon: IconKeepNear,
   },
 ] satisfies Array<{
   id: SeatingSmartTool;
   label: string;
-  icon: typeof IconSchool;
+  icon: typeof IconTeacherAnchor;
 }>);
 const relationToolActive = computed(() => {
   return props.activeTool === "keep_near" || props.activeTool === "keep_apart";

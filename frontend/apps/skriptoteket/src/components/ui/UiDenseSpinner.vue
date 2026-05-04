@@ -7,7 +7,7 @@
  * - keeps planner/editor loading affordances in the shared primitive layer
  */
 
-import { LoaderCircle } from "lucide-vue-next";
+import { IconSpinner } from "../icons";
 
 withDefaults(
   defineProps<{
@@ -22,12 +22,10 @@ withDefaults(
 </script>
 
 <template>
-  <LoaderCircle
+  <IconSpinner
     class="animate-spin"
     :size="size"
-    :aria-hidden="label ? undefined : 'true'"
-    :aria-label="label"
-    :stroke-width="2.4"
+    :label="label"
     data-ui="dense-spinner"
   />
 </template>

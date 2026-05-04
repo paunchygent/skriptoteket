@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * Canonical remove/decrement symbol.
+ * Canonical classroom symbol.
  *
  * Relationships:
  * - exported through `src/components/icons/index.ts`
- * - pairs with `IconPlus` for dense stepper-style adjustment controls
+ * - uses the approved Tabler fallback for teacher/classroom semantics
  */
 
-import { Minus } from "lucide-vue-next";
+import { IconChalkboardTeacher } from "@tabler/icons-vue";
 
 defineProps<{
   size?: number;
@@ -15,9 +15,9 @@ defineProps<{
 </script>
 
 <template>
-  <Minus
+  <IconChalkboardTeacher
     :size="size ?? 24"
-    :stroke-width="2.5"
+    stroke-width="2"
     aria-hidden="true"
   />
 </template>

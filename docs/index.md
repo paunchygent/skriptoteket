@@ -23,6 +23,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - Shared tool control language:
   `docs/reference/ref-shared-tool-control-language-v1.md`
+- Symbol semantics inventory and decision contract:
+  `docs/reference/ref-symbol-semantics-inventory-and-decision-contract-2026-05-04.md`
 - Frontend transition continuity pattern:
   `docs/reference/ref-frontend-transition-continuity-v1.md`
 - Frontend design-system codemap:
@@ -168,6 +170,15 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0247-st-32-08-landing-showcase-svg-asset-cutover-and-backup-preservation.md`
 - ST-32-08 landing authenticated-value copy alternatives mockup:
   `docs/mockups/st-32-08-landing-authenticated-value-copy-alternatives/README.md`
+- ST-29-12 symbol inventory and semantic mapping:
+  `docs/mockups/st-29-12-symbol-inventory/README.md`
+- ST-29-12 canonical symbol language story:
+  `docs/backlog/stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md`
+- ST-29-12 symbol inventory task sequence:
+  `docs/backlog/prs/pr-0291-st-29-12-symbol-inventory-and-visual-index-artifact.md`,
+  `docs/backlog/prs/pr-0292-st-29-12-semantic-symbol-decision-matrix.md`,
+  `docs/backlog/prs/pr-0293-st-29-12-klassrumskartan-symbol-implementation.md`,
+  `docs/backlog/prs/pr-0294-st-29-12-shared-site-symbol-rollout-and-guardrails.md`
 - ST-32-08 landing authenticated-value copy refresh:
   `docs/backlog/prs/pr-0270-st-32-08-landing-authenticated-value-copy-refresh.md`
 - ST-32-09 canonical public-route recovery + SPA unmatched state story:

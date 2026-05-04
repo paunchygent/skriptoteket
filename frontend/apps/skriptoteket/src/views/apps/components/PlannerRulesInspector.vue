@@ -9,7 +9,7 @@
 
 import { computed } from "vue";
 
-import { IconSettings, IconTrash } from "../../../components/icons";
+import { IconEdit, IconTrash } from "../../../components/icons";
 import type { RelationshipRule, Student } from "../classroomPlannerTypes";
 import {
   formatRelationshipRuleHeading,
@@ -93,7 +93,7 @@ function relationshipRuleHeading(rule: RelationshipRule, index: number): string 
             aria-label="Redigera regeln Nära läraren"
             @click="emit('edit-near-teacher')"
           >
-            <IconSettings :size="14" />
+            <IconEdit :size="14" />
           </button>
           <button
             type="button"
@@ -135,7 +135,7 @@ function relationshipRuleHeading(rule: RelationshipRule, index: number): string 
             :aria-label="`Redigera ${relationshipRuleHeading(rule, index)}`"
             @click="emit('edit-rule', rule.id)"
           >
-            <IconSettings :size="14" />
+            <IconEdit :size="14" />
           </button>
           <button
             type="button"

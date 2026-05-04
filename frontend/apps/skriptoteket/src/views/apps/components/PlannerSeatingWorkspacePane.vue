@@ -10,7 +10,7 @@
 
 import { computed, ref } from "vue";
 
-import { IconArrow, IconUsersRound } from "../../../components/icons";
+import { IconArrow, IconStudents } from "../../../components/icons";
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import {
@@ -134,7 +134,7 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
         @click="togglePhoneStudentSheet"
       >
         <span class="flex min-w-0 items-center gap-2">
-          <IconUsersRound
+          <IconStudents
             :size="17"
             class="shrink-0"
           />

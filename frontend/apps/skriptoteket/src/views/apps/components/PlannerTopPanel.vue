@@ -11,12 +11,12 @@
 import { computed, ref, type Component } from "vue";
 
 import {
-  IconArmchair,
   IconCheck,
-  IconClipboardList,
+  IconGroupsWorkspace,
   IconMoreVertical,
-  IconSettings,
-  IconUsersRound,
+  IconOverview,
+  IconRules,
+  IconSeatingPlan,
   IconX,
 } from "../../../components/icons";
 import UiSegmentedToggle, {
@@ -114,22 +114,22 @@ const modeMetadata: Record<WorkspaceMode, {
   overview: {
     label: "Översikt",
     subtitle: "Snabböversikt",
-    icon: IconClipboardList,
+    icon: IconOverview,
   },
   grouping: {
     label: "Grupper",
     subtitle: "Gruppindelning",
-    icon: IconUsersRound,
+    icon: IconGroupsWorkspace,
   },
   seating: {
     label: "Sittplatser",
     subtitle: "Klassrumskarta",
-    icon: IconArmchair,
+    icon: IconSeatingPlan,
   },
   rules: {
     label: "Regler",
     subtitle: "Regler och relationer",
-    icon: IconSettings,
+    icon: IconRules,
   },
 };
 const activeModeOption = computed(() => {
@@ -193,7 +193,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
   return {
     label: option.label,
     subtitle: option.title ?? "",
-    icon: IconClipboardList,
+    icon: IconOverview,
   };
 }
 </script>
