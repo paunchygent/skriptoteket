@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * Phone overview distribution row.
+ * Overview distribution panel.
  *
  * Relationships:
- * - adapts the shared share/export panel to the small-screen overview
- * - keeps Grupper and Sittplatser selection inside the Dela affordance
+ * - adapts the shared share/export panel to overview-only distribution
+ * - rendered in separate phone/tablet and desktop containers by the parent
  * - emits scope-specific actions while the route shell prepares drafts in place
  */
 
@@ -21,28 +21,53 @@ import type {
 
 type OverviewDistributionScope = "grouping" | "seating";
 
-const props = defineProps<{
-  hasRoster: boolean;
-  hasTemplate: boolean;
-  showGroupingOption?: boolean;
-  showSeatingOption?: boolean;
-  groupingExportBusy?: boolean;
-  groupingExportErrorMessage?: string | null;
-  groupingShareBusy?: boolean;
-  groupingShareLoading?: boolean;
-  groupingShareStatusLabel?: string | null;
-  groupingShareErrorMessage?: string | null;
-  groupingShareRevokingId?: string | null;
-  groupingShares?: ClassroomPlannerShareArtifact[];
-  seatingExportBusy?: boolean;
-  seatingExportErrorMessage?: string | null;
-  seatingShareBusy?: boolean;
-  seatingShareLoading?: boolean;
-  seatingShareStatusLabel?: string | null;
-  seatingShareErrorMessage?: string | null;
-  seatingShareRevokingId?: string | null;
-  seatingShares?: ClassroomPlannerShareArtifact[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    testPrefix: "phone-overview" | "desktop-overview";
+    autoPrepare?: boolean;
+    hasRoster: boolean;
+    hasTemplate: boolean;
+    showGroupingOption?: boolean;
+    showSeatingOption?: boolean;
+    groupingExportBusy?: boolean;
+    groupingExportErrorMessage?: string | null;
+    groupingShareBusy?: boolean;
+    groupingShareLoading?: boolean;
+    groupingShareStatusLabel?: string | null;
+    groupingShareErrorMessage?: string | null;
+    groupingShareRevokingId?: string | null;
+    groupingShares?: ClassroomPlannerShareArtifact[];
+    seatingExportBusy?: boolean;
+    seatingExportErrorMessage?: string | null;
+    seatingShareBusy?: boolean;
+    seatingShareLoading?: boolean;
+    seatingShareStatusLabel?: string | null;
+    seatingShareErrorMessage?: string | null;
+    seatingShareRevokingId?: string | null;
+    seatingShares?: ClassroomPlannerShareArtifact[];
+  }>(),
+  {
+    autoPrepare: true,
+    showGroupingOption: true,
+    showSeatingOption: true,
+    groupingExportBusy: false,
+    groupingExportErrorMessage: null,
+    groupingShareBusy: false,
+    groupingShareLoading: false,
+    groupingShareStatusLabel: null,
+    groupingShareErrorMessage: null,
+    groupingShareRevokingId: null,
+    groupingShares: () => [],
+    seatingExportBusy: false,
+    seatingExportErrorMessage: null,
+    seatingShareBusy: false,
+    seatingShareLoading: false,
+    seatingShareStatusLabel: null,
+    seatingShareErrorMessage: null,
+    seatingShareRevokingId: null,
+    seatingShares: () => [],
+  },
+);
 
 const emit = defineEmits<{
   (e: "prepare", scope: OverviewDistributionScope): void;
@@ -186,10 +211,15 @@ function selectScope(value: string): void {
 }
 
 onMounted(() => {
-  prepare();
+  if (props.autoPrepare !== false) {
+    prepare();
+  }
 });
 
 watch(resolvedScope, (scope) => {
+  if (props.autoPrepare === false) {
+    return;
+  }
   if (preparedScope.value === scope) {
     return;
   }
@@ -197,6 +227,9 @@ watch(resolvedScope, (scope) => {
 });
 
 watch(() => props.hasRoster, (hasRoster) => {
+  if (props.autoPrepare === false) {
+    return;
+  }
   if (!hasRoster || preparedScope.value === resolvedScope.value) {
     return;
   }
@@ -263,12 +296,14 @@ function revokeShare(share: ClassroomPlannerShareArtifact): void {
     :show-share-actions="hasRoster"
     :scope-value="resolvedScope"
     :scope-options="scopeOptions"
+    :class="testPrefix === 'desktop-overview' ? 'planner-share-export-overview-desktop' : undefined"
+    :visual-variant="testPrefix === 'desktop-overview' ? 'desktop-overview' : 'default'"
     trigger-variant="inline"
-    trigger-test-id="phone-overview-share-export-row"
-    panel-test-id="phone-overview-share-export-panel"
-    create-share-test-id="phone-overview-share-create"
-    create-share-mobile-test-id="phone-overview-share-create-mobile"
-    file-option-test-id-prefix="phone-overview-export-option"
+    :trigger-test-id="`${testPrefix}-share-export-row`"
+    :panel-test-id="`${testPrefix}-share-export-panel`"
+    :create-share-test-id="`${testPrefix}-share-create`"
+    :create-share-mobile-test-id="`${testPrefix}-share-create-mobile`"
+    :file-option-test-id-prefix="`${testPrefix}-export-option`"
     @select-scope="selectScope"
     @create-share="createShare"
     @copy-share="copyShare"

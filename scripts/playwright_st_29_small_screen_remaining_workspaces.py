@@ -313,6 +313,31 @@ def _assert_fits_viewport(page: Page, locator: Locator, *, label: str) -> None:
         )
 
 
+def _assert_desktop_overview_distribution_row_heights(page: Page) -> None:
+    """Assert desktop overview Dela actions share the same column-row height."""
+
+    panel = page.locator('[data-test="desktop-overview-share-export-panel"]').first
+    expect(panel).to_be_visible()
+    panel.scroll_into_view_if_needed()
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / "desktop-overview-distribution-panel.png"),
+        full_page=False,
+    )
+    height_selectors = {
+        "scope": '[data-test="planner-share-export-scope-grouping"]',
+        "link": '[data-test="desktop-overview-share-create"]',
+        "file": '[data-test="desktop-overview-export-option-a3"]',
+    }
+    heights: dict[str, float] = {}
+    for label, selector in height_selectors.items():
+        box = panel.locator(selector).first.bounding_box()
+        if box is None:
+            raise AssertionError(f"Expected desktop overview {label} action to be visible.")
+        heights[label] = box["height"]
+    if len({round(height) for height in heights.values()}) != 1:
+        raise AssertionError(f"Expected desktop overview Dela row heights to match, got {heights}.")
+
+
 def _verify_mobile_prerequisite_blocking(page: Page, *, viewport_label: str) -> None:
     """Verify unavailable phone modes look and behave blocked before setup exists."""
 
@@ -481,6 +506,8 @@ def _verify_viewport(page: Page, *, viewport_label: str, width: int, height: int
         path=str(ARTIFACTS_DIR / f"{viewport_label}-overview.png"),
         full_page=True,
     )
+    if viewport_label == "desktop":
+        _assert_desktop_overview_distribution_row_heights(page)
     _capture_mode_shell(page, viewport_label=viewport_label, width=width)
     _capture_workspace(page, mode="grouping", label="Grupper", viewport_label=viewport_label)
     _capture_workspace(page, mode="seating", label="Sittplatser", viewport_label=viewport_label)

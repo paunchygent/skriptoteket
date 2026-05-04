@@ -40,6 +40,7 @@ const props = withDefaults(
     fileOptionTestIdPrefix?: string;
     triggerVariant?: "toolbar" | "phone-row" | "menu-item" | "inline";
     triggerMeta?: string | null;
+    visualVariant?: "default" | "desktop-overview";
     scopeValue?: string | null;
     scopeOptions?: PlannerShareExportScopeOption[];
   }>(),
@@ -63,6 +64,7 @@ const props = withDefaults(
     fileOptionTestIdPrefix: "planner-share-export-file",
     triggerVariant: "toolbar",
     triggerMeta: null,
+    visualVariant: "default",
     scopeValue: null,
     scopeOptions: () => [],
   },
@@ -384,6 +386,7 @@ onUnmounted(() => {
           :share-error-message="shareErrorMessage"
           :revoking-share-id="revokingShareId"
           :show-revoke-action="showRevokeAction"
+          :visual-variant="visualVariant"
           :create-share-test-id="createShareTestId"
           :create-share-mobile-test-id="createShareMobileTestId"
           @create-share="emit('create-share')"
@@ -397,6 +400,7 @@ onUnmounted(() => {
           :export-busy="exportBusy"
           :export-error-message="exportErrorMessage"
           :file-option-test-id-prefix="fileOptionTestIdPrefix"
+          :visual-variant="visualVariant"
           @export-default="emit('export-default')"
           @export-option="emit('export-option', $event)"
         />

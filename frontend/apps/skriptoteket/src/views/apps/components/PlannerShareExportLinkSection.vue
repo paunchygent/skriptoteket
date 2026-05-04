@@ -24,6 +24,7 @@ const props = withDefaults(
     shareStatusLabel?: string | null;
     shareErrorMessage?: string | null;
     showRevokeAction?: boolean;
+    visualVariant?: "default" | "desktop-overview";
     createShareTestId: string;
     createShareMobileTestId: string;
   }>(),
@@ -35,6 +36,7 @@ const props = withDefaults(
     shareStatusLabel: null,
     shareErrorMessage: null,
     showRevokeAction: true,
+    visualVariant: "default",
   },
 );
 
@@ -69,7 +71,42 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
     class="border-b border-navy/15"
     aria-labelledby="planner-share-export-link-heading"
   >
-    <div class="grid gap-3 px-3.5 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-4">
+    <div
+      v-if="visualVariant === 'desktop-overview'"
+      class="planner-share-export-link-actions px-3.5 py-3 md:px-4"
+    >
+      <h3
+        id="planner-share-export-link-heading"
+        class="mb-2 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/65"
+      >
+        Länk
+      </h3>
+      <button
+        type="button"
+        class="planner-share-export-link-create-button grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border border-navy bg-navy px-2.5 text-left text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:opacity-55"
+        :disabled="isCreateActionBusy"
+        :data-test="createShareTestId"
+        :aria-busy="isCreateActionBusy ? 'true' : undefined"
+        :aria-label="isCreateActionBusy ? 'Skapar länk' : undefined"
+        @click="emit('create-share')"
+      >
+        <UiDenseSpinner
+          v-if="isCreateActionBusy"
+          :size="12"
+        />
+        <IconPlus
+          v-else
+          :size="13"
+        />
+        <span class="truncate text-[11px] font-semibold leading-none">
+          Skapa länk
+        </span>
+      </button>
+    </div>
+    <div
+      v-else
+      class="planner-share-export-link-actions grid gap-3 px-3.5 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-4"
+    >
       <div>
         <h3
           id="planner-share-export-link-heading"

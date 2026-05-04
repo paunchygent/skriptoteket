@@ -365,6 +365,51 @@ body.app-shell-game-mode::before {
     @apply border border-dashed border-navy/25 bg-canvas px-3 py-2 text-xs text-navy/60;
   }
 
+  .planner-share-export-overview-desktop .planner-share-export-inline-panel {
+    @apply shadow-brutal-sm;
+    min-height: 18rem;
+    max-height: 18rem;
+  }
+
+  .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] {
+    display: grid;
+    grid-template-columns: minmax(13rem, 0.75fr) minmax(18rem, 1fr) minmax(16rem, 1fr);
+    align-items: stretch;
+  }
+
+  .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] > section {
+    border-bottom: 0;
+    border-right: 1px solid rgb(28 46 74 / 0.15);
+  }
+
+  .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] > section:last-child {
+    border-right: 0;
+  }
+
+  .planner-share-export-overview-desktop [data-test="planner-share-export-link-state"] {
+    min-height: 5.5rem;
+  }
+
+  .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"] {
+    height: 3rem;
+    min-height: 3rem;
+  }
+
+  .planner-share-export-overview-desktop .planner-share-export-link-create-button {
+    height: 3rem;
+  }
+
+  .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"][aria-pressed="true"] {
+    border-color: var(--huleedu-navy);
+    background-color: var(--huleedu-navy);
+    color: var(--huleedu-canvas);
+  }
+
+  .planner-share-export-overview-desktop .planner-share-export-file-option {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    height: 3rem;
+  }
+
   .planner-modal-footer-button {
     @apply min-h-[2.75rem] shadow-none;
     @apply active:translate-x-0 active:translate-y-0 active:shadow-none;
@@ -879,6 +924,10 @@ body.app-shell-game-mode::before {
 .planner-workspace-split-row,
 .planner-grouping-layout-row {
   display: none;
+}
+
+.planner-desktop-overview-grid {
+  gap: var(--huleedu-space-4);
 }
 
 .page-enter-active,

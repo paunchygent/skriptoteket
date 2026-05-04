@@ -185,4 +185,21 @@ describe("PlannerShareExportPanel", () => {
     expect(visibleMobileActions).toHaveLength(1);
     expect(visibleMobileActions[0]?.attributes("data-test")).toBe("grouping-share-create-mobile");
   });
+
+  it("uses desktop overview row actions instead of toolbar button tokens", () => {
+    const wrapper = mount(PlannerShareExportPanel, {
+      props: {
+        fileOptions: groupingFileOptions(),
+        triggerVariant: "inline",
+        visualVariant: "desktop-overview",
+        createShareTestId: "desktop-overview-share-create",
+        createShareMobileTestId: "desktop-overview-share-create-mobile",
+      },
+    });
+
+    const createButton = wrapper.get('[data-test="desktop-overview-share-create"]');
+    expect(createButton.classes()).toContain("planner-share-export-link-create-button");
+    expect(createButton.attributes("data-ui")).toBeUndefined();
+    expect(createButton.classes()).not.toContain("h-10");
+  });
 });

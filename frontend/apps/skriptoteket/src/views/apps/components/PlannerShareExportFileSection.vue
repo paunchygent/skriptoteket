@@ -8,6 +8,7 @@
  */
 
 import { computed } from "vue";
+import { FileSpreadsheet, FileText } from "lucide-vue-next";
 
 import { IconDownload } from "../../../components/icons";
 import { UiDenseSpinner } from "../../../components/ui";
@@ -21,6 +22,7 @@ const props = defineProps<{
   exportBusy?: boolean;
   exportErrorMessage?: string | null;
   fileOptionTestIdPrefix: string;
+  visualVariant?: "default" | "desktop-overview";
 }>();
 
 const emit = defineEmits<{
@@ -41,6 +43,16 @@ function selectFileOption(option: PlannerExportFileOption): void {
     return;
   }
   emit("export-option", option.option);
+}
+
+function fileTypeLabel(option: PlannerExportFileOption): string {
+  if (option.option === "xlsx") {
+    return "XLSX";
+  }
+  if (option.option === "a3_landscape" || option.option === "a4_landscape") {
+    return "PDF";
+  }
+  return option.option.includes("pdf") ? "PDF" : "FIL";
 }
 </script>
 
@@ -72,28 +84,69 @@ function selectFileOption(option: PlannerExportFileOption): void {
         v-for="option in fileOptions"
         :key="option.id"
         type="button"
-        class="grid h-10 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border border-navy/20 bg-white px-2.5 text-left text-navy transition-colors hover:border-navy/35 hover:bg-canvas/70 disabled:cursor-not-allowed disabled:opacity-55"
+        :class="[
+          'planner-share-export-file-option grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border border-navy/20 bg-white px-2.5 text-left text-navy transition-colors hover:border-navy/35 hover:bg-canvas/70 disabled:cursor-not-allowed disabled:opacity-55',
+          visualVariant === 'desktop-overview' ? 'h-12' : 'h-10',
+        ]"
         :disabled="exportBusy"
         :data-test="`${fileOptionTestIdPrefix}-${option.id}`"
         :aria-busy="exportBusy && option.id === defaultFileOption?.id ? 'true' : undefined"
         @click="selectFileOption(option)"
       >
-        <UiDenseSpinner
-          v-if="exportBusy && option.id === defaultFileOption?.id"
-          :size="12"
-        />
-        <IconDownload
-          v-else
-          :size="13"
-        />
+        <template v-if="visualVariant === 'desktop-overview'">
+          <FileSpreadsheet
+            v-if="option.option === 'xlsx'"
+            :size="14"
+            :stroke-width="2.25"
+            aria-hidden="true"
+          />
+          <FileText
+            v-else-if="option.option === 'a3_landscape' || option.option === 'a4_landscape'"
+            :size="14"
+            :stroke-width="2.25"
+            aria-hidden="true"
+          />
+          <FileText
+            v-else
+            :size="14"
+            :stroke-width="2.25"
+            aria-hidden="true"
+          />
+        </template>
+        <template v-else>
+          <UiDenseSpinner
+            v-if="exportBusy && option.id === defaultFileOption?.id"
+            :size="12"
+          />
+          <IconDownload
+            v-else
+            :size="13"
+          />
+        </template>
         <span class="truncate text-[11px] font-semibold leading-none">
           {{ option.label }}
         </span>
+        <template v-if="visualVariant === 'desktop-overview'">
+          <UiDenseSpinner
+            v-if="exportBusy && option.id === defaultFileOption?.id"
+            :size="12"
+          />
+          <IconDownload
+            v-else
+            :size="13"
+          />
+        </template>
         <span
-          v-if="option.isDefault"
+          v-else-if="option.isDefault"
           class="text-[10px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/50"
         >
           Standard
+        </span>
+        <span
+          v-else
+          class="text-[10px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-navy/45"
+        >
+          {{ fileTypeLabel(option) }}
         </span>
       </button>
     </div>

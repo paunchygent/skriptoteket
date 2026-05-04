@@ -26,8 +26,8 @@ import {
 } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
 import PlannerDesktopOverviewSetupPanel from "./PlannerDesktopOverviewSetupPanel.vue";
+import PlannerOverviewDistributionPanel from "./PlannerOverviewDistributionPanel.vue";
 import PlannerPhoneOverviewSetupPanel from "./PlannerPhoneOverviewSetupPanel.vue";
-import PlannerPhoneOverviewShareExportRow from "./PlannerPhoneOverviewShareExportRow.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
 type OverviewDistributionScope = "grouping" | "seating";
@@ -243,7 +243,8 @@ function selectWorkspaceMode(value: string): void {
           @delete-current-template="emit('delete-current-template')"
         />
 
-        <PlannerPhoneOverviewShareExportRow
+        <PlannerOverviewDistributionPanel
+          test-prefix="phone-overview"
           :has-roster="Boolean(selectedRoster)"
           :has-template="Boolean(selectedTemplate)"
           :show-grouping-option="overviewCapabilities?.show_grouping_option !== false"
@@ -304,6 +305,43 @@ function selectWorkspaceMode(value: string): void {
           @create-template="emit('create-template')"
           @edit-current-template="emit('edit-current-template', $event)"
           @delete-current-template="emit('delete-current-template')"
+        />
+
+        <PlannerOverviewDistributionPanel
+          test-prefix="desktop-overview"
+          class="planner-desktop-overview-distribution"
+          :auto-prepare="false"
+          :has-roster="Boolean(selectedRoster)"
+          :has-template="Boolean(selectedTemplate)"
+          :show-grouping-option="overviewCapabilities?.show_grouping_option !== false"
+          :show-seating-option="overviewCapabilities?.show_seating_option !== false"
+          :grouping-export-busy="groupingExportBusy"
+          :grouping-export-error-message="groupingExportErrorMessage"
+          :grouping-share-busy="groupingShareBusy"
+          :grouping-share-loading="groupingShareLoading"
+          :grouping-share-status-label="groupingShareStatusLabel"
+          :grouping-share-error-message="groupingShareErrorMessage"
+          :grouping-share-revoking-id="groupingShareRevokingId"
+          :grouping-shares="groupingShares"
+          :seating-export-busy="seatingExportBusy"
+          :seating-export-error-message="seatingExportErrorMessage"
+          :seating-share-busy="seatingShareBusy"
+          :seating-share-loading="seatingShareLoading"
+          :seating-share-status-label="seatingShareStatusLabel"
+          :seating-share-error-message="seatingShareErrorMessage"
+          :seating-share-revoking-id="seatingShareRevokingId"
+          :seating-shares="seatingShares"
+          @prepare="emit('prepare-overview-distribution', $event)"
+          @export-grouping-default="emit('export-overview-grouping-default')"
+          @export-grouping-option="emit('export-overview-grouping-option', $event)"
+          @share-grouping-link="emit('share-overview-grouping-link')"
+          @copy-grouping-share="emit('copy-overview-grouping-share', $event)"
+          @revoke-grouping-share="emit('revoke-overview-grouping-share', $event)"
+          @export-seating-default="emit('export-overview-seating-default')"
+          @export-seating-option="emit('export-overview-seating-option', $event)"
+          @share-seating-link="emit('share-overview-seating-link')"
+          @copy-seating-share="emit('copy-overview-seating-share', $event)"
+          @revoke-seating-share="emit('revoke-overview-seating-share', $event)"
         />
       </div>
     </template>
