@@ -86,6 +86,7 @@ const emit = defineEmits<{
 const selectedScope = ref<OverviewDistributionScope | null>(null);
 const preparedScope = ref<OverviewDistributionScope | null>(null);
 
+const canDistribute = computed(() => props.hasRoster);
 const resolvedScope = computed<OverviewDistributionScope>(() => {
   if (selectedScope.value === "seating" && props.hasTemplate) {
     return "seating";
@@ -102,6 +103,8 @@ const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
       : [{
         value: "grouping",
         label: "Gruppindelning",
+        disabled: !canDistribute.value,
+        disabledReason: canDistribute.value ? null : "Skapa en klasslista först.",
       }]
   ),
   ...(
@@ -110,8 +113,12 @@ const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
       : [{
         value: "seating",
         label: "Sittschema",
-        disabled: !props.hasTemplate,
-        disabledReason: props.hasTemplate ? null : "Välj ett klassrum först.",
+        disabled: !canDistribute.value || !props.hasTemplate,
+        disabledReason: !canDistribute.value
+          ? "Skapa en klasslista först."
+          : props.hasTemplate
+            ? null
+            : "Välj ett klassrum först.",
       }]
   ),
 ]);
@@ -294,7 +301,7 @@ function revokeShare(share: ClassroomPlannerShareArtifact): void {
     :revoking-share-id="revokingShareId"
     :show-file-actions="hasRoster"
     :show-share-actions="hasRoster"
-    :scope-value="resolvedScope"
+    :scope-value="canDistribute ? resolvedScope : null"
     :scope-options="scopeOptions"
     :class="testPrefix === 'desktop-overview' ? 'planner-share-export-overview-desktop' : undefined"
     :visual-variant="testPrefix === 'desktop-overview' ? 'desktop-overview' : 'default'"

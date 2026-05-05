@@ -215,6 +215,28 @@ describe("PlannerClassWorkspace", () => {
       .toBeDefined();
   });
 
+  it("does not preselect a share/export scope when requirements are missing", () => {
+    const wrapper = mountWorkspace({
+      selectedRosterId: null,
+      selectedTemplateId: null,
+      workspaceSummary: null,
+      availableRosters: [],
+      availableTemplates: [],
+    });
+
+    const groupingScope = wrapper.get("[data-test='planner-share-export-scope-grouping']");
+    const seatingScope = wrapper.get("[data-test='planner-share-export-scope-seating']");
+
+    expect(groupingScope.attributes("disabled")).toBeDefined();
+    expect(seatingScope.attributes("disabled")).toBeDefined();
+    expect(groupingScope.attributes("aria-pressed")).toBe("false");
+    expect(seatingScope.attributes("aria-pressed")).toBe("false");
+    expect(groupingScope.classes()).not.toContain("bg-action");
+    expect(seatingScope.classes()).not.toContain("bg-action");
+    expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Länk");
+    expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Filer");
+  });
+
   it("uses the top selector as direct task entry and carries the selected classroom only for seating", async () => {
     const wrapper = mountWorkspace({
       selectedTemplateId: "template-2",

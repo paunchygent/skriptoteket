@@ -193,7 +193,8 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
 
         <ul
           v-else
-          class="divide-y divide-navy/10"
+          class="planner-share-export-link-list divide-y divide-navy/10"
+          data-test="planner-share-export-link-list"
         >
           <li
             v-for="share in activeShares"

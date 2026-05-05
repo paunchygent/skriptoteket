@@ -379,11 +379,14 @@ body.app-shell-game-mode::before {
     display: grid;
     grid-template-columns: minmax(13rem, 0.75fr) minmax(18rem, 1fr) minmax(16rem, 1fr);
     align-items: stretch;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] > section {
     border-bottom: 0;
     border-right: 1px solid rgb(8 43 76 / 0.15);
+    min-height: 0;
   }
 
   .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] > section:last-child {
@@ -391,7 +394,29 @@ body.app-shell-game-mode::before {
   }
 
   .planner-share-export-overview-desktop [data-test="planner-share-export-link-state"] {
-    min-height: 5.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .planner-share-export-overview-desktop [aria-labelledby="planner-share-export-link-heading"] {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .planner-share-export-overview-desktop [data-test="planner-share-export-link-state-content"] {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .planner-share-export-overview-desktop .planner-share-export-link-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"] {

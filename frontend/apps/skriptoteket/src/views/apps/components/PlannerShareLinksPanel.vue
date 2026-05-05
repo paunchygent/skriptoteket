@@ -159,7 +159,7 @@ onUnmounted(() => {
 
     <section
       v-if="isOpen"
-      class="fixed inset-x-0 bottom-0 z-[40] max-h-[85vh] overflow-y-auto rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:w-[32rem] md:overflow-visible md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm"
+      class="fixed inset-x-0 bottom-0 z-[40] flex max-h-[85vh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,34rem)] md:w-[32rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm"
       role="dialog"
       aria-label="Delade länkar"
       :data-test="panelTestId"
@@ -230,93 +230,98 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <p
-        v-if="statusLabel"
-        class="border-b border-navy/10 px-3.5 py-2 text-[11px] font-semibold text-navy/65"
-        data-test="planner-share-status"
+      <div
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        data-test="planner-share-links-scroll"
       >
-        {{ statusLabel }}
-      </p>
-      <p
-        v-if="errorMessage"
-        class="border-b border-critical/20 bg-critical/5 px-3.5 py-2 text-[11px] font-semibold text-critical"
-        data-test="planner-share-error"
-      >
-        {{ errorMessage }}
-      </p>
-
-      <p
-        v-if="loading && activeShareCount === 0"
-        class="px-3.5 py-4 text-sm font-semibold text-navy/65"
-      >
-        Hämtar länkar…
-      </p>
-      <p
-        v-else-if="activeShareCount === 0"
-        class="px-3.5 py-4 text-sm text-navy/65"
-        data-test="planner-share-links-empty"
-      >
-        Inga aktiva delade länkar för det här utkastet.
-      </p>
-
-      <ul
-        v-else
-        class="divide-y divide-navy/10"
-      >
-        <li
-          v-for="share in activeShares"
-          :key="share.id"
-          class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-3"
-          :data-test="`planner-share-link-${share.id}`"
+        <p
+          v-if="statusLabel"
+          class="border-b border-navy/10 px-3.5 py-2 text-[11px] font-semibold text-navy/65"
+          data-test="planner-share-status"
         >
-          <div class="min-w-0">
-            <p class="truncate text-sm font-semibold leading-tight text-navy">
-              {{ share.title }}
-            </p>
-            <p class="mt-0.5 truncate font-mono text-[10px] text-navy/50">
-              {{ formatActiveMeta(share) }}
-            </p>
-          </div>
-          <div class="flex min-w-max items-center justify-end gap-1.5">
-            <button
-              type="button"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-canvas/40 text-navy transition-colors hover:border-action/45 hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
-              :disabled="!share.public_url"
-              :data-test="`planner-share-copy-${share.id}`"
-              title="Kopiera länk till urklipp"
-              @click="emit('copy-share', share)"
-            >
-              <IconCopy
-                :size="12"
-              />
-              <span class="sr-only md:not-sr-only">Kopiera</span>
-            </button>
-            <button
-              v-if="showRevokeAction"
-              type="button"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-critical/30 bg-canvas/40 text-critical transition-colors hover:bg-critical/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
-              :disabled="revokingShareId === share.id"
-              :data-test="`planner-share-revoke-${share.id}`"
-              title="Återkalla länken"
-              :aria-busy="revokingShareId === share.id ? 'true' : undefined"
-              :aria-label="revokingShareId === share.id ? 'Återkallar länken' : undefined"
-              @click="emit('revoke-share', share)"
-            >
-              <UiDenseSpinner
-                v-if="revokingShareId === share.id"
-                :size="12"
-              />
-              <IconTrash
-                v-else
-                :size="12"
-              />
-              <span class="sr-only md:not-sr-only">
-                Återkalla
-              </span>
-            </button>
-          </div>
-        </li>
-      </ul>
+          {{ statusLabel }}
+        </p>
+        <p
+          v-if="errorMessage"
+          class="border-b border-critical/20 bg-critical/5 px-3.5 py-2 text-[11px] font-semibold text-critical"
+          data-test="planner-share-error"
+        >
+          {{ errorMessage }}
+        </p>
+
+        <p
+          v-if="loading && activeShareCount === 0"
+          class="px-3.5 py-4 text-sm font-semibold text-navy/65"
+        >
+          Hämtar länkar…
+        </p>
+        <p
+          v-else-if="activeShareCount === 0"
+          class="px-3.5 py-4 text-sm text-navy/65"
+          data-test="planner-share-links-empty"
+        >
+          Inga aktiva delade länkar för det här utkastet.
+        </p>
+
+        <ul
+          v-else
+          class="divide-y divide-navy/10"
+        >
+          <li
+            v-for="share in activeShares"
+            :key="share.id"
+            class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-3"
+            :data-test="`planner-share-link-${share.id}`"
+          >
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold leading-tight text-navy">
+                {{ share.title }}
+              </p>
+              <p class="mt-0.5 truncate font-mono text-[10px] text-navy/50">
+                {{ formatActiveMeta(share) }}
+              </p>
+            </div>
+            <div class="flex min-w-max items-center justify-end gap-1.5">
+              <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-canvas/40 text-navy transition-colors hover:border-action/45 hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+                :disabled="!share.public_url"
+                :data-test="`planner-share-copy-${share.id}`"
+                title="Kopiera länk till urklipp"
+                @click="emit('copy-share', share)"
+              >
+                <IconCopy
+                  :size="12"
+                />
+                <span class="sr-only md:not-sr-only">Kopiera</span>
+              </button>
+              <button
+                v-if="showRevokeAction"
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-critical/30 bg-canvas/40 text-critical transition-colors hover:bg-critical/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+                :disabled="revokingShareId === share.id"
+                :data-test="`planner-share-revoke-${share.id}`"
+                title="Återkalla länken"
+                :aria-busy="revokingShareId === share.id ? 'true' : undefined"
+                :aria-label="revokingShareId === share.id ? 'Återkallar länken' : undefined"
+                @click="emit('revoke-share', share)"
+              >
+                <UiDenseSpinner
+                  v-if="revokingShareId === share.id"
+                  :size="12"
+                />
+                <IconTrash
+                  v-else
+                  :size="12"
+                />
+                <span class="sr-only md:not-sr-only">
+                  Återkalla
+                </span>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
     </section>
   </div>
 </template>

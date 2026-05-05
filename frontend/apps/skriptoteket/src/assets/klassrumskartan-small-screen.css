@@ -267,6 +267,20 @@
   min-height: 5.75rem;
 }
 
+@media (max-width: 767px) {
+  .planner-share-export-link-list {
+    --planner-share-export-link-row-height: 3.75rem;
+
+    max-height: calc(var(--planner-share-export-link-row-height) * 4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .planner-share-export-link-list > li {
+    min-height: var(--planner-share-export-link-row-height);
+  }
+}
+
 .planner-phone-seating-student-toggle {
   display: flex;
   min-height: 2.5rem;

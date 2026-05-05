@@ -186,6 +186,25 @@ describe("PlannerShareExportPanel", () => {
     expect(visibleMobileActions[0]?.attributes("data-test")).toBe("grouping-share-create-mobile");
   });
 
+  it("marks the created-link list as the mobile scroll owner", async () => {
+    const shares = Array.from({ length: 5 }, (_, index) => makeShare({
+      id: `share-scroll-${index + 1}`,
+      publicUrl: `https://skriptoteket.hule.education/share/classroom/scroll-${index + 1}/klass-7a`,
+    }));
+    const wrapper = mount(PlannerShareExportPanel, {
+      props: {
+        fileOptions: groupingFileOptions(),
+        shares,
+      },
+    });
+
+    await wrapper.get('[data-test="planner-share-export-trigger"]').trigger("click");
+
+    const linkList = wrapper.get('[data-test="planner-share-export-link-list"]');
+    expect(linkList.classes()).toContain("planner-share-export-link-list");
+    expect(wrapper.findAll('[data-test^="planner-share-link-share-scroll-"]')).toHaveLength(5);
+  });
+
   it("uses desktop overview row actions instead of toolbar button tokens", () => {
     const wrapper = mount(PlannerShareExportPanel, {
       props: {
