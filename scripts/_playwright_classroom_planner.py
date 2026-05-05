@@ -107,7 +107,10 @@ def login_to_app(page: Page, *, base_url: str, email: str, password: str) -> Non
 def create_roster(page: Page, *, roster_name: str) -> None:
     """Create a deterministic class list through the live roster modal."""
 
-    create_button = page.get_by_role("button", name=re.compile(r"Ny klasslista", re.IGNORECASE))
+    create_button = page.get_by_role(
+        "button",
+        name=re.compile(r"Ny klass(?:lista)?", re.IGNORECASE),
+    )
     expect(create_button).to_be_visible(timeout=60000)
     create_button.click()
     expect(

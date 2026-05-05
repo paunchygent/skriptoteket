@@ -29,3 +29,9 @@ currently cause jumpy transitions for users.
 - Tool run settings save: `frontend/apps/skriptoteket/src/components/tool-run/ToolRunSettingsPanel.vue`
 - Suggestion submit: `frontend/apps/skriptoteket/src/views/SuggestionNewView.vue`
 - Admin suggestion decision: `frontend/apps/skriptoteket/src/views/admin/AdminSuggestionDetailView.vue`
+
+### Follow-up migration targets
+
+- `PR-0299`: audit auth/logout and critical non-blocking action failures so
+  transient failures use dismissible failure toasts, while blocking states stay
+  inline through `SystemMessage`.

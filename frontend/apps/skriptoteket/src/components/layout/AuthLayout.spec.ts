@@ -60,7 +60,6 @@ describe("AuthLayout", () => {
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,
-        logoutError: null,
         logoutInProgress: false,
       },
       slots: {
@@ -87,7 +86,6 @@ describe("AuthLayout", () => {
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,
-        logoutError: null,
         logoutInProgress: false,
       },
       slots: {
@@ -113,7 +111,6 @@ describe("AuthLayout", () => {
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,
-        logoutError: null,
         logoutInProgress: false,
       },
       slots: {

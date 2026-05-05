@@ -15,6 +15,8 @@ from starlette_dishka import StarletteProvider
 
 from skriptoteket.config import Settings
 from skriptoteket.di.catalog import CatalogProvider
+from skriptoteket.di.classroom_planner_rosters import ClassroomPlannerRosterProvider
+from skriptoteket.di.classroom_planner_smart_rules import ClassroomPlannerSmartRuleProvider
 from skriptoteket.di.curated_apps import CuratedAppsProvider
 from skriptoteket.di.editor import EditorProvider
 from skriptoteket.di.favorites import FavoritesProvider
@@ -34,6 +36,8 @@ from skriptoteket.di.suggestions import SuggestionsProvider
 
 __all__ = [
     "CatalogProvider",
+    "ClassroomPlannerRosterProvider",
+    "ClassroomPlannerSmartRuleProvider",
     "CuratedAppsProvider",
     "EditorProvider",
     "FavoritesProvider",
@@ -64,6 +68,8 @@ def create_container(settings: Settings):
         InfrastructureSessionFilesProvider(),
         InfrastructureCuratedAppsProvider(),
         CuratedAppsProvider(),
+        ClassroomPlannerRosterProvider(),
+        ClassroomPlannerSmartRuleProvider(),
         IdentityProvider(),
         CatalogProvider(),
         FavoritesProvider(),

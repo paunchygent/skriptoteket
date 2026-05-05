@@ -161,4 +161,32 @@ describe("useSmartSeatingRun", () => {
     expect(applyWorkspace).not.toHaveBeenCalled();
     expect(smartRun.tone.value).toBe("warning");
   });
+
+  it("uses teacher-safe copy for fixed-seat validation failures", async () => {
+    const draft = ref(createWorkspace().draft);
+    clientMocks.apiPost.mockRejectedValue(
+      new Error("Fixed-seat rules must reference classroom seats."),
+    );
+    const smartRun = useSmartSeatingRun({
+      draft,
+      smartRulesHydrated: ref(true),
+      runningState: ref(false),
+      flushDraftLane: vi.fn().mockResolvedValue({ status: "saved" }),
+      flushSmartRuleLane: vi.fn().mockResolvedValue({ status: "saved" }),
+      applyWorkspace: vi.fn(),
+      normalizeErrorMessage: vi.fn(() => "Fixed-seat rules must reference classroom seats."),
+    });
+
+    const result = await smartRun.run();
+
+    expect(result).toEqual({
+      status: "blocked",
+      message:
+        "En fast plats kan inte användas längre. Kontrollera eleven och platsen och försök igen.",
+    });
+    expect(smartRun.message.value).toBe(
+      "En fast plats kan inte användas längre. Kontrollera eleven och platsen och försök igen.",
+    );
+    expect(smartRun.tone.value).toBe("warning");
+  });
 });

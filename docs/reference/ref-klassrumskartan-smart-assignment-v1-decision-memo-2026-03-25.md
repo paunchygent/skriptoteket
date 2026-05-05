@@ -5,8 +5,9 @@ title: "Klassrumskartan smart assignment v1 decision memo (2026-03-25)"
 status: active
 owners: "agents"
 created: 2026-03-25
+updated: 2026-05-05
 topic: "smart-assignment"
-links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09"]
 ---
 
 ## Summary
@@ -42,11 +43,22 @@ explicit, and the current class-first workflow intact.
     `Regler`
   - task-pane drawers or overflow menus must not become full rule editors
 - Give `Regler` two map views over the same authoring session:
-  - `Planeringskarta` is the default and always uses one clean alphabetical planning layout that
-    does not inherit classroom geometry or the current seating draft
-  - `Sittschema` mirrors the current seating draft when it exists
+  - as refined by `ST-27-09`, the classroom-faithful view is the default when a classroom exists
+  - `Planeringskarta` remains available as a deliberate abstract planning view and always uses one
+    clean alphabetical planning layout that does not inherit classroom geometry or the current
+    seating draft
+  - `Sittschema` mirrors the current seating draft when it exists; future teacher-facing copy
+    should call that destination `Klassrumsvyn` / `klassrumsvyn`
 - Add one seating-only rule:
   - `Närmare läraren`
+- Add one hard classroom-template-scoped seating rule:
+  - `Fast plats`
+  - it binds one roster student to one physical seat
+  - it can be authored only from the classroom-faithful view
+  - from `Planeringskarta`, clicking the tool prompts:
+    `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?`
+  - `Ja` switches to the classroom view and activates the tool; `Nej` or close keeps the teacher on
+    `Planeringskarta`
 - Lock the first interaction model:
   - one active smart tool at a time
   - `Närmare läraren` is a unary click-to-toggle rule
@@ -85,6 +97,12 @@ explicit, and the current class-first workflow intact.
   - `Keep near` in seating means one local vicinity overall, but a 2-student pair should prefer
     direct left/right or above/below adjacency over diagonal placement
   - `Keep apart` in grouping should spread cluster members across different groups whenever possible
+- Treat `Fast plats` as a hard seating invariant rather than a scored preference:
+  - fixed placements must be validated before solving
+  - fixed students and fixed seats are removed from the remaining search problem
+  - all candidate scoring must see the merged fixed + candidate mapping
+  - an impossible or conflicting fixed placement fails the smart seating run without saving a
+    partial result
 - Compute teacher-distance from room-owned teaching cues:
   - recommend that the teacher places `Whiteboard` or `Kateder`
   - if no stronger cue exists, assume the teaching position is the top-middle of the room
@@ -153,7 +171,21 @@ The approved planning package for this memo is:
 - `ST-27-04`: smart grouping v1
 - `ST-27-05`: smart explanations and rerun messaging
 - `ST-27-06`: planner session lanes and transition matrix remediation
+- `ST-27-09`: fixed-seat rules and classroom-view-first rule authoring
 - `REV-EPIC-27`: required review package before implementation begins
 - `PR-0152`: implementation design task for the frontend session-lane remediation
 - `PR-0155`: implementation design task for the dedicated rules workspace and task-pane summary
   cut-over
+- `PR-0297`: backend fixed-seat persistence and score-aware solver seeding
+- `PR-0298`: frontend fixed-seat tool and classroom-view-first rules UX
+
+## 2026-05-05 refinement
+
+The original V1 memo made `Planeringskarta` the default rules view. `ST-27-09` refines that default
+after the fixed-seat design discussion:
+
+- when a classroom exists, the classroom-faithful view is the default rules surface
+- `Planeringskarta` remains available and must stay a stable abstract alphabetical planning map
+- geometry-evaluated student rules can still be authored from either view, but the UI should nudge
+  teachers toward classroom geometry
+- `Fast plats` is geometry-targeted and therefore must be authored from the classroom view

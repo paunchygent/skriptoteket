@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * Editor sandbox runner shell.
+ *
+ * This component coordinates schema-driven sandbox inputs, run execution, file
+ * reference cleanup, and post-run action submission for editor preview checks.
+ */
+
 import { computed, ref, toRef, watch } from "vue";
 
 import { apiFetch } from "../../api/client";
@@ -9,6 +16,7 @@ import { useSandboxFileRefs } from "../../composables/editor/useSandboxFileRefs"
 import { useSandboxSettings } from "../../composables/editor/useSandboxSettings";
 import { useToolInputs, type ToolInputFormValues } from "../../composables/tools/useToolInputs";
 import type { FileSelectionMode } from "../../composables/tools/useToolInputs";
+import { useToast } from "../../composables/useToast";
 import { getFileRefSource } from "../../composables/tools/fileRefHelpers";
 import SystemMessage from "../ui/SystemMessage.vue";
 import SandboxInputPanel from "./SandboxInputPanel.vue";
@@ -36,6 +44,7 @@ const props = defineProps<{
 }>();
 
 const toolInputs = useToolInputs({ schema: toRef(props, "inputSchema") });
+const toast = useToast();
 
 const inputValues = toolInputs.values;
 const inputFields = toolInputs.nonFileFields;
@@ -154,12 +163,8 @@ async function deleteFileRefs(payload: { field: string; refs: string[] }): Promi
       },
     );
     await sandboxFileRefs.fetchFileRefs(snapshotId);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      runExec.errorMessage.value = error.message;
-    } else {
-      runExec.errorMessage.value = "Det gick inte att ta bort filer.";
-    }
+  } catch {
+    toast.failure("Det gick inte att ta bort filerna. Försök igen.");
   }
 }
 

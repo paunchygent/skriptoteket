@@ -27,6 +27,7 @@ import {
   type CreateClassroomPlannerGuestDraftSessionOptions,
 } from "./classroomPlannerGuestDraftPersistence";
 import { createClassroomPlannerGuestDraftWorkspace } from "./classroomPlannerGuestDraftWorkspace";
+import { createClassroomPlannerSmartRunActions } from "./classroomPlannerSmartRunActions";
 import { usePublicSmartGroupingRun } from "./usePublicSmartGroupingRun";
 import { usePublicSmartSeatingRun } from "./usePublicSmartSeatingRun";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
@@ -36,6 +37,7 @@ import { useSmartRuleUiState } from "./useSmartRuleUiState";
 import type {
   DraftGroup,
   DraftWorkspaceResponse,
+  FixedSeatRule,
   PlanDraft,
   RelationshipRule,
   RoomTemplate,
@@ -52,6 +54,7 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
+  const fixedSeatRules = ref<FixedSeatRule[]>([]);
   const smartRulesRevision = ref(0);
   const historyStatus = ref({
     can_undo: false,
@@ -115,6 +118,7 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
     seatAssignments,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
   });
   const draftLane = useDraftPersistenceLane({
@@ -161,6 +165,7 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
     seatAssignmentsByStudentId,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
     historyStatus,
     historyActionInFlight,
@@ -223,9 +228,12 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
   });
   const smartRuleActions = createClassroomPlannerSmartRuleActions({
     draft,
+    template,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     studentsById,
+    seatsById,
     isWorkspaceBusy,
     canEditSeatingSmartRules,
     draftLane,
@@ -306,28 +314,14 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
     applyWorkspace: applyWorkspaceWithHistoryCapture,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
-  async function runGroupingShuffle(): Promise<void> {
-    publicSmartGroupingRun.clearFeedback();
-    if (!draft.value || draft.value.draft_kind !== "grouping") {
-      return;
-    }
-    if ((draft.value.smart_enabled ?? false) !== true) {
-      mutationActions.randomizeGroups();
-      return;
-    }
-    await publicSmartGroupingRun.run();
-  }
-  async function runSeatingShuffle(): Promise<void> {
-    publicSmartSeatingRun.clearFeedback();
-    if (!draft.value || draft.value.draft_kind !== "seating") {
-      return;
-    }
-    if ((draft.value.smart_enabled ?? false) !== true) {
-      mutationActions.randomizeSeating();
-      return;
-    }
-    await publicSmartSeatingRun.run();
-  }
+  const smartRunActions = createClassroomPlannerSmartRunActions({
+    draft,
+    smartSeatingRun: publicSmartSeatingRun,
+    smartGroupingRun: publicSmartGroupingRun,
+    randomizeSeating: mutationActions.randomizeSeating,
+    randomizeGroups: mutationActions.randomizeGroups,
+    clearFeedbackBeforeRun: true,
+  });
   async function noopHistoryAction(): Promise<void> {
     return;
   }
@@ -413,7 +407,7 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
       studentsById, seatsById, fixturesById, groupsById,
       groupAssignmentsByStudentId,
       seatAssignmentsByStudentId,
-      seatingPreferences, relationshipRules, smartRulesRevision, smartRulesHydrated,
+      seatingPreferences, relationshipRules, fixedSeatRules, smartRulesRevision, smartRulesHydrated,
       groupAssignments, seatAssignments,
       ungroupedStudents, unseatedStudents, studentsByGroupId, studentBySeatId, zones,
       canUndo, canRedo,
@@ -421,10 +415,14 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
     smartRuleState: {
       activeSeatingSmartTool: smartRuleUiState.activeSeatingSmartTool,
       pendingRelationshipStudentIds: smartRuleUiState.pendingRelationshipStudentIds,
+      pendingFixedSeatStudentId: smartRuleUiState.pendingFixedSeatStudentId,
+      pendingFixedSeatSeatId: smartRuleUiState.pendingFixedSeatSeatId,
+      editingFixedSeatRuleId: smartRuleUiState.editingFixedSeatRuleId,
       editingRelationshipRuleId: smartRuleUiState.editingRelationshipRuleId,
       editingNearTeacherRule: smartRuleUiState.editingNearTeacherRule,
       smartRuleFeedbackMessage: smartRuleUiState.feedbackMessage,
       canCommitPendingRelationshipRule: smartRuleUiState.canCommitPendingRelationshipRule,
+      canCommitPendingFixedSeatRule: smartRuleUiState.canCommitPendingFixedSeatRule,
       setDraftSmartEnabled: smartRuleActions.setDraftSmartEnabled,
       setDraftUseHistoryEnabled: smartRuleActions.setDraftUseHistoryEnabled,
       setActiveSeatingSmartTool: smartRuleUiState.setActiveSeatingSmartTool,
@@ -434,10 +432,16 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
       handleSeatingSmartToolStudentSelection:
         smartRuleActions.handleSeatingSmartToolStudentSelection,
       commitPendingRelationshipRule: smartRuleActions.commitPendingRelationshipRule,
+      selectFixedSeatRuleSeat: smartRuleActions.selectFixedSeatRuleSeat,
+      commitPendingFixedSeatRule: smartRuleActions.commitPendingFixedSeatRule,
       beginRelationshipRuleEdit: smartRuleActions.beginRelationshipRuleEdit,
       beginNearTeacherEdit: smartRuleActions.beginNearTeacherEdit,
+      beginFixedSeatRuleEdit: smartRuleActions.beginFixedSeatRuleEdit,
       clearNearTeacherRule: smartRuleActions.clearNearTeacherRule,
       deleteRelationshipRule: smartRuleActions.deleteRelationshipRule,
+      deleteFixedSeatRule: smartRuleActions.deleteFixedSeatRule,
+      fixedSeatRuleForStudent: smartRuleActions.fixedSeatRuleForStudent,
+      fixedSeatRuleForSeat: smartRuleActions.fixedSeatRuleForSeat,
       isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
       setDraftGroupingSeatingDistanceEnabled:
         smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
@@ -487,9 +491,9 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
       moveGroup: mutationActions.moveGroup,
       removeGroup: mutationActions.removeGroup,
       randomizeGroups: mutationActions.randomizeGroups,
-      runGroupingShuffle,
+      runGroupingShuffle: smartRunActions.runGroupingShuffle,
       randomizeSeating: mutationActions.randomizeSeating,
-      runSeatingShuffle,
+      runSeatingShuffle: smartRunActions.runSeatingShuffle,
     },
   });
 }

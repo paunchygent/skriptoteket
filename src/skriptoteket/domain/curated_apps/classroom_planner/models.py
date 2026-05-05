@@ -149,6 +149,17 @@ class RelationshipRule(BaseModel):
     student_ids: list[str] = Field(min_length=2)
 
 
+class FixedSeatRule(BaseModel):
+    """Represent one hard student-to-seat placement for a room template."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    id: str
+    template_id: UUID
+    student_id: str
+    seat_id: str
+
+
 class RosterSmartRules(BaseModel):
     """Represent roster-owned smart rules shared across drafts for one class."""
 
@@ -158,6 +169,7 @@ class RosterSmartRules(BaseModel):
     revision: int = 0
     seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
     relationship_rules: list[RelationshipRule] = Field(default_factory=list)
+    fixed_seat_rules: list[FixedSeatRule] = Field(default_factory=list)
 
 
 class PlanDraftStatus(StrEnum):

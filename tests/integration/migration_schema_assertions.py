@@ -1,190 +1,59 @@
 """Schema assertions for revision-focused Alembic idempotency tests.
 
-This module centralizes the uncovered migration revisions that still need
-explicit integration coverage and provides behavior-level schema assertions for
-each revision. The companion idempotency runner upgrades to a revision, reruns
-that same revision as a no-op, downgrades to its parent, and upgrades again.
+Purpose:
+    Provide behavior-level schema assertions for migration revisions covered by
+    the idempotency runner.
+
+Relationships:
+    - Shares revision inventory and reusable SQL inspection helpers with the
+      migration coverage support modules.
+    - Supports upgrade, no-op rerun, downgrade, and re-upgrade proof for each
+      covered revision.
 """
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
-
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-RevisionAssertion = Callable[[AsyncEngine], Awaitable[None]]
-
-COVERED_REVISION_IDS: tuple[str, ...] = (
-    "0001_init",
-    "0012_tool_owner_user_id",
-    "0014_tool_versions_settings",
-    "0022_email_verification_tokens",
-    "0026_profile_ai_settings",
-    "0032_user_file_vault",
-    "57a6ea32ef0a",
-    "f30ac060991c",
-    "4f5605f8be18",
-    "8a1d4c7b32ef",
-    "c2a6b2f4d91e",
-    "d8f0d0ef2b6d",
-    "9f1a6c4d2e7b",
-    "6b44e9b5d3c1",
-    "91f6c4a7b2d1",
-    "4cb43fe0cf54",
-    "71e8b6f24c1a",
-    "9d7c4a12b6ef",
-    "b18f6a0d3e2c",
-    "c9c1c9270a3d",
-    "e4b7c2d9a1f0",
-    "f6c1e2a9b3d4",
-    "7b8a6f1d2c3e",
-    "8c4d2e1f7a9b",
-    "1d3e5f7a9b2c",
-    "5f2c7d1a9b8e",
-    "4a9d7c1e2b34",
-    "2b6c4d8e1f9a",
-    "6a1e9d3c4b7f",
-    "7d4c1a2b9e6f",
-    "3e8b5c1a7d4f",
-    "4d2c6b8e1a9f",
-    "8f3d2c1b4a6e",
-    "a1e4d6c8b2f0",
-    "b7f9c2d4e1a6",
-    "d3a9f6b2c4e7",
-    "c1d2e3f4a5b6",
-    "a8f5c7d9e2b1",
-    "b4c6d8e1f2a3",
-    "c7d9e3f5a1b2",
-    "e2f4a6b8c9d0",
-    "f8a2c6d4e9b1",
+from tests.integration.migration_revision_coverage import COVERED_REVISION_IDS
+from tests.integration.migration_schema_helpers import (
+    RevisionAssertion,
+)
+from tests.integration.migration_schema_helpers import (
+    check_constraint_names as _check_constraint_names,
+)
+from tests.integration.migration_schema_helpers import (
+    column_map as _column_map,
+)
+from tests.integration.migration_schema_helpers import (
+    foreign_key_targets as _foreign_key_targets,
+)
+from tests.integration.migration_schema_helpers import (
+    index_definitions as _index_definitions,
+)
+from tests.integration.migration_schema_helpers import (
+    index_names as _index_names,
+)
+from tests.integration.migration_schema_helpers import (
+    scalar_count as _scalar_count,
+)
+from tests.integration.migration_schema_helpers import (
+    table_names as _table_names,
+)
+from tests.integration.migration_schema_share_assertions import (
+    assert_0d9c_fixed_seat_rules,
+    assert_a8f5_classroom_planner_share_artifacts,
+    assert_b4c6_share_artifact_lifecycle_fks,
+    assert_c7d9_share_artifact_public_path,
+    assert_e2f4_public_guest_share_controls,
+    assert_f8a2_share_preview_assets,
 )
 
-
-async def _table_names(engine: AsyncEngine) -> set[str]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
-        )
-        return {row[0] for row in result.fetchall()}
-
-
-async def _column_map(engine: AsyncEngine, table_name: str) -> dict[str, dict[str, object]]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(
-                """
-                SELECT column_name, is_nullable
-                FROM information_schema.columns
-                WHERE table_schema = 'public' AND table_name = :table_name
-                """
-            ),
-            {"table_name": table_name},
-        )
-        return {row.column_name: {"is_nullable": row.is_nullable} for row in result.fetchall()}
-
-
-async def _index_names(engine: AsyncEngine, table_name: str) -> set[str]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(
-                """
-                SELECT indexname
-                FROM pg_indexes
-                WHERE schemaname = 'public' AND tablename = :table_name
-                """
-            ),
-            {"table_name": table_name},
-        )
-        return {row[0] for row in result.fetchall()}
-
-
-async def _index_definitions(engine: AsyncEngine, table_name: str) -> dict[str, str]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(
-                """
-                SELECT indexname, indexdef
-                FROM pg_indexes
-                WHERE schemaname = 'public' AND tablename = :table_name
-                """
-            ),
-            {"table_name": table_name},
-        )
-        return {row.indexname: row.indexdef for row in result.fetchall()}
-
-
-async def _foreign_key_targets(engine: AsyncEngine, table_name: str) -> dict[str, str]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(
-                """
-                SELECT
-                    kcu.column_name,
-                    ccu.table_name
-                FROM information_schema.table_constraints tc
-                JOIN information_schema.key_column_usage kcu
-                  ON tc.constraint_name = kcu.constraint_name
-                 AND tc.table_schema = kcu.table_schema
-                JOIN information_schema.constraint_column_usage ccu
-                  ON ccu.constraint_name = tc.constraint_name
-                 AND ccu.table_schema = tc.table_schema
-                WHERE tc.constraint_type = 'FOREIGN KEY'
-                  AND tc.table_schema = 'public'
-                  AND tc.table_name = :table_name
-                """
-            ),
-            {"table_name": table_name},
-        )
-        return {row[0]: row[1] for row in result.fetchall()}
-
-
-async def _foreign_key_delete_rules(engine: AsyncEngine, table_name: str) -> dict[str, str]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(
-                """
-                SELECT
-                    kcu.column_name,
-                    rc.delete_rule
-                FROM information_schema.table_constraints tc
-                JOIN information_schema.key_column_usage kcu
-                  ON tc.constraint_name = kcu.constraint_name
-                 AND tc.table_schema = kcu.table_schema
-                JOIN information_schema.referential_constraints rc
-                  ON rc.constraint_name = tc.constraint_name
-                 AND rc.constraint_schema = tc.table_schema
-                WHERE tc.constraint_type = 'FOREIGN KEY'
-                  AND tc.table_schema = 'public'
-                  AND tc.table_name = :table_name
-                """
-            ),
-            {"table_name": table_name},
-        )
-        return {row[0]: row[1] for row in result.fetchall()}
-
-
-async def _check_constraint_names(engine: AsyncEngine, table_name: str) -> set[str]:
-    async with engine.connect() as conn:
-        result = await conn.execute(
-            text(
-                """
-                SELECT constraint_name
-                FROM information_schema.table_constraints
-                WHERE table_schema = 'public'
-                  AND table_name = :table_name
-                  AND constraint_type = 'CHECK'
-                """
-            ),
-            {"table_name": table_name},
-        )
-        return {row[0] for row in result.fetchall()}
-
-
-async def _scalar_count(engine: AsyncEngine, table_name: str) -> int:
-    async with engine.connect() as conn:
-        result = await conn.execute(text(f'SELECT COUNT(*) FROM "{table_name}"'))
-        return int(result.scalar_one())
+__all__ = [
+    "COVERED_REVISION_IDS",
+    "SCHEMA_ASSERTIONS",
+    "assert_schema_for_revision",
+]
 
 
 async def _assert_0001_init(engine: AsyncEngine) -> None:
@@ -263,117 +132,6 @@ async def _assert_c1d2_drop_browser_auth_sessions(engine: AsyncEngine) -> None:
     tables = await _table_names(engine)
     assert "sessions" not in tables
     assert "tool_sessions" in tables
-
-
-async def _assert_a8f5_classroom_planner_share_artifacts(engine: AsyncEngine) -> None:
-    await _assert_c1d2_drop_browser_auth_sessions(engine)
-    tables = await _table_names(engine)
-    assert "classroom_planner_share_artifacts" in tables
-    columns = await _column_map(engine, "classroom_planner_share_artifacts")
-    assert {
-        "token_hash",
-        "source",
-        "draft_kind",
-        "owner_user_id",
-        "draft_id",
-        "roster_id",
-        "template_id",
-        "source_revision",
-        "renderer_version",
-        "presentation_schema_version",
-        "presentation_hash",
-        "content_hash",
-        "presentation_payload",
-        "rendered_html",
-        "rendered_css",
-        "revoked_at",
-        "expires_at",
-    }.issubset(columns)
-    assert columns["token_hash"]["is_nullable"] == "NO"
-    assert columns["rendered_html"]["is_nullable"] == "NO"
-    assert columns["rendered_css"]["is_nullable"] == "NO"
-    indexes = await _index_names(engine, "classroom_planner_share_artifacts")
-    assert {
-        "ix_classroom_planner_share_artifacts_token_hash",
-        "ix_classroom_planner_share_artifacts_source",
-        "ix_classroom_planner_share_artifacts_owner_user_id",
-        "ix_classroom_planner_share_artifacts_draft_id",
-        "ix_cp_share_artifacts_owner_draft_kind_created",
-        "ix_cp_share_artifacts_expires_at",
-        "ix_cp_share_artifacts_revoked_at",
-    }.issubset(indexes)
-    foreign_keys = await _foreign_key_targets(engine, "classroom_planner_share_artifacts")
-    assert foreign_keys["owner_user_id"] == "users"
-    assert foreign_keys["draft_id"] == "classroom_planner_plan_drafts"
-
-
-async def _assert_b4c6_share_artifact_lifecycle_fks(engine: AsyncEngine) -> None:
-    await _assert_a8f5_classroom_planner_share_artifacts(engine)
-    delete_rules = await _foreign_key_delete_rules(
-        engine,
-        "classroom_planner_share_artifacts",
-    )
-    assert delete_rules["owner_user_id"] == "NO ACTION"
-    assert delete_rules["draft_id"] == "NO ACTION"
-
-
-async def _assert_c7d9_share_artifact_public_path(engine: AsyncEngine) -> None:
-    await _assert_b4c6_share_artifact_lifecycle_fks(engine)
-    columns = await _column_map(engine, "classroom_planner_share_artifacts")
-    assert "public_path" in columns
-    assert columns["public_path"]["is_nullable"] == "YES"
-
-
-async def _assert_e2f4_public_guest_share_controls(engine: AsyncEngine) -> None:
-    await _assert_c7d9_share_artifact_public_path(engine)
-    columns = await _column_map(engine, "classroom_planner_share_artifacts")
-    assert {
-        "guest_snapshot_fingerprint",
-        "client_operation_id",
-        "revoke_secret_hash",
-    }.issubset(columns)
-    assert columns["guest_snapshot_fingerprint"]["is_nullable"] == "YES"
-    assert columns["client_operation_id"]["is_nullable"] == "YES"
-    assert columns["revoke_secret_hash"]["is_nullable"] == "YES"
-    indexes = await _index_names(engine, "classroom_planner_share_artifacts")
-    assert {
-        "ix_cp_share_artifacts_public_client_op",
-        "ix_cp_share_artifacts_guest_fingerprint",
-    }.issubset(indexes)
-
-
-async def _assert_f8a2_share_preview_assets(engine: AsyncEngine) -> None:
-    await _assert_e2f4_public_guest_share_controls(engine)
-    tables = await _table_names(engine)
-    assert "classroom_planner_share_preview_assets" in tables
-    columns = await _column_map(engine, "classroom_planner_share_preview_assets")
-    assert {
-        "share_id",
-        "content_type",
-        "width",
-        "height",
-        "image_bytes",
-        "preview_content_hash",
-        "source_content_hash",
-        "presentation_hash",
-        "renderer_version",
-        "generated_at",
-        "updated_at",
-    }.issubset(columns)
-    assert columns["share_id"]["is_nullable"] == "NO"
-    assert columns["image_bytes"]["is_nullable"] == "NO"
-    foreign_keys = await _foreign_key_targets(engine, "classroom_planner_share_preview_assets")
-    assert foreign_keys["share_id"] == "classroom_planner_share_artifacts"
-    delete_rules = await _foreign_key_delete_rules(
-        engine,
-        "classroom_planner_share_preview_assets",
-    )
-    assert delete_rules["share_id"] == "CASCADE"
-    indexes = await _index_names(engine, "classroom_planner_share_preview_assets")
-    assert {
-        "ix_cp_share_preview_assets_source_hash",
-        "ix_cp_share_preview_assets_preview_hash",
-    }.issubset(indexes)
 
 
 async def _assert_0032_user_file_vault(engine: AsyncEngine) -> None:
@@ -715,11 +473,12 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "b7f9c2d4e1a6": _assert_b7f9_drop_legacy_student_notes,
     "d3a9f6b2c4e7": _assert_d3a9_guest_upgrade_identity,
     "c1d2e3f4a5b6": _assert_c1d2_drop_browser_auth_sessions,
-    "a8f5c7d9e2b1": _assert_a8f5_classroom_planner_share_artifacts,
-    "b4c6d8e1f2a3": _assert_b4c6_share_artifact_lifecycle_fks,
-    "c7d9e3f5a1b2": _assert_c7d9_share_artifact_public_path,
-    "e2f4a6b8c9d0": _assert_e2f4_public_guest_share_controls,
-    "f8a2c6d4e9b1": _assert_f8a2_share_preview_assets,
+    "a8f5c7d9e2b1": assert_a8f5_classroom_planner_share_artifacts,
+    "b4c6d8e1f2a3": assert_b4c6_share_artifact_lifecycle_fks,
+    "c7d9e3f5a1b2": assert_c7d9_share_artifact_public_path,
+    "e2f4a6b8c9d0": assert_e2f4_public_guest_share_controls,
+    "f8a2c6d4e9b1": assert_f8a2_share_preview_assets,
+    "0d9c5e8a2f31": assert_0d9c_fixed_seat_rules,
 }
 
 

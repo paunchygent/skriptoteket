@@ -11,10 +11,13 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.smart_rule
     PatchRosterSmartRulesHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    FixedSeatRule,
     RelationshipKind,
     RelationshipRule,
+    RoomTemplate,
     Roster,
     RosterSmartRules,
+    Seat,
     Student,
     StudentSeatingPreference,
 )
@@ -32,6 +35,19 @@ def _build_roster(*, roster_id, owner_user_id) -> Roster:
             Student(id="s2", display_name="Alan"),
             Student(id="s3", display_name="Barbara"),
         ],
+        created_at=now,
+        updated_at=now,
+    )
+
+
+def _build_template(*, template_id, owner_user_id) -> RoomTemplate:
+    now = datetime.now(timezone.utc)
+    return RoomTemplate(
+        id=template_id,
+        owner_user_id=owner_user_id,
+        name="Sal 101",
+        seats=[Seat(id="seat-1", x=0, y=0), Seat(id="seat-2", x=1, y=0)],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -82,7 +98,12 @@ async def test_patch_roster_smart_rules_saves_valid_rules_through_uow() -> None:
             )
         ],
     )
-    handler = PatchRosterSmartRulesHandler(uow=uow, rosters=rosters, smart_rules=smart_rules)
+    handler = PatchRosterSmartRulesHandler(
+        uow=uow,
+        rosters=rosters,
+        templates=AsyncMock(),
+        smart_rules=smart_rules,
+    )
 
     result = await handler.handle(
         roster_id=roster_id,
@@ -96,6 +117,7 @@ async def test_patch_roster_smart_rules_saves_valid_rules_through_uow() -> None:
                 student_ids=["s2", "s3"],
             )
         ],
+        fixed_seat_rules=[],
     )
 
     smart_rules.save.assert_awaited_once_with(
@@ -137,7 +159,12 @@ async def test_patch_roster_smart_rules_rejects_overlapping_relationship_cluster
     smart_rules = AsyncMock()
     uow = AsyncMock()
     rosters.get_by_id.return_value = _build_roster(roster_id=roster_id, owner_user_id=owner_user_id)
-    handler = PatchRosterSmartRulesHandler(uow=uow, rosters=rosters, smart_rules=smart_rules)
+    handler = PatchRosterSmartRulesHandler(
+        uow=uow,
+        rosters=rosters,
+        templates=AsyncMock(),
+        smart_rules=smart_rules,
+    )
 
     with pytest.raises(DomainError, match="at most one relationship rule"):
         await handler.handle(
@@ -157,6 +184,7 @@ async def test_patch_roster_smart_rules_rejects_overlapping_relationship_cluster
                     student_ids=["s2", "s3"],
                 ),
             ],
+            fixed_seat_rules=[],
         )
 
 
@@ -168,7 +196,12 @@ async def test_patch_roster_smart_rules_rejects_negative_revision() -> None:
     smart_rules = AsyncMock()
     uow = AsyncMock()
     rosters.get_by_id.return_value = _build_roster(roster_id=roster_id, owner_user_id=owner_user_id)
-    handler = PatchRosterSmartRulesHandler(uow=uow, rosters=rosters, smart_rules=smart_rules)
+    handler = PatchRosterSmartRulesHandler(
+        uow=uow,
+        rosters=rosters,
+        templates=AsyncMock(),
+        smart_rules=smart_rules,
+    )
 
     with pytest.raises(DomainError, match="zero or greater"):
         await handler.handle(
@@ -177,6 +210,7 @@ async def test_patch_roster_smart_rules_rejects_negative_revision() -> None:
             expected_revision=-1,
             seating_preferences=[],
             relationship_rules=[],
+            fixed_seat_rules=[],
         )
 
 
@@ -194,7 +228,12 @@ async def test_patch_roster_smart_rules_strips_false_near_teacher_preferences() 
         seating_preferences=[],
         relationship_rules=[],
     )
-    handler = PatchRosterSmartRulesHandler(uow=uow, rosters=rosters, smart_rules=smart_rules)
+    handler = PatchRosterSmartRulesHandler(
+        uow=uow,
+        rosters=rosters,
+        templates=AsyncMock(),
+        smart_rules=smart_rules,
+    )
 
     await handler.handle(
         roster_id=roster_id,
@@ -202,6 +241,7 @@ async def test_patch_roster_smart_rules_strips_false_near_teacher_preferences() 
         expected_revision=0,
         seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=False)],
         relationship_rules=[],
+        fixed_seat_rules=[],
     )
 
     smart_rules.save.assert_awaited_once_with(
@@ -213,3 +253,103 @@ async def test_patch_roster_smart_rules_strips_false_near_teacher_preferences() 
         ),
         expected_revision=0,
     )
+
+
+@pytest.mark.asyncio
+async def test_patch_roster_smart_rules_validates_and_saves_fixed_seat_rules() -> None:
+    roster_id = uuid4()
+    owner_user_id = uuid4()
+    template_id = uuid4()
+    rosters = AsyncMock()
+    templates = AsyncMock()
+    smart_rules = AsyncMock()
+    uow = AsyncMock()
+    rosters.get_by_id.return_value = _build_roster(roster_id=roster_id, owner_user_id=owner_user_id)
+    templates.get_by_id.return_value = _build_template(
+        template_id=template_id,
+        owner_user_id=owner_user_id,
+    )
+    fixed_rule = FixedSeatRule(
+        id="fixed-1",
+        template_id=template_id,
+        student_id="s1",
+        seat_id="seat-1",
+    )
+    smart_rules.save.return_value = RosterSmartRules(
+        roster_id=roster_id,
+        revision=1,
+        fixed_seat_rules=[fixed_rule],
+    )
+    handler = PatchRosterSmartRulesHandler(
+        uow=uow,
+        rosters=rosters,
+        templates=templates,
+        smart_rules=smart_rules,
+    )
+
+    result = await handler.handle(
+        roster_id=roster_id,
+        owner_user_id=owner_user_id,
+        expected_revision=0,
+        seating_preferences=[],
+        relationship_rules=[],
+        fixed_seat_rules=[fixed_rule],
+    )
+
+    templates.get_by_id.assert_awaited_once_with(template_id=template_id)
+    smart_rules.save.assert_awaited_once_with(
+        rules=RosterSmartRules(
+            roster_id=roster_id,
+            revision=0,
+            fixed_seat_rules=[fixed_rule],
+        ),
+        expected_revision=0,
+    )
+    assert result.fixed_seat_rules == [fixed_rule]
+
+
+@pytest.mark.asyncio
+async def test_patch_roster_smart_rules_rejects_duplicate_fixed_seats() -> None:
+    roster_id = uuid4()
+    owner_user_id = uuid4()
+    template_id = uuid4()
+    rosters = AsyncMock()
+    templates = AsyncMock()
+    smart_rules = AsyncMock()
+    uow = AsyncMock()
+    rosters.get_by_id.return_value = _build_roster(roster_id=roster_id, owner_user_id=owner_user_id)
+    templates.get_by_id.return_value = _build_template(
+        template_id=template_id,
+        owner_user_id=owner_user_id,
+    )
+    handler = PatchRosterSmartRulesHandler(
+        uow=uow,
+        rosters=rosters,
+        templates=templates,
+        smart_rules=smart_rules,
+    )
+
+    with pytest.raises(DomainError, match="One seat can be fixed"):
+        await handler.handle(
+            roster_id=roster_id,
+            owner_user_id=owner_user_id,
+            expected_revision=0,
+            seating_preferences=[],
+            relationship_rules=[],
+            fixed_seat_rules=[
+                FixedSeatRule(
+                    id="fixed-1",
+                    template_id=template_id,
+                    student_id="s1",
+                    seat_id="seat-1",
+                ),
+                FixedSeatRule(
+                    id="fixed-2",
+                    template_id=template_id,
+                    student_id="s2",
+                    seat_id="seat-1",
+                ),
+            ],
+        )
+
+    smart_rules.save.assert_not_awaited()

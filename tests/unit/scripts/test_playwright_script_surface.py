@@ -29,6 +29,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0274_authenticated_share_links.py",
     "playwright_pr_0286_share_export_affordance.py",
     "playwright_pr_0287_smart_settings_persistence.py",
+    "playwright_pr_0299_logout_failure_toast.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

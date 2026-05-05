@@ -17,6 +17,7 @@ import { computed, ref } from "vue";
 
 import { ApiError } from "../../api/client";
 import type {
+  FixedSeatRule,
   RelationshipRule,
   RosterSmartRulesResponse,
   SaveStatus,
@@ -33,6 +34,7 @@ export type RosterSmartRulePatchPayload = {
   expected_revision: number;
   seating_preferences: StudentSeatingPreference[];
   relationship_rules: RelationshipRule[];
+  fixed_seat_rules: FixedSeatRule[];
 };
 
 export type RosterSmartRuleLaneResult =

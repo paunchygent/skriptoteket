@@ -371,13 +371,14 @@ body.app-shell-game-mode::before {
 
   .planner-share-export-overview-desktop .planner-share-export-inline-panel {
     @apply shadow-brutal-sm;
+    --planner-share-export-overview-control-height: 2.875rem;
     min-height: 18rem;
     max-height: 18rem;
   }
 
   .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] {
     display: grid;
-    grid-template-columns: minmax(13rem, 0.75fr) minmax(18rem, 1fr) minmax(16rem, 1fr);
+    grid-template-columns: minmax(16rem, 0.85fr) minmax(17rem, 1fr) minmax(15rem, 1fr);
     align-items: stretch;
     min-height: 0;
     overflow: hidden;
@@ -420,12 +421,23 @@ body.app-shell-game-mode::before {
   }
 
   .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"] {
-    height: 3rem;
-    min-height: 3rem;
+    min-height: 2.25rem;
+  }
+
+  .planner-share-export-overview-desktop .planner-share-export-scope-rail {
+    height: var(--planner-share-export-overview-control-height);
+    min-height: var(--planner-share-export-overview-control-height);
+    max-height: var(--planner-share-export-overview-control-height);
+  }
+
+  .planner-share-export-overview-desktop [data-test="planner-share-export-scope-summary"] {
+    min-height: 8rem;
   }
 
   .planner-share-export-overview-desktop .planner-share-export-link-create-button {
-    height: 3rem;
+    height: var(--planner-share-export-overview-control-height);
+    min-height: var(--planner-share-export-overview-control-height);
+    max-height: var(--planner-share-export-overview-control-height);
   }
 
   .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"][aria-pressed="true"] {
@@ -440,7 +452,9 @@ body.app-shell-game-mode::before {
 
   .planner-share-export-overview-desktop .planner-share-export-file-option {
     grid-template-columns: auto minmax(0, 1fr) auto;
-    height: 3rem;
+    height: var(--planner-share-export-overview-control-height);
+    min-height: var(--planner-share-export-overview-control-height);
+    max-height: var(--planner-share-export-overview-control-height);
   }
 
   .planner-modal-footer-button {
@@ -472,7 +486,7 @@ body.app-shell-game-mode::before {
        - info:    navy / 90% + "i" icon (white)
        - success: pine green (`--huleedu-success`) / 90% + check icon (white)
        - warning: amber (`--huleedu-warning`) / 90% + warning icon (navy text for contrast)
-       - failure: critical / 90% + × icon (white)
+       - failure: warm terracotta (`--huleedu-terracotta`) / 90% + × icon (white)
      ════════════════════════════════════════════════════════════════════════ */
 
   .toast-container {
@@ -541,7 +555,7 @@ body.app-shell-game-mode::before {
   }
 
   .toast-failure {
-    @apply bg-critical/90;
+    @apply bg-terracotta/90;
     color: var(--button-primary-text);
   }
 

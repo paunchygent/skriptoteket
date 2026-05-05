@@ -25,7 +25,7 @@
   --huleedu-panel: rgba(250, 250, 246, 0.64); /* Canvas-toned panel shell that lets the grid breathe */
   --huleedu-panel-muted: rgba(250, 250, 246, 0.38);
   --huleedu-navy: #082B4C;          /* Deep Navy: structure + long-form text */
-  --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent only */
+  --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent + transient failure toast */
   --huleedu-action: #3F7F78;        /* Verdigris Teal: functional action/selection */
   --huleedu-critical: #4D1521;      /* Burgundy family: destructive/critical decisions */
   --huleedu-burgundy: var(--huleedu-critical); /* Deprecated compatibility alias */

@@ -39,9 +39,9 @@ export function useGroupingShareFlow(options: UseGroupingShareFlowOptions) {
       scopeChangedMessage: "Grouping share scope changed.",
       initialStatusLabel: "Skapar delningslänk…",
       copiedMessage: "Delningslänken är kopierad.",
-      createFallbackMessage: "Det gick inte att skapa delningslänken just nu.",
+      createFallbackMessage: "Det gick inte att skapa delningslänken. Klicka på Skapa länk igen.",
       listFallbackMessage: "Kunde inte hämta delade länkar.",
-      revokeFallbackMessage: "Kunde inte återkalla länken just nu.",
+      revokeFallbackMessage: "Det gick inte att återkalla länken. Klicka på Återkalla igen.",
       copyUnavailableMessage: "Länken kan inte kopieras förrän den skapats om.",
     },
   });

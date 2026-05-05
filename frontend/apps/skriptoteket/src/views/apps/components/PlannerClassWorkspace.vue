@@ -123,6 +123,19 @@ const selectedRosterCountLabel = computed(() => {
   }
   return null;
 });
+const selectedTemplateSeatCountLabel = computed(() => {
+  const seatCount = selectedTemplate.value?.seats.length;
+  if (seatCount === undefined) {
+    return null;
+  }
+  return seatCount === 1 ? "1 plats" : `${seatCount} platser`;
+});
+const overviewGroupingDraft = computed(() => {
+  return props.visibleGroupingDraft ?? props.workspaceSummary?.active_grouping_draft ?? null;
+});
+const overviewSeatingDraft = computed(() => {
+  return props.visibleSeatingDraft ?? props.workspaceSummary?.active_seating_draft ?? null;
+});
 const workspaceDisabledReasons = computed(() => {
   const baseReasons = resolvePlannerWorkspaceDisabledReasons({
     hasRoster: hasSelectedRoster.value,
@@ -247,6 +260,12 @@ function selectWorkspaceMode(value: string): void {
           test-prefix="phone-overview"
           :has-roster="Boolean(selectedRoster)"
           :has-template="Boolean(selectedTemplate)"
+          :roster-label="selectedRoster?.name ?? workspaceSummary?.roster.name"
+          :classroom-label="selectedTemplate?.name"
+          :roster-count-label="selectedRosterCountLabel"
+          :classroom-seat-count-label="selectedTemplateSeatCountLabel"
+          :grouping-draft-updated-at="overviewGroupingDraft?.updated_at"
+          :seating-draft-updated-at="overviewSeatingDraft?.updated_at"
           :show-grouping-option="overviewCapabilities?.show_grouping_option !== false"
           :show-seating-option="overviewCapabilities?.show_seating_option !== false"
           :grouping-export-busy="groupingExportBusy"
@@ -313,6 +332,12 @@ function selectWorkspaceMode(value: string): void {
           :auto-prepare="false"
           :has-roster="Boolean(selectedRoster)"
           :has-template="Boolean(selectedTemplate)"
+          :roster-label="selectedRoster?.name ?? workspaceSummary?.roster.name"
+          :classroom-label="selectedTemplate?.name"
+          :roster-count-label="selectedRosterCountLabel"
+          :classroom-seat-count-label="selectedTemplateSeatCountLabel"
+          :grouping-draft-updated-at="overviewGroupingDraft?.updated_at"
+          :seating-draft-updated-at="overviewSeatingDraft?.updated_at"
           :show-grouping-option="overviewCapabilities?.show_grouping_option !== false"
           :show-seating-option="overviewCapabilities?.show_seating_option !== false"
           :grouping-export-busy="groupingExportBusy"

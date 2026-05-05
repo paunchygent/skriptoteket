@@ -7,11 +7,18 @@
 
 import type { Ref } from "vue";
 
+import { useToast } from "../../composables/useToast";
+import { createClassroomPlannerHistoryDraftActions } from "./classroomPlannerHistoryDraftActions";
 import type { PlannerScreen, PlannerWorkspaceInitialView } from "./classroomPlannerOverviewStore";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
 import { flushPlannerRouteShellSave } from "./classroomPlannerRouteShellSaveGuards";
 import type { PlannerRouteShellSaveController } from "./classroomPlannerRouteShellSaveGuards";
-import type { ClassWorkspaceSummary, PlanDraftSummary } from "./classroomPlannerTypes";
+import type { ClassWorkspaceSummary } from "./classroomPlannerTypes";
+import {
+  activeDraftId,
+  resolveRulesWorkspaceTemplateId,
+  resolveSeatingWorkspaceTemplateId,
+} from "./classroomPlannerWorkspaceResolution";
 
 type PlannerRouteShellWorkspaceState = {
   selectedRosterId: Ref<string | null>;
@@ -64,58 +71,19 @@ type ChangeGroupingRosterPayload = {
   rosterId: string;
 };
 
-function activeDraftId(
-  summary: ClassWorkspaceSummary | null,
-  draftKind: "grouping" | "seating",
-): string | null {
-  const draft: PlanDraftSummary | null =
-    draftKind === "grouping"
-      ? (summary?.active_grouping_draft ?? null)
-      : (summary?.active_seating_draft ?? null);
-  return draft?.id ?? null;
-}
-
-function resolveRulesWorkspaceTemplateId(options: {
-  bootstrapsSeatingHost: boolean;
-  plannerTemplateId: string | null;
-  activeSeatingTemplateId: string | null;
-  selectedWorkspaceTemplateId: string | null;
-}): string | null {
-  if (options.bootstrapsSeatingHost) {
-    return (
-      options.selectedWorkspaceTemplateId
-      ?? options.plannerTemplateId
-      ?? options.activeSeatingTemplateId
-      ?? null
-    );
-  }
-
-  return (
-    options.plannerTemplateId
-    ?? options.activeSeatingTemplateId
-    ?? options.selectedWorkspaceTemplateId
-    ?? null
-  );
-}
-
-function resolveSeatingWorkspaceTemplateId(options: {
-  plannerTemplateId: string | null;
-  activeSeatingTemplateId: string | null;
-  selectedWorkspaceTemplateId: string | null;
-}): string | null {
-  return (
-    options.plannerTemplateId
-    ?? options.activeSeatingTemplateId
-    ?? options.selectedWorkspaceTemplateId
-    ?? null
-  );
-}
-
 export function createClassroomPlannerWorkspaceFlow(
   state: PlannerRouteShellWorkspaceState,
   actions: PlannerRouteShellWorkspaceActions,
   plannerState: PlannerRouteShellWorkspacePlannerState,
 ) {
+  const toast = useToast();
+  const historyDraftActions = createClassroomPlannerHistoryDraftActions(
+    state,
+    actions,
+    plannerState,
+    toast,
+  );
+
   async function openWorkspace(
     payload: OpenWorkspacePayload,
     draftKind: "grouping" | "seating",
@@ -440,85 +408,6 @@ export function createClassroomPlannerWorkspaceFlow(
     }
   }
 
-  async function openGroupingHistoryDraft(draftId: string): Promise<void> {
-    state.plannerActionError.value = null;
-    try {
-      await plannerState.activateGroupingHistoryDraft(draftId);
-      await actions.refreshClassWorkspaceSummaryForSelectedRoster();
-      state.plannerInitialView.value = "groups";
-      state.currentScreen.value = "planner";
-    } catch (error: unknown) {
-      state.plannerActionError.value = normalizeClassroomPlannerUiError(
-        error,
-        "Kunde inte öppna det historiska grupputkastet just nu.",
-      );
-    }
-  }
-
-  async function openSeatingHistoryDraft(draftId: string): Promise<void> {
-    if (state.isSeatingLifecycleBusy.value) {
-      return;
-    }
-    state.plannerActionError.value = null;
-    state.isSeatingLifecycleBusy.value = true;
-    state.busySeatingHistoryDraftId.value = draftId;
-    try {
-      await plannerState.activateSeatingHistoryDraft(draftId);
-      await actions.refreshClassWorkspaceSummaryForSelectedRoster();
-      state.plannerInitialView.value = "seats";
-      state.currentScreen.value = "planner";
-    } catch (error: unknown) {
-      state.plannerActionError.value = normalizeClassroomPlannerUiError(
-        error,
-        "Kunde inte öppna det historiska sittschemat just nu.",
-      );
-    } finally {
-      state.busySeatingHistoryDraftId.value = null;
-      state.isSeatingLifecycleBusy.value = false;
-    }
-  }
-
-  async function deleteGroupingHistoryDraft(draftId: string): Promise<void> {
-    const rosterId = state.selectedRosterId.value ?? state.classWorkspaceSummary.value?.roster.id ?? null;
-    if (!rosterId) {
-      return;
-    }
-
-    state.plannerActionError.value = null;
-    try {
-      await plannerState.deleteGroupingHistoryDraft(draftId);
-      await actions.loadClassWorkspaceSummary(rosterId);
-    } catch (error: unknown) {
-      state.plannerActionError.value = normalizeClassroomPlannerUiError(
-        error,
-        "Kunde inte ta bort det historiska grupputkastet just nu.",
-      );
-    }
-  }
-
-  async function deleteSeatingHistoryDraft(draftId: string): Promise<void> {
-    const rosterId = state.selectedRosterId.value ?? state.classWorkspaceSummary.value?.roster.id ?? null;
-    if (!rosterId || state.isSeatingLifecycleBusy.value) {
-      return;
-    }
-
-    state.plannerActionError.value = null;
-    state.isSeatingLifecycleBusy.value = true;
-    state.busySeatingHistoryDraftId.value = draftId;
-    try {
-      await plannerState.deleteSeatingHistoryDraft(draftId);
-      await actions.loadClassWorkspaceSummary(rosterId);
-    } catch (error: unknown) {
-      state.plannerActionError.value = normalizeClassroomPlannerUiError(
-        error,
-        "Kunde inte ta bort det historiska sittschemat just nu.",
-      );
-    } finally {
-      state.busySeatingHistoryDraftId.value = null;
-      state.isSeatingLifecycleBusy.value = false;
-    }
-  }
-
   async function selectPlannerWorkspaceMode(
     mode: "overview" | "grouping" | "seating" | "rules",
   ): Promise<void> {
@@ -584,10 +473,10 @@ export function createClassroomPlannerWorkspaceFlow(
     changeSeatingTemplate,
     startNewGroupingDraft,
     startNewSeatingDraft,
-    openGroupingHistoryDraft,
-    openSeatingHistoryDraft,
-    deleteGroupingHistoryDraft,
-    deleteSeatingHistoryDraft,
+    openGroupingHistoryDraft: historyDraftActions.openGroupingHistoryDraft,
+    openSeatingHistoryDraft: historyDraftActions.openSeatingHistoryDraft,
+    deleteGroupingHistoryDraft: historyDraftActions.deleteGroupingHistoryDraft,
+    deleteSeatingHistoryDraft: historyDraftActions.deleteSeatingHistoryDraft,
     prepareOverviewDistributionScope,
     selectPlannerWorkspaceMode,
     dismissWorkspaceNotice,

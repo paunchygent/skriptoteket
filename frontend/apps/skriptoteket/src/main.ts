@@ -3,6 +3,7 @@ import { createApp } from "vue";
 
 import "./assets/main.css";
 import "./assets/klassrumskartan-small-screen.css";
+import "./assets/klassrumskartan-rules-workspace.css";
 import App from "./App.vue";
 import { router } from "./router";
 

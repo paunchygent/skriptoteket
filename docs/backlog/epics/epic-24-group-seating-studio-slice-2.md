@@ -127,6 +127,9 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - `PR-0111` shipped overview-owned resumable continuation and is now merged to `main`
   - `PR-0112` shipped the simplified overview/planner chrome that keeps the segmented toggle as the
     only mode switch
+  - `PR-0300` later corrected the class-list edit lifecycle so ordinary active draft containers do
+    not block saved class-list edits; removed students now cascade out of draft assignments, draft
+    history snapshots, and roster-owned smart rules
 - The planner maintainability follow-up refactor chain is also now shipped:
   - `PR-0114` decomposed the planner shell and overview shell into focused workspace/overview
     components plus local shared UI primitives

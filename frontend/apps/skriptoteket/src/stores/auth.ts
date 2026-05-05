@@ -22,6 +22,10 @@ import {
   loadSharedCsrfToken,
   loadSharedSessionSnapshot,
 } from "./authBootstrap";
+import {
+  LOGOUT_GENERIC_FAILURE_MESSAGE,
+  LOGOUT_NETWORK_FAILURE_MESSAGE,
+} from "./authUserMessages";
 
 type ApiRole = components["schemas"]["Role"];
 type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
@@ -54,7 +58,7 @@ async function postSharedLogout(csrfToken: string): Promise<Response> {
       credentials: "include",
       headers: buildSharedLogoutHeaders(csrfToken),
     },
-    { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
+    { timeoutMs: 10000, timeoutMessage: LOGOUT_NETWORK_FAILURE_MESSAGE },
   );
 }
 
@@ -325,7 +329,7 @@ export const useAuthStore = defineStore("auth", {
         throw new Error(this.error);
       } catch (error: unknown) {
         if (!this.error) {
-          this.error = error instanceof Error ? error.message : "Logout failed";
+          this.error = error instanceof Error ? error.message : LOGOUT_GENERIC_FAILURE_MESSAGE;
         }
         this.status = "error";
         throw error;

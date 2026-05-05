@@ -364,6 +364,8 @@ class GuestUpgradeAssetImporter:
                 roster=mapped_roster.roster,
                 seating_preferences=seating_preferences,
                 relationship_rules=relationship_rules,
+                fixed_seat_rules=[],
+                templates_by_id={},
             )
         except DomainError as error:
             receipt.conflicted.append(

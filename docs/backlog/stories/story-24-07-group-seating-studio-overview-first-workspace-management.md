@@ -114,3 +114,8 @@ Focus:
   - the overview/main page can stand in for the superseded landing surface
   - `PR-0111` is merged to `main`
   - the remaining cutover work belongs to `ST-24-08`
+- `PR-0300` closed the class-list edit cascade follow-up on 2026-05-05:
+  - active draft existence no longer blocks saved class-list edits
+  - removed students are pruned from draft assignments, draft history snapshots, and roster-owned
+    smart rules
+  - keep-near / keep-apart rules that fall below two remaining students are deleted

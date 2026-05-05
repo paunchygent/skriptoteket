@@ -92,7 +92,7 @@ export type StudentSeatingPreference = {
   near_teacher: boolean;
 };
 
-export type SeatingSmartTool = "near_teacher" | "keep_near" | "keep_apart";
+export type SeatingSmartTool = "near_teacher" | "keep_near" | "keep_apart" | "fixed_seat";
 
 export type RelationshipRuleKind = "keep_near" | "keep_apart";
 
@@ -100,6 +100,13 @@ export type RelationshipRule = {
   id: string;
   kind: RelationshipRuleKind;
   student_ids: string[];
+};
+
+export type FixedSeatRule = {
+  id: string;
+  template_id: string;
+  student_id: string;
+  seat_id: string;
 };
 
 export type ResumablePlanDraft = {
@@ -197,6 +204,7 @@ export type RosterSmartRulesResponse = {
   revision: number;
   seating_preferences: StudentSeatingPreference[];
   relationship_rules: RelationshipRule[];
+  fixed_seat_rules?: FixedSeatRule[];
 };
 
 export type DraftHistoryStatus = DraftWorkspaceResponse["history_status"];

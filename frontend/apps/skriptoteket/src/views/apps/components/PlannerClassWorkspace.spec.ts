@@ -188,6 +188,8 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.find("[data-test='phone-overview-share-export-panel']").exists()).toBe(true);
     expect(wrapper.get("[data-test='planner-share-export-scope-grouping']").text()).toContain("Gruppindelning");
     expect(wrapper.get("[data-test='planner-share-export-scope-seating']").text()).toContain("Sittschema");
+    expect(wrapper.get("[data-test='planner-share-export-scope-context']").text()).toBe("SA24D · Sal 101");
+    expect(wrapper.get("[data-test='planner-share-export-scope-meta']").text()).toContain("Sittschema · 1 plats");
     expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Länk, PDF, Excel");
     expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain(
       "Aktiva länkar visas här",
@@ -198,6 +200,8 @@ describe("PlannerClassWorkspace", () => {
 
     await wrapper.get("[data-test='planner-share-export-scope-grouping']").trigger("click");
     expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["seating"], ["grouping"]]);
+    expect(wrapper.get("[data-test='planner-share-export-scope-context']").text()).toBe("SA24D · Sal 101");
+    expect(wrapper.get("[data-test='planner-share-export-scope-meta']").text()).toContain("Gruppindelning · 28 elever");
 
     await wrapper.get("[data-test='phone-overview-share-create-mobile']").trigger("click");
     await wrapper.get("[data-test='phone-overview-export-option-xlsx']").trigger("click");
@@ -213,6 +217,8 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.emitted("prepare-overview-distribution")).toEqual([["grouping"]]);
     expect(wrapper.get("[data-test='planner-share-export-scope-seating']").attributes("disabled"))
       .toBeDefined();
+    expect(wrapper.get("[data-test='planner-share-export-scope-prerequisite']").text())
+      .toBe("Sittschema: Välj ett klassrum först.");
   });
 
   it("does not preselect a share/export scope when requirements are missing", () => {
@@ -233,6 +239,9 @@ describe("PlannerClassWorkspace", () => {
     expect(seatingScope.attributes("aria-pressed")).toBe("false");
     expect(groupingScope.classes()).not.toContain("bg-action");
     expect(seatingScope.classes()).not.toContain("bg-action");
+    expect(wrapper.find("[data-test='planner-share-export-scope-summary']").exists()).toBe(false);
+    expect(wrapper.get("[data-test='planner-share-export-scope-prerequisite']").text())
+      .toBe("Skapa en klasslista först.");
     expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Länk");
     expect(wrapper.get("[data-test='phone-overview-share-export-panel']").text()).not.toContain("Filer");
   });

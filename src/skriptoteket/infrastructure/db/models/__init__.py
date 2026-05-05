@@ -24,6 +24,7 @@ from skriptoteket.infrastructure.db.models.classroom_planner_roster import (
     RosterModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_roster_smart_rule import (
+    RosterFixedSeatRuleModel,
     RosterRelationshipRuleModel,
     RosterSeatingPreferenceModel,
     RosterSmartRuleSetModel,
@@ -65,6 +66,7 @@ __all__ = [
     "IdentityProjectionModel",
     "PlanDraftModel",
     "PasswordResetTokenModel",
+    "RosterFixedSeatRuleModel",
     "RosterRelationshipRuleModel",
     "RoomTemplateModel",
     "RosterModel",

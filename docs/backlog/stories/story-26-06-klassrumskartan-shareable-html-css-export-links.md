@@ -5,7 +5,7 @@ title: "Klassrumskartan shareable HTML/CSS export links"
 status: ready
 owners: "agents"
 created: 2026-04-30
-updated: 2026-05-03
+updated: 2026-05-06
 epic: "EPIC-26"
 dependencies:
   - "ADR-0075"
@@ -126,6 +126,11 @@ sharing.
     it moves file export choices into the workspace `Dela` affordance as
     `Dela och exportera` while preserving this story's share-artifact,
     export-preparation, and link-management contracts.
+  - `PR-0301` is closed as a cross-linked `ST-29-11` overview-selector polish
+    slice: it may change the visible `Välj innehåll` selector and selected-draft
+    confirmation inside `Dela och exportera`, but it did not change this
+    story's share-artifact, export-preparation, link-management, revoke, or
+    public-read contracts.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

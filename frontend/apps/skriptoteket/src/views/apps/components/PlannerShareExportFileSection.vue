@@ -85,7 +85,7 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
         type="button"
         :class="[
           'planner-share-export-file-option grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border border-navy/20 bg-canvas/40 px-2.5 text-left text-navy transition-colors hover:border-action/45 hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-55',
-          visualVariant === 'desktop-overview' ? 'h-12' : 'h-10',
+          visualVariant === 'desktop-overview' ? '' : 'h-10',
         ]"
         :disabled="exportBusy"
         :data-test="`${fileOptionTestIdPrefix}-${option.id}`"

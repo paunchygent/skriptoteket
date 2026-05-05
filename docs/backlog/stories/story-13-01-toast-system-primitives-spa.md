@@ -8,7 +8,7 @@ created: 2025-12-25
 epic: "EPIC-13"
 acceptance_criteria:
   - "Given a user completes a successful action, when the app triggers a toast, then an overlay toast appears without layout shift and auto-dismisses"
-  - "Given an action fails in a non-blocking way, when the app triggers a failure toast, then the toast uses burgundy styling and is announced accessibly"
+  - "Given an action fails in a non-blocking way, when the app triggers a failure toast, then the toast uses warm terracotta styling and is announced accessibly"
   - "Given an action triggers a warning, when the app triggers a warning toast, then the toast uses amber styling and is announced accessibly"
   - "Given multiple toasts are triggered quickly, when they render, then they stack (bounded) and remain readable on mobile"
   - "Toast styling is implemented as shared primitives in frontend/apps/skriptoteket/src/assets/main.css (no ad-hoc inline styling)"
@@ -28,5 +28,5 @@ can adopt incrementally.
 
 ## Notes
 
-- Toast variants: info (navy), success (pine green), warning (amber), failure (burgundy).
+- Toast variants: info (navy), success (pine green), warning (amber), failure (warm terracotta).
 - Validation and blocking errors remain inline (sticky, close-only), per ADR-0037.

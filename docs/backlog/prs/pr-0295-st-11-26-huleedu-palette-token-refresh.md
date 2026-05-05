@@ -13,7 +13,7 @@ acceptance_criteria:
   - "Shared CSS tokens define the HuleEdu working palette and semantic aliases for brand, text, borders, action, buttons, and light canvas surfaces."
   - "The Tailwind 4 theme bridge exposes paper, terracotta, action, and critical utilities without removing legacy burgundy compatibility."
   - "Shared button, focus, selected-state, and link primitives use the Verdigris action channel where they are functional UI, not warning/destructive UI."
-  - "Shared destructive and failure primitives use critical/error-family tokens, not terracotta or teal."
+  - "Shared destructive primitives use critical/error-family tokens, while transient failure toasts use terracotta because they are not critical blocking states."
   - "Shared dense buttons, rails, toggles, segmented controls, and share/export action buttons use the action channel for active/selected/primary control states instead of structural navy."
   - "Filled selected selectors keep light selected text for nested labels and disabled selected states; navy text must not sit on Verdigris fill."
   - "Canvas is treated as the unified base surface; broad white-on-canvas panel stacks are avoided in favor of translucent panel surfaces and light row/object highlights."
@@ -35,7 +35,7 @@ Introduce the agreed HuleEdu working palette as shared tokens and wire the first
 semantic pass through the SPA bridge and shared primitives:
 
 - Deep Navy for structure and long text.
-- Warm Terracotta for brand accent only.
+- Warm Terracotta for brand accent and transient failure toasts.
 - Verdigris Teal for functional action, selection, focus, and calm positive state.
 - Light canvas/paper for the shared warm surface.
 - Translucent canvas-toned panel surfaces as the default page/panel base, with opaque canvas-toned modal shells over overlays and white reserved for fields and deliberate object contrast.
@@ -57,7 +57,8 @@ semantic pass through the SPA bridge and shared primitives:
    `action`, and `critical` utilities.
 3. Update shared primitives in `main.css` and dense control components so primary
    buttons, focus rings, selected states, toggles, rails, and links use `action`,
-   while destructive/failure primitives use `critical`.
+   destructive primitives use `critical`, and transient failure toasts use
+   terracotta.
 4. Update SPA, renderer, and email/template surfaces that still used old burgundy
    action styling or stale navy literals.
 5. Replace high-visibility white-on-canvas dashboard/planner panels with

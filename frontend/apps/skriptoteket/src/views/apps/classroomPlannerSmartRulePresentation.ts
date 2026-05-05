@@ -11,6 +11,7 @@
  */
 
 import type {
+  FixedSeatRule,
   RelationshipRule,
   Seat,
   Student,
@@ -28,6 +29,7 @@ export function formatRelationshipRuleHeading(
 export function buildSmartRuleMarkersByStudentId(
   seatingPreferences: readonly StudentSeatingPreference[],
   relationshipRules: readonly RelationshipRule[],
+  fixedSeatRules: readonly FixedSeatRule[] = [],
 ): Record<string, string[]> {
   const markers: Record<string, string[]> = {};
 
@@ -45,7 +47,15 @@ export function buildSmartRuleMarkersByStudentId(
     }
   });
 
+  for (const rule of fixedSeatRules) {
+    markers[rule.student_id] = [...(markers[rule.student_id] ?? []), "Fast plats"];
+  }
+
   return markers;
+}
+
+export function formatSeatDisplayLabel(seatId: string): string {
+  return seatId.replace(/^seat-/i, "plats-");
 }
 
 export function resolveStudentNames(

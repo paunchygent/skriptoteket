@@ -2,22 +2,23 @@
  * Classroom planner smart-rule actions.
  *
  * Purpose:
- *   Own smart seating authoring mutations and draft smart-toggle mutations
- *   without mixing them into workspace loading or route-transition logic.
+ *   Applies smart seating authoring mutations and draft smart-toggle changes
+ *   from the workspace. Rule persistence stays roster-global while smart run
+ *   toggles stay draft-local.
  *
  * Relationships:
  *   - consumed by `useClassroomState.ts`
- *   - mutates roster-global smart-rule state and draft-local smart-enabled
- *     state
- *   - coordinates with `useRosterSmartRuleLane.ts` and
- *     `useSmartRuleUiState.ts`
+ *   - marks changes through `useRosterSmartRuleLane.ts`
+ *   - reads transient selections from `useSmartRuleUiState.ts`
  */
 
 import type { ComputedRef, Ref } from "vue";
 
 import type {
+  FixedSeatRule,
   PlanDraft,
   RelationshipRule,
+  RoomTemplate,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
@@ -30,9 +31,12 @@ type SmartRuleUiState = ReturnType<typeof useSmartRuleUiState>;
 
 type CreateClassroomPlannerSmartRuleActionsOptions = {
   draft: Ref<PlanDraft | null>;
+  template: Ref<RoomTemplate | null>;
   seatingPreferences: Ref<StudentSeatingPreference[]>;
   relationshipRules: Ref<RelationshipRule[]>;
+  fixedSeatRules: Ref<FixedSeatRule[]>;
   studentsById: ComputedRef<Record<string, { id: string }>>;
+  seatsById: ComputedRef<Record<string, { id: string }>>;
   isWorkspaceBusy: ComputedRef<boolean>;
   canEditSeatingSmartRules: ComputedRef<boolean>;
   draftLane: DraftLane;
@@ -47,6 +51,13 @@ function createRelationshipRuleId(): string {
     return crypto.randomUUID();
   }
   return `relationship-rule-${Date.now()}`;
+}
+
+function createFixedSeatRuleId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `fixed-seat-rule-${Date.now()}`;
 }
 
 export function createClassroomPlannerSmartRuleActions(
@@ -320,6 +331,111 @@ export function createClassroomPlannerSmartRuleActions(
     options.smartRuleLane.markDirty();
   }
 
+  function fixedSeatRuleMatchesActiveTemplate(rule: FixedSeatRule): boolean {
+    return options.template.value !== null && rule.template_id === options.template.value.id;
+  }
+
+  function fixedSeatRuleForStudent(studentId: string): FixedSeatRule | null {
+    return options.fixedSeatRules.value.find((rule) => {
+      return fixedSeatRuleMatchesActiveTemplate(rule) && rule.student_id === studentId;
+    }) ?? null;
+  }
+
+  function fixedSeatRuleForSeat(seatId: string): FixedSeatRule | null {
+    return options.fixedSeatRules.value.find((rule) => {
+      return fixedSeatRuleMatchesActiveTemplate(rule) && rule.seat_id === seatId;
+    }) ?? null;
+  }
+
+  function beginFixedSeatRuleEdit(ruleId: string): void {
+    if (!options.canEditSeatingSmartRules.value) {
+      return;
+    }
+    const rule = options.fixedSeatRules.value.find((candidate) => candidate.id === ruleId);
+    if (!rule) {
+      return;
+    }
+    options.smartRuleUiState.beginFixedSeatEdit(rule.id, rule.student_id, rule.seat_id);
+  }
+
+  function deleteFixedSeatRule(ruleId: string): void {
+    if (!options.canEditSeatingSmartRules.value) {
+      return;
+    }
+    const nextRules = options.fixedSeatRules.value.filter((rule) => rule.id !== ruleId);
+    if (nextRules.length === options.fixedSeatRules.value.length) {
+      return;
+    }
+    options.fixedSeatRules.value = nextRules;
+    if (options.smartRuleUiState.editingFixedSeatRuleId.value === ruleId) {
+      options.smartRuleUiState.clearPendingRelationshipSelection();
+    } else {
+      options.smartRuleUiState.clearFeedback();
+    }
+    options.syncVisibleSessionBindings();
+    options.smartRuleLane.markDirty();
+  }
+
+  function selectFixedSeatRuleSeat(seatId: string): boolean {
+    if (
+      options.smartRuleUiState.activeSeatingSmartTool.value !== "fixed_seat"
+      || !options.canEditSeatingSmartRules.value
+      || options.isWorkspaceBusy.value
+      || !options.template.value
+      || !options.seatsById.value[seatId]
+    ) {
+      return false;
+    }
+    options.smartRuleUiState.togglePendingFixedSeatSeat(seatId);
+    return true;
+  }
+
+  function commitPendingFixedSeatRule(): boolean {
+    if (
+      options.smartRuleUiState.activeSeatingSmartTool.value !== "fixed_seat"
+      || !options.canEditSeatingSmartRules.value
+      || options.isWorkspaceBusy.value
+      || !options.template.value
+    ) {
+      return false;
+    }
+    const studentId = options.smartRuleUiState.pendingFixedSeatStudentId.value;
+    if (!studentId || !options.studentsById.value[studentId]) {
+      options.smartRuleUiState.setFeedbackMessage("Välj en elev först.");
+      return false;
+    }
+    const seatId = options.smartRuleUiState.pendingFixedSeatSeatId.value;
+    if (!seatId || !options.seatsById.value[seatId]) {
+      options.smartRuleUiState.setFeedbackMessage("Välj en plats först.");
+      return false;
+    }
+
+    const editingRuleId = options.smartRuleUiState.editingFixedSeatRuleId.value;
+    const conflictingSeatRule = fixedSeatRuleForSeat(seatId);
+    if (conflictingSeatRule && conflictingSeatRule.id !== editingRuleId) {
+      options.smartRuleUiState.setFeedbackMessage("Platsen är redan låst. Välj en annan plats.");
+      return false;
+    }
+
+    const existingStudentRule = fixedSeatRuleForStudent(studentId);
+    const ruleId = editingRuleId ?? existingStudentRule?.id ?? createFixedSeatRuleId();
+    const nextRule: FixedSeatRule = {
+      id: ruleId,
+      template_id: options.template.value.id,
+      student_id: studentId,
+      seat_id: seatId,
+    };
+    const replacedRuleIds = new Set([ruleId, existingStudentRule?.id].filter(Boolean));
+    options.fixedSeatRules.value = [
+      ...options.fixedSeatRules.value.filter((rule) => !replacedRuleIds.has(rule.id)),
+      nextRule,
+    ];
+    options.smartRuleUiState.clearPendingRelationshipSelection();
+    options.syncVisibleSessionBindings();
+    options.smartRuleLane.markDirty();
+    return true;
+  }
+
   function handleSeatingSmartToolStudentSelection(studentId: string): boolean {
     if (
       !options.studentsById.value[studentId]
@@ -327,6 +443,24 @@ export function createClassroomPlannerSmartRuleActions(
       || options.isWorkspaceBusy.value
     ) {
       return false;
+    }
+
+    if (options.smartRuleUiState.activeSeatingSmartTool.value === "fixed_seat") {
+      const existingRule = fixedSeatRuleForStudent(studentId);
+      if (options.smartRuleUiState.pendingFixedSeatStudentId.value === studentId) {
+        options.smartRuleUiState.togglePendingFixedSeatStudent(studentId);
+        return true;
+      }
+      if (existingRule) {
+        options.smartRuleUiState.beginFixedSeatEdit(
+          existingRule.id,
+          existingRule.student_id,
+          existingRule.seat_id,
+        );
+        return true;
+      }
+      options.smartRuleUiState.togglePendingFixedSeatStudent(studentId);
+      return true;
     }
 
     options.smartRuleUiState.togglePendingRelationshipStudent(studentId);
@@ -344,7 +478,13 @@ export function createClassroomPlannerSmartRuleActions(
     commitPendingRelationshipRule,
     beginRelationshipRuleEdit,
     beginNearTeacherEdit,
+    beginFixedSeatRuleEdit,
     clearNearTeacherRule,
     deleteRelationshipRule,
+    deleteFixedSeatRule,
+    selectFixedSeatRuleSeat,
+    commitPendingFixedSeatRule,
+    fixedSeatRuleForStudent,
+    fixedSeatRuleForSeat,
   };
 }

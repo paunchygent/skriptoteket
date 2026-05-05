@@ -10,6 +10,7 @@
 import type {
   ClassroomSelectionMode,
   DraftGroup,
+  FixedSeatRule,
   GroupAssignment,
   PlanDraftKind,
   RelationshipRule,
@@ -69,6 +70,7 @@ export type ClassroomPlannerGuestSmartRuleSet = {
   revision: number;
   seating_preferences: StudentSeatingPreference[];
   relationship_rules: RelationshipRule[];
+  fixed_seat_rules?: FixedSeatRule[];
   fingerprint: string;
 };
 

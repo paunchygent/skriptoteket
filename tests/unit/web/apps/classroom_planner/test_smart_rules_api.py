@@ -11,6 +11,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PatchRosterSmartRulesHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    FixedSeatRule,
     RelationshipKind,
     RelationshipRule,
     RosterSmartRules,
@@ -60,6 +61,14 @@ async def test_get_roster_smart_rules_calls_handler() -> None:
                 student_ids=["s1", "s2"],
             )
         ],
+        fixed_seat_rules=[
+            FixedSeatRule(
+                id="fixed-1",
+                template_id=roster_id,
+                student_id="s1",
+                seat_id="seat-1",
+            )
+        ],
     )
 
     result = await _unwrap_dishka(api.get_roster_smart_rules)(
@@ -78,6 +87,14 @@ async def test_get_roster_smart_rules_calls_handler() -> None:
             id="rule-1",
             kind=RelationshipKind.KEEP_NEAR.value,
             student_ids=["s1", "s2"],
+        )
+    ]
+    assert result.fixed_seat_rules == [
+        api.FixedSeatRuleDto(
+            id="fixed-1",
+            template_id=roster_id,
+            student_id="s1",
+            seat_id="seat-1",
         )
     ]
     handler.handle.assert_awaited_once_with(roster_id=roster_id, owner_user_id=user.id)
@@ -99,6 +116,14 @@ async def test_update_roster_smart_rules_calls_handler() -> None:
                 student_ids=["s1", "s2", "s3"],
             )
         ],
+        fixed_seat_rules=[
+            api.FixedSeatRuleDto(
+                id="fixed-1",
+                template_id=roster_id,
+                student_id="s1",
+                seat_id="seat-1",
+            )
+        ],
     )
     handler.handle.return_value = RosterSmartRules(
         roster_id=roster_id,
@@ -109,6 +134,14 @@ async def test_update_roster_smart_rules_calls_handler() -> None:
                 id="rule-1",
                 kind=RelationshipKind.KEEP_APART,
                 student_ids=["s1", "s2", "s3"],
+            )
+        ],
+        fixed_seat_rules=[
+            FixedSeatRule(
+                id="fixed-1",
+                template_id=roster_id,
+                student_id="s1",
+                seat_id="seat-1",
             )
         ],
     )
@@ -134,4 +167,38 @@ async def test_update_roster_smart_rules_calls_handler() -> None:
                 student_ids=["s1", "s2", "s3"],
             )
         ],
+        fixed_seat_rules=[
+            FixedSeatRule(
+                id="fixed-1",
+                template_id=roster_id,
+                student_id="s1",
+                seat_id="seat-1",
+            )
+        ],
     )
+
+
+@pytest.mark.unit
+def test_update_roster_smart_rules_request_rejects_duplicate_fixed_rule_ids() -> None:
+    template_id = uuid4()
+
+    with pytest.raises(ValidationError, match="Fixed-seat rule IDs"):
+        api.UpdateRosterSmartRulesRequest.model_validate(
+            {
+                "expected_revision": 0,
+                "fixed_seat_rules": [
+                    {
+                        "id": "fixed-1",
+                        "template_id": str(template_id),
+                        "student_id": "s1",
+                        "seat_id": "seat-1",
+                    },
+                    {
+                        "id": "fixed-1",
+                        "template_id": str(template_id),
+                        "student_id": "s2",
+                        "seat_id": "seat-2",
+                    },
+                ],
+            }
+        )

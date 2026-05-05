@@ -350,10 +350,9 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
       statusLabel.value = copied ? null : created.public_url;
       toast.success(options.messages.copiedMessage);
       errorMessage.value = null;
-    } catch (error: unknown) {
-      const message = normalizeShareError(error, options.messages.fallbackMessage);
-      errorMessage.value = message;
-      toast.warning(message);
+    } catch {
+      errorMessage.value = null;
+      toast.failure(options.messages.fallbackMessage);
     } finally {
       isBusy.value = false;
       if (statusLabel.value === options.messages.initialStatusLabel) {
@@ -387,8 +386,8 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
     }
     const publicPath = share.public_path;
     if (!publicPath) {
-      errorMessage.value = options.messages.revokeFallbackMessage;
-      toast.warning(options.messages.revokeFallbackMessage);
+      errorMessage.value = null;
+      toast.failure(options.messages.revokeFallbackMessage);
       return;
     }
 
@@ -398,8 +397,8 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
       const snapshot = await options.getSnapshot();
       const metadata = readPreviousMetadata(snapshot, options.draftKind);
       if (!metadata || metadata.publicPath !== publicPath) {
-        errorMessage.value = options.messages.revokeFallbackMessage;
-        toast.warning(options.messages.revokeFallbackMessage);
+        errorMessage.value = null;
+        toast.failure(options.messages.revokeFallbackMessage);
         return;
       }
       await options.revokeShare({
@@ -410,10 +409,9 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
       shares.value = shares.value.filter((item) => item.id !== share.id);
       statusLabel.value = null;
       toast.success(options.messages.revokedMessage);
-    } catch (error: unknown) {
-      const message = normalizeShareError(error, options.messages.revokeFallbackMessage);
-      errorMessage.value = message;
-      toast.warning(message);
+    } catch {
+      errorMessage.value = null;
+      toast.failure(options.messages.revokeFallbackMessage);
     } finally {
       revokingShareId.value = null;
     }

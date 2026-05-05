@@ -10,6 +10,10 @@ import { computed, nextTick, reactive, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "./App.vue";
+import {
+  LOGOUT_GENERIC_FAILURE_MESSAGE,
+  LOGOUT_NETWORK_FAILURE_MESSAGE,
+} from "./stores/authUserMessages";
 
 type MockRoute = {
   name: string;
@@ -53,6 +57,10 @@ const routerMocks = vi.hoisted(() => ({
   pageTransition: null as MockPageTransition | null,
 }));
 
+const toastMocks = vi.hoisted(() => ({
+  failure: vi.fn(),
+}));
+
 vi.mock("vue-router", () => ({
   useRoute: () => routerMocks.route,
   useRouter: () => routerMocks.router,
@@ -68,6 +76,10 @@ vi.mock("./composables/usePageTransition", () => ({
 
 vi.mock("./components/help/useHelp", () => ({
   useHelp: () => routerMocks.help,
+}));
+
+vi.mock("./composables/useToast", () => ({
+  useToast: () => toastMocks,
 }));
 
 describe("App", () => {
@@ -102,8 +114,34 @@ describe("App", () => {
     };
 
     routerMocks.router.push.mockReset();
+    toastMocks.failure.mockReset();
     window.history.replaceState(null, "");
   });
+
+  function mountWithLogoutButton() {
+    return mount(App, {
+      global: {
+        stubs: {
+          LandingLayout: { template: "<div><slot /></div>" },
+          AuthLayout: {
+            props: ["logoutInProgress"],
+            emits: ["logout"],
+            template:
+              "<div><button data-test='logout' @click='$emit(\"logout\")'>Logga ut</button><slot /></div>",
+          },
+          ToastHost: { template: "<div />" },
+          RouterView: { template: "<div />" },
+        },
+      },
+    });
+  }
+
+  async function flushAsync(): Promise<void> {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await Promise.resolve();
+      await nextTick();
+    }
+  }
 
   it("routes to auth-login with the classroom planner origin preserved when auth drops", async () => {
     window.history.replaceState({ classroomPlannerEntryOrigin: "dashboard" }, "");
@@ -199,5 +237,32 @@ describe("App", () => {
       name: "auth-login",
       query: { next: "/admin/tools?status=draft#review" },
     });
+  });
+
+  it("shows the network logout failure as a toast instead of a layout panel", async () => {
+    if (!routerMocks.auth) {
+      throw new Error("Expected auth mocks to be initialized.");
+    }
+    routerMocks.auth.logout.mockRejectedValueOnce(new Error(LOGOUT_NETWORK_FAILURE_MESSAGE));
+
+    const wrapper = mountWithLogoutButton();
+    await wrapper.get("[data-test='logout']").trigger("click");
+    await flushAsync();
+
+    expect(toastMocks.failure).toHaveBeenCalledWith(LOGOUT_NETWORK_FAILURE_MESSAGE);
+    expect(routerMocks.router.push).not.toHaveBeenCalledWith({ path: "/" });
+  });
+
+  it("normalizes non-network logout failures before showing the toast", async () => {
+    if (!routerMocks.auth) {
+      throw new Error("Expected auth mocks to be initialized.");
+    }
+    routerMocks.auth.logout.mockRejectedValueOnce(new Error("raw backend detail"));
+
+    const wrapper = mountWithLogoutButton();
+    await wrapper.get("[data-test='logout']").trigger("click");
+    await flushAsync();
+
+    expect(toastMocks.failure).toHaveBeenCalledWith(LOGOUT_GENERIC_FAILURE_MESSAGE);
   });
 });

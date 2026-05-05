@@ -148,7 +148,7 @@ async function submitDecision(): Promise<void> {
     } else if (error instanceof Error) {
       toast.failure(error.message);
     } else {
-      toast.failure("Kunde inte spara beslut.");
+      toast.failure("Det gick inte att spara beslutet. Försök igen.");
     }
   } finally {
     isSubmitting.value = false;

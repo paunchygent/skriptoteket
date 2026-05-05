@@ -323,6 +323,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence:
   `docs/backlog/prs/pr-0287-st-29-11-smart-settings-popover-persistence.md`
+- ST-29-11 overview share/export scope rail and draft confirmation:
+  `docs/backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md`
 - ST-26-06 shared-link PDF download spinner contract:
   `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
 - Review gate for PR-0282 shared-link PDF download spinner contract:
@@ -439,6 +441,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:
   `docs/backlog/prs/pr-0287-st-29-11-smart-settings-popover-persistence.md`
+- ST-29-11 overview share/export scope rail and draft confirmation task:
+  `docs/backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md`
 - ST-26-06 share-link popover and bottom-sheet management task:
   `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
 - ST-26-06 spatial share-page renderer and grouping polish task:
@@ -489,6 +493,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
 - Active Klassrumskartan smart assignment epic:
   `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
+- ST-27-09 fixed-seat rules + classroom-view-first authoring:
+  `docs/backlog/stories/story-27-09-klassrumskartan-fixed-seat-rules-and-classroom-view-first-authoring.md`
+- ST-27-09 contract slice:
+  `docs/backlog/prs/pr-0296-st-27-09-fixed-seat-rule-contract-and-classroom-view-default.md`
+- ST-27-09 backend fixed-seat solver slice:
+  `docs/backlog/prs/pr-0297-st-27-09-fixed-seat-rule-persistence-and-solver-seeding.md`
+- ST-27-09 frontend fixed-seat authoring slice:
+  `docs/backlog/prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md`
 - Approved Klassrumskartan smart assignment review:
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed auth-cutover ADR:
@@ -549,6 +561,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-seating-page-spatial-map-mockup.png`
 - Klassrumskartan ST-29-11 share/export affordance mockup:
   `docs/mockups/st-29-11-share-export-affordance/share-export-affordance-mockup.png`
+- Klassrumskartan ST-29-11 share/export scope selector alternatives:
+  `docs/mockups/st-29-11-share-export-affordance/share-export-scope-selector-alternatives-2026-05-05.png`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -1123,6 +1137,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md`
 - `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
 - `docs/backlog/prs/pr-0295-st-11-26-huleedu-palette-token-refresh.md`
+- `docs/backlog/prs/pr-0299-st-13-02-auth-and-critical-action-feedback-toast-audit.md`
 
 ### Backlog Stories
 

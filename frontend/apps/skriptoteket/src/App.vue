@@ -17,7 +17,9 @@ import {
   buildProtectedAuthEntryLocationFromCurrentRoute,
 } from "./composables/auth/authEntryNavigation";
 import { usePageTransition } from "./composables/usePageTransition";
+import { useToast } from "./composables/useToast";
 import { useAuthStore } from "./stores/auth";
+import { normalizeLogoutFailureMessage } from "./stores/authUserMessages";
 import { useHelp } from "./components/help/useHelp";
 import { CLASSROOM_PLANNER_APP_ID } from "./views/apps/classroomPlannerNavigation";
 
@@ -26,8 +28,8 @@ const router = useRouter();
 const route = useRoute();
 const help = useHelp();
 const pageTransition = usePageTransition();
+const toast = useToast();
 
-const logoutError = ref<string | null>(null);
 const logoutInProgress = ref(false);
 const helpPanelEnabled = ref(false);
 
@@ -115,7 +117,6 @@ watch(
 );
 
 async function onLogout(): Promise<void> {
-  logoutError.value = null;
   logoutInProgress.value = true;
 
   try {
@@ -123,7 +124,7 @@ async function onLogout(): Promise<void> {
     pageTransition.suppressNext();
     await router.push({ path: "/" });
   } catch (error: unknown) {
-    logoutError.value = error instanceof Error ? error.message : "Logout failed";
+    toast.failure(normalizeLogoutFailureMessage(error));
   } finally {
     logoutInProgress.value = false;
   }
@@ -174,7 +175,6 @@ async function onLogout(): Promise<void> {
       :can-see-contributor="canSeeContributor"
       :can-see-admin="canSeeAdmin"
       :can-see-superuser="canSeeSuperuser"
-      :logout-error="logoutError"
       :logout-in-progress="logoutInProgress"
       @logout="onLogout"
     >

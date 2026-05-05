@@ -76,7 +76,7 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.get('[data-test="rules-map-surface-heading"]').text()).toBe("SR24D");
     expect(wrapper.get('[data-test="rules-map-unplaced-count"]').text()).toContain("2 elever");
     expect(wrapper.findAll('button[data-test^="rules-unplaced-student-"]')).toHaveLength(2);
-    expect(wrapper.get('[data-test="rules-map-view-planning"]').text()).toContain("Planeringsvy");
+    expect(wrapper.get('[data-test="rules-map-view-planning"]').text()).toContain("Planeringskarta");
     expect(wrapper.get('[data-test="rules-map-view-seating"]').text()).toContain("Klassrumsvy");
     expect(wrapper.get('[data-test="rules-map-view-planning"]').attributes("style")).toContain(
       "min-width:",
@@ -84,6 +84,9 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.get('[data-test="rules-map-view-seating"]').attributes("style")).toContain(
       "min-width:",
     );
+    expect(wrapper.findAll('[data-ui-option="segmented-toggle-option"] button').map((button) =>
+      button.text(),
+    )).toEqual(["Klassrumsvy", "Planeringskarta"]);
     expect(wrapper.get('[data-test="rules-unplaced-student-student-1"]').text()).toContain(
       "Ada Lovelace",
     );
@@ -141,6 +144,99 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.get('[data-test="rules-map-scroll-frame"]').attributes("style")).toBeUndefined();
     expect(wrapper.get('[data-test="rules-map-surface-shell"]').classes()).toContain("px-6");
     expect(wrapper.get('[data-test="rules-map-surface-shell"]').classes()).toContain("py-6");
+  });
+
+  it("emits fixed-seat selections and renders saved lock markers", async () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "seating_arrangement",
+        rosterName: "SR24D",
+        template: {
+          ...template,
+          seats: [
+            { id: "seat-1", x: 0, y: 0, zone: null },
+            { id: "seat-2", x: 120, y: 0, zone: null },
+          ],
+        },
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [],
+        activeTool: "fixed_seat",
+        pendingFixedSeatStudentId: "student-2",
+        pendingFixedSeatSeatId: "seat-2",
+        fixedSeatRules: [
+          {
+            id: "fixed-1",
+            template_id: "template-1",
+            student_id: "student-1",
+            seat_id: "seat-1",
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="rules-seat-fixed-lock-seat-1"]').attributes("title")).toContain(
+      "Fast plats: Ada Lovelace -> plats-1",
+    );
+    expect(wrapper.get('[data-test="rules-seat-pending-lock-seat-2"]').attributes("title")).toContain(
+      "Fast plats: Alan Turing -> plats-2",
+    );
+    expect(wrapper.find('[data-test="rules-seat-pending-label-seat-2"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-2"]').attributes("aria-pressed"))
+      .toBe("true");
+    expect(wrapper.get('[data-test="rules-unplaced-fixed-seat-preview-student-2"]').text()).toBe(
+      "Fast plats",
+    );
+
+    await wrapper.get('[data-test="rules-seat-node-seat-2"] button').trigger("click");
+
+    expect(wrapper.emitted("seat-selected")).toEqual([["seat-2"]]);
+  });
+
+  it("routes fixed-seat canvas clicks through physical-seat precedence", async () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "seating_arrangement",
+        rosterName: "SR24D",
+        template: {
+          ...template,
+          seats: [
+            { id: "seat-1", x: 0, y: 0, zone: null },
+            { id: "seat-2", x: 120, y: 0, zone: null },
+          ],
+        },
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [{ seat_id: "seat-1", student_id: "student-1" }],
+        activeTool: "fixed_seat",
+        pendingFixedSeatStudentId: "student-1",
+        pendingFixedSeatSeatId: null,
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="rules-seat-node-seat-1"] button').trigger("click");
+
+    expect(wrapper.emitted("seat-selected")).toEqual([["seat-1"]]);
+    expect(wrapper.emitted("student-selected")).toBeUndefined();
+
+    await wrapper.setProps({ pendingFixedSeatSeatId: "seat-2" });
+    await wrapper.get('[data-test="rules-seat-node-seat-2"] button').trigger("click");
+
+    expect(wrapper.emitted("seat-selected")).toEqual([["seat-1"], ["seat-2"]]);
   });
 
   it("shows the seating guidance only when Sittschema has no template to project", () => {

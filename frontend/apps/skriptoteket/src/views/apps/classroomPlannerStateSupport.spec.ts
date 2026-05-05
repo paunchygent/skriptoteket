@@ -14,6 +14,7 @@ import type {
   DraftGroup,
   DraftHistoryStatus,
   DraftWorkspaceResponse,
+  FixedSeatRule,
   PlanDraft,
   RelationshipRule,
   RoomTemplate,
@@ -75,6 +76,10 @@ function createSupportFixture() {
     { id: "rule-1", kind: "keep_near", student_ids: ["student-1", "student-2"] },
     { id: "rule-2", kind: "keep_apart", student_ids: ["student-2", "student-4"] },
   ]);
+  const fixedSeatRules = ref<FixedSeatRule[]>([
+    { id: "fixed-1", template_id: "template-1", student_id: "student-1", seat_id: "seat-1" },
+    { id: "fixed-2", template_id: "template-1", student_id: "student-2", seat_id: "seat-2" },
+  ]);
   const smartRulesRevision = ref(4);
   const historyStatus = ref<DraftHistoryStatus>({ can_undo: true, can_redo: false });
   const historyActionInFlight = ref(false);
@@ -92,6 +97,7 @@ function createSupportFixture() {
     seatAssignmentsByStudentId,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
     historyStatus,
     historyActionInFlight,
@@ -112,6 +118,7 @@ function createSupportFixture() {
     seatAssignmentsByStudentId,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
     historyStatus,
     historyActionInFlight,
@@ -140,6 +147,9 @@ describe("createClassroomPlannerStateSupport", () => {
     expect(fixture.seatAssignmentsByStudentId.value).toEqual({
       "student-1": "seat-1",
     });
+    expect(fixture.fixedSeatRules.value).toEqual([
+      { id: "fixed-1", template_id: "template-1", student_id: "student-1", seat_id: "seat-1" },
+    ]);
   });
 
   it("updates the active roster in place and prunes removed students from local planner state", () => {
@@ -172,6 +182,9 @@ describe("createClassroomPlannerStateSupport", () => {
       { student_id: "student-1", near_teacher: true },
     ]);
     expect(fixture.relationshipRules.value).toEqual([]);
+    expect(fixture.fixedSeatRules.value).toEqual([
+      { id: "fixed-1", template_id: "template-1", student_id: "student-1", seat_id: "seat-1" },
+    ]);
     expect(fixture.smartRuleUiState.reset).toHaveBeenCalledTimes(1);
   });
 
@@ -235,6 +248,7 @@ describe("createClassroomPlannerStateSupport", () => {
 
     expect(fixture.seatingPreferences.value).toEqual([]);
     expect(fixture.relationshipRules.value).toEqual([]);
+    expect(fixture.fixedSeatRules.value).toEqual([]);
     expect(fixture.smartRulesRevision.value).toBe(7);
   });
 

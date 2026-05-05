@@ -15,6 +15,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    FixedSeatRule,
     RelationshipKind,
     RelationshipRule,
     RosterSmartRules,
@@ -22,6 +23,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.db.models.classroom_planner_roster_smart_rule import (
+    RosterFixedSeatRuleModel,
     RosterRelationshipRuleModel,
     RosterSeatingPreferenceModel,
     RosterSmartRuleSetModel,
@@ -53,6 +55,14 @@ class PostgreSQLRosterSmartRuleRepository(RosterSmartRuleRepositoryProtocol):
             .where(RosterRelationshipRuleModel.roster_id == roster_id)
             .order_by(RosterRelationshipRuleModel.rule_id)
         )
+        fixed_seat_result = await self._session.execute(
+            select(RosterFixedSeatRuleModel)
+            .where(RosterFixedSeatRuleModel.roster_id == roster_id)
+            .order_by(
+                RosterFixedSeatRuleModel.template_id,
+                RosterFixedSeatRuleModel.student_id,
+            )
+        )
         return RosterSmartRules(
             roster_id=roster_id,
             revision=root.revision,
@@ -71,6 +81,15 @@ class PostgreSQLRosterSmartRuleRepository(RosterSmartRuleRepositoryProtocol):
                     student_ids=model.student_ids,
                 )
                 for model in relationship_result.scalars().all()
+            ],
+            fixed_seat_rules=[
+                FixedSeatRule(
+                    id=model.rule_id,
+                    template_id=model.template_id,
+                    student_id=model.student_id,
+                    seat_id=model.seat_id,
+                )
+                for model in fixed_seat_result.scalars().all()
             ],
         )
 
@@ -138,6 +157,11 @@ class PostgreSQLRosterSmartRuleRepository(RosterSmartRuleRepositoryProtocol):
                 RosterRelationshipRuleModel.roster_id == rules.roster_id
             )
         )
+        await self._session.execute(
+            delete(RosterFixedSeatRuleModel).where(
+                RosterFixedSeatRuleModel.roster_id == rules.roster_id
+            )
+        )
         await self._session.flush()
 
         self._session.add_all(
@@ -160,6 +184,18 @@ class PostgreSQLRosterSmartRuleRepository(RosterSmartRuleRepositoryProtocol):
                     student_ids=rule.student_ids,
                 )
                 for rule in rules.relationship_rules
+            ]
+        )
+        self._session.add_all(
+            [
+                RosterFixedSeatRuleModel(
+                    roster_id=rules.roster_id,
+                    rule_id=rule.id,
+                    template_id=rule.template_id,
+                    student_id=rule.student_id,
+                    seat_id=rule.seat_id,
+                )
+                for rule in rules.fixed_seat_rules
             ]
         )
         await self._session.flush()

@@ -290,10 +290,9 @@ export function createClassroomPlannerGuestOverviewCrudFlow(
     try {
       await deleteRoster(overviewDeleteRosterTarget.value.id);
       overviewDeleteRosterTarget.value = null;
-    } catch (error: unknown) {
-      overviewDeleteRosterError.value = error instanceof Error
-        ? error.message
-        : "Kunde inte ta bort klasslistan i den publika arbetsytan.";
+    } catch {
+      overviewDeleteRosterError.value =
+        "Det gick inte att ta bort klasslistan. Försök igen eller avbryt.";
     } finally {
       isDeletingOverviewRoster.value = false;
     }
@@ -309,10 +308,9 @@ export function createClassroomPlannerGuestOverviewCrudFlow(
     try {
       await deleteTemplate(overviewDeleteTemplateTarget.value.id);
       overviewDeleteTemplateTarget.value = null;
-    } catch (error: unknown) {
-      overviewDeleteTemplateError.value = error instanceof Error
-        ? error.message
-        : "Kunde inte ta bort klassrummet i den publika arbetsytan.";
+    } catch {
+      overviewDeleteTemplateError.value =
+        "Det gick inte att ta bort klassrummet. Försök igen eller avbryt.";
     } finally {
       isDeletingOverviewTemplate.value = false;
     }

@@ -1,0 +1,41 @@
+/* Klassrumskartan rules-workspace geometry.
+
+   Purpose:
+   - owns the desktop rules row spacing, sticky tool column, and fixed side-rail
+     height for rule authoring
+
+   Relationships:
+   - imported after `klassrumskartan-small-screen.css` so these focused rules
+     override the generic planner breakpoint defaults without brittle nesting
+   - consumed by `PlannerRulesWorkspacePane.vue` and `PlannerRulesToolRail.vue`
+*/
+
+@media (min-width: 1024px) {
+  .planner-desktop-rules-workspace {
+    display: grid;
+    gap: var(--huleedu-space-3);
+  }
+
+  .planner-rules-tool-column {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+  }
+
+  .planner-rules-tool-lane {
+    position: static;
+    min-height: 480px;
+    height: 480px;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+
+  .planner-rules-tool-lane .planner-tool-rail-state {
+    min-height: 0;
+  }
+
+  .planner-rules-tool-lane .planner-tool-rail-actions {
+    flex: none;
+  }
+}

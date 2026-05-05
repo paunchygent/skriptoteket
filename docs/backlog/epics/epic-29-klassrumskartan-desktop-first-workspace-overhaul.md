@@ -5,7 +5,7 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-05-04
+updated: 2026-05-06
 outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, coherent grouping/seating/rules work surfaces, and a mockup-first small-screen companion lane that replaces cramped phone rails with mode-specific reduced layouts."
 dependencies:
   [
@@ -104,6 +104,9 @@ into the `laptop` proof width.
   controls and Klassrumskartan domain symbols. Its next task sequence starts with
   `docs/mockups/st-29-12-symbol-inventory/index.html` and continues through `PR-0291` to `PR-0294`
   before runtime icon changes are made.
+- `PR-0301` is closed as the `ST-29-11` follow-up for the overview `Dela och exportera` content
+  selector: it keeps the `PR-0286` consolidation and replaces the stacked rows with the preferred
+  rail toggle plus class-list/classroom draft confirmation.
 - `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
   and approved Swedish guidance without adding walkthroughs, modals, or extra onboarding chrome.
 - Approved small-screen workspace direction lives in

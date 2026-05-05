@@ -1,15 +1,8 @@
-"""Support helpers for Klassrumskartan public Smart application handlers.
+"""Guest-snapshot materialization for public Klassrumskartan Smart runs.
 
-Purpose:
-    Keep the anonymous Smart handlers focused on solver orchestration by
-    centralizing guest-snapshot materialization, invariant checks, and public
-    workspace serialization.
-
-Relationships:
-    - Reuses the approved browser-owned guest snapshot payloads from
-      `guest_upgrade_contracts.py`.
-    - Reuses smart-rule validation from `smart_rule_validation.py`.
-    - Consumed by the public Smart grouping and seating handlers.
+Anonymous Smart handlers receive browser-owned draft snapshots. These helpers
+validate the snapshot, build domain inputs, and serialize the public workspace
+response used by grouping and seating runs.
 """
 
 from __future__ import annotations
@@ -22,7 +15,6 @@ from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contr
     ClassroomPlannerGuestSnapshotPayload,
     GuestUpgradeDraftPayload,
     GuestUpgradeRosterPayload,
-    GuestUpgradeSmartRuleSetPayload,
     GuestUpgradeTemplatePayload,
 )
 from skriptoteket.application.curated_apps.classroom_planner.public_smart_run_contracts import (
@@ -54,14 +46,12 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 )
 from skriptoteket.domain.errors import validation_error
 
-from .smart_rule_validation import normalize_seating_preferences, validate_roster_smart_rules
+from .public_smart_rules import build_public_smart_rules, resolve_public_smart_rule_set
 
 PUBLIC_SMART_RUN_MAX_STUDENTS = 80
 PUBLIC_SMART_RUN_MAX_GROUPS = 12
 PUBLIC_SMART_RUN_MAX_SEATS = 160
 PUBLIC_SMART_RUN_MAX_FIXTURES = 64
-PUBLIC_SMART_RUN_MAX_RELATIONSHIP_RULES = 32
-PUBLIC_SMART_RUN_MAX_RELATIONSHIP_RULE_STUDENTS = 8
 PUBLIC_SMART_RUN_GUEST_OWNER_ID = uuid5(
     NAMESPACE_URL,
     "skriptoteket:classroom-planner:public-smart:guest-owner",
@@ -108,11 +98,11 @@ def materialize_public_smart_workspace(
 
     roster = _build_roster(roster_payload=roster_payload, now=now)
     template = _build_template(template_payload=template_payload, now=now)
-    smart_rule_payload = _resolve_smart_rule_set(
+    smart_rule_payload = resolve_public_smart_rule_set(
         snapshot=snapshot,
         roster_local_id=draft_payload.roster_local_id,
     )
-    smart_rules = _build_smart_rules(
+    smart_rules = build_public_smart_rules(
         roster=roster,
         smart_rule_payload=smart_rule_payload,
     )
@@ -294,17 +284,6 @@ def _resolve_template(
     raise validation_error("Public Smart payload references an unknown guest classroom.")
 
 
-def _resolve_smart_rule_set(
-    *,
-    snapshot: ClassroomPlannerGuestSnapshotPayload,
-    roster_local_id: str,
-) -> GuestUpgradeSmartRuleSetPayload | None:
-    for rule_set in snapshot.smart_rule_sets:
-        if rule_set.roster_local_id == roster_local_id:
-            return rule_set
-    return None
-
-
 def _validate_roster_payload(roster_payload: GuestUpgradeRosterPayload) -> None:
     if len(roster_payload.students) > PUBLIC_SMART_RUN_MAX_STUDENTS:
         raise validation_error("Public Smart payload exceeds the supported class size.")
@@ -435,44 +414,6 @@ def _build_template(
         fixtures=list(template_payload.fixtures),
         created_at=now,
         updated_at=now,
-    )
-
-
-def _build_smart_rules(
-    *,
-    roster: Roster,
-    smart_rule_payload: GuestUpgradeSmartRuleSetPayload | None,
-) -> RosterSmartRules:
-    if smart_rule_payload is None:
-        return RosterSmartRules(
-            roster_id=roster.id,
-            revision=0,
-            seating_preferences=[],
-            relationship_rules=[],
-        )
-
-    if len(smart_rule_payload.relationship_rules) > PUBLIC_SMART_RUN_MAX_RELATIONSHIP_RULES:
-        raise validation_error(
-            "Public Smart payload exceeds the supported relationship-rule count."
-        )
-    for rule in smart_rule_payload.relationship_rules:
-        if len(rule.student_ids) > PUBLIC_SMART_RUN_MAX_RELATIONSHIP_RULE_STUDENTS:
-            raise validation_error("Public Smart relationship rules exceed the supported size.")
-
-    seating_preferences = normalize_seating_preferences(
-        list(smart_rule_payload.seating_preferences)
-    )
-    relationship_rules = list(smart_rule_payload.relationship_rules)
-    validate_roster_smart_rules(
-        roster=roster,
-        seating_preferences=seating_preferences,
-        relationship_rules=relationship_rules,
-    )
-    return RosterSmartRules(
-        roster_id=roster.id,
-        revision=smart_rule_payload.revision,
-        seating_preferences=seating_preferences,
-        relationship_rules=relationship_rules,
     )
 
 

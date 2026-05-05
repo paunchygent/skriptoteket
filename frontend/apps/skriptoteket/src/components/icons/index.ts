@@ -33,6 +33,7 @@ export { default as IconInfo } from "./IconInfo.vue";
 export { default as IconKeepApart } from "./IconKeepApart.vue";
 export { default as IconKeepNear } from "./IconKeepNear.vue";
 export { default as IconLink2 } from "./IconLink2.vue";
+export { default as IconLock } from "./IconLock.vue";
 export { default as IconMinus } from "./IconMinus.vue";
 export { default as IconMoreVertical } from "./IconMoreVertical.vue";
 export { default as IconOverview } from "./IconOverview.vue";

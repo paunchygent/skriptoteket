@@ -102,7 +102,7 @@ async function publishTool(tool: AdminToolItem): Promise<void> {
     } else if (error instanceof Error) {
       toast.failure(error.message);
     } else {
-      toast.failure("Det gick inte att publicera verktyget.");
+      toast.failure("Det gick inte att publicera verktyget. Försök igen.");
     }
   } finally {
     actionInProgress.value = null;
@@ -130,7 +130,7 @@ async function depublishTool(tool: AdminToolItem): Promise<void> {
     } else if (error instanceof Error) {
       toast.failure(error.message);
     } else {
-      toast.failure("Det gick inte att avpublicera verktyget.");
+      toast.failure("Det gick inte att avpublicera verktyget. Försök igen.");
     }
   } finally {
     actionInProgress.value = null;

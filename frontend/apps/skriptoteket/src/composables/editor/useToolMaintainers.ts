@@ -1,3 +1,11 @@
+/**
+ * Editor maintainer permission state.
+ *
+ * This composable keeps owner/maintainer list loading separate from add/remove
+ * action feedback so drawer-level errors and transient toasts do not duplicate
+ * the same failure.
+ */
+
 import { ref, watch, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
@@ -70,17 +78,8 @@ export function useToolMaintainers({ toolId, canEdit, notify }: UseToolMaintaine
       ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
       notify.success("Redigeringsbehörigheter uppdaterade.");
-    } catch (err: unknown) {
-      if (isApiError(err)) {
-        error.value = err.message;
-        notify.failure(err.message);
-      } else if (err instanceof Error) {
-        error.value = err.message;
-        notify.failure(err.message);
-      } else {
-        error.value = "Det gick inte att lägga till redigeringsbehörighet.";
-        notify.failure(error.value);
-      }
+    } catch {
+      notify.failure("Det gick inte att lägga till redigeringsbehörigheten. Försök igen.");
     } finally {
       isSaving.value = false;
     }
@@ -105,17 +104,8 @@ export function useToolMaintainers({ toolId, canEdit, notify }: UseToolMaintaine
       ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
       notify.success("Redigeringsbehörigheter uppdaterade.");
-    } catch (err: unknown) {
-      if (isApiError(err)) {
-        error.value = err.message;
-        notify.failure(err.message);
-      } else if (err instanceof Error) {
-        error.value = err.message;
-        notify.failure(err.message);
-      } else {
-        error.value = "Det gick inte att ta bort redigeringsbehörighet.";
-        notify.failure(error.value);
-      }
+    } catch {
+      notify.failure("Det gick inte att ta bort redigeringsbehörigheten. Försök igen.");
     } finally {
       isSaving.value = false;
     }

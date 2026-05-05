@@ -5,7 +5,7 @@ title: "Klassrumskartan smart assignment v1"
 status: active
 owners: "agents"
 created: 2026-03-25
-updated: 2026-04-01
+updated: 2026-05-05
 outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a dedicated `Regler` workspace, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
@@ -21,13 +21,20 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   - `Use history`
 - Allow one seating-only rule:
   - `Närmare läraren`
+- Allow one classroom-template-scoped hard seating rule:
+  - `Fast plats`
 - Allow one explicit grouping-only seat-distance toggle without turning it into a fifth shared
   smart control.
 - Make `Regler` the first-class home for smart-rule creation and editing:
-  - `Planeringskarta` is the default authoring map and always keeps one normalized alphabetical
-    planning layout independent of classroom geometry or the active seating draft
-  - `Sittschema` is an optional alternative that mirrors the current seating draft when one exists
-  - both map views share the same active tool and selection state
+  - the classroom-faithful view is the default authoring map when a classroom exists
+  - `Planeringskarta` remains an optional abstract planning map and always keeps one normalized
+    alphabetical planning layout independent of classroom geometry or the active seating draft
+  - existing `Sittschema` wording denotes the classroom-faithful projection; future teacher-facing
+    copy should use `Klassrumsvyn` / `klassrumsvyn`
+  - `Fast plats` is authored only from the classroom-faithful view because it needs one physical
+    student-to-seat target
+  - both map views share the same active tool and selection state where the active tool can be
+    validly used from both maps
 - Keep `Sittplatser` and `Grupper` calm:
   - retain the small `Smart` toggle in the main task toolbar
   - allow one compact or collapsed smart summary near that toggle
@@ -69,6 +76,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   visible without overwhelming the teacher.
 - The new `Regler` workspace must feel clearly different from `Sittplatser` and `Grupper` without
   becoming a heavier secondary application inside the planner.
+- The classroom-view-first refinement must not erase the useful planning-map abstraction; teachers
+  should still be able to choose `Planeringskarta` deliberately.
+- `Fast plats` is a hard seating invariant, so implementation must prevent partial draft writes
+  when fixed placements conflict with roster or room state.
 - Tool state, cursor state, and student-selection feedback must stay strong enough that rule
   authoring feels deliberate rather than hidden behind weak color-only affordances.
 - Smart grouping history partly depends on seating export checkpoints until grouping export
@@ -90,6 +101,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - [x] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
 - [x] [ST-27-07: Dedicated rules workspace with separate planning and seating maps](../stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)
 - [x] [ST-27-08: Retire student notes drawer and seating-mode student activation](../stories/story-27-08-klassrumskartan-retire-student-notes-drawer-and-seating-mode-student-activation.md)
+- [ ] [ST-27-09: Fixed-seat rules and classroom-view-first rule authoring](../stories/story-27-09-klassrumskartan-fixed-seat-rules-and-classroom-view-first-authoring.md)
 - [ ] [ST-27-04: Smart grouping v1](../stories/story-27-04-klassrumskartan-smart-grouping-v1.md)
 - [ ] [ST-27-05: Smart explanations and rerun messaging](../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md)
 
@@ -100,11 +112,22 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - The metadata drawer is not part of the intended end-state; the remaining retirement/removal
   slice is now tracked under `ST-27-08`.
 - `Regler` is now the dedicated smart-rule authoring home:
-  - `Planeringskarta` is the default normalized map
-  - `Sittschema` is the optional exact-current-arrangement map
+  - as of `ST-27-09`, the classroom-faithful view is the default when a classroom exists
+  - `Planeringskarta` is the optional normalized map
+  - `Sittschema` is the older name for the exact-current-arrangement map; future user-facing copy
+    should use `Klassrumsvyn`
   - `Sittplatser` and `Grupper` keep compact summary/settings affordances only
 - `Planeringskarta` must remain a clean alphabetical planning abstraction even after classroom or
   seating context exists; it must not collapse back into the classroom canvas.
+- `Fast plats` is a classroom-template-scoped hard rule:
+  - it binds one roster student to one physical seat in the active classroom template
+  - it cannot be authored from `Planeringskarta`
+  - from `Planeringskarta`, the `Fast plats` tool should prompt:
+    `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?`
+  - choosing `Ja` switches to the classroom view and activates the tool
+  - choosing `Nej` or closing the prompt leaves the teacher on `Planeringskarta`
+  - Smart seating must seed fixed placements before solving remaining seats and score all other
+    rules against the merged fixed + candidate mapping
 - The first visible smart-rule interaction model is locked:
   - `Nära läraren` uses the same rail-owned pending selection plus explicit create/save confirmation
     as the relationship rules, but still persists as one consolidated seating-only rule
@@ -122,7 +145,19 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   authoring surface.
 - Later smart seating/grouping work must build on the explicit session-controller + lane split, not
   on planner-wide flush/save-status/shared-timer semantics.
+- `ST-27-09` refines the completed `ST-27-07` map-default contract without reopening its
+  implementation: `Planeringskarta` remains stable and abstract when selected, but the classroom
+  view becomes the default and the only fixed-seat authoring surface.
 - A review doc must approve this package before implementation begins.
+
+## Planned Follow-up (2026-05-05)
+
+- ST-27-09 is ready:
+  - PR-0296 captured the fixed-seat and classroom-view-first contract in docs.
+  - PR-0297 is the backend slice for fixed-seat persistence, hard validation, and score-aware
+    solver seeding.
+  - PR-0298 is the frontend slice for `Klassrumsvyn` defaulting, the `Fast plats` prompt,
+    fixed-seat markers, and live UX proof.
 
 ## Implementation Summary (as of 2026-04-01)
 

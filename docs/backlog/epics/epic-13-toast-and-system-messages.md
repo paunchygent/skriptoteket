@@ -31,6 +31,10 @@ dependencies: ["ADR-0037", "ADR-0032"]
 - [ST-13-03: Standardize inline system messages](../stories/story-13-03-standardize-inline-system-messages.md)
 - [ST-13-04: Toastify profile actions](../stories/story-13-04-toastify-profile-actions.md)
 
+## Follow-ups
+
+- [PR-0299: ST-13-02 auth and critical action feedback toast audit](../prs/pr-0299-st-13-02-auth-and-critical-action-feedback-toast-audit.md)
+
 ## Risks
 
 - Hiding important feedback: some errors must remain inline (blocking states) to avoid “toast-only” failures.

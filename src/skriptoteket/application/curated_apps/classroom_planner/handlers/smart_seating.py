@@ -16,6 +16,9 @@ from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     build_room_context_hash,
     build_room_context_snapshot,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.fixed_seating import (
+    build_fixed_seat_mapping,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     DraftWorkspace,
@@ -124,6 +127,7 @@ class RunSmartSeatingHandler:
             raise not_found("Roster", str(workspace.draft.roster_id))
 
         smart_rules = await self._smart_rules.get_by_roster_id(roster_id=workspace.draft.roster_id)
+        build_fixed_seat_mapping(roster=roster, template=template, smart_rules=smart_rules)
         hydrated_workspace = self._hydrate_workspace(
             workspace=workspace,
             roster=roster,

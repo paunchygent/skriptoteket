@@ -12,6 +12,14 @@ import { ref } from "vue";
 import { createClassroomPlannerWorkspaceFlow } from "./classroomPlannerRouteShellWorkspace";
 import type { ClassWorkspaceSummary } from "./classroomPlannerTypes";
 
+const toastMocks = vi.hoisted(() => ({
+  failure: vi.fn(),
+}));
+
+vi.mock("../../composables/useToast", () => ({
+  useToast: () => toastMocks,
+}));
+
 function createDeferred() {
   let resolvePromise!: () => void;
   const promise = new Promise<void>((resolve) => {
@@ -26,6 +34,7 @@ function createDeferred() {
 describe("createClassroomPlannerWorkspaceFlow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    toastMocks.failure.mockReset();
   });
 
   it("prefers the overview-selected template when Regler bootstraps a seating host draft", async () => {

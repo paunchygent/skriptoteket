@@ -141,10 +141,28 @@ def _wait_for_share_link_state(page: Page, panel: Locator) -> None:
     raise AssertionError("Share-link section did not render active rows or empty state.")
 
 
+def _assert_equal_heights(*, rail: Locator, create_button: Locator, export_button: Locator) -> None:
+    """Assert overview share/export controls share the same rendered height."""
+
+    boxes = {
+        "scope rail": rail.bounding_box(),
+        "create link": create_button.bounding_box(),
+        "export button": export_button.bounding_box(),
+    }
+    missing = [name for name, box in boxes.items() if box is None]
+    if missing:
+        raise AssertionError(f"Missing rendered boxes for: {', '.join(missing)}")
+
+    heights = {name: round(box["height"], 2) for name, box in boxes.items() if box is not None}
+    if max(heights.values()) - min(heights.values()) > 0.5:
+        raise AssertionError(f"Overview share/export controls have uneven heights: {heights}")
+
+
 def _assert_mobile_sheet_scroll_is_contained(page: Page, panel: Locator) -> None:
     """Assert the Dela sheet owns scrolling while background scroll stays fixed."""
 
     scroller = panel.locator('[data-test="planner-share-export-scroll"]')
+    link_list = panel.locator('[data-test="planner-share-export-link-list"]')
     expect(scroller).to_be_visible()
     expect(page.locator('[data-test="planner-share-export-backdrop"]')).to_be_visible()
 
@@ -153,23 +171,33 @@ def _assert_mobile_sheet_scroll_is_contained(page: Page, panel: Locator) -> None
         raise AssertionError(f"Expected body scroll lock while Dela is open, got {body_overflow!r}")
 
     initial_window_scroll = page.evaluate("() => window.scrollY")
-    scroll_state = scroller.evaluate(
+    scroll_owner = scroller
+    scroll_state = scroll_owner.evaluate(
         """(element) => {
             const maxScrollTop = element.scrollHeight - element.clientHeight;
             element.scrollTop = Math.max(1, Math.floor(maxScrollTop / 2));
             return {scrollTop: element.scrollTop, maxScrollTop};
         }"""
     )
+    if scroll_state["maxScrollTop"] <= 0 and link_list.count() > 0:
+        scroll_owner = link_list
+        scroll_state = scroll_owner.evaluate(
+            """(element) => {
+                const maxScrollTop = element.scrollHeight - element.clientHeight;
+                element.scrollTop = Math.max(1, Math.floor(maxScrollTop / 2));
+                return {scrollTop: element.scrollTop, maxScrollTop};
+            }"""
+        )
     if scroll_state["maxScrollTop"] <= 0:
-        raise AssertionError("Expected mobile Dela sheet content to overflow its scroller.")
+        raise AssertionError("Expected mobile Dela content to overflow a contained scroller.")
     if scroll_state["scrollTop"] <= 0:
-        raise AssertionError("Expected mobile Dela sheet scroller to move.")
+        raise AssertionError("Expected mobile Dela contained scroller to move.")
     if page.evaluate("() => window.scrollY") != initial_window_scroll:
         raise AssertionError("Window scrolled while the Dela sheet scroller moved.")
 
-    scroller.evaluate("(element) => { element.scrollTop = element.scrollHeight; }")
+    scroll_owner.evaluate("(element) => { element.scrollTop = element.scrollHeight; }")
     bottom_window_scroll = page.evaluate("() => window.scrollY")
-    scroller.hover()
+    scroll_owner.hover()
     page.mouse.wheel(0, 1800)
     page.wait_for_timeout(150)
     if page.evaluate("() => window.scrollY") != bottom_window_scroll:
@@ -230,12 +258,66 @@ def _verify_distribution_panel(
     _close_panel(page, kind=kind)
 
 
-def _verify_viewport(page: Page, *, width: int, height: int) -> None:
+def _verify_overview_scope_selector(
+    page: Page,
+    *,
+    viewport_label: str,
+    width: int,
+    roster_name: str,
+    template_name: str,
+) -> None:
+    """Verify the overview Dela selector rail and selected-draft confirmation."""
+
+    focus_workspace_mode(page, label="Översikt")
+    panel_prefix = "phone-overview" if width < 768 else "desktop-overview"
+    panel = page.locator(f'[data-test="{panel_prefix}-share-export-panel"]')
+    expect(panel).to_be_visible()
+    expect(panel.get_by_role("heading", name="Dela och exportera")).to_be_visible()
+
+    context = panel.locator('[data-test="planner-share-export-scope-context"]')
+    meta = panel.locator('[data-test="planner-share-export-scope-meta"]')
+    expect(context).to_have_text(f"{roster_name} · {template_name}")
+    expect(meta).to_contain_text("Sittschema")
+
+    panel.locator('[data-test="planner-share-export-scope-grouping"]').click()
+    expect(context).to_have_text(f"{roster_name} · {template_name}")
+    expect(meta).to_contain_text("Gruppindelning")
+    expect(panel.locator('[data-test="planner-share-export-scope-seating"]')).to_be_enabled()
+
+    if width >= 768:
+        _assert_equal_heights(
+            rail=panel.locator(".planner-share-export-scope-rail"),
+            create_button=panel.locator(f'[data-test="{panel_prefix}-share-create"]'),
+            export_button=panel.locator(f'[data-test="{panel_prefix}-export-option-xlsx"]'),
+        )
+
+    page.screenshot(
+        path=str(ARTIFACTS_DIR / f"overview-{viewport_label}-share-export-scope-selector.png"),
+        full_page=True,
+    )
+
+
+def _verify_viewport(
+    page: Page,
+    *,
+    width: int,
+    height: int,
+    roster_name: str,
+    template_name: str,
+) -> None:
     """Verify grouping and seating share/export panels at one viewport size."""
 
     viewport_label = f"{width}x{height}"
     page.set_viewport_size({"width": width, "height": height})
     page.wait_for_timeout(250)
+
+    _verify_overview_scope_selector(
+        page,
+        viewport_label=viewport_label,
+        width=width,
+        roster_name=roster_name,
+        template_name=template_name,
+    )
 
     focus_workspace_mode(page, label="Grupper")
     expect(page.locator('[data-test="grouping-actions-menu"]')).to_be_visible()
@@ -318,7 +400,13 @@ def _run(
         _start_seating_draft(page)
 
         for width, height in VIEWPORTS:
-            _verify_viewport(page, width=width, height=height)
+            _verify_viewport(
+                page,
+                width=width,
+                height=height,
+                roster_name=roster_name,
+                template_name=template_name,
+            )
 
         context.close()
         browser.close()

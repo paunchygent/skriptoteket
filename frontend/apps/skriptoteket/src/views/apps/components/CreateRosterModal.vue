@@ -12,6 +12,7 @@ import { computed, ref, watch } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
 import { IconTrash } from "../../../components/icons";
+import SystemMessage from "../../../components/ui/SystemMessage.vue";
 import type { AmbiguousRow } from "../useClassListImportFlow";
 import { useClassListImportFlow } from "../useClassListImportFlow";
 import type { Roster, Student } from "../classroomPlannerTypes";
@@ -166,9 +167,9 @@ async function removeRoster(): Promise<void> {
       await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`);
     }
     emit("deleted", props.roster.id);
-  } catch (deleteError: unknown) {
+  } catch {
     formError.value =
-      deleteError instanceof Error ? deleteError.message : "Kunde inte radera klasslistan.";
+      "Det gick inte att ta bort klasslistan. Försök igen eller stäng dialogrutan.";
   } finally {
     isDeleting.value = false;
   }
@@ -330,14 +331,11 @@ function closeModal(): void {
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
-          <div
+          <SystemMessage
             v-if="formError"
-            class="system-message system-message-error"
-          >
-            <div class="system-message-content">
-              {{ formError }}
-            </div>
-          </div>
+            v-model="formError"
+            variant="error"
+          />
 
           <div class="mt-6 space-y-5">
             <section class="space-y-3 border border-navy/20 bg-canvas p-4 shadow-brutal-sm">
@@ -386,14 +384,11 @@ function closeModal(): void {
                 </button>
               </div>
 
-              <div
+              <SystemMessage
                 v-if="importError"
-                class="system-message system-message-error"
-              >
-                <div class="system-message-content">
-                  {{ importError }}
-                </div>
-              </div>
+                v-model="importError"
+                variant="error"
+              />
 
               <div
                 v-if="preview"

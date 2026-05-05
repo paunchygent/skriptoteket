@@ -22,6 +22,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftHistoryStatus,
     DraftWorkspace,
+    FixedSeatRule,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -287,3 +288,49 @@ async def test_run_smart_seating_raises_conflict_for_stale_revision() -> None:
             owner_user_id=owner_user_id,
             expected_revision=workspace.draft.revision - 1,
         )
+
+
+@pytest.mark.asyncio
+async def test_run_smart_seating_rejects_invalid_fixed_seat_without_persisting() -> None:
+    owner_user_id = uuid4()
+    roster = _roster(owner_user_id=owner_user_id)
+    template = _template(owner_user_id=owner_user_id)
+    workspace = _workspace(
+        owner_user_id=owner_user_id,
+        roster_id=roster.id,
+        template_id=template.id,
+    )
+    drafts = AsyncMock()
+    drafts.get_workspace.return_value = workspace
+    handler = RunSmartSeatingHandler(
+        uow=AsyncMock(),
+        drafts=drafts,
+        rosters=AsyncMock(get_by_id=AsyncMock(return_value=roster)),
+        templates=AsyncMock(get_by_id=AsyncMock(return_value=template)),
+        smart_rules=AsyncMock(
+            get_by_roster_id=AsyncMock(
+                return_value=RosterSmartRules(
+                    roster_id=roster.id,
+                    fixed_seat_rules=[
+                        FixedSeatRule(
+                            id="fixed-1",
+                            template_id=template.id,
+                            student_id="ada",
+                            seat_id="missing-seat",
+                        )
+                    ],
+                )
+            )
+        ),
+        checkpoints=AsyncMock(list_recent_for_roster_and_room_context=AsyncMock(return_value=[])),
+        clock=_Clock(datetime(2026, 3, 27, 12, 0, tzinfo=timezone.utc)),
+    )
+
+    with pytest.raises(DomainError, match="classroom seats"):
+        await handler.handle(
+            draft_id=workspace.draft.id,
+            owner_user_id=owner_user_id,
+            expected_revision=workspace.draft.revision,
+        )
+
+    drafts.save_workspace.assert_not_awaited()

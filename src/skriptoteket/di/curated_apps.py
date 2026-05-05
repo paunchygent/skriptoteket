@@ -23,13 +23,11 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreatePublicGuestGroupingShareHandler,
     CreatePublicGuestSeatingShareHandler,
     CreateRoomTemplateHandler,
-    CreateRosterHandler,
     CreateSeatingDraftHandler,
     CreateSeatingExportJobHandler,
     DeleteHistoricGroupingDraftHandler,
     DeleteHistoricSeatingDraftHandler,
     DeleteRoomTemplateHandler,
-    DeleteRosterHandler,
     DownloadGroupingExportJobHandler,
     DownloadSeatingExportJobHandler,
     GetClassroomPlannerGuestUpgradeConsumptionHandler,
@@ -43,15 +41,11 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetRecoverableSeatingExportJobForDraftHandler,
     GetResumableDraftHandler,
     GetRoomTemplateHandler,
-    GetRosterHandler,
-    GetRosterSmartRulesHandler,
     GetSeatingExportJobHandler,
     GroupingExportJobFinalizer,
     ListClassroomPlannerShareArtifactsHandler,
     ListRoomTemplatesHandler,
-    ListRostersHandler,
     PatchDraftHandler,
-    PatchRosterSmartRulesHandler,
     PrepareGroupingExportHandler,
     PrepareSeatingExportHandler,
     PublicGuestSharePolicy,
@@ -69,7 +63,6 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     SeatingExportJobFinalizer,
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
-    UpdateRosterHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
     CreateClassListImportPreviewHandler,
@@ -518,49 +511,6 @@ class CuratedAppsProvider(Provider):
             id_generator=id_generator,
             vault_files=vault_files,
             vault_storage=vault_storage,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def list_rosters_handler(self, rosters: RosterRepositoryProtocol) -> ListRostersHandler:
-        return ListRostersHandler(rosters=rosters)
-
-    @provide(scope=Scope.REQUEST)
-    def get_roster_handler(self, rosters: RosterRepositoryProtocol) -> GetRosterHandler:
-        return GetRosterHandler(rosters=rosters)
-
-    @provide(scope=Scope.REQUEST)
-    def create_roster_handler(
-        self,
-        uow: UnitOfWorkProtocol,
-        rosters: RosterRepositoryProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-    ) -> CreateRosterHandler:
-        return CreateRosterHandler(uow=uow, rosters=rosters, clock=clock, id_generator=id_generator)
-
-    @provide(scope=Scope.REQUEST)
-    def update_roster_handler(
-        self,
-        uow: UnitOfWorkProtocol,
-        rosters: RosterRepositoryProtocol,
-        drafts: PlanDraftRepositoryProtocol,
-        clock: ClockProtocol,
-    ) -> UpdateRosterHandler:
-        return UpdateRosterHandler(uow=uow, rosters=rosters, drafts=drafts, clock=clock)
-
-    @provide(scope=Scope.REQUEST)
-    def delete_roster_handler(
-        self,
-        uow: UnitOfWorkProtocol,
-        rosters: RosterRepositoryProtocol,
-        drafts: PlanDraftRepositoryProtocol,
-        share_lifecycle: ClassroomPlannerShareLifecycleService,
-    ) -> DeleteRosterHandler:
-        return DeleteRosterHandler(
-            uow=uow,
-            rosters=rosters,
-            drafts=drafts,
-            share_lifecycle=share_lifecycle,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -1157,14 +1107,6 @@ class CuratedAppsProvider(Provider):
         return GetDraftWorkspaceHandler(drafts=drafts, rosters=rosters, templates=templates)
 
     @provide(scope=Scope.REQUEST)
-    def get_roster_smart_rules_handler(
-        self,
-        rosters: RosterRepositoryProtocol,
-        smart_rules: RosterSmartRuleRepositoryProtocol,
-    ) -> GetRosterSmartRulesHandler:
-        return GetRosterSmartRulesHandler(rosters=rosters, smart_rules=smart_rules)
-
-    @provide(scope=Scope.REQUEST)
     def patch_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -1179,19 +1121,6 @@ class CuratedAppsProvider(Provider):
             rosters=rosters,
             templates=templates,
             clock=clock,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def patch_roster_smart_rules_handler(
-        self,
-        uow: UnitOfWorkProtocol,
-        rosters: RosterRepositoryProtocol,
-        smart_rules: RosterSmartRuleRepositoryProtocol,
-    ) -> PatchRosterSmartRulesHandler:
-        return PatchRosterSmartRulesHandler(
-            uow=uow,
-            rosters=rosters,
-            smart_rules=smart_rules,
         )
 
     @provide(scope=Scope.REQUEST)

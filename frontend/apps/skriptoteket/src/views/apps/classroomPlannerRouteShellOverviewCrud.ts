@@ -248,7 +248,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     } catch (error: unknown) {
       overviewDeleteTemplateError.value = normalizeClassroomPlannerUiError(
         error,
-        "Kunde inte ta bort klassrummet just nu.",
+        "Det gick inte att ta bort klassrummet. Försök igen eller avbryt.",
       );
     } finally {
       isDeletingOverviewTemplate.value = false;
@@ -270,7 +270,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     } catch (error: unknown) {
       overviewDeleteRosterError.value = normalizeClassroomPlannerUiError(
         error,
-        "Kunde inte ta bort klasslistan just nu.",
+        "Det gick inte att ta bort klasslistan. Försök igen eller avbryt.",
       );
     } finally {
       isDeletingOverviewRoster.value = false;

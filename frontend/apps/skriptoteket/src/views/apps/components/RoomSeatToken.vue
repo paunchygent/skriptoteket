@@ -34,7 +34,7 @@ const displaySeatId = computed(() => props.seatId.replace(/^seat-/i, "plats-"));
       !ghost && selected
         ? 'border-action bg-action/10 text-action shadow-brutal'
         : '',
-      !ghost && studentName
+      !ghost && studentName && !selected
         ? 'bg-white text-navy shadow-brutal-sm'
         : '',
       !ghost && !studentName && !selected

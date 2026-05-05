@@ -41,8 +41,8 @@ export function usePublicGroupingShareFlow(options: UsePublicGroupingShareFlowOp
       initialStatusLabel: "Skapar länk…",
       copiedMessage: "Länken är kopierad.",
       revokedMessage: "Länken är återkallad.",
-      fallbackMessage: "Det gick inte att skapa länken just nu.",
-      revokeFallbackMessage: "Det gick inte att återkalla länken just nu.",
+      fallbackMessage: "Det gick inte att skapa delningslänken. Klicka på Skapa länk igen.",
+      revokeFallbackMessage: "Det gick inte att återkalla länken. Klicka på Återkalla igen.",
     },
   });
 }

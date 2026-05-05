@@ -239,8 +239,24 @@ describe("PlannerShareExportPanel", () => {
         visualVariant: "desktop-overview",
         scopeValue: "seating",
         scopeOptions: [
-          { value: "grouping", label: "Gruppindelning" },
-          { value: "seating", label: "Sittschema" },
+          {
+            value: "grouping",
+            label: "Gruppindelning",
+            summary: {
+              contextLabel: "SA24D · Sal 101",
+              kindLabel: "Gruppindelning",
+              details: ["28 elever"],
+            },
+          },
+          {
+            value: "seating",
+            label: "Sittschema",
+            summary: {
+              contextLabel: "SA24D · Sal 101",
+              kindLabel: "Sittschema",
+              details: ["1 plats", "Senast uppdaterad 23 mars 2026"],
+            },
+          },
         ],
       },
     });
@@ -253,5 +269,40 @@ describe("PlannerShareExportPanel", () => {
     expect(selectedScope.classes()).toContain("text-button-primary-text");
     expect(selectedScope.classes()).not.toContain("text-navy");
     expect(unselectedScope.classes()).toContain("text-navy");
+    expect(wrapper.get('[data-test="planner-share-export-scope-summary"]').text()).toContain("Valt innehåll");
+    expect(wrapper.get('[data-test="planner-share-export-scope-context"]').text()).toBe("SA24D · Sal 101");
+    expect(wrapper.get('[data-test="planner-share-export-scope-meta"]').text())
+      .toBe("Sittschema · 1 plats · Senast uppdaterad 23 mars 2026");
+  });
+
+  it("shows visible prerequisite copy for disabled overview scopes", () => {
+    const wrapper = mount(PlannerShareExportPanel, {
+      props: {
+        fileOptions: groupingFileOptions(),
+        triggerVariant: "inline",
+        visualVariant: "desktop-overview",
+        scopeValue: "grouping",
+        scopeOptions: [
+          {
+            value: "grouping",
+            label: "Gruppindelning",
+            summary: {
+              contextLabel: "SA24D · Klassrum saknas",
+              kindLabel: "Gruppindelning",
+              details: ["28 elever"],
+            },
+          },
+          {
+            value: "seating",
+            label: "Sittschema",
+            disabled: true,
+            disabledReason: "Välj ett klassrum först.",
+          },
+        ],
+      },
+    });
+
+    expect(wrapper.get('[data-test="planner-share-export-scope-prerequisite"]').text())
+      .toBe("Sittschema: Välj ett klassrum först.");
   });
 });

@@ -72,6 +72,7 @@ vi.mock("../../stores/auth", () => ({
 vi.mock("../../stores/toast", () => ({
   useToastStore: () => ({
     success: vi.fn(),
+    failure: vi.fn(),
   }),
 }));
 

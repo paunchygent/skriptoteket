@@ -226,7 +226,8 @@ export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>
       if (error instanceof ShareFlowScopeChangedError || !isActiveScope(scope)) {
         return;
       }
-      errorMessage.value = normalizeShareError(error, options.messages.createFallbackMessage);
+      toast.failure(options.messages.createFallbackMessage);
+      errorMessage.value = null;
       statusLabel.value = null;
     } finally {
       if (isActiveScope(scope)) {
@@ -246,8 +247,9 @@ export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>
       const revoked = await options.revokeShare(share.id);
       replaceShare(revoked);
       toast.success("Länken är återkallad.");
-    } catch (error: unknown) {
-      errorMessage.value = normalizeShareError(error, options.messages.revokeFallbackMessage);
+    } catch {
+      toast.failure(options.messages.revokeFallbackMessage);
+      errorMessage.value = null;
     } finally {
       revokingShareId.value = null;
     }

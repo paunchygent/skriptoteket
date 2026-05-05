@@ -13,6 +13,7 @@ import type {
   ClassWorkspaceSummary,
   DraftGroup,
   DraftWorkspaceResponse,
+  FixedSeatRule,
   GroupAssignment,
   PlanDraft,
   PlanDraftKind,
@@ -62,6 +63,7 @@ type GuestDraftPersistenceContext = {
   seatAssignments: ComputedRef<SeatAssignment[]>;
   seatingPreferences: Ref<StudentSeatingPreference[]>;
   relationshipRules: Ref<RelationshipRule[]>;
+  fixedSeatRules: Ref<FixedSeatRule[]>;
   smartRulesRevision: Ref<number>;
 };
 
@@ -96,6 +98,7 @@ export function createClassroomPlannerGuestDraftPersistence(
     seatAssignments,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
   } = context;
 
@@ -158,6 +161,7 @@ export function createClassroomPlannerGuestDraftPersistence(
       revision: nextRevision,
       seatingPreferences: seatingPreferences.value,
       relationshipRules: relationshipRules.value,
+      fixedSeatRules: fixedSeatRules.value,
     });
 
     return await options.persistSnapshotMutation({

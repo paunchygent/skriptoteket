@@ -1,8 +1,8 @@
-"""Roster handlers for the classroom planner curated app.
+"""Teacher-managed roster CRUD for the classroom planner.
 
-This module owns teacher-managed roster CRUD flows. It keeps reusable roster
-assets separate from draft-scoped planning state and enforces owner scoping plus
-basic roster invariants at the application boundary.
+Rosters are reusable class-list assets, while grouping and seating drafts keep
+mutable planning state. These handlers enforce owner scoping and basic roster
+invariants before persistence.
 """
 
 from __future__ import annotations
@@ -10,11 +10,14 @@ from __future__ import annotations
 from collections import Counter
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.classroom_planner.handlers import (
+    roster_student_cleanup,
+)
 from skriptoteket.application.curated_apps.classroom_planner.handlers.share_artifacts import (
     ClassroomPlannerShareLifecycleService,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import Roster, Student
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
+from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RosterRepositoryProtocol,
@@ -33,10 +36,6 @@ def _validate_students(*, students: list[Student]) -> None:
             "Student IDs must be unique within a roster.",
             details={"duplicate_student_ids": duplicates},
         )
-
-
-def _student_list_changed(*, current: list[Student], updated: list[Student]) -> bool:
-    return current != updated
 
 
 class ListRostersHandler:
@@ -101,11 +100,11 @@ class UpdateRosterHandler:
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
         clock: ClockProtocol,
-        drafts: PlanDraftRepositoryProtocol | None = None,
+        student_cleanup: roster_student_cleanup.RosterStudentCleanupService | None = None,
     ) -> None:
         self._uow = uow
         self._rosters = rosters
-        self._drafts = drafts
+        self._student_cleanup = student_cleanup
         self._clock = clock
 
     async def handle(
@@ -115,33 +114,27 @@ class UpdateRosterHandler:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(roster_id))
-        if self._drafts is not None and _student_list_changed(
+        removed_ids = roster_student_cleanup.removed_student_ids(
             current=roster.students,
             updated=students,
-        ):
-            has_active_draft = await self._drafts.has_active_for_roster(
-                owner_user_id=owner_user_id,
-                roster_id=roster_id,
-            )
-            if has_active_draft:
-                raise DomainError(
-                    code=ErrorCode.CONFLICT,
-                    message=(
-                        "Du kan inte ändra eleverna i klasslistan eftersom ett aktivt "
-                        "utkast fortfarande använder den."
-                    ),
-                    details={"roster_id": str(roster_id), "reason": "active_draft_dependency"},
-                )
-
+        )
+        now = self._clock.now()
         updated = Roster(
             id=roster.id,
             owner_user_id=roster.owner_user_id,
             name=name,
             students=students,
             created_at=roster.created_at,
-            updated_at=self._clock.now(),
+            updated_at=now,
         )
         async with self._uow:
+            if self._student_cleanup is not None and removed_ids:
+                await self._student_cleanup.remove_for_roster(
+                    owner_user_id=owner_user_id,
+                    roster_id=roster_id,
+                    student_ids=removed_ids,
+                    updated_at=now,
+                )
             await self._rosters.save(roster=updated)
         return updated
 

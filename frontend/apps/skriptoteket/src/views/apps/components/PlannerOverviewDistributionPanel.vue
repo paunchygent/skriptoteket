@@ -27,6 +27,12 @@ const props = withDefaults(
     autoPrepare?: boolean;
     hasRoster: boolean;
     hasTemplate: boolean;
+    rosterLabel?: string | null;
+    classroomLabel?: string | null;
+    rosterCountLabel?: string | null;
+    classroomSeatCountLabel?: string | null;
+    groupingDraftUpdatedAt?: string | null;
+    seatingDraftUpdatedAt?: string | null;
     showGroupingOption?: boolean;
     showSeatingOption?: boolean;
     groupingExportBusy?: boolean;
@@ -48,6 +54,12 @@ const props = withDefaults(
   }>(),
   {
     autoPrepare: true,
+    rosterLabel: null,
+    classroomLabel: null,
+    rosterCountLabel: null,
+    classroomSeatCountLabel: null,
+    groupingDraftUpdatedAt: null,
+    seatingDraftUpdatedAt: null,
     showGroupingOption: true,
     showSeatingOption: true,
     groupingExportBusy: false,
@@ -87,6 +99,28 @@ const selectedScope = ref<OverviewDistributionScope | null>(null);
 const preparedScope = ref<OverviewDistributionScope | null>(null);
 
 const canDistribute = computed(() => props.hasRoster);
+const dateFormatter = new Intl.DateTimeFormat("sv-SE", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+const rosterContextLabel = computed(() => props.rosterLabel ?? "Klasslista saknas");
+const classroomContextLabel = computed(() => props.classroomLabel ?? "Klassrum saknas");
+const combinedContextLabel = computed(() => {
+  return `${rosterContextLabel.value} · ${classroomContextLabel.value}`;
+});
+
+function formatUpdatedDetail(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  return `Senast uppdaterad ${dateFormatter.format(new Date(value))}`;
+}
+
+function compactDetails(values: Array<string | null | undefined>): string[] {
+  return values.filter((value): value is string => Boolean(value));
+}
+
 const resolvedScope = computed<OverviewDistributionScope>(() => {
   if (selectedScope.value === "seating" && props.hasTemplate) {
     return "seating";
@@ -103,6 +137,14 @@ const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
       : [{
         value: "grouping",
         label: "Gruppindelning",
+        summary: {
+          contextLabel: combinedContextLabel.value,
+          kindLabel: "Gruppindelning",
+          details: compactDetails([
+            props.rosterCountLabel,
+            formatUpdatedDetail(props.groupingDraftUpdatedAt),
+          ]),
+        },
         disabled: !canDistribute.value,
         disabledReason: canDistribute.value ? null : "Skapa en klasslista först.",
       }]
@@ -113,6 +155,14 @@ const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
       : [{
         value: "seating",
         label: "Sittschema",
+        summary: {
+          contextLabel: combinedContextLabel.value,
+          kindLabel: "Sittschema",
+          details: compactDetails([
+            props.classroomSeatCountLabel,
+            formatUpdatedDetail(props.seatingDraftUpdatedAt),
+          ]),
+        },
         disabled: !canDistribute.value || !props.hasTemplate,
         disabledReason: !canDistribute.value
           ? "Skapa en klasslista först."

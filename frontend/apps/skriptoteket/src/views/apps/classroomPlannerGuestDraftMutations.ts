@@ -10,6 +10,7 @@
 
 import type {
   ClassWorkspaceSummary,
+  FixedSeatRule,
   DraftGroup,
   DraftWorkspaceResponse,
   GroupAssignment,
@@ -351,6 +352,7 @@ export function buildGuestSmartRulesResponse(input: {
   revision: number;
   seatingPreferences: StudentSeatingPreference[];
   relationshipRules: RelationshipRule[];
+  fixedSeatRules?: FixedSeatRule[];
 }): RosterSmartRulesResponse {
   return {
     roster_id: input.rosterId,
@@ -360,6 +362,7 @@ export function buildGuestSmartRulesResponse(input: {
       ...rule,
       student_ids: [...rule.student_ids],
     })),
+    fixed_seat_rules: (input.fixedSeatRules ?? []).map((rule) => ({ ...rule })),
   };
 }
 

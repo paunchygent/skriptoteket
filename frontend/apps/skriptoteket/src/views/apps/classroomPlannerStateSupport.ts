@@ -29,6 +29,7 @@ import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellEr
 import type {
   DraftHistoryStatus,
   DraftGroup,
+  FixedSeatRule,
   DraftWorkspaceResponse,
   GroupAssignment,
   PlanDraft,
@@ -58,6 +59,7 @@ type CreateClassroomPlannerStateSupportOptions = {
   seatAssignmentsByStudentId: Ref<Record<string, string | null>>;
   seatingPreferences: Ref<StudentSeatingPreference[]>;
   relationshipRules: Ref<RelationshipRule[]>;
+  fixedSeatRules: Ref<FixedSeatRule[]>;
   smartRulesRevision: Ref<number>;
   historyStatus: Ref<DraftHistoryStatus>;
   historyActionInFlight: Ref<boolean>;
@@ -98,6 +100,7 @@ export function createClassroomPlannerStateSupport(
   function clearRosterSmartRules(optionsArg: { resetUiState?: boolean } = {}): void {
     options.seatingPreferences.value = [];
     options.relationshipRules.value = [];
+    options.fixedSeatRules.value = [];
     options.smartRulesRevision.value = 0;
     if (optionsArg.resetUiState ?? true) {
       options.smartRuleUiState.reset();
@@ -137,6 +140,7 @@ export function createClassroomPlannerStateSupport(
       ...rule,
       student_ids: [...rule.student_ids],
     }));
+    options.fixedSeatRules.value = normalizedRules.fixed_seat_rules?.map((rule) => ({ ...rule })) ?? [];
     options.smartRulesRevision.value = normalizedRules.revision;
     options.smartRuleLane.applyHydratedRules();
   }
@@ -178,6 +182,9 @@ export function createClassroomPlannerStateSupport(
         return typeof seatId === "string" && seatIds.has(seatId);
       }),
     );
+    options.fixedSeatRules.value = options.fixedSeatRules.value.filter((rule) => {
+      return rule.template_id === normalizedTemplate.id && seatIds.has(rule.seat_id);
+    });
   }
 
   function replaceCurrentRoster(nextRoster: Roster): void {
@@ -208,6 +215,9 @@ export function createClassroomPlannerStateSupport(
         student_ids: [...new Set(rule.student_ids.filter((studentId) => studentIds.has(studentId)))],
       }))
       .filter((rule) => rule.student_ids.length >= 2);
+    options.fixedSeatRules.value = options.fixedSeatRules.value.filter((rule) => {
+      return studentIds.has(rule.student_id);
+    });
     options.smartRuleUiState.reset();
   }
 
@@ -232,6 +242,7 @@ export function createClassroomPlannerStateSupport(
         ...rule,
         student_ids: [...rule.student_ids],
       })),
+      fixed_seat_rules: options.fixedSeatRules.value.map((rule) => ({ ...rule })),
     };
   }
 
@@ -277,6 +288,7 @@ export function createClassroomPlannerStateSupport(
     options.seatAssignmentsByStudentId.value = {};
     options.seatingPreferences.value = [];
     options.relationshipRules.value = [];
+    options.fixedSeatRules.value = [];
     options.smartRulesRevision.value = 0;
     options.historyStatus.value = {
       can_undo: false,

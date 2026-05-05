@@ -27,7 +27,6 @@ const props = defineProps<{
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
   canSeeSuperuser: boolean;
-  logoutError: string | null;
   logoutInProgress: boolean;
 }>();
 
@@ -181,12 +180,6 @@ onBeforeUnmount(() => {
         'auth-main-content--immersive': isImmersiveCuratedAppRoute,
       }"
     >
-      <div
-        v-if="logoutError"
-        class="mb-4 p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
-      >
-        {{ logoutError }}
-      </div>
       <slot />
     </main>
   </div>

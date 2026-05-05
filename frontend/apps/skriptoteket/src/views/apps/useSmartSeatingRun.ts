@@ -35,6 +35,15 @@ type SmartSeatingRunOutcome =
 const MISSING_DRAFT_MESSAGE = "Öppna ett sittschema innan du använder Smart slumpa."
 const SMART_RULES_NOT_READY_MESSAGE = "Smarta regler kunde inte laddas än. Försök igen."
 const GENERIC_RUN_ERROR_MESSAGE = "Det gick inte att köra smart placering just nu."
+const FIXED_SEAT_RUN_ERROR_MESSAGE =
+  "En fast plats kan inte användas längre. Kontrollera eleven och platsen och försök igen."
+
+function normalizeSmartSeatingRunMessage(messageText: string): string {
+  if (/fixed.?seat|fast plats|fasta platser/i.test(messageText)) {
+    return FIXED_SEAT_RUN_ERROR_MESSAGE
+  }
+  return messageText
+}
 
 export function useSmartSeatingRun(options: UseSmartSeatingRunOptions) {
   const message = ref<string | null>(null);
@@ -90,9 +99,10 @@ export function useSmartSeatingRun(options: UseSmartSeatingRunOptions) {
         { expected_revision: persistedDraft.revision },
       )
       if (result.status === "blocked") {
-        message.value = result.message
+        const blockedMessage = normalizeSmartSeatingRunMessage(result.message)
+        message.value = blockedMessage
         tone.value = "warning"
-        return { status: "blocked", message: result.message }
+        return { status: "blocked", message: blockedMessage }
       }
 
       options.applyWorkspace(result.workspace)
@@ -100,7 +110,9 @@ export function useSmartSeatingRun(options: UseSmartSeatingRunOptions) {
       tone.value = "success"
       return { status: "applied", message: result.message ?? null }
     } catch (error: unknown) {
-      const normalizedMessage = options.normalizeErrorMessage(error, GENERIC_RUN_ERROR_MESSAGE)
+      const normalizedMessage = normalizeSmartSeatingRunMessage(
+        options.normalizeErrorMessage(error, GENERIC_RUN_ERROR_MESSAGE),
+      )
       message.value = normalizedMessage
       tone.value = "warning"
       return { status: "blocked", message: normalizedMessage }

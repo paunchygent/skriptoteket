@@ -29,6 +29,7 @@ import { apiDelete, apiGet, apiPatch, apiPost } from "../../api/client";
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
 import { createClassroomPlannerLifecycle } from "./classroomPlannerLifecycle";
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
+import { createClassroomPlannerSmartRunActions } from "./classroomPlannerSmartRunActions";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
 import {
   buildFixtureMap,
@@ -42,6 +43,7 @@ import { useSmartSeatingRun } from "./useSmartSeatingRun";
 import type {
   DraftGroup,
   DraftHistoryStatus,
+  FixedSeatRule,
   GroupAssignment,
   PlanDraft,
   RelationshipRule,
@@ -68,6 +70,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
+  const fixedSeatRules = ref<FixedSeatRule[]>([]);
   const smartRulesRevision = ref(0);
   const historyStatus = ref<DraftHistoryStatus>({
     can_undo: false,
@@ -248,6 +251,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     seatAssignmentsByStudentId,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
     historyStatus,
     historyActionInFlight,
@@ -294,9 +298,12 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
 
   const smartRuleActions = createClassroomPlannerSmartRuleActions({
     draft,
+    template,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     studentsById,
+    seatsById,
     isWorkspaceBusy,
     canEditSeatingSmartRules,
     draftLane,
@@ -345,29 +352,13 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     },
   });
 
-  async function runSeatingShuffle(): Promise<void> {
-    if (!draft.value || draft.value.draft_kind !== "seating") {
-      return;
-    }
-    if ((draft.value.smart_enabled ?? false) !== true) {
-      smartSeatingRun.clearFeedback();
-      mutationActions.randomizeSeating();
-      return;
-    }
-    await smartSeatingRun.run();
-  }
-
-  async function runGroupingShuffle(): Promise<void> {
-    if (!draft.value || draft.value.draft_kind !== "grouping") {
-      return;
-    }
-    if ((draft.value.smart_enabled ?? false) !== true) {
-      smartGroupingRun.clearFeedback();
-      mutationActions.randomizeGroups();
-      return;
-    }
-    await smartGroupingRun.run();
-  }
+  const smartRunActions = createClassroomPlannerSmartRunActions({
+    draft,
+    smartSeatingRun,
+    smartGroupingRun,
+    randomizeSeating: mutationActions.randomizeSeating,
+    randomizeGroups: mutationActions.randomizeGroups,
+  });
 
   return {
     draft,
@@ -406,10 +397,14 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     seatAssignmentsByStudentId,
     seatingPreferences,
     relationshipRules,
+    fixedSeatRules,
     smartRulesRevision,
     smartRulesHydrated,
     activeSeatingSmartTool: smartRuleUiState.activeSeatingSmartTool,
     pendingRelationshipStudentIds: smartRuleUiState.pendingRelationshipStudentIds,
+    pendingFixedSeatStudentId: smartRuleUiState.pendingFixedSeatStudentId,
+    pendingFixedSeatSeatId: smartRuleUiState.pendingFixedSeatSeatId,
+    editingFixedSeatRuleId: smartRuleUiState.editingFixedSeatRuleId,
     editingRelationshipRuleId: smartRuleUiState.editingRelationshipRuleId,
     editingNearTeacherRule: smartRuleUiState.editingNearTeacherRule,
     smartRuleFeedbackMessage: smartRuleUiState.feedbackMessage,
@@ -423,6 +418,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     canUndo,
     canRedo,
     canCommitPendingRelationshipRule: smartRuleUiState.canCommitPendingRelationshipRule,
+    canCommitPendingFixedSeatRule: smartRuleUiState.canCommitPendingFixedSeatRule,
     clearWorkspace: stateSupport.clearWorkspace,
     discardPendingSessionWork: stateSupport.discardPendingSessionWork,
     replaceCurrentRoster: stateSupport.replaceCurrentRoster,
@@ -455,10 +451,16 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     replaceNearTeacherPreference: smartRuleActions.replaceNearTeacherPreference,
     handleSeatingSmartToolStudentSelection: smartRuleActions.handleSeatingSmartToolStudentSelection,
     commitPendingRelationshipRule: smartRuleActions.commitPendingRelationshipRule,
+    selectFixedSeatRuleSeat: smartRuleActions.selectFixedSeatRuleSeat,
+    commitPendingFixedSeatRule: smartRuleActions.commitPendingFixedSeatRule,
     beginRelationshipRuleEdit: smartRuleActions.beginRelationshipRuleEdit,
     beginNearTeacherEdit: smartRuleActions.beginNearTeacherEdit,
+    beginFixedSeatRuleEdit: smartRuleActions.beginFixedSeatRuleEdit,
     clearNearTeacherRule: smartRuleActions.clearNearTeacherRule,
     deleteRelationshipRule: smartRuleActions.deleteRelationshipRule,
+    deleteFixedSeatRule: smartRuleActions.deleteFixedSeatRule,
+    fixedSeatRuleForStudent: smartRuleActions.fixedSeatRuleForStudent,
+    fixedSeatRuleForSeat: smartRuleActions.fixedSeatRuleForSeat,
     isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
     setDraftGroupingSeatingDistanceEnabled:
       smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
@@ -476,9 +478,9 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     moveGroup: mutationActions.moveGroup,
     removeGroup: mutationActions.removeGroup,
     randomizeGroups: mutationActions.randomizeGroups,
-    runGroupingShuffle,
+    runGroupingShuffle: smartRunActions.runGroupingShuffle,
     randomizeSeating: mutationActions.randomizeSeating,
-    runSeatingShuffle,
+    runSeatingShuffle: smartRunActions.runSeatingShuffle,
   };
 });
 

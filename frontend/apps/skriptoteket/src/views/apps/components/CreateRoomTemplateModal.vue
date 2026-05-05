@@ -10,6 +10,7 @@
 import { computed, ref, toRef } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import SystemMessage from "../../../components/ui/SystemMessage.vue";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useRoomTemplateEditorState } from "../useRoomTemplateEditorState";
 import RoomTemplateBuilderSurface from "./RoomTemplateBuilderSurface.vue";
@@ -120,8 +121,9 @@ async function removeTemplate(): Promise<void> {
       await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`);
     }
     emit("deleted", props.template.id);
-  } catch (deleteError: unknown) {
-    error.value = deleteError instanceof Error ? deleteError.message : "Kunde inte radera klassrummet.";
+  } catch {
+    error.value =
+      "Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.";
   } finally {
     isDeleting.value = false;
   }
@@ -161,14 +163,11 @@ async function removeTemplate(): Promise<void> {
         </div>
 
         <div class="room-template-modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
-          <div
+          <SystemMessage
             v-if="error"
-            class="system-message system-message-error"
-          >
-            <div class="system-message-content">
-              {{ error }}
-            </div>
-          </div>
+            v-model="error"
+            variant="error"
+          />
 
           <div class="room-template-modal-editor-grid mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">
             <RoomTemplateEditorSidebar

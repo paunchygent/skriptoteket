@@ -11,17 +11,27 @@
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-import type { RoomTemplate, SeatAssignment, Student } from "../classroomPlannerTypes";
+import type {
+  FixedSeatRule,
+  RoomTemplate,
+  SeatAssignment,
+  SeatingSmartTool,
+  Student,
+} from "../classroomPlannerTypes";
 import UiSegmentedToggle, {
   type UiSegmentedToggleOption,
 } from "../../../components/ui/UiSegmentedToggle.vue";
-import { sortStudentsAlphabetically } from "../classroomPlannerSmartRulePresentation";
+import {
+  formatSeatDisplayLabel,
+  sortStudentsAlphabetically,
+} from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
 import RoomSceneSurface from "./RoomSceneSurface.vue";
 import PlannerRulesSeatNode from "./PlannerRulesSeatNode.vue";
+import PlannerRulesUnplacedStudentGrid from "./PlannerRulesUnplacedStudentGrid.vue";
 
 type RulesMapView = "planning_map" | "seating_arrangement";
 
@@ -36,6 +46,10 @@ const props = withDefaults(defineProps<{
   seatAssignments?: SeatAssignment[];
   selectedStudentId?: string | null;
   pendingSelectedStudentIds?: string[];
+  activeTool?: SeatingSmartTool | null;
+  pendingFixedSeatStudentId?: string | null;
+  pendingFixedSeatSeatId?: string | null;
+  fixedSeatRules?: FixedSeatRule[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
   rosterName: null,
@@ -47,11 +61,16 @@ const props = withDefaults(defineProps<{
   seatAssignments: () => [],
   selectedStudentId: null,
   pendingSelectedStudentIds: () => [],
+  activeTool: null,
+  pendingFixedSeatStudentId: null,
+  pendingFixedSeatSeatId: null,
+  fixedSeatRules: () => [],
   smartRuleMarkersByStudentId: () => ({}),
 });
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
+  (e: "seat-selected", seatId: string): void;
   (e: "update:mapView", value: RulesMapView): void;
 }>();
 
@@ -100,12 +119,20 @@ const surfaceStudents = computed(() => {
 const selectedUnplacedStudentsCount = computed(() => {
   return surfaceStudents.value.filter((student) => isStudentSelected(student.id)).length;
 });
+const surfaceStudentCountLabel = computed(() => {
+  const count = surfaceStudents.value.length;
+  return count === 1 ? "1 elev" : `${count} elever`;
+});
 const surfaceHeadingLabel = computed(() => {
   if (isPlanningMap.value) {
     return props.rosterName ?? "Klass";
   }
   return "Ej på karta";
 });
+const fixedSeatRuleBySeatId = computed<Record<string, FixedSeatRule | undefined>>(() => {
+  return Object.fromEntries(props.fixedSeatRules.map((rule) => [rule.seat_id, rule]));
+});
+const fixedSeatActive = computed(() => props.activeTool === "fixed_seat");
 const shouldCenterSurface = computed(() => {
   const paddedWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0")
     + (ROOM_VIEWPORT_FRAME_PADDING * 2);
@@ -114,11 +141,6 @@ const shouldCenterSurface = computed(() => {
 const mapViewOptions = computed<UiSegmentedToggleOption[]>(() => {
   return [
     {
-      value: "planning_map",
-      label: "Planeringsvy",
-      dataTest: "rules-map-view-planning",
-    },
-    {
       value: "seating_arrangement",
       label: "Klassrumsvy",
       dataTest: "rules-map-view-seating",
@@ -126,6 +148,11 @@ const mapViewOptions = computed<UiSegmentedToggleOption[]>(() => {
       title: !props.canShowSeatingArrangement
         ? props.seatingArrangementUnavailableMessage ?? undefined
         : undefined,
+    },
+    {
+      value: "planning_map",
+      label: "Planeringskarta",
+      dataTest: "rules-map-view-planning",
     },
   ];
 });
@@ -189,7 +216,35 @@ function selectionOrder(studentId: string): number | null {
 }
 
 function isStudentSelected(studentId: string): boolean {
-  return props.selectedStudentId === studentId || props.pendingSelectedStudentIds.includes(studentId);
+  return (
+    props.selectedStudentId === studentId
+    || props.pendingSelectedStudentIds.includes(studentId)
+    || props.pendingFixedSeatStudentId === studentId
+  );
+}
+
+function isSeatSelectedForFixedSeat(seatId: string): boolean {
+  return props.activeTool === "fixed_seat" && props.pendingFixedSeatSeatId === seatId;
+}
+
+function fixedSeatTitle(rule: FixedSeatRule | undefined): string | null {
+  if (!rule) {
+    return null;
+  }
+  const studentName = props.studentsById[rule.student_id]?.display_name ?? "Elev";
+  return `Fast plats: ${studentName} -> ${formatSeatDisplayLabel(rule.seat_id)}`;
+}
+
+function pendingFixedSeatPreviewTitle(seatId: string): string | null {
+  if (props.activeTool !== "fixed_seat" || props.pendingFixedSeatSeatId !== seatId) {
+    return null;
+  }
+  const studentId = props.pendingFixedSeatStudentId;
+  if (!studentId) {
+    return null;
+  }
+  const studentName = props.studentsById[studentId]?.display_name ?? "Elev";
+  return `Fast plats: ${studentName} -> ${formatSeatDisplayLabel(seatId)}`;
 }
 
 function updateMapView(value: string): void {
@@ -317,9 +372,16 @@ function updateMapView(value: string): void {
                           :key="seat.id"
                           :seat="seat"
                           :student="seatingStudentsBySeatId[seat.id]"
+                          :fixed="fixedSeatRuleBySeatId[seat.id] !== undefined"
+                          :fixed-seat-title="fixedSeatTitle(fixedSeatRuleBySeatId[seat.id])"
+                          :pending-fixed-seat-preview-title="pendingFixedSeatPreviewTitle(seat.id)"
                           :selected="
-                            seatingStudentsBySeatId[seat.id] !== null
+                            (
+                              seatingStudentsBySeatId[seat.id] !== null
                               && isStudentSelected(seatingStudentsBySeatId[seat.id]?.id ?? '')
+                            )
+                              || fixedSeatRuleBySeatId[seat.id]?.student_id === pendingFixedSeatStudentId
+                              || isSeatSelectedForFixedSeat(seat.id)
                           "
                           :selection-order="
                             seatingStudentsBySeatId[seat.id] !== null
@@ -329,8 +391,12 @@ function updateMapView(value: string): void {
                           :markers="
                             smartRuleMarkersByStudentId[seatingStudentsBySeatId[seat.id]?.id ?? ''] ?? []
                           "
-                          :interactive="seatingStudentsBySeatId[seat.id] !== null"
+                          :fixed-seat-active="fixedSeatActive"
+                          :pending-fixed-seat-student-id="pendingFixedSeatStudentId"
+                          :pending-fixed-seat-seat-id="pendingFixedSeatSeatId"
+                          :interactive="fixedSeatActive || seatingStudentsBySeatId[seat.id] !== null"
                           @student-selected="emit('student-selected', $event)"
+                          @seat-selected="emit('seat-selected', $event)"
                         />
                       </template>
                     </RoomSceneSurface>
@@ -340,65 +406,16 @@ function updateMapView(value: string): void {
             </div>
           </div>
 
-          <div
-            v-if="surfaceStudents.length > 0"
-            class="rules-unplaced-panel mt-3 border border-navy/20 bg-canvas px-3 py-3"
-            data-test="rules-map-unplaced"
-          >
-            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-navy/15 pb-2">
-              <div class="space-y-1">
-                <p
-                  class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
-                  data-test="rules-map-surface-heading"
-                >
-                  {{ surfaceHeadingLabel }}
-                </p>
-                <p
-                  class="text-xs font-medium text-navy/55"
-                  data-test="rules-map-unplaced-count"
-                >
-                  {{ surfaceStudents.length }} elever
-                </p>
-              </div>
-              <p
-                v-if="selectedUnplacedStudentsCount > 0"
-                class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-action"
-                data-test="rules-map-unplaced-selected-count"
-              >
-                {{ selectedUnplacedStudentsCount }} valda
-              </p>
-            </div>
-            <div
-              class="rules-unplaced-grid mt-3"
-              data-test="rules-map-unplaced-grid"
-            >
-              <button
-                v-for="student in surfaceStudents"
-                :key="student.id"
-                type="button"
-                class="rules-unplaced-student border text-left"
-                :class="
-                  isStudentSelected(student.id)
-                    ? 'planner-choice-button-active-raised'
-                    : 'planner-choice-button-idle'
-                "
-                :data-test="`rules-unplaced-student-${student.id}`"
-                :aria-pressed="isStudentSelected(student.id) ? 'true' : 'false'"
-                @click="emit('student-selected', student.id)"
-              >
-                <span class="rules-unplaced-student-name">
-                  {{ student.display_name }}
-                </span>
-                <span
-                  v-if="selectionOrder(student.id)"
-                  class="rules-unplaced-student-order"
-                  :data-test="`rules-unplaced-student-order-${student.id}`"
-                >
-                  {{ selectionOrder(student.id) }}
-                </span>
-              </button>
-            </div>
-          </div>
+          <PlannerRulesUnplacedStudentGrid
+            :students="surfaceStudents"
+            :heading-label="surfaceHeadingLabel"
+            :student-count-label="surfaceStudentCountLabel"
+            :selected-count="selectedUnplacedStudentsCount"
+            :is-student-selected="isStudentSelected"
+            :selection-order="selectionOrder"
+            :pending-fixed-seat-student-id="pendingFixedSeatStudentId"
+            @student-selected="emit('student-selected', $event)"
+          />
         </div>
       </Transition>
     </div>
@@ -425,44 +442,6 @@ function updateMapView(value: string): void {
   inset: 0;
   width: 100%;
   pointer-events: none;
-}
-
-.rules-unplaced-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.65rem;
-}
-
-.rules-unplaced-student {
-  display: flex;
-  min-height: 3.25rem;
-  width: 100%;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 0.875rem;
-}
-
-.rules-unplaced-student-name {
-  min-width: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.35;
-  text-wrap: balance;
-}
-
-.rules-unplaced-student-order {
-  display: inline-flex;
-  min-height: 1.5rem;
-  min-width: 1.5rem;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
-  flex-shrink: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

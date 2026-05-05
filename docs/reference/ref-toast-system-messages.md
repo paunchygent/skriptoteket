@@ -55,7 +55,7 @@ Toasts are **overlay cards** with an icon + message, and **never push content**.
 | `info` | neutral status | navy (90% opacity) | `i` / dot |
 | `success` | completed positive outcome | pine green (`--huleedu-success`, 90% opacity) | check |
 | `warning` | caution, attention | amber (`--huleedu-warning`, 90% opacity) | warning |
-| `failure` | action did not complete | burgundy (90% opacity) | × |
+| `failure` | action did not complete | warm terracotta (`--huleedu-terracotta`, 90% opacity) | × |
 
 Recommended durations (auto-dismiss):
 

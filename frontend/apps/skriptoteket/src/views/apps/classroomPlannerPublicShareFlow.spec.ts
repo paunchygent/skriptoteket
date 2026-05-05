@@ -17,6 +17,7 @@ import type { PlanDraft } from "./classroomPlannerTypes";
 const toastMocks = vi.hoisted(() => ({
   success: vi.fn(),
   warning: vi.fn(),
+  failure: vi.fn(),
 }));
 
 vi.mock("../../composables/useToast", () => ({
@@ -136,6 +137,7 @@ describe("createClassroomPlannerPublicShareFlow", () => {
     localStorage.clear();
     toastMocks.success.mockReset();
     toastMocks.warning.mockReset();
+    toastMocks.failure.mockReset();
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText: vi.fn().mockResolvedValue(undefined) },

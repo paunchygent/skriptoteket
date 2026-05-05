@@ -5,7 +5,7 @@ title: "Klassrumskartan — Shared site/app dense-control primitive tightening"
 status: ready
 owners: "agents"
 created: 2026-04-01
-updated: 2026-05-03
+updated: 2026-05-06
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -55,6 +55,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0282: ST-26-06 shared-link PDF download spinner contract](../prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md)
 - [PR-0286: ST-29-11 share/export affordance consolidation](../prs/pr-0286-st-29-11-share-export-affordance-consolidation.md)
 - [PR-0287: ST-29-11 Smart settings popover persistence](../prs/pr-0287-st-29-11-smart-settings-popover-persistence.md)
+- [PR-0301: ST-29-11 overview share/export scope rail and draft confirmation](../prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -93,6 +94,11 @@ instead of treating it as unfinished planner-layout implementation.
   seating settings stay open for internal toggles/selects in authenticated and
   guest shells, while explicit close, backdrop, Escape, and intentional Rules
   navigation still close the panel.
+- `PR-0301` is done as a bounded overview `Dela och exportera` polish slice:
+  it keeps the `PR-0286` share/export consolidation intact, replaces the clunky
+  stacked content selector with the product-owner preferred rail toggle, and
+  adds selected-draft confirmation for class list and classroom context with
+  live proof at phone, laptop, and desktop widths.
 
 ## References
 

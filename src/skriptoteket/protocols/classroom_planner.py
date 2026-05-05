@@ -147,6 +147,21 @@ class RosterRepositoryProtocol(Protocol):
         ...
 
 
+class RosterStudentReferenceRepositoryProtocol(Protocol):
+    """Remove deleted roster students from planner-owned references."""
+
+    async def remove_for_roster(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        student_ids: set[str],
+        updated_at: datetime,
+    ) -> None:
+        """Remove roster students from dependent draft assignments and history."""
+        ...
+
+
 class RosterSmartRuleRepositoryProtocol(Protocol):
     """Persist roster-owned smart rules shared across drafts."""
 

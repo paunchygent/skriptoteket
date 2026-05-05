@@ -80,3 +80,41 @@ class RosterRelationshipRuleModel(Base):
     rule_id: Mapped[str] = mapped_column(String(255), nullable=False)
     kind: Mapped[str] = mapped_column(String(32), nullable=False)
     student_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+
+
+class RosterFixedSeatRuleModel(Base):
+    """Persist one roster-owned hard fixed-seat rule for a room template."""
+
+    __tablename__ = "classroom_planner_roster_fixed_seat_rules"
+    __table_args__ = (
+        UniqueConstraint("roster_id", "rule_id", name="uq_cp_roster_fixed_seat_rule"),
+        UniqueConstraint(
+            "roster_id",
+            "template_id",
+            "student_id",
+            name="uq_cp_roster_fixed_seat_student",
+        ),
+        UniqueConstraint(
+            "roster_id",
+            "template_id",
+            "seat_id",
+            name="uq_cp_roster_fixed_seat_seat",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    roster_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("classroom_planner_roster_smart_rule_sets.roster_id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    rule_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    template_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("classroom_planner_room_templates.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    student_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    seat_id: Mapped[str] = mapped_column(String(255), nullable=False)

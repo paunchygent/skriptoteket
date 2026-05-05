@@ -14,15 +14,17 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PatchRosterSmartRulesHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    FixedSeatRule,
     RelationshipRule,
     RosterSmartRules,
     StudentSeatingPreference,
 )
 from skriptoteket.domain.identity.models import User
-from skriptoteket.web.api.v1.apps_classroom_planner import (
+from skriptoteket.web.api.v1.apps_classroom_planner import _assert_unique
+from skriptoteket.web.api.v1.apps_classroom_planner_smart_rule_contracts import (
+    FixedSeatRuleDto,
     RelationshipRuleDto,
     StudentSeatingPreferenceDto,
-    _assert_unique,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
@@ -40,6 +42,7 @@ class RosterSmartRulesResponse(BaseModel):
     revision: int
     seating_preferences: list[StudentSeatingPreferenceDto]
     relationship_rules: list[RelationshipRuleDto]
+    fixed_seat_rules: list[FixedSeatRuleDto]
 
 
 class UpdateRosterSmartRulesRequest(BaseModel):
@@ -49,6 +52,7 @@ class UpdateRosterSmartRulesRequest(BaseModel):
     expected_revision: int
     seating_preferences: list[StudentSeatingPreferenceDto] = []
     relationship_rules: list[RelationshipRuleDto] = []
+    fixed_seat_rules: list[FixedSeatRuleDto] = []
 
     @model_validator(mode="after")
     def validate_unique_collections(self) -> "UpdateRosterSmartRulesRequest":
@@ -57,6 +61,7 @@ class UpdateRosterSmartRulesRequest(BaseModel):
             label="Seating preference student",
         )
         _assert_unique([rule.id for rule in self.relationship_rules], label="Relationship rule")
+        _assert_unique([rule.id for rule in self.fixed_seat_rules], label="Fixed-seat rule")
         return self
 
 
@@ -72,6 +77,7 @@ def _serialize_roster_smart_rules(rules: RosterSmartRules) -> RosterSmartRulesRe
         relationship_rules=[
             RelationshipRuleDto.model_validate(rule) for rule in rules.relationship_rules
         ],
+        fixed_seat_rules=[FixedSeatRuleDto.model_validate(rule) for rule in rules.fixed_seat_rules],
     )
 
 
@@ -104,6 +110,9 @@ async def update_roster_smart_rules(
         relationship_rules=[
             RelationshipRule.model_validate(rule.model_dump())
             for rule in request.relationship_rules
+        ],
+        fixed_seat_rules=[
+            FixedSeatRule.model_validate(rule.model_dump()) for rule in request.fixed_seat_rules
         ],
     )
     return _serialize_roster_smart_rules(rules)

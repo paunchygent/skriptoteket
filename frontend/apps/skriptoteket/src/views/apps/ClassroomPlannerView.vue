@@ -308,6 +308,7 @@ const {
       :is-submitting="isDeletingOverviewRoster"
       @cancel="closeOverviewRosterDelete"
       @confirm="void confirmOverviewRosterDelete()"
+      @dismiss-error="overviewDeleteRosterError = null"
     />
 
     <PlannerConfirmationDialog
@@ -320,6 +321,7 @@ const {
       :is-submitting="isDeletingOverviewTemplate"
       @cancel="closeOverviewTemplateDelete"
       @confirm="void confirmOverviewTemplateDelete()"
+      @dismiss-error="overviewDeleteTemplateError = null"
     />
 
     <PlannerConfirmationDialog

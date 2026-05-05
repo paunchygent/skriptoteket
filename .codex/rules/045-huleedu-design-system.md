@@ -94,7 +94,7 @@ Skriptoteket adopts a **Brutalist Academic** design system. This style prioritiz
   - opaque canvas-toned modal shells (`bg-modal`) when the surface floats over dimmed or layered content
   - subtle row highlights (`bg-panel-muted`, `bg-action/5`, `bg-warning/10`, `bg-navy/5`) inside the same surface
   - borders, rules, spacing, and hard shadows for hierarchy
-  - terracotta only as small brand/accent splashes, not as a broad surface or action fill
+  - terracotta only as small brand/accent splashes and transient failure toast surfaces, not as a broad app surface or action fill
   - visible Verdigris fills for true selected/active state, with light text on the fill
   - Verdigris outline/text treatment for secondary actions such as share-link creation
 - **Avoid**:
@@ -214,7 +214,7 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 | `--huleedu-modal` / `--surface-modal` | `bg-modal` | #FAFAF6 | Opaque canvas-toned modal, dialog, popover, drawer, and sheet shells over overlays |
 | `--huleedu-panel` / `--huleedu-panel-muted` | `bg-panel`, `bg-panel-muted` | translucent #FAFAF6 | Panel shells and internal row/object highlights that should not read as white cards |
 | `--huleedu-navy` | `bg-navy`, `text-navy`, `border-navy` | #082B4C | Primary text, borders, structure, academic framing |
-| `--huleedu-terracotta` | `bg-terracotta`, `text-terracotta` | #C94F32 | Brand accent only: logo accent, short rules, selected editorial markers |
+| `--huleedu-terracotta` | `bg-terracotta`, `text-terracotta` | #C94F32 | Brand accent and transient failure toast surface: logo accent, short rules, selected editorial markers, non-critical toast failures |
 | `--huleedu-action` | `bg-action`, `text-action`, `border-action` | #3F7F78 | Functional action, selected state, focus, calm confirmation |
 | `--huleedu-critical` | `bg-critical`, `text-critical` | #4D1521 | Destructive actions, truly critical user decisions |
 | `--huleedu-burgundy` | `bg-burgundy`, `text-burgundy` | #4D1521 | Deprecated compatibility alias for the critical channel; do not use in new code |
@@ -626,7 +626,7 @@ All Vue files must be **<500 LoC**. Extract logic to composables, UI to child co
 | Inline `style` attributes | Tailwind classes or CSS variables |
 | English error messages | Swedish: "Det gick inte att..." |
 | `rounded-sm` on buttons | Remove radius or use brutalist aesthetic |
-| Ad-hoc feedback colors | Toasts: `info=navy`, `success=--huleedu-success`, `warning=--huleedu-warning`, `failure=--huleedu-critical` (90% opacity); validation/blocking errors stay inline |
+| Ad-hoc feedback colors | Toasts: `info=navy`, `success=--huleedu-success`, `warning=--huleedu-warning`, `failure=--huleedu-terracotta` (90% opacity); validation/blocking errors stay inline |
 | Custom `@keyframes` in `<style>` | Use `animate-spin`, `animate-pulse` utilities |
 
 ---

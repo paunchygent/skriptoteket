@@ -270,6 +270,7 @@ async function exitPublicPlanner(): Promise<void> {
       :is-submitting="guestController.isDeletingOverviewRoster.value"
       @cancel="guestController.closeOverviewRosterDelete"
       @confirm="void guestController.confirmOverviewRosterDelete()"
+      @dismiss-error="guestController.overviewDeleteRosterError.value = null"
     />
 
     <PlannerConfirmationDialog
@@ -282,6 +283,7 @@ async function exitPublicPlanner(): Promise<void> {
       :is-submitting="guestController.isDeletingOverviewTemplate.value"
       @cancel="guestController.closeOverviewTemplateDelete"
       @confirm="void guestController.confirmOverviewTemplateDelete()"
+      @dismiss-error="guestController.overviewDeleteTemplateError.value = null"
     />
   </div>
 </template>

@@ -30,6 +30,11 @@ export type PlannerShareExportScopeOption = {
   value: string;
   label: string;
   meta?: string | null;
+  summary?: {
+    contextLabel: string;
+    kindLabel: string;
+    details?: string[];
+  } | null;
   disabled?: boolean;
   disabledReason?: string | null;
 };

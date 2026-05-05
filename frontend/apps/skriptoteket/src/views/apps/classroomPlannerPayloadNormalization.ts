@@ -15,6 +15,7 @@ import type {
   ClassWorkspaceSummary,
   DraftHistoryStatus,
   DraftWorkspaceResponse,
+  FixedSeatRule,
   PlanDraftSummary,
   RelationshipRule,
   RoomTemplate,
@@ -51,6 +52,10 @@ function cloneSeatingPreferences(
   preferences: StudentSeatingPreference[] | null | undefined,
 ): StudentSeatingPreference[] {
   return cloneArrayOrEmpty(preferences).map((preference) => ({ ...preference }));
+}
+
+function cloneFixedSeatRules(rules: FixedSeatRule[] | null | undefined): FixedSeatRule[] {
+  return cloneArrayOrEmpty(rules).map((rule) => ({ ...rule }));
 }
 
 function normalizeDraftHistoryStatus(
@@ -122,5 +127,6 @@ export function normalizeClassroomPlannerSmartRules(
     ...rules,
     seating_preferences: cloneSeatingPreferences(rules.seating_preferences),
     relationship_rules: cloneRelationshipRules(rules.relationship_rules),
+    fixed_seat_rules: cloneFixedSeatRules(rules.fixed_seat_rules),
   };
 }

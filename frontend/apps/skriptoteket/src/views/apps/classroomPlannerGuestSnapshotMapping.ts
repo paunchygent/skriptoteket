@@ -161,9 +161,11 @@ export function mapSmartRulesToGuestSnapshot(
     revision: smartRules.revision,
     seating_preferences: smartRules.seating_preferences,
     relationship_rules: smartRules.relationship_rules,
+    fixed_seat_rules: smartRules.fixed_seat_rules ?? [],
     fingerprint: createClassroomPlannerGuestFingerprint({
       seating_preferences: smartRules.seating_preferences,
       relationship_rules: smartRules.relationship_rules,
+      fixed_seat_rules: smartRules.fixed_seat_rules ?? [],
     }),
   };
 }
@@ -287,6 +289,7 @@ export function hydrateGuestSnapshot(
       revision: smartRules.revision,
       seating_preferences: smartRules.seating_preferences,
       relationship_rules: smartRules.relationship_rules,
+      fixed_seat_rules: smartRules.fixed_seat_rules ?? [],
     })),
     grouping_draft: hydrateGuestDraft(snapshot.grouping_draft, snapshot),
     seating_draft: hydrateGuestDraft(snapshot.seating_draft, snapshot),

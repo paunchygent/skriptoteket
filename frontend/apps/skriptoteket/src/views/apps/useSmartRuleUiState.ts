@@ -2,15 +2,14 @@
  * Smart-rule UI state.
  *
  * Purpose:
- *   Own the transient teacher-facing smart-rule authoring state for the
- *   seating workspace: active tool, pending relationship selection, and local
- *   feedback. This bucket must reset only from explicit planner transition
- *   policy, never from save or load acknowledgements.
+ *   Keeps transient rule authoring selections for the seating workspace:
+ *   active tool, pending students, pending fixed-seat binding, and local
+ *   feedback. Planner transition policies decide when this state resets.
  *
  * Relationships:
  *   - composed by `useClassroomState.ts`
- *   - transition resets are orchestrated by `plannerTransitionPolicies.ts`
- *   - persistence lanes never mutate this bucket directly
+ *   - transition resets run through `plannerTransitionPolicies.ts`
+ *   - persistence lanes read this state through smart-rule actions
  */
 
 import { computed, ref } from "vue";
@@ -24,6 +23,9 @@ type UseSmartRuleUiStateOptions = {
 export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
   const activeSeatingSmartTool = ref<SeatingSmartTool | null>(null);
   const pendingRelationshipStudentIds = ref<string[]>([]);
+  const pendingFixedSeatStudentId = ref<string | null>(null);
+  const pendingFixedSeatSeatId = ref<string | null>(null);
+  const editingFixedSeatRuleId = ref<string | null>(null);
   const editingRelationshipRuleId = ref<string | null>(null);
   const editingNearTeacherRule = ref(false);
   const feedbackMessage = ref<string | null>(null);
@@ -40,6 +42,14 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
       && pendingRelationshipStudentIds.value.length >= 2
     );
   });
+  const canCommitPendingFixedSeatRule = computed(() => {
+    return (
+      options.canEditSmartRules()
+      && activeSeatingSmartTool.value === "fixed_seat"
+      && pendingFixedSeatStudentId.value !== null
+      && pendingFixedSeatSeatId.value !== null
+    );
+  });
 
   function clearFeedback(): void {
     feedbackMessage.value = null;
@@ -47,6 +57,9 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
 
   function clearPendingRelationshipSelection(): void {
     pendingRelationshipStudentIds.value = [];
+    pendingFixedSeatStudentId.value = null;
+    pendingFixedSeatSeatId.value = null;
+    editingFixedSeatRuleId.value = null;
     editingRelationshipRuleId.value = null;
     editingNearTeacherRule.value = false;
     clearFeedback();
@@ -87,6 +100,20 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     clearFeedback();
   }
 
+  function beginFixedSeatEdit(ruleId: string | null, studentId: string, seatId: string | null): void {
+    if (!options.canEditSmartRules()) {
+      return;
+    }
+    activeSeatingSmartTool.value = "fixed_seat";
+    pendingRelationshipStudentIds.value = [];
+    pendingFixedSeatStudentId.value = studentId;
+    pendingFixedSeatSeatId.value = seatId;
+    editingFixedSeatRuleId.value = ruleId;
+    editingRelationshipRuleId.value = null;
+    editingNearTeacherRule.value = false;
+    clearFeedback();
+  }
+
   function setActiveSeatingSmartTool(tool: SeatingSmartTool | null): void {
     if (tool !== null && !options.canEditSmartRules()) {
       return;
@@ -115,21 +142,53 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     clearFeedback();
   }
 
+  function setPendingFixedSeatStudent(studentId: string): void {
+    pendingRelationshipStudentIds.value = [];
+    pendingFixedSeatStudentId.value = studentId;
+    editingRelationshipRuleId.value = null;
+    editingNearTeacherRule.value = false;
+    clearFeedback();
+  }
+
+  function togglePendingFixedSeatStudent(studentId: string): void {
+    pendingRelationshipStudentIds.value = [];
+    pendingFixedSeatStudentId.value = pendingFixedSeatStudentId.value === studentId ? null : studentId;
+    editingRelationshipRuleId.value = null;
+    editingNearTeacherRule.value = false;
+    clearFeedback();
+  }
+
+  function togglePendingFixedSeatSeat(seatId: string): void {
+    pendingRelationshipStudentIds.value = [];
+    pendingFixedSeatSeatId.value = pendingFixedSeatSeatId.value === seatId ? null : seatId;
+    editingRelationshipRuleId.value = null;
+    editingNearTeacherRule.value = false;
+    clearFeedback();
+  }
+
   return {
     activeSeatingSmartTool,
     pendingRelationshipStudentIds,
+    pendingFixedSeatStudentId,
+    pendingFixedSeatSeatId,
+    editingFixedSeatRuleId,
     editingRelationshipRuleId,
     editingNearTeacherRule,
     feedbackMessage,
     canCommitPendingRelationshipRule,
+    canCommitPendingFixedSeatRule,
     clearFeedback,
     clearPendingRelationshipSelection,
     setFeedbackMessage,
     reset,
     beginRelationshipRuleEdit,
     beginNearTeacherEdit,
+    beginFixedSeatEdit,
     setActiveSeatingSmartTool,
     isStudentInPendingRelationshipSelection,
     togglePendingRelationshipStudent,
+    setPendingFixedSeatStudent,
+    togglePendingFixedSeatStudent,
+    togglePendingFixedSeatSeat,
   };
 }

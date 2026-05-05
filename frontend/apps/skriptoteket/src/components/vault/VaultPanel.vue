@@ -71,6 +71,11 @@ const sortOptions: UiSegmentedToggleOption[] = [
   { value: "size", label: "Storlek", dataTest: "vault-sort-size" },
 ];
 
+const deleteFileFailureMessage = "Det gick inte att flytta filen till papperskorgen. Försök igen.";
+const deleteFilesFailureMessage = "Det gick inte att flytta filerna till papperskorgen. Försök igen.";
+const restoreFileFailureMessage = "Det gick inte att återställa filen. Försök igen.";
+const restoreFilesFailureMessage = "Det gick inte att återställa filerna. Försök igen.";
+
 function isVaultListState(value: string): value is VaultListState {
   return value === "active" || value === "trash";
 }
@@ -211,14 +216,8 @@ async function onDelete(fileId: string): Promise<void> {
     await deleteFile(fileId);
     toast.success("Filen flyttades till papperskorgen.");
     await refresh();
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      actionError.value = error.message;
-    } else if (error instanceof Error) {
-      actionError.value = error.message;
-    } else {
-      actionError.value = "Det gick inte att ta bort filen.";
-    }
+  } catch {
+    toast.failure(deleteFileFailureMessage);
   } finally {
     isMutating.value = false;
   }
@@ -238,14 +237,8 @@ async function onDeleteSelected(): Promise<void> {
     clearManageSelection();
     toast.success("Markerade filer flyttades till papperskorgen.");
     await refresh();
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      actionError.value = error.message;
-    } else if (error instanceof Error) {
-      actionError.value = error.message;
-    } else {
-      actionError.value = "Det gick inte att ta bort filerna.";
-    }
+  } catch {
+    toast.failure(deleteFilesFailureMessage);
   } finally {
     isMutating.value = false;
   }
@@ -260,14 +253,8 @@ async function onRestore(fileId: string): Promise<void> {
     await restoreFile(fileId);
     toast.success("Filen återställdes.");
     await refresh();
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      actionError.value = error.message;
-    } else if (error instanceof Error) {
-      actionError.value = error.message;
-    } else {
-      actionError.value = "Det gick inte att återställa filen.";
-    }
+  } catch {
+    toast.failure(restoreFileFailureMessage);
   } finally {
     isMutating.value = false;
   }
@@ -287,14 +274,8 @@ async function onRestoreSelected(): Promise<void> {
     clearManageSelection();
     toast.success("Markerade filer återställdes.");
     await refresh();
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      actionError.value = error.message;
-    } else if (error instanceof Error) {
-      actionError.value = error.message;
-    } else {
-      actionError.value = "Det gick inte att återställa filerna.";
-    }
+  } catch {
+    toast.failure(restoreFilesFailureMessage);
   } finally {
     isMutating.value = false;
   }
