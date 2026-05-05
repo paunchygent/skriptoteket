@@ -28,6 +28,8 @@ describe("PlannerWorkspaceActionBar", () => {
       "context",
       "secondary",
     ]);
+    expect(wrapper.get('[data-ui="planner-workspace-action-bar"]').classes()).toContain("bg-canvas");
+    expect(wrapper.get('[data-ui="planner-workspace-action-bar"]').classes()).not.toContain("bg-panel");
 
     expect(wrapper.get('[data-zone="primary"] [data-test="primary-action"]').text()).toContain("Primary");
     expect(wrapper.get('[data-zone="context"] [data-test="context-control"]').text()).toContain("Context");

@@ -10,7 +10,16 @@ import { nextTick, reactive } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import PlannerWorkspaceShell from "./PlannerWorkspaceShell.vue";
-import type { ClassWorkspaceSummary, PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
+import type {
+  ClassWorkspaceSummary,
+  FixedSeatRule,
+  PlanDraft,
+  RelationshipRule,
+  RoomTemplate,
+  Roster,
+  SeatingSmartTool,
+  Student,
+} from "../classroomPlannerTypes";
 
 const toastMocks = vi.hoisted(() => ({
   info: vi.fn(),
@@ -26,23 +35,34 @@ type PlannerStateMock = {
     use_history?: boolean;
     grouping_seating_distance_enabled?: boolean;
   };
-  students: Roster["students"];
-  ungroupedStudents: Roster["students"];
-  unseatedStudents: Roster["students"];
+  students: Student[];
+  studentsById: Record<string, Student | undefined>;
+  seatsById: Record<string, RoomTemplate["seats"][number] | undefined>;
+  ungroupedStudents: Student[];
+  unseatedStudents: Student[];
   groups: Array<{ id: string; name: string; sort_order: number; name_is_custom: boolean }>;
   studentsByGroupId: Record<string, Roster["students"]>;
   groupAssignments: Array<{ student_id: string; group_id: string }>;
   seats: RoomTemplate["seats"];
   seatAssignments: Array<{ student_id: string; seat_id: string }>;
   seatingPreferences: Array<{ student_id: string; near_teacher: boolean }>;
-  relationshipRules: Array<{ id: string; kind: "keep_near" | "keep_apart"; student_ids: string[] }>;
+  relationshipRules: RelationshipRule[];
+  fixedSeatRules: FixedSeatRule[];
   pendingRelationshipStudentIds: string[];
+  pendingFixedSeatStudentId: string | null;
+  pendingFixedSeatSeatId: string | null;
+  editingFixedSeatRuleId: string | null;
+  editingRelationshipRuleId: string | null;
+  editingNearTeacherRule: boolean;
   smartRuleFeedbackMessage: string | null;
+  smartRuleHydrationStatus: "idle" | "hydrating" | "ready" | "error";
+  smartRuleHydrationMessage: string | null;
   smartGroupingRunMessage: string | null;
   smartGroupingRunTone: "neutral" | "success" | "warning";
   smartSeatingRunMessage: string | null;
   smartSeatingRunTone: "neutral" | "success" | "warning";
   canCommitPendingRelationshipRule: boolean;
+  canCommitPendingFixedSeatRule: boolean;
   plannerStatusLabel: string;
   plannerStatusMessage: string | null;
   plannerStatusTone: "neutral" | "success" | "warning" | "danger";
@@ -53,13 +73,20 @@ type PlannerStateMock = {
   canEditSeatingSmartRules: boolean;
   canUndo: boolean;
   canRedo: boolean;
-  activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
+  activeSeatingSmartTool: SeatingSmartTool | null;
   beginNearTeacherEdit: ReturnType<typeof vi.fn>;
   setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
   clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
+  removePendingRelationshipStudent: ReturnType<typeof vi.fn>;
   handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
   commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
+  commitPendingFixedSeatRule: ReturnType<typeof vi.fn>;
+  selectFixedSeatRuleSeat: ReturnType<typeof vi.fn>;
+  beginRelationshipRuleEdit: ReturnType<typeof vi.fn>;
+  beginFixedSeatRuleEdit: ReturnType<typeof vi.fn>;
+  clearNearTeacherRule: ReturnType<typeof vi.fn>;
   deleteRelationshipRule: ReturnType<typeof vi.fn>;
+  deleteFixedSeatRule: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
   setDraftUseHistoryEnabled: ReturnType<typeof vi.fn>;
   setDraftGroupingSeatingDistanceEnabled: ReturnType<typeof vi.fn>;
@@ -90,6 +117,14 @@ const stateMocks = vi.hoisted(() => ({
       { id: "student-1", display_name: "Ada Lovelace" },
       { id: "student-2", display_name: "Alan Turing" },
     ],
+    studentsById: {
+      "student-1": { id: "student-1", display_name: "Ada Lovelace" },
+      "student-2": { id: "student-2", display_name: "Alan Turing" },
+    },
+    seatsById: {
+      "seat-1": { id: "seat-1", x: 0, y: 0, zone: null },
+      "seat-2": { id: "seat-2", x: 120, y: 0, zone: null },
+    },
     ungroupedStudents: [
       { id: "student-1", display_name: "Ada Lovelace" },
       { id: "student-2", display_name: "Alan Turing" },
@@ -108,8 +143,16 @@ const stateMocks = vi.hoisted(() => ({
     seatAssignments: [{ student_id: "student-1", seat_id: "seat-1" }],
     seatingPreferences: [],
     relationshipRules: [],
+    fixedSeatRules: [],
     pendingRelationshipStudentIds: [],
+    pendingFixedSeatStudentId: null,
+    pendingFixedSeatSeatId: null,
+    editingFixedSeatRuleId: null,
+    editingRelationshipRuleId: null,
+    editingNearTeacherRule: false,
     smartRuleFeedbackMessage: null,
+    smartRuleHydrationStatus: "ready",
+    smartRuleHydrationMessage: null,
     smartGroupingRunMessage: null,
     smartGroupingRunTone: "neutral",
     smartSeatingRunMessage: null,
@@ -123,6 +166,7 @@ const stateMocks = vi.hoisted(() => ({
     isRunningSmartGrouping: false,
     isRunningSmartSeating: false,
     canEditSeatingSmartRules: true,
+    canCommitPendingFixedSeatRule: false,
     canUndo: false,
     canRedo: false,
     activeSeatingSmartTool: null,
@@ -131,9 +175,16 @@ const stateMocks = vi.hoisted(() => ({
     }),
     setActiveSeatingSmartTool: vi.fn(),
     clearPendingRelationshipSelection: vi.fn(),
+    removePendingRelationshipStudent: vi.fn(),
     handleSeatingSmartToolStudentSelection: vi.fn(() => false),
     commitPendingRelationshipRule: vi.fn(() => true),
+    commitPendingFixedSeatRule: vi.fn(() => true),
+    selectFixedSeatRuleSeat: vi.fn(() => true),
+    beginRelationshipRuleEdit: vi.fn(),
+    beginFixedSeatRuleEdit: vi.fn(),
+    clearNearTeacherRule: vi.fn(() => true),
     deleteRelationshipRule: vi.fn(),
+    deleteFixedSeatRule: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
     setDraftUseHistoryEnabled: vi.fn(),
     setDraftGroupingSeatingDistanceEnabled: vi.fn(),
@@ -271,6 +322,10 @@ describe("PlannerWorkspaceShell", () => {
       { id: "student-1", display_name: "Ada Lovelace" },
       { id: "student-2", display_name: "Alan Turing" },
     ];
+    stateMocks.plannerState.studentsById = {
+      "student-1": { id: "student-1", display_name: "Ada Lovelace" },
+      "student-2": { id: "student-2", display_name: "Alan Turing" },
+    };
     stateMocks.plannerState.ungroupedStudents = [...stateMocks.plannerState.students];
     stateMocks.plannerState.unseatedStudents = [...stateMocks.plannerState.students];
     stateMocks.plannerState.groups = [{ id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false }];
@@ -280,16 +335,29 @@ describe("PlannerWorkspaceShell", () => {
       { id: "seat-1", x: 0, y: 0, zone: null },
       { id: "seat-2", x: 120, y: 0, zone: null },
     ];
+    stateMocks.plannerState.seatsById = {
+      "seat-1": { id: "seat-1", x: 0, y: 0, zone: null },
+      "seat-2": { id: "seat-2", x: 120, y: 0, zone: null },
+    };
     stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
     stateMocks.plannerState.seatingPreferences = [];
     stateMocks.plannerState.relationshipRules = [];
+    stateMocks.plannerState.fixedSeatRules = [];
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
+    stateMocks.plannerState.pendingFixedSeatStudentId = null;
+    stateMocks.plannerState.pendingFixedSeatSeatId = null;
+    stateMocks.plannerState.editingFixedSeatRuleId = null;
+    stateMocks.plannerState.editingRelationshipRuleId = null;
+    stateMocks.plannerState.editingNearTeacherRule = false;
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
+    stateMocks.plannerState.smartRuleHydrationStatus = "ready";
+    stateMocks.plannerState.smartRuleHydrationMessage = null;
     stateMocks.plannerState.smartGroupingRunMessage = null;
     stateMocks.plannerState.smartGroupingRunTone = "neutral";
     stateMocks.plannerState.smartSeatingRunMessage = null;
     stateMocks.plannerState.smartSeatingRunTone = "neutral";
     stateMocks.plannerState.canCommitPendingRelationshipRule = false;
+    stateMocks.plannerState.canCommitPendingFixedSeatRule = false;
     stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.isRunningSmartGrouping = false;
     stateMocks.plannerState.canEditSeatingSmartRules = true;
@@ -302,11 +370,21 @@ describe("PlannerWorkspaceShell", () => {
     });
     stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
+    stateMocks.plannerState.removePendingRelationshipStudent.mockReset();
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReset();
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReturnValue(false);
     stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
     stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
+    stateMocks.plannerState.commitPendingFixedSeatRule.mockReset();
+    stateMocks.plannerState.commitPendingFixedSeatRule.mockReturnValue(true);
+    stateMocks.plannerState.selectFixedSeatRuleSeat.mockReset();
+    stateMocks.plannerState.selectFixedSeatRuleSeat.mockReturnValue(true);
+    stateMocks.plannerState.beginRelationshipRuleEdit.mockReset();
+    stateMocks.plannerState.beginFixedSeatRuleEdit.mockReset();
+    stateMocks.plannerState.clearNearTeacherRule.mockReset();
+    stateMocks.plannerState.clearNearTeacherRule.mockReturnValue(true);
     stateMocks.plannerState.deleteRelationshipRule.mockReset();
+    stateMocks.plannerState.deleteFixedSeatRule.mockReset();
     stateMocks.plannerState.setDraftSmartEnabled.mockReset();
     stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
     stateMocks.plannerState.setDraftGroupingSeatingDistanceEnabled.mockReset();
