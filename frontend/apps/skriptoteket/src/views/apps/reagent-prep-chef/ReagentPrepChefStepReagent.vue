@@ -49,7 +49,7 @@ const emit = defineEmits<{
             <Transition name="popover">
               <div
                 v-if="props.chemicalSearchIsActive"
-                class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto border border-navy bg-panel shadow-brutal-sm"
+                class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto border border-navy bg-modal shadow-brutal-sm"
               >
                 <div
                   v-if="props.chemicalSearchResults.length === 0"

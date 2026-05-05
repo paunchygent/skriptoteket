@@ -5,7 +5,7 @@ title: "HuleEdu palette token refresh and semantic color split"
 status: in_progress
 owners: "agents"
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-05-05
 epic: "EPIC-11"
 acceptance_criteria:
   - "Given the shared design-token source, when frontend code consumes HuleEdu colors, then Deep Navy, Warm Terracotta, Verdigris Teal, and light canvas/paper are available as canonical role tokens."
@@ -15,6 +15,7 @@ acceptance_criteria:
   - "Given a selector is rendered as selected on a filled Verdigris surface, when it has nested labels or disabled state, then no navy text class overrides the light selected text color."
   - "Given the light warm canvas background, when body copy or dense workspace text appears, then Deep Navy remains the only new palette color used for long readable text."
   - "Given pages and dense workspaces use the light canvas, when panels, rows, and highlights are composed, then the UI avoids large white-on-canvas patchwork and prefers translucent canvas-toned panel surfaces with lighter row/object highlights."
+  - "Given a modal, dialog, popover, drawer, or sheet floats over dimmed or layered content, when its shell is rendered, then it uses an opaque canvas-toned modal surface instead of translucent panel or white page-card styling."
   - "Given a share/link action is secondary, when it appears beside export or setup controls, then it uses Verdigris outline/text with a link icon instead of filled primary CTA styling or a plus icon."
 ---
 
@@ -30,7 +31,8 @@ palette now separates those roles:
   completion/status accent.
 - Canvas/Paper `#FAFAF6`: light warm base surface. It should unify the page rather than act as a
   backdrop for stacked white panels; use lighter row/object highlights to create emphasis without a
-  blotchy background.
+  blotchy background. Modal, dialog, popover, drawer, and sheet shells use an opaque canvas-toned
+  modal token over overlays so the chrome stays stable without returning to broad white cards.
 
 Warning and destructive semantics are not part of the terracotta or teal roles.
 Warning remains amber/ochra. Destructive and truly user-critical decisions remain
@@ -45,3 +47,5 @@ on the burgundy/error-family channel.
   the legacy `burgundy` name.
 - Avoid broad white panels on canvas by default. Use translucent canvas-toned panel surfaces, borders, spacing,
   and light highlights unless a specific object needs stronger contrast.
+- Use the opaque modal shell token for floating overlay surfaces; keep white for text fields, textareas,
+  classroom objects, and isolated previews that need deliberate contrast.

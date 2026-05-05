@@ -78,7 +78,7 @@ function confirmDelete(draftId: string): void {
       @click="emit('close')"
     />
     <aside
-      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-panel shadow-brutal"
+      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-modal shadow-brutal"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0">

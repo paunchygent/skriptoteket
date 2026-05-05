@@ -151,8 +151,7 @@ watch(
   right: var(--huleedu-space-4);
   bottom: var(--huleedu-space-4);
   width: min(420px, calc(100vw - var(--huleedu-space-8)));
-  background-color: var(--huleedu-canvas);
-  background-color: color-mix(in srgb, var(--huleedu-canvas) 55%, white);
+  background-color: var(--surface-modal);
   z-index: var(--huleedu-z-modal);
 }
 

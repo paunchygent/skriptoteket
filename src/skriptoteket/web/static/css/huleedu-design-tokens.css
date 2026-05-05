@@ -21,6 +21,7 @@
      ───────────────────────────────────────────────────────────────────────── */
   --huleedu-paper: #FAFAF6;         /* Light warm canvas background */
   --huleedu-canvas: var(--huleedu-paper);
+  --huleedu-modal: var(--huleedu-canvas); /* Opaque canvas-toned modal/dialog shell */
   --huleedu-panel: rgba(250, 250, 246, 0.64); /* Canvas-toned panel shell that lets the grid breathe */
   --huleedu-panel-muted: rgba(250, 250, 246, 0.38);
   --huleedu-navy: #082B4C;          /* Deep Navy: structure + long-form text */
@@ -43,6 +44,7 @@
   --button-secondary-border: var(--huleedu-navy);
   --button-secondary-text: var(--huleedu-navy);
   --surface-paper: var(--huleedu-paper);
+  --surface-modal: var(--huleedu-modal);
   --surface-panel: var(--huleedu-panel);
   --surface-panel-muted: var(--huleedu-panel-muted);
 

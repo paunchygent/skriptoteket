@@ -7,6 +7,7 @@
   /* Core brand colors */
   --color-paper: var(--huleedu-paper);
   --color-canvas: var(--huleedu-canvas);
+  --color-modal: var(--surface-modal);
   --color-panel: var(--huleedu-panel);
   --color-panel-muted: var(--huleedu-panel-muted);
   --color-navy: var(--huleedu-navy);

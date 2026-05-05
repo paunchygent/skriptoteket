@@ -103,7 +103,7 @@ const assistantActivity = computed(() => {
 
   <aside
     :class="[
-      'fixed inset-y-0 right-0 z-50 bg-canvas border-l border-navy shadow-brutal flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
+      'fixed inset-y-0 right-0 z-50 bg-modal border-l border-navy shadow-brutal flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
       isRailOnlyOnMobile ? 'w-[var(--chat-rail-width,64px)]' : 'w-full',
       props.variant === 'column' ? 'lg:border-0 lg:shadow-none lg:bg-transparent' : '',
     ]"

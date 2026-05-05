@@ -318,7 +318,7 @@ onUnmounted(() => {
       :class="[
         isInline
           ? 'planner-share-export-inline-panel flex w-full flex-col overflow-hidden border border-navy bg-canvas'
-          : 'fixed inset-x-0 bottom-0 z-[40] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-canvas pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,42rem)] md:w-[34rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm',
+          : 'fixed inset-x-0 bottom-0 z-[40] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,42rem)] md:w-[34rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm',
       ]"
       :role="isInline ? undefined : 'dialog'"
       :aria-modal="isInline ? undefined : 'true'"

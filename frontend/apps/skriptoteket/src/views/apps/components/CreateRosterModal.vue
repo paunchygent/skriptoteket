@@ -307,7 +307,10 @@ function closeModal(): void {
       @click="closeModal"
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
-      <div class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-panel shadow-brutal">
+      <div
+        class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-modal shadow-brutal"
+        data-test="roster-modal-shell"
+      >
         <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
           <div class="min-w-0 space-y-1 px-6 pt-6 md:px-8 md:pt-8">
             <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
@@ -503,7 +506,10 @@ function closeModal(): void {
           </div>
         </div>
 
-        <div class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-panel px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div
+          class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-modal px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+          data-test="roster-modal-footer"
+        >
           <div>
             <button
               v-if="isEditing"

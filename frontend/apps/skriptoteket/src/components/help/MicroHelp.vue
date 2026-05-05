@@ -166,7 +166,7 @@ onUnmounted(() => {
   max-width: min(20rem, calc(100vw - var(--huleedu-space-8)));
   padding: var(--huleedu-space-4);
   padding-right: var(--huleedu-space-10);
-  background-color: var(--huleedu-canvas);
+  background-color: var(--surface-modal);
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   box-shadow: var(--huleedu-shadow-brutal-sm);
   font-size: 0.875rem;

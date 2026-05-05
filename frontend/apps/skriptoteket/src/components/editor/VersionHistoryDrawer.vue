@@ -51,8 +51,8 @@ const hasMoreVersions = computed(() => props.versions.length > VERSION_PREVIEW_L
 const isPopover = computed(() => props.variant === "popover");
 const panelClasses = computed(() =>
   isPopover.value
-    ? "fixed inset-y-[var(--huleedu-space-8)] left-[var(--huleedu-space-4)] right-[var(--huleedu-space-4)] z-50 bg-canvas border border-navy flex flex-col overflow-hidden md:left-[var(--huleedu-space-12)] md:right-auto md:w-[420px]"
-    : "fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden",
+    ? "fixed inset-y-[var(--huleedu-space-8)] left-[var(--huleedu-space-4)] right-[var(--huleedu-space-4)] z-50 bg-modal border border-navy flex flex-col overflow-hidden md:left-[var(--huleedu-space-12)] md:right-auto md:w-[420px]"
+    : "fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden",
 );
 
 function versionLabel(state: VersionState): string {

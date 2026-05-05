@@ -30,7 +30,7 @@ const emit = defineEmits<{
       @click="emit('cancel')"
     />
     <div class="relative flex min-h-full items-center justify-center py-4">
-      <div class="w-full max-w-[32rem] border border-navy bg-panel p-6 shadow-brutal-sm">
+      <div class="w-full max-w-[32rem] border border-navy bg-modal p-6 shadow-brutal-sm">
         <div class="space-y-2">
           <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-critical">
             {{ eyebrow }}

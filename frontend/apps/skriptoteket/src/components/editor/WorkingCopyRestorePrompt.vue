@@ -106,7 +106,7 @@ watch(
         @click.self="closeDiff"
       >
         <div
-          class="relative w-full max-w-6xl mx-4 p-4 bg-canvas border border-navy shadow-brutal flex flex-col min-h-0 h-[min(760px,calc(100vh-3rem))]"
+          class="relative w-full max-w-6xl mx-4 p-4 bg-modal border border-navy shadow-brutal flex flex-col min-h-0 h-[min(760px,calc(100vh-3rem))]"
         >
           <button
             type="button"

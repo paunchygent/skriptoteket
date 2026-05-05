@@ -17,6 +17,7 @@ acceptance_criteria:
   - "Shared dense buttons, rails, toggles, segmented controls, and share/export action buttons use the action channel for active/selected/primary control states instead of structural navy."
   - "Filled selected selectors keep light selected text for nested labels and disabled selected states; navy text must not sit on Verdigris fill."
   - "Canvas is treated as the unified base surface; broad white-on-canvas panel stacks are avoided in favor of translucent panel surfaces and light row/object highlights."
+  - "Modal, dialog, popover, drawer, and sheet shells use an opaque canvas-toned modal token instead of translucent panel tokens, while form fields and deliberate object previews may remain white."
   - "Secondary share/link actions use Verdigris outline/text hierarchy and link symbols, while filled Verdigris is reserved for true primary CTA or selected/active state."
   - "Design-system docs/rules document the palette split and deprecate new usage of generic burgundy for functional action roles."
 ---
@@ -37,7 +38,7 @@ semantic pass through the SPA bridge and shared primitives:
 - Warm Terracotta for brand accent only.
 - Verdigris Teal for functional action, selection, focus, and calm positive state.
 - Light canvas/paper for the shared warm surface.
-- Translucent canvas-toned panel surfaces as the default page/panel base, with white reserved for fields and deliberate object contrast.
+- Translucent canvas-toned panel surfaces as the default page/panel base, with opaque canvas-toned modal shells over overlays and white reserved for fields and deliberate object contrast.
 - Amber/ochra for warning.
 - Burgundy/error-family for destructive and truly critical decisions.
 
@@ -62,7 +63,9 @@ semantic pass through the SPA bridge and shared primitives:
 5. Replace high-visibility white-on-canvas dashboard/planner panels with
    canvas-toned surfaces, while keeping white only for deliberate object/editor
    contrast.
-6. Update the governing design-system docs so future work does not reintroduce
+6. Add a dedicated opaque modal shell token and move overlay-backed modal,
+   dialog, popover, drawer, and sheet chrome off translucent panel surfaces.
+7. Update the governing design-system docs so future work does not reintroduce
    terracotta/teal warning semantics.
 
 ## Test plan

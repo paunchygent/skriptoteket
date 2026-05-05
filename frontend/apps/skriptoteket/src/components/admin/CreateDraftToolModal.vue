@@ -46,7 +46,7 @@ watch(
         :aria-describedby="error ? 'create-tool-dialog-error' : undefined"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-lg mx-4 p-6 bg-canvas border border-navy shadow-brutal">
+        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-brutal">
           <button
             type="button"
             class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"

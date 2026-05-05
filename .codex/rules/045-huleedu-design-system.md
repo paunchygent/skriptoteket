@@ -86,10 +86,12 @@ Skriptoteket adopts a **Brutalist Academic** design system. This style prioritiz
 - **Problem**: White panels on a warm canvas can create a blotchy page where the background, cards,
   tables, and repeated rows compete as separate sheets of paper.
 - **Rule**: Treat the light canvas as the shared base surface. Prefer `bg-panel`/paper-toned panel shells
-  and only use pure white when a control, form field, classroom object, or isolated preview needs
-  deliberate contrast.
+  for in-page panels and `bg-modal` for modal, dialog, popover, drawer, and sheet shells that must stay
+  opaque over overlays. Only use pure white when a control, form field, classroom object, or isolated
+  preview needs deliberate contrast.
 - **Use**:
   - translucent panel shells (`bg-panel`) that keep the canvas from becoming a stack of white blocks
+  - opaque canvas-toned modal shells (`bg-modal`) when the surface floats over dimmed or layered content
   - subtle row highlights (`bg-panel-muted`, `bg-action/5`, `bg-warning/10`, `bg-navy/5`) inside the same surface
   - borders, rules, spacing, and hard shadows for hierarchy
   - terracotta only as small brand/accent splashes, not as a broad surface or action fill
@@ -209,6 +211,7 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 | Token | Tailwind Class | Hex | Usage |
 |-------|----------------|-----|-------|
 | `--huleedu-paper` / `--huleedu-canvas` | `bg-paper`, `bg-canvas`, `text-canvas` | #FAFAF6 | Light warm canvas surface, button text on dark when off-white is desired |
+| `--huleedu-modal` / `--surface-modal` | `bg-modal` | #FAFAF6 | Opaque canvas-toned modal, dialog, popover, drawer, and sheet shells over overlays |
 | `--huleedu-panel` / `--huleedu-panel-muted` | `bg-panel`, `bg-panel-muted` | translucent #FAFAF6 | Panel shells and internal row/object highlights that should not read as white cards |
 | `--huleedu-navy` | `bg-navy`, `text-navy`, `border-navy` | #082B4C | Primary text, borders, structure, academic framing |
 | `--huleedu-terracotta` | `bg-terracotta`, `text-terracotta` | #C94F32 | Brand accent only: logo accent, short rules, selected editorial markers |

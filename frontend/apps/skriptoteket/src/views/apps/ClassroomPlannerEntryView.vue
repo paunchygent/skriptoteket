@@ -118,7 +118,7 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
       class="fixed inset-0 z-50 flex items-center justify-center bg-navy/30 p-4 backdrop-blur-[1px]"
       data-test="guest-upgrade-blocking-modal"
     >
-      <div class="w-full max-w-[28rem] border border-navy bg-panel px-6 py-5 text-sm text-navy/80 shadow-brutal-md">
+      <div class="w-full max-w-[28rem] border border-navy bg-modal px-6 py-5 text-sm text-navy/80 shadow-brutal-md">
         Kontrollerar om det finns tidigare arbete i den här webbläsaren...
       </div>
     </div>

@@ -134,6 +134,8 @@ This is the real styling contract path.
 - Button text white is exposed as `--button-primary-text` / `text-button-primary-text` so filled
   action controls do not rely on Tailwind default color names.
 - Canvas/Paper `#FAFAF6`: `--huleedu-paper` / `--huleedu-canvas`, light warm surface.
+- Modal shell: `--huleedu-modal` / `--surface-modal`, exposed as `bg-modal` for opaque
+  canvas-toned modal, dialog, popover, drawer, and sheet shells over overlays.
 - Panel shell: `--huleedu-panel` / `--huleedu-panel-muted`, exposed as `bg-panel` and
   `bg-panel-muted` for translucent canvas-toned panels and internal rows.
 - Critical burgundy `#4D1521`: `--huleedu-critical`, `bg-critical`, `text-critical`, destructive
@@ -144,8 +146,9 @@ This is the real styling contract path.
 code should prefer `action`, `terracotta`, `critical`, `warning`, or `error` according to the semantic role.
 
 Surface rule: use the light canvas as the uniform base. Avoid large white panels stacked over canvas unless
-the object needs deliberate contrast; use `bg-panel` for panel shells and `bg-panel-muted` or semantic tints
-for rows/highlights so pages do not feel blotchy.
+the object needs deliberate contrast; use `bg-panel` for in-page panel shells and `bg-panel-muted` or semantic
+tints for rows/highlights so pages do not feel blotchy. Use `bg-modal` for opaque modal/dialog/popover/drawer
+shells that float over dimmed or layered content.
 
 Action hierarchy rule: Verdigris fill is for true primary CTA or selected/active state. Secondary actions
 that still belong to the action family, such as share-link creation, use Verdigris border/text treatment and

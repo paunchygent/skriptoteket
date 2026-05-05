@@ -96,7 +96,7 @@ onUnmounted(() => {
       @click="emit('close')"
     />
     <aside
-      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-panel shadow-brutal"
+      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-modal shadow-brutal"
       data-test="grouping-settings-drawer"
       role="dialog"
       aria-modal="true"

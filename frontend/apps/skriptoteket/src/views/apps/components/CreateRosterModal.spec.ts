@@ -80,6 +80,15 @@ describe("CreateRosterModal", () => {
     await flushPromises();
   }
 
+  it("uses the opaque modal surface while keeping deliberate white form fields", () => {
+    const wrapper = mount(CreateRosterModal);
+
+    expect(wrapper.get("[data-test='roster-modal-shell']").classes()).toContain("bg-modal");
+    expect(wrapper.get("[data-test='roster-modal-footer']").classes()).toContain("bg-modal");
+    expect(wrapper.get("input[type='text']").classes()).toContain("bg-white");
+    expect(wrapper.get("textarea").classes()).toContain("bg-white");
+  });
+
   it("imports a parsed class list directly into the create modal before save", async () => {
     clientMocks.apiPost
       .mockResolvedValueOnce(

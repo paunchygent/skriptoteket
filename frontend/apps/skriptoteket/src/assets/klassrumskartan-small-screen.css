@@ -53,7 +53,7 @@
 .planner-phone-tab,
 .planner-phone-rule-row {
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: var(--huleedu-panel);
+  background-color: var(--surface-modal);
   color: var(--huleedu-navy);
 }
 

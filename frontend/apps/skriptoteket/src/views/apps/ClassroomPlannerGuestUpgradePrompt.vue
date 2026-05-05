@@ -74,7 +74,7 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
     aria-labelledby="guest-upgrade-title"
     data-test="guest-upgrade-modal"
   >
-    <section class="w-full max-w-[34rem] border border-navy bg-panel p-6 shadow-brutal-md md:p-7">
+    <section class="w-full max-w-[34rem] border border-navy bg-modal p-6 shadow-brutal-md md:p-7">
       <div class="space-y-3">
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-terracotta">
           Arbete från gästläge hittat
