@@ -55,7 +55,7 @@ const passwordResetUrl = computed(() =>
 </script>
 
 <template>
-  <div class="border border-navy bg-canvas p-6 shadow-brutal md:p-8">
+  <div class="border border-navy bg-panel p-6 shadow-brutal md:p-8">
     <div class="space-y-4 text-sm leading-6 text-navy/75">
       <p>
         {{ introCopy }}

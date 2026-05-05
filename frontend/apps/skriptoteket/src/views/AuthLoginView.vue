@@ -11,6 +11,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { sharedAuthCeremonyUrl } from "../api/sharedAuth";
 import AuthLoginPanel from "../components/auth/AuthLoginPanel.vue";
+import BrandLogo from "../components/brand/BrandLogo.vue";
 import {
   clearAuthCallbackRetry,
   hasAuthCallbackRetry,
@@ -131,10 +132,10 @@ watch(
   <div class="flex min-h-[60vh] items-center justify-center px-4 py-10">
     <section class="w-full max-w-md space-y-5">
       <header class="space-y-3 text-center">
-        <p class="text-xs font-semibold tracking-[var(--huleedu-tracking-label)] text-navy/60 uppercase">
-          Skriptoteket
-        </p>
-        <h1 class="font-serif text-4xl font-semibold tracking-[-0.03em] text-navy">
+        <div class="flex justify-center">
+          <BrandLogo height="34px" />
+        </div>
+        <h1 class="font-serif text-4xl font-semibold tracking-normal text-navy">
           Logga in
         </h1>
         <p class="text-sm leading-6 text-navy/70">
