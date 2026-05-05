@@ -264,7 +264,7 @@ watch(
         <p class="text-xs text-navy/60">
           <RouterLink
             to="/my-tools"
-            class="text-navy underline underline-offset-4 hover:text-burgundy"
+            class="text-navy underline underline-offset-4 hover:text-action"
           >
             Mina verktyg
           </RouterLink>
@@ -272,7 +272,7 @@ watch(
             <span class="text-navy/30"> · </span>
             <RouterLink
               to="/admin/tools"
-              class="text-navy underline underline-offset-4 hover:text-burgundy"
+              class="text-navy underline underline-offset-4 hover:text-action"
             >
               Alla verktyg
             </RouterLink>
@@ -299,7 +299,7 @@ watch(
 
           <div
             v-if="isSearchOpen && toolSearch.normalizedQuery"
-            class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(520px,92vw)] border border-navy bg-white shadow-brutal-sm z-[var(--huleedu-z-tooltip)]"
+            class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(520px,92vw)] border border-navy bg-panel shadow-brutal-sm z-[var(--huleedu-z-tooltip)]"
           >
             <div class="p-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-2)]">
               <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
@@ -380,7 +380,7 @@ watch(
 
     <div
       v-if="isRedirecting"
-      class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Öppnar senaste verktyg…</span>
@@ -391,7 +391,7 @@ watch(
       class="grid gap-[var(--huleedu-space-6)] lg:grid-cols-2"
     >
       <section
-        class="border border-navy bg-white shadow-brutal-sm p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
+        class="border border-navy bg-panel shadow-brutal-sm p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
       >
         <header class="space-y-[var(--huleedu-space-1)]">
           <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -435,7 +435,7 @@ watch(
       </section>
 
       <section
-        class="border border-navy bg-white shadow-brutal-sm p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
+        class="border border-navy bg-panel shadow-brutal-sm p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
       >
         <header class="space-y-[var(--huleedu-space-1)]">
           <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -448,7 +448,7 @@ watch(
             <p class="text-xs text-navy/60">
               <RouterLink
                 to="/admin/tools"
-                class="text-navy underline underline-offset-4 hover:text-burgundy"
+                class="text-navy underline underline-offset-4 hover:text-action"
               >
                 Visa alla verktyg
               </RouterLink>

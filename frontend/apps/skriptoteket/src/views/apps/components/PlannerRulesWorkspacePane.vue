@@ -230,7 +230,7 @@ watch(canShowSeatingArrangement, (nextValue) => {
             <span class="block text-sm font-semibold">{{ tool.label }}</span>
             <span
               class="block text-xs"
-              :class="plannerState.activeSeatingSmartTool === tool.id ? 'text-canvas/75' : 'text-navy/60'"
+              :class="plannerState.activeSeatingSmartTool === tool.id ? 'text-button-primary-text/75' : 'text-navy/60'"
             >
               {{ tool.subtitle }}
             </span>

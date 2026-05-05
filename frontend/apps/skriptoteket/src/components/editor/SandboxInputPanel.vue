@@ -58,7 +58,7 @@ function updateInputValues(value: ToolInputFormValues): void {
 
     <p
       v-if="inputSchemaError"
-      class="text-xs font-semibold text-burgundy"
+      class="text-xs font-semibold text-critical"
     >
       {{ inputSchemaError }}
     </p>

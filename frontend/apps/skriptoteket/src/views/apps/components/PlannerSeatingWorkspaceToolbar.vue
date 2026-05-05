@@ -405,7 +405,7 @@ const showOverflowPanel = computed(() => (
           </select>
           <p
             v-if="showSeatingTemplateRequiredHint"
-            class="mt-1 text-xs font-semibold text-burgundy"
+            class="mt-1 text-xs font-semibold text-critical"
           >
             Välj klassrum innan du startar ett nytt sittschema.
           </p>

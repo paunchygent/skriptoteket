@@ -198,7 +198,7 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
     assert "room-floor" in rendered.rendered_html
     assert "room-fixture--whiteboard" in rendered.rendered_html
     assert "room-fixture--teacher-desk" in rendered.rendered_html
-    assert "background: rgba(28, 46, 74, 0.86);" in rendered.rendered_css
+    assert "background: rgba(8, 43, 76, 0.86);" in rendered.rendered_css
     assert "background-image:" not in rendered.rendered_css
     assert ".room-fixture--door::after" not in rendered.rendered_css
     assert "transform: translateY(-8%);" in rendered.rendered_css

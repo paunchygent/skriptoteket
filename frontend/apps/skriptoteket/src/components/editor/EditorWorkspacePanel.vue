@@ -49,7 +49,7 @@ const chatColumnWidth = computed(() => {
 </script>
 
 <template>
-  <div class="border border-navy bg-white shadow-brutal-sm flex flex-col min-h-0 h-full">
+  <div class="border border-navy bg-panel shadow-brutal-sm flex flex-col min-h-0 h-full">
     <div
       class="grid flex-1 min-h-0 h-full gap-y-3 transition-[grid-template-columns] duration-200 ease-out lg:grid-cols-[minmax(0,1fr)_var(--chat-column-width)] lg:grid-rows-[auto_minmax(0,1fr)_auto]"
       :style="{ '--chat-column-width': chatColumnWidth, '--chat-rail-width': chatRailWidth }"

@@ -98,6 +98,24 @@ describe("UiSegmentedToggle", () => {
     expect(wrapper.get('[data-test="workspace-overview"]').classes()).toContain("h-[40px]");
   });
 
+  it("keeps selected text light even when the selected option is disabled", () => {
+    const wrapper = mount(UiSegmentedToggle, {
+      props: {
+        modelValue: "grouping",
+        variant: "workspace",
+        disabled: true,
+        options: [
+          { value: "overview", label: "Översikt", dataTest: "workspace-overview" },
+          { value: "grouping", label: "Grupper", dataTest: "workspace-grouping" },
+        ],
+      },
+    });
+
+    const selectedButton = wrapper.get('[data-test="workspace-grouping"]');
+    expect(selectedButton.classes()).toContain("text-button-primary-text");
+    expect(selectedButton.classes()).not.toContain("hover:text-navy/70");
+  });
+
   it("keeps disabled option guidance available beyond the disabled button title", () => {
     const wrapper = mount(UiSegmentedToggle, {
       props: {

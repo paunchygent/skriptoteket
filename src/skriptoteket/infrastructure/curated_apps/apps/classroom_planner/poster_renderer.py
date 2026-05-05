@@ -418,8 +418,8 @@ def _build_css(
 :root {{
   --ink: #111111;
   --paper: #ffffff;
-  --accent: #1c2e4a;
-  --brand-burgundy: #4d1521;
+  --accent: #082b4c;
+  --brand-terracotta: #c94f32;
   --grid-line: #11111122;
   --heading-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
 }}
@@ -467,7 +467,7 @@ body {{
   bottom: 0;
   width: 0mm;
   height: 0.95mm;
-  background: var(--brand-burgundy);
+  background: var(--brand-terracotta);
 }}
 .poster__header-copy {{
   display: grid;
@@ -580,7 +580,7 @@ body {{
   font-size: var(--seat-long-font);
 }}
 .poster-seat--empty .poster-seat__token {{
-  border-color: #1c2e4a66;
+  border-color: #082b4c66;
   border-style: dashed;
   background: rgba(255, 255, 255, 0.72);
 }}
@@ -619,7 +619,7 @@ body {{
   right: 1.2mm;
   top: 33%;
   bottom: 33%;
-  border: 0.4mm solid rgba(28, 46, 74, 0.25);
+  border: 0.4mm solid rgba(8, 43, 76, 0.25);
   border-radius: 1mm;
   background: #ffffff;
 }}
@@ -632,7 +632,7 @@ body {{
   z-index: 1;
 }}
 .poster-fixture--muted {{
-  background: rgba(28, 46, 74, 0.12);
+  background: rgba(8, 43, 76, 0.12);
 }}
 .poster-fixture--bench.poster-fixture--muted {{
   background: transparent;
@@ -662,7 +662,7 @@ body {{
   bottom: 0.55mm;
   height: 0.45mm;
   border-radius: 999px;
-  background: rgba(28, 46, 74, 0.35);
+  background: rgba(8, 43, 76, 0.35);
 }}
 .poster-fixture--wall-top,
 .poster-fixture--wall-bottom {{

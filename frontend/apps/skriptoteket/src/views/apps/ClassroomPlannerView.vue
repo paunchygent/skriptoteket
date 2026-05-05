@@ -136,7 +136,7 @@ const {
 
     <div
       v-if="isBootstrapping"
-      class="border border-navy bg-white px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
+      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
     >
       Laddar planeringsmiljön...
     </div>

@@ -213,7 +213,7 @@ function onToggleFocusMode(): void {
 }
 
 .topbar-brand-link:focus-visible {
-  outline: 2px solid var(--huleedu-burgundy-40);
+  outline: 2px solid var(--huleedu-action-40);
   outline-offset: 3px;
 }
 
@@ -230,7 +230,7 @@ function onToggleFocusMode(): void {
 .focus-mode-toggle {
   padding: var(--huleedu-space-1) var(--huleedu-space-3);
   border: var(--huleedu-border-width) solid var(--huleedu-navy-30);
-  background-color: white;
+  background-color: var(--huleedu-panel);
   font-size: var(--huleedu-text-xs);
   font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
@@ -246,16 +246,16 @@ function onToggleFocusMode(): void {
 
 .focus-mode-toggle:hover {
   border-color: var(--huleedu-navy);
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .focus-mode-toggle.is-active {
-  border-color: var(--huleedu-burgundy);
-  color: var(--huleedu-burgundy);
+  border-color: var(--huleedu-action);
+  color: var(--huleedu-action);
 }
 
 .focus-mode-toggle:focus-visible {
-  outline: 2px solid var(--huleedu-burgundy-40);
+  outline: 2px solid var(--huleedu-action-40);
   outline-offset: 3px;
 }
 
@@ -308,7 +308,7 @@ function onToggleFocusMode(): void {
 }
 
 .top-nav-link:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .user-separator {
@@ -330,7 +330,7 @@ function onToggleFocusMode(): void {
 }
 
 .logout-btn:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .logout-btn:disabled {

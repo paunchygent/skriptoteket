@@ -130,7 +130,7 @@ const pendingActionLabel = computed(() => {
 
         <div
           v-if="feedbackMessage"
-          class="mt-2 border border-burgundy/30 bg-burgundy/10 px-2.5 py-2 text-xs font-semibold text-burgundy"
+          class="mt-2 border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs font-semibold text-warning"
           data-test="rules-feedback"
         >
           {{ feedbackMessage }}
@@ -153,7 +153,7 @@ const pendingActionLabel = computed(() => {
               <span class="min-w-0 truncate">{{ student.name }}</span>
               <button
                 type="button"
-                class="planner-row-remove-button inline-flex h-5 w-5 items-center justify-center rounded-[4px] border border-transparent hover:border-burgundy/20 hover:bg-burgundy/5"
+                class="planner-row-remove-button inline-flex h-5 w-5 items-center justify-center rounded-[4px] border border-transparent hover:border-critical/20 hover:bg-critical/5"
                 :aria-label="`Ta bort ${student.name} från regeln`"
                 @click="emit('remove-pending-student', student.id)"
               >

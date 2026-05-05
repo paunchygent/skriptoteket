@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-22
-updated: 2025-12-25
+updated: 2026-05-04
 supersedes: ["ADR-0029"]
 links: ["ADR-0017", "ADR-0027", "ADR-0029"]
 ---
@@ -41,15 +41,36 @@ source.
 
 ```css
 @theme inline {
+  --color-paper: var(--huleedu-paper);
   --color-canvas: var(--huleedu-canvas);
   --color-navy: var(--huleedu-navy);
+  --color-terracotta: var(--huleedu-terracotta);
+  --color-action: var(--huleedu-action);
+  --color-critical: var(--huleedu-critical);
   --color-burgundy: var(--huleedu-burgundy);
+  --color-button-primary-text: var(--button-primary-text);
   --shadow-brutal: var(--huleedu-shadow-brutal-sm);
   /* ... */
 }
 ```
 
-This generates utilities like `bg-canvas`, `text-navy`, `text-burgundy`, `shadow-brutal`, etc.
+This generates utilities like `bg-canvas`, `text-navy`, `text-action`, `text-critical`, `shadow-brutal`, etc.
+`burgundy` remains as a compatibility alias for older call sites and should not be used for new functional
+action states.
+
+### Palette note (2026-05-04)
+
+The HuleEdu working palette separates brand, action, and alert semantics:
+
+- Deep Navy `#082B4C` is the structural and long-text color.
+- Warm Terracotta `#C94F32` is the brand accent, not a warning or destructive color.
+- Verdigris Teal `#3F7F78` is the functional action/selection/focus color, not a warning color.
+- Canvas/Paper `#FAFAF6` is the light warm surface; avoid red/saturated default page backgrounds.
+- Warning remains amber/ochra; destructive and truly critical actions remain on the burgundy/error-family channel.
+
+Surface composition should use the light canvas as a uniform base rather than placing repeated white panels
+on top of canvas. Prefer canvas-toned panels and lighter row/object highlights for emphasis, with pure white
+reserved for deliberate object contrast.
 
 ### Implementation (Skriptoteket)
 

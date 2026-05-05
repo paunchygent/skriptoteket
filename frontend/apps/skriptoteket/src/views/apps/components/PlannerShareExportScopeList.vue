@@ -42,8 +42,8 @@ function selectScope(option: PlannerShareExportScopeOption): void {
         v-for="option in scopeOptions"
         :key="option.value"
         type="button"
-        class="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border px-2.5 text-left text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-        :class="option.value === scopeValue ? 'border-navy/35 bg-canvas' : 'border-navy/20 bg-white hover:border-navy/35 hover:bg-canvas/70'"
+        class="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border px-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        :class="option.value === scopeValue ? 'border-action bg-action text-button-primary-text' : 'border-navy/20 bg-canvas/40 text-navy hover:border-action/45 hover:bg-action/5'"
         :disabled="option.disabled"
         :title="option.disabledReason ?? undefined"
         :aria-pressed="option.value === scopeValue"
@@ -56,7 +56,7 @@ function selectScope(option: PlannerShareExportScopeOption): void {
         />
         <span
           v-else
-          class="h-[13px] w-[13px]"
+          class="h-[13px] w-[13px] text-navy"
           aria-hidden="true"
         />
         <span class="truncate text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)]">

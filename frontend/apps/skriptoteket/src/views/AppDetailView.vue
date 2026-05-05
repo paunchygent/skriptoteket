@@ -227,11 +227,11 @@ onUnmounted(() => {
     <div class="flex items-center gap-3 text-sm text-navy/70">
       <RouterLink
         to="/browse"
-        class="underline hover:text-burgundy"
+        class="underline hover:text-action"
       >
         ← Tillbaka till katalog
       </RouterLink>
-      <span class="px-2 py-1 border border-navy bg-white shadow-brutal-sm uppercase tracking-wide font-semibold">
+      <span class="px-2 py-1 border border-navy bg-panel shadow-brutal-sm uppercase tracking-wide font-semibold">
         Kurerad app
       </span>
     </div>
@@ -248,14 +248,14 @@ onUnmounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
+      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
     >
       {{ errorMessage }}
     </div>
@@ -291,7 +291,7 @@ onUnmounted(() => {
       <!-- Unified result card -->
       <div
         v-else-if="run"
-        class="border border-navy bg-white shadow-brutal-sm"
+        class="border border-navy bg-panel shadow-brutal-sm"
       >
         <div class="p-4 space-y-4">
           <!-- Status row -->

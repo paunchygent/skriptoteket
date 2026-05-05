@@ -208,7 +208,7 @@ watch(hasSettingsSchema, (hasSchema) => {
   <div class="max-w-3xl space-y-6">
     <RouterLink
       to="/browse"
-      class="text-sm text-navy/70 underline hover:text-burgundy"
+      class="text-sm text-navy/70 underline hover:text-action"
     >
       {{ "\u2190" }} Tillbaka till katalog
     </RouterLink>
@@ -225,7 +225,7 @@ watch(hasSettingsSchema, (hasSchema) => {
 
     <div
       v-if="isLoadingTool"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
     >
       Laddar...
     </div>
@@ -239,7 +239,7 @@ watch(hasSettingsSchema, (hasSchema) => {
     <!-- UNIFIED TOOL CARD -->
     <div
       v-else-if="tool"
-      class="border border-navy bg-white shadow-brutal-sm"
+      class="border border-navy bg-panel shadow-brutal-sm"
     >
       <UsageInstructions
         v-if="tool.usage_instructions?.trim()"
@@ -320,7 +320,7 @@ watch(hasSettingsSchema, (hasSchema) => {
 
       <!-- Error message -->
       <UiCollapse :open="Boolean(errorMessage)">
-        <div class="px-4 py-3 border-b border-navy/20 bg-white">
+        <div class="px-4 py-3 border-b border-navy/20 bg-panel-muted">
           <SystemMessage
             v-model="errorMessage"
             variant="error"
@@ -351,7 +351,7 @@ watch(hasSettingsSchema, (hasSchema) => {
             Visar resultat för {{ selectedStepRun.label }}.
             <button
               type="button"
-              class="underline hover:text-burgundy"
+              class="underline hover:text-action"
               @click="selectedStepRun = null"
             >
               Visa aktuellt

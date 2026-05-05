@@ -125,7 +125,7 @@ watch(() => props.profile, () => {
 </script>
 
 <template>
-  <div class="profile-panel border border-navy bg-white shadow-brutal-sm">
+  <div class="profile-panel border border-navy bg-panel shadow-brutal-sm">
     <!-- Header with avatar -->
     <div class="flex items-center gap-4 border-b border-navy/20 p-4">
       <div

@@ -38,7 +38,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-white shadow-brutal-sm">
+  <section class="border border-navy bg-panel shadow-brutal-sm">
     <div class="p-4 space-y-4">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="space-y-1">
@@ -73,7 +73,7 @@ const emit = defineEmits<{
 
       <div
         v-else-if="props.riskErrorMessage"
-        class="p-3 border border-error bg-white shadow-brutal-sm text-error text-sm"
+        class="p-3 border border-error bg-panel shadow-brutal-sm text-error text-sm"
       >
         {{ props.riskErrorMessage }}
       </div>
@@ -81,10 +81,10 @@ const emit = defineEmits<{
       <template v-else-if="props.riskDraft">
         <div
           v-if="props.riskWarnings.length > 0"
-          class="p-3 border border-burgundy bg-canvas shadow-none space-y-1"
+          class="p-3 border border-warning bg-warning/10 shadow-none space-y-1"
         >
-          <p class="font-semibold text-burgundy">Varningar</p>
-          <ul class="list-disc pl-5 space-y-1 text-burgundy text-sm">
+          <p class="font-semibold text-warning">Varningar</p>
+          <ul class="list-disc pl-5 space-y-1 text-warning text-sm">
             <li
               v-for="warning in props.riskWarnings"
               :key="warning"
@@ -193,7 +193,7 @@ const emit = defineEmits<{
             <h3 class="text-sm font-semibold text-navy">Risker</h3>
             <span
               v-if="props.riskDraft.requires_confirmation"
-              class="text-xs text-burgundy"
+              class="text-xs text-warning"
             >
               Bekräfta alla risker innan export.
             </span>
@@ -202,7 +202,7 @@ const emit = defineEmits<{
           <div
             v-for="risk in props.riskDraft.risks"
             :key="risk.id"
-            class="border border-navy/20 bg-white p-3 shadow-none space-y-3"
+            class="border border-navy/20 bg-panel p-3 shadow-none space-y-3"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="space-y-1">
@@ -272,7 +272,7 @@ const emit = defineEmits<{
 
         <p
           v-if="props.missingRiskContextMessage"
-          class="text-xs text-burgundy"
+          class="text-xs text-warning"
         >
           {{ props.missingRiskContextMessage }}
         </p>
@@ -284,7 +284,7 @@ const emit = defineEmits<{
           Sparad i Mina filer.
           <RouterLink
             to="/vault"
-            class="underline hover:text-burgundy"
+            class="underline hover:text-action"
           >
             Öppna Mina filer
           </RouterLink>

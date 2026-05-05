@@ -260,11 +260,11 @@ onMounted(() => {
     <div class="flex items-center gap-3 text-sm text-navy/70">
       <RouterLink
         to="/browse"
-        class="underline hover:text-burgundy"
+        class="underline hover:text-action"
       >
         ← Tillbaka till katalog
       </RouterLink>
-      <span class="px-2 py-1 border border-navy bg-white shadow-brutal-sm uppercase tracking-wide font-semibold">
+      <span class="px-2 py-1 border border-navy bg-panel shadow-brutal-sm uppercase tracking-wide font-semibold">
         Kurerad app
       </span>
 
@@ -296,20 +296,20 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
+      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
     >
       {{ errorMessage }}
     </div>
 
     <template v-else>
-      <div class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/80 space-y-2">
+      <div class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/80 space-y-2">
         <p class="font-semibold">Säkerhet</p>
         <p>
           Den här appen ger endast råd för ämnen i listan. Om ämnet saknas: konsultera alltid SDS och lokala rutiner.

@@ -23,7 +23,7 @@ const variantClass = computed(() => {
     case "owner":
       return "border-success bg-success/10 text-success";
     case "locked":
-      return "border-burgundy bg-burgundy/10 text-burgundy";
+      return "border-warning bg-warning/10 text-warning";
     case "acquiring":
       return "border-navy/30 bg-canvas/40 text-navy/70";
     default:

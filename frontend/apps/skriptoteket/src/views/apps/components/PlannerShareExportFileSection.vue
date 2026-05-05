@@ -72,7 +72,7 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
 
     <p
       v-if="exportErrorMessage"
-      class="mb-2 border border-burgundy/20 bg-burgundy/5 px-2 py-1.5 text-[11px] font-semibold text-burgundy"
+      class="mb-2 border border-critical/20 bg-critical/5 px-2 py-1.5 text-[11px] font-semibold text-critical"
       data-test="planner-export-error"
     >
       {{ exportErrorMessage }}
@@ -84,7 +84,7 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
         :key="option.id"
         type="button"
         :class="[
-          'planner-share-export-file-option grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border border-navy/20 bg-white px-2.5 text-left text-navy transition-colors hover:border-navy/35 hover:bg-canvas/70 disabled:cursor-not-allowed disabled:opacity-55',
+          'planner-share-export-file-option grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[4px] border border-navy/20 bg-canvas/40 px-2.5 text-left text-navy transition-colors hover:border-action/45 hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-55',
           visualVariant === 'desktop-overview' ? 'h-12' : 'h-10',
         ]"
         :disabled="exportBusy"

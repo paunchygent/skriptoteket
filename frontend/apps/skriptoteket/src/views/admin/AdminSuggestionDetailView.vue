@@ -192,7 +192,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
       </div>
       <button
         type="button"
-        class="text-sm underline text-burgundy hover:text-navy"
+        class="text-sm underline text-action hover:text-navy"
         @click="router.back()"
       >
         ← Tillbaka
@@ -201,7 +201,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Laddar...
     </div>
@@ -214,7 +214,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
     <div
       v-else-if="!suggestion"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy"
     >
       Förslaget hittades inte.
     </div>
@@ -223,7 +223,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
       v-else
       class="space-y-6"
     >
-      <div class="border border-navy bg-white shadow-brutal-sm p-4 space-y-2">
+      <div class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-2">
         <div class="flex items-center justify-between gap-3">
           <h2 class="text-xl font-semibold text-navy">{{ suggestion.title }}</h2>
           <span class="px-2 py-1 border border-navy bg-canvas shadow-brutal-sm text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -277,7 +277,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
         </div>
       </div>
 
-      <div class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3">
+      <div class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-navy">Historik</h3>
           <span class="text-xs text-navy/60">Senaste först</span>
@@ -320,7 +320,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
       <div
         v-if="canDecide"
-        class="border border-navy bg-white shadow-brutal-sm p-4 space-y-4"
+        class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-4"
       >
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-navy">Beslut</h3>
@@ -333,7 +333,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
               v-model="decision"
               type="radio"
               value="accept"
-              class="h-4 w-4 accent-burgundy"
+              class="h-4 w-4 accent-action"
             >
             <span>Acceptera</span>
           </label>
@@ -342,7 +342,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
               v-model="decision"
               type="radio"
               value="deny"
-              class="h-4 w-4 accent-burgundy"
+              class="h-4 w-4 accent-action"
             >
             <span>Avslå</span>
           </label>
@@ -467,7 +467,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
       <div
         v-else
-        class="p-3 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+        class="p-3 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
       >
         Förslaget är redan granskat.
       </div>

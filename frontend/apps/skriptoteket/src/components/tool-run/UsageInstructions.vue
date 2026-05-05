@@ -139,7 +139,7 @@ watch(
   <div class="border-b border-navy/20">
     <button
       type="button"
-      class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-canvas/50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40"
+      class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-canvas/50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40"
       :aria-expanded="isOpen"
       :aria-controls="contentId"
       @click="toggle"

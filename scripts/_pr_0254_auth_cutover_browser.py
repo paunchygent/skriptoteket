@@ -26,7 +26,8 @@ from scripts._playwright_browser import launch_chromium
 from scripts._pr_0254_auth_cutover_manifest import DEFAULT_APP, DEFAULT_REALM
 
 PUBLIC_CLASSROOM_APP_PATH = "/public/apps/classroom.group-seating-studio"
-PROTECTED_NEXT_PATH = "/editor"
+PROTECTED_NEXT_PATH = "/apps/classroom.group-seating-studio"
+PROTECTED_ROUTE_HEADING = "Klassrumskartan"
 APP_CONTINUATION_PATH = "/api/v1/profile/app-continuation"
 AI_SETTINGS_PATH = "/api/v1/profile/ai-settings"
 HULEEDU_SESSION_COOKIE = "huleedu_session"
@@ -203,6 +204,37 @@ def _continue_to_huleedu_login(page: Page, *, lane: LoopbackLane) -> None:
     )
 
 
+def _submit_huleedu_login(page: Page, *, email: str, password: str) -> None:
+    login_api_path = "/v1/auth/login"
+    email_input = page.locator("#email")
+    password_input = page.locator("#password")
+    expect(email_input).to_be_visible(timeout=15_000)
+    expect(password_input).to_be_visible(timeout=15_000)
+    email_input.fill(email)
+    password_input.fill(password)
+
+    login_button = page.get_by_role("button", name=re.compile("logga in", re.I)).first
+    expect(login_button).to_be_enabled(timeout=15_000)
+    try:
+        with page.expect_response(
+            lambda response: login_api_path in urlparse(response.url).path,
+            timeout=10_000,
+        ) as response_info:
+            login_button.click()
+    except PlaywrightTimeoutError:
+        with page.expect_response(
+            lambda response: login_api_path in urlparse(response.url).path,
+            timeout=10_000,
+        ) as response_info:
+            password_input.press("Enter")
+    response = response_info.value
+    if response.status != 200:
+        response_text = (
+            response.text()[:500].replace(email, "<email>").replace(password, "<password>")
+        )
+        raise AssertionError(f"HuleEdu login API returned {response.status}: {response_text}")
+
+
 def _cookie_assertions(context: BrowserContext) -> tuple[dict[str, object], list[str]]:
     cookies = context.cookies()
     names = {str(cookie.get("name")) for cookie in cookies}
@@ -286,7 +318,8 @@ def _assert_projection_and_role(
         "observed_local_role": observed_role,
         "role_matches_expected": True,
         "provider_roles_ignored_for_local_authorization": True,
-        "protected_editor_route_opened": True,
+        "protected_route_opened": True,
+        "protected_route": PROTECTED_NEXT_PATH,
         "admin_superuser_matrix_extension": {
             "status": "not_run_in_default_smoke",
             "reason": "Contributor lane consumes PR-0262 role manifest; run matrix extension explicitly.",
@@ -392,7 +425,7 @@ def run_lane(
     """Run one loopback lane and return sanitized assertion sections."""
     observed: list[dict[str, object]] = []
     forbidden_values = [email, password]
-    screenshot_path = run_dir / f"{lane.name}-editor-after-callback.png"
+    screenshot_path = run_dir / f"{lane.name}-protected-app-after-callback.png"
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
@@ -410,12 +443,13 @@ def run_lane(
         public_route = _assert_public_app_accessible(page=page, lane=lane, observed=observed)
         auth_entry = _assert_auth_entry_href(page, lane=lane)
         _continue_to_huleedu_login(page, lane=lane)
-        page.locator("#email").fill(email)
-        page.locator("#password").fill(password)
-        page.get_by_role("button", name=re.compile("logga in", re.I)).click()
+        _submit_huleedu_login(page, email=email, password=password)
 
-        page.wait_for_url(
-            re.compile(rf"^{re.escape(lane.base_url)}/(auth/callback|editor)"),
+        expect(page).to_have_url(
+            re.compile(
+                rf"^({re.escape(lane.base_url)}/auth/callback|"
+                rf"{re.escape(lane.base_url + PROTECTED_NEXT_PATH)})(?:$|[?#])"
+            ),
             timeout=60_000,
         )
         app_status = _wait_for_status(
@@ -425,11 +459,13 @@ def run_lane(
             statuses={200},
             label="app-continuation",
         )
-        page.wait_for_url(
-            re.compile(rf"^{re.escape(lane.base_url + PROTECTED_NEXT_PATH)}(?:$|\?)"),
+        expect(page).to_have_url(
+            re.compile(rf"^{re.escape(lane.base_url + PROTECTED_NEXT_PATH)}(?:$|[?#])"),
             timeout=60_000,
         )
-        expect(page.get_by_role("heading", name="Kodredigeraren")).to_be_visible(timeout=15_000)
+        expect(page.get_by_role("heading", name=PROTECTED_ROUTE_HEADING)).to_be_visible(
+            timeout=15_000
+        )
         try:
             page.wait_for_load_state("networkidle", timeout=10_000)
         except PlaywrightTimeoutError:

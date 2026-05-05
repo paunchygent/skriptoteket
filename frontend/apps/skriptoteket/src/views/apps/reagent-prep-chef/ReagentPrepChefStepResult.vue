@@ -25,7 +25,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-white shadow-brutal-sm">
+  <section class="border border-navy bg-panel shadow-brutal-sm">
     <div class="p-4 space-y-4">
       <h2 class="text-lg font-semibold text-navy">Resultat</h2>
 
@@ -89,10 +89,10 @@ const emit = defineEmits<{
 
           <div
             v-if="props.warnings.length > 0"
-            class="p-3 border border-burgundy bg-canvas shadow-none space-y-1"
+            class="p-3 border border-warning bg-warning/10 shadow-none space-y-1"
           >
-            <p class="font-semibold text-burgundy">Varningar</p>
-            <ul class="list-disc pl-5 space-y-1 text-burgundy">
+            <p class="font-semibold text-warning">Varningar</p>
+            <ul class="list-disc pl-5 space-y-1 text-warning">
               <li
                 v-for="(warning, index) in props.warnings"
                 :key="index"
@@ -111,7 +111,7 @@ const emit = defineEmits<{
         <p class="font-semibold text-navy">Säkerhet</p>
         <p
           v-if="props.safety.level === 'unknown'"
-          class="text-burgundy"
+          class="text-warning"
         >
           {{ props.safety.message ?? "Okänt ämne: konsultera SDS innan användning." }}
         </p>
@@ -184,7 +184,7 @@ const emit = defineEmits<{
         Sparad i Mina filer.
         <RouterLink
           to="/vault"
-          class="underline hover:text-burgundy"
+          class="underline hover:text-action"
         >
           Öppna Mina filer
         </RouterLink>
@@ -192,7 +192,7 @@ const emit = defineEmits<{
 
       <p
         v-if="props.actionErrorMessage"
-        class="text-sm text-burgundy whitespace-pre-wrap"
+        class="text-sm text-critical whitespace-pre-wrap"
       >
         {{ props.actionErrorMessage }}
       </p>

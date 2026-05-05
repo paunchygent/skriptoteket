@@ -85,7 +85,7 @@ function updateNameFromEvent(event: Event): void {
       >
     </div>
 
-    <div class="border border-navy bg-white p-4 shadow-brutal-sm">
+    <div class="border border-navy bg-panel p-4 shadow-brutal-sm">
       <div class="mb-3 flex items-end justify-between gap-3">
         <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
           Storlek
@@ -139,7 +139,7 @@ function updateNameFromEvent(event: Event): void {
       </div>
     </div>
 
-    <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
+    <div class="border border-navy bg-panel p-4 shadow-brutal-sm">
       <div class="mb-3 flex items-end justify-between gap-3">
         <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
           Verktyg
@@ -190,7 +190,7 @@ function updateNameFromEvent(event: Event): void {
       </div>
     </div>
 
-    <div class="border border-navy bg-white p-4 shadow-brutal-sm">
+    <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
       <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
         Så här gör du
       </h3>

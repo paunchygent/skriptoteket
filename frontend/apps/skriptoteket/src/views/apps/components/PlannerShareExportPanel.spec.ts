@@ -201,9 +201,38 @@ describe("PlannerShareExportPanel", () => {
     expect(createButton.classes()).toContain("planner-share-export-link-create-button");
     expect(createButton.attributes("data-ui")).toBeUndefined();
     expect(createButton.classes()).not.toContain("h-10");
+    expect(createButton.classes()).toContain("text-action");
+    expect(createButton.classes()).not.toContain("bg-action");
+    expect(createButton.classes()).not.toContain("text-button-primary-text");
+    expect(createButton.html()).toContain("lucide-link");
+    expect(createButton.html()).not.toContain("lucide-plus");
     expect(wrapper.get('[data-test="planner-share-export-file-xlsx"]').html())
       .toContain("lucide-file-spreadsheet");
     expect(wrapper.get('[data-test="planner-share-export-file-pdf"]').html())
       .toContain("lucide-file-text");
+  });
+
+  it("keeps selected desktop overview scope text light on the action fill", () => {
+    const wrapper = mount(PlannerShareExportPanel, {
+      props: {
+        fileOptions: groupingFileOptions(),
+        triggerVariant: "inline",
+        visualVariant: "desktop-overview",
+        scopeValue: "seating",
+        scopeOptions: [
+          { value: "grouping", label: "Gruppindelning" },
+          { value: "seating", label: "Sittschema" },
+        ],
+      },
+    });
+
+    const selectedScope = wrapper.get('[data-test="planner-share-export-scope-seating"]');
+    const unselectedScope = wrapper.get('[data-test="planner-share-export-scope-grouping"]');
+
+    expect(selectedScope.attributes("aria-pressed")).toBe("true");
+    expect(selectedScope.classes()).toContain("bg-action");
+    expect(selectedScope.classes()).toContain("text-button-primary-text");
+    expect(selectedScope.classes()).not.toContain("text-navy");
+    expect(unselectedScope.classes()).toContain("text-navy");
   });
 });

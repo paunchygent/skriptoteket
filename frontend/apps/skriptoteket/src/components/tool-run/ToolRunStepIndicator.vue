@@ -16,7 +16,7 @@ function stepStatusClass(step: StepResult): string {
     case "completed":
       return "bg-success text-white border-success";
     case "current":
-      return "bg-burgundy text-canvas border-burgundy";
+      return "bg-action text-button-primary-text border-action";
     default:
       return "bg-canvas text-navy/50 border-navy/30";
   }
@@ -52,7 +52,7 @@ function connectorClass(step: StepResult): string {
           class="flex items-center justify-center w-6 h-6 text-xs font-bold border-2 rounded-full transition-colors"
           :class="[
             stepStatusClass(step),
-            step.status === 'completed' ? 'cursor-pointer hover:ring-2 hover:ring-burgundy/30' : 'cursor-default',
+            step.status === 'completed' ? 'cursor-pointer hover:ring-2 hover:ring-action/30' : 'cursor-default',
           ]"
           :disabled="step.status !== 'completed'"
           :title="step.label"
@@ -73,7 +73,7 @@ function connectorClass(step: StepResult): string {
           class="h-0.5 w-4 sm:w-6 bg-navy/20"
         />
         <div
-          class="flex items-center justify-center w-6 h-6 text-xs font-bold border-2 rounded-full bg-burgundy text-canvas border-burgundy"
+          class="flex items-center justify-center w-6 h-6 text-xs font-bold border-2 rounded-full bg-action text-button-primary-text border-action"
         >
           {{ currentStepNumber }}
         </div>

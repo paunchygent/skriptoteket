@@ -24,7 +24,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-white shadow-brutal-sm">
+  <section class="border border-navy bg-panel shadow-brutal-sm">
     <div class="p-4 space-y-4">
       <div class="space-y-1">
         <h2 class="text-lg font-semibold text-navy">Ämne</h2>
@@ -49,7 +49,7 @@ const emit = defineEmits<{
             <Transition name="popover">
               <div
                 v-if="props.chemicalSearchIsActive"
-                class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto border border-navy bg-white shadow-brutal-sm"
+                class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto border border-navy bg-panel shadow-brutal-sm"
               >
                 <div
                   v-if="props.chemicalSearchResults.length === 0"

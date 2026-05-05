@@ -148,7 +148,7 @@ function updateField(name: string, value: ToolInputFormValue): void {
 
       <p
         v-if="errors[field.name]"
-        class="text-xs font-semibold text-burgundy"
+        class="text-xs font-semibold text-critical"
       >
         {{ errors[field.name] }}
       </p>

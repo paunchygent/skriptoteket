@@ -315,7 +315,7 @@ async function createDraftTool(): Promise<void> {
 
           <div
             v-else
-            class="max-h-[min(220px,50vh)] overflow-y-auto border border-navy/20 bg-white divide-y divide-navy/15"
+            class="max-h-[min(220px,50vh)] overflow-y-auto border border-navy/20 bg-panel divide-y divide-navy/15"
           >
             <button
               v-for="tool in toolSearch.results"
@@ -343,7 +343,7 @@ async function createDraftTool(): Promise<void> {
             <template v-if="props.canCreateTool">
               <button
                 type="button"
-                class="font-semibold uppercase tracking-wide text-navy underline underline-offset-4 hover:text-burgundy"
+                class="font-semibold uppercase tracking-wide text-navy underline underline-offset-4 hover:text-action"
                 @click="void openAdminToolsIndex()"
               >
                 Visa alla verktyg
@@ -365,7 +365,7 @@ async function createDraftTool(): Promise<void> {
             </div>
             <div
               v-else
-              class="max-h-[min(220px,50vh)] overflow-y-auto border border-navy/20 bg-white divide-y divide-navy/15"
+              class="max-h-[min(220px,50vh)] overflow-y-auto border border-navy/20 bg-panel divide-y divide-navy/15"
             >
               <button
                 v-for="tool in recentTools"
@@ -392,7 +392,7 @@ async function createDraftTool(): Promise<void> {
               <button
                 v-if="props.canCreateTool"
                 type="button"
-                class="text-[10px] font-semibold uppercase tracking-wide text-navy underline underline-offset-4 hover:text-burgundy"
+                class="text-[10px] font-semibold uppercase tracking-wide text-navy underline underline-offset-4 hover:text-action"
                 @click="void openAdminToolsIndex()"
               >
                 Alla verktyg
@@ -423,7 +423,7 @@ async function createDraftTool(): Promise<void> {
 
             <div
               v-else
-              class="max-h-[min(220px,50vh)] overflow-y-auto border border-navy/20 bg-white divide-y divide-navy/15"
+              class="max-h-[min(220px,50vh)] overflow-y-auto border border-navy/20 bg-panel divide-y divide-navy/15"
             >
               <button
                 v-for="tool in sortedMyTools"

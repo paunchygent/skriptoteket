@@ -292,6 +292,9 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(wrapper.get('[data-test="phone-rules-tool-keep_apart"]').classes()).toContain(
       "planner-phone-rule-row-active",
     );
+    expect(wrapper.get('[data-test="phone-rules-tool-keep_apart"]').html()).toContain(
+      "text-button-primary-text/75",
+    );
     expect(wrapper.get('[data-test="phone-rules-tool-near_teacher"]').html()).toContain(
       "lucide-user-star",
     );

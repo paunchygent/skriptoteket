@@ -120,7 +120,7 @@ const showPreview = ref(false);
         </span>
         <button
           type="button"
-          class="text-xs text-navy/70 hover:text-burgundy underline"
+          class="text-xs text-navy/70 hover:text-action underline"
           @click="showPreview = !showPreview"
         >
           {{ showPreview ? "Visa redigerare" : "Visa f&ouml;rhandsgranskning" }}

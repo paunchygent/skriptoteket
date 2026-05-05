@@ -25,7 +25,7 @@ function statusLabel(status: SuggestionStatus): string {
 
 function statusClass(status: SuggestionStatus): string {
   if (status === "pending_review") {
-    return "bg-burgundy/10 text-burgundy border border-burgundy/40";
+    return "bg-warning/10 text-warning border border-warning/40";
   }
   if (status === "accepted") {
     return "bg-success/10 text-success border border-success/30";
@@ -86,28 +86,28 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
     >
       {{ errorMessage }}
     </div>
 
     <div
       v-else-if="suggestions.length === 0"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Inga förslag väntar på granskning.
     </div>
 
     <ul
       v-else
-      class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
+      class="border border-navy bg-panel shadow-brutal-sm divide-y divide-navy/15"
     >
       <ToolListRow
         v-for="suggestion in suggestions"

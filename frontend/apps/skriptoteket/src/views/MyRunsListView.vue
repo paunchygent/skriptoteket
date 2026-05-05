@@ -45,7 +45,7 @@ function statusClass(status: RunStatus): string {
       return "bg-error/10 text-error border border-error/30";
     case "queued":
     case "running":
-      return "bg-burgundy/10 text-burgundy border border-burgundy/40";
+      return "bg-action/10 text-action border border-action/40";
     case "cancelled":
       return "bg-canvas text-navy/70 border border-navy/30";
     default:
@@ -248,7 +248,7 @@ onMounted(() => {
 
 .panel {
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: white;
+  background-color: var(--huleedu-panel);
   box-shadow: var(--huleedu-shadow-brutal-sm);
 }
 
@@ -292,7 +292,7 @@ onMounted(() => {
 }
 
 .download-link:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .action-link {
@@ -303,6 +303,6 @@ onMounted(() => {
 }
 
 .action-link:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 </style>

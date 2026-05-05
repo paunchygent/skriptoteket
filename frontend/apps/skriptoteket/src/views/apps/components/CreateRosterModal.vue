@@ -53,7 +53,7 @@ const importDropZoneClass = computed(() => {
     return "border-navy/20 bg-navy/5 text-navy/45";
   }
   if (isImportDropActive.value) {
-    return "border-burgundy bg-white text-navy shadow-brutal-sm";
+    return "border-action bg-white text-navy shadow-brutal-sm";
   }
   return "border-navy/25 bg-white/80 text-navy/70";
 });
@@ -307,7 +307,7 @@ function closeModal(): void {
       @click="closeModal"
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
-      <div class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-white shadow-brutal">
+      <div class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-panel shadow-brutal">
         <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
           <div class="min-w-0 space-y-1 px-6 pt-6 md:px-8 md:pt-8">
             <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
@@ -394,7 +394,7 @@ function closeModal(): void {
 
               <div
                 v-if="preview"
-                class="space-y-2 border border-navy/20 bg-white p-3"
+                class="space-y-2 border border-navy/20 bg-panel-muted p-3"
                 data-test="roster-import-summary"
               >
                 <div class="flex flex-wrap items-center justify-between gap-2">
@@ -459,14 +459,14 @@ function closeModal(): void {
 
             <div
               v-if="ambiguousRows.length > 0"
-              class="space-y-3 border border-burgundy/20 bg-burgundy/5 p-4"
+              class="space-y-3 border border-warning/20 bg-warning/10 p-4"
               data-test="roster-import-ambiguous"
             >
               <div class="space-y-1">
-                <p class="text-xs font-semibold uppercase tracking-wide text-burgundy">
+                <p class="text-xs font-semibold uppercase tracking-wide text-warning">
                   Otydliga rader från importen
                 </p>
-                <p class="text-sm text-burgundy/80">
+                <p class="text-sm text-warning">
                   Lägg till sådant som faktiskt är elevnamn, eller ignorera rader som inte hör till
                   klasslistan.
                 </p>
@@ -476,9 +476,9 @@ function closeModal(): void {
                 <div
                   v-for="(row, index) in ambiguousRows"
                   :key="`${row.raw_text}-${index}`"
-                  class="space-y-2 border border-burgundy/20 bg-white p-3"
+                  class="space-y-2 border border-warning/20 bg-panel-muted p-3"
                 >
-                  <div class="break-all font-mono text-sm text-burgundy">
+                  <div class="break-all font-mono text-sm text-warning">
                     {{ row.raw_text }}
                   </div>
                   <div class="flex flex-wrap gap-3">
@@ -503,7 +503,7 @@ function closeModal(): void {
           </div>
         </div>
 
-        <div class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-panel px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
           <div>
             <button
               v-if="isEditing"

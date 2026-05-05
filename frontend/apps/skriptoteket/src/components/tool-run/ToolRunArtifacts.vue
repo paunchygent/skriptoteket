@@ -112,7 +112,7 @@ async function saveToVault(artifact: RunArtifact | ArtifactEntry): Promise<void>
       >
         <a
           :href="resolveProtectedApiUrl(artifact.download_url)"
-          class="underline text-burgundy hover:text-navy"
+          class="underline text-action hover:text-navy"
           download
         >
           {{ artifact.path }}

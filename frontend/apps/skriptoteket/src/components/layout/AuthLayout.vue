@@ -183,7 +183,7 @@ onBeforeUnmount(() => {
     >
       <div
         v-if="logoutError"
-        class="mb-4 p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
+        class="mb-4 p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
       >
         {{ logoutError }}
       </div>

@@ -65,7 +65,7 @@ function toggle(): void {
   >
     <span
       class="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-[2px] border"
-      :class="modelValue ? 'border-navy bg-navy text-canvas' : 'border-navy/30 bg-white text-transparent'"
+      :class="modelValue ? 'border-action bg-action text-button-primary-text' : 'border-navy/30 bg-white text-transparent'"
       aria-hidden="true"
     >
       <IconCheck :size="10" />

@@ -83,7 +83,7 @@ src/skriptoteket/web/api/
 
 | Current Web Route | New API Endpoint |
 |-------------------|------------------|
-| `POST /login` | `POST /api/v1/auth/login` |
+| Historical local login form | Superseded by HuleEdu browser-session ceremony |
 | `POST /logout` | `POST /api/v1/auth/logout` |
 | `GET /` (user info) | `GET /api/v1/auth/me` |
 | `GET /browse/` | `GET /api/v1/professions` |
@@ -135,11 +135,12 @@ src/skriptoteket/web/api/
 
 ### CSRF Flow for SPA
 
-1. SPA calls `POST /api/v1/auth/login` with credentials
-2. Backend sets HTTP-only session cookie, returns `{ user, csrf_token }`
-3. SPA stores `csrf_token` in memory (Pinia store)
-4. For all mutating requests, SPA includes `X-CSRF-Token` header
-5. Backend validates header against session's stored token
+1. Browser starts the HuleEdu-owned auth ceremony.
+2. HuleEdu establishes the shared browser session and redirects back to
+   Skriptoteket continuation.
+3. Skriptoteket resolves the signed app context to a local projection.
+4. The SPA fetches shared CSRF through the HuleEdu session contract when
+   needed for mutating requests.
 
 ---
 

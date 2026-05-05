@@ -85,14 +85,14 @@ onUnmounted(() => {
         v-if="showSettings"
         id="rpc-settings-popover"
         ref="settingsPopoverRef"
-        class="absolute right-0 mt-2 z-50 w-[min(22rem,calc(100vw-2rem))] border border-navy bg-white shadow-brutal-sm p-4 pr-10 text-sm text-navy/80"
+        class="absolute right-0 mt-2 z-50 w-[min(22rem,calc(100vw-2rem))] border border-navy bg-panel shadow-brutal-sm p-4 pr-10 text-sm text-navy/80"
         role="dialog"
         aria-modal="false"
         aria-label="Inställningar"
       >
         <button
           type="button"
-          class="absolute top-2 right-2 h-7 w-7 grid place-items-center border border-transparent rounded-[var(--huleedu-radius-sm)] text-navy/60 hover:text-burgundy hover:border-navy/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+          class="absolute top-2 right-2 h-7 w-7 grid place-items-center border border-transparent rounded-[var(--huleedu-radius-sm)] text-navy/60 hover:text-action hover:border-navy/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
           aria-label="Stäng inställningar"
           @click="closeSettings"
         >

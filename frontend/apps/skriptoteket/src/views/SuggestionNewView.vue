@@ -128,7 +128,7 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="expand-left-40 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="expand-left-40 p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Laddar formulär...
     </div>
@@ -143,7 +143,7 @@ onMounted(() => {
       />
 
       <form
-        class="expand-left-40 border border-navy bg-white p-4 shadow-brutal-sm space-y-4"
+        class="expand-left-40 border border-navy bg-panel p-4 shadow-brutal-sm space-y-4"
         @submit.prevent="submit"
       >
         <SystemMessage
@@ -198,7 +198,7 @@ onMounted(() => {
             <label class="text-sm font-semibold text-navy">Yrken</label>
             <span class="text-xs text-navy/60">Välj minst ett</span>
           </div>
-          <div class="p-4 border border-navy bg-white">
+          <div class="p-4 border border-navy bg-panel-muted">
             <div class="grid gap-3 sm:grid-cols-2">
               <label
                 v-for="profession in professions"
@@ -208,7 +208,7 @@ onMounted(() => {
                 <input
                   :value="profession.slug"
                   type="checkbox"
-                  class="h-4 w-4 accent-burgundy"
+                  class="h-4 w-4 accent-action"
                   :checked="selectedProfessions.includes(profession.slug)"
                   @change="selectedProfessions = toggleSelection(selectedProfessions, profession.slug)"
                 >
@@ -223,7 +223,7 @@ onMounted(() => {
             <label class="text-sm font-semibold text-navy">Kategorier</label>
             <span class="text-xs text-navy/60">Välj minst en</span>
           </div>
-          <div class="p-4 border border-navy bg-white">
+          <div class="p-4 border border-navy bg-panel-muted">
             <div class="grid gap-3 sm:grid-cols-2">
               <label
                 v-for="category in categories"
@@ -233,7 +233,7 @@ onMounted(() => {
                 <input
                   :value="category.slug"
                   type="checkbox"
-                  class="h-4 w-4 accent-burgundy"
+                  class="h-4 w-4 accent-action"
                   :checked="selectedCategories.includes(category.slug)"
                   @change="selectedCategories = toggleSelection(selectedCategories, category.slug)"
                 >

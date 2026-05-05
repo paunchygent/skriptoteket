@@ -38,7 +38,7 @@ const steps = [
         </p>
         <RouterLink
           :to="publicClassroomPlannerPath"
-          class="mt-6 inline-flex items-center gap-2 font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+          class="mt-6 inline-flex items-center gap-2 font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-action focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
         >
           Öppna appen
           <span aria-hidden="true">→</span>

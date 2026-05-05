@@ -52,10 +52,10 @@ const viewportWidth = ref(0);
 
 function ghostPlacementClass(canPlace: boolean, type: RoomTemplateGhostPlacement["type"]): string {
   if (!canPlace) {
-    return "border-burgundy bg-burgundy/10 text-burgundy opacity-70";
+    return "border-critical bg-critical/10 text-critical opacity-70";
   }
   if (type === "seat") {
-    return "border-navy/70 bg-navy/10";
+    return "border-action/70 bg-action/10";
   }
   return "border-navy/40 bg-white/40";
 }

@@ -255,7 +255,7 @@ function onHelp(event: MouseEvent): void {
 }
 
 .sidebar-brand:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .sidebar-nav {
@@ -296,12 +296,12 @@ function onHelp(event: MouseEvent): void {
 }
 
 .sidebar-nav-item:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .sidebar-nav-item.router-link-active {
   color: var(--huleedu-navy);
-  border-left-color: var(--huleedu-burgundy);
+  border-left-color: var(--huleedu-action);
 }
 
 @media (min-width: 768px) {

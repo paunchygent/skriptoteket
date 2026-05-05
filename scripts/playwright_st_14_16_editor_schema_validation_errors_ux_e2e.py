@@ -64,9 +64,7 @@ def _ensure_draft_for_tool(
     base_url: str,
     tool_slug: str,
 ) -> tuple[str, str]:
-    csrf = context.request.get(f"{base_url}/api/v1/auth/csrf")
-    expect(csrf).to_be_ok()
-    csrf_token = csrf.json()["csrf_token"]
+    csrf_token = "huleedu-gateway-context"
 
     tool = context.request.get(f"{base_url}/api/v1/tools/{tool_slug}")
     expect(tool).to_be_ok()

@@ -104,7 +104,7 @@ onMounted(async () => {
               eller
               <a
                 :href="registerUrl"
-                class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+                class="font-medium text-navy underline decoration-1 underline-offset-3 transition-colors hover:text-action focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
               >
                 skapa ett konto
               </a>
@@ -128,7 +128,7 @@ onMounted(async () => {
         <!-- Error message -->
         <div
           v-if="dashboardError"
-          class="p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
+          class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
         >
           {{ dashboardError }}
         </div>
@@ -331,7 +331,7 @@ onMounted(async () => {
   display: block;
   padding: 1.25rem;
   border: 1px solid var(--color-navy);
-  background-color: white;
+  background-color: var(--huleedu-panel);
   box-shadow: 4px 4px 0 0 var(--color-navy);
   text-decoration: none;
   transition: all 0.15s ease;
@@ -356,7 +356,7 @@ onMounted(async () => {
 }
 
 :deep(.dashboard-card:hover .card-label) {
-  color: var(--color-burgundy);
+  color: var(--color-action);
 }
 
 :deep(.card-arrow) {
@@ -367,7 +367,7 @@ onMounted(async () => {
 
 :deep(.dashboard-card:hover .card-arrow) {
   transform: translateX(4px);
-  color: var(--color-burgundy);
+  color: var(--color-action);
 }
 
 :deep(.card-stats) {

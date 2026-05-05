@@ -75,7 +75,7 @@ const authenticatedIndexSections = computed(() =>
         </h4>
         <ul
           data-test="help-index-list"
-          class="border border-navy/15 bg-white divide-y divide-navy/15"
+          class="border border-navy/15 bg-panel divide-y divide-navy/15"
         >
           <li
             v-for="item in section.items"
@@ -103,7 +103,7 @@ const authenticatedIndexSections = computed(() =>
     >
       <ul
         data-test="help-index-list"
-        class="border border-navy/15 bg-white divide-y divide-navy/15"
+        class="border border-navy/15 bg-panel divide-y divide-navy/15"
       >
         <li
           v-for="item in loggedOutIndexItems"

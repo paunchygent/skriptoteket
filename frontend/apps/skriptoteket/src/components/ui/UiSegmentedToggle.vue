@@ -357,7 +357,7 @@ onScopeDispose(() => {
   >
     <span
       aria-hidden="true"
-      class="absolute left-0 top-0 rounded-[2px] bg-navy pointer-events-none z-0 will-change-transform"
+      class="absolute left-0 top-0 rounded-[2px] bg-action pointer-events-none z-0 will-change-transform"
       :style="sliderStyle"
     />
 
@@ -378,12 +378,16 @@ onScopeDispose(() => {
         :aria-describedby="optionDescriptionId(index)"
         :title="option.title || undefined"
         :data-test="option.dataTest"
-        class="relative z-[2] inline-flex w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 transition-colors duration-200"
+        class="relative z-[2] inline-flex w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2 transition-colors duration-200"
         :class="[
           optionClass,
           index > 0 ? 'border-l border-navy/20' : '',
-          option.value === props.modelValue ? 'text-canvas' : 'text-navy/70 hover:text-navy',
-          props.disabled || option.disabled ? 'opacity-40 cursor-not-allowed hover:text-navy/70' : '',
+          option.value === props.modelValue ? 'text-button-primary-text' : 'text-navy/70 hover:text-navy',
+          props.disabled || option.disabled
+            ? `opacity-40 cursor-not-allowed ${
+              option.value === props.modelValue ? 'hover:text-button-primary-text' : 'hover:text-navy/70'
+            }`
+            : '',
         ]"
         :style="equalizedButtonStyle"
         @click="selectOption(option)"

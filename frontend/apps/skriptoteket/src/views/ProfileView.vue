@@ -62,7 +62,7 @@ onMounted(() => {
         <div
           v-if="isLoading"
           key="loading"
-          class="profile-stage-item expand-left-40 border border-navy bg-white shadow-brutal-sm"
+          class="profile-stage-item expand-left-40 border border-navy bg-panel shadow-brutal-sm"
         >
           <div class="flex items-center gap-4 border-b border-navy/20 p-4">
             <div class="h-14 w-14 shrink-0 animate-pulse border-2 border-navy/20 bg-navy/10" />

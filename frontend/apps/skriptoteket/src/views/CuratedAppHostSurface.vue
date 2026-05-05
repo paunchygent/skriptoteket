@@ -27,23 +27,23 @@ defineProps<{
   >
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
+      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
     >
       {{ errorMessage }}
     </div>
 
     <div
       v-else
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm space-y-2"
+      class="p-4 border border-critical bg-panel shadow-brutal-sm space-y-2"
     >
-      <p class="text-sm font-semibold text-burgundy">
+      <p class="text-sm font-semibold text-critical">
         Den här appen kräver en anpassad vy som inte är installerad ännu.
       </p>
       <p class="text-sm text-navy/70">

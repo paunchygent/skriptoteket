@@ -28,7 +28,7 @@ def _make_request(
     scope = {
         "type": "http",
         "method": "GET",
-        "path": "/api/v1/auth/login",
+        "path": "/api/v1/profile/app-continuation",
         "headers": encoded_headers,
         "client": (client_host, 12345),
     }

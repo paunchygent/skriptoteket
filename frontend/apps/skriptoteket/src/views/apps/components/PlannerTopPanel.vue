@@ -199,7 +199,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
 </script>
 
 <template>
-  <article class="planner-top-panel space-y-3 border border-navy bg-white p-4 shadow-brutal-sm">
+  <article class="planner-top-panel space-y-3 border border-navy bg-panel p-4 shadow-brutal-sm">
     <div class="planner-top-panel-heading flex items-start justify-between gap-3 border-b border-navy/20 pb-3">
       <div class="min-w-0 space-y-1">
         <h2 class="planner-shell-title">

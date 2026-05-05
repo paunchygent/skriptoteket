@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60">
   <style>
-    .list-frame { fill: none; stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
-    .list-line { stroke: #1c2e4a; stroke-width: 1; stroke-opacity: 0.5; shape-rendering: crispEdges; }
-    .list-active { stroke: #1c2e4a; stroke-width: 1.2; stroke-opacity: 0.8; shape-rendering: crispEdges; }
-    .desk-top { fill: none; stroke: #1c2e4a; stroke-width: 1.5; shape-rendering: crispEdges; }
-    .seat-filled { fill: none; stroke: #1c2e4a; stroke-width: 1.5; }
-    .seat-target { fill: none; stroke: #1c2e4a; stroke-width: 1; stroke-dasharray: 2, 2; stroke-opacity: 0.45; }
-    .guide { stroke: #1c2e4a; stroke-width: 0.7; stroke-dasharray: 1.5, 1.5; stroke-opacity: 0.3; }
-    .arrow { fill: none; stroke: #1c2e4a; stroke-width: 0.8; stroke-opacity: 0.4; }
+    .list-frame { fill: none; stroke: #082b4c; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .list-line { stroke: #082b4c; stroke-width: 1; stroke-opacity: 0.5; shape-rendering: crispEdges; }
+    .list-active { stroke: #082b4c; stroke-width: 1.2; stroke-opacity: 0.8; shape-rendering: crispEdges; }
+    .desk-top { fill: none; stroke: #082b4c; stroke-width: 1.5; shape-rendering: crispEdges; }
+    .seat-filled { fill: none; stroke: #082b4c; stroke-width: 1.5; }
+    .seat-target { fill: none; stroke: #082b4c; stroke-width: 1; stroke-dasharray: 2, 2; stroke-opacity: 0.45; }
+    .guide { stroke: #082b4c; stroke-width: 0.7; stroke-dasharray: 1.5, 1.5; stroke-opacity: 0.3; }
+    .arrow { fill: none; stroke: #082b4c; stroke-width: 0.8; stroke-opacity: 0.4; }
     .name-text {
       font-family: "IBM Plex Sans", sans-serif;
       font-size: 5.5px;
       font-weight: 600;
-      fill: #1c2e4a;
+      fill: #082b4c;
       text-anchor: middle;
     }
-    .bullet { fill: #1c2e4a; fill-opacity: 0.4; }
-    .bullet-act { fill: #1c2e4a; fill-opacity: 0.8; }
+    .bullet { fill: #082b4c; fill-opacity: 0.4; }
+    .bullet-act { fill: #082b4c; fill-opacity: 0.8; }
   </style>
 
   <rect x="6" y="10" width="26" height="40" class="list-frame" />

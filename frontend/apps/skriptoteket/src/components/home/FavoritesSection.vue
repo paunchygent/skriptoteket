@@ -37,7 +37,7 @@ function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): vo
       <template #action>
         <RouterLink
           to="/browse?favorites=true"
-          class="text-xs font-semibold uppercase tracking-wide text-navy/70 hover:text-burgundy"
+          class="text-xs font-semibold uppercase tracking-wide text-navy/70 hover:text-action"
         >
           Visa alla →
         </RouterLink>

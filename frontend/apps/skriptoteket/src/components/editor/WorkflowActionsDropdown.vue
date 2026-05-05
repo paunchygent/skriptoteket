@@ -99,7 +99,7 @@ onBeforeUnmount(() => {
         role="menuitem"
         class="w-full text-left px-2.5 py-2 text-[11px] text-navy hover:bg-white transition-colors"
         :class="{
-          'text-burgundy': item.tone === 'danger',
+          'text-critical': item.tone === 'danger',
           'font-semibold': item.tone === 'primary',
         }"
         @click="handleSelect(item)"

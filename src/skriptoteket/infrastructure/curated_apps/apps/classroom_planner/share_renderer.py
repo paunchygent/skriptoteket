@@ -52,16 +52,16 @@ _SHARE_BASE_CSS = """
 :root {
   color-scheme: light;
   --canvas: #fafaf6;
-  --navy: #1c2e4a;
-  --navy-05: rgba(28, 46, 74, 0.05);
-  --navy-10: rgba(28, 46, 74, 0.10);
-  --navy-15: rgba(28, 46, 74, 0.15);
-  --navy-20: rgba(28, 46, 74, 0.20);
-  --navy-30: rgba(28, 46, 74, 0.30);
-  --navy-40: rgba(28, 46, 74, 0.40);
-  --navy-50: rgba(28, 46, 74, 0.50);
-  --navy-60: rgba(28, 46, 74, 0.60);
-  --navy-70: rgba(28, 46, 74, 0.70);
+  --navy: #082b4c;
+  --navy-05: rgba(8, 43, 76, 0.05);
+  --navy-10: rgba(8, 43, 76, 0.10);
+  --navy-15: rgba(8, 43, 76, 0.15);
+  --navy-20: rgba(8, 43, 76, 0.20);
+  --navy-30: rgba(8, 43, 76, 0.30);
+  --navy-40: rgba(8, 43, 76, 0.40);
+  --navy-50: rgba(8, 43, 76, 0.50);
+  --navy-60: rgba(8, 43, 76, 0.60);
+  --navy-70: rgba(8, 43, 76, 0.70);
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;

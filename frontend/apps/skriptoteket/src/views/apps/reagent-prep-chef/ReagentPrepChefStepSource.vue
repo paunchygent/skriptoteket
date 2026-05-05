@@ -19,7 +19,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-white shadow-brutal-sm">
+  <section class="border border-navy bg-panel shadow-brutal-sm">
     <div class="p-4 space-y-4">
       <div class="space-y-1">
         <h2 class="text-lg font-semibold text-navy">Källa</h2>
@@ -118,7 +118,7 @@ const emit = defineEmits<{
 
       <p
         v-if="props.actionErrorMessage"
-        class="text-sm text-burgundy whitespace-pre-wrap"
+        class="text-sm text-critical whitespace-pre-wrap"
       >
         {{ props.actionErrorMessage }}
       </p>

@@ -78,7 +78,7 @@ watch(
 
     <p
       v-if="props.settingsSchemaError"
-      class="px-3 py-2 text-xs font-semibold text-burgundy"
+      class="px-3 py-2 text-xs font-semibold text-critical"
     >
       {{ props.settingsSchemaError }}
     </p>

@@ -170,7 +170,7 @@ function sourceLabel(ref: FileRefInfo): string {
             </span>
             <button
               type="button"
-              class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-burgundy/40 text-burgundy bg-white leading-none"
+              class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-critical/40 text-critical bg-white leading-none"
               :disabled="isReadOnly"
               @click="removeVaultRef(refValue)"
             >
@@ -215,7 +215,7 @@ function sourceLabel(ref: FileRefInfo): string {
           >
             <input
               type="checkbox"
-              class="mt-0.5 accent-burgundy"
+              class="mt-0.5 accent-action"
               :checked="modelValue.includes(sessionRef.ref)"
               :disabled="isReadOnly || isAtMax(sessionRef.ref)"
               @change="onToggleEvent($event, sessionRef.ref)"
@@ -246,7 +246,7 @@ function sourceLabel(ref: FileRefInfo): string {
 
     <p
       v-if="errorMessage"
-      :class="[isCompact ? 'text-[10px] font-semibold text-burgundy' : 'text-xs font-semibold text-burgundy']"
+      :class="[isCompact ? 'text-[10px] font-semibold text-critical' : 'text-xs font-semibold text-critical']"
     >
       {{ errorMessage }}
     </p>

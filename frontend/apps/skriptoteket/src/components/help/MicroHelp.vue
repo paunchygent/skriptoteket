@@ -146,13 +146,13 @@ onUnmounted(() => {
 }
 
 .micro-help-trigger:hover {
-  color: var(--huleedu-burgundy);
-  background-color: var(--huleedu-burgundy-10);
+  color: var(--huleedu-action);
+  background-color: var(--huleedu-action-10);
 }
 
 .micro-help-trigger:focus-visible,
 .micro-help-close:focus-visible {
-  outline: 2px solid var(--huleedu-burgundy-40);
+  outline: 2px solid var(--huleedu-action-40);
   outline-offset: 2px;
 }
 
@@ -194,7 +194,7 @@ onUnmounted(() => {
 }
 
 .micro-help-close:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
   border-color: var(--huleedu-navy);
 }
 

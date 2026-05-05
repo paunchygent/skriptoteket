@@ -345,8 +345,8 @@ def _apply_docx_profile_styles(doc: Any, profile: str) -> None:
     except Exception:
         pass
 
-    navy = RGBColor(0x1C, 0x2E, 0x4A)  # HuleEdu navy
-    burgundy = RGBColor(0x4D, 0x15, 0x21)  # HuleEdu burgundy
+    navy = RGBColor(0x08, 0x2B, 0x4C)  # HuleEdu deep navy
+    action = RGBColor(0x3F, 0x7F, 0x78)  # HuleEdu Verdigris action
     black = RGBColor(0, 0, 0)
 
     if profile == PROFILE_PRINT_BW:
@@ -366,8 +366,8 @@ def _apply_docx_profile_styles(doc: Any, profile: str) -> None:
         code_font = "Liberation Mono"
         body_size = 11
         h1_size, h2_size, h3_size = 22, 16, 13
-        heading_color = burgundy
-        link_color = burgundy
+        heading_color = navy
+        link_color = action
         body_line_spacing = 1.2
         heading_space_before = (18, 14, 12)
         heading_space_after = (8, 6, 4)

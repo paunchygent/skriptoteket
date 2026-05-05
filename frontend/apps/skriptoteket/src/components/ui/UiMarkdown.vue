@@ -19,7 +19,7 @@ const renderedHtml = computed(() => {
 <!-- eslint-disable vue/no-v-html -- sanitized with DOMPurify -->
 <template>
   <div
-    class="prose prose-sm max-w-none text-navy prose-a:text-burgundy prose-code:font-mono prose-pre:font-mono"
+    class="prose prose-sm max-w-none text-navy prose-a:text-action prose-code:font-mono prose-pre:font-mono"
     v-html="renderedHtml"
   />
 </template>

@@ -62,7 +62,7 @@ const emit = defineEmits<{
             </a>
           </div>
 
-          <div class="mt-4 border border-navy bg-white shadow-none max-h-[70vh] overflow-auto p-4">
+          <div class="mt-4 border border-navy bg-panel shadow-none max-h-[70vh] overflow-auto p-4">
             <p
               v-if="props.isLoading"
               class="text-sm text-navy/70"

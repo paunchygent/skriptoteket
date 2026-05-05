@@ -184,7 +184,7 @@ async function copyDebugText(): Promise<void> {
           class="px-2 py-0.5 border font-semibold uppercase tracking-wide text-[10px]"
           :class="{
             'border-success bg-success/10 text-success': displayedRun.status === 'succeeded',
-            'border-burgundy bg-burgundy/10 text-burgundy': displayedRun.status === 'failed',
+            'border-error bg-error/10 text-error': displayedRun.status === 'failed',
             'border-warning bg-warning/10 text-warning': displayedRun.status === 'timed_out',
           }"
         >
@@ -198,7 +198,7 @@ async function copyDebugText(): Promise<void> {
       <!-- Error summary -->
       <div
         v-if="displayedRun?.error_summary"
-        class="text-[11px] text-burgundy"
+        class="text-[11px] text-critical"
       >
         <p class="font-semibold">Ett fel uppstod</p>
         <pre class="mt-1 whitespace-pre-wrap font-mono text-[11px]">{{ displayedRun.error_summary }}</pre>

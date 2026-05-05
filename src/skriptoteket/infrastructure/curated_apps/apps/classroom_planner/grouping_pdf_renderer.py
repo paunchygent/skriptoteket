@@ -203,7 +203,7 @@ def _build_css() -> str:
         right: 0;
         bottom: 0;
         height: 1.2pt;
-        background: #1c2e4a;
+        background: #082b4c;
       }
 
       .letterhead::before {
@@ -213,12 +213,12 @@ def _build_css() -> str:
         bottom: 0;
         width: 16mm;
         height: 2.2pt;
-        background: #4d1521;
+        background: #c94f32;
       }
 
       .letterhead h1 {
         margin: 0 0 1.8mm;
-        color: #1c2e4a;
+        color: #082b4c;
         font-family: var(--heading-serif);
         font-size: 20pt;
         font-weight: 700;
@@ -284,7 +284,7 @@ def _build_css() -> str:
         min-width: 0;
         break-inside: avoid;
         page-break-inside: avoid;
-        border: 1.4pt solid #1c2e4a;
+        border: 1.4pt solid #082b4c;
         border-radius: 0;
         padding: 3mm;
         background: #ffffff;
@@ -303,12 +303,12 @@ def _build_css() -> str:
         gap: 2.4mm;
         margin-bottom: 2.4mm;
         padding-bottom: 1.9mm;
-        border-bottom: 0.8pt solid rgba(28, 46, 74, 0.18);
+        border-bottom: 0.8pt solid rgba(8, 43, 76, 0.18);
       }
 
       .group-card h2 {
         margin: 0;
-        color: #1c2e4a;
+        color: #082b4c;
         font-family: var(--heading-serif);
         font-size: 11.4pt;
         font-weight: 700;
@@ -349,9 +349,9 @@ def _build_css() -> str:
         width: 5.8mm;
         height: 5.8mm;
         border-radius: 999px;
-        border: 0.7pt solid #1c2e4a;
+        border: 0.7pt solid #082b4c;
         background: #ffffff;
-        color: #1c2e4a;
+        color: #082b4c;
         font-size: 7.2pt;
         font-weight: 700;
         line-height: 1;

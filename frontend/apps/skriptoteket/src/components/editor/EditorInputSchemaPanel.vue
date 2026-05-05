@@ -114,7 +114,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     :class="[
-      isInline ? 'p-3 space-y-3' : 'border border-navy/20 bg-white shadow-brutal-sm p-3 space-y-3',
+      isInline ? 'p-3 space-y-3' : 'border border-navy/20 bg-panel shadow-brutal-sm p-3 space-y-3',
     ]"
   >
     <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
@@ -230,7 +230,7 @@ onBeforeUnmount(() => {
 
       <p
         v-if="props.inputSchemaError"
-        class="text-xs font-semibold text-burgundy"
+        class="text-xs font-semibold text-critical"
       >
         {{ props.inputSchemaError }}
       </p>

@@ -205,7 +205,7 @@ function updateMapView(value: string): void {
 
 <template>
   <section
-    class="border border-navy bg-white p-3 shadow-brutal-sm"
+    class="border border-navy bg-panel p-3 shadow-brutal-sm"
     data-test="rules-map-panel"
   >
     <div
@@ -281,7 +281,7 @@ function updateMapView(value: string): void {
             v-else-if="!isPlanningMap && template"
             ref="canvasViewport"
             data-test="rules-map-canvas"
-            class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
+            class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-panel p-3"
           >
             <div
               data-test="rules-map-scroll-frame"
@@ -362,7 +362,7 @@ function updateMapView(value: string): void {
               </div>
               <p
                 v-if="selectedUnplacedStudentsCount > 0"
-                class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-burgundy"
+                class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-action"
                 data-test="rules-map-unplaced-selected-count"
               >
                 {{ selectedUnplacedStudentsCount }} valda

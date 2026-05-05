@@ -11,7 +11,7 @@
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
-import { IconCopy, IconLink2, IconPlus, IconTrash, IconX } from "../../../components/icons";
+import { IconCopy, IconLink2, IconTrash, IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
@@ -159,7 +159,7 @@ onUnmounted(() => {
 
     <section
       v-if="isOpen"
-      class="fixed inset-x-0 bottom-0 z-[40] max-h-[85vh] overflow-y-auto rounded-t-xl border-t-2 border-navy bg-white pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:w-[32rem] md:overflow-visible md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm"
+      class="fixed inset-x-0 bottom-0 z-[40] max-h-[85vh] overflow-y-auto rounded-t-xl border-t-2 border-navy bg-canvas pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:w-[32rem] md:overflow-visible md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm"
       role="dialog"
       aria-label="Delade länkar"
       :data-test="panelTestId"
@@ -187,13 +187,13 @@ onUnmounted(() => {
             :disabled="busy"
             :busy="busy"
             busy-label="Skapar länk"
-            tone="primary"
+            tone="secondary"
             class="min-w-[8.5rem]"
             data-test="planner-share-create"
             @click="createShare"
           >
             <template #leading>
-              <IconPlus :size="10" />
+              <IconLink2 :size="10" />
             </template>
           </UiDenseActionButton>
         </div>
@@ -211,7 +211,7 @@ onUnmounted(() => {
       <div class="border-b border-navy/10 px-3.5 py-2 md:hidden">
         <button
           type="button"
-          class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-navy bg-navy px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-canvas disabled:cursor-not-allowed disabled:opacity-50"
+          class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-action/60 bg-canvas/40 px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-action transition-colors hover:border-action hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="busy"
           data-test="planner-share-create-mobile"
           :aria-busy="busy ? 'true' : undefined"
@@ -222,7 +222,7 @@ onUnmounted(() => {
             v-if="busy"
             :size="12"
           />
-          <IconPlus
+          <IconLink2
             v-else
             :size="12"
           />
@@ -239,7 +239,7 @@ onUnmounted(() => {
       </p>
       <p
         v-if="errorMessage"
-        class="border-b border-burgundy/20 bg-burgundy/5 px-3.5 py-2 text-[11px] font-semibold text-burgundy"
+        class="border-b border-critical/20 bg-critical/5 px-3.5 py-2 text-[11px] font-semibold text-critical"
         data-test="planner-share-error"
       >
         {{ errorMessage }}
@@ -280,7 +280,7 @@ onUnmounted(() => {
           <div class="flex min-w-max items-center justify-end gap-1.5">
             <button
               type="button"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-white text-navy transition-colors hover:border-navy/35 hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-canvas/40 text-navy transition-colors hover:border-action/45 hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
               :disabled="!share.public_url"
               :data-test="`planner-share-copy-${share.id}`"
               title="Kopiera länk till urklipp"
@@ -294,7 +294,7 @@ onUnmounted(() => {
             <button
               v-if="showRevokeAction"
               type="button"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-burgundy/30 bg-white text-burgundy transition-colors hover:bg-burgundy/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-critical/30 bg-canvas/40 text-critical transition-colors hover:bg-critical/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
               :disabled="revokingShareId === share.id"
               :data-test="`planner-share-revoke-${share.id}`"
               title="Återkalla länken"

@@ -18,7 +18,7 @@ const isCompact = computed(() => props.density === "compact");
     :class="[
       isCompact
         ? 'p-3 panel-inset'
-        : 'p-4 border border-navy bg-white shadow-brutal-sm',
+        : 'p-4 border border-navy bg-panel shadow-brutal-sm',
     ]"
   >
     <UiMarkdown :markdown="props.output.markdown" />

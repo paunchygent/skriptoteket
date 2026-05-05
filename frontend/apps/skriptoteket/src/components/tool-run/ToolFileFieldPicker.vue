@@ -241,7 +241,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                       isCompact
                         ? 'text-[10px] tracking-[var(--huleedu-tracking-label)] text-navy/80'
                         : 'text-xs tracking-wide text-navy',
-                      isReadOnly ? '' : 'group-hover:text-burgundy',
+                      isReadOnly ? '' : 'group-hover:text-action',
                     ]"
                   >
                     Välj filer
@@ -297,7 +297,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                       type="button"
                       :disabled="!canDeleteSelected(field)"
                       :class="[
-                        'btn-ghost border-burgundy/40 text-burgundy shadow-none',
+                        'btn-ghost border-critical/40 text-critical shadow-none',
                         isCompact
                           ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
                           : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
@@ -326,7 +326,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                     >
                       <input
                         type="checkbox"
-                        class="mt-0.5 accent-burgundy"
+                        class="mt-0.5 accent-action"
                         :checked="selectionFor(field).refs.includes(sessionRef.ref)"
                         :disabled="isReadOnly || (!selectionFor(field).refs.includes(sessionRef.ref) && selectionFor(field).refs.length >= field.max)"
                         @change="onToggleSessionRef(field, sessionRef.ref, $event)"
@@ -375,7 +375,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                         </span>
                         <button
                           type="button"
-                          class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-burgundy/40 text-burgundy bg-white leading-none"
+                          class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-critical/40 text-critical bg-white leading-none"
                           :disabled="isReadOnly"
                           @click="emit('update:refs', { field: field.name, refs: selectionFor(field).refs.filter((value) => value !== refValue) })"
                         >
@@ -405,7 +405,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
 
         <p
           v-if="errors[field.name]"
-          :class="[isCompact ? 'text-[10px] font-semibold text-burgundy' : 'text-xs font-semibold text-burgundy']"
+          :class="[isCompact ? 'text-[10px] font-semibold text-critical' : 'text-xs font-semibold text-critical']"
         >
           {{ errors[field.name] }}
         </p>

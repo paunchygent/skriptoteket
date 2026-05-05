@@ -96,7 +96,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
     <nav class="flex items-center flex-wrap gap-2 mb-4 text-xs uppercase tracking-wide text-navy/60">
       <RouterLink
         to="/browse/professions"
-        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
+        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
       >
         Yrkesgrupper
       </RouterLink>
@@ -104,7 +104,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
       <RouterLink
         v-if="profession"
         :to="`/browse/professions/${professionSlug}`"
-        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
+        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
       >
         {{ profession.label }}
       </RouterLink>
@@ -134,7 +134,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
     >
       {{ errorMessage }}
     </div>
@@ -152,7 +152,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
         v-if="tools.length > 0"
         class="mb-8 last:mb-0"
       >
-        <ul class="list-none m-0 p-0 border border-navy bg-white">
+        <ul class="list-none m-0 p-0 border border-navy bg-panel">
           <li
             v-for="tool in tools"
             :key="tool.id"
@@ -160,10 +160,10 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
           >
             <RouterLink
               :to="{ name: 'tool-run', params: { slug: tool.slug } }"
-              class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+              class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
             >
               <div class="flex flex-col gap-1 min-w-0">
-                <span class="font-medium text-navy group-hover:text-burgundy transition-colors">
+                <span class="font-medium text-navy group-hover:text-action transition-colors">
                   {{ tool.title }}
                 </span>
                 <span
@@ -171,7 +171,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
                   class="text-sm text-navy/60 break-words"
                 >{{ tool.summary }}</span>
               </div>
-              <span class="text-navy/40 group-hover:text-burgundy transition-colors">
+              <span class="text-navy/40 group-hover:text-action transition-colors">
                 →
               </span>
             </RouterLink>
@@ -184,7 +184,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
         v-if="curatedApps.length > 0"
         class="mb-8 last:mb-0"
       >
-        <ul class="list-none m-0 p-0 border border-navy bg-white">
+        <ul class="list-none m-0 p-0 border border-navy bg-panel">
           <li
             v-for="app in curatedApps"
             :key="app.app_id"
@@ -192,10 +192,10 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
           >
             <RouterLink
               :to="curatedAppTarget(app.app_id)"
-              class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+              class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
             >
               <div class="flex flex-col gap-1 min-w-0">
-                <span class="font-medium text-navy group-hover:text-burgundy transition-colors">
+                <span class="font-medium text-navy group-hover:text-action transition-colors">
                   {{ app.title }}
                 </span>
                 <span
@@ -203,7 +203,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
                   class="text-sm text-navy/60 break-words"
                 >{{ app.summary }}</span>
               </div>
-              <span class="text-navy/40 group-hover:text-burgundy transition-colors">
+              <span class="text-navy/40 group-hover:text-action transition-colors">
                 →
               </span>
             </RouterLink>

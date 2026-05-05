@@ -43,7 +43,7 @@ DEFAULT_HULEEDU_AUTH_ORIGIN = "http://localhost:8080"
 DEFAULT_127_BASE_URL = "http://127.0.0.1:5173"
 DEFAULT_127_HULEEDU_LOGIN_ORIGIN = "http://127.0.0.1:5174"
 DEFAULT_127_HULEEDU_AUTH_ORIGIN = "http://127.0.0.1:8080"
-DEFAULT_DOTENV_PATH = "../../huleedu/.env"
+DEFAULT_DOTENV_PATH = ".env"
 DEFAULT_HULEEDU_TASK_0326_ARTIFACT = (
     "../../huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json"
 )

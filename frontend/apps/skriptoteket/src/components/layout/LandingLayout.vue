@@ -169,7 +169,7 @@ const loginUrl = computed(() => {
 .landing-brand:hover,
 .landing-nav-link:hover,
 .landing-header-link:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-action);
 }
 
 .landing-nav-link:hover::after,
@@ -182,7 +182,7 @@ const loginUrl = computed(() => {
 
 .landing-nav-link:focus-visible,
 .landing-header-link:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--huleedu-burgundy) 40%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--huleedu-action) 40%, transparent);
   outline-offset: 4px;
 }
 

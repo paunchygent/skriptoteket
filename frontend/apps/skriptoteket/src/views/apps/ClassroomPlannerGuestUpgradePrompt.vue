@@ -74,9 +74,9 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
     aria-labelledby="guest-upgrade-title"
     data-test="guest-upgrade-modal"
   >
-    <section class="w-full max-w-[34rem] border border-navy bg-white p-6 shadow-brutal-md md:p-7">
+    <section class="w-full max-w-[34rem] border border-navy bg-panel p-6 shadow-brutal-md md:p-7">
       <div class="space-y-3">
-        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-burgundy">
+        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-terracotta">
           Arbete från gästläge hittat
         </p>
         <div class="space-y-2">
@@ -98,7 +98,7 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
       <p
         v-if="errorMessage"
         data-test="guest-upgrade-error-message"
-        class="mt-4 text-sm leading-6 text-burgundy"
+        class="mt-4 text-sm leading-6 text-critical"
       >
         {{ errorMessage }}
       </p>
@@ -122,7 +122,7 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
         </button>
         <button
           type="button"
-          class="btn-ghost text-burgundy"
+          class="btn-ghost text-critical"
           data-test="guest-upgrade-discard-button"
           @click="$emit('discard')"
         >

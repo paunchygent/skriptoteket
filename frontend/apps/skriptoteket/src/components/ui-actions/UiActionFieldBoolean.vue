@@ -23,7 +23,7 @@ function onChange(event: Event): void {
       type="checkbox"
       :checked="modelValue"
       :class="[
-        'border border-navy accent-burgundy',
+        'border border-navy accent-action',
         isCompact ? 'h-3.5 w-3.5' : 'mt-1 h-4 w-4',
       ]"
       @change="onChange"

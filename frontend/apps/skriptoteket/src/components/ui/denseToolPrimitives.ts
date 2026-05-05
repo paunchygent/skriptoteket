@@ -7,7 +7,7 @@
  * - freezes a hard small-radius corner language (`4px`) so dense controls stay blocky, not soft
  */
 
-export type DenseActionTone = "default" | "primary" | "danger";
+export type DenseActionTone = "default" | "primary" | "secondary" | "danger";
 export type DenseActionSize = "icon" | "utility";
 export type DenseActionGroupPosition = "single" | "start" | "middle" | "end";
 export type DenseStatusTone = "neutral" | "success" | "warning" | "error";
@@ -33,13 +33,13 @@ type DenseActionValueClassOptions = {
 export const DENSE_MENU_ITEM_SELECTOR = '[role="menuitem"]:not([disabled])';
 
 export const DENSE_MENU_PANEL_CLASS =
-  "border border-navy bg-white shadow-brutal-sm outline-none z-[var(--huleedu-z-tooltip)]";
+  "border border-navy bg-panel shadow-brutal-sm outline-none z-[var(--huleedu-z-tooltip)]";
 export const DENSE_ACTION_RADIUS_CLASS = "rounded-[4px]";
 export const DENSE_SEGMENTED_SHELL_CLASS = `${DENSE_ACTION_RADIUS_CLASS} border border-navy/15 bg-canvas/50 p-0.5`;
 export const DENSE_SEGMENTED_SUBRAIL_SHELL_CLASS =
   `${DENSE_ACTION_RADIUS_CLASS} border border-navy/20 bg-canvas/60 p-px`;
 export const DENSE_SEGMENTED_WORKSPACE_SHELL_CLASS =
-  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/25 bg-white p-[2px]`;
+  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/25 bg-panel-muted p-[2px]`;
 
 export const DENSE_MENU_ITEM_BASE_CLASS =
   "flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-snug transition-colors focus-visible:outline-none focus:bg-canvas hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50";
@@ -67,16 +67,20 @@ function toneClass(tone: DenseActionTone, active: boolean): string {
   switch (tone) {
     case "primary":
       return active
-        ? "border-navy bg-navy/90 text-canvas"
-        : "border-navy bg-navy text-canvas hover:bg-navy/90";
+        ? "border-action bg-action text-button-primary-text"
+        : "border-action bg-action text-button-primary-text hover:bg-action/90";
+    case "secondary":
+      return active
+        ? "border-action bg-action/10 text-action"
+        : "border-action/60 bg-canvas/40 text-action hover:border-action hover:bg-action/5";
     case "danger":
       return active
-        ? "border-burgundy/40 bg-burgundy/10 text-burgundy"
-        : "border-burgundy/30 bg-white text-burgundy hover:bg-burgundy/5";
+        ? "border-critical/40 bg-critical/10 text-critical"
+        : "border-critical/30 bg-panel text-critical hover:bg-critical/5";
     default:
       return active
-        ? "border-navy/25 bg-canvas text-navy"
-        : "border-navy/20 bg-white text-navy hover:bg-canvas/70";
+        ? "border-action/45 bg-action/10 text-action"
+        : "border-navy/20 bg-panel text-navy hover:bg-action/5";
   }
 }
 
@@ -115,7 +119,7 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
   } = options;
 
   const base =
-    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
   const sizeClass =
     size === "icon"
       ? "h-9 w-9 p-0 text-[12px]"
@@ -132,7 +136,7 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
 }
 
 export function denseMenuItemClass(tone: DenseActionTone = "default"): string {
-  return `${DENSE_MENU_ITEM_BASE_CLASS} ${tone === "danger" ? "text-burgundy" : "text-navy"}`;
+  return `${DENSE_MENU_ITEM_BASE_CLASS} ${tone === "danger" ? "text-critical" : "text-navy"}`;
 }
 
 export function denseStatusPillClass(options: DenseStatusPillClassOptions = {}): string {
@@ -141,7 +145,7 @@ export function denseStatusPillClass(options: DenseStatusPillClassOptions = {}):
   const base =
     "inline-flex h-[28px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide leading-none";
   const interactiveClass = interactive
-    ? "cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+    ? "cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
     : "";
 
   return [base, interactiveClass, statusToneClass(tone, active, interactive)].join(" ").trim();

@@ -101,14 +101,14 @@ async function exitPublicPlanner(): Promise<void> {
 
     <div
       v-if="guestController.isBootstrapping.value"
-      class="border border-navy bg-white px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
+      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
     >
       Laddar planeringsmiljön...
     </div>
 
     <section
       v-else-if="guestController.guestAuthoringClosed.value"
-      class="border border-navy bg-white px-4 py-8 shadow-brutal-sm md:px-6 md:py-10"
+      class="border border-navy bg-panel px-4 py-8 shadow-brutal-sm md:px-6 md:py-10"
       data-test="public-guest-authoring-closed-state"
     >
       <div class="mx-auto flex max-w-3xl flex-col gap-4 text-center text-navy">

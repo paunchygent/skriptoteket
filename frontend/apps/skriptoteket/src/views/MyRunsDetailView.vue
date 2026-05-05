@@ -196,7 +196,7 @@ onUnmounted(() => {
   <div class="max-w-3xl space-y-6">
     <RouterLink
       to="/my-runs"
-      class="text-sm text-navy/70 underline hover:text-burgundy"
+      class="text-sm text-navy/70 underline hover:text-action"
     >
       ← Tillbaka
     </RouterLink>
@@ -207,7 +207,7 @@ onUnmounted(() => {
       <RouterLink
         v-if="run?.tool_slug"
         :to="{ name: 'tool-run', params: { slug: run.tool_slug } }"
-        class="inline-block text-sm underline text-burgundy hover:text-navy"
+        class="inline-block text-sm underline text-action hover:text-navy"
       >
         Kör igen
       </RouterLink>
@@ -215,14 +215,14 @@ onUnmounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
+      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
     >
       {{ errorMessage }}
     </div>

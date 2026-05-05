@@ -5,7 +5,7 @@ title: "Frontend design-system codemap (SPA, planner, editor)"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-29
+updated: 2026-05-04
 topic: "frontend design system"
 links:
   - "ADR-0017"
@@ -124,6 +124,32 @@ This is the real styling contract path.
   - `frontend/apps/skriptoteket/src/styles/tailwind-theme.css`
 - SPA CSS entrypoint and primitive classes:
   - `frontend/apps/skriptoteket/src/assets/main.css`
+
+### Current palette contract
+
+- Deep Navy `#082B4C`: `--huleedu-navy`, `text-navy`, `border-navy`, structural and long-form text.
+- Warm Terracotta `#C94F32`: `--huleedu-terracotta`, brand accent only.
+- Verdigris Teal `#3F7F78`: `--huleedu-action`, `bg-action`, `text-action`, functional action,
+  selected state, focus, and calm confirmation.
+- Button text white is exposed as `--button-primary-text` / `text-button-primary-text` so filled
+  action controls do not rely on Tailwind default color names.
+- Canvas/Paper `#FAFAF6`: `--huleedu-paper` / `--huleedu-canvas`, light warm surface.
+- Panel shell: `--huleedu-panel` / `--huleedu-panel-muted`, exposed as `bg-panel` and
+  `bg-panel-muted` for translucent canvas-toned panels and internal rows.
+- Critical burgundy `#4D1521`: `--huleedu-critical`, `bg-critical`, `text-critical`, destructive
+  and truly critical decisions.
+- Warning amber remains `--huleedu-warning`; warning is not terracotta or teal.
+
+`--huleedu-burgundy` and `burgundy` utilities remain compatibility aliases for older call sites. New
+code should prefer `action`, `terracotta`, `critical`, `warning`, or `error` according to the semantic role.
+
+Surface rule: use the light canvas as the uniform base. Avoid large white panels stacked over canvas unless
+the object needs deliberate contrast; use `bg-panel` for panel shells and `bg-panel-muted` or semantic tints
+for rows/highlights so pages do not feel blotchy.
+
+Action hierarchy rule: Verdigris fill is for true primary CTA or selected/active state. Secondary actions
+that still belong to the action family, such as share-link creation, use Verdigris border/text treatment and
+semantic icons (`IconLink2` for link/share), not primary fill or generic plus symbols.
 
 ## Shared primitive and asset surfaces
 

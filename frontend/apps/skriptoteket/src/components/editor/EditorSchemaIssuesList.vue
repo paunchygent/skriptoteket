@@ -15,14 +15,14 @@ const props = defineProps<EditorSchemaIssuesListProps>();
     v-if="props.issues.length > 0"
     class="space-y-1"
   >
-    <p class="text-xs font-semibold text-burgundy">
+    <p class="text-xs font-semibold text-critical">
       Valideringsfel:
     </p>
     <ul class="space-y-1">
       <li
         v-for="(issue, index) in props.issues"
         :key="index"
-        class="text-xs text-burgundy"
+        class="text-xs text-critical"
       >
         <span
           v-if="issue.path"

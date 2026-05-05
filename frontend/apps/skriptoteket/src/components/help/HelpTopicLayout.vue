@@ -8,7 +8,7 @@ defineProps<{ title: string }>();
   <section class="space-y-3">
     <button
       type="button"
-      class="text-sm text-navy/70 underline hover:text-burgundy"
+      class="text-sm text-navy/70 underline hover:text-action"
       @click="emit('back')"
     >
       ← Till hjälpindex

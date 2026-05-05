@@ -109,7 +109,7 @@ const primaryRecoveryPath = computed(() => {
   font-weight: var(--huleedu-font-semibold);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-terracotta);
 }
 
 .route-recovery__title {

@@ -31,6 +31,10 @@ HULEEDU_CONTAINER_PUBLIC_KEY_PATH = (
     "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH:-"
     "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem}"
 )
+WORKER_FAST_HEALTHCHECK_COMMAND = (
+    "PYTHONPATH=/app/__pypackages__/3.13/lib:/app/src "
+    "python -m skriptoteket.cli.commands.healthcheck_execution_worker_fast"
+)
 
 
 def _service_environment(compose_path: Path, service_name: str) -> dict[str, str]:
@@ -81,10 +85,16 @@ def test_frontend_docker_dev_uses_local_huleedu_gateway_for_shared_auth() -> Non
 
 
 def test_docker_dev_worker_does_not_inherit_host_playwright_platform_override() -> None:
+    compose_payload = yaml.safe_load((ROOT / "compose.yaml").read_text(encoding="utf-8"))
+    worker_service = compose_payload["services"]["worker"]
     worker_environment = _service_environment(ROOT / "compose.yaml", "worker")
 
     assert worker_environment["PLAYWRIGHT_BROWSERS_PATH"] == "/ms-playwright"
     assert worker_environment["PLAYWRIGHT_HOST_PLATFORM_OVERRIDE"] == ""
+    assert worker_service["healthcheck"]["test"] == [
+        "CMD-SHELL",
+        WORKER_FAST_HEALTHCHECK_COMMAND,
+    ]
 
 
 def test_vite_dev_proxy_keeps_public_api_off_huleedu_gateway() -> None:
@@ -104,6 +114,7 @@ def test_vite_dev_proxy_keeps_public_api_off_huleedu_gateway() -> None:
 def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api() -> None:
     compose_payload = yaml.safe_load((ROOT / "compose.prod.yaml").read_text(encoding="utf-8"))
     web_service = compose_payload["services"]["web"]
+    worker_service = compose_payload["services"]["worker"]
     web_environment = web_service["environment"]
 
     assert HULEEDU_PROD_PUBLIC_KEY_DIR_VOLUME in web_service["volumes"]
@@ -123,3 +134,7 @@ def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api(
         web_environment["HULEEDU_INTERNAL_IDENTITY_AUDIENCE"]
         == "${HULEEDU_INTERNAL_IDENTITY_AUDIENCE:-skriptoteket}"
     )
+    assert worker_service["healthcheck"]["test"] == [
+        "CMD-SHELL",
+        WORKER_FAST_HEALTHCHECK_COMMAND,
+    ]

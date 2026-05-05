@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
 
 <template>
   <section
-    class="flex min-h-0 flex-1 flex-col border border-navy bg-white p-3 shadow-brutal-sm"
+    class="flex min-h-0 flex-1 flex-col border border-navy bg-panel p-3 shadow-brutal-sm"
     :class="props.compact ? 'planner-room-canvas-compact' : ''"
   >
     <div
@@ -187,7 +187,7 @@ onBeforeUnmount(() => {
     <div
       ref="canvasViewport"
       data-test="room-canvas-viewport"
-      class="mt-3 min-h-[480px] flex-1 overflow-auto border border-navy/20 bg-white p-3"
+      class="mt-3 min-h-[480px] flex-1 overflow-auto border border-navy/20 bg-panel p-3"
       :class="props.compact ? 'planner-room-canvas-compact-viewport' : ''"
     >
       <div

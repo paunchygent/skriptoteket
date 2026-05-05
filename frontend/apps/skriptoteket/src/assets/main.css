@@ -89,67 +89,71 @@ body.app-shell-game-mode::before {
     }
   }
 
-  /* Standard action button: Navy base → Burgundy fill on hover, 4px press */
+  /* Standard action button: Verdigris action fill, 4px press */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
     @apply border border-navy cursor-pointer transition-colors transition-shadow;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply bg-navy text-canvas shadow-brutal;
+    @apply shadow-brutal;
     @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
   }
 
-  /* Critical CTA: Burgundy base, no Navy fill on hover, 4px press */
+  /* Primary CTA: same action fill as standard primary, reserved for page-level conversion. */
   .btn-cta {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
     @apply border border-navy cursor-pointer transition-colors transition-shadow;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply bg-burgundy text-canvas shadow-brutal;
+    @apply shadow-brutal;
     @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
   }
 
   /* No-fill table/button: Canvas hover + warning highlight, 4px press */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
     @apply border border-navy cursor-pointer transition-colors transition-shadow;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply bg-white text-navy shadow-brutal;
+    @apply bg-panel text-navy shadow-brutal;
     @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
   }
 
   /* Planner button recipes - shared Klassrumskartan surface treatments */
   .planner-btn-ghost {
-    @apply border-navy/30 bg-white shadow-none;
+    @apply border-navy/30 bg-panel shadow-none;
   }
 
   .planner-btn-ghost-soft {
-    @apply border-navy/25 bg-white shadow-none;
+    @apply border-navy/25 bg-panel shadow-none;
   }
 
   .planner-btn-ghost-subtle {
-    @apply border-navy/20 bg-white shadow-none;
+    @apply border-navy/20 bg-panel shadow-none;
   }
 
   .planner-btn-ghost-canvas {
-    @apply border-navy/30 bg-canvas shadow-none;
+    @apply border-navy/30 bg-panel shadow-none;
   }
 
   .planner-btn-ghost-muted {
-    @apply text-navy/50 hover:text-burgundy disabled:text-navy/40;
+    @apply text-navy/50 hover:text-action disabled:text-navy/40;
   }
 
   .planner-btn-danger {
-    @apply border-burgundy/40 bg-white text-burgundy shadow-none;
+    @apply border-critical/40 bg-panel text-critical shadow-none;
   }
 
   .planner-btn-danger-soft {
-    @apply border-burgundy/30 bg-white text-burgundy shadow-none;
+    @apply border-critical/30 bg-panel text-critical shadow-none;
   }
 
   .planner-btn-alert {
-    @apply border-amber-400/70 bg-white text-amber-900 shadow-none;
+    @apply border-amber-400/70 bg-panel text-amber-900 shadow-none;
   }
 
   .planner-btn-ghost-sm {
@@ -185,7 +189,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-link-button {
-    @apply font-semibold text-navy underline underline-offset-2 transition-colors hover:text-burgundy;
+    @apply font-semibold text-navy underline underline-offset-2 transition-colors hover:text-action;
   }
 
   .planner-icon-dismiss {
@@ -197,7 +201,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-text-link-danger {
-    @apply text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-burgundy underline;
+    @apply text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-critical underline;
   }
 
   .planner-text-link-muted {
@@ -213,7 +217,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-row-remove-button {
-    @apply mt-0.5 shrink-0 text-burgundy opacity-60 transition-opacity hover:opacity-100;
+    @apply mt-0.5 shrink-0 text-critical opacity-60 transition-opacity hover:opacity-100;
   }
 
   .planner-grid-node-button {
@@ -221,31 +225,31 @@ body.app-shell-game-mode::before {
   }
 
   .planner-marker-button {
-    @apply absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center border border-burgundy bg-white text-[11px] font-semibold text-burgundy;
+    @apply absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center border border-action bg-panel text-[11px] font-semibold text-action;
   }
 
   .planner-choice-button-active {
-    @apply border-burgundy bg-burgundy/10 text-burgundy;
+    @apply border-action bg-action/10 text-action;
   }
 
   .planner-choice-button-active-raised {
-    @apply border-burgundy bg-burgundy/10 text-burgundy shadow-brutal-sm;
+    @apply border-action bg-action/10 text-action shadow-brutal-sm;
   }
 
   .planner-choice-button-idle {
-    @apply border-navy/20 bg-white text-navy hover:bg-canvas;
+    @apply border-navy/20 bg-panel text-navy hover:bg-action/5;
   }
 
   .planner-choice-button-idle-muted {
-    @apply border-navy/20 bg-white text-navy/70;
+    @apply border-navy/20 bg-panel text-navy/70;
   }
 
   .planner-choice-button-strong {
-    @apply border-navy bg-white text-navy hover:bg-canvas;
+    @apply border-navy bg-panel text-navy hover:bg-action/5;
   }
 
   .planner-tool-rail {
-    @apply border border-navy bg-white px-2 py-2 shadow-brutal-sm;
+    @apply border border-navy bg-panel px-2 py-2 shadow-brutal-sm;
   }
 
   .planner-rules-layout-row {
@@ -270,7 +274,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-rules-summary-panel {
-    @apply min-h-[11.5rem] border border-navy bg-white px-3 py-2.5 shadow-brutal-sm;
+    @apply min-h-[11.5rem] border border-navy bg-panel px-3 py-2.5 shadow-brutal-sm;
   }
 
   .planner-rules-summary-cards {
@@ -278,16 +282,16 @@ body.app-shell-game-mode::before {
   }
 
   .planner-rules-summary-card {
-    @apply w-[14.75rem] max-w-full flex-none border border-navy/20 bg-white px-3 py-2.5;
+    @apply w-[14.75rem] max-w-full flex-none border border-navy/20 bg-panel-muted px-3 py-2.5;
   }
 
   .planner-rules-summary-card-editing {
-    @apply border-burgundy bg-burgundy/5;
+    @apply border-action bg-action/5;
   }
 
   .planner-overview-panel,
   .planner-desktop-overview-section {
-    @apply grid border border-navy/20 bg-canvas p-3.5;
+    @apply grid border border-navy/20 bg-panel p-3.5;
     grid-template-rows: minmax(3.5rem, auto) minmax(4.75rem, auto) 15rem auto;
     gap: 0.625rem;
   }
@@ -322,7 +326,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-overview-setup-panel {
-    @apply grid gap-0 border border-navy bg-white p-3.5 shadow-brutal-sm;
+    @apply grid gap-0 border border-navy bg-panel p-3.5 shadow-brutal-sm;
   }
 
   .planner-overview-setup-panel-desktop {
@@ -354,15 +358,15 @@ body.app-shell-game-mode::before {
   }
 
   .planner-overview-setup-action {
-    @apply inline-flex min-h-[2.25rem] items-center justify-center gap-1.5 border border-navy bg-white px-3 py-1 text-xs font-semibold text-navy transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-[2.25rem] items-center justify-center gap-1.5 border border-navy bg-panel-muted px-3 py-1 text-xs font-semibold text-navy transition-colors hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .planner-overview-setup-action-danger {
-    @apply border-burgundy text-burgundy hover:bg-burgundy/5;
+    @apply border-critical text-critical hover:bg-critical/5;
   }
 
   .planner-overview-setup-empty {
-    @apply border border-dashed border-navy/25 bg-canvas px-3 py-2 text-xs text-navy/60;
+    @apply border border-dashed border-navy/25 bg-panel-muted px-3 py-2 text-xs text-navy/60;
   }
 
   .planner-share-export-overview-desktop .planner-share-export-inline-panel {
@@ -379,7 +383,7 @@ body.app-shell-game-mode::before {
 
   .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] > section {
     border-bottom: 0;
-    border-right: 1px solid rgb(28 46 74 / 0.15);
+    border-right: 1px solid rgb(8 43 76 / 0.15);
   }
 
   .planner-share-export-overview-desktop [data-test="planner-share-export-scroll"] > section:last-child {
@@ -400,9 +404,13 @@ body.app-shell-game-mode::before {
   }
 
   .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"][aria-pressed="true"] {
-    border-color: var(--huleedu-navy);
-    background-color: var(--huleedu-navy);
-    color: var(--huleedu-canvas);
+    border-color: var(--huleedu-action);
+    background-color: var(--huleedu-action);
+    color: var(--button-primary-text);
+  }
+
+  .planner-share-export-overview-desktop [data-test^="planner-share-export-scope-"][aria-pressed="true"] * {
+    color: inherit;
   }
 
   .planner-share-export-overview-desktop .planner-share-export-file-option {
@@ -419,16 +427,16 @@ body.app-shell-game-mode::before {
      PANEL PRIMITIVES - Brutalist hierarchy
 
      Rule of thumb:
-       - Outer panels: `border border-navy bg-white shadow-brutal*`
+       - Outer panels: `border border-navy bg-panel shadow-brutal*`
        - Nested panels: thick inset border, no shadow (`panel-inset*`)
      ════════════════════════════════════════════════════════════════════════ */
 
   .panel-inset {
-    @apply border-2 border-navy/20 bg-white shadow-none;
+    @apply border-2 border-navy/20 bg-panel-muted shadow-none;
   }
 
   .panel-inset-canvas {
-    @apply border-2 border-navy/20 bg-canvas shadow-none;
+    @apply border-2 border-navy/20 bg-panel shadow-none;
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -439,7 +447,7 @@ body.app-shell-game-mode::before {
        - info:    navy / 90% + "i" icon (white)
        - success: pine green (`--huleedu-success`) / 90% + check icon (white)
        - warning: amber (`--huleedu-warning`) / 90% + warning icon (navy text for contrast)
-       - failure: burgundy / 90% + × icon (white)
+       - failure: critical / 90% + × icon (white)
      ════════════════════════════════════════════════════════════════════════ */
 
   .toast-container {
@@ -508,7 +516,8 @@ body.app-shell-game-mode::before {
   }
 
   .toast-failure {
-    @apply bg-burgundy/90 text-canvas;
+    @apply bg-critical/90;
+    color: var(--button-primary-text);
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -547,7 +556,7 @@ body.app-shell-game-mode::before {
   }
 
   .system-message-info {
-    @apply border-navy bg-white text-navy;
+    @apply border-navy bg-panel text-navy;
   }
 
   .system-message-success {
@@ -608,12 +617,14 @@ body.app-shell-game-mode::before {
     @apply inline-flex items-center justify-center;
     @apply h-8 px-3;
     @apply text-[11px] font-semibold uppercase tracking-wide;
-    @apply text-canvas bg-navy border border-navy;
+    @apply border border-navy;
     @apply transition-colors;
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
   }
 
   .btn-inline-primary:hover:not(:disabled) {
-    @apply bg-burgundy;
+    @apply ring-2 ring-action/40;
   }
 
   .btn-inline-primary:disabled {
@@ -722,11 +733,11 @@ body.app-shell-game-mode::before {
 
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:not(:disabled):not(:active):hover {
-    @apply bg-burgundy;
+    @apply ring-2 ring-action/40;
   }
 
   .btn-cta:not(:disabled):not(:active):hover {
-    @apply ring-2 ring-burgundy/40;
+    @apply ring-2 ring-action/40;
   }
 
   .btn-ghost:not(:disabled):not(:active):hover {
@@ -896,7 +907,7 @@ body.app-shell-game-mode::before {
   min-height: 0;
   flex-direction: column;
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: white;
+  background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-3);
   box-shadow: var(--huleedu-shadow-brutal-xs);
 }
@@ -913,7 +924,7 @@ body.app-shell-game-mode::before {
   align-self: start;
   flex-direction: column;
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: white;
+  background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-3);
   box-shadow: var(--huleedu-shadow-brutal-xs);
 }

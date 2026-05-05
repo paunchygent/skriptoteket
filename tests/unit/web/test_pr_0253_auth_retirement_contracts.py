@@ -38,19 +38,22 @@ RETIRED_AUTH_SURFACE_SCAN_ROOTS = (
     ROOT / "tests" / "unit" / "web",
 )
 
+LOCAL_AUTH_API_PREFIX = "/api/v1/auth"
+LOCAL_PROFILE_API_PREFIX = "/api/v1/profile"
+
 RETIRED_LOCAL_AUTH_PATHS = {
-    "/api/v1/auth/login",
-    "/api/v1/auth/logout",
-    "/api/v1/auth/me",
-    "/api/v1/auth/csrf",
-    "/api/v1/auth/register",
-    "/api/v1/auth/register/validate",
-    "/api/v1/auth/resend-verification",
-    "/api/v1/auth/verify-email",
-    "/api/v1/auth/forgot-password",
-    "/api/v1/auth/reset-password",
-    "/api/v1/profile/password",
-    "/api/v1/profile/email",
+    f"{LOCAL_AUTH_API_PREFIX}/login",
+    f"{LOCAL_AUTH_API_PREFIX}/logout",
+    f"{LOCAL_AUTH_API_PREFIX}/me",
+    f"{LOCAL_AUTH_API_PREFIX}/csrf",
+    f"{LOCAL_AUTH_API_PREFIX}/register",
+    f"{LOCAL_AUTH_API_PREFIX}/register/validate",
+    f"{LOCAL_AUTH_API_PREFIX}/resend-verification",
+    f"{LOCAL_AUTH_API_PREFIX}/verify-email",
+    f"{LOCAL_AUTH_API_PREFIX}/forgot-password",
+    f"{LOCAL_AUTH_API_PREFIX}/reset-password",
+    f"{LOCAL_PROFILE_API_PREFIX}/password",
+    f"{LOCAL_PROFILE_API_PREFIX}/email",
 }
 
 RETIRED_LOCAL_AUTH_SCHEMAS = {
@@ -205,15 +208,15 @@ def test_frontend_source_does_not_call_local_auth_or_mint_gateway_identity_heade
         "/v1/auth/reset-password",
         "/v1/auth/request-email-verification",
         "/v1/auth/verify-email",
-        "/api/v1/auth/login",
-        "/api/v1/auth/logout",
-        "/api/v1/auth/register",
-        "/api/v1/auth/forgot-password",
-        "/api/v1/auth/reset-password",
-        "/api/v1/auth/verify-email",
-        "/api/v1/auth/resend-verification",
-        "/api/v1/auth/csrf",
-        "/api/v1/auth/me",
+        f"{LOCAL_AUTH_API_PREFIX}/login",
+        f"{LOCAL_AUTH_API_PREFIX}/logout",
+        f"{LOCAL_AUTH_API_PREFIX}/register",
+        f"{LOCAL_AUTH_API_PREFIX}/forgot-password",
+        f"{LOCAL_AUTH_API_PREFIX}/reset-password",
+        f"{LOCAL_AUTH_API_PREFIX}/verify-email",
+        f"{LOCAL_AUTH_API_PREFIX}/resend-verification",
+        f"{LOCAL_AUTH_API_PREFIX}/csrf",
+        f"{LOCAL_AUTH_API_PREFIX}/me",
         "X-HuleEdu-Identity-",
     }
     offenders: list[str] = []
@@ -237,7 +240,7 @@ def test_active_playwright_command_surfaces_do_not_call_retired_local_auth() -> 
     active_paths = {ROOT / (module.replace(".", "/") + ".py") for module in active_modules}
     active_paths.add(ROOT / "scripts" / "_playwright_huleedu_auth.py")
 
-    retired_fragments = {"/api/v1/auth/login", "/api/v1/auth/csrf"}
+    retired_fragments = {f"{LOCAL_AUTH_API_PREFIX}/login", f"{LOCAL_AUTH_API_PREFIX}/csrf"}
     offenders: list[str] = []
     for path in sorted(active_paths):
         text = path.read_text(encoding="utf-8")

@@ -64,7 +64,7 @@ function onInput(event: Event): void {
         :aria-invalid="error ? 'true' : 'false'"
         :aria-describedby="hint || error ? descriptionId : undefined"
         class="w-full border bg-white px-3 py-2 pr-11 shadow-brutal-sm text-navy"
-        :class="error ? 'border-burgundy' : 'border-navy'"
+        :class="error ? 'border-critical' : 'border-navy'"
         @input="onInput"
       >
 
@@ -87,7 +87,7 @@ function onInput(event: Event): void {
       v-if="hint || error"
       :id="descriptionId"
       class="text-xs"
-      :class="error ? 'text-burgundy' : 'text-navy/60'"
+      :class="error ? 'text-critical' : 'text-navy/60'"
     >
       {{ error ?? hint }}
     </p>

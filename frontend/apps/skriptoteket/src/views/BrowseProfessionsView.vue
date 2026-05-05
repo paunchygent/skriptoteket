@@ -53,14 +53,14 @@ onMounted(() => {
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
     >
       {{ errorMessage }}
     </div>
 
     <ul
       v-else
-      class="list-none m-0 p-0 border border-navy bg-white"
+      class="list-none m-0 p-0 border border-navy bg-panel"
     >
       <li
         v-for="profession in professions"
@@ -72,7 +72,7 @@ onMounted(() => {
           class="group flex justify-between items-center p-4 no-underline text-inherit hover:bg-canvas transition-colors"
         >
           <span class="font-medium">{{ profession.label }}</span>
-          <span class="text-navy/40 group-hover:text-burgundy transition-colors">→</span>
+          <span class="text-navy/40 group-hover:text-action transition-colors">→</span>
         </RouterLink>
       </li>
     </ul>

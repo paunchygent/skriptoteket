@@ -52,7 +52,7 @@ const emit = defineEmits<{
 
     <span
       v-if="selectionOrder !== null"
-      class="pointer-events-none absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-burgundy bg-white text-[11px] font-semibold text-burgundy shadow-brutal-sm"
+      class="pointer-events-none absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-white text-[11px] font-semibold text-action shadow-brutal-sm"
       :data-test="`rules-seat-order-${seat.id}`"
     >
       {{ selectionOrder }}

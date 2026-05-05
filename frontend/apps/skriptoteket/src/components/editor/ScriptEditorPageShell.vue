@@ -150,7 +150,7 @@ const {
     <!-- Loading state -->
     <div
       v-if="isLoading"
-      class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="flex items-center gap-3 p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar editorn...</span>
@@ -159,7 +159,7 @@ const {
     <!-- Error state -->
     <div
       v-else-if="!editor"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Det gick inte att ladda editorn.
     </div>

@@ -270,7 +270,7 @@ watch(
 
 <template>
   <form
-    class="p-4 border border-navy bg-white shadow-brutal-sm space-y-4"
+    class="p-4 border border-navy bg-panel shadow-brutal-sm space-y-4"
     @submit.prevent="onSubmit"
   >
     <div

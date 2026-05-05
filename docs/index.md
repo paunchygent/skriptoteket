@@ -1122,6 +1122,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0252-st-28-02-auth-entry-return-to-origin-on-huleedu-session.md`
 - `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md`
 - `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`
+- `docs/backlog/prs/pr-0295-st-11-26-huleedu-palette-token-refresh.md`
 
 ### Backlog Stories
 
@@ -1259,6 +1260,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-11-23-tool-owner-and-maintainer-permissions.md`
 - `docs/backlog/stories/story-11-24-home-view-messaging-reset-for-curated-library.md`
 - `docs/backlog/stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md`
+- `docs/backlog/stories/story-11-26-huleedu-palette-token-refresh.md`
 - `docs/backlog/stories/story-12-01-multi-file-upload.md`
 - `docs/backlog/stories/story-12-02-native-pdf-output-helper.md`
 - `docs/backlog/stories/story-12-03-personalized-tool-settings.md`

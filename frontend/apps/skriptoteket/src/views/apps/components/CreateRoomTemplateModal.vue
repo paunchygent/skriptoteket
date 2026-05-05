@@ -138,7 +138,7 @@ async function removeTemplate(): Promise<void> {
     />
     <div class="room-template-modal-positioner relative flex min-h-full items-start justify-center py-4">
       <div
-        class="room-template-modal-panel flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-white shadow-brutal 2xl:max-w-[1680px]"
+        class="room-template-modal-panel flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-panel shadow-brutal 2xl:max-w-[1680px]"
         data-test="room-template-modal-panel"
       >
         <div class="room-template-modal-header flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
@@ -214,7 +214,7 @@ async function removeTemplate(): Promise<void> {
           </div>
         </div>
 
-        <div class="room-template-modal-footer sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div class="room-template-modal-footer sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-panel px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
           <div>
             <button
               v-if="isEditing"

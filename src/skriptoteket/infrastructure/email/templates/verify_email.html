@@ -23,11 +23,11 @@
         <tr>
             <td align="center" style="padding: 48px 16px;">
                 <!-- Main content card with brutalist shadow -->
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 512px; background-color: #FFFFFF; border: 1px solid #1C2E4A; box-shadow: 6px 6px 0px 0px #1C2E4A;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 512px; background-color: #FFFFFF; border: 1px solid #082B4C; box-shadow: 6px 6px 0px 0px #082B4C;">
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 32px 32px 24px 32px; border-bottom: 1px solid rgba(28, 46, 74, 0.3);">
-                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #1C2E4A;">
+                        <td style="padding: 32px 32px 24px 32px; border-bottom: 1px solid rgba(8, 43, 76, 0.3);">
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #082B4C;">
                                 Skriptoteket
                             </p>
                         </td>
@@ -36,22 +36,22 @@
                     <!-- Body content -->
                     <tr>
                         <td style="padding: 32px;">
-                            <h1 style="margin: 0 0 24px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 600; color: #1C2E4A; line-height: 1.25; letter-spacing: -0.01em;">
+                            <h1 style="margin: 0 0 24px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 600; color: #082B4C; line-height: 1.25; letter-spacing: -0.01em;">
                                 Hej {{ first_name }}!
                             </h1>
 
-                            <p style="margin: 0 0 16px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.625; color: #1C2E4A;">
+                            <p style="margin: 0 0 16px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.625; color: #082B4C;">
                                 Tack för att du registrerade dig på Skriptoteket.
                             </p>
 
-                            <p style="margin: 0 0 32px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.625; color: #1C2E4A;">
+                            <p style="margin: 0 0 32px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.625; color: #082B4C;">
                                 Klicka på knappen nedan för att verifiera din e-postadress:
                             </p>
 
                             <!-- CTA Button - huleedu-btn style -->
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 32px 0;">
                                 <tr>
-                                    <td style="background-color: #4D1521; border-radius: 2px;">
+                                    <td style="background-color: #3F7F78; border-radius: 2px;">
                                         <a href="{{ verification_url }}"
                                            style="display: inline-block; padding: 16px 32px; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 600; color: #FAFAF6; text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em;">
                                             Verifiera e-postadress
@@ -60,15 +60,15 @@
                                 </tr>
                             </table>
 
-                            <p style="margin: 0 0 12px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(28, 46, 74, 0.6);">
+                            <p style="margin: 0 0 12px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(8, 43, 76, 0.6);">
                                 Om knappen inte fungerar
                             </p>
 
-                            <p style="margin: 0 0 24px 0; font-family: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace; font-size: 13px; line-height: 1.5; color: #1C2E4A; word-break: break-all; background-color: #FAFAF6; padding: 16px; border: 1px solid rgba(28, 46, 74, 0.3);">
+                            <p style="margin: 0 0 24px 0; font-family: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace; font-size: 13px; line-height: 1.5; color: #082B4C; word-break: break-all; background-color: #FAFAF6; padding: 16px; border: 1px solid rgba(8, 43, 76, 0.3);">
                                 {{ verification_url }}
                             </p>
 
-                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.5; color: rgba(28, 46, 74, 0.6);">
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.5; color: rgba(8, 43, 76, 0.6);">
                                 Länken är giltig i {{ expiry_hours }} timmar.
                             </p>
                         </td>
@@ -76,8 +76,8 @@
 
                     <!-- Footer -->
                     <tr>
-                        <td style="padding: 24px 32px; border-top: 1px solid rgba(28, 46, 74, 0.3); background-color: #FAFAF6;">
-                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.5; color: rgba(28, 46, 74, 0.6);">
+                        <td style="padding: 24px 32px; border-top: 1px solid rgba(8, 43, 76, 0.3); background-color: #FAFAF6;">
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.5; color: rgba(8, 43, 76, 0.6);">
                                 Om du inte registrerade dig på Skriptoteket kan du ignorera detta meddelande.
                             </p>
                         </td>
@@ -88,7 +88,7 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 512px;">
                     <tr>
                         <td style="padding: 24px 32px; text-align: center;">
-                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(28, 46, 74, 0.4);">
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(8, 43, 76, 0.4);">
                                 Skriptoteket är en del av HuleEdu
                             </p>
                         </td>

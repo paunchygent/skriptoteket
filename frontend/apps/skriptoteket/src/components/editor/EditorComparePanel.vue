@@ -147,7 +147,7 @@ const diffItems = computed(() => {
 
       <div
         v-else-if="errorMessage"
-        class="h-full w-full flex items-center justify-center p-4 panel-inset text-sm text-burgundy"
+        class="h-full w-full flex items-center justify-center p-4 panel-inset text-sm text-critical"
         data-editor-state="diff-error"
       >
         {{ errorMessage }}

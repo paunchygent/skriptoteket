@@ -105,7 +105,7 @@ function handleDropdownSelect(actionId: string): void {
         <button
           v-if="canRequestChanges"
           type="button"
-          :class="[actionButtonClass, 'text-burgundy']"
+          :class="[actionButtonClass, 'text-critical']"
           :disabled="isSubmitting"
           @click="emit('action', 'request_changes')"
         >

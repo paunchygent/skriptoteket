@@ -181,7 +181,7 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Laddar...
     </div>
@@ -195,20 +195,20 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Pågående
         </h2>
-        <ul class="border border-navy bg-white shadow-brutal-sm">
+        <ul class="border border-navy bg-panel shadow-brutal-sm">
           <li
             v-for="tool in inProgressTools"
             :key="tool.id"
             class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-canvas transition-colors">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-action/5 transition-colors">
               <div class="flex flex-col gap-1 min-w-0 max-w-[40rem]">
                 <span class="text-sm font-medium text-navy">{{ tool.title }}</span>
                 <span class="text-xs text-navy/60 break-words">{{ truncate(tool.summary, 80) }}</span>
               </div>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
-                class="shrink-0 text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
+                class="shrink-0 text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
               >
                 Redigera
               </RouterLink>
@@ -225,13 +225,13 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Klara med ändringar
         </h2>
-        <ul class="border border-navy bg-white shadow-brutal-sm">
+        <ul class="border border-navy bg-panel shadow-brutal-sm">
           <li
             v-for="tool in readyToolsWithPendingReview"
             :key="tool.id"
             class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-canvas transition-colors">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-action/5 transition-colors">
               <div class="flex flex-col gap-1 min-w-0 max-w-[40rem]">
                 <span class="text-sm font-medium text-navy">{{ tool.title }}</span>
                 <span class="text-xs text-navy/60 break-words">{{ truncate(tool.summary, 80) }}</span>
@@ -252,7 +252,7 @@ onMounted(() => {
                 </div>
                 <RouterLink
                   :to="`/admin/tools/${tool.id}`"
-                  class="text-sm font-semibold text-burgundy border-b border-burgundy/40 pb-0.5 hover:border-burgundy transition-colors"
+                  class="text-sm font-semibold text-action border-b border-action/40 pb-0.5 hover:border-action transition-colors"
                 >
                   Granska
                 </RouterLink>
@@ -270,13 +270,13 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Klara
         </h2>
-        <ul class="border border-navy bg-white shadow-brutal-sm">
+        <ul class="border border-navy bg-panel shadow-brutal-sm">
           <li
             v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"
             class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-canvas transition-colors">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-action/5 transition-colors">
               <div class="flex flex-col gap-1 min-w-0 max-w-[40rem]">
                 <span class="text-sm font-medium text-navy">{{ tool.title }}</span>
                 <span class="text-xs text-navy/60 break-words">{{ truncate(tool.summary, 80) }}</span>
@@ -297,7 +297,7 @@ onMounted(() => {
                 </div>
                 <RouterLink
                   :to="`/admin/tools/${tool.id}`"
-                  class="text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
+                  class="text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
                 >
                   Redigera
                 </RouterLink>

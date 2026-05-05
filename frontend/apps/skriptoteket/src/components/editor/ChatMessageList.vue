@@ -60,7 +60,7 @@ async function copyText(text: string): Promise<void> {
       :key="message.id"
       :class="[
         'py-2 pl-3',
-        message.role === 'user' ? 'border-l-2 border-burgundy/60' : 'border-l-2 border-navy/30',
+        message.role === 'user' ? 'border-l-2 border-terracotta/60' : 'border-l-2 border-navy/30',
       ]"
     >
       <div class="flex items-center justify-between gap-2">
@@ -70,7 +70,7 @@ async function copyText(text: string): Promise<void> {
           </span>
           <span
             v-if="message.role === 'assistant' && message.status === 'failed'"
-            class="text-[11px] font-semibold text-burgundy/70"
+            class="text-[11px] font-semibold text-critical/70"
           >
             Misslyckades
           </span>

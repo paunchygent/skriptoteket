@@ -18,7 +18,7 @@ defineProps<{
 </script>
 
 <template>
-  <details class="border border-navy bg-white p-4 shadow-brutal-sm">
+  <details class="border border-navy bg-panel p-4 shadow-brutal-sm">
     <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
       <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
         Förhandsvisning
@@ -28,7 +28,7 @@ defineProps<{
       </span>
     </summary>
 
-    <div class="relative mt-4 overflow-auto border border-navy/20 bg-white p-4">
+    <div class="relative mt-4 overflow-auto border border-navy/20 bg-panel p-4">
       <RoomSceneSurface
         :grid="roomGrid"
         :seats="seats"

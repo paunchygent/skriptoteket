@@ -79,8 +79,7 @@ def _ensure_draft_for_tool(
     Returns the version_id of the draft.
     """
     # Get CSRF token
-    csrf = context.request.get(f"{base_url}/api/v1/auth/csrf")
-    csrf_token = csrf.json()["csrf_token"]
+    csrf_token = "huleedu-gateway-context"
 
     # Get tool ID
     tool = context.request.get(f"{base_url}/api/v1/tools/{tool_slug}")

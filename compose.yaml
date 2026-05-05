@@ -103,7 +103,10 @@ services:
       - vault_data:/var/lib/skriptoteket/vault
     healthcheck:
       test:
-        ["CMD", "pdm", "run", "python", "-m", "skriptoteket.cli", "healthcheck-execution-worker"]
+        [
+          "CMD-SHELL",
+          "PYTHONPATH=/app/__pypackages__/3.13/lib:/app/src python -m skriptoteket.cli.commands.healthcheck_execution_worker_fast",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

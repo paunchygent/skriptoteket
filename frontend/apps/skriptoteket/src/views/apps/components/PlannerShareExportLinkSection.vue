@@ -10,7 +10,7 @@
 
 import { computed } from "vue";
 
-import { IconCopy, IconPlus, IconTrash } from "../../../components/icons";
+import { IconCopy, IconLink2, IconTrash } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
@@ -82,7 +82,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
       </h3>
       <button
         type="button"
-        class="planner-share-export-link-create-button grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border border-navy bg-navy px-2.5 text-left text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:opacity-55"
+        class="planner-share-export-link-create-button grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-[4px] border border-action/60 bg-canvas/40 px-2.5 text-left text-action transition-colors hover:border-action hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-55"
         :disabled="isCreateActionBusy"
         :data-test="createShareTestId"
         :aria-busy="isCreateActionBusy ? 'true' : undefined"
@@ -93,7 +93,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
           v-if="isCreateActionBusy"
           :size="12"
         />
-        <IconPlus
+        <IconLink2
           v-else
           :size="13"
         />
@@ -120,13 +120,13 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
           :disabled="isCreateActionBusy"
           :busy="isCreateActionBusy"
           busy-label="Skapar länk"
-          tone="primary"
+          tone="secondary"
           class="min-w-[8.5rem]"
           :data-test="createShareTestId"
           @click="emit('create-share')"
         >
           <template #leading>
-            <IconPlus :size="10" />
+            <IconLink2 :size="10" />
           </template>
         </UiDenseActionButton>
       </div>
@@ -135,7 +135,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
     <div class="border-t border-navy/10 px-3.5 py-2 md:hidden">
       <button
         type="button"
-        class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-navy bg-navy px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-canvas disabled:cursor-not-allowed disabled:opacity-50"
+        class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-action/60 bg-canvas/40 px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-action transition-colors hover:border-action hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-50"
         :disabled="isCreateActionBusy"
         :data-test="createShareMobileTestId"
         :aria-busy="isCreateActionBusy ? 'true' : undefined"
@@ -146,7 +146,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
           v-if="isCreateActionBusy"
           :size="12"
         />
-        <IconPlus
+        <IconLink2
           v-else
           :size="12"
         />
@@ -171,7 +171,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
         </p>
         <p
           v-if="shareErrorMessage"
-          class="border-b border-burgundy/20 bg-burgundy/5 px-3.5 py-2 text-[11px] font-semibold text-burgundy"
+          class="border-b border-critical/20 bg-critical/5 px-3.5 py-2 text-[11px] font-semibold text-critical"
           data-test="planner-share-error"
         >
           {{ shareErrorMessage }}
@@ -212,7 +212,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
             <div class="flex min-w-max items-center justify-end gap-1.5">
               <button
                 type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-white text-navy transition-colors hover:border-navy/35 hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-navy/20 bg-canvas/40 text-navy transition-colors hover:border-action/45 hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
                 :disabled="!share.public_url"
                 :data-test="`planner-share-copy-${share.id}`"
                 title="Kopiera länk till urklipp"
@@ -226,7 +226,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
               <button
                 v-if="showRevokeAction"
                 type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-burgundy/30 bg-white text-burgundy transition-colors hover:bg-burgundy/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-critical/30 bg-canvas/40 text-critical transition-colors hover:bg-critical/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
                 :disabled="revokingShareId === share.id"
                 :data-test="`planner-share-revoke-${share.id}`"
                 title="Återkalla länken"

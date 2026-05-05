@@ -415,7 +415,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="border border-navy bg-white shadow-brutal-sm p-4 space-y-4">
+  <section class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-4">
     <header class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p
@@ -452,9 +452,9 @@ onUnmounted(() => {
           <span class="font-semibold uppercase tracking-wide">Kvot</span>
           <span>{{ formatBytes(usage.bytes_total) }} / {{ formatBytes(usage.max_total_bytes) }}</span>
         </div>
-        <div class="h-2 border border-navy/30 bg-white">
+        <div class="h-2 border border-navy/30 bg-panel-muted">
           <div
-            class="h-full bg-burgundy"
+            class="h-full bg-action"
             :style="{ width: `${Math.round(usagePercent * 100)}%` }"
           />
         </div>
@@ -505,7 +505,7 @@ onUnmounted(() => {
         >
           <button
             type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-white shadow-none"
+            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-panel shadow-none"
             :disabled="isLoading || manageSelectionDisabled"
             @click="selectAllVisibleManage"
           >
@@ -513,7 +513,7 @@ onUnmounted(() => {
           </button>
           <button
             type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-white shadow-none"
+            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-panel shadow-none"
             :disabled="selectedManageIds.length === 0 || manageSelectionDisabled"
             @click="clearManageSelection"
           >
@@ -522,7 +522,7 @@ onUnmounted(() => {
           <button
             v-if="state === 'active'"
             type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-burgundy/40 text-burgundy bg-white shadow-none"
+            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-critical/40 text-critical bg-panel shadow-none"
             :disabled="selectedManageIds.length === 0 || isMutating || manageSelectionDisabled"
             @click="void onDeleteSelected()"
           >
@@ -586,7 +586,7 @@ onUnmounted(() => {
         <li
           v-for="file in files"
           :key="file.id"
-          class="border border-navy/20 bg-white hover:bg-canvas/30 transition-colors"
+          class="border border-navy/20 bg-panel hover:bg-action/5 transition-colors"
         >
           <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3">
             <label
@@ -604,7 +604,7 @@ onUnmounted(() => {
                 v-if="isPickerMode"
                 :id="`vault-file-select-${file.id}`"
                 type="checkbox"
-                class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-burgundy"
+                class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-action"
                 :aria-label="file.name"
                 :checked="props.modelValue.includes(file.ref)"
                 :disabled="selectionDisabled || file.is_missing_on_disk"
@@ -616,7 +616,7 @@ onUnmounted(() => {
                 v-model="selectedManageIds"
                 type="checkbox"
                 :value="file.id"
-                class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-burgundy"
+                class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-action"
                 :aria-label="file.name"
                 :disabled="manageSelectionDisabled"
               >
@@ -640,7 +640,7 @@ onUnmounted(() => {
                   >·</span>
                   <span
                     v-if="file.is_missing_on_disk"
-                    class="font-semibold text-burgundy"
+                    class="font-semibold text-critical"
                   >Saknas på servern</span>
                 </div>
                 <p
@@ -651,7 +651,7 @@ onUnmounted(() => {
                 </p>
                 <p
                   v-if="file.is_missing_on_disk"
-                  class="mt-1 text-[11px] text-burgundy"
+                  class="mt-1 text-[11px] text-critical"
                 >
                   Filen saknas på servern. Ta bort den eller skapa den igen om du behöver den.
                 </p>
@@ -679,7 +679,7 @@ onUnmounted(() => {
                 >·</span>
                 <span
                   v-if="file.is_missing_on_disk"
-                  class="font-semibold text-burgundy"
+                  class="font-semibold text-critical"
                 >Saknas på servern</span>
               </div>
             </div>
@@ -691,7 +691,7 @@ onUnmounted(() => {
             >
               <button
                 type="button"
-                class="h-[30px] w-[30px] grid place-items-center bg-transparent text-navy/70 hover:bg-canvas/50 hover:text-navy shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+                class="h-[30px] w-[30px] grid place-items-center bg-transparent text-navy/70 hover:bg-canvas/50 hover:text-navy shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
                 :disabled="isMutating"
                 :aria-expanded="openMenuForFileId === file.id"
                 :aria-controls="`vault-file-actions-${file.id}`"
@@ -705,7 +705,7 @@ onUnmounted(() => {
                 <div
                   v-if="openMenuForFileId === file.id"
                   :id="`vault-file-actions-${file.id}`"
-                  class="absolute right-0 mt-2 w-48 border border-navy bg-white shadow-brutal-sm z-50"
+                  class="absolute right-0 mt-2 w-48 border border-navy bg-panel shadow-brutal-sm z-50"
                   role="menu"
                   aria-label="Filåtgärder"
                   @click.stop
@@ -724,7 +724,7 @@ onUnmounted(() => {
                   <button
                     v-if="state === 'active'"
                     type="button"
-                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-burgundy hover:bg-canvas transition-colors"
+                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-critical hover:bg-canvas transition-colors"
                     role="menuitem"
                     :disabled="isMutating"
                     @click="void onDelete(file.id); closeMenu();"

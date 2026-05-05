@@ -184,15 +184,15 @@ describe("CreateRosterModal", () => {
     const wrapper = mount(CreateRosterModal);
     const dropzone = wrapper.get("[data-test='roster-modal-import-dropzone']");
 
-    expect(dropzone.classes()).not.toContain("border-burgundy");
+    expect(dropzone.classes()).not.toContain("border-action");
 
     await dropzone.trigger("dragover", {
       dataTransfer: { files: [], types: ["Files"], dropEffect: "copy" },
     });
-    expect(dropzone.classes()).toContain("border-burgundy");
+    expect(dropzone.classes()).toContain("border-action");
 
     await dropzone.trigger("dragleave", { relatedTarget: null });
-    expect(dropzone.classes()).not.toContain("border-burgundy");
+    expect(dropzone.classes()).not.toContain("border-action");
   });
 
   it("matches edit-mode student ids by name instead of reusing ids by row position", async () => {

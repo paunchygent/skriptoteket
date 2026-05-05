@@ -25,6 +25,9 @@ Target Python is 3.13-3.14.
   400-500 lines.
 - For UI or route changes, run a live functional check and record the exact
   verification in `.codex/handoff.md`.
+- Authenticated browser proof must use the HuleEdu browser-session ceremony and
+  repo helpers/preflight. Never derive auth proof from prior shell snippets,
+  direct product-backend credential POSTs, or local session-cookie shortcuts.
 - Git workflow is merge-only: never rebase, amend, force-push, or hide conflict
   resolution in history.
 - Never commit secrets. Use environment variables and local `.env` files.

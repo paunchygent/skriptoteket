@@ -5,9 +5,16 @@
   --font-mono: var(--huleedu-font-mono);
 
   /* Core brand colors */
+  --color-paper: var(--huleedu-paper);
   --color-canvas: var(--huleedu-canvas);
+  --color-panel: var(--huleedu-panel);
+  --color-panel-muted: var(--huleedu-panel-muted);
   --color-navy: var(--huleedu-navy);
+  --color-terracotta: var(--huleedu-terracotta);
+  --color-action: var(--huleedu-action);
+  --color-critical: var(--huleedu-critical);
   --color-burgundy: var(--huleedu-burgundy);
+  --color-button-primary-text: var(--button-primary-text);
 
   /* Feedback */
   --color-success: var(--huleedu-success);
@@ -18,4 +25,5 @@
   --shadow-brutal: var(--huleedu-shadow-brutal-sm);
   --shadow-brutal-sm: var(--huleedu-shadow-brutal-xs);
   --shadow-brutal-burgundy: 4px 4px 0px 0px var(--huleedu-burgundy);
+  --shadow-brutal-action: 4px 4px 0px 0px var(--huleedu-action);
 }

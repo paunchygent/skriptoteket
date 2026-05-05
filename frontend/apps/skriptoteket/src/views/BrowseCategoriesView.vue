@@ -62,7 +62,7 @@ watch(professionSlug, () => {
     <nav class="flex items-center flex-wrap gap-2 mb-4 text-xs uppercase tracking-wide text-navy/60">
       <RouterLink
         to="/browse/professions"
-        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
+        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
       >
         Yrkesgrupper
       </RouterLink>
@@ -86,7 +86,7 @@ watch(professionSlug, () => {
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
     >
       {{ errorMessage }}
     </div>
@@ -100,7 +100,7 @@ watch(professionSlug, () => {
 
     <ul
       v-else
-      class="list-none m-0 p-0 border border-navy bg-white"
+      class="list-none m-0 p-0 border border-navy bg-panel"
     >
       <li
         v-for="category in categories"
@@ -112,7 +112,7 @@ watch(professionSlug, () => {
           class="group flex justify-between items-center p-4 no-underline text-inherit hover:bg-canvas transition-colors"
         >
           <span class="font-medium">{{ category.label }}</span>
-          <span class="text-navy/40 group-hover:text-burgundy transition-colors">→</span>
+          <span class="text-navy/40 group-hover:text-action transition-colors">→</span>
         </RouterLink>
       </li>
     </ul>

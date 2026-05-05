@@ -166,7 +166,7 @@ onMounted(() => {
 
 .panel {
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: white;
+  background-color: var(--huleedu-panel);
   box-shadow: var(--huleedu-shadow-brutal-sm);
   padding: var(--huleedu-space-4);
 }

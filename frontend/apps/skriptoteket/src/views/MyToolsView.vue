@@ -74,21 +74,21 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-white shadow-brutal-sm text-sm text-error"
+      class="p-4 border border-error bg-panel shadow-brutal-sm text-sm text-error"
     >
       {{ errorMessage }}
     </div>
 
     <div
       v-else-if="!hasTools"
-      class="w-full p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
+      class="w-full p-8 border border-navy bg-panel shadow-brutal flex flex-col items-center text-center space-y-4"
     >
       <div class="space-y-2 max-w-[40rem]">
         <p class="text-navy font-semibold">Du har inga verktyg att underhålla ännu.</p>
@@ -117,7 +117,7 @@ onMounted(() => {
 
     <ul
       v-else
-      class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
+      class="border border-navy bg-panel shadow-brutal-sm divide-y divide-navy/15"
     >
       <ToolListRow
         v-for="tool in tools"

@@ -20,8 +20,8 @@ describe("shared CTA/action-button CSS contract", () => {
 
   it("keeps CTA/button press, shadow, and token roles aligned with the shared contract", () => {
     expect(stylesheet).toContain("@apply active:translate-x-1 active:translate-y-1 active:shadow-none;");
-    expect(stylesheet).toContain("@apply bg-navy text-canvas shadow-brutal;");
-    expect(stylesheet).toContain("@apply bg-burgundy text-canvas shadow-brutal;");
     expect(stylesheet).toContain("@apply bg-white text-navy shadow-brutal;");
+    expect(stylesheet).toContain("background-color: var(--button-primary-bg);");
+    expect(stylesheet).toContain("color: var(--button-primary-text);");
   });
 });

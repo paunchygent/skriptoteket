@@ -2,7 +2,7 @@
 id: "045-huleedu-design-system"
 type: "implementation"
 created: 2025-12-15
-updated: 2026-04-07
+updated: 2026-05-04
 scope: "frontend"
 references:
   - ADR-0027
@@ -81,6 +81,27 @@ Skriptoteket adopts a **Brutalist Academic** design system. This style prioritiz
   - paragraph-heavy helper copy in the default operational view
   - using mobile-first stacking as the source layout for desktop workspaces
 
+### Surface Cohesion (Canvas, Not Patchwork)
+
+- **Problem**: White panels on a warm canvas can create a blotchy page where the background, cards,
+  tables, and repeated rows compete as separate sheets of paper.
+- **Rule**: Treat the light canvas as the shared base surface. Prefer `bg-panel`/paper-toned panel shells
+  and only use pure white when a control, form field, classroom object, or isolated preview needs
+  deliberate contrast.
+- **Use**:
+  - translucent panel shells (`bg-panel`) that keep the canvas from becoming a stack of white blocks
+  - subtle row highlights (`bg-panel-muted`, `bg-action/5`, `bg-warning/10`, `bg-navy/5`) inside the same surface
+  - borders, rules, spacing, and hard shadows for hierarchy
+  - terracotta only as small brand/accent splashes, not as a broad surface or action fill
+  - visible Verdigris fills for true selected/active state, with light text on the fill
+  - Verdigris outline/text treatment for secondary actions such as share-link creation
+- **Avoid**:
+  - large stacks of white panels on top of canvas
+  - alternating white cards and canvas bands where one continuous work surface would be calmer
+  - using broad color fills when a light highlight or border can carry the state
+  - making secondary actions look like primary CTAs just because they use the action color
+  - using plus icons for link/share creation; link/share affordances use link semantics
+
 ---
 
 ## 1. Styling Rules (Alignment)
@@ -102,6 +123,8 @@ These rules keep our docs, skills, and implementation aligned (ADR-0032):
   meaning that cannot be expressed inside the stable shell, action row, or local side surface.
 - **Landing/editorial rule**: for landing pages, overview pages, and other prose-led surfaces, rely on headings,
   section rhythm, and composition before introducing eyebrow labels or compact meta-navigation.
+- **Surface rule**: avoid large white-on-canvas patchwork. Use the light canvas as the uniform base surface and
+  prefer lighter row or object highlights for emphasis.
 
 ### V1 freeze for tool-grade surfaces
 
@@ -132,7 +155,8 @@ frontend/apps/skriptoteket/src/styles/tailwind-theme.css   ← @theme mapping to
 frontend/apps/skriptoteket/src/assets/main.css             ← App entry point
 ```
 
-**Rule**: Never modify `huleedu-design-tokens.css` directly. It is the shared source of truth with HuleEdu.
+**Rule**: Do not modify `huleedu-design-tokens.css` as an incidental component fix. It is the shared source of
+truth with HuleEdu and may only change through an explicit design-token/backlog slice.
 
 ---
 
@@ -147,10 +171,17 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
   --font-serif: var(--huleedu-font-serif);
   --font-mono: var(--huleedu-font-mono);
 
-  /* Core brand colors → use as text-navy, bg-burgundy, etc. */
+  /* Core brand colors → use as text-navy, bg-action, text-critical, etc. */
+  --color-paper: var(--huleedu-paper);
   --color-canvas: var(--huleedu-canvas);
+  --color-panel: var(--huleedu-panel);
+  --color-panel-muted: var(--huleedu-panel-muted);
   --color-navy: var(--huleedu-navy);
+  --color-terracotta: var(--huleedu-terracotta);
+  --color-action: var(--huleedu-action);
+  --color-critical: var(--huleedu-critical);
   --color-burgundy: var(--huleedu-burgundy);
+  --color-button-primary-text: var(--button-primary-text);
 
   /* Feedback colors */
   --color-success: var(--huleedu-success);
@@ -166,7 +197,7 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 **Usage in Vue templates**:
 
 ```vue
-<div class="bg-canvas text-navy border border-navy shadow-brutal-sm">
+<div class="bg-panel text-navy border border-navy shadow-brutal-sm">
   Content with HuleEdu tokens via Tailwind
 </div>
 ```
@@ -177,14 +208,24 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 
 | Token | Tailwind Class | Hex | Usage |
 |-------|----------------|-----|-------|
-| `--huleedu-canvas` | `bg-canvas`, `text-canvas` | #FAFAF6 | Background, button text on dark |
-| `--huleedu-navy` | `bg-navy`, `text-navy`, `border-navy` | #1C2E4A | Primary text, borders, functional buttons |
-| `--huleedu-burgundy` | `bg-burgundy`, `text-burgundy` | #4D1521 | CTA accent, errors, publish actions |
+| `--huleedu-paper` / `--huleedu-canvas` | `bg-paper`, `bg-canvas`, `text-canvas` | #FAFAF6 | Light warm canvas surface, button text on dark when off-white is desired |
+| `--huleedu-panel` / `--huleedu-panel-muted` | `bg-panel`, `bg-panel-muted` | translucent #FAFAF6 | Panel shells and internal row/object highlights that should not read as white cards |
+| `--huleedu-navy` | `bg-navy`, `text-navy`, `border-navy` | #082B4C | Primary text, borders, structure, academic framing |
+| `--huleedu-terracotta` | `bg-terracotta`, `text-terracotta` | #C94F32 | Brand accent only: logo accent, short rules, selected editorial markers |
+| `--huleedu-action` | `bg-action`, `text-action`, `border-action` | #3F7F78 | Functional action, selected state, focus, calm confirmation |
+| `--huleedu-critical` | `bg-critical`, `text-critical` | #4D1521 | Destructive actions, truly critical user decisions |
+| `--huleedu-burgundy` | `bg-burgundy`, `text-burgundy` | #4D1521 | Deprecated compatibility alias for the critical channel; do not use in new code |
 | `--huleedu-success` | `text-success`, `border-success` | #059669 | Success states |
-| `--huleedu-warning` | `text-warning`, `bg-warning/20` | #D97706 | Attention, pending review |
+| `--huleedu-warning` | `text-warning`, `bg-warning/20` | #D97706 | Warning/attention, pending review; never terracotta or teal |
 | `--huleedu-error` | `text-error` | #DC2626 | Error states |
 
-**Opacity variants**: Use Tailwind opacity syntax: `text-navy/60`, `bg-burgundy/10`, `border-navy/20`
+**Opacity variants**: Use Tailwind opacity syntax: `text-navy/60`, `bg-action/10`, `border-navy/20`.
+
+**Long-text rule**: on light warm canvas backgrounds, Deep Navy is the only new palette color for body text.
+Terracotta and Verdigris Teal are accent/action colors, not prose colors.
+
+**Alert split**: Terracotta is not a warning color. Verdigris Teal is not a warning color. Warning stays on the
+amber/ochra channel, while destructive and truly critical decisions stay on the burgundy/error-family channel.
 
 ---
 
@@ -195,14 +236,18 @@ These standardize hover + press depth and reduce drift:
 
 | Variant | Class | Default | Hover | Press |
 |---------|-------|---------|-------|-------|
-| Standard button | `btn-primary` | Navy | Burgundy fill | 4px |
-| Critical CTA | `btn-cta` | Burgundy | Burgundy highlight (no navy fill) | 4px |
+| Standard button | `btn-primary` | Verdigris action | Action focus ring | 4px |
+| Primary CTA | `btn-cta` | Verdigris action | Action focus ring | 4px |
 | No-fill table/action | `btn-ghost` | White/no-fill | Canvas fill + amber highlight | 4px |
 
 Notes:
 
 - Hover styles are gated behind `@media (hover: hover) and (pointer: fine)` to avoid sticky hover on touch devices.
 - Do **not** use amber highlight on `btn-primary` / `btn-cta`.
+- Do **not** use terracotta or teal for destructive/warning semantics. Use `critical`, `error`, or `warning`
+  according to the actual state.
+- Filled active/selected states in shared buttons, rails, segmented controls, and toggles use `action`.
+  Navy remains for structure, borders, and long text.
 - Workspace-heavy tools should maintain a canonical symbol language for repeated operations; do not
   default to long text labels for undo/redo/history/settings/export/zoom-class controls when the
   symbol is well-established.
@@ -310,7 +355,7 @@ Notes:
 ### Card with Shadow
 
 ```vue
-<div class="border border-navy bg-white shadow-brutal-sm p-4">
+<div class="border border-navy bg-panel shadow-brutal-sm p-4">
   Card content
 </div>
 ```
@@ -318,7 +363,7 @@ Notes:
 ### Section Card (larger padding)
 
 ```vue
-<div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-3">
+<div class="border border-navy bg-panel shadow-brutal-sm p-5 space-y-3">
   Section content
 </div>
 ```
@@ -326,7 +371,7 @@ Notes:
 ### Error Message
 
 ```vue
-<div class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy">
+<div class="p-4 border border-error bg-panel shadow-brutal-sm text-sm text-error">
   {{ errorMessage }}
 </div>
 ```
@@ -346,11 +391,11 @@ Notes:
 ### Standard List
 
 ```vue
-<ul class="list-none m-0 p-0 border border-navy bg-white">
+<ul class="list-none m-0 p-0 border border-navy bg-canvas">
   <li v-for="item in items"
       :key="item.id"
       class="border-b border-navy/20 last:border-b-0">
-    <div class="flex justify-between items-center p-4 hover:bg-canvas transition-colors">
+    <div class="flex justify-between items-center p-4 hover:bg-action/5 transition-colors">
       <span class="font-medium text-navy">{{ item.title }}</span>
       <RouterLink :to="item.href" class="...button classes...">
         Öppna
@@ -429,7 +474,7 @@ Notes:
 
 ```vue
 <nav class="flex items-center flex-wrap gap-2 text-xs uppercase tracking-wide text-navy/60">
-  <RouterLink to="/browse" class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors">
+  <RouterLink to="/browse" class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors">
     Yrkesgrupper
   </RouterLink>
   <span class="text-navy/30">/</span>
@@ -488,7 +533,7 @@ Notes:
 ```vue
 <span class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border"
       :class="{
-        'border-burgundy text-burgundy': state === 'active',
+        'border-action text-action': state === 'active',
         'border-warning text-warning': state === 'in_review',
         'border-navy/40 text-navy/70': state === 'draft' || state === 'archived'
       }">
@@ -578,7 +623,7 @@ All Vue files must be **<500 LoC**. Extract logic to composables, UI to child co
 | Inline `style` attributes | Tailwind classes or CSS variables |
 | English error messages | Swedish: "Det gick inte att..." |
 | `rounded-sm` on buttons | Remove radius or use brutalist aesthetic |
-| Ad-hoc feedback colors | Toasts: `info=navy`, `success=--huleedu-success`, `warning=--huleedu-warning`, `failure=burgundy` (90% opacity); validation/blocking errors stay inline |
+| Ad-hoc feedback colors | Toasts: `info=navy`, `success=--huleedu-success`, `warning=--huleedu-warning`, `failure=--huleedu-critical` (90% opacity); validation/blocking errors stay inline |
 | Custom `@keyframes` in `<style>` | Use `animate-spin`, `animate-pulse` utilities |
 
 ---

@@ -36,10 +36,13 @@ ACTIVE_SCRIPT_SCAN_ROOTS = (
     ROOT / ".codex" / "skills",
 )
 
+LOCAL_AUTH_API_PREFIX = "/api/v1/auth"
+RETIRED_LOGIN_PATH = f"{LOCAL_AUTH_API_PREFIX}/login"
+
 RETIRED_LOCAL_AUTH_PATTERNS = {
-    "/api/v1/auth/login",
-    'f"{api_base_url}/api/v1/auth/login"',
-    'f"{base_url}/api/v1/auth/login"',
+    RETIRED_LOGIN_PATH,
+    f'f"{{api_base_url}}{RETIRED_LOGIN_PATH}"',
+    f'f"{{base_url}}{RETIRED_LOGIN_PATH}"',
 }
 
 RETIRED_COOKIE_PATTERN = "skriptoteket_session"

@@ -88,7 +88,7 @@ function handleCardKeydown(event: KeyboardEvent): void {
     :aria-label="isInteractive ? `${actionLabel} ${item.title}` : undefined"
     :class="[
       'relative border transition-all duration-150',
-      isList ? 'px-4 py-3 bg-white border-navy/15' : 'border-navy bg-white shadow-brutal-xs',
+      isList ? 'px-4 py-3 bg-panel border-navy/15' : 'border-navy bg-panel shadow-brutal-xs',
       isCompact ? 'flex flex-col h-full p-3 compact-card' : (!isList && 'p-4'),
       isInteractive ? 'catalog-card-interactive' : '',
     ]"
@@ -129,9 +129,9 @@ function handleCardKeydown(event: KeyboardEvent): void {
         :class="[
           'inline-flex items-center justify-center justify-self-end self-start -mt-1 col-start-2 row-start-1',
           'focus-visible:outline focus-visible:outline-2',
-          'focus-visible:outline-burgundy/40 focus-visible:outline-offset-2',
+          'focus-visible:outline-action/40 focus-visible:outline-offset-2',
           'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-          item.is_favorite ? 'text-burgundy' : 'text-burgundy/70 hover:text-burgundy',
+          item.is_favorite ? 'text-terracotta' : 'text-terracotta/70 hover:text-terracotta',
           'h-6 w-6',
         ]"
         @click.stop="handleToggle"
@@ -173,9 +173,9 @@ function handleCardKeydown(event: KeyboardEvent): void {
         :class="[
           'absolute top-0 inline-flex items-center justify-center',
           'focus-visible:outline focus-visible:outline-2',
-          'focus-visible:outline-burgundy/40 focus-visible:outline-offset-2',
+          'focus-visible:outline-action/40 focus-visible:outline-offset-2',
           'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-          item.is_favorite ? 'text-burgundy' : 'text-burgundy/70 hover:text-burgundy',
+          item.is_favorite ? 'text-terracotta' : 'text-terracotta/70 hover:text-terracotta',
           'right-3 h-6 w-6 sm:right-4 sm:h-7 sm:w-7',
         ]"
         @click.stop="handleToggle"
@@ -223,9 +223,9 @@ function handleCardKeydown(event: KeyboardEvent): void {
           :class="[
             'inline-flex items-center justify-center h-5 w-5',
             'focus-visible:outline focus-visible:outline-2',
-            'focus-visible:outline-burgundy/40 focus-visible:outline-offset-2',
+            'focus-visible:outline-action/40 focus-visible:outline-offset-2',
             'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-            item.is_favorite ? 'text-burgundy' : 'text-burgundy/70 hover:text-burgundy',
+            item.is_favorite ? 'text-terracotta' : 'text-terracotta/70 hover:text-terracotta',
           ]"
           @click.stop="handleToggle"
         >
@@ -275,7 +275,7 @@ function handleCardKeydown(event: KeyboardEvent): void {
 }
 
 .catalog-card-interactive:focus-visible {
-  outline: 2px solid var(--huleedu-burgundy-40);
+  outline: 2px solid var(--huleedu-action-40);
   outline-offset: 2px;
 }
 
@@ -288,7 +288,7 @@ function handleCardKeydown(event: KeyboardEvent): void {
   }
 
   .catalog-card-interactive:hover .catalog-title {
-    color: var(--color-burgundy);
+    color: var(--huleedu-action);
   }
 }
 

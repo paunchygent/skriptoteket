@@ -1,23 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Klassrum med whiteboard, dörr och placerade elever">
   <style>
-    .frame { fill: none; stroke: #1c2e4a; stroke-width: 2; }
-    .fixture { fill: rgba(28, 46, 74, 0.06); stroke: #1c2e4a; stroke-width: 2; }
+    .frame { fill: none; stroke: #082b4c; stroke-width: 2; }
+    .fixture { fill: rgba(8, 43, 76, 0.06); stroke: #082b4c; stroke-width: 2; }
     .fixture-label {
       font-family: "IBM Plex Mono", monospace;
       font-size: 9px;
       font-weight: 700;
-      fill: #1c2e4a;
+      fill: #082b4c;
       fill-opacity: 0.7;
       text-anchor: middle;
     }
     .desk {
       fill: #fafaf6;
-      stroke: #1c2e4a;
+      stroke: #082b4c;
       stroke-width: 2;
     }
     .desk-empty {
-      fill: rgba(28, 46, 74, 0.05);
-      stroke: #1c2e4a;
+      fill: rgba(8, 43, 76, 0.05);
+      stroke: #082b4c;
       stroke-width: 2;
       stroke-dasharray: 3 3;
     }
@@ -25,7 +25,7 @@
       font-family: "IBM Plex Sans", sans-serif;
       font-size: 10px;
       font-weight: 600;
-      fill: #1c2e4a;
+      fill: #082b4c;
       text-anchor: middle;
     }
     .name-empty {

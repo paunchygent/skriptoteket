@@ -95,7 +95,7 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "--page-width-mm:420.0" in bundle.html_content
     assert "justify-content: center;" in bundle.css_content
     assert "font-family: var(--heading-serif);" in bundle.css_content
-    assert "background: var(--brand-burgundy);" in bundle.css_content
+    assert "background: var(--brand-terracotta);" in bundle.css_content
     assert 'class="pdf-brand-footer"' in bundle.html_content
     assert 'href="https://skriptoteket.hule.education"' in bundle.html_content
     assert "poster__watermark" not in bundle.html_content

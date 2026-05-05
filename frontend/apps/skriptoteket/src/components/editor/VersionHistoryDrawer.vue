@@ -168,7 +168,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
 
           <ul
             v-else
-            class="border border-navy/20 bg-white divide-y divide-navy/20"
+            class="border border-navy/20 bg-panel divide-y divide-navy/20"
           >
             <li
               v-for="version in visibleVersions"
@@ -261,7 +261,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
 
             <ul
               v-else
-              class="border border-navy/20 bg-white divide-y divide-navy/20"
+              class="border border-navy/20 bg-panel divide-y divide-navy/20"
             >
               <li
                 v-for="checkpoint in checkpoints"

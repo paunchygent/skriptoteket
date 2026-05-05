@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60">
-  <rect x="2" y="2" width="96" height="56" fill="none" stroke="#1c2e4a" stroke-width="2" />
+  <rect x="2" y="2" width="96" height="56" fill="none" stroke="#082b4c" stroke-width="2" />
   <rect
     x="14"
     y="10"
     width="22"
     height="8"
-    fill="rgba(28, 46, 74, 0.10)"
-    stroke="#1c2e4a"
+    fill="rgba(8, 43, 76, 0.10)"
+    stroke="#082b4c"
     stroke-width="1.5"
   />
   <rect
@@ -14,8 +14,8 @@
     y="10"
     width="22"
     height="8"
-    fill="rgba(28, 46, 74, 0.10)"
-    stroke="#1c2e4a"
+    fill="rgba(8, 43, 76, 0.10)"
+    stroke="#082b4c"
     stroke-width="1.5"
   />
 </svg>

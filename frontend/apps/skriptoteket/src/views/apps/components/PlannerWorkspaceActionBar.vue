@@ -28,7 +28,7 @@ defineExpose({
 <template>
   <div
     ref="rootRef"
-    class="planner-workspace-action-bar flex items-center gap-3 border border-navy bg-white px-3 py-2 shadow-brutal-sm"
+    class="planner-workspace-action-bar flex items-center gap-3 border border-navy bg-panel px-3 py-2 shadow-brutal-sm"
     data-ui="planner-workspace-action-bar"
   >
     <div
