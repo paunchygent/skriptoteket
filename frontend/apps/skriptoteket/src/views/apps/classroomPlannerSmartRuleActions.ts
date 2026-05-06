@@ -21,6 +21,7 @@ import type {
   RoomTemplate,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
+import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 import type { useSmartRuleUiState } from "./useSmartRuleUiState";
@@ -70,7 +71,10 @@ export function createClassroomPlannerSmartRuleActions(
     if (!options.draft.value || options.isWorkspaceBusy.value) {
       return;
     }
-    if ((options.draft.value[key] ?? false) === enabled) {
+    const currentValue = key === "smart_enabled"
+      ? isSmartEnabledByDefault(options.draft.value)
+      : (options.draft.value[key] ?? false);
+    if (currentValue === enabled) {
       return;
     }
     options.draft.value = {

@@ -10,7 +10,13 @@ import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
-import type { PlanDraft, RelationshipRule, RoomTemplate, Roster } from "../classroomPlannerTypes";
+import type {
+  FixedSeatRule,
+  PlanDraft,
+  RelationshipRule,
+  RoomTemplate,
+  Roster,
+} from "../classroomPlannerTypes";
 
 type PlannerStateMock = {
   template: RoomTemplate | null;
@@ -22,6 +28,7 @@ type PlannerStateMock = {
   unseatedStudents: Roster["students"];
   seatingPreferences: Array<{ student_id: string; near_teacher: boolean }>;
   relationshipRules: RelationshipRule[];
+  fixedSeatRules: FixedSeatRule[];
   smartRuleHydrationStatus: "idle" | "hydrating" | "ready" | "error";
   smartRuleHydrationMessage: string | null;
   smartSeatingRunMessage: string | null;
@@ -48,6 +55,7 @@ const stateMocks = vi.hoisted(() => ({
     relationshipRules: [
       { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
     ],
+    fixedSeatRules: [],
     smartRuleHydrationStatus: "ready",
     smartRuleHydrationMessage: null,
     smartSeatingRunMessage: null,
@@ -67,6 +75,7 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
     stateMocks.plannerState.relationshipRules = [
       { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
     ];
+    stateMocks.plannerState.fixedSeatRules = [];
     stateMocks.plannerState.smartRuleHydrationStatus = "ready";
     stateMocks.plannerState.smartRuleHydrationMessage = null;
     stateMocks.plannerState.smartSeatingRunMessage = null;
@@ -134,6 +143,40 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
 
     expect(wrapper.text()).not.toContain("Ada Lovelace");
     expect(wrapper.find('[data-test="student-pool-markers-student-2"]').exists()).toBe(false);
+  });
+
+  it("passes active fixed-seat rules into the seating canvas and marker pipeline", () => {
+    stateMocks.plannerState.fixedSeatRules = [
+      { id: "fixed-active", template_id: "template-1", student_id: "student-2", seat_id: "seat-1" },
+      { id: "fixed-other-template", template_id: "template-2", student_id: "student-1", seat_id: "seat-9" },
+    ];
+
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+      },
+      global: {
+        stubs: {
+          RoomCanvas: {
+            props: ["fixedSeatRules", "smartRuleMarkersByStudentId"],
+            template: `
+              <div data-test="room-canvas-stub">
+                <span data-test="room-canvas-fixed-rules">
+                  {{ fixedSeatRules.length === 1 ? fixedSeatRules[0].id : fixedSeatRules.length }}
+                </span>
+                <span data-test="room-canvas-fixed-marker">
+                  {{ (smartRuleMarkersByStudentId["student-2"] ?? []).join(",") }}
+                </span>
+              </div>
+            `,
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="room-canvas-fixed-rules"]').text()).toBe("fixed-active");
+    expect(wrapper.get('[data-test="room-canvas-fixed-marker"]').text()).toContain("Fast plats");
+    expect(wrapper.text()).not.toContain("fixed-other-template");
   });
 
   it("keeps the unseated pool and canvas lane in a bounded desktop split workspace", () => {

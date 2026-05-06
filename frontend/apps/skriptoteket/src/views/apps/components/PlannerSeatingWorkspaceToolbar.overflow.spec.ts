@@ -12,6 +12,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
 
 const hiddenContributionIds = ref<string[]>([]);
+const toastMocks = vi.hoisted(() => ({
+  warning: vi.fn(),
+}));
 
 vi.mock("./usePlannerToolbarOverflow", () => ({
   usePlannerToolbarOverflow: () => ({
@@ -27,6 +30,10 @@ vi.mock("./usePlannerToolbarOverflow", () => ({
       reset: 642,
     })),
   }),
+}));
+
+vi.mock("../../../composables/useToast", () => ({
+  useToast: () => toastMocks,
 }));
 
 type PlannerStateMock = {
@@ -123,28 +130,30 @@ describe("PlannerSeatingWorkspaceToolbar overflow", () => {
     stateMocks.plannerState.canRedo = true;
     stateMocks.plannerState.undoSeatingDraft.mockReset();
     stateMocks.plannerState.redoSeatingDraft.mockReset();
+    stateMocks.plannerState.setDraftSmartEnabled.mockReset();
+    toastMocks.warning.mockReset();
     document.body.innerHTML = "";
   });
 
-  it("keeps classroom context and Smart inline before the first seating cutoff", async () => {
+  it("keeps classroom context inline while Smart defaults to overflow", async () => {
     const wrapper = await mountToolbarForHidden([]);
 
     expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-seating-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="new-seating-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-workspace-setup"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(true);
+    expectInlineContributionHidden(wrapper, '[data-test="seating-smart-cluster"]');
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="seating-overflow-undo"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-overflow-reset"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-overflow-new-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-overflow-template-control"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
   }, 10_000);
 
   it("keeps share management in the secondary action cluster while lower-priority controls overflow", async () => {
-    const wrapper = await mountToolbarForHidden(["context", "smart", "reset"]);
+    const wrapper = await mountToolbarForHidden(["context", "reset"]);
     await wrapper.setProps({
       showShareLinkAction: true,
       shares: [],
@@ -159,12 +168,12 @@ describe("PlannerSeatingWorkspaceToolbar overflow", () => {
     expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
   });
 
-  it("moves classroom context into overflow before Smart", async () => {
+  it("keeps Smart in overflow when classroom context also overflows", async () => {
     const wrapper = await mountToolbarForHidden(["context"]);
 
     expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');
-    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(true);
+    expectInlineContributionHidden(wrapper, '[data-test="seating-smart-cluster"]');
     expect(wrapper.find('[data-test="reset-seating-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
@@ -172,11 +181,23 @@ describe("PlannerSeatingWorkspaceToolbar overflow", () => {
     expect(wrapper.get('[data-test="seating-overflow-template-control"]').classes()).not.toContain(
       "planner-toolbar-menu-panel-phone-only",
     );
-    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
   });
 
-  it("moves seating Smart into overflow after classroom context", async () => {
-    const wrapper = await mountToolbarForHidden(["context", "smart"]);
+  it("shows teacher-friendly warning copy when Smart is turned off", async () => {
+    const wrapper = await mountToolbarForHidden([]);
+
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+    await wrapper.get('[data-test="seating-overflow-smart-toggle"]').trigger("click");
+
+    expect(stateMocks.plannerState.setDraftSmartEnabled).toHaveBeenCalledWith(false);
+    expect(toastMocks.warning).toHaveBeenCalledWith(
+      "Smart är avstängt. När du slumpar tas ingen hänsyn till regler, fasta platser, nära läraren eller ihop/isär.",
+    );
+  });
+
+  it("keeps reset overflow separate from Smart overflow", async () => {
+    const wrapper = await mountToolbarForHidden(["context"]);
 
     expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');
@@ -192,8 +213,8 @@ describe("PlannerSeatingWorkspaceToolbar overflow", () => {
     );
   });
 
-  it("moves seating reset only after classroom context and Smart have overflowed", async () => {
-    const wrapper = await mountToolbarForHidden(["context", "smart", "reset"]);
+  it("moves seating reset only after classroom context has overflowed", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "reset"]);
 
     expect(wrapper.find('[data-test="new-seating-draft"]').exists()).toBe(true);
     expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');

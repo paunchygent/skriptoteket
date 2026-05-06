@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createClassroomPlannerGuestDraftPersistence } from "./classroomPlannerGuestDraftPersistence";
 import { createClassroomPlannerGuestDraftWorkspace } from "./classroomPlannerGuestDraftWorkspace";
+import { buildNewGuestDraft } from "./classroomPlannerGuestDraftMutations";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
 import {
   createClassroomPlannerGuestSnapshotFromSeed,
@@ -90,6 +91,19 @@ function createGroupingWorkspace(template: RoomTemplate | null): DraftWorkspaceR
 }
 
 describe("classroomPlannerGuestDraftWorkspace", () => {
+  it("starts new public guest drafts with Smart enabled", () => {
+    const draft = buildNewGuestDraft({
+      draftId: "draft-1",
+      draftKind: "seating",
+      rosterId: "roster-1",
+      templateId: "template-1",
+      templateRequired: true,
+      nowIso: NOW_ISO,
+    });
+
+    expect(draft.smart_enabled).toBe(true);
+  });
+
   it("persists the newly selected grouping classroom when reusing an existing guest draft", async () => {
     const templateTwo = createTemplate("template-2", "Sal 202");
     let snapshot = createClassroomPlannerGuestSnapshotFromSeed({

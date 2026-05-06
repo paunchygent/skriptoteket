@@ -150,7 +150,7 @@ async def test_first_step_undo_seeds_blank_grouping_state() -> None:
     assert model.undo_index == 1
     assert history[0]["smart_enabled"] is False
     assert history[0]["groups"] == []
-    assert history[1]["smart_enabled"] is False
+    assert history[1]["smart_enabled"] is True
     assert history[1]["groups"] == [
         {"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}
     ]
@@ -191,7 +191,7 @@ async def test_snapshot_coverage_includes_template_and_flags() -> None:
     history = _require_history(model)
     assert len(history) == 2
     snapshot = history[1]
-    assert snapshot["smart_enabled"] is False
+    assert snapshot["smart_enabled"] is True
     assert snapshot["use_history"] is True
     assert snapshot["grouping_seating_distance_enabled"] is True
     assert snapshot["template_id"] == str(template_id)
@@ -249,7 +249,7 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
     history = _require_history(model)
     assert len(history) == 2
     assert history[0]["smart_enabled"] is False
-    assert history[1]["smart_enabled"] is False
+    assert history[1]["smart_enabled"] is True
     assert _first_group_id(history[0]) == "g1"
     assert _first_group_id(history[1]) == "new"
     assert model.undo_index == 1
@@ -299,7 +299,7 @@ async def test_logically_identical_snapshots_do_not_append_history() -> None:
     history = _require_history(model)
     assert len(history) == 2
     assert history[0]["smart_enabled"] is False
-    assert history[1]["smart_enabled"] is False
+    assert history[1]["smart_enabled"] is True
     assert model.undo_index == 1
 
 
@@ -342,7 +342,7 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
 
     history = _require_history(model)
     assert len(history) == 1
-    assert history[0]["smart_enabled"] is False
+    assert history[0]["smart_enabled"] is True
     assert history[0]["use_history"] is True
     assert history[0]["grouping_seating_distance_enabled"] is True
     assert "template_id" not in history[0]

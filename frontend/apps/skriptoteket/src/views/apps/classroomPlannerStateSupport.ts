@@ -26,6 +26,7 @@ import {
   normalizeClassroomPlannerWorkspace,
 } from "./classroomPlannerPayloadNormalization";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
+import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
 import type {
   DraftHistoryStatus,
   DraftGroup,
@@ -224,7 +225,7 @@ export function createClassroomPlannerStateSupport(
   function serializeDraftPatch() {
     return {
       expected_revision: options.draft.value?.revision ?? null,
-      smart_enabled: options.draft.value?.smart_enabled ?? false,
+      smart_enabled: isSmartEnabledByDefault(options.draft.value),
       use_history: options.draft.value?.use_history ?? false,
       grouping_seating_distance_enabled:
         options.draft.value?.grouping_seating_distance_enabled ?? false,

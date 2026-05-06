@@ -52,6 +52,7 @@ describe("RoomCanvas", () => {
     stateMocks.plannerState.clearSeatAssignment.mockReset();
     stateMocks.plannerState.swapSeatAssignments.mockReset();
     stateMocks.plannerState.fixtures = [];
+    stateMocks.plannerState.seats = [{ id: "seat-1", x: 0, y: 0 }];
     stateMocks.plannerState.studentBySeatId = { "seat-1": null };
   });
 
@@ -163,6 +164,47 @@ describe("RoomCanvas", () => {
 
     expect(wrapper.get('[data-test="seat-markers-seat-1"]').text()).toContain("Lärare");
     expect(wrapper.get('[data-test="seat-markers-seat-1"]').text()).toContain("Isär A");
+  });
+
+  it("renders a fixed-seat lock only when the fixed student occupies the fixed seat", () => {
+    stateMocks.plannerState.studentBySeatId = {
+      "seat-1": { id: "student-1", display_name: "Ada" },
+    };
+
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        fixedSeatRules: [
+          { id: "fixed-1", template_id: "template-1", student_id: "student-1", seat_id: "seat-1" },
+        ],
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        surfaceScale: 1,
+      },
+    });
+
+    expect(wrapper.get('[data-test="seat-fixed-lock-seat-1"]').attributes("title")).toBe(
+      "Fast plats: Ada -> plats-1",
+    );
+    expect(wrapper.get('[data-test="seat-fixed-lock-seat-1"]').html()).toContain("lucide-lock-keyhole");
+  });
+
+  it("does not render a fixed-seat lock for the wrong occupant", () => {
+    stateMocks.plannerState.studentBySeatId = {
+      "seat-1": { id: "student-2", display_name: "Alan" },
+    };
+
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        fixedSeatRules: [
+          { id: "fixed-1", template_id: "template-1", student_id: "student-1", seat_id: "seat-1" },
+        ],
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        surfaceScale: 1,
+      },
+    });
+
+    expect(wrapper.find('[data-test="seat-fixed-lock-seat-1"]').exists()).toBe(false);
   });
 
   it("renders seating zoom controls and forwards the viewport actions", async () => {

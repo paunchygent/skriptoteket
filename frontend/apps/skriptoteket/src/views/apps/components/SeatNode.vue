@@ -8,6 +8,7 @@
  */
 
 import RoomSeatToken from "./RoomSeatToken.vue";
+import { IconLock } from "../../../components/icons";
 import type { Seat, Student } from "../classroomPlannerTypes";
 import { getSeatFrameStyle } from "../roomSeatPresentation";
 
@@ -16,6 +17,8 @@ const props = defineProps<{
   student: Student | null;
   selected?: boolean;
   markers?: string[];
+  fixed?: boolean;
+  fixedSeatTitle?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -104,6 +107,16 @@ function onDragStart(event: DragEvent): void {
         {{ marker }}
       </span>
     </div>
+
+    <span
+      v-if="fixed"
+      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-action text-white shadow-brutal-sm"
+      :title="fixedSeatTitle ?? undefined"
+      :aria-label="fixedSeatTitle ?? 'Fast plats'"
+      :data-test="`seat-fixed-lock-${seat.id}`"
+    >
+      <IconLock :size="13" />
+    </span>
 
     <div
       v-if="student"

@@ -53,10 +53,18 @@ const {
 } = useRoomViewportZoom(seatingRoomSurfaceMetrics, {
   resetSource: computed(() => selectedTemplateId ?? plannerState.template?.id ?? null),
 });
+const activeFixedSeatRules = computed(() => {
+  const templateId = plannerState.template?.id ?? null;
+  if (!templateId) {
+    return [];
+  }
+  return plannerState.fixedSeatRules.filter((rule) => rule.template_id === templateId);
+});
 const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
   return buildSmartRuleMarkersByStudentId(
     plannerState.seatingPreferences,
     plannerState.relationshipRules,
+    activeFixedSeatRules.value,
   );
 });
 
@@ -172,6 +180,7 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
         data-test="phone-seating-workspace-canvas"
         :scale-percent="seatingCanvasScalePercent"
         :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
+        :fixed-seat-rules="activeFixedSeatRules"
         :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
         :surface-scale="seatingCanvasScale"
         @viewport-size="setVisibleSeatingCanvasViewportSize"
@@ -216,6 +225,7 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
           data-test="seating-workspace"
           :scale-percent="seatingCanvasScalePercent"
           :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
+          :fixed-seat-rules="activeFixedSeatRules"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           :surface-scale="seatingCanvasScale"
           @viewport-size="setVisibleSeatingCanvasViewportSize"

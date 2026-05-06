@@ -17,8 +17,13 @@ import {
   UiDenseIconButton,
   UiDenseToggle,
 } from "../../../components/ui";
+import { useToast } from "../../../composables/useToast";
 import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
+import {
+  SMART_DISABLED_NOTICE,
+  isSmartEnabledByDefault,
+} from "../classroomPlannerSmartDefaults";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
@@ -77,9 +82,8 @@ const props = withDefaults(
 
 const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
 const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
-const PHONE_SMART_OVERFLOW_MAX_WIDTH_PX = 460;
 const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
-const OVERFLOW_PRIORITY_ORDER = ["context", "smart", "reset"];
+const OVERFLOW_PRIORITY_ORDER = ["context", "reset"];
 
 function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
   if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
@@ -88,13 +92,10 @@ function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] |
   if (rootElement.clientWidth > PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX) {
     return null;
   }
-  if (rootElement.clientWidth > PHONE_SMART_OVERFLOW_MAX_WIDTH_PX) {
+  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
     return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
   }
-  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
-    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
-  }
-  return OVERFLOW_PRIORITY_ORDER.slice(0, 3);
+  return OVERFLOW_PRIORITY_ORDER;
 }
 
 const emit = defineEmits<{
@@ -124,6 +125,7 @@ type OverflowActionItem = {
 };
 
 const plannerState = useClassroomState();
+const toast = useToast();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
@@ -176,10 +178,6 @@ const {
     {
       id: "context",
       selector: '[data-overflow-contribution="context"]',
-    },
-    {
-      id: "smart",
-      selector: '[data-overflow-contribution="smart"]',
     },
     {
       id: "reset",
@@ -313,14 +311,21 @@ const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
 const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isSmartInline = computed(() => props.showSmartControls && !hiddenContributionIds.value.includes("smart"));
+const isSmartInline = computed(() => false);
 const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
 const hasContextOverflowPanel = computed(() => props.availableTemplates.length > 0 && !isContextInline.value);
-const hasSmartOverflowPanel = computed(() => props.showSmartControls && !isSmartInline.value);
+const hasSmartOverflowPanel = computed(() => props.showSmartControls);
 const showOverflowPanel = computed(() => (
   hasSmartOverflowPanel.value
   || hasContextOverflowPanel.value
 ));
+
+function setSmartEnabled(enabled: boolean): void {
+  plannerState.setDraftSmartEnabled(enabled);
+  if (!enabled) {
+    toast.warning(SMART_DISABLED_NOTICE);
+  }
+}
 </script>
 
 <template>
@@ -419,9 +424,9 @@ const showOverflowPanel = computed(() => (
             data-test="seating-smart-toggle"
             label="Smart"
             group-position="start"
-            :model-value="plannerState.draft?.smart_enabled ?? false"
+            :model-value="isSmartEnabledByDefault(plannerState.draft)"
             :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-            @update:model-value="plannerState.setDraftSmartEnabled($event)"
+            @update:model-value="setSmartEnabled"
           />
           <UiDenseIconButton
             data-test="seating-open-settings"
@@ -562,9 +567,9 @@ const showOverflowPanel = computed(() => (
                   data-test="seating-overflow-smart-toggle"
                   label="Smart"
                   group-position="start"
-                  :model-value="plannerState.draft?.smart_enabled ?? false"
+                  :model-value="isSmartEnabledByDefault(plannerState.draft)"
                   :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-                  @update:model-value="plannerState.setDraftSmartEnabled($event)"
+                  @update:model-value="setSmartEnabled"
                 />
                 <UiDenseIconButton
                   data-test="seating-overflow-open-settings"

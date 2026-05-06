@@ -128,6 +128,7 @@ async def test_resolve_draft_returns_existing_active_draft(
     )
 
     assert result.id == existing.id
+    assert result.smart_enabled is existing.smart_enabled
     drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
         owner_user_id=owner_id,
         roster_id=roster_id,
@@ -162,6 +163,7 @@ async def test_resolve_draft_creates_new_draft_when_none_exists(
     assert result.id == draft_id
     assert result.draft_kind == PlanDraftKind.SEATING
     assert result.status == PlanDraftStatus.ACTIVE
+    assert result.smart_enabled is True
     drafts.save_workspace.assert_awaited_once()
 
 

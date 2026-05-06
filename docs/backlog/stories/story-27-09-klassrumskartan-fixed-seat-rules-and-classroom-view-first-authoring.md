@@ -65,3 +65,5 @@ work.
   backend fixed-seat persistence, validation, and score-aware solver seeding.
 - [PR-0298](../prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md):
   frontend classroom-view default, `Fast plats` tool prompt, markers, and proof.
+- [PR-0304](../prs/pr-0304-st-27-09-seating-workspace-fixed-seat-lock-marker.md):
+  seating-workspace lock marker remediation for honored fixed-seat placements.

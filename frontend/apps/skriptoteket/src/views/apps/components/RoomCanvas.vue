@@ -11,7 +11,8 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import SeatNode from "./SeatNode.vue";
 import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
-import type { RoomFixture } from "../classroomPlannerTypes";
+import type { FixedSeatRule, RoomFixture } from "../classroomPlannerTypes";
+import { formatSeatDisplayLabel } from "../classroomPlannerSmartRulePresentation";
 import {
   getFloorFixtureFrameStyle,
   getRoomFloorLayerStyle,
@@ -26,6 +27,7 @@ import { useClassroomState } from "../useClassroomState";
 const props = withDefaults(defineProps<{
   selectedStudentIds?: string[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
+  fixedSeatRules?: FixedSeatRule[];
   scalePercent: number;
   scaledSurfaceStyle: Record<string, string>;
   surfaceScale: number;
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   selectedStudentIds: () => [],
   smartRuleMarkersByStudentId: () => ({}),
+  fixedSeatRules: () => [],
   compact: false,
 });
 
@@ -68,6 +71,18 @@ const shouldCenterSurface = computed(() => {
     + (ROOM_VIEWPORT_FRAME_PADDING * 2);
   return viewportWidth.value <= 0 || paddedWidth <= viewportWidth.value;
 });
+const fixedSeatRuleBySeatId = computed<Record<string, FixedSeatRule | undefined>>(() => {
+  return Object.fromEntries(props.fixedSeatRules.map((rule) => [rule.seat_id, rule]));
+});
+
+function honoredFixedSeatTitle(seatId: string): string | null {
+  const rule = fixedSeatRuleBySeatId.value[seatId];
+  const student = state.studentBySeatId[seatId];
+  if (!rule || !student || rule.student_id !== student.id) {
+    return null;
+  }
+  return `Fast plats: ${student.display_name} -> ${formatSeatDisplayLabel(seatId)}`;
+}
 
 function floorFixtureStyle(fixture: RoomFixture): Record<string, string> {
   return getFloorFixtureFrameStyle(fixture);
@@ -241,6 +256,8 @@ onBeforeUnmount(() => {
                   :seat="seat"
                   :student="state.studentBySeatId[seat.id]"
                   :markers="props.smartRuleMarkersByStudentId[state.studentBySeatId[seat.id]?.id ?? ''] ?? []"
+                  :fixed="honoredFixedSeatTitle(seat.id) !== null"
+                  :fixed-seat-title="honoredFixedSeatTitle(seat.id)"
                   :selected="props.selectedStudentIds.includes(state.studentBySeatId[seat.id]?.id ?? '')"
                   @student-dropped="state.assignStudentToSeat"
                   @student-removed="state.clearSeatAssignment"

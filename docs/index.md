@@ -509,6 +509,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0297-st-27-09-fixed-seat-rule-persistence-and-solver-seeding.md`
 - ST-27-09 frontend fixed-seat authoring slice:
   `docs/backlog/prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md`
+- ST-27-09 seating workspace fixed-seat lock marker remediation:
+  `docs/backlog/prs/pr-0304-st-27-09-seating-workspace-fixed-seat-lock-marker.md`
 - Approved Klassrumskartan smart assignment review:
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed auth-cutover ADR:

@@ -12,6 +12,7 @@
 
 import type { Ref } from "vue";
 
+import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
 import type { PlanDraft } from "./classroomPlannerTypes";
 
 type SmartRun = {
@@ -38,7 +39,7 @@ export function createClassroomPlannerSmartRunActions(
     if (!options.draft.value || options.draft.value.draft_kind !== "seating") {
       return;
     }
-    if ((options.draft.value.smart_enabled ?? false) !== true) {
+    if (!isSmartEnabledByDefault(options.draft.value)) {
       options.smartSeatingRun.clearFeedback();
       options.randomizeSeating();
       return;
@@ -53,7 +54,7 @@ export function createClassroomPlannerSmartRunActions(
     if (!options.draft.value || options.draft.value.draft_kind !== "grouping") {
       return;
     }
-    if ((options.draft.value.smart_enabled ?? false) !== true) {
+    if (!isSmartEnabledByDefault(options.draft.value)) {
       options.smartGroupingRun.clearFeedback();
       options.randomizeGroups();
       return;

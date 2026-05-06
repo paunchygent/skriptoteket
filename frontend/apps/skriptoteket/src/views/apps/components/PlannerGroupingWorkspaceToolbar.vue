@@ -26,8 +26,13 @@ import {
   UiDenseToggle,
   denseActionValueClass,
 } from "../../../components/ui";
+import { useToast } from "../../../composables/useToast";
 import type { GroupingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
+import {
+  SMART_DISABLED_NOTICE,
+  isSmartEnabledByDefault,
+} from "../classroomPlannerSmartDefaults";
 import type { Roster } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
@@ -84,9 +89,8 @@ const props = withDefaults(
 
 const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
 const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
-const PHONE_SMART_OVERFLOW_MAX_WIDTH_PX = 460;
 const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
-const OVERFLOW_PRIORITY_ORDER = ["context", "smart", "reset"];
+const OVERFLOW_PRIORITY_ORDER = ["context", "reset"];
 
 function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
   if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
@@ -95,13 +99,10 @@ function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] |
   if (rootElement.clientWidth > PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX) {
     return null;
   }
-  if (rootElement.clientWidth > PHONE_SMART_OVERFLOW_MAX_WIDTH_PX) {
+  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
     return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
   }
-  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
-    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
-  }
-  return OVERFLOW_PRIORITY_ORDER.slice(0, 3);
+  return OVERFLOW_PRIORITY_ORDER;
 }
 
 const emit = defineEmits<{
@@ -130,6 +131,7 @@ type OverflowActionItem = {
 };
 
 const state = useClassroomState();
+const toast = useToast();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
@@ -168,10 +170,6 @@ const {
     {
       id: "context",
       selector: '[data-overflow-contribution="context"]',
-    },
-    {
-      id: "smart",
-      selector: '[data-overflow-contribution="smart"]',
     },
     {
       id: "reset",
@@ -272,14 +270,21 @@ const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
 const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isSmartInline = computed(() => props.showSmartControls && !hiddenContributionIds.value.includes("smart"));
+const isSmartInline = computed(() => false);
 const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
 const hasContextOverflowPanel = computed(() => props.availableRosters.length > 0 && !isContextInline.value);
-const hasSmartOverflowPanel = computed(() => props.showSmartControls && !isSmartInline.value);
+const hasSmartOverflowPanel = computed(() => props.showSmartControls);
 const showOverflowPanel = computed(() => (
   hasContextOverflowPanel.value
   || hasSmartOverflowPanel.value
 ));
+
+function setSmartEnabled(enabled: boolean): void {
+  state.setDraftSmartEnabled(enabled);
+  if (!enabled) {
+    toast.warning(SMART_DISABLED_NOTICE);
+  }
+}
 </script>
 
 <template>
@@ -413,9 +418,9 @@ const showOverflowPanel = computed(() => (
             data-test="grouping-smart-toggle"
             label="Smart"
             group-position="start"
-            :model-value="state.draft?.smart_enabled ?? false"
+            :model-value="isSmartEnabledByDefault(state.draft)"
             :disabled="state.isWorkspaceBusy"
-            @update:model-value="state.setDraftSmartEnabled($event)"
+            @update:model-value="setSmartEnabled"
           />
           <UiDenseIconButton
             data-test="grouping-open-settings"
@@ -542,9 +547,9 @@ const showOverflowPanel = computed(() => (
                   data-test="grouping-overflow-smart-toggle"
                   label="Smart"
                   group-position="start"
-                  :model-value="state.draft?.smart_enabled ?? false"
+                  :model-value="isSmartEnabledByDefault(state.draft)"
                   :disabled="state.isWorkspaceBusy"
-                  @update:model-value="state.setDraftSmartEnabled($event)"
+                  @update:model-value="setSmartEnabled"
                 />
                 <UiDenseIconButton
                   data-test="grouping-overflow-open-settings"

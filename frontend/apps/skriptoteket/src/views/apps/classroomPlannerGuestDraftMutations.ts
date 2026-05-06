@@ -381,7 +381,7 @@ export function buildNewGuestDraft(input: {
     draft_kind: input.draftKind,
     template_id: input.templateId,
     task_entry_classroom_selection_mode: input.templateRequired ? "required" : "optional",
-    smart_enabled: false,
+    smart_enabled: true,
     use_history: false,
     grouping_seating_distance_enabled: false,
     status: "active",
