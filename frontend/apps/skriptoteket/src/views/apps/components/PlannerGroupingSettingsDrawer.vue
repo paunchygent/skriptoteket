@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * Grouping Smart settings drawer.
+ * Grouping advanced Smart settings drawer.
  *
- * This drawer keeps secondary Smart tuning outside the first-row grouping
- * toolbar. It lets the teacher adjust history, classroom, and seating
- * influence while leaving rule authoring in the dedicated Regler workspace.
+ * This drawer owns the teacher-facing Smart opt-out controls for grouping.
+ * It keeps rule authoring in the dedicated Regler workspace while preserving
+ * grouping-only classroom and seating influence settings.
  */
 
 import { computed, onMounted, onUnmounted } from "vue";
@@ -15,6 +15,13 @@ import {
   UiDenseActionButton,
   UiDenseToggle,
 } from "../../../components/ui";
+import { useToast } from "../../../composables/useToast";
+import {
+  SMART_DISABLED_NOTICE,
+  isGroupingSeatingDistanceEnabledByDefault,
+  isHistoryEnabledByDefault,
+  isSmartEnabledByDefault,
+} from "../classroomPlannerSmartDefaults";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useClassroomState } from "../useClassroomState";
 
@@ -39,6 +46,7 @@ const emit = defineEmits<{
 }>();
 
 const state = useClassroomState();
+const toast = useToast();
 
 const hasSelectedTemplate = computed(() => {
   return typeof props.selectedTemplateId === "string" && props.selectedTemplateId.length > 0;
@@ -47,22 +55,26 @@ const classroomHelpText = computed(() => {
   if (props.availableTemplates.length === 0) {
     return "Det finns inga klassrum att välja ännu.";
   }
-  return "Välj ett klassrum om Smart ska ta hänsyn till sittschemat.";
+  return "Välj vilket klassrum gruppindelningen hör till. Det avgör vilket sittschema Smart kan använda när Tillämpa sittschema är på.";
 });
 const seatingHelpText = computed(() => {
   if (!hasSelectedTemplate.value) {
-    return "Välj först ett klassrum för att använda sittschemat.";
+    return "Välj först ett klassrum så Smart vet vilket sittschema som kan användas.";
   }
-  return "Med Tillämpa sittschema aktiverat försöker algoritmen skapa grupper av de elever som sitter nära varandra samtidigt som den respekterar dina övriga regler, som \"håll ihop\" och \"håll isär\".";
+  return "Försöker lägga elever som redan sitter nära varandra i samma grupp. Det kan göra gruppstarten lugnare när eleverna ska arbeta från sina platser.";
 });
+
+function setSmartEnabled(enabled: boolean): void {
+  state.setDraftSmartEnabled(enabled);
+  if (!enabled) {
+    toast.warning(SMART_DISABLED_NOTICE);
+  }
+}
 
 function changeGroupingTemplate(event: Event): void {
   const target = event.target;
   if (!(target instanceof HTMLSelectElement)) {
     return;
-  }
-  if (!target.value) {
-    state.setDraftGroupingSeatingDistanceEnabled(false);
   }
   emit("change-grouping-template", target.value || null);
 }
@@ -103,21 +115,18 @@ onUnmounted(() => {
       aria-labelledby="grouping-settings-title"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
-        <div class="min-w-0 space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Smart
-          </p>
+        <div class="min-w-0">
           <h3
             id="grouping-settings-title"
             class="font-serif text-xl text-navy"
           >
-            Smart-inställningar
+            Avancerade inställningar
           </h3>
         </div>
         <button
           type="button"
           class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-sm"
-          aria-label="Stäng Smart-inställningar"
+          aria-label="Stäng avancerade inställningar"
           @click="emit('close')"
         >
           <IconX :size="14" />
@@ -125,6 +134,19 @@ onUnmounted(() => {
       </div>
 
       <div class="flex-1 space-y-4 overflow-y-auto p-4">
+        <section class="space-y-2 border border-navy/20 bg-canvas p-4">
+          <UiDenseToggle
+            data-test="grouping-settings-smart-toggle"
+            label="Smart placering"
+            :model-value="isSmartEnabledByDefault(state.draft)"
+            :disabled="state.isWorkspaceBusy"
+            @update:model-value="setSmartEnabled"
+          />
+          <p class="text-sm leading-relaxed text-navy/65">
+            Tar hänsyn till dina regler när du skapar en ny placering, till exempel fasta platser eller elever som inte bör sitta nära varandra.
+          </p>
+        </section>
+
         <section
           v-if="showHistorySetting"
           class="space-y-2 border border-navy/20 bg-canvas p-4"
@@ -132,12 +154,12 @@ onUnmounted(() => {
           <UiDenseToggle
             data-test="grouping-settings-history-toggle"
             label="Historik"
-            :model-value="state.draft?.use_history ?? false"
+            :model-value="isHistoryEnabledByDefault(state.draft)"
             :disabled="state.isWorkspaceBusy"
             @update:model-value="state.setDraftUseHistoryEnabled($event)"
           />
           <p class="text-sm leading-relaxed text-navy/65">
-            Minskar risken att samma elever hamnar i samma grupp igen.
+            Försöker undvika att elever får samma plats eller samma bordsgrannar som tidigare. Stäng av om du vill börja utan historik.
           </p>
         </section>
 
@@ -177,7 +199,7 @@ onUnmounted(() => {
           <UiDenseToggle
             data-test="grouping-settings-seating-toggle"
             label="Tillämpa sittschema"
-            :model-value="state.draft?.grouping_seating_distance_enabled ?? false"
+            :model-value="hasSelectedTemplate && isGroupingSeatingDistanceEnabledByDefault(state.draft)"
             :disabled="state.isWorkspaceBusy || !hasSelectedTemplate"
             @update:model-value="state.setDraftGroupingSeatingDistanceEnabled($event)"
           />
@@ -192,7 +214,7 @@ onUnmounted(() => {
               Regler
             </h4>
             <p class="text-sm leading-relaxed text-navy/65">
-              Du lägger till och ändrar regler i arbetsytan Regler.
+              Lägg till och ändra regler för placeringar.
             </p>
           </div>
           <UiDenseActionButton

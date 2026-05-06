@@ -30,7 +30,10 @@ import {
   createClassroomPlannerGuestContentHash,
   createClassroomPlannerGuestFingerprint,
 } from "./classroomPlannerGuestFingerprint";
-import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
+import {
+  isGroupingSeatingDistanceEnabledByDefault,
+  isSmartEnabledByDefault,
+} from "./classroomPlannerSmartDefaults";
 
 export type ClassroomPlannerGuestCheckpointSeed = {
   local_id: string;
@@ -185,7 +188,7 @@ export function mapDraftWorkspaceToGuestSnapshot(
     smart_enabled: isSmartEnabledByDefault(workspace.draft),
     use_history: workspace.draft.use_history ?? false,
     grouping_seating_distance_enabled:
-      workspace.draft.grouping_seating_distance_enabled ?? false,
+      isGroupingSeatingDistanceEnabledByDefault(workspace.draft),
     revision: workspace.draft.revision,
     last_opened_at: workspace.draft.last_opened_at,
     groups: workspace.groups,
@@ -198,7 +201,7 @@ export function mapDraftWorkspaceToGuestSnapshot(
       smart_enabled: isSmartEnabledByDefault(workspace.draft),
       use_history: workspace.draft.use_history ?? false,
       grouping_seating_distance_enabled:
-        workspace.draft.grouping_seating_distance_enabled ?? false,
+        isGroupingSeatingDistanceEnabledByDefault(workspace.draft),
       groups: workspace.groups,
       group_assignments: workspace.group_assignments,
       seat_assignments: workspace.seat_assignments,

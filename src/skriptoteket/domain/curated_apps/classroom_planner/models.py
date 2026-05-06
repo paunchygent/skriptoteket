@@ -206,8 +206,8 @@ class PlanDraft(BaseModel):
     template_id: UUID | None = None
     task_entry_classroom_selection_mode: ClassroomSelectionMode = ClassroomSelectionMode.OPTIONAL
     smart_enabled: bool = True
-    use_history: bool = False
-    grouping_seating_distance_enabled: bool = False
+    use_history: bool = True
+    grouping_seating_distance_enabled: bool = True
     status: PlanDraftStatus = PlanDraftStatus.ACTIVE
     guest_import_identity: str | None = None
     revision: int = 0

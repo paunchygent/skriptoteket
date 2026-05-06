@@ -327,6 +327,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md`
 - ST-29-11 planner toolbar overflow priority regression:
   `docs/backlog/prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md`
+- ST-29-11 Smart advanced settings drawer copy and history default:
+  `docs/backlog/prs/pr-0305-st-29-11-smart-advanced-settings-drawer-copy-and-history-default.md`
+- ST-29-11 share priority and Smart settings opt-out parity:
+  `docs/backlog/prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md`
 - ST-26-06 public guest overview share/export state wiring:
   `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 shared-link PDF download spinner contract:
@@ -449,6 +453,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md`
 - ST-29-11 planner toolbar overflow priority regression task:
   `docs/backlog/prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md`
+- ST-29-11 Smart advanced settings drawer copy and history default task:
+  `docs/backlog/prs/pr-0305-st-29-11-smart-advanced-settings-drawer-copy-and-history-default.md`
+- ST-29-11 share priority and Smart settings opt-out parity task:
+  `docs/backlog/prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md`
 - ST-26-06 public guest overview share/export state wiring task:
   `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 share-link popover and bottom-sheet management task:

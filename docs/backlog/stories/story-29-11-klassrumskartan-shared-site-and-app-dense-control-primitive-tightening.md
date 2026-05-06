@@ -58,6 +58,8 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0301: ST-29-11 overview share/export scope rail and draft confirmation](../prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md)
 - [PR-0302: ST-29-11 planner toolbar Smart overflow default remediation](../prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md)
 - [PR-0303: ST-26-06 public guest overview share/export state wiring](../prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md)
+- [PR-0305: ST-29-11 Smart advanced settings drawer copy and history default](../prs/pr-0305-st-29-11-smart-advanced-settings-drawer-copy-and-history-default.md)
+- [PR-0306: ST-29-11 share priority and Smart settings opt-out parity](../prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -111,6 +113,17 @@ instead of treating it as unfinished planner-layout implementation.
   dense-control presentation while making public overview share/export actions
   use the selected browser-owned draft and show the browser-owned current link
   rows.
+- `PR-0305` is done as the Smart advanced-settings copy/default lock:
+  grouping/seating now open `Avancerade inställningar` from the normal overflow
+  settings group, the drawer starts with the `Smart placering` master toggle,
+  authenticated `Historik` defaults on unless explicitly opted out, public guest
+  history remains omitted, and the locked Swedish copy is covered by focused
+  component tests plus the retained toolbar parity browser proof.
+- `PR-0306` is done as the share-priority and remaining Smart opt-out parity
+  follow-up: grouping/seating toolbar tests keep inline `Dela` more important
+  than the class/classroom selector, grouping-specific `Tillämpa sittschema`
+  defaults on until explicitly turned off, and the grouping classroom helper
+  copy now explains the exact room-context versus seating-influence behavior.
 
 ## References
 

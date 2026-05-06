@@ -21,7 +21,11 @@ import type {
   RoomTemplate,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
-import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
+import {
+  isGroupingSeatingDistanceEnabledByDefault,
+  isHistoryEnabledByDefault,
+  isSmartEnabledByDefault,
+} from "./classroomPlannerSmartDefaults";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 import type { useSmartRuleUiState } from "./useSmartRuleUiState";
@@ -73,7 +77,9 @@ export function createClassroomPlannerSmartRuleActions(
     }
     const currentValue = key === "smart_enabled"
       ? isSmartEnabledByDefault(options.draft.value)
-      : (options.draft.value[key] ?? false);
+      : key === "use_history"
+        ? isHistoryEnabledByDefault(options.draft.value)
+        : isGroupingSeatingDistanceEnabledByDefault(options.draft.value);
     if (currentValue === enabled) {
       return;
     }

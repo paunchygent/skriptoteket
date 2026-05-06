@@ -829,26 +829,32 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find('[data-test="grouping-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-active-rule-count"]').exists()).toBe(false);
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-label")).toBe(
-      "Smart-inställningar",
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').text()).toContain(
+      "Avancerade inställningar",
     );
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-haspopup")).toBe("dialog");
 
     await wrapper.get('[data-test="grouping-overflow-open-settings"]').trigger("click");
 
-    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Smart-inställningar");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Avancerade inställningar");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).not.toContain("Smart-inställningar");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Smart placering");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
+      "Tar hänsyn till dina regler när du skapar en ny placering, till exempel fasta platser eller elever som inte bör sitta nära varandra.",
+    );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Historik");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Klassrum");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
       "Tillämpa sittschema",
     );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
-      "Minskar risken att samma elever hamnar i samma grupp igen.",
+      "Försöker undvika att elever får samma plats eller samma bordsgrannar som tidigare. Stäng av om du vill börja utan historik.",
     );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
       "Välj först ett klassrum för att använda sittschemat.",
     );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
-      "Du lägger till och ändrar regler i arbetsytan Regler.",
+      "Lägg till och ändra regler för placeringar.",
     );
 
     await wrapper.get('[data-test="grouping-settings-history-toggle"]').trigger("click");
@@ -913,19 +919,25 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(false);
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
-    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').attributes("aria-label")).toBe(
-      "Smart-inställningar",
+    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').text()).toContain(
+      "Avancerade inställningar",
     );
+    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').attributes("aria-haspopup")).toBe("dialog");
 
     await wrapper.get('[data-test="seating-overflow-open-settings"]').trigger("click");
 
-    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Smart-inställningar");
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Avancerade inställningar");
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).not.toContain("Smart-inställningar");
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Smart placering");
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain(
+      "Tar hänsyn till dina regler när du skapar en ny placering, till exempel fasta platser eller elever som inte bör sitta nära varandra.",
+    );
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Historik");
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain(
-      "Om du tidigare har exporterat ett sittschema kan Smart använda det för att variera placeringen över tid.",
+      "Försöker undvika att elever får samma plats eller samma bordsgrannar som tidigare. Stäng av om du vill börja utan historik.",
     );
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain(
-      "Du lägger till och ändrar regler i arbetsytan Regler.",
+      "Lägg till och ändra regler för placeringar.",
     );
 
     await wrapper.get('[data-test="seating-settings-history-toggle"]').trigger("click");

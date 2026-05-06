@@ -164,6 +164,8 @@ async def test_resolve_draft_creates_new_draft_when_none_exists(
     assert result.draft_kind == PlanDraftKind.SEATING
     assert result.status == PlanDraftStatus.ACTIVE
     assert result.smart_enabled is True
+    assert result.use_history is True
+    assert result.grouping_seating_distance_enabled is True
     drafts.save_workspace.assert_awaited_once()
 
 

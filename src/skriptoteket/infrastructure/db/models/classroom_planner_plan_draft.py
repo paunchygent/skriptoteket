@@ -82,20 +82,20 @@ class PlanDraftModel(Base):
     smart_enabled: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        default=False,
-        server_default=text("false"),
+        default=True,
+        server_default=text("true"),
     )
     use_history: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        default=False,
-        server_default=text("false"),
+        default=True,
+        server_default=text("true"),
     )
     grouping_seating_distance_enabled: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        default=False,
-        server_default=text("false"),
+        default=True,
+        server_default=text("true"),
     )
     status: Mapped[str] = mapped_column(
         String(32),

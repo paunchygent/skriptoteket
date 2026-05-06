@@ -127,8 +127,8 @@ describe("PlannerGroupingWorkspaceToolbar", () => {
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="grouping-actions-menu"]').exists()).toBe(true);
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
 
-    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-label")).toBe(
-      "Smart-inställningar",
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').text()).toContain(
+      "Avancerade inställningar",
     );
     expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-haspopup")).toBe(
       "dialog",

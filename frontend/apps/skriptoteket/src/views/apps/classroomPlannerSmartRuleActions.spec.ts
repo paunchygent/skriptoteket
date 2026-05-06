@@ -13,7 +13,12 @@ import { computed, ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
-import type { FixedSeatRule, RelationshipRule, StudentSeatingPreference } from "./classroomPlannerTypes";
+import type {
+  FixedSeatRule,
+  PlanDraft,
+  RelationshipRule,
+  StudentSeatingPreference,
+} from "./classroomPlannerTypes";
 import { useSmartRuleUiState } from "./useSmartRuleUiState";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
@@ -21,8 +26,15 @@ import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 type DraftLane = ReturnType<typeof useDraftPersistenceLane>;
 type SmartRuleLane = ReturnType<typeof useRosterSmartRuleLane>;
 
-function createFixture(initialFixedSeatRules: FixedSeatRule[] = []) {
-  const fixedSeatRules = ref<FixedSeatRule[]>(initialFixedSeatRules);
+function createFixture(input: {
+  initialFixedSeatRules?: FixedSeatRule[];
+  draft?: PlanDraft | null;
+} = {}) {
+  const draft = ref<PlanDraft | null>(input.draft ?? null);
+  const fixedSeatRules = ref<FixedSeatRule[]>(input.initialFixedSeatRules ?? []);
+  const draftLane = {
+    markDirty: vi.fn(),
+  } as unknown as DraftLane;
   const smartRuleLane = {
     markDirty: vi.fn(),
   } as unknown as SmartRuleLane;
@@ -30,7 +42,7 @@ function createFixture(initialFixedSeatRules: FixedSeatRule[] = []) {
     canEditSmartRules: () => true,
   });
   const actions = createClassroomPlannerSmartRuleActions({
-    draft: ref(null),
+    draft,
     template: ref({
       id: "template-1",
       name: "Sal 101",
@@ -53,15 +65,38 @@ function createFixture(initialFixedSeatRules: FixedSeatRule[] = []) {
     })),
     isWorkspaceBusy: computed(() => false),
     canEditSeatingSmartRules: computed(() => true),
-    draftLane: {} as DraftLane,
+    draftLane,
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: vi.fn(),
   });
-  return { actions, fixedSeatRules, smartRuleLane, smartRuleUiState };
+  return { actions, draft, draftLane, fixedSeatRules, smartRuleLane, smartRuleUiState };
 }
 
 describe("createClassroomPlannerSmartRuleActions", () => {
+  it("treats missing grouping seating influence flag as enabled until the teacher opts out", () => {
+    const fixture = createFixture({
+      draft: {
+        id: "draft-1",
+        roster_id: "roster-1",
+        draft_kind: "grouping",
+        status: "active",
+        revision: 1,
+        last_opened_at: "2026-05-06T10:00:00.000Z",
+      },
+    });
+
+    fixture.actions.setDraftGroupingSeatingDistanceEnabled(true);
+
+    expect(fixture.draft.value?.grouping_seating_distance_enabled).toBeUndefined();
+    expect(fixture.draftLane.markDirty).not.toHaveBeenCalled();
+
+    fixture.actions.setDraftGroupingSeatingDistanceEnabled(false);
+
+    expect(fixture.draft.value?.grouping_seating_distance_enabled).toBe(false);
+    expect(fixture.draftLane.markDirty).toHaveBeenCalledTimes(1);
+  });
+
   it("creates fixed-seat rules only after seat selection and explicit confirmation", () => {
     const fixture = createFixture();
 
@@ -103,14 +138,15 @@ describe("createClassroomPlannerSmartRuleActions", () => {
   });
 
   it("moves an existing fixed-seat rule after editing and confirmation", () => {
-    const fixture = createFixture([
+    const fixture = createFixture({
+      initialFixedSeatRules: [
       {
         id: "fixed-1",
         template_id: "template-1",
         student_id: "student-1",
         seat_id: "seat-1",
       },
-    ]);
+    ]});
 
     fixture.actions.beginFixedSeatRuleEdit("fixed-1");
     expect(fixture.smartRuleUiState.pendingFixedSeatStudentId.value).toBe("student-1");
@@ -127,14 +163,15 @@ describe("createClassroomPlannerSmartRuleActions", () => {
   });
 
   it("blocks locking a seat already fixed for another student", () => {
-    const fixture = createFixture([
+    const fixture = createFixture({
+      initialFixedSeatRules: [
       {
         id: "fixed-1",
         template_id: "template-1",
         student_id: "student-1",
         seat_id: "seat-1",
       },
-    ]);
+    ]});
 
     fixture.smartRuleUiState.setActiveSeatingSmartTool("fixed_seat");
     fixture.actions.handleSeatingSmartToolStudentSelection("student-2");

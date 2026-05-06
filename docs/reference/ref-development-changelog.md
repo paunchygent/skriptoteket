@@ -15,6 +15,113 @@ Rule:
 - When compacting `.codex/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
 
+## 2026-05-06 handoff compaction dump
+
+Moved from `.codex/handoff.md` while adding `PR-0305` so the live handoff stays under the
+repo line-count limit.
+
+### Previous Status
+
+- Added `ST-11-26` and `PR-0295` under `EPIC-11` for the palette/token refresh.
+- Updated canonical token source `src/skriptoteket/web/static/css/huleedu-design-tokens.css`:
+  Deep Navy `#082B4C`, Warm Terracotta `#C94F32`, Verdigris Teal `#3F7F78`, light canvas/paper
+  `#FAFAF6`, critical burgundy `#4D1521`.
+- Added semantic aliases for brand, text, border, action, primary button, and surface roles.
+- Kept `burgundy` as a deprecated compatibility alias for the critical channel; new action state
+  uses `action`.
+- Updated Tailwind bridge with `paper`, `terracotta`, `action`, `critical`, and
+  `button-primary-text`.
+- Updated shared primitives: `btn-primary`, `btn-cta`, focus rings, planner selected states,
+  danger buttons, toast failure, dense buttons, segmented toggles, toggle switches, small-screen
+  active rows/tabs/rules, share/export create buttons, room-seat selected state, and roster import
+  drag-active state.
+- Guarded filled selected selectors so selected teal controls keep light text, including nested
+  labels/icons in the desktop Översikt Dela scope selector.
+- Kept warning amber/ochra and critical/error-family separate; terracotta and teal are not warning
+  colors.
+- Reverted canvas/paper from the initial warmer `#F7F3EC` idea back to the lighter `#FAFAF6` to
+  avoid red/saturated page backgrounds behind white panels.
+- Updated `.codex/rules/045-huleedu-design-system.md`, `ADR-0032`, the frontend design-system
+  codemap, `docs/index.md`, and `EPIC-11`.
+- Added the surface-cohesion rule: light canvas is the uniform base; avoid stacked white-on-canvas
+  panels and use light row/object highlights instead.
+- Replaced remaining live SPA burgundy action/focus/accent drift with `action` where functional,
+  `critical` where destructive/error, and terracotta only for small brand/editorial accent.
+- Updated local logo SVG/PNG assets, verification email CTA, Klassrumskartan share/poster/PDF
+  renderer literals, docx script colors, and landing SVG assets toward the new palette.
+- Tightened the share/export hierarchy after visual review: selected scopes keep teal fill/light
+  text, `Skapa länk` is secondary teal outline/text with `IconLink2`, and the Dela panels/file rows
+  use canvas-toned surfaces instead of white-on-canvas patchwork.
+- Follow-up surface pass replaced visible white-on-canvas panel shells with `bg-panel` /
+  `bg-panel-muted`: dashboard/catalog cards, admin lists, suggestion forms, planner top panel,
+  workspace toolbar, overview setup panel, grouped/student panels, rules summary panels, phone
+  sheets/trays, modals/drawers, and shared planner button rails. Inputs and actual room/canvas
+  objects intentionally remain white.
+- Modal-shell follow-up added opaque `--huleedu-modal` / `--surface-modal` / `bg-modal` for modal,
+  dialog, popover, drawer, and sheet shells over overlays. In-page panels still use translucent
+  `bg-panel`; text fields, textareas, room objects, and isolated previews keep deliberate white
+  contrast.
+- Toast color follow-up: transient `failure` toasts now use warm terracotta (`bg-terracotta/90`)
+  instead of critical burgundy, while destructive and blocking inline errors remain on
+  critical/error-family channels.
+
+### Previous Verification
+
+- Toast color follow-up: `pdm run fe-build` passed; existing large chunk-size warnings remain.
+- Toast color follow-up: `pdm run docs-validate` passed.
+- Toast color follow-up: scoped `git diff --check -- frontend/apps/skriptoteket/src/assets/main.css
+  src/skriptoteket/web/static/css/huleedu-design-tokens.css
+  docs/reference/ref-toast-system-messages.md .codex/rules/045-huleedu-design-system.md
+  docs/backlog/stories/story-13-01-toast-system-primitives-spa.md
+  docs/backlog/prs/pr-0295-st-11-26-huleedu-palette-token-refresh.md
+  docs/backlog/prs/pr-0299-st-13-02-auth-and-critical-action-feedback-toast-audit.md` passed.
+- `PR-0300` checks passed: focused Klassrumskartan backend tests (`42 passed`), fixed-seat domain
+  tests (`4 passed`), `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, route-shell Vitest (`4 passed`), `pdm run docs-validate`, and
+  `git diff --check`.
+- Fixed-seat rules UX parity check passed: `pdm run fe-test -- --run
+  classroomPlannerSmartRuleActions PlannerRulesWorkspacePane PlannerRulesMapCanvas` passed
+  (3 files, 19 tests), `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run docs-validate`, and
+  `git diff --check` passed. In-app browser was reachable through browser-use and showed the
+  HuleEdu login ceremony for Skriptoteket; no credentials were submitted.
+- Fixed-seat visual preview follow-up passed: pending fixed-seat authoring now highlights the
+  pending student, marks the pending seat with a dashed lock and student-seat label, and shows a
+  compact `Fast plats` marker when the selected student is in the unassigned list. Focused Vitest,
+  `fe-type-check`, `fe-lint`, and `git diff --check` passed.
+- Fixed-seat classroom-canvas deselection follow-up passed: clicking the already selected pending
+  seat emits seat deselection, and clicking the selected seated student when no pending seat exists
+  emits student deselection. Focused Vitest now covers 20 tests; `fe-type-check`, `fe-lint`, and
+  `git diff --check` passed.
+- Fixed-seat preview polish follow-up passed: binding pills now use neutral matching styling, the
+  canvas pending fixed-seat preview keeps only the lock marker without the extra text card, and the
+  rules map toggle orders `Klassrumsvy` before `Planeringskarta` while preserving the classroom
+  default. Focused Vitest, `fe-type-check`, `fe-lint`, and `git diff --check` passed.
+- Rules workspace tool-rail follow-up passed: `Skapa/Spara regel` and `Rensa markering` now live in
+  a bottom action slot inside the fixed-height rail, so fixed-seat preview content can
+  appear/disappear without moving the buttons. The layout remains CSS-owned (`flex`/`mt-auto` plus
+  the focused `klassrumskartan-rules-workspace.css` rules); no JS sizing or sticky logic was added.
+  Focused Vitest, `fe-type-check`, `fe-lint`, `fe-build`, `docs-validate`, `handoff-validate`, and
+  `git diff --check` passed; `pdm run dev-stack ps` showed web/worker healthy plus db/frontend up.
+  In-app browser was available through `browser-use`/Node REPL but remained on the HuleEdu login
+  form, so no credentialed visual action was taken.
+- Rules workspace geometry follow-up passed: the fixed-seat planning-map prompt keeps its locked
+  wording while using `bg-canvas`, the active-rules summary and tool/map row now have a normal
+  workspace gutter, sticky behavior moved to the whole rules tool column, and the side rail
+  reserves a fixed 480px desktop height so dynamic rule controls do not resize the panel. New CSS
+  lives in the focused `klassrumskartan-rules-workspace.css` import. Focused Vitest,
+  `fe-type-check`, `fe-lint`, `docs-validate`, and `git diff --check` passed.
+- `pdm run fe-test -- src/App.spec.ts src/components/layout/AuthLayout.spec.ts
+  src/views/apps/classroomPlannerPublicShareFlow.spec.ts
+  src/views/apps/classroomPlannerShareFlow.spec.ts
+  src/views/apps/classroomPlannerRouteShellWorkspace.spec.ts src/components/vault/VaultPanel.spec.ts`
+  passed: 6 files, 19 tests.
+- `pdm run fe-type-check` passed.
+- `pdm run fe-lint` passed.
+- `pdm run fe-build` passed; existing large chunk-size warnings remain.
+- `pdm run docs-validate` passed.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+
 ## 2026-04-12 handoff compaction dump
 
 Moved from `.codex/handoff.md` while preparing `ST-28-08` / `PR-0257` as the next

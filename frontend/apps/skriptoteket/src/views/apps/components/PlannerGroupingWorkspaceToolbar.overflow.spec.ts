@@ -26,8 +26,8 @@ vi.mock("./usePlannerToolbarOverflow", () => ({
     ),
     thresholds: computed(() => ({
       context: 842,
-      smart: 714,
       reset: 620,
+      distribution: 480,
     })),
   }),
 }));
@@ -123,29 +123,38 @@ describe("PlannerGroupingWorkspaceToolbar overflow", () => {
     document.body.innerHTML = "";
   });
 
-  it("keeps context inline while Smart defaults to overflow", async () => {
+  it("keeps context inline while advanced settings stays in the overflow menu", async () => {
     const wrapper = await mountToolbarForHidden([]);
 
     expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-roster-control"]').exists()).toBe(true);
-    expectInlineContributionHidden(wrapper, '[data-test="grouping-smart-cluster"]');
+    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').text()).toContain(
+      "Avancerade inställningar",
+    );
+    expect(wrapper.get('[data-test="grouping-overflow-open-settings"]').attributes("aria-haspopup")).toBe(
+      "dialog",
+    );
   }, 10_000);
 
-  it("keeps Smart in overflow when roster context also overflows", async () => {
+  it("keeps advanced settings in the menu when roster context also overflows", async () => {
     const wrapper = await mountToolbarForHidden(["context"]);
+    await wrapper.setProps({
+      showShareLinkAction: true,
+      shares: [],
+    });
 
     expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-share-trigger"]').exists()).toBe(true);
     expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
-    expectInlineContributionHidden(wrapper, '[data-test="grouping-smart-cluster"]');
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
@@ -153,36 +162,65 @@ describe("PlannerGroupingWorkspaceToolbar overflow", () => {
     expect(wrapper.get('[data-test="grouping-overflow-roster-control"]').classes()).not.toContain(
       "planner-toolbar-menu-panel-phone-only",
     );
-    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-open-settings"]').exists()).toBe(true);
   });
 
-  it("shows teacher-friendly warning copy when Smart is turned off", async () => {
+  it("keeps share management inline while class and reset controls overflow", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "reset"]);
+    await wrapper.setProps({
+      showShareLinkAction: true,
+      shares: [],
+    });
+
+    expect(wrapper.find('[data-test="grouping-share-trigger"]').exists()).toBe(true);
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
+    expectInlineContributionHidden(wrapper, '[data-overflow-contribution="reset"]');
+
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
+    expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-share-trigger"]').exists()).toBe(false);
+  });
+
+  it("moves share management into overflow only after context and reset", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "reset", "distribution"]);
+    await wrapper.setProps({
+      showShareLinkAction: true,
+      shares: [],
+    });
+
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
+    expectInlineContributionHidden(wrapper, '[data-overflow-contribution="reset"]');
+    expectInlineContributionHidden(wrapper, '[data-overflow-contribution="distribution"]');
+
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
+    expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-share-trigger"]').exists()).toBe(true);
+  });
+
+  it("routes advanced settings through the settings menu item", async () => {
     const wrapper = await mountToolbarForHidden([]);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    await wrapper.get('[data-test="grouping-overflow-smart-toggle"]').trigger("click");
+    await wrapper.get('[data-test="grouping-overflow-open-settings"]').trigger("click");
 
-    expect(stateMocks.plannerState.setDraftSmartEnabled).toHaveBeenCalledWith(false);
-    expect(toastMocks.warning).toHaveBeenCalledWith(
-      "Smart är avstängt. När du slumpar tas ingen hänsyn till regler, fasta platser, nära läraren eller ihop/isär.",
-    );
+    expect(wrapper.emitted("open-settings")).toEqual([[]]);
+    expect(stateMocks.plannerState.setDraftSmartEnabled).not.toHaveBeenCalled();
+    expect(toastMocks.warning).not.toHaveBeenCalled();
   });
 
-  it("keeps reset overflow separate from Smart overflow", async () => {
+  it("keeps reset overflow separate from the settings menu item", async () => {
     const wrapper = await mountToolbarForHidden(["context"]);
 
     expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
-    expectInlineContributionHidden(wrapper, '[data-test="grouping-smart-cluster"]');
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     expect(wrapper.get('[data-test="grouping-overflow-roster-control"]').classes()).not.toContain(
       "planner-toolbar-menu-panel-phone-only",
     );
-    expect(wrapper.get('[data-test="grouping-overflow-smart-control"]').classes()).not.toContain(
-      "planner-toolbar-menu-panel-phone-only",
-    );
+    expect(wrapper.find('[data-test="grouping-overflow-open-settings"]').exists()).toBe(true);
   });
 
   it("moves reset only after context has overflowed", async () => {
@@ -190,13 +228,12 @@ describe("PlannerGroupingWorkspaceToolbar overflow", () => {
 
     expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(true);
     expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
-    expectInlineContributionHidden(wrapper, '[data-test="grouping-smart-cluster"]');
     expectInlineContributionHidden(wrapper, '[data-overflow-contribution="reset"]');
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-open-settings"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(true);
   });
 });

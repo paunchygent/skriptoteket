@@ -29,8 +29,8 @@ class PlanDraftDto(BaseModel):
     template_id: UUID | None = None
     task_entry_classroom_selection_mode: ClassroomSelectionMode
     smart_enabled: bool = True
-    use_history: bool = False
-    grouping_seating_distance_enabled: bool = False
+    use_history: bool = True
+    grouping_seating_distance_enabled: bool = True
     status: str
     revision: int
     last_opened_at: datetime

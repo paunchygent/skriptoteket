@@ -128,8 +128,8 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-actions-menu"]').exists()).toBe(true);
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
 
-    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').attributes("aria-label")).toBe(
-      "Smart-inställningar",
+    expect(wrapper.get('[data-test="seating-overflow-open-settings"]').text()).toContain(
+      "Avancerade inställningar",
     );
     expect(wrapper.find('[data-test="seating-active-rule-count"]').exists()).toBe(false);
   });

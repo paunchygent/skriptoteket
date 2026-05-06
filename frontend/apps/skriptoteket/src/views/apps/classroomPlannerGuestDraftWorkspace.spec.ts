@@ -91,7 +91,7 @@ function createGroupingWorkspace(template: RoomTemplate | null): DraftWorkspaceR
 }
 
 describe("classroomPlannerGuestDraftWorkspace", () => {
-  it("starts new public guest drafts with Smart enabled", () => {
+  it("starts new public guest drafts with available Smart settings enabled", () => {
     const draft = buildNewGuestDraft({
       draftId: "draft-1",
       draftKind: "seating",
@@ -102,6 +102,8 @@ describe("classroomPlannerGuestDraftWorkspace", () => {
     });
 
     expect(draft.smart_enabled).toBe(true);
+    expect(draft.grouping_seating_distance_enabled).toBe(true);
+    expect(draft.use_history).toBe(false);
   });
 
   it("persists the newly selected grouping classroom when reusing an existing guest draft", async () => {

@@ -44,6 +44,23 @@ async def column_map(engine: AsyncEngine, table_name: str) -> dict[str, dict[str
         return {row.column_name: {"is_nullable": row.is_nullable} for row in result.fetchall()}
 
 
+async def column_defaults(engine: AsyncEngine, table_name: str) -> dict[str, str | None]:
+    """Return column defaults for one public table."""
+
+    async with engine.connect() as conn:
+        result = await conn.execute(
+            text(
+                """
+                SELECT column_name, column_default
+                FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = :table_name
+                """
+            ),
+            {"table_name": table_name},
+        )
+        return {row.column_name: row.column_default for row in result.fetchall()}
+
+
 async def index_names(engine: AsyncEngine, table_name: str) -> set[str]:
     """Return index names for one public table."""
 

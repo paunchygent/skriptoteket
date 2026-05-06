@@ -12,6 +12,7 @@ Relationships:
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from tests.integration.migration_schema_helpers import (
+    column_defaults,
     column_map,
     foreign_key_delete_rules,
     foreign_key_targets,
@@ -159,3 +160,20 @@ async def assert_0d9c_fixed_seat_rules(engine: AsyncEngine) -> None:
         "ix_classroom_planner_roster_fixed_seat_rules_roster_id",
         "ix_classroom_planner_roster_fixed_seat_rules_template_id",
     }.issubset(indexes)
+
+
+async def assert_3f6d_use_history_default_on(engine: AsyncEngine) -> None:
+    """Verify authenticated draft history defaults to on for new rows."""
+
+    await assert_0d9c_fixed_seat_rules(engine)
+    defaults = await column_defaults(engine, "classroom_planner_plan_drafts")
+    assert defaults["use_history"] in {"true", "true::boolean"}
+
+
+async def assert_8a6d_grouping_seating_distance_default_on(engine: AsyncEngine) -> None:
+    """Verify authenticated Smart settings default to on for new rows."""
+
+    await assert_3f6d_use_history_default_on(engine)
+    defaults = await column_defaults(engine, "classroom_planner_plan_drafts")
+    assert defaults["smart_enabled"] in {"true", "true::boolean"}
+    assert defaults["grouping_seating_distance_enabled"] in {"true", "true::boolean"}

@@ -23,6 +23,8 @@ type PlannerToolbarMenuItem = {
   icon?: Component;
   disabled?: boolean;
   group?: "primary" | "secondary";
+  hasPopup?: "dialog" | "menu";
+  expanded?: boolean;
   responsiveVisibility?: "all" | "phone";
   testId?: string;
   tone?: "default" | "danger";
@@ -132,6 +134,8 @@ function handleMenuKeydown(event: KeyboardEvent): void {
             ]"
             :data-test="item.testId"
             :disabled="item.disabled"
+            :aria-haspopup="item.hasPopup"
+            :aria-expanded="item.hasPopup ? item.expanded : undefined"
             @click="handleSelect(item)"
           >
             <component
@@ -162,6 +166,8 @@ function handleMenuKeydown(event: KeyboardEvent): void {
           ]"
           :data-test="item.testId"
           :disabled="item.disabled"
+          :aria-haspopup="item.hasPopup"
+          :aria-expanded="item.hasPopup ? item.expanded : undefined"
           @click="handleSelect(item)"
         >
           <component

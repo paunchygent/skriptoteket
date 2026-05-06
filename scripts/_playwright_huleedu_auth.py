@@ -102,6 +102,9 @@ def wait_http(url: str, *, timeout_seconds: float = 20.0) -> None:
 def temporary_vite_server(*, proxy_target: str | None = None) -> Iterator[str]:
     """Start a temporary Vite dev server and stop it when the check ends."""
     port = _free_port()
+    effective_proxy_target = proxy_target or os.environ.get(
+        "VITE_DEV_PROXY_TARGET", "http://127.0.0.1:8000"
+    )
     process = subprocess.Popen(
         [
             "pnpm",
@@ -123,8 +126,8 @@ def temporary_vite_server(*, proxy_target: str | None = None) -> Iterator[str]:
         text=True,
         env={
             **os.environ,
-            "VITE_DEV_PROXY_TARGET": proxy_target
-            or os.environ.get("VITE_DEV_PROXY_TARGET", "http://127.0.0.1:8000"),
+            "VITE_DEV_PROXY_TARGET": effective_proxy_target,
+            "VITE_DEV_PUBLIC_API_PROXY_TARGET": effective_proxy_target,
         },
     )
     base_url = f"http://127.0.0.1:{port}"

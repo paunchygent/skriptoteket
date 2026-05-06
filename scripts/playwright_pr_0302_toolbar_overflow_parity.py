@@ -71,15 +71,19 @@ ROUNDTRIP = (
     ToolbarExpectation("tablet-down", 768, 1024),
     ToolbarExpectation("phone-breakpoint", 767, 900, ()),
     ToolbarExpectation("phone-context-overflow", 520, 844, ("context",)),
-    ToolbarExpectation("phone-smart-overflow", 440, 844, ("context", "smart")),
-    ToolbarExpectation("phone", 390, 844, ("context", "smart", "reset")),
-    ToolbarExpectation("phone-smart-return", 440, 844, ("context", "smart")),
+    ToolbarExpectation("phone-settings-menu", 440, 844, ("context",)),
+    ToolbarExpectation("phone", 390, 844, ("context", "reset")),
+    ToolbarExpectation(
+        "phone-distribution-overflow", 330, 844, ("context", "reset", "distribution")
+    ),
+    ToolbarExpectation("phone-reset-return", 390, 844, ("context", "reset")),
+    ToolbarExpectation("phone-settings-return", 440, 844, ("context",)),
     ToolbarExpectation("phone-context-return", 520, 844, ("context",)),
     ToolbarExpectation("tablet-up", 768, 1024),
     ToolbarExpectation("laptop-up", 1366, 768),
     ToolbarExpectation("desktop-end", 2048, 900, ()),
 )
-COLLAPSE_ORDER = ("context", "smart", "reset")
+COLLAPSE_ORDER = ("context", "reset", "distribution")
 
 
 def _is_local_vite_url(base_url: str) -> bool:
@@ -207,12 +211,8 @@ def _open_grouping_workspace(page: Page, *, template_name: str) -> None:
     focus_workspace_mode(page, label="Grupper")
     expect(page.locator('[data-test="grouping-actions-menu"]')).to_be_visible()
 
-    inline_settings = page.locator('[data-test="grouping-open-settings"]')
-    if _visible(inline_settings):
-        inline_settings.first.click()
-    else:
-        page.locator('[data-test="grouping-actions-menu"]').click()
-        page.locator('[data-test="grouping-overflow-open-settings"]').click()
+    page.locator('[data-test="grouping-actions-menu"]').click()
+    page.locator('[data-test="grouping-overflow-open-settings"]').click()
 
     drawer = page.locator('[data-test="grouping-settings-drawer"]')
     expect(drawer).to_be_visible()
@@ -318,18 +318,20 @@ def _selectors(kind: WorkspaceKind) -> dict[str, str]:
         return {
             "context_inline": '[data-test="grouping-roster-control"]',
             "context_overflow": '[data-test="grouping-overflow-roster-control"]',
-            "smart_inline": '[data-test="grouping-smart-cluster"]',
-            "smart_overflow": '[data-test="grouping-overflow-smart-control"]',
+            "settings_overflow": '[data-test="grouping-overflow-open-settings"]',
             "reset_inline": '[data-test="reset-grouping-draft"]',
             "reset_overflow": '[data-test="grouping-overflow-reset"]',
+            "distribution_inline": '[data-test="grouping-share-trigger"]',
+            "distribution_overflow": '[data-test="grouping-overflow-share-trigger"]',
         }
     return {
         "context_inline": '[data-test="seating-workspace-setup"]',
         "context_overflow": '[data-test="seating-overflow-template-control"]',
-        "smart_inline": '[data-test="seating-smart-cluster"]',
-        "smart_overflow": '[data-test="seating-overflow-smart-control"]',
+        "settings_overflow": '[data-test="seating-overflow-open-settings"]',
         "reset_inline": '[data-test="reset-seating-draft"]',
         "reset_overflow": '[data-test="seating-overflow-reset"]',
+        "distribution_inline": '[data-test="seating-share-trigger"]',
+        "distribution_overflow": '[data-test="seating-overflow-share-trigger"]',
     }
 
 
@@ -355,6 +357,7 @@ def _toolbar_diagnostics(toolbar: Locator) -> dict[str, object]:
             hiddenActions: element.getAttribute("data-overflow-hidden-actions"),
             contextThreshold: element.getAttribute("data-overflow-context-inline-min-width"),
             resetThreshold: element.getAttribute("data-overflow-reset-inline-min-width"),
+            distributionThreshold: element.getAttribute("data-overflow-distribution-inline-min-width"),
             inlineHidden: Array.from(element.querySelectorAll("[data-overflow-contribution]"))
                 .map(node => ({
                     contribution: node.getAttribute("data-overflow-contribution"),
@@ -418,13 +421,13 @@ def _assert_toolbar_placement(
     selectors = _selectors(kind)
     inline_expectations = {
         "context": selectors["context_inline"],
-        "smart": selectors["smart_inline"],
         "reset": selectors["reset_inline"],
+        "distribution": selectors["distribution_inline"],
     }
     overflow_expectations = {
         "context": selectors["context_overflow"],
-        "smart": selectors["smart_overflow"],
         "reset": selectors["reset_overflow"],
+        "distribution": selectors["distribution_overflow"],
     }
 
     for contribution, selector in inline_expectations.items():
@@ -442,6 +445,12 @@ def _assert_toolbar_placement(
             )
 
     _assert_menu_background(page, kind=kind)
+    settings_item = page.locator(selectors["settings_overflow"])
+    if not _visible(settings_item) or "Avancerade inställningar" not in settings_item.inner_text():
+        raise AssertionError(
+            f"{surface} {kind} {expectation.label} missing advanced settings item: "
+            f"hidden={hidden_actions}, diagnostics={_toolbar_diagnostics(toolbar)}."
+        )
     for contribution, selector in overflow_expectations.items():
         should_be_overflowed = contribution in hidden_actions
         if should_be_overflowed and not _visible(page.locator(selector)):

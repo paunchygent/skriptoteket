@@ -22,17 +22,10 @@ import {
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
-  UiDenseIconButton,
-  UiDenseToggle,
   denseActionValueClass,
 } from "../../../components/ui";
-import { useToast } from "../../../composables/useToast";
 import type { GroupingExportOption } from "../classroomPlannerExportApi";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
-import {
-  SMART_DISABLED_NOTICE,
-  isSmartEnabledByDefault,
-} from "../classroomPlannerSmartDefaults";
 import type { Roster } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
@@ -90,7 +83,8 @@ const props = withDefaults(
 const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
 const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
 const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
-const OVERFLOW_PRIORITY_ORDER = ["context", "reset"];
+const PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX = 340;
+const OVERFLOW_PRIORITY_ORDER = ["context", "reset", "distribution"];
 
 function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
   if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
@@ -101,6 +95,9 @@ function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] |
   }
   if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
     return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
+  }
+  if (rootElement.clientWidth > PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX) {
+    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
   }
   return OVERFLOW_PRIORITY_ORDER;
 }
@@ -124,6 +121,8 @@ type OverflowActionItem = {
   icon?: Component;
   disabled: boolean;
   group?: "primary" | "secondary";
+  hasPopup?: "dialog" | "menu";
+  expanded?: boolean;
   responsiveVisibility?: "all" | "phone";
   tone?: "danger";
   testId: string;
@@ -131,7 +130,6 @@ type OverflowActionItem = {
 };
 
 const state = useClassroomState();
-const toast = useToast();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
@@ -175,6 +173,10 @@ const {
       id: "reset",
       selector: '[data-overflow-contribution="reset"]',
     },
+    {
+      id: "distribution",
+      selector: '[data-overflow-contribution="distribution"]',
+    },
   ],
 });
 const overflowActionItems = computed(() => {
@@ -213,6 +215,18 @@ const secondaryActionItems = computed(() => {
     testId: "edit-grouping-roster",
     onSelect: () => emit("edit-roster"),
   });
+  if (props.showSmartControls) {
+    items.push({
+      id: "advanced-settings",
+      label: "Avancerade inställningar",
+      icon: IconAdjustments,
+      disabled: state.isWorkspaceBusy,
+      hasPopup: "dialog",
+      expanded: props.smartSettingsOpen,
+      testId: "grouping-overflow-open-settings",
+      onSelect: () => emit("open-settings"),
+    });
+  }
   return items;
 });
 const isResetGroupingDialogOpen = ref(false);
@@ -270,21 +284,12 @@ const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
 const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isSmartInline = computed(() => false);
+const isDistributionInline = computed(() => !hiddenContributionIds.value.includes("distribution"));
 const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
 const hasContextOverflowPanel = computed(() => props.availableRosters.length > 0 && !isContextInline.value);
-const hasSmartOverflowPanel = computed(() => props.showSmartControls);
 const showOverflowPanel = computed(() => (
   hasContextOverflowPanel.value
-  || hasSmartOverflowPanel.value
 ));
-
-function setSmartEnabled(enabled: boolean): void {
-  state.setDraftSmartEnabled(enabled);
-  if (!enabled) {
-    toast.warning(SMART_DISABLED_NOTICE);
-  }
-}
 </script>
 
 <template>
@@ -295,6 +300,7 @@ function setSmartEnabled(enabled: boolean): void {
       :data-overflow-hidden-actions="hiddenContributionIds.join(',')"
       :data-overflow-context-inline-min-width="thresholds.context"
       :data-overflow-reset-inline-min-width="thresholds.reset"
+      :data-overflow-distribution-inline-min-width="thresholds.distribution"
     >
       <template #primary>
         <div
@@ -404,40 +410,6 @@ function setSmartEnabled(enabled: boolean): void {
             </PlannerToolbarIconButton>
           </div>
         </div>
-        <div
-          :class="[
-            'flex items-center [&>*+*]:-ml-px',
-            !isSmartInline ? 'planner-toolbar-inline-overflowed' : null,
-          ]"
-          data-overflow-contribution="smart"
-          :data-overflow-inline-hidden="!isSmartInline ? 'true' : undefined"
-          data-test="grouping-smart-cluster"
-          :aria-hidden="!isSmartInline"
-        >
-          <UiDenseToggle
-            data-test="grouping-smart-toggle"
-            label="Smart"
-            group-position="start"
-            :model-value="isSmartEnabledByDefault(state.draft)"
-            :disabled="state.isWorkspaceBusy"
-            @update:model-value="setSmartEnabled"
-          />
-          <UiDenseIconButton
-            data-test="grouping-open-settings"
-            label="Smart-inställningar"
-            aria-label="Smart-inställningar"
-            title="Öppna Smart-inställningar"
-            size="utility"
-            group-position="end"
-            :active="smartSettingsOpen"
-            :expanded="smartSettingsOpen"
-            has-popup="dialog"
-            :disabled="state.isWorkspaceBusy"
-            @click="emit('open-settings')"
-          >
-            <IconAdjustments :size="14" />
-          </UiDenseIconButton>
-        </div>
       </template>
 
       <template
@@ -473,31 +445,38 @@ function setSmartEnabled(enabled: boolean): void {
       </template>
 
       <template #secondary>
-        <PlannerShareExportPanel
+        <div
           v-if="showDistributionAction"
-          :file-options="exportOptions"
-          :shares="shares"
-          :share-loading="shareLoading"
-          :share-busy="shareBusy"
-          :share-status-label="shareStatusLabel"
-          :share-error-message="shareErrorMessage"
-          :export-busy="exportBusy"
-          :export-error-message="exportErrorMessage"
-          :revoking-share-id="revokingShareId"
-          :show-file-actions="showExportActions"
-          :show-share-actions="showShareLinkAction"
-          :show-revoke-action="showShareRevokeAction"
-          trigger-test-id="grouping-share-trigger"
-          panel-test-id="grouping-share-management"
-          create-share-test-id="grouping-share-create"
-          create-share-mobile-test-id="grouping-share-create-mobile"
-          file-option-test-id-prefix="grouping-export-option"
-          @create-share="emit('share-link')"
-          @copy-share="emit('copy-share', $event)"
-          @revoke-share="emit('revoke-share', $event)"
-          @export-default="emit('export-default')"
-          @export-option="handleExportOption"
-        />
+          :class="{ 'planner-toolbar-inline-overflowed': !isDistributionInline }"
+          data-overflow-contribution="distribution"
+          :data-overflow-inline-hidden="!isDistributionInline ? 'true' : undefined"
+          :aria-hidden="!isDistributionInline"
+        >
+          <PlannerShareExportPanel
+            :file-options="exportOptions"
+            :shares="shares"
+            :share-loading="shareLoading"
+            :share-busy="shareBusy"
+            :share-status-label="shareStatusLabel"
+            :share-error-message="shareErrorMessage"
+            :export-busy="exportBusy"
+            :export-error-message="exportErrorMessage"
+            :revoking-share-id="revokingShareId"
+            :show-file-actions="showExportActions"
+            :show-share-actions="showShareLinkAction"
+            :show-revoke-action="showShareRevokeAction"
+            trigger-test-id="grouping-share-trigger"
+            panel-test-id="grouping-share-management"
+            create-share-test-id="grouping-share-create"
+            create-share-mobile-test-id="grouping-share-create-mobile"
+            file-option-test-id-prefix="grouping-export-option"
+            @create-share="emit('share-link')"
+            @copy-share="emit('copy-share', $event)"
+            @revoke-share="emit('revoke-share', $event)"
+            @export-default="emit('export-default')"
+            @export-option="handleExportOption"
+          />
+        </div>
         <PlannerToolbarOverflowMenu
           label="Fler gruppåtgärder"
           :items="secondaryActionItems"
@@ -531,46 +510,9 @@ function setSmartEnabled(enabled: boolean): void {
                 </option>
               </select>
             </label>
-            <div
-              v-if="hasSmartOverflowPanel"
-              :class="[
-                'space-y-2',
-                hasContextOverflowPanel ? 'border-t border-navy/10 pt-3' : null,
-              ]"
-              data-test="grouping-overflow-smart-control"
-            >
-              <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
-                Smart
-              </span>
-              <div class="flex items-center [&>*+*]:-ml-px">
-                <UiDenseToggle
-                  data-test="grouping-overflow-smart-toggle"
-                  label="Smart"
-                  group-position="start"
-                  :model-value="isSmartEnabledByDefault(state.draft)"
-                  :disabled="state.isWorkspaceBusy"
-                  @update:model-value="setSmartEnabled"
-                />
-                <UiDenseIconButton
-                  data-test="grouping-overflow-open-settings"
-                  label="Smart-inställningar"
-                  aria-label="Smart-inställningar"
-                  title="Öppna Smart-inställningar"
-                  size="utility"
-                  group-position="end"
-                  :active="smartSettingsOpen"
-                  :expanded="smartSettingsOpen"
-                  has-popup="dialog"
-                  :disabled="state.isWorkspaceBusy"
-                  @click="emit('open-settings')"
-                >
-                  <IconAdjustments :size="14" />
-                </UiDenseIconButton>
-              </div>
-            </div>
           </template>
           <template
-            v-if="showDistributionAction"
+            v-if="showDistributionAction && !isDistributionInline"
             #footer
           >
             <PlannerShareExportPanel

@@ -113,7 +113,7 @@ class GuestUpgradeDraftPayload(BaseModel):
     task_entry_classroom_selection_mode: ClassroomSelectionMode
     smart_enabled: bool = True
     use_history: bool = False
-    grouping_seating_distance_enabled: bool = False
+    grouping_seating_distance_enabled: bool = True
     revision: int
     last_opened_at: str
     groups: list[DraftGroup] = Field(default_factory=list)

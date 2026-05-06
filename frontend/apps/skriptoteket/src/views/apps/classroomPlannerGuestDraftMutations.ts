@@ -383,7 +383,7 @@ export function buildNewGuestDraft(input: {
     task_entry_classroom_selection_mode: input.templateRequired ? "required" : "optional",
     smart_enabled: true,
     use_history: false,
-    grouping_seating_distance_enabled: false,
+    grouping_seating_distance_enabled: true,
     status: "active",
     revision: 1,
     last_opened_at: input.nowIso,

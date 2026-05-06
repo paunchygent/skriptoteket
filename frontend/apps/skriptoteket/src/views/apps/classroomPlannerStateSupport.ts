@@ -26,7 +26,11 @@ import {
   normalizeClassroomPlannerWorkspace,
 } from "./classroomPlannerPayloadNormalization";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
-import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
+import {
+  isGroupingSeatingDistanceEnabledByDefault,
+  isHistoryEnabledByDefault,
+  isSmartEnabledByDefault,
+} from "./classroomPlannerSmartDefaults";
 import type {
   DraftHistoryStatus,
   DraftGroup,
@@ -226,9 +230,9 @@ export function createClassroomPlannerStateSupport(
     return {
       expected_revision: options.draft.value?.revision ?? null,
       smart_enabled: isSmartEnabledByDefault(options.draft.value),
-      use_history: options.draft.value?.use_history ?? false,
+      use_history: isHistoryEnabledByDefault(options.draft.value),
       grouping_seating_distance_enabled:
-        options.draft.value?.grouping_seating_distance_enabled ?? false,
+        isGroupingSeatingDistanceEnabledByDefault(options.draft.value),
       groups: options.groups.value.map((group) => ({ ...group })),
       group_assignments: options.groupAssignments.value.map((assignment) => ({ ...assignment })),
       seat_assignments: options.seatAssignments.value.map((assignment) => ({ ...assignment })),

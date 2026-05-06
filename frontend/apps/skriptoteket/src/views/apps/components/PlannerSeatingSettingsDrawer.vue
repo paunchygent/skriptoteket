@@ -1,16 +1,21 @@
 <script setup lang="ts">
 /**
- * Seating Smart settings drawer.
+ * Seating advanced Smart settings drawer.
  *
- * This drawer keeps secondary Smart tuning outside the first-row seating
- * toolbar. It exposes history as a Smart setting while leaving rule authoring
- * in the dedicated Regler workspace.
+ * This drawer owns the teacher-facing Smart opt-out controls for seating while
+ * leaving rule authoring in the dedicated Regler workspace.
  */
 
 import { onMounted, onUnmounted } from "vue";
 
 import { IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseToggle } from "../../../components/ui";
+import { useToast } from "../../../composables/useToast";
+import {
+  SMART_DISABLED_NOTICE,
+  isHistoryEnabledByDefault,
+  isSmartEnabledByDefault,
+} from "../classroomPlannerSmartDefaults";
 import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(defineProps<{
@@ -26,6 +31,14 @@ const emit = defineEmits<{
 }>();
 
 const state = useClassroomState();
+const toast = useToast();
+
+function setSmartEnabled(enabled: boolean): void {
+  state.setDraftSmartEnabled(enabled);
+  if (!enabled) {
+    toast.warning(SMART_DISABLED_NOTICE);
+  }
+}
 
 function openRules(): void {
   emit("open-rules");
@@ -63,21 +76,18 @@ onUnmounted(() => {
       aria-labelledby="seating-settings-title"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
-        <div class="min-w-0 space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Smart
-          </p>
+        <div class="min-w-0">
           <h3
             id="seating-settings-title"
             class="font-serif text-xl text-navy"
           >
-            Smart-inställningar
+            Avancerade inställningar
           </h3>
         </div>
         <button
           type="button"
           class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-sm"
-          aria-label="Stäng Smart-inställningar"
+          aria-label="Stäng avancerade inställningar"
           @click="emit('close')"
         >
           <IconX :size="14" />
@@ -85,6 +95,19 @@ onUnmounted(() => {
       </div>
 
       <div class="flex-1 space-y-4 overflow-y-auto p-4">
+        <section class="space-y-2 border border-navy/20 bg-canvas p-4">
+          <UiDenseToggle
+            data-test="seating-settings-smart-toggle"
+            label="Smart placering"
+            :model-value="isSmartEnabledByDefault(state.draft)"
+            :disabled="state.isWorkspaceBusy"
+            @update:model-value="setSmartEnabled"
+          />
+          <p class="text-sm leading-relaxed text-navy/65">
+            Tar hänsyn till dina regler när du skapar en ny placering, till exempel fasta platser eller elever som inte bör sitta nära varandra.
+          </p>
+        </section>
+
         <section
           v-if="showHistorySetting"
           class="space-y-2 border border-navy/20 bg-canvas p-4"
@@ -92,12 +115,12 @@ onUnmounted(() => {
           <UiDenseToggle
             data-test="seating-settings-history-toggle"
             label="Historik"
-            :model-value="state.draft?.use_history ?? false"
+            :model-value="isHistoryEnabledByDefault(state.draft)"
             :disabled="state.isWorkspaceBusy"
             @update:model-value="state.setDraftUseHistoryEnabled($event)"
           />
           <p class="text-sm leading-relaxed text-navy/65">
-            Om du tidigare har exporterat ett sittschema kan Smart använda det för att variera placeringen över tid.
+            Försöker undvika att elever får samma plats eller samma bordsgrannar som tidigare. Stäng av om du vill börja utan historik.
           </p>
         </section>
 
@@ -107,7 +130,7 @@ onUnmounted(() => {
               Regler
             </h4>
             <p class="text-sm leading-relaxed text-navy/65">
-              Du lägger till och ändrar regler i arbetsytan Regler.
+              Lägg till och ändra regler för placeringar.
             </p>
           </div>
           <UiDenseActionButton

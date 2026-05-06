@@ -2,8 +2,9 @@
  * Classroom planner Smart default and opt-out copy.
  *
  * Purpose:
- *   Keeps Smart-on-by-default behavior and teacher-facing opt-out feedback
- *   consistent between authenticated and public planner workspaces.
+ *   Keeps Smart, history, and grouping seating-influence opt-out defaults plus
+ *   teacher-facing feedback consistent between authenticated and public
+ *   planner workspaces.
  *
  * Relationships:
  *   - read by planner draft persistence, Smart run routing, and workspace
@@ -21,4 +22,16 @@ export function isSmartEnabledByDefault(
   draft: Pick<PlanDraft, "smart_enabled"> | null | undefined,
 ): boolean {
   return draft?.smart_enabled ?? true;
+}
+
+export function isHistoryEnabledByDefault(
+  draft: Pick<PlanDraft, "use_history"> | null | undefined,
+): boolean {
+  return draft?.use_history ?? true;
+}
+
+export function isGroupingSeatingDistanceEnabledByDefault(
+  draft: Pick<PlanDraft, "grouping_seating_distance_enabled"> | null | undefined,
+): boolean {
+  return draft?.grouping_seating_distance_enabled ?? true;
 }
