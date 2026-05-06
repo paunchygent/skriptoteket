@@ -31,6 +31,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0287_smart_settings_persistence.py",
     "playwright_pr_0299_logout_failure_toast.py",
     "playwright_pr_0302_toolbar_overflow_parity.py",
+    "playwright_pr_0303_public_guest_overview_distribution.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

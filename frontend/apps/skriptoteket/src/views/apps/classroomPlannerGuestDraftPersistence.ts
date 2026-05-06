@@ -134,7 +134,7 @@ export function createClassroomPlannerGuestDraftPersistence(
         return {
           nextSnapshot: replaceGuestSnapshotDraft(snapshot, workspace, {
             updatedAt,
-            currentScreen: "planner",
+            currentScreen: snapshot.ui_state.current_screen,
             plannerInitialView: workspace.draft.draft_kind === "grouping" ? "groups" : "seats",
             selectedRosterId: roster.value!.id,
             selectedTemplateId: resolvePersistedSelectedTemplateId(

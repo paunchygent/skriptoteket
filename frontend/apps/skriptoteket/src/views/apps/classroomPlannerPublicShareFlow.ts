@@ -7,7 +7,7 @@
  * localStorage for best-effort supersede on the next share.
  */
 
-import { computed, ref, unref, type Ref } from "vue";
+import { computed, ref, unref, watch, type Ref } from "vue";
 
 import { isApiError } from "../../api/client";
 import { useToast } from "../../composables/useToast";
@@ -254,6 +254,13 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
   const isDraftInScope = computed(() => {
     return unref(options.plannerState.draft)?.draft_kind === options.draftKind;
   });
+  const activeDraftSignature = computed(() => {
+    const draft = unref(options.plannerState.draft);
+    if (!draft || draft.draft_kind !== options.draftKind) {
+      return null;
+    }
+    return `${draft.id}:${draft.revision}`;
+  });
 
   function getActiveDraft(): PlanDraft | null {
     const draft = unref(options.plannerState.draft);
@@ -282,7 +289,13 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
     }
   }
 
-  void hydrateLatestBrowserOwnedShare();
+  watch(
+    activeDraftSignature,
+    () => {
+      void hydrateLatestBrowserOwnedShare();
+    },
+    { immediate: true },
+  );
 
   async function startShare(): Promise<void> {
     if (isBusy.value) {

@@ -12,6 +12,26 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerClassWorkspace from "./PlannerClassWorkspace.vue";
 
+const groupingShare = {
+  id: "share-1",
+  title: "SA24D grupper",
+  draft_kind: "grouping",
+  source: "public_guest",
+  source_revision: 1,
+  slug: "sa24d-grupper",
+  public_path: "/share/classroom/sa24d-grupper",
+  public_url: "https://skriptoteket.example/share/classroom/sa24d-grupper",
+  preview_description: "Gruppindelning",
+  renderer_version: "klassrumskartan-share-renderer-v1",
+  presentation_schema_version: "grouping-share-v1",
+  content_hash: "sha256:content",
+  presentation_hash: "sha256:presentation",
+  created_at: "2026-05-06T08:00:00Z",
+  updated_at: "2026-05-06T08:00:00Z",
+  revoked_at: null,
+  expires_at: "2026-06-06T08:00:00Z",
+};
+
 function buildWorkspaceSummary() {
   return {
     roster: { id: "roster-1", name: "SA24D", student_count: 28 },
@@ -219,6 +239,22 @@ describe("PlannerClassWorkspace", () => {
       .toBeDefined();
     expect(wrapper.get("[data-test='planner-share-export-scope-prerequisite']").text())
       .toBe("Sittschema: Välj ett klassrum först.");
+  });
+
+  it("keeps a workspace-created grouping link visible as the default overview share scope", async () => {
+    const wrapper = mountWorkspace({
+      groupingShares: [groupingShare],
+    });
+
+    expect(wrapper.get("[data-test='planner-share-export-scope-meta']").text())
+      .toContain("Gruppindelning · 28 elever");
+    expect(wrapper.get("[data-test='planner-share-link-share-1']").text()).toContain("SA24D grupper");
+
+    await wrapper.get("[data-test='phone-overview-share-create-mobile']").trigger("click");
+    await wrapper.get("[data-test='phone-overview-export-option-xlsx']").trigger("click");
+
+    expect(wrapper.emitted("share-overview-grouping-link")).toEqual([[]]);
+    expect(wrapper.emitted("export-overview-grouping-default")).toEqual([[]]);
   });
 
   it("does not preselect a share/export scope when requirements are missing", () => {

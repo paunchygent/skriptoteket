@@ -107,6 +107,9 @@ into the `laptop` proof width.
 - `PR-0301` is closed as the `ST-29-11` follow-up for the overview `Dela och exportera` content
   selector: it keeps the `PR-0286` consolidation and replaces the stacked rows with the preferred
   rail toggle plus class-list/classroom draft confirmation.
+- `PR-0303` is done as the cross-linked public guest overview wiring remediation; it keeps
+  the `ST-29-11` overview rail presentation intact while fixing the `ST-26-06` share/export state
+  path for public guest users.
 - `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
   and approved Swedish guidance without adding walkthroughs, modals, or extra onboarding chrome.
 - Approved small-screen workspace direction lives in

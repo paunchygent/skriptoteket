@@ -26,6 +26,8 @@ import { usePublicGroupingShareFlow } from "./usePublicGroupingShareFlow";
 import { usePublicSeatingExportFlow } from "./usePublicSeatingExportFlow";
 import { usePublicSeatingShareFlow } from "./usePublicSeatingShareFlow";
 
+type OverviewDistributionScope = "grouping" | "seating";
+
 const router = useRouter();
 const guestController = useClassroomPlannerGuestController();
 const providedGuestPlannerState = reactive(guestController.guestPlannerState);
@@ -65,6 +67,50 @@ const registerUrl = computed(() =>
 
 async function exitPublicPlanner(): Promise<void> {
   await router.push({ name: "home" });
+}
+
+async function prepareOverviewDistributionScope(scope: OverviewDistributionScope): Promise<boolean> {
+  return await guestController.prepareOverviewDistributionScope(scope);
+}
+
+async function startOverviewDefaultGroupingExport(): Promise<void> {
+  if (await prepareOverviewDistributionScope("grouping")) {
+    await groupingExportFlow.startDefaultExport();
+  }
+}
+
+async function startOverviewGroupingExportOption(
+  option: Parameters<typeof groupingExportFlow.startExport>[0],
+): Promise<void> {
+  if (await prepareOverviewDistributionScope("grouping")) {
+    await groupingExportFlow.startExport(option);
+  }
+}
+
+async function startOverviewGroupingShareLink(): Promise<void> {
+  if (await prepareOverviewDistributionScope("grouping")) {
+    await groupingShareFlow.startShare();
+  }
+}
+
+async function startOverviewDefaultSeatingExport(): Promise<void> {
+  if (await prepareOverviewDistributionScope("seating")) {
+    await seatingExportFlow.startDefaultExport();
+  }
+}
+
+async function startOverviewSeatingExportOption(
+  option: Parameters<typeof seatingExportFlow.startExport>[0],
+): Promise<void> {
+  if (await prepareOverviewDistributionScope("seating")) {
+    await seatingExportFlow.startExport(option);
+  }
+}
+
+async function startOverviewSeatingShareLink(): Promise<void> {
+  if (await prepareOverviewDistributionScope("seating")) {
+    await seatingShareFlow.startShare();
+  }
 }
 </script>
 
@@ -177,6 +223,20 @@ async function exitPublicPlanner(): Promise<void> {
           :visible-grouping-draft="null"
           :visible-seating-draft="null"
           :overview-capabilities="guestController.overviewCapabilities"
+          :grouping-export-busy="groupingExportFlow.isBusy.value"
+          :grouping-export-error-message="groupingExportFlow.errorMessage.value"
+          :grouping-share-busy="groupingShareFlow.isBusy.value"
+          :grouping-share-status-label="groupingShareFlow.statusLabel.value"
+          :grouping-share-error-message="groupingShareFlow.errorMessage.value"
+          :grouping-share-revoking-id="groupingShareFlow.revokingShareId.value"
+          :grouping-shares="groupingShareFlow.shares.value"
+          :seating-export-busy="seatingExportFlow.isBusy.value"
+          :seating-export-error-message="seatingExportFlow.errorMessage.value"
+          :seating-share-busy="seatingShareFlow.isBusy.value"
+          :seating-share-status-label="seatingShareFlow.statusLabel.value"
+          :seating-share-error-message="seatingShareFlow.errorMessage.value"
+          :seating-share-revoking-id="seatingShareFlow.revokingShareId.value"
+          :seating-shares="seatingShareFlow.shares.value"
           @exit-app="void exitPublicPlanner()"
           @create-roster="guestController.openRosterCreate"
           @edit-roster="guestController.openSelectedRosterEdit"
@@ -189,6 +249,17 @@ async function exitPublicPlanner(): Promise<void> {
           @open-grouping="void guestController.openGroupingWorkspace()"
           @open-seating="void guestController.openSeatingWorkspace($event.templateId)"
           @open-rules="void guestController.openRulesWorkspace()"
+          @prepare-overview-distribution="void prepareOverviewDistributionScope($event)"
+          @export-overview-grouping-default="void startOverviewDefaultGroupingExport()"
+          @export-overview-grouping-option="void startOverviewGroupingExportOption($event)"
+          @share-overview-grouping-link="void startOverviewGroupingShareLink()"
+          @copy-overview-grouping-share="void groupingShareFlow.copyShareLink($event)"
+          @revoke-overview-grouping-share="void groupingShareFlow.revokePublicShare($event)"
+          @export-overview-seating-default="void startOverviewDefaultSeatingExport()"
+          @export-overview-seating-option="void startOverviewSeatingExportOption($event)"
+          @share-overview-seating-link="void startOverviewSeatingShareLink()"
+          @copy-overview-seating-share="void seatingShareFlow.copyShareLink($event)"
+          @revoke-overview-seating-share="void seatingShareFlow.revokePublicShare($event)"
         />
 
         <ClassroomPlannerGuestWorkspaceShell

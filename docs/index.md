@@ -327,6 +327,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md`
 - ST-29-11 planner toolbar overflow priority regression:
   `docs/backlog/prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md`
+- ST-26-06 public guest overview share/export state wiring:
+  `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 shared-link PDF download spinner contract:
   `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`
 - Review gate for PR-0282 shared-link PDF download spinner contract:
@@ -447,6 +449,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md`
 - ST-29-11 planner toolbar overflow priority regression task:
   `docs/backlog/prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md`
+- ST-26-06 public guest overview share/export state wiring task:
+  `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 share-link popover and bottom-sheet management task:
   `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
 - ST-26-06 spatial share-page renderer and grouping polish task:

@@ -6,6 +6,7 @@
  * with the same client operation.
  */
 
+import { nextTick, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
@@ -332,5 +333,61 @@ describe("createClassroomPlannerPublicShareFlow", () => {
     });
     expect(reloadedFlow.shares.value).toEqual([]);
     expect(Object.keys(localStorage).some((key) => key.includes("public-share"))).toBe(false);
+  });
+
+  it("hydrates browser-owned share metadata when the draft appears after overview preparation", async () => {
+    const snapshot = createSnapshot("sha256:first");
+    const createShare = vi
+      .fn()
+      .mockResolvedValue(createdShare("/share/classroom/current/klass-7a", "current-secret"));
+    const firstFlow = createClassroomPlannerPublicShareFlow({
+      plannerState: {
+        draft: createDraft(),
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      },
+      getSnapshot: vi.fn(async () => snapshot),
+      draftKind: "grouping",
+      createShare,
+      revokeShare: vi.fn(),
+      messages: {
+        missingDraftMessage: "missing",
+        initialStatusLabel: "sharing",
+        copiedMessage: "copied",
+        revokedMessage: "revoked",
+        fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
+      },
+    });
+    await firstFlow.startShare();
+
+    const lateDraft = ref<PlanDraft | null>(null);
+    const reloadedFlow = createClassroomPlannerPublicShareFlow({
+      plannerState: {
+        draft: lateDraft,
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      },
+      getSnapshot: vi.fn(async () => snapshot),
+      draftKind: "grouping",
+      createShare: vi.fn(),
+      revokeShare: vi.fn(),
+      messages: {
+        missingDraftMessage: "missing",
+        initialStatusLabel: "sharing",
+        copiedMessage: "copied",
+        revokedMessage: "revoked",
+        fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
+      },
+    });
+
+    expect(reloadedFlow.shares.value).toEqual([]);
+
+    lateDraft.value = createDraft();
+    await nextTick();
+
+    await vi.waitFor(() => {
+      expect(reloadedFlow.shares.value).toHaveLength(1);
+    });
+    expect(reloadedFlow.shares.value[0]?.public_path).toBe("/share/classroom/current/klass-7a");
   });
 });

@@ -57,6 +57,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0287: ST-29-11 Smart settings popover persistence](../prs/pr-0287-st-29-11-smart-settings-popover-persistence.md)
 - [PR-0301: ST-29-11 overview share/export scope rail and draft confirmation](../prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md)
 - [PR-0302: ST-29-11 planner toolbar overflow priority regression](../prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md)
+- [PR-0303: ST-26-06 public guest overview share/export state wiring](../prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -100,6 +101,11 @@ instead of treating it as unfinished planner-layout implementation.
   stacked content selector with the product-owner preferred rail toggle, and
   adds selected-draft confirmation for class list and classroom context with
   live proof at phone, laptop, and desktop widths.
+- `PR-0303` is done as a cross-linked `ST-26-06` remediation slice for public
+  guest overview wiring only: it preserves the existing overview rail and
+  dense-control presentation while making public overview share/export actions
+  use the selected browser-owned draft and show the browser-owned current link
+  rows.
 
 ## References
 

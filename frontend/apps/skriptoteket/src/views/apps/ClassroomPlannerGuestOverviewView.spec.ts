@@ -8,7 +8,7 @@
  */
 
 import { defineComponent, nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
@@ -16,6 +16,63 @@ import ClassroomPlannerGuestOverviewView from "./ClassroomPlannerGuestOverviewVi
 
 const routerMocks = vi.hoisted(() => ({
   push: vi.fn(),
+}));
+
+const shareArtifact = {
+  id: "share-1",
+  title: "SA24D",
+  draft_kind: "grouping",
+  source: "public_guest",
+  source_revision: 1,
+  slug: "sa24d",
+  public_path: "/share/classroom/public/sa24d",
+  public_url: "https://skriptoteket.hule.education/share/classroom/public/sa24d",
+  preview_description: "Publik gruppindelning",
+  renderer_version: "klassrumskartan-share-renderer-v1",
+  presentation_schema_version: "grouping-share-v1",
+  content_hash: "sha256:content",
+  presentation_hash: "sha256:presentation",
+  created_at: "2026-05-06T08:00:00Z",
+  updated_at: "2026-05-06T08:00:00Z",
+  revoked_at: null,
+  expires_at: "2026-06-06T08:00:00Z",
+};
+
+const publicFlowMocks = vi.hoisted(() => ({
+  groupingExport: {
+    isBusy: { value: false },
+    statusLabel: { value: null as string | null },
+    errorMessage: { value: null as string | null },
+    startDefaultExport: vi.fn(),
+    startExport: vi.fn(),
+  },
+  seatingExport: {
+    isBusy: { value: false },
+    statusLabel: { value: null as string | null },
+    errorMessage: { value: null as string | null },
+    startDefaultExport: vi.fn(),
+    startExport: vi.fn(),
+  },
+  groupingShare: {
+    isBusy: { value: false },
+    statusLabel: { value: null as string | null },
+    errorMessage: { value: null as string | null },
+    revokingShareId: { value: null as string | null },
+    shares: { value: [] as unknown[] },
+    startShare: vi.fn(),
+    copyShareLink: vi.fn(),
+    revokePublicShare: vi.fn(),
+  },
+  seatingShare: {
+    isBusy: { value: false },
+    statusLabel: { value: null as string | null },
+    errorMessage: { value: null as string | null },
+    revokingShareId: { value: null as string | null },
+    shares: { value: [] as unknown[] },
+    startShare: vi.fn(),
+    copyShareLink: vi.fn(),
+    revokePublicShare: vi.fn(),
+  },
 }));
 
 const guestOverviewMocks = vi.hoisted(() => ({
@@ -66,6 +123,7 @@ const guestOverviewMocks = vi.hoisted(() => ({
   startNewGroupingDraft: vi.fn(),
   startNewSeatingDraft: vi.fn(),
   openRulesWorkspace: vi.fn(),
+  prepareOverviewDistributionScope: vi.fn(),
   selectPlannerWorkspaceMode: vi.fn(),
   openRosterCreate: vi.fn(),
   closeRosterModal: vi.fn(),
@@ -94,6 +152,20 @@ const PlannerClassWorkspaceStub = defineComponent({
   name: "PlannerClassWorkspace",
   props: {
     overviewCapabilities: { type: Object, required: false, default: null },
+    groupingExportBusy: { type: Boolean, required: false, default: false },
+    groupingExportErrorMessage: { type: String, required: false, default: null },
+    groupingShareBusy: { type: Boolean, required: false, default: false },
+    groupingShareStatusLabel: { type: String, required: false, default: null },
+    groupingShareErrorMessage: { type: String, required: false, default: null },
+    groupingShareRevokingId: { type: String, required: false, default: null },
+    groupingShares: { type: Array, required: false, default: () => [] },
+    seatingExportBusy: { type: Boolean, required: false, default: false },
+    seatingExportErrorMessage: { type: String, required: false, default: null },
+    seatingShareBusy: { type: Boolean, required: false, default: false },
+    seatingShareStatusLabel: { type: String, required: false, default: null },
+    seatingShareErrorMessage: { type: String, required: false, default: null },
+    seatingShareRevokingId: { type: String, required: false, default: null },
+    seatingShares: { type: Array, required: false, default: () => [] },
   },
   template: "<div data-test='planner-class-workspace-stub' />",
 });
@@ -118,6 +190,22 @@ vi.mock("vue-router", async (importOriginal) => {
 
 vi.mock("./useClassroomPlannerGuestController", () => ({
   useClassroomPlannerGuestController: () => guestOverviewMocks,
+}));
+
+vi.mock("./usePublicGroupingExportFlow", () => ({
+  usePublicGroupingExportFlow: () => publicFlowMocks.groupingExport,
+}));
+
+vi.mock("./usePublicSeatingExportFlow", () => ({
+  usePublicSeatingExportFlow: () => publicFlowMocks.seatingExport,
+}));
+
+vi.mock("./usePublicGroupingShareFlow", () => ({
+  usePublicGroupingShareFlow: () => publicFlowMocks.groupingShare,
+}));
+
+vi.mock("./usePublicSeatingShareFlow", () => ({
+  usePublicSeatingShareFlow: () => publicFlowMocks.seatingShare,
 }));
 
 function mountView() {
@@ -151,7 +239,33 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     guestOverviewMocks.openGroupingWorkspace.mockReset();
     guestOverviewMocks.openSeatingWorkspace.mockReset();
     guestOverviewMocks.openRulesWorkspace.mockReset();
+    guestOverviewMocks.prepareOverviewDistributionScope.mockReset();
+    guestOverviewMocks.prepareOverviewDistributionScope.mockResolvedValue(true);
     guestOverviewMocks.selectPlannerWorkspaceMode.mockReset();
+    publicFlowMocks.groupingExport.isBusy.value = false;
+    publicFlowMocks.groupingExport.errorMessage.value = null;
+    publicFlowMocks.groupingExport.startDefaultExport.mockReset();
+    publicFlowMocks.groupingExport.startExport.mockReset();
+    publicFlowMocks.seatingExport.isBusy.value = false;
+    publicFlowMocks.seatingExport.errorMessage.value = null;
+    publicFlowMocks.seatingExport.startDefaultExport.mockReset();
+    publicFlowMocks.seatingExport.startExport.mockReset();
+    publicFlowMocks.groupingShare.isBusy.value = false;
+    publicFlowMocks.groupingShare.statusLabel.value = null;
+    publicFlowMocks.groupingShare.errorMessage.value = null;
+    publicFlowMocks.groupingShare.revokingShareId.value = null;
+    publicFlowMocks.groupingShare.shares.value = [];
+    publicFlowMocks.groupingShare.startShare.mockReset();
+    publicFlowMocks.groupingShare.copyShareLink.mockReset();
+    publicFlowMocks.groupingShare.revokePublicShare.mockReset();
+    publicFlowMocks.seatingShare.isBusy.value = false;
+    publicFlowMocks.seatingShare.statusLabel.value = null;
+    publicFlowMocks.seatingShare.errorMessage.value = null;
+    publicFlowMocks.seatingShare.revokingShareId.value = null;
+    publicFlowMocks.seatingShare.shares.value = [];
+    publicFlowMocks.seatingShare.startShare.mockReset();
+    publicFlowMocks.seatingShare.copyShareLink.mockReset();
+    publicFlowMocks.seatingShare.revokePublicShare.mockReset();
   });
 
   it("keeps the final registration copy and passes checkpoint-3 capabilities to the class workspace", () => {
@@ -178,6 +292,73 @@ describe("ClassroomPlannerGuestOverviewView", () => {
     await nextTick();
 
     expect(guestOverviewMocks.openRulesWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes public share/export state into the guest class-workspace overview", () => {
+    publicFlowMocks.groupingExport.isBusy.value = true;
+    publicFlowMocks.groupingExport.errorMessage.value = "Grupp-export misslyckades.";
+    publicFlowMocks.groupingShare.statusLabel.value = "Länk skapad.";
+    publicFlowMocks.groupingShare.revokingShareId.value = "share-1";
+    publicFlowMocks.groupingShare.shares.value = [shareArtifact];
+    publicFlowMocks.seatingShare.errorMessage.value = "Sittplatslänk misslyckades.";
+
+    const wrapper = mountView();
+    const classWorkspace = wrapper.findComponent(PlannerClassWorkspaceStub);
+
+    expect(classWorkspace.props("groupingExportBusy")).toBe(true);
+    expect(classWorkspace.props("groupingExportErrorMessage")).toBe("Grupp-export misslyckades.");
+    expect(classWorkspace.props("groupingShareStatusLabel")).toBe("Länk skapad.");
+    expect(classWorkspace.props("groupingShareRevokingId")).toBe("share-1");
+    expect(classWorkspace.props("groupingShares")).toEqual([shareArtifact]);
+    expect(classWorkspace.props("seatingShareErrorMessage")).toBe("Sittplatslänk misslyckades.");
+  });
+
+  it("prepares overview drafts before starting public overview share and export operations", async () => {
+    const wrapper = mountView();
+    const classWorkspace = wrapper.findComponent(PlannerClassWorkspaceStub);
+
+    classWorkspace.vm.$emit("prepare-overview-distribution", "grouping");
+    classWorkspace.vm.$emit("export-overview-grouping-default");
+    classWorkspace.vm.$emit("export-overview-grouping-option", "pdf_a4_portrait");
+    classWorkspace.vm.$emit("share-overview-grouping-link");
+    classWorkspace.vm.$emit("share-overview-seating-link");
+    await flushPromises();
+
+    expect(guestOverviewMocks.prepareOverviewDistributionScope).toHaveBeenCalledWith("grouping");
+    expect(guestOverviewMocks.prepareOverviewDistributionScope).toHaveBeenCalledWith("seating");
+    expect(publicFlowMocks.groupingExport.startDefaultExport).toHaveBeenCalledTimes(1);
+    expect(publicFlowMocks.groupingExport.startExport).toHaveBeenCalledWith("pdf_a4_portrait");
+    expect(publicFlowMocks.groupingShare.startShare).toHaveBeenCalledTimes(1);
+    expect(publicFlowMocks.seatingShare.startShare).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not start overview share/export operations when draft preparation is blocked", async () => {
+    guestOverviewMocks.prepareOverviewDistributionScope.mockResolvedValue(false);
+    const wrapper = mountView();
+    const classWorkspace = wrapper.findComponent(PlannerClassWorkspaceStub);
+
+    classWorkspace.vm.$emit("export-overview-grouping-default");
+    classWorkspace.vm.$emit("share-overview-grouping-link");
+    await flushPromises();
+
+    expect(publicFlowMocks.groupingExport.startDefaultExport).not.toHaveBeenCalled();
+    expect(publicFlowMocks.groupingShare.startShare).not.toHaveBeenCalled();
+  });
+
+  it("routes public overview copy and revoke events to the browser-owned share flow", async () => {
+    const wrapper = mountView();
+    const classWorkspace = wrapper.findComponent(PlannerClassWorkspaceStub);
+
+    classWorkspace.vm.$emit("copy-overview-grouping-share", shareArtifact);
+    classWorkspace.vm.$emit("revoke-overview-grouping-share", shareArtifact);
+    classWorkspace.vm.$emit("copy-overview-seating-share", shareArtifact);
+    classWorkspace.vm.$emit("revoke-overview-seating-share", shareArtifact);
+    await nextTick();
+
+    expect(publicFlowMocks.groupingShare.copyShareLink).toHaveBeenCalledWith(shareArtifact);
+    expect(publicFlowMocks.groupingShare.revokePublicShare).toHaveBeenCalledWith(shareArtifact);
+    expect(publicFlowMocks.seatingShare.copyShareLink).toHaveBeenCalledWith(shareArtifact);
+    expect(publicFlowMocks.seatingShare.revokePublicShare).toHaveBeenCalledWith(shareArtifact);
   });
 
   it("renders the dedicated guest planner shell when the browser-owned draft is active", () => {

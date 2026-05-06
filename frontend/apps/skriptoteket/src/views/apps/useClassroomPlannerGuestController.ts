@@ -29,6 +29,8 @@ import {
 import type { ClassroomPlannerGuestPlannerInitialView } from "./classroomPlannerGuestSnapshot";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
 
+type OverviewDistributionScope = "grouping" | "seating";
+
 function resolveSnapshotDraftId(
   snapshot: ClassroomPlannerGuestSnapshot,
   initialView: ClassroomPlannerGuestPlannerInitialView,
@@ -342,6 +344,74 @@ export function useClassroomPlannerGuestController(options?: {
     return true;
   }
 
+  function activeDraftMatchesDistributionScope(input: {
+    scope: OverviewDistributionScope;
+    rosterId: string;
+    templateId: string | null;
+  }): boolean {
+    const activeDraft = guestPlannerState.draft.value;
+    if (!activeDraft || activeDraft.draft_kind !== input.scope || activeDraft.roster_id !== input.rosterId) {
+      return false;
+    }
+
+    if (input.scope === "seating") {
+      return activeDraft.template_id === input.templateId;
+    }
+
+    return (activeDraft.template_id ?? null) === input.templateId;
+  }
+
+  async function prepareOverviewDistributionScope(
+    scope: OverviewDistributionScope,
+  ): Promise<boolean> {
+    const rosterId = selectedRosterId.value;
+    if (!rosterId) {
+      return false;
+    }
+
+    const templateId = scope === "seating"
+      ? selectedTemplateId.value
+      : resolveGuestGroupingTemplateContext(selectedTemplateId.value);
+    if (scope === "seating" && !templateId) {
+      return false;
+    }
+
+    plannerActionError.value = null;
+    try {
+      if (
+        guestPlannerState.draft.value
+        && !activeDraftMatchesDistributionScope({ scope, rosterId, templateId })
+        && !(await flushPlannerForModeSwitch(
+          "Lös sparkonflikten innan du byter underlag för delning.",
+          "Kunde inte spara ändringarna innan underlaget för delning byttes.",
+        ))
+      ) {
+        return false;
+      }
+
+      if (!activeDraftMatchesDistributionScope({ scope, rosterId, templateId })) {
+        await guestPlannerState.resolveDraft(rosterId, templateId, scope);
+      }
+
+      const nextPlannerInitialView = scope === "seating" ? "seats" : "groups";
+      await guestPlannerState.persistOverviewUiState({
+        selectedRosterId: rosterId,
+        selectedTemplateId: selectedTemplateId.value,
+        plannerInitialView: nextPlannerInitialView,
+      });
+      currentScreen.value = "class-workspace";
+      plannerInitialView.value = nextPlannerInitialView;
+      return true;
+    } catch (error: unknown) {
+      plannerActionError.value = error instanceof Error
+        ? error.message
+        : scope === "seating"
+          ? "Kunde inte förbereda sittplatser för delning just nu."
+          : "Kunde inte förbereda grupper för delning just nu.";
+      return false;
+    }
+  }
+
   async function openGroupingWorkspace(rosterId: string | null = selectedRosterId.value): Promise<void> {
     if (!rosterId) {
       return;
@@ -605,6 +675,7 @@ export function useClassroomPlannerGuestController(options?: {
     startNewGroupingDraft,
     startNewSeatingDraft,
     openRulesWorkspace,
+    prepareOverviewDistributionScope,
     selectPlannerWorkspaceMode,
     ...overviewCrudFlow,
     saveRoster,

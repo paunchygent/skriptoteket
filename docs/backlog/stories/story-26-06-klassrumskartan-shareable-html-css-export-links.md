@@ -131,6 +131,12 @@ sharing.
     confirmation inside `Dela och exportera`, but it did not change this
     story's share-artifact, export-preparation, link-management, revoke, or
     public-read contracts.
+  - `PR-0303` is done as a public guest remediation slice for the overview
+    `Dela och exportera` state wiring defect: the public overview now prepares
+    the selected browser-owned draft before share/export, passes public
+    share/export state into the overview panel, shows workspace-created links in
+    the matching created-links section, and hydrates browser-held current-link
+    metadata after the relevant draft/snapshot becomes available.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

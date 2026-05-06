@@ -128,6 +128,12 @@ const resolvedScope = computed<OverviewDistributionScope>(() => {
   if (selectedScope.value === "grouping") {
     return "grouping";
   }
+  if ((props.groupingShares?.length ?? 0) > 0) {
+    return "grouping";
+  }
+  if (props.groupingDraftUpdatedAt && !props.seatingDraftUpdatedAt) {
+    return "grouping";
+  }
   return props.hasTemplate && props.showSeatingOption !== false ? "seating" : "grouping";
 });
 const scopeOptions = computed<PlannerShareExportScopeOption[]>(() => [
