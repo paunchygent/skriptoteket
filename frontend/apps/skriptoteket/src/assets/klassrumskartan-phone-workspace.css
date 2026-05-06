@@ -1,0 +1,469 @@
+/* Klassrumskartan phone workspace layout rules.
+
+   Relationships:
+   - imported by `klassrumskartan-small-screen.css` before tablet and desktop
+     breakpoint rules so phone-first workspace surfaces keep cascade priority
+   - owns ST-29 phone mode sheets, compact workspace rows, mobile seating/rules
+     trays, and compact share panels
+*/
+
+.classroom-planner-stage {
+  padding: var(--huleedu-space-4) var(--huleedu-space-4);
+}
+
+@media (min-width: 768px) {
+  .classroom-planner-stage {
+    padding-right: var(--huleedu-space-6);
+    padding-left: var(--huleedu-space-6);
+  }
+}
+
+@media (max-width: 767px) {
+  .app-layout .auth-main-content.auth-main-content--workspace {
+    --planner-phone-panel-gap: var(--huleedu-space-4);
+    --planner-phone-edge-gutter: calc(var(--planner-phone-panel-gap) / 2);
+
+    padding-right: var(--planner-phone-edge-gutter);
+    padding-left: var(--planner-phone-edge-gutter);
+  }
+
+  .classroom-planner-stage {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+.planner-phone-mode-switch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--huleedu-space-2);
+}
+
+.planner-phone-mode-active,
+.planner-phone-mode-sheet-trigger,
+.planner-phone-row-action,
+.planner-phone-link-button,
+.planner-phone-tab,
+.planner-phone-rule-row {
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: var(--surface-modal);
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-mode-active,
+.planner-phone-mode-sheet-trigger {
+  min-height: 2.25rem;
+  padding: 0 var(--huleedu-space-3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.planner-phone-mode-active {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action);
+  color: var(--button-primary-text);
+}
+
+.planner-phone-mode-active *,
+.planner-phone-tab-active *,
+.planner-phone-rule-row-active * {
+  color: inherit;
+}
+
+.planner-phone-mode-sheet-trigger {
+  min-width: 5rem;
+}
+
+.planner-phone-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(8 43 76 / 0.18);
+}
+
+.planner-phone-mode-sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 80;
+  margin: 0 auto;
+  max-width: 30rem;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border-bottom: 0;
+  background-color: var(--surface-modal);
+  padding: var(--huleedu-space-4);
+  padding-bottom: calc(var(--huleedu-space-4) + env(safe-area-inset-bottom));
+  box-shadow: var(--huleedu-shadow-brutal-sm);
+}
+
+.planner-phone-sheet-handle {
+  margin: 0 auto var(--huleedu-space-3);
+  height: 0.1875rem;
+  width: 4rem;
+  background-color: rgb(8 43 76 / 0.28);
+}
+
+.planner-phone-mode-sheet-row {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: var(--huleedu-space-3);
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.2);
+  background-color: var(--huleedu-panel-muted);
+  padding: 0.625rem var(--huleedu-space-3);
+  text-align: left;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-mode-sheet-row-active {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action-10);
+  color: var(--huleedu-action);
+}
+
+.planner-phone-mode-sheet-row:disabled {
+  cursor: not-allowed;
+  border-color: rgb(8 43 76 / 0.12);
+  background-color: rgb(241 243 246 / 0.82);
+  color: rgb(8 43 76 / 0.38);
+  opacity: 1;
+}
+
+.planner-phone-mode-sheet-row:disabled svg {
+  color: rgb(8 43 76 / 0.32);
+}
+
+.planner-phone-overview-dashboard,
+.planner-phone-grouping-workspace,
+.planner-phone-seating-workspace,
+.planner-phone-rules-workspace {
+  display: grid;
+  gap: var(--huleedu-space-3);
+}
+
+.planner-phone-overview-section,
+.planner-phone-rules-selection,
+.planner-phone-subordinate-surface {
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.22);
+  background-color: var(--huleedu-panel);
+  padding: var(--huleedu-space-3);
+}
+
+.planner-phone-select {
+  width: 100%;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.25);
+  background-color: white;
+  padding: 0.5rem var(--huleedu-space-3);
+  font-size: 0.875rem;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-select:disabled {
+  cursor: not-allowed;
+  border-color: rgb(8 43 76 / 0.12);
+  background-color: rgb(241 243 246 / 0.82);
+  color: rgb(8 43 76 / 0.42);
+  opacity: 1;
+}
+
+.planner-phone-link-button {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 var(--huleedu-space-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.planner-phone-link-button:disabled {
+  cursor: not-allowed;
+  border-color: rgb(8 43 76 / 0.12);
+  background-color: rgb(241 243 246 / 0.82);
+  color: rgb(8 43 76 / 0.38);
+  opacity: 1;
+}
+
+.planner-phone-link-button-danger {
+  border-color: var(--huleedu-critical);
+  color: var(--huleedu-critical);
+}
+
+.planner-overview-setup-panel-phone .planner-overview-setup-actions {
+  display: grid;
+  grid-template-columns: max-content minmax(max-content, 1fr) max-content;
+  gap: 0.375rem;
+}
+
+.planner-overview-setup-panel-phone .planner-overview-setup-action {
+  min-height: 2.25rem;
+  min-width: 0;
+  width: 100%;
+  gap: 0.25rem;
+  padding-right: 0.375rem;
+  padding-left: 0.375rem;
+  white-space: nowrap;
+}
+
+.planner-phone-row-action {
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-3);
+  padding: 0 var(--huleedu-space-3);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.planner-phone-row-action:disabled {
+  cursor: not-allowed;
+  border-color: rgb(8 43 76 / 0.12);
+  background-color: rgb(241 243 246 / 0.82);
+  color: rgb(8 43 76 / 0.38);
+  opacity: 1;
+}
+
+.planner-phone-row-action:disabled svg,
+.planner-phone-row-action:disabled span {
+  color: rgb(8 43 76 / 0.38);
+}
+
+.planner-share-export-inline {
+  min-inline-size: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.planner-share-export-inline-disabled {
+  cursor: not-allowed;
+  color: rgb(8 43 76 / 0.38);
+}
+
+.planner-share-export-inline-disabled .planner-share-export-inline-panel {
+  border-color: rgb(8 43 76 / 0.12);
+  background-color: rgb(241 243 246 / 0.82);
+}
+
+.planner-share-export-link-state {
+  min-height: 5.75rem;
+  overflow: hidden;
+}
+
+.planner-share-export-link-state-content {
+  min-height: 5.75rem;
+}
+
+@media (max-width: 767px) {
+  .planner-share-export-link-list {
+    --planner-share-export-link-row-height: 3.75rem;
+
+    max-height: calc(var(--planner-share-export-link-row-height) * 4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .planner-share-export-link-list > li {
+    min-height: var(--planner-share-export-link-row-height);
+  }
+}
+
+.planner-phone-seating-student-toggle {
+  display: flex;
+  min-height: 2.5rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-3);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: var(--huleedu-panel);
+  padding: 0 var(--huleedu-space-3);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-seating-student-tray {
+  max-height: min(34vh, 18rem);
+  min-height: 0;
+  overflow: hidden;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.22);
+  background-color: var(--huleedu-panel);
+  padding: var(--huleedu-space-2);
+}
+
+.planner-phone-seating-student-tray .planner-student-pool-surface {
+  max-height: calc(min(34vh, 18rem) - var(--huleedu-space-4));
+  min-height: 0;
+  box-shadow: none;
+}
+
+.planner-phone-workspace-strip,
+.planner-phone-status-row {
+  display: flex;
+  min-height: 2.125rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-2);
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.2);
+  background-color: var(--huleedu-panel);
+  padding: 0 var(--huleedu-space-3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-status-row {
+  justify-content: flex-start;
+}
+
+.planner-phone-tab-strip {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding-bottom: 0.125rem;
+}
+
+.planner-phone-tab {
+  min-height: 2rem;
+  flex: 0 0 auto;
+  padding: 0 var(--huleedu-space-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.planner-phone-tab-active {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action);
+  color: var(--button-primary-text);
+}
+
+.planner-room-canvas-compact {
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  padding: var(--huleedu-space-2);
+}
+
+.planner-room-canvas-compact-toolbar {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.planner-room-canvas-compact-viewport {
+  min-height: min(46vh, 22rem);
+  max-height: 46vh;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: var(--huleedu-space-2);
+}
+
+.planner-room-canvas-compact-surface-shell {
+  padding: var(--huleedu-space-2);
+}
+
+.planner-phone-rule-row {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: var(--huleedu-space-3);
+  padding: 0.5rem var(--huleedu-space-3);
+  text-align: left;
+}
+
+.planner-phone-rule-row-active {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action);
+  color: var(--button-primary-text);
+  box-shadow: inset 0 0 0 2px var(--huleedu-canvas);
+}
+
+.planner-phone-rules-selection {
+  position: sticky;
+  top: var(--huleedu-space-2);
+  z-index: 8;
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+.planner-phone-rules-student-tray {
+  max-height: min(46vh, 24rem);
+  min-height: 0;
+  overflow: hidden;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.22);
+  background-color: var(--huleedu-canvas);
+  padding: var(--huleedu-space-2);
+}
+
+.planner-phone-rules-student-tray .planner-student-pool-surface {
+  max-height: calc(min(46vh, 24rem) - var(--huleedu-space-4));
+  min-height: 0;
+  box-shadow: none;
+}
+
+.planner-phone-selected-student-row {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-2);
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.18);
+  background-color: var(--huleedu-panel-muted);
+  padding: 0 var(--huleedu-space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-drop-target {
+  display: grid;
+  min-height: 5.5rem;
+  width: 100%;
+  place-items: center;
+  border: var(--huleedu-border-width) dashed rgb(8 43 76 / 0.35);
+  background-color: var(--huleedu-canvas);
+  padding: var(--huleedu-space-3);
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgb(8 43 76 / 0.72);
+}
+
+.planner-phone-drop-target span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.planner-phone-grouping-target {
+  position: sticky;
+  top: var(--huleedu-space-2);
+  z-index: 8;
+  background-color: var(--huleedu-paper);
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+[data-test="phone-grouping-student-pool"] {
+  max-height: min(44vh, 23rem);
+  min-height: 14rem;
+  overflow: hidden;
+}
+
+[data-test="phone-grouping-student-pool-scroll-body"] {
+  min-height: 0;
+  overscroll-behavior: contain;
+}

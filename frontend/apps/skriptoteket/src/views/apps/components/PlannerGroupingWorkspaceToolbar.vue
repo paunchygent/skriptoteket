@@ -82,6 +82,28 @@ const props = withDefaults(
   },
 );
 
+const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
+const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
+const PHONE_SMART_OVERFLOW_MAX_WIDTH_PX = 460;
+const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
+const OVERFLOW_PRIORITY_ORDER = ["context", "smart", "reset"];
+
+function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
+  if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
+    return null;
+  }
+  if (rootElement.clientWidth > PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX) {
+    return null;
+  }
+  if (rootElement.clientWidth > PHONE_SMART_OVERFLOW_MAX_WIDTH_PX) {
+    return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
+  }
+  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
+    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
+  }
+  return OVERFLOW_PRIORITY_ORDER.slice(0, 3);
+}
+
 const emit = defineEmits<{
   (e: "change-grouping-roster", rosterId: string): void;
   (e: "new-grouping-draft"): void;
@@ -141,31 +163,37 @@ const {
   thresholds,
 } = usePlannerToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
+  forcedHiddenContributionIds: resolvePhoneHiddenContributionIds,
   contributions: [
-    {
-      id: "reset",
-      selector: '[data-overflow-contribution="reset"]',
-    },
     {
       id: "context",
       selector: '[data-overflow-contribution="context"]',
+    },
+    {
+      id: "smart",
+      selector: '[data-overflow-contribution="smart"]',
+    },
+    {
+      id: "reset",
+      selector: '[data-overflow-contribution="reset"]',
     },
   ],
 });
 const overflowActionItems = computed(() => {
   const isResetOverflowed = hiddenContributionIds.value.includes("reset");
-  return [
-    {
-      id: "reset-grouping",
-      label: "Börja om",
-      disabled: state.isWorkspaceBusy || !hasGroupingAssignments.value,
-      group: "primary" as const,
-      tone: "danger" as const,
-      testId: "grouping-overflow-reset",
-      responsiveVisibility: isResetOverflowed ? "all" as const : "phone" as const,
-      onSelect: openResetGroupingDialog,
-    },
-  ];
+  if (!isResetOverflowed) {
+    return [];
+  }
+  return [{
+    id: "reset-grouping",
+    label: "Börja om",
+    disabled: state.isWorkspaceBusy || !hasGroupingAssignments.value,
+    group: "primary" as const,
+    tone: "danger" as const,
+    testId: "grouping-overflow-reset",
+    responsiveVisibility: "all" as const,
+    onSelect: openResetGroupingDialog,
+  }];
 });
 const secondaryActionItems = computed(() => {
   const items: OverflowActionItem[] = [...overflowActionItems.value];
@@ -244,11 +272,13 @@ const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
 const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
+const isSmartInline = computed(() => props.showSmartControls && !hiddenContributionIds.value.includes("smart"));
 const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
+const hasContextOverflowPanel = computed(() => props.availableRosters.length > 0 && !isContextInline.value);
+const hasSmartOverflowPanel = computed(() => props.showSmartControls && !isSmartInline.value);
 const showOverflowPanel = computed(() => (
-  props.availableRosters.length > 0
-  || props.showSmartControls
-  || showDistributionAction.value
+  hasContextOverflowPanel.value
+  || hasSmartOverflowPanel.value
 ));
 </script>
 
@@ -318,8 +348,10 @@ const showOverflowPanel = computed(() => (
           </UiDenseActionButton>
         </div>
         <div
-          v-if="isResetInline"
+          :class="{ 'planner-toolbar-inline-overflowed': !isResetInline }"
           data-overflow-contribution="reset"
+          :data-overflow-inline-hidden="!isResetInline ? 'true' : undefined"
+          :aria-hidden="!isResetInline"
         >
           <UiDenseActionButton
             label="Börja om"
@@ -367,16 +399,55 @@ const showOverflowPanel = computed(() => (
             </PlannerToolbarIconButton>
           </div>
         </div>
+        <div
+          :class="[
+            'flex items-center [&>*+*]:-ml-px',
+            !isSmartInline ? 'planner-toolbar-inline-overflowed' : null,
+          ]"
+          data-overflow-contribution="smart"
+          :data-overflow-inline-hidden="!isSmartInline ? 'true' : undefined"
+          data-test="grouping-smart-cluster"
+          :aria-hidden="!isSmartInline"
+        >
+          <UiDenseToggle
+            data-test="grouping-smart-toggle"
+            label="Smart"
+            group-position="start"
+            :model-value="state.draft?.smart_enabled ?? false"
+            :disabled="state.isWorkspaceBusy"
+            @update:model-value="state.setDraftSmartEnabled($event)"
+          />
+          <UiDenseIconButton
+            data-test="grouping-open-settings"
+            label="Smart-inställningar"
+            aria-label="Smart-inställningar"
+            title="Öppna Smart-inställningar"
+            size="utility"
+            group-position="end"
+            :active="smartSettingsOpen"
+            :expanded="smartSettingsOpen"
+            has-popup="dialog"
+            :disabled="state.isWorkspaceBusy"
+            @click="emit('open-settings')"
+          >
+            <IconAdjustments :size="14" />
+          </UiDenseIconButton>
+        </div>
       </template>
 
       <template
-        v-if="availableRosters.length > 0 && isContextInline"
+        v-if="availableRosters.length > 0"
         #context
       >
         <label
-          class="block w-[8rem]"
+          :class="[
+            'block w-[8rem]',
+            !isContextInline ? 'planner-toolbar-inline-overflowed' : null,
+          ]"
           data-overflow-contribution="context"
+          :data-overflow-inline-hidden="!isContextInline ? 'true' : undefined"
           data-test="grouping-roster-control"
+          :aria-hidden="!isContextInline"
         >
           <select
             aria-label="Klass"
@@ -432,7 +503,7 @@ const showOverflowPanel = computed(() => (
             #panel
           >
             <label
-              v-if="availableRosters.length > 0"
+              v-if="hasContextOverflowPanel"
               class="block space-y-1"
               data-test="grouping-overflow-roster-control"
             >
@@ -456,10 +527,10 @@ const showOverflowPanel = computed(() => (
               </select>
             </label>
             <div
-              v-if="showSmartControls"
+              v-if="hasSmartOverflowPanel"
               :class="[
                 'space-y-2',
-                availableRosters.length > 0 ? 'border-t border-navy/10 pt-3' : null,
+                hasContextOverflowPanel ? 'border-t border-navy/10 pt-3' : null,
               ]"
               data-test="grouping-overflow-smart-control"
             >

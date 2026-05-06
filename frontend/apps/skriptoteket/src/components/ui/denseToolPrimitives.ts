@@ -33,7 +33,7 @@ type DenseActionValueClassOptions = {
 export const DENSE_MENU_ITEM_SELECTOR = '[role="menuitem"]:not([disabled])';
 
 export const DENSE_MENU_PANEL_CLASS =
-  "border border-navy bg-panel shadow-brutal-sm outline-none z-[var(--huleedu-z-tooltip)]";
+  "border border-navy bg-modal shadow-brutal-sm outline-none z-[var(--huleedu-z-tooltip)]";
 export const DENSE_ACTION_RADIUS_CLASS = "rounded-[4px]";
 export const DENSE_SEGMENTED_SHELL_CLASS = `${DENSE_ACTION_RADIUS_CLASS} border border-navy/15 bg-canvas/50 p-0.5`;
 export const DENSE_SEGMENTED_SUBRAIL_SHELL_CLASS =

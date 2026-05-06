@@ -25,7 +25,11 @@ class FixedClock:
         return self._now
 
 
-def _snapshot(*, grouping_use_history: bool = False) -> ClassroomPlannerGuestSnapshotPayload:
+def _snapshot(
+    *,
+    grouping_use_history: bool = False,
+    template_id: str = "template-1",
+) -> ClassroomPlannerGuestSnapshotPayload:
     return ClassroomPlannerGuestSnapshotPayload.model_validate(
         {
             "schema_version": 1,
@@ -50,7 +54,7 @@ def _snapshot(*, grouping_use_history: bool = False) -> ClassroomPlannerGuestSna
             ],
             "templates": [
                 {
-                    "local_id": "template-1",
+                    "local_id": template_id,
                     "name": "Sal 101",
                     "grid_cols": 4,
                     "grid_rows": 4,
@@ -70,6 +74,7 @@ def _snapshot(*, grouping_use_history: bool = False) -> ClassroomPlannerGuestSna
                     "revision": 1,
                     "seating_preferences": [],
                     "relationship_rules": [],
+                    "fixed_seat_rules": [],
                     "fingerprint": "sha256:rules",
                 }
             ],
@@ -77,7 +82,7 @@ def _snapshot(*, grouping_use_history: bool = False) -> ClassroomPlannerGuestSna
                 "local_id": "grouping-draft-1",
                 "draft_kind": "grouping",
                 "roster_local_id": "roster-1",
-                "template_local_id": "template-1",
+                "template_local_id": template_id,
                 "task_entry_classroom_selection_mode": "optional",
                 "smart_enabled": True,
                 "use_history": grouping_use_history,
@@ -101,7 +106,7 @@ def _snapshot(*, grouping_use_history: bool = False) -> ClassroomPlannerGuestSna
                 "local_id": "seating-draft-1",
                 "draft_kind": "seating",
                 "roster_local_id": "roster-1",
-                "template_local_id": "template-1",
+                "template_local_id": template_id,
                 "task_entry_classroom_selection_mode": "required",
                 "smart_enabled": True,
                 "use_history": False,
@@ -121,7 +126,7 @@ def _snapshot(*, grouping_use_history: bool = False) -> ClassroomPlannerGuestSna
             "checkpoint_descriptors": [],
             "ui_state": {
                 "selected_roster_local_id": "roster-1",
-                "selected_template_local_id": "template-1",
+                "selected_template_local_id": template_id,
                 "current_screen": "planner",
                 "planner_initial_view": "groups",
                 "dismissed_grouping_draft_local_id": None,
@@ -181,6 +186,33 @@ async def test_run_public_smart_seating_returns_browser_owned_workspace() -> Non
     assert result.workspace.draft.revision == 3
     assert len(result.workspace.seat_assignments) == 4
     assert result.message == "Smart placering klar."
+
+
+@pytest.mark.asyncio
+async def test_run_public_smart_seating_honors_fixed_seat_rules() -> None:
+    template_id = "11111111-1111-4111-8111-111111111111"
+    snapshot_payload = _snapshot(template_id=template_id).model_dump(mode="json")
+    snapshot_payload["smart_rule_sets"][0]["fixed_seat_rules"] = [
+        {
+            "id": "fixed-ada",
+            "template_id": template_id,
+            "student_id": "ada",
+            "seat_id": "seat-1",
+        }
+    ]
+    snapshot = ClassroomPlannerGuestSnapshotPayload.model_validate(snapshot_payload)
+    handler = RunPublicSmartSeatingHandler(
+        clock=FixedClock(datetime(2026, 4, 7, 12, 0, tzinfo=timezone.utc))
+    )
+
+    result = await handler.handle(snapshot=snapshot, expected_revision=2)
+
+    assignments = {
+        assignment.student_id: assignment.seat_id
+        for assignment in result.workspace.seat_assignments
+    }
+    assert assignments["ada"] == "seat-1"
+    assert assignments["cai"] != "seat-1"
 
 
 @pytest.mark.asyncio

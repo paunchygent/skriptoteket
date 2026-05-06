@@ -5,7 +5,7 @@
  * core phone actions visible while subordinate controls collapse.
  */
 
-import { mount } from "@vue/test-utils";
+import { mount, type VueWrapper } from "@vue/test-utils";
 import { computed, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -22,10 +22,9 @@ vi.mock("./usePlannerToolbarOverflow", () => ({
         : `${hiddenContributionIds.value.join("-")}-overflow`,
     ),
     thresholds: computed(() => ({
-      "undo-redo": 842,
-      reset: 772,
-      "new-draft": 684,
-      context: 612,
+      context: 842,
+      smart: 714,
+      reset: 620,
     })),
   }),
 }));
@@ -97,6 +96,13 @@ async function mountToolbarForHidden(
   });
 }
 
+function expectInlineContributionHidden(wrapper: VueWrapper, selector: string): void {
+  const contribution = wrapper.get(selector);
+  expect(contribution.classes()).toContain("planner-toolbar-inline-overflowed");
+  expect(contribution.attributes("data-overflow-inline-hidden")).toBe("true");
+  expect(contribution.attributes("aria-hidden")).toBe("true");
+}
+
 describe("PlannerGroupingWorkspaceToolbar overflow", () => {
   beforeEach(() => {
     stateMocks.plannerState.groupAssignments = [{ student_id: "student-1", group_id: "group-1" }];
@@ -108,64 +114,68 @@ describe("PlannerGroupingWorkspaceToolbar overflow", () => {
     document.body.innerHTML = "";
   });
 
-  it("keeps undo/redo and reset inline before the first cutoff", async () => {
+  it("keeps context and Smart inline before the first cutoff", async () => {
     const wrapper = await mountToolbarForHidden([]);
 
     expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-roster-control"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="grouping-overflow-reset"]').classes()).toContain(
-      "planner-toolbar-menu-item-phone-only",
-    );
+    expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(false);
   }, 10_000);
 
-  it("keeps undo/redo inline even when the measured overflow state is narrow", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo"]);
+  it("moves roster context into overflow before Smart", async () => {
+    const wrapper = await mountToolbarForHidden(["context"]);
 
     expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
+    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
 
-    expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-overflow-redo"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="grouping-overflow-reset"]').classes()).toContain(
-      "planner-toolbar-menu-item-phone-only",
+    expect(wrapper.get('[data-test="grouping-overflow-roster-control"]').classes()).not.toContain(
+      "planner-toolbar-menu-panel-phone-only",
     );
+    expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(false);
   });
 
-  it("moves reset into overflow without hiding undo/redo", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo", "reset"]);
+  it("moves Smart into overflow after roster context", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "smart"]);
 
     expect(wrapper.find('[data-test="grouping-undo-redo-cluster"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(false);
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-smart-cluster"]');
+    expect(wrapper.find('[data-test="reset-grouping-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
-    expect(wrapper.find('[data-test="grouping-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-overflow-redo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="grouping-overflow-reset"]').classes()).not.toContain(
-      "planner-toolbar-menu-item-phone-only",
+    expect(wrapper.get('[data-test="grouping-overflow-roster-control"]').classes()).not.toContain(
+      "planner-toolbar-menu-panel-phone-only",
+    );
+    expect(wrapper.get('[data-test="grouping-overflow-smart-control"]').classes()).not.toContain(
+      "planner-toolbar-menu-panel-phone-only",
     );
   });
 
-  it("keeps new draft inline while roster context can move into overflow", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo", "reset", "new-draft", "context"]);
+  it("moves reset only after context and Smart have overflowed", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "smart", "reset"]);
 
     expect(wrapper.find('[data-test="new-grouping-draft"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-roster-control"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="grouping-smart-cluster"]').exists()).toBe(false);
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-roster-control"]');
+    expectInlineContributionHidden(wrapper, '[data-test="grouping-smart-cluster"]');
+    expectInlineContributionHidden(wrapper, '[data-overflow-contribution="reset"]');
 
     await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="grouping-overflow-new-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="grouping-overflow-roster-control"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="grouping-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="grouping-overflow-reset"]').exists()).toBe(true);
   });
 });

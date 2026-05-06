@@ -97,7 +97,15 @@ def materialize_public_smart_workspace(
     )
 
     roster = _build_roster(roster_payload=roster_payload, now=now)
-    template = _build_template(template_payload=template_payload, now=now)
+    templates_by_local_id = _build_templates_by_local_id(
+        template_payloads=snapshot.templates,
+        now=now,
+    )
+    template = (
+        templates_by_local_id.get(template_payload.local_id)
+        if template_payload is not None
+        else None
+    )
     smart_rule_payload = resolve_public_smart_rule_set(
         snapshot=snapshot,
         roster_local_id=draft_payload.roster_local_id,
@@ -105,6 +113,10 @@ def materialize_public_smart_workspace(
     smart_rules = build_public_smart_rules(
         roster=roster,
         smart_rule_payload=smart_rule_payload,
+        templates_by_id={str(template.id): template for template in templates_by_local_id.values()},
+        template_id_by_local_id={
+            local_id: template.id for local_id, template in templates_by_local_id.items()
+        },
     )
     workspace = _build_workspace(
         draft_payload=draft_payload,
@@ -415,6 +427,22 @@ def _build_template(
         created_at=now,
         updated_at=now,
     )
+
+
+def _build_templates_by_local_id(
+    *,
+    template_payloads: list[GuestUpgradeTemplatePayload],
+    now: datetime,
+) -> dict[str, RoomTemplate]:
+    templates_by_id: dict[str, RoomTemplate] = {}
+    for template_payload in template_payloads:
+        template = _build_template(
+            template_payload=template_payload,
+            now=now,
+        )
+        if template is not None:
+            templates_by_id[template_payload.local_id] = template
+    return templates_by_id
 
 
 def _build_workspace(

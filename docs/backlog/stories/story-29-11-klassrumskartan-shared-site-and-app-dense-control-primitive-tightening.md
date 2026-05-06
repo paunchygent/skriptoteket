@@ -56,6 +56,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0286: ST-29-11 share/export affordance consolidation](../prs/pr-0286-st-29-11-share-export-affordance-consolidation.md)
 - [PR-0287: ST-29-11 Smart settings popover persistence](../prs/pr-0287-st-29-11-smart-settings-popover-persistence.md)
 - [PR-0301: ST-29-11 overview share/export scope rail and draft confirmation](../prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md)
+- [PR-0302: ST-29-11 planner toolbar overflow priority regression](../prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md)
 
 ## Implementation Summary (as of 2026-04-06)
 

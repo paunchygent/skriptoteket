@@ -118,4 +118,36 @@ describe("usePlannerToolbarOverflow", () => {
       }),
     ).toEqual(["undo-redo", "reset", "new-draft"]);
   });
+
+  it("supports the planner context before Smart before reset priority ladder", () => {
+    const thresholds = derivePlannerToolbarOverflowThresholds({
+      fullyVisibleRequiredWidthPx: 900,
+      contributionOrder: ["context", "smart", "reset"],
+      contributionWidthsPx: {
+        context: 128,
+        smart: 94,
+        reset: 88,
+      },
+    });
+
+    expect(thresholds).toEqual({
+      context: 900,
+      smart: 772,
+      reset: 678,
+    });
+    expect(
+      resolveOverflowHiddenContributionIds({
+        availableWidthPx: 899,
+        contributionOrder: ["context", "smart", "reset"],
+        thresholds,
+      }),
+    ).toEqual(["context"]);
+    expect(
+      resolveOverflowHiddenContributionIds({
+        availableWidthPx: 771,
+        contributionOrder: ["context", "smart", "reset"],
+        thresholds,
+      }),
+    ).toEqual(["context", "smart"]);
+  });
 });

@@ -7,11 +7,15 @@ grouping and seating solvers.
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contracts import (
     ClassroomPlannerGuestSnapshotPayload,
     GuestUpgradeSmartRuleSetPayload,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    FixedSeatRule,
+    RoomTemplate,
     Roster,
     RosterSmartRules,
 )
@@ -39,6 +43,8 @@ def build_public_smart_rules(
     *,
     roster: Roster,
     smart_rule_payload: GuestUpgradeSmartRuleSetPayload | None,
+    templates_by_id: dict[str, RoomTemplate],
+    template_id_by_local_id: dict[str, UUID],
 ) -> RosterSmartRules:
     """Build validated roster smart rules for an anonymous Smart run."""
     if smart_rule_payload is None:
@@ -61,16 +67,26 @@ def build_public_smart_rules(
         list(smart_rule_payload.seating_preferences)
     )
     relationship_rules = list(smart_rule_payload.relationship_rules)
+    fixed_seat_rules = [
+        FixedSeatRule(
+            id=rule.id,
+            template_id=template_id_by_local_id.get(str(rule.template_id), rule.template_id),
+            student_id=rule.student_id,
+            seat_id=rule.seat_id,
+        )
+        for rule in smart_rule_payload.fixed_seat_rules
+    ]
     validate_roster_smart_rules(
         roster=roster,
         seating_preferences=seating_preferences,
         relationship_rules=relationship_rules,
-        fixed_seat_rules=[],
-        templates_by_id={},
+        fixed_seat_rules=fixed_seat_rules,
+        templates_by_id=templates_by_id,
     )
     return RosterSmartRules(
         roster_id=roster.id,
         revision=smart_rule_payload.revision,
         seating_preferences=seating_preferences,
         relationship_rules=relationship_rules,
+        fixed_seat_rules=fixed_seat_rules,
     )

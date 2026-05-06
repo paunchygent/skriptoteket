@@ -31,6 +31,7 @@ export type PlannerToolbarOverflowContribution = {
 type UsePlannerToolbarOverflowOptions = {
   getRootElement: () => HTMLElement | null;
   contributions: PlannerToolbarOverflowContribution[];
+  forcedHiddenContributionIds?: (rootElement: HTMLElement) => string[] | null;
   isEnabled?: Ref<boolean>;
 };
 
@@ -46,16 +47,33 @@ function parseGapPx(rootElement: HTMLElement): number {
 }
 
 function measureZoneRequirementPx(rootElement: HTMLElement): number {
-  const zones = [...rootElement.querySelectorAll<HTMLElement>("[data-zone]")].filter((zone) => {
-    return zone.offsetParent !== null || zone.getBoundingClientRect().width > 0;
-  });
-  if (zones.length === 0) {
+  const zoneRequirementsPx = [...rootElement.querySelectorAll<HTMLElement>("[data-zone]")]
+    .map((zone) => {
+      const visibleInlineChildren = [...zone.children].filter((candidate): candidate is HTMLElement => {
+        return candidate instanceof HTMLElement
+          && candidate.dataset.overflowInlineHidden !== "true"
+          && (candidate.offsetParent !== null || candidate.getBoundingClientRect().width > 0);
+      });
+      if (
+        visibleInlineChildren.length === 0
+        || (zone.offsetParent === null && zone.getBoundingClientRect().width <= 0)
+      ) {
+        return 0;
+      }
+      const zoneGapPx = parseGapPx(zone);
+      const childWidthsPx = visibleInlineChildren.reduce((sum, child) => {
+        return sum + Math.max(0, child.getBoundingClientRect().width);
+      }, 0);
+      return childWidthsPx + zoneGapPx * Math.max(0, visibleInlineChildren.length - 1);
+    })
+    .filter((requirementPx) => requirementPx > 0);
+  if (zoneRequirementsPx.length === 0) {
     return 0;
   }
 
   const gapPx = parseGapPx(rootElement);
-  const zoneWidthsPx = zones.reduce((sum, zone) => sum + zone.getBoundingClientRect().width, 0);
-  return zoneWidthsPx + gapPx * Math.max(0, zones.length - 1);
+  const zoneWidthsPx = zoneRequirementsPx.reduce((sum, requirementPx) => sum + requirementPx, 0);
+  return zoneWidthsPx + gapPx * Math.max(0, zoneRequirementsPx.length - 1);
 }
 
 export function measureContributionWidthPx(
@@ -72,8 +90,13 @@ export function measureContributionWidthPx(
     return Math.max(0, element.getBoundingClientRect().width);
   }
 
+  if (element.dataset.overflowInlineHidden === "true") {
+    return Math.max(0, element.getBoundingClientRect().width + parseGapPx(zoneElement));
+  }
+
   const visibleZoneItems = [...zoneElement.children].filter((candidate): candidate is HTMLElement => {
     return candidate instanceof HTMLElement
+      && candidate.dataset.overflowInlineHidden !== "true"
       && (candidate.offsetParent !== null || candidate.getBoundingClientRect().width > 0);
   });
   const contributionIndex = visibleZoneItems.findIndex((candidate) => candidate === element);
@@ -187,15 +210,17 @@ export function usePlannerToolbarOverflow(options: UsePlannerToolbarOverflowOpti
     const estimatedFullyVisibleWidthPx = currentRequiredWidthPx + hiddenContributionIds.value.reduce((sum, id) => {
       return sum + roundUpPx(nextContributionWidthsPx[id] ?? 0);
     }, 0);
-    fullyVisibleRequiredWidthPx.value = Math.max(
-      fullyVisibleRequiredWidthPx.value,
-      roundUpPx(estimatedFullyVisibleWidthPx),
-    );
+    fullyVisibleRequiredWidthPx.value = roundUpPx(estimatedFullyVisibleWidthPx);
     thresholds.value = derivePlannerToolbarOverflowThresholds({
       fullyVisibleRequiredWidthPx: fullyVisibleRequiredWidthPx.value,
       contributionOrder,
       contributionWidthsPx: nextContributionWidthsPx,
     });
+    const forcedHiddenContributionIds = options.forcedHiddenContributionIds?.(rootElement) ?? null;
+    if (forcedHiddenContributionIds) {
+      hiddenContributionIds.value = forcedHiddenContributionIds;
+      return;
+    }
     hiddenContributionIds.value = resolveOverflowHiddenContributionIds({
       availableWidthPx: rootElement.clientWidth,
       contributionOrder,
@@ -242,6 +267,7 @@ export function usePlannerToolbarOverflow(options: UsePlannerToolbarOverflowOpti
   });
 
   onMounted(() => {
+    window.addEventListener("resize", scheduleMeasurement);
     scheduleMeasurement();
   });
 
@@ -250,6 +276,7 @@ export function usePlannerToolbarOverflow(options: UsePlannerToolbarOverflowOpti
   });
 
   onBeforeUnmount(() => {
+    window.removeEventListener("resize", scheduleMeasurement);
     disconnectResizeObserver();
     if (scheduledMeasurementId !== null) {
       window.cancelAnimationFrame(scheduledMeasurementId);

@@ -15,13 +15,20 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Literal, TypedDict
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from skriptoteket.application.curated_apps.classroom_planner.guest_smart_rule_fingerprints import (
+    build_server_smart_rule_fingerprint,
+    build_smart_rule_fingerprint_fixed_seat_rule,
+    build_smart_rule_fingerprint_relationship_rule,
+    build_smart_rule_fingerprint_seating_preference,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomSelectionMode,
     DraftGroup,
+    FixedSeatRule,
     GroupAssignment,
     PlanDraftKind,
     RelationshipRule,
@@ -32,42 +39,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 )
 
 SNAPSHOT_PROFILE = "public_browser_workspace_with_upgrade"
-
-
-class SmartRuleFingerprintSeatingPreference(TypedDict):
-    """Describe the normalized smart-rule fingerprint payload for one student."""
-
-    student_id: str
-    near_teacher: bool
-
-
-class SmartRuleFingerprintRelationshipRule(TypedDict):
-    """Describe the normalized smart-rule fingerprint payload for one relation."""
-
-    kind: str
-    student_ids: list[str]
-
-
-def build_smart_rule_fingerprint_seating_preference(
-    preference: StudentSeatingPreference,
-) -> SmartRuleFingerprintSeatingPreference:
-    """Return the normalized fingerprint payload for one seating preference."""
-
-    return {
-        "student_id": preference.student_id,
-        "near_teacher": preference.near_teacher,
-    }
-
-
-def build_smart_rule_fingerprint_relationship_rule(
-    rule: RelationshipRule,
-) -> SmartRuleFingerprintRelationshipRule:
-    """Return the normalized fingerprint payload for one relationship rule."""
-
-    return {
-        "kind": rule.kind.value,
-        "student_ids": sorted(rule.student_ids),
-    }
 
 
 def _canonical_json(value: object) -> str:
@@ -126,6 +97,7 @@ class GuestUpgradeSmartRuleSetPayload(BaseModel):
     revision: int
     seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
     relationship_rules: list[RelationshipRule] = Field(default_factory=list)
+    fixed_seat_rules: list[FixedSeatRule] = Field(default_factory=list)
     fingerprint: str
 
 
@@ -307,30 +279,6 @@ def build_server_template_fingerprint(payload: GuestUpgradeTemplatePayload) -> s
     )
 
 
-def build_server_smart_rule_fingerprint(
-    *,
-    seating_preferences: list[SmartRuleFingerprintSeatingPreference],
-    relationship_rules: list[SmartRuleFingerprintRelationshipRule],
-) -> str:
-    """Hash one roster-global smart-rule set after student mapping."""
-
-    return _sha256_payload(
-        {
-            "seating_preferences": sorted(
-                seating_preferences,
-                key=lambda preference: str(preference["student_id"]),
-            ),
-            "relationship_rules": sorted(
-                relationship_rules,
-                key=lambda rule: (
-                    str(rule["kind"]),
-                    tuple(rule["student_ids"]),
-                ),
-            ),
-        }
-    )
-
-
 def build_server_draft_fingerprint(payload: GuestUpgradeDraftPayload) -> str:
     """Hash a guest draft by its portable arrangement payload."""
 
@@ -445,6 +393,10 @@ def recompute_server_snapshot(
                     relationship_rules=[
                         build_smart_rule_fingerprint_relationship_rule(rule)
                         for rule in smart_rules.relationship_rules
+                    ],
+                    fixed_seat_rules=[
+                        build_smart_rule_fingerprint_fixed_seat_rule(rule)
+                        for rule in smart_rules.fixed_seat_rules
                     ],
                 )
             }

@@ -1,0 +1,420 @@
+/* Klassrumskartan tablet and desktop workspace breakpoints.
+
+   Relationships:
+   - imported by `klassrumskartan-small-screen.css` after phone-first rules
+   - owns planner top-panel compaction, workspace toolbar breakpoints, room
+     modal phone sizing, and desktop sticky workspace lanes
+*/
+
+@media (max-width: 1023px) {
+  .planner-top-panel {
+    gap: var(--huleedu-space-2);
+    border-color: rgb(8 43 76 / 0.26);
+    padding: var(--huleedu-space-3);
+    box-shadow: var(--huleedu-shadow-brutal-xs);
+  }
+
+  .planner-top-panel-heading {
+    align-items: center;
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .planner-top-panel .planner-shell-title {
+    font-size: 1.375rem;
+    line-height: 1.05;
+  }
+
+  .planner-top-panel-context {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .planner-top-panel-exit {
+    height: 2rem;
+    width: 2rem;
+    border-color: rgb(8 43 76 / 0.24);
+    background-color: var(--huleedu-panel);
+  }
+
+  .planner-top-panel-exit svg {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+
+  .planner-top-panel-status {
+    min-height: 0;
+    gap: var(--huleedu-space-1);
+    flex-wrap: wrap;
+  }
+
+  .planner-top-panel-status:has(.planner-top-panel-compact-status-message) .planner-top-panel-status-copy {
+    display: none;
+  }
+
+  .planner-top-panel-status-pill {
+    height: 0.75rem;
+    width: 0.75rem;
+    justify-content: center;
+    gap: 0;
+    border: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  .planner-top-panel-status-pill > span:first-child {
+    height: 0.5rem;
+    width: 0.5rem;
+  }
+
+  .planner-top-panel-status-label-text {
+    position: absolute;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .planner-top-panel-status [data-test="planner-top-panel-status-message"],
+  .planner-top-panel-status [data-test="planner-top-panel-supporting-text"],
+  .planner-top-panel-status [data-test="planner-top-panel-compact-status-message"] {
+    min-width: 0;
+    flex: 1 1 100%;
+    line-height: 1.25;
+  }
+
+  .planner-top-panel-compact-status-message {
+    display: block;
+    white-space: normal;
+  }
+
+  .planner-share-export-inline-panel {
+    box-shadow: var(--huleedu-shadow-brutal-xs);
+  }
+
+  .planner-workspace-toolbar-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .planner-workspace-action-bar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    gap: var(--huleedu-space-1);
+    overflow: visible;
+    padding-right: var(--huleedu-space-1);
+    padding-left: var(--huleedu-space-1);
+  }
+
+  .planner-workspace-action-bar [data-zone="primary"] {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 0.25rem;
+    overflow: hidden;
+  }
+
+  .planner-workspace-action-bar [data-zone="secondary"] {
+    min-width: 0;
+    flex: 0 0 auto;
+    gap: 0.25rem;
+  }
+
+  .planner-workspace-action-bar [data-zone="context"] select {
+    max-width: 100%;
+  }
+
+  .planner-share-export-toolbar {
+    display: none;
+  }
+
+  .planner-workspace-scoped-share-row {
+    display: none;
+  }
+
+  .planner-workspace-toolbar-shell [data-test="randomize-groups"],
+  .planner-workspace-toolbar-shell [data-test="randomize-seating"],
+  .planner-workspace-toolbar-shell [data-test="grouping-share-trigger"],
+  .planner-workspace-toolbar-shell [data-test="seating-share-trigger"] {
+    gap: 0.25rem;
+    padding-right: 0.375rem;
+    padding-left: 0.375rem;
+    font-size: 0.625rem;
+  }
+
+  .planner-workspace-toolbar-shell [data-test="new-grouping-draft"],
+  .planner-workspace-toolbar-shell [data-test="new-seating-draft"] {
+    padding-right: 0.375rem;
+    padding-left: 0.375rem;
+    font-size: 0.625rem;
+  }
+
+  .planner-workspace-toolbar-shell [data-test="undo-grouping"],
+  .planner-workspace-toolbar-shell [data-test="redo-grouping"],
+  .planner-workspace-toolbar-shell [data-test="undo-seating-draft"],
+  .planner-workspace-toolbar-shell [data-test="redo-seating-draft"],
+  .planner-workspace-toolbar-shell [data-test="grouping-actions-menu"],
+  .planner-workspace-toolbar-shell [data-test="seating-actions-menu"] {
+    width: 1.75rem;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .planner-workspace-toolbar-shell[data-view="groups"] [data-test="grouping-group-count-control"] [data-ui="dense-action-button"],
+  .planner-workspace-toolbar-shell[data-view="groups"] [data-test="group-count-value"] {
+    width: 1.75rem;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .planner-workspace-toolbar-shell[data-view="groups"] [data-test="group-count-value"] {
+    display: none;
+  }
+
+  .room-template-modal-root {
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .room-template-modal-positioner {
+    min-height: 100dvh;
+    padding: 0;
+  }
+
+  .room-template-modal-panel {
+    width: 100dvw;
+    max-width: 100dvw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-right: 0;
+    border-left: 0;
+    box-shadow: none;
+  }
+
+  .room-template-modal-header {
+    gap: var(--huleedu-space-3);
+    padding-bottom: var(--huleedu-space-3);
+  }
+
+  .room-template-modal-header > div {
+    padding: var(--huleedu-space-4) 0 0 var(--huleedu-space-4);
+  }
+
+  .room-template-modal-header h2 {
+    font-size: 1.875rem;
+    line-height: 1.05;
+  }
+
+  .room-template-modal-header p {
+    max-width: 18rem;
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+
+  .room-template-modal-header > button {
+    margin: var(--huleedu-space-4) var(--huleedu-space-4) 0 0;
+  }
+
+  .room-template-modal-body {
+    overflow-x: hidden;
+    padding: var(--huleedu-space-3);
+  }
+
+  .room-template-modal-editor-grid {
+    margin-top: var(--huleedu-space-3);
+    gap: var(--huleedu-space-3);
+  }
+
+  .room-template-modal-editor-grid > *,
+  .room-template-modal-builder-column {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .room-template-modal-builder-column {
+    overflow: hidden;
+  }
+
+  [data-test="room-template-editor-sidebar"] {
+    display: grid;
+    gap: var(--huleedu-space-3);
+  }
+
+  [data-test="room-template-editor-sidebar"] > * {
+    min-width: 0;
+  }
+
+  [data-test="room-template-editor-sidebar"] > div {
+    padding: var(--huleedu-space-3);
+  }
+
+  [data-test="room-template-tool-buttons"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-test="room-template-tool-buttons"] button {
+    min-width: 0;
+    justify-content: center;
+    padding-right: var(--huleedu-space-2);
+    padding-left: var(--huleedu-space-2);
+    white-space: normal;
+  }
+
+  [data-test="room-template-editor-sidebar"] > div:last-child {
+    display: none;
+  }
+
+  [data-test="room-builder-viewport"] {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+    min-height: min(52vh, 24rem);
+    max-height: 52vh;
+    padding: var(--huleedu-space-2);
+  }
+
+  [data-test="room-builder-scroll-frame"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  [data-test="room-builder-surface-shell"] {
+    padding: var(--huleedu-space-3);
+  }
+
+  .room-template-modal-footer {
+    padding: var(--huleedu-space-3);
+  }
+}
+
+@media (min-width: 768px) {
+  .planner-group-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .planner-toolbar-menu-item-phone-only {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .planner-share-export-toolbar {
+    display: flex;
+  }
+
+  .planner-toolbar-menu-item-phone-only {
+    display: none;
+  }
+
+  .planner-workspace-scoped-share-row {
+    display: none;
+  }
+
+  .planner-workspace-action-bar {
+    overflow: visible;
+  }
+
+  .planner-desktop-mode-switch,
+  .planner-desktop-overview-grid,
+  .planner-desktop-rules-workspace {
+    display: block;
+  }
+
+  .planner-desktop-overview-grid {
+    display: grid;
+  }
+
+  .planner-phone-mode-switch,
+  .planner-phone-overview-dashboard,
+  .planner-phone-grouping-workspace,
+  .planner-phone-seating-workspace,
+  .planner-phone-rules-workspace {
+    display: none;
+  }
+
+  .planner-workspace-split-row {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .planner-grouping-layout-row {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .planner-rules-layout-row {
+    grid-template-columns: 176px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .planner-grouping-pool-lane {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+    min-height: 480px;
+    height: 480px;
+    max-height: 480px;
+  }
+
+  .planner-seating-pool-lane {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+    min-height: 480px;
+    height: 480px;
+    max-height: 480px;
+  }
+
+  .planner-rules-tool-lane {
+    position: sticky;
+    top: var(--planner-toolbar-sticky-offset);
+    z-index: 10;
+    align-self: start;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+
+  .planner-workspace-primary-lane,
+  .planner-grouping-board-lane,
+  .planner-seating-workspace-lane {
+    min-height: 0;
+  }
+
+  .planner-seating-workspace-lane {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .planner-student-pool-surface {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .planner-group-board {
+    min-height: 480px;
+    grid-auto-rows: minmax(234px, auto);
+    align-items: stretch;
+  }
+
+  .planner-group-card {
+    min-height: 234px;
+    height: 100%;
+    align-self: auto;
+  }
+}
+
+@media (min-width: 1536px) {
+  .planner-group-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

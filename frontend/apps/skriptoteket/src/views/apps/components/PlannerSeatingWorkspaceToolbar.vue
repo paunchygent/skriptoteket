@@ -75,6 +75,28 @@ const props = withDefaults(
   },
 );
 
+const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
+const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
+const PHONE_SMART_OVERFLOW_MAX_WIDTH_PX = 460;
+const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
+const OVERFLOW_PRIORITY_ORDER = ["context", "smart", "reset"];
+
+function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
+  if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
+    return null;
+  }
+  if (rootElement.clientWidth > PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX) {
+    return null;
+  }
+  if (rootElement.clientWidth > PHONE_SMART_OVERFLOW_MAX_WIDTH_PX) {
+    return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
+  }
+  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
+    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
+  }
+  return OVERFLOW_PRIORITY_ORDER.slice(0, 3);
+}
+
 const emit = defineEmits<{
   (e: "change-seating-template", templateId: string | null): void;
   (e: "new-seating-draft", templateId: string): void;
@@ -149,31 +171,37 @@ const {
   thresholds,
 } = usePlannerToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
+  forcedHiddenContributionIds: resolvePhoneHiddenContributionIds,
   contributions: [
-    {
-      id: "reset",
-      selector: '[data-overflow-contribution="reset"]',
-    },
     {
       id: "context",
       selector: '[data-overflow-contribution="context"]',
+    },
+    {
+      id: "smart",
+      selector: '[data-overflow-contribution="smart"]',
+    },
+    {
+      id: "reset",
+      selector: '[data-overflow-contribution="reset"]',
     },
   ],
 });
 const overflowActionItems = computed(() => {
   const isResetOverflowed = hiddenContributionIds.value.includes("reset");
-  return [
-    {
-      id: "reset-seating",
-      label: "Börja om",
-      disabled: props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value,
-      group: "primary" as const,
-      tone: "danger" as const,
-      testId: "seating-overflow-reset",
-      responsiveVisibility: isResetOverflowed ? "all" as const : "phone" as const,
-      onSelect: openResetSeatingDialog,
-    },
-  ];
+  if (!isResetOverflowed) {
+    return [];
+  }
+  return [{
+    id: "reset-seating",
+    label: "Börja om",
+    disabled: props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value,
+    group: "primary" as const,
+    tone: "danger" as const,
+    testId: "seating-overflow-reset",
+    responsiveVisibility: "all" as const,
+    onSelect: openResetSeatingDialog,
+  }];
 });
 const secondaryActionItems = computed(() => {
   const items: OverflowActionItem[] = [...overflowActionItems.value];
@@ -285,11 +313,13 @@ const isUndoRedoInline = computed(() => true);
 const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
 const isNewDraftInline = computed(() => true);
 const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
+const isSmartInline = computed(() => props.showSmartControls && !hiddenContributionIds.value.includes("smart"));
 const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
+const hasContextOverflowPanel = computed(() => props.availableTemplates.length > 0 && !isContextInline.value);
+const hasSmartOverflowPanel = computed(() => props.showSmartControls && !isSmartInline.value);
 const showOverflowPanel = computed(() => (
-  props.showSmartControls
-  || props.availableTemplates.length > 0
-  || showDistributionAction.value
+  hasSmartOverflowPanel.value
+  || hasContextOverflowPanel.value
 ));
 </script>
 
@@ -360,8 +390,10 @@ const showOverflowPanel = computed(() => (
           </UiDenseActionButton>
         </div>
         <div
-          v-if="isResetInline"
+          :class="{ 'planner-toolbar-inline-overflowed': !isResetInline }"
           data-overflow-contribution="reset"
+          :data-overflow-inline-hidden="!isResetInline ? 'true' : undefined"
+          :aria-hidden="!isResetInline"
         >
           <UiDenseActionButton
             label="Börja om"
@@ -373,16 +405,55 @@ const showOverflowPanel = computed(() => (
             Börja om
           </UiDenseActionButton>
         </div>
+        <div
+          :class="[
+            'flex items-center [&>*+*]:-ml-px',
+            !isSmartInline ? 'planner-toolbar-inline-overflowed' : null,
+          ]"
+          data-overflow-contribution="smart"
+          :data-overflow-inline-hidden="!isSmartInline ? 'true' : undefined"
+          data-test="seating-smart-cluster"
+          :aria-hidden="!isSmartInline"
+        >
+          <UiDenseToggle
+            data-test="seating-smart-toggle"
+            label="Smart"
+            group-position="start"
+            :model-value="plannerState.draft?.smart_enabled ?? false"
+            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+            @update:model-value="plannerState.setDraftSmartEnabled($event)"
+          />
+          <UiDenseIconButton
+            data-test="seating-open-settings"
+            label="Smart-inställningar"
+            aria-label="Smart-inställningar"
+            title="Öppna Smart-inställningar"
+            size="utility"
+            group-position="end"
+            :active="smartSettingsOpen"
+            :expanded="smartSettingsOpen"
+            has-popup="dialog"
+            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+            @click="emit('open-settings')"
+          >
+            <IconAdjustments :size="14" />
+          </UiDenseIconButton>
+        </div>
       </template>
 
       <template
-        v-if="isContextInline"
+        v-if="availableTemplates.length > 0"
         #context
       >
         <label
-          class="block w-[11rem] shrink-0"
+          :class="[
+            'block w-[11rem] shrink-0',
+            !isContextInline ? 'planner-toolbar-inline-overflowed' : null,
+          ]"
           data-overflow-contribution="context"
+          :data-overflow-inline-hidden="!isContextInline ? 'true' : undefined"
           data-test="seating-workspace-setup"
+          :aria-hidden="!isContextInline"
         >
           <select
             ref="seatingTemplateSelect"
@@ -448,7 +519,7 @@ const showOverflowPanel = computed(() => (
             #panel
           >
             <label
-              v-if="availableTemplates.length > 0"
+              v-if="hasContextOverflowPanel"
               class="block space-y-1"
               data-test="seating-overflow-template-control"
             >
@@ -476,10 +547,10 @@ const showOverflowPanel = computed(() => (
               </select>
             </label>
             <div
-              v-if="showSmartControls"
+              v-if="hasSmartOverflowPanel"
               :class="[
                 'space-y-2',
-                availableTemplates.length > 0 ? 'border-t border-navy/10 pt-3' : null,
+                hasContextOverflowPanel ? 'border-t border-navy/10 pt-3' : null,
               ]"
               data-test="seating-overflow-smart-control"
             >

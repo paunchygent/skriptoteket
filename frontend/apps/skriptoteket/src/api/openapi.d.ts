@@ -3731,6 +3731,40 @@ export interface components {
          */
         FileRefSource: "session" | "vault";
         /**
+         * FixedSeatRule
+         * @description Represent one hard student-to-seat placement for a room template.
+         */
+        FixedSeatRule: {
+            /** Id */
+            id: string;
+            /** Seat Id */
+            seat_id: string;
+            /** Student Id */
+            student_id: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+        };
+        /**
+         * FixedSeatRuleDto
+         * @description Serialize one hard student-to-seat placement for a classroom.
+         */
+        FixedSeatRuleDto: {
+            /** Id */
+            id: string;
+            /** Seat Id */
+            seat_id: string;
+            /** Student Id */
+            student_id: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+        };
+        /**
          * FlunkOutFrenzyBootstrapResult
          * @description Serialize the initial game-shell bootstrap payload.
          */
@@ -3979,6 +4013,8 @@ export interface components {
         GuestUpgradeSmartRuleSetPayload: {
             /** Fingerprint */
             fingerprint: string;
+            /** Fixed Seat Rules */
+            fixed_seat_rules?: components["schemas"]["FixedSeatRule"][];
             /** Relationship Rules */
             relationship_rules?: components["schemas"]["RelationshipRule"][];
             /** Revision */
@@ -5486,6 +5522,8 @@ export interface components {
          * @description Serialize roster-owned smart rules for one class.
          */
         RosterSmartRulesResponse: {
+            /** Fixed Seat Rules */
+            fixed_seat_rules: components["schemas"]["FixedSeatRuleDto"][];
             /** Relationship Rules */
             relationship_rules: components["schemas"]["RelationshipRuleDto"][];
             /** Revision */
@@ -6602,6 +6640,11 @@ export interface components {
         UpdateRosterSmartRulesRequest: {
             /** Expected Revision */
             expected_revision: number;
+            /**
+             * Fixed Seat Rules
+             * @default []
+             */
+            fixed_seat_rules: components["schemas"]["FixedSeatRuleDto"][];
             /**
              * Relationship Rules
              * @default []

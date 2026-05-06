@@ -903,6 +903,24 @@ body.app-shell-game-mode::before {
   overflow-y: visible;
 }
 
+.planner-workspace-action-bar .planner-toolbar-inline-overflowed {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: max-content;
+  max-width: none;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.planner-workspace-action-bar [data-zone]:has(> .planner-toolbar-inline-overflowed:only-child) {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: max-content;
+  max-width: none;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .planner-workspace-action-bar [data-zone="primary"] {
   min-width: 0;
   flex: 1 1 auto;

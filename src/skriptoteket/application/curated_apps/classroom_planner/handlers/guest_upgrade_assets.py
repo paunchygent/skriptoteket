@@ -9,6 +9,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.classroom_planner.guest_smart_rule_fingerprints import (
+    build_server_smart_rule_fingerprint,
+    build_smart_rule_fingerprint_fixed_seat_rule,
+    build_smart_rule_fingerprint_relationship_rule,
+    build_smart_rule_fingerprint_seating_preference,
+)
 from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contracts import (
     ClassroomPlannerGuestSnapshotPayload,
     ClassroomPlannerGuestUpgradeReceipt,
@@ -18,11 +24,9 @@ from skriptoteket.application.curated_apps.classroom_planner.guest_upgrade_contr
     GuestUpgradeSmartRuleSetPayload,
     GuestUpgradeTemplatePayload,
     build_server_roster_fingerprint,
-    build_server_smart_rule_fingerprint,
-    build_smart_rule_fingerprint_relationship_rule,
-    build_smart_rule_fingerprint_seating_preference,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    FixedSeatRule,
     RelationshipRule,
     RoomTemplate,
     Roster,
@@ -108,6 +112,7 @@ class GuestUpgradeAssetImporter:
                 receipt=receipt,
                 request=request,
                 roster_cache=roster_cache,
+                template_cache=template_cache,
                 smart_rule_set=smart_rule_set,
             )
 
@@ -279,6 +284,7 @@ class GuestUpgradeAssetImporter:
         receipt: ClassroomPlannerGuestUpgradeReceipt,
         request: ClassroomPlannerGuestUpgradeRequest,
         roster_cache: dict[str, MappedRoster],
+        template_cache: dict[str, MappedTemplate],
         smart_rule_set: GuestUpgradeSmartRuleSetPayload,
     ) -> None:
         mapped_roster = roster_cache.get(smart_rule_set.roster_local_id)
@@ -350,6 +356,40 @@ class GuestUpgradeAssetImporter:
             )
             return
 
+        invalid_fixed_rule_ids: list[str] = []
+        fixed_seat_rules: list[FixedSeatRule] = []
+        for fixed_rule in smart_rule_set.fixed_seat_rules:
+            mapped_template = template_cache.get(str(fixed_rule.template_id))
+            mapped_student_id = mapped_roster.student_id_map.get(fixed_rule.student_id)
+            mapped_seat_id = (
+                mapped_template.seat_id_map.get(fixed_rule.seat_id) if mapped_template else None
+            )
+            if mapped_template is None or mapped_student_id is None or mapped_seat_id is None:
+                invalid_fixed_rule_ids.append(fixed_rule.id)
+                continue
+            fixed_seat_rules.append(
+                FixedSeatRule(
+                    id=fixed_rule.id,
+                    template_id=mapped_template.template.id,
+                    student_id=mapped_student_id,
+                    seat_id=mapped_seat_id,
+                )
+            )
+        if invalid_fixed_rule_ids:
+            receipt.conflicted.append(
+                ClassroomPlannerGuestUpgradeReceiptItem(
+                    entity_type="smart_rule_set",
+                    local_id=smart_rule_set.roster_local_id,
+                    target_id=str(mapped_roster.roster.id),
+                    target_name=mapped_roster.roster.name,
+                    message=(
+                        "Smart rules contain invalid fixed-seat rules after template, "
+                        "student, or seat mapping and were left unchanged."
+                    ),
+                )
+            )
+            return
+
         seating_preferences = normalize_seating_preferences(
             [
                 StudentSeatingPreference(
@@ -364,8 +404,10 @@ class GuestUpgradeAssetImporter:
                 roster=mapped_roster.roster,
                 seating_preferences=seating_preferences,
                 relationship_rules=relationship_rules,
-                fixed_seat_rules=[],
-                templates_by_id={},
+                fixed_seat_rules=fixed_seat_rules,
+                templates_by_id={
+                    str(mapped.template.id): mapped.template for mapped in template_cache.values()
+                },
             )
         except DomainError as error:
             receipt.conflicted.append(
@@ -387,6 +429,9 @@ class GuestUpgradeAssetImporter:
             relationship_rules=[
                 build_smart_rule_fingerprint_relationship_rule(rule) for rule in relationship_rules
             ],
+            fixed_seat_rules=[
+                build_smart_rule_fingerprint_fixed_seat_rule(rule) for rule in fixed_seat_rules
+            ],
         )
         current_fingerprint = build_server_smart_rule_fingerprint(
             seating_preferences=[
@@ -396,6 +441,10 @@ class GuestUpgradeAssetImporter:
             relationship_rules=[
                 build_smart_rule_fingerprint_relationship_rule(rule)
                 for rule in current_rules.relationship_rules
+            ],
+            fixed_seat_rules=[
+                build_smart_rule_fingerprint_fixed_seat_rule(rule)
+                for rule in current_rules.fixed_seat_rules
             ],
         )
         if target_fingerprint == current_fingerprint:
@@ -412,6 +461,7 @@ class GuestUpgradeAssetImporter:
             current_rules.revision != 0
             or current_rules.seating_preferences
             or current_rules.relationship_rules
+            or current_rules.fixed_seat_rules
         ):
             receipt.conflicted.append(
                 ClassroomPlannerGuestUpgradeReceiptItem(
@@ -431,6 +481,7 @@ class GuestUpgradeAssetImporter:
                     revision=current_rules.revision,
                     seating_preferences=seating_preferences,
                     relationship_rules=relationship_rules,
+                    fixed_seat_rules=fixed_seat_rules,
                 ),
                 expected_revision=current_rules.revision,
             )

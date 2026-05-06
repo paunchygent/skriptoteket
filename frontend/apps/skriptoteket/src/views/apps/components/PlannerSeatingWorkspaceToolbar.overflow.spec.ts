@@ -5,7 +5,7 @@
  * overflow ladder so toolbar collapse does not drift from grouping.
  */
 
-import { mount } from "@vue/test-utils";
+import { mount, type VueWrapper } from "@vue/test-utils";
 import { computed, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -22,10 +22,9 @@ vi.mock("./usePlannerToolbarOverflow", () => ({
         : `${hiddenContributionIds.value.join("-")}-overflow`,
     ),
     thresholds: computed(() => ({
-      "undo-redo": 864,
-      reset: 790,
-      "new-draft": 702,
-      context: 628,
+      context: 864,
+      smart: 736,
+      reset: 642,
     })),
   }),
 }));
@@ -107,6 +106,13 @@ async function mountToolbarForHidden(
   });
 }
 
+function expectInlineContributionHidden(wrapper: VueWrapper, selector: string): void {
+  const contribution = wrapper.get(selector);
+  expect(contribution.classes()).toContain("planner-toolbar-inline-overflowed");
+  expect(contribution.attributes("data-overflow-inline-hidden")).toBe("true");
+  expect(contribution.attributes("aria-hidden")).toBe("true");
+}
+
 describe("PlannerSeatingWorkspaceToolbar overflow", () => {
   beforeEach(() => {
     stateMocks.plannerState.template = buildTemplate();
@@ -120,80 +126,84 @@ describe("PlannerSeatingWorkspaceToolbar overflow", () => {
     document.body.innerHTML = "";
   });
 
-  it("keeps undo/redo and reset inline before the first seating cutoff", async () => {
+  it("keeps classroom context and Smart inline before the first seating cutoff", async () => {
     const wrapper = await mountToolbarForHidden([]);
 
     expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-seating-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="new-seating-draft"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-workspace-setup"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="seating-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="seating-overflow-reset"]').classes()).toContain(
-      "planner-toolbar-menu-item-phone-only",
-    );
+    expect(wrapper.find('[data-test="seating-overflow-reset"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-overflow-new-draft"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-overflow-template-control"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(false);
   }, 10_000);
 
   it("keeps share management in the secondary action cluster while lower-priority controls overflow", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo", "reset", "new-draft", "context"]);
+    const wrapper = await mountToolbarForHidden(["context", "smart", "reset"]);
     await wrapper.setProps({
       showShareLinkAction: true,
       shares: [],
     });
 
     expect(wrapper.find('[data-test="seating-share-trigger"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-workspace-setup"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(false);
+    expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');
+    expectInlineContributionHidden(wrapper, '[data-test="seating-smart-cluster"]');
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="seating-overflow-template-control"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
   });
 
-  it("keeps seating undo/redo inline even when the measured overflow state is narrow", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo"]);
+  it("moves classroom context into overflow before Smart", async () => {
+    const wrapper = await mountToolbarForHidden(["context"]);
 
     expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
+    expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');
+    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="reset-seating-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
 
-    expect(wrapper.find('[data-test="seating-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-overflow-redo"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="seating-overflow-reset"]').classes()).toContain(
-      "planner-toolbar-menu-item-phone-only",
+    expect(wrapper.get('[data-test="seating-overflow-template-control"]').classes()).not.toContain(
+      "planner-toolbar-menu-panel-phone-only",
     );
+    expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(false);
   });
 
-  it("moves seating reset into overflow without hiding undo/redo", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo", "reset"]);
+  it("moves seating Smart into overflow after classroom context", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "smart"]);
 
     expect(wrapper.find('[data-test="seating-undo-redo-cluster"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="reset-seating-draft"]').exists()).toBe(false);
+    expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');
+    expectInlineContributionHidden(wrapper, '[data-test="seating-smart-cluster"]');
+    expect(wrapper.find('[data-test="reset-seating-draft"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
-    expect(wrapper.find('[data-test="seating-overflow-undo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-overflow-redo"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-overflow-reset"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="seating-overflow-reset"]').classes()).not.toContain(
-      "planner-toolbar-menu-item-phone-only",
+    expect(wrapper.get('[data-test="seating-overflow-template-control"]').classes()).not.toContain(
+      "planner-toolbar-menu-panel-phone-only",
+    );
+    expect(wrapper.get('[data-test="seating-overflow-smart-control"]').classes()).not.toContain(
+      "planner-toolbar-menu-panel-phone-only",
     );
   });
 
-  it("keeps new seating draft inline while classroom context can move into overflow", async () => {
-    const wrapper = await mountToolbarForHidden(["undo-redo", "reset", "new-draft", "context"]);
+  it("moves seating reset only after classroom context and Smart have overflowed", async () => {
+    const wrapper = await mountToolbarForHidden(["context", "smart", "reset"]);
 
     expect(wrapper.find('[data-test="new-seating-draft"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-workspace-setup"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="seating-smart-cluster"]').exists()).toBe(false);
+    expectInlineContributionHidden(wrapper, '[data-test="seating-workspace-setup"]');
+    expectInlineContributionHidden(wrapper, '[data-test="seating-smart-cluster"]');
+    expectInlineContributionHidden(wrapper, '[data-overflow-contribution="reset"]');
 
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     expect(wrapper.find('[data-test="seating-overflow-new-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-overflow-template-control"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-overflow-smart-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-overflow-reset"]').exists()).toBe(true);
   });
 });
