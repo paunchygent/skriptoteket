@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -34,6 +34,27 @@ class GroupingExportCheckpointModel(Base):
             "source_export_job_id",
             unique=True,
         ),
+        Index(
+            "uq_cp_grouping_export_checkpoints_source_share",
+            "source_share_artifact_id",
+            unique=True,
+        ),
+        CheckConstraint(
+            "source_kind IN ('export_job', 'share_artifact')",
+            name="ck_cp_grouping_export_checkpoints_source_kind",
+        ),
+        CheckConstraint(
+            "("
+            "source_kind = 'export_job' "
+            "AND source_export_job_id IS NOT NULL "
+            "AND source_share_artifact_id IS NULL"
+            ") OR ("
+            "source_kind = 'share_artifact' "
+            "AND source_export_job_id IS NULL "
+            "AND source_share_artifact_id IS NOT NULL"
+            ")",
+            name="ck_cp_grouping_export_checkpoints_one_source",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -55,10 +76,16 @@ class GroupingExportCheckpointModel(Base):
         nullable=False,
         index=True,
     )
-    source_export_job_id: Mapped[UUID] = mapped_column(
+    source_kind: Mapped[str] = mapped_column(String(32), nullable=False, default="export_job")
+    source_export_job_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("classroom_planner_grouping_export_jobs.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
+    )
+    source_share_artifact_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("classroom_planner_share_artifacts.id", ondelete="CASCADE"),
+        nullable=True,
     )
     assignment_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     grouping_snapshot: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)

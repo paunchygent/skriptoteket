@@ -60,6 +60,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0303: ST-26-06 public guest overview share/export state wiring](../prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md)
 - [PR-0305: ST-29-11 Smart advanced settings drawer copy and history default](../prs/pr-0305-st-29-11-smart-advanced-settings-drawer-copy-and-history-default.md)
 - [PR-0306: ST-29-11 share priority and Smart settings opt-out parity](../prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md)
+- [PR-0307: ST-26-06 share-as-export Smart history provenance](../prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -124,6 +125,10 @@ instead of treating it as unfinished planner-layout implementation.
   than the class/classroom selector, grouping-specific `Tillämpa sittschema`
   defaults on until explicitly turned off, and the grouping classroom helper
   copy now explains the exact room-context versus seating-influence behavior.
+- `PR-0307` is ready as the backend persistence counterpart for the Smart
+  history default: authenticated share links should count as export-backed
+  history checkpoints, while public guest shares stay outside account-backed
+  history.
 
 ## References
 

@@ -16,6 +16,7 @@ Relationships:
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from uuid import UUID
 
@@ -103,6 +104,7 @@ class CreateClassroomPlannerShareArtifactHandler:
         self,
         *,
         command: CreateClassroomPlannerShareArtifactCommand,
+        after_persist: Callable[[ClassroomPlannerShareArtifact], Awaitable[None]] | None = None,
     ) -> ClassroomPlannerShareArtifactCreateResult:
         result = self.build_unsaved(command=command)
         preview_asset = await self.build_preview_asset(artifact=result.artifact)
@@ -111,6 +113,8 @@ class CreateClassroomPlannerShareArtifactHandler:
                 artifact=result.artifact,
                 preview_asset=preview_asset,
             )
+            if after_persist is not None:
+                await after_persist(persisted)
         return result.model_copy(update={"artifact": persisted})
 
     async def build_preview_asset(

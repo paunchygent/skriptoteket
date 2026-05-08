@@ -21,6 +21,12 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportKind,
     SeatingExportLayoutId,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint_recorders import (
+    GroupingCheckpointRecorder,
+    SeatingCheckpointRecorder,
+    build_grouping_checkpoint,
+    build_seating_checkpoint,
+)
 from skriptoteket.application.curated_apps.classroom_planner.handlers.grouping_exports import (
     PrepareGroupingExportHandler,
 )
@@ -32,14 +38,19 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.share_arti
     CreateClassroomPlannerShareArtifactHandler,
 )
 from skriptoteket.application.curated_apps.classroom_planner.shares import (
+    ClassroomPlannerShareArtifact,
     ClassroomPlannerShareArtifactCreateResult,
     ClassroomPlannerShareArtifactSource,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoint_provenance import (
+    CheckpointSourceKind,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareRendererProtocol,
 )
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 
 
 class CreateAuthenticatedGroupingShareHandler:
@@ -50,10 +61,14 @@ class CreateAuthenticatedGroupingShareHandler:
         *,
         prepare_grouping: PrepareGroupingExportHandler,
         create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        checkpoint_recorder: GroupingCheckpointRecorder,
+        id_generator: IdGeneratorProtocol,
         renderer: ClassroomPlannerShareRendererProtocol,
     ) -> None:
         self._prepare_grouping = prepare_grouping
         self._create_artifact = create_artifact
+        self._checkpoint_recorder = checkpoint_recorder
+        self._id_generator = id_generator
         self._renderer = renderer
 
     async def handle(
@@ -77,6 +92,18 @@ class CreateAuthenticatedGroupingShareHandler:
             paper_size=GroupingExportPaperSize.A4_PORTRAIT,
         )
         rendered = self._renderer.render_grouping(prepared_export=prepared_export)
+
+        async def record_checkpoint(artifact: ClassroomPlannerShareArtifact) -> None:
+            await self._checkpoint_recorder.record(
+                checkpoint=build_grouping_checkpoint(
+                    workspace=workspace,
+                    checkpoint_id=self._id_generator.new_uuid(),
+                    created_at=artifact.created_at,
+                    source_kind=CheckpointSourceKind.SHARE_ARTIFACT,
+                    source_share_artifact_id=artifact.id,
+                )
+            )
+
         return await self._create_artifact.handle(
             command=CreateClassroomPlannerShareArtifactCommand(
                 source=ClassroomPlannerShareArtifactSource.AUTHENTICATED,
@@ -93,7 +120,8 @@ class CreateAuthenticatedGroupingShareHandler:
                 presentation_payload=rendered.presentation_payload,
                 rendered_html=rendered.rendered_html,
                 rendered_css=rendered.rendered_css,
-            )
+            ),
+            after_persist=record_checkpoint,
         )
 
 
@@ -105,10 +133,14 @@ class CreateAuthenticatedSeatingShareHandler:
         *,
         prepare_seating: PrepareSeatingExportHandler,
         create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        checkpoint_recorder: SeatingCheckpointRecorder,
+        id_generator: IdGeneratorProtocol,
         renderer: ClassroomPlannerShareRendererProtocol,
     ) -> None:
         self._prepare_seating = prepare_seating
         self._create_artifact = create_artifact
+        self._checkpoint_recorder = checkpoint_recorder
+        self._id_generator = id_generator
         self._renderer = renderer
 
     async def handle(
@@ -132,6 +164,18 @@ class CreateAuthenticatedSeatingShareHandler:
             layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
         )
         rendered = self._renderer.render_seating(prepared_export=prepared_export)
+
+        async def record_checkpoint(artifact: ClassroomPlannerShareArtifact) -> None:
+            await self._checkpoint_recorder.record(
+                checkpoint=build_seating_checkpoint(
+                    workspace=workspace,
+                    checkpoint_id=self._id_generator.new_uuid(),
+                    created_at=artifact.created_at,
+                    source_kind=CheckpointSourceKind.SHARE_ARTIFACT,
+                    source_share_artifact_id=artifact.id,
+                )
+            )
+
         return await self._create_artifact.handle(
             command=CreateClassroomPlannerShareArtifactCommand(
                 source=ClassroomPlannerShareArtifactSource.AUTHENTICATED,
@@ -148,7 +192,8 @@ class CreateAuthenticatedSeatingShareHandler:
                 presentation_payload=rendered.presentation_payload,
                 rendered_html=rendered.rendered_html,
                 rendered_css=rendered.rendered_css,
-            )
+            ),
+            after_persist=record_checkpoint,
         )
 
 

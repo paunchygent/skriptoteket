@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     GroupingExportJob,
@@ -31,10 +31,11 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     build_grouping_pdf_view_model,
     build_grouping_xlsx_view_model,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoint_provenance import (
+    CheckpointSourceKind,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints import (
     GroupingExportCheckpoint,
-    build_grouping_assignment_hash,
-    build_normalized_grouping_snapshot,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import ClassroomPlannerWorkspace
 from skriptoteket.domain.errors import not_found, validation_error
@@ -49,6 +50,7 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol, VaultStorageProtocol
 
+from .checkpoint_recorders import build_grouping_checkpoint
 from .grouping_export_job_completion import GroupingExportJobFinalizer
 from .grouping_exports import PrepareGroupingExportHandler
 
@@ -128,6 +130,7 @@ class CreateGroupingExportJobHandler:
                     workspace=workspace,
                     job_id=job.id,
                     created_at=self._clock.now(),
+                    checkpoint_id=self._id_generator.new_uuid(),
                 ),
                 filename=view_model.output_filename,
             )
@@ -177,6 +180,7 @@ class CreateGroupingExportJobHandler:
                     workspace=workspace,
                     job_id=job.id,
                     created_at=self._clock.now(),
+                    checkpoint_id=self._id_generator.new_uuid(),
                 ),
                 filename=view_model.output_filename,
             )
@@ -403,22 +407,16 @@ def _build_grouping_checkpoint(
     workspace: ClassroomPlannerWorkspace,
     job_id: UUID,
     created_at: datetime,
+    checkpoint_id: UUID,
 ) -> GroupingExportCheckpoint:
     """Build one export-backed grouping-history checkpoint from the workspace."""
 
-    grouping_snapshot = build_normalized_grouping_snapshot(
-        roster=workspace.roster,
-        group_assignments=workspace.group_assignments,
-    )
-    return GroupingExportCheckpoint(
-        id=uuid4(),
-        roster_id=workspace.roster.id,
-        template_id=workspace.template.id if workspace.template is not None else None,
-        source_draft_id=workspace.draft.id,
-        source_export_job_id=job_id,
-        assignment_hash=build_grouping_assignment_hash(grouping_snapshot=grouping_snapshot),
-        grouping_snapshot=grouping_snapshot,
+    return build_grouping_checkpoint(
+        workspace=workspace,
+        checkpoint_id=checkpoint_id,
         created_at=created_at,
+        source_kind=CheckpointSourceKind.EXPORT_JOB,
+        source_export_job_id=job_id,
     )
 
 

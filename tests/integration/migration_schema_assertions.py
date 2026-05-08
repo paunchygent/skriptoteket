@@ -437,6 +437,40 @@ async def _assert_4d2c_grouping_export_checkpoints(engine: AsyncEngine) -> None:
     assert foreign_keys["source_export_job_id"] == "classroom_planner_grouping_export_jobs"
 
 
+async def _assert_f2a7_share_checkpoint_provenance(engine: AsyncEngine) -> None:
+    await assert_8a6d_grouping_seating_distance_default_on(engine)
+    for table_name, source_job_table, source_share_index, kind_check, source_check in (
+        (
+            "classroom_planner_seating_export_checkpoints",
+            "classroom_planner_seating_export_jobs",
+            "uq_cp_seating_export_checkpoints_source_share",
+            "ck_cp_seating_export_checkpoints_source_kind",
+            "ck_cp_seating_export_checkpoints_one_source",
+        ),
+        (
+            "classroom_planner_grouping_export_checkpoints",
+            "classroom_planner_grouping_export_jobs",
+            "uq_cp_grouping_export_checkpoints_source_share",
+            "ck_cp_grouping_export_checkpoints_source_kind",
+            "ck_cp_grouping_export_checkpoints_one_source",
+        ),
+    ):
+        columns = await _column_map(engine, table_name)
+        assert {"source_kind", "source_share_artifact_id"}.issubset(columns)
+        assert columns["source_kind"]["is_nullable"] == "NO"
+        assert columns["source_export_job_id"]["is_nullable"] == "YES"
+
+        indexes = await _index_names(engine, table_name)
+        assert source_share_index in indexes
+
+        foreign_keys = await _foreign_key_targets(engine, table_name)
+        assert foreign_keys["source_export_job_id"] == source_job_table
+        assert foreign_keys["source_share_artifact_id"] == "classroom_planner_share_artifacts"
+
+        constraints = await _check_constraint_names(engine, table_name)
+        assert {kind_check, source_check}.issubset(constraints)
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -483,6 +517,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0d9c5e8a2f31": assert_0d9c_fixed_seat_rules,
     "3f6d8a2c4b91": assert_3f6d_use_history_default_on,
     "8a6d4c2f1b09": assert_8a6d_grouping_seating_distance_default_on,
+    "f2a7c9d4e6b8": _assert_f2a7_share_checkpoint_provenance,
 }
 
 

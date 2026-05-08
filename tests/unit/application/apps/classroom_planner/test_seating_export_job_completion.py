@@ -21,6 +21,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportLayoutId,
     SeatingExportPaperSize,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint_recorders import (
+    SeatingCheckpointRecorder,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     NormalizedRoomSeat,
@@ -158,7 +161,7 @@ async def test_complete_local_success_records_checkpoint_when_latest_differs() -
 
     finalizer = SeatingExportJobFinalizer(
         jobs=jobs,
-        checkpoints=checkpoints,
+        checkpoint_recorder=SeatingCheckpointRecorder(checkpoints=checkpoints),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,
@@ -222,7 +225,7 @@ async def test_complete_local_success_skips_checkpoint_when_latest_assignment_ha
 
     finalizer = SeatingExportJobFinalizer(
         jobs=jobs,
-        checkpoints=checkpoints,
+        checkpoint_recorder=SeatingCheckpointRecorder(checkpoints=checkpoints),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,
@@ -286,7 +289,7 @@ async def test_complete_local_success_keeps_geometry_based_identity_across_templ
 
     finalizer = SeatingExportJobFinalizer(
         jobs=jobs,
-        checkpoints=checkpoints,
+        checkpoint_recorder=SeatingCheckpointRecorder(checkpoints=checkpoints),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,
@@ -317,7 +320,7 @@ async def test_mark_failed_does_not_create_checkpoint() -> None:
 
     finalizer = SeatingExportJobFinalizer(
         jobs=jobs,
-        checkpoints=checkpoints,
+        checkpoint_recorder=SeatingCheckpointRecorder(checkpoints=checkpoints),
         vault_files=AsyncMock(spec=VaultFileRepositoryProtocol),
         vault_usage=AsyncMock(spec=VaultUsageRepositoryProtocol),
         vault_storage=AsyncMock(spec=VaultStorageProtocol),

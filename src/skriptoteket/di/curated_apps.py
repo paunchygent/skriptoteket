@@ -64,6 +64,10 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint_recorders import (
+    GroupingCheckpointRecorder,
+    SeatingCheckpointRecorder,
+)
 from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
     CreateClassListImportPreviewHandler,
 )
@@ -732,7 +736,7 @@ class CuratedAppsProvider(Provider):
     def seating_export_job_finalizer(
         self,
         jobs: SeatingExportJobRepositoryProtocol,
-        checkpoints: SeatingExportCheckpointRepositoryProtocol,
+        checkpoint_recorder: SeatingCheckpointRecorder,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -743,7 +747,7 @@ class CuratedAppsProvider(Provider):
     ) -> SeatingExportJobFinalizer:
         return SeatingExportJobFinalizer(
             jobs=jobs,
-            checkpoints=checkpoints,
+            checkpoint_recorder=checkpoint_recorder,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,
@@ -757,7 +761,7 @@ class CuratedAppsProvider(Provider):
     def grouping_export_job_finalizer(
         self,
         jobs: GroupingExportJobRepositoryProtocol,
-        checkpoints: GroupingExportCheckpointRepositoryProtocol,
+        checkpoint_recorder: GroupingCheckpointRecorder,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -768,7 +772,7 @@ class CuratedAppsProvider(Provider):
     ) -> GroupingExportJobFinalizer:
         return GroupingExportJobFinalizer(
             jobs=jobs,
-            checkpoints=checkpoints,
+            checkpoint_recorder=checkpoint_recorder,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,
@@ -947,11 +951,15 @@ class CuratedAppsProvider(Provider):
         self,
         prepare_grouping: PrepareGroupingExportHandler,
         create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        checkpoint_recorder: GroupingCheckpointRecorder,
+        id_generator: IdGeneratorProtocol,
         renderer: ClassroomPlannerShareRendererProtocol,
     ) -> CreateAuthenticatedGroupingShareHandler:
         return CreateAuthenticatedGroupingShareHandler(
             prepare_grouping=prepare_grouping,
             create_artifact=create_artifact,
+            checkpoint_recorder=checkpoint_recorder,
+            id_generator=id_generator,
             renderer=renderer,
         )
 
@@ -960,11 +968,15 @@ class CuratedAppsProvider(Provider):
         self,
         prepare_seating: PrepareSeatingExportHandler,
         create_artifact: CreateClassroomPlannerShareArtifactHandler,
+        checkpoint_recorder: SeatingCheckpointRecorder,
+        id_generator: IdGeneratorProtocol,
         renderer: ClassroomPlannerShareRendererProtocol,
     ) -> CreateAuthenticatedSeatingShareHandler:
         return CreateAuthenticatedSeatingShareHandler(
             prepare_seating=prepare_seating,
             create_artifact=create_artifact,
+            checkpoint_recorder=checkpoint_recorder,
+            id_generator=id_generator,
             renderer=renderer,
         )
 
@@ -1284,6 +1296,13 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLSeatingExportCheckpointRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def seating_checkpoint_recorder(
+        self,
+        checkpoints: SeatingExportCheckpointRepositoryProtocol,
+    ) -> SeatingCheckpointRecorder:
+        return SeatingCheckpointRecorder(checkpoints=checkpoints)
+
+    @provide(scope=Scope.REQUEST)
     def grouping_export_job_repository(
         self, session: AsyncSession
     ) -> GroupingExportJobRepositoryProtocol:
@@ -1294,6 +1313,13 @@ class CuratedAppsProvider(Provider):
         self, session: AsyncSession
     ) -> GroupingExportCheckpointRepositoryProtocol:
         return PostgreSQLGroupingExportCheckpointRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def grouping_checkpoint_recorder(
+        self,
+        checkpoints: GroupingExportCheckpointRepositoryProtocol,
+    ) -> GroupingCheckpointRecorder:
+        return GroupingCheckpointRecorder(checkpoints=checkpoints)
 
     @provide(scope=Scope.REQUEST)
     def classroom_planner_share_artifact_repository(

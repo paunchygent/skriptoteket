@@ -8,6 +8,9 @@ from uuid import uuid4
 
 import pytest
 
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoint_provenance import (
+    CheckpointSourceKind,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     NormalizedRoomSeat,
     NormalizedSeatingSnapshot,
@@ -61,6 +64,9 @@ async def test_create_persists_checkpoint_json_payloads() -> None:
 
     assert persisted == checkpoint
     stored_model = session.add.call_args.args[0]
+    assert stored_model.source_kind == CheckpointSourceKind.EXPORT_JOB.value
+    assert stored_model.source_export_job_id == checkpoint.source_export_job_id
+    assert stored_model.source_share_artifact_id is None
     assert stored_model.room_context_hash == checkpoint.room_context_hash
     assert stored_model.assignment_hash == checkpoint.assignment_hash
     assert stored_model.room_context["grid_cols"] == 14
@@ -77,7 +83,9 @@ async def test_get_latest_for_roster_and_room_context_maps_model_to_domain() -> 
         roster_id=uuid4(),
         template_id=uuid4(),
         source_draft_id=uuid4(),
+        source_kind=CheckpointSourceKind.EXPORT_JOB.value,
         source_export_job_id=uuid4(),
+        source_share_artifact_id=None,
         room_context_hash="room-hash",
         assignment_hash="assignment-hash",
         room_context={"grid_cols": 14, "grid_rows": 9, "seats": [], "fixtures": []},
@@ -96,6 +104,9 @@ async def test_get_latest_for_roster_and_room_context_maps_model_to_domain() -> 
     )
 
     assert result is not None
+    assert result.source_kind is CheckpointSourceKind.EXPORT_JOB
+    assert result.source_export_job_id == model.source_export_job_id
+    assert result.source_share_artifact_id is None
     assert result.assignment_hash == "assignment-hash"
     assert result.seating_snapshot.unplaced_student_ids == ["student-2"]
 
@@ -108,7 +119,9 @@ async def test_list_recent_for_roster_and_room_context_returns_newest_first_wind
         roster_id=uuid4(),
         template_id=uuid4(),
         source_draft_id=uuid4(),
+        source_kind=CheckpointSourceKind.EXPORT_JOB.value,
         source_export_job_id=uuid4(),
+        source_share_artifact_id=None,
         room_context_hash="room-hash",
         assignment_hash="assignment-older",
         room_context={"grid_cols": 14, "grid_rows": 9, "seats": [], "fixtures": []},
@@ -120,7 +133,9 @@ async def test_list_recent_for_roster_and_room_context_returns_newest_first_wind
         roster_id=older.roster_id,
         template_id=uuid4(),
         source_draft_id=uuid4(),
+        source_kind=CheckpointSourceKind.EXPORT_JOB.value,
         source_export_job_id=uuid4(),
+        source_share_artifact_id=None,
         room_context_hash="room-hash",
         assignment_hash="assignment-newer",
         room_context={"grid_cols": 14, "grid_rows": 9, "seats": [], "fixtures": []},
@@ -143,3 +158,35 @@ async def test_list_recent_for_roster_and_room_context_returns_newest_first_wind
     ]
     statement = session.execute.call_args.args[0]
     assert "LIMIT 12" in str(statement.compile(compile_kwargs={"literal_binds": True}))
+
+
+@pytest.mark.asyncio
+async def test_get_latest_maps_share_artifact_provenance_to_domain() -> None:
+    session = AsyncMock()
+    share_artifact_id = uuid4()
+    model = Mock(
+        id=uuid4(),
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        source_draft_id=uuid4(),
+        source_kind=CheckpointSourceKind.SHARE_ARTIFACT.value,
+        source_export_job_id=None,
+        source_share_artifact_id=share_artifact_id,
+        room_context_hash="room-hash",
+        assignment_hash="assignment-hash",
+        room_context={"grid_cols": 14, "grid_rows": 9, "seats": [], "fixtures": []},
+        seating_snapshot={"placed_assignments": [], "unplaced_student_ids": []},
+        created_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
+    )
+    session.execute.return_value = _scalar_one_or_none_result(model)
+    repo = PostgreSQLSeatingExportCheckpointRepository(session)
+
+    result = await repo.get_latest_for_roster_and_room_context(
+        roster_id=model.roster_id,
+        room_context_hash=model.room_context_hash,
+    )
+
+    assert result is not None
+    assert result.source_kind is CheckpointSourceKind.SHARE_ARTIFACT
+    assert result.source_export_job_id is None
+    assert result.source_share_artifact_id == share_artifact_id

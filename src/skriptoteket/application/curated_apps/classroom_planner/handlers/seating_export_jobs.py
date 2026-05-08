@@ -27,12 +27,11 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingPosterRenderRequest,
     seating_xlsx_view_model,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoint_provenance import (
+    CheckpointSourceKind,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     SeatingExportCheckpoint,
-    build_assignment_hash,
-    build_normalized_seating_snapshot,
-    build_room_context_hash,
-    build_room_context_snapshot,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
@@ -50,6 +49,7 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
+from .checkpoint_recorders import build_seating_checkpoint
 from .seating_export_job_completion import SeatingExportJobFinalizer
 from .seating_export_job_support import build_job_result
 from .seating_exports import PrepareSeatingExportHandler
@@ -348,21 +348,10 @@ def _build_export_checkpoint_candidate(
 ) -> SeatingExportCheckpoint:
     """Build the checkpoint candidate recorded for a successful seating export."""
 
-    template = workspace.template
-    if template is None:
-        raise ValueError("Seating export checkpoints require a room template.")
-
-    room_context = build_room_context_snapshot(workspace=workspace)
-    seating_snapshot = build_normalized_seating_snapshot(workspace=workspace)
-    return SeatingExportCheckpoint(
-        id=checkpoint_id,
-        roster_id=workspace.roster.id,
-        template_id=template.id,
-        source_draft_id=workspace.draft.id,
-        source_export_job_id=export_job_id,
-        room_context_hash=build_room_context_hash(room_context=room_context),
-        assignment_hash=build_assignment_hash(seating_snapshot=seating_snapshot),
-        room_context=room_context,
-        seating_snapshot=seating_snapshot,
+    return build_seating_checkpoint(
+        workspace=workspace,
+        checkpoint_id=checkpoint_id,
         created_at=exported_at,
+        source_kind=CheckpointSourceKind.EXPORT_JOB,
+        source_export_job_id=export_job_id,
     )

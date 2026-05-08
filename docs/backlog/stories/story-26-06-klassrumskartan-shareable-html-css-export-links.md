@@ -137,6 +137,10 @@ sharing.
     share/export state into the overview panel, shows workspace-created links in
     the matching created-links section, and hydrates browser-held current-link
     metadata after the relevant draft/snapshot becomes available.
+  - `PR-0307` is ready as the authenticated share-as-export Smart-history
+    provenance slice: owner-scoped `Dela` should create the same eligible
+    grouping/seating checkpoint history as PDF/Excel exports, while public guest
+    shares remain excluded from account-backed history.
 - Closed remediation:
   - `REV-PR-0276` found that the shipped static seating share page breaks the
     merged-bench label contract: the export model merges bench geometry, but

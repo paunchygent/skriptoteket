@@ -43,6 +43,13 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportLayoutId,
     SeatingPosterScene,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint_recorders import (
+    GroupingCheckpointRecorder,
+    SeatingCheckpointRecorder,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoint_provenance import (
+    CheckpointSourceKind,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     DraftHistoryStatus,
@@ -171,6 +178,12 @@ def _result(*, source_revision: int) -> ClassroomPlannerShareArtifactCreateResul
     )
 
 
+def _id_generator(checkpoint_id):
+    generator = MagicMock()
+    generator.new_uuid.return_value = checkpoint_id
+    return generator
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_create_grouping_share_enforces_expected_revision_before_persisting() -> None:
@@ -179,9 +192,12 @@ async def test_create_grouping_share_enforces_expected_revision_before_persistin
     prepare.load_workspace.return_value = workspace
     renderer = MagicMock(spec=ClassroomPlannerShareRendererProtocol)
     create_artifact = AsyncMock(spec=CreateClassroomPlannerShareArtifactHandler)
+    checkpoint_recorder = AsyncMock(spec=GroupingCheckpointRecorder)
     handler = CreateAuthenticatedGroupingShareHandler(
         prepare_grouping=prepare,
         create_artifact=create_artifact,
+        checkpoint_recorder=checkpoint_recorder,
+        id_generator=_id_generator(uuid4()),
         renderer=renderer,
     )
 
@@ -197,6 +213,7 @@ async def test_create_grouping_share_enforces_expected_revision_before_persistin
     prepare.build_prepared_contract.assert_not_called()
     renderer.render_grouping.assert_not_called()
     create_artifact.handle.assert_not_awaited()
+    checkpoint_recorder.record.assert_not_awaited()
 
 
 @pytest.mark.unit
@@ -212,9 +229,12 @@ async def test_create_grouping_share_uses_canonical_renderer_output() -> None:
     renderer.render_grouping.return_value = rendered
     create_artifact = AsyncMock(spec=CreateClassroomPlannerShareArtifactHandler)
     create_artifact.handle.return_value = _result(source_revision=workspace.draft.revision)
+    checkpoint_recorder = AsyncMock(spec=GroupingCheckpointRecorder)
     handler = CreateAuthenticatedGroupingShareHandler(
         prepare_grouping=prepare,
         create_artifact=create_artifact,
+        checkpoint_recorder=checkpoint_recorder,
+        id_generator=_id_generator(uuid4()),
         renderer=renderer,
     )
 
@@ -243,7 +263,56 @@ async def test_create_grouping_share_uses_canonical_renderer_output() -> None:
     assert command.presentation_payload == rendered.presentation_payload
     assert command.rendered_html == rendered.rendered_html
     assert command.rendered_css == rendered.rendered_css
+    assert create_artifact.handle.await_args.kwargs["after_persist"] is not None
     assert result.public_token == "public-token"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_grouping_share_records_share_checkpoint_after_persist() -> None:
+    workspace = _workspace(draft_kind=PlanDraftKind.GROUPING, revision=7)
+    prepared = _grouping_contract(workspace)
+    rendered = _rendered()
+    checkpoint_id = uuid4()
+    create_result = _result(source_revision=workspace.draft.revision)
+    prepare = AsyncMock(spec=PrepareGroupingExportHandler)
+    prepare.load_workspace.return_value = workspace
+    prepare.build_prepared_contract.return_value = prepared
+    renderer = MagicMock(spec=ClassroomPlannerShareRendererProtocol)
+    renderer.render_grouping.return_value = rendered
+    create_artifact = AsyncMock(spec=CreateClassroomPlannerShareArtifactHandler)
+
+    async def create_with_callback(*, command, after_persist=None):
+        del command
+        assert after_persist is not None
+        await after_persist(create_result.artifact)
+        return create_result
+
+    create_artifact.handle.side_effect = create_with_callback
+    checkpoint_recorder = AsyncMock(spec=GroupingCheckpointRecorder)
+    handler = CreateAuthenticatedGroupingShareHandler(
+        prepare_grouping=prepare,
+        create_artifact=create_artifact,
+        checkpoint_recorder=checkpoint_recorder,
+        id_generator=_id_generator(checkpoint_id),
+        renderer=renderer,
+    )
+
+    await handler.handle(
+        draft_id=workspace.draft.id,
+        owner_user_id=workspace.draft.owner_user_id,
+        expected_revision=7,
+    )
+
+    checkpoint = checkpoint_recorder.record.await_args.kwargs["checkpoint"]
+    assert workspace.template is not None
+    assert checkpoint.id == checkpoint_id
+    assert checkpoint.roster_id == workspace.roster.id
+    assert checkpoint.source_draft_id == workspace.draft.id
+    assert checkpoint.source_kind is CheckpointSourceKind.SHARE_ARTIFACT
+    assert checkpoint.source_export_job_id is None
+    assert checkpoint.source_share_artifact_id == create_result.artifact.id
+    assert checkpoint.created_at == create_result.artifact.created_at
 
 
 @pytest.mark.unit
@@ -254,9 +323,12 @@ async def test_create_seating_share_enforces_expected_revision_before_persisting
     prepare.load_workspace.return_value = workspace
     renderer = MagicMock(spec=ClassroomPlannerShareRendererProtocol)
     create_artifact = AsyncMock(spec=CreateClassroomPlannerShareArtifactHandler)
+    checkpoint_recorder = AsyncMock(spec=SeatingCheckpointRecorder)
     handler = CreateAuthenticatedSeatingShareHandler(
         prepare_seating=prepare,
         create_artifact=create_artifact,
+        checkpoint_recorder=checkpoint_recorder,
+        id_generator=_id_generator(uuid4()),
         renderer=renderer,
     )
 
@@ -271,6 +343,7 @@ async def test_create_seating_share_enforces_expected_revision_before_persisting
     prepare.build_prepared_contract.assert_not_called()
     renderer.render_seating.assert_not_called()
     create_artifact.handle.assert_not_awaited()
+    checkpoint_recorder.record.assert_not_awaited()
 
 
 @pytest.mark.unit
@@ -291,9 +364,12 @@ async def test_create_seating_share_uses_pretty_brutalist_poster_contract() -> N
     renderer.render_seating.return_value = rendered
     create_artifact = AsyncMock(spec=CreateClassroomPlannerShareArtifactHandler)
     create_artifact.handle.return_value = _result(source_revision=workspace.draft.revision)
+    checkpoint_recorder = AsyncMock(spec=SeatingCheckpointRecorder)
     handler = CreateAuthenticatedSeatingShareHandler(
         prepare_seating=prepare,
         create_artifact=create_artifact,
+        checkpoint_recorder=checkpoint_recorder,
+        id_generator=_id_generator(uuid4()),
         renderer=renderer,
     )
 
@@ -314,3 +390,58 @@ async def test_create_seating_share_uses_pretty_brutalist_poster_contract() -> N
     assert command.template_id == workspace.draft.template_id
     assert command.source_revision == 4
     assert command.presentation_schema_version == "seating-share-v1"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_seating_share_records_share_checkpoint_after_persist() -> None:
+    workspace = _workspace(draft_kind=PlanDraftKind.SEATING, revision=4)
+    prepared = _seating_contract(workspace)
+    rendered = _rendered().model_copy(
+        update={
+            "renderer_version": "klassrumskartan-seating-share-renderer-v2",
+            "presentation_schema_version": "seating-share-v1",
+        }
+    )
+    checkpoint_id = uuid4()
+    create_result = _result(source_revision=workspace.draft.revision)
+    prepare = AsyncMock(spec=PrepareSeatingExportHandler)
+    prepare.load_workspace.return_value = workspace
+    prepare.build_prepared_contract.return_value = prepared
+    renderer = MagicMock(spec=ClassroomPlannerShareRendererProtocol)
+    renderer.render_seating.return_value = rendered
+    create_artifact = AsyncMock(spec=CreateClassroomPlannerShareArtifactHandler)
+
+    async def create_with_callback(*, command, after_persist=None):
+        del command
+        assert after_persist is not None
+        await after_persist(create_result.artifact)
+        return create_result
+
+    create_artifact.handle.side_effect = create_with_callback
+    checkpoint_recorder = AsyncMock(spec=SeatingCheckpointRecorder)
+    handler = CreateAuthenticatedSeatingShareHandler(
+        prepare_seating=prepare,
+        create_artifact=create_artifact,
+        checkpoint_recorder=checkpoint_recorder,
+        id_generator=_id_generator(checkpoint_id),
+        renderer=renderer,
+    )
+
+    await handler.handle(
+        draft_id=workspace.draft.id,
+        owner_user_id=workspace.draft.owner_user_id,
+        expected_revision=4,
+    )
+
+    checkpoint = checkpoint_recorder.record.await_args.kwargs["checkpoint"]
+    assert workspace.template is not None
+    assert checkpoint.id == checkpoint_id
+    assert checkpoint.roster_id == workspace.roster.id
+    assert checkpoint.template_id == workspace.template.id
+    assert checkpoint.room_context_hash
+    assert checkpoint.source_draft_id == workspace.draft.id
+    assert checkpoint.source_kind is CheckpointSourceKind.SHARE_ARTIFACT
+    assert checkpoint.source_export_job_id is None
+    assert checkpoint.source_share_artifact_id == create_result.artifact.id
+    assert checkpoint.created_at == create_result.artifact.created_at

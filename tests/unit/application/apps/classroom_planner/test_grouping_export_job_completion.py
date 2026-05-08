@@ -14,6 +14,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     GroupingExportJobStatus,
     GroupingExportKind,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint_recorders import (
+    GroupingCheckpointRecorder,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints import (
     GroupingExportCheckpoint,
@@ -133,7 +136,7 @@ async def test_complete_local_success_records_grouping_checkpoint_when_latest_di
 
     finalizer = GroupingExportJobFinalizer(
         jobs=jobs,
-        checkpoints=checkpoints,
+        checkpoint_recorder=GroupingCheckpointRecorder(checkpoints=checkpoints),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,
@@ -195,7 +198,7 @@ async def test_complete_local_success_skips_grouping_checkpoint_when_assignment_
 
     finalizer = GroupingExportJobFinalizer(
         jobs=jobs,
-        checkpoints=checkpoints,
+        checkpoint_recorder=GroupingCheckpointRecorder(checkpoints=checkpoints),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,

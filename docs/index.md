@@ -156,6 +156,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0259-st-32-06-public-smart-slumpa-accepted-workspace-snapshot-commit-contract.md`
 - Review gate for PR-0259 public Smart Slumpa snapshot commit contract:
   `docs/backlog/reviews/review-pr-0259-public-smart-slumpa-snapshot-commit-contract.md`
+- ST-26-06 authenticated share-as-export Smart history provenance:
+  `docs/backlog/prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md`
+- Review gate for PR-0307 share-as-export Smart history provenance:
+  `docs/backlog/reviews/review-pr-0307-share-as-export-smart-history-provenance.md`
 - ST-32-07 public landing entry hierarchy + mockup-grounded CTA cutover story:
   `docs/backlog/stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md`
 - ST-32-07 landing public-entry information architecture + canonical mockup preview:

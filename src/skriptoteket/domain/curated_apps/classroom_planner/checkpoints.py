@@ -13,8 +13,11 @@ from datetime import datetime
 from hashlib import blake2b
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoint_provenance import (
+    CheckpointSourceKind,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     RoomFixtureType,
@@ -84,12 +87,28 @@ class SeatingExportCheckpoint(BaseModel):
     roster_id: UUID
     template_id: UUID
     source_draft_id: UUID
-    source_export_job_id: UUID
+    source_kind: CheckpointSourceKind = CheckpointSourceKind.EXPORT_JOB
+    source_export_job_id: UUID | None = None
+    source_share_artifact_id: UUID | None = None
     room_context_hash: str
     assignment_hash: str
     room_context: SeatingRoomContextSnapshot
     seating_snapshot: NormalizedSeatingSnapshot
     created_at: datetime
+
+    @model_validator(mode="after")
+    def validate_source(self) -> "SeatingExportCheckpoint":
+        """Ensure provenance points to exactly one durable source."""
+
+        has_export_job = self.source_export_job_id is not None
+        has_share_artifact = self.source_share_artifact_id is not None
+        if self.source_kind is CheckpointSourceKind.EXPORT_JOB:
+            if has_export_job and not has_share_artifact:
+                return self
+        if self.source_kind is CheckpointSourceKind.SHARE_ARTIFACT:
+            if has_share_artifact and not has_export_job:
+                return self
+        raise ValueError("Checkpoint provenance must match exactly one source id.")
 
 
 def build_room_context_snapshot(

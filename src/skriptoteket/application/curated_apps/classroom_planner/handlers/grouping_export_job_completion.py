@@ -26,9 +26,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints imp
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
-from skriptoteket.protocols.classroom_planner import (
-    GroupingExportCheckpointRepositoryProtocol,
-)
 from skriptoteket.protocols.classroom_planner_exports import GroupingExportJobRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -39,6 +36,8 @@ from skriptoteket.protocols.vault import (
     VaultUsageRepositoryProtocol,
 )
 
+from .checkpoint_recorders import GroupingCheckpointRecorder
+
 
 class GroupingExportJobFinalizer:
     """Persist locally generated grouping artifacts and terminal job states."""
@@ -47,7 +46,7 @@ class GroupingExportJobFinalizer:
         self,
         *,
         jobs: GroupingExportJobRepositoryProtocol,
-        checkpoints: GroupingExportCheckpointRepositoryProtocol,
+        checkpoint_recorder: GroupingCheckpointRecorder,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -57,7 +56,7 @@ class GroupingExportJobFinalizer:
         settings: Settings,
     ) -> None:
         self._jobs = jobs
-        self._checkpoints = checkpoints
+        self._checkpoint_recorder = checkpoint_recorder
         self._vault_files = vault_files
         self._vault_usage = vault_usage
         self._vault_storage = vault_storage
@@ -124,14 +123,7 @@ class GroupingExportJobFinalizer:
         async with self._uow:
             persisted_job = await self._jobs.update(job=updated)
             if checkpoint is not None and status is GroupingExportJobStatus.SUCCEEDED:
-                latest_checkpoints = await self._checkpoints.list_recent_for_roster(
-                    roster_id=checkpoint.roster_id
-                )
-                latest_checkpoint = latest_checkpoints[0] if latest_checkpoints else None
-                if latest_checkpoint is None or (
-                    latest_checkpoint.assignment_hash != checkpoint.assignment_hash
-                ):
-                    await self._checkpoints.create(checkpoint=checkpoint)
+                await self._checkpoint_recorder.record(checkpoint=checkpoint)
             return persisted_job
 
     async def _save_to_vault(

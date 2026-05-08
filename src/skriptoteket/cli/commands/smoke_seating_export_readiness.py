@@ -32,6 +32,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
 from skriptoteket.application.curated_apps.classroom_planner.handlers import (
     seating_export_job_completion as seating_export_job_completion_handlers,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint_recorders import (
+    SeatingCheckpointRecorder,
+)
 from skriptoteket.application.curated_apps.classroom_planner.handlers.drafts import (
     PatchDraftHandler,
 )
@@ -381,7 +384,9 @@ async def _create_export_job(
         vault_storage = LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT))
         finalizer = seating_export_job_completion_handlers.SeatingExportJobFinalizer(
             jobs=PostgreSQLSeatingExportJobRepository(session),
-            checkpoints=PostgreSQLSeatingExportCheckpointRepository(session),
+            checkpoint_recorder=SeatingCheckpointRecorder(
+                checkpoints=PostgreSQLSeatingExportCheckpointRepository(session)
+            ),
             vault_files=vault_files,
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=vault_storage,
