@@ -30,6 +30,7 @@ from scripts._playwright_huleedu_auth import (
     temporary_backend_server,
     temporary_vite_server,
 )
+from scripts._playwright_touch import assert_touch_action, pinch_zoom
 
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0310-phone-fixed-seat-rules-map")
 PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
@@ -103,6 +104,21 @@ def _assert_marker_avoids_seat_core(*, marker: Locator, seat: Locator, label: st
         raise AssertionError(f"{label} marker overlaps the seat label core.")
 
 
+def _assert_phone_map_pinch_changed_zoom(page: Page) -> None:
+    """Assert the shared phone classroom map responds to a pinch gesture."""
+
+    map_selector = (
+        '[data-test="phone-classroom-seat-map"], '
+        '[data-test="phone-fixed-seat-map"], '
+        '[data-test="phone-seating-workspace-canvas"]'
+    )
+    assert_touch_action(page, map_selector)
+    zoom_percent = page.locator('[data-test="phone-fixed-seat-map-zoom-percent"]').first
+    initial_zoom = zoom_percent.inner_text()
+    pinch_zoom(page, map_selector)
+    expect(zoom_percent).not_to_have_text(initial_zoom)
+
+
 def _create_roster(page: Page, *, roster_name: str) -> None:
     """Create one browser-owned public roster through the overview UI."""
 
@@ -136,7 +152,7 @@ def _create_template(page: Page, *, template_name: str) -> None:
     expect(grid_buttons.nth(0)).to_be_visible()
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
-    page.get_by_role("button", name=re.compile(r"Skapa(?: klassrum)?", re.IGNORECASE)).click()
+    page.locator('[data-test="room-template-save-button"]').click()
     _wait_for_select_option(
         page,
         selector='[data-test="overview-template-select"], [data-test="phone-overview-template-select"]',
@@ -205,6 +221,11 @@ def _run(*, base_url: str) -> None:
         page.locator('[data-test="phone-rules-student-pool"]').get_by_role(
             "button", name=re.compile(r"Ada Lovelace")
         ).click()
+        _assert_phone_map_pinch_changed_zoom(page)
+        page.locator('[data-test="phone-fixed-seat-map-seat-seat-1"]').click()
+        expect(page.locator('[data-test="phone-fixed-seat-pending-seat"]')).to_contain_text(
+            "Välj en plats"
+        )
         page.locator('[data-test="phone-fixed-seat-map-seat-seat-1"]').click()
         expect(page.locator('[data-test="phone-fixed-seat-pending-student"]')).to_contain_text(
             "Ada Lovelace"
@@ -234,6 +255,11 @@ def _run(*, base_url: str) -> None:
                 has_text="Smart placering klar, men 2 elever fick ingen plats."
             )
         ).to_be_visible(timeout=15_000)
+        occupied_seat = page.locator('[data-test="phone-fixed-seat-map-seat-seat-1"]')
+        expect(occupied_seat).to_contain_text("Ada")
+        _assert_phone_map_pinch_changed_zoom(page)
+        occupied_seat.click()
+        expect(occupied_seat).to_contain_text("Ada")
         page.screenshot(
             path=str(ARTIFACTS_DIR / "phone-capacity-shortfall-toast.png"),
             full_page=True,

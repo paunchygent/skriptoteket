@@ -88,6 +88,7 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     setViewportSize: setBuilderViewportSize,
     zoomOut,
     zoomIn,
+    zoomByFactor: zoomBuilderByFactor,
     resetZoom: resetBuilderZoom,
   } = useRoomViewportZoom(roomSurfaceMetrics, { resetSource: template });
 
@@ -434,6 +435,7 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     setBuilderViewportSize,
     zoomOut,
     zoomIn,
+    zoomBuilderByFactor,
     resetBuilderZoom,
     clearRoomContents,
   };

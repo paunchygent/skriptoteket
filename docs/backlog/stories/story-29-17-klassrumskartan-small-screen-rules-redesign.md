@@ -40,3 +40,6 @@ This story gives `Regler` its own reduced authoring pattern.
   post-review addition adds collision-free symbolic rule markers through the
   shared rules-map marker contract and clearer Smart outcome toast copy on
   phone.
+- [PR-0312: Shared phone classroom-map touch viewport gestures](../prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md)
+  (`done` 2026-05-10) adds reusable pinch/touch zoom for the phone `Fast
+  plats` map without changing fixed-seat selection semantics.

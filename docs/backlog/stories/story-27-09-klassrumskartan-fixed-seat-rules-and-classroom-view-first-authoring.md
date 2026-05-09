@@ -72,6 +72,10 @@ work.
   phone fixed-seat rule authoring map affordance for selecting physical seats
   (`done` 2026-05-09): phone map implemented with Smart toast diagnostics and
   collision-free symbolic rule markers.
+- [PR-0312](../prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md):
+  shared phone classroom-map touch viewport gestures (`done` 2026-05-10) for
+  pinch zoom on the `Fast plats` phone map without changing the fixed-seat rule
+  contract.
 
 ## Implementation Notes
 

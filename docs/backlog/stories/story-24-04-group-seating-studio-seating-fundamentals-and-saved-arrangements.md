@@ -90,6 +90,9 @@ technical and less trustworthy.
   compact sticky footer actions, required-name focus/recovery, aligned name
   panel spacing, and touch/coarse-pointer ghost-preview suppression while
   preserving desktop hover previews.
+- [PR-0312: Shared phone classroom-map touch viewport gestures](../prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md)
+  (`done` 2026-05-10): adds reusable pinch/touch zoom on the
+  room-template builder map and other phone classroom-map surfaces.
 
 ## Options considered
 

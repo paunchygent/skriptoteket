@@ -36,6 +36,30 @@ function setHoverCapableViewport(): void {
   });
 }
 
+function dispatchTouchEvent(
+  element: Element,
+  type: string,
+  distance: number,
+  touches = 2,
+): void {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "touches", {
+    value: {
+      length: touches,
+      item: (index: number) => {
+        if (index >= touches) {
+          return null;
+        }
+        return {
+          clientX: index === 0 ? 0 : distance,
+          clientY: 0,
+        };
+      },
+    },
+  });
+  element.dispatchEvent(event);
+}
+
 describe("RoomTemplateBuilderSurface", () => {
   beforeEach(() => {
     vi.stubGlobal("ResizeObserver", ResizeObserverMock);
@@ -138,5 +162,32 @@ describe("RoomTemplateBuilderSurface", () => {
 
     await firstCell.trigger("mousemove", { clientX: 8, clientY: 8 });
     expect(wrapper.find('[data-test="room-builder-ghost-overlay"]').exists()).toBe(true);
+  });
+
+  it("emits pinch zoom factors and suppresses the follow-up cell click", async () => {
+    const wrapper = mount(RoomTemplateBuilderSurface, {
+      props: {
+        roomGrid: { cols: 14, rows: 9 },
+        seats: [],
+        fixtures: [],
+        ghostPlacement: null,
+        ghostRenderableFixture: null,
+        builderScale: 0.8,
+        builderScaledSurfaceStyle: { width: "1120px", height: "768px" },
+        builderScalePercent: 80,
+      },
+    });
+    const viewport = wrapper.get('[data-test="room-builder-viewport"]');
+    const firstCell = wrapper.find(".planner-grid-node-button");
+
+    dispatchTouchEvent(viewport.element, "touchstart", 100);
+    dispatchTouchEvent(viewport.element, "touchmove", 125);
+    dispatchTouchEvent(viewport.element, "touchend", 125, 1);
+    await nextTick();
+    await firstCell.trigger("click", { clientX: 8, clientY: 8 });
+
+    expect(wrapper.emitted("zoom-by-factor")?.[0]).toEqual([1.25]);
+    expect(wrapper.emitted("clear-hover")).toHaveLength(1);
+    expect(wrapper.emitted("cell-click")).toBeUndefined();
   });
 });

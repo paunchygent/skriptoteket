@@ -458,13 +458,15 @@
 }
 
 .planner-phone-fixed-seat-map {
-  --planner-phone-seat-cell-size: 2.75rem;
+  --planner-phone-map-scale: 1;
+  --planner-phone-seat-cell-size: calc(2.75rem * var(--planner-phone-map-scale));
 
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-paper);
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
 }
 
 .planner-phone-fixed-seat-map-header {

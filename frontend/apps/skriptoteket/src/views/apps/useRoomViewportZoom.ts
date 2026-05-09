@@ -47,6 +47,18 @@ export function useRoomViewportZoom(
     manualZoomScale.value = clampRoomViewportScale(currentScale + ROOM_VIEWPORT_SCALE_STEP);
   }
 
+  function setManualZoomScale(nextScale: number): void {
+    manualZoomScale.value = clampRoomViewportScale(nextScale);
+  }
+
+  function zoomByFactor(factor: number): void {
+    if (!Number.isFinite(factor) || factor <= 0) {
+      return;
+    }
+    const currentScale = manualZoomScale.value ?? fitScale.value;
+    setManualZoomScale(currentScale * factor);
+  }
+
   function resetZoom(): void {
     manualZoomScale.value = null;
   }
@@ -66,6 +78,8 @@ export function useRoomViewportZoom(
     setViewportSize,
     zoomOut,
     zoomIn,
+    setManualZoomScale,
+    zoomByFactor,
     resetZoom,
   };
 }

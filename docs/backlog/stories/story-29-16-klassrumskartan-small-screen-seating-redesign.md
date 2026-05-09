@@ -46,3 +46,7 @@ operations out of the way.
   first-name row.
 - Desktop and tablet seating remain on the full `RoomCanvas`; the simplified
   classroom map is a phone-only companion surface.
+- [PR-0312: Shared phone classroom-map touch viewport gestures](../prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md)
+  (`done` 2026-05-10) adds reusable pinch/touch zoom for the phone seating
+  map without replacing the short-press remove and long-press move/swap
+  semantics.

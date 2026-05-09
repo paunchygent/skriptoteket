@@ -459,6 +459,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md`
 - ST-24-04 phone room-template modal stabilization:
   `docs/backlog/prs/pr-0311-st-24-04-phone-room-template-modal-stabilization.md`
+- Shared phone classroom-map touch viewport gestures:
+  `docs/backlog/prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`
+- Review gate for PR-0312 shared phone classroom-map touch viewport gestures:
+  `docs/backlog/reviews/review-pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`
 - ST-29-11 share/export affordance consolidation task:
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:
@@ -539,6 +543,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0304-st-27-09-seating-workspace-fixed-seat-lock-marker.md`
 - ST-27-09 phone fixed-seat rules map affordance:
   `docs/backlog/prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md`
+- Shared phone classroom-map touch viewport gestures:
+  `docs/backlog/prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`
+- Review gate for PR-0312 shared phone classroom-map touch viewport gestures:
+  `docs/backlog/reviews/review-pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`
 - Approved Klassrumskartan smart assignment review:
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed auth-cutover ADR:

@@ -19,6 +19,7 @@ import {
   type RoomGridDimensions,
 } from "../roomFixtureLayout";
 import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
+import { useRoomTouchViewportGestures } from "../useRoomTouchViewportGestures";
 import type {
   RoomTemplateCellClickOptions,
   RoomTemplateGhostPlacement,
@@ -42,6 +43,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "zoom-out"): void;
   (e: "zoom-in"): void;
+  (e: "zoom-by-factor", factor: number): void;
   (e: "zoom-fit"): void;
   (e: "clear-hover"): void;
   (e: "cell-hover", event: MouseEvent, row: number, col: number): void;
@@ -53,6 +55,13 @@ const emit = defineEmits<{
 const builderViewport = ref<HTMLElement | null>(null);
 const viewportWidth = ref(0);
 const suppressGhostPreview = ref(false);
+const touchViewportGestures = useRoomTouchViewportGestures({
+  onZoomByFactor: (factor) => emit("zoom-by-factor", factor),
+  onGestureStart: () => {
+    suppressGhostPreview.value = true;
+    emit("clear-hover");
+  },
+});
 
 function isNoHoverPointer(event: PointerEvent): boolean {
   if (event.pointerType === "touch" || event.pointerType === "pen") {
@@ -90,6 +99,10 @@ function handleCellFocus(row: number, col: number): void {
 }
 
 function handleCellClick(event: MouseEvent, row: number, col: number): void {
+  if (touchViewportGestures.consumeTapSuppression()) {
+    event.preventDefault();
+    return;
+  }
   emit("cell-click", row, col, event, {
     suppressHoverPreview: suppressGhostPreview.value || isNoHoverDevice(),
   });
@@ -225,6 +238,10 @@ const shouldCenterSurface = computed(() => {
       ref="builderViewport"
       data-test="room-builder-viewport"
       class="min-h-[560px] flex-1 overflow-auto border border-navy/20 bg-white/70 p-3 lg:min-h-[640px]"
+      @touchstart="touchViewportGestures.handleTouchStart"
+      @touchmove="touchViewportGestures.handleTouchMove"
+      @touchend="touchViewportGestures.handleTouchEnd"
+      @touchcancel="touchViewportGestures.handleTouchCancel"
     >
       <div
         data-test="room-builder-scroll-frame"

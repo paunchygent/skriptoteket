@@ -65,6 +65,31 @@ async function dispatchPointerEvent(
   await nextTick();
 }
 
+async function dispatchTouchEvent(
+  element: Element,
+  type: string,
+  distance: number,
+  touches = 2,
+): Promise<void> {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "touches", {
+    value: {
+      length: touches,
+      item: (index: number) => {
+        if (index >= touches) {
+          return null;
+        }
+        return {
+          clientX: index === 0 ? 0 : distance,
+          clientY: 0,
+        };
+      },
+    },
+  });
+  element.dispatchEvent(event);
+  await nextTick();
+}
+
 describe("PlannerPhoneClassroomSeatMap", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -140,5 +165,39 @@ describe("PlannerPhoneClassroomSeatMap", () => {
 
     expect(wrapper.emitted("swap-requested")).toEqual([["student-1", "student-2"]]);
     expect(wrapper.emitted("student-removed")).toBeUndefined();
+  });
+
+  it("zooms on pinch without firing the follow-up short-press removal", async () => {
+    const wrapper = mountEditableMap();
+    const map = wrapper.get('[data-test="phone-classroom-seat-map"]');
+    const sourceSeat = wrapper.get('[data-test="phone-fixed-seat-map-seat-seat-1"]');
+
+    await dispatchTouchEvent(map.element, "touchstart", 100);
+    await dispatchTouchEvent(map.element, "touchmove", 125);
+    await dispatchTouchEvent(map.element, "touchend", 125, 1);
+    await sourceSeat.trigger("click");
+
+    expect(wrapper.get('[data-test="phone-fixed-seat-map-zoom-percent"]').text()).toBe("125%");
+    expect(wrapper.emitted("student-removed")).toBeUndefined();
+  });
+
+  it("zooms on pinch without selecting a fixed-seat target", async () => {
+    const wrapper = mount(PlannerPhoneClassroomSeatMap, {
+      props: {
+        template,
+        studentsById,
+        seatAssignments: [],
+      },
+    });
+    const map = wrapper.get('[data-test="phone-classroom-seat-map"]');
+    const targetSeat = wrapper.get('[data-test="phone-fixed-seat-map-seat-seat-1"]');
+
+    await dispatchTouchEvent(map.element, "touchstart", 100);
+    await dispatchTouchEvent(map.element, "touchmove", 125);
+    await dispatchTouchEvent(map.element, "touchend", 125, 1);
+    await targetSeat.trigger("click");
+
+    expect(wrapper.get('[data-test="phone-fixed-seat-map-zoom-percent"]').text()).toBe("125%");
+    expect(wrapper.emitted("seat-selected")).toBeUndefined();
   });
 });

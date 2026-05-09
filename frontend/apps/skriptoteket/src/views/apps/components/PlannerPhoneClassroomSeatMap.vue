@@ -29,11 +29,18 @@ import {
   type SmartRuleMarkerKind,
 } from "../classroomPlannerSeatRuleMarkers";
 import {
+  PHONE_MAP_BASE_CELL_SIZE_PX,
+  formatPhoneSeatStudentName,
+  type PhoneSeatStudentName,
+} from "../phoneClassroomSeatMapPresentation";
+import {
   isWallFixtureType,
   normalizeRoomGrid,
   resolveWallSideFromFixture,
   ROOM_GRID_UNIT,
 } from "../roomFixtureLayout";
+import { useRoomTouchViewportGestures } from "../useRoomTouchViewportGestures";
+import { useRoomViewportZoom } from "../useRoomViewportZoom";
 
 const props = withDefaults(defineProps<{
   template?: RoomTemplate | null;
@@ -74,18 +81,30 @@ const markerIconByKind: Record<SmartRuleMarkerKind, Component> = {
   "near-teacher": IconTeacherAnchor,
 };
 const PHONE_LONG_PRESS_MS = 450;
-type PhoneSeatStudentName = {
-  firstName: string;
-  lastInitials: string | null;
-};
 const longPressTimer = ref<ReturnType<typeof window.setTimeout> | null>(null);
 const touchDragStudentId = ref<string | null>(null);
 const touchDragSourceSeatId = ref<string | null>(null);
 const suppressClickSeatId = ref<string | null>(null);
 const roomGrid = computed(() => normalizeRoomGrid(props.template));
+const roomSurfaceMetrics = computed(() => ({
+  width: roomGrid.value.cols * PHONE_MAP_BASE_CELL_SIZE_PX,
+  height: roomGrid.value.rows * PHONE_MAP_BASE_CELL_SIZE_PX,
+}));
+const {
+  scale: mapScale,
+  scalePercent: mapScalePercent,
+  zoomByFactor: zoomMapByFactor,
+} = useRoomViewportZoom(roomSurfaceMetrics);
+const touchViewportGestures = useRoomTouchViewportGestures({
+  onZoomByFactor: zoomMapByFactor,
+  onGestureStart: () => {
+    resetTouchDrag();
+  },
+});
 const mapGridStyle = computed(() => ({
   "--phone-map-cols": String(roomGrid.value.cols),
   "--phone-map-rows": String(roomGrid.value.rows),
+  "--planner-phone-map-scale": String(mapScale.value),
   gridTemplateColumns: `repeat(${roomGrid.value.cols}, var(--planner-phone-seat-cell-size))`,
   gridTemplateRows: `repeat(${roomGrid.value.rows}, var(--planner-phone-seat-cell-size))`,
 }));
@@ -200,22 +219,6 @@ function fixtureClass(fixture: RoomFixture): string[] {
   ].filter(Boolean);
 }
 
-function formatPhoneSeatStudentName(displayName: string): PhoneSeatStudentName | null {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) {
-    return null;
-  }
-  const lastInitials = parts
-    .slice(1)
-    .map((part) => part[0]?.toLocaleUpperCase("sv-SE") ?? "")
-    .filter(Boolean)
-    .join("");
-  return {
-    firstName: parts[0] ?? displayName.trim(),
-    lastInitials: lastInitials.length > 0 ? lastInitials : null,
-  };
-}
-
 function seatTitle(seatId: string): string {
   const studentName = studentBySeatId.value[seatId]?.display_name;
   const baseLabel = formatSeatDisplayLabel(seatId);
@@ -269,7 +272,11 @@ function seatIdFromPointer(event: PointerEvent): string | null {
 }
 
 function handlePointerDown(event: PointerEvent, seatId: string): void {
-  if (!props.editableAssignments || (event.pointerType !== "touch" && event.pointerType !== "pen")) {
+  if (
+    touchViewportGestures.gestureActive.value
+    || !props.editableAssignments
+    || (event.pointerType !== "touch" && event.pointerType !== "pen")
+  ) {
     return;
   }
   const student = studentBySeatId.value[seatId];
@@ -348,6 +355,9 @@ function handleDragOver(event: DragEvent): void {
 }
 
 function handleSeatClick(seatId: string): void {
+  if (touchViewportGestures.consumeTapSuppression()) {
+    return;
+  }
   if (suppressClickSeatId.value === seatId) {
     suppressClickSeatId.value = null;
     return;
@@ -370,13 +380,24 @@ onBeforeUnmount(() => {
     v-if="template"
     class="planner-phone-fixed-seat-map"
     data-test="phone-classroom-seat-map"
+    @touchstart="touchViewportGestures.handleTouchStart"
+    @touchmove="touchViewportGestures.handleTouchMove"
+    @touchend="touchViewportGestures.handleTouchEnd"
+    @touchcancel="touchViewportGestures.handleTouchCancel"
   >
     <div class="planner-phone-fixed-seat-map-header">
       <span>Klassrum</span>
       <span data-test="phone-fixed-seat-map-count">{{ seatCountLabel }}</span>
+      <span
+        class="sr-only"
+        data-test="phone-fixed-seat-map-zoom-percent"
+      >
+        {{ mapScalePercent }}%
+      </span>
     </div>
     <div
       class="planner-phone-fixed-seat-map-grid"
+      data-test="phone-classroom-seat-map-grid"
       :style="mapGridStyle"
     >
       <div

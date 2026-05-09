@@ -67,6 +67,7 @@ const {
   setBuilderViewportSize,
   zoomOut,
   zoomIn,
+  zoomBuilderByFactor,
   resetBuilderZoom,
   clearRoomContents,
 } = useRoomTemplateEditorState(toRef(props, "template"));
@@ -227,6 +228,7 @@ async function removeTemplate(): Promise<void> {
                 :builder-scale-percent="builderScalePercent"
                 @zoom-out="zoomOut"
                 @zoom-in="zoomIn"
+                @zoom-by-factor="zoomBuilderByFactor"
                 @zoom-fit="resetBuilderZoom"
                 @clear-hover="clearHoverState"
                 @cell-hover="updateHoverState"

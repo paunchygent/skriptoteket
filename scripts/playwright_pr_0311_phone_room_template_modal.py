@@ -32,6 +32,7 @@ from scripts._playwright_huleedu_auth import (
     temporary_backend_server,
     temporary_vite_server,
 )
+from scripts._playwright_touch import assert_touch_action, pinch_zoom
 
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0311-phone-room-template-modal")
 PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
@@ -186,6 +187,19 @@ def _assert_seat_touch_contract(page: Page) -> None:
     expect(page.locator('[data-test="room-builder-ghost-overlay"]')).to_have_count(0)
 
 
+def _assert_builder_pinch_zoom(page: Page) -> None:
+    """Pinch the phone builder viewport and assert no accidental seat appears."""
+
+    assert_touch_action(page, '[data-test="room-builder-viewport"]')
+    zoom_percent = page.locator('[data-test="builder-zoom-percent"]')
+    initial_zoom = zoom_percent.inner_text()
+    pinch_zoom(page, '[data-test="room-builder-viewport"]')
+    expect(zoom_percent).not_to_have_text(initial_zoom)
+    expect(
+        page.locator('[data-test="room-builder-viewport"] [data-test="room-seat-token"]')
+    ).to_have_count(0)
+
+
 def _run_phone_proof(page: Page, *, base_url: str) -> None:
     """Run the phone modal proof against the public route."""
 
@@ -200,6 +214,7 @@ def _run_phone_proof(page: Page, *, base_url: str) -> None:
     )
     _assert_missing_name_recovery(page)
     _assert_seat_touch_contract(page)
+    _assert_builder_pinch_zoom(page)
     page.screenshot(path=str(ARTIFACTS_DIR / "phone-create-modal-recovery.png"), full_page=True)
     _save_template_from_modal(page, template_name=template_name)
 

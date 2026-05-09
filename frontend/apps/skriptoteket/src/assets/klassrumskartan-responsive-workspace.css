@@ -279,6 +279,7 @@
     max-width: 100%;
     box-sizing: border-box;
     overflow: auto;
+    touch-action: pan-x pan-y;
     min-height: min(52vh, 24rem);
     max-height: 52vh;
     padding: var(--huleedu-space-2);
