@@ -26,6 +26,22 @@ class ResizeObserverMock {
   disconnect(): void {}
 }
 
+function setHoverCapableViewport(): void {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: vi.fn().mockReturnValue({
+      matches: false,
+      media: "(hover: none), (pointer: coarse)",
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  });
+}
+
 const clientMocks = vi.hoisted(() => ({
   apiDelete: vi.fn(),
   apiPost: vi.fn(),
@@ -45,6 +61,7 @@ vi.mock("../../../api/client", async () => {
 describe("CreateRoomTemplateModal", () => {
   beforeEach(() => {
     vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+    setHoverCapableViewport();
     clientMocks.apiDelete.mockReset();
     clientMocks.apiPost.mockReset();
     clientMocks.apiPut.mockReset();
@@ -402,7 +419,7 @@ describe("CreateRoomTemplateModal", () => {
     );
   });
 
-  it("shows the backend message when classroom delete fails", async () => {
+  it("keeps governed Swedish recovery copy when classroom delete fails", async () => {
     clientMocks.apiDelete.mockRejectedValueOnce(
       new ApiError({
         code: "INTERNAL_ERROR",
@@ -427,9 +444,8 @@ describe("CreateRoomTemplateModal", () => {
     await wrapper.get("button.planner-btn-danger").trigger("click");
     await Promise.resolve();
 
-    expect(wrapper.text()).toContain(
-      "Kunde inte radera klassrummet just nu.",
-    );
+    expect(wrapper.text()).toContain("Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.");
+    expect(wrapper.text()).not.toContain("Kunde inte radera klassrummet just nu.");
     expect(wrapper.emitted("deleted")).toBeUndefined();
   });
 });

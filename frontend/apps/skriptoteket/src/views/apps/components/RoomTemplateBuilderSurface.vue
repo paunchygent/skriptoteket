@@ -19,7 +19,10 @@ import {
   type RoomGridDimensions,
 } from "../roomFixtureLayout";
 import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
-import type { RoomTemplateGhostPlacement } from "../useRoomTemplateEditorState";
+import type {
+  RoomTemplateCellClickOptions,
+  RoomTemplateGhostPlacement,
+} from "../useRoomTemplateEditorState";
 import type { RoomFixture, Seat } from "../classroomPlannerTypes";
 import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
 import RoomSceneSurface from "./RoomSceneSurface.vue";
@@ -43,12 +46,54 @@ const emit = defineEmits<{
   (e: "clear-hover"): void;
   (e: "cell-hover", event: MouseEvent, row: number, col: number): void;
   (e: "cell-focus", row: number, col: number): void;
-  (e: "cell-click", row: number, col: number, event: MouseEvent): void;
+  (e: "cell-click", row: number, col: number, event: MouseEvent, options?: RoomTemplateCellClickOptions): void;
   (e: "viewport-size", size: { width: number; height: number }): void;
 }>();
 
 const builderViewport = ref<HTMLElement | null>(null);
 const viewportWidth = ref(0);
+const suppressGhostPreview = ref(false);
+
+function isNoHoverPointer(event: PointerEvent): boolean {
+  if (event.pointerType === "touch" || event.pointerType === "pen") {
+    return true;
+  }
+  return isNoHoverDevice();
+}
+
+function isNoHoverDevice(): boolean {
+  return window.matchMedia?.("(hover: none), (pointer: coarse)").matches ?? false;
+}
+
+function handleCellPointerDown(event: PointerEvent): void {
+  suppressGhostPreview.value = isNoHoverPointer(event);
+  if (suppressGhostPreview.value) {
+    emit("clear-hover");
+  }
+}
+
+function handleCellMouseMove(event: MouseEvent, row: number, col: number): void {
+  if (isNoHoverDevice()) {
+    suppressGhostPreview.value = true;
+    emit("clear-hover");
+    return;
+  }
+  suppressGhostPreview.value = false;
+  emit("cell-hover", event, row, col);
+}
+
+function handleCellFocus(row: number, col: number): void {
+  if (suppressGhostPreview.value || isNoHoverDevice()) {
+    return;
+  }
+  emit("cell-focus", row, col);
+}
+
+function handleCellClick(event: MouseEvent, row: number, col: number): void {
+  emit("cell-click", row, col, event, {
+    suppressHoverPreview: suppressGhostPreview.value || isNoHoverDevice(),
+  });
+}
 
 function ghostPlacementClass(canPlace: boolean, type: RoomTemplateGhostPlacement["type"]): string {
   if (!canPlace) {
@@ -96,8 +141,14 @@ onBeforeUnmount(() => {
   builderViewportObserver = null;
 });
 
+const canShowGhostPreview = computed(() => {
+  return !suppressGhostPreview.value && !isNoHoverDevice();
+});
+
 const showFloorGhost = computed(() => {
   return (
+    canShowGhostPreview.value
+    &&
     props.ghostPlacement
     && (!props.ghostRenderableFixture || props.ghostPlacement.type === "seat" || !isWallFixtureType(props.ghostPlacement.type))
   );
@@ -105,6 +156,8 @@ const showFloorGhost = computed(() => {
 
 const showWallGhost = computed(() => {
   return (
+    canShowGhostPreview.value
+    &&
     props.ghostPlacement
     && props.ghostPlacement.type !== "seat"
     && props.ghostRenderableFixture
@@ -213,9 +266,10 @@ const shouldCenterSurface = computed(() => {
                         :key="`cell-${row}-${col}`"
                         type="button"
                         class="planner-grid-node-button"
-                        @mousemove="emit('cell-hover', $event, row - 1, col - 1)"
-                        @focus="emit('cell-focus', row - 1, col - 1)"
-                        @click="emit('cell-click', row - 1, col - 1, $event)"
+                        @pointerdown="handleCellPointerDown"
+                        @mousemove="handleCellMouseMove($event, row - 1, col - 1)"
+                        @focus="handleCellFocus(row - 1, col - 1)"
+                        @click="handleCellClick($event, row - 1, col - 1)"
                       />
                     </template>
                   </div>
@@ -225,6 +279,7 @@ const shouldCenterSurface = computed(() => {
                   <div
                     v-if="showFloorGhost"
                     class="pointer-events-none absolute inset-0 z-20"
+                    data-test="room-builder-ghost-overlay"
                   >
                     <div
                       v-if="ghostPlacement?.type === 'seat'"
@@ -260,6 +315,7 @@ const shouldCenterSurface = computed(() => {
                   <div
                     v-if="showWallGhost && ghostRenderableFixture && ghostPlacement"
                     class="pointer-events-none absolute inset-0 z-20"
+                    data-test="room-builder-ghost-overlay"
                   >
                     <div
                       class="absolute rounded-sm border-2 border-dashed"

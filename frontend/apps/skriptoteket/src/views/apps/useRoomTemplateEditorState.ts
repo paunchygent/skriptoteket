@@ -59,6 +59,10 @@ export type RoomTemplateGhostPlacement = {
   canPlace: boolean;
 };
 
+export type RoomTemplateCellClickOptions = {
+  suppressHoverPreview?: boolean;
+};
+
 export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | undefined>) {
   const name = ref("");
   const selectedTool = ref<BuilderTool>("seat");
@@ -186,9 +190,20 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     fixtures.value = fixtures.value.filter((fixture) => fixture.id !== fixtureId);
   }
 
-  function toggleGridCell(row: number, col: number, event?: MouseEvent): void {
+  function finishPlacementInteraction(options?: RoomTemplateCellClickOptions): void {
+    if (options?.suppressHoverPreview) {
+      clearHoverState();
+    }
+  }
+
+  function toggleGridCell(
+    row: number,
+    col: number,
+    event?: MouseEvent,
+    options?: RoomTemplateCellClickOptions,
+  ): void {
     error.value = null;
-    if (event) {
+    if (event && !options?.suppressHoverPreview) {
       updateHoverState(event, row, col);
     }
 
@@ -198,25 +213,30 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     if (selectedTool.value === "erase") {
       if (occupiedWallFixture) {
         removeFixtureById(occupiedWallFixture.id);
+        finishPlacementInteraction(options);
         return;
       }
       if (occupiedFloorFixture) {
         removeFixtureById(occupiedFloorFixture.id);
+        finishPlacementInteraction(options);
         return;
       }
       seatCells.value = seatCells.value.filter((value) => value !== seatKey(row, col));
+      finishPlacementInteraction(options);
       return;
     }
 
     if (selectedTool.value === "seat") {
       if (occupiedFloorFixture || occupiedWallFixture) {
         error.value = "Ta bort möbeln eller väggobjektet först om du vill lägga en plats där.";
+        finishPlacementInteraction(options);
         return;
       }
       const key = seatKey(row, col);
       seatCells.value = isSeatAt(seatCells.value, row, col)
         ? seatCells.value.filter((value) => value !== key)
         : [...seatCells.value, key];
+      finishPlacementInteraction(options);
       return;
     }
 
@@ -228,6 +248,7 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     const sameKindFixture = findSameKindFixtureAt(fixtures.value, selectedTool.value, row, col);
     if (sameKindFixture) {
       removeFixtureById(sameKindFixture.id);
+      finishPlacementInteraction(options);
       return;
     }
 
@@ -239,6 +260,7 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
       error.value = isWallFixtureType(selectedTool.value)
         ? "Det valda objektet måste få plats längs väggen utan att krocka med andra väggobjekt."
         : "Det valda objektet får inte plats där eller krockar med befintlig möblering.";
+      finishPlacementInteraction(options);
       return;
     }
 
@@ -254,6 +276,7 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
         label: buildRoomFixtureLabel(selectedTool.value),
       },
     ];
+    finishPlacementInteraction(options);
   }
 
   function resizeRoom(axis: "cols" | "rows", delta: 1 | -1): void {

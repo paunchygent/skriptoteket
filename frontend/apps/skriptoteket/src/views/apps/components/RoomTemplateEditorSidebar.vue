@@ -7,7 +7,7 @@
  * extracted editor composable.
  */
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { BuilderTool } from "../roomTemplateEditorDomain";
 import type { RoomFixturePaletteEntry, RoomGridDimensions } from "../roomFixtureLayout";
@@ -20,6 +20,7 @@ const props = defineProps<{
   canShrinkCols: boolean;
   canShrinkRows: boolean;
   roomFixturePalette: RoomFixturePaletteEntry[];
+  nameError?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -57,6 +58,12 @@ const toolEntries = computed<RoomEditorToolEntry[]>(() => [
 const selectedToolEntry = computed<RoomEditorToolEntry>(() => {
   return toolEntries.value.find((tool) => tool.id === props.selectedTool) ?? toolEntries.value[0]!;
 });
+const nameInput = ref<HTMLInputElement | null>(null);
+
+function focusNameInput(): void {
+  nameInput.value?.scrollIntoView({ block: "center", behavior: "smooth" });
+  nameInput.value?.focus();
+}
 
 function updateNameFromEvent(event: Event): void {
   const target = event.target;
@@ -65,6 +72,10 @@ function updateNameFromEvent(event: Event): void {
   }
   emit("update:name", target.value);
 }
+
+defineExpose({
+  focusNameInput,
+});
 </script>
 
 <template>
@@ -72,17 +83,36 @@ function updateNameFromEvent(event: Event): void {
     class="space-y-5 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100svh-10rem)] xl:overflow-y-auto"
     data-test="room-template-editor-sidebar"
   >
-    <div class="space-y-1">
-      <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+    <div
+      class="room-template-name-panel border border-navy bg-panel p-4 shadow-brutal-sm"
+      data-test="room-template-name-panel"
+    >
+      <label
+        for="room-template-name-input"
+        class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+      >
         Klassrummets namn
       </label>
       <input
+        id="room-template-name-input"
+        ref="nameInput"
         :value="name"
         type="text"
         placeholder="Till exempel Sal 304"
+        data-test="room-template-name-input"
         class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :aria-invalid="nameError ? 'true' : undefined"
+        :aria-describedby="nameError ? 'room-template-name-error' : undefined"
         @input="updateNameFromEvent"
       >
+      <p
+        v-if="nameError"
+        id="room-template-name-error"
+        class="mt-2 text-xs font-semibold text-critical"
+        data-test="room-template-name-error"
+      >
+        {{ nameError }}
+      </p>
     </div>
 
     <div class="border border-navy bg-panel p-4 shadow-brutal-sm">

@@ -248,6 +248,15 @@
     padding: var(--huleedu-space-3);
   }
 
+  [data-test="room-template-name-panel"] {
+    width: 100%;
+    margin: 0;
+  }
+
+  [data-test="room-template-name-input"] {
+    margin-top: var(--huleedu-space-1);
+  }
+
   [data-test="room-template-tool-buttons"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -285,7 +294,27 @@
   }
 
   .room-template-modal-footer {
-    padding: var(--huleedu-space-3);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--huleedu-space-2);
+    padding: var(--huleedu-space-2) var(--huleedu-space-3) calc(var(--huleedu-space-2) + env(safe-area-inset-bottom));
+  }
+
+  .room-template-modal-footer-danger {
+    min-width: 0;
+  }
+
+  .room-template-modal-footer-actions {
+    display: contents;
+  }
+
+  .room-template-modal-footer-button {
+    min-height: 2.5rem;
+    min-width: 0;
+    padding-right: var(--huleedu-space-3);
+    padding-left: var(--huleedu-space-3);
+    white-space: nowrap;
   }
 }
 

@@ -109,7 +109,7 @@ def _create_template(page: Page, *, template_name: str) -> None:
     expect(grid_buttons.nth(0)).to_be_visible()
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
-    page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Skapa(?: klassrum)?", re.IGNORECASE)).click()
     _wait_for_select_option(
         page,
         selector='[data-test="overview-template-select"], [data-test="phone-overview-template-select"]',

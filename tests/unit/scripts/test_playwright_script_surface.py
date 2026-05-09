@@ -33,6 +33,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0302_toolbar_overflow_parity.py",
     "playwright_pr_0303_public_guest_overview_distribution.py",
     "playwright_pr_0310_phone_fixed_seat_rules_map.py",
+    "playwright_pr_0311_phone_room_template_modal.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

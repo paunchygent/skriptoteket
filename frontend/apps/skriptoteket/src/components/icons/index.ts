@@ -43,6 +43,7 @@ export { default as IconPresentation } from "./IconPresentation.vue";
 export { default as IconRedo } from "./IconRedo.vue";
 export { default as IconRole } from "./IconRole.vue";
 export { default as IconRules } from "./IconRules.vue";
+export { default as IconSave } from "./IconSave.vue";
 export { default as IconSchool } from "./IconSchool.vue";
 export { default as IconSearch } from "./IconSearch.vue";
 export { default as IconSeat } from "./IconSeat.vue";

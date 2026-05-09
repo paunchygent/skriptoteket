@@ -86,6 +86,10 @@ technical and less trustworthy.
 ## Follow-up PR Slices
 
 - [PR-0311: ST-24-04 phone room-template modal stabilization](../prs/pr-0311-st-24-04-phone-room-template-modal-stabilization.md)
+  (`done` 2026-05-09): stabilizes the phone room-template editor modal with
+  compact sticky footer actions, required-name focus/recovery, aligned name
+  panel spacing, and touch/coarse-pointer ghost-preview suppression while
+  preserving desktop hover previews.
 
 ## Options considered
 

@@ -7,9 +7,10 @@
  * modal keeps ownership of submit/delete transport and open/close lifecycle.
  */
 
-import { computed, ref, toRef } from "vue";
+import { computed, nextTick, ref, toRef } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import { IconSave, IconTrash, IconX } from "../../../components/icons";
 import SystemMessage from "../../../components/ui/SystemMessage.vue";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useRoomTemplateEditorState } from "../useRoomTemplateEditorState";
@@ -39,6 +40,8 @@ const emit = defineEmits<{
 const isEditing = computed(() => Boolean(props.template));
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
+const nameRequiredMessage = "Ge klassrummet ett namn innan du sparar.";
+const editorSidebar = ref<InstanceType<typeof RoomTemplateEditorSidebar> | null>(null);
 
 const {
   name,
@@ -68,8 +71,35 @@ const {
   clearRoomContents,
 } = useRoomTemplateEditorState(toRef(props, "template"));
 
+const nameValidationError = computed(() => {
+  return error.value === nameRequiredMessage ? nameRequiredMessage : null;
+});
+const modalSystemError = computed(() => {
+  return error.value && error.value !== nameRequiredMessage ? error.value : null;
+});
+const primarySaveLabel = computed(() => {
+  if (isSubmitting.value) {
+    return "Sparar...";
+  }
+  return isEditing.value ? "Spara" : "Skapa";
+});
+
+function updateName(value: string): void {
+  name.value = value;
+  if (error.value === nameRequiredMessage && value.trim().length > 0) {
+    error.value = null;
+  }
+}
+
+async function showNameRequiredError(): Promise<void> {
+  error.value = nameRequiredMessage;
+  await nextTick();
+  editorSidebar.value?.focusNameInput();
+}
+
 async function submit(): Promise<void> {
   if (!isValid.value) {
+    await showNameRequiredError();
     return;
   }
 
@@ -122,8 +152,7 @@ async function removeTemplate(): Promise<void> {
     }
     emit("deleted", props.template.id);
   } catch {
-    error.value =
-      "Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.";
+    error.value = "Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.";
   } finally {
     isDeleting.value = false;
   }
@@ -164,21 +193,23 @@ async function removeTemplate(): Promise<void> {
 
         <div class="room-template-modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
           <SystemMessage
-            v-if="error"
+            v-if="modalSystemError"
             v-model="error"
             variant="error"
           />
 
           <div class="room-template-modal-editor-grid mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">
             <RoomTemplateEditorSidebar
+              ref="editorSidebar"
               :name="name"
+              :name-error="nameValidationError"
               :selected-tool="selectedTool"
               :seat-count="parsedSeats.length"
               :room-grid="roomGrid"
               :can-shrink-cols="canShrinkCols"
               :can-shrink-rows="canShrinkRows"
               :room-fixture-palette="roomFixturePalette"
-              @update:name="name = $event"
+              @update:name="updateName"
               @update:selected-tool="selectedTool = $event"
               @resize-room="resizeRoom($event.axis, $event.delta)"
               @clear-room="clearRoomContents"
@@ -214,32 +245,38 @@ async function removeTemplate(): Promise<void> {
         </div>
 
         <div class="room-template-modal-footer sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-modal px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
-          <div>
+          <div class="room-template-modal-footer-danger">
             <button
               v-if="isEditing"
               type="button"
-              class="btn-ghost planner-btn-danger"
+              class="room-template-modal-footer-button btn-ghost planner-btn-danger inline-flex items-center justify-center gap-2"
+              data-test="room-template-delete-button"
               :disabled="isDeleting"
               @click="removeTemplate"
             >
-              {{ isDeleting ? "Raderar..." : "Radera klassrum" }}
+              <IconTrash :size="14" />
+              <span>{{ isDeleting ? "Raderar..." : "Radera" }}</span>
             </button>
           </div>
-          <div class="flex flex-wrap justify-end gap-3">
+          <div class="room-template-modal-footer-actions flex flex-wrap justify-end gap-3">
             <button
               type="button"
-              class="btn-ghost planner-btn-ghost-canvas"
+              class="room-template-modal-footer-button btn-ghost planner-btn-ghost-canvas inline-flex items-center justify-center gap-2"
+              data-test="room-template-cancel-button"
               @click="emit('close')"
             >
-              Avbryt
+              <IconX :size="14" />
+              <span>Avbryt</span>
             </button>
             <button
               type="button"
-              class="btn-primary"
-              :disabled="!isValid || isSubmitting"
+              class="room-template-modal-footer-button btn-primary inline-flex items-center justify-center gap-2"
+              data-test="room-template-save-button"
+              :disabled="isSubmitting"
               @click="submit"
             >
-              {{ isSubmitting ? "Sparar..." : isEditing ? "Spara klassrum" : "Skapa klassrum" }}
+              <IconSave :size="14" />
+              <span>{{ primarySaveLabel }}</span>
             </button>
           </div>
         </div>

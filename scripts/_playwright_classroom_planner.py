@@ -180,7 +180,7 @@ def create_template(page: Page, *, template_name: str) -> None:
     ).to_be_visible()
 
     with page.expect_response(re.compile(r".*/templates$")) as response_info:
-        page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
+        page.get_by_role("button", name=re.compile(r"Skapa(?: klassrum)?", re.IGNORECASE)).click()
     if not response_info.value.ok:
         raise AssertionError(
             f"Expected classroom template creation to succeed, got {response_info.value.status}"
