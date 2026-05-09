@@ -30,6 +30,10 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
 )
+from skriptoteket.application.curated_apps.classroom_planner.draft_smart_preferences import (
+    DraftSmartPreferenceSeed,
+)
+from skriptoteket.application.identity.commands import GetProfileResult
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     DraftHistoryStatus,
@@ -49,7 +53,7 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner as api
 from skriptoteket.web.api.v1 import apps_classroom_planner_grouping as api_grouping
 from skriptoteket.web.api.v1 import apps_classroom_planner_seating as api_seating
-from tests.fixtures.identity_fixtures import make_user
+from tests.fixtures.identity_fixtures import make_user, make_user_profile
 
 
 def _unwrap_dishka(fn):
@@ -109,6 +113,16 @@ async def test_delete_historic_grouping_draft_calls_handler():
 async def test_create_seating_draft_calls_handler():
     user = make_user(role=Role.USER)
     handler = AsyncMock(spec=CreateSeatingDraftHandler)
+    profile_handler = AsyncMock()
+    profile_handler.handle.return_value = GetProfileResult(
+        user=user,
+        profile=make_user_profile(
+            user_id=user.id,
+            classroom_planner_smart_enabled=False,
+            classroom_planner_use_history=False,
+            classroom_planner_grouping_seating_distance_enabled=True,
+        ),
+    )
     now = datetime.now(timezone.utc)
     roster_id = uuid4()
     template_id = uuid4()
@@ -132,6 +146,7 @@ async def test_create_seating_draft_calls_handler():
             template_id=template_id,
         ),
         handler=handler,
+        profile_handler=profile_handler,
         user=user,
     )
 
@@ -140,6 +155,11 @@ async def test_create_seating_draft_calls_handler():
         owner_user_id=user.id,
         roster_id=roster_id,
         template_id=template_id,
+        smart_preferences=DraftSmartPreferenceSeed(
+            smart_enabled=False,
+            use_history=False,
+            grouping_seating_distance_enabled=True,
+        ),
     )
 
 
@@ -635,6 +655,16 @@ def test_update_plan_draft_request_rejects_legacy_smart_preference_payload() -> 
 async def test_resolve_draft_calls_handler():
     user = make_user(role=Role.USER)
     handler = AsyncMock(spec=ResolveDraftHandler)
+    profile_handler = AsyncMock()
+    profile_handler.handle.return_value = GetProfileResult(
+        user=user,
+        profile=make_user_profile(
+            user_id=user.id,
+            classroom_planner_smart_enabled=True,
+            classroom_planner_use_history=False,
+            classroom_planner_grouping_seating_distance_enabled=False,
+        ),
+    )
     req = api.ResolvePlanDraftRequest(
         roster_id=uuid4(),
         draft_kind=PlanDraftKind.SEATING,
@@ -658,6 +688,7 @@ async def test_resolve_draft_calls_handler():
     result = await _unwrap_dishka(api.resolve_draft)(
         request=req,
         handler=handler,
+        profile_handler=profile_handler,
         user=user,
     )
 
@@ -667,6 +698,11 @@ async def test_resolve_draft_calls_handler():
         roster_id=req.roster_id,
         draft_kind=PlanDraftKind.SEATING,
         template_id=req.template_id,
+        smart_preferences=DraftSmartPreferenceSeed(
+            smart_enabled=True,
+            use_history=False,
+            grouping_seating_distance_enabled=False,
+        ),
     )
 
 
@@ -675,6 +711,16 @@ async def test_resolve_draft_calls_handler():
 async def test_create_grouping_draft_calls_handler():
     user = make_user(role=Role.USER)
     handler = AsyncMock(spec=CreateGroupingDraftHandler)
+    profile_handler = AsyncMock()
+    profile_handler.handle.return_value = GetProfileResult(
+        user=user,
+        profile=make_user_profile(
+            user_id=user.id,
+            classroom_planner_smart_enabled=None,
+            classroom_planner_use_history=True,
+            classroom_planner_grouping_seating_distance_enabled=False,
+        ),
+    )
     req = api_grouping.CreateGroupingDraftRequest(
         roster_id=uuid4(),
         template_id=uuid4(),
@@ -697,6 +743,7 @@ async def test_create_grouping_draft_calls_handler():
     result = await _unwrap_dishka(api_grouping.create_grouping_draft)(
         request=req,
         handler=handler,
+        profile_handler=profile_handler,
         user=user,
     )
 
@@ -705,6 +752,11 @@ async def test_create_grouping_draft_calls_handler():
         owner_user_id=user.id,
         roster_id=req.roster_id,
         template_id=req.template_id,
+        smart_preferences=DraftSmartPreferenceSeed(
+            smart_enabled=None,
+            use_history=True,
+            grouping_seating_distance_enabled=False,
+        ),
     )
 
 

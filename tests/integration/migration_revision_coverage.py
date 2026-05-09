@@ -56,4 +56,5 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "3f6d8a2c4b91",
     "8a6d4c2f1b09",
     "f2a7c9d4e6b8",
+    "b6c9f2a1d4e8",
 )

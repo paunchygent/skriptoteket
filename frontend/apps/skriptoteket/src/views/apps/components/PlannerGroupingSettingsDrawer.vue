@@ -21,7 +21,7 @@ import {
   isGroupingSeatingDistanceEnabledByDefault,
   isHistoryEnabledByDefault,
   isSmartEnabledByDefault,
-} from "../classroomPlannerSmartDefaults";
+} from "../classroomPlannerSmartPreferences";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useClassroomState } from "../useClassroomState";
 

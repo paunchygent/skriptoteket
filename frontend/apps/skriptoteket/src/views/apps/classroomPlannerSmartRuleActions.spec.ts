@@ -74,7 +74,7 @@ function createFixture(input: {
 }
 
 describe("createClassroomPlannerSmartRuleActions", () => {
-  it("treats missing grouping seating influence flag as enabled until the teacher opts out", () => {
+  it("treats missing grouping seating influence flag as disabled until the teacher opts in", () => {
     const fixture = createFixture({
       draft: {
         id: "draft-1",
@@ -86,14 +86,14 @@ describe("createClassroomPlannerSmartRuleActions", () => {
       },
     });
 
-    fixture.actions.setDraftGroupingSeatingDistanceEnabled(true);
+    fixture.actions.setDraftGroupingSeatingDistanceEnabled(false);
 
     expect(fixture.draft.value?.grouping_seating_distance_enabled).toBeUndefined();
     expect(fixture.draftLane.markDirty).not.toHaveBeenCalled();
 
-    fixture.actions.setDraftGroupingSeatingDistanceEnabled(false);
+    fixture.actions.setDraftGroupingSeatingDistanceEnabled(true);
 
-    expect(fixture.draft.value?.grouping_seating_distance_enabled).toBe(false);
+    expect(fixture.draft.value?.grouping_seating_distance_enabled).toBe(true);
     expect(fixture.draftLane.markDirty).toHaveBeenCalledTimes(1);
   });
 

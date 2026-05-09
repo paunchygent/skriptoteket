@@ -25,6 +25,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.identity.models import User
+from skriptoteket.protocols.identity import GetProfileHandlerProtocol
 from skriptoteket.web.api.v1.apps_classroom_planner import (
     DraftWorkspaceResponse,
     _serialize_workspace,
@@ -42,6 +43,9 @@ from skriptoteket.web.api.v1.apps_classroom_planner_export_job_contracts import 
     CreateGroupingExportJobRequest,
     GroupingExportJobDto,
     serialize_grouping_export_job,
+)
+from skriptoteket.web.api.v1.apps_classroom_planner_preferences import (
+    load_classroom_planner_smart_preference_seed,
 )
 from skriptoteket.web.api.v1.apps_classroom_planner_share_contracts import (
     ClassroomPlannerShareArtifactDto,
@@ -97,12 +101,18 @@ class BlockedSmartGroupingRunResponse(BaseModel):
 async def create_grouping_draft(
     request: CreateGroupingDraftRequest,
     handler: FromDishka[CreateGroupingDraftHandler],
+    profile_handler: FromDishka[GetProfileHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
+    smart_preferences = await load_classroom_planner_smart_preference_seed(
+        user=user,
+        profile_handler=profile_handler,
+    )
     draft = await handler.handle(
         owner_user_id=user.id,
         roster_id=request.roster_id,
         template_id=request.template_id,
+        smart_preferences=smart_preferences,
     )
     return serialize_plan_draft(draft)
 

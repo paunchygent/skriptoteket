@@ -30,7 +30,7 @@ class PlanDraftDto(BaseModel):
     task_entry_classroom_selection_mode: ClassroomSelectionMode
     smart_enabled: bool = True
     use_history: bool = True
-    grouping_seating_distance_enabled: bool = True
+    grouping_seating_distance_enabled: bool = False
     status: str
     revision: int
     last_opened_at: datetime

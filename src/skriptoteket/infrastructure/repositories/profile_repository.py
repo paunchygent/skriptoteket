@@ -35,6 +35,11 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
             display_name=profile.display_name,
             allow_remote_fallback=profile.allow_remote_fallback,
             inline_completion_provider=profile.inline_completion_provider,
+            classroom_planner_smart_enabled=profile.classroom_planner_smart_enabled,
+            classroom_planner_use_history=profile.classroom_planner_use_history,
+            classroom_planner_grouping_seating_distance_enabled=(
+                profile.classroom_planner_grouping_seating_distance_enabled
+            ),
             locale=profile.locale,
             created_at=profile.created_at,
             updated_at=profile.updated_at,
@@ -54,6 +59,11 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
         model.display_name = profile.display_name
         model.allow_remote_fallback = profile.allow_remote_fallback
         model.inline_completion_provider = profile.inline_completion_provider
+        model.classroom_planner_smart_enabled = profile.classroom_planner_smart_enabled
+        model.classroom_planner_use_history = profile.classroom_planner_use_history
+        model.classroom_planner_grouping_seating_distance_enabled = (
+            profile.classroom_planner_grouping_seating_distance_enabled
+        )
         model.locale = profile.locale
         model.updated_at = profile.updated_at
 

@@ -29,6 +29,7 @@ import { apiDelete, apiGet, apiPatch, apiPost } from "../../api/client";
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
 import { createClassroomPlannerLifecycle } from "./classroomPlannerLifecycle";
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
+import type { ClassroomPlannerSmartPreferenceKey } from "./classroomPlannerSmartPreferences";
 import { createClassroomPlannerSmartRunActions } from "./classroomPlannerSmartRunActions";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
 import {
@@ -54,6 +55,7 @@ import type {
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
+import { useClassroomPlannerSmartPreferenceLane } from "./useClassroomPlannerSmartPreferenceLane";
 import { usePlannerSessionController } from "./usePlannerSessionController";
 import { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 import { useSmartRuleUiState } from "./useSmartRuleUiState";
@@ -81,6 +83,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const smartSeatingRunInFlight = ref(false);
 
   const sessionController = usePlannerSessionController();
+  const smartPreferenceLane = useClassroomPlannerSmartPreferenceLane();
 
   const hasWorkspace = computed(() => {
     return draft.value !== null && roster.value !== null;
@@ -310,12 +313,19 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
+    onSmartPreferenceChange(
+      key: ClassroomPlannerSmartPreferenceKey,
+      enabled: boolean,
+    ): void {
+      smartPreferenceLane.persistPreference(key, enabled);
+    },
   });
 
   const lifecycle = createClassroomPlannerLifecycle({
     apiDelete,
     apiGet,
     apiPost,
+    flushSmartPreferenceLane: smartPreferenceLane.flushPendingChanges,
     exitAutosaveTimeoutMs: EXIT_AUTOSAVE_TIMEOUT_MS,
     smartRuleHydrationFallbackMessage: SMART_RULE_HYDRATION_FALLBACK_MESSAGE,
     draft,

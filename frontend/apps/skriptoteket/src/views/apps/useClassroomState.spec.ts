@@ -97,6 +97,23 @@ function createSmartRulesResponse(): RosterSmartRulesResponse {
   };
 }
 
+function createProfileResponse() {
+  return {
+    user: {
+      id: "user-1",
+      email: "teacher@example.com",
+      role: "user",
+      auth_provider: "local",
+    },
+    profile: {
+      user_id: "user-1",
+      locale: "sv-SE",
+      created_at: "2026-05-09T10:00:00.000Z",
+      updated_at: "2026-05-09T10:00:00.000Z",
+    },
+  };
+}
+
 function createWorkspaceVariant(options: {
   draftId?: string;
   rosterId?: string;
@@ -708,6 +725,7 @@ describe("useClassroomState", () => {
             student_ids: ["s1", "s2"],
           }),
         ],
+        fixed_seat_rules: [],
       },
     );
     expect(state.activeSeatingSmartTool).toBe("keep_apart");
@@ -765,6 +783,7 @@ describe("useClassroomState", () => {
             student_ids: ["s1", "s3"],
           },
         ],
+        fixed_seat_rules: [],
       },
     );
     expect(state.smartRulesRevision).toBe(5);
@@ -800,6 +819,7 @@ describe("useClassroomState", () => {
         expected_revision: 1,
         seating_preferences: [{ student_id: "s2", near_teacher: true }],
         relationship_rules: [],
+        fixed_seat_rules: [],
       },
     );
     expect(state.smartRulesRevision).toBe(2);
@@ -832,6 +852,7 @@ describe("useClassroomState", () => {
         expected_revision: 6,
         seating_preferences: [{ student_id: "s3", near_teacher: true }],
         relationship_rules: [],
+        fixed_seat_rules: [],
       },
     );
     expect(state.smartRulesRevision).toBe(7);
@@ -1141,6 +1162,7 @@ describe("useClassroomState", () => {
           { student_id: "s2", near_teacher: true },
         ],
         relationship_rules: [],
+        fixed_seat_rules: [],
       },
     );
     expect(state.smartRulesRevision).toBe(2);
@@ -1220,6 +1242,53 @@ describe("useClassroomState", () => {
     );
     expect(state.draft?.draft_kind).toBe("grouping");
     expect(state.groupAssignments).toEqual([]);
+  });
+
+  it("waits for ordered Smart preference persistence before starting a new grouping draft", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+    const firstPreferenceWrite = createDeferred<ReturnType<typeof createProfileResponse>>();
+    const secondPreferenceWrite = createDeferred<ReturnType<typeof createProfileResponse>>();
+    clientMocks.apiPatch
+      .mockReturnValueOnce(firstPreferenceWrite.promise)
+      .mockReturnValueOnce(secondPreferenceWrite.promise);
+    clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "grouping"));
+    mockWorkspaceLoad(createWorkspaceResponse("template-1", "grouping"));
+
+    state.setDraftGroupingSeatingDistanceEnabled(true);
+    state.setDraftGroupingSeatingDistanceEnabled(false);
+    const newDraftPromise = state.startNewGroupingDraft("roster-1", "template-1");
+    await vi.waitFor(() => expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1));
+
+    expect(clientMocks.apiPatch).toHaveBeenNthCalledWith(
+      1,
+      "/api/v1/profile/classroom-planner-settings",
+      { grouping_seating_distance_enabled: true },
+    );
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
+
+    firstPreferenceWrite.resolve(createProfileResponse());
+    await vi.waitFor(() => expect(clientMocks.apiPatch).toHaveBeenCalledTimes(2));
+    expect(clientMocks.apiPatch).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/profile/classroom-planner-settings",
+      { grouping_seating_distance_enabled: false },
+    );
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
+
+    secondPreferenceWrite.resolve(createProfileResponse());
+    await newDraftPromise;
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new",
+      {
+        roster_id: "roster-1",
+        template_id: "template-1",
+      },
+    );
+    expect(
+      clientMocks.apiPatch.mock.invocationCallOrder[1],
+    ).toBeLessThan(clientMocks.apiPost.mock.invocationCallOrder[0]);
   });
 
   it("starts a brand-new seating draft through the dedicated lifecycle endpoint", async () => {

@@ -207,7 +207,7 @@ class PlanDraft(BaseModel):
     task_entry_classroom_selection_mode: ClassroomSelectionMode = ClassroomSelectionMode.OPTIONAL
     smart_enabled: bool = True
     use_history: bool = True
-    grouping_seating_distance_enabled: bool = True
+    grouping_seating_distance_enabled: bool = False
     status: PlanDraftStatus = PlanDraftStatus.ACTIVE
     guest_import_identity: str | None = None
     revision: int = 0

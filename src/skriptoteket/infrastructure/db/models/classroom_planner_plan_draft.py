@@ -94,8 +94,8 @@ class PlanDraftModel(Base):
     grouping_seating_distance_enabled: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        default=True,
-        server_default=text("true"),
+        default=False,
+        server_default=text("false"),
     )
     status: Mapped[str] = mapped_column(
         String(32),

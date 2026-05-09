@@ -26,6 +26,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
+from ..draft_smart_preferences import DraftSmartPreferenceSeed, resolve_draft_smart_settings
 from .planner_context import load_roster_and_template_for_owner
 from .workspace_builders import build_initial_workspace
 
@@ -55,6 +56,7 @@ class CreateSeatingDraftHandler:
         owner_user_id: UUID,
         roster_id: UUID,
         template_id: UUID | None,
+        smart_preferences: DraftSmartPreferenceSeed | None = None,
     ) -> PlanDraft:
         if template_id is None:
             raise validation_error("Välj klassrum innan du startar ett nytt sittschema.")
@@ -91,6 +93,7 @@ class CreateSeatingDraftHandler:
                 roster_id=roster_id,
                 draft_kind=PlanDraftKind.SEATING,
                 template_id=template_id,
+                **resolve_draft_smart_settings(smart_preferences),
                 status=PlanDraftStatus.ACTIVE,
                 revision=0,
                 last_opened_at=now,

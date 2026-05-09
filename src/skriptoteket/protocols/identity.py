@@ -33,6 +33,8 @@ from skriptoteket.application.identity.commands import (
     RegisterUserResult,
     UpdateAiSettingsCommand,
     UpdateAiSettingsResult,
+    UpdateClassroomPlannerSettingsCommand,
+    UpdateClassroomPlannerSettingsResult,
     UpdateProfileCommand,
     UpdateProfileResult,
     ValidateRegistrationCommand,
@@ -174,6 +176,13 @@ class UpdateProfileHandlerProtocol(Protocol):
 
 class UpdateAiSettingsHandlerProtocol(Protocol):
     async def handle(self, command: UpdateAiSettingsCommand) -> UpdateAiSettingsResult: ...
+
+
+class UpdateClassroomPlannerSettingsHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        command: UpdateClassroomPlannerSettingsCommand,
+    ) -> UpdateClassroomPlannerSettingsResult: ...
 
 
 class ChangePasswordHandlerProtocol(Protocol):

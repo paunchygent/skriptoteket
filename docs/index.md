@@ -160,6 +160,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md`
 - Review gate for PR-0307 share-as-export Smart history provenance:
   `docs/backlog/reviews/review-pr-0307-share-as-export-smart-history-provenance.md`
+- ST-29-11 Smart settings preference continuity and seating-influence default:
+  `docs/backlog/prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md`
 - ST-32-07 public landing entry hierarchy + mockup-grounded CTA cutover story:
   `docs/backlog/stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md`
 - ST-32-07 landing public-entry information architecture + canonical mockup preview:
@@ -335,6 +337,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0305-st-29-11-smart-advanced-settings-drawer-copy-and-history-default.md`
 - ST-29-11 share priority and Smart settings opt-out parity:
   `docs/backlog/prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md`
+- ST-29-11 Smart settings preference continuity and seating-influence default:
+  `docs/backlog/prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md`
 - ST-26-06 public guest overview share/export state wiring:
   `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 shared-link PDF download spinner contract:
@@ -461,6 +465,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0305-st-29-11-smart-advanced-settings-drawer-copy-and-history-default.md`
 - ST-29-11 share priority and Smart settings opt-out parity task:
   `docs/backlog/prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md`
+- ST-29-11 Smart settings preference continuity and seating-influence default task:
+  `docs/backlog/prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md`
 - ST-26-06 public guest overview share/export state wiring task:
   `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 share-link popover and bottom-sheet management task:

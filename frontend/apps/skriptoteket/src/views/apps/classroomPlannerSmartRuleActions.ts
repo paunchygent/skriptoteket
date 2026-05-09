@@ -22,10 +22,11 @@ import type {
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import {
+  type ClassroomPlannerSmartPreferenceKey,
   isGroupingSeatingDistanceEnabledByDefault,
   isHistoryEnabledByDefault,
   isSmartEnabledByDefault,
-} from "./classroomPlannerSmartDefaults";
+} from "./classroomPlannerSmartPreferences";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 import type { useSmartRuleUiState } from "./useSmartRuleUiState";
@@ -49,6 +50,10 @@ type CreateClassroomPlannerSmartRuleActionsOptions = {
   smartRuleUiState: SmartRuleUiState;
   syncVisibleSessionBindings: () => void;
   onDraftMutation?: () => void;
+  onSmartPreferenceChange?: (
+    key: ClassroomPlannerSmartPreferenceKey,
+    enabled: boolean,
+  ) => void;
 };
 
 function createRelationshipRuleId(): string {
@@ -89,6 +94,7 @@ export function createClassroomPlannerSmartRuleActions(
     };
     options.syncVisibleSessionBindings();
     options.onDraftMutation?.();
+    options.onSmartPreferenceChange?.(key, enabled);
     options.draftLane.markDirty();
   }
 

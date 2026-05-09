@@ -19,6 +19,7 @@ criteria, and implementation doctrine in governed docs.
 | Session Date | Entry File | Scope |
 | --- | --- | --- |
 | 2026-05-02 | `entries/session-2026-05-02-share-and-help-handoff-compaction.md` | Compacted ST-32-08, ST-08-35, ST-26-06, PR-0278, and EPIC-36 handoff history |
+| 2026-05-09 | `entries/session-2026-05-09-pr-0308-smart-settings-preference-continuity.md` | Compacted PR-0308 Smart settings preference-continuity implementation and verification |
 | 2026-04-16 | `entries/session-2026-04-16-task-0042.md` | TASK-0042 long-term memory cutover and template-lane retirement |
 | 2026-04-16 | `entries/session-2026-04-16-st08-10-script-editor-intelligence-review.md` | Retained ST-08-10 script editor intelligence review prompt content |
 | 2026-04-16 | `entries/session-2026-04-16-epic-05-huleedu-design-harmonization.md` | Retained EPIC-05 HuleEdu design harmonization prompt content |

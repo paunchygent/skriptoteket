@@ -46,6 +46,7 @@ from tests.integration.migration_schema_share_assertions import (
     assert_8a6d_grouping_seating_distance_default_on,
     assert_a8f5_classroom_planner_share_artifacts,
     assert_b4c6_share_artifact_lifecycle_fks,
+    assert_b6c9_classroom_planner_profile_preferences,
     assert_c7d9_share_artifact_public_path,
     assert_e2f4_public_guest_share_controls,
     assert_f8a2_share_preview_assets,
@@ -518,6 +519,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "3f6d8a2c4b91": assert_3f6d_use_history_default_on,
     "8a6d4c2f1b09": assert_8a6d_grouping_seating_distance_default_on,
     "f2a7c9d4e6b8": _assert_f2a7_share_checkpoint_provenance,
+    "b6c9f2a1d4e8": assert_b6c9_classroom_planner_profile_preferences,
 }
 
 

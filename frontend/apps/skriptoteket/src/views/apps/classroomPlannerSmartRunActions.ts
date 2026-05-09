@@ -12,7 +12,7 @@
 
 import type { Ref } from "vue";
 
-import { isSmartEnabledByDefault } from "./classroomPlannerSmartDefaults";
+import { isSmartEnabledByDefault } from "./classroomPlannerSmartPreferences";
 import type { PlanDraft } from "./classroomPlannerTypes";
 
 type SmartRun = {

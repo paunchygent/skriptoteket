@@ -115,6 +115,22 @@ class UpdateAiSettingsResult(BaseModel):
     profile: UserProfile
 
 
+class UpdateClassroomPlannerSettingsCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user_id: UUID
+    smart_enabled: bool | None = None
+    use_history: bool | None = None
+    grouping_seating_distance_enabled: bool | None = None
+
+
+class UpdateClassroomPlannerSettingsResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    profile: UserProfile
+
+
 class ChangePasswordCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 

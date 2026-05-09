@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from skriptoteket.application.identity.commands import (
     GetProfileCommand,
     UpdateAiSettingsCommand,
+    UpdateClassroomPlannerSettingsCommand,
     UpdateProfileCommand,
 )
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
@@ -26,6 +27,7 @@ from skriptoteket.domain.identity.models import User, UserProfile
 from skriptoteket.protocols.identity import (
     GetProfileHandlerProtocol,
     UpdateAiSettingsHandlerProtocol,
+    UpdateClassroomPlannerSettingsHandlerProtocol,
     UpdateProfileHandlerProtocol,
 )
 from skriptoteket.web.api.v1.ai_policy import AiPolicyResponse, build_ai_policy
@@ -73,6 +75,24 @@ class UpdateAiSettingsRequest(BaseModel):
             and self.inline_completion_provider_preference is None
         ):
             raise ValueError("At least one AI setting is required")
+        return self
+
+
+class UpdateClassroomPlannerSettingsRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    smart_enabled: bool | None = None
+    use_history: bool | None = None
+    grouping_seating_distance_enabled: bool | None = None
+
+    @model_validator(mode="after")
+    def validate_at_least_one_field(self) -> "UpdateClassroomPlannerSettingsRequest":
+        if (
+            self.smart_enabled is None
+            and self.use_history is None
+            and self.grouping_seating_distance_enabled is None
+        ):
+            raise ValueError("At least one classroom planner setting is required")
         return self
 
 
@@ -128,6 +148,23 @@ async def update_ai_settings(
             user_id=user.id,
             remote_fallback_preference=payload.remote_fallback_preference,
             inline_completion_provider_preference=payload.inline_completion_provider_preference,
+        )
+    )
+    return ProfileResponse(user=result.user, profile=result.profile)
+
+
+@router.patch("/classroom-planner-settings", response_model=ProfileResponse)
+async def update_classroom_planner_settings(
+    payload: UpdateClassroomPlannerSettingsRequest,
+    handler: FromDishka[UpdateClassroomPlannerSettingsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ProfileResponse:
+    result = await handler.handle(
+        UpdateClassroomPlannerSettingsCommand(
+            user_id=user.id,
+            smart_enabled=payload.smart_enabled,
+            use_history=payload.use_history,
+            grouping_seating_distance_enabled=payload.grouping_seating_distance_enabled,
         )
     )
     return ProfileResponse(user=result.user, profile=result.profile)

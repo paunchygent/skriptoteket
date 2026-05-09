@@ -108,7 +108,7 @@ class PublicPlanDraftDto(BaseModel):
     task_entry_classroom_selection_mode: ClassroomSelectionMode
     smart_enabled: bool = True
     use_history: bool = False
-    grouping_seating_distance_enabled: bool = True
+    grouping_seating_distance_enabled: bool = False
     status: Literal["active"] = "active"
     revision: int
     last_opened_at: str

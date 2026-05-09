@@ -15,7 +15,7 @@ import {
   SMART_DISABLED_NOTICE,
   isHistoryEnabledByDefault,
   isSmartEnabledByDefault,
-} from "../classroomPlannerSmartDefaults";
+} from "../classroomPlannerSmartPreferences";
 import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(defineProps<{

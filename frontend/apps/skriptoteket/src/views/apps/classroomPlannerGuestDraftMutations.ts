@@ -24,6 +24,7 @@ import type {
   SeatAssignment,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
+import { resolveGuestDraftSmartPreferences } from "./classroomPlannerSmartPreferences";
 import type {
   ClassroomPlannerGuestCheckpointDescriptor,
   ClassroomPlannerGuestSnapshot,
@@ -375,15 +376,16 @@ export function buildNewGuestDraft(input: {
   nowIso: string;
   groups?: DraftGroup[];
 }): PlanDraft {
+  const smartPreferences = resolveGuestDraftSmartPreferences();
   return {
     id: input.draftId,
     roster_id: input.rosterId,
     draft_kind: input.draftKind,
     template_id: input.templateId,
     task_entry_classroom_selection_mode: input.templateRequired ? "required" : "optional",
-    smart_enabled: true,
-    use_history: false,
-    grouping_seating_distance_enabled: true,
+    smart_enabled: smartPreferences.smart_enabled,
+    use_history: smartPreferences.use_history,
+    grouping_seating_distance_enabled: smartPreferences.grouping_seating_distance_enabled,
     status: "active",
     revision: 1,
     last_opened_at: input.nowIso,

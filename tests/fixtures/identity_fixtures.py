@@ -44,6 +44,9 @@ def make_user_profile(
     user_id: UUID,
     allow_remote_fallback: bool | None = None,
     inline_completion_provider: Literal["local", "external"] | None = None,
+    classroom_planner_smart_enabled: bool | None = None,
+    classroom_planner_use_history: bool | None = None,
+    classroom_planner_grouping_seating_distance_enabled: bool | None = None,
     now: datetime | None = None,
 ) -> UserProfile:
     ts = now or datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
@@ -54,6 +57,11 @@ def make_user_profile(
         display_name=None,
         allow_remote_fallback=allow_remote_fallback,
         inline_completion_provider=inline_completion_provider,
+        classroom_planner_smart_enabled=classroom_planner_smart_enabled,
+        classroom_planner_use_history=classroom_planner_use_history,
+        classroom_planner_grouping_seating_distance_enabled=(
+            classroom_planner_grouping_seating_distance_enabled
+        ),
         locale="sv-SE",
         created_at=ts,
         updated_at=ts,

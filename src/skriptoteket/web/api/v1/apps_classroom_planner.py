@@ -57,9 +57,13 @@ from skriptoteket.protocols.classroom_planner import (
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
+from skriptoteket.protocols.identity import GetProfileHandlerProtocol
 from skriptoteket.web.api.v1.apps_classroom_planner_draft_contracts import (
     PlanDraftDto,
     serialize_plan_draft,
+)
+from skriptoteket.web.api.v1.apps_classroom_planner_preferences import (
+    load_classroom_planner_smart_preference_seed,
 )
 from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
     ClassWorkspaceSummaryDto,
@@ -529,13 +533,19 @@ async def delete_template(
 async def resolve_draft(
     request: ResolvePlanDraftRequest,
     handler: FromDishka[ResolveDraftHandler],
+    profile_handler: FromDishka[GetProfileHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> PlanDraftDto:
+    smart_preferences = await load_classroom_planner_smart_preference_seed(
+        user=user,
+        profile_handler=profile_handler,
+    )
     draft = await handler.handle(
         owner_user_id=user.id,
         roster_id=request.roster_id,
         draft_kind=request.draft_kind,
         template_id=request.template_id,
+        smart_preferences=smart_preferences,
     )
     return serialize_plan_draft(draft)
 

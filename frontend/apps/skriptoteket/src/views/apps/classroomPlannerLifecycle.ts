@@ -45,6 +45,9 @@ type CreateClassroomPlannerLifecycleOptions = {
   apiDelete: <T>(url: string) => Promise<T>;
   apiGet: <T>(url: string) => Promise<T>;
   apiPost: <T>(url: string, payload?: Record<string, string | null>) => Promise<T>;
+  flushSmartPreferenceLane: () => Promise<
+    { status: "saved" } | { status: "blocked"; reason: "error"; message: string }
+  >;
   exitAutosaveTimeoutMs: number;
   smartRuleHydrationFallbackMessage: string;
   draft: Ref<PlanDraft | null>;
@@ -186,6 +189,11 @@ export function createClassroomPlannerLifecycle(
     url: string,
     payload?: Record<string, string | null>,
   ): Promise<void> {
+    const preferenceResult = await options.flushSmartPreferenceLane();
+    if (preferenceResult.status === "blocked") {
+      throw new Error(preferenceResult.message);
+    }
+
     options.sessionController.beginWorkspaceTransition();
     try {
       const createdDraft = payload === undefined

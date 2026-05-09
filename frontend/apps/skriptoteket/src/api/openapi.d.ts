@@ -1923,6 +1923,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/profile/classroom-planner-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Classroom Planner Settings */
+        patch: operations["update_classroom_planner_settings_api_v1_profile_classroom_planner_settings_patch"];
+        trace?: never;
+    };
     "/api/v1/public/apps/classroom.group-seating-studio/grouping/export": {
         parameters: {
             query?: never;
@@ -3980,7 +3997,7 @@ export interface components {
             seat_assignments?: components["schemas"]["SeatAssignment"][];
             /**
              * Smart Enabled
-             * @default false
+             * @default true
              */
             smart_enabled: boolean;
             task_entry_classroom_selection_mode: components["schemas"]["ClassroomSelectionMode"];
@@ -4526,7 +4543,7 @@ export interface components {
             roster_id: string;
             /**
              * Smart Enabled
-             * @default false
+             * @default true
              */
             smart_enabled: boolean;
             /** Status */
@@ -4536,7 +4553,7 @@ export interface components {
             template_id?: string | null;
             /**
              * Use History
-             * @default false
+             * @default true
              */
             use_history: boolean;
         };
@@ -4807,7 +4824,7 @@ export interface components {
             roster_id: string;
             /**
              * Smart Enabled
-             * @default false
+             * @default true
              */
             smart_enabled: boolean;
             /**
@@ -6570,6 +6587,15 @@ export interface components {
             /** Remote Fallback Preference */
             remote_fallback_preference?: ("unset" | "allow" | "deny") | null;
         };
+        /** UpdateClassroomPlannerSettingsRequest */
+        UpdateClassroomPlannerSettingsRequest: {
+            /** Grouping Seating Distance Enabled */
+            grouping_seating_distance_enabled?: boolean | null;
+            /** Smart Enabled */
+            smart_enabled?: boolean | null;
+            /** Use History */
+            use_history?: boolean | null;
+        };
         /**
          * UpdatePlanDraftRequest
          * @description Deserialize mutable draft workspace patches.
@@ -6731,6 +6757,12 @@ export interface components {
         UserProfile: {
             /** Allow Remote Fallback */
             allow_remote_fallback?: boolean | null;
+            /** Classroom Planner Grouping Seating Distance Enabled */
+            classroom_planner_grouping_seating_distance_enabled?: boolean | null;
+            /** Classroom Planner Smart Enabled */
+            classroom_planner_smart_enabled?: boolean | null;
+            /** Classroom Planner Use History */
+            classroom_planner_use_history?: boolean | null;
             /**
              * Created At
              * Format: date-time
@@ -10816,6 +10848,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileAppContinuationResponse"];
+                };
+            };
+        };
+    };
+    update_classroom_planner_settings_api_v1_profile_classroom_planner_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClassroomPlannerSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

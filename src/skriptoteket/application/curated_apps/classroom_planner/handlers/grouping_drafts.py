@@ -24,6 +24,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
+from ..draft_smart_preferences import DraftSmartPreferenceSeed, resolve_draft_smart_settings
 from .planner_context import load_roster_and_template_for_owner
 from .workspace_builders import build_initial_workspace
 
@@ -53,6 +54,7 @@ class CreateGroupingDraftHandler:
         owner_user_id: UUID,
         roster_id: UUID,
         template_id: UUID | None = None,
+        smart_preferences: DraftSmartPreferenceSeed | None = None,
     ) -> PlanDraft:
         await load_roster_and_template_for_owner(
             rosters=self._rosters,
@@ -86,6 +88,7 @@ class CreateGroupingDraftHandler:
                 roster_id=roster_id,
                 draft_kind=PlanDraftKind.GROUPING,
                 template_id=template_id,
+                **resolve_draft_smart_settings(smart_preferences),
                 status=PlanDraftStatus.ACTIVE,
                 revision=0,
                 last_opened_at=now,

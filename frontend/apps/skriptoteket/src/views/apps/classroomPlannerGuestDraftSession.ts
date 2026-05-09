@@ -28,6 +28,7 @@ import {
 } from "./classroomPlannerGuestDraftPersistence";
 import { createClassroomPlannerGuestDraftWorkspace } from "./classroomPlannerGuestDraftWorkspace";
 import { createClassroomPlannerSmartRunActions } from "./classroomPlannerSmartRunActions";
+import { rememberGuestSmartPreference } from "./classroomPlannerSmartPreferences";
 import { usePublicSmartGroupingRun } from "./usePublicSmartGroupingRun";
 import { usePublicSmartSeatingRun } from "./usePublicSmartSeatingRun";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
@@ -241,6 +242,7 @@ export function createClassroomPlannerGuestDraftSession(options: CreateClassroom
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
     onDraftMutation: captureCurrentGuestWorkspace,
+    onSmartPreferenceChange: rememberGuestSmartPreference,
   });
   const mutationActions = createPlannerMutationActions({
     students,

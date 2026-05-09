@@ -33,7 +33,7 @@ import {
 import {
   isGroupingSeatingDistanceEnabledByDefault,
   isSmartEnabledByDefault,
-} from "./classroomPlannerSmartDefaults";
+} from "./classroomPlannerSmartPreferences";
 
 export type ClassroomPlannerGuestCheckpointSeed = {
   local_id: string;

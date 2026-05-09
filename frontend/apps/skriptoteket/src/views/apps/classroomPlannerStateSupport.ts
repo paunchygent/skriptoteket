@@ -30,7 +30,7 @@ import {
   isGroupingSeatingDistanceEnabledByDefault,
   isHistoryEnabledByDefault,
   isSmartEnabledByDefault,
-} from "./classroomPlannerSmartDefaults";
+} from "./classroomPlannerSmartPreferences";
 import type {
   DraftHistoryStatus,
   DraftGroup,

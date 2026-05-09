@@ -170,10 +170,35 @@ async def assert_3f6d_use_history_default_on(engine: AsyncEngine) -> None:
     assert defaults["use_history"] in {"true", "true::boolean"}
 
 
+async def assert_8a6d_smart_flag_columns_exist(engine: AsyncEngine) -> None:
+    """Verify the authenticated draft Smart flag columns exist."""
+
+    await assert_3f6d_use_history_default_on(engine)
+    columns = await column_map(engine, "classroom_planner_plan_drafts")
+    assert {"smart_enabled", "use_history", "grouping_seating_distance_enabled"}.issubset(columns)
+    defaults = await column_defaults(engine, "classroom_planner_plan_drafts")
+    assert defaults["smart_enabled"] in {"true", "true::boolean"}
+
+
 async def assert_8a6d_grouping_seating_distance_default_on(engine: AsyncEngine) -> None:
     """Verify authenticated Smart settings default to on for new rows."""
 
-    await assert_3f6d_use_history_default_on(engine)
+    await assert_8a6d_smart_flag_columns_exist(engine)
+    defaults = await column_defaults(engine, "classroom_planner_plan_drafts")
+    assert defaults["grouping_seating_distance_enabled"] in {"true", "true::boolean"}
+
+
+async def assert_b6c9_classroom_planner_profile_preferences(engine: AsyncEngine) -> None:
+    """Verify Smart preferences are profile-owned and seating influence defaults off."""
+
+    await assert_8a6d_smart_flag_columns_exist(engine)
+    profile_columns = await column_map(engine, "user_profiles")
+    assert {
+        "classroom_planner_smart_enabled",
+        "classroom_planner_use_history",
+        "classroom_planner_grouping_seating_distance_enabled",
+    }.issubset(profile_columns)
     defaults = await column_defaults(engine, "classroom_planner_plan_drafts")
     assert defaults["smart_enabled"] in {"true", "true::boolean"}
-    assert defaults["grouping_seating_distance_enabled"] in {"true", "true::boolean"}
+    assert defaults["use_history"] in {"true", "true::boolean"}
+    assert defaults["grouping_seating_distance_enabled"] in {"false", "false::boolean"}
