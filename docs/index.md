@@ -162,6 +162,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0307-share-as-export-smart-history-provenance.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
   `docs/backlog/prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md`
+- ST-29-11 phone grouping toolbar distribution overflow regression:
+  `docs/backlog/prs/pr-0309-st-29-11-phone-grouping-toolbar-distribution-overflow-regression.md`
 - ST-32-07 public landing entry hierarchy + mockup-grounded CTA cutover story:
   `docs/backlog/stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md`
 - ST-32-07 landing public-entry information architecture + canonical mockup preview:
@@ -453,6 +455,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0289-st-29-16-small-screen-seating-workspace.md`
 - ST-29-17 small-screen rules workspace task:
   `docs/backlog/prs/pr-0290-st-29-17-small-screen-rules-workspace.md`
+- ST-27-09 phone fixed-seat rules map affordance:
+  `docs/backlog/prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md`
+- ST-24-04 phone room-template modal stabilization:
+  `docs/backlog/prs/pr-0311-st-24-04-phone-room-template-modal-stabilization.md`
 - ST-29-11 share/export affordance consolidation task:
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:
@@ -467,6 +473,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default task:
   `docs/backlog/prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md`
+- ST-29-11 phone grouping toolbar distribution overflow regression task:
+  `docs/backlog/prs/pr-0309-st-29-11-phone-grouping-toolbar-distribution-overflow-regression.md`
 - ST-26-06 public guest overview share/export state wiring task:
   `docs/backlog/prs/pr-0303-st-26-06-public-guest-overview-share-export-state-wiring.md`
 - ST-26-06 share-link popover and bottom-sheet management task:
@@ -529,6 +537,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md`
 - ST-27-09 seating workspace fixed-seat lock marker remediation:
   `docs/backlog/prs/pr-0304-st-27-09-seating-workspace-fixed-seat-lock-marker.md`
+- ST-27-09 phone fixed-seat rules map affordance:
+  `docs/backlog/prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md`
 - Approved Klassrumskartan smart assignment review:
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed auth-cutover ADR:

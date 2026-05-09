@@ -83,6 +83,10 @@ technical and less trustworthy.
   - editor behavior and placement model
   - rendering fidelity and object visuals
 
+## Follow-up PR Slices
+
+- [PR-0311: ST-24-04 phone room-template modal stabilization](../prs/pr-0311-st-24-04-phone-room-template-modal-stabilization.md)
+
 ## Options considered
 
 ### 1. Canonical viewport model

@@ -62,6 +62,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0306: ST-29-11 share priority and Smart settings opt-out parity](../prs/pr-0306-st-29-11-share-priority-and-smart-settings-opt-out-parity.md)
 - [PR-0307: ST-26-06 share-as-export Smart history provenance](../prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md)
 - [PR-0308: ST-29-11 Smart settings preference continuity and seating-influence default](../prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md)
+- [PR-0309: ST-29-11 phone grouping toolbar distribution overflow regression](../prs/pr-0309-st-29-11-phone-grouping-toolbar-distribution-overflow-regression.md)
 
 ## Implementation Summary (as of 2026-04-06)
 
@@ -136,6 +137,10 @@ instead of treating it as unfinished planner-layout implementation.
   authenticated Smart settings are profile-owned and cross-browser persisted,
   first-time grouping drafts keep `Tillämpa sittschema` off, and public guest
   drafts remember explicit Smart choices only in browser storage.
+- `PR-0309` is done as the phone grouping-toolbar distribution overflow
+  remediation: `Dela` now moves into overflow at the iPhone 15 Pro portrait
+  proof width so the group-count split control remains reachable, while seating
+  keeps its existing phone ladder.
 
 ## References
 

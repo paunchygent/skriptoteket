@@ -198,6 +198,27 @@ describe("PlannerGroupingWorkspaceToolbar overflow", () => {
     expect(wrapper.find('[data-test="grouping-overflow-share-trigger"]').exists()).toBe(true);
   });
 
+  it("keeps the group-count split control reachable when phone distribution overflows", async () => {
+    stateMocks.plannerState.groups = [
+      { id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+      { id: "group-2", name: "Grupp 2", sort_order: 1, name_is_custom: false },
+    ];
+    const wrapper = await mountToolbarForHidden(["context", "reset", "distribution"]);
+    await wrapper.setProps({
+      showShareLinkAction: true,
+      shares: [],
+    });
+
+    expect(wrapper.find('[data-test="grouping-group-count-control"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="decrement-group-count"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="group-count-value"]').text()).toBe("2");
+    expect(wrapper.get('[data-test="increment-group-count"]').attributes("disabled")).toBeUndefined();
+    expectInlineContributionHidden(wrapper, '[data-overflow-contribution="distribution"]');
+
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
+    expect(wrapper.find('[data-test="grouping-overflow-share-trigger"]').exists()).toBe(true);
+  });
+
   it("routes advanced settings through the settings menu item", async () => {
     const wrapper = await mountToolbarForHidden([]);
 

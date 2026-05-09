@@ -31,3 +31,7 @@ This story gives `Regler` its own reduced authoring pattern.
 - Keep smart-rule persistence and solver contracts unchanged.
 - Preserve the desktop `PR-0155` rail/map/inspector workspace at laptop and
   desktop widths.
+
+## Follow-up PR Slices
+
+- [PR-0310: ST-27-09 phone fixed-seat rules map affordance](../prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md)

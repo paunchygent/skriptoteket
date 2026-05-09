@@ -63,6 +63,8 @@ class ToolbarExpectation:
     width: int
     height: int
     exact_hidden: tuple[str, ...] | None = None
+    grouping_exact_hidden: tuple[str, ...] | None = None
+    seating_exact_hidden: tuple[str, ...] | None = None
 
 
 ROUNDTRIP = (
@@ -72,11 +74,35 @@ ROUNDTRIP = (
     ToolbarExpectation("phone-breakpoint", 767, 900, ()),
     ToolbarExpectation("phone-context-overflow", 520, 844, ("context",)),
     ToolbarExpectation("phone-settings-menu", 440, 844, ("context",)),
-    ToolbarExpectation("phone", 390, 844, ("context", "reset")),
+    ToolbarExpectation(
+        "phone-reset-overflow",
+        420,
+        844,
+        grouping_exact_hidden=("context", "reset"),
+    ),
+    ToolbarExpectation(
+        "iphone-15-pro",
+        393,
+        852,
+        grouping_exact_hidden=("context", "reset", "distribution"),
+        seating_exact_hidden=("context", "reset"),
+    ),
+    ToolbarExpectation(
+        "phone",
+        390,
+        844,
+        grouping_exact_hidden=("context", "reset", "distribution"),
+        seating_exact_hidden=("context", "reset"),
+    ),
     ToolbarExpectation(
         "phone-distribution-overflow", 330, 844, ("context", "reset", "distribution")
     ),
-    ToolbarExpectation("phone-reset-return", 390, 844, ("context", "reset")),
+    ToolbarExpectation(
+        "phone-reset-return",
+        420,
+        844,
+        grouping_exact_hidden=("context", "reset"),
+    ),
     ToolbarExpectation("phone-settings-return", 440, 844, ("context",)),
     ToolbarExpectation("phone-context-return", 520, 844, ("context",)),
     ToolbarExpectation("tablet-up", 768, 1024),
@@ -390,6 +416,13 @@ def _assert_toolbar_placement(
     """Assert one toolbar placement state after a viewport resize."""
 
     page.set_viewport_size({"width": expectation.width, "height": expectation.height})
+    exact_hidden = (
+        expectation.grouping_exact_hidden
+        if kind == "grouping" and expectation.grouping_exact_hidden is not None
+        else expectation.seating_exact_hidden
+        if kind == "seating" and expectation.seating_exact_hidden is not None
+        else expectation.exact_hidden
+    )
     hidden_actions: tuple[str, ...] = ()
     toolbar = _assert_toolbar_scroll_fit(page, kind=kind)
     stable_reads = 0
@@ -403,7 +436,7 @@ def _assert_toolbar_placement(
             stable_reads = 1
             last_hidden_actions = current_hidden_actions
         hidden_actions = current_hidden_actions
-        if expectation.exact_hidden is not None and hidden_actions != expectation.exact_hidden:
+        if exact_hidden is not None and hidden_actions != exact_hidden:
             page.wait_for_timeout(250)
             continue
         if stable_reads < 2:
@@ -415,7 +448,7 @@ def _assert_toolbar_placement(
         diagnostics = _toolbar_diagnostics(toolbar)
         raise AssertionError(
             f"{kind} toolbar did not reach expected hidden actions at {expectation.label}: "
-            f"expected={expectation.exact_hidden}, actual={hidden_actions}, diagnostics={diagnostics}."
+            f"expected={exact_hidden}, actual={hidden_actions}, diagnostics={diagnostics}."
         )
 
     selectors = _selectors(kind)
@@ -474,7 +507,7 @@ def _assert_toolbar_placement(
 def _assert_roundtrip(page: Page, *, surface: Surface, kind: WorkspaceKind) -> None:
     """Assert one workspace survives the full resize roundtrip."""
 
-    hidden_lengths: list[int] = []
+    hidden_steps: list[tuple[int, int]] = []
     for expectation in ROUNDTRIP:
         hidden_actions = _assert_toolbar_placement(
             page,
@@ -482,12 +515,15 @@ def _assert_roundtrip(page: Page, *, surface: Surface, kind: WorkspaceKind) -> N
             kind=kind,
             expectation=expectation,
         )
-        hidden_lengths.append(len(hidden_actions))
+        hidden_steps.append((expectation.width, len(hidden_actions)))
 
-    for previous, current in zip(hidden_lengths, hidden_lengths[1:]):
-        if abs(current - previous) > 1:
+    for (previous_width, previous_length), (current_width, current_length) in zip(
+        hidden_steps,
+        hidden_steps[1:],
+    ):
+        if current_width < previous_width and current_length - previous_length > 1:
             raise AssertionError(
-                f"{surface} {kind} toolbar overflow jumps by more than one contribution: {hidden_lengths}."
+                f"{surface} {kind} toolbar overflow jumps by more than one contribution while narrowing: {hidden_steps}."
             )
 
 

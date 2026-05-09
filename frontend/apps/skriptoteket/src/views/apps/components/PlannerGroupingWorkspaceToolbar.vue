@@ -82,8 +82,8 @@ const props = withDefaults(
 
 const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
 const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
-const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
-const PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX = 340;
+const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 405;
+const PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX = 380;
 const OVERFLOW_PRIORITY_ORDER = ["context", "reset", "distribution"];
 
 function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
