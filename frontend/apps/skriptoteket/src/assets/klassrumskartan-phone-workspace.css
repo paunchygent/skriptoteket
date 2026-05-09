@@ -400,7 +400,306 @@
   box-shadow: var(--huleedu-shadow-brutal-xs);
 }
 
+.planner-phone-fixed-seat-panel,
+.planner-phone-fixed-seat-empty {
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.22);
+  background-color: var(--huleedu-canvas);
+  padding: var(--huleedu-space-3);
+  overflow: hidden;
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+.planner-phone-fixed-seat-empty {
+  border-style: dashed;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: rgb(8 43 76 / 0.72);
+}
+
+.planner-phone-fixed-seat-binding {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--huleedu-space-2);
+  margin: var(--huleedu-space-3) 0;
+}
+
+.planner-phone-fixed-seat-binding div {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  align-items: center;
+  min-height: 2.25rem;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.18);
+  background-color: var(--huleedu-panel);
+}
+
+.planner-phone-fixed-seat-binding dt,
+.planner-phone-fixed-seat-binding dd {
+  min-width: 0;
+  padding: 0 var(--huleedu-space-2);
+}
+
+.planner-phone-fixed-seat-binding dt {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+  color: rgb(8 43 76 / 0.62);
+}
+
+.planner-phone-fixed-seat-binding dd {
+  overflow: hidden;
+  margin: 0;
+  border-left: var(--huleedu-border-width) solid rgb(8 43 76 / 0.14);
+  font-size: 0.875rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planner-phone-fixed-seat-map {
+  --planner-phone-seat-cell-size: 2.75rem;
+
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: var(--huleedu-paper);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.planner-phone-fixed-seat-map-header {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-2);
+  border-bottom: var(--huleedu-border-width) solid rgb(8 43 76 / 0.18);
+  padding: 0 var(--huleedu-space-2);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.planner-phone-fixed-seat-map-header span:last-child {
+  min-width: 1.75rem;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.35);
+  background-color: var(--huleedu-canvas);
+  text-align: center;
+}
+
+.planner-phone-fixed-seat-map-grid {
+  display: grid;
+  gap: 2px;
+  inline-size: max-content;
+  min-inline-size: 100%;
+  padding: var(--huleedu-space-3) var(--huleedu-space-2) var(--huleedu-space-2);
+  overflow: visible;
+  background-color: var(--huleedu-panel);
+  background-image:
+    linear-gradient(rgb(8 43 76 / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(8 43 76 / 0.08) 1px, transparent 1px);
+  background-size: calc(100% / var(--phone-map-cols, 14)) calc(100% / var(--phone-map-rows, 9));
+}
+
+.planner-phone-fixed-seat-map-fixture,
+.planner-phone-fixed-seat-map-seat-wrapper,
+.planner-phone-fixed-seat-map-seat {
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  justify-self: stretch;
+}
+
+.planner-phone-fixed-seat-map-seat-wrapper {
+  position: relative;
+  z-index: 2;
+  display: grid;
+}
+
+.planner-phone-fixed-seat-map-fixture {
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid rgb(8 43 76 / 0.24);
+  background-color: rgb(8 43 76 / 0.06);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+  color: rgb(8 43 76 / 0.56);
+}
+
+.planner-phone-fixed-seat-map-fixture-whiteboard {
+  border-color: rgb(8 43 76 / 0.45);
+  background-color: white;
+}
+
+.planner-phone-fixed-seat-map-fixture-wall-top,
+.planner-phone-fixed-seat-map-fixture-wall-bottom,
+.planner-phone-fixed-seat-map-fixture-wall-left,
+.planner-phone-fixed-seat-map-fixture-wall-right {
+  pointer-events: none;
+  border-color: rgb(8 43 76 / 0.34);
+  background-color: rgb(8 43 76 / 0.08);
+  color: transparent;
+}
+
+.planner-phone-fixed-seat-map-fixture-wall-top {
+  align-self: start;
+  min-height: 0.45rem;
+  height: 0.45rem;
+  transform: translateY(-100%);
+}
+
+.planner-phone-fixed-seat-map-fixture-wall-bottom {
+  align-self: end;
+  min-height: 0.45rem;
+  height: 0.45rem;
+  transform: translateY(100%);
+}
+
+.planner-phone-fixed-seat-map-fixture-wall-left {
+  justify-self: start;
+  min-width: 0.45rem;
+  width: 0.45rem;
+  transform: translateX(-100%);
+}
+
+.planner-phone-fixed-seat-map-fixture-wall-right {
+  justify-self: end;
+  min-width: 0.45rem;
+  width: 0.45rem;
+  transform: translateX(100%);
+}
+
+.planner-phone-fixed-seat-map-seat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: var(--planner-phone-seat-cell-size);
+  min-height: var(--planner-phone-seat-cell-size);
+  padding: 0.18rem;
+  border: 1px solid rgb(8 43 76 / 0.22);
+  background-color: white;
+  color: rgb(8 43 76 / 0.62);
+  font-size: 0.5625rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.planner-phone-fixed-seat-map-seat-with-markers {
+  z-index: 12;
+}
+
+.planner-phone-fixed-seat-map-seat-wrapper-with-markers {
+  z-index: 12;
+}
+
+.planner-phone-fixed-seat-map-seat-label,
+.planner-phone-fixed-seat-map-seat-student-first,
+.planner-phone-fixed-seat-map-seat-student-initials {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planner-phone-fixed-seat-map-seat-student-first {
+  color: var(--huleedu-navy);
+  font-size: 0.5rem;
+  font-weight: 850;
+  line-height: 0.95;
+}
+
+.planner-phone-fixed-seat-map-seat-student-initials {
+  color: rgb(8 43 76 / 0.68);
+  font-size: 0.4375rem;
+  font-weight: 850;
+  letter-spacing: var(--huleedu-tracking-label);
+  line-height: 0.85;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.planner-phone-fixed-seat-map-seat-selected {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action);
+  color: var(--button-primary-text);
+  box-shadow: inset 0 0 0 2px var(--huleedu-canvas);
+}
+
+.planner-phone-fixed-seat-map-seat-fixed:not(.planner-phone-fixed-seat-map-seat-selected) {
+  border-color: var(--huleedu-action);
+  color: var(--huleedu-action);
+}
+
+.planner-phone-fixed-seat-map-seat-touch-dragging {
+  outline: 2px solid var(--huleedu-warning);
+  outline-offset: 2px;
+}
+
+.planner-phone-fixed-seat-rule-markers {
+  position: absolute;
+  bottom: calc(100% - 0.35rem);
+  left: 50%;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.planner-phone-fixed-seat-rule-marker {
+  display: inline-flex;
+  width: 0.875rem;
+  height: 0.875rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--huleedu-navy);
+  background-color: var(--huleedu-canvas);
+  color: var(--huleedu-navy);
+  line-height: 1;
+  box-shadow: 1px 1px 0 rgb(8 43 76 / 0.28);
+}
+
+.planner-phone-fixed-seat-rule-marker-success {
+  border-color: var(--huleedu-success);
+  background-color: var(--huleedu-success);
+  color: white;
+}
+
+.planner-phone-fixed-seat-rule-marker-warning {
+  border-color: var(--huleedu-warning);
+  background-color: var(--huleedu-warning);
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-fixed-seat-rule-marker-error {
+  border-color: var(--huleedu-error, var(--huleedu-critical));
+  background-color: var(--huleedu-error, var(--huleedu-critical));
+  color: white;
+}
+
+.planner-phone-fixed-seat-rule-marker-overflow {
+  width: auto;
+  min-width: 0.875rem;
+  padding: 0 0.12rem;
+  font-size: 0.5rem;
+  font-weight: 900;
+}
+
 .planner-phone-rules-student-tray {
+  position: relative;
+  z-index: 1;
   max-height: min(46vh, 24rem);
   min-height: 0;
   overflow: hidden;

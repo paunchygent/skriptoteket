@@ -5,7 +5,7 @@ title: "Klassrumskartan small-screen rules redesign"
 status: done
 owners: "agents"
 created: 2026-04-30
-updated: 2026-05-04
+updated: 2026-05-09
 epic: "EPIC-29"
 dependencies:
   - "ST-29-13"
@@ -35,3 +35,8 @@ This story gives `Regler` its own reduced authoring pattern.
 ## Follow-up PR Slices
 
 - [PR-0310: ST-27-09 phone fixed-seat rules map affordance](../prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md)
+  (`done` 2026-05-09): adds the phone `Fast plats` classroom-seat map while
+  preserving the reduced relationship-rule student-selection flow. The
+  post-review addition adds collision-free symbolic rule markers through the
+  shared rules-map marker contract and clearer Smart outcome toast copy on
+  phone.

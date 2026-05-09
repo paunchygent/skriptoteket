@@ -160,7 +160,7 @@ describe("PlannerRulesMapCanvas", () => {
         },
         students,
         studentsById: { "student-1": students[0], "student-2": students[1] },
-        seatAssignments: [],
+        seatAssignments: [{ seat_id: "seat-1", student_id: "student-1" }],
         activeTool: "fixed_seat",
         pendingFixedSeatStudentId: "student-2",
         pendingFixedSeatSeatId: "seat-2",
@@ -182,11 +182,13 @@ describe("PlannerRulesMapCanvas", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="rules-seat-fixed-lock-seat-1"]').attributes("title")).toContain(
-      "Fast plats: Ada Lovelace -> plats-1",
+    expect(wrapper.get('[data-test="rules-seat-rule-marker-seat-1-fixed-seat-success"]').attributes("title"))
+      .toContain(
+        "Ada Lovelace ska sitta på plats-1. Regeln är uppfylld.",
     );
-    expect(wrapper.get('[data-test="rules-seat-pending-lock-seat-2"]').attributes("title")).toContain(
-      "Fast plats: Alan Turing -> plats-2",
+    expect(wrapper.get('[data-test="rules-seat-rule-marker-seat-2-fixed-seat-warning"]').attributes("title"))
+      .toContain(
+        "Vald plats för Alan Turing.",
     );
     expect(wrapper.find('[data-test="rules-seat-pending-label-seat-2"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="rules-unplaced-student-student-2"]').attributes("aria-pressed"))
@@ -198,6 +200,84 @@ describe("PlannerRulesMapCanvas", () => {
     await wrapper.get('[data-test="rules-seat-node-seat-2"] button').trigger("click");
 
     expect(wrapper.emitted("seat-selected")).toEqual([["seat-2"]]);
+  });
+
+  it("renders global symbolic rule markers on classroom-map seats", () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "seating_arrangement",
+        rosterName: "SR24D",
+        template: {
+          ...template,
+          seats: [
+            { id: "seat-1", x: 0, y: 0, zone: null },
+            { id: "seat-2", x: 120, y: 0, zone: null },
+          ],
+        },
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [
+          { seat_id: "seat-1", student_id: "student-1" },
+          { seat_id: "seat-2", student_id: "student-2" },
+        ],
+        relationshipRules: [
+          { id: "near-1", kind: "keep_near", student_ids: ["student-1", "student-2"] },
+        ],
+        seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-keep-near-success"]').exists())
+      .toBe(true);
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-near-teacher-success"]').exists())
+      .toBe(true);
+  });
+
+  it("uses the solver teaching anchor when toning near-teacher markers on the rules map", () => {
+    const rightAnchorTemplate = {
+      ...template,
+      seats: [
+        { id: "seat-left-top", x: 0, y: 0, zone: null },
+        { id: "seat-left-bottom", x: 0, y: 120, zone: null },
+        { id: "seat-mid-top", x: 120, y: 0, zone: null },
+        { id: "seat-mid-bottom", x: 120, y: 120, zone: null },
+        { id: "seat-right-top", x: 240, y: 0, zone: null },
+        { id: "seat-right-bottom", x: 240, y: 120, zone: null },
+      ],
+      fixtures: [
+        { id: "whiteboard-right", type: "whiteboard" as const, x: 336, y: 0, width: 48, height: 240 },
+      ],
+    };
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "seating_arrangement",
+        rosterName: "SR24D",
+        template: rightAnchorTemplate,
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [
+          { seat_id: "seat-left-top", student_id: "student-1" },
+        ],
+        seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-left-top-near-teacher-warning"]').exists())
+      .toBe(true);
   });
 
   it("routes fixed-seat canvas clicks through physical-seat precedence", async () => {

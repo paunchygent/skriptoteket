@@ -13,10 +13,12 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 
 import type {
   FixedSeatRule,
+  RelationshipRule,
   RoomTemplate,
   SeatAssignment,
   SeatingSmartTool,
   Student,
+  StudentSeatingPreference,
 } from "../classroomPlannerTypes";
 import UiSegmentedToggle, {
   type UiSegmentedToggleOption,
@@ -25,6 +27,7 @@ import {
   formatSeatDisplayLabel,
   sortStudentsAlphabetically,
 } from "../classroomPlannerSmartRulePresentation";
+import { buildSeatRuleMarkersBySeatId } from "../classroomPlannerSeatRuleMarkers";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
@@ -50,6 +53,8 @@ const props = withDefaults(defineProps<{
   pendingFixedSeatStudentId?: string | null;
   pendingFixedSeatSeatId?: string | null;
   fixedSeatRules?: FixedSeatRule[];
+  relationshipRules?: RelationshipRule[];
+  seatingPreferences?: StudentSeatingPreference[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
   rosterName: null,
@@ -65,6 +70,8 @@ const props = withDefaults(defineProps<{
   pendingFixedSeatStudentId: null,
   pendingFixedSeatSeatId: null,
   fixedSeatRules: () => [],
+  relationshipRules: () => [],
+  seatingPreferences: () => [],
   smartRuleMarkersByStudentId: () => ({}),
 });
 
@@ -132,6 +139,16 @@ const surfaceHeadingLabel = computed(() => {
 const fixedSeatRuleBySeatId = computed<Record<string, FixedSeatRule | undefined>>(() => {
   return Object.fromEntries(props.fixedSeatRules.map((rule) => [rule.seat_id, rule]));
 });
+const seatRuleMarkersBySeatId = computed(() => buildSeatRuleMarkersBySeatId({
+  template: props.template,
+  studentsById: props.studentsById,
+  seatAssignments: props.seatAssignments,
+  fixedSeatRules: props.fixedSeatRules,
+  relationshipRules: props.relationshipRules,
+  seatingPreferences: props.seatingPreferences,
+  pendingFixedSeatStudentId: props.pendingFixedSeatStudentId,
+  pendingFixedSeatSeatId: props.pendingFixedSeatSeatId,
+}));
 const fixedSeatActive = computed(() => props.activeTool === "fixed_seat");
 const shouldCenterSurface = computed(() => {
   const paddedWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0")
@@ -388,9 +405,7 @@ function updateMapView(value: string): void {
                               ? selectionOrder(seatingStudentsBySeatId[seat.id]?.id ?? '')
                               : null
                           "
-                          :markers="
-                            smartRuleMarkersByStudentId[seatingStudentsBySeatId[seat.id]?.id ?? ''] ?? []
-                          "
+                          :markers="seatRuleMarkersBySeatId[seat.id] ?? []"
                           :fixed-seat-active="fixedSeatActive"
                           :pending-fixed-seat-student-id="pendingFixedSeatStudentId"
                           :pending-fixed-seat-seat-id="pendingFixedSeatSeatId"

@@ -21,6 +21,7 @@ import {
 import { setSeatStyledStudentDragPreview } from "../roomSeatDragPreview";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
+import PlannerPhoneClassroomSeatMap from "./PlannerPhoneClassroomSeatMap.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import RoomCanvas from "./RoomCanvas.vue";
 import { useClassroomState } from "../useClassroomState";
@@ -174,19 +175,20 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
         />
       </div>
 
-      <RoomCanvas
+      <PlannerPhoneClassroomSeatMap
         v-if="!isSeatWorkspaceWithoutTemplate"
-        compact
         data-test="phone-seating-workspace-canvas"
-        :scale-percent="seatingCanvasScalePercent"
-        :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
+        :template="plannerState.template"
+        :students-by-id="plannerState.studentsById"
+        :seat-assignments="plannerState.seatAssignments"
         :fixed-seat-rules="activeFixedSeatRules"
-        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-        :surface-scale="seatingCanvasScale"
-        @viewport-size="setVisibleSeatingCanvasViewportSize"
-        @zoom-fit="resetSeatingCanvasZoom"
-        @zoom-in="zoomInSeatingCanvas"
-        @zoom-out="zoomOutSeatingCanvas"
+        :relationship-rules="plannerState.relationshipRules"
+        :seating-preferences="plannerState.seatingPreferences"
+        editable-assignments
+        @student-dragstart="onStudentDragStart"
+        @student-dropped="plannerState.assignStudentToSeat"
+        @student-removed="plannerState.clearSeatAssignment"
+        @swap-requested="plannerState.swapSeatAssignments"
       />
       <div
         v-else
@@ -226,6 +228,8 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
           :scale-percent="seatingCanvasScalePercent"
           :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
           :fixed-seat-rules="activeFixedSeatRules"
+          :relationship-rules="plannerState.relationshipRules"
+          :seating-preferences="plannerState.seatingPreferences"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           :surface-scale="seatingCanvasScale"
           @viewport-size="setVisibleSeatingCanvasViewportSize"

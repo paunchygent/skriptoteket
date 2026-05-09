@@ -7,9 +7,12 @@
  * behavior.
  */
 
+import type { Component } from "vue";
+
 import RoomSeatToken from "./RoomSeatToken.vue";
-import { IconLock } from "../../../components/icons";
+import { IconKeepApart, IconKeepNear, IconLock, IconTeacherAnchor } from "../../../components/icons";
 import type { Seat, Student } from "../classroomPlannerTypes";
+import type { SmartRuleMarkerKind, SmartRuleSymbolMarker } from "../classroomPlannerSeatRuleMarkers";
 import { getSeatFrameStyle } from "../roomSeatPresentation";
 
 const props = withDefaults(defineProps<{
@@ -17,7 +20,7 @@ const props = withDefaults(defineProps<{
   student: Student | null;
   selected?: boolean;
   selectionOrder?: number | null;
-  markers?: string[];
+  markers?: SmartRuleSymbolMarker[];
   interactive?: boolean;
   fixed?: boolean;
   fixedSeatTitle?: string | null;
@@ -37,6 +40,13 @@ const props = withDefaults(defineProps<{
   pendingFixedSeatSeatId: null,
   pendingFixedSeatPreviewTitle: null,
 });
+
+const markerIconByKind: Record<SmartRuleMarkerKind, Component> = {
+  "fixed-seat": IconLock,
+  "keep-apart": IconKeepApart,
+  "keep-near": IconKeepNear,
+  "near-teacher": IconTeacherAnchor,
+};
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
@@ -69,40 +79,36 @@ function handleSeatClick(): void {
 <template>
   <div
     class="absolute transition-transform"
-    :class="interactive ? 'cursor-pointer hover:-translate-y-0.5' : ''"
+    :class="[
+      interactive ? 'cursor-pointer hover:-translate-y-0.5' : '',
+      markers.length > 0 ? 'z-30' : 'z-10',
+    ]"
     :style="getSeatFrameStyle(seat)"
     :data-test="`rules-seat-node-${seat.id}`"
   >
-    <span
-      v-if="fixed"
-      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-action text-white shadow-brutal-sm"
-      :title="fixedSeatTitle ?? undefined"
-      :aria-label="fixedSeatTitle ?? 'Fast plats'"
-      :data-test="`rules-seat-fixed-lock-${seat.id}`"
-    >
-      <IconLock :size="13" />
-    </span>
-
-    <span
-      v-if="pendingFixedSeatPreviewTitle"
-      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed border-action bg-white text-action shadow-brutal-sm"
-      :title="pendingFixedSeatPreviewTitle"
-      :aria-label="pendingFixedSeatPreviewTitle"
-      :data-test="`rules-seat-pending-lock-${seat.id}`"
-    >
-      <IconLock :size="13" />
-    </span>
-
     <div
       v-if="markers.length > 0"
-      class="pointer-events-none absolute -top-7 left-1/2 z-10 flex w-max max-w-none -translate-x-1/2 flex-nowrap items-center gap-0.5 whitespace-nowrap"
+      class="pointer-events-none absolute bottom-[calc(100%_-_0.25rem)] left-1/2 z-30 flex -translate-x-1/2 flex-col-reverse items-center justify-end gap-0.5"
+      :aria-label="markers.map((marker) => marker.label).join(' ')"
+      :title="markers.map((marker) => marker.label).join(' ')"
     >
       <span
         v-for="marker in markers"
-        :key="marker"
-        class="inline-flex h-3.5 shrink-0 items-center border border-navy/20 bg-canvas px-1.5 text-[8px] font-semibold uppercase tracking-[0.08em] text-navy/70"
+        :key="marker.id"
+        class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px] shadow-brutal-sm"
+        :class="{
+          'border-success bg-success text-white': marker.tone === 'success',
+          'border-warning bg-warning text-navy': marker.tone === 'warning',
+          'border-error bg-error text-white': marker.tone === 'error',
+        }"
+        :title="marker.label"
+        :aria-label="marker.label"
+        :data-test="`rules-seat-rule-marker-${seat.id}-${marker.kind}-${marker.tone}`"
       >
-        {{ marker }}
+        <component
+          :is="markerIconByKind[marker.kind]"
+          :size="12"
+        />
       </span>
     </div>
 

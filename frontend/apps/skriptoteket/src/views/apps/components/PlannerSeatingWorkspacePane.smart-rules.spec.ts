@@ -14,17 +14,25 @@ import type {
   FixedSeatRule,
   PlanDraft,
   RelationshipRule,
+  RoomFixture,
   RoomTemplate,
   Roster,
+  Seat,
+  SeatAssignment,
+  Student,
 } from "../classroomPlannerTypes";
 
 type PlannerStateMock = {
   template: RoomTemplate | null;
+  seats: Seat[];
+  fixtures: RoomFixture[];
   draft: (
     Pick<PlanDraft, "id" | "draft_kind" | "revision">
     & { smart_enabled?: boolean; use_history?: boolean }
   ) | null;
   studentsById: Record<string, Roster["students"][number]>;
+  seatAssignments: SeatAssignment[];
+  studentBySeatId: Record<string, Student | null>;
   unseatedStudents: Roster["students"];
   seatingPreferences: Array<{ student_id: string; near_teacher: boolean }>;
   relationshipRules: RelationshipRule[];
@@ -33,7 +41,9 @@ type PlannerStateMock = {
   smartRuleHydrationMessage: string | null;
   smartSeatingRunMessage: string | null;
   smartSeatingRunTone: "neutral" | "success" | "warning";
+  assignStudentToSeat: ReturnType<typeof vi.fn>;
   clearSeatAssignment: ReturnType<typeof vi.fn>;
+  swapSeatAssignments: ReturnType<typeof vi.fn>;
   retrySmartRuleHydration: ReturnType<typeof vi.fn>;
 };
 
@@ -45,11 +55,15 @@ const stateMocks = vi.hoisted(() => ({
       seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
       fixtures: [],
     },
+    seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
+    fixtures: [],
     draft: { id: "draft-1", draft_kind: "seating", revision: 2, smart_enabled: true },
     studentsById: {
       "student-1": { id: "student-1", display_name: "Ada Lovelace" },
       "student-2": { id: "student-2", display_name: "Alan Turing" },
     },
+    seatAssignments: [],
+    studentBySeatId: { "seat-1": null },
     unseatedStudents: [{ id: "student-2", display_name: "Alan Turing" }],
     seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
     relationshipRules: [
@@ -60,7 +74,9 @@ const stateMocks = vi.hoisted(() => ({
     smartRuleHydrationMessage: null,
     smartSeatingRunMessage: null,
     smartSeatingRunTone: "neutral",
+    assignStudentToSeat: vi.fn(),
     clearSeatAssignment: vi.fn(),
+    swapSeatAssignments: vi.fn(),
     retrySmartRuleHydration: vi.fn(),
   }))(),
 }));
@@ -76,11 +92,17 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
       { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
     ];
     stateMocks.plannerState.fixedSeatRules = [];
+    stateMocks.plannerState.seatAssignments = [];
+    stateMocks.plannerState.studentBySeatId = { "seat-1": null };
+    stateMocks.plannerState.seats = [{ id: "seat-1", x: 0, y: 0, zone: null }];
+    stateMocks.plannerState.fixtures = [];
     stateMocks.plannerState.smartRuleHydrationStatus = "ready";
     stateMocks.plannerState.smartRuleHydrationMessage = null;
     stateMocks.plannerState.smartSeatingRunMessage = null;
     stateMocks.plannerState.smartSeatingRunTone = "neutral";
+    stateMocks.plannerState.assignStudentToSeat.mockReset();
     stateMocks.plannerState.clearSeatAssignment.mockReset();
+    stateMocks.plannerState.swapSeatAssignments.mockReset();
     stateMocks.plannerState.retrySmartRuleHydration.mockReset();
   });
 
@@ -227,7 +249,7 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
     );
   });
 
-  it("keeps the phone seating workspace map-first with a compact student tray above the map", async () => {
+  it("keeps the phone seating workspace on the shared simplified classroom map", async () => {
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
@@ -248,6 +270,8 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
     expect(toggle.classes()).toContain("planner-phone-seating-student-toggle");
     expect(toggle.html()).toContain("lucide-users-round");
     expect(toggle.html()).not.toContain("lucide-school");
+    expect(phoneWorkspace.find('[data-test="room-canvas-stub"]').exists()).toBe(false);
+    expect(canvas.find('[data-test="phone-fixed-seat-map-seat-seat-1"]').exists()).toBe(true);
     expect(toggle.element.compareDocumentPosition(canvas.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(wrapper.find('[data-test="phone-seating-student-sheet"]').exists()).toBe(false);
 
@@ -257,5 +281,24 @@ describe("PlannerSeatingWorkspacePane smart-rule boundary", () => {
     expect(wrapper.get('[data-test="phone-seating-student-sheet"]').classes()).toContain(
       "planner-phone-seating-student-tray",
     );
+  });
+
+  it("uses tap-to-remove instead of a cramped remove button on the phone seating map", async () => {
+    stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
+    stateMocks.plannerState.studentBySeatId = {
+      "seat-1": { id: "student-1", display_name: "Ada Lovelace" },
+    };
+
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+      },
+    });
+
+    expect(wrapper.find('[data-test="phone-seat-remove-seat-1"]').exists()).toBe(false);
+
+    await wrapper.get('[data-test="phone-fixed-seat-map-seat-seat-1"]').trigger("click");
+
+    expect(stateMocks.plannerState.clearSeatAssignment).toHaveBeenCalledWith("student-1");
   });
 });

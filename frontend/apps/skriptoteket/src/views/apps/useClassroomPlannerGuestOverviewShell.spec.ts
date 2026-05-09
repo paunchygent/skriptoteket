@@ -685,6 +685,195 @@ describe("useClassroomPlannerGuestController", () => {
     expect(savedSnapshot?.ui_state.selected_template_local_id).toBe("template-1");
   });
 
+  it("resolves a selected classroom when guest rules opens from an active grouping draft", async () => {
+    const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-rules-seating-host",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [
+        {
+          id: "roster-1",
+          name: "SA24D",
+          students: [{ id: "student-1", display_name: "Ada" }],
+        },
+      ],
+      templates: [
+        {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 8,
+          grid_rows: 6,
+          seats: [{ id: "seat-1", x: 1, y: 1, zone: "front" }],
+          fixtures: [],
+        },
+      ],
+      smart_rule_sets: [],
+      grouping_draft: {
+        draft: {
+          id: "draft-grouping-rules-host",
+          roster_id: "roster-1",
+          draft_kind: "grouping",
+          template_id: null,
+          smart_enabled: false,
+          use_history: false,
+          grouping_seating_distance_enabled: false,
+          status: "active",
+          revision: 1,
+          last_opened_at: "2026-04-05T09:10:00.000Z",
+        },
+        roster: {
+          id: "roster-1",
+          name: "SA24D",
+          students: [{ id: "student-1", display_name: "Ada" }],
+        },
+        template: null,
+        groups: [{ id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false }],
+        group_assignments: [],
+        seat_assignments: [],
+        history_status: { can_undo: false, can_redo: false },
+      },
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: "roster-1",
+        selected_template_id: "template-1",
+        current_screen: "planner",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+    const saveSnapshot = vi.fn(async () => undefined);
+    const harness = mountGuestOverviewHarness({
+      nowIso: () => "2026-04-05T09:30:00.000Z",
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "ready" as const,
+          snapshot: readySnapshot,
+          summary: summarizeClassroomPlannerGuestSnapshot(readySnapshot),
+        })),
+        saveSnapshot,
+        initializeEmptySnapshot: vi.fn(),
+        clearCurrentSnapshot: vi.fn(),
+      }),
+    });
+    await flushGuestOverview();
+
+    expect(harness.getState().guestPlannerState.draft.value?.draft_kind).toBe("grouping");
+
+    await harness.getState().selectPlannerWorkspaceMode("rules");
+
+    expect(harness.getState().plannerInitialView.value).toBe("rules");
+    expect(harness.getState().guestPlannerState.draft.value?.draft_kind).toBe("seating");
+    expect(harness.getState().guestPlannerState.template.value?.id).toBe("template-1");
+    const savedSnapshot = (saveSnapshot.mock.calls as unknown[][]).at(-1)?.[0] as
+      | {
+          ui_state: {
+            planner_initial_view: string;
+            selected_template_local_id: string | null;
+          };
+        }
+      | undefined;
+    expect(savedSnapshot?.ui_state.planner_initial_view).toBe("rules");
+    expect(savedSnapshot?.ui_state.selected_template_local_id).toBe("template-1");
+  });
+
+  it("prefers a selected classroom over an unloaded grouping draft when opening guest rules", async () => {
+    const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({
+      snapshot_id: "guest-snapshot-rules-overview-seating-host",
+      created_at: "2026-04-05T09:00:00.000Z",
+      updated_at: "2026-04-05T09:00:00.000Z",
+      expires_at: "2026-04-19T09:00:00.000Z",
+      rosters: [
+        {
+          id: "roster-1",
+          name: "SA24D",
+          students: [{ id: "student-1", display_name: "Ada" }],
+        },
+      ],
+      templates: [
+        {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 8,
+          grid_rows: 6,
+          seats: [{ id: "seat-1", x: 1, y: 1, zone: "front" }],
+          fixtures: [],
+        },
+      ],
+      smart_rule_sets: [],
+      grouping_draft: {
+        draft: {
+          id: "draft-grouping-rules-overview-host",
+          roster_id: "roster-1",
+          draft_kind: "grouping",
+          template_id: null,
+          smart_enabled: false,
+          use_history: false,
+          grouping_seating_distance_enabled: false,
+          status: "active",
+          revision: 1,
+          last_opened_at: "2026-04-05T09:10:00.000Z",
+        },
+        roster: {
+          id: "roster-1",
+          name: "SA24D",
+          students: [{ id: "student-1", display_name: "Ada" }],
+        },
+        template: null,
+        groups: [{ id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false }],
+        group_assignments: [],
+        seat_assignments: [],
+        history_status: { can_undo: false, can_redo: false },
+      },
+      seating_draft: null,
+      checkpoint_descriptors: [],
+      ui_state: {
+        selected_roster_id: "roster-1",
+        selected_template_id: "template-1",
+        current_screen: "class-workspace",
+        planner_initial_view: "groups",
+        dismissed_grouping_draft_id: null,
+        dismissed_seating_draft_id: null,
+      },
+    });
+    const saveSnapshot = vi.fn(async () => undefined);
+    const harness = mountGuestOverviewHarness({
+      nowIso: () => "2026-04-05T09:30:00.000Z",
+      guestStorageFactory: () => ({
+        loadCurrentSnapshot: vi.fn(async () => ({
+          status: "ready" as const,
+          snapshot: readySnapshot,
+          summary: summarizeClassroomPlannerGuestSnapshot(readySnapshot),
+        })),
+        saveSnapshot,
+        initializeEmptySnapshot: vi.fn(),
+        clearCurrentSnapshot: vi.fn(),
+      }),
+    });
+    await flushGuestOverview();
+
+    expect(harness.getState().currentScreen.value).toBe("class-workspace");
+    expect(harness.getState().guestPlannerState.draft.value).toBeNull();
+
+    await harness.getState().selectPlannerWorkspaceMode("rules");
+
+    expect(harness.getState().plannerInitialView.value).toBe("rules");
+    expect(harness.getState().guestPlannerState.draft.value?.draft_kind).toBe("seating");
+    expect(harness.getState().guestPlannerState.template.value?.id).toBe("template-1");
+    const savedSnapshot = (saveSnapshot.mock.calls as unknown[][]).at(-1)?.[0] as
+      | {
+          ui_state: {
+            planner_initial_view: string;
+            selected_template_local_id: string | null;
+          };
+        }
+      | undefined;
+    expect(savedSnapshot?.ui_state.planner_initial_view).toBe("rules");
+    expect(savedSnapshot?.ui_state.selected_template_local_id).toBe("template-1");
+  });
+
   it("preserves the overview classroom selection when grouping autosave persists random assignments", async () => {
     vi.useFakeTimers();
     const readySnapshot = createClassroomPlannerGuestSnapshotFromSeed({

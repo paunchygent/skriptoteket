@@ -83,11 +83,18 @@ class RunPublicSmartSeatingHandler:
                 seat_assignments=smart_result.seat_assignments,
             ),
             used_history=False,
-            message=_build_run_message(has_tradeoffs=smart_result.has_tradeoffs),
+            message=_build_run_message(
+                has_tradeoffs=smart_result.has_tradeoffs,
+                unplaced_student_count=len(smart_result.unplaced_student_ids),
+            ),
         )
 
 
-def _build_run_message(*, has_tradeoffs: bool) -> str:
+def _build_run_message(*, has_tradeoffs: bool, unplaced_student_count: int) -> str:
+    if unplaced_student_count == 1:
+        return "Smart placering klar, men 1 elev fick ingen plats."
+    if unplaced_student_count > 1:
+        return f"Smart placering klar, men {unplaced_student_count} elever fick ingen plats."
     if has_tradeoffs:
-        return "Smart placering klar med bästa möjliga kompromiss."
+        return "Smart placering klar, men alla regler kunde inte uppfyllas."
     return "Smart placering klar."

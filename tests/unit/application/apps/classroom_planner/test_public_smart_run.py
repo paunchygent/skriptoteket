@@ -189,6 +189,28 @@ async def test_run_public_smart_seating_returns_browser_owned_workspace() -> Non
 
 
 @pytest.mark.asyncio
+async def test_run_public_smart_seating_message_names_unplaced_capacity_shortfall() -> None:
+    snapshot_payload = _snapshot().model_dump(mode="json")
+    snapshot_payload["templates"][0]["seats"] = [
+        {"id": "seat-1", "x": 0, "y": 0, "zone": None},
+        {"id": "seat-2", "x": 1, "y": 0, "zone": None},
+    ]
+    snapshot_payload["seating_draft"]["seat_assignments"] = [
+        {"student_id": "ada", "seat_id": "seat-1"},
+        {"student_id": "alan", "seat_id": "seat-2"},
+    ]
+    snapshot = ClassroomPlannerGuestSnapshotPayload.model_validate(snapshot_payload)
+    handler = RunPublicSmartSeatingHandler(
+        clock=FixedClock(datetime(2026, 4, 7, 12, 0, tzinfo=timezone.utc))
+    )
+
+    result = await handler.handle(snapshot=snapshot, expected_revision=2)
+
+    assert len(result.workspace.seat_assignments) == 2
+    assert result.message == "Smart placering klar, men 2 elever fick ingen plats."
+
+
+@pytest.mark.asyncio
 async def test_run_public_smart_seating_honors_fixed_seat_rules() -> None:
     template_id = "11111111-1111-4111-8111-111111111111"
     snapshot_payload = _snapshot(template_id=template_id).model_dump(mode="json")

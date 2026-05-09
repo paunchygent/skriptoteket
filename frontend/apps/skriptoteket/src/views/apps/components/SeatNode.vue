@@ -7,19 +7,29 @@
  * draggable and removable, but no longer support click activation.
  */
 
+import type { Component } from "vue";
+
 import RoomSeatToken from "./RoomSeatToken.vue";
-import { IconLock } from "../../../components/icons";
+import { IconKeepApart, IconKeepNear, IconLock, IconTeacherAnchor } from "../../../components/icons";
 import type { Seat, Student } from "../classroomPlannerTypes";
+import type { SmartRuleMarkerKind, SmartRuleSymbolMarker } from "../classroomPlannerSeatRuleMarkers";
 import { getSeatFrameStyle } from "../roomSeatPresentation";
 
 const props = defineProps<{
   seat: Seat;
   student: Student | null;
   selected?: boolean;
-  markers?: string[];
+  markers?: SmartRuleSymbolMarker[];
   fixed?: boolean;
   fixedSeatTitle?: string | null;
 }>();
+
+const markerIconByKind: Record<SmartRuleMarkerKind, Component> = {
+  "fixed-seat": IconLock,
+  "keep-apart": IconKeepApart,
+  "keep-near": IconKeepNear,
+  "near-teacher": IconTeacherAnchor,
+};
 
 const emit = defineEmits<{
   (e: "student-dropped", studentId: string, seatId: string): void;
@@ -87,7 +97,10 @@ function onDragStart(event: DragEvent): void {
 <template>
   <div
     class="absolute transition-transform transition-shadow"
-    :class="student ? 'cursor-grab hover:-translate-y-0.5' : ''"
+    :class="[
+      student ? 'cursor-grab hover:-translate-y-0.5' : '',
+      (markers ?? []).length > 0 ? 'z-30' : 'z-10',
+    ]"
     :style="getSeatFrameStyle(seat)"
     :draggable="Boolean(student)"
     @dragover="onDragOver"
@@ -96,15 +109,28 @@ function onDragStart(event: DragEvent): void {
   >
     <div
       v-if="(markers ?? []).length > 0"
-      class="pointer-events-none absolute -top-5 left-1/2 z-10 flex -translate-x-1/2 flex-wrap justify-center gap-1"
+      class="pointer-events-none absolute bottom-[calc(100%_-_0.25rem)] left-1/2 z-30 flex -translate-x-1/2 flex-col-reverse items-center justify-end gap-0.5"
+      :aria-label="markers?.map((marker) => marker.label).join(' ')"
+      :title="markers?.map((marker) => marker.label).join(' ')"
       :data-test="`seat-markers-${seat.id}`"
     >
       <span
         v-for="marker in markers"
-        :key="marker"
-        class="border border-navy/20 bg-canvas px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+        :key="marker.id"
+        class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px] shadow-brutal-sm"
+        :class="{
+          'border-success bg-success text-white': marker.tone === 'success',
+          'border-warning bg-warning text-navy': marker.tone === 'warning',
+          'border-error bg-error text-white': marker.tone === 'error',
+        }"
+        :title="marker.label"
+        :aria-label="marker.label"
+        :data-test="`seat-rule-marker-${seat.id}-${marker.kind}-${marker.tone}`"
       >
-        {{ marker }}
+        <component
+          :is="markerIconByKind[marker.kind]"
+          :size="12"
+        />
       </span>
     </div>
 

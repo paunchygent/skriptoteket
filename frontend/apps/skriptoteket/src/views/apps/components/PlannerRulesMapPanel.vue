@@ -14,10 +14,12 @@
 
 import type {
   FixedSeatRule,
+  RelationshipRule,
   RoomTemplate,
   SeatAssignment,
   SeatingSmartTool,
   Student,
+  StudentSeatingPreference,
 } from "../classroomPlannerTypes";
 import PlannerRulesMapCanvas from "./PlannerRulesMapCanvas.vue";
 
@@ -38,6 +40,8 @@ withDefaults(defineProps<{
   pendingFixedSeatStudentId?: string | null;
   pendingFixedSeatSeatId?: string | null;
   fixedSeatRules?: FixedSeatRule[];
+  relationshipRules?: RelationshipRule[];
+  seatingPreferences?: StudentSeatingPreference[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
   canShowSeatingArrangement: false,
@@ -53,6 +57,8 @@ withDefaults(defineProps<{
   pendingFixedSeatStudentId: null,
   pendingFixedSeatSeatId: null,
   fixedSeatRules: () => [],
+  relationshipRules: () => [],
+  seatingPreferences: () => [],
   smartRuleMarkersByStudentId: () => ({}),
 });
 
@@ -80,6 +86,8 @@ const emit = defineEmits<{
       :pending-fixed-seat-student-id="pendingFixedSeatStudentId"
       :pending-fixed-seat-seat-id="pendingFixedSeatSeatId"
       :fixed-seat-rules="fixedSeatRules"
+      :relationship-rules="relationshipRules"
+      :seating-preferences="seatingPreferences"
       :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
       @update:map-view="emit('update:mapView', $event)"
       @student-selected="emit('student-selected', $event)"

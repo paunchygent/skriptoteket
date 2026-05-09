@@ -5,6 +5,7 @@ title: "Klassrumskartan: fixed-seat rules and classroom-view-first rule authorin
 status: ready
 owners: "agents"
 created: 2026-05-05
+updated: 2026-05-09
 epic: "EPIC-27"
 dependencies: ["ST-27-03", "ST-27-07", "ST-27-08"]
 acceptance_criteria:
@@ -68,4 +69,22 @@ work.
 - [PR-0304](../prs/pr-0304-st-27-09-seating-workspace-fixed-seat-lock-marker.md):
   seating-workspace lock marker remediation for honored fixed-seat placements.
 - [PR-0310](../prs/pr-0310-st-27-09-phone-fixed-seat-rules-map-affordance.md):
-  phone fixed-seat rule authoring map affordance for selecting physical seats.
+  phone fixed-seat rule authoring map affordance for selecting physical seats
+  (`done` 2026-05-09): phone map implemented with Smart toast diagnostics and
+  collision-free symbolic rule markers.
+
+## Implementation Notes
+
+- `PR-0310` closes the phone-specific fixed-seat authoring gap by adding a
+  compact classroom-template seat map when `Fast plats` is active on phone.
+- The phone map is intentionally simplified, but it preserves row/seat geometry
+  and seat identity from the selected classroom template rather than creating a
+  separate phone-only seating model.
+- Public guest transitions now resolve the selected classroom when `Regler`
+  opens from an active grouping draft, so `Fast plats` does not falsely report
+  that no classroom exists.
+- `PR-0310` also clarifies Smart compromise toasts so capacity shortfalls and
+  soft-rule compromises use distinct Swedish copy, and map seat markers
+  globally use compact symbols with success/warning/error token semantics on
+  both rules and seating surfaces instead of text labels that can obscure seats
+  or student names.

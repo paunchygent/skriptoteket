@@ -260,6 +260,61 @@ async def test_run_smart_seating_loads_recent_checkpoint_window_and_persists_res
 
 
 @pytest.mark.asyncio
+async def test_run_smart_seating_message_names_unplaced_capacity_shortfall() -> None:
+    owner_user_id = uuid4()
+    roster = _roster(owner_user_id=owner_user_id).model_copy(
+        update={
+            "students": [
+                Student(id="ada", display_name="Ada"),
+                Student(id="alan", display_name="Alan"),
+                Student(id="grace", display_name="Grace"),
+            ],
+        }
+    )
+    template = _template(owner_user_id=owner_user_id).model_copy(
+        update={"seats": [Seat(id="front-left", x=0, y=0)]}
+    )
+    workspace = _workspace(
+        owner_user_id=owner_user_id,
+        roster_id=roster.id,
+        template_id=template.id,
+    ).model_copy(update={"seat_assignments": []})
+    persisted_workspace = workspace.model_copy(
+        update={
+            "draft": workspace.draft.model_copy(
+                update={
+                    "revision": workspace.draft.revision + 1,
+                    "updated_at": datetime(2026, 3, 27, 12, 0, tzinfo=timezone.utc),
+                }
+            ),
+            "seat_assignments": [SeatAssignment(student_id="ada", seat_id="front-left")],
+        }
+    )
+    drafts = AsyncMock()
+    drafts.get_workspace.side_effect = [workspace, persisted_workspace]
+    handler = RunSmartSeatingHandler(
+        uow=AsyncMock(),
+        drafts=drafts,
+        rosters=AsyncMock(get_by_id=AsyncMock(return_value=roster)),
+        templates=AsyncMock(get_by_id=AsyncMock(return_value=template)),
+        smart_rules=AsyncMock(
+            get_by_roster_id=AsyncMock(return_value=RosterSmartRules(roster_id=roster.id))
+        ),
+        checkpoints=AsyncMock(list_recent_for_roster_and_room_context=AsyncMock(return_value=[])),
+        clock=_Clock(datetime(2026, 3, 27, 12, 0, tzinfo=timezone.utc)),
+    )
+
+    result = await handler.handle(
+        draft_id=workspace.draft.id,
+        owner_user_id=owner_user_id,
+        expected_revision=workspace.draft.revision,
+    )
+
+    assert isinstance(result, SmartSeatingAppliedResult)
+    assert result.message == "Smart placering klar, men 2 elever fick ingen plats."
+
+
+@pytest.mark.asyncio
 async def test_run_smart_seating_raises_conflict_for_stale_revision() -> None:
     owner_user_id = uuid4()
     roster = _roster(owner_user_id=owner_user_id)

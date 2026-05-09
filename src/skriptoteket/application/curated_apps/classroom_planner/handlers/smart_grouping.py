@@ -306,7 +306,7 @@ def _build_run_message(
     has_tradeoffs: bool,
 ) -> str:
     if has_tradeoffs:
-        base_message = "Smart gruppindelning klar med bästa möjliga kompromiss."
+        base_message = "Smart gruppindelning klar, men alla regler kunde inte uppfyllas."
     elif used_history and used_live_seating:
         base_message = "Smart gruppindelning klar med historik och stöd från klassens sittschema."
     elif used_history:

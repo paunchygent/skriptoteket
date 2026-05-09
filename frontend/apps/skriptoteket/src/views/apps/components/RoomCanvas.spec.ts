@@ -2,7 +2,7 @@ import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RoomFixture, Student } from "../classroomPlannerTypes";
+import type { RoomFixture, RoomTemplate, Seat, SeatAssignment, Student } from "../classroomPlannerTypes";
 import RoomCanvas from "./RoomCanvas.vue";
 
 class ResizeObserverMock {
@@ -24,9 +24,21 @@ function setViewportSize(width: number, height: number): void {
 const stateMocks = vi.hoisted(() => ({
   plannerState: {
     unseatedStudents: [{ id: "student-1", display_name: "Ada" }],
-    template: { id: "template-1", name: "Sal 101", grid_cols: 14, grid_rows: 9, seats: [], fixtures: [] },
-    seats: [{ id: "seat-1", x: 0, y: 0 }],
+    template: {
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [],
+    } as RoomTemplate,
+    seats: [{ id: "seat-1", x: 0, y: 0 }] as Seat[],
     fixtures: [] as RoomFixture[],
+    studentsById: {
+      "student-1": { id: "student-1", display_name: "Ada" },
+      "student-2": { id: "student-2", display_name: "Alan" },
+    } as Record<string, Student | undefined>,
+    seatAssignments: [] as SeatAssignment[],
     studentBySeatId: { "seat-1": null } as Record<string, Student | null>,
     assignStudentToSeat: vi.fn(),
     clearSeatAssignment: vi.fn(),
@@ -53,6 +65,15 @@ describe("RoomCanvas", () => {
     stateMocks.plannerState.swapSeatAssignments.mockReset();
     stateMocks.plannerState.fixtures = [];
     stateMocks.plannerState.seats = [{ id: "seat-1", x: 0, y: 0 }];
+    stateMocks.plannerState.template = {
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [{ id: "seat-1", x: 0, y: 0 }],
+      fixtures: [],
+    };
+    stateMocks.plannerState.seatAssignments = [];
     stateMocks.plannerState.studentBySeatId = { "seat-1": null };
   });
 
@@ -145,31 +166,99 @@ describe("RoomCanvas", () => {
     expect(wrapper.html()).toContain("rounded-full");
   });
 
-  it("renders tile markers for visible smart rules on occupied seats", () => {
+  it("renders symbolic markers for visible smart rules on occupied seats", () => {
+    stateMocks.plannerState.seats = [
+      { id: "seat-1", x: 0, y: 0 },
+      { id: "seat-2", x: 120, y: 0 },
+    ];
+    stateMocks.plannerState.template = {
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [
+        { id: "seat-1", x: 0, y: 0 },
+        { id: "seat-2", x: 120, y: 0 },
+      ],
+      fixtures: [],
+    };
     stateMocks.plannerState.studentBySeatId = {
       "seat-1": { id: "student-1", display_name: "Ada" },
+      "seat-2": { id: "student-2", display_name: "Alan" },
     };
+    stateMocks.plannerState.seatAssignments = [
+      { student_id: "student-1", seat_id: "seat-1" },
+      { student_id: "student-2", seat_id: "seat-2" },
+    ];
 
     const wrapper = mount(RoomCanvas, {
       props: {
         scalePercent: 100,
         scaledSurfaceStyle: { width: "1400px", height: "960px" },
         selectedStudentIds: ["student-1"],
-        smartRuleMarkersByStudentId: {
-          "student-1": ["Lärare", "Isär A"],
-        },
+        relationshipRules: [
+          { id: "near-1", kind: "keep_near", student_ids: ["student-1", "student-2"] },
+        ],
+        seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
         surfaceScale: 1,
       },
     });
 
-    expect(wrapper.get('[data-test="seat-markers-seat-1"]').text()).toContain("Lärare");
-    expect(wrapper.get('[data-test="seat-markers-seat-1"]').text()).toContain("Isär A");
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-near-teacher-success"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-keep-near-success"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="seat-markers-seat-1"]').classes()).toContain("flex-col-reverse");
   });
 
-  it("renders a fixed-seat lock only when the fixed student occupies the fixed seat", () => {
+  it("uses the solver teaching anchor when toning near-teacher markers on the seating map", () => {
+    const seats = [
+      { id: "seat-top-left", x: 0, y: 0 },
+      { id: "seat-top-right", x: 120, y: 0 },
+      { id: "seat-mid-left", x: 0, y: 120 },
+      { id: "seat-mid-right", x: 120, y: 120 },
+      { id: "seat-bottom-left", x: 0, y: 240 },
+      { id: "seat-bottom-right", x: 120, y: 240 },
+    ];
+    stateMocks.plannerState.seats = seats;
+    stateMocks.plannerState.template = {
+      id: "template-bottom-anchor",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats,
+      fixtures: [
+        { id: "whiteboard-bottom", type: "whiteboard", x: 0, y: 336, width: 240, height: 48 },
+      ],
+    };
+    stateMocks.plannerState.studentBySeatId = {
+      "seat-top-left": { id: "student-1", display_name: "Ada" },
+      "seat-top-right": null,
+      "seat-mid-left": null,
+      "seat-mid-right": null,
+      "seat-bottom-left": null,
+      "seat-bottom-right": null,
+    };
+    stateMocks.plannerState.seatAssignments = [
+      { student_id: "student-1", seat_id: "seat-top-left" },
+    ];
+
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+        surfaceScale: 1,
+      },
+    });
+
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-top-left-near-teacher-warning"]').exists())
+      .toBe(true);
+  });
+
+  it("renders a success fixed-seat symbol when the fixed student occupies the fixed seat", () => {
     stateMocks.plannerState.studentBySeatId = {
       "seat-1": { id: "student-1", display_name: "Ada" },
     };
+    stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
 
     const wrapper = mount(RoomCanvas, {
       props: {
@@ -182,16 +271,18 @@ describe("RoomCanvas", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="seat-fixed-lock-seat-1"]').attributes("title")).toBe(
-      "Fast plats: Ada -> plats-1",
+    expect(wrapper.get('[data-test="seat-rule-marker-seat-1-fixed-seat-success"]').attributes("title")).toBe(
+      "Ada ska sitta på plats-1. Regeln är uppfylld.",
     );
-    expect(wrapper.get('[data-test="seat-fixed-lock-seat-1"]').html()).toContain("lucide-lock-keyhole");
+    expect(wrapper.get('[data-test="seat-rule-marker-seat-1-fixed-seat-success"]').html())
+      .toContain("lucide-lock-keyhole");
   });
 
-  it("does not render a fixed-seat lock for the wrong occupant", () => {
+  it("renders an error fixed-seat symbol for the wrong occupant", () => {
     stateMocks.plannerState.studentBySeatId = {
       "seat-1": { id: "student-2", display_name: "Alan" },
     };
+    stateMocks.plannerState.seatAssignments = [{ student_id: "student-2", seat_id: "seat-1" }];
 
     const wrapper = mount(RoomCanvas, {
       props: {
@@ -204,7 +295,9 @@ describe("RoomCanvas", () => {
       },
     });
 
-    expect(wrapper.find('[data-test="seat-fixed-lock-seat-1"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="seat-rule-marker-seat-1-fixed-seat-error"]').attributes("title")).toBe(
+      "Ada ska sitta på plats-1. Nu sitter Alan där.",
+    );
   });
 
   it("renders seating zoom controls and forwards the viewport actions", async () => {

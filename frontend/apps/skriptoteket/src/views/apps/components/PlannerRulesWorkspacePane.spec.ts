@@ -149,6 +149,19 @@ describe("PlannerRulesWorkspacePane", () => {
         { id: "student-3", display_name: "Grace Hopper" },
       ],
     };
+    stateMocks.plannerState.template = {
+      id: "template-1",
+      name: "Sal 101",
+      seats: [
+        { id: "seat-1", x: 0, y: 0, zone: null },
+        { id: "seat-2", x: 120, y: 0, zone: null },
+      ],
+      fixtures: [],
+    };
+    stateMocks.plannerState.seatsById = {
+      "seat-1": { id: "seat-1", x: 0, y: 0, zone: null },
+      "seat-2": { id: "seat-2", x: 120, y: 0, zone: null },
+    };
     stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
     stateMocks.plannerState.seatingPreferences = [
       { student_id: "student-1", near_teacher: true },
@@ -478,6 +491,58 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith("student-1");
     expect(stateMocks.plannerState.clearPendingRelationshipSelection).toHaveBeenCalledWith();
     expect(stateMocks.plannerState.commitPendingRelationshipRule).toHaveBeenCalledWith();
+  });
+
+  it("renders the approved phone fixed-seat map flow without replacing relationship tools", async () => {
+    stateMocks.plannerState.activeSeatingSmartTool = "fixed_seat";
+    stateMocks.plannerState.pendingRelationshipStudentIds = [];
+    stateMocks.plannerState.pendingFixedSeatStudentId = "student-1";
+    stateMocks.plannerState.pendingFixedSeatSeatId = "seat-2";
+    stateMocks.plannerState.canCommitPendingFixedSeatRule = true;
+
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="phone-rules-selection"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="phone-fixed-seat-panel"]').text()).toContain("Välj elev och plats.");
+    expect(wrapper.get('[data-test="phone-fixed-seat-pending-student"]').text()).toContain("Ada Lovelace");
+    expect(wrapper.get('[data-test="phone-fixed-seat-pending-seat"]').text()).toContain("plats-2");
+    expect(wrapper.findAll('button[data-test^="phone-fixed-seat-map-seat-seat-"]')).toHaveLength(2);
+    expect(wrapper.get('[data-test="phone-rules-commit-fixed-seat"]').attributes("disabled")).toBeUndefined();
+
+    await wrapper.get('[data-test="phone-fixed-seat-map-seat-seat-1"]').trigger("click");
+    await wrapper.get('[data-test="phone-rules-commit-fixed-seat"]').trigger("click");
+
+    expect(stateMocks.plannerState.selectFixedSeatRuleSeat).toHaveBeenCalledWith("seat-1");
+    expect(stateMocks.plannerState.commitPendingFixedSeatRule).toHaveBeenCalledWith();
+  });
+
+  it("explains that Fast plats requires a classroom on phone", async () => {
+    stateMocks.plannerState.template = null;
+
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="phone-rules-tool-fixed_seat"]').trigger("click");
+
+    expect(wrapper.get('[data-test="phone-rules-fixed-seat-classroom-required"]').text()).toContain(
+      "Fast plats kräver ett klassrum.",
+    );
+    expect(stateMocks.plannerState.setActiveSeatingSmartTool).not.toHaveBeenCalledWith("fixed_seat");
   });
 
   it("starts the phone rules workspace with a usable near-teacher selection target", () => {

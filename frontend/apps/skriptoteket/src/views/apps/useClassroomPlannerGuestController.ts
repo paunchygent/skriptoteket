@@ -554,6 +554,13 @@ export function useClassroomPlannerGuestController(options?: {
         : null;
 
       if (guestPlannerState.draft.value && guestPlannerState.roster.value?.id === selectedRosterId.value) {
+        if (selectedTemplateId.value && !guestPlannerState.template.value) {
+          await guestPlannerState.resolveDraft(
+            selectedRosterId.value,
+            selectedTemplateId.value,
+            "seating",
+          );
+        }
         await persistUiState({
           selectedRosterId: selectedRosterId.value,
           selectedTemplateId: guestPlannerState.template.value?.id ?? selectedTemplateId.value,
@@ -563,16 +570,25 @@ export function useClassroomPlannerGuestController(options?: {
         return;
       }
 
-      if (seatingDraft) {
+      if (selectedTemplateId.value) {
+        if (seatingDraft?.template?.id === selectedTemplateId.value) {
+          await guestPlannerState.loadWorkspace(seatingDraft.draft.id);
+        } else {
+          await guestPlannerState.resolveDraft(
+            selectedRosterId.value,
+            selectedTemplateId.value,
+            "seating",
+          );
+        }
+      } else if (seatingDraft) {
         await guestPlannerState.loadWorkspace(seatingDraft.draft.id);
       } else if (groupingDraft) {
         await guestPlannerState.loadWorkspace(groupingDraft.draft.id);
       } else {
-        const preferredDraftKind = selectedTemplateId.value ? "seating" : "grouping";
         await guestPlannerState.resolveDraft(
           selectedRosterId.value,
           selectedTemplateId.value,
-          preferredDraftKind,
+          "grouping",
         );
       }
 
