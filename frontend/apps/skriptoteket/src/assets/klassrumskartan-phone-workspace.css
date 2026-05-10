@@ -673,6 +673,12 @@
   box-shadow: 1px 1px 0 rgb(8 43 76 / 0.28);
 }
 
+.planner-phone-fixed-seat-rule-marker-neutral {
+  border-color: rgb(8 43 76 / 0.36);
+  background-color: var(--huleedu-canvas);
+  color: var(--huleedu-navy);
+}
+
 .planner-phone-fixed-seat-rule-marker-success {
   border-color: var(--huleedu-success);
   background-color: var(--huleedu-success);

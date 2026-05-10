@@ -50,3 +50,9 @@ operations out of the way.
   (`done` 2026-05-10) adds reusable pinch/touch zoom for the phone seating
   map without replacing the short-press remove and long-press move/swap
   semantics.
+- [PR-0313: Shared phone classroom-map real-device pinch remediation](../prs/pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md)
+  follows up on real iPhone evidence that the simplified phone seating map did
+  not visibly zoom even after the shared gesture layer shipped.
+- [PR-0314: Solver-owned rule marker semantics](../prs/pr-0314-solver-owned-rule-marker-semantics.md)
+  follows up on marker-tone drift so soft-rule fulfillment colors are not
+  independently inferred by the phone seating map.

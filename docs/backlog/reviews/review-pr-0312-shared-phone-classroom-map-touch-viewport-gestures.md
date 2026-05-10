@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0312
 title: "Review: PR-0312 shared phone classroom-map touch viewport gestures"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-05-10
 updated: 2026-05-10
@@ -20,10 +20,10 @@ links:
 
 ## TL;DR
 
-`PR-0312` is not approved yet. The shared Vue gesture shape is small and the
-focused tests are green, but the phone pinch contract is still not proven on
-the real browser path because the touch targets do not declare touch gesture
-arbitration and the retained browser helper fabricates DOM touch events.
+`PR-0312` was approved after the touch-arbitration remediation replaced the
+fabricated touch helper path with browser-level proof and computed
+`touch-action` assertions. Post-deploy iPhone testing later found a remaining
+simplified-map-only failure; that is tracked separately in `PR-0313`.
 
 ## Problem Statement
 
@@ -156,3 +156,4 @@ gestures.
 |--------|----------|-------------|
 | 1 | `REV-PR-0312` | Recorded retained review verdict as `changes_requested` with the browser touch-arbitration blocker and observed verification evidence. |
 | 2 | `PR-0312` | Remediation added `touch-action: pan-x pan-y` to the phone builder and simplified phone map targets, replaced fabricated retained pinch events with CDP touch input, and added computed `touch-action` assertions to the retained phone proofs. Pending re-review. |
+| 3 | `REV-PR-0312` | Second-pass review was approved by the user on 2026-05-10 and deployed. Post-deploy iPhone evidence opened `PR-0313` for the remaining simplified-map real-device pinch gap. |

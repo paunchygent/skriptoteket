@@ -109,6 +109,33 @@ export type FixedSeatRule = {
   seat_id: string;
 };
 
+export type SmartRuleDiagnosticKind =
+  | "fixed_seat"
+  | "near_teacher"
+  | "keep_near"
+  | "keep_apart";
+
+export type SmartRuleDiagnosticStatus = "pending" | "satisfied" | "degraded" | "failed";
+
+export type SmartRuleDiagnosticSeatingContext =
+  | "shared_table"
+  | "bench_row"
+  | "row_layout"
+  | "local_cluster"
+  | "unknown";
+
+export type SmartRuleDiagnostic = {
+  rule_id?: string | null;
+  rule_kind: SmartRuleDiagnosticKind;
+  status: SmartRuleDiagnosticStatus;
+  student_ids: string[];
+  seat_ids: string[];
+  reason_code: string;
+  relation_mode?: string | null;
+  seating_context?: SmartRuleDiagnosticSeatingContext | null;
+  message_key?: string | null;
+};
+
 export type ResumablePlanDraft = {
   draft: PlanDraft;
   roster_name: string;
@@ -164,6 +191,7 @@ export type AppliedSmartSeatingRunResponse = {
   workspace: DraftWorkspaceResponse;
   used_history: boolean;
   message?: string | null;
+  rule_diagnostics?: SmartRuleDiagnostic[];
 };
 
 export type BlockedSmartSeatingRunResponse = {

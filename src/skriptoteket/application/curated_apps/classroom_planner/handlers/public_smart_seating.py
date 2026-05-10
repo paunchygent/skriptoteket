@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import sol
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.protocols.clock import ClockProtocol
 
+from ..smart_rule_diagnostic_contracts import serialize_smart_rule_diagnostics
 from .public_smart_run_support import (
     build_public_workspace_response,
     materialize_public_smart_workspace,
@@ -87,6 +88,7 @@ class RunPublicSmartSeatingHandler:
                 has_tradeoffs=smart_result.has_tradeoffs,
                 unplaced_student_count=len(smart_result.unplaced_student_ids),
             ),
+            rule_diagnostics=serialize_smart_rule_diagnostics(smart_result.rule_diagnostics),
         )
 
 

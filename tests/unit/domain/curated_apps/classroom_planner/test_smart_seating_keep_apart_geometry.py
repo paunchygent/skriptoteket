@@ -15,9 +15,11 @@ from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
     TeachingAnchor,
     build_seat_topology,
 )
-from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import (
-    _keep_apart_has_tradeoff,
-    _keep_apart_pair_score,
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
+    keep_apart_has_tradeoff as _keep_apart_has_tradeoff,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
+    keep_apart_pair_score as _keep_apart_pair_score,
 )
 
 _NOW = datetime(2026, 3, 29, tzinfo=timezone.utc)

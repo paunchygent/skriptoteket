@@ -31,6 +31,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 - Smart assignment V1 decision memo:
   `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
+- Solver rule diagnostics contract:
+  `docs/reference/ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md`
 - HuleEdu launch surface + shared auth topology:
   `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md`
 - Hule Education product identity realms + Skriptoteket standalone identity:
@@ -463,6 +465,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`
 - Review gate for PR-0312 shared phone classroom-map touch viewport gestures:
   `docs/backlog/reviews/review-pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`
+- Shared phone classroom-map real-device pinch remediation:
+  `docs/backlog/prs/pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md`
+- Solver-owned rule marker semantics:
+  `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md`
 - ST-29-11 share/export affordance consolidation task:
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:

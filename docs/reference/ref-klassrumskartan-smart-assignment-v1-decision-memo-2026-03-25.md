@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-25
 updated: 2026-05-05
 topic: "smart-assignment"
-links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09", "REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10"]
 ---
 
 ## Summary
@@ -189,3 +189,17 @@ after the fixed-seat design discussion:
 - geometry-evaluated student rules can still be authored from either view, but the UI should nudge
   teachers toward classroom geometry
 - `Fast plats` is geometry-targeted and therefore must be authored from the classroom view
+
+## 2026-05-10 solver diagnostics refinement
+
+Map marker colors for soft rules are solver-owned. The frontend may show
+neutral participation markers while diagnostics are missing, but it must not
+derive success, degraded, or failed states from duplicated geometry logic.
+
+The accepted diagnostic vocabulary is captured in
+[`REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10`](ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md).
+The key refinement is that `Håll nära` needs both relation mode and seating
+context: across-table can be a successful close placement at a shared table,
+while row/bench layouts should prefer adjacent same-row pair placement and
+must prove any degraded or failed state in backend tests before frontend marker
+colors are restored.

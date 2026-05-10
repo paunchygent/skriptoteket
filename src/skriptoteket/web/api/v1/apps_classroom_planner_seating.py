@@ -10,7 +10,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     ActivateSeatingHistoryDraftHandler,
@@ -24,6 +24,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ListClassroomPlannerShareArtifactsHandler,
     PrepareSeatingExportHandler,
     RunSmartSeatingHandler,
+    SmartRuleDiagnosticDto,
+    serialize_smart_rule_diagnostics,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.identity.models import User
@@ -86,6 +88,7 @@ class AppliedSmartSeatingRunResponse(BaseModel):
     workspace: DraftWorkspaceResponse
     used_history: bool
     message: str | None
+    rule_diagnostics: list[SmartRuleDiagnosticDto] = Field(default_factory=list)
 
 
 class BlockedSmartSeatingRunResponse(BaseModel):
@@ -164,6 +167,7 @@ async def run_smart_seating(
         workspace=_serialize_workspace(result.workspace),
         used_history=result.used_history,
         message=result.message,
+        rule_diagnostics=serialize_smart_rule_diagnostics(result.rule_diagnostics),
     )
 
 

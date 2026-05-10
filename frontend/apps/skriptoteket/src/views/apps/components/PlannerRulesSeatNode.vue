@@ -97,6 +97,7 @@ function handleSeatClick(): void {
         :key="marker.id"
         class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px] shadow-brutal-sm"
         :class="{
+          'border-navy/35 bg-canvas text-navy': marker.tone === 'neutral',
           'border-success bg-success text-white': marker.tone === 'success',
           'border-warning bg-warning text-navy': marker.tone === 'warning',
           'border-error bg-error text-white': marker.tone === 'error',

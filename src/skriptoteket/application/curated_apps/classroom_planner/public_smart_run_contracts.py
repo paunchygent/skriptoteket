@@ -29,6 +29,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
 )
 
+from .smart_rule_diagnostic_contracts import SmartRuleDiagnosticDto
+
 
 class PublicSmartRunRequest(BaseModel):
     """Describe one stateless public Smart helper request."""
@@ -171,6 +173,7 @@ class PublicSmartSeatingAppliedResponse(BaseModel):
     workspace: PublicDraftWorkspaceResponse
     used_history: bool
     message: str | None = None
+    rule_diagnostics: list[SmartRuleDiagnosticDto] = Field(default_factory=list)
 
 
 class PublicSmartSeatingBlockedResponse(BaseModel):

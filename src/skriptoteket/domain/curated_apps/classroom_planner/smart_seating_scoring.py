@@ -14,6 +14,9 @@ from math import gcd
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     SeatingExportCheckpoint,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.seat_support_context import (
+    SeatingContext,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
     KeepNearRelationMode,
     SeatPairTopology,
@@ -165,6 +168,7 @@ def keep_near_pair_score(
     *,
     pair: SeatPairTopology,
     cluster_size: int,
+    seating_context: SeatingContext = "row_layout",
     current_mode: KeepNearRelationMode | None = None,
     pair_key: frozenset[str] | None = None,
     pair_seat_ids: frozenset[str] | None = None,
@@ -173,7 +177,11 @@ def keep_near_pair_score(
     """Score one compact keep-near relation, including local-mode rotation."""
 
     if cluster_size == 2:
-        if pair.orthogonally_adjacent:
+        if seating_context == "shared_table":
+            score = _shared_table_pair_score(pair)
+        elif seating_context in {"bench_row", "row_layout"}:
+            score = _row_pair_score(pair)
+        elif pair.orthogonally_adjacent:
             score = 18.0
         elif pair.same_line_one_step:
             score = 2.5
@@ -226,6 +234,32 @@ def keep_near_pair_score(
         elif len(next_modes) > 1 and normalized_mode == next_modes[1]:
             score += 1.5
     return score
+
+
+def _shared_table_pair_score(pair: SeatPairTopology) -> float:
+    if pair.keep_near_relation_mode in {"adjacent-row", "adjacent-column"}:
+        return 18.0
+    if pair.keep_near_relation_mode in {"diagonal-block", "one-step-row", "one-step-column"}:
+        return 6.0
+    if pair.same_local_zone:
+        return -6.0
+    return -12.0
+
+
+def _row_pair_score(pair: SeatPairTopology) -> float:
+    if pair.keep_near_relation_mode == "adjacent-row":
+        return 22.0
+    if pair.keep_near_relation_mode == "adjacent-column":
+        return 7.0
+    if pair.keep_near_relation_mode in {"diagonal-block", "one-step-row", "one-step-column"}:
+        return -4.0
+    if pair.same_row or pair.same_column:
+        return -6.0 - float(pair.grid_manhattan)
+    if pair.same_local_zone and pair.grid_manhattan <= 3:
+        return -8.0
+    if pair.same_local_zone:
+        return -10.0
+    return -12.0
 
 
 def _rotation_step(

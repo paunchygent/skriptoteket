@@ -15,6 +15,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from itertools import combinations
 
+from skriptoteket.domain.curated_apps.classroom_planner.seat_support_context import (
+    SeatingContext,
+    SeatSupportContext,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
     KeepNearRelationMode,
     SeatPairTopology,
@@ -40,6 +44,7 @@ class SeatScoreContext:
     near_teacher_pool_rank_by_seat: dict[str, int]
     near_teacher_history_counts_by_student: dict[str, dict[str, int]]
     current_near_teacher_pool_seat_ids: set[str]
+    seat_support_context: SeatSupportContext
     current_keep_near_mode_by_pair: dict[frozenset[str], KeepNearRelationMode]
     current_keep_near_seat_ids_by_pair: dict[frozenset[str], frozenset[str]]
     history_targets_by_student: dict[str, float]
@@ -84,6 +89,12 @@ def score_partial_seat(
                 continue
             score += keep_near_pair_score(
                 pair=context.topology.pair(seat_id, peer_seat_id),
+                seating_context=_pair_seating_context(
+                    topology=context.topology,
+                    support_context=context.seat_support_context,
+                    left_seat_id=seat_id,
+                    right_seat_id=peer_seat_id,
+                ),
                 cluster_size=len(cluster),
                 current_mode=context.current_keep_near_mode_by_pair.get(
                     frozenset((student_id, peer_id))
@@ -141,6 +152,11 @@ def score_candidate(
             pair = context.topology.pair(left_seat_id, right_seat_id)
             quality += keep_near_pair_score(
                 pair=pair,
+                seating_context=context.seat_support_context.pair_context(
+                    left_seat_id=left_seat_id,
+                    right_seat_id=right_seat_id,
+                    pair=pair,
+                ),
                 cluster_size=len(cluster),
                 current_mode=context.current_keep_near_mode_by_pair.get(
                     frozenset((left_id, right_id))
@@ -151,7 +167,15 @@ def score_candidate(
                     frozenset((left_id, right_id))
                 ),
             )
-            if keep_near_has_tradeoff(pair=pair, cluster_size=len(cluster)):
+            if keep_near_has_tradeoff(
+                pair=pair,
+                seating_context=context.seat_support_context.pair_context(
+                    left_seat_id=left_seat_id,
+                    right_seat_id=right_seat_id,
+                    pair=pair,
+                ),
+                cluster_size=len(cluster),
+            ):
                 has_tradeoffs = True
 
     for cluster in context.keep_apart_clusters:
@@ -198,10 +222,19 @@ def keep_apart_pair_score(*, pair: SeatPairTopology) -> float:
     return spread_score - 1.0
 
 
-def keep_near_has_tradeoff(*, pair: SeatPairTopology, cluster_size: int) -> bool:
+def keep_near_has_tradeoff(
+    *,
+    pair: SeatPairTopology,
+    seating_context: SeatingContext = "row_layout",
+    cluster_size: int,
+) -> bool:
     """Return whether one keep-near pair missed the preferred local relation."""
 
     if cluster_size == 2:
+        if seating_context == "shared_table":
+            return pair.keep_near_relation_mode not in {"adjacent-row", "adjacent-column"}
+        if seating_context in {"bench_row", "row_layout"}:
+            return pair.keep_near_relation_mode != "adjacent-row"
         return not pair.orthogonally_adjacent
     return pair.keep_near_relation_mode is None
 
@@ -222,6 +255,21 @@ def _merged_candidate_mapping(
     if not context.fixed_assignments_by_student:
         return mapping
     return {**context.fixed_assignments_by_student, **mapping}
+
+
+def _pair_seating_context(
+    *,
+    topology: SeatTopology,
+    support_context: SeatSupportContext,
+    left_seat_id: str,
+    right_seat_id: str,
+) -> SeatingContext:
+    pair = topology.pair(left_seat_id, right_seat_id)
+    return support_context.pair_context(
+        left_seat_id=left_seat_id,
+        right_seat_id=right_seat_id,
+        pair=pair,
+    )
 
 
 def _teacher_priority_score(

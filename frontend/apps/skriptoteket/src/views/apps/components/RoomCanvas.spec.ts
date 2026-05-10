@@ -204,12 +204,12 @@ describe("RoomCanvas", () => {
       },
     });
 
-    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-near-teacher-success"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-keep-near-success"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-near-teacher-neutral"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-keep-near-neutral"]').exists()).toBe(true);
     expect(wrapper.get('[data-test="seat-markers-seat-1"]').classes()).toContain("flex-col-reverse");
   });
 
-  it("uses the solver teaching anchor when toning near-teacher markers on the seating map", () => {
+  it("does not infer near-teacher fulfillment tone on the seating map", () => {
     const seats = [
       { id: "seat-top-left", x: 0, y: 0 },
       { id: "seat-top-right", x: 120, y: 0 },
@@ -250,7 +250,67 @@ describe("RoomCanvas", () => {
       },
     });
 
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-top-left-near-teacher-neutral"]').exists())
+      .toBe(true);
     expect(wrapper.find('[data-test="seat-rule-marker-seat-top-left-near-teacher-warning"]').exists())
+      .toBe(false);
+  });
+
+  it("uses solver diagnostics for soft-rule marker tones when assignments still match", () => {
+    stateMocks.plannerState.seats = [
+      { id: "seat-1", x: 0, y: 0 },
+      { id: "seat-2", x: 120, y: 0 },
+    ];
+    stateMocks.plannerState.template = {
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: stateMocks.plannerState.seats,
+      fixtures: [],
+    };
+    stateMocks.plannerState.studentBySeatId = {
+      "seat-1": { id: "student-1", display_name: "Ada" },
+      "seat-2": { id: "student-2", display_name: "Alan" },
+    };
+    stateMocks.plannerState.seatAssignments = [
+      { student_id: "student-1", seat_id: "seat-1" },
+      { student_id: "student-2", seat_id: "seat-2" },
+    ];
+
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        relationshipRules: [
+          { id: "near-1", kind: "keep_near", student_ids: ["student-1", "student-2"] },
+        ],
+        seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+        ruleDiagnostics: [
+          {
+            rule_id: "near_teacher:student-1",
+            rule_kind: "near_teacher",
+            status: "degraded",
+            student_ids: ["student-1"],
+            seat_ids: ["seat-1"],
+            reason_code: "near_teacher_row_front_compromise",
+          },
+          {
+            rule_id: "near-1",
+            rule_kind: "keep_near",
+            status: "failed",
+            student_ids: ["student-1", "student-2"],
+            seat_ids: ["seat-1", "seat-2"],
+            reason_code: "keep_near_not_close",
+          },
+        ],
+        surfaceScale: 1,
+      },
+    });
+
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-near-teacher-warning"]').exists())
+      .toBe(true);
+    expect(wrapper.find('[data-test="seat-rule-marker-seat-1-keep-near-error"]').exists())
       .toBe(true);
   });
 

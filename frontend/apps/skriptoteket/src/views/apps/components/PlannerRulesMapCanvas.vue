@@ -17,6 +17,7 @@ import type {
   RoomTemplate,
   SeatAssignment,
   SeatingSmartTool,
+  SmartRuleDiagnostic,
   Student,
   StudentSeatingPreference,
 } from "../classroomPlannerTypes";
@@ -55,6 +56,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules?: FixedSeatRule[];
   relationshipRules?: RelationshipRule[];
   seatingPreferences?: StudentSeatingPreference[];
+  ruleDiagnostics?: SmartRuleDiagnostic[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
   rosterName: null,
@@ -72,6 +74,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules: () => [],
   relationshipRules: () => [],
   seatingPreferences: () => [],
+  ruleDiagnostics: () => [],
   smartRuleMarkersByStudentId: () => ({}),
 });
 
@@ -146,6 +149,7 @@ const seatRuleMarkersBySeatId = computed(() => buildSeatRuleMarkersBySeatId({
   fixedSeatRules: props.fixedSeatRules,
   relationshipRules: props.relationshipRules,
   seatingPreferences: props.seatingPreferences,
+  ruleDiagnostics: props.ruleDiagnostics,
   pendingFixedSeatStudentId: props.pendingFixedSeatStudentId,
   pendingFixedSeatSeatId: props.pendingFixedSeatSeatId,
 }));

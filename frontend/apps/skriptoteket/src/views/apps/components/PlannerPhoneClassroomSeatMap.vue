@@ -20,6 +20,7 @@ import type {
   RoomFixture,
   RoomTemplate,
   SeatAssignment,
+  SmartRuleDiagnostic,
   Student,
   StudentSeatingPreference,
 } from "../classroomPlannerTypes";
@@ -50,6 +51,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules?: FixedSeatRule[];
   relationshipRules?: RelationshipRule[];
   seatingPreferences?: StudentSeatingPreference[];
+  ruleDiagnostics?: SmartRuleDiagnostic[];
   pendingFixedSeatStudentId?: string | null;
   pendingFixedSeatSeatId?: string | null;
   editableAssignments?: boolean;
@@ -61,6 +63,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules: () => [],
   relationshipRules: () => [],
   seatingPreferences: () => [],
+  ruleDiagnostics: () => [],
   pendingFixedSeatStudentId: null,
   pendingFixedSeatSeatId: null,
   editableAssignments: false,
@@ -85,6 +88,7 @@ const longPressTimer = ref<ReturnType<typeof window.setTimeout> | null>(null);
 const touchDragStudentId = ref<string | null>(null);
 const touchDragSourceSeatId = ref<string | null>(null);
 const suppressClickSeatId = ref<string | null>(null);
+const mapViewport = ref<HTMLElement | null>(null);
 const roomGrid = computed(() => normalizeRoomGrid(props.template));
 const roomSurfaceMetrics = computed(() => ({
   width: roomGrid.value.cols * PHONE_MAP_BASE_CELL_SIZE_PX,
@@ -100,6 +104,7 @@ const touchViewportGestures = useRoomTouchViewportGestures({
   onGestureStart: () => {
     resetTouchDrag();
   },
+  target: mapViewport,
 });
 const mapGridStyle = computed(() => ({
   "--phone-map-cols": String(roomGrid.value.cols),
@@ -151,6 +156,7 @@ const ruleMarkersBySeatId = computed(() => buildSeatRuleMarkersBySeatId({
   fixedSeatRules: props.fixedSeatRules,
   relationshipRules: props.relationshipRules,
   seatingPreferences: props.seatingPreferences,
+  ruleDiagnostics: props.ruleDiagnostics,
   pendingFixedSeatStudentId: props.pendingFixedSeatStudentId,
   pendingFixedSeatSeatId: props.pendingFixedSeatSeatId,
 }));
@@ -378,12 +384,9 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="template"
+    ref="mapViewport"
     class="planner-phone-fixed-seat-map"
     data-test="phone-classroom-seat-map"
-    @touchstart="touchViewportGestures.handleTouchStart"
-    @touchmove="touchViewportGestures.handleTouchMove"
-    @touchend="touchViewportGestures.handleTouchEnd"
-    @touchcancel="touchViewportGestures.handleTouchCancel"
   >
     <div class="planner-phone-fixed-seat-map-header">
       <span>Klassrum</span>

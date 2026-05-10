@@ -211,6 +211,7 @@ async def test_run_smart_seating_returns_applied_payload_from_handler() -> None:
         workspace=workspace,
         used_history=True,
         message="Smart placering klar med stöd av tidigare exporter.",
+        rule_diagnostics=(),
     )
 
     result = await _unwrap_dishka(api.run_smart_seating)(

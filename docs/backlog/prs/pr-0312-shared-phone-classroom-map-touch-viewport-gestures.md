@@ -2,7 +2,7 @@
 type: pr
 id: PR-0312
 title: "Shared phone classroom-map touch viewport gestures"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-05-10
 updated: 2026-05-10
@@ -204,8 +204,11 @@ short/long-press semantics intact.
 ## Implementation Closeout
 
 Implemented and reviewed on 2026-05-10. `REV-PR-0312` requested changes for
-the browser touch-arbitration proof path. The implementation now includes the
-remediation below and is pending re-review.
+the browser touch-arbitration proof path. The remediation below was approved
+and deployed, but later real-device iPhone testing found that the simplified
+phone maps still do not visibly zoom even though the room-template builder does.
+That post-deploy gap is tracked as
+[`PR-0313`](pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md).
 
 - Extended `useRoomViewportZoom` with direct scale and zoom-factor APIs while
   preserving existing stepped zoom and fit-reset behavior.

@@ -19,6 +19,7 @@ import type {
   RelationshipRule,
   RoomTemplate,
   SeatAssignment,
+  SmartRuleDiagnostic,
   Student,
   StudentSeatingPreference,
 } from "../classroomPlannerTypes";
@@ -34,6 +35,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules?: FixedSeatRule[];
   relationshipRules?: RelationshipRule[];
   seatingPreferences?: StudentSeatingPreference[];
+  ruleDiagnostics?: SmartRuleDiagnostic[];
 }>(), {
   template: null,
   studentsById: () => ({}),
@@ -43,6 +45,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules: () => [],
   relationshipRules: () => [],
   seatingPreferences: () => [],
+  ruleDiagnostics: () => [],
 });
 
 const emit = defineEmits<{
@@ -110,6 +113,7 @@ const canClearSelection = computed(() => (
       :fixed-seat-rules="fixedSeatRules"
       :relationship-rules="relationshipRules"
       :seating-preferences="seatingPreferences"
+      :rule-diagnostics="ruleDiagnostics"
       data-test="phone-fixed-seat-map"
       @seat-selected="emit('seat-selected', $event)"
     />

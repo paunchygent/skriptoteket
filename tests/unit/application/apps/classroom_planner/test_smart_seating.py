@@ -255,6 +255,7 @@ async def test_run_smart_seating_loads_recent_checkpoint_window_and_persists_res
     assert result.used_history is True
     assert result.workspace.draft.revision == workspace.draft.revision + 1
     assert result.workspace.seat_assignments == persisted_workspace.seat_assignments
+    assert result.rule_diagnostics == ()
     checkpoints.list_recent_for_roster_and_room_context.assert_awaited_once()
     drafts.save_workspace.assert_awaited_once()
 

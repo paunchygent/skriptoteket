@@ -186,6 +186,7 @@ async def test_run_public_smart_seating_returns_browser_owned_workspace() -> Non
     assert result.workspace.draft.revision == 3
     assert len(result.workspace.seat_assignments) == 4
     assert result.message == "Smart placering klar."
+    assert result.rule_diagnostics == []
 
 
 @pytest.mark.asyncio
@@ -235,6 +236,8 @@ async def test_run_public_smart_seating_honors_fixed_seat_rules() -> None:
     }
     assert assignments["ada"] == "seat-1"
     assert assignments["cai"] != "seat-1"
+    assert result.rule_diagnostics[0].rule_kind == "fixed_seat"
+    assert result.rule_diagnostics[0].status == "satisfied"
 
 
 @pytest.mark.asyncio

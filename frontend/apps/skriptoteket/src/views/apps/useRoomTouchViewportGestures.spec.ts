@@ -23,9 +23,17 @@ function touchEvent(distance: number, touches = 2): TouchEvent {
         };
       },
     },
+    cancelable: true,
     preventDefault: vi.fn(),
   };
   return event as unknown as TouchEvent;
+}
+
+function platformGestureEvent(scale: number): Event {
+  const event = new Event("gesturechange", { cancelable: true });
+  Object.defineProperty(event, "scale", { value: scale });
+  vi.spyOn(event, "preventDefault");
+  return event;
 }
 
 describe("useRoomTouchViewportGestures", () => {
@@ -63,5 +71,21 @@ describe("useRoomTouchViewportGestures", () => {
 
     expect(onZoomByFactor).not.toHaveBeenCalled();
     expect(gestures.consumeTapSuppression()).toBe(false);
+  });
+
+  it("turns platform gesture scale changes into zoom factors", () => {
+    const onZoomByFactor = vi.fn();
+    const gestures = useRoomTouchViewportGestures({ onZoomByFactor });
+    const start = platformGestureEvent(1);
+    const change = platformGestureEvent(1.2);
+
+    gestures.handlePlatformGestureStart(start);
+    gestures.handlePlatformGestureChange(change);
+    gestures.handleTouchCancel();
+
+    expect(onZoomByFactor).toHaveBeenCalledWith(1.2);
+    expect(start.preventDefault).toHaveBeenCalledOnce();
+    expect(change.preventDefault).toHaveBeenCalledOnce();
+    expect(gestures.consumeTapSuppression()).toBe(true);
   });
 });

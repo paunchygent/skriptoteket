@@ -15,6 +15,7 @@ import type {
   FixedSeatRule,
   RelationshipRule,
   RoomFixture,
+  SmartRuleDiagnostic,
   StudentSeatingPreference,
 } from "../classroomPlannerTypes";
 import { buildSeatRuleMarkersBySeatId } from "../classroomPlannerSeatRuleMarkers";
@@ -35,6 +36,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules?: FixedSeatRule[];
   relationshipRules?: RelationshipRule[];
   seatingPreferences?: StudentSeatingPreference[];
+  ruleDiagnostics?: SmartRuleDiagnostic[];
   scalePercent: number;
   scaledSurfaceStyle: Record<string, string>;
   surfaceScale: number;
@@ -45,6 +47,7 @@ const props = withDefaults(defineProps<{
   fixedSeatRules: () => [],
   relationshipRules: () => [],
   seatingPreferences: () => [],
+  ruleDiagnostics: () => [],
   compact: false,
 });
 
@@ -87,6 +90,7 @@ const seatRuleMarkersBySeatId = computed(() => buildSeatRuleMarkersBySeatId({
   fixedSeatRules: props.fixedSeatRules,
   relationshipRules: props.relationshipRules,
   seatingPreferences: props.seatingPreferences,
+  ruleDiagnostics: props.ruleDiagnostics,
 }));
 
 function floorFixtureStyle(fixture: RoomFixture): Record<string, string> {

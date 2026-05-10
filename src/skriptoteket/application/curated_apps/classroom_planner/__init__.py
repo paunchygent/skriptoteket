@@ -105,6 +105,10 @@ from .shares import (
     ClassroomPlannerSharePreviewAsset,
     RenderedClassroomPlannerShare,
 )
+from .smart_rule_diagnostic_contracts import (
+    SmartRuleDiagnosticDto,
+    serialize_smart_rule_diagnostics,
+)
 
 __all__ = [
     "AbandonDraftHandler",
@@ -178,7 +182,9 @@ __all__ = [
     "SeatingExportKind",
     "SeatingExportLayoutId",
     "SeatingExportPaperSize",
+    "SmartRuleDiagnosticDto",
     "RevokeClassroomPlannerShareArtifactHandler",
+    "serialize_smart_rule_diagnostics",
     "UndoDraftHandler",
     "UpdateRoomTemplateHandler",
     "UpdateRosterHandler",

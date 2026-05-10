@@ -234,13 +234,13 @@ describe("PlannerRulesMapCanvas", () => {
       },
     });
 
-    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-keep-near-success"]').exists())
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-keep-near-neutral"]').exists())
       .toBe(true);
-    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-near-teacher-success"]').exists())
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-near-teacher-neutral"]').exists())
       .toBe(true);
   });
 
-  it("uses the solver teaching anchor when toning near-teacher markers on the rules map", () => {
+  it("does not infer near-teacher fulfillment tone on the rules map", () => {
     const rightAnchorTemplate = {
       ...template,
       seats: [
@@ -276,7 +276,48 @@ describe("PlannerRulesMapCanvas", () => {
       },
     });
 
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-left-top-near-teacher-neutral"]').exists())
+      .toBe(true);
     expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-left-top-near-teacher-warning"]').exists())
+      .toBe(false);
+  });
+
+  it("renders rules-map soft-rule marker tones from current solver diagnostics", () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "seating_arrangement",
+        rosterName: "SR24D",
+        template,
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [
+          { seat_id: "seat-1", student_id: "student-1" },
+          { seat_id: "seat-2", student_id: "student-2" },
+        ],
+        relationshipRules: [
+          { id: "apart-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
+        ],
+        ruleDiagnostics: [
+          {
+            rule_id: "apart-1",
+            rule_kind: "keep_apart",
+            status: "failed",
+            student_ids: ["student-1", "student-2"],
+            seat_ids: ["seat-1", "seat-2"],
+            reason_code: "keep_apart_immediate_contact",
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-keep-apart-error"]').exists())
       .toBe(true);
   });
 

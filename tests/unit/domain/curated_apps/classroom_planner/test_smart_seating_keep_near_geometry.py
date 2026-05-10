@@ -1,8 +1,8 @@
 """Focused keep-near pair geometry tests for smart seating.
 
-This module locks the tightened two-student `Keep near` contract: direct
-left/right or above/below adjacency is the only clean outcome, while diagonal
-or one-seat-buffer fallback placements remain tradeoffs.
+This module locks the tightened two-student row-layout `Keep near` contract:
+left/right adjacency is the clean outcome, while across-row, diagonal, or
+one-seat-buffer fallback placements remain lower-quality alternatives.
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
     TeachingAnchor,
     build_seat_topology,
 )
-from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import (
-    _keep_near_has_tradeoff,
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
+    keep_near_has_tradeoff as _keep_near_has_tradeoff,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_scoring import (
     keep_near_pair_score,

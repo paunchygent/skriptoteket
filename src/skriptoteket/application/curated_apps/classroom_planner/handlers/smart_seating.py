@@ -26,6 +26,9 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RoomTemplate,
     Roster,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.smart_rule_diagnostics import (
+    SmartRuleDiagnostic,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import (
     SmartSeatingResult,
     solve_smart_seating,
@@ -57,6 +60,7 @@ class SmartSeatingAppliedResult:
     workspace: ClassroomPlannerWorkspace
     used_history: bool
     message: str | None
+    rule_diagnostics: tuple[SmartRuleDiagnostic, ...]
 
 
 @dataclass(frozen=True)
@@ -172,6 +176,7 @@ class RunSmartSeatingHandler:
                 has_tradeoffs=smart_result.has_tradeoffs,
                 unplaced_student_count=len(smart_result.unplaced_student_ids),
             ),
+            rule_diagnostics=smart_result.rule_diagnostics,
         )
 
     async def _load_template(

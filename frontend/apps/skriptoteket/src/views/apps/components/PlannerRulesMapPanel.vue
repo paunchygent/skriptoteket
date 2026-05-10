@@ -18,6 +18,7 @@ import type {
   RoomTemplate,
   SeatAssignment,
   SeatingSmartTool,
+  SmartRuleDiagnostic,
   Student,
   StudentSeatingPreference,
 } from "../classroomPlannerTypes";
@@ -42,6 +43,7 @@ withDefaults(defineProps<{
   fixedSeatRules?: FixedSeatRule[];
   relationshipRules?: RelationshipRule[];
   seatingPreferences?: StudentSeatingPreference[];
+  ruleDiagnostics?: SmartRuleDiagnostic[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
   canShowSeatingArrangement: false,
@@ -59,6 +61,7 @@ withDefaults(defineProps<{
   fixedSeatRules: () => [],
   relationshipRules: () => [],
   seatingPreferences: () => [],
+  ruleDiagnostics: () => [],
   smartRuleMarkersByStudentId: () => ({}),
 });
 
@@ -88,6 +91,7 @@ const emit = defineEmits<{
       :fixed-seat-rules="fixedSeatRules"
       :relationship-rules="relationshipRules"
       :seating-preferences="seatingPreferences"
+      :rule-diagnostics="ruleDiagnostics"
       :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
       @update:map-view="emit('update:mapView', $event)"
       @student-selected="emit('student-selected', $event)"

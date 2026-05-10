@@ -334,6 +334,7 @@ watch(mapView, (nextValue) => {
         :fixed-seat-rules="activeFixedSeatRules"
         :relationship-rules="plannerState.relationshipRules"
         :seating-preferences="plannerState.seatingPreferences"
+        :rule-diagnostics="plannerState.smartRuleDiagnostics"
         @clear-selection="plannerState.clearPendingRelationshipSelection()"
         @seat-selected="plannerState.selectFixedSeatRuleSeat($event)"
       />
@@ -476,6 +477,7 @@ watch(mapView, (nextValue) => {
           :fixed-seat-rules="activeFixedSeatRules"
           :relationship-rules="plannerState.relationshipRules"
           :seating-preferences="plannerState.seatingPreferences"
+          :rule-diagnostics="plannerState.smartRuleDiagnostics"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           @update:map-view="mapView = $event"
           @student-selected="emit('student-selected', $event)"

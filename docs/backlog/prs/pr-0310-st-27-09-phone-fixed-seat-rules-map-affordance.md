@@ -214,6 +214,12 @@ state and existing solver/presentation helpers. Do not add a new persistence
 shape unless implementation proves the frontend cannot honestly derive the
 state.
 
+Post-deploy iPhone testing proved that this boundary is too permissive for
+soft-rule fulfillment tones. `PR-0314` supersedes the local-derivation rule for
+`Nära läraren`, `Håll nära`, and `Håll isär`: frontend markers may keep
+symbols and layout, but success/warning/error fulfillment truth must come from
+solver-owned diagnostics or be omitted for soft rules.
+
 Stop and create a follow-up if the work requires:
 
 - changing the smart-run response contract beyond additive diagnostics

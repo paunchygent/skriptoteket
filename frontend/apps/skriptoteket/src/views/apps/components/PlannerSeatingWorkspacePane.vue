@@ -184,6 +184,7 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
         :fixed-seat-rules="activeFixedSeatRules"
         :relationship-rules="plannerState.relationshipRules"
         :seating-preferences="plannerState.seatingPreferences"
+        :rule-diagnostics="plannerState.smartRuleDiagnostics"
         editable-assignments
         @student-dragstart="onStudentDragStart"
         @student-dropped="plannerState.assignStudentToSeat"
@@ -230,6 +231,7 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
           :fixed-seat-rules="activeFixedSeatRules"
           :relationship-rules="plannerState.relationshipRules"
           :seating-preferences="plannerState.seatingPreferences"
+          :rule-diagnostics="plannerState.smartRuleDiagnostics"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           :surface-scale="seatingCanvasScale"
           @viewport-size="setVisibleSeatingCanvasViewportSize"

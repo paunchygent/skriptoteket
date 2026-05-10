@@ -109,11 +109,11 @@ describe("PlannerPhoneFixedSeatRulePanel", () => {
     expect(wrapper.get('[data-test="phone-fixed-seat-map-seat-first-name-seat-12"]').text()).toBe("Nora");
     expect(wrapper.get('[data-test="phone-fixed-seat-map-seat-last-initials-seat-12"]').text()).toBe("J");
     expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-1-fixed-seat-success"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-1-keep-apart-success"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-1-near-teacher-success"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-1-keep-apart-neutral"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-1-near-teacher-neutral"]').exists()).toBe(true);
   });
 
-  it("uses the solver teaching anchor when toning near-teacher markers on the phone map", () => {
+  it("does not infer near-teacher fulfillment tone on the phone map", () => {
     const rightAnchorTemplate = {
       ...template,
       fixtures: [
@@ -140,7 +140,39 @@ describe("PlannerPhoneFixedSeatRulePanel", () => {
       },
     });
 
+    expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-right-near-teacher-neutral"]').exists())
+      .toBe(true);
     expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-right-near-teacher-success"]').exists())
+      .toBe(false);
+  });
+
+  it("renders phone soft-rule marker tones from current solver diagnostics", () => {
+    const wrapper = mount(PlannerPhoneFixedSeatRulePanel, {
+      props: {
+        template,
+        studentsById: {
+          "student-1": { id: "student-1", display_name: "Vilma Ossner" },
+        },
+        seatAssignments: [
+          { student_id: "student-1", seat_id: "seat-1" },
+        ],
+        seatingPreferences: [
+          { student_id: "student-1", near_teacher: true },
+        ],
+        ruleDiagnostics: [
+          {
+            rule_id: "near_teacher:student-1",
+            rule_kind: "near_teacher",
+            status: "satisfied",
+            student_ids: ["student-1"],
+            seat_ids: ["seat-1"],
+            reason_code: "near_teacher_row_first_rank",
+          },
+        ],
+      },
+    });
+
+    expect(wrapper.find('[data-test="phone-seat-rule-marker-seat-1-near-teacher-success"]').exists())
       .toBe(true);
   });
 });

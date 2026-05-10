@@ -16,13 +16,7 @@
  *   - delegates transition semantics to `plannerTransitionPolicies.ts`
  */
 
-import {
-  computed,
-  inject,
-  provide,
-  ref,
-  type InjectionKey,
-} from "vue";
+import { computed, inject, provide, ref, type InjectionKey } from "vue";
 import { defineStore } from "pinia";
 
 import { apiDelete, apiGet, apiPatch, apiPost } from "../../api/client";
@@ -51,6 +45,7 @@ import type {
   RoomTemplate,
   Roster,
   SeatAssignment,
+  SmartRuleDiagnostic,
   Student,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
@@ -73,11 +68,9 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
   const fixedSeatRules = ref<FixedSeatRule[]>([]);
+  const smartRuleDiagnostics = ref<SmartRuleDiagnostic[]>([]);
   const smartRulesRevision = ref(0);
-  const historyStatus = ref<DraftHistoryStatus>({
-    can_undo: false,
-    can_redo: false,
-  });
+  const historyStatus = ref<DraftHistoryStatus>({ can_undo: false, can_redo: false });
   const historyActionInFlight = ref(false);
   const smartGroupingRunInFlight = ref(false);
   const smartSeatingRunInFlight = ref(false);
@@ -106,9 +99,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const seatsById = computed(() => buildSeatMap(seats.value));
   const fixturesById = computed(() => buildFixtureMap(fixtures.value));
   const groupsById = computed(() => buildGroupMap(groups.value));
-  const hasAssignedTarget = (
-    entry: [string, string | null],
-  ): entry is [string, string] => {
+  const hasAssignedTarget = (entry: [string, string | null]): entry is [string, string] => {
     return typeof entry[1] === "string" && entry[1].length > 0;
   };
 
@@ -174,9 +165,9 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     canEditSmartRules: () => canEditSeatingSmartRules.value,
   });
 
-  const stateSupportHolder: {
-    current: ReturnType<typeof createClassroomPlannerStateSupport> | null;
-  } = { current: null };
+  const stateSupportHolder = {
+    current: null as ReturnType<typeof createClassroomPlannerStateSupport> | null,
+  };
 
   function getStateSupport(): ReturnType<typeof createClassroomPlannerStateSupport> {
     if (!stateSupportHolder.current) {
@@ -287,6 +278,9 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     flushDraftLane: draftLane.flushPendingChanges,
     flushSmartRuleLane: smartRuleLane.flushPendingChanges,
     applyWorkspace: stateSupport.applyWorkspace,
+    applyRuleDiagnostics: (diagnostics) => {
+      smartRuleDiagnostics.value = diagnostics;
+    },
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
   const smartGroupingRun = useSmartGroupingRun({
@@ -313,10 +307,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
-    onSmartPreferenceChange(
-      key: ClassroomPlannerSmartPreferenceKey,
-      enabled: boolean,
-    ): void {
+    onSmartPreferenceChange(key: ClassroomPlannerSmartPreferenceKey, enabled: boolean): void {
       smartPreferenceLane.persistPreference(key, enabled);
     },
   });
@@ -408,6 +399,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     seatingPreferences,
     relationshipRules,
     fixedSeatRules,
+    smartRuleDiagnostics,
     smartRulesRevision,
     smartRulesHydrated,
     activeSeatingSmartTool: smartRuleUiState.activeSeatingSmartTool,
@@ -472,10 +464,8 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     fixedSeatRuleForStudent: smartRuleActions.fixedSeatRuleForStudent,
     fixedSeatRuleForSeat: smartRuleActions.fixedSeatRuleForSeat,
     isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
-    setDraftGroupingSeatingDistanceEnabled:
-      smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
-    isStudentInPendingRelationshipSelection:
-      smartRuleUiState.isStudentInPendingRelationshipSelection,
+    setDraftGroupingSeatingDistanceEnabled: smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
+    isStudentInPendingRelationshipSelection: smartRuleUiState.isStudentInPendingRelationshipSelection,
     assignStudentToGroup: mutationActions.assignStudentToGroup,
     removeStudentFromGroup: mutationActions.removeStudentFromGroup,
     clearGroupingAssignments: mutationActions.clearGroupingAssignments,

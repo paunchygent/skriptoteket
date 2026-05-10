@@ -6,7 +6,7 @@
  * of its domain-specific tap, placement, selection, and drag behavior.
  */
 
-import { ref } from "vue";
+import { onBeforeUnmount, ref, watch, type Ref } from "vue";
 
 type TouchPoint = {
   clientX: number;
@@ -17,7 +17,10 @@ export type RoomTouchViewportGestureOptions = {
   onZoomByFactor: (factor: number) => void;
   onGestureStart?: () => void;
   onGestureEnd?: () => void;
+  target?: Ref<HTMLElement | null>;
 };
+
+type PlatformGestureEvent = Event & { scale?: number };
 
 function touchDistance(first: TouchPoint, second: TouchPoint): number {
   return Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
@@ -29,12 +32,30 @@ function firstTwoTouches(event: TouchEvent): [TouchPoint, TouchPoint] | null {
   return first && second ? [first, second] : null;
 }
 
+function preventBrowserDefault(event: Event): void {
+  if (event.cancelable) {
+    event.preventDefault();
+  }
+}
+
+function platformGestureScale(event: Event): number | null {
+  const scale = (event as PlatformGestureEvent).scale;
+  return typeof scale === "number" && Number.isFinite(scale) && scale > 0 ? scale : null;
+}
+
 export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOptions) {
   const gestureActive = ref(false);
   const suppressNextTap = ref(false);
   let lastDistance: number | null = null;
+  let platformGestureActive = false;
+  let lastPlatformGestureScale: number | null = null;
+  let cleanupTarget: (() => void) | null = null;
 
   function beginGesture(event: TouchEvent): void {
+    if (platformGestureActive) {
+      preventBrowserDefault(event);
+      return;
+    }
     const touches = firstTwoTouches(event);
     if (!touches) {
       return;
@@ -43,7 +64,7 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
     gestureActive.value = true;
     suppressNextTap.value = true;
     options.onGestureStart?.();
-    event.preventDefault();
+    preventBrowserDefault(event);
   }
 
   function handleTouchStart(event: TouchEvent): void {
@@ -53,6 +74,10 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
   }
 
   function handleTouchMove(event: TouchEvent): void {
+    if (platformGestureActive) {
+      preventBrowserDefault(event);
+      return;
+    }
     if (!gestureActive.value || event.touches.length < 2) {
       return;
     }
@@ -66,7 +91,33 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
     }
     lastDistance = nextDistance;
     suppressNextTap.value = true;
-    event.preventDefault();
+    preventBrowserDefault(event);
+  }
+
+  function handlePlatformGestureStart(event: Event): void {
+    lastPlatformGestureScale = platformGestureScale(event) ?? 1;
+    platformGestureActive = true;
+    gestureActive.value = true;
+    suppressNextTap.value = true;
+    lastDistance = null;
+    options.onGestureStart?.();
+    preventBrowserDefault(event);
+  }
+
+  function handlePlatformGestureChange(event: Event): void {
+    const nextScale = platformGestureScale(event);
+    if (nextScale === null) {
+      return;
+    }
+    if (!platformGestureActive) {
+      handlePlatformGestureStart(event);
+    }
+    if (lastPlatformGestureScale !== null && lastPlatformGestureScale > 0) {
+      options.onZoomByFactor(nextScale / lastPlatformGestureScale);
+    }
+    lastPlatformGestureScale = nextScale;
+    suppressNextTap.value = true;
+    preventBrowserDefault(event);
   }
 
   function endGesture(): void {
@@ -74,7 +125,9 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
       options.onGestureEnd?.();
     }
     gestureActive.value = false;
+    platformGestureActive = false;
     lastDistance = null;
+    lastPlatformGestureScale = null;
   }
 
   function handleTouchEnd(event: TouchEvent): void {
@@ -85,6 +138,52 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
 
   function handleTouchCancel(): void {
     endGesture();
+  }
+
+  function bindGestureTarget(element: HTMLElement): () => void {
+    const listenerOptions = { passive: false };
+    element.addEventListener("touchstart", handleTouchStart, listenerOptions);
+    element.addEventListener("touchmove", handleTouchMove, listenerOptions);
+    element.addEventListener("touchend", handleTouchEnd, listenerOptions);
+    element.addEventListener("touchcancel", handleTouchCancel, listenerOptions);
+    element.addEventListener("gesturestart", handlePlatformGestureStart, listenerOptions);
+    element.addEventListener("gesturechange", handlePlatformGestureChange, listenerOptions);
+    element.addEventListener("gestureend", handleTouchCancel, listenerOptions);
+    return () => {
+      element.removeEventListener("touchstart", handleTouchStart);
+      element.removeEventListener("touchmove", handleTouchMove);
+      element.removeEventListener("touchend", handleTouchEnd);
+      element.removeEventListener("touchcancel", handleTouchCancel);
+      element.removeEventListener("gesturestart", handlePlatformGestureStart);
+      element.removeEventListener("gesturechange", handlePlatformGestureChange);
+      element.removeEventListener("gestureend", handleTouchCancel);
+    };
+  }
+
+  if (options.target) {
+    watch(
+      options.target,
+      (target, _previousTarget, onCleanup) => {
+        cleanupTarget?.();
+        cleanupTarget = null;
+        if (!target) {
+          return;
+        }
+        const cleanup = bindGestureTarget(target);
+        cleanupTarget = cleanup;
+        onCleanup(() => {
+          cleanup();
+          if (cleanupTarget === cleanup) {
+            cleanupTarget = null;
+          }
+        });
+      },
+      { flush: "sync", immediate: true },
+    );
+    onBeforeUnmount(() => {
+      cleanupTarget?.();
+      cleanupTarget = null;
+    });
   }
 
   function consumeTapSuppression(): boolean {
@@ -101,6 +200,8 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
     handleTouchMove,
     handleTouchEnd,
     handleTouchCancel,
+    handlePlatformGestureStart,
+    handlePlatformGestureChange,
     consumeTapSuppression,
   };
 }

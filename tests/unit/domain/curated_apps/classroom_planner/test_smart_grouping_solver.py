@@ -44,10 +44,10 @@ from tests.unit.domain.curated_apps.classroom_planner import (
     smart_grouping_simulation_support as grouping_support,
 )
 from tests.unit.domain.curated_apps.classroom_planner import (
-    test_smart_grouping_solver_g20_sa24d as g20_grouping,
+    smart_seating_solver_scenarios as g20_seating,
 )
 from tests.unit.domain.curated_apps.classroom_planner import (
-    test_smart_seating_solver as g20_seating,
+    test_smart_grouping_solver_g20_sa24d as g20_grouping,
 )
 from tests.unit.domain.curated_apps.classroom_planner import (
     test_smart_seating_solver_bf25_g104 as bf25_seating,
@@ -307,8 +307,10 @@ def test_group_topology_cohesion_counts_split_singleton_islands() -> None:
 
 
 def test_group_topology_cohesion_counts_zone_spill_and_row_gaps_for_bench_rooms() -> None:
-    template = g20_seating._build_template()
-    topology = build_live_seating_topology(room_context=g20_seating._build_room_context(template))
+    template = g20_seating.build_g20_template()
+    topology = build_live_seating_topology(
+        room_context=g20_seating.build_g20_room_context(template)
+    )
     seats_by_zone: dict[int, list[str]] = {}
     for seat_id, zone_id in topology.local_zone_id_by_seat.items():
         seats_by_zone.setdefault(zone_id, []).append(seat_id)
@@ -354,8 +356,8 @@ def test_group_topology_cohesion_counts_zone_spill_and_row_gaps_for_bench_rooms(
 
 
 def test_pair_swap_improvement_recovers_better_g20_layout() -> None:
-    roster = g20_seating._build_roster()
-    template = g20_seating._build_template()
+    roster = g20_seating.build_g20_roster()
+    template = g20_seating.build_g20_template()
     reduced_keep_apart_cluster = (
         grouping_support.student_id("Petter Odehn"),
         grouping_support.student_id("Viktor Thornblad"),
@@ -366,20 +368,20 @@ def test_pair_swap_improvement_recovers_better_g20_layout() -> None:
         roster_id=roster.id,
         keep_near_clusters=(g20_grouping._KEEP_NEAR_PAIR,),
         keep_apart_clusters=(reduced_keep_apart_cluster,),
-        near_teacher_student_ids=tuple(sorted(g20_seating._NEAR_TEACHER_STUDENT_IDS)),
+        near_teacher_student_ids=tuple(sorted(g20_seating.NEAR_TEACHER_STUDENT_IDS)),
     )
     seating_result = solve_smart_seating(
         roster=roster,
         template=template,
         smart_rules=seating_rules,
         current_seat_assignments=[],
-        history_checkpoints=g20_seating._build_history_checkpoints(
+        history_checkpoints=g20_seating.build_g20_history_checkpoints(
             roster=roster,
             template=template,
         ),
     )
     live_seating = LiveSeatingContinuityInput(
-        room_context=g20_seating._build_room_context(template),
+        room_context=g20_seating.build_g20_room_context(template),
         seat_assignments=seating_result.seat_assignments,
     )
     grouping_rules = grouping_support.build_rules(

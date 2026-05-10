@@ -61,6 +61,7 @@ const touchViewportGestures = useRoomTouchViewportGestures({
     suppressGhostPreview.value = true;
     emit("clear-hover");
   },
+  target: builderViewport,
 });
 
 function isNoHoverPointer(event: PointerEvent): boolean {
@@ -238,10 +239,6 @@ const shouldCenterSurface = computed(() => {
       ref="builderViewport"
       data-test="room-builder-viewport"
       class="min-h-[560px] flex-1 overflow-auto border border-navy/20 bg-white/70 p-3 lg:min-h-[640px]"
-      @touchstart="touchViewportGestures.handleTouchStart"
-      @touchmove="touchViewportGestures.handleTouchMove"
-      @touchend="touchViewportGestures.handleTouchEnd"
-      @touchcancel="touchViewportGestures.handleTouchCancel"
     >
       <div
         data-test="room-builder-scroll-frame"

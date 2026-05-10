@@ -14,6 +14,7 @@ import type {
   DraftWorkspaceResponse,
   PlanDraft,
   SmartSeatingRunResponse,
+  SmartRuleDiagnostic,
 } from "./classroomPlannerTypes";
 import type { DraftPersistenceLaneResult } from "./useDraftPersistenceLane";
 import type { RosterSmartRuleLaneResult } from "./useRosterSmartRuleLane";
@@ -25,6 +26,7 @@ type UseSmartSeatingRunOptions = {
   flushDraftLane: () => Promise<DraftPersistenceLaneResult>;
   flushSmartRuleLane: () => Promise<RosterSmartRuleLaneResult>;
   applyWorkspace: (workspace: DraftWorkspaceResponse) => void;
+  applyRuleDiagnostics?: (diagnostics: SmartRuleDiagnostic[]) => void;
   normalizeErrorMessage: (error: unknown, fallbackMessage: string) => string;
 };
 
@@ -54,6 +56,7 @@ export function useSmartSeatingRun(options: UseSmartSeatingRunOptions) {
   function clearFeedback(): void {
     message.value = null;
     tone.value = "neutral";
+    options.applyRuleDiagnostics?.([]);
   }
 
   async function run(): Promise<SmartSeatingRunOutcome> {
@@ -102,10 +105,12 @@ export function useSmartSeatingRun(options: UseSmartSeatingRunOptions) {
         const blockedMessage = normalizeSmartSeatingRunMessage(result.message)
         message.value = blockedMessage
         tone.value = "warning"
+        options.applyRuleDiagnostics?.([])
         return { status: "blocked", message: blockedMessage }
       }
 
       options.applyWorkspace(result.workspace)
+      options.applyRuleDiagnostics?.(result.rule_diagnostics ?? [])
       message.value = result.message ?? null
       tone.value = "success"
       return { status: "applied", message: result.message ?? null }

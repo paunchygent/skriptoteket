@@ -33,9 +33,17 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Seat,
     SeatAssignment,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.seat_support_context import (
+    build_seat_support_context,
+    desired_near_teacher_seat_ids,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
     build_seat_topology,
     infer_teaching_anchor,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.smart_rule_diagnostics import (
+    SmartRuleDiagnostic,
+    build_smart_rule_diagnostics,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
     CandidateScore,
@@ -43,15 +51,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_
     is_better_score,
     score_candidate,
     score_partial_seat,
-)
-from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
-    keep_apart_has_tradeoff as _keep_apart_has_tradeoff,
-)
-from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
-    keep_apart_pair_score as _keep_apart_pair_score,
-)
-from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_scoring import (
-    keep_near_has_tradeoff as _keep_near_has_tradeoff,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_scoring import (
     current_keep_near_modes,
@@ -63,14 +62,6 @@ QUALITY_EPSILON = 1e-6
 EXACT_ASSIGNMENT_LIMIT = 7
 RANDOM_ATTEMPTS = 96
 
-__all__ = [
-    "SmartSeatingResult",
-    "solve_smart_seating",
-    "_keep_apart_has_tradeoff",
-    "_keep_apart_pair_score",
-    "_keep_near_has_tradeoff",
-]
-
 
 @dataclass(frozen=True)
 class SmartSeatingResult:
@@ -79,6 +70,7 @@ class SmartSeatingResult:
     seat_assignments: list[SeatAssignment]
     unplaced_student_ids: list[str]
     has_tradeoffs: bool
+    rule_diagnostics: tuple[SmartRuleDiagnostic, ...] = ()
 
 
 def solve_smart_seating(
@@ -103,6 +95,7 @@ def solve_smart_seating(
             seat_assignments=[],
             unplaced_student_ids=[],
             has_tradeoffs=False,
+            rule_diagnostics=(),
         )
 
     fixed_seat_ids = set(fixed_mapping.values())
@@ -150,10 +143,21 @@ def solve_smart_seating(
             {**fixed_mapping, **best_mapping}.items(), key=lambda item: item[0]
         )
     ]
+    rule_diagnostics = build_smart_rule_diagnostics(
+        roster=roster,
+        template=template,
+        smart_rules=smart_rules,
+        seat_assignments=seat_assignments,
+    )
     return SmartSeatingResult(
         seat_assignments=seat_assignments,
         unplaced_student_ids=sorted(unplaced_student_ids),
-        has_tradeoffs=best_score.has_tradeoffs or bool(unplaced_student_ids),
+        has_tradeoffs=(
+            best_score.has_tradeoffs
+            or bool(unplaced_student_ids)
+            or any(diagnostic.status != "satisfied" for diagnostic in rule_diagnostics)
+        ),
+        rule_diagnostics=rule_diagnostics,
     )
 
 
@@ -192,18 +196,25 @@ def _build_score_context(
     history_checkpoints: list[SeatingExportCheckpoint],
     fixed_assignments_by_student: dict[str, str],
 ) -> SeatScoreContext:
+    anchor = infer_teaching_anchor(template=template)
     topology = build_seat_topology(
         seats=seats,
-        anchor=infer_teaching_anchor(template=template),
+        anchor=anchor,
         fixtures=template.fixtures,
+    )
+    seat_support_context = build_seat_support_context(
+        seats=seats,
+        fixtures=template.fixtures,
+        anchor=anchor,
     )
     near_teacher_student_ids = {
         preference.student_id
         for preference in smart_rules.seating_preferences
         if preference.near_teacher
     }
-    near_teacher_pool_seat_ids = topology.near_teacher_pool(
-        seat_count=min(len(seats), len(near_teacher_student_ids) + 1),
+    near_teacher_pool_seat_ids = desired_near_teacher_seat_ids(
+        topology=topology,
+        support_context=seat_support_context,
     )
     keep_near_clusters = [
         set(rule.student_ids)
@@ -230,6 +241,7 @@ def _build_score_context(
             if student_id in current_assignments_by_student
             and current_assignments_by_student[student_id] in set(near_teacher_pool_seat_ids)
         },
+        seat_support_context=seat_support_context,
         current_keep_near_mode_by_pair=current_keep_near_modes(
             keep_near_clusters=keep_near_clusters,
             current_assignments_by_student=current_assignments_by_student,
