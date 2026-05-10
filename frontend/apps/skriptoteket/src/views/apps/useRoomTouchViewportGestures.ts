@@ -13,8 +13,13 @@ type TouchPoint = {
   clientY: number;
 };
 
+export type RoomTouchViewportGestureAnchor = {
+  clientX: number;
+  clientY: number;
+};
+
 export type RoomTouchViewportGestureOptions = {
-  onZoomByFactor: (factor: number) => void;
+  onZoomByFactor: (factor: number, anchor: RoomTouchViewportGestureAnchor | null) => void;
   onGestureStart?: () => void;
   onGestureEnd?: () => void;
   target?: Ref<HTMLElement | null>;
@@ -24,6 +29,16 @@ type PlatformGestureEvent = Event & { scale?: number };
 
 function touchDistance(first: TouchPoint, second: TouchPoint): number {
   return Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
+}
+
+function touchMidpoint(
+  first: TouchPoint,
+  second: TouchPoint,
+): RoomTouchViewportGestureAnchor {
+  return {
+    clientX: (first.clientX + second.clientX) / 2,
+    clientY: (first.clientY + second.clientY) / 2,
+  };
 }
 
 function firstTwoTouches(event: TouchEvent): [TouchPoint, TouchPoint] | null {
@@ -87,7 +102,7 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
     }
     const nextDistance = touchDistance(touches[0], touches[1]);
     if (lastDistance > 0 && nextDistance > 0) {
-      options.onZoomByFactor(nextDistance / lastDistance);
+      options.onZoomByFactor(nextDistance / lastDistance, touchMidpoint(touches[0], touches[1]));
     }
     lastDistance = nextDistance;
     suppressNextTap.value = true;
@@ -113,7 +128,7 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
       handlePlatformGestureStart(event);
     }
     if (lastPlatformGestureScale !== null && lastPlatformGestureScale > 0) {
-      options.onZoomByFactor(nextScale / lastPlatformGestureScale);
+      options.onZoomByFactor(nextScale / lastPlatformGestureScale, null);
     }
     lastPlatformGestureScale = nextScale;
     suppressNextTap.value = true;

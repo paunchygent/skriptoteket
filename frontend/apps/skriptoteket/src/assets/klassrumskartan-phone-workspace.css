@@ -463,8 +463,9 @@
 
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-paper);
+  max-block-size: min(72dvh, 42rem);
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
 }
@@ -589,8 +590,8 @@
   padding: 0.18rem;
   border: 1px solid rgb(8 43 76 / 0.22);
   background-color: white;
-  color: rgb(8 43 76 / 0.62);
-  font-size: 0.5625rem;
+  color: var(--huleedu-navy);
+  font-size: 0.625rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -615,17 +616,17 @@
 
 .planner-phone-fixed-seat-map-seat-student-first {
   color: var(--huleedu-navy);
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   font-weight: 850;
-  line-height: 0.95;
+  line-height: 0.98;
 }
 
 .planner-phone-fixed-seat-map-seat-student-initials {
-  color: rgb(8 43 76 / 0.68);
-  font-size: 0.4375rem;
+  color: var(--huleedu-navy);
+  font-size: 0.5rem;
   font-weight: 850;
   letter-spacing: var(--huleedu-tracking-label);
-  line-height: 0.85;
+  line-height: 0.9;
   text-align: center;
   text-transform: uppercase;
 }
@@ -662,8 +663,8 @@
 
 .planner-phone-fixed-seat-rule-marker {
   display: inline-flex;
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 1rem;
+  height: 1rem;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--huleedu-navy);
@@ -699,9 +700,9 @@
 
 .planner-phone-fixed-seat-rule-marker-overflow {
   width: auto;
-  min-width: 0.875rem;
+  min-width: 1rem;
   padding: 0 0.12rem;
-  font-size: 0.5rem;
+  font-size: 0.5625rem;
   font-weight: 900;
 }
 

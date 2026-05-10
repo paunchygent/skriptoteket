@@ -5,7 +5,7 @@
  * component so touch/viewport behavior can evolve without growing the renderer.
  */
 
-export const PHONE_MAP_BASE_CELL_SIZE_PX = 44;
+export const PHONE_MAP_BASE_CELL_SIZE_PX = 52;
 
 export type PhoneSeatStudentName = {
   firstName: string;

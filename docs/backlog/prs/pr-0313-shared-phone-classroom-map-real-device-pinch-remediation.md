@@ -17,6 +17,8 @@ dependencies:
 acceptance_criteria:
   - "Given the phone `Sittplatser` simplified classroom map renders on an iPhone-sized viewport, when the teacher performs a real two-finger pinch on the map, then the map visibly zooms without removing, moving, or swapping a seated student."
   - "Given the phone `Regler` `Fast plats` simplified classroom map renders on an iPhone-sized viewport, when the teacher performs a real two-finger pinch on the map, then the map visibly zooms without selecting, clearing, or saving a fixed-seat binding."
+  - "Given the teacher pinches around a visible map location, when zoom changes, then that gesture target remains centered under the same screen point instead of drifting toward the canvas origin."
+  - "Given the simplified phone map renders at its default zoom, when seats have assigned students and rule markers, then names, initials, and marker symbols remain readable without requiring a preliminary zoom."
   - "Given a recognized pinch gesture ends on either simplified map, when the browser dispatches a follow-up tap/click, then the map suppresses that follow-up domain action exactly once."
   - "Given one-finger interaction is used on either simplified map, when the teacher taps or short/long-presses a seat, then the existing `PR-0310` seat selection, removal, move, and swap semantics remain unchanged."
   - "Given browser proof runs for the phone simplified map, when the proof asserts zoom, then it proves native/browser-level input ownership rather than only fabricated DOM `TouchEvent` handler invocation."
@@ -184,3 +186,31 @@ both `Sittplatser` and `Regler` / `Fast plats`.
 Verification:
 
 - `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers PlannerPhoneClassroomSeatMap useRoomTouchViewportGestures`
+
+## Field Follow-up: Anchored Zoom And Readability
+
+Real-device testing after the visible zoom fix confirmed pinch zoom now works,
+but the simplified map grows from the canvas origin. That makes the map drift
+toward the upper-left corner and disorients the teacher because the visible
+gesture target is not preserved across the scale change. The same field pass
+also showed that default-size student names, initials, and rule symbols are too
+small before zoom.
+
+Follow-up remediation:
+
+- Extend the shared gesture payload with a viewport-relative gesture centroid.
+- Add a small anchored zoom helper for scrollable map viewports so the content
+  coordinate under the gesture midpoint remains under that midpoint after the
+  new scale is applied.
+- Make the phone map a contained two-axis pan/zoom viewport so zoom growth is
+  compensated through `scrollLeft` / `scrollTop` rather than page drift.
+- Increase default simplified-map seat, name, initials, and marker readability
+  without changing desktop/tablet `RoomCanvas`.
+
+Additional verification:
+
+- Focused composable proof that anchored zoom adjusts scroll position from the
+  pre-zoom content coordinate.
+- Component proof that a pinch around a known phone-map point changes zoom
+  without pushing that point toward the origin and still suppresses the
+  follow-up click.

@@ -112,6 +112,15 @@ describe("PlannerPhoneClassroomSeatMap", () => {
     expect(wrapper.emitted("student-removed")).toEqual([["student-1"]]);
   });
 
+  it("uses the readable default phone seat cell size before zoom", () => {
+    const wrapper = mountEditableMap();
+    const map = wrapper.get('[data-test="phone-classroom-seat-map"]');
+
+    expect(map.attributes("style")).toContain("--planner-phone-seat-cell-size: 52px");
+    expect(wrapper.get('[data-test="phone-fixed-seat-map-seat-first-name-seat-1"]').text()).toBe("Ada");
+    expect(wrapper.get('[data-test="phone-fixed-seat-map-seat-last-initials-seat-1"]').text()).toBe("L");
+  });
+
   it("moves a seated student to an empty seat on long press release", async () => {
     vi.useFakeTimers();
     const wrapper = mountEditableMap();
@@ -178,8 +187,38 @@ describe("PlannerPhoneClassroomSeatMap", () => {
     await sourceSeat.trigger("click");
 
     expect(wrapper.get('[data-test="phone-fixed-seat-map-zoom-percent"]').text()).toBe("125%");
-    expect(map.attributes("style")).toContain("--planner-phone-seat-cell-size: 55px");
+    expect(map.attributes("style")).toContain("--planner-phone-seat-cell-size: 65px");
     expect(wrapper.emitted("student-removed")).toBeUndefined();
+  });
+
+  it("keeps the pinch target anchored while zooming the scrollable map", async () => {
+    const wrapper = mountEditableMap();
+    const map = wrapper.get('[data-test="phone-classroom-seat-map"]');
+    Object.defineProperties(map.element, {
+      clientWidth: { configurable: true, value: 300 },
+      clientHeight: { configurable: true, value: 180 },
+    });
+    map.element.getBoundingClientRect = () => ({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 300,
+      bottom: 180,
+      width: 300,
+      height: 180,
+      toJSON: () => ({}),
+    });
+    map.element.scrollLeft = 100;
+    map.element.scrollTop = 40;
+
+    await dispatchTouchEvent(map.element, "touchstart", 100);
+    await dispatchTouchEvent(map.element, "touchmove", 125);
+    await nextTick();
+
+    expect(wrapper.get('[data-test="phone-fixed-seat-map-zoom-percent"]').text()).toBe("125%");
+    expect(map.element.scrollLeft).toBe(140.625);
+    expect(map.element.scrollTop).toBe(50);
   });
 
   it("zooms on pinch without selecting a fixed-seat target", async () => {

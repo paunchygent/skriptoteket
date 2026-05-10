@@ -44,8 +44,8 @@ import {
 import {
   normalizeRoomGrid,
 } from "../roomFixtureLayout";
+import { useAnchoredRoomViewportZoom } from "../useAnchoredRoomViewportZoom";
 import { useRoomTouchViewportGestures } from "../useRoomTouchViewportGestures";
-import { useRoomViewportZoom } from "../useRoomViewportZoom";
 
 const props = withDefaults(defineProps<{
   template?: RoomTemplate | null;
@@ -102,7 +102,7 @@ const {
   scale: mapScale,
   scalePercent: mapScalePercent,
   zoomByFactor: zoomMapByFactor,
-} = useRoomViewportZoom(roomSurfaceMetrics);
+} = useAnchoredRoomViewportZoom(roomSurfaceMetrics, mapViewport);
 const touchViewportGestures = useRoomTouchViewportGestures({
   onZoomByFactor: zoomMapByFactor,
   onGestureStart: () => {
@@ -440,7 +440,7 @@ onBeforeUnmount(() => {
             >
               <component
                 :is="markerIconByKind[marker.kind]"
-                :size="9"
+                :size="11"
               />
             </span>
             <span

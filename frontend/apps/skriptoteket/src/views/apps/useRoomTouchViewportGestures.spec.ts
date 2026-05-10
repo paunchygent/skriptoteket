@@ -19,7 +19,7 @@ function touchEvent(distance: number, touches = 2): TouchEvent {
         }
         return {
           clientX: index === 0 ? 0 : distance,
-          clientY: 0,
+          clientY: 20,
         };
       },
     },
@@ -54,7 +54,10 @@ describe("useRoomTouchViewportGestures", () => {
     gestures.handleTouchEnd(touchEvent(125, 1));
 
     expect(onGestureStart).toHaveBeenCalledTimes(1);
-    expect(onZoomByFactor).toHaveBeenCalledWith(1.25);
+    expect(onZoomByFactor).toHaveBeenCalledWith(1.25, {
+      clientX: 62.5,
+      clientY: 20,
+    });
     expect(onGestureEnd).toHaveBeenCalledTimes(1);
     expect(start.preventDefault).toHaveBeenCalledOnce();
     expect(move.preventDefault).toHaveBeenCalledOnce();
@@ -83,7 +86,7 @@ describe("useRoomTouchViewportGestures", () => {
     gestures.handlePlatformGestureChange(change);
     gestures.handleTouchCancel();
 
-    expect(onZoomByFactor).toHaveBeenCalledWith(1.2);
+    expect(onZoomByFactor).toHaveBeenCalledWith(1.2, null);
     expect(start.preventDefault).toHaveBeenCalledOnce();
     expect(change.preventDefault).toHaveBeenCalledOnce();
     expect(gestures.consumeTapSuppression()).toBe(true);
