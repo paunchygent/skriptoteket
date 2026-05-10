@@ -202,6 +202,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     draftLane,
     smartRuleLane,
     smartRuleUiState,
+    applyRuleDiagnostics,
     clearRuleDiagnostics,
   });
   const stateSupport = getStateSupport();

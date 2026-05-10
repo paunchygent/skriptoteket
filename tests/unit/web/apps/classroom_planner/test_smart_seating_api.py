@@ -33,6 +33,9 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.smart_rule_diagnostics import (
+    SmartRuleDiagnostic,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner_seating as api
@@ -211,7 +214,17 @@ async def test_run_smart_seating_returns_applied_payload_from_handler() -> None:
         workspace=workspace,
         used_history=True,
         message="Smart placering klar med stöd av tidigare exporter.",
-        rule_diagnostics=(),
+        rule_diagnostics=(
+            SmartRuleDiagnostic(
+                rule_id="near_teacher:ada",
+                rule_kind="near_teacher",
+                status="satisfied",
+                student_ids=("ada",),
+                seat_ids=("front-right",),
+                reason_code="near_teacher_row_first_rank",
+                freshness_key="fresh-1",
+            ),
+        ),
     )
 
     result = await _unwrap_dishka(api.run_smart_seating)(
@@ -224,6 +237,7 @@ async def test_run_smart_seating_returns_applied_payload_from_handler() -> None:
     assert result.status == "applied"
     assert result.workspace.draft.id == workspace.draft.id
     assert result.used_history is True
+    assert result.rule_diagnostics[0].freshness_key == "fresh-1"
     handler.handle.assert_awaited_once_with(
         draft_id=workspace.draft.id,
         owner_user_id=user.id,

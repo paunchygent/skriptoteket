@@ -2500,6 +2500,8 @@ export interface components {
         AppliedSmartSeatingRunResponse: {
             /** Message */
             message: string | null;
+            /** Rule Diagnostics */
+            rule_diagnostics?: components["schemas"]["SmartRuleDiagnosticDto"][];
             /** Status */
             status: string;
             /** Used History */
@@ -3298,6 +3300,8 @@ export interface components {
             groups: components["schemas"]["DraftGroupDto"][];
             history_status: components["schemas"]["DraftHistoryStatusDto"];
             roster: components["schemas"]["RosterDto"];
+            /** Rule Diagnostics */
+            rule_diagnostics?: components["schemas"]["SmartRuleDiagnosticDto"][];
             /** Seat Assignments */
             seat_assignments: components["schemas"]["SeatAssignmentDto"][];
             template?: components["schemas"]["RoomTemplateDto"] | null;
@@ -4955,6 +4959,8 @@ export interface components {
         PublicSmartSeatingAppliedResponse: {
             /** Message */
             message?: string | null;
+            /** Rule Diagnostics */
+            rule_diagnostics?: components["schemas"]["SmartRuleDiagnosticDto"][];
             /**
              * Status
              * @constant
@@ -5879,6 +5885,38 @@ export interface components {
         SmartGroupingRunRequest: {
             /** Expected Revision */
             expected_revision: number;
+        };
+        /**
+         * SmartRuleDiagnosticDto
+         * @description Serialize one display-safe solver-owned smart-rule diagnostic.
+         */
+        SmartRuleDiagnosticDto: {
+            /** Freshness Key */
+            freshness_key?: string | null;
+            /** Message Key */
+            message_key?: string | null;
+            /** Reason Code */
+            reason_code: string;
+            /** Relation Mode */
+            relation_mode?: string | null;
+            /** Rule Id */
+            rule_id?: string | null;
+            /**
+             * Rule Kind
+             * @enum {string}
+             */
+            rule_kind: "fixed_seat" | "near_teacher" | "keep_near" | "keep_apart";
+            /** Seat Ids */
+            seat_ids?: string[];
+            /** Seating Context */
+            seating_context?: ("shared_table" | "bench_row" | "row_layout" | "local_cluster" | "unknown") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "satisfied" | "degraded" | "failed";
+            /** Student Ids */
+            student_ids?: string[];
         };
         /**
          * SmartSeatingRunRequest

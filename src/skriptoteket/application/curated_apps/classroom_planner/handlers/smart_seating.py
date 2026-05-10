@@ -44,6 +44,10 @@ from skriptoteket.protocols.classroom_planner import (
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
+from ..smart_rule_diagnostic_freshness import (
+    apply_diagnostic_freshness_key,
+    build_diagnostic_freshness_key,
+)
 from .workspace_builders import ensure_active_draft
 
 NO_HISTORY_BLOCK_MESSAGE = (
@@ -163,20 +167,31 @@ class RunSmartSeatingHandler:
             workspace=workspace,
             seat_assignments=smart_result,
         )
+        hydrated_result_workspace = self._hydrate_workspace(
+            workspace=persisted_workspace,
+            roster=roster,
+            template=template,
+        )
+        freshness_key = build_diagnostic_freshness_key(
+            draft=hydrated_result_workspace.draft,
+            roster=roster,
+            template=template,
+            smart_rules=smart_rules,
+            seat_assignments=hydrated_result_workspace.seat_assignments,
+        )
         return SmartSeatingAppliedResult(
             status="applied",
-            workspace=self._hydrate_workspace(
-                workspace=persisted_workspace,
-                roster=roster,
-                template=template,
-            ),
+            workspace=hydrated_result_workspace,
             used_history=bool(history),
             message=_build_run_message(
                 used_history=bool(history),
                 has_tradeoffs=smart_result.has_tradeoffs,
                 unplaced_student_count=len(smart_result.unplaced_student_ids),
             ),
-            rule_diagnostics=smart_result.rule_diagnostics,
+            rule_diagnostics=apply_diagnostic_freshness_key(
+                diagnostics=smart_result.rule_diagnostics,
+                freshness_key=freshness_key,
+            ),
         )
 
     async def _load_template(

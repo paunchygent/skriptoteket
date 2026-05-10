@@ -180,6 +180,7 @@ export function createClassroomPlannerGuestDraftSession(
     draftLane,
     smartRuleLane,
     smartRuleUiState,
+    applyRuleDiagnostics,
     clearRuleDiagnostics,
   });
   const stateSupport = getStateSupport();

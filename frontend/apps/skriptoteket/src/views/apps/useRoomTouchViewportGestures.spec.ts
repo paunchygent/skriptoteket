@@ -29,9 +29,11 @@ function touchEvent(distance: number, touches = 2): TouchEvent {
   return event as unknown as TouchEvent;
 }
 
-function platformGestureEvent(scale: number): Event {
+function platformGestureEvent(scale: number, clientX = 90, clientY = 140): Event {
   const event = new Event("gesturechange", { cancelable: true });
   Object.defineProperty(event, "scale", { value: scale });
+  Object.defineProperty(event, "clientX", { value: clientX });
+  Object.defineProperty(event, "clientY", { value: clientY });
   vi.spyOn(event, "preventDefault");
   return event;
 }
@@ -53,7 +55,10 @@ describe("useRoomTouchViewportGestures", () => {
     gestures.handleTouchMove(move);
     gestures.handleTouchEnd(touchEvent(125, 1));
 
-    expect(onGestureStart).toHaveBeenCalledTimes(1);
+    expect(onGestureStart).toHaveBeenCalledWith({
+      clientX: 50,
+      clientY: 20,
+    });
     expect(onZoomByFactor).toHaveBeenCalledWith(1.25, {
       clientX: 62.5,
       clientY: 20,
@@ -86,7 +91,10 @@ describe("useRoomTouchViewportGestures", () => {
     gestures.handlePlatformGestureChange(change);
     gestures.handleTouchCancel();
 
-    expect(onZoomByFactor).toHaveBeenCalledWith(1.2, null);
+    expect(onZoomByFactor).toHaveBeenCalledWith(1.2, {
+      clientX: 90,
+      clientY: 140,
+    });
     expect(start.preventDefault).toHaveBeenCalledOnce();
     expect(change.preventDefault).toHaveBeenCalledOnce();
     expect(gestures.consumeTapSuppression()).toBe(true);

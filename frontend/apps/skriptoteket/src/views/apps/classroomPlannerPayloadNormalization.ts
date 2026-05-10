@@ -21,6 +21,7 @@ import type {
   RoomTemplate,
   Roster,
   RosterSmartRulesResponse,
+  SmartRuleDiagnostic,
   StudentSeatingPreference,
   TaskEntryOption,
 } from "./classroomPlannerTypes";
@@ -56,6 +57,16 @@ function cloneSeatingPreferences(
 
 function cloneFixedSeatRules(rules: FixedSeatRule[] | null | undefined): FixedSeatRule[] {
   return cloneArrayOrEmpty(rules).map((rule) => ({ ...rule }));
+}
+
+function cloneRuleDiagnostics(
+  diagnostics: SmartRuleDiagnostic[] | null | undefined,
+): SmartRuleDiagnostic[] {
+  return cloneArrayOrEmpty(diagnostics).map((diagnostic) => ({
+    ...diagnostic,
+    student_ids: cloneArrayOrEmpty(diagnostic.student_ids),
+    seat_ids: cloneArrayOrEmpty(diagnostic.seat_ids),
+  }));
 }
 
 function normalizeDraftHistoryStatus(
@@ -117,6 +128,7 @@ export function normalizeClassroomPlannerWorkspace(
       ...assignment,
     })),
     history_status: normalizeDraftHistoryStatus(workspace.history_status),
+    rule_diagnostics: cloneRuleDiagnostics(workspace.rule_diagnostics),
   };
 }
 

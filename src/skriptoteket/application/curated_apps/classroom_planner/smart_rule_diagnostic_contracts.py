@@ -38,6 +38,7 @@ class SmartRuleDiagnosticDto(BaseModel):
     relation_mode: str | None = None
     seating_context: SeatingContext | None = None
     message_key: str | None = None
+    freshness_key: str | None = None
 
 
 def serialize_smart_rule_diagnostics(
@@ -56,6 +57,7 @@ def serialize_smart_rule_diagnostics(
             relation_mode=diagnostic.relation_mode,
             seating_context=diagnostic.seating_context,
             message_key=diagnostic.message_key,
+            freshness_key=diagnostic.freshness_key,
         )
         for diagnostic in diagnostics
     ]

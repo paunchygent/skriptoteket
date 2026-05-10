@@ -43,6 +43,7 @@ import type {
   Roster,
   RosterSmartRulesResponse,
   SeatAssignment,
+  SmartRuleDiagnostic,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
@@ -74,6 +75,7 @@ type CreateClassroomPlannerStateSupportOptions = {
   draftLane: DraftLane;
   smartRuleLane: SmartRuleLane;
   smartRuleUiState: SmartRuleUiState;
+  applyRuleDiagnostics?: (diagnostics: SmartRuleDiagnostic[]) => void;
   clearRuleDiagnostics?: () => void;
 };
 
@@ -134,6 +136,7 @@ export function createClassroomPlannerStateSupport(
     );
     options.historyStatus.value = normalizedWorkspace.history_status;
     options.historyActionInFlight.value = false;
+    options.applyRuleDiagnostics?.(normalizedWorkspace.rule_diagnostics ?? []);
   }
 
   function applyRosterSmartRules(rules: RosterSmartRulesResponse): void {
@@ -164,6 +167,7 @@ export function createClassroomPlannerStateSupport(
     };
     options.historyStatus.value = normalizedWorkspace.history_status;
     options.historyActionInFlight.value = false;
+    options.applyRuleDiagnostics?.(normalizedWorkspace.rule_diagnostics ?? []);
   }
 
   function applySmartRuleSaveAcknowledgement(rules: RosterSmartRulesResponse): void {
@@ -303,6 +307,7 @@ export function createClassroomPlannerStateSupport(
       can_redo: false,
     };
     options.historyActionInFlight.value = false;
+    options.clearRuleDiagnostics?.();
   }
 
   return {

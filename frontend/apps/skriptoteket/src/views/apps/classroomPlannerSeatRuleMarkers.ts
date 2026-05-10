@@ -169,6 +169,9 @@ function buildCurrentDiagnostics(
     if (diagnostic.rule_kind === "fixed_seat") {
       continue;
     }
+    if (!hasUsableFreshnessKey(diagnostic)) {
+      continue;
+    }
     if (!diagnosticMatchesCurrentAssignment(diagnostic, seatIdByStudentId)) {
       continue;
     }
@@ -190,6 +193,10 @@ function buildCurrentDiagnostics(
     }
   }
   return diagnosticsByRule;
+}
+
+function hasUsableFreshnessKey(diagnostic: SmartRuleDiagnostic): boolean {
+  return typeof diagnostic.freshness_key === "string" && diagnostic.freshness_key.length > 0;
 }
 
 function diagnosticMatchesRelationshipRule(

@@ -1115,8 +1115,14 @@ class CuratedAppsProvider(Provider):
         drafts: PlanDraftRepositoryProtocol,
         rosters: RosterRepositoryProtocol,
         templates: RoomTemplateRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
     ) -> GetDraftWorkspaceHandler:
-        return GetDraftWorkspaceHandler(drafts=drafts, rosters=rosters, templates=templates)
+        return GetDraftWorkspaceHandler(
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            smart_rules=smart_rules,
+        )
 
     @provide(scope=Scope.REQUEST)
     def patch_draft_handler(

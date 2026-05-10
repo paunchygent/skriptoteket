@@ -9,6 +9,7 @@ concurrency.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
@@ -22,19 +23,29 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ResumablePlanDraft,
     RoomTemplate,
     Roster,
+    RosterSmartRules,
     SeatAssignment,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.smart_rule_diagnostics import (
+    SmartRuleDiagnostic,
+    build_smart_rule_diagnostics,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
+    RosterSmartRuleRepositoryProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 from ..draft_smart_preferences import DraftSmartPreferenceSeed, resolve_draft_smart_settings
+from ..smart_rule_diagnostic_freshness import (
+    apply_diagnostic_freshness_key,
+    build_diagnostic_freshness_key,
+)
 from .planner_context import load_roster_and_template_for_owner
 from .workspace_builders import (
     build_initial_workspace,
@@ -42,6 +53,14 @@ from .workspace_builders import (
     ensure_active_draft,
 )
 from .workspace_validation import ensure_valid_workspace_structure
+
+
+@dataclass(frozen=True, slots=True)
+class DraftWorkspaceReadResult:
+    """Bundle one hydrated workspace with rehydrated rule diagnostics."""
+
+    workspace: ClassroomPlannerWorkspace
+    rule_diagnostics: tuple[SmartRuleDiagnostic, ...] = ()
 
 
 async def _get_owned_active_draft(
@@ -268,22 +287,24 @@ class GetDraftWorkspaceHandler:
         drafts: PlanDraftRepositoryProtocol,
         rosters: RosterRepositoryProtocol,
         templates: RoomTemplateRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
     ) -> None:
         self._drafts = drafts
         self._rosters = rosters
         self._templates = templates
+        self._smart_rules = smart_rules
 
     async def handle(
         self,
         *,
         draft_id: UUID,
         owner_user_id: UUID,
-    ) -> ClassroomPlannerWorkspace:
+    ) -> DraftWorkspaceReadResult:
         workspace, roster, template = await self._load_workspace_context(
             draft_id=draft_id,
             owner_user_id=owner_user_id,
         )
-        return ClassroomPlannerWorkspace(
+        hydrated_workspace = ClassroomPlannerWorkspace(
             draft=workspace.draft,
             roster=roster,
             template=template,
@@ -291,6 +312,19 @@ class GetDraftWorkspaceHandler:
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             history_status=workspace.history_status,
+        )
+        rule_diagnostics: tuple[SmartRuleDiagnostic, ...] = ()
+        if hydrated_workspace.draft.draft_kind is PlanDraftKind.SEATING and template is not None:
+            smart_rules = await self._smart_rules.get_by_roster_id(
+                roster_id=workspace.draft.roster_id
+            )
+            rule_diagnostics = _rehydrate_rule_diagnostics(
+                workspace=hydrated_workspace,
+                smart_rules=smart_rules,
+            )
+        return DraftWorkspaceReadResult(
+            workspace=hydrated_workspace,
+            rule_diagnostics=rule_diagnostics,
         )
 
     async def _load_workspace_context(
@@ -311,6 +345,34 @@ class GetDraftWorkspaceHandler:
             if not template or template.owner_user_id != owner_user_id:
                 raise not_found("RoomTemplate", str(workspace.draft.template_id))
         return workspace, roster, template
+
+
+def _rehydrate_rule_diagnostics(
+    *,
+    workspace: ClassroomPlannerWorkspace,
+    smart_rules: RosterSmartRules,
+) -> tuple[SmartRuleDiagnostic, ...]:
+    """Recompute display diagnostics from current persisted workspace truth."""
+
+    if workspace.draft.draft_kind is not PlanDraftKind.SEATING or workspace.template is None:
+        return ()
+    diagnostics = build_smart_rule_diagnostics(
+        roster=workspace.roster,
+        template=workspace.template,
+        smart_rules=smart_rules,
+        seat_assignments=workspace.seat_assignments,
+    )
+    freshness_key = build_diagnostic_freshness_key(
+        draft=workspace.draft,
+        roster=workspace.roster,
+        template=workspace.template,
+        smart_rules=smart_rules,
+        seat_assignments=workspace.seat_assignments,
+    )
+    return apply_diagnostic_freshness_key(
+        diagnostics=diagnostics,
+        freshness_key=freshness_key,
+    )
 
 
 class PatchDraftHandler:

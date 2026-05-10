@@ -12,7 +12,7 @@
  *   - receives gesture anchors from `useRoomTouchViewportGestures.ts`
  */
 
-import { nextTick, type Ref } from "vue";
+import { type Ref } from "vue";
 
 import {
   clampRoomViewportScale,
@@ -29,11 +29,15 @@ type ViewportPoint = {
   y: number;
 };
 
+type GestureCamera = {
+  contentX: number;
+  contentY: number;
+};
+
 export type AnchoredScrollInput = {
-  oldScale: number;
   newScale: number;
-  scrollLeft: number;
-  scrollTop: number;
+  contentX: number;
+  contentY: number;
   anchorX: number;
   anchorY: number;
 };
@@ -45,17 +49,26 @@ function clamp(value: number, minimum: number, maximum: number): number {
 export function computeAnchoredRoomViewportScroll(
   input: AnchoredScrollInput,
 ): { left: number; top: number } {
-  if (input.oldScale <= 0 || input.newScale <= 0) {
+  if (input.newScale <= 0) {
     return {
-      left: input.scrollLeft,
-      top: input.scrollTop,
+      left: 0,
+      top: 0,
     };
   }
-  const contentX = (input.scrollLeft + input.anchorX) / input.oldScale;
-  const contentY = (input.scrollTop + input.anchorY) / input.oldScale;
   return {
-    left: (contentX * input.newScale) - input.anchorX,
-    top: (contentY * input.newScale) - input.anchorY,
+    left: (input.contentX * input.newScale) - input.anchorX,
+    top: (input.contentY * input.newScale) - input.anchorY,
+  };
+}
+
+function captureGestureCamera(
+  viewport: HTMLElement,
+  scale: number,
+  point: ViewportPoint,
+): GestureCamera {
+  return {
+    contentX: (viewport.scrollLeft + point.x) / scale,
+    contentY: (viewport.scrollTop + point.y) / scale,
   };
 }
 
@@ -82,6 +95,59 @@ export function useAnchoredRoomViewportZoom(
   options: UseRoomViewportZoomOptions = {},
 ) {
   const zoom = useRoomViewportZoom(surfaceMetrics, options);
+  let gestureCamera: GestureCamera | null = null;
+  let pendingAnimationFrame: number | null = null;
+  let pendingPoint: ViewportPoint | null = null;
+  let pendingScale: number | null = null;
+
+  function applyPendingGestureCamera(): void {
+    pendingAnimationFrame = null;
+    const element = viewport.value;
+    if (!element || !gestureCamera || !pendingPoint || pendingScale === null) {
+      return;
+    }
+    const nextScroll = computeAnchoredRoomViewportScroll({
+      newScale: pendingScale,
+      contentX: gestureCamera.contentX,
+      contentY: gestureCamera.contentY,
+      anchorX: pendingPoint.x,
+      anchorY: pendingPoint.y,
+    });
+    element.scrollLeft = Math.max(0, nextScroll.left);
+    element.scrollTop = Math.max(0, nextScroll.top);
+  }
+
+  function scheduleGestureCameraScroll(scale: number, point: ViewportPoint): void {
+    pendingScale = scale;
+    pendingPoint = point;
+    if (pendingAnimationFrame !== null) {
+      return;
+    }
+    pendingAnimationFrame = window.requestAnimationFrame(applyPendingGestureCamera);
+  }
+
+  function beginGestureCamera(anchor: RoomTouchViewportGestureAnchor | null): void {
+    const element = viewport.value;
+    if (!element || zoom.scale.value <= 0) {
+      gestureCamera = null;
+      return;
+    }
+    const point = resolveViewportPoint(element, anchor);
+    gestureCamera = captureGestureCamera(element, zoom.scale.value, point);
+    pendingPoint = point;
+    pendingScale = zoom.scale.value;
+  }
+
+  function endGestureCamera(): void {
+    if (pendingAnimationFrame !== null) {
+      window.cancelAnimationFrame(pendingAnimationFrame);
+      pendingAnimationFrame = null;
+      applyPendingGestureCamera();
+    }
+    gestureCamera = null;
+    pendingPoint = null;
+    pendingScale = null;
+  }
 
   function zoomByFactor(
     factor: number,
@@ -98,16 +164,19 @@ export function useAnchoredRoomViewportZoom(
       return;
     }
     const point = resolveViewportPoint(element, anchor);
+    if (gestureCamera) {
+      zoom.setManualZoomScale(newScale);
+      scheduleGestureCameraScroll(newScale, point);
+      return;
+    }
     const nextScroll = computeAnchoredRoomViewportScroll({
-      oldScale,
       newScale,
-      scrollLeft: element.scrollLeft,
-      scrollTop: element.scrollTop,
+      ...captureGestureCamera(element, oldScale, point),
       anchorX: point.x,
       anchorY: point.y,
     });
     zoom.setManualZoomScale(newScale);
-    void nextTick(() => {
+    window.requestAnimationFrame(() => {
       element.scrollLeft = Math.max(0, nextScroll.left);
       element.scrollTop = Math.max(0, nextScroll.top);
     });
@@ -115,6 +184,8 @@ export function useAnchoredRoomViewportZoom(
 
   return {
     ...zoom,
+    beginGestureCamera,
+    endGestureCamera,
     zoomByFactor,
   };
 }

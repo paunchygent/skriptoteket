@@ -22,3 +22,18 @@ def test_phone_workspace_sheet_uses_opaque_modal_surface() -> None:
     assert match is not None
     assert "background-color: var(--surface-modal);" in match.group("body")
     assert "background-color: var(--huleedu-panel);" not in match.group("body")
+
+
+def test_phone_classroom_map_scales_readability_tokens_from_seat_geometry() -> None:
+    css = PHONE_WORKSPACE_CSS.read_text(encoding="utf-8")
+
+    match = re.search(r"\.planner-phone-fixed-seat-map\s*\{(?P<body>[^}]*)\}", css)
+
+    assert match is not None
+    body = match.group("body")
+    assert "--planner-phone-seat-ordinal-size: clamp(" in body
+    assert "--planner-phone-seat-name-size: clamp(" in body
+    assert "--planner-phone-seat-initial-size: clamp(" in body
+    assert "--planner-phone-rule-marker-size: clamp(" in body
+    assert "--planner-phone-rule-marker-icon-size: clamp(" in body
+    assert body.count("var(--planner-phone-seat-cell-size)") >= 5

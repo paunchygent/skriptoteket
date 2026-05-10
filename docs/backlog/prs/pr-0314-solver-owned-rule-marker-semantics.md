@@ -25,6 +25,8 @@ acceptance_criteria:
   - "Given backend diagnostics are added, when `Håll nära` is evaluated, then pair and group outcomes distinguish desired success, acceptable degraded placement, and failed placement using backend topology and seating context."
   - "Given students sit at a shared round or square table, when a `Håll nära` pair is placed across the table in a backend-approved close relation, then the diagnostic can classify that as `satisfied` rather than a row-layout failure."
   - "Given students sit in bench or row layout, when a `Håll nära` pair is not left/right adjacent, then the backend diagnostic classifies it as degraded or failed according to the accepted row-layout rule and proves that with unit tests before frontend coloring."
+  - "Given a seating workspace is reloaded or rehydrated after a Smart seating run, when the current persisted draft, smart-rule shape, template, roster, and seat assignments still match the solver input, then backend-owned rule diagnostics are recomputed and returned so soft-rule marker tones survive reload without persisting stale diagnostic blobs."
+  - "Given diagnostics are returned from workspace load or Smart-run responses, when the frontend maps them to marker tones, then every diagnostic carries a freshness key or digest derived from draft revision, smart-rule shape, template, roster, and seat assignments, and stale or mismatched diagnostics render neutral."
 ---
 
 ## Problem
@@ -95,6 +97,29 @@ needs visible fulfillment truth. The governing reference is
 The frontend marker helper then maps diagnostics to existing symbols and token
 families. It does not recompute solver truth.
 
+### Step C: Rehydrate Diagnostics From Current Truth
+
+Solver diagnostics must not remain a Smart-run-only transient payload. The
+workspace load path must recompute diagnostics from the current persisted truth
+instead of storing diagnostic blobs in draft data:
+
+- draft id and revision
+- current smart-rule shape and revision
+- current room template id and seat/furniture shape
+- current roster id and student ids
+- current seat assignments
+
+The recomputed diagnostics must carry a display-safe freshness key or digest
+covering those inputs. The frontend may color soft-rule markers only when the
+diagnostic freshness key matches the current visible workspace inputs. If the
+key is absent or mismatched, the marker must render neutral.
+
+This rehydration requirement applies to authenticated workspace load and any
+public/guest workspace rehydration surface that can restore a seating workspace
+after a browser reload. It is not enough to clear diagnostics on mutation:
+reload must be able to regain truthful solver-owned marker tones from backend
+truth.
+
 `Håll nära` requires special care:
 
 - pairs at shared round/square tables can treat across-table relation as a
@@ -139,6 +164,11 @@ families. It does not recompute solver truth.
 - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py`
 - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_seating.py`
 - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_smart_seating.py`
+- `src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py`
+- `src/skriptoteket/web/api/v1/apps_classroom_planner.py`
+- `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`
+- `src/skriptoteket/application/curated_apps/classroom_planner/smart_rule_diagnostic_contracts.py`
+- `frontend/apps/skriptoteket/src/api/openapi.d.ts`
 
 ## Implementation Plan
 
@@ -154,11 +184,24 @@ families. It does not recompute solver truth.
    - extend topology with seating context where needed
    - return additive diagnostics from authenticated and public Smart seating
      handlers
-5. Add backend tests for fixed seat, near-teacher, keep-apart, and keep-near
+5. Implement Step C backend rehydration:
+   - recompute diagnostics on authenticated workspace load from persisted
+     draft, smart rules, template, roster, and seat assignments
+   - include a freshness key or digest over draft revision, smart-rule shape,
+     template, roster, and seat assignments
+   - expose the same additive diagnostic contract on workspace load without
+     persisting diagnostic blobs as draft state
+   - update public/guest rehydration only if the guest restore path can receive
+     backend recomputed diagnostics; otherwise document why guest diagnostics
+     stay neutral until the next public Smart run
+6. Add backend tests for fixed seat, near-teacher, keep-apart, and keep-near
    pair/group outcomes before frontend coloring is restored.
-6. Only after backend diagnostics pass, let the frontend map diagnostic status
+7. Only after backend diagnostics pass, let the frontend map diagnostic status
    to marker tones.
-7. Keep marker symbols, layout, accessible labels, and collision avoidance from
+8. Regenerate OpenAPI frontend types after adding `rule_diagnostics` to
+   workspace load responses and fail the slice if generated `openapi.d.ts`
+   drifts from the backend response model.
+9. Keep marker symbols, layout, accessible labels, and collision avoidance from
    `PR-0310`.
 
 ## Test Plan
@@ -167,6 +210,10 @@ families. It does not recompute solver truth.
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py tests/unit/application/apps/classroom_planner/test_public_smart_run.py -q`
 - Add focused backend tests for the diagnostic contract named in
   `REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10`.
+- Add backend/API tests proving workspace load returns recomputed diagnostics
+  with a freshness key, and that a changed draft revision, smart-rule shape,
+  template, roster, or seat assignment changes or invalidates that key.
+- `pdm run fe-gen-api-types`
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
 - `pdm run docs-validate`
@@ -286,9 +333,78 @@ mutation, not only on assignment/template/roster mutations. The bundled
 `PR-0313` phone pinch lane also remains open until actual iPhone confirmation is
 recorded.
 
+## Field Follow-up: Diagnostic Rehydration
+
+Real-device follow-up on 2026-05-10 confirmed that soft-rule marker tones are
+lost after reloading the seating workspace. Fixed-seat markers keep their green
+state because they are recomputed locally from exact hard-rule truth, but
+`Nära läraren`, `Håll nära`, and `Håll isär` colors depend on transient
+solver diagnostics that are currently applied only from Smart-run responses.
+
+Required remediation:
+
+- Do not persist diagnostic blobs in draft state.
+- Recompute solver-owned diagnostics on authenticated workspace load from the
+  current persisted draft, smart rules, template, roster, and seat assignments.
+- Return the recomputed diagnostics additively from the workspace response.
+- Attach a freshness key or digest over draft revision, smart-rule shape,
+  template, roster, and seat assignments.
+- Require the frontend marker mapper to treat missing or mismatched freshness
+  as neutral, not as stale success/warning/error truth.
+- Regenerate and check OpenAPI frontend types because `rule_diagnostics` moving
+  onto workspace load is an API contract change.
+
+Proof must cover reload/rehydration directly: after a Smart seating run creates
+soft-rule diagnostics, reloading the same seating workspace should restore the
+same solver-owned marker tones without running Smart again, and any changed
+freshness input should neutralize or replace those diagnostics.
+
 Verification:
 
 - `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers PlannerPhoneClassroomSeatMap useRoomTouchViewportGestures`
 - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_keep_near_geometry.py tests/unit/domain/curated_apps/classroom_planner/test_smart_rule_diagnostics.py -q`
 - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -m simulation --override-ini addopts='' -q`
 - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_keep_near_geometry.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -m simulation --override-ini addopts='' -q`
+
+## Rehydration Remediation Closeout
+
+Implemented on 2026-05-10; ready for retained review after verification.
+
+- Added a focused diagnostic freshness helper that builds a canonical SHA-256
+  key from diagnostic schema version, draft id/revision, smart-rule
+  revision/shape, template seat/furniture shape, roster/student ids, and sorted
+  seat assignments.
+- Extended `SmartRuleDiagnosticDto` with additive `freshness_key` and attached
+  the key to authenticated Smart-run diagnostics, public Smart-run diagnostics,
+  and authenticated seating-workspace reload diagnostics.
+- `GET /drafts/{draft_id}/workspace` now recomputes seating rule diagnostics
+  from current persisted truth instead of persisting diagnostic blobs in draft
+  data. Grouping workspaces return an empty diagnostic list and do not touch the
+  smart-rule repository.
+- Frontend workspace hydration now applies returned `rule_diagnostics`; local
+  workspace clears and save acknowledgements without diagnostics neutralize
+  stored diagnostic colors.
+- Soft-rule marker coloring now requires a backend freshness key plus current
+  rule kind/student-shape and current student-seat assignment matches. Missing
+  freshness renders neutral, so stale transient diagnostics cannot keep coloring
+  after reload or local edits.
+- Regenerated OpenAPI frontend types with `pdm run fe-gen-api-types`; generated
+  `openapi.d.ts` now includes `rule_diagnostics` on workspace responses and
+  `freshness_key` on diagnostic DTOs.
+
+Public/guest decision:
+
+- Public Smart-run responses now carry the same freshness key.
+- A new stateless public diagnostic-rehydrate endpoint is intentionally not
+  introduced in this slice because the current reported reload issue is the
+  authenticated persisted-draft workspace. Browser-owned public snapshots
+  should remain neutral unless they pass through a backend Smart-run or an
+  explicitly scoped future public rehydrate API.
+
+Additional verification:
+
+- `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_rule_diagnostic_freshness.py tests/unit/application/apps/classroom_planner/test_draft_workspace_diagnostics.py tests/unit/web/apps/classroom_planner/test_draft_workspace_api.py tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
+- `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_workspace_diagnostics.py -q`
+- `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers classroomPlannerStateSupport useAnchoredRoomViewportZoom useRoomTouchViewportGestures PlannerPhoneClassroomSeatMap`
+- `pdm run fe-gen-api-types`
+- `pdm run typecheck`

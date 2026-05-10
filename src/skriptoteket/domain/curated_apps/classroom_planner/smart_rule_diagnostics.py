@@ -57,6 +57,23 @@ class SmartRuleDiagnostic:
     relation_mode: str | None = None
     seating_context: SeatingContext | None = None
     message_key: str | None = None
+    freshness_key: str | None = None
+
+    def with_freshness_key(self, freshness_key: str) -> "SmartRuleDiagnostic":
+        """Return this diagnostic bound to one solver-input freshness key."""
+
+        return SmartRuleDiagnostic(
+            rule_id=self.rule_id,
+            rule_kind=self.rule_kind,
+            status=self.status,
+            student_ids=self.student_ids,
+            seat_ids=self.seat_ids,
+            reason_code=self.reason_code,
+            relation_mode=self.relation_mode,
+            seating_context=self.seating_context,
+            message_key=self.message_key,
+            freshness_key=freshness_key,
+        )
 
 
 @dataclass(frozen=True)

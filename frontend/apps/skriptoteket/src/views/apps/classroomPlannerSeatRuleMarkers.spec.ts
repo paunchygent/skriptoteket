@@ -56,6 +56,7 @@ function relationshipDiagnostic(
     student_ids: ["a", "b"],
     seat_ids: ["seat-a", "seat-b"],
     reason_code: "keep_near_row_not_close",
+    freshness_key: "fresh-1",
     ...overrides,
   };
 }
@@ -106,10 +107,29 @@ describe("buildSeatRuleMarkersBySeatId diagnostic freshness", () => {
           student_ids: ["a"],
           seat_ids: ["seat-a"],
           reason_code: "near_teacher_row_first_rank",
+          freshness_key: "fresh-1",
         },
       ],
     });
 
     expect(markers["seat-a"]?.[0]?.tone).toBe("neutral");
+  });
+
+  it("ignores soft-rule diagnostics when the freshness key is missing", () => {
+    expect(
+      markerToneForRule(
+        [{ id: "rule-1", kind: "keep_near", student_ids: ["a", "b"] }],
+        [relationshipDiagnostic({ freshness_key: null })],
+      ),
+    ).toBe("neutral");
+  });
+
+  it("colors soft-rule diagnostics when rule shape, assignment, and freshness match", () => {
+    expect(
+      markerToneForRule(
+        [{ id: "rule-1", kind: "keep_near", student_ids: ["a", "b"] }],
+        [relationshipDiagnostic({ status: "satisfied" })],
+      ),
+    ).toBe("success");
   });
 });

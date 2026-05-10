@@ -87,6 +87,8 @@ function createSupportFixture() {
     reset: vi.fn(),
     clearPendingRelationshipSelection: vi.fn(),
   } as unknown as SmartRuleUiState;
+  const applyRuleDiagnostics = vi.fn();
+  const clearRuleDiagnostics = vi.fn();
 
   const support = createClassroomPlannerStateSupport({
     draft,
@@ -107,6 +109,8 @@ function createSupportFixture() {
     draftLane: {} as DraftLane,
     smartRuleLane: { applyHydratedRules: vi.fn() } as unknown as SmartRuleLane,
     smartRuleUiState,
+    applyRuleDiagnostics,
+    clearRuleDiagnostics,
   });
 
   return {
@@ -123,6 +127,8 @@ function createSupportFixture() {
     historyStatus,
     historyActionInFlight,
     smartRuleUiState,
+    applyRuleDiagnostics,
+    clearRuleDiagnostics,
     support,
   };
 }
@@ -234,6 +240,51 @@ describe("createClassroomPlannerStateSupport", () => {
       fixtures: [],
     });
     expect(fixture.historyStatus.value).toEqual({ can_undo: false, can_redo: false });
+  });
+
+  it("applies rehydrated rule diagnostics from workspace payloads", () => {
+    const fixture = createSupportFixture();
+
+    fixture.support.applyWorkspace({
+      draft: {
+        id: "draft-2",
+        roster_id: "roster-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        status: "active",
+        revision: 5,
+        last_opened_at: "2026-04-01T09:00:00Z",
+      },
+      roster: fixture.roster.value!,
+      template: fixture.template.value!,
+      groups: [],
+      group_assignments: [],
+      seat_assignments: [{ student_id: "student-1", seat_id: "seat-1" }],
+      history_status: { can_undo: false, can_redo: false },
+      rule_diagnostics: [
+        {
+          rule_id: "near_teacher:student-1",
+          rule_kind: "near_teacher",
+          status: "satisfied",
+          student_ids: ["student-1"],
+          seat_ids: ["seat-1"],
+          reason_code: "near_teacher_row_first_rank",
+          freshness_key: "fresh-1",
+        },
+      ],
+    });
+
+    expect(fixture.applyRuleDiagnostics).toHaveBeenCalledWith([
+      {
+        rule_id: "near_teacher:student-1",
+        rule_kind: "near_teacher",
+        status: "satisfied",
+        student_ids: ["student-1"],
+        seat_ids: ["seat-1"],
+        reason_code: "near_teacher_row_first_rank",
+        freshness_key: "fresh-1",
+      },
+    ]);
   });
 
   it("defaults missing smart-rule collections to empty arrays during hydration", () => {

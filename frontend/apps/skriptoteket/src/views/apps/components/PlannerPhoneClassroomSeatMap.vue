@@ -101,13 +101,17 @@ const roomSurfaceMetrics = computed(() => ({
 const {
   scale: mapScale,
   scalePercent: mapScalePercent,
+  beginGestureCamera,
+  endGestureCamera,
   zoomByFactor: zoomMapByFactor,
 } = useAnchoredRoomViewportZoom(roomSurfaceMetrics, mapViewport);
 const touchViewportGestures = useRoomTouchViewportGestures({
   onZoomByFactor: zoomMapByFactor,
-  onGestureStart: () => {
+  onGestureStart: (anchor) => {
+    beginGestureCamera(anchor);
     resetTouchDrag();
   },
+  onGestureEnd: endGestureCamera,
   target: mapViewport,
 });
 const mapViewportStyle = computed(() => ({
@@ -440,7 +444,7 @@ onBeforeUnmount(() => {
             >
               <component
                 :is="markerIconByKind[marker.kind]"
-                :size="11"
+                :size="16"
               />
             </span>
             <span

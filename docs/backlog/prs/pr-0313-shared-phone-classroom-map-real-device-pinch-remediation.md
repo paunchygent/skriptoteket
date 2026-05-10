@@ -18,7 +18,9 @@ acceptance_criteria:
   - "Given the phone `Sittplatser` simplified classroom map renders on an iPhone-sized viewport, when the teacher performs a real two-finger pinch on the map, then the map visibly zooms without removing, moving, or swapping a seated student."
   - "Given the phone `Regler` `Fast plats` simplified classroom map renders on an iPhone-sized viewport, when the teacher performs a real two-finger pinch on the map, then the map visibly zooms without selecting, clearing, or saving a fixed-seat binding."
   - "Given the teacher pinches around a visible map location, when zoom changes, then that gesture target remains centered under the same screen point instead of drifting toward the canvas origin."
+  - "Given the simplified phone map receives a continuous pinch gesture, when gesture events arrive quickly, then zoom and scroll compensation are coalesced through one gesture-camera update loop rather than chained through stale scroll/scale state."
   - "Given the simplified phone map renders at its default zoom, when seats have assigned students and rule markers, then names, initials, and marker symbols remain readable without requiring a preliminary zoom."
+  - "Given the simplified phone map zooms, when seat containers grow or shrink, then seat ordinals, student names, initials, and marker symbols scale from bounded CSS variables derived from `--planner-phone-seat-cell-size` instead of staying fixed-size."
   - "Given a recognized pinch gesture ends on either simplified map, when the browser dispatches a follow-up tap/click, then the map suppresses that follow-up domain action exactly once."
   - "Given one-finger interaction is used on either simplified map, when the teacher taps or short/long-presses a seat, then the existing `PR-0310` seat selection, removal, move, and swap semantics remain unchanged."
   - "Given browser proof runs for the phone simplified map, when the proof asserts zoom, then it proves native/browser-level input ownership rather than only fabricated DOM `TouchEvent` handler invocation."
@@ -202,10 +204,20 @@ Follow-up remediation:
 - Add a small anchored zoom helper for scrollable map viewports so the content
   coordinate under the gesture midpoint remains under that midpoint after the
   new scale is applied.
+- Replace incremental scroll compensation with a reusable gesture-camera model:
+  on gesture start, capture the content coordinate under the pinch centroid;
+  during gesture movement, derive scroll from that captured content coordinate,
+  the latest centroid, and the target scale.
+- Coalesce camera updates with `requestAnimationFrame` so fast iPhone gesture
+  streams do not compound against stale `scrollLeft` / `scrollTop` values.
+- Feed platform `gesturestart` / `gesturechange` `clientX` and `clientY` into
+  the same camera path when available; never fall back to viewport center when
+  the browser supplies a real gesture location.
 - Make the phone map a contained two-axis pan/zoom viewport so zoom growth is
   compensated through `scrollLeft` / `scrollTop` rather than page drift.
-- Increase default simplified-map seat, name, initials, and marker readability
-  without changing desktop/tablet `RoomCanvas`.
+- Treat simplified-map typography and symbol scaling as acceptance, not polish:
+  derive seat ordinal, first-name, initials, marker-box, and marker-icon sizes
+  from bounded CSS variables based on `--planner-phone-seat-cell-size`.
 
 Additional verification:
 
@@ -214,3 +226,47 @@ Additional verification:
 - Component proof that a pinch around a known phone-map point changes zoom
   without pushing that point toward the origin and still suppresses the
   follow-up click.
+- Component or browser proof that scaled seat cells also scale readable text
+  and marker symbols within bounded min/max values.
+
+## Anchored Zoom Remediation Closeout
+
+Implemented on 2026-05-10; ready for retained review plus real-device
+confirmation.
+
+- Extended the shared gesture payload so both two-touch and platform
+  `gesturestart` / `gesturechange` paths carry a viewport-relative centroid
+  when the browser exposes `clientX` and `clientY`.
+- Replaced active-pinch `nextTick` scroll correction with a reusable
+  gesture-camera model in `useAnchoredRoomViewportZoom`: gesture start captures
+  the content coordinate under the centroid, gesture updates derive scroll from
+  that original content coordinate plus the latest centroid and target scale,
+  and fast updates coalesce through one `requestAnimationFrame`.
+- Kept discrete button zoom on the anchored viewport helper while reserving the
+  gesture camera for continuous pinch streams.
+- Wired `PlannerPhoneClassroomSeatMap.vue` to begin and end the gesture camera
+  around recognized pinch gestures while preserving one-finger short-press and
+  long-press semantics from `PR-0310`.
+- Review remediation flushed the final queued gesture-camera scroll before
+  clearing pinch state, so a normal `touchmove` then `touchend` sequence cannot
+  leave the last scale frame unanchored.
+- Scaled phone-map ordinals, first names, initials, marker boxes, and marker
+  icons from bounded CSS variables derived from
+  `--planner-phone-seat-cell-size`, and restored high-contrast token color for
+  smaller text.
+
+Additional verification:
+
+- `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers classroomPlannerStateSupport useAnchoredRoomViewportZoom useRoomTouchViewportGestures PlannerPhoneClassroomSeatMap`
+- `pdm run pytest tests/unit/scripts/test_klassrumskartan_surface_tokens.py -q`
+- `pdm run fe-type-check`
+- `pdm run fe-lint`
+- `pdm run docs-validate`
+- `pdm run handoff-validate`
+- `git diff --check`
+
+Real-device note:
+
+- This closes the code-level drift and readability remediation, but final
+  `done` closeout still requires iPhone confirmation that pinch centering feels
+  smooth in both phone `Sittplatser` and phone `Regler` / `Fast plats`.

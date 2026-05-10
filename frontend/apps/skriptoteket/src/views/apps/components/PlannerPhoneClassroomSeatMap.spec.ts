@@ -192,6 +192,10 @@ describe("PlannerPhoneClassroomSeatMap", () => {
   });
 
   it("keeps the pinch target anchored while zooming the scrollable map", async () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
     const wrapper = mountEditableMap();
     const map = wrapper.get('[data-test="phone-classroom-seat-map"]');
     Object.defineProperties(map.element, {
@@ -217,7 +221,7 @@ describe("PlannerPhoneClassroomSeatMap", () => {
     await nextTick();
 
     expect(wrapper.get('[data-test="phone-fixed-seat-map-zoom-percent"]').text()).toBe("125%");
-    expect(map.element.scrollLeft).toBe(140.625);
+    expect(map.element.scrollLeft).toBe(125);
     expect(map.element.scrollTop).toBe(50);
   });
 

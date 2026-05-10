@@ -21,13 +21,13 @@ links:
 
 ## TL;DR
 
-`PR-0314` remains `changes_requested` after second-pass review. The row/bench
-`Håll nära` remediation is accepted: direct same-row adjacency is now the clean
-solver target and the G20 / SA24D history proof keeps the pair in
-`adjacent-row`. Diagnostic freshness is still not fully closed because local
-smart-rule mutations can leave old diagnostics in state until the next Smart
-run. The bundled `PR-0313` phone pinch lane is improved in code but still needs
-actual iPhone confirmation before deploy closeout.
+`PR-0314` backend diagnostic rehydration is accepted in third-pass review:
+authenticated workspace load recomputes solver diagnostics from persisted truth,
+diagnostics carry freshness keys, and frontend soft-rule coloring rejects
+freshness-free diagnostics. The bundled `PR-0313` phone pinch lane remains
+`changes_requested`: the gesture camera can cancel its final pending scroll
+frame on gesture end, and real iPhone confirmation is still required before
+deploy closeout.
 
 ## Problem Statement
 
@@ -75,7 +75,7 @@ diagnostics.
 - [x] Scope is attached to `PR-0314`.
 - [x] Solver diagnostics are additive on authenticated and public Smart seating responses.
 - [x] Frontend local soft-rule geometry inference is removed.
-- [ ] Diagnostic freshness is proven across local rule edits and pending smart-rule changes.
+- [x] Diagnostic freshness is proven across local rule edits, workspace reload, and pending smart-rule changes.
 - [x] Row/bench `Håll nära` no-conflict behavior matches the teacher-facing direct-adjacency requirement.
 - [ ] Bundled phone-map gesture proof matches real-device behavior before deploy.
 
@@ -166,7 +166,7 @@ diagnostics.
 
 - [x] Solver-owned diagnostic boundary
 - [x] Fixed-seat local hard-rule truth
-- [ ] Diagnostic freshness contract
+- [x] Diagnostic freshness contract
 - [ ] Row/bench keep-near direct-adjacency contract
 
 ## Changes Made
@@ -283,3 +283,60 @@ fix and `PR-0313` receives real-device phone proof.
 
 - `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers PlannerPhoneClassroomSeatMap useRoomTouchViewportGestures`
 - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_keep_near_geometry.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -m simulation --override-ini addopts='' -q`
+
+## Third-Pass Re-review
+
+**Reviewer:** `codex`
+**Date:** `2026-05-10`
+**Verdict:** `changes_requested`
+
+### Accepted Fixes
+
+- `PR-0314` diagnostic rehydration is accepted. `GetDraftWorkspaceHandler` now
+  recomputes seating diagnostics from persisted draft, roster, template,
+  smart-rule, and assignment truth; grouping workspaces do not touch the
+  smart-rule repository.
+- Authenticated Smart-run, public Smart-run, and authenticated workspace-load
+  diagnostics now carry additive `freshness_key` values, and OpenAPI frontend
+  types include the expanded workspace/diagnostic contract.
+- Frontend marker rendering now refuses soft-rule diagnostics without a
+  freshness key and still requires current rule shape plus current assignment
+  matches before applying tones.
+
+### Remaining Required Changes
+
+1. Blocker: `PR-0313` can drop the final gesture-camera scroll update when a
+   touch gesture ends before the queued animation frame runs.
+
+   Evidence:
+
+   - `frontend/apps/skriptoteket/src/views/apps/useAnchoredRoomViewportZoom.ts`
+     schedules active gesture-camera scroll compensation through
+     `requestAnimationFrame`.
+   - `endGestureCamera()` clears the pending point/scale and cancels the pending
+     frame before applying it.
+   - `useRoomTouchViewportGestures.ts` invokes `onGestureEnd` as soon as the
+     touch count drops below two, so a normal `touchmove` -> `touchend` sequence
+     can leave the latest scale applied without the matching scroll correction.
+
+   Required fix:
+
+   Flush the pending camera update before clearing/canceling gesture-camera
+   state, or leave the queued frame with the captured camera data needed to
+   apply the final scroll. Add a focused test where `zoomByFactor()` queues a
+   frame, `endGestureCamera()` runs before the frame callback, and the viewport
+   still receives the final anchored scroll. Mirror that at component level with
+   `touchmove` followed by `touchend` before RAF.
+
+2. Blocker: `PR-0313` still lacks the required real-device iPhone confirmation.
+
+   Required fix:
+
+   After the final-frame flush is repaired, record successful phone
+   confirmation for both phone `Sittplatser` and phone `Regler` / `Fast plats`,
+   or attach proof that exercises the same WebKit gesture ownership path.
+
+### Third-Pass Verification
+
+- `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers classroomPlannerStateSupport useAnchoredRoomViewportZoom useRoomTouchViewportGestures PlannerPhoneClassroomSeatMap`
+- `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_rule_diagnostic_freshness.py tests/unit/application/apps/classroom_planner/test_draft_workspace_diagnostics.py tests/unit/web/apps/classroom_planner/test_draft_workspace_api.py tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`

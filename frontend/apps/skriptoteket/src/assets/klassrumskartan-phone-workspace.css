@@ -460,6 +460,11 @@
 .planner-phone-fixed-seat-map {
   --planner-phone-map-scale: 1;
   --planner-phone-seat-cell-size: calc(2.75rem * var(--planner-phone-map-scale));
+  --planner-phone-seat-ordinal-size: clamp(0.8rem, calc(var(--planner-phone-seat-cell-size) * 0.24), 1.1rem);
+  --planner-phone-seat-name-size: clamp(0.75rem, calc(var(--planner-phone-seat-cell-size) * 0.22), 1.02rem);
+  --planner-phone-seat-initial-size: clamp(0.62rem, calc(var(--planner-phone-seat-cell-size) * 0.16), 0.82rem);
+  --planner-phone-rule-marker-size: clamp(1.08rem, calc(var(--planner-phone-seat-cell-size) * 0.3), 1.5rem);
+  --planner-phone-rule-marker-icon-size: clamp(0.78rem, calc(var(--planner-phone-seat-cell-size) * 0.2), 1.08rem);
 
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-paper);
@@ -591,7 +596,7 @@
   border: 1px solid rgb(8 43 76 / 0.22);
   background-color: white;
   color: var(--huleedu-navy);
-  font-size: 0.625rem;
+  font-size: var(--planner-phone-seat-name-size);
   font-weight: 800;
   line-height: 1;
 }
@@ -614,16 +619,22 @@
   white-space: nowrap;
 }
 
+.planner-phone-fixed-seat-map-seat-label {
+  color: var(--huleedu-navy);
+  font-size: var(--planner-phone-seat-ordinal-size);
+  font-weight: 900;
+}
+
 .planner-phone-fixed-seat-map-seat-student-first {
   color: var(--huleedu-navy);
-  font-size: 0.625rem;
+  font-size: var(--planner-phone-seat-name-size);
   font-weight: 850;
   line-height: 0.98;
 }
 
 .planner-phone-fixed-seat-map-seat-student-initials {
   color: var(--huleedu-navy);
-  font-size: 0.5rem;
+  font-size: var(--planner-phone-seat-initial-size);
   font-weight: 850;
   letter-spacing: var(--huleedu-tracking-label);
   line-height: 0.9;
@@ -663,8 +674,8 @@
 
 .planner-phone-fixed-seat-rule-marker {
   display: inline-flex;
-  width: 1rem;
-  height: 1rem;
+  width: var(--planner-phone-rule-marker-size);
+  height: var(--planner-phone-rule-marker-size);
   align-items: center;
   justify-content: center;
   border: 1px solid var(--huleedu-navy);
@@ -672,6 +683,11 @@
   color: var(--huleedu-navy);
   line-height: 1;
   box-shadow: 1px 1px 0 rgb(8 43 76 / 0.28);
+}
+
+.planner-phone-fixed-seat-rule-marker svg {
+  width: var(--planner-phone-rule-marker-icon-size);
+  height: var(--planner-phone-rule-marker-icon-size);
 }
 
 .planner-phone-fixed-seat-rule-marker-neutral {
@@ -700,9 +716,9 @@
 
 .planner-phone-fixed-seat-rule-marker-overflow {
   width: auto;
-  min-width: 1rem;
+  min-width: var(--planner-phone-rule-marker-size);
   padding: 0 0.12rem;
-  font-size: 0.5625rem;
+  font-size: var(--planner-phone-seat-initial-size);
   font-weight: 900;
 }
 

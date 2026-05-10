@@ -20,12 +20,12 @@ export type RoomTouchViewportGestureAnchor = {
 
 export type RoomTouchViewportGestureOptions = {
   onZoomByFactor: (factor: number, anchor: RoomTouchViewportGestureAnchor | null) => void;
-  onGestureStart?: () => void;
+  onGestureStart?: (anchor: RoomTouchViewportGestureAnchor | null) => void;
   onGestureEnd?: () => void;
   target?: Ref<HTMLElement | null>;
 };
 
-type PlatformGestureEvent = Event & { scale?: number };
+type PlatformGestureEvent = Event & { clientX?: number; clientY?: number; scale?: number };
 
 function touchDistance(first: TouchPoint, second: TouchPoint): number {
   return Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
@@ -58,6 +58,16 @@ function platformGestureScale(event: Event): number | null {
   return typeof scale === "number" && Number.isFinite(scale) && scale > 0 ? scale : null;
 }
 
+function platformGestureAnchor(event: Event): RoomTouchViewportGestureAnchor | null {
+  const gestureEvent = event as PlatformGestureEvent;
+  return typeof gestureEvent.clientX === "number"
+    && typeof gestureEvent.clientY === "number"
+    && Number.isFinite(gestureEvent.clientX)
+    && Number.isFinite(gestureEvent.clientY)
+    ? { clientX: gestureEvent.clientX, clientY: gestureEvent.clientY }
+    : null;
+}
+
 export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOptions) {
   const gestureActive = ref(false);
   const suppressNextTap = ref(false);
@@ -76,9 +86,10 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
       return;
     }
     lastDistance = touchDistance(touches[0], touches[1]);
+    const anchor = touchMidpoint(touches[0], touches[1]);
     gestureActive.value = true;
     suppressNextTap.value = true;
-    options.onGestureStart?.();
+    options.onGestureStart?.(anchor);
     preventBrowserDefault(event);
   }
 
@@ -111,11 +122,12 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
 
   function handlePlatformGestureStart(event: Event): void {
     lastPlatformGestureScale = platformGestureScale(event) ?? 1;
+    const anchor = platformGestureAnchor(event);
     platformGestureActive = true;
     gestureActive.value = true;
     suppressNextTap.value = true;
     lastDistance = null;
-    options.onGestureStart?.();
+    options.onGestureStart?.(anchor);
     preventBrowserDefault(event);
   }
 
@@ -128,7 +140,10 @@ export function useRoomTouchViewportGestures(options: RoomTouchViewportGestureOp
       handlePlatformGestureStart(event);
     }
     if (lastPlatformGestureScale !== null && lastPlatformGestureScale > 0) {
-      options.onZoomByFactor(nextScale / lastPlatformGestureScale, null);
+      options.onZoomByFactor(
+        nextScale / lastPlatformGestureScale,
+        platformGestureAnchor(event),
+      );
     }
     lastPlatformGestureScale = nextScale;
     suppressNextTap.value = true;

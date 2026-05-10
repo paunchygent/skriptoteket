@@ -27,9 +27,11 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PatchDraftHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    SmartRuleDiagnosticDto,
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
+    serialize_smart_rule_diagnostics,
 )
 from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
     CreateClassListImportPreviewHandler,
@@ -243,6 +245,7 @@ class DraftWorkspaceResponse(BaseModel):
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
     history_status: DraftHistoryStatusDto
+    rule_diagnostics: list[SmartRuleDiagnosticDto] = Field(default_factory=list)
 
 
 class ResolvePlanDraftRequest(BaseModel):
@@ -316,7 +319,11 @@ def _serialize_resumable_plan_draft(resumable: ResumablePlanDraft) -> ResumableP
     )
 
 
-def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspaceResponse:
+def _serialize_workspace(
+    workspace: ClassroomPlannerWorkspace,
+    *,
+    rule_diagnostics: list[SmartRuleDiagnosticDto] | None = None,
+) -> DraftWorkspaceResponse:
     """Map the hydrated planner workspace to the public API response."""
     return DraftWorkspaceResponse(
         draft=serialize_plan_draft(workspace.draft),
@@ -332,6 +339,7 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
             for assignment in workspace.seat_assignments
         ],
         history_status=DraftHistoryStatusDto.model_validate(workspace.history_status),
+        rule_diagnostics=rule_diagnostics or [],
     )
 
 
@@ -585,8 +593,11 @@ async def get_draft_workspace(
     handler: FromDishka[GetDraftWorkspaceHandler],
     user: User = Depends(require_app_user_api),
 ) -> DraftWorkspaceResponse:
-    workspace = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
-    return _serialize_workspace(workspace)
+    result = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
+    return _serialize_workspace(
+        result.workspace,
+        rule_diagnostics=serialize_smart_rule_diagnostics(result.rule_diagnostics),
+    )
 
 
 @router.patch("/drafts/{draft_id}", response_model=DraftWorkspaceResponse)

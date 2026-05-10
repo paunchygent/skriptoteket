@@ -134,6 +134,7 @@ export type SmartRuleDiagnostic = {
   relation_mode?: string | null;
   seating_context?: SmartRuleDiagnosticSeatingContext | null;
   message_key?: string | null;
+  freshness_key?: string | null;
 };
 
 export type ResumablePlanDraft = {
@@ -184,6 +185,7 @@ export type DraftWorkspaceResponse = {
     can_undo: boolean;
     can_redo: boolean;
   };
+  rule_diagnostics?: SmartRuleDiagnostic[];
 };
 
 export type AppliedSmartSeatingRunResponse = {
