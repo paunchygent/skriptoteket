@@ -13,10 +13,11 @@ import { computed, ref } from "vue";
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
 import { buildGuestWorkspaceResponse } from "./classroomPlannerGuestDraftMutations";
 import { createPlannerMutationActions } from "./classroomPlannerStoreMutations";
-import { createClassroomPlannerGuestDraftDerivedState } from "./classroomPlannerGuestDraftDerivedState";
+import { createClassroomPlannerDerivedState } from "./classroomPlannerDerivedState";
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
 import { createClassroomPlannerGuestDraftHistory } from "./classroomPlannerGuestDraftHistory";
+import { createClassroomPlannerGuestDraftHistoryActions } from "./classroomPlannerGuestDraftHistoryActions";
 import { createClassroomPlannerGuestDraftSessionApi } from "./classroomPlannerGuestDraftSessionApi";
 import {
   PUBLIC_GROUPING_SMART_RUN_API_PATH,
@@ -43,9 +44,9 @@ import type {
   RelationshipRule,
   RoomTemplate,
   Roster,
-  SmartRuleDiagnostic,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
+import { useClassroomPlannerRuleDiagnostics } from "./useClassroomPlannerRuleDiagnostics";
 
 export function createClassroomPlannerGuestDraftSession(
   options: CreateClassroomPlannerGuestDraftSessionOptions,
@@ -59,7 +60,11 @@ export function createClassroomPlannerGuestDraftSession(
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
   const fixedSeatRules = ref<FixedSeatRule[]>([]);
-  const smartRuleDiagnostics = ref<SmartRuleDiagnostic[]>([]);
+  const {
+    smartRuleDiagnostics,
+    applyRuleDiagnostics,
+    clearRuleDiagnostics,
+  } = useClassroomPlannerRuleDiagnostics();
   const smartRulesRevision = ref(0);
   const historyStatus = ref({ can_undo: false, can_redo: false });
   const historyActionInFlight = ref(false);
@@ -91,7 +96,7 @@ export function createClassroomPlannerGuestDraftSession(
     studentsByGroupId,
     studentBySeatId,
     zones,
-  } = createClassroomPlannerGuestDraftDerivedState({
+  } = createClassroomPlannerDerivedState({
     roster,
     template,
     groups,
@@ -145,9 +150,8 @@ export function createClassroomPlannerGuestDraftSession(
       getStateSupport().applySmartRuleSaveAcknowledgement(rules);
     },
   });
-  const hasPendingAutosave = computed(() => {
-    return draftLane.hasPendingChanges.value || smartRuleLane.hasPendingChanges.value;
-  });
+  const hasPendingAutosave = computed(() =>
+    draftLane.hasPendingChanges.value || smartRuleLane.hasPendingChanges.value);
   const smartRulesHydrated = computed(() => smartRuleLane.isHydrated.value);
   const canEditSeatingSmartRules = computed(() => {
     return roster.value !== null && smartRuleLane.isHydrated.value && !isWorkspaceBusy.value;
@@ -155,9 +159,8 @@ export function createClassroomPlannerGuestDraftSession(
   const canUndo = computed(() => {
     return draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_undo;
   });
-  const canRedo = computed(() => {
-    return draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_redo;
-  });
+  const canRedo = computed(() =>
+    draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_redo);
   stateSupportHolder.current = createClassroomPlannerStateSupport({
     draft,
     roster,
@@ -177,6 +180,7 @@ export function createClassroomPlannerGuestDraftSession(
     draftLane,
     smartRuleLane,
     smartRuleUiState,
+    clearRuleDiagnostics,
   });
   const stateSupport = getStateSupport();
   function syncGuestHistoryStatus(): void {
@@ -242,6 +246,7 @@ export function createClassroomPlannerGuestDraftSession(
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
+    clearRuleDiagnostics,
     onDraftMutation: captureCurrentGuestWorkspace,
     onSmartPreferenceChange: rememberGuestSmartPreference,
   });
@@ -255,6 +260,7 @@ export function createClassroomPlannerGuestDraftSession(
     seatAssignmentsByStudentId,
     canMutate: () => !isWorkspaceBusy.value,
     markDirty: () => {
+      clearRuleDiagnostics();
       stateSupport.syncVisibleSessionBindings();
       captureCurrentGuestWorkspace();
       draftLane.markDirty();
@@ -315,9 +321,7 @@ export function createClassroomPlannerGuestDraftSession(
     getCurrentWorkspace,
     commitWorkspaceToSnapshot,
     applyWorkspace: applyWorkspaceWithHistoryCapture,
-    applyRuleDiagnostics: (diagnostics) => {
-      smartRuleDiagnostics.value = diagnostics;
-    },
+    applyRuleDiagnostics,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
   const smartRunActions = createClassroomPlannerSmartRunActions({
@@ -328,42 +332,6 @@ export function createClassroomPlannerGuestDraftSession(
     randomizeGroups: mutationActions.randomizeGroups,
     clearFeedbackBeforeRun: true,
   });
-  async function noopHistoryAction(): Promise<void> {
-    return;
-  }
-  function buildHistoryWorkspace(workspace: DraftWorkspaceResponse): DraftWorkspaceResponse {
-    return {
-      ...workspace,
-      draft: {
-        ...workspace.draft,
-        revision: draft.value?.revision ?? workspace.draft.revision,
-        last_opened_at: draft.value?.last_opened_at ?? workspace.draft.last_opened_at,
-      },
-    };
-  }
-  async function applyGuestHistoryAction(direction: "undo" | "redo"): Promise<void> {
-    if (!draft.value || isWorkspaceBusy.value) {
-      return;
-    }
-
-    historyActionInFlight.value = true;
-    try {
-      const historyWorkspace = direction === "undo"
-        ? guestHistory.undo(draft.value.id)
-        : guestHistory.redo(draft.value.id);
-      if (!historyWorkspace) {
-        syncGuestHistoryStatus();
-        return;
-      }
-
-      stateSupport.applyWorkspace(buildHistoryWorkspace(historyWorkspace));
-      replaceCurrentGuestHistoryWorkspace();
-      stateSupport.syncVisibleSessionBindings();
-      draftLane.markDirty();
-    } finally {
-      historyActionInFlight.value = false;
-    }
-  }
   const reloadActiveWorkspace = async () => {
     if (!draft.value) {
       return;
@@ -371,21 +339,16 @@ export function createClassroomPlannerGuestDraftSession(
     await workspaceActions.loadWorkspace(draft.value.id);
   };
 
-  function createScopedHistoryAction(
-    draftKind: "grouping" | "seating",
-    direction: "undo" | "redo",
-  ) {
-    return async () => {
-      if (draft.value?.draft_kind !== draftKind) {
-        return;
-      }
-      await applyGuestHistoryAction(direction);
-    };
-  }
-  const undoGroupingDraft = createScopedHistoryAction("grouping", "undo");
-  const redoGroupingDraft = createScopedHistoryAction("grouping", "redo");
-  const undoSeatingDraft = createScopedHistoryAction("seating", "undo");
-  const redoSeatingDraft = createScopedHistoryAction("seating", "redo");
+  const historyActions = createClassroomPlannerGuestDraftHistoryActions({
+    draft,
+    isWorkspaceBusy,
+    historyActionInFlight,
+    guestHistory,
+    stateSupport,
+    draftLane,
+    syncGuestHistoryStatus,
+    replaceCurrentGuestHistoryWorkspace,
+  });
   const abandonDraft = async () => ({ status: "saved" as const });
   return createClassroomPlannerGuestDraftSessionApi({
     sessionState: {
@@ -469,14 +432,14 @@ export function createClassroomPlannerGuestDraftSession(
       persistOverviewUiState: workspaceActions.persistOverviewUiState,
     },
     historyActions: {
-      activateGroupingHistoryDraft: noopHistoryAction,
-      deleteGroupingHistoryDraft: noopHistoryAction,
-      activateSeatingHistoryDraft: noopHistoryAction,
-      deleteSeatingHistoryDraft: noopHistoryAction,
-      undoGroupingDraft,
-      redoGroupingDraft,
-      undoSeatingDraft,
-      redoSeatingDraft,
+      activateGroupingHistoryDraft: historyActions.noopHistoryAction,
+      deleteGroupingHistoryDraft: historyActions.noopHistoryAction,
+      activateSeatingHistoryDraft: historyActions.noopHistoryAction,
+      deleteSeatingHistoryDraft: historyActions.noopHistoryAction,
+      undoGroupingDraft: historyActions.undoGroupingDraft,
+      redoGroupingDraft: historyActions.redoGroupingDraft,
+      undoSeatingDraft: historyActions.undoSeatingDraft,
+      redoSeatingDraft: historyActions.redoSeatingDraft,
     },
     mutationActions: {
       assignStudentToGroup: mutationActions.assignStudentToGroup,

@@ -235,7 +235,7 @@ def keep_near_has_tradeoff(
             return pair.keep_near_relation_mode not in {"adjacent-row", "adjacent-column"}
         if seating_context in {"bench_row", "row_layout"}:
             return pair.keep_near_relation_mode != "adjacent-row"
-        return not pair.orthogonally_adjacent
+        return pair.keep_near_relation_mode != "adjacent-row"
     return pair.keep_near_relation_mode is None
 
 

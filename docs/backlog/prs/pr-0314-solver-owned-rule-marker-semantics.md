@@ -2,7 +2,7 @@
 type: pr
 id: PR-0314
 title: "Solver-owned rule marker semantics"
-status: done
+status: in_progress
 owners: "agents"
 created: 2026-05-10
 updated: 2026-05-10
@@ -227,3 +227,68 @@ Additional verification:
 - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -m simulation --override-ini addopts='' -q`
 - `pdm run fe-test -- --run RoomCanvas PlannerPhoneFixedSeatRulePanel PlannerRulesMapCanvas useSmartSeatingRun usePublicSmartSeatingRun`
 - `pdm run ruff check ...`
+
+Second-pass remediation applied on 2026-05-10.
+
+- Direct smart-rule mutations now receive the shared diagnostics invalidation
+  callback and clear stored solver diagnostics before marking the smart-rule
+  lane dirty.
+- The direct mutation proof covers near-teacher edits, relationship-rule
+  commits, fixed-seat commits, and Smart preference changes in
+  `classroomPlannerSmartRuleActions.spec.ts`.
+- The near-limit frontend files were split rather than compressed:
+  `classroomPlannerFixedSeatRuleActions.ts`,
+  `classroomPlannerDerivedState.ts`,
+  `classroomPlannerGuestDraftHistoryActions.ts`,
+  `phoneClassroomSeatMapLayout.ts`, and
+  `useClassroomPlannerRuleDiagnostics.ts`.
+
+`PR-0313` still remains open for actual iPhone confirmation before deploy
+closeout.
+
+## Review Closeout
+
+Ruthless review on 2026-05-10 requested changes. `PR-0314` was blocked until:
+
+- stale solver diagnostics cannot keep coloring markers after local rule edits
+  or rule-shape changes
+- row/bench `Håll nära` pair placement proves direct same-row adjacency as the
+  clean no-conflict outcome instead of rotating into same-column placement
+  under light rule pressure
+
+See
+[`REV-PR-0314`](../reviews/review-pr-0314-solver-owned-rule-marker-semantics.md).
+
+## Review Remediation
+
+Applied on 2026-05-10; second-pass review keeps `PR-0314` in progress until the
+remaining diagnostic lifecycle gap is closed.
+
+- Marker coloring now requires a full current soft-rule shape match before a
+  diagnostic can supply a tone: relationship diagnostics must match current
+  rule id, rule kind, current `student_ids`, and current student-seat
+  assignment; near-teacher diagnostics must match the current stable
+  `near_teacher:{student_id}` preference key and assignment.
+- Authenticated and guest local assignment/template/roster mutations clear the
+  stored diagnostics so stale solver output is not carried across visible local
+  workspace changes.
+- Row/bench and unknown-context `Håll nära` pair scoring now treats
+  `adjacent-row` as the clean target and heavily penalizes `adjacent-column`
+  unless the pair is explicitly in a shared-table context.
+- The G20 / SA24D solver proof now asserts the keep-near pair remains
+  `adjacent-row` across history reruns while still preserving near-teacher,
+  keep-apart, and overall layout diversity.
+
+Second-pass review accepted the row/bench `Håll nära` remediation and the
+specific rule-shape diagnostic matching proof. It still requires stored
+diagnostics to be cleared or revision-checked on every local smart-rule
+mutation, not only on assignment/template/roster mutations. The bundled
+`PR-0313` phone pinch lane also remains open until actual iPhone confirmation is
+recorded.
+
+Verification:
+
+- `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers PlannerPhoneClassroomSeatMap useRoomTouchViewportGestures`
+- `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_keep_near_geometry.py tests/unit/domain/curated_apps/classroom_planner/test_smart_rule_diagnostics.py -q`
+- `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -m simulation --override-ini addopts='' -q`
+- `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_keep_near_geometry.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -m simulation --override-ini addopts='' -q`

@@ -2,7 +2,7 @@
 
 This module locks the tightened two-student row-layout `Keep near` contract:
 left/right adjacency is the clean outcome, while across-row, diagonal, or
-one-seat-buffer fallback placements remain lower-quality alternatives.
+one-seat-buffer fallback placements remain degraded or failed alternatives.
 """
 
 from __future__ import annotations
@@ -54,16 +54,40 @@ def _build_topology():
     )
 
 
-def test_keep_near_pair_prefers_direct_orthogonal_contact() -> None:
+def test_keep_near_pair_prefers_same_row_direct_contact() -> None:
     topology = _build_topology()
 
-    orthogonal_pair = topology.pair("seat-1", "seat-2")
+    same_row_pair = topology.pair("seat-1", "seat-2")
+    same_column_pair = topology.pair("seat-1", "seat-4")
     diagonal_pair = topology.pair("seat-1", "seat-5")
 
-    assert orthogonal_pair.orthogonally_adjacent is True
-    assert _keep_near_has_tradeoff(pair=orthogonal_pair, cluster_size=2) is False
+    assert same_row_pair.keep_near_relation_mode == "adjacent-row"
+    assert same_column_pair.keep_near_relation_mode == "adjacent-column"
+    assert _keep_near_has_tradeoff(pair=same_row_pair, cluster_size=2) is False
+    assert _keep_near_has_tradeoff(pair=same_column_pair, cluster_size=2) is True
+    assert (
+        _keep_near_has_tradeoff(
+            pair=same_column_pair,
+            cluster_size=2,
+            seating_context="unknown",
+        )
+        is True
+    )
     assert _keep_near_has_tradeoff(pair=diagonal_pair, cluster_size=2) is True
-    assert keep_near_pair_score(pair=orthogonal_pair, cluster_size=2) > keep_near_pair_score(
+    assert keep_near_pair_score(pair=same_row_pair, cluster_size=2) > keep_near_pair_score(
+        pair=same_column_pair,
+        cluster_size=2,
+    )
+    assert keep_near_pair_score(
+        pair=same_row_pair,
+        cluster_size=2,
+        seating_context="unknown",
+    ) > keep_near_pair_score(
+        pair=same_column_pair,
+        cluster_size=2,
+        seating_context="unknown",
+    )
+    assert keep_near_pair_score(pair=same_row_pair, cluster_size=2) > keep_near_pair_score(
         pair=diagonal_pair,
         cluster_size=2,
     )
@@ -72,12 +96,12 @@ def test_keep_near_pair_prefers_direct_orthogonal_contact() -> None:
 def test_keep_near_pair_treats_one_seat_buffer_as_fallback_only() -> None:
     topology = _build_topology()
 
-    orthogonal_pair = topology.pair("seat-1", "seat-4")
+    same_row_pair = topology.pair("seat-1", "seat-2")
     buffered_pair = topology.pair("seat-1", "seat-3")
 
     assert buffered_pair.same_line_one_step is True
     assert _keep_near_has_tradeoff(pair=buffered_pair, cluster_size=2) is True
-    assert keep_near_pair_score(pair=orthogonal_pair, cluster_size=2) > keep_near_pair_score(
+    assert keep_near_pair_score(pair=same_row_pair, cluster_size=2) > keep_near_pair_score(
         pair=buffered_pair,
         cluster_size=2,
     )

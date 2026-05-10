@@ -35,10 +35,14 @@ import {
   type PhoneSeatStudentName,
 } from "../phoneClassroomSeatMapPresentation";
 import {
-  isWallFixtureType,
+  buildPhoneFixtureClass,
+  buildPhoneFixtureGridStyle,
+  buildPhoneFixtureLabel,
+  buildPhoneFixtureVisibleLabel,
+  buildPhoneSeatGridStyle,
+} from "../phoneClassroomSeatMapLayout";
+import {
   normalizeRoomGrid,
-  resolveWallSideFromFixture,
-  ROOM_GRID_UNIT,
 } from "../roomFixtureLayout";
 import { useRoomTouchViewportGestures } from "../useRoomTouchViewportGestures";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
@@ -106,10 +110,13 @@ const touchViewportGestures = useRoomTouchViewportGestures({
   },
   target: mapViewport,
 });
+const mapViewportStyle = computed(() => ({
+  "--planner-phone-map-scale": String(mapScale.value),
+  "--planner-phone-seat-cell-size": `${PHONE_MAP_BASE_CELL_SIZE_PX * mapScale.value}px`,
+}));
 const mapGridStyle = computed(() => ({
   "--phone-map-cols": String(roomGrid.value.cols),
   "--phone-map-rows": String(roomGrid.value.rows),
-  "--planner-phone-map-scale": String(mapScale.value),
   gridTemplateColumns: `repeat(${roomGrid.value.cols}, var(--planner-phone-seat-cell-size))`,
   gridTemplateRows: `repeat(${roomGrid.value.rows}, var(--planner-phone-seat-cell-size))`,
 }));
@@ -161,68 +168,24 @@ const ruleMarkersBySeatId = computed(() => buildSeatRuleMarkersBySeatId({
   pendingFixedSeatSeatId: props.pendingFixedSeatSeatId,
 }));
 
-function gridStartFromCoordinate(value: number): number {
-  return Math.max(1, Math.round(value / ROOM_GRID_UNIT) + 1);
-}
-
-function gridSpanFromSize(value: number): number {
-  return Math.max(1, Math.round(value / ROOM_GRID_UNIT));
-}
-
 function seatGridStyle(seat: { x: number; y: number }): Record<string, string> {
-  return {
-    gridColumn: `${gridStartFromCoordinate(seat.x)} / span 1`,
-    gridRow: `${gridStartFromCoordinate(seat.y)} / span 1`,
-  };
+  return buildPhoneSeatGridStyle(seat);
 }
 
 function fixtureGridStyle(fixture: RoomFixture): Record<string, string> {
-  const wallSide = props.template && isWallFixtureType(fixture.type)
-    ? resolveWallSideFromFixture(fixture, roomGrid.value)
-    : null;
-  if (wallSide === "top" || wallSide === "bottom") {
-    return {
-      gridColumn: `${gridStartFromCoordinate(fixture.x)} / span ${gridSpanFromSize(fixture.width)}`,
-      gridRow: `${wallSide === "top" ? 1 : roomGrid.value.rows} / span 1`,
-    };
-  }
-  if (wallSide === "left" || wallSide === "right") {
-    return {
-      gridColumn: `${wallSide === "left" ? 1 : roomGrid.value.cols} / span 1`,
-      gridRow: `${gridStartFromCoordinate(fixture.y)} / span ${gridSpanFromSize(fixture.height)}`,
-    };
-  }
-  return {
-    gridColumn: `${gridStartFromCoordinate(fixture.x)} / span ${gridSpanFromSize(fixture.width)}`,
-    gridRow: `${gridStartFromCoordinate(fixture.y)} / span ${gridSpanFromSize(fixture.height)}`,
-  };
+  return buildPhoneFixtureGridStyle(fixture, roomGrid.value);
 }
 
 function fixtureLabel(fixture: RoomFixture): string {
-  if (fixture.type === "teacher_desk") {
-    return "Kateder";
-  }
-  if (fixture.type === "door") {
-    return "Dörr";
-  }
-  if (fixture.type === "window") {
-    return "Fönster";
-  }
-  return "Tavla";
+  return buildPhoneFixtureLabel(fixture);
 }
 
 function fixtureVisibleLabel(fixture: RoomFixture): string {
-  return isWallFixtureType(fixture.type) ? "" : fixtureLabel(fixture);
+  return buildPhoneFixtureVisibleLabel(fixture);
 }
 
 function fixtureClass(fixture: RoomFixture): string[] {
-  const wallSide = props.template && isWallFixtureType(fixture.type)
-    ? resolveWallSideFromFixture(fixture, roomGrid.value)
-    : null;
-  return [
-    `planner-phone-fixed-seat-map-fixture-${fixture.type}`,
-    wallSide ? `planner-phone-fixed-seat-map-fixture-wall-${wallSide}` : "",
-  ].filter(Boolean);
+  return buildPhoneFixtureClass(fixture, roomGrid.value);
 }
 
 function seatTitle(seatId: string): string {
@@ -387,6 +350,7 @@ onBeforeUnmount(() => {
     ref="mapViewport"
     class="planner-phone-fixed-seat-map"
     data-test="phone-classroom-seat-map"
+    :style="mapViewportStyle"
   >
     <div class="planner-phone-fixed-seat-map-header">
       <span>Klassrum</span>

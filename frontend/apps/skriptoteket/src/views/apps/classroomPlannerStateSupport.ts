@@ -74,6 +74,7 @@ type CreateClassroomPlannerStateSupportOptions = {
   draftLane: DraftLane;
   smartRuleLane: SmartRuleLane;
   smartRuleUiState: SmartRuleUiState;
+  clearRuleDiagnostics?: () => void;
 };
 
 export function createClassroomPlannerStateSupport(
@@ -190,6 +191,7 @@ export function createClassroomPlannerStateSupport(
     options.fixedSeatRules.value = options.fixedSeatRules.value.filter((rule) => {
       return rule.template_id === normalizedTemplate.id && seatIds.has(rule.seat_id);
     });
+    options.clearRuleDiagnostics?.();
   }
 
   function replaceCurrentRoster(nextRoster: Roster): void {
@@ -224,6 +226,7 @@ export function createClassroomPlannerStateSupport(
       return studentIds.has(rule.student_id);
     });
     options.smartRuleUiState.reset();
+    options.clearRuleDiagnostics?.();
   }
 
   function serializeDraftPatch() {

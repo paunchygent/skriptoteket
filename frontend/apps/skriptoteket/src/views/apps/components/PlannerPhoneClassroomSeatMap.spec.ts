@@ -178,6 +178,7 @@ describe("PlannerPhoneClassroomSeatMap", () => {
     await sourceSeat.trigger("click");
 
     expect(wrapper.get('[data-test="phone-fixed-seat-map-zoom-percent"]').text()).toBe("125%");
+    expect(map.attributes("style")).toContain("--planner-phone-seat-cell-size: 55px");
     expect(wrapper.emitted("student-removed")).toBeUndefined();
   });
 

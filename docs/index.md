@@ -469,6 +469,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md`
 - Solver-owned rule marker semantics:
   `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md`
+- Review gate for PR-0314 solver-owned rule marker semantics:
+  `docs/backlog/reviews/review-pr-0314-solver-owned-rule-marker-semantics.md`
 - ST-29-11 share/export affordance consolidation task:
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:

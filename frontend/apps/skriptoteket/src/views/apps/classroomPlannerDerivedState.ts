@@ -1,9 +1,15 @@
 /**
- * Classroom planner guest draft derived state.
+ * Classroom planner derived state.
  *
- * This module centralizes the pure computed projections for the guest planner
- * session so the main session controller can focus on lifecycle and
- * persistence boundaries.
+ * Purpose:
+ *   Centralize pure computed projections shared by authenticated and guest
+ *   planner sessions so session controllers can focus on lifecycle and
+ *   persistence boundaries.
+ *
+ * Relationships:
+ *   - consumed by `useClassroomState.ts`
+ *   - consumed by `classroomPlannerGuestDraftSession.ts`
+ *   - delegates map builders to `classroomPlannerStoreMutations.ts`
  */
 
 import { computed, type Ref } from "vue";
@@ -29,7 +35,7 @@ function hasAssignedTarget(entry: [string, string | null]): entry is [string, st
   return typeof entry[1] === "string" && entry[1].length > 0;
 }
 
-export function createClassroomPlannerGuestDraftDerivedState(options: {
+export function createClassroomPlannerDerivedState(options: {
   roster: Ref<Roster | null>;
   template: Ref<RoomTemplate | null>;
   groups: Ref<DraftGroup[]>;

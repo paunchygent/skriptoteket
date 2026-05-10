@@ -156,6 +156,15 @@ function buildCurrentDiagnostics(
     nearTeacherByStudentId: new Map(),
     relationshipByRuleId: new Map(),
   };
+  const nearTeacherStudentIds = new Set(
+    (input.seatingPreferences ?? [])
+      .filter((preference) => preference.near_teacher)
+      .map((preference) => preference.student_id),
+  );
+  const relationshipRuleById = new Map((input.relationshipRules ?? []).map((rule) => [
+    rule.id,
+    rule,
+  ]));
   for (const diagnostic of input.ruleDiagnostics ?? []) {
     if (diagnostic.rule_kind === "fixed_seat") {
       continue;
@@ -165,16 +174,34 @@ function buildCurrentDiagnostics(
     }
     if (diagnostic.rule_kind === "near_teacher") {
       const [studentId] = diagnostic.student_ids;
-      if (studentId) {
+      if (
+        studentId
+        && diagnostic.student_ids.length === 1
+        && diagnostic.rule_id === `near_teacher:${studentId}`
+        && nearTeacherStudentIds.has(studentId)
+      ) {
         diagnosticsByRule.nearTeacherByStudentId.set(studentId, diagnostic);
       }
       continue;
     }
-    if (diagnostic.rule_id) {
-      diagnosticsByRule.relationshipByRuleId.set(diagnostic.rule_id, diagnostic);
+    const rule = diagnostic.rule_id ? relationshipRuleById.get(diagnostic.rule_id) : undefined;
+    if (rule && diagnosticMatchesRelationshipRule(diagnostic, rule)) {
+      diagnosticsByRule.relationshipByRuleId.set(rule.id, diagnostic);
     }
   }
   return diagnosticsByRule;
+}
+
+function diagnosticMatchesRelationshipRule(
+  diagnostic: SmartRuleDiagnostic,
+  rule: RelationshipRule,
+): boolean {
+  const expectedKind = rule.kind === "keep_near" ? "keep_near" : "keep_apart";
+  return (
+    diagnostic.rule_id === rule.id
+    && diagnostic.rule_kind === expectedKind
+    && sameStringSet(diagnostic.student_ids, rule.student_ids)
+  );
 }
 
 function diagnosticMatchesCurrentAssignment(

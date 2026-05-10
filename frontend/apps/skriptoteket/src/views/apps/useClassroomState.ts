@@ -21,34 +21,26 @@ import { defineStore } from "pinia";
 
 import { apiDelete, apiGet, apiPatch, apiPost } from "../../api/client";
 import { createPlannerStatusModel } from "./classroomPlannerStatus";
+import { createClassroomPlannerDerivedState } from "./classroomPlannerDerivedState";
 import { createClassroomPlannerLifecycle } from "./classroomPlannerLifecycle";
 import { createClassroomPlannerSmartRuleActions } from "./classroomPlannerSmartRuleActions";
 import type { ClassroomPlannerSmartPreferenceKey } from "./classroomPlannerSmartPreferences";
 import { createClassroomPlannerSmartRunActions } from "./classroomPlannerSmartRunActions";
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
-import {
-  buildFixtureMap,
-  buildGroupMap,
-  buildSeatMap,
-  buildStudentMap,
-  createPlannerMutationActions,
-} from "./classroomPlannerStoreMutations";
+import { createPlannerMutationActions } from "./classroomPlannerStoreMutations";
 import { useSmartGroupingRun } from "./useSmartGroupingRun";
 import { useSmartSeatingRun } from "./useSmartSeatingRun";
 import type {
   DraftGroup,
   DraftHistoryStatus,
   FixedSeatRule,
-  GroupAssignment,
   PlanDraft,
   RelationshipRule,
   RoomTemplate,
   Roster,
-  SeatAssignment,
-  SmartRuleDiagnostic,
-  Student,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
+import { useClassroomPlannerRuleDiagnostics } from "./useClassroomPlannerRuleDiagnostics";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import { useClassroomPlannerSmartPreferenceLane } from "./useClassroomPlannerSmartPreferenceLane";
 import { usePlannerSessionController } from "./usePlannerSessionController";
@@ -68,7 +60,11 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
   const fixedSeatRules = ref<FixedSeatRule[]>([]);
-  const smartRuleDiagnostics = ref<SmartRuleDiagnostic[]>([]);
+  const {
+    smartRuleDiagnostics,
+    applyRuleDiagnostics,
+    clearRuleDiagnostics,
+  } = useClassroomPlannerRuleDiagnostics();
   const smartRulesRevision = ref(0);
   const historyStatus = ref<DraftHistoryStatus>({ can_undo: false, can_redo: false });
   const historyActionInFlight = ref(false);
@@ -91,74 +87,27 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     );
   });
 
-  const students = computed(() => roster.value?.students ?? []);
-  const seats = computed(() => template.value?.seats ?? []);
-  const fixtures = computed(() => template.value?.fixtures ?? []);
-
-  const studentsById = computed(() => buildStudentMap(students.value));
-  const seatsById = computed(() => buildSeatMap(seats.value));
-  const fixturesById = computed(() => buildFixtureMap(fixtures.value));
-  const groupsById = computed(() => buildGroupMap(groups.value));
-  const hasAssignedTarget = (entry: [string, string | null]): entry is [string, string] => {
-    return typeof entry[1] === "string" && entry[1].length > 0;
-  };
-
-  const groupAssignments = computed<GroupAssignment[]>(() => {
-    return Object.entries(groupAssignmentsByStudentId.value)
-      .filter(hasAssignedTarget)
-      .map(([studentId, groupId]) => ({ student_id: studentId, group_id: groupId }));
-  });
-
-  const seatAssignments = computed<SeatAssignment[]>(() => {
-    return Object.entries(seatAssignmentsByStudentId.value)
-      .filter(hasAssignedTarget)
-      .map(([studentId, seatId]) => ({ student_id: studentId, seat_id: seatId }));
-  });
-
-  const ungroupedStudents = computed(() => {
-    return students.value.filter((student) => !groupAssignmentsByStudentId.value[student.id]);
-  });
-
-  const unseatedStudents = computed(() => {
-    return students.value.filter((student) => !seatAssignmentsByStudentId.value[student.id]);
-  });
-
-  const studentsByGroupId = computed<Record<string, Student[]>>(() => {
-    const grouped: Record<string, Student[]> = {};
-    for (const group of groups.value) {
-      grouped[group.id] = [];
-    }
-    for (const student of students.value) {
-      const groupId = groupAssignmentsByStudentId.value[student.id];
-      if (groupId && grouped[groupId]) {
-        grouped[groupId].push(student);
-      }
-    }
-    return grouped;
-  });
-
-  const studentBySeatId = computed<Record<string, Student | null>>(() => {
-    const placed: Record<string, Student | null> = {};
-    for (const seat of seats.value) {
-      placed[seat.id] = null;
-    }
-    for (const student of students.value) {
-      const seatId = seatAssignmentsByStudentId.value[student.id];
-      if (seatId && placed[seatId] !== undefined) {
-        placed[seatId] = student;
-      }
-    }
-    return placed;
-  });
-
-  const zones = computed(() => {
-    return Array.from(
-      new Set(
-        seats.value
-          .map((seat) => seat.zone ?? null)
-          .filter((zone): zone is string => typeof zone === "string" && zone.length > 0),
-      ),
-    ).sort();
+  const {
+    students,
+    seats,
+    fixtures,
+    studentsById,
+    seatsById,
+    fixturesById,
+    groupsById,
+    groupAssignments,
+    seatAssignments,
+    ungroupedStudents,
+    unseatedStudents,
+    studentsByGroupId,
+    studentBySeatId,
+    zones,
+  } = createClassroomPlannerDerivedState({
+    roster,
+    template,
+    groups,
+    groupAssignmentsByStudentId,
+    seatAssignmentsByStudentId,
   });
 
   const smartRuleUiState = useSmartRuleUiState({
@@ -214,16 +163,14 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     },
   });
 
-  const hasPendingAutosave = computed(() => {
-    return draftLane.hasPendingChanges.value || smartRuleLane.hasPendingChanges.value;
-  });
+  const hasPendingAutosave = computed(() =>
+    draftLane.hasPendingChanges.value || smartRuleLane.hasPendingChanges.value);
 
   const smartRulesHydrated = computed(() => smartRuleLane.isHydrated.value);
 
   const canEditSeatingSmartRules = computed(() => {
     return roster.value !== null && smartRuleLane.isHydrated.value && !isWorkspaceBusy.value;
   });
-
   const canUndo = computed(() => {
     return (
       draft.value !== null
@@ -255,6 +202,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     draftLane,
     smartRuleLane,
     smartRuleUiState,
+    clearRuleDiagnostics,
   });
   const stateSupport = getStateSupport();
 
@@ -278,9 +226,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     flushDraftLane: draftLane.flushPendingChanges,
     flushSmartRuleLane: smartRuleLane.flushPendingChanges,
     applyWorkspace: stateSupport.applyWorkspace,
-    applyRuleDiagnostics: (diagnostics) => {
-      smartRuleDiagnostics.value = diagnostics;
-    },
+    applyRuleDiagnostics,
     normalizeErrorMessage: stateSupport.normalizeMutationError,
   });
   const smartGroupingRun = useSmartGroupingRun({
@@ -307,6 +253,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: stateSupport.syncVisibleSessionBindings,
+    clearRuleDiagnostics,
     onSmartPreferenceChange(key: ClassroomPlannerSmartPreferenceKey, enabled: boolean): void {
       smartPreferenceLane.persistPreference(key, enabled);
     },
@@ -348,6 +295,7 @@ const useAuthenticatedClassroomStateStore = defineStore("classroom-state", () =>
     seatAssignmentsByStudentId,
     canMutate: () => !isWorkspaceBusy.value,
     markDirty: () => {
+      clearRuleDiagnostics();
       stateSupport.syncVisibleSessionBindings();
       draftLane.markDirty();
     },

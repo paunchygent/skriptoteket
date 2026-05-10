@@ -27,6 +27,7 @@ import {
   isHistoryEnabledByDefault,
   isSmartEnabledByDefault,
 } from "./classroomPlannerSmartPreferences";
+import { createClassroomPlannerFixedSeatRuleActions } from "./classroomPlannerFixedSeatRuleActions";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
 import type { useSmartRuleUiState } from "./useSmartRuleUiState";
@@ -49,6 +50,7 @@ type CreateClassroomPlannerSmartRuleActionsOptions = {
   smartRuleLane: SmartRuleLane;
   smartRuleUiState: SmartRuleUiState;
   syncVisibleSessionBindings: () => void;
+  clearRuleDiagnostics?: () => void;
   onDraftMutation?: () => void;
   onSmartPreferenceChange?: (
     key: ClassroomPlannerSmartPreferenceKey,
@@ -63,16 +65,26 @@ function createRelationshipRuleId(): string {
   return `relationship-rule-${Date.now()}`;
 }
 
-function createFixedSeatRuleId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  return `fixed-seat-rule-${Date.now()}`;
-}
-
 export function createClassroomPlannerSmartRuleActions(
   options: CreateClassroomPlannerSmartRuleActionsOptions,
 ) {
+  function markSmartRuleMutationDirty(): void {
+    options.clearRuleDiagnostics?.();
+    options.syncVisibleSessionBindings();
+    options.smartRuleLane.markDirty();
+  }
+
+  const fixedSeatActions = createClassroomPlannerFixedSeatRuleActions({
+    template: options.template,
+    fixedSeatRules: options.fixedSeatRules,
+    studentsById: options.studentsById,
+    seatsById: options.seatsById,
+    isWorkspaceBusy: options.isWorkspaceBusy,
+    canEditSeatingSmartRules: options.canEditSeatingSmartRules,
+    smartRuleUiState: options.smartRuleUiState,
+    markSmartRuleMutationDirty,
+  });
+
   function setDraftBooleanFlag(
     key: "smart_enabled" | "use_history" | "grouping_seating_distance_enabled",
     enabled: boolean,
@@ -93,6 +105,7 @@ export function createClassroomPlannerSmartRuleActions(
       [key]: enabled,
     };
     options.syncVisibleSessionBindings();
+    options.clearRuleDiagnostics?.();
     options.onDraftMutation?.();
     options.onSmartPreferenceChange?.(key, enabled);
     options.draftLane.markDirty();
@@ -131,8 +144,7 @@ export function createClassroomPlannerSmartRuleActions(
           near_teacher: true,
         },
       ];
-      options.syncVisibleSessionBindings();
-      options.smartRuleLane.markDirty();
+      markSmartRuleMutationDirty();
       options.smartRuleUiState.clearFeedback();
       return;
     }
@@ -143,8 +155,7 @@ export function createClassroomPlannerSmartRuleActions(
     options.seatingPreferences.value = options.seatingPreferences.value.filter(
       (preference) => preference.student_id !== studentId,
     );
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
+    markSmartRuleMutationDirty();
     options.smartRuleUiState.clearFeedback();
   }
 
@@ -199,8 +210,7 @@ export function createClassroomPlannerSmartRuleActions(
       return false;
     }
 
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
+    markSmartRuleMutationDirty();
     options.smartRuleUiState.clearFeedback();
     return true;
   }
@@ -234,8 +244,7 @@ export function createClassroomPlannerSmartRuleActions(
         })
         .filter((preference): preference is StudentSeatingPreference => preference !== null);
       options.smartRuleUiState.clearPendingRelationshipSelection();
-      options.syncVisibleSessionBindings();
-      options.smartRuleLane.markDirty();
+      markSmartRuleMutationDirty();
       return true;
     }
 
@@ -273,8 +282,7 @@ export function createClassroomPlannerSmartRuleActions(
         };
       });
       options.smartRuleUiState.clearPendingRelationshipSelection();
-      options.syncVisibleSessionBindings();
-      options.smartRuleLane.markDirty();
+      markSmartRuleMutationDirty();
       return true;
     }
 
@@ -287,8 +295,7 @@ export function createClassroomPlannerSmartRuleActions(
       },
     ];
     options.smartRuleUiState.clearPendingRelationshipSelection();
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
+    markSmartRuleMutationDirty();
     return true;
   }
 
@@ -324,8 +331,7 @@ export function createClassroomPlannerSmartRuleActions(
 
     options.seatingPreferences.value = [];
     options.smartRuleUiState.clearFeedback();
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
+    markSmartRuleMutationDirty();
     return true;
   }
 
@@ -343,113 +349,7 @@ export function createClassroomPlannerSmartRuleActions(
     } else {
       options.smartRuleUiState.clearFeedback();
     }
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
-  }
-
-  function fixedSeatRuleMatchesActiveTemplate(rule: FixedSeatRule): boolean {
-    return options.template.value !== null && rule.template_id === options.template.value.id;
-  }
-
-  function fixedSeatRuleForStudent(studentId: string): FixedSeatRule | null {
-    return options.fixedSeatRules.value.find((rule) => {
-      return fixedSeatRuleMatchesActiveTemplate(rule) && rule.student_id === studentId;
-    }) ?? null;
-  }
-
-  function fixedSeatRuleForSeat(seatId: string): FixedSeatRule | null {
-    return options.fixedSeatRules.value.find((rule) => {
-      return fixedSeatRuleMatchesActiveTemplate(rule) && rule.seat_id === seatId;
-    }) ?? null;
-  }
-
-  function beginFixedSeatRuleEdit(ruleId: string): void {
-    if (!options.canEditSeatingSmartRules.value) {
-      return;
-    }
-    const rule = options.fixedSeatRules.value.find((candidate) => candidate.id === ruleId);
-    if (!rule) {
-      return;
-    }
-    options.smartRuleUiState.beginFixedSeatEdit(rule.id, rule.student_id, rule.seat_id);
-  }
-
-  function deleteFixedSeatRule(ruleId: string): void {
-    if (!options.canEditSeatingSmartRules.value) {
-      return;
-    }
-    const nextRules = options.fixedSeatRules.value.filter((rule) => rule.id !== ruleId);
-    if (nextRules.length === options.fixedSeatRules.value.length) {
-      return;
-    }
-    options.fixedSeatRules.value = nextRules;
-    if (options.smartRuleUiState.editingFixedSeatRuleId.value === ruleId) {
-      options.smartRuleUiState.clearPendingRelationshipSelection();
-    } else {
-      options.smartRuleUiState.clearFeedback();
-    }
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
-  }
-
-  function selectFixedSeatRuleSeat(seatId: string): boolean {
-    if (
-      options.smartRuleUiState.activeSeatingSmartTool.value !== "fixed_seat"
-      || !options.canEditSeatingSmartRules.value
-      || options.isWorkspaceBusy.value
-      || !options.template.value
-      || !options.seatsById.value[seatId]
-    ) {
-      return false;
-    }
-    options.smartRuleUiState.togglePendingFixedSeatSeat(seatId);
-    return true;
-  }
-
-  function commitPendingFixedSeatRule(): boolean {
-    if (
-      options.smartRuleUiState.activeSeatingSmartTool.value !== "fixed_seat"
-      || !options.canEditSeatingSmartRules.value
-      || options.isWorkspaceBusy.value
-      || !options.template.value
-    ) {
-      return false;
-    }
-    const studentId = options.smartRuleUiState.pendingFixedSeatStudentId.value;
-    if (!studentId || !options.studentsById.value[studentId]) {
-      options.smartRuleUiState.setFeedbackMessage("Välj en elev först.");
-      return false;
-    }
-    const seatId = options.smartRuleUiState.pendingFixedSeatSeatId.value;
-    if (!seatId || !options.seatsById.value[seatId]) {
-      options.smartRuleUiState.setFeedbackMessage("Välj en plats först.");
-      return false;
-    }
-
-    const editingRuleId = options.smartRuleUiState.editingFixedSeatRuleId.value;
-    const conflictingSeatRule = fixedSeatRuleForSeat(seatId);
-    if (conflictingSeatRule && conflictingSeatRule.id !== editingRuleId) {
-      options.smartRuleUiState.setFeedbackMessage("Platsen är redan låst. Välj en annan plats.");
-      return false;
-    }
-
-    const existingStudentRule = fixedSeatRuleForStudent(studentId);
-    const ruleId = editingRuleId ?? existingStudentRule?.id ?? createFixedSeatRuleId();
-    const nextRule: FixedSeatRule = {
-      id: ruleId,
-      template_id: options.template.value.id,
-      student_id: studentId,
-      seat_id: seatId,
-    };
-    const replacedRuleIds = new Set([ruleId, existingStudentRule?.id].filter(Boolean));
-    options.fixedSeatRules.value = [
-      ...options.fixedSeatRules.value.filter((rule) => !replacedRuleIds.has(rule.id)),
-      nextRule,
-    ];
-    options.smartRuleUiState.clearPendingRelationshipSelection();
-    options.syncVisibleSessionBindings();
-    options.smartRuleLane.markDirty();
-    return true;
+    markSmartRuleMutationDirty();
   }
 
   function handleSeatingSmartToolStudentSelection(studentId: string): boolean {
@@ -462,21 +362,7 @@ export function createClassroomPlannerSmartRuleActions(
     }
 
     if (options.smartRuleUiState.activeSeatingSmartTool.value === "fixed_seat") {
-      const existingRule = fixedSeatRuleForStudent(studentId);
-      if (options.smartRuleUiState.pendingFixedSeatStudentId.value === studentId) {
-        options.smartRuleUiState.togglePendingFixedSeatStudent(studentId);
-        return true;
-      }
-      if (existingRule) {
-        options.smartRuleUiState.beginFixedSeatEdit(
-          existingRule.id,
-          existingRule.student_id,
-          existingRule.seat_id,
-        );
-        return true;
-      }
-      options.smartRuleUiState.togglePendingFixedSeatStudent(studentId);
-      return true;
+      return fixedSeatActions.handleFixedSeatStudentSelection(studentId);
     }
 
     options.smartRuleUiState.togglePendingRelationshipStudent(studentId);
@@ -494,13 +380,13 @@ export function createClassroomPlannerSmartRuleActions(
     commitPendingRelationshipRule,
     beginRelationshipRuleEdit,
     beginNearTeacherEdit,
-    beginFixedSeatRuleEdit,
+    beginFixedSeatRuleEdit: fixedSeatActions.beginFixedSeatRuleEdit,
     clearNearTeacherRule,
     deleteRelationshipRule,
-    deleteFixedSeatRule,
-    selectFixedSeatRuleSeat,
-    commitPendingFixedSeatRule,
-    fixedSeatRuleForStudent,
-    fixedSeatRuleForSeat,
+    deleteFixedSeatRule: fixedSeatActions.deleteFixedSeatRule,
+    selectFixedSeatRuleSeat: fixedSeatActions.selectFixedSeatRuleSeat,
+    commitPendingFixedSeatRule: fixedSeatActions.commitPendingFixedSeatRule,
+    fixedSeatRuleForStudent: fixedSeatActions.fixedSeatRuleForStudent,
+    fixedSeatRuleForSeat: fixedSeatActions.fixedSeatRuleForSeat,
   };
 }

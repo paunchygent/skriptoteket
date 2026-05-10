@@ -2,7 +2,7 @@
 type: pr
 id: PR-0313
 title: "Shared phone classroom-map real-device pinch remediation"
-status: done
+status: in_progress
 owners: "agents"
 created: 2026-05-10
 updated: 2026-05-10
@@ -153,3 +153,34 @@ Verification:
 - `pdm run docs-validate`
 - `pdm run handoff-validate`
 - `git diff --check`
+
+## Post-Review Field Finding
+
+Real-device testing reported on 2026-05-10 that touch gesture zoom in/out still
+does not work on the simplified phone classroom maps. The retained Chromium and
+unit proof was therefore not sufficient to close the real-device acceptance
+criterion. The remediation below reopens the lane for re-review and still needs
+actual phone confirmation before final `done` closeout.
+
+## Review Remediation
+
+Applied on 2026-05-10; second-pass code proof accepted the visible zoom binding,
+but final closeout still requires real-device iPhone confirmation.
+
+- Fixed the simplified map's visual zoom binding so pinch-derived scale updates
+  set the viewport-level `--planner-phone-seat-cell-size` used by the rendered
+  seat grid, not only the hidden zoom percent.
+- Kept the shared `useRoomTouchViewportGestures` path unchanged; this
+  remediation targets the broken simplified-map consumer where zoom state was
+  not visibly affecting the map cells.
+- Added focused component proof that a 125% pinch changes both the displayed
+  zoom percent and the rendered phone-seat cell-size style while suppressing
+  the follow-up seat-removal click.
+
+Second-pass review verified the component proof, but this PR remains
+`in_progress` until the same behavior is confirmed on the actual phone path for
+both `Sittplatser` and `Regler` / `Fast plats`.
+
+Verification:
+
+- `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers PlannerPhoneClassroomSeatMap useRoomTouchViewportGestures`

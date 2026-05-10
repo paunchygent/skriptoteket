@@ -59,7 +59,7 @@ def _keep_near_valid(run: ScenarioRun, topology: SeatTopology) -> bool:
         run.assignments_by_student[KEEP_NEAR_STUDENT_IDS[0]],
         run.assignments_by_student[KEEP_NEAR_STUDENT_IDS[1]],
     )
-    return pair.orthogonally_adjacent
+    return pair.keep_near_relation_mode == "adjacent-row"
 
 
 def _keep_apart_valid(run: ScenarioRun, topology: SeatTopology) -> bool:
@@ -120,7 +120,7 @@ def test_g20_immediate_diagonal_is_invalid_keep_apart_geometry() -> None:
     assert _keep_apart_pair_score(pair=pair) < 0.0
 
 
-def test_g20_pair_keep_near_requires_direct_row_or_column_contact() -> None:
+def test_g20_pair_keep_near_requires_direct_same_row_contact() -> None:
     template = build_g20_template()
     topology = build_seat_topology(
         seats=template.seats,
@@ -128,10 +128,13 @@ def test_g20_pair_keep_near_requires_direct_row_or_column_contact() -> None:
         fixtures=template.fixtures,
     )
 
-    pair = topology.pair("seat-1", "seat-11")
+    same_column_pair = topology.pair("seat-1", "seat-10")
+    diagonal_pair = topology.pair("seat-1", "seat-11")
 
-    assert pair.diagonal_neighbor is True
-    assert _keep_near_has_tradeoff(pair=pair, cluster_size=2) is True
+    assert same_column_pair.keep_near_relation_mode == "adjacent-column"
+    assert diagonal_pair.diagonal_neighbor is True
+    assert _keep_near_has_tradeoff(pair=same_column_pair, cluster_size=2) is True
+    assert _keep_near_has_tradeoff(pair=diagonal_pair, cluster_size=2) is True
 
 
 @pytest.mark.parametrize("use_history", [False, True], ids=["no-history", "with-history"])
@@ -221,8 +224,7 @@ def _assert_keep_near_rotation(simulation: ScenarioSimulation) -> None:
     }
     keep_near_modes.discard(None)
     assert min(distinct_seat_counts.values()) >= _MIN_DISTINCT_SEAT_COUNT
-    assert keep_near_modes <= {"adjacent-row", "adjacent-column"}
-    assert len(keep_near_modes) >= 2
+    assert keep_near_modes == {"adjacent-row"}
 
 
 def test_g20_sa24d_history_reruns_stay_valid_and_diverse(

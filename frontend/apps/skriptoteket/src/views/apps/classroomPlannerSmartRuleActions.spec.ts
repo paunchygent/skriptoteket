@@ -41,6 +41,7 @@ function createFixture(input: {
   const smartRuleUiState = useSmartRuleUiState({
     canEditSmartRules: () => true,
   });
+  const clearRuleDiagnostics = vi.fn();
   const actions = createClassroomPlannerSmartRuleActions({
     draft,
     template: ref({
@@ -69,8 +70,9 @@ function createFixture(input: {
     smartRuleLane,
     smartRuleUiState,
     syncVisibleSessionBindings: vi.fn(),
+    clearRuleDiagnostics,
   });
-  return { actions, draft, draftLane, fixedSeatRules, smartRuleLane, smartRuleUiState };
+  return { actions, clearRuleDiagnostics, draft, draftLane, fixedSeatRules, smartRuleLane, smartRuleUiState };
 }
 
 describe("createClassroomPlannerSmartRuleActions", () => {
@@ -95,6 +97,25 @@ describe("createClassroomPlannerSmartRuleActions", () => {
 
     expect(fixture.draft.value?.grouping_seating_distance_enabled).toBe(true);
     expect(fixture.draftLane.markDirty).toHaveBeenCalledTimes(1);
+    expect(fixture.clearRuleDiagnostics).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears stored solver diagnostics when direct smart-rule mutations change rules", () => {
+    const fixture = createFixture();
+
+    expect(fixture.actions.setStudentNearTeacherEnabled("student-1", true)).toBe(true);
+
+    fixture.smartRuleUiState.setActiveSeatingSmartTool("keep_near");
+    fixture.actions.handleSeatingSmartToolStudentSelection("student-1");
+    fixture.actions.handleSeatingSmartToolStudentSelection("student-2");
+    expect(fixture.actions.commitPendingRelationshipRule()).toBe(true);
+
+    fixture.smartRuleUiState.setActiveSeatingSmartTool("fixed_seat");
+    fixture.actions.handleSeatingSmartToolStudentSelection("student-1");
+    fixture.actions.selectFixedSeatRuleSeat("seat-1");
+    expect(fixture.actions.commitPendingFixedSeatRule()).toBe(true);
+
+    expect(fixture.clearRuleDiagnostics).toHaveBeenCalledTimes(3);
   });
 
   it("creates fixed-seat rules only after seat selection and explicit confirmation", () => {

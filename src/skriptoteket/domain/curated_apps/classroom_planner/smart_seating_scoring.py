@@ -181,8 +181,10 @@ def keep_near_pair_score(
             score = _shared_table_pair_score(pair)
         elif seating_context in {"bench_row", "row_layout"}:
             score = _row_pair_score(pair)
-        elif pair.orthogonally_adjacent:
+        elif pair.keep_near_relation_mode == "adjacent-row":
             score = 18.0
+        elif pair.keep_near_relation_mode == "adjacent-column":
+            score = -18.0
         elif pair.same_line_one_step:
             score = 2.5
         elif pair.diagonal_neighbor and pair.same_local_zone:
@@ -212,6 +214,7 @@ def keep_near_pair_score(
             score = -10.0
     next_modes = _next_keep_near_modes(
         cluster_size=cluster_size,
+        seating_context=seating_context,
         current_mode=current_mode,
         pair_key=pair_key,
         current_pair_seat_ids=current_pair_seat_ids,
@@ -250,7 +253,7 @@ def _row_pair_score(pair: SeatPairTopology) -> float:
     if pair.keep_near_relation_mode == "adjacent-row":
         return 22.0
     if pair.keep_near_relation_mode == "adjacent-column":
-        return 7.0
+        return -4.0
     if pair.keep_near_relation_mode in {"diagonal-block", "one-step-row", "one-step-column"}:
         return -4.0
     if pair.same_row or pair.same_column:
@@ -297,6 +300,7 @@ def _normalized_keep_near_mode(
 def _next_keep_near_modes(
     *,
     cluster_size: int,
+    seating_context: SeatingContext,
     current_mode: KeepNearRelationMode | None,
     pair_key: frozenset[str] | None,
     current_pair_seat_ids: frozenset[str] | None,
@@ -305,6 +309,8 @@ def _next_keep_near_modes(
     if normalized_mode is None or pair_key is None:
         return ()
     if cluster_size == 2:
+        if seating_context != "shared_table":
+            return () if normalized_mode == "adjacent-row" else ("adjacent-row",)
         if normalized_mode == "adjacent-row":
             return ("adjacent-column",)
         if normalized_mode == "adjacent-column":
