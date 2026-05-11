@@ -196,7 +196,7 @@ const fixedSeatActionLabel = computed(() => {
                   type="button"
                   class="planner-row-remove-button inline-flex h-5 w-5 items-center justify-center rounded-[4px] border border-transparent hover:border-critical/20 hover:bg-critical/5"
                   :aria-label="`Ta bort ${student.name} från regeln`"
-                  @click="emit('remove-pending-student', student.id)"
+                  @click.stop="emit('remove-pending-student', student.id)"
                 >
                   <IconX :size="12" />
                 </button>
@@ -310,7 +310,7 @@ const fixedSeatActionLabel = computed(() => {
           class="btn-ghost planner-btn-ghost planner-btn-ghost-sm w-full"
           data-test="rules-clear-selection"
           :disabled="pendingSelectionCount === 0"
-          @click="emit('clear-selection')"
+          @click.stop="emit('clear-selection')"
         >
           Rensa markering
         </button>

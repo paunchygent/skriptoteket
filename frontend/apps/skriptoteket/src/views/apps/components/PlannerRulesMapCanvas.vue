@@ -80,6 +80,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
+  (e: "selected-student-removed", studentId: string): void;
   (e: "seat-selected", seatId: string): void;
   (e: "update:mapView", value: RulesMapView): void;
 }>();
@@ -277,6 +278,18 @@ function updateMapView(value: string): void {
   }
   emit("update:mapView", value);
 }
+
+function handleStudentSelection(studentId: string): void {
+  if (
+    props.activeTool !== "fixed_seat"
+    && props.pendingSelectedStudentIds.includes(studentId)
+  ) {
+    emit("selected-student-removed", studentId);
+    return;
+  }
+
+  emit("student-selected", studentId);
+}
 </script>
 
 <template>
@@ -414,7 +427,7 @@ function updateMapView(value: string): void {
                           :pending-fixed-seat-student-id="pendingFixedSeatStudentId"
                           :pending-fixed-seat-seat-id="pendingFixedSeatSeatId"
                           :interactive="fixedSeatActive || seatingStudentsBySeatId[seat.id] !== null"
-                          @student-selected="emit('student-selected', $event)"
+                          @student-selected="handleStudentSelection"
                           @seat-selected="emit('seat-selected', $event)"
                         />
                       </template>
@@ -433,7 +446,7 @@ function updateMapView(value: string): void {
             :is-student-selected="isStudentSelected"
             :selection-order="selectionOrder"
             :pending-fixed-seat-student-id="pendingFixedSeatStudentId"
-            @student-selected="emit('student-selected', $event)"
+            @student-selected="handleStudentSelection"
           />
         </div>
       </Transition>

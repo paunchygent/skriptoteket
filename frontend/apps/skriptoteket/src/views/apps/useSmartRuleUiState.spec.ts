@@ -50,6 +50,52 @@ describe("useSmartRuleUiState", () => {
     expect(state.editingNearTeacherRule.value).toBe(false);
   });
 
+  it("activates the near-teacher tool as a blank authoring state", () => {
+    const state = useSmartRuleUiState({
+      canEditSmartRules: () => true,
+    });
+
+    state.setActiveSeatingSmartTool("near_teacher");
+
+    expect(state.activeSeatingSmartTool.value).toBe("near_teacher");
+    expect(state.pendingRelationshipStudentIds.value).toEqual([]);
+    expect(state.editingNearTeacherRule.value).toBe(false);
+  });
+
+  it("clears candidate students without dropping edit identity", () => {
+    const state = useSmartRuleUiState({
+      canEditSmartRules: () => true,
+    });
+
+    state.beginRelationshipRuleEdit("rule-1", "keep_near", ["s1", "s2"]);
+
+    state.clearPendingRuleCandidates();
+
+    expect(state.activeSeatingSmartTool.value).toBe("keep_near");
+    expect(state.pendingRelationshipStudentIds.value).toEqual([]);
+    expect(state.editingRelationshipRuleId.value).toBe("rule-1");
+
+    state.togglePendingRelationshipStudent("s3");
+
+    expect(state.pendingRelationshipStudentIds.value).toEqual(["s3"]);
+    expect(state.editingRelationshipRuleId.value).toBe("rule-1");
+  });
+
+  it("removes a candidate idempotently without dropping edit identity", () => {
+    const state = useSmartRuleUiState({
+      canEditSmartRules: () => true,
+    });
+
+    state.beginRelationshipRuleEdit("rule-1", "keep_near", ["s1", "s2"]);
+
+    state.removePendingRuleCandidate("s1");
+    state.removePendingRuleCandidate("s1");
+
+    expect(state.pendingRelationshipStudentIds.value).toEqual(["s2"]);
+    expect(state.editingRelationshipRuleId.value).toBe("rule-1");
+    expect(state.activeSeatingSmartTool.value).toBe("keep_near");
+  });
+
   it("ignores tool activation when smart rules are not editable", () => {
     const state = useSmartRuleUiState({
       canEditSmartRules: () => false,

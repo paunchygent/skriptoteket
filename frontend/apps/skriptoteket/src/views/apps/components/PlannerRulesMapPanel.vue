@@ -67,6 +67,7 @@ withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
+  (e: "selected-student-removed", studentId: string): void;
   (e: "seat-selected", seatId: string): void;
   (e: "update:mapView", value: RulesMapView): void;
 }>();
@@ -95,6 +96,7 @@ const emit = defineEmits<{
       :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
       @update:map-view="emit('update:mapView', $event)"
       @student-selected="emit('student-selected', $event)"
+      @selected-student-removed="emit('selected-student-removed', $event)"
       @seat-selected="emit('seat-selected', $event)"
     />
   </div>

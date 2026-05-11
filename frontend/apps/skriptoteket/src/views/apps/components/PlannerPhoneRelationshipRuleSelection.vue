@@ -41,7 +41,7 @@ const emit = defineEmits<{
         class="planner-phone-link-button"
         data-test="phone-rules-clear-selection"
         :disabled="students.length === 0"
-        @click="emit('clear-selection')"
+        @click.stop="emit('clear-selection')"
       >
         Rensa
       </button>
@@ -61,7 +61,7 @@ const emit = defineEmits<{
           type="button"
           class="planner-row-remove-button"
           :aria-label="`Ta bort ${student.name} från regeln`"
-          @click="emit('remove-student', student.id)"
+          @click.stop="emit('remove-student', student.id)"
         >
           <IconX :size="14" />
         </button>

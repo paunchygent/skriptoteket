@@ -393,6 +393,114 @@
   box-shadow: inset 0 0 0 2px var(--huleedu-canvas);
 }
 
+.planner-phone-rules-summary {
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.22);
+  background-color: var(--huleedu-panel);
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+.planner-phone-rules-summary-toggle {
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-2);
+  padding: 0 var(--huleedu-space-3);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rules-summary-count {
+  display: inline-grid;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.36);
+  background-color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.planner-phone-rules-active-list {
+  display: grid;
+  border-top: var(--huleedu-border-width) solid rgb(8 43 76 / 0.18);
+}
+
+.planner-phone-rules-active-row {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+  border-top: 1px solid rgb(8 43 76 / 0.12);
+  padding: 0.5rem var(--huleedu-space-2);
+}
+
+.planner-phone-rules-active-row:first-child {
+  border-top: 0;
+}
+
+.planner-phone-rules-active-row-editing {
+  box-shadow: inset 0.25rem 0 0 var(--huleedu-action);
+}
+
+.planner-phone-rules-active-icon {
+  flex-shrink: 0;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rules-active-label,
+.planner-phone-rules-active-target {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planner-phone-rules-active-label {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rules-active-target {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: rgb(8 43 76 / 0.68);
+}
+
+.planner-phone-rules-active-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+.planner-phone-rule-action-button {
+  display: inline-grid;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: var(--huleedu-border-width) solid rgb(8 43 76 / 0.22);
+  background-color: white;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rule-action-button:disabled {
+  cursor: not-allowed;
+  border-color: rgb(8 43 76 / 0.12);
+  background-color: rgb(241 243 246 / 0.82);
+  color: rgb(8 43 76 / 0.38);
+  opacity: 1;
+}
+
+.planner-phone-rule-action-button-danger:not(:disabled) {
+  border-color: rgb(211 47 47 / 0.45);
+  color: var(--huleedu-critical);
+}
+
 .planner-phone-rules-selection {
   position: sticky;
   top: var(--huleedu-space-2);

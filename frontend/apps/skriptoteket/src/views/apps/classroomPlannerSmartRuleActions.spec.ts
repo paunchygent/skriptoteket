@@ -140,6 +140,45 @@ describe("createClassroomPlannerSmartRuleActions", () => {
     expect(fixture.smartRuleLane.markDirty).toHaveBeenCalledTimes(1);
   });
 
+  it("deletes fixed-seat rules through the shared smart-rule mutation path", () => {
+    const fixture = createFixture({
+      initialFixedSeatRules: [
+        {
+          id: "fixed-1",
+          template_id: "template-1",
+          student_id: "student-1",
+          seat_id: "seat-1",
+        },
+        {
+          id: "fixed-2",
+          template_id: "template-1",
+          student_id: "student-2",
+          seat_id: "seat-2",
+        },
+      ],
+    });
+
+    fixture.actions.beginFixedSeatRuleEdit("fixed-1");
+    fixture.actions.deleteFixedSeatRule("missing-rule");
+
+    expect(fixture.fixedSeatRules.value).toHaveLength(2);
+    expect(fixture.smartRuleLane.markDirty).not.toHaveBeenCalled();
+
+    fixture.actions.deleteFixedSeatRule("fixed-1");
+
+    expect(fixture.fixedSeatRules.value).toEqual([
+      {
+        id: "fixed-2",
+        template_id: "template-1",
+        student_id: "student-2",
+        seat_id: "seat-2",
+      },
+    ]);
+    expect(fixture.smartRuleUiState.editingFixedSeatRuleId.value).toBeNull();
+    expect(fixture.smartRuleLane.markDirty).toHaveBeenCalledTimes(1);
+    expect(fixture.clearRuleDiagnostics).toHaveBeenCalledTimes(1);
+  });
+
   it("toggles fixed-seat student and seat selections before confirmation", () => {
     const fixture = createFixture();
 

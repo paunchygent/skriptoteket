@@ -77,7 +77,8 @@ type PlannerStateMock = {
   beginNearTeacherEdit: ReturnType<typeof vi.fn>;
   setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
   clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
-  removePendingRelationshipStudent: ReturnType<typeof vi.fn>;
+  removePendingRuleCandidate: ReturnType<typeof vi.fn>;
+  isStudentInPendingRuleCandidates: ReturnType<typeof vi.fn>;
   handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
   commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
   commitPendingFixedSeatRule: ReturnType<typeof vi.fn>;
@@ -175,7 +176,8 @@ const stateMocks = vi.hoisted(() => ({
     }),
     setActiveSeatingSmartTool: vi.fn(),
     clearPendingRelationshipSelection: vi.fn(),
-    removePendingRelationshipStudent: vi.fn(),
+    removePendingRuleCandidate: vi.fn(),
+    isStudentInPendingRuleCandidates: vi.fn(() => false),
     handleSeatingSmartToolStudentSelection: vi.fn(() => false),
     commitPendingRelationshipRule: vi.fn(() => true),
     commitPendingFixedSeatRule: vi.fn(() => true),
@@ -370,7 +372,9 @@ describe("PlannerWorkspaceShell", () => {
     });
     stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
-    stateMocks.plannerState.removePendingRelationshipStudent.mockReset();
+    stateMocks.plannerState.removePendingRuleCandidate.mockReset();
+    stateMocks.plannerState.isStudentInPendingRuleCandidates.mockReset();
+    stateMocks.plannerState.isStudentInPendingRuleCandidates.mockReturnValue(false);
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReset();
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReturnValue(false);
     stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
@@ -750,6 +754,45 @@ describe("PlannerWorkspaceShell", () => {
     );
   });
 
+  it("removes already-selected Regler candidates without replaying the select toggle", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.activeSeatingSmartTool = "keep_near";
+    stateMocks.plannerState.pendingRelationshipStudentIds = ["student-1", "student-2"];
+    stateMocks.plannerState.isStudentInPendingRuleCandidates.mockImplementation(
+      (studentId: string) => studentId === "student-1",
+    );
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "rules",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerRulesWorkspacePane: {
+            template: "<button data-test='rules-student' @click=\"$emit('student-selected', 'student-1')\" />",
+          },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get("[data-test='rules-student']").trigger("click");
+
+    expect(stateMocks.plannerState.removePendingRuleCandidate).toHaveBeenCalledWith("student-1");
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
+  });
+
   it("ignores Regler student clicks when no smart tool is active", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-2",
@@ -851,7 +894,7 @@ describe("PlannerWorkspaceShell", () => {
       "Försöker undvika att elever får samma plats eller samma bordsgrannar som tidigare. Stäng av om du vill börja utan historik.",
     );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
-      "Välj först ett klassrum för att använda sittschemat.",
+      "Välj först ett klassrum så Smart vet vilket sittschema som kan användas.",
     );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
       "Lägg till och ändra regler för placeringar.",
@@ -871,7 +914,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.emitted("change-grouping-template")).toEqual([[{ templateId: "template-2" }]]);
     expect((wrapper.get('[data-test="grouping-settings-template-select"]').element as HTMLSelectElement).value).toBe("template-2");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
-      "Med Tillämpa sittschema aktiverat försöker algoritmen skapa grupper av de elever som sitter nära varandra samtidigt som den respekterar dina övriga regler, som \"håll ihop\" och \"håll isär\".",
+      "Försöker lägga elever som redan sitter nära varandra i samma grupp. Det kan göra gruppstarten lugnare när eleverna ska arbeta från sina platser.",
     );
 
     await wrapper.get('[data-test="grouping-settings-seating-toggle"]').trigger("click");

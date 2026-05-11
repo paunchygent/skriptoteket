@@ -128,6 +128,56 @@ describe("useDraftPersistenceLane", () => {
     expect(lane.hasPendingChanges.value).toBe(false);
   });
 
+  it("flushes queued draft edits before reporting saved", async () => {
+    vi.useFakeTimers();
+    const firstSave = createDeferred<DraftWorkspaceResponse>();
+    const secondSave = createDeferred<DraftWorkspaceResponse>();
+    const persistDraft = vi.fn()
+      .mockReturnValueOnce(firstSave.promise)
+      .mockReturnValueOnce(secondSave.promise);
+    const applyCommittedWorkspace = vi.fn();
+    const applyAcknowledgement = vi.fn();
+
+    const lane = useDraftPersistenceLane({
+      canSchedule: () => true,
+      getSessionToken: () => 0,
+      normalizeErrorMessage: (_error, fallback) => fallback,
+      persistDraft,
+      serializePatch: () => ({
+        expected_revision: 4,
+        smart_enabled: false,
+        use_history: false,
+        grouping_seating_distance_enabled: false,
+        groups: [],
+        group_assignments: [],
+        seat_assignments: [],
+      }),
+      applyCommittedWorkspace,
+      applyAcknowledgement,
+    });
+
+    lane.resetBoundDraft("draft-1");
+    lane.markDirty();
+    await vi.advanceTimersByTimeAsync(900);
+    lane.markDirty();
+
+    const flushPromise = lane.flushPendingChanges();
+    firstSave.resolve(createWorkspaceResponse(5));
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(persistDraft).toHaveBeenCalledTimes(2);
+    expect(lane.hasPendingChanges.value).toBe(true);
+
+    secondSave.resolve(createWorkspaceResponse(6));
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(10);
+
+    await expect(flushPromise).resolves.toEqual({ status: "saved" });
+    expect(applyCommittedWorkspace).toHaveBeenCalledWith(createWorkspaceResponse(6));
+    expect(lane.hasPendingChanges.value).toBe(false);
+  });
+
   it("ignores late responses after the session token changes", async () => {
     vi.useFakeTimers();
     let sessionToken = 0;

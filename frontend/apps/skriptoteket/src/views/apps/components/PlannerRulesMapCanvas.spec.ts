@@ -305,6 +305,7 @@ describe("PlannerRulesMapCanvas", () => {
             student_ids: ["student-1", "student-2"],
             seat_ids: ["seat-1", "seat-2"],
             reason_code: "keep_apart_immediate_contact",
+            freshness_key: "fresh-1",
           },
         ],
       },
@@ -319,6 +320,53 @@ describe("PlannerRulesMapCanvas", () => {
 
     expect(wrapper.find('[data-test="rules-seat-rule-marker-seat-1-keep-apart-error"]').exists())
       .toBe(true);
+  });
+
+  it("emits explicit removal when a selected relationship candidate is clicked on the map", async () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "seating_arrangement",
+        rosterName: "SR24D",
+        template,
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [{ seat_id: "seat-1", student_id: "student-1" }],
+        activeTool: "keep_near",
+        pendingSelectedStudentIds: ["student-1"],
+        canShowSeatingArrangement: true,
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="rules-seat-node-seat-1"] button').trigger("click");
+
+    expect(wrapper.emitted("selected-student-removed")).toEqual([["student-1"]]);
+    expect(wrapper.emitted("student-selected")).toBeUndefined();
+  });
+
+  it("emits explicit removal when a selected relationship candidate is clicked in the roster tray", async () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "planning_map",
+        rosterName: "SR24D",
+        template,
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        activeTool: "keep_near",
+        pendingSelectedStudentIds: ["student-2"],
+      },
+    });
+
+    await wrapper.get('[data-test="rules-unplaced-student-student-2"]').trigger("click");
+
+    expect(wrapper.emitted("selected-student-removed")).toEqual([["student-2"]]);
+    expect(wrapper.emitted("student-selected")).toBeUndefined();
   });
 
   it("routes fixed-seat canvas clicks through physical-seat precedence", async () => {

@@ -44,10 +44,13 @@ type GuestWorkspaceTestState = {
   plannerStatusMessage: ClassroomStateLike["plannerStatusMessage"];
   plannerStatusTone: ClassroomStateLike["plannerStatusTone"];
   plannerConflictMessage: ClassroomStateLike["plannerConflictMessage"];
+  pendingRelationshipStudentIds: string[];
   undoGroupingDraft: ReturnType<typeof vi.fn>;
   redoGroupingDraft: ReturnType<typeof vi.fn>;
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
+  removePendingRuleCandidate: ReturnType<typeof vi.fn>;
+  isStudentInPendingRuleCandidates: ReturnType<typeof vi.fn>;
   handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
   reloadActiveWorkspace: ReturnType<typeof vi.fn>;
 };
@@ -89,10 +92,13 @@ function mountGuestWorkspaceShellHarness(options?: {
     plannerStatusMessage: null,
     plannerStatusTone: "neutral",
     plannerConflictMessage: null,
+    pendingRelationshipStudentIds: [],
     undoGroupingDraft: vi.fn(async () => {}),
     redoGroupingDraft: vi.fn(async () => {}),
     undoSeatingDraft: vi.fn(async () => {}),
     redoSeatingDraft: vi.fn(async () => {}),
+    removePendingRuleCandidate: vi.fn(),
+    isStudentInPendingRuleCandidates: vi.fn(() => false),
     handleSeatingSmartToolStudentSelection: vi.fn(),
     reloadActiveWorkspace: vi.fn(),
   }) as unknown as GuestWorkspaceTestState;
@@ -185,7 +191,11 @@ function mountGuestWorkspaceShellHarness(options?: {
           template: "<div data-test='seating-pane-stub' />",
         },
         PlannerRulesWorkspacePane: {
-          template: "<div data-test='rules-pane-stub' />",
+          template: `
+            <div data-test='rules-pane-stub'>
+              <button data-test='rules-student' @click="$emit('student-selected', 'student-1')" />
+            </div>
+          `,
         },
         PlannerGroupingSettingsDrawer: {
           name: "PlannerGroupingSettingsDrawer",
@@ -257,6 +267,21 @@ describe("ClassroomPlannerGuestWorkspaceShell", () => {
     expect(
       wrapper.get("[data-test='planner-top-panel-mode']").attributes("data-show-rules-option"),
     ).toBe("true");
+  });
+
+  it("removes already-selected guest rule candidates without replaying selection", async () => {
+    const { wrapper, plannerState } = mountGuestWorkspaceShellHarness({ initialView: "rules" });
+    plannerState.activeSeatingSmartTool = "keep_near";
+    plannerState.pendingRelationshipStudentIds = ["student-1", "student-2"];
+    plannerState.isStudentInPendingRuleCandidates.mockImplementation(
+      (studentId: string) => studentId === "student-1",
+    );
+    await nextTick();
+
+    await wrapper.get("[data-test='rules-student']").trigger("click");
+
+    expect(plannerState.removePendingRuleCandidate).toHaveBeenCalledWith("student-1");
+    expect(plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
   });
 
   it("keeps Smart and export visible while hiding account-only history controls in the guest shell", async () => {

@@ -214,18 +214,25 @@ export function useDraftPersistenceLane(options: DraftPersistenceLaneOptions) {
 
   async function flushPendingChanges(): Promise<DraftPersistenceLaneResult> {
     clearAutosaveTimer();
-    if (inFlight.value) {
-      await waitForIdle();
-      return resolveResult();
+    while (true) {
+      if (inFlight.value) {
+        await waitForIdle();
+        if (status.value === "conflict" || status.value === "error") {
+          return resolveResult();
+        }
+        continue;
+      }
+      if (!hasPendingChanges.value) {
+        return resolveResult();
+      }
+      const result = await persistPendingChanges();
+      if (result === "cancelled") {
+        return { status: "saved" };
+      }
+      if (result.status === "blocked") {
+        return result;
+      }
     }
-    if (!hasPendingChanges.value) {
-      return { status: "saved" };
-    }
-    const result = await persistPendingChanges();
-    if (result === "cancelled") {
-      return { status: "saved" };
-    }
-    return result;
   }
 
   return {

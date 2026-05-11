@@ -43,6 +43,8 @@ type PlannerStateMock = {
   canCommitPendingFixedSeatRule: boolean;
   setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
   clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
+  clearPendingRuleCandidates: ReturnType<typeof vi.fn>;
+  removePendingRuleCandidate: ReturnType<typeof vi.fn>;
   retrySmartRuleHydration: ReturnType<typeof vi.fn>;
   beginRelationshipRuleEdit: ReturnType<typeof vi.fn>;
   beginNearTeacherEdit: ReturnType<typeof vi.fn>;
@@ -57,6 +59,8 @@ type PlannerStateMock = {
   fixedSeatRuleForSeat: ReturnType<typeof vi.fn>;
   replaceNearTeacherPreference: ReturnType<typeof vi.fn>;
   handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
+  isStudentInPendingRelationshipSelection: ReturnType<typeof vi.fn>;
+  isStudentInPendingRuleCandidates: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -117,6 +121,8 @@ const stateMocks = vi.hoisted(() => ({
     canCommitPendingFixedSeatRule: false,
     setActiveSeatingSmartTool: vi.fn(),
     clearPendingRelationshipSelection: vi.fn(),
+    clearPendingRuleCandidates: vi.fn(),
+    removePendingRuleCandidate: vi.fn(),
     retrySmartRuleHydration: vi.fn(),
     beginRelationshipRuleEdit: vi.fn(),
     beginNearTeacherEdit: vi.fn(),
@@ -131,6 +137,8 @@ const stateMocks = vi.hoisted(() => ({
     fixedSeatRuleForSeat: vi.fn(() => null),
     replaceNearTeacherPreference: vi.fn(),
     handleSeatingSmartToolStudentSelection: vi.fn(() => true),
+    isStudentInPendingRelationshipSelection: vi.fn(() => false),
+    isStudentInPendingRuleCandidates: vi.fn(() => false),
   }))(),
 }));
 
@@ -186,6 +194,8 @@ describe("PlannerRulesWorkspacePane", () => {
     stateMocks.plannerState.canCommitPendingFixedSeatRule = false;
     stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
+    stateMocks.plannerState.clearPendingRuleCandidates.mockReset();
+    stateMocks.plannerState.removePendingRuleCandidate.mockReset();
     stateMocks.plannerState.retrySmartRuleHydration.mockReset();
     stateMocks.plannerState.beginRelationshipRuleEdit.mockReset();
     stateMocks.plannerState.beginNearTeacherEdit.mockReset();
@@ -207,6 +217,10 @@ describe("PlannerRulesWorkspacePane", () => {
     stateMocks.plannerState.replaceNearTeacherPreference.mockReset();
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReset();
     stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReturnValue(true);
+    stateMocks.plannerState.isStudentInPendingRelationshipSelection.mockReset();
+    stateMocks.plannerState.isStudentInPendingRelationshipSelection.mockReturnValue(false);
+    stateMocks.plannerState.isStudentInPendingRuleCandidates.mockReset();
+    stateMocks.plannerState.isStudentInPendingRuleCandidates.mockReturnValue(false);
   });
 
   it("defaults to Klassrumsvy when a classroom exists and preserves explicit switches", async () => {
@@ -381,7 +395,7 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(stateMocks.plannerState.commitPendingFixedSeatRule).toHaveBeenCalledWith();
   });
 
-  it("activates the near-teacher tool from the summary panel instead of opening a dropdown edit flow", async () => {
+  it("edits the persisted near-teacher rule from the summary panel", async () => {
     const wrapper = mount(PlannerRulesWorkspacePane, {
       global: {
         stubs: {
@@ -395,6 +409,23 @@ describe("PlannerRulesWorkspacePane", () => {
     await wrapper.get('[data-test="rules-edit-near-teacher-0"]').trigger("click");
 
     expect(stateMocks.plannerState.beginNearTeacherEdit).toHaveBeenCalledWith();
+  });
+
+  it("activates the near-teacher tool without entering persisted edit mode", async () => {
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="phone-rules-tool-near_teacher"]').trigger("click");
+
+    expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("near_teacher");
+    expect(stateMocks.plannerState.beginNearTeacherEdit).not.toHaveBeenCalled();
   });
 
   it("removes the consolidated near-teacher rule directly from the inspector", async () => {
@@ -489,8 +520,48 @@ describe("PlannerRulesWorkspacePane", () => {
 
     expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("keep_near");
     expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith("student-1");
-    expect(stateMocks.plannerState.clearPendingRelationshipSelection).toHaveBeenCalledWith();
+    expect(stateMocks.plannerState.clearPendingRuleCandidates).toHaveBeenCalledWith();
     expect(stateMocks.plannerState.commitPendingRelationshipRule).toHaveBeenCalledWith();
+  });
+
+  it("removes phone selected candidates with an idempotent remove action", async () => {
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="phone-rules-selected-student"] button').trigger("click");
+
+    expect(stateMocks.plannerState.removePendingRuleCandidate).toHaveBeenCalledWith("student-2");
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
+  });
+
+  it("removes already-selected phone student cards instead of toggling them back in", async () => {
+    stateMocks.plannerState.isStudentInPendingRuleCandidates.mockImplementation(
+      (studentId: string) => studentId === "student-2",
+    );
+
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    await wrapper
+      .findAll('[data-test="phone-rules-student-pool"] button')[1]
+      .trigger("click");
+
+    expect(stateMocks.plannerState.removePendingRuleCandidate).toHaveBeenCalledWith("student-2");
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
   });
 
   it("renders the approved phone fixed-seat map flow without replacing relationship tools", async () => {
@@ -545,7 +616,7 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(stateMocks.plannerState.setActiveSeatingSmartTool).not.toHaveBeenCalledWith("fixed_seat");
   });
 
-  it("starts the phone rules workspace with a usable near-teacher selection target", () => {
+  it("starts the rules workspace with a blank near-teacher tool instead of editing persisted rules", () => {
     stateMocks.plannerState.activeSeatingSmartTool = null;
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
 
@@ -559,6 +630,7 @@ describe("PlannerRulesWorkspacePane", () => {
       },
     });
 
-    expect(stateMocks.plannerState.beginNearTeacherEdit).toHaveBeenCalledWith();
+    expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("near_teacher");
+    expect(stateMocks.plannerState.beginNearTeacherEdit).not.toHaveBeenCalled();
   });
 });

@@ -219,6 +219,11 @@ onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
 function selectStudent(studentId: string): void {
   if (currentView.value === "rules") {
     if (plannerState.activeSeatingSmartTool) {
+      if (plannerState.isStudentInPendingRuleCandidates(studentId)) {
+        plannerState.removePendingRuleCandidate(studentId);
+        selectedStudentId.value = null;
+        return;
+      }
       plannerState.handleSeatingSmartToolStudentSelection(studentId);
     }
     selectedStudentId.value = null;

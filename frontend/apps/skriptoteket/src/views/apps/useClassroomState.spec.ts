@@ -603,6 +603,31 @@ describe("useClassroomState", () => {
     expect(state.pendingRelationshipStudentIds).toEqual([]);
   });
 
+  it("removes pending rule candidates idempotently without mutating persisted rules", () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+    };
+    state.relationshipRules = [
+      { id: "rule-1", kind: "keep_near", student_ids: ["s1", "s2"] },
+    ];
+
+    state.beginRelationshipRuleEdit("rule-1");
+
+    expect(state.pendingRelationshipStudentIds).toEqual(["s1", "s2"]);
+    expect(state.isStudentInPendingRuleCandidates("s1")).toBe(true);
+
+    state.removePendingRuleCandidate("s1");
+    state.removePendingRuleCandidate("s1");
+
+    expect(state.pendingRelationshipStudentIds).toEqual(["s2"]);
+    expect(state.editingRelationshipRuleId).toBe("rule-1");
+    expect(state.relationshipRules).toEqual([
+      { id: "rule-1", kind: "keep_near", student_ids: ["s1", "s2"] },
+    ]);
+    expect(state.hasPendingAutosave).toBe(false);
+  });
+
   it("keeps near-teacher selections pending until the teacher confirms the rule", () => {
     const state = seedWorkspace();
     state.draft = {

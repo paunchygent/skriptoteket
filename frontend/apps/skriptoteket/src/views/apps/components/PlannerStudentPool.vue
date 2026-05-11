@@ -11,12 +11,13 @@ import type { Student } from "../classroomPlannerTypes";
 import { PLANNER_STUDENT_POOL_SURFACE_CLASS } from "../plannerWorkspaceLayout";
 import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     title: string;
     students: Student[];
     selectedStudentId?: string | null;
     selectedStudentIds?: string[];
+    selectedClickAction?: "select" | "remove";
     smartRuleMarkersByStudentId?: Record<string, string[]>;
     emptyLabel: string;
     disabled?: boolean;
@@ -26,6 +27,7 @@ withDefaults(
   {
     selectedStudentId: null,
     selectedStudentIds: () => [],
+    selectedClickAction: "select",
     smartRuleMarkersByStudentId: () => ({}),
     disabled: false,
     rootTestId: undefined,
@@ -35,10 +37,23 @@ withDefaults(
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
+  (e: "selected-student-removed", studentId: string): void;
   (e: "student-dragstart", payload: { event: DragEvent; studentId: string }): void;
   (e: "pool-dragover", event: DragEvent): void;
   (e: "pool-drop", event: DragEvent): void;
 }>();
+
+function isStudentSelected(studentId: string): boolean {
+  return props.selectedStudentId === studentId || props.selectedStudentIds.includes(studentId);
+}
+
+function handleStudentClick(studentId: string): void {
+  if (isStudentSelected(studentId) && props.selectedClickAction === "remove") {
+    emit("selected-student-removed", studentId);
+    return;
+  }
+  emit("student-selected", studentId);
+}
 </script>
 
 <template>
@@ -72,10 +87,10 @@ const emit = defineEmits<{
         :key="student.id"
         type="button"
         class="flex items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
-        :class="selectedStudentId === student.id || selectedStudentIds.includes(student.id) ? 'planner-choice-button-active' : 'planner-choice-button-strong'"
+        :class="isStudentSelected(student.id) ? 'planner-choice-button-active' : 'planner-choice-button-strong'"
         :disabled="disabled"
         :draggable="!disabled"
-        @click="emit('student-selected', student.id)"
+        @click="handleStudentClick(student.id)"
         @dragstart="emit('student-dragstart', { event: $event, studentId: student.id })"
       >
         <div class="min-w-0">

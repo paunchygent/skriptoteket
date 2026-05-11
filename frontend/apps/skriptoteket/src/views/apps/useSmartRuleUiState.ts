@@ -65,6 +65,28 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     clearFeedback();
   }
 
+  function clearPendingRuleCandidates(): void {
+    pendingRelationshipStudentIds.value = [];
+    pendingFixedSeatStudentId.value = null;
+    pendingFixedSeatSeatId.value = null;
+    clearFeedback();
+  }
+
+  function removePendingRuleCandidate(studentId: string): void {
+    const nextStudentIds = pendingRelationshipStudentIds.value.filter(
+      (pendingStudentId) => pendingStudentId !== studentId,
+    );
+    const removedRelationshipStudent = nextStudentIds.length !== pendingRelationshipStudentIds.value.length;
+    const removedFixedSeatStudent = pendingFixedSeatStudentId.value === studentId;
+    pendingRelationshipStudentIds.value = nextStudentIds;
+    if (removedFixedSeatStudent) {
+      pendingFixedSeatStudentId.value = null;
+    }
+    if (removedRelationshipStudent || removedFixedSeatStudent) {
+      clearFeedback();
+    }
+  }
+
   function setFeedbackMessage(message: string | null): void {
     feedbackMessage.value = message;
   }
@@ -131,6 +153,13 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     return pendingRelationshipStudentIds.value.includes(studentId);
   }
 
+  function isStudentInPendingRuleCandidates(studentId: string): boolean {
+    return (
+      isStudentInPendingRelationshipSelection(studentId)
+      || pendingFixedSeatStudentId.value === studentId
+    );
+  }
+
   function togglePendingRelationshipStudent(studentId: string): void {
     if (isStudentInPendingRelationshipSelection(studentId)) {
       pendingRelationshipStudentIds.value = pendingRelationshipStudentIds.value.filter(
@@ -179,6 +208,8 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     canCommitPendingFixedSeatRule,
     clearFeedback,
     clearPendingRelationshipSelection,
+    clearPendingRuleCandidates,
+    removePendingRuleCandidate,
     setFeedbackMessage,
     reset,
     beginRelationshipRuleEdit,
@@ -186,6 +217,7 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     beginFixedSeatEdit,
     setActiveSeatingSmartTool,
     isStudentInPendingRelationshipSelection,
+    isStudentInPendingRuleCandidates,
     togglePendingRelationshipStudent,
     setPendingFixedSeatStudent,
     togglePendingFixedSeatStudent,

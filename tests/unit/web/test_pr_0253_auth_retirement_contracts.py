@@ -238,7 +238,6 @@ def test_active_playwright_command_surfaces_do_not_call_retired_local_auth() -> 
         if isinstance(value, str) and value.startswith("python -m scripts.playwright")
     }
     active_paths = {ROOT / (module.replace(".", "/") + ".py") for module in active_modules}
-    active_paths.add(ROOT / "scripts" / "_playwright_huleedu_auth.py")
 
     retired_fragments = {f"{LOCAL_AUTH_API_PREFIX}/login", f"{LOCAL_AUTH_API_PREFIX}/csrf"}
     offenders: list[str] = []

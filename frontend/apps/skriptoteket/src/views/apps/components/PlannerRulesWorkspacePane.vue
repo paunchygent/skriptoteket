@@ -7,25 +7,19 @@
  * top summary panel for active rules only.
  */
 
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 import {
   IconArrow,
   IconInfo,
-  IconKeepApart,
-  IconKeepNear,
-  IconLock,
-  IconTeacherAnchor,
 } from "../../../components/icons";
-import type { Student } from "../classroomPlannerTypes";
-import {
-  buildSmartRuleMarkersByStudentId,
-  formatSeatDisplayLabel,
-} from "../classroomPlannerSmartRulePresentation";
+import { PHONE_RULE_TOOL_ROWS } from "../plannerPhoneRuleToolRows";
+import { usePlannerRulesWorkspaceViewState } from "../plannerRulesWorkspaceViewState";
 import PlannerRulesInspector from "./PlannerRulesInspector.vue";
 import PlannerRulesMapPanel from "./PlannerRulesMapPanel.vue";
 import PlannerPhoneFixedSeatRulePanel from "./PlannerPhoneFixedSeatRulePanel.vue";
 import PlannerPhoneRelationshipRuleSelection from "./PlannerPhoneRelationshipRuleSelection.vue";
+import PlannerPhoneRulesSummary from "./PlannerPhoneRulesSummary.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerRulesToolRail from "./PlannerRulesToolRail.vue";
 import PlannerFixedSeatSwitchPrompt from "./PlannerFixedSeatSwitchPrompt.vue";
@@ -49,84 +43,21 @@ const phoneStudentListOpen = ref(true);
 const fixedSeatSwitchPromptOpen = ref(false);
 const phoneFixedSeatClassroomMessageVisible = ref(false);
 
-const nearTeacherStudents = computed<Student[]>(() => {
-  return plannerState.seatingPreferences
-    .filter((preference) => preference.near_teacher === true)
-    .map((preference) => plannerState.studentsById[preference.student_id] ?? null)
-    .filter((student): student is Student => student !== null);
-});
-const activeFixedSeatRules = computed(() => {
-  const templateId = plannerState.template?.id ?? null;
-  if (!templateId) {
-    return [];
-  }
-  return plannerState.fixedSeatRules.filter((rule) => rule.template_id === templateId);
-});
-const smartRuleMarkersByStudentId = computed(() => {
-  return buildSmartRuleMarkersByStudentId(
-    plannerState.seatingPreferences,
-    plannerState.relationshipRules,
-    activeFixedSeatRules.value,
-  );
-});
-const pendingFixedSeatStudentName = computed(() => {
-  const studentId = plannerState.pendingFixedSeatStudentId;
-  if (!studentId) {
-    return null;
-  }
-  return plannerState.studentsById[studentId]?.display_name ?? null;
-});
-const pendingFixedSeatSeatLabel = computed(() => {
-  const seatId = plannerState.pendingFixedSeatSeatId;
-  return seatId ? formatSeatDisplayLabel(seatId) : null;
-});
-const pendingSelectionCount = computed(() => {
-  if (plannerState.activeSeatingSmartTool === "fixed_seat") {
-    return Number(plannerState.pendingFixedSeatStudentId !== null)
-      + Number(plannerState.pendingFixedSeatSeatId !== null);
-  }
-  return plannerState.pendingRelationshipStudentIds.length;
-});
-const pendingRuleStudents = computed(() => {
-  return plannerState.pendingRelationshipStudentIds
-    .map((studentId) => {
-      const student = plannerState.studentsById[studentId];
-      if (!student) {
-        return null;
-      }
-      return { id: student.id, name: student.display_name };
-    })
-    .filter((student): student is { id: string; name: string } => student !== null);
-});
-const phoneStudentCountLabel = computed(() => {
-  const count = plannerState.students.length;
-  return count === 1 ? "1 elev" : `${count} elever`;
-});
-const phoneCanCommitRelationshipRule = computed(() => {
-  return (
-    plannerState.activeSeatingSmartTool !== "fixed_seat"
-    && plannerState.activeSeatingSmartTool !== null
-  );
-});
-const canUseClassroomView = computed(() => plannerState.template !== null);
-const seatingArrangementUnavailableMessage = computed(() => {
-  if (plannerState.template === null) {
-    return "Klassrumsvyn blir tillgänglig när klassen har ett klassrum.";
-  }
-  return null;
-});
-const phoneSelectedStudentIds = computed(() => {
-  if (plannerState.activeSeatingSmartTool === "fixed_seat") {
-    return plannerState.pendingFixedSeatStudentId ? [plannerState.pendingFixedSeatStudentId] : [];
-  }
-  return plannerState.pendingRelationshipStudentIds;
-});
-const phoneToolRows = computed(() => [
-  { id: "near_teacher" as const, label: "Nära läraren", subtitle: "Placera elever nära katedern.", icon: IconTeacherAnchor },
-  { id: "fixed_seat" as const, label: "Fast plats", subtitle: "Lås en elev till en plats.", icon: IconLock },
-  { id: "keep_apart" as const, label: "Håll isär", subtitle: "Placera elever på avstånd.", icon: IconKeepApart },
-  { id: "keep_near" as const, label: "Håll nära", subtitle: "Placera elever tillsammans.", icon: IconKeepNear },
-]);
+const {
+  activeFixedSeatRules,
+  canUseClassroomView,
+  nearTeacherStudents,
+  pendingFixedSeatSeatLabel,
+  pendingFixedSeatStudentName,
+  pendingRuleStudents,
+  pendingSelectionCount,
+  phoneCanCommitRelationshipRule,
+  phoneSelectedStudentIds,
+  phoneStudentCountLabel,
+  seatingArrangementUnavailableMessage,
+  smartRuleMarkersByStudentId,
+} = usePlannerRulesWorkspaceViewState(plannerState);
+const phoneToolRows = PHONE_RULE_TOOL_ROWS;
 
 function activateFixedSeatTool(): void {
   fixedSeatSwitchPromptOpen.value = false;
@@ -152,7 +83,10 @@ function selectTool(tool: "near_teacher" | "keep_near" | "keep_apart" | "fixed_s
   phoneFixedSeatClassroomMessageVisible.value = false;
   if (tool === "near_teacher") {
     fixedSeatSwitchPromptOpen.value = false;
-    plannerState.beginNearTeacherEdit();
+    if (plannerState.activeSeatingSmartTool === tool) {
+      return;
+    }
+    plannerState.setActiveSeatingSmartTool(tool);
     return;
   }
   fixedSeatSwitchPromptOpen.value = false;
@@ -179,7 +113,7 @@ function beginNearTeacherEdit(): void {
 }
 
 function removePendingRelationshipStudent(studentId: string): void {
-  plannerState.handleSeatingSmartToolStudentSelection(studentId);
+  plannerState.removePendingRuleCandidate(studentId);
 }
 
 function togglePhoneStudentList(): void {
@@ -188,6 +122,10 @@ function togglePhoneStudentList(): void {
 
 function handlePhoneStudentSelection(studentId: string): void {
   if (plannerState.activeSeatingSmartTool) {
+    if (plannerState.isStudentInPendingRuleCandidates(studentId)) {
+      plannerState.removePendingRuleCandidate(studentId);
+      return;
+    }
     plannerState.handleSeatingSmartToolStudentSelection(studentId);
     return;
   }
@@ -216,6 +154,9 @@ function onPhoneSelectionDrop(event: DragEvent): void {
   event.preventDefault();
   const studentId = event.dataTransfer?.getData("studentId");
   if (studentId && plannerState.activeSeatingSmartTool) {
+    if (plannerState.isStudentInPendingRelationshipSelection(studentId)) {
+      return;
+    }
     plannerState.handleSeatingSmartToolStudentSelection(studentId);
   }
 }
@@ -224,7 +165,7 @@ watch(
   () => plannerState.canEditSeatingSmartRules,
   (canEdit) => {
     if (canEdit && !plannerState.activeSeatingSmartTool) {
-      plannerState.beginNearTeacherEdit();
+      plannerState.setActiveSeatingSmartTool("near_teacher");
     }
   },
   { immediate: true },
@@ -316,6 +257,23 @@ watch(mapView, (nextValue) => {
         </button>
       </div>
 
+      <PlannerPhoneRulesSummary
+        :near-teacher-students="nearTeacherStudents"
+        :relationship-rules="plannerState.relationshipRules"
+        :fixed-seat-rules="activeFixedSeatRules"
+        :students-by-id="plannerState.studentsById"
+        :editing-relationship-rule-id="plannerState.editingRelationshipRuleId"
+        :editing-fixed-seat-rule-id="plannerState.editingFixedSeatRuleId"
+        :editing-near-teacher-rule="plannerState.editingNearTeacherRule"
+        :can-edit="plannerState.canEditSeatingSmartRules"
+        @edit-near-teacher="beginNearTeacherEdit"
+        @delete-near-teacher="plannerState.clearNearTeacherRule()"
+        @edit-rule="editRelationshipRule"
+        @delete-rule="plannerState.deleteRelationshipRule($event)"
+        @edit-fixed-seat-rule="plannerState.beginFixedSeatRuleEdit($event)"
+        @delete-fixed-seat-rule="plannerState.deleteFixedSeatRule($event)"
+      />
+
       <div
         v-if="phoneFixedSeatClassroomMessageVisible"
         class="planner-phone-fixed-seat-empty"
@@ -335,14 +293,14 @@ watch(mapView, (nextValue) => {
         :relationship-rules="plannerState.relationshipRules"
         :seating-preferences="plannerState.seatingPreferences"
         :rule-diagnostics="plannerState.smartRuleDiagnostics"
-        @clear-selection="plannerState.clearPendingRelationshipSelection()"
+        @clear-selection="plannerState.clearPendingRuleCandidates()"
         @seat-selected="plannerState.selectFixedSeatRuleSeat($event)"
       />
 
       <PlannerPhoneRelationshipRuleSelection
         v-else
         :students="pendingRuleStudents"
-        @clear-selection="plannerState.clearPendingRelationshipSelection()"
+        @clear-selection="plannerState.clearPendingRuleCandidates()"
         @remove-student="removePendingRelationshipStudent"
         @selection-dragover="onPhoneSelectionDragOver"
         @selection-drop="onPhoneSelectionDrop"
@@ -376,10 +334,12 @@ watch(mapView, (nextValue) => {
           :disabled="!plannerState.activeSeatingSmartTool"
           :selected-student-id="selectedStudentId"
           :selected-student-ids="phoneSelectedStudentIds"
+          selected-click-action="remove"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           empty-label="Inga elever"
           root-test-id="phone-rules-student-pool"
           @student-selected="handlePhoneStudentSelection"
+          @selected-student-removed="removePendingRelationshipStudent"
           @student-dragstart="onPhoneStudentDragStart($event.event, $event.studentId)"
           @pool-dragover="onPhoneSelectionDragOver"
           @pool-drop="onPhoneSelectionDrop"
@@ -446,7 +406,7 @@ watch(mapView, (nextValue) => {
             :can-commit-pending-fixed-seat-rule="plannerState.canCommitPendingFixedSeatRule"
             :feedback-message="plannerState.smartRuleFeedbackMessage"
             @select-tool="selectTool"
-            @clear-selection="plannerState.clearPendingRelationshipSelection()"
+            @clear-selection="plannerState.clearPendingRuleCandidates()"
             @remove-pending-student="removePendingRelationshipStudent"
             @commit-pending="plannerState.commitPendingRelationshipRule()"
             @commit-fixed-seat="plannerState.commitPendingFixedSeatRule()"
@@ -481,6 +441,7 @@ watch(mapView, (nextValue) => {
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           @update:map-view="mapView = $event"
           @student-selected="emit('student-selected', $event)"
+          @selected-student-removed="removePendingRelationshipStudent"
           @seat-selected="plannerState.selectFixedSeatRuleSeat($event)"
         />
       </div>

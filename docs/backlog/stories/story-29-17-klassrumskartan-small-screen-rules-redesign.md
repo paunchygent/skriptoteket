@@ -49,3 +49,7 @@ This story gives `Regler` its own reduced authoring pattern.
 - [PR-0314: Solver-owned rule marker semantics](../prs/pr-0314-solver-owned-rule-marker-semantics.md)
   follows up on marker-tone drift so soft-rule colors in `Regler` reflect
   solver-owned diagnostics or remain neutral.
+- [PR-0315: Phone rules active-rule management and delete affordances](../prs/pr-0315-st-29-17-phone-rules-active-rule-management.md)
+  follows up on the reduced phone rules workflow by adding compact edit/delete
+  affordances for persisted `Nära läraren`, `Håll nära`, `Håll isär`, and
+  active-template `Fast plats` rules.

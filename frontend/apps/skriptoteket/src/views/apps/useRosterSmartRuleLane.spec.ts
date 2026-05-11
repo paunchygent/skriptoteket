@@ -104,6 +104,53 @@ describe("useRosterSmartRuleLane", () => {
     expect(lane.hasPendingChanges.value).toBe(false);
   });
 
+  it("flushes queued smart-rule edits before reporting saved", async () => {
+    vi.useFakeTimers();
+    const firstSave = createDeferred<RosterSmartRulesResponse>();
+    const secondSave = createDeferred<RosterSmartRulesResponse>();
+    const persistSmartRules = vi.fn()
+      .mockReturnValueOnce(firstSave.promise)
+      .mockReturnValueOnce(secondSave.promise);
+    const applyCommittedRules = vi.fn();
+    const applyAcknowledgement = vi.fn();
+
+    const lane = useRosterSmartRuleLane({
+      canSchedule: () => true,
+      getSessionToken: () => 0,
+      normalizeErrorMessage: (_error, fallback) => fallback,
+      persistSmartRules,
+      serializePatch: () => ({
+        expected_revision: 0,
+        seating_preferences: [{ student_id: "s1", near_teacher: true }],
+        relationship_rules: [],
+        fixed_seat_rules: [],
+      }),
+      applyCommittedRules,
+      applyAcknowledgement,
+    });
+
+    lane.bindRoster("roster-1");
+    lane.markDirty();
+    await vi.advanceTimersByTimeAsync(900);
+    lane.markDirty();
+
+    const flushPromise = lane.flushPendingChanges();
+    firstSave.resolve(createSmartRulesResponse(1, ["s1"]));
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(persistSmartRules).toHaveBeenCalledTimes(2);
+    expect(lane.hasPendingChanges.value).toBe(true);
+
+    secondSave.resolve(createSmartRulesResponse(2, ["s1", "s2"]));
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(10);
+
+    await expect(flushPromise).resolves.toEqual({ status: "saved" });
+    expect(applyCommittedRules).toHaveBeenCalledWith(createSmartRulesResponse(2, ["s1", "s2"]));
+    expect(lane.hasPendingChanges.value).toBe(false);
+  });
+
   it("ignores late smart-rule responses after the session token changes", async () => {
     vi.useFakeTimers();
     let sessionToken = 0;

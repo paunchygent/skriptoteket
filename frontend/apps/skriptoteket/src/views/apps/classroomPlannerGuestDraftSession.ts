@@ -394,6 +394,8 @@ export function createClassroomPlannerGuestDraftSession(
       setDraftUseHistoryEnabled: smartRuleActions.setDraftUseHistoryEnabled,
       setActiveSeatingSmartTool: smartRuleUiState.setActiveSeatingSmartTool,
       clearPendingRelationshipSelection: smartRuleUiState.clearPendingRelationshipSelection,
+      clearPendingRuleCandidates: smartRuleUiState.clearPendingRuleCandidates,
+      removePendingRuleCandidate: smartRuleUiState.removePendingRuleCandidate,
       setStudentNearTeacherEnabled: smartRuleActions.setStudentNearTeacherEnabled,
       replaceNearTeacherPreference: smartRuleActions.replaceNearTeacherPreference,
       handleSeatingSmartToolStudentSelection: smartRuleActions.handleSeatingSmartToolStudentSelection,
@@ -411,6 +413,7 @@ export function createClassroomPlannerGuestDraftSession(
       isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
       setDraftGroupingSeatingDistanceEnabled: smartRuleActions.setDraftGroupingSeatingDistanceEnabled,
       isStudentInPendingRelationshipSelection: smartRuleUiState.isStudentInPendingRelationshipSelection,
+      isStudentInPendingRuleCandidates: smartRuleUiState.isStudentInPendingRuleCandidates,
     },
     workspaceActions: {
       clearWorkspace: stateSupport.clearWorkspace,

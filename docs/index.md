@@ -471,6 +471,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md`
 - Review gate for PR-0314 solver-owned rule marker semantics:
   `docs/backlog/reviews/review-pr-0314-solver-owned-rule-marker-semantics.md`
+- Phone rules active-rule management and delete affordances:
+  `docs/backlog/prs/pr-0315-st-29-17-phone-rules-active-rule-management.md`
 - ST-29-11 share/export affordance consolidation task:
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:
