@@ -15,7 +15,7 @@ import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnaps
 import type {
   DraftWorkspaceResponse,
   PlanDraft,
-  SmartSeatingRunResponse,
+  PublicSmartSeatingRunResponse,
   SmartRuleDiagnostic,
 } from "./classroomPlannerTypes";
 import type { DraftPersistenceLaneResult } from "./useDraftPersistenceLane";
@@ -105,7 +105,7 @@ export function usePublicSmartSeatingRun(options: UsePublicSmartSeatingRunOption
       }
 
       const snapshot = await options.commitWorkspaceToSnapshot(currentWorkspace);
-      const result = await apiPost<SmartSeatingRunResponse>(
+      const result = await apiPost<PublicSmartSeatingRunResponse>(
         options.apiPath,
         {
           expected_revision: resolveSeatingRevision(snapshot),

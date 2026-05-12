@@ -11,12 +11,12 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.classroom_planner import RunSmartGroupingHandler
 from skriptoteket.application.curated_apps.classroom_planner.handlers.smart_grouping import (
     SmartGroupingAppliedResult,
-    SmartGroupingBlockedResult,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
@@ -204,31 +204,18 @@ async def test_run_smart_grouping_returns_applied_payload_from_handler() -> None
 
 
 @pytest.mark.unit
-@pytest.mark.asyncio
-async def test_run_smart_grouping_returns_blocked_payload_for_no_history() -> None:
-    user = make_user(role=Role.USER)
-    draft_id = uuid4()
-    handler = AsyncMock(spec=RunSmartGroupingHandler)
-    handler.handle.return_value = SmartGroupingBlockedResult(
-        status="blocked",
-        reason="no_history",
-        message="För att använda historik behöver du först exportera en gruppindelning.",
-        used_history=False,
-        used_live_seating=True,
+def test_run_smart_grouping_response_model_is_applied_only() -> None:
+    smart_run_path = (
+        "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/smart-run"
+    )
+    smart_run_route = next(
+        route
+        for route in api.router.routes
+        if isinstance(route, APIRoute) and route.path == smart_run_path
     )
 
-    result = await _unwrap_dishka(api.run_smart_grouping)(
-        draft_id=draft_id,
-        request=api.SmartGroupingRunRequest(expected_revision=4),
-        handler=handler,
-        user=user,
-    )
-
-    assert result.status == "blocked"
-    assert result.reason == "no_history"
-    assert result.workspace is None
-    assert result.used_history is False
-    assert result.used_live_seating is True
+    assert smart_run_route.response_model is api.AppliedSmartGroupingRunResponse
+    assert not hasattr(api, "BlockedSmartGroupingRunResponse")
 
 
 @pytest.mark.unit

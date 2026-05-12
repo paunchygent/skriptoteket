@@ -129,10 +129,9 @@ instead of treating it as unfinished planner-layout implementation.
   classroom helper copy now explains the exact room-context versus
   seating-influence behavior. `PR-0308` supersedes that seating-influence
   default while keeping the toolbar/copy work intact.
-- `PR-0307` is ready as the backend persistence counterpart for the Smart
-  history default: authenticated share links should count as export-backed
-  history checkpoints, while public guest shares stay outside account-backed
-  history.
+- `PR-0307` is done as the backend persistence counterpart for the Smart
+  history default: authenticated share links now count as export-backed history
+  checkpoints, while public guest shares stay outside account-backed history.
 - `PR-0308` is done as a remediation to the over-broad `PR-0306` default:
   authenticated Smart settings are profile-owned and cross-browser persisted,
   first-time grouping drafts keep `Tillämpa sittschema` off, and public guest

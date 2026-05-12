@@ -162,6 +162,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md`
 - Review gate for PR-0307 share-as-export Smart history provenance:
   `docs/backlog/reviews/review-pr-0307-share-as-export-smart-history-provenance.md`
+- ST-27-05 Smart history first-run soft-degrade:
+  `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
+- Review gate for PR-0316 Smart history first-run soft-degrade:
+  `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
   `docs/backlog/prs/pr-0308-st-29-11-smart-settings-preference-continuity-and-seating-influence-default.md`
 - ST-29-11 phone grouping toolbar distribution overflow regression:
@@ -473,6 +477,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0314-solver-owned-rule-marker-semantics.md`
 - Phone rules active-rule management and delete affordances:
   `docs/backlog/prs/pr-0315-st-29-17-phone-rules-active-rule-management.md`
+- ST-27-05 Smart history first-run soft-degrade:
+  `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
+- Review gate for PR-0316 Smart history first-run soft-degrade:
+  `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 share/export affordance consolidation task:
   `docs/backlog/prs/pr-0286-st-29-11-share-export-affordance-consolidation.md`
 - ST-29-11 Smart settings popover persistence task:
@@ -1023,6 +1031,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md`
 - `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
 - `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
+- `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
 - `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
 - `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
 - `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`

@@ -8,10 +8,8 @@ import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner.handlers.smart_grouping import (
     NO_CLASSROOM_SIGNAL_MESSAGE,
-    NO_HISTORY_BLOCK_MESSAGE,
     RunSmartGroupingHandler,
     SmartGroupingAppliedResult,
-    SmartGroupingBlockedResult,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     NormalizedRoomSeat,
@@ -209,7 +207,7 @@ def _seating_checkpoint(*, roster_id, template_id) -> SeatingExportCheckpoint:
 
 
 @pytest.mark.asyncio
-async def test_run_smart_grouping_blocks_when_use_history_has_no_grouping_checkpoints() -> None:
+async def test_run_smart_grouping_applies_without_history_when_no_grouping_checkpoints() -> None:
     owner_user_id = uuid4()
     roster = _roster(owner_user_id=owner_user_id)
     workspace = _grouping_workspace(
@@ -217,8 +215,20 @@ async def test_run_smart_grouping_blocks_when_use_history_has_no_grouping_checkp
         roster_id=roster.id,
         use_history=True,
     )
+    persisted_workspace = workspace.model_copy(
+        update={
+            "draft": workspace.draft.model_copy(
+                update={
+                    "revision": workspace.draft.revision + 1,
+                    "updated_at": datetime(2026, 3, 29, 12, 0, tzinfo=timezone.utc),
+                }
+            )
+        }
+    )
     drafts = AsyncMock()
-    drafts.get_workspace.return_value = workspace
+    drafts.get_workspace.side_effect = [workspace, persisted_workspace]
+    grouping_checkpoints = AsyncMock()
+    grouping_checkpoints.list_recent_for_roster.return_value = []
     handler = RunSmartGroupingHandler(
         uow=AsyncMock(),
         drafts=drafts,
@@ -227,7 +237,7 @@ async def test_run_smart_grouping_blocks_when_use_history_has_no_grouping_checkp
         smart_rules=AsyncMock(
             get_by_roster_id=AsyncMock(return_value=RosterSmartRules(roster_id=roster.id))
         ),
-        grouping_checkpoints=AsyncMock(list_recent_for_roster=AsyncMock(return_value=[])),
+        grouping_checkpoints=grouping_checkpoints,
         seating_checkpoints=AsyncMock(),
         clock=_Clock(datetime(2026, 3, 29, 12, 0, tzinfo=timezone.utc)),
     )
@@ -238,14 +248,13 @@ async def test_run_smart_grouping_blocks_when_use_history_has_no_grouping_checkp
         expected_revision=workspace.draft.revision,
     )
 
-    assert result == SmartGroupingBlockedResult(
-        status="blocked",
-        reason="no_history",
-        message=NO_HISTORY_BLOCK_MESSAGE,
-        used_history=False,
-        used_live_seating=False,
-    )
-    drafts.save_workspace.assert_not_awaited()
+    assert isinstance(result, SmartGroupingAppliedResult)
+    assert result.status == "applied"
+    assert result.used_history is False
+    assert result.used_live_seating is False
+    assert result.workspace.draft.revision == workspace.draft.revision + 1
+    grouping_checkpoints.list_recent_for_roster.assert_awaited_once()
+    drafts.save_workspace.assert_awaited_once()
 
 
 @pytest.mark.asyncio

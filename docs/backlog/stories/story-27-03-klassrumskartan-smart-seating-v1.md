@@ -5,7 +5,7 @@ title: "Klassrumskartan — Smart seating v1"
 status: done
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-28
+updated: 2026-05-11
 epic: "EPIC-27"
 dependencies: ["ST-27-01", "ST-27-02", "ST-27-06"]
 acceptance_criteria:
@@ -20,7 +20,7 @@ acceptance_criteria:
   - "Given `Use history` is enabled and a student does not have `Närmare läraren`, when smart seating runs across multiple teacher-approved checkpoints, then it tries to balance that student's teacher-distance more fairly over time rather than repeatedly leaving the same students nearest the teacher."
   - "Given room-owned teaching cues exist, when smart seating evaluates teacher-distance, then it infers the teaching/front edge from `Whiteboard` and `Kateder`; if no stronger cue exists, the default teaching position is top-middle in the standard planner view."
   - "Given eligible seating checkpoints exist and `Use history` is enabled, when smart seating runs, then history is derived from those checkpoints rather than from draft autosave or undo/redo mechanics."
-  - "Given `Use history` is enabled but no eligible checkpoints exist, when the teacher tries to run smart seating, then the planner does not silently fall back to no-history behavior and instead blocks that history-enabled run with a short teacher-facing explanation."
+  - "Given `Use history` is enabled but no eligible checkpoints exist, when the teacher runs smart seating, then the planner applies a smart result without history, reports `used_history=false`, and does not treat draft autosave or undo/redo mechanics as history."
   - "Given the room or rules make a perfect result impossible, when smart seating completes, then the best available layout is still returned together with one short teacher-facing message rather than a hard failure."
 ui_impact: "Yes (smart seating toggle and result flow)"
 data_impact: "Yes (smart seating request/response contract)"
@@ -75,8 +75,9 @@ lane on top of that foundation.
 - `Slumpa` now branches honestly in `Sittplatser`:
   - `Smart` off keeps the local random reshuffle
   - `Smart` on flushes the draft + smart-rule lanes and applies the backend smart-run result
-- Draft-local `Use history` is now exposed in the seating workspace, persisted through the draft
-  lane, and blocks honestly when no eligible export checkpoints exist.
+- Draft-local `Use history` is exposed in the seating workspace and persisted through the draft
+  lane. `ST-27-05` / `PR-0316` refines the no-checkpoint first-run case so it runs without history
+  instead of blocking, while still excluding drafts and undo/redo from history.
 - Real-room topology is now normalized into teacher-facing ranks, contiguous local zones, and
   spread-oriented seating blocks, so `G20` and similar classrooms no longer fall back to toy-grid
   adjacency assumptions.

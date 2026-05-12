@@ -5,7 +5,7 @@ title: "Klassrumskartan — Smart grouping v1"
 status: in_progress
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-30
+updated: 2026-05-11
 epic: "EPIC-27"
 dependencies: ["ST-27-01", "ST-27-02", "ST-27-06", "ST-27-07"]
 acceptance_criteria:
@@ -26,7 +26,7 @@ acceptance_criteria:
   - "Given `Klassrum` is selected and `Sittschemat` is enabled but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may consume those checkpoints as fallback compactness input without treating them as grouping history."
   - "Given `Klassrum` is selected and `Sittschemat` is enabled but no usable seating context exists, when smart grouping runs, then the planner falls back honestly to rules plus any enabled history lane and tells the teacher that no seating-based classroom signal was available for that run."
   - "Given `Use history` is enabled, when smart grouping evaluates prior outcomes, then grouping history only handles anti-repeat rotation, stays label-insensitive, and penalizes exact or near-repeat student co-memberships rather than raw group ids."
-  - "Given `Use history` is enabled but no eligible grouping checkpoints exist for the requested grouping history inputs, when the teacher tries to run smart grouping, then the planner does not silently fall back to no-history behavior and instead blocks that history-enabled run with a short teacher-facing explanation."
+  - "Given `Use history` is enabled but no eligible grouping checkpoints exist for the requested grouping history inputs, when the teacher runs smart grouping, then the planner applies a smart grouping result without history, reports `used_history=false`, and does not treat seating compactness, draft state, or local guest state as grouping history."
 ui_impact: "Yes (smart grouping toggle, classroom-aware grouping control semantics, and history)"
 data_impact: "Yes (smart grouping request/response contract)"
 ---
@@ -93,3 +93,6 @@ needs three lanes to stay honest:
 - Grouping checkpoints are the primary grouping-history lane, while seating checkpoints remain a
   secondary fallback compactness source only when classroom-aware grouping is enabled through
   `Klassrum` + `Sittschemat` in Smart-inställningar.
+- `ST-27-05` / `PR-0316` refines the first-run grouping history case: an enabled `Historik` toggle
+  with no eligible grouping checkpoints runs without history rather than blocking, while keeping the
+  checkpoint-only source rule intact.

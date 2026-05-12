@@ -15,7 +15,7 @@ import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnaps
 import type {
   DraftWorkspaceResponse,
   PlanDraft,
-  SmartGroupingRunResponse,
+  PublicSmartGroupingRunResponse,
 } from "./classroomPlannerTypes";
 import type { DraftPersistenceLaneResult } from "./useDraftPersistenceLane";
 import type { RosterSmartRuleLaneResult } from "./useRosterSmartRuleLane";
@@ -102,7 +102,7 @@ export function usePublicSmartGroupingRun(options: UsePublicSmartGroupingRunOpti
       }
 
       const snapshot = await options.commitWorkspaceToSnapshot(currentWorkspace);
-      const result = await apiPost<SmartGroupingRunResponse>(
+      const result = await apiPost<PublicSmartGroupingRunResponse>(
         options.apiPath,
         {
           expected_revision: resolveGroupingRevision(snapshot),

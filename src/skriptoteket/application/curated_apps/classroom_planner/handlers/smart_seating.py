@@ -50,11 +50,6 @@ from ..smart_rule_diagnostic_freshness import (
 )
 from .workspace_builders import ensure_active_draft
 
-NO_HISTORY_BLOCK_MESSAGE = (
-    "För att använda historik behöver du först exportera "
-    "ett sittschema för just det här klassrummet."
-)
-
 
 @dataclass(frozen=True)
 class SmartSeatingAppliedResult:
@@ -67,17 +62,7 @@ class SmartSeatingAppliedResult:
     rule_diagnostics: tuple[SmartRuleDiagnostic, ...]
 
 
-@dataclass(frozen=True)
-class SmartSeatingBlockedResult:
-    """Represent one honest blocked smart-seating run."""
-
-    status: Literal["blocked"]
-    reason: Literal["no_history"]
-    message: str
-    used_history: bool
-
-
-SmartSeatingRunResult = SmartSeatingAppliedResult | SmartSeatingBlockedResult
+SmartSeatingRunResult = SmartSeatingAppliedResult
 
 
 class RunSmartSeatingHandler:
@@ -148,14 +133,6 @@ class RunSmartSeatingHandler:
             room_context_hash=room_context_hash,
             use_history=workspace.draft.use_history,
         )
-        if workspace.draft.use_history and not history:
-            return SmartSeatingBlockedResult(
-                status="blocked",
-                reason="no_history",
-                message=NO_HISTORY_BLOCK_MESSAGE,
-                used_history=False,
-            )
-
         smart_result = solve_smart_seating(
             roster=roster,
             template=template,

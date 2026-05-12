@@ -89,11 +89,6 @@ export function useSmartGroupingRun(options: UseSmartGroupingRunOptions) {
         `/api/v1/apps/classroom.group-seating-studio/drafts/grouping/${persistedDraft.id}/smart-run`,
         { expected_revision: persistedDraft.revision },
       );
-      if (result.status === "blocked") {
-        message.value = result.message;
-        tone.value = "warning";
-        return { status: "blocked", message: result.message };
-      }
 
       options.applyWorkspace(result.workspace);
       message.value = result.message ?? null;

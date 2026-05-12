@@ -5,9 +5,9 @@ title: "Klassrumskartan smart assignment v1 decision memo (2026-03-25)"
 status: active
 owners: "agents"
 created: 2026-03-25
-updated: 2026-05-05
+updated: 2026-05-11
 topic: "smart-assignment"
-links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09", "REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09", "PR-0316", "REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10"]
 ---
 
 ## Summary
@@ -143,8 +143,10 @@ explicit, and the current class-first workflow intact.
   - relation carry-over
   - optional seating-distance signals
 - Raw drafts, draft history, and reopened drafts are never treated as checkpoints.
-- If `Use history` is enabled but no eligible checkpoints exist, the history-enabled smart run is
-  blocked with a short teacher-facing explanation rather than silently downgraded.
+- If `Use history` is enabled but no eligible checkpoints exist, the smart run applies without
+  history, reports `used_history=false`, and does not show a no-history warning or blocked run.
+  This soft-degrade must not treat raw drafts, draft history, undo/redo, reopened drafts, or public
+  guest local state as checkpoint substitutes.
 
 ## Resolved conflicts with current repo state
 
@@ -203,3 +205,19 @@ context: across-table can be a successful close placement at a shared table,
 while row/bench layouts should prefer adjacent same-row pair placement and
 must prove any degraded or failed state in backend tests before frontend marker
 colors are restored.
+
+## 2026-05-11 Smart history first-run refinement
+
+`PR-0305` and `PR-0308` make authenticated `Smart placering` and `Historik`
+default-on unless the teacher opts out. Under that product shape, a missing
+checkpoint is the normal first Smart run for a new classroom/class, not an error.
+
+Resolved behavior:
+
+- no eligible checkpoints + `Historik` on -> run without history, `used_history=false`, normal
+  smart-run feedback
+- eligible export/share checkpoints + `Historik` on -> load checkpoint history, `used_history=true`
+- raw drafts, autosave, undo/redo, history-drawer drafts, abandoned drafts, reopened drafts, and
+  public guest local state remain ineligible as Smart-history sources
+- public guest Smart runs keep account-backed `Historik` omitted/off unless a separate public
+  contract explicitly adds a browser-owned history model

@@ -5,7 +5,7 @@ title: "Klassrumskartan smart assignment v1"
 status: active
 owners: "agents"
 created: 2026-03-25
-updated: 2026-05-05
+updated: 2026-05-11
 outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a dedicated `Regler` workspace, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
@@ -84,8 +84,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   authoring feels deliberate rather than hidden behind weak color-only affordances.
 - Smart grouping history partly depends on seating export checkpoints until grouping export
   checkpoints exist later under the export lane.
-- The package must define one explicit no-checkpoint behavior for `Use history`; teams must not
-  infer their own fallback semantics.
+- The package must define one explicit no-checkpoint behavior for `Use history`: first runs with no
+  eligible checkpoints soft-degrade to no-history Smart runs, while drafts and undo/redo still never
+  become history inputs.
 - Deleting old visible semantics is the cleaner design choice, but it makes rollback to the older
   model intentionally expensive.
 - Solver latency or weak explanations could reduce trust even if the assignment quality is strong.
@@ -135,6 +136,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
     commit
   - overlapping visible relationship clusters are blocked in V1
 - Smart history must start from explicit exports, not from draft mechanics.
+- When `Historik` is on but no eligible checkpoint exists, Smart seating/grouping must run without
+  history, report `used_history=false`, and avoid warning/blocking the teacher in this normal
+  first-run state.
 - The first grouping-history source may be seating checkpoints before grouping export checkpoints
   exist later under the export lane.
 - `ST-27-06` is now a required remediation slice before `ST-27-03` and `ST-27-04`.
@@ -158,6 +162,16 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
     solver seeding.
   - PR-0298 is the frontend slice for `Klassrumsvyn` defaulting, the `Fast plats` prompt,
     fixed-seat markers, and live UX proof.
+
+## Planned Follow-up (2026-05-11)
+
+- ST-27-05 now owns the Smart history first-run refinement:
+  - PR-0316 should remove the normal no-checkpoint block for Smart seating and Smart grouping
+  - the run should still be checkpoint-honest by reporting `used_history=false`
+  - no draft, undo/redo, abandoned draft, history-drawer, or public guest local state may be used as
+    a substitute history source
+  - eligible export/share checkpoints should continue to set `used_history=true` and influence the
+    solver
 
 ## Implementation Summary (as of 2026-04-01)
 

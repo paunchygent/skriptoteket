@@ -50,9 +50,6 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 from .workspace_builders import ensure_active_draft
 
-NO_HISTORY_BLOCK_MESSAGE = (
-    "För att använda historik behöver du först exportera en gruppindelning för den här klassen."
-)
 NO_CLASSROOM_SIGNAL_MESSAGE = "Inget användbart sittschema fanns för valt klassrum."
 
 
@@ -67,18 +64,7 @@ class SmartGroupingAppliedResult:
     message: str | None
 
 
-@dataclass(frozen=True)
-class SmartGroupingBlockedResult:
-    """Represent one honest blocked smart-grouping run."""
-
-    status: Literal["blocked"]
-    reason: Literal["no_history"]
-    message: str
-    used_history: bool
-    used_live_seating: bool
-
-
-SmartGroupingRunResult = SmartGroupingAppliedResult | SmartGroupingBlockedResult
+SmartGroupingRunResult = SmartGroupingAppliedResult
 
 
 class RunSmartGroupingHandler:
@@ -151,15 +137,6 @@ class RunSmartGroupingHandler:
             template=template,
             enabled=workspace.draft.grouping_seating_distance_enabled,
         )
-        if workspace.draft.use_history and not history:
-            return SmartGroupingBlockedResult(
-                status="blocked",
-                reason="no_history",
-                message=NO_HISTORY_BLOCK_MESSAGE,
-                used_history=False,
-                used_live_seating=live_seating is not None,
-            )
-
         smart_result = solve_smart_grouping(
             roster=roster,
             groups=workspace.groups,

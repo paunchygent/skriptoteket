@@ -2,10 +2,10 @@
 type: pr
 id: PR-0307
 title: "ST-26-06: Share-as-export Smart history provenance"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-08
-updated: 2026-05-08
+updated: 2026-05-11
 stories:
   - "ST-26-06"
   - "ST-29-11"
@@ -106,9 +106,23 @@ weakening the public guest boundary:
 - `pdm run handoff-validate`
 - `git diff --check`
 
+## Implementation Summary
+
+Closed on 2026-05-08. Authenticated share creation now records explicit
+`share_artifact` provenance for seating/grouping Smart-history checkpoints, while
+public guest shares remain outside account-backed history.
+
+The implementation landed as commit `913f76da Count Klassrumskartan shares as history exports`.
+
+## Verification
+
+- Retained review: `docs/backlog/reviews/review-pr-0307-share-as-export-smart-history-provenance.md`
+  is approved.
+- Repository evidence: commit `913f76da Count Klassrumskartan shares as history exports`.
+
 ## Rollback plan
 
 Revert the provenance migration, checkpoint-recorder wiring, and share-handler
-checkpoint calls together. Do not replace the backend no-history blocker with a
-frontend-only workaround; without a persisted checkpoint, Smart history should
-remain honest.
+checkpoint calls together. Do not replace the checkpoint source boundary with a
+frontend-only draft-history workaround; without a persisted checkpoint, Smart
+history should remain honest even when Smart runs without history.

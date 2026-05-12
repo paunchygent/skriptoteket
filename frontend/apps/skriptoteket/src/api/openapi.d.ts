@@ -2529,40 +2529,6 @@ export interface components {
          * @enum {string}
          */
         AuthProvider: "local" | "huleedu";
-        /**
-         * BlockedSmartGroupingRunResponse
-         * @description Serialize one blocked backend smart-grouping result.
-         */
-        BlockedSmartGroupingRunResponse: {
-            /** Message */
-            message: string;
-            /** Reason */
-            reason: string;
-            /** Status */
-            status: string;
-            /** Used History */
-            used_history: boolean;
-            /** Used Live Seating */
-            used_live_seating: boolean;
-            /** Workspace */
-            workspace?: null;
-        };
-        /**
-         * BlockedSmartSeatingRunResponse
-         * @description Serialize one blocked backend smart-seating result.
-         */
-        BlockedSmartSeatingRunResponse: {
-            /** Message */
-            message: string;
-            /** Reason */
-            reason: string;
-            /** Status */
-            status: string;
-            /** Used History */
-            used_history: boolean;
-            /** Workspace */
-            workspace?: null;
-        };
         /** Body_create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post */
         Body_create_public_import_preview_api_v1_public_apps_classroom_group_seating_studio_rosters_import_preview_post: {
             /** File */
@@ -7938,7 +7904,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AppliedSmartGroupingRunResponse"] | components["schemas"]["BlockedSmartGroupingRunResponse"];
+                    "application/json": components["schemas"]["AppliedSmartGroupingRunResponse"];
                 };
             };
             /** @description Validation Error */
@@ -8286,7 +8252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AppliedSmartSeatingRunResponse"] | components["schemas"]["BlockedSmartSeatingRunResponse"];
+                    "application/json": components["schemas"]["AppliedSmartSeatingRunResponse"];
                 };
             };
             /** @description Validation Error */

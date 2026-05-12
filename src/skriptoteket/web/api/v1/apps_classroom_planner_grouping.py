@@ -86,17 +86,6 @@ class AppliedSmartGroupingRunResponse(BaseModel):
     message: str | None
 
 
-class BlockedSmartGroupingRunResponse(BaseModel):
-    """Serialize one blocked backend smart-grouping result."""
-
-    status: str
-    reason: str
-    message: str
-    workspace: None = None
-    used_history: bool
-    used_live_seating: bool
-
-
 @router.post("/drafts/grouping/new", response_model=PlanDraftDto)
 async def create_grouping_draft(
     request: CreateGroupingDraftRequest,
@@ -138,27 +127,19 @@ async def delete_historic_grouping_draft(
 
 @router.post(
     "/drafts/grouping/{draft_id}/smart-run",
-    response_model=AppliedSmartGroupingRunResponse | BlockedSmartGroupingRunResponse,
+    response_model=AppliedSmartGroupingRunResponse,
 )
 async def run_smart_grouping(
     draft_id: UUID,
     request: SmartGroupingRunRequest,
     handler: FromDishka[RunSmartGroupingHandler],
     user: User = Depends(require_app_user_api),
-) -> AppliedSmartGroupingRunResponse | BlockedSmartGroupingRunResponse:
+) -> AppliedSmartGroupingRunResponse:
     result = await handler.handle(
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=request.expected_revision,
     )
-    if result.status == "blocked":
-        return BlockedSmartGroupingRunResponse(
-            status=result.status,
-            reason=result.reason,
-            message=result.message,
-            used_history=result.used_history,
-            used_live_seating=result.used_live_seating,
-        )
     return AppliedSmartGroupingRunResponse(
         status=result.status,
         workspace=_serialize_workspace(result.workspace),

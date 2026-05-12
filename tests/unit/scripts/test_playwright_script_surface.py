@@ -35,6 +35,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0310_phone_fixed_seat_rules_map.py",
     "playwright_pr_0311_phone_room_template_modal.py",
     "playwright_pr_0315_phone_rules_active_management.py",
+    "playwright_pr_0316_smart_history_first_run_soft_degrade.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

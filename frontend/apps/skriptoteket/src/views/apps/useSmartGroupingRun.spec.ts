@@ -3,7 +3,7 @@
  *
  * These tests lock the frontend-only smart grouping flow so `Slumpa` flushes
  * both persistence lanes before calling the backend smart-run endpoint and
- * preserves the strict applied-or-blocked contract from PR-0167.
+ * treats no-history first runs as applied backend results.
  */
 
 import { ref } from "vue";
@@ -139,16 +139,17 @@ describe("useSmartGroupingRun", () => {
     expect(smartRun.tone.value).toBe("warning");
   });
 
-  it("surfaces the typed no-history block without mutating the workspace", async () => {
+  it("applies a no-history first-run response without warning", async () => {
     const draft = ref(createWorkspace().draft);
-    const applyWorkspace = vi.fn();
+    const applyWorkspace = vi.fn((workspace: DraftWorkspaceResponse) => {
+      draft.value = workspace.draft;
+    });
     clientMocks.apiPost.mockResolvedValue({
-      status: "blocked",
-      reason: "no_history",
-      workspace: null,
+      status: "applied",
+      workspace: createWorkspace(6),
       used_history: false,
       used_live_seating: false,
-      message: "För att använda historik behöver du först exportera en gruppindelning för den här klassen.",
+      message: "Smart gruppindelning klar.",
     });
     const smartRun = useSmartGroupingRun({
       draft,
@@ -163,10 +164,10 @@ describe("useSmartGroupingRun", () => {
     const result = await smartRun.run();
 
     expect(result).toEqual({
-      status: "blocked",
-      message: "För att använda historik behöver du först exportera en gruppindelning för den här klassen.",
+      status: "applied",
+      message: "Smart gruppindelning klar.",
     });
-    expect(applyWorkspace).not.toHaveBeenCalled();
-    expect(smartRun.tone.value).toBe("warning");
+    expect(applyWorkspace).toHaveBeenCalledWith(createWorkspace(6));
+    expect(smartRun.tone.value).toBe("success");
   });
 });

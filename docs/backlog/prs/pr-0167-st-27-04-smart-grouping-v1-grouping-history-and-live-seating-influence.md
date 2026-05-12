@@ -5,7 +5,7 @@ title: "Klassrumskartan: smart grouping v1 grouping history, live seating influe
 status: ready
 owners: "agents"
 created: 2026-03-29
-updated: 2026-03-30
+updated: 2026-05-11
 stories:
   - "ST-27-04"
 tags:
@@ -40,7 +40,7 @@ acceptance_criteria:
   - "Given `Klassrum` is selected and `Sittschemat` is enabled inside `Smart-inställningar`, when an active seating draft exists for the same class, then that live seating arrangement becomes the first compactness source and uses seat-topology distance to penalize same-group spread quadratically beyond a local elastic radius while still respecting explicit relation rules."
   - "Given `Klassrum` is selected and `Sittschemat` is enabled inside `Smart-inställningar` but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may use those checkpoints as a fallback compactness source without treating them as grouping history."
   - "Given `Klassrum` is selected and `Sittschemat` is enabled but no usable seating context exists, when smart grouping runs, then it falls back honestly to rules plus any enabled history lane instead of pretending the classroom-aware lane was used."
-  - "Given `Use history` is enabled but no eligible grouping checkpoints exist, when the teacher tries to run smart grouping, then the run is blocked with a short teacher-facing explanation and the draft assignments stay unchanged."
+  - "Given `Use history` is enabled but no eligible grouping checkpoints exist, when the teacher runs smart grouping, then the run applies without history, reports `used_history=false`, and does not treat draft state, seating compactness, or public guest local state as grouping history."
   - "Given the teacher needs to adjust rules, when they navigate to `Regler`, then rules remain a workspace-level setting surface and do not appear as a duplicate toolbar shortcut in `Grupper`."
   - "Given the teacher switches between `Grupper` and `Sittplatser`, when they scan the first row, then both workspaces follow the same single-row action grammar with a right-side selector/export cluster and Smart tuning moved into `Smart-inställningar`."
 ---
@@ -296,7 +296,9 @@ relying on verbal context:
      - roster-global smart rules
      - grouping-history inputs
      - live seating input
-   - Block honestly when `Use history` is enabled but no eligible grouping-history records exist.
+   - Run without history when `Use history` is enabled but no eligible grouping-history records
+     exist, while still reporting `used_history=false` and keeping checkpoint-only source
+     semantics.
 
 5. Add the bespoke web/API contract.
    - Add `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/smart-run`
@@ -308,7 +310,11 @@ relying on verbal context:
      - `used_history: bool`
      - `used_live_seating: bool`
      - `message: str | null`
-   - `200` blocked response:
+   - `PR-0316` removes the stale blocked response branch if `no_history` is the
+     only blocked business result. The normal no-checkpoint first-run case must
+     return the applied response above with `used_history=false`.
+   - Historical `200` blocked response shape, retained here only as superseded
+     context until `PR-0316` lands:
      - `status: "blocked"`
      - `reason: "no_history"`
      - `workspace: null`

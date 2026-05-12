@@ -101,13 +101,6 @@ export function useSmartSeatingRun(options: UseSmartSeatingRunOptions) {
         `/api/v1/apps/classroom.group-seating-studio/drafts/seating/${persistedDraft.id}/smart-run`,
         { expected_revision: persistedDraft.revision },
       )
-      if (result.status === "blocked") {
-        const blockedMessage = normalizeSmartSeatingRunMessage(result.message)
-        message.value = blockedMessage
-        tone.value = "warning"
-        options.applyRuleDiagnostics?.([])
-        return { status: "blocked", message: blockedMessage }
-      }
 
       options.applyWorkspace(result.workspace)
       options.applyRuleDiagnostics?.(result.rule_diagnostics ?? [])

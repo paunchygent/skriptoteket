@@ -5,7 +5,7 @@ title: "Klassrumskartan: smart seating v1 backend run, use-history gating, and t
 status: done
 owners: "agents"
 created: 2026-03-27
-updated: 2026-03-28
+updated: 2026-05-11
 stories:
   - "ST-27-03"
 tags:
@@ -50,8 +50,9 @@ That leaves the repo in an in-between state:
 - `Smart` is visible in the seating workspace, but it does not yet switch the planner onto a
   backend-owned smart run
 - export-backed checkpoints now exist, but the seating workspace has no honest `Use history` flow
-- teacher-distance fairness, teacher-edge inference, and no-history blocking remain accepted in
-  docs but unshipped in behavior
+- teacher-distance fairness, teacher-edge inference, and the original no-history block were accepted
+  in docs but unshipped in behavior; `PR-0316` later supersedes that block with first-run
+  soft-degrade while preserving checkpoint-only history
 
 Without this slice, smart seating remains a half-visible affordance instead of a trustworthy V1
 workflow.
@@ -92,8 +93,9 @@ small while making smart seating real end-to-end:
      - history fairness softens repeated teacher-distance bias across eligible checkpoints.
      - repeated smart reruns prefer a different strong candidate when one exists instead of
        collapsing onto the current assignment hash.
-   - Add application tests for no-history blocking, best-effort fallback, and checkpoint-only
-     history sourcing.
+   - Add application tests for the historical no-history block, best-effort fallback, and
+     checkpoint-only history sourcing. `PR-0316` later supersedes the block expectation with
+     no-history soft-degrade.
 
 2. Add the backend smart-seating run seam.
    - Introduce one pure smart-seating domain module for:
@@ -109,7 +111,8 @@ small while making smart seating real end-to-end:
      - eligible seating checkpoints for the same roster and normalized room context
    - Reject or block clearly when the smart run cannot proceed honestly, especially:
      - `Smart` disabled
-     - `Use history` enabled with no eligible checkpoints
+     - historical behavior: `Use history` enabled with no eligible checkpoints, later superseded by
+       `PR-0316` first-run soft-degrade
    - Persist the chosen seating result back through the draft workspace so undo/redo and autosave
      remain truthful.
 
@@ -137,7 +140,8 @@ small while making smart seating real end-to-end:
      - `workspace: DraftWorkspaceResponse`
      - `used_history: bool`
      - `message: str | null`
-   - `200` blocked business response for honest no-history gating:
+   - Historical `200` blocked business response for honest no-history gating, later superseded for
+     normal first-run no-checkpoint behavior by `PR-0316`:
      - `status: "blocked"`
      - `reason: "no_history"`
      - `message: str`
@@ -158,7 +162,9 @@ small while making smart seating real end-to-end:
      - `Smart` on -> backend smart seating run
    - Keep rerun semantics on the same `Slumpa` control; do not add a second alternate-result
      action.
-   - Show one short result message or one short no-history block in the seating workspace.
+   - Show one short result message or, under the historical contract, one short no-history block in
+     the seating workspace. `PR-0316` supersedes the normal first-run no-checkpoint block with
+     success feedback and `used_history=false`.
    - Keep the frontend authoritative only for orchestration and display, not solver behavior.
 
 ## Acceptance criteria mapping by tranche
@@ -171,7 +177,7 @@ small while making smart seating real end-to-end:
   - covers acceptance criteria 1, 2, 3, and 4
 - Tranche 4: integrated proof and close-out
   - re-validates all acceptance criteria end-to-end, especially the `Smart` off/on branch and the
-    honest no-history block
+    historical no-history block later superseded by `PR-0316`
 
 ## Story acceptance traceability (`ST-27-03`)
 
@@ -210,7 +216,8 @@ small while making smart seating real end-to-end:
     undo/redo state
 - Criterion 11:
   - implemented in `PR-0154`
-  - proof: history-enabled smart seating blocks honestly when no eligible checkpoints exist
+  - proof: history-enabled smart seating historically blocked when no eligible checkpoints existed;
+    `PR-0316` supersedes this with no-history soft-degrade
 - Criterion 12:
   - implemented in `PR-0154`
   - proof: the best available seating plus one short teacher-facing message is returned instead of
@@ -306,13 +313,15 @@ small while making smart seating real end-to-end:
 ## PR-sized execution checklist
 
 - [x] Add domain tests for teaching-edge inference and rule-aware seat scoring
-- [x] Add application tests for smart-run success, no-history blocking, and checkpoint-only history
+- [x] Add application tests for smart-run success, historical no-history blocking, and
+  checkpoint-only history
 - [x] Extend the checkpoint protocol/repository seam for eligible history lookup
 - [x] Add the backend smart-seating handler and thin seating API endpoint
 - [x] Persist smart-run results back into the draft workspace with optimistic safety
 - [x] Add the seating `Use history` UI control and persist it draft-locally
 - [x] Wire the seating `Slumpa` action to branch between local random and backend smart run
-- [x] Show short teacher-facing success/block messages in the seating workspace
+- [x] Show short teacher-facing success/block messages in the seating workspace; `PR-0316`
+  supersedes the normal first-run no-checkpoint block with success feedback
 - [x] Regression-verify the already-shipped smart-rule authoring surface, overlap blocking, and
   cross-draft roster-global rule reuse
 - [x] Re-run verification and record manual proof steps in `.codex/handoff.md`

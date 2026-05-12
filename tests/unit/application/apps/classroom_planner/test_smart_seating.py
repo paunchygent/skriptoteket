@@ -7,10 +7,8 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner.handlers.smart_seating import (
-    NO_HISTORY_BLOCK_MESSAGE,
     RunSmartSeatingHandler,
     SmartSeatingAppliedResult,
-    SmartSeatingBlockedResult,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     NormalizedRoomSeat,
@@ -162,7 +160,7 @@ def _checkpoint(*, roster_id) -> SeatingExportCheckpoint:
 
 
 @pytest.mark.asyncio
-async def test_run_smart_seating_blocks_when_use_history_has_no_eligible_checkpoints() -> None:
+async def test_run_smart_seating_applies_without_history_when_no_eligible_checkpoints() -> None:
     owner_user_id = uuid4()
     roster = _roster(owner_user_id=owner_user_id)
     template = _template(owner_user_id=owner_user_id)
@@ -172,8 +170,24 @@ async def test_run_smart_seating_blocks_when_use_history_has_no_eligible_checkpo
         template_id=template.id,
         use_history=True,
     )
+    persisted_workspace = workspace.model_copy(
+        update={
+            "draft": workspace.draft.model_copy(
+                update={
+                    "revision": workspace.draft.revision + 1,
+                    "updated_at": datetime(2026, 3, 27, 12, 0, tzinfo=timezone.utc),
+                }
+            ),
+            "seat_assignments": [
+                SeatAssignment(student_id="ada", seat_id="front-right"),
+                SeatAssignment(student_id="alan", seat_id="back-left"),
+            ],
+        }
+    )
     drafts = AsyncMock()
-    drafts.get_workspace.return_value = workspace
+    drafts.get_workspace.side_effect = [workspace, persisted_workspace]
+    checkpoints = AsyncMock()
+    checkpoints.list_recent_for_roster_and_room_context.return_value = []
     handler = RunSmartSeatingHandler(
         uow=AsyncMock(),
         drafts=drafts,
@@ -182,7 +196,7 @@ async def test_run_smart_seating_blocks_when_use_history_has_no_eligible_checkpo
         smart_rules=AsyncMock(
             get_by_roster_id=AsyncMock(return_value=RosterSmartRules(roster_id=roster.id))
         ),
-        checkpoints=AsyncMock(list_recent_for_roster_and_room_context=AsyncMock(return_value=[])),
+        checkpoints=checkpoints,
         clock=_Clock(datetime(2026, 3, 27, 12, 0, tzinfo=timezone.utc)),
     )
 
@@ -192,13 +206,13 @@ async def test_run_smart_seating_blocks_when_use_history_has_no_eligible_checkpo
         expected_revision=workspace.draft.revision,
     )
 
-    assert result == SmartSeatingBlockedResult(
-        status="blocked",
-        reason="no_history",
-        message=NO_HISTORY_BLOCK_MESSAGE,
-        used_history=False,
-    )
-    drafts.save_workspace.assert_not_awaited()
+    assert isinstance(result, SmartSeatingAppliedResult)
+    assert result.status == "applied"
+    assert result.used_history is False
+    assert result.workspace.draft.revision == workspace.draft.revision + 1
+    assert result.workspace.seat_assignments == persisted_workspace.seat_assignments
+    checkpoints.list_recent_for_roster_and_room_context.assert_awaited_once()
+    drafts.save_workspace.assert_awaited_once()
 
 
 @pytest.mark.asyncio

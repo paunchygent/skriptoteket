@@ -91,16 +91,6 @@ class AppliedSmartSeatingRunResponse(BaseModel):
     rule_diagnostics: list[SmartRuleDiagnosticDto] = Field(default_factory=list)
 
 
-class BlockedSmartSeatingRunResponse(BaseModel):
-    """Serialize one blocked backend smart-seating result."""
-
-    status: str
-    reason: str
-    message: str
-    workspace: None = None
-    used_history: bool
-
-
 @router.post("/drafts/seating/new", response_model=PlanDraftDto)
 async def create_seating_draft(
     request: CreateSeatingDraftRequest,
@@ -142,26 +132,19 @@ async def delete_historic_seating_draft(
 
 @router.post(
     "/drafts/seating/{draft_id}/smart-run",
-    response_model=AppliedSmartSeatingRunResponse | BlockedSmartSeatingRunResponse,
+    response_model=AppliedSmartSeatingRunResponse,
 )
 async def run_smart_seating(
     draft_id: UUID,
     request: SmartSeatingRunRequest,
     handler: FromDishka[RunSmartSeatingHandler],
     user: User = Depends(require_app_user_api),
-) -> AppliedSmartSeatingRunResponse | BlockedSmartSeatingRunResponse:
+) -> AppliedSmartSeatingRunResponse:
     result = await handler.handle(
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=request.expected_revision,
     )
-    if result.status == "blocked":
-        return BlockedSmartSeatingRunResponse(
-            status=result.status,
-            reason=result.reason,
-            message=result.message,
-            used_history=result.used_history,
-        )
     return AppliedSmartSeatingRunResponse(
         status=result.status,
         workspace=_serialize_workspace(result.workspace),

@@ -3,7 +3,7 @@
  *
  * These tests lock the frontend-only smart seating flow so `Slumpa` flushes
  * both persistence lanes before calling the backend smart-run endpoint and
- * preserves the strict applied-or-blocked contract from PR-0154.
+ * treats no-history first runs as applied backend results.
  */
 
 import { ref } from "vue";
@@ -132,15 +132,16 @@ describe("useSmartSeatingRun", () => {
     expect(smartRun.tone.value).toBe("warning");
   });
 
-  it("surfaces the typed no-history block without mutating the workspace", async () => {
+  it("applies a no-history first-run response without warning", async () => {
     const draft = ref(createWorkspace().draft);
-    const applyWorkspace = vi.fn();
+    const applyWorkspace = vi.fn((workspace: DraftWorkspaceResponse) => {
+      draft.value = workspace.draft;
+    });
     clientMocks.apiPost.mockResolvedValue({
-      status: "blocked",
-      reason: "no_history",
-      workspace: null,
+      status: "applied",
+      workspace: createWorkspace(6),
       used_history: false,
-      message: "För att använda historik behöver du först exportera ett sittschema för just det här klassrummet.",
+      message: "Smart placering klar.",
     });
     const smartRun = useSmartSeatingRun({
       draft,
@@ -155,11 +156,11 @@ describe("useSmartSeatingRun", () => {
     const result = await smartRun.run();
 
     expect(result).toEqual({
-      status: "blocked",
-      message: "För att använda historik behöver du först exportera ett sittschema för just det här klassrummet.",
+      status: "applied",
+      message: "Smart placering klar.",
     });
-    expect(applyWorkspace).not.toHaveBeenCalled();
-    expect(smartRun.tone.value).toBe("warning");
+    expect(applyWorkspace).toHaveBeenCalledWith(createWorkspace(6));
+    expect(smartRun.tone.value).toBe("success");
   });
 
   it("uses teacher-safe copy for fixed-seat validation failures", async () => {

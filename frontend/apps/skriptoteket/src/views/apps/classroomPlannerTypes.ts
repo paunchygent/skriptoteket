@@ -196,7 +196,7 @@ export type AppliedSmartSeatingRunResponse = {
   rule_diagnostics?: SmartRuleDiagnostic[];
 };
 
-export type BlockedSmartSeatingRunResponse = {
+export type PublicBlockedSmartSeatingRunResponse = {
   status: "blocked";
   reason: "no_history";
   workspace: null;
@@ -204,9 +204,11 @@ export type BlockedSmartSeatingRunResponse = {
   message: string;
 };
 
-export type SmartSeatingRunResponse =
+export type SmartSeatingRunResponse = AppliedSmartSeatingRunResponse;
+
+export type PublicSmartSeatingRunResponse =
   | AppliedSmartSeatingRunResponse
-  | BlockedSmartSeatingRunResponse;
+  | PublicBlockedSmartSeatingRunResponse;
 
 export type AppliedSmartGroupingRunResponse = {
   status: "applied";
@@ -216,7 +218,7 @@ export type AppliedSmartGroupingRunResponse = {
   message?: string | null;
 };
 
-export type BlockedSmartGroupingRunResponse = {
+export type PublicBlockedSmartGroupingRunResponse = {
   status: "blocked";
   reason: "no_history";
   workspace: null;
@@ -225,9 +227,11 @@ export type BlockedSmartGroupingRunResponse = {
   message: string;
 };
 
-export type SmartGroupingRunResponse =
+export type SmartGroupingRunResponse = AppliedSmartGroupingRunResponse;
+
+export type PublicSmartGroupingRunResponse =
   | AppliedSmartGroupingRunResponse
-  | BlockedSmartGroupingRunResponse;
+  | PublicBlockedSmartGroupingRunResponse;
 
 export type RosterSmartRulesResponse = {
   roster_id: string;

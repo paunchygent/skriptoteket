@@ -5,7 +5,7 @@ title: "Review: Klassrumskartan smart assignment v1"
 status: approved
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-29
+updated: 2026-05-11
 reviewer: "lead-developer"
 epic: EPIC-27
 adrs:
@@ -85,7 +85,7 @@ re-coupling it through one shared save contract.
 | Delete old visible planner metadata semantics without migration | Cleaner reset than mixing incompatible teacher models; no real users exist yet | [ ] |
 | Keep smart grouping and smart seating in the same epic, but with separate mode toggles | Matches the shared hidden relation model while preserving separate teacher tasks | [ ] |
 | Keep classroom-aware grouping separate from history and expose it through `Klassrum` + `Sittschemat` in Smart-inställningar | Preserves clear teacher intent without turning history into a hidden room-awareness switch | [ ] |
-| Block history-enabled runs when no eligible checkpoints exist | Prevents silent fallback and keeps teacher trust intact | [ ] |
+| Soft-degrade history-enabled first runs with no eligible checkpoints | Prevents error-like first-run feedback while keeping draft history ineligible | [ ] |
 | Treat later grouping checkpoints as the primary grouping-history lane | Keeps grouping mode-specific while still allowing seating checkpoints as a secondary source | [ ] |
 | Mirror roster-global vs draft-local ownership in the frontend session shape | Prevents one shared planner save contract from reintroducing the same transition bugs under new names | [ ] |
 
@@ -142,8 +142,9 @@ re-coupling it through one shared save contract.
   - common smart controls are now explicitly separate from the grouping-only
     classroom-aware lane
   - later grouping checkpoints are now the primary grouping-history lane
-  - history-enabled smart runs now block with a short message when no eligible
-    checkpoints exist
+  - history-enabled smart runs originally blocked with a short message when no eligible
+    checkpoints existed; `PR-0316` later supersedes that first-run behavior with no-history
+    soft-degrade while keeping checkpoint-only history sources
   - checkpoint dedupe now defines canonical assignment-hash semantics
   - smart reruns now belong to the core `Slumpa` contract rather than to a
     separate alternate-result control
@@ -177,6 +178,13 @@ re-coupling it through one shared save contract.
     visible
   - compactness tuning should be reviewed from both metrics and overlays, not from prose or raw
     scores alone
+- 2026-05-11 Smart history first-run refinement under `ST-27-05` / `PR-0316`:
+  - authenticated `Historik` remains default-on
+  - no eligible checkpoints is treated as a normal first-run state
+  - Smart seating/grouping runs without history, reports `used_history=false`, and shows normal
+    Smart-run feedback
+  - raw drafts, undo/redo, abandoned drafts, history-drawer drafts, and public guest local state
+    remain ineligible as Smart-history sources
 
 ## Suggested Approval Wording
 
