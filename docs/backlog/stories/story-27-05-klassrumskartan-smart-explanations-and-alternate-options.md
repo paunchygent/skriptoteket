@@ -5,7 +5,7 @@ title: "Klassrumskartan — Smart explanations and rerun messaging"
 status: ready
 owners: "agents"
 created: 2026-03-25
-updated: 2026-05-11
+updated: 2026-05-12
 epic: "EPIC-27"
 dependencies: ["ST-27-03", "ST-27-04", "ST-27-07"]
 acceptance_criteria:
@@ -42,6 +42,7 @@ duplicate controls for behavior the teacher already understands.
 ## Planned PR slices
 
 - [PR-0316: ST-27-05 Smart history first-run soft-degrade](../prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md)
+- [PR-0317: ST-27-03 Smart seating history diversity scoring](../prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md)
 
 ## 2026-05-11 refinement
 
@@ -56,3 +57,11 @@ Resolved behavior:
 - continue to exclude raw drafts, autosave history, undo/redo, history-drawer drafts, abandoned
   drafts, and public guest local state from Smart history
 - keep the existing history-aware solver behavior when eligible export/share checkpoints exist
+
+## 2026-05-12 scorer-diversity refinement
+
+`PR-0317` keeps the no-checkpoint soft-degrade contract from `PR-0316`, but tightens what
+`used_history=true` means for seating: accepted share/export checkpoints must now create meaningful
+anti-repeat pressure across new seating drafts, with `Håll nära` and `Håll isär` measured by
+unordered pair patterns rather than swaps inside the same two seats. This refinement is solver-owned
+and does not add teacher-facing score panels or new rerun controls.

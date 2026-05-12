@@ -164,6 +164,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0307-share-as-export-smart-history-provenance.md`
 - ST-27-05 Smart history first-run soft-degrade:
   `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
+- ST-27-03 Smart seating history diversity scoring:
+  `docs/backlog/prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
@@ -479,6 +481,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0315-st-29-17-phone-rules-active-rule-management.md`
 - ST-27-05 Smart history first-run soft-degrade:
   `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
+- ST-27-03 Smart seating history diversity scoring:
+  `docs/backlog/prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 share/export affordance consolidation task:
@@ -1032,6 +1036,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
 - `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
 - `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
+- `docs/backlog/prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md`
 - `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
 - `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
 - `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`

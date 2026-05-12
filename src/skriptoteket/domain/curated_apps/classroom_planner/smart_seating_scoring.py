@@ -148,6 +148,9 @@ def near_teacher_score(
                 student_id=student_id,
                 pool_size=pool_size,
                 near_teacher_student_count=near_teacher_student_count,
+                current_assignment_fingerprint=_current_assignment_fingerprint(
+                    current_assignments_by_student
+                ),
             )
         ) % pool_size
         rank_gap = abs(pool_rank - target_rank)
@@ -270,6 +273,7 @@ def _rotation_step(
     student_id: str,
     pool_size: int,
     near_teacher_student_count: int,
+    current_assignment_fingerprint: str = "",
 ) -> int:
     candidates = [
         candidate
@@ -278,11 +282,21 @@ def _rotation_step(
     ]
     if not candidates:
         return 1
-    if near_teacher_student_count <= 1:
+    if near_teacher_student_count <= 1 and not current_assignment_fingerprint:
         return candidates[0]
-    digest = blake2b(student_id.encode("utf-8"), digest_size=1).digest()[0]
+    seed_material = f"{student_id}|{current_assignment_fingerprint}"
+    digest = blake2b(seed_material.encode("utf-8"), digest_size=1).digest()[0]
     offset = candidates[digest % len(candidates)]
     return offset if digest % 2 == 0 else -offset
+
+
+def _current_assignment_fingerprint(current_assignments_by_student: dict[str, str]) -> str:
+    if not current_assignments_by_student:
+        return ""
+    return "|".join(
+        f"{student_id}:{seat_id}"
+        for student_id, seat_id in sorted(current_assignments_by_student.items())
+    )
 
 
 def _normalized_keep_near_mode(

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from hashlib import blake2b
 from statistics import mean
 from unicodedata import normalize
 from uuid import uuid4
@@ -54,6 +55,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import (
 
 _NOW = datetime(2026, 3, 27, tzinfo=timezone.utc)
 HISTORY_RERUN_COUNT = 240
+HISTORY_ACCEPTANCE_CYCLE_COUNT = 10
 _HISTORY_CHECKPOINT_COUNT = 6
 _SA24D_STUDENT_NAMES = (
     "Kerstin Aitman",
@@ -266,6 +268,58 @@ def simulate_g20_sa24d_runs(*, run_count: int, use_history: bool) -> ScenarioSim
     )
 
 
+def simulate_g20_sa24d_new_draft_history_cycles(*, run_count: int) -> ScenarioSimulation:
+    """Run the accepted-checkpoint cycle used by share/export-backed history."""
+
+    roster = _build_roster()
+    template = build_g20_template()
+    rules = _build_rules(roster_id=roster.id)
+    topology = build_seat_topology(
+        seats=template.seats,
+        anchor=infer_teaching_anchor(template=template),
+        fixtures=template.fixtures,
+    )
+    support_context = build_seat_support_context(
+        seats=template.seats,
+        fixtures=template.fixtures,
+        anchor=infer_teaching_anchor(template=template),
+    )
+    history_checkpoints: list[SeatingExportCheckpoint] = []
+    runs: list[ScenarioRun] = []
+    for run_index in range(run_count):
+        result = solve_smart_seating(
+            roster=roster,
+            template=template,
+            smart_rules=rules,
+            current_seat_assignments=[],
+            history_checkpoints=history_checkpoints,
+        )
+        assignments_by_student = _assignment_map(result)
+        scenario_run = _build_scenario_run(
+            assignments_by_student=assignments_by_student,
+            rule_diagnostics=result.rule_diagnostics,
+            topology=topology,
+        )
+        runs.append(scenario_run)
+        checkpoint = _build_accepted_checkpoint(
+            roster=roster,
+            template=template,
+            assignments_by_student=assignments_by_student,
+            run_index=run_index,
+        )
+        if not history_checkpoints or history_checkpoints[0].assignment_hash != (
+            checkpoint.assignment_hash
+        ):
+            history_checkpoints.insert(0, checkpoint)
+    return ScenarioSimulation(
+        topology=topology,
+        near_teacher_pool_seat_ids=frozenset(
+            desired_near_teacher_seat_ids(topology=topology, support_context=support_context)
+        ),
+        runs=runs,
+    )
+
+
 def _build_roster() -> Roster:
     return Roster(
         id=uuid4(),
@@ -356,6 +410,35 @@ def _build_history_checkpoints(
             )
         )
     return checkpoints
+
+
+def _build_accepted_checkpoint(
+    *,
+    roster: Roster,
+    template: RoomTemplate,
+    assignments_by_student: dict[str, str],
+    run_index: int,
+) -> SeatingExportCheckpoint:
+    signature = tuple(sorted(assignments_by_student.items()))
+    assignment_hash = blake2b(repr(signature).encode("utf-8"), digest_size=8).hexdigest()
+    return SeatingExportCheckpoint(
+        id=uuid4(),
+        roster_id=roster.id,
+        template_id=template.id,
+        source_draft_id=uuid4(),
+        source_export_job_id=uuid4(),
+        room_context_hash="g20-hash",
+        assignment_hash=assignment_hash,
+        room_context=_build_room_context(template),
+        seating_snapshot=NormalizedSeatingSnapshot(
+            placed_assignments=[
+                NormalizedSeatPlacement(student_id=student_id, seat_id=seat_id)
+                for student_id, seat_id in signature
+            ],
+            unplaced_student_ids=[],
+        ),
+        created_at=_NOW + timedelta(minutes=run_index),
+    )
 
 
 def _assignment_map(result: SmartSeatingResult) -> dict[str, str]:

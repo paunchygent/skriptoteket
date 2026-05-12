@@ -5,7 +5,7 @@ title: "Klassrumskartan smart assignment v1"
 status: active
 owners: "agents"
 created: 2026-03-25
-updated: 2026-05-11
+updated: 2026-05-12
 outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a dedicated `Regler` workspace, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
@@ -172,6 +172,15 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
     a substitute history source
   - eligible export/share checkpoints should continue to set `used_history=true` and influence the
     solver
+
+## Planned Follow-up (2026-05-12)
+
+- ST-27-03 / ST-27-05 now own the Smart seating diversity correction:
+  - PR-0317 adds history-backed diversity scoring for accepted share/export checkpoints
+  - the solver must vary full layouts, per-student seat/zone use, `Håll nära` unordered pair
+    placement, and `Håll isär` unordered seat-pair and block spread patterns across new drafts
+  - pair swaps inside the same two seats do not count as distinct teacher-visible patterns
+  - `Fast plats` remains the hard non-variable exception
 
 ## Implementation Summary (as of 2026-04-01)
 

@@ -5,9 +5,9 @@ title: "Klassrumskartan smart assignment v1 decision memo (2026-03-25)"
 status: active
 owners: "agents"
 created: 2026-03-25
-updated: 2026-05-11
+updated: 2026-05-12
 topic: "smart-assignment"
-links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09", "PR-0316", "REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07", "ST-27-09", "PR-0316", "PR-0317", "REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10"]
 ---
 
 ## Summary
@@ -221,3 +221,25 @@ Resolved behavior:
   public guest local state remain ineligible as Smart-history sources
 - public guest Smart runs keep account-backed `Historik` omitted/off unless a separate public
   contract explicitly adds a browser-owned history model
+
+## 2026-05-12 Smart seating diversity refinement
+
+Production testing with `SA24D` / `G20` showed that share/export checkpoint loading alone was not a
+strong enough fairness guarantee. When `Smart` and `Historik` are enabled, accepted seating
+checkpoints must now be converted into solver diversity terms for:
+
+- exact non-fixed layout repetition
+- per-student seat, block, local-zone, and front-rank reuse
+- `Håll nära` pair seat and relation reuse
+- `Håll isär` unordered pair seat reuse plus cluster block and zone spread-pattern reuse
+
+The no-history path remains honest: without eligible checkpoints, same-draft reruns may still vary
+against the current active assignment, but new raw drafts, autosave, undo/redo, abandoned drafts,
+history-drawer drafts, reopened drafts, and public guest local state are still not Smart history.
+`Fast plats` is the explicit exception to variation because it is a hard classroom-template
+invariant.
+
+Variation proofs must count teacher-visible rule patterns, not student swaps within the same two
+seats. The G104 normal-rule proof uses a 10-run window with one fixed seat, two near-teacher
+students, one `Håll isär` pair, and one `Håll nära` pair, and requires 10/10 distinct unordered
+rule-block patterns in both exported-history and same-draft/no-history modes.

@@ -5,7 +5,7 @@ title: "Klassrumskartan — Smart seating v1"
 status: done
 owners: "agents"
 created: 2026-03-25
-updated: 2026-05-11
+updated: 2026-05-12
 epic: "EPIC-27"
 dependencies: ["ST-27-01", "ST-27-02", "ST-27-06"]
 acceptance_criteria:
@@ -94,3 +94,14 @@ lane on top of that foundation.
   produced 120 valid reruns with 120 unique layouts, a 12-seat valid teacher pool with 11 seats
   exercised, 10 distinct seats for each near-teacher student, pairwise keep-near row/column
   adjacency rotation, and stricter keep-apart diagonal rejection.
+
+## 2026-05-12 corrective follow-up
+
+Production testing on `SA24D` / `G20` showed that the shipped history seam proved checkpoint
+loading but not enough checkpoint-backed seating diversity for the new-draft -> Smart `Slumpa` ->
+share/export cycle. `PR-0317` adds the corrective solver-scoring slice: accepted checkpoint history
+now contributes full-layout, per-student seat/block/zone/front-rank, `Håll nära` unordered pair,
+and `Håll isär` unordered seat-pair plus spread-pattern anti-repeat terms. The follow-up also
+solves two-student `Håll isär` pairs jointly and proves a G104 normal-rule 10-run cycle with 10/10
+teacher-visible rule block patterns without treating in-pair swaps as unique. `Fast plats` remains
+a hard seeded placement and is excluded from variation expectations.

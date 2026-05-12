@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_candidate_
     keep_near_has_tradeoff as _keep_near_has_tradeoff,
 )
 from tests.unit.domain.curated_apps.classroom_planner.smart_seating_solver_scenarios import (
+    HISTORY_ACCEPTANCE_CYCLE_COUNT,
     HISTORY_RERUN_COUNT,
     KEEP_APART_STUDENT_IDS,
     KEEP_NEAR_STUDENT_IDS,
@@ -33,6 +34,7 @@ from tests.unit.domain.curated_apps.classroom_planner.smart_seating_solver_scena
     ScenarioRun,
     ScenarioSimulation,
     build_g20_template,
+    simulate_g20_sa24d_new_draft_history_cycles,
     simulate_g20_sa24d_runs,
 )
 
@@ -44,6 +46,9 @@ _MIN_NEAR_TEACHER_DISTINCT_SEAT_COUNT = 3
 _MIN_NEAR_TEACHER_ROTATION_POOL_SIZE = 5
 _MIN_KEEP_APART_MEAN_DISTANCE = 7.0
 _MIN_KEEP_APART_BLOCK_COUNT = 2
+_MIN_ACCEPTED_HISTORY_NEAR_TEACHER_DISTINCT_SEATS = 5
+_MIN_ACCEPTED_HISTORY_RULE_STUDENT_DISTINCT_SEATS = 5
+_MIN_NO_HISTORY_RULE_STUDENT_DISTINCT_SEATS = 4
 
 
 def _near_teacher_valid(run: ScenarioRun, _: SeatTopology) -> bool:
@@ -103,6 +108,11 @@ def _distinct_seat_counts_by_student(
 @pytest.fixture(scope="module")
 def g20_sa24d_history_simulation() -> ScenarioSimulation:
     return simulate_g20_sa24d_runs(run_count=HISTORY_RERUN_COUNT, use_history=True)
+
+
+@pytest.fixture(scope="module")
+def g20_sa24d_new_draft_history_cycle() -> ScenarioSimulation:
+    return simulate_g20_sa24d_new_draft_history_cycles(run_count=HISTORY_ACCEPTANCE_CYCLE_COUNT)
 
 
 def test_g20_immediate_diagonal_is_invalid_keep_apart_geometry() -> None:
@@ -236,3 +246,56 @@ def test_g20_sa24d_history_reruns_stay_valid_and_diverse(
     assert min(run.keep_apart_block_count for run in runs) >= _MIN_KEEP_APART_BLOCK_COUNT
     assert min(run.keep_apart_mean_distance for run in runs) >= _MIN_KEEP_APART_MEAN_DISTANCE
     assert len({run.signature for run in runs}) >= _MIN_VALID_LAYOUT_COUNT
+
+
+def test_g20_sa24d_new_draft_share_history_cycle_maximizes_variation(
+    g20_sa24d_new_draft_history_cycle: ScenarioSimulation,
+) -> None:
+    runs = g20_sa24d_new_draft_history_cycle.runs
+
+    assert all(_has_no_failed_or_pending_diagnostics(run) for run in runs)
+    assert all(_near_teacher_valid(run, g20_sa24d_new_draft_history_cycle.topology) for run in runs)
+    assert all(_keep_near_valid(run, g20_sa24d_new_draft_history_cycle.topology) for run in runs)
+    assert all(_keep_apart_valid(run, g20_sa24d_new_draft_history_cycle.topology) for run in runs)
+    assert len({run.signature for run in runs}) == HISTORY_ACCEPTANCE_CYCLE_COUNT
+
+    near_teacher_counts = _distinct_seat_counts_by_student(
+        g20_sa24d_new_draft_history_cycle,
+        student_ids=NEAR_TEACHER_STUDENT_IDS,
+    )
+    keep_near_counts = _distinct_seat_counts_by_student(
+        g20_sa24d_new_draft_history_cycle,
+        student_ids=KEEP_NEAR_STUDENT_IDS,
+    )
+    keep_apart_counts = _distinct_seat_counts_by_student(
+        g20_sa24d_new_draft_history_cycle,
+        student_ids=KEEP_APART_STUDENT_IDS,
+    )
+    assert min(near_teacher_counts.values()) >= _MIN_ACCEPTED_HISTORY_NEAR_TEACHER_DISTINCT_SEATS
+    assert min(keep_near_counts.values()) >= _MIN_ACCEPTED_HISTORY_RULE_STUDENT_DISTINCT_SEATS
+    assert min(keep_apart_counts.values()) >= _MIN_ACCEPTED_HISTORY_RULE_STUDENT_DISTINCT_SEATS
+
+
+def test_g20_sa24d_no_history_same_draft_reruns_stay_smart_and_diverse() -> None:
+    simulation = simulate_g20_sa24d_runs(
+        run_count=HISTORY_ACCEPTANCE_CYCLE_COUNT,
+        use_history=False,
+    )
+    runs = simulation.runs
+
+    assert all(_has_no_failed_or_pending_diagnostics(run) for run in runs)
+    assert all(_near_teacher_valid(run, simulation.topology) for run in runs)
+    assert all(_keep_near_valid(run, simulation.topology) for run in runs)
+    assert all(_keep_apart_valid(run, simulation.topology) for run in runs)
+    assert len({run.signature for run in runs}) == HISTORY_ACCEPTANCE_CYCLE_COUNT
+
+    keep_near_counts = _distinct_seat_counts_by_student(
+        simulation,
+        student_ids=KEEP_NEAR_STUDENT_IDS,
+    )
+    keep_apart_counts = _distinct_seat_counts_by_student(
+        simulation,
+        student_ids=KEEP_APART_STUDENT_IDS,
+    )
+    assert min(keep_near_counts.values()) >= _MIN_NO_HISTORY_RULE_STUDENT_DISTINCT_SEATS
+    assert min(keep_apart_counts.values()) >= _MIN_NO_HISTORY_RULE_STUDENT_DISTINCT_SEATS

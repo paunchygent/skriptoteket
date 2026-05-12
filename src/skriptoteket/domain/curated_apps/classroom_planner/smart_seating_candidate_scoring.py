@@ -24,14 +24,27 @@ from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
     SeatPairTopology,
     SeatTopology,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_history import (
+    SeatingHistoryDiversity,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_history_scoring import (
+    history_diversity_score,
+    keep_apart_pair_history_diversity_score,
+    student_history_diversity_score,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_pattern_scoring import (
+    block_signature_for_students,
+    current_block_rotation_score,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_scoring import (
     keep_near_pair_score,
     near_teacher_score,
 )
 
 QUALITY_EPSILON = 1e-6
-CURRENT_SEAT_REPEAT_PENALTY = 3.0
-LAYOUT_REPEAT_PENALTY = 2.5
+CURRENT_SEAT_REPEAT_PENALTY = 8.0
+LAYOUT_REPEAT_PENALTY = 7.0
+DIVERSITY_QUALITY_WINDOW = 10.0
 
 
 @dataclass(frozen=True)
@@ -48,6 +61,12 @@ class SeatScoreContext:
     current_keep_near_mode_by_pair: dict[frozenset[str], KeepNearRelationMode]
     current_keep_near_seat_ids_by_pair: dict[frozenset[str], frozenset[str]]
     history_targets_by_student: dict[str, float]
+    history_diversity: SeatingHistoryDiversity
+    history_fingerprint: str
+    history_diversity_weight: float
+    block_ids: tuple[int, ...]
+    current_keep_near_block_signature_by_pair: dict[frozenset[str], tuple[int, ...]]
+    current_keep_apart_block_signature_by_pair: dict[frozenset[str], tuple[int, ...]]
     keep_near_clusters: list[set[str]]
     keep_apart_clusters: list[set[str]]
     current_assignments_by_student: dict[str, str]
@@ -105,6 +124,19 @@ def score_partial_seat(
                     frozenset((student_id, peer_id))
                 ),
             )
+            score += current_block_rotation_score(
+                pair_key=frozenset((student_id, peer_id)),
+                candidate_signature=block_signature_for_students(
+                    assignments_by_student={
+                        **full_mapping,
+                        student_id: seat_id,
+                    },
+                    student_ids=frozenset((student_id, peer_id)),
+                    topology=context.topology,
+                ),
+                current_signatures_by_pair=context.current_keep_near_block_signature_by_pair,
+                block_ids=context.block_ids,
+            )
     for cluster in context.keep_apart_clusters:
         if student_id not in cluster:
             continue
@@ -115,8 +147,33 @@ def score_partial_seat(
             score += keep_apart_pair_score(
                 pair=context.topology.pair(seat_id, peer_seat_id),
             )
+            score += current_block_rotation_score(
+                pair_key=frozenset((student_id, peer_id)),
+                candidate_signature=block_signature_for_students(
+                    assignments_by_student={
+                        **full_mapping,
+                        student_id: seat_id,
+                    },
+                    student_ids=frozenset((student_id, peer_id)),
+                    topology=context.topology,
+                ),
+                current_signatures_by_pair=context.current_keep_apart_block_signature_by_pair,
+                block_ids=context.block_ids,
+            )
+            score += keep_apart_pair_history_diversity_score(
+                pair_key=frozenset((student_id, peer_id)),
+                pair_seat_ids=frozenset((seat_id, peer_seat_id)),
+                context=context,
+                weight_multiplier=0.75,
+            )
     if context.current_assignments_by_student.get(student_id) == seat_id:
         score -= CURRENT_SEAT_REPEAT_PENALTY
+    score += student_history_diversity_score(
+        student_id=student_id,
+        seat_id=seat_id,
+        context=context,
+        weight_multiplier=0.5,
+    )
     return score
 
 
@@ -141,6 +198,8 @@ def score_candidate(
         )
         if context.current_assignments_by_student.get(student_id) == seat_id:
             diversity -= LAYOUT_REPEAT_PENALTY
+
+    diversity += history_diversity_score(mapping=mapping, context=context)
 
     for cluster in context.keep_near_clusters:
         for left_id, right_id in combinations(sorted(cluster), 2):
@@ -167,6 +226,16 @@ def score_candidate(
                     frozenset((left_id, right_id))
                 ),
             )
+            diversity += current_block_rotation_score(
+                pair_key=frozenset((left_id, right_id)),
+                candidate_signature=block_signature_for_students(
+                    assignments_by_student=mapping,
+                    student_ids=frozenset((left_id, right_id)),
+                    topology=context.topology,
+                ),
+                current_signatures_by_pair=context.current_keep_near_block_signature_by_pair,
+                block_ids=context.block_ids,
+            )
             if keep_near_has_tradeoff(
                 pair=pair,
                 seating_context=context.seat_support_context.pair_context(
@@ -187,6 +256,16 @@ def score_candidate(
                 continue
             pair = context.topology.pair(left_seat_id, right_seat_id)
             quality += keep_apart_pair_score(pair=pair)
+            diversity += current_block_rotation_score(
+                pair_key=frozenset((left_id, right_id)),
+                candidate_signature=block_signature_for_students(
+                    assignments_by_student=mapping,
+                    student_ids=frozenset((left_id, right_id)),
+                    topology=context.topology,
+                ),
+                current_signatures_by_pair=context.current_keep_apart_block_signature_by_pair,
+                block_ids=context.block_ids,
+            )
             if keep_apart_has_tradeoff(pair):
                 has_tradeoffs = True
 
@@ -202,10 +281,15 @@ def is_better_score(*, score: CandidateScore, current_best: CandidateScore | Non
         return True
     if score.has_tradeoffs and not current_best.has_tradeoffs:
         return False
-    if score.quality > current_best.quality + QUALITY_EPSILON:
+    quality_delta = score.quality - current_best.quality
+    if abs(quality_delta) <= DIVERSITY_QUALITY_WINDOW:
+        if _combined_score(score) > _combined_score(current_best) + QUALITY_EPSILON:
+            return True
+        if _combined_score(score) < _combined_score(current_best) - QUALITY_EPSILON:
+            return False
+        return quality_delta > QUALITY_EPSILON
+    if quality_delta > QUALITY_EPSILON:
         return True
-    if abs(score.quality - current_best.quality) <= QUALITY_EPSILON:
-        return score.diversity > current_best.diversity + QUALITY_EPSILON
     return False
 
 
@@ -294,6 +378,10 @@ def _teacher_priority_score(
     if target_distance is None:
         return (1.0 - abs(seat_distance - 0.5)) * 0.4
     return (1.0 - abs(seat_distance - target_distance)) * 6.0
+
+
+def _combined_score(score: CandidateScore) -> float:
+    return score.quality + score.diversity
 
 
 def _keep_apart_is_hard_negative(pair: SeatPairTopology) -> bool:
