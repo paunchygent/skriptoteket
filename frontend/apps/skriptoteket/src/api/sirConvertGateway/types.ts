@@ -15,6 +15,7 @@ export type DigiExamMigrationTarget = "examnet_pdf" | "qti_package";
 export type SirConvertJobStatus =
   | "submitted"
   | "queued"
+  | "running"
   | "processing"
   | "succeeded"
   | "failed"

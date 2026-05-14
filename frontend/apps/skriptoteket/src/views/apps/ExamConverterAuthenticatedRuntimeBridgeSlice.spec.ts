@@ -29,14 +29,21 @@ import type {
 } from "../../api/sirConvertGateway";
 
 const gatewayMocks = vi.hoisted(() => ({
+  downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  listDigiExamMigrationArtifacts: vi.fn(),
+  saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
 
 vi.mock("../../api/sirConvertGateway", () => ({
+  downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
   getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
   getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+  listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  saveDigiExamMigrationArtifactToUserFiles:
+    gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
   submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
 }));
 
@@ -84,6 +91,121 @@ function terminalResult(
   };
 }
 
+function artifactJsonBlob(artifactKey: string, payload: unknown) {
+  return {
+    artifactKey,
+    blob: {
+      text: () => Promise.resolve(JSON.stringify(payload)),
+    } as Blob,
+    contentType: "application/json",
+    filename: `${artifactKey}.json`,
+  };
+}
+
+function reviewItem(overrides: Record<string, unknown> = {}) {
+  return {
+    answer_key: { provenance: "dxe_populated_key" },
+    item_id: "item-001",
+    item_type: "multiple_choice",
+    max_score: 1,
+    prompt_html: null,
+    prompt_lines: ["Beräkna värdet."],
+    sequence: 1,
+    title: "Beräkna värdet.",
+    warnings: [],
+    ...overrides,
+  };
+}
+
+function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
+  const requiresReview = options.requiresReview ?? false;
+  gatewayMocks.listDigiExamMigrationArtifacts.mockResolvedValue({
+    artifacts: [
+      {
+        artifact_key: "examnet_pdf",
+        availability: "available",
+        content_type: "application/pdf",
+        filename: "Ma1c_Exam.net.pdf",
+        sha256: null,
+        size_bytes: 684 * 1024,
+      },
+      {
+        artifact_key: "qti_package",
+        availability: "available",
+        content_type: "application/zip",
+        filename: "Ma1c_QTI.zip",
+        sha256: null,
+        size_bytes: 1_200_000,
+      },
+    ],
+    bundle_status: "partial",
+    job_id: "job_exam_converter_1",
+    manual_follow_up: {
+      artifact_key: "manual_follow_up_report",
+      count: requiresReview ? 1 : 0,
+      required: requiresReview,
+    },
+    schema_version: "digiexam_migration_bundle_v1",
+    warnings: {
+      artifact_key: "warnings_report",
+      count: 0,
+    },
+  });
+  gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
+    ({ artifactKey }: { artifactKey: string }) => {
+      if (artifactKey === "ir_json") {
+        return Promise.resolve(
+          artifactJsonBlob("ir_json", {
+            items: [
+              reviewItem(),
+              reviewItem({
+                answer_key: { provenance: requiresReview ? "absent" : "dxe_populated_key" },
+                item_id: "item-002",
+                max_score: 1,
+                prompt_lines: ["Vilket av följande tal är ett primtal?"],
+                sequence: 2,
+                title: "Vilket av följande tal är ett primtal?",
+              }),
+            ],
+            manual_follow_ups: requiresReview
+              ? [
+                  {
+                    item_id: "item-002",
+                    message: "Manual answer key is required.",
+                    reason: "manual_answer_key_required",
+                    source_span: null,
+                  },
+                ]
+              : [],
+            parse_status: "success",
+            renderer_ready: true,
+            schema_version: "digiexam_intermediate_exam_v2",
+            source_filename: "Ma1c_NationelltProv_HT25.dxe",
+            source_producer: null,
+            warnings: [],
+          }),
+        );
+      }
+      return Promise.resolve(
+        artifactJsonBlob("migration_manifest", {
+          asset_count: 0,
+          asset_summaries: [],
+          exam_schema_version: "digiexam_intermediate_exam_v2",
+          item_count: 2,
+          item_summaries: [],
+          manual_follow_up_count: requiresReview ? 1 : 0,
+          parse_status: "success",
+          renderer_ready: true,
+          schema_version: "digiexam_ir_manifest_v2",
+          source_filename: "Ma1c_NationelltProv_HT25.dxe",
+          source_producer: null,
+          warning_count: 0,
+        }),
+      );
+    },
+  );
+}
+
 async function chooseFile(wrapper: ReturnType<typeof mount>, selector: string, file: File) {
   const input = wrapper.find<HTMLInputElement>(selector);
   Object.defineProperty(input.element, "files", {
@@ -106,9 +228,13 @@ function startButton(wrapper: ReturnType<typeof mount>) {
 }
 
 beforeEach(() => {
+  gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
+  gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
+  mockReviewArtifacts();
 });
 
 afterEach(() => {
@@ -148,16 +274,17 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
       jobId: "job_exam_converter_1",
     });
     expect(wrapper.text()).toContain("Provet är konverterat");
-    expect(wrapper.text()).not.toContain("Konverterade frågor");
-    expect(wrapper.text()).not.toContain("Filer klara att hämta");
-    expect(wrapper.text()).not.toContain("Rapport");
+    expect(wrapper.text()).toContain("Frågor (2)");
+    expect(wrapper.text()).toContain("Filer (2)");
+    expect(wrapper.text()).toContain("Rapport");
+    expect(wrapper.text()).not.toContain("Spara i mina filer");
   });
 
   it("polls queued jobs with the returned correlation ID before reading the result", async () => {
     vi.useFakeTimers();
     gatewayMocks.submitDigiExamMigration.mockResolvedValueOnce(submittedJob("queued"));
     gatewayMocks.getDigiExamMigrationJob
-      .mockResolvedValueOnce({ jobId: "job_exam_converter_1", status: "processing" })
+      .mockResolvedValueOnce({ jobId: "job_exam_converter_1", status: "running" })
       .mockResolvedValueOnce({ jobId: "job_exam_converter_1", status: "succeeded" });
     gatewayMocks.getDigiExamMigrationResult.mockResolvedValueOnce(terminalResult());
     const wrapper = mount(ExamConverterAuthenticatedView);
@@ -192,11 +319,12 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
     wrapper.unmount();
   });
 
-  it("maps partial terminal results to teacher action copy without inventing question counts", async () => {
+  it("maps partial terminal results to artifact-backed teacher action copy", async () => {
+    mockReviewArtifacts({ requiresReview: true });
     gatewayMocks.submitDigiExamMigration.mockResolvedValueOnce(submittedJob("succeeded"));
     gatewayMocks.getDigiExamMigrationResult.mockResolvedValueOnce(
       terminalResult({
-        bundle_status: "partial",
+        bundle_status: "blocked",
         manual_follow_up_required: true,
         warning_count: 3,
       }),
@@ -213,8 +341,7 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
-    expect(wrapper.text()).toContain("Några frågor behöver ses över innan provet är klart.");
-    expect(wrapper.text()).not.toContain("3 frågor");
+    expect(wrapper.text()).toContain("1 fråga saknar facit eller poäng.");
     expect(wrapper.text()).not.toContain("Sir Convert");
   });
 

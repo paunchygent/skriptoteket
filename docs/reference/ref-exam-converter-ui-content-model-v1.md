@@ -113,11 +113,31 @@ Use these exact headline states:
 Next-step copy must be action-level and direct. Good examples:
 
 - `Hämta filerna och kontrollera provet innan du använder det.`
-- `Hämta rapporten och kontrollera frågorna som behöver ses över.`
+- `Öppna frågorna som saknar facit eller poäng.`
 - `Försök igen med en ny provfil eller välj färre målformat.`
 
 Avoid vague states such as `Konverteringen behöver kontrolleras` or
 `Provet är delvis klart`.
+
+Primary actions must use short button labels plus approved lucide symbols.
+Do not put full explanatory sentences in button copy. The explanation belongs
+in a dynamic help/info affordance, tooltip, or compact disclosure that appears
+only when the teacher asks for it or focuses the action.
+
+When a converted exam has actual missing `Facit` or `Poäng`, the teacher must
+be able to choose between reviewing the questions and accepting the current
+state for export/save. The end-state action copy is:
+
+- button: `Granska`; help/info copy:
+  `Granska och redigera frågorna som saknar facit eller poäng.`
+- button: `Godkänn`; help/info copy:
+  `Hoppa över granskningen och exportera provet direkt.`
+
+`Godkänn` is a review-decision gate for the current conversion result. It must
+not mutate Sir Convert IR, invent missing data, or claim that questions have
+been fixed. It records that the teacher has accepted the current state for
+export/save. Starting a new conversion or clearing the selected files must clear
+that acceptance.
 
 ## Left Workflow Rail Content
 
@@ -155,18 +175,54 @@ complete as possible.
 
 ## Files List Content
 
-The files list uses compact rows. Each row may show:
+The files list uses compact rows. In slices where the conversion result still
+requires teacher review, the files list is a readiness surface, not an export
+action surface. It must not compete with `Frågor` as the next step.
+
+Each row may show:
 
 - filename
 - file kind, for example `PDF` or `QTI`
 - size when known
-- `Hämta`
-- `Spara i mina filer`
+- readiness status
 - row disclosure for details
+
+Download and save actions belong in the `Filer` mode after the review-decision
+gate is clear. Do not render a generic `Åtgärd` column, and do not mix review
+actions, report-reading actions, and export/save actions in one column.
+
+File actions are available when either:
+
+- the projection has no actual missing `Facit`/`Poäng` and no blocking warning;
+  or
+- the teacher has clicked `Godkänn` to accept the current state for export/save.
+
+`Godkänn` is not only a local UI state. In the end-state workflow it must make
+the accepted current conversion exportable without claiming missing data has
+been fixed. If Sir Convert initially marks a requested file as blocked because
+`Facit` or `Poäng` is missing, Skriptoteket needs a governed accepted-state
+export path instead of merely enabling a stale blocked row. If a file is blocked
+for another reason, the row must stay disabled and show the visible outcome,
+for example `Kunde inte skapas`.
+
+Missing `Facit` or `Poäng` should guide the teacher toward `Granska`, but it
+must not force review when the teacher knowingly wants to export the current
+conversion.
 
 If a file cannot be created, the row copy should state the visible outcome and
 the next action, for example `Kunde inte skapa QTI-paketet. Öppna rapporten och
-kontrollera frågorna som behöver ses över.`
+kontrollera frågorna som saknar facit eller poäng.`
+
+If a first-pass file exists before review is complete, the row must not imply
+that it is the final recommended export. Use visible outcome copy such as:
+
+- `Skapad, men kontrollera frågorna först`
+- `Kan hämtas när frågorna har kontrollerats`
+- `Kunde inte skapas`
+
+Avoid internal staging language such as `beredskap`, `förhandsberedskap`,
+`export readiness`, or explanations of why a file is not final. The teacher
+needs to know what happened and what they can do next.
 
 The files list belongs inside the active `Filer` inspection mode. It must not
 remain as a large persistent panel while the teacher is reviewing questions.
@@ -181,46 +237,117 @@ The question list belongs inside the active `Frågor` inspection mode. The table
 is a scanning surface; detailed correction happens in one selected row, one
 side drawer, or one focused detail pane at a time.
 
+For the current authenticated DigiExam lane, `Frågor` is populated from Sir
+Convert's read-only `digiexam-ir.json` and `migration-manifest.json` artifacts.
+Skriptoteket parses those artifacts into a teacher-facing projection and must
+not mutate the IR, create local reviewed state, or invent review outcomes.
+
+If contract-backed missing data (`Facit` or `Poäng`) or warnings exist,
+`Frågor` is the default active inspection mode. `Filer` becomes the default
+only when no question review is required. A free-text item with
+`manual_marking_required` is normal in this read-only slice and must not be
+counted as `saknar facit eller poäng`; it can surface later through
+teacher-marking or item-editing affordances. A generic upstream `partial`
+bundle state caused only by free-text manual marking must not make the
+teacher-facing result strip say that the conversion only partly succeeded.
+
 Collapsed rows may show:
 
-- question number
-- short title or stem preview
+- one `Fråga` cell containing question number plus real prompt preview, for
+  example `1. Varför är stål hårdare...`
 - question type
 - points
-- dynamic imported-content indicators
+- missing-information indicators
 - conversion status
-- created files
-- disclosure control
 
-Dynamic imported-content indicators make the list useful across source formats.
-They should show only safe, contract-backed facts that help the teacher see what
-was imported, for example:
+Do not split `Nr` and `Fråga` into separate columns when the title is generic.
+The source item id, for example `item-001`, belongs in the selected-question
+detail pane only.
 
-- `Facit importerat`
-- `Svarsalternativ importerade`
-- `Bedömningsanvisning finns`
-- `Poäng importerade`
-- `Endast frågetext`
-- `Behöver kompletteras`
+Question type labels must use teacher-recognizable Swedish terms, not
+English-derived contract labels or nonstandard Swedish shortcuts. For DigiExam
+choice items, do not use `Enval`. Use:
+
+- `Flerval: ett val` for one-correct-choice items;
+- `Flerval: flera val` for multiple-response items;
+- `Flerval: matchning` for matching items when the source contract explicitly
+  identifies matching structure; and
+- `Lucktext` for source-backed gap-fill items.
+
+If a future `.dxe` sample exposes a matching shape with a type code or structure
+not yet covered by Sir Convert, the parser/export contract must fail closed and
+retain the source shape for review rather than relabeling it as another
+question type.
+
+Missing-information indicators make the list useful across source formats
+without turning the happy path into visual noise. The UI should not render
+success pills for expected facts such as imported facit or imported points. If a
+row shows a point value and no missing-facit indicator, the teacher can assume
+that the normal data is present.
+
+Indicators should be sparse, actionable, and contract-backed. Because the
+column header already says `Saknas`, cell labels must stay short:
+
+- `Facit`
+- `Poäng`
 
 These indicators must be data-driven per question and source format. They must
 not invent answer keys, points, alternatives, or grading notes when the
 conversion contract does not provide them.
 
+Do not create missing labels for every possible item property. For example,
+`Svarsalternativ` must not be shown as missing unless the conversion contract
+explicitly proves that alternatives were expected and absent. When the contract
+only says the item needs manual follow-up, do not invent a generic missing-field
+label. Let the status symbol mark the row for attention and put the specific
+contract-backed explanation in the selected-question detail pane if the source
+data supports it.
+
+For this slice, `manual_answer_key_required` maps to `Facit`, missing
+`maxScore` maps to `Poäng`, and `manual_marking_required` for `Fritext` does
+not map to a missing field.
+
 Expanded row or drawer may show:
 
 - source question id from Sir Convert
 - full stem when available
-- detected alternatives or detected answer only when the contract marks it safe
+- detected alternatives for all source-backed choice questions
+- detected answer only when the contract marks it safe
 - warning text translated into teacher action
-- next action, for example `Kontrollera vilket alternativ som är rätt och markera korrekt svar.`
+- missing fields in a `Saknas` section, using field labels such as `Facit` or
+  `Poäng` rather than repeating `saknas` in each label
 - optional deep link to the source question in Sir Convert when a governed link
   exists
 
-Expanded rows must also support direct, low-friction completion in the
-interface. When a question is incomplete or partially imported, the teacher
-should be able to correct or add the missing safe fields directly where they are
-reviewing the question, for example:
+Choice alternatives are not optional decoration. For `Flerval: ett val`,
+`Flerval: flera val`, and `Flerval: matchning`, the selected-question detail
+must show the source-backed alternatives/options needed for the teacher to
+decide whether missing `Facit` can be accepted as-is or must be corrected.
+When alternatives are present but no source-proven correct marker exists, the
+problem is missing `Facit`, not missing alternatives. The UI must not hide
+alternatives and then ask the teacher to accept the current state.
+
+`Lucktext` must be presented as source-backed gap-fill structure only when the
+IR proves gap blanks, source prompt text/HTML, and any embedded references. A
+multi-gap `Lucktext` item with no source validations can lack `Facit`, but it
+may also have a target-format support problem if the requested PDF or QTI
+target cannot safely represent multi-gap input yet. Do not collapse target
+support blockers into the same `saknar facit eller poäng` count unless the
+blocked field is specifically missing `Facit` or `Poäng`.
+
+Expanded rows should eventually support direct, low-friction completion in the
+interface. That completion requires an explicit Sir Convert mutation and
+rebuild contract. Until that contract exists, the Skriptoteket UI must remain a
+read-only projection and must not offer local-only controls that imply persisted
+review or re-export readiness.
+
+The read-only detail pane must not explain internal implementation gaps to the
+teacher. Avoid copy such as `när redigering stöds`, `mellanformat`,
+`mutation`, or instructions to use another service because Skriptoteket cannot
+yet save the correction. If the current slice has no teacher action, the pane
+should simply show the question, what is present, and what is missing.
+
+Future mutation-backed review may allow the teacher to:
 
 - mark or change the correct answer when alternatives are present;
 - add or adjust points;
@@ -233,12 +360,33 @@ These edits must be designed as question-level review actions, not as a detour
 through a technical report. The goal is that the next PDF or QTI export is as
 complete as possible with minimal unnecessary clicks.
 
-Status labels:
+Status in dense question rows should use approved lucide success/warning
+symbols with accessible labels, not repeated visible text. The scanning row
+must let the `Saknas` column carry the actionable missing-field labels. Use
+screen-reader labels only when needed, for example `Klar`, `Saknas`, `Kunde
+inte konverteras`, or `Inte vald`.
 
-- `Klar`
-- `Behöver ses över`
-- `Kunde inte konverteras`
-- `Inte vald`
+## Report Content
+
+The report mode is diagnostic support. It is not the primary workflow and must
+not replace question-level review.
+
+The current lightweight report can be projected from `migration-manifest.json`
+when it includes warning counts, manual-follow-up counts, and answer-key
+provenance summaries. It should explain what needs attention and point the
+teacher back to `Frågor`.
+
+Useful report copy patterns:
+
+- `Det här behöver kontrolleras`
+- `Frågor där facit saknas`
+- `Frågor med varningar`
+- `Kontrollera frågorna i Frågor innan du använder filerna.`
+
+Do not expose raw provenance enum names. Translate them into teacher-facing
+phrases, but keep dense labels short when a heading already carries the
+meaning. For example, a diagnostic sentence may say `Facit saknas`, while a
+`Saknas` table cell should only say `Facit`.
 
 ## Design Application
 
@@ -302,10 +450,11 @@ Recommended UI slice order:
 3. result strip and next-action copy;
 4. inspection mode control;
 5. question list scanning surface;
-6. selected-question detail pane and completion actions;
-7. files inspection mode;
-8. report inspection mode;
-9. empty, loading, failed, and partial states across the approved surfaces.
+6. review decision gate: `Granska` / `Godkänn` with dynamic help/info copy;
+7. selected-question detail pane and completion actions;
+8. files inspection mode with download/save actions gated by review decision;
+9. report inspection mode;
+10. empty, loading, failed, and partial states across the approved surfaces.
 
 Service/runtime wiring is a separate implementation concern and must not be
 used as a reason to skip UI slice approval.

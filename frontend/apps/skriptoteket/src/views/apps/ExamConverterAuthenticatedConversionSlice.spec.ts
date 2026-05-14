@@ -26,14 +26,21 @@ import ExamConverterResultStrip from "./exam-converter-authenticated/ExamConvert
 import type { ExamConverterResultStripState } from "./exam-converter-authenticated/useExamConverterConversionState";
 
 const gatewayMocks = vi.hoisted(() => ({
+  downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  listDigiExamMigrationArtifacts: vi.fn(),
+  saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
 
 vi.mock("../../api/sirConvertGateway", () => ({
+  downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
   getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
   getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+  listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  saveDigiExamMigrationArtifactToUserFiles:
+    gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
   submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
 }));
 
@@ -57,8 +64,11 @@ function startButton(wrapper: ReturnType<typeof mount>) {
 }
 
 beforeEach(() => {
+  gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
+  gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReturnValue(new Promise(() => undefined));
 });
@@ -157,7 +167,7 @@ describe("ExamConverterAuthenticatedView conversion-start slice", () => {
 describe("ExamConverterResultStrip", () => {
   const resultStates: ExamConverterResultStripState[] = [
     {
-      actionLabel: "Öppna frågor",
+      actionLabel: null,
       detail: null,
       nextAction: "Kontrollera frågorna innan du sparar eller hämtar filer.",
       progress: null,
@@ -166,9 +176,9 @@ describe("ExamConverterResultStrip", () => {
       tone: "success",
     },
     {
-      actionLabel: "Öppna frågor",
-      detail: "8 frågor behöver ses över innan provet är klart.",
-      nextAction: "Kontrollera frågorna som behöver ses över.",
+      actionLabel: null,
+      detail: "8 frågor saknar facit eller poäng.",
+      nextAction: "Kontrollera frågorna med saknat facit eller poäng.",
       progress: null,
       status: "partial",
       title: "Konverteringen av provet lyckades delvis",
@@ -199,13 +209,14 @@ describe("ExamConverterResultStrip", () => {
     }
   });
 
-  it("emits question navigation intent only when the result can be reviewed", async () => {
+  it("keeps result-strip navigation out of the dedicated review decision gate", () => {
     const wrapper = mount(ExamConverterResultStrip, {
       props: { result: resultStates[1] },
     });
 
-    await wrapper.find('[data-test="exam-converter-result-open-questions"]').trigger("click");
-
-    expect(wrapper.emitted("openQuestions")).toHaveLength(1);
+    expect(wrapper.find('[data-test="exam-converter-result-open-questions"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.emitted("openQuestions")).toBeUndefined();
   });
 });

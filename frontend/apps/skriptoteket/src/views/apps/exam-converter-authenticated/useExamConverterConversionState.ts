@@ -55,7 +55,7 @@ const RESULT_STRIP_BY_STATUS: Record<
   StaticResultStripState
 > = {
   success: {
-    actionLabel: "Öppna frågor",
+    actionLabel: null,
     detail: null,
     nextAction: "Kontrollera frågorna innan du sparar eller hämtar filer.",
     status: "success",
@@ -63,9 +63,9 @@ const RESULT_STRIP_BY_STATUS: Record<
     tone: "success",
   },
   partial: {
-    actionLabel: "Öppna frågor",
-    detail: "Några frågor behöver ses över innan provet är klart.",
-    nextAction: "Kontrollera frågorna som behöver ses över.",
+    actionLabel: null,
+    detail: "Några frågor saknar facit eller poäng.",
+    nextAction: "Kontrollera frågorna med saknat facit eller poäng.",
     status: "partial",
     title: "Konverteringen av provet lyckades delvis",
     tone: "warning",
@@ -114,9 +114,6 @@ function buildRunningProgress(elapsedSeconds: number): ExamConverterRunningProgr
 function statusForRuntimeOutcome(
   outcome: ExamConverterRuntimeOutcome,
 ): Exclude<ExamConverterConversionStatus, "idle" | "running"> {
-  if (outcome.bundleStatus === "blocked") {
-    return "failed";
-  }
   if (
     outcome.bundleStatus === "partial" ||
     outcome.manualFollowUpRequired ||
@@ -124,14 +121,31 @@ function statusForRuntimeOutcome(
   ) {
     return "partial";
   }
+  if (outcome.bundleStatus === "blocked") {
+    return "failed";
+  }
   return "success";
 }
 
-function buildPartialDetail(outcome: ExamConverterRuntimeOutcome | null): string {
-  if (outcome?.manualFollowUpCount && outcome.manualFollowUpCount > 0) {
-    return `${outcome.manualFollowUpCount.toLocaleString("sv-SE")} frågor behöver ses över innan provet är klart.`;
+function buildPartialDetail(outcome: ExamConverterRuntimeOutcome | null): string | null {
+  if (outcome?.manualFollowUpCount !== null && outcome?.manualFollowUpCount !== undefined) {
+    if (outcome.manualFollowUpCount === 0) {
+      return null;
+    }
+    const countLabel =
+      outcome.manualFollowUpCount === 1
+        ? "1 fråga"
+        : `${outcome.manualFollowUpCount.toLocaleString("sv-SE")} frågor`;
+    return `${countLabel} saknar facit eller poäng.`;
   }
-  return "Några frågor behöver ses över innan provet är klart.";
+  return "Några frågor saknar facit eller poäng.";
+}
+
+function buildPartialNextAction(outcome: ExamConverterRuntimeOutcome | null): string | null {
+  if (outcome?.manualFollowUpCount === 0) {
+    return null;
+  }
+  return RESULT_STRIP_BY_STATUS.partial.nextAction;
 }
 
 function buildResultStripState(params: {
@@ -158,6 +172,7 @@ function buildResultStripState(params: {
     return {
       ...RESULT_STRIP_BY_STATUS.partial,
       detail: buildPartialDetail(runtimeOutcome),
+      nextAction: buildPartialNextAction(runtimeOutcome),
       progress: null,
     };
   }

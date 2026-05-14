@@ -12,13 +12,19 @@
  *     authenticated Exam Converter runtime bridge.
  */
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
+import type {
+  ExamConverterInspectionMode,
+  ExamConverterReviewFile,
+} from "./exam-converter-authenticated/digiexamIrReviewParser";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
+import { useExamConverterFileActions } from "./exam-converter-authenticated/useExamConverterFileActions";
+import { useExamConverterReviewArtifacts } from "./exam-converter-authenticated/useExamConverterReviewArtifacts";
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
 import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated/useExamConverterConversionState";
 
@@ -45,7 +51,22 @@ const {
   resultStrip,
   startConversion,
 } = useExamConverterConversionState();
-const { cancelRuntime, submitAndPoll } = useExamConverterAuthenticatedRuntime();
+const { cancelRuntime, lastCorrelationId, lastJobId, submitAndPoll } =
+  useExamConverterAuthenticatedRuntime();
+const {
+  loadReviewArtifacts,
+  projection: reviewProjection,
+  resetReviewArtifacts,
+  status: reviewStatus,
+} = useExamConverterReviewArtifacts();
+const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
+const acceptedCurrentState = ref(false);
+const {
+  downloadFile,
+  fileActionStates,
+  resetFileActions,
+  saveFile,
+} = useExamConverterFileActions();
 
 const hasSelectedTargetFormat = computed(
   () => selectedTargetFormats.value.pdf || selectedTargetFormats.value.qti,
@@ -58,8 +79,31 @@ const canStartConversion = computed(
     !isConversionRunning.value,
 );
 
+const hasBlockingReviewState = computed(() => {
+  const report = reviewProjection.value?.report;
+  if (!report) {
+    return false;
+  }
+  return report.attentionQuestionCount > 0 || report.warningCount > 0;
+});
+
+const requiresReviewDecision = computed(() => {
+  return (reviewProjection.value?.report.attentionQuestionCount ?? 0) > 0;
+});
+
+const canUseFiles = computed(() => {
+  if (!reviewProjection.value) {
+    return false;
+  }
+  return !hasBlockingReviewState.value || acceptedCurrentState.value;
+});
+
 function handleResetLocalChoices(): void {
   cancelRuntime();
+  resetReviewArtifacts();
+  resetFileActions();
+  acceptedCurrentState.value = false;
+  activeInspectionMode.value = "questions";
   resetLocalChoices();
   resetConversion();
 }
@@ -80,6 +124,10 @@ async function handleStartConversion(): Promise<void> {
     return;
   }
 
+  resetReviewArtifacts();
+  resetFileActions();
+  acceptedCurrentState.value = false;
+  activeInspectionMode.value = "questions";
   startConversion();
   try {
     const result = await submitAndPoll({
@@ -88,11 +136,64 @@ async function handleStartConversion(): Promise<void> {
       targetSelection: { ...selectedTargetFormats.value },
     });
     if (result) {
-      finishConversion(toRuntimeOutcome(result));
+      const runtimeOutcome = toRuntimeOutcome(result);
+      const correlationId = lastCorrelationId.value;
+      const jobId = lastJobId.value ?? result.job.jobId;
+      const projection = correlationId
+        ? await loadReviewArtifacts({
+            correlationId,
+            jobId,
+          })
+        : null;
+      if (projection) {
+        const projectedWarningCount = Math.max(
+          runtimeOutcome.warningCount,
+          projection.report.warningCount,
+        );
+        const requiresQuestionReview =
+          projection.report.attentionQuestionCount > 0 || projectedWarningCount > 0;
+        activeInspectionMode.value = projection.defaultMode;
+        finishConversion({
+          ...runtimeOutcome,
+          bundleStatus: requiresQuestionReview ? runtimeOutcome.bundleStatus : "complete",
+          manualFollowUpRequired: requiresQuestionReview,
+          manualFollowUpCount: projection.report.attentionQuestionCount,
+          warningCount: projectedWarningCount,
+        });
+      } else {
+        finishConversion(runtimeOutcome);
+      }
     }
   } catch {
     failConversion();
   }
+}
+
+function selectInspectionMode(mode: ExamConverterInspectionMode): void {
+  activeInspectionMode.value = mode;
+}
+
+function handleAcceptCurrentState(): void {
+  acceptedCurrentState.value = true;
+  activeInspectionMode.value = "files";
+}
+
+async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> {
+  const correlationId = lastCorrelationId.value;
+  const jobId = lastJobId.value;
+  if (!correlationId || !jobId || !canUseFiles.value) {
+    return;
+  }
+  await downloadFile({ correlationId, file, jobId });
+}
+
+async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
+  const correlationId = lastCorrelationId.value;
+  const jobId = lastJobId.value;
+  if (!correlationId || !jobId || !canUseFiles.value) {
+    return;
+  }
+  await saveFile({ correlationId, file, jobId });
 }
 </script>
 
@@ -122,10 +223,22 @@ async function handleStartConversion(): Promise<void> {
         @toggle-target-format="toggleTargetFormat"
       />
       <ExamConverterWorkspaceShell
+        :active-inspection-mode="activeInspectionMode"
+        :accepted-current-state="acceptedCurrentState"
+        :can-use-files="canUseFiles"
+        :file-action-states="fileActionStates"
         :result-strip="resultStrip"
+        :review-projection="reviewProjection"
+        :requires-review-decision="requiresReviewDecision"
+        :review-status="reviewStatus"
         :selected-source-file="selectedSourceFile"
         :source-file-error="sourceFileError"
+        @accept-current-state="handleAcceptCurrentState"
+        @download-file="handleDownloadFile"
         @files-dropped="selectDroppedFiles"
+        @inspection-mode-selected="selectInspectionMode"
+        @open-questions="selectInspectionMode('questions')"
+        @save-file="handleSaveFile"
         @source-file-selected="selectSourceFile"
       />
     </section>

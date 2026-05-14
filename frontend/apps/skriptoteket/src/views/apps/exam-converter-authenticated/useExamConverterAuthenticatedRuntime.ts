@@ -48,6 +48,7 @@ const DEFAULT_POLL_INTERVAL_MS = 2_000;
 const ACTIVE_JOB_STATUSES = new Set<SirConvertJobStatus>([
   "submitted",
   "queued",
+  "running",
   "processing",
 ]);
 

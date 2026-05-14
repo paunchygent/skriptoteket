@@ -128,6 +128,7 @@ services:
       - VITE_DEV_PORT=5173
       - VITE_DEV_BACKEND_PROXY_TARGET=${VITE_DEV_BACKEND_PROXY_TARGET:-http://skriptoteket_web:8000}
       - VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://huleedu_api_gateway_service:8080}
+      - VITE_DEV_SIR_CONVERT_GATEWAY_PROXY_TARGET=${VITE_DEV_SIR_CONVERT_GATEWAY_PROXY_TARGET:-http://huleedu_api_gateway_service:8080}
       - VITE_HULEEDU_AUTH_BASE_URL=${VITE_HULEEDU_AUTH_BASE_URL:-http://localhost:8080}
       - VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login}
     volumes:

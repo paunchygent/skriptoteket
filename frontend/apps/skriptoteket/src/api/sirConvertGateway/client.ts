@@ -189,7 +189,7 @@ export function createSirConvertGatewayClient(
 export function createBrowserSirConvertGatewayClient(): SirConvertGatewayClient {
   const auth = useAuthStore();
   return createSirConvertGatewayClient({
-    fetcher: fetch,
+    fetcher: (input, init) => fetch(input, init),
     ensureCsrfToken: () => auth.ensureCsrfToken(),
   });
 }

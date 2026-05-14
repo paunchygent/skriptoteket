@@ -63,6 +63,7 @@ function readStatus(value: unknown): SirConvertJobStatus {
   if (
     status === "submitted" ||
     status === "queued" ||
+    status === "running" ||
     status === "processing" ||
     status === "succeeded" ||
     status === "failed" ||
@@ -97,7 +98,12 @@ function readArtifactAvailability(value: unknown): SirConvertArtifactAvailabilit
 
 export function parseJob(payload: unknown): SirConvertJob {
   const root = readRecord(payload, "payload");
-  const job = readRecord(root.job, "job");
+  const job = isRecord(root.job)
+    ? root.job
+    : {
+        job_id: root.job_id,
+        status: root.status,
+      };
   return {
     jobId: readString(job.job_id, "job.job_id"),
     status: readStatus(job.status),

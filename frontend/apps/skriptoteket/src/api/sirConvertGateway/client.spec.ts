@@ -10,6 +10,7 @@ import {
   getDigiExamMigrationResult,
   isSirConvertArtifactAvailable,
   listDigiExamMigrationArtifacts,
+  saveDigiExamMigrationArtifactToUserFiles,
   submitDigiExamMigration,
 } from ".";
 
@@ -86,6 +87,7 @@ describe("Sir Convert Gateway browser client", () => {
         credentials: "include",
       }),
     );
+    expect(vi.mocked(fetch).mock.contexts[0]).toBeUndefined();
     const headers = requestHeaders(0);
     expect(headers.get("X-Correlation-ID")).toBe("corr_teacher_action_001");
     expect(headers.get("Idempotency-Key")).toMatch(/^idem_skriptoteket_[0-9a-f]{48}$/);
@@ -115,9 +117,11 @@ describe("Sir Convert Gateway browser client", () => {
   });
 
   it("reads status, result, manifest, and named artifacts with one correlation ID", async () => {
-    mockJson({ job: { job_id: "job_1", status: "processing" } });
+    mockJson({ job: { job_id: "job_1", status: "running" } });
     mockJson({
-      job: { job_id: "job_1", status: "succeeded" },
+      api_version: "v2",
+      job_id: "job_1",
+      status: "succeeded",
       result: {
         artifact: {
           filename: "artifact-bundle.json",
@@ -185,7 +189,7 @@ describe("Sir Convert Gateway browser client", () => {
 
     await expect(
       getDigiExamMigrationJob({ jobId: "job_1", correlationId: "corr_1" }),
-    ).resolves.toMatchObject({ jobId: "job_1", status: "processing" });
+    ).resolves.toMatchObject({ jobId: "job_1", status: "running" });
     const result = await getDigiExamMigrationResult({
       jobId: "job_1",
       correlationId: "corr_1",
@@ -320,6 +324,7 @@ describe("Sir Convert Gateway browser client", () => {
   });
 
   it("maps artifact bundle provenance for later user-file persistence", () => {
+    const checksum = "79fad2af3f64ab5070a9949a71f7681e2043b5c47606dc70b0e68dc4e83150ba";
     const metadata = buildSirConvertUserFileSaveMetadata({
       jobId: "job_1",
       artifact: {
@@ -328,7 +333,7 @@ describe("Sir Convert Gateway browser client", () => {
         content_type: "application/pdf",
         availability: "available",
         size_bytes: 100,
-        sha256: "sha256:abc",
+        sha256: `sha256:${checksum}`,
       },
       savedDisplayFilename: "Nationellt prov import.pdf",
       correlationId: "corr_1",
@@ -342,10 +347,63 @@ describe("Sir Convert Gateway browser client", () => {
       saved_display_filename: "Nationellt prov import.pdf",
       content_type: "application/pdf",
       size_bytes: 100,
-      sha256: "sha256:abc",
+      sha256: checksum,
       bundle_schema_version: "digiexam_migration_bundle_v1",
       correlation_id: "corr_1",
       saved_at: "2026-05-13T12:00:00.000Z",
     });
+  });
+
+  it("saves downloaded named artifacts through the owner-scoped user-file endpoint", async () => {
+    mockJson({
+      source_artifact_id: "documents.conversion_hub:job_1:examnet_pdf",
+      vault_artifact: {
+        bytes: 3,
+        created_at: "2026-05-14T10:00:00Z",
+        file_id: "vault-file-1",
+        name: "examnet-import.pdf",
+      },
+    });
+
+    const saved = await saveDigiExamMigrationArtifactToUserFiles({
+      artifact: {
+        artifact_key: "examnet_pdf",
+        availability: "available",
+        content_type: "application/pdf",
+        filename: "examnet-import.pdf",
+        sha256: null,
+        size_bytes: 3,
+      },
+      artifactBlob: {
+        artifactKey: "examnet_pdf",
+        blob: new Blob(["pdf"], { type: "application/pdf" }),
+        contentType: "application/pdf",
+        filename: "examnet-import.pdf",
+      },
+      correlationId: "corr_1",
+      jobId: "job_1",
+      savedAt: new Date("2026-05-14T10:00:00Z"),
+    });
+
+    expect(saved.vault_artifact.name).toBe("examnet-import.pdf");
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save",
+      expect.objectContaining({
+        credentials: "include",
+        method: "POST",
+      }),
+    );
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    const headers = init.headers as Headers;
+    const form = init.body as FormData;
+    const metadata = JSON.parse(String(form.get("metadata_json"))) as {
+      artifact_key: string;
+      saved_display_filename: string;
+    };
+    expect(headers.get("X-CSRF-Token")).toBe("csrf-token");
+    expect(headers.get("Content-Type")).toBeNull();
+    expect(metadata.artifact_key).toBe("examnet_pdf");
+    expect(metadata.saved_display_filename).toBe("examnet-import.pdf");
+    expect(form.get("artifact")).toBeInstanceOf(File);
   });
 });

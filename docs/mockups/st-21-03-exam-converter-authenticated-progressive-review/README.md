@@ -7,10 +7,10 @@ owners: "agents"
 created: 2026-05-14
 updated: 2026-05-14
 tags: ["ST-21-03", "PR-0325", "exam-converter", "authenticated", "mockup"]
-summary: "Selected direction for the authenticated Exam Converter progressive-review workspace. The bottom files reminder/centered affordance is explicitly rejected and must be revised before implementation."
-canonical_preview: "exam-converter-authenticated-progressive-review-v1.png"
+summary: "Selected direction for the authenticated Exam Converter progressive-review workspace after replacing the rejected bottom files panel with segmented inspection modes."
+canonical_preview: "exam-converter-authenticated-progressive-review-v2.png"
 submission_policy: "Use this bundle as the product-approved layout direction before production Vue changes under PR-0325."
-winner_policy: "Use the visual system, workspace hierarchy, and progressive-review model from this mockup, but replace the rejected bottom files panel with a calmer mode switch or header-level secondary action."
+winner_policy: "Use the visual system, workspace hierarchy, and progressive-review model from this mockup. Keep files inside the Filer inspection mode and keep Frågor as the default follow-up surface."
 ---
 
 # ST-21-03 Exam Converter Authenticated Progressive Review
@@ -26,7 +26,7 @@ hard structural lines, progressive disclosure, and teacher-facing Swedish copy.
 
 ## Preview
 
-![Exam Converter authenticated progressive review](exam-converter-authenticated-progressive-review-v1.png)
+![Exam Converter authenticated progressive review](exam-converter-authenticated-progressive-review-v2.png)
 
 ## Design Verdict
 
@@ -46,14 +46,14 @@ Accepted:
 
 Rejected:
 
-- the bottom stretched reminder panel with a centered `Visa filer` affordance.
-  It reads as a strange extra panel and weakens the selected-mode model.
+- the bottom stretched reminder panel with a centered `Visa filer` affordance
+  from the first draft. It reads as a strange extra panel and weakens the
+  selected-mode model.
 
 Implementation must remove or redesign that bottom affordance. Acceptable
 alternatives include:
 
 - rely on the `Filer (3)` segmented mode alone;
-- move a compact `3 filer klara` hint into the result strip or mode label;
 - expose file availability through the `Filer` tab without any bottom panel.
 
 Do not implement the centered bottom dropdown-like affordance.
@@ -97,10 +97,10 @@ file save/download decision. Final file actions happen after review inside the
 The result strip is the only global result state in the main workspace:
 
 - headline: `Konverteringen av provet lyckades delvis`;
-- detail: `8 frågor behöver ses över innan provet är klart.`;
-- primary contextual action: `Öppna rapport`;
+- detail: `8 frågor saknar facit eller poäng.`;
+- primary contextual action: `Öppna frågor`;
 - next-action line:
-  `Kontrollera frågorna som behöver ses över. Filerna kan hämtas när du är klar.`
+  `Kontrollera frågorna med saknat facit eller poäng.`
 
 Do not duplicate this status in other panels.
 
@@ -132,20 +132,19 @@ Question list columns:
 - `Nr`;
 - `Fråga`;
 - `Typ`;
-- `Importerad information`;
+- `Saknas`;
 - `Poäng`;
-- `Status`;
-- `Filer`.
+- `Status`.
 
-Dynamic imported-information indicators may include:
+Dynamic missing-field indicators are sparse and contract-backed. In the current
+slice they may include:
 
 - `Facit`;
-- `Poäng`;
-- `Svarsalternativ`;
-- `Endast frågetext`;
-- `Behöver kompletteras`.
+- `Poäng`.
 
-These indicators must be data-backed and source-aware.
+Do not render success pills for expected imported information. Do not invent
+missing labels such as `Svarsalternativ` unless the converter contract later
+proves that alternatives were expected and absent.
 
 ### Selected Question Detail
 
@@ -155,14 +154,12 @@ The detail pane shows only the currently selected question:
 - low-emphasis source id;
 - full question text;
 - imported alternatives or answer fields when safe;
-- editable points;
-- direct completion action such as `Markera som kontrollerad`;
-- next-action copy;
-- primary `Spara ändring`;
-- secondary `Hoppa över`.
+- present data;
+- missing fields.
 
-The detail pane is not a report viewer. It exists to let the teacher complete
-question data directly so the next PDF or QTI export becomes more complete.
+The current detail pane is read-only. It must not offer local-only edit or
+review-complete controls until Sir Convert exposes an explicit mutation and
+rebuild contract.
 
 ## Component Translation
 
@@ -170,19 +167,17 @@ Likely production components:
 
 - `ExamConverterAuthenticatedView`
   - owns page composition and app-host integration.
-- `ExamConverterWorkflowRail`
+- `ExamConverterWorkflowRailShell`
   - owns source/supporting-file selection, target choices, and submit/reset.
 - `ExamConverterResultStrip`
   - owns one global conversion state and one next action.
 - `ExamConverterInspectionTabs`
   - owns `Frågor`, `Filer`, and `Rapport` mode selection.
-- `ExamConverterQuestionList`
-  - owns the dense, collapsed question table.
-- `ExamConverterQuestionDetailPane`
-  - owns selected-question editing and review completion.
-- `ExamConverterFilesList`
+- `ExamConverterQuestionReviewShell`
+  - owns the dense question table and selected-question detail pane.
+- `ExamConverterFilesReadinessList`
   - rendered only inside the active `Filer` mode.
-- `ExamConverterReportPanel`
+- `ExamConverterReportSummary`
   - rendered only inside the active `Rapport` mode.
 
 Keep transport, save/runtime calls, and parser types outside these presentation

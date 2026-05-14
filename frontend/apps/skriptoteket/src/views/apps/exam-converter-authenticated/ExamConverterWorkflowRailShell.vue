@@ -345,6 +345,7 @@ function handleSupportingFileInput(event: Event): void {
         <button
           type="button"
           class="btn-ghost justify-center shadow-none"
+          data-test="exam-converter-reset-local-choices"
           @click="emit('resetLocalChoices')"
         >
           Rensa val

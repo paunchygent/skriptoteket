@@ -17,4 +17,5 @@ export * from "./jobSpec";
 export * from "./requestContext";
 export * from "./saveMetadata";
 export * from "./types";
+export * from "./userFiles";
 export * from "./urls";

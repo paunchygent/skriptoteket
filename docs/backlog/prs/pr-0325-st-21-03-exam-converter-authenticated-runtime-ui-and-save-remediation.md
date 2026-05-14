@@ -303,6 +303,229 @@ Out of scope for slice 4:
 - report mode;
 - download and save behavior.
 
+### Slice 5: IR-Backed Read-Only Review Shell
+
+Status: implemented after product approval.
+
+Implementation contract:
+
+- Add the inspection mode surface as progressive disclosure:
+  `Frågor`, `Filer`, and `Rapport`.
+- Default to `Frågor` when the terminal result or migration manifest reports
+  `manual_follow_up_required`, manual follow-ups, or warnings.
+- Default to `Filer` only when no question review is required.
+- Fetch and parse the read-only Sir Convert named artifacts that already exist
+  for authenticated DigiExam jobs:
+  `ir_json` (`digiexam-ir.json`) and `migration_manifest`
+  (`migration-manifest.json`).
+- Introduce `digiexamIrReviewParser.ts` as the boundary that validates the
+  subset Skriptoteket needs and projects it into teacher-facing review rows.
+  This boundary must not mutate the IR, create local reviewed state, or invent
+  answer keys, points, alternatives, or review outcomes.
+- Introduce `useExamConverterReviewArtifacts` or equivalent focused composable
+  for manifest/artifact reads and loading/error state. It must call the
+  existing Gateway artifact client with the runtime `jobId` and
+  `correlationId`.
+- Add `ExamConverterInspectionTabs` as a pure mode switch. Only one mode may
+  render at a time.
+- Add an initial `ExamConverterQuestionReviewShell` with a dense read-only
+  question list and one selected-question detail pane/drawer. The detail pane
+  may show only safe, contract-backed fields and teacher-facing warning/action
+  copy.
+- Add `ExamConverterFilesReadinessList` as readiness/status only. It must not
+  render download/save actions in this slice and must not use a generic
+  `Åtgärd` column.
+- Add `ExamConverterReportSummary` as a lightweight diagnostic summary from the
+  migration manifest. It should explain counts and provenance in teacher-facing
+  Swedish and point the teacher back to `Frågor`.
+- In `Frågor`, do not render success pills for expected imported information.
+  Show only missing/actionable fields, and keep labels short under the `Saknas`
+  column, for example `Facit` and `Poäng`. If the contract only proves manual
+  follow-up without a specific missing field, do not invent a generic label.
+  Let the status symbol mark the row and show the contract-backed explanation
+  in the selected-question detail pane. Do not invent missing labels such as
+  `Svarsalternativ` unless the conversion contract explicitly proves that
+  alternatives were expected and absent.
+- Use teacher-recognizable Swedish type labels. Do not use `Enval`; map
+  one-correct-choice source items to `Flerval: ett val`,
+  multiple-response items to `Flerval: flera val`, matching items to
+  `Flerval: matchning` when the source contract explicitly proves matching
+  structure, and gap-fill items to `Lucktext`.
+- The selected-question detail pane must include source-backed alternatives
+  for all flerval questions. Alternatives are required review data, not summary
+  metadata. If alternatives are present but no source-proven correct marker is
+  present, show missing `Facit`; do not imply that the alternatives themselves
+  are missing.
+- Render one `Fråga` table column containing the question number plus real
+  prompt preview. Do not render a separate `Nr` column, and keep source item ids
+  such as `item-001` in the selected-question detail pane only.
+- Count only actual missing `Facit`/`Poäng` questions in the result-strip and
+  inspection-header missing-data counts. `manual_answer_key_required` maps to
+  `Facit`; missing `maxScore` maps to `Poäng`; `manual_marking_required` for
+  `Fritext` is normal for this read-only slice and must not be counted as
+  `saknar facit eller poäng`.
+- In dense question rows, use approved lucide success/warning symbols for
+  status instead of repeated text such as `Behöver ses över`.
+- In read-only detail panes, do not explain implementation gaps or future
+  editing support to the teacher. Show the question, present data, and missing
+  fields only.
+- In `Filer`, avoid internal staging language such as `beredskap`; file rows
+  must state the visible outcome and the next useful teacher action.
+
+Implementation notes:
+
+- The authenticated runtime now accepts Sir Convert `running` as an active job
+  state and accepts the actual v2 terminal-result envelope where `job_id` and
+  `status` are top-level fields.
+- A Sir Convert bundle marked `blocked` because question review is required is
+  shown as `Konverteringen av provet lyckades delvis`, not as a failed
+  conversion, when manual follow-up or warnings are present.
+- Follow-up refinement: free-text `manual_marking_required` is treated as
+  normal, while the missing-data headline counts only questions that actually
+  lack `Facit` or `Poäng`. If Sir Convert reports the bundle as `partial`
+  only because free-text items need normal teacher marking, the authenticated
+  UI keeps the teacher-facing result as `Provet är konverterat`.
+- Live validation against local Sir Convert and the HuleEdu Gateway edge passed
+  for submit, terminal result, artifact manifest, `migration_manifest`, and
+  `ir_json`.
+
+Out of scope for slice 5:
+
+- editing IR fields;
+- local `markera som kontrollerad` state;
+- mutation/rebuild of downstream PDF or QTI;
+- download;
+- save-to-files;
+- LLM-inferred answer-key UX beyond displaying governed provenance if the
+  artifact already contains it.
+
+### Slice 6: Review Decision Gate And Files Actions
+
+Status: partially implemented; live audit exposed an accepted-state export
+contract gap before closeout.
+
+Implementation contract:
+
+- Add the review-decision gate that lets the teacher choose what happens when
+  the conversion has actual missing `Facit` or `Poäng`.
+- Use short action labels only:
+  - `Granska` with an approved lucide review/inspection symbol.
+  - `Godkänn` with an approved lucide check/confirm symbol.
+- Do not use long action sentences as button copy. Put explanatory text in a
+  dynamic help/info affordance, tooltip, or compact disclosure.
+- Approved end-state help/info copy:
+  - `Granska`: `Granska och redigera frågorna som saknar facit eller poäng.`
+  - `Godkänn`: `Hoppa över granskningen och exportera provet direkt.`
+- `Godkänn` accepts the current conversion state for export/save. It must not
+  mutate Sir Convert IR, invent missing facit/poäng, or claim that questions
+  have been fixed.
+- File actions (`Hämta`, `Spara`) are available when either:
+  - the projection has no actual missing `Facit`/`Poäng` and no blocking
+    warning; or
+  - the teacher has used `Godkänn` for the current conversion result.
+- `Godkänn` must make the accepted current conversion exportable without
+  claiming missing data has been fixed. It is not sufficient for Skriptoteket
+  to set only a local acceptance flag when Sir Convert has pre-generated a
+  blocked artifact manifest. If a requested file is blocked specifically
+  because accepted missing `Facit`/`Poäng` prevents generation, this slice needs
+  either a Sir Convert accepted-state export/rebuild contract or a Sir Convert
+  best-effort output contract that emits available files with warnings.
+- File rows still respect non-review blockers. If Sir Convert marks a requested
+  file as blocked, failed, unsupported, or not created for a reason unrelated
+  to accepted missing `Facit`/`Poäng`, `Hämta` and `Spara` stay disabled for
+  that row and the row shows the visible outcome, for example
+  `Kunde inte skapas`.
+- Starting a new conversion, clearing selected files, or resetting local choices
+  must clear the current-state acceptance.
+- `Filer` remains the place for file actions. Do not add a generic mixed
+  `Åtgärd` column that blends review, report, export, and save actions.
+- The copy must describe the intended release end state, not a temporary
+  intermediate development state.
+
+Implementation notes:
+
+- `ExamConverterReviewDecisionGate` renders the approved short actions:
+  `Granska` and `Godkänn`. The approved long-form explanations live in
+  affordance help (`title`) instead of visible button copy.
+- `ExamConverterFilesReadinessList` now owns the `Hämta` and `Spara` columns.
+  It does not render a generic `Åtgärd` column and does not mix review/report
+  actions with export/save actions.
+- `useExamConverterFileActions` keeps download/save state per Sir Convert
+  artifact key, downloads named artifacts through the authenticated Gateway
+  client, and saves downloaded artifacts through the owner-scoped
+  save-to-user-files endpoint.
+- `saveMetadata.ts` normalizes Sir Convert artifact checksums from
+  `sha256:<hex>` into the 64-character SHA-256 value required by the
+  Skriptoteket save boundary before the backend verifies content bytes.
+- New conversions, source/supporting-file changes, and `Rensa val` clear the
+  current-state acceptance and per-file action state.
+- Focused frontend tests cover the decision-gate copy/affordance boundary,
+  gated file actions, save-to-user-files wiring, and reset behavior. The
+  Sir Convert Gateway client spec covers checksum normalization and the
+  multipart save request shape.
+- Live validation passed with local Sir Convert at `http://127.0.0.1:8085`:
+  one DXE with an actual missing `Facit` showed the review gate, kept QTI
+  `Hämta`/`Spara` disabled before `Godkänn`, enabled QTI after `Godkänn`,
+  saved QTI to user files, and kept the upstream-blocked PDF row disabled.
+  Screenshot retained locally at
+  `.artifacts/pr-0325-live/slice-6-review-gate-files-save.png`.
+- Follow-up live audit with
+  `1811577114-ekologiprov-v-49-25d-e.dxe` exposed the incomplete end-state:
+  after `Godkänn`, both target rows remained disabled because Sir Convert
+  returned `examnet_pdf` as `blocked/manual_answer_key_required` and
+  `qti_package` as `blocked/qti_validation_failed`. That contradicts the
+  intended `Godkänn` semantics for accepted missing `Facit`/`Poäng`; the local
+  UI acceptance must be replaced or backed by a governed accepted-state export
+  path before `PR-0325` can be treated as closed.
+- The same audit exposed a prerequisite review-projection flaw that belongs in
+  this save/export slice: Skriptoteket currently cannot let the teacher make a
+  meaningful `Godkänn` decision for flerval questions because the UI projection
+  does not render the source-backed alternatives in the selected-question
+  detail. Before an accepted-state export contract is implemented, the review
+  projection must show alternatives for `Flerval: ett val`,
+  `Flerval: flera val`, and governed matching items, while keeping correct
+  answers absent unless Sir Convert proves them.
+- For the audited ecology `.dxe`, Sir Convert classifies question 13 as
+  `Lucktext` because the source carries DigiExam `type: 3`, `bodyHTML`
+  `dxWordGap` spans, five `blanks`, and one embedded image reference. That
+  classification is source-backed. The blocker is target readiness: the current
+  PDF/QTI outputs do not have a governed safe shape for this multi-gap
+  no-validation item. PR-0325 must keep that blocker distinct from ordinary
+  missing `Facit`/`Poäng` counts and must not treat `Godkänn` as enabling a file
+  Sir Convert cannot create safely.
+
+Recommended solution retained for this slice:
+
+- tighten the Skriptoteket review projection so question type labels follow the
+  approved Swedish taxonomy and selected flerval details include alternatives;
+- require Sir Convert to expose accepted-state export/readiness as a governed
+  contract, preserving per-target and per-item blocker reasons instead of a
+  stale local `Godkänn` flag;
+- allow `Godkänn` to trigger or refresh that accepted-state export only for
+  target rows Sir Convert can actually create under the accepted-current-state
+  policy; and
+- keep unsupported target-shape blockers, such as the audited multi-gap
+  `Lucktext` item, disabled with a visible outcome until Sir Convert has a
+  governed renderer/import shape for them.
+
+Out of scope for slice 6 until separately approved:
+
+- broad IR mutation/rebuild workflow;
+- group edit for points;
+- batch answer-key editing;
+- unrelated Vault redesign;
+- public-lane save/persistence.
+
+Stop conditions for slice 6:
+
+- Stop if the authenticated Gateway client cannot fetch `ir_json` or
+  `migration_manifest` through owned artifact reads.
+- Stop if the IR shape needed for question rows differs from the Sir Convert
+  retained contract and would require guessing fields.
+- Stop if a visible UI control would imply persisted review, corrected answers,
+  regenerated exports, download readiness, or save readiness without a
+  governed mutation/rebuild/export contract.
+
 ## Test Plan
 
 - Focused frontend tests for authenticated host registration and Exam Converter

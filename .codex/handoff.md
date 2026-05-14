@@ -12,7 +12,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2026-05-14.
 - Branch: `main`.
 - Current lane: `PR-0325` Exam Converter authenticated runtime UI and save
-  remediation under `ST-21-03` is ready.
+  remediation under `ST-21-03`; Slice 6 exposed an accepted-state export gap.
 - Current state: `ADR-0085` is accepted; `PR-0318`, `PR-0319`, `PR-0320`,
   `PR-0321`, `PR-0322`, and `PR-0323` are done. Retained reviews
   `REV-PR-0318` through `REV-PR-0322` are approved. Sir Convert `TASK-292`
@@ -76,11 +76,34 @@ Keep this file updated so the next session can pick up work quickly.
 - Slice 4 is implemented: authenticated Exam Converter now submits the selected
   `.dxe`, optional `Valfritt rättat prov` PDF, Swedish artifact language, and
   selected PDF/QTI targets through the existing HuleEdu Gateway Sir Convert
-  client, polls queued/submitted/processing jobs with the returned correlation
+  client, polls queued/submitted/running/processing jobs with the returned correlation
   ID, reads the terminal result, and maps complete/partial/blocked/failed
   outcomes to the approved compact result strip. Real upstream progress/ETA
   consumption, artifact manifest rendering, question/file/report modes,
   download, and save remain out of scope.
+- Slice 5 is implemented: authenticated Exam Converter loads Sir Convert
+  `ir_json` and `migration_manifest` through the HuleEdu Gateway artifact
+  client, projects them through `digiexamIrReviewParser.ts`, and renders
+  `Frågor`, `Filer`, and `Rapport` as a read-only progressive inspection
+  surface. It shows missing-only labels (`Facit`, `Poäng`) under `Saknas`,
+  uses one `Fråga` column with number plus prompt preview, treats free-text
+  `manual_marking_required` as normal for this slice, uses lucide
+  warning/success symbols for row status, avoids local review/edit state, and
+  treats Sir Convert `blocked` bundles with real missing data as partial
+  conversion rather than runtime failure. A Sir Convert `partial` bundle caused
+  only by normal free-text manual marking stays teacher-visible as a converted
+  exam.
+- Slice 6 is partially implemented: authenticated Exam Converter now shows a
+  review-decision gate with short `Granska` / `Godkänn` actions when actual
+  `Facit`/`Poäng` gaps exist, keeps long action explanations in help
+  affordances, and clears acceptance on new/reset flows. Live audit showed
+  that local `Godkänn` is not enough when Sir Convert has already returned
+  blocked target files for accepted missing `Facit`/`Poäng`.
+- Slice 6 save wiring uses `useExamConverterFileActions.ts` to download named
+  artifacts through the HuleEdu Gateway and save them through the
+  owner-scoped user-file endpoint; `saveMetadata.ts` normalizes
+  `sha256:<hex>` to the 64-character value verified by the backend save
+  handler.
 - Sir Convert follow-up is required before real long-running ETA can be shown:
   DigiExam migration jobs that can exceed ten seconds need an additive
   progress/ETA contract (stage, bounded percent or step, optional ETA,
@@ -110,6 +133,12 @@ Keep this file updated so the next session can pick up work quickly.
   (25 passed)
 - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts`
   (29 passed)
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/api/sirConvertGateway/client.spec.ts`
+  (30 passed)
+- `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
+  (26 passed)
+- `pdm run pytest tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py -q`
+  (3 passed)
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
 - Browser proof on `http://127.0.0.1:5173/apps/documents.conversion_hub`
@@ -118,6 +147,23 @@ Keep this file updated so the next session can pick up work quickly.
   confirmed the authenticated Exam Converter route still renders after Slice 4;
   screenshot retained locally at
   `.artifacts/pr-0325-slice-4/authenticated-runtime-bridge.png`.
+- Live validation with local Sir Convert running at `http://127.0.0.1:8085`
+  and the HuleEdu Gateway `/sir-convert` edge enabled passed end to end:
+  submit/result/artifact manifest/`migration_manifest`/`ir_json` all returned
+  200 through the authenticated browser flow, with screenshots retained under
+  `.artifacts/pr-0325-live/`.
+- Slice 6 live validation with local Sir Convert running at
+  `http://127.0.0.1:8085` passed through the authenticated browser flow:
+  a DXE with one missing `Facit` showed `Granska` / `Godkänn`, kept QTI
+  `Hämta`/`Spara` disabled before `Godkänn`, enabled and saved QTI after
+  `Godkänn`, and kept the upstream-blocked PDF row disabled. Screenshot:
+  `.artifacts/pr-0325-live/slice-6-review-gate-files-save.png`.
+- Follow-up live audit with `1811577114-ekologiprov-v-49-25d-e.dxe` exposed
+  the current blocker: after `Godkänn`, Sir Convert still reports
+  `examnet_pdf` as `blocked/manual_answer_key_required` and `qti_package` as
+  `blocked/qti_validation_failed`, so both rows remain disabled. `Godkänn`
+  needs a governed accepted-state export/rebuild path or an upstream
+  best-effort artifact contract before `PR-0325` can close.
 - `rg -n "convert\\.hule\\.education|X-API-Key|SIR_CONVERT_A_LOT_V2_API_KEY|127\\.0\\.0\\.1:9010|PublicConversionGrantV1|PublicArtifactReadLeaseV1" src/skriptoteket/web/static/spa`
   (no matches)
 - `pdm run docs-validate`
@@ -138,21 +184,15 @@ pdm run handoff-validate
 git diff --check
 ```
 ## Known Issues / Risks
-- `PR-0313` still needs real iPhone confirmation before final `done` closeout.
-- `PR-0315` remains a separate local lane; do not mix any follow-up review or
-  publication work for it into the `PR-0317` diff without an explicit decision.
-- `ST-27-09` still has older ready PR slices (`PR-0297`, `PR-0298`) whose
-  implementation appears delivered or superseded by later fixed-seat work
-  (`PR-0304`, `PR-0310`). Reconcile separately before starting unrelated
-  fixed-seat runtime work.
-- BF25/G104 now prioritizes stronger overlap-rule rotation and keeps valid
-  `Håll isär` separation with a 10.5 mean-distance floor.
+- `PR-0325` is not closeout-ready until `Godkänn` is backed by a real
+  accepted-state export path for target files blocked only by accepted missing
+  `Facit`/`Poäng`; the same slice must first fix the review projection so
+  flerval details show alternatives and type labels use `Flerval: ett val`,
+  `Flerval: flera val`, `Flerval: matchning`, and `Lucktext`, with the audited
+  multi-gap `Lucktext` item kept distinct from ordinary missing-field counts.
 ## Next Steps
-- Continue `PR-0325` by proposing the next slice first. Do not
-  implement UI until that slice's mockup/sketch, behavior, affordances,
-  component choices, recommendation rationale, and test-code behavior-spec
-  shape are explicitly approved. Runtime/save wiring follows the approved UI
-  structure and remains separate.
+- Finish `PR-0325` closeout: run the full frontend closeout gates
+  only after resolving the accepted-state export gap behind `Godkänn`.
 - Rerun `PR-0324` only after `PR-0325` lands and is reviewed.
 - Do not reopen the public grant/read-lease lane unless HuleEdu or Sir Convert
   changes the accepted contract.

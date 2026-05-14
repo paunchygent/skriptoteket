@@ -15,19 +15,42 @@
 
 import { FileText, Upload } from "lucide-vue-next";
 
+import ExamConverterFilesReadinessList from "./ExamConverterFilesReadinessList.vue";
+import ExamConverterInspectionTabs from "./ExamConverterInspectionTabs.vue";
+import ExamConverterQuestionReviewShell from "./ExamConverterQuestionReviewShell.vue";
+import ExamConverterReportSummary from "./ExamConverterReportSummary.vue";
+import ExamConverterReviewDecisionGate from "./ExamConverterReviewDecisionGate.vue";
 import ExamConverterResultStrip from "./ExamConverterResultStrip.vue";
+import type {
+  ExamConverterInspectionMode,
+  ExamConverterReviewFile,
+  ExamConverterReviewProjection,
+} from "./digiexamIrReviewParser";
+import type { ExamConverterFileActionStates } from "./useExamConverterFileActions";
 import type { ExamConverterResultStripState } from "./useExamConverterConversionState";
+import type { ExamConverterReviewArtifactsStatus } from "./useExamConverterReviewArtifacts";
 import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceFile";
 
 defineProps<{
+  activeInspectionMode: ExamConverterInspectionMode;
+  acceptedCurrentState: boolean;
+  canUseFiles: boolean;
+  fileActionStates: ExamConverterFileActionStates;
   resultStrip: ExamConverterResultStripState | null;
+  reviewProjection: ExamConverterReviewProjection | null;
+  requiresReviewDecision: boolean;
+  reviewStatus: ExamConverterReviewArtifactsStatus;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
   sourceFileError: string | null;
 }>();
 
 const emit = defineEmits<{
+  acceptCurrentState: [];
+  downloadFile: [file: ExamConverterReviewFile];
   filesDropped: [files: File[]];
   openQuestions: [];
+  inspectionModeSelected: [mode: ExamConverterInspectionMode];
+  saveFile: [file: ExamConverterReviewFile];
   sourceFileSelected: [file: File];
 }>();
 
@@ -61,11 +84,19 @@ function handleDrop(event: DragEvent): void {
     data-test="exam-converter-workspace-shell"
   >
     <header class="px-4 py-4">
-      <ExamConverterResultStrip
-        v-if="resultStrip"
-        :result="resultStrip"
-        @open-questions="emit('openQuestions')"
-      />
+      <template v-if="resultStrip">
+        <ExamConverterResultStrip
+          :result="resultStrip"
+          @open-questions="emit('openQuestions')"
+        />
+        <ExamConverterReviewDecisionGate
+          v-if="reviewProjection && requiresReviewDecision"
+          :accepted="acceptedCurrentState"
+          :missing-count="reviewProjection.report.attentionQuestionCount"
+          @accept-current-state="emit('acceptCurrentState')"
+          @review-questions="emit('openQuestions')"
+        />
+      </template>
       <div
         v-else
         class="min-w-0"
@@ -91,6 +122,60 @@ function handleDrop(event: DragEvent): void {
         <p class="text-base font-medium leading-tight text-navy">
           Vänta medan provet konverteras.
         </p>
+      </div>
+      <div
+        v-else-if="resultStrip"
+        class="min-h-0 w-full flex-1 bg-panel"
+        data-test="exam-converter-inspection-surface"
+      >
+        <div
+          v-if="reviewStatus === 'loading'"
+          class="grid min-h-[18rem] place-items-center border border-dashed border-navy/35 bg-canvas px-6 py-8 text-center"
+          data-test="exam-converter-review-loading"
+        >
+          <p class="text-sm font-medium leading-snug text-navy">
+            Läser frågorna.
+          </p>
+        </div>
+        <div
+          v-else-if="reviewStatus === 'failed' || !reviewProjection"
+          class="grid min-h-[18rem] place-items-center border border-dashed border-error/45 bg-error/5 px-6 py-8 text-center"
+          data-test="exam-converter-review-failed"
+        >
+          <p class="text-sm font-medium leading-snug text-navy">
+            Det gick inte att läsa frågorna. Försök igen.
+          </p>
+        </div>
+        <div
+          v-else
+          class="flex min-h-0 flex-1 flex-col"
+        >
+          <ExamConverterInspectionTabs
+            :active-mode="activeInspectionMode"
+            :attention-count="reviewProjection.report.attentionQuestionCount"
+            :file-count="reviewProjection.files.length"
+            :question-count="reviewProjection.questions.length"
+            @mode-selected="emit('inspectionModeSelected', $event)"
+          />
+          <ExamConverterQuestionReviewShell
+            v-if="activeInspectionMode === 'questions'"
+            :projection="reviewProjection"
+          />
+          <ExamConverterFilesReadinessList
+            v-else-if="activeInspectionMode === 'files'"
+            :accepted-current-state="acceptedCurrentState"
+            :action-states="fileActionStates"
+            :actions-enabled="canUseFiles"
+            :files="reviewProjection.files"
+            @download-file="emit('downloadFile', $event)"
+            @save-file="emit('saveFile', $event)"
+          />
+          <ExamConverterReportSummary
+            v-else
+            :report="reviewProjection.report"
+            @open-questions="emit('inspectionModeSelected', 'questions')"
+          />
+        </div>
       </div>
       <label
         v-else
