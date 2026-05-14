@@ -71,9 +71,15 @@ Keep this file updated so the next session can pick up work quickly.
   `Starta konvertering` only after a `.dxe` and at least one target are
   selected, shows `Konverterar provet...` in a compact result strip with
   moving stage/progress visualization, locks local intake affordances while
-  running, and keeps success/partial/failed result-strip states as component
-  scaffold states for the later runtime slice. Gateway submit/poll/result
-  mapping, real upstream progress/ETA consumption, question/file/report modes,
+  running, and keeps success/partial/failed result-strip states ready for
+  runtime mapping.
+- Slice 4 is implemented: authenticated Exam Converter now submits the selected
+  `.dxe`, optional `Valfritt rättat prov` PDF, Swedish artifact language, and
+  selected PDF/QTI targets through the existing HuleEdu Gateway Sir Convert
+  client, polls queued/submitted/processing jobs with the returned correlation
+  ID, reads the terminal result, and maps complete/partial/blocked/failed
+  outcomes to the approved compact result strip. Real upstream progress/ETA
+  consumption, artifact manifest rendering, question/file/report modes,
   download, and save remain out of scope.
 - Sir Convert follow-up is required before real long-running ETA can be shown:
   DigiExam migration jobs that can exceed ten seconds need an additive
@@ -102,10 +108,16 @@ Keep this file updated so the next session can pick up work quickly.
   (18 passed)
 - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts`
   (25 passed)
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts`
+  (29 passed)
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
 - Browser proof on `http://127.0.0.1:5173/apps/documents.conversion_hub`
   confirmed the visible local intake copy and combined-drop announcement.
+- Browser proof on `http://127.0.0.1:5173/apps/documents.conversion_hub`
+  confirmed the authenticated Exam Converter route still renders after Slice 4;
+  screenshot retained locally at
+  `.artifacts/pr-0325-slice-4/authenticated-runtime-bridge.png`.
 - `rg -n "convert\\.hule\\.education|X-API-Key|SIR_CONVERT_A_LOT_V2_API_KEY|127\\.0\\.0\\.1:9010|PublicConversionGrantV1|PublicArtifactReadLeaseV1" src/skriptoteket/web/static/spa`
   (no matches)
 - `pdm run docs-validate`

@@ -3,22 +3,24 @@
  * Authenticated Exam Converter host frame.
  *
  * Domain purpose:
- *   Provide the stable signed-in Exam Converter workspace frame and
- *   browser-local source-file intake before result, question, report, submit,
- *   or save behavior is introduced.
+ *   Provide the stable signed-in Exam Converter workspace frame, browser-local
+ *   intake, and the first authenticated submit/poll/result-strip bridge.
  *
  * Relationships:
  *   - Mounted by `curatedAppHostRegistry` for authenticated Conversion Hub.
- *   - Composes structural shell components only; transport/runtime state is
- *     introduced by later approved UI slices.
+ *   - Composes shell components and delegates runtime transport to the
+ *     authenticated Exam Converter runtime bridge.
  */
 
 import { computed } from "vue";
 
+import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
+import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
+import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated/useExamConverterConversionState";
 
 const {
   clearSupportingFile,
@@ -35,8 +37,15 @@ const {
   toggleTargetFormat,
 } = useExamConverterSourceFile();
 
-const { isConversionRunning, resetConversion, resultStrip, startConversion } =
-  useExamConverterConversionState();
+const {
+  failConversion,
+  finishConversion,
+  isConversionRunning,
+  resetConversion,
+  resultStrip,
+  startConversion,
+} = useExamConverterConversionState();
+const { cancelRuntime, submitAndPoll } = useExamConverterAuthenticatedRuntime();
 
 const hasSelectedTargetFormat = computed(
   () => selectedTargetFormats.value.pdf || selectedTargetFormats.value.qti,
@@ -50,15 +59,40 @@ const canStartConversion = computed(
 );
 
 function handleResetLocalChoices(): void {
+  cancelRuntime();
   resetLocalChoices();
   resetConversion();
 }
 
-function handleStartConversion(): void {
-  if (!canStartConversion.value) {
+function toRuntimeOutcome(result: SirConvertTerminalResult): ExamConverterRuntimeOutcome {
+  return {
+    artifactCount: result.conversion_metadata.artifact_count,
+    bundleStatus: result.conversion_metadata.bundle_status,
+    manualFollowUpCount: null,
+    manualFollowUpRequired: result.conversion_metadata.manual_follow_up_required,
+    warningCount: result.conversion_metadata.warning_count,
+  };
+}
+
+async function handleStartConversion(): Promise<void> {
+  const sourceSelection = selectedSourceFile.value;
+  if (!canStartConversion.value || !sourceSelection) {
     return;
   }
+
   startConversion();
+  try {
+    const result = await submitAndPoll({
+      sourceFile: sourceSelection.file,
+      supportingFile: selectedSupportingFile.value?.file ?? null,
+      targetSelection: { ...selectedTargetFormats.value },
+    });
+    if (result) {
+      finishConversion(toRuntimeOutcome(result));
+    }
+  } catch {
+    failConversion();
+  }
 }
 </script>
 

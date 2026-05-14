@@ -19,11 +19,23 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import ExamConverterResultStrip from "./exam-converter-authenticated/ExamConverterResultStrip.vue";
 import type { ExamConverterResultStripState } from "./exam-converter-authenticated/useExamConverterConversionState";
+
+const gatewayMocks = vi.hoisted(() => ({
+  getDigiExamMigrationJob: vi.fn(),
+  getDigiExamMigrationResult: vi.fn(),
+  submitDigiExamMigration: vi.fn(),
+}));
+
+vi.mock("../../api/sirConvertGateway", () => ({
+  getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
+  getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+  submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
+}));
 
 async function chooseSourceFile(wrapper: ReturnType<typeof mount>) {
   const input = wrapper.find<HTMLInputElement>(
@@ -43,6 +55,13 @@ async function chooseSourceFile(wrapper: ReturnType<typeof mount>) {
 function startButton(wrapper: ReturnType<typeof mount>) {
   return wrapper.find('[data-test="exam-converter-start-conversion"]');
 }
+
+beforeEach(() => {
+  gatewayMocks.getDigiExamMigrationJob.mockReset();
+  gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.submitDigiExamMigration.mockReset();
+  gatewayMocks.submitDigiExamMigration.mockReturnValue(new Promise(() => undefined));
+});
 
 afterEach(() => {
   vi.useRealTimers();

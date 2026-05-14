@@ -236,9 +236,9 @@ Implemented:
   `Konverterar provet...`, `Provet är konverterat`,
   `Konverteringen av provet lyckades delvis`, and
   `Konverteringen av provet misslyckades`.
-- The authenticated host wires only the running state for now; success,
-  partial, and failed states are component-level scaffold states awaiting the
-  approved runtime submit/poll/result slice.
+- The authenticated host originally wired only the running state in this slice;
+  terminal success, partial, and failed transitions are now connected by Slice
+  4's runtime bridge.
 - `ExamConverterAuthenticatedConversionSlice.spec.ts` covers start eligibility,
   running-state rendering, moving local progress, long-running copy, reset
   behavior, result-strip copy, no service jargon, and the
@@ -262,6 +262,45 @@ Out of scope for slice 3:
 - inspection tabs;
 - question list and selected-question detail;
 - files/report modes;
+- download and save behavior.
+
+### Slice 4: Authenticated Runtime Submit/Poll/Result Strip
+
+Status: implemented after product approval.
+
+Implemented:
+
+- `useExamConverterAuthenticatedRuntime` is a focused authenticated runtime
+  bridge for exactly one selected exam conversion.
+- The bridge submits the selected `.dxe`, optional `Valfritt rättat prov` PDF,
+  Swedish artifact language, selected target formats, and `wait_seconds=0`
+  through the existing HuleEdu Gateway Sir Convert client.
+- Target declarations are mapped narrowly:
+  `PDF -> examnet_pdf` and `QTI-format -> qti_package`.
+- Queued/submitted/processing jobs are polled through
+  `getDigiExamMigrationJob` with the returned correlation ID until terminal
+  status.
+- Succeeded jobs read the terminal result through
+  `getDigiExamMigrationResult`; failed/canceled jobs map to the approved
+  failure strip copy.
+- `useExamConverterConversionState` now accepts a terminal runtime outcome and
+  maps complete, partial/manual-follow-up/warning, and blocked outcomes to the
+  approved result-strip states without exposing service jargon.
+- Partial result copy intentionally avoids inventing an exact question count
+  until a later manifest/question slice consumes a governed count contract.
+- `ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts` documents the slice
+  purpose, expected teacher-visible behavior, recommended implementation shape,
+  submit payload, polling correlation, partial result copy, and failure
+  mapping.
+
+Out of scope for slice 4:
+
+- real upstream progress/ETA consumption;
+- artifact manifest rendering;
+- inspection tabs;
+- question list and selected-question detail;
+- generated file list;
+- report mode;
 - download and save behavior.
 
 ## Test Plan

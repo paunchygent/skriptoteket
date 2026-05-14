@@ -3,7 +3,7 @@
  *
  * Domain purpose:
  *   Own the authenticated Exam Converter's teacher-visible conversion phase
- *   before upstream runtime polling and result data are connected.
+ *   and terminal result-strip mapping after runtime polling completes.
  *
  * Relationships:
  *   - Used by `ExamConverterAuthenticatedView`.
@@ -27,6 +27,14 @@ export type ExamConverterRunningProgress = {
   isLongRunning: boolean;
   percent: number;
   stageLabel: string;
+};
+
+export type ExamConverterRuntimeOutcome = {
+  artifactCount: number;
+  bundleStatus: "complete" | "partial" | "blocked";
+  manualFollowUpCount: number | null;
+  manualFollowUpRequired: boolean;
+  warningCount: number;
 };
 
 export type ExamConverterResultStripState = {
@@ -56,7 +64,7 @@ const RESULT_STRIP_BY_STATUS: Record<
   },
   partial: {
     actionLabel: "Öppna frågor",
-    detail: "8 frågor behöver ses över innan provet är klart.",
+    detail: "Några frågor behöver ses över innan provet är klart.",
     nextAction: "Kontrollera frågorna som behöver ses över.",
     status: "partial",
     title: "Konverteringen av provet lyckades delvis",
@@ -103,10 +111,35 @@ function buildRunningProgress(elapsedSeconds: number): ExamConverterRunningProgr
   };
 }
 
-function buildResultStripState(
-  status: ExamConverterConversionStatus,
-  progress: ExamConverterRunningProgress,
-): ExamConverterResultStripState | null {
+function statusForRuntimeOutcome(
+  outcome: ExamConverterRuntimeOutcome,
+): Exclude<ExamConverterConversionStatus, "idle" | "running"> {
+  if (outcome.bundleStatus === "blocked") {
+    return "failed";
+  }
+  if (
+    outcome.bundleStatus === "partial" ||
+    outcome.manualFollowUpRequired ||
+    outcome.warningCount > 0
+  ) {
+    return "partial";
+  }
+  return "success";
+}
+
+function buildPartialDetail(outcome: ExamConverterRuntimeOutcome | null): string {
+  if (outcome?.manualFollowUpCount && outcome.manualFollowUpCount > 0) {
+    return `${outcome.manualFollowUpCount.toLocaleString("sv-SE")} frågor behöver ses över innan provet är klart.`;
+  }
+  return "Några frågor behöver ses över innan provet är klart.";
+}
+
+function buildResultStripState(params: {
+  status: ExamConverterConversionStatus;
+  progress: ExamConverterRunningProgress;
+  runtimeOutcome: ExamConverterRuntimeOutcome | null;
+}): ExamConverterResultStripState | null {
+  const { progress, runtimeOutcome, status } = params;
   if (status === "idle") {
     return null;
   }
@@ -121,12 +154,20 @@ function buildResultStripState(
       tone: "info",
     };
   }
+  if (status === "partial") {
+    return {
+      ...RESULT_STRIP_BY_STATUS.partial,
+      detail: buildPartialDetail(runtimeOutcome),
+      progress: null,
+    };
+  }
   return { ...RESULT_STRIP_BY_STATUS[status], progress: null };
 }
 
 export function useExamConverterConversionState() {
   const conversionStatus = ref<ExamConverterConversionStatus>("idle");
   const runningElapsedSeconds = ref(0);
+  const runtimeOutcome = ref<ExamConverterRuntimeOutcome | null>(null);
   let runningTimer: ReturnType<typeof window.setInterval> | null = null;
 
   const isConversionRunning = computed(() => conversionStatus.value === "running");
@@ -134,7 +175,11 @@ export function useExamConverterConversionState() {
     buildRunningProgress(runningElapsedSeconds.value),
   );
   const resultStrip = computed(() =>
-    buildResultStripState(conversionStatus.value, runningProgress.value),
+    buildResultStripState({
+      progress: runningProgress.value,
+      runtimeOutcome: runtimeOutcome.value,
+      status: conversionStatus.value,
+    }),
   );
 
   function stopRunningTimer(): void {
@@ -147,22 +192,40 @@ export function useExamConverterConversionState() {
   function resetConversion(): void {
     stopRunningTimer();
     runningElapsedSeconds.value = 0;
+    runtimeOutcome.value = null;
     conversionStatus.value = "idle";
   }
 
   function startConversion(): void {
     stopRunningTimer();
     runningElapsedSeconds.value = 0;
+    runtimeOutcome.value = null;
     conversionStatus.value = "running";
     runningTimer = window.setInterval(() => {
       runningElapsedSeconds.value += 1;
     }, 1_000);
   }
 
+  function finishConversion(outcome: ExamConverterRuntimeOutcome): void {
+    stopRunningTimer();
+    runningElapsedSeconds.value = 0;
+    runtimeOutcome.value = outcome;
+    conversionStatus.value = statusForRuntimeOutcome(outcome);
+  }
+
+  function failConversion(): void {
+    stopRunningTimer();
+    runningElapsedSeconds.value = 0;
+    runtimeOutcome.value = null;
+    conversionStatus.value = "failed";
+  }
+
   onBeforeUnmount(stopRunningTimer);
 
   return {
     conversionStatus,
+    failConversion,
+    finishConversion,
     isConversionRunning,
     resetConversion,
     resultStrip,
