@@ -179,7 +179,8 @@ Out of scope for slice 1:
 
 ### Slice 2: Source File Intake
 
-Status: implemented after product approval.
+Status: implemented after product approval and extended with local intake
+affordances after product feedback.
 
 Implemented:
 
@@ -189,14 +190,24 @@ Implemented:
   and rejects non-`.dxe` files with direct Swedish copy.
 - `ExamConverterWorkflowRailShell` reflects the selected source filename, size,
   uploaded status, and remove affordance.
+- `ExamConverterWorkflowRailShell` exposes a separate optional
+  `Valfritt rättat prov` PDF affordance with `Välj fil (.pdf)`, empty state,
+  selected filename/size, remove affordance, and PDF-only rejection.
+- `ExamConverterWorkspaceShell` now announces that a `.dxe` and optional
+  corrected PDF can be dragged in together; the local intake composable places
+  them in the correct slots and rejects multiple `.dxe` files with
+  `Välj en provfil åt gången.`.
+- Target output formats are local true/false choices in the rail. The choices
+  remain a preview/declaration before review, not final download/save actions.
 - The conversion CTA remains disabled because submit/runtime behavior belongs
   to the next slice.
 - `ExamConverterAuthenticatedView.spec.ts` now covers selected-file state,
-  invalid-file rejection, removal back to idle, and the no-runtime boundary.
+  invalid-file rejection, optional corrected PDF selection/removal, combined
+  drop placement, multiple-`.dxe` rejection, target-format toggles, reset
+  behavior, and the no-runtime boundary.
 
 Out of scope for slice 2:
 
-- result-PDF selection;
 - submit/runtime calls;
 - result strip;
 - inspection tabs;

@@ -14,15 +14,50 @@
 
 import { Check, FileText, HelpCircle, Play, Upload, X } from "lucide-vue-next";
 
-import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceFile";
+import type {
+  ExamConverterSourceFileSelection,
+  ExamConverterTargetFormat,
+  ExamConverterTargetSelection,
+} from "./useExamConverterSourceFile";
 
 defineProps<{
+  selectedSupportingFile: ExamConverterSourceFileSelection | null;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
+  selectedTargetFormats: ExamConverterTargetSelection;
+  supportingFileError: string | null;
 }>();
 
 const emit = defineEmits<{
+  clearSupportingFile: [];
   clearSourceFile: [];
+  resetLocalChoices: [];
+  sourceFileSelected: [file: File];
+  supportingFileSelected: [file: File];
+  toggleTargetFormat: [format: ExamConverterTargetFormat];
 }>();
+
+function firstFile(fileList: FileList | null): File | null {
+  const [file] = Array.from(fileList ?? []);
+  return file ?? null;
+}
+
+function handleSourceFileInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const file = firstFile(input.files);
+  if (file) {
+    emit("sourceFileSelected", file);
+  }
+  input.value = "";
+}
+
+function handleSupportingFileInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const file = firstFile(input.files);
+  if (file) {
+    emit("supportingFileSelected", file);
+  }
+  input.value = "";
+}
 </script>
 
 <template>
@@ -67,7 +102,7 @@ const emit = defineEmits<{
           </span>
           <button
             type="button"
-            class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas"
+            class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
             aria-label="Ta bort provfil"
             data-test="exam-converter-clear-source-file"
             @click="emit('clearSourceFile')"
@@ -78,10 +113,18 @@ const emit = defineEmits<{
             />
           </button>
         </div>
-        <div
+        <label
           v-else
-          class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3"
+          class="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3 hover:bg-canvas"
+          data-test="exam-converter-source-file-action"
         >
+          <input
+            class="sr-only"
+            type="file"
+            accept=".dxe"
+            data-test="exam-converter-rail-source-file-input"
+            @change="handleSourceFileInput"
+          >
           <Upload
             class="h-5 w-5 text-action"
             aria-hidden="true"
@@ -89,7 +132,7 @@ const emit = defineEmits<{
           <span class="min-w-0 text-sm font-medium leading-snug text-navy">
             Välj provfil (.dxe)
           </span>
-        </div>
+        </label>
         <p
           v-if="!selectedSourceFile"
           class="text-xs leading-snug text-navy/65"
@@ -113,19 +156,83 @@ const emit = defineEmits<{
         data-test="exam-converter-supporting-file-state"
       >
         <h2 class="text-sm font-semibold leading-tight text-navy">
-          2. Valfri resultat-PDF
+          2. Valfritt rättat prov
         </h2>
-        <div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3">
+        <div
+          v-if="selectedSupportingFile"
+          class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border border-navy/25 bg-panel px-3 py-3"
+          data-test="exam-converter-selected-supporting-file"
+        >
+          <FileText
+            class="h-5 w-5 text-navy"
+            aria-hidden="true"
+          />
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-medium leading-snug text-navy">
+              {{ selectedSupportingFile.name }}
+            </span>
+            <span class="mt-0.5 block text-xs leading-none text-navy/65">
+              {{ selectedSupportingFile.sizeLabel }}
+            </span>
+          </span>
+          <button
+            type="button"
+            class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas"
+            aria-label="Ta bort resultat-PDF"
+            data-test="exam-converter-clear-supporting-file"
+            @click="emit('clearSupportingFile')"
+          >
+            <X
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+        <label
+          v-else
+          class="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3 hover:bg-canvas"
+          :class="supportingFileError ? 'border-error bg-error/5' : undefined"
+          data-test="exam-converter-supporting-file-action"
+        >
+          <input
+            class="sr-only"
+            type="file"
+            accept=".pdf"
+            data-test="exam-converter-supporting-file-input"
+            @change="handleSupportingFileInput"
+          >
           <FileText
             class="h-5 w-5 text-navy"
             aria-hidden="true"
           />
           <span class="min-w-0 text-sm font-medium leading-snug text-navy">
-            Välj fil
+            Välj fil (.pdf)
           </span>
-        </div>
+        </label>
+        <p
+          v-if="supportingFileError"
+          class="text-xs leading-snug text-error"
+        >
+          {{ supportingFileError }}
+        </p>
+        <p
+          v-else-if="selectedSupportingFile"
+          class="flex items-center gap-2 text-xs leading-snug text-success"
+        >
+          <Check
+            class="h-3 w-3"
+            aria-hidden="true"
+          />
+          Filen är uppladdad
+        </p>
+        <p
+          v-else
+          class="text-xs leading-snug text-navy/65"
+        >
+          Ingen fil vald.
+        </p>
         <p class="text-xs leading-snug text-navy/65">
-          För svarsmall.
+          Kan dras in samtidigt med provfilen.
         </p>
       </section>
 
@@ -137,10 +244,24 @@ const emit = defineEmits<{
           3. Målfiler
         </h2>
         <div class="grid gap-2">
-          <div class="border border-navy/25 bg-panel px-3 py-3">
+          <button
+            type="button"
+            class="border px-3 py-3 text-left"
+            :class="[
+              selectedTargetFormats.pdf ? 'border-navy/25 bg-panel' : 'border-navy/20 bg-panel-muted opacity-75',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action',
+            ]"
+            :aria-pressed="selectedTargetFormats.pdf"
+            data-test="exam-converter-target-pdf"
+            @click="emit('toggleTargetFormat', 'pdf')"
+          >
             <div class="flex items-center gap-2 text-sm font-medium leading-snug text-navy">
-              <span class="grid h-5 w-5 place-items-center border border-navy bg-navy text-button-primary-text">
+              <span
+                class="grid h-5 w-5 place-items-center border border-navy"
+                :class="selectedTargetFormats.pdf ? 'bg-navy text-button-primary-text' : 'bg-panel text-navy'"
+              >
                 <Check
+                  v-if="selectedTargetFormats.pdf"
                   class="h-3 w-3"
                   aria-hidden="true"
                 />
@@ -154,12 +275,26 @@ const emit = defineEmits<{
             <p class="mt-2 text-xs leading-snug text-navy/65">
               För direktimport av prov i Exam.net.
             </p>
-          </div>
+          </button>
 
-          <div class="border border-navy/25 bg-panel px-3 py-3">
+          <button
+            type="button"
+            class="border px-3 py-3 text-left"
+            :class="[
+              selectedTargetFormats.qti ? 'border-navy/25 bg-panel' : 'border-navy/20 bg-panel-muted opacity-75',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action',
+            ]"
+            :aria-pressed="selectedTargetFormats.qti"
+            data-test="exam-converter-target-qti"
+            @click="emit('toggleTargetFormat', 'qti')"
+          >
             <div class="flex items-center gap-2 text-sm font-medium leading-snug text-navy">
-              <span class="grid h-5 w-5 place-items-center border border-navy bg-navy text-button-primary-text">
+              <span
+                class="grid h-5 w-5 place-items-center border border-navy"
+                :class="selectedTargetFormats.qti ? 'bg-navy text-button-primary-text' : 'bg-panel text-navy'"
+              >
                 <Check
+                  v-if="selectedTargetFormats.qti"
                   class="h-3 w-3"
                   aria-hidden="true"
                 />
@@ -173,7 +308,7 @@ const emit = defineEmits<{
             <p class="mt-2 text-xs leading-snug text-navy/65">
               För lagring och import. Exam.net-stöd är planerat.
             </p>
-          </div>
+          </button>
         </div>
       </section>
 
@@ -195,7 +330,7 @@ const emit = defineEmits<{
         <button
           type="button"
           class="btn-ghost justify-center shadow-none"
-          disabled
+          @click="emit('resetLocalChoices')"
         >
           Rensa val
         </button>

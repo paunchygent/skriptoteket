@@ -18,10 +18,18 @@ import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConv
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
 
 const {
+  clearSupportingFile,
   clearSourceFile,
+  resetLocalChoices,
+  selectDroppedFiles,
+  selectSupportingFile,
   selectSourceFile,
+  selectedSupportingFile,
   selectedSourceFile,
+  selectedTargetFormats,
+  supportingFileError,
   sourceFileError,
+  toggleTargetFormat,
 } = useExamConverterSourceFile();
 </script>
 
@@ -36,12 +44,21 @@ const {
       data-test="exam-converter-host-frame"
     >
       <ExamConverterWorkflowRailShell
+        :selected-supporting-file="selectedSupportingFile"
         :selected-source-file="selectedSourceFile"
+        :selected-target-formats="selectedTargetFormats"
+        :supporting-file-error="supportingFileError"
+        @clear-supporting-file="clearSupportingFile"
         @clear-source-file="clearSourceFile"
+        @reset-local-choices="resetLocalChoices"
+        @source-file-selected="selectSourceFile"
+        @supporting-file-selected="selectSupportingFile"
+        @toggle-target-format="toggleTargetFormat"
       />
       <ExamConverterWorkspaceShell
         :selected-source-file="selectedSourceFile"
         :source-file-error="sourceFileError"
+        @files-dropped="selectDroppedFiles"
         @source-file-selected="selectSourceFile"
       />
     </section>

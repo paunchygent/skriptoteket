@@ -67,4 +67,3 @@ data/reagent_prep_chef/sds/files/
 
 # Sensitive operational docs (credentials, server details)
 .codex/rules/080-home-server-deployment.md
-.codex/handoff.md

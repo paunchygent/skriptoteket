@@ -23,6 +23,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+  filesDropped: [files: File[]];
   sourceFileSelected: [file: File];
 }>();
 
@@ -41,7 +42,10 @@ function handleFileInput(event: Event): void {
 
 function handleDrop(event: DragEvent): void {
   event.preventDefault();
-  selectFirstFile(event.dataTransfer?.files ?? null);
+  const files = Array.from(event.dataTransfer?.files ?? []);
+  if (files.length > 0) {
+    emit("filesDropped", files);
+  }
 }
 </script>
 
@@ -60,7 +64,7 @@ function handleDrop(event: DragEvent): void {
           {{ selectedSourceFile ? "Provfilen är vald" : "Välj provfil för att börja" }}
         </h2>
         <p class="mt-1 text-sm leading-snug text-navy/70">
-          {{ selectedSourceFile ? "Nästa steg är att starta konverteringen." : "Dra hit .dxe-filen eller välj fil från datorn." }}
+          {{ selectedSourceFile ? "Nästa steg är att starta konverteringen." : "Dra hit .dxe-filen. Om du har ett rättat prov som PDF kan du dra in båda samtidigt." }}
         </p>
       </div>
     </header>
@@ -109,6 +113,12 @@ function handleDrop(event: DragEvent): void {
               class="mt-2 text-sm leading-snug text-error"
             >
               {{ sourceFileError }}
+            </p>
+            <p
+              v-else
+              class="mt-2 text-sm leading-snug text-navy/70"
+            >
+              .dxe och rättat prov som PDF kan dras in samtidigt.
             </p>
           </div>
         </div>
