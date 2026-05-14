@@ -67,6 +67,19 @@ Keep this file updated so the next session can pick up work quickly.
   rejection, selected filename/size rail state, remove-to-idle behavior,
   output-format true/false toggles, combined `.dxe` + PDF drop placement, and
   multiple-`.dxe` rejection. Submit/runtime remains out of scope.
+- Slice 3 is implemented: authenticated Exam Converter now enables
+  `Starta konvertering` only after a `.dxe` and at least one target are
+  selected, shows `Konverterar provet...` in a compact result strip with
+  moving stage/progress visualization, locks local intake affordances while
+  running, and keeps success/partial/failed result-strip states as component
+  scaffold states for the later runtime slice. Gateway submit/poll/result
+  mapping, real upstream progress/ETA consumption, question/file/report modes,
+  download, and save remain out of scope.
+- Sir Convert follow-up is required before real long-running ETA can be shown:
+  DigiExam migration jobs that can exceed ten seconds need an additive
+  progress/ETA contract (stage, bounded percent or step, optional ETA,
+  stale/stalled/unknown semantics). Skriptoteket must consume that later instead
+  of treating browser-local progress as authoritative.
 - `PR-0325` explicitly points implementers at Klassrumskartan's app-export
   save precedent:
   `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py`
@@ -87,6 +100,8 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run fe-build`
 - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts`
   (18 passed)
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts`
+  (25 passed)
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
 - Browser proof on `http://127.0.0.1:5173/apps/documents.conversion_hub`

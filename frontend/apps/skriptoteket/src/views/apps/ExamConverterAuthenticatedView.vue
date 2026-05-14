@@ -13,8 +13,11 @@
  *     introduced by later approved UI slices.
  */
 
+import { computed } from "vue";
+
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
+import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
 
 const {
@@ -31,6 +34,32 @@ const {
   sourceFileError,
   toggleTargetFormat,
 } = useExamConverterSourceFile();
+
+const { isConversionRunning, resetConversion, resultStrip, startConversion } =
+  useExamConverterConversionState();
+
+const hasSelectedTargetFormat = computed(
+  () => selectedTargetFormats.value.pdf || selectedTargetFormats.value.qti,
+);
+
+const canStartConversion = computed(
+  () =>
+    selectedSourceFile.value !== null &&
+    hasSelectedTargetFormat.value &&
+    !isConversionRunning.value,
+);
+
+function handleResetLocalChoices(): void {
+  resetLocalChoices();
+  resetConversion();
+}
+
+function handleStartConversion(): void {
+  if (!canStartConversion.value) {
+    return;
+  }
+  startConversion();
+}
 </script>
 
 <template>
@@ -44,18 +73,22 @@ const {
       data-test="exam-converter-host-frame"
     >
       <ExamConverterWorkflowRailShell
+        :can-start-conversion="canStartConversion"
+        :is-conversion-running="isConversionRunning"
         :selected-supporting-file="selectedSupportingFile"
         :selected-source-file="selectedSourceFile"
         :selected-target-formats="selectedTargetFormats"
         :supporting-file-error="supportingFileError"
         @clear-supporting-file="clearSupportingFile"
         @clear-source-file="clearSourceFile"
-        @reset-local-choices="resetLocalChoices"
+        @reset-local-choices="handleResetLocalChoices"
+        @start-conversion="handleStartConversion"
         @source-file-selected="selectSourceFile"
         @supporting-file-selected="selectSupportingFile"
         @toggle-target-format="toggleTargetFormat"
       />
       <ExamConverterWorkspaceShell
+        :result-strip="resultStrip"
         :selected-source-file="selectedSourceFile"
         :source-file-error="sourceFileError"
         @files-dropped="selectDroppedFiles"

@@ -15,15 +15,19 @@
 
 import { FileText, Upload } from "lucide-vue-next";
 
+import ExamConverterResultStrip from "./ExamConverterResultStrip.vue";
+import type { ExamConverterResultStripState } from "./useExamConverterConversionState";
 import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceFile";
 
 defineProps<{
+  resultStrip: ExamConverterResultStripState | null;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
   sourceFileError: string | null;
 }>();
 
 const emit = defineEmits<{
   filesDropped: [files: File[]];
+  openQuestions: [];
   sourceFileSelected: [file: File];
 }>();
 
@@ -52,11 +56,20 @@ function handleDrop(event: DragEvent): void {
 <template>
   <section
     class="flex h-full min-h-[26rem] flex-col bg-panel"
-    aria-labelledby="exam-converter-auth-title"
+    :aria-label="resultStrip ? 'Exam Converter' : undefined"
+    :aria-labelledby="resultStrip ? undefined : 'exam-converter-auth-title'"
     data-test="exam-converter-workspace-shell"
   >
     <header class="px-4 py-4">
-      <div class="min-w-0">
+      <ExamConverterResultStrip
+        v-if="resultStrip"
+        :result="resultStrip"
+        @open-questions="emit('openQuestions')"
+      />
+      <div
+        v-else
+        class="min-w-0"
+      >
         <h2
           id="exam-converter-auth-title"
           class="text-lg font-semibold leading-tight text-navy"
@@ -70,7 +83,17 @@ function handleDrop(event: DragEvent): void {
     </header>
 
     <div class="flex min-h-0 flex-1 px-4 pb-4">
+      <div
+        v-if="resultStrip?.status === 'running'"
+        class="grid min-h-0 w-full flex-1 place-items-center border border-dashed border-navy/45 bg-canvas px-6 py-6"
+        data-test="exam-converter-running-surface"
+      >
+        <p class="text-base font-medium leading-tight text-navy">
+          Vänta medan provet konverteras.
+        </p>
+      </div>
       <label
+        v-else
         class="grid min-h-0 w-full flex-1 border border-dashed border-navy/45 bg-canvas px-6 py-6"
         :class="sourceFileError ? 'border-error bg-error/5' : undefined"
         data-test="exam-converter-source-drop-zone"

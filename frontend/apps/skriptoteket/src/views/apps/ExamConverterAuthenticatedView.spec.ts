@@ -3,20 +3,20 @@
  *
  * Slice purpose:
  *   Provide the stable authenticated app frame and browser-local source-file
- *   intake for Exam Converter before conversion, results, files, questions,
+ *   intake for Exam Converter before upstream runtime, files, questions,
  *   reports, or save behavior is introduced.
  *
  * Expected behavior:
  *   The authenticated app host renders a two-zone workspace: a compact left
  *   setup rail and a dominant right workspace shell with a `.dxe` drop zone.
  *   Selecting a source file updates the rail and workspace locally only. It
- *   must not render conversion results, file rows, question rows, report
- *   content, runtime controls, or service jargon in this slice.
+ *   must not render file rows, question rows, report content, upstream runtime
+ *   details, or service jargon in this slice.
  *
  * Recommended implementation shape:
  *   Keep `ExamConverterAuthenticatedView` as a composition component. Use a
  *   tiny composable for local file selection, and keep runtime clients,
- *   conversion state, and save behavior out of this slice.
+ *   conversion result data, and save behavior out of this slice.
  */
 
 import { mount } from "@vue/test-utils";
@@ -124,7 +124,9 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(wrapper.find('[data-test="exam-converter-source-drop-zone"]').text()).toContain(
       "Ma1c_NationelltProv_HT25.dxe",
     );
-    expect(wrapper.find("button.btn-cta").attributes("disabled")).toBeDefined();
+    expect(
+      wrapper.find('[data-test="exam-converter-start-conversion"]').attributes("disabled"),
+    ).toBeUndefined();
   });
 
   it("rejects non-.dxe files without inventing conversion state", async () => {

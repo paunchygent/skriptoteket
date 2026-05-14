@@ -21,6 +21,8 @@ import type {
 } from "./useExamConverterSourceFile";
 
 defineProps<{
+  canStartConversion: boolean;
+  isConversionRunning: boolean;
   selectedSupportingFile: ExamConverterSourceFileSelection | null;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
   selectedTargetFormats: ExamConverterTargetSelection;
@@ -31,6 +33,7 @@ const emit = defineEmits<{
   clearSupportingFile: [];
   clearSourceFile: [];
   resetLocalChoices: [];
+  startConversion: [];
   sourceFileSelected: [file: File];
   supportingFileSelected: [file: File];
   toggleTargetFormat: [format: ExamConverterTargetFormat];
@@ -105,6 +108,7 @@ function handleSupportingFileInput(event: Event): void {
             class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
             aria-label="Ta bort provfil"
             data-test="exam-converter-clear-source-file"
+            :disabled="isConversionRunning"
             @click="emit('clearSourceFile')"
           >
             <X
@@ -116,6 +120,7 @@ function handleSupportingFileInput(event: Event): void {
         <label
           v-else
           class="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3 hover:bg-canvas"
+          :class="isConversionRunning ? 'cursor-not-allowed opacity-60' : undefined"
           data-test="exam-converter-source-file-action"
         >
           <input
@@ -123,6 +128,7 @@ function handleSupportingFileInput(event: Event): void {
             type="file"
             accept=".dxe"
             data-test="exam-converter-rail-source-file-input"
+            :disabled="isConversionRunning"
             @change="handleSourceFileInput"
           >
           <Upload
@@ -180,6 +186,7 @@ function handleSupportingFileInput(event: Event): void {
             class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas"
             aria-label="Ta bort resultat-PDF"
             data-test="exam-converter-clear-supporting-file"
+            :disabled="isConversionRunning"
             @click="emit('clearSupportingFile')"
           >
             <X
@@ -191,7 +198,10 @@ function handleSupportingFileInput(event: Event): void {
         <label
           v-else
           class="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3 hover:bg-canvas"
-          :class="supportingFileError ? 'border-error bg-error/5' : undefined"
+          :class="[
+            supportingFileError ? 'border-error bg-error/5' : undefined,
+            isConversionRunning ? 'cursor-not-allowed opacity-60' : undefined,
+          ]"
           data-test="exam-converter-supporting-file-action"
         >
           <input
@@ -199,6 +209,7 @@ function handleSupportingFileInput(event: Event): void {
             type="file"
             accept=".pdf"
             data-test="exam-converter-supporting-file-input"
+            :disabled="isConversionRunning"
             @change="handleSupportingFileInput"
           >
           <FileText
@@ -246,13 +257,14 @@ function handleSupportingFileInput(event: Event): void {
         <div class="grid gap-2">
           <button
             type="button"
-            class="border px-3 py-3 text-left"
+            class="border px-3 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
             :class="[
               selectedTargetFormats.pdf ? 'border-navy/25 bg-panel' : 'border-navy/20 bg-panel-muted opacity-75',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action',
             ]"
             :aria-pressed="selectedTargetFormats.pdf"
             data-test="exam-converter-target-pdf"
+            :disabled="isConversionRunning"
             @click="emit('toggleTargetFormat', 'pdf')"
           >
             <div class="flex items-center gap-2 text-sm font-medium leading-snug text-navy">
@@ -279,13 +291,14 @@ function handleSupportingFileInput(event: Event): void {
 
           <button
             type="button"
-            class="border px-3 py-3 text-left"
+            class="border px-3 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
             :class="[
               selectedTargetFormats.qti ? 'border-navy/25 bg-panel' : 'border-navy/20 bg-panel-muted opacity-75',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action',
             ]"
             :aria-pressed="selectedTargetFormats.qti"
             data-test="exam-converter-target-qti"
+            :disabled="isConversionRunning"
             @click="emit('toggleTargetFormat', 'qti')"
           >
             <div class="flex items-center gap-2 text-sm font-medium leading-snug text-navy">
@@ -319,7 +332,9 @@ function handleSupportingFileInput(event: Event): void {
         <button
           type="button"
           class="btn-cta justify-center gap-2 shadow-none"
-          disabled
+          :disabled="!canStartConversion || isConversionRunning"
+          data-test="exam-converter-start-conversion"
+          @click="emit('startConversion')"
         >
           <Play
             class="h-4 w-4"

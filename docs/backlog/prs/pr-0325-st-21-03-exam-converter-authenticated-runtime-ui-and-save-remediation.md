@@ -214,6 +214,56 @@ Out of scope for slice 2:
 - question/file/report modes;
 - download and save behavior.
 
+### Slice 3: Conversion Start And Result Strip Scaffold
+
+Status: implemented after product approval.
+
+Implemented:
+
+- `useExamConverterConversionState` owns local conversion phase state for the
+  authenticated UI scaffold without importing Gateway, Sir Convert, or save
+  clients.
+- `ExamConverterWorkflowRailShell` enables `Starta konvertering` only when one
+  `.dxe` is selected and at least one target format is selected.
+- Starting conversion transitions the workspace to `Konverterar provet...` and
+  locks local input/target affordances while the scaffold is running.
+- Running conversion now uses a token-aligned progress visualization with
+  stage text, percentage, segmented progress, and a long-running message after
+  ten seconds. This remains local visual feedback until Sir Convert exposes
+  real progress/ETA events.
+- `ExamConverterResultStrip` renders the approved compact status strip copy for
+  running, success, partial, and failed conversion states:
+  `Konverterar provet...`, `Provet är konverterat`,
+  `Konverteringen av provet lyckades delvis`, and
+  `Konverteringen av provet misslyckades`.
+- The authenticated host wires only the running state for now; success,
+  partial, and failed states are component-level scaffold states awaiting the
+  approved runtime submit/poll/result slice.
+- `ExamConverterAuthenticatedConversionSlice.spec.ts` covers start eligibility,
+  running-state rendering, moving local progress, long-running copy, reset
+  behavior, result-strip copy, no service jargon, and the
+  no-question/file/report boundary.
+
+Required upstream follow-up:
+
+- If authenticated Exam Converter jobs can exceed ten seconds, Sir Convert must
+  expose a governed progress/ETA contract for the DigiExam migration runtime
+  path. Skriptoteket must consume that stream or polling field instead of
+  treating browser-local progress as authoritative. The desired downstream
+  shape is additive: current stage label, bounded percent or step index,
+  optional ETA seconds, and stale/stalled/unknown semantics without leaking
+  service internals into user-facing copy.
+
+Out of scope for slice 3:
+
+- Gateway submit calls;
+- polling/result mapping;
+- real upstream progress/ETA consumption;
+- inspection tabs;
+- question list and selected-question detail;
+- files/report modes;
+- download and save behavior.
+
 ## Test Plan
 
 - Focused frontend tests for authenticated host registration and Exam Converter
