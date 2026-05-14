@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-04-03
-updated: 2026-04-08
+updated: 2026-05-13
 links:
   [
     "PRD-script-hub-v0.2",
@@ -14,6 +14,7 @@ links:
     "ADR-0009",
     "ADR-0023",
     "ADR-0075",
+    "ADR-0085",
     "EPIC-27",
   ]
 ---
@@ -57,6 +58,25 @@ default, and allows Klassrumskartan to be the first consumer without baking its
 storage/history/export assumptions into every curated app.
 
 ## Decision
+
+### Post-Acceptance Amendment: ADR-0085
+
+`ADR-0085` amends this ADR for one narrow case:
+`documents.conversion_hub` may expose a public `exam_converter` capability with
+profile `public_browser_runtime`.
+
+The original matrix entry below remains true for general Conversion Hub
+workloads. General conversion, route discovery, arbitrary file conversion,
+batch conversion, owner-scoped job recovery, Vault/MyFiles handoff, and account
+history remain authenticated-only. Only the bounded Exam Converter public lane
+is opened, and it must be represented as a scoped public capability rather than
+an unqualified app-wide public profile:
+
+```yaml
+public_capabilities:
+  - scope: exam_converter
+    profile: public_browser_runtime
+```
 
 ### 1. Public curated-app access is a separate app capability, not an implication of `min_role`
 

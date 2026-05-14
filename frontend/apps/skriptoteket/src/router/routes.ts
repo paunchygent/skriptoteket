@@ -93,6 +93,11 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/public/apps/:appId/:publicCapabilitySlug",
+    name: "public-app-capability-detail",
+    component: () => import("../views/PublicAppHostView.vue"),
+  },
+  {
     path: "/public/apps/:appId",
     name: "public-app-detail",
     component: () => import("../views/PublicAppHostView.vue"),

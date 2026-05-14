@@ -23,6 +23,14 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
 )
+from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
+    ConversionHubSirConvertArtifactSaveMetadata,
+    SaveConversionHubSirConvertArtifactCommand,
+    SaveConversionHubSirConvertArtifactResult,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
+    SaveConversionHubSirConvertArtifactHandler,
+)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
     CreateConversionHubJobsHandler,
@@ -198,6 +206,35 @@ async def submit_jobs(
         wait_seconds=wait_seconds,
         correlation_id=correlation_id,
         build_job_spec=_build_v2_job_spec,
+    )
+
+
+@router.post(
+    "/exam-converter/artifacts/save",
+    response_model=SaveConversionHubSirConvertArtifactResult,
+)
+async def save_exam_converter_artifact(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[SaveConversionHubSirConvertArtifactHandler],
+    metadata_json: str = Form(..., min_length=2),
+    artifact: UploadFile = File(...),
+    user: User = Depends(require_app_user_api),
+) -> SaveConversionHubSirConvertArtifactResult:
+    _require_app_access(registry=registry, user=user)
+    try:
+        metadata = ConversionHubSirConvertArtifactSaveMetadata.model_validate_json(metadata_json)
+    except Exception as exc:
+        raise validation_error("Invalid artifact metadata JSON.") from exc
+    filename = artifact.filename or metadata.saved_display_filename
+    content = await artifact.read()
+    return await handler.handle(
+        actor=user,
+        command=SaveConversionHubSirConvertArtifactCommand(
+            metadata=metadata,
+            filename=filename,
+            content_type=artifact.content_type or metadata.content_type,
+            content=content,
+        ),
     )
 
 

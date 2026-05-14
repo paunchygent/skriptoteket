@@ -5,6 +5,7 @@ from __future__ import annotations
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppPublicAccessProfile,
+    CuratedAppPublicRuntimeStatus,
     CuratedAppUiMode,
     curated_app_tool_id,
 )
@@ -73,3 +74,26 @@ def test_registry_marks_klassrumskartan_as_default_favorite() -> None:
     assert app.summary == (
         "Skapa sittplatsscheman och grupper automatiskt och finjustera med drag-and-drop."
     )
+
+
+def test_registry_keeps_conversion_hub_general_access_authenticated_only() -> None:
+    registry = InMemoryCuratedAppRegistry(
+        settings=Settings(
+            APP_VERSION="9.9.9",
+            ENVIRONMENT="development",
+            DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/test",
+        )
+    )
+
+    app = registry.get_by_app_id(app_id="documents.conversion_hub")
+
+    assert app is not None
+    assert app.public_access_profile is CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY
+    assert app.supports_public_access is False
+    assert app.supports_public_capability(scope="exam_converter") is True
+    assert app.supports_public_capability(scope="general_conversion") is False
+    assert len(app.public_capabilities) == 1
+    capability = app.public_capabilities[0]
+    assert capability.scope == "exam_converter"
+    assert capability.profile is CuratedAppPublicAccessProfile.PUBLIC_BROWSER_RUNTIME
+    assert capability.runtime_status is CuratedAppPublicRuntimeStatus.ACTIVE

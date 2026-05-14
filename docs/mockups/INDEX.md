@@ -33,5 +33,6 @@ Bundle rules:
 - [ST-29-12 symbol inventory and semantic mapping](st-29-12-symbol-inventory/README.md)
 - [ST-29 small-screen workspace redesign](st-29-small-screen-workspace-redesign/README.md)
 - [ST-26-06 share link UX and page renderer](st-26-06-share-link-ux-and-page-renderer/README.md)
+- [ST-21-03 Exam Converter authenticated progressive review](st-21-03-exam-converter-authenticated-progressive-review/README.md)
 - [ST-32-07 public landing discoverability](st-32-07-public-landing-discoverability/README.md)
 - [ST-32-08 landing authenticated-value copy alternatives](st-32-08-landing-authenticated-value-copy-alternatives/README.md)

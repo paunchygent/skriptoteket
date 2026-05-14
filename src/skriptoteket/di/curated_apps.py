@@ -74,10 +74,16 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.imports im
 from skriptoteket.application.curated_apps.flunk_out_frenzy import (
     GetFlunkOutFrenzyBootstrapHandler,
 )
+from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
+    SaveConversionHubSirConvertArtifactHandler,
+)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     CreateConversionHubJobsHandler,
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
+    PublicExamConverterRuntimeHandler,
 )
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
     ReagentPrepChefGetDefaultsHandler,
@@ -142,6 +148,13 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_previ
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
     SEATING_SHARE_RENDERER_VERSION,
     StaticClassroomPlannerShareRenderer,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
+    public_exam_converter_grants,
+    public_exam_converter_store,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
+    public_exam_converter_sir_convert_client_v2 as public_exam_converter_sir_convert,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
@@ -230,6 +243,11 @@ from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProt
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.public_exam_converter import (
+    PublicExamConverterGrantAuthorityProtocol,
+    PublicExamConverterJobStoreProtocol,
+    PublicExamConverterSirConvertProtocol,
+)
 from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefChemicalsHandlerProtocol,
     ReagentPrepChefExportPdfHandlerProtocol,
@@ -292,6 +310,59 @@ class CuratedAppsProvider(Provider):
         http_client = build_sir_convert_async_http_client(settings=settings)
         try:
             yield SirConvertALotClientV2(settings=settings, client=http_client)
+        finally:
+            await http_client.aclose()
+
+    @provide(scope=Scope.APP)
+    def public_exam_converter_grant_authority_settings(
+        self,
+        settings: Settings,
+    ) -> public_exam_converter_grants.PublicExamConverterGrantAuthoritySettings:
+        return public_exam_converter_grants.PublicExamConverterGrantAuthoritySettings(
+            base_url=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_GRANT_BASE_URL,
+            client_id=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ID,
+            client_assertion=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION,
+            client_assertion_secret=(
+                settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION_SECRET
+            ),
+            assertion_audience=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_ASSERTION_AUDIENCE,
+            timeout_seconds=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_TIMEOUT_SECONDS,
+            fallback_artifact_ttl_seconds=settings.PUBLIC_EXAM_CONVERTER_ARTIFACT_TTL_SECONDS,
+            client_assertion_ttl_seconds=(
+                settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION_TTL_SECONDS
+            ),
+        )
+
+    @provide(scope=Scope.APP)
+    async def public_exam_converter_grant_authority(
+        self,
+        settings: public_exam_converter_grants.PublicExamConverterGrantAuthoritySettings,
+    ) -> AsyncIterator[PublicExamConverterGrantAuthorityProtocol]:
+        http_client = public_exam_converter_grants.build_public_exam_converter_grant_http_client(
+            settings=settings
+        )
+        try:
+            yield public_exam_converter_grants.HuleEduPublicExamConverterGrantAuthority(
+                settings=settings, client=http_client
+            )
+        finally:
+            await http_client.aclose()
+
+    @provide(scope=Scope.APP)
+    def public_exam_converter_job_store(self) -> PublicExamConverterJobStoreProtocol:
+        return public_exam_converter_store.InMemoryPublicExamConverterJobStore()
+
+    @provide(scope=Scope.APP)
+    async def public_exam_converter_sir_convert(
+        self,
+        settings: SirConvertClientSettingsV2,
+    ) -> AsyncIterator[PublicExamConverterSirConvertProtocol]:
+        http_client = build_sir_convert_async_http_client(settings=settings)
+        try:
+            yield public_exam_converter_sir_convert.PublicExamConverterSirConvertClientV2(
+                settings=settings,
+                client=http_client,
+            )
         finally:
             await http_client.aclose()
 
@@ -1461,4 +1532,42 @@ class CuratedAppsProvider(Provider):
             client=client,
             uow=uow,
             clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_conversion_hub_sir_convert_artifact_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> SaveConversionHubSirConvertArtifactHandler:
+        return SaveConversionHubSirConvertArtifactHandler(
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def public_exam_converter_runtime_handler(
+        self,
+        store: PublicExamConverterJobStoreProtocol,
+        grant_authority: PublicExamConverterGrantAuthorityProtocol,
+        sir_convert: PublicExamConverterSirConvertProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> PublicExamConverterRuntimeHandler:
+        return PublicExamConverterRuntimeHandler(
+            store=store,
+            grant_authority=grant_authority,
+            sir_convert=sir_convert,
+            clock=clock,
+            id_generator=id_generator,
         )

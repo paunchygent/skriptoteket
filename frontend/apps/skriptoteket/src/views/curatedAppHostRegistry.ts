@@ -19,7 +19,7 @@ type CuratedAppHostViewConfig = {
 };
 
 type CuratedAppHostRegistration = {
-  authenticated: CuratedAppHostViewConfig;
+  authenticated?: CuratedAppHostViewConfig;
   public?: CuratedAppHostViewConfig;
 };
 
@@ -42,6 +42,14 @@ const curatedAppHostRegistry: Record<string, CuratedAppHostRegistration> = {
     public: {
       loader: () => import("./apps/ClassroomPlannerEntryView.vue"),
       props: { hostMode: "public" },
+    },
+  },
+  "documents.conversion_hub": {
+    authenticated: {
+      loader: () => import("./apps/ExamConverterAuthenticatedView.vue"),
+    },
+    public: {
+      loader: () => import("./apps/ExamConverterPublicView.vue"),
     },
   },
   "games.flunk_out_frenzy": {

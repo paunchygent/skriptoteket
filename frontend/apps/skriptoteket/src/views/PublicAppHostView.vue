@@ -6,17 +6,29 @@
  * public-safe bootstrap metadata from the parallel public API namespace.
  */
 
-import { apiGet, isApiError } from "../api/client";
+import { isApiError, publicApiGet } from "../api/client";
 import type { components } from "../api/openapi";
 import CuratedAppHostSurface from "./CuratedAppHostSurface.vue";
-import { useCuratedAppHost } from "./useCuratedAppHost";
+import { useCuratedAppHost, type CuratedAppRouteContext } from "./useCuratedAppHost";
 
 type PublicAppBootstrapResponse = components["schemas"]["PublicAppBootstrapResponse"];
+type PublicAppCapabilityBootstrapResponse =
+  components["schemas"]["PublicAppCapabilityBootstrapResponse"];
+
+function buildPublicBootstrapPath(appId: string, context: CuratedAppRouteContext): string {
+  const encodedAppId = encodeURIComponent(appId);
+  if (context.publicCapabilitySlug) {
+    return `/api/v1/public/apps/${encodedAppId}/${encodeURIComponent(context.publicCapabilitySlug)}`;
+  }
+  return `/api/v1/public/apps/${encodedAppId}`;
+}
 
 const { errorMessage, hostView, hostViewProps, isLoading, shouldBlock } = useCuratedAppHost({
   hostMode: "public",
-  loadApp: async (appId) => {
-    return apiGet<PublicAppBootstrapResponse>(`/api/v1/public/apps/${encodeURIComponent(appId)}`);
+  loadApp: async (appId, context) => {
+    return publicApiGet<PublicAppBootstrapResponse | PublicAppCapabilityBootstrapResponse>(
+      buildPublicBootstrapPath(appId, context),
+    );
   },
   getErrorMessage: (error) => {
     if (isApiError(error)) {

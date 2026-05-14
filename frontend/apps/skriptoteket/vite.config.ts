@@ -1,3 +1,15 @@
+/**
+ * Skriptoteket SPA Vite development and production asset configuration.
+ *
+ * Purpose:
+ *   Build the teacher-facing SPA and keep local API proxy lanes aligned with
+ *   the HuleEdu Gateway edge that owns browser auth and Sir Convert routing.
+ *
+ * Relationships:
+ *   - `src/api/*` clients rely on these proxy prefixes during local proof.
+ *   - `src/skriptoteket/web/` serves the built SPA assets in production.
+ */
+
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
@@ -10,6 +22,8 @@ const devPort = Number.parseInt(process.env.VITE_DEV_PORT ?? "5173", 10);
 const devBackendProxyTarget = process.env.VITE_DEV_BACKEND_PROXY_TARGET ?? "http://localhost:8000";
 const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET ?? devBackendProxyTarget;
 const devPublicApiProxyTarget = process.env.VITE_DEV_PUBLIC_API_PROXY_TARGET ?? devBackendProxyTarget;
+const devSirConvertGatewayProxyTarget =
+  process.env.VITE_DEV_SIR_CONVERT_GATEWAY_PROXY_TARGET ?? "http://localhost:8080";
 const usePolling = process.env.VITE_DEV_POLLING === "true";
 const pollingInterval = Number.parseInt(process.env.VITE_DEV_POLLING_INTERVAL ?? "", 10);
 const watch = usePolling
@@ -44,6 +58,10 @@ export default defineConfig(({ command }) => ({
       },
       "/api": {
         target: devProxyTarget,
+        changeOrigin: true,
+      },
+      "/sir-convert": {
+        target: devSirConvertGatewayProxyTarget,
         changeOrigin: true,
       },
       "/share/classroom": {

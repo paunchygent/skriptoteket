@@ -40,6 +40,16 @@ describe("routes", () => {
     expect(resolved.params.appId).toBe("classroom.group-seating-studio");
   });
 
+  it("freezes the scoped public Exam Converter route namespace", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/public/apps/documents.conversion_hub/exam-converter");
+
+    expect(resolved.name).toBe("public-app-capability-detail");
+    expect(resolved.params.appId).toBe("documents.conversion_hub");
+    expect(resolved.params.publicCapabilitySlug).toBe("exam-converter");
+  });
+
   it("resolves malformed public app links to the dedicated recovery route", () => {
     const router = createTestRouter();
 

@@ -8,6 +8,7 @@ import {
   apiGet,
   apiPost,
   isApiError,
+  publicApiGet,
   resolveProtectedApiUrl,
 } from "./client";
 import { useAuthStore } from "../stores/auth";
@@ -411,6 +412,27 @@ describe("client", () => {
           method: "POST",
           body: '{"input":"value"}',
         }),
+      );
+    });
+  });
+
+  describe("publicApiGet()", () => {
+    it("omits credentials for public app bootstrap requests", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: () => Promise.resolve({ data: "public" }),
+      } as Response);
+
+      const result = await publicApiGet(
+        "/api/v1/public/apps/documents.conversion_hub/exam-converter",
+      );
+
+      expect(result).toEqual({ data: "public" });
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/v1/public/apps/documents.conversion_hub/exam-converter",
+        expect.objectContaining({ method: "GET", credentials: "omit" }),
       );
     });
   });

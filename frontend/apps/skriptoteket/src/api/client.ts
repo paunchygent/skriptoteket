@@ -208,6 +208,10 @@ export async function publicApiFetch<T>(
   throw await toApiError(response);
 }
 
+export async function publicApiGet<T>(path: string): Promise<T> {
+  return await publicApiFetch<T>(path, { method: "GET" });
+}
+
 export async function publicApiPost<T>(path: string, body?: unknown): Promise<T> {
   return await publicApiFetch<T>(path, { method: "POST", body });
 }

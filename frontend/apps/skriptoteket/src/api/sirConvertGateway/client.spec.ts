@@ -1,0 +1,351 @@
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+
+import { createTestUser } from "../../stores/authTestHelpers";
+import { useAuthStore } from "../../stores/auth";
+import {
+  buildSirConvertUserFileSaveMetadata,
+  downloadDigiExamMigrationArtifact,
+  getDigiExamMigrationJob,
+  getDigiExamMigrationResult,
+  isSirConvertArtifactAvailable,
+  listDigiExamMigrationArtifacts,
+  submitDigiExamMigration,
+} from ".";
+
+function jsonResponse(payload: unknown, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  if (!headers.has("content-type")) {
+    headers.set("content-type", "application/json");
+  }
+  return new Response(JSON.stringify(payload), { ...init, headers });
+}
+
+function mockJson(payload: unknown, init: ResponseInit = {}): void {
+  vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(payload, init));
+}
+
+function dxeFile(): File {
+  return new File(["dxe"], "exam.dxe", { type: "application/octet-stream" });
+}
+
+function expectFormDataFile(
+  value: FormDataEntryValue | null,
+  expected: { name: string; type: string },
+): void {
+  expect(value).toBeInstanceOf(File);
+  const file = value as File;
+  expect(file.name).toBe(expected.name);
+  expect(file.type).toBe(expected.type);
+}
+
+function requestHeaders(callIndex: number): Headers {
+  const init = vi.mocked(fetch).mock.calls[callIndex][1] as RequestInit;
+  return init.headers as Headers;
+}
+
+describe("Sir Convert Gateway browser client", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.mocked(fetch).mockReset();
+    const auth = useAuthStore();
+    auth.user = createTestUser();
+    auth.csrfToken = "csrf-token";
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("submits governed multipart jobs through the HuleEdu Gateway edge", async () => {
+    mockJson(
+      { job: { job_id: "job_1", status: "queued" } },
+      { status: 202, headers: { "X-Idempotent-Replay": "true" } },
+    );
+
+    const file = dxeFile();
+    const gradedResultPdf = new File(["answers"], "graded-result.pdf", {
+      type: "application/pdf",
+    });
+    const submitted = await submitDigiExamMigration({
+      file,
+      gradedResultPdf,
+      targets: ["examnet_pdf"],
+      correlationId: "corr_teacher_action_001",
+    });
+
+    expect(submitted).toMatchObject({
+      jobId: "job_1",
+      status: "queued",
+      idempotentReplay: true,
+    });
+    expect(fetch).toHaveBeenCalledWith(
+      "/sir-convert/v2/convert/jobs?wait_seconds=0",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+      }),
+    );
+    const headers = requestHeaders(0);
+    expect(headers.get("X-Correlation-ID")).toBe("corr_teacher_action_001");
+    expect(headers.get("Idempotency-Key")).toMatch(/^idem_skriptoteket_[0-9a-f]{48}$/);
+    expect(headers.get("X-CSRF-Token")).toBe("csrf-token");
+    expect(headers.get("X-API-Key")).toBeNull();
+    expect(headers.get("Content-Type")).toBeNull();
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    const formData = init.body as FormData;
+    expectFormDataFile(formData.get("file"), {
+      name: "exam.dxe",
+      type: "application/octet-stream",
+    });
+    expectFormDataFile(formData.get("graded_result_pdf"), {
+      name: "graded-result.pdf",
+      type: "application/pdf",
+    });
+    expect(formData.has("parity_pdf")).toBe(false);
+
+    const jobSpec = JSON.parse(String(formData.get("job_spec"))) as {
+      conversion: { output_format: string; targets: string[] };
+      source: { format: string };
+    };
+    expect(jobSpec.source.format).toBe("digiexam_dxe");
+    expect(jobSpec.conversion.output_format).toBe("examnet_migration_bundle");
+    expect(jobSpec.conversion.targets).toEqual(["examnet_pdf"]);
+  });
+
+  it("reads status, result, manifest, and named artifacts with one correlation ID", async () => {
+    mockJson({ job: { job_id: "job_1", status: "processing" } });
+    mockJson({
+      job: { job_id: "job_1", status: "succeeded" },
+      result: {
+        artifact: {
+          filename: "artifact-bundle.json",
+          content_type: "application/json",
+          sha256: "sha256:abc",
+          size_bytes: 3281,
+        },
+        conversion_metadata: {
+          route_key: "digiexam_dxe_to_examnet_migration_bundle",
+          bundle_schema_version: "digiexam_migration_bundle_v1",
+          bundle_status: "partial",
+          source_sha256: "sha256:def",
+          target_availability: {
+            examnet_pdf: "blocked",
+            qti_package: "not_requested",
+          },
+          manual_follow_up_required: true,
+          warning_count: 3,
+          artifact_count: 9,
+        },
+      },
+    });
+    mockJson({
+      schema_version: "digiexam_migration_bundle_v1",
+      job_id: "job_1",
+      bundle_status: "blocked",
+      artifacts: [
+        {
+          artifact_key: "examnet_pdf",
+          filename: "examnet-import.pdf",
+          content_type: "application/pdf",
+          availability: "blocked",
+          size_bytes: null,
+          sha256: null,
+          blocker_code: "unsupported_target_shape",
+        },
+        {
+          artifact_key: "qti_package",
+          filename: "qti-package.zip",
+          content_type: "application/zip",
+          availability: "not_requested",
+          size_bytes: null,
+          sha256: null,
+        },
+      ],
+      manual_follow_up: {
+        required: true,
+        artifact_key: "manual_follow_up_report",
+        count: 2,
+      },
+      warnings: {
+        artifact_key: "warnings_report",
+        count: 3,
+      },
+    });
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(new Blob(["pdf"]), {
+        status: 200,
+        headers: {
+          "content-type": "application/pdf",
+          "content-disposition": 'attachment; filename="examnet-import.pdf"',
+        },
+      }),
+    );
+
+    await expect(
+      getDigiExamMigrationJob({ jobId: "job_1", correlationId: "corr_1" }),
+    ).resolves.toMatchObject({ jobId: "job_1", status: "processing" });
+    const result = await getDigiExamMigrationResult({
+      jobId: "job_1",
+      correlationId: "corr_1",
+    });
+    const manifest = await listDigiExamMigrationArtifacts({
+      jobId: "job_1",
+      correlationId: "corr_1",
+    });
+    const artifact = await downloadDigiExamMigrationArtifact({
+      jobId: "job_1",
+      artifactKey: "examnet_pdf",
+      correlationId: "corr_1",
+    });
+
+    expect(result.conversion_metadata.bundle_status).toBe("partial");
+    expect(result.conversion_metadata.target_availability.qti_package).toBe("not_requested");
+    expect(manifest.bundle_status).toBe("blocked");
+    expect(isSirConvertArtifactAvailable(manifest.artifacts[0])).toBe(false);
+    expect(artifact.filename).toBe("examnet-import.pdf");
+
+    expect(vi.mocked(fetch).mock.calls.map((call) => call[0])).toEqual([
+      "/sir-convert/v2/convert/jobs/job_1",
+      "/sir-convert/v2/convert/jobs/job_1/result",
+      "/sir-convert/v2/convert/jobs/job_1/artifacts",
+      "/sir-convert/v2/convert/jobs/job_1/artifacts/examnet_pdf",
+    ]);
+    for (const index of [0, 1, 2, 3]) {
+      expect(requestHeaders(index).get("X-Correlation-ID")).toBe("corr_1");
+      expect(requestHeaders(index).get("X-API-Key")).toBeNull();
+    }
+  });
+
+  it("uses a configured Gateway base without changing the route family", async () => {
+    vi.stubEnv(
+      "VITE_HULEEDU_SIR_CONVERT_BASE_URL",
+      "https://api.example.test/sir-convert/v2/convert/",
+    );
+    mockJson({ job: { job_id: "job_2", status: "queued" } });
+
+    await getDigiExamMigrationJob({ jobId: "job_2", correlationId: "corr_2" });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.example.test/sir-convert/v2/convert/jobs/job_2",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
+  it("allows the local HuleEdu Gateway base for explicit browser proof", async () => {
+    vi.stubEnv(
+      "VITE_HULEEDU_SIR_CONVERT_BASE_URL",
+      "http://127.0.0.1:8080/sir-convert/v2/convert/",
+    );
+    mockJson({ job: { job_id: "job_2", status: "queued" } });
+
+    await getDigiExamMigrationJob({ jobId: "job_2", correlationId: "corr_2" });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "http://127.0.0.1:8080/sir-convert/v2/convert/jobs/job_2",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
+  it.each([
+    ["https://convert.hule.education/v2/convert"],
+    ["http://127.0.0.1:9010/v2/convert"],
+    ["http://localhost:8000/sir-convert/v2/convert"],
+    ["https://api.hule.education/v2/convert"],
+    ["https://api.example.test/v2/convert"],
+  ])("rejects non-Gateway configured base %s", async (configuredBase) => {
+    vi.stubEnv("VITE_HULEEDU_SIR_CONVERT_BASE_URL", configuredBase);
+
+    await expect(
+      getDigiExamMigrationJob({ jobId: "job_2", correlationId: "corr_2" }),
+    ).rejects.toThrow("Invalid Sir Convert Gateway base URL");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["blocked", "failed", "not_implemented"] as const)(
+    "rejects %s artifact entries without blocker_code",
+    async (availability) => {
+      mockJson({
+        schema_version: "digiexam_migration_bundle_v1",
+        job_id: "job_1",
+        bundle_status: "blocked",
+        artifacts: [
+          {
+            artifact_key: "examnet_pdf",
+            filename: "examnet-import.pdf",
+            content_type: "application/pdf",
+            availability,
+            size_bytes: null,
+            sha256: null,
+          },
+        ],
+        manual_follow_up: null,
+        warnings: null,
+      });
+
+      await expect(
+        listDigiExamMigrationArtifacts({ jobId: "job_1", correlationId: "corr_1" }),
+      ).rejects.toMatchObject({
+        code: "SIR_CONVERT_CONTRACT_DRIFT",
+        message: expect.stringContaining("requires blocker_code"),
+      });
+    },
+  );
+
+  it("preserves upstream error envelopes", async () => {
+    mockJson(
+      {
+        error: {
+          code: "qti_validation_failed",
+          message: "QTI package is blocked.",
+          details: { artifact_key: "qti_package" },
+        },
+        correlation_id: "corr_upstream",
+      },
+      { status: 409, statusText: "Conflict" },
+    );
+
+    await expect(
+      downloadDigiExamMigrationArtifact({
+        jobId: "job_1",
+        artifactKey: "qti_package",
+        correlationId: "corr_1",
+      }),
+    ).rejects.toMatchObject({
+      status: 409,
+      code: "qti_validation_failed",
+      correlationId: "corr_upstream",
+    });
+  });
+
+  it("maps artifact bundle provenance for later user-file persistence", () => {
+    const metadata = buildSirConvertUserFileSaveMetadata({
+      jobId: "job_1",
+      artifact: {
+        artifact_key: "examnet_pdf",
+        filename: "examnet-import.pdf",
+        content_type: "application/pdf",
+        availability: "available",
+        size_bytes: 100,
+        sha256: "sha256:abc",
+      },
+      savedDisplayFilename: "Nationellt prov import.pdf",
+      correlationId: "corr_1",
+      savedAt: new Date("2026-05-13T12:00:00Z"),
+    });
+
+    expect(metadata).toEqual({
+      sir_convert_job_id: "job_1",
+      artifact_key: "examnet_pdf",
+      source_filename: "examnet-import.pdf",
+      saved_display_filename: "Nationellt prov import.pdf",
+      content_type: "application/pdf",
+      size_bytes: 100,
+      sha256: "sha256:abc",
+      bundle_schema_version: "digiexam_migration_bundle_v1",
+      correlation_id: "corr_1",
+      saved_at: "2026-05-13T12:00:00.000Z",
+    });
+  });
+});

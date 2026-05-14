@@ -39,6 +39,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md`
 - ADR-0083 Hule Education product identity realms for Skriptoteket login:
   `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`
+- ADR-0085 Exam Converter public conversion exception for Conversion Hub:
+  `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`
+- Exam Converter UI content model:
+  `docs/reference/ref-exam-converter-ui-content-model-v1.md`
 - Launch SEO and indexing readiness assessment:
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Public landing copy lock:
@@ -166,6 +170,34 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
 - ST-27-03 Smart seating history diversity scoring:
   `docs/backlog/prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md`
+- ST-21-03 authenticated Exam Converter HuleEdu Sir Convert edge adapter:
+  `docs/backlog/prs/pr-0318-st-21-03-authenticated-exam-converter-huleedu-sir-convert-edge.md`
+- Review gate for PR-0318 authenticated Exam Converter HuleEdu Sir Convert edge adapter:
+  `docs/backlog/reviews/review-pr-0318-authenticated-exam-converter-huleedu-sir-convert-edge.md`
+- ST-21-03 Exam Converter public profile and route-contract freeze:
+  `docs/backlog/prs/pr-0319-st-21-03-exam-converter-public-profile-and-route-contract-freeze.md`
+- Review gate for PR-0319 Exam Converter public profile and route-contract freeze:
+  `docs/backlog/reviews/review-pr-0319-exam-converter-public-profile-and-route-contract-freeze.md`
+- ST-21-03 Exam Converter public one-time runtime lane:
+  `docs/backlog/prs/pr-0320-st-21-03-exam-converter-public-one-time-runtime-lane.md`
+- Review gate for PR-0320 Exam Converter public one-time runtime lane:
+  `docs/backlog/reviews/review-pr-0320-exam-converter-public-one-time-runtime-lane.md`
+- ST-21-03 Exam Converter public active-runtime metadata and grant contract:
+  `docs/backlog/prs/pr-0321-st-21-03-exam-converter-public-active-runtime-metadata-and-grant-contract.md`
+- Review gate for PR-0321 Exam Converter public active-runtime metadata and grant contract:
+  `docs/backlog/reviews/review-pr-0321-exam-converter-public-active-runtime-metadata-and-grant-contract.md`
+- ST-21-03 Exam Converter live upstream public grant proof:
+  `docs/backlog/prs/pr-0322-st-21-03-exam-converter-live-upstream-public-grant-proof.md`
+- Review gate for PR-0322 Exam Converter live upstream public grant proof:
+  `docs/backlog/reviews/review-pr-0322-exam-converter-live-upstream-public-grant-proof.md`
+- ST-21-03 Exam Converter grant-only consumer alignment:
+  `docs/backlog/prs/pr-0323-st-21-03-exam-converter-grant-only-consumer-alignment.md`
+- ST-21-03 Exam Converter authenticated end-to-end proof:
+  `docs/backlog/prs/pr-0324-st-21-03-exam-converter-authenticated-end-to-end-proof.md`
+- Review gate for PR-0324 Exam Converter authenticated end-to-end proof:
+  `docs/backlog/reviews/review-pr-0324-exam-converter-authenticated-end-to-end-proof.md`
+- ST-21-03 Exam Converter authenticated runtime UI and save remediation:
+  `docs/backlog/prs/pr-0325-st-21-03-exam-converter-authenticated-runtime-ui-and-save-remediation.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
@@ -483,6 +515,34 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
 - ST-27-03 Smart seating history diversity scoring:
   `docs/backlog/prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md`
+- ST-21-03 authenticated Exam Converter HuleEdu Sir Convert edge adapter:
+  `docs/backlog/prs/pr-0318-st-21-03-authenticated-exam-converter-huleedu-sir-convert-edge.md`
+- Review gate for PR-0318 authenticated Exam Converter HuleEdu Sir Convert edge adapter:
+  `docs/backlog/reviews/review-pr-0318-authenticated-exam-converter-huleedu-sir-convert-edge.md`
+- ST-21-03 Exam Converter public profile and route-contract freeze:
+  `docs/backlog/prs/pr-0319-st-21-03-exam-converter-public-profile-and-route-contract-freeze.md`
+- Review gate for PR-0319 Exam Converter public profile and route-contract freeze:
+  `docs/backlog/reviews/review-pr-0319-exam-converter-public-profile-and-route-contract-freeze.md`
+- ST-21-03 Exam Converter public one-time runtime lane:
+  `docs/backlog/prs/pr-0320-st-21-03-exam-converter-public-one-time-runtime-lane.md`
+- Review gate for PR-0320 Exam Converter public one-time runtime lane:
+  `docs/backlog/reviews/review-pr-0320-exam-converter-public-one-time-runtime-lane.md`
+- ST-21-03 Exam Converter public active-runtime metadata and grant contract:
+  `docs/backlog/prs/pr-0321-st-21-03-exam-converter-public-active-runtime-metadata-and-grant-contract.md`
+- Review gate for PR-0321 Exam Converter public active-runtime metadata and grant contract:
+  `docs/backlog/reviews/review-pr-0321-exam-converter-public-active-runtime-metadata-and-grant-contract.md`
+- ST-21-03 Exam Converter live upstream public grant proof:
+  `docs/backlog/prs/pr-0322-st-21-03-exam-converter-live-upstream-public-grant-proof.md`
+- Review gate for PR-0322 Exam Converter live upstream public grant proof:
+  `docs/backlog/reviews/review-pr-0322-exam-converter-live-upstream-public-grant-proof.md`
+- ST-21-03 Exam Converter grant-only consumer alignment:
+  `docs/backlog/prs/pr-0323-st-21-03-exam-converter-grant-only-consumer-alignment.md`
+- ST-21-03 Exam Converter authenticated end-to-end proof:
+  `docs/backlog/prs/pr-0324-st-21-03-exam-converter-authenticated-end-to-end-proof.md`
+- Review gate for PR-0324 Exam Converter authenticated end-to-end proof:
+  `docs/backlog/reviews/review-pr-0324-exam-converter-authenticated-end-to-end-proof.md`
+- ST-21-03 Exam Converter authenticated runtime UI and save remediation:
+  `docs/backlog/prs/pr-0325-st-21-03-exam-converter-authenticated-runtime-ui-and-save-remediation.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 share/export affordance consolidation task:
@@ -583,6 +643,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
 - Accepted Klassrumskartan public share artifact exception ADR:
   `docs/adr/adr-0084-klassrumskartan-public-share-artifact-exception.md`
+- Accepted Exam Converter public conversion exception ADR:
+  `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`
 - Accepted Hemma deploy entrypoint ADR:
   `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - Accepted app-local bootstrap continuation ADR:
@@ -788,6 +850,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`
 - `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`
 - `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md`
+- `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`
 - `docs/reference/ref-runner-contract-v3.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-frontend-transition-continuity-v1.md`
@@ -1037,6 +1100,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
 - `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`
 - `docs/backlog/prs/pr-0317-st-27-03-smart-seating-history-diversity-scoring.md`
+- `docs/backlog/prs/pr-0318-st-21-03-authenticated-exam-converter-huleedu-sir-convert-edge.md`
+- `docs/backlog/prs/pr-0319-st-21-03-exam-converter-public-profile-and-route-contract-freeze.md`
 - `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
 - `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
 - `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
@@ -1426,6 +1491,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md`
 - `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md`
+- `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md`
 - `docs/backlog/stories/story-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md`
 - `docs/backlog/stories/story-23-01-group-seating-studio-skeleton.md`
 - `docs/backlog/stories/story-23-02-group-seating-studio-manual-planner.md`

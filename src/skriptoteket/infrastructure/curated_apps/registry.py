@@ -14,6 +14,8 @@ from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
     CuratedAppPublicAccessProfile,
+    CuratedAppPublicCapability,
+    CuratedAppPublicRuntimeStatus,
     CuratedAppUiMode,
     curated_app_tool_id,
 )
@@ -75,6 +77,13 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 ),
                 min_role=Role.USER,
                 public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,
+                public_capabilities=[
+                    CuratedAppPublicCapability(
+                        scope="exam_converter",
+                        profile=CuratedAppPublicAccessProfile.PUBLIC_BROWSER_RUNTIME,
+                        runtime_status=CuratedAppPublicRuntimeStatus.ACTIVE,
+                    ),
+                ],
                 placements=[
                     CuratedAppPlacement(profession_slug="gemensamt", category_slug="ovrigt"),
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),

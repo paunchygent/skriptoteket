@@ -14,7 +14,7 @@ from __future__ import annotations
 from enum import StrEnum
 from uuid import NAMESPACE_URL, UUID, uuid5
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from skriptoteket.domain.identity.models import Role
 
@@ -40,6 +40,12 @@ class CuratedAppPublicAccessProfile(StrEnum):
     PUBLIC_BROWSER_WORKSPACE_WITH_UPGRADE = "public_browser_workspace_with_upgrade"
 
 
+class CuratedAppPublicRuntimeStatus(StrEnum):
+    CONTRACT_ONLY = "contract_only"
+    GRANT_CONTRACT_READY = "grant_contract_ready"
+    ACTIVE = "active"
+
+
 class CuratedAppPlacement(BaseModel):
     """Where an app appears in Katalog (profession/category browse tree)."""
 
@@ -59,6 +65,44 @@ class CuratedAppPlacement(BaseModel):
         return normalized
 
 
+class CuratedAppPublicCapability(BaseModel):
+    """Scoped public capability exposed by an otherwise authenticated app."""
+
+    model_config = ConfigDict(frozen=True)
+
+    scope: str
+    profile: CuratedAppPublicAccessProfile
+    runtime_status: CuratedAppPublicRuntimeStatus = CuratedAppPublicRuntimeStatus.CONTRACT_ONLY
+
+    @field_validator("scope")
+    @classmethod
+    def _validate_scope(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("public capability scope is required")
+        if len(normalized) > 64:
+            raise ValueError("public capability scope must be 64 characters or less")
+        if normalized != normalized.lower():
+            raise ValueError("public capability scope must be lowercase")
+        if not all(
+            (character.isascii() and character.isalnum()) or character == "_"
+            for character in normalized
+        ):
+            raise ValueError(
+                "public capability scope may only contain lowercase letters, digits, and _"
+            )
+        return normalized
+
+    @field_validator("profile")
+    @classmethod
+    def _validate_public_profile(
+        cls, value: CuratedAppPublicAccessProfile
+    ) -> CuratedAppPublicAccessProfile:
+        if value is CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY:
+            raise ValueError("public capability profile must be a public access profile")
+        return value
+
+
 class CuratedAppDefinition(BaseModel):
     """Curated app metadata discovered via a registry (ADR-0023)."""
 
@@ -74,6 +118,7 @@ class CuratedAppDefinition(BaseModel):
     public_access_profile: CuratedAppPublicAccessProfile = (
         CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY
     )
+    public_capabilities: list[CuratedAppPublicCapability] = Field(default_factory=list)
     default_favorite: bool = False
     placements: list[CuratedAppPlacement]
 
@@ -100,6 +145,18 @@ class CuratedAppDefinition(BaseModel):
             raise ValueError("placements is required")
         return value
 
+    @field_validator("public_capabilities")
+    @classmethod
+    def _validate_public_capabilities(
+        cls, value: list[CuratedAppPublicCapability]
+    ) -> list[CuratedAppPublicCapability]:
+        seen_scopes: set[str] = set()
+        for capability in value:
+            if capability.scope in seen_scopes:
+                raise ValueError("public capability scopes must be unique")
+            seen_scopes.add(capability.scope)
+        return value
+
     @model_validator(mode="after")
     def _validate_tool_id_matches_app_id(self) -> CuratedAppDefinition:
         expected = curated_app_tool_id(app_id=self.app_id)
@@ -118,3 +175,13 @@ class CuratedAppDefinition(BaseModel):
     @property
     def supports_public_access(self) -> bool:
         return self.public_access_profile is not CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY
+
+    def get_public_capability(self, *, scope: str) -> CuratedAppPublicCapability | None:
+        normalized_scope = scope.strip()
+        for capability in self.public_capabilities:
+            if capability.scope == normalized_scope:
+                return capability
+        return None
+
+    def supports_public_capability(self, *, scope: str) -> bool:
+        return self.get_public_capability(scope=scope) is not None

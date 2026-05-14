@@ -5,14 +5,17 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-03-27
-outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview) that routes all supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
+updated: 2026-05-13
+outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
 ## Scope
 
 - Add a **Conversion Hub** curated app (bespoke-required) that exposes a complete UI for the set of
   conversions supported by Sir Convert-a-Lot v2.
+- Add an Exam Converter product lane under Conversion Hub for teacher-facing
+  DigiExam/Exam.net migration workflows, split into public one-time conversion
+  and authenticated owner-scoped artifact workflows.
 - Support batch conversions (multiple files) and a single-PDF preview UX that still uses the normal
   v2 job lifecycle, but through a Skriptoteket-owned local job ledger and download boundary rather
   than raw upstream job ids.
@@ -30,11 +33,15 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
   updated to the new surface.
 - No redirect-based artifact delivery that bypasses Skriptoteket ownership checks for Conversion Hub
   downloads.
+- No general public anonymous conversion upload route may ship outside the
+  accepted `ADR-0085` scoped public capability contract for the bounded Exam
+  Converter exception.
 
 ## Stories (ordered)
 
 - [ ] 1. [ST-21-01: Curated app: Conversion Hub (v1)](../stories/story-21-01-curated-app-conversion-hub-v1.md)
 - [ ] 2. [ST-21-02: Migration: retire html-to-pdf-preview + update tests](../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md)
+- [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md)
 
 ## Risks
 
@@ -45,6 +52,10 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
   contract.
 - Artifact naming / vault integration drift:
   mitigate by asserting on "PDF exists and is valid" rather than hardcoded filenames in E2E.
+- Public upload and compute abuse:
+  mitigate by reusing the dedicated public namespace, rate-limit, payload-cap,
+  MIME/type-validation, reason-code, TTL, and no-Vault rules from the accepted
+  public curated-app boundary before opening the Exam Converter lane.
 - Over-scoping in one PR:
   mitigate via PR-sized tasks with strict ordering (PR-0063..).
 
@@ -52,11 +63,61 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
 
 - ADR-0066 (this epic's conversion strategy decision)
 - Existing curated apps platform: ADR-0022, ADR-0023, ADR-0024
+- Public curated-app access and abuse-control authority: ADR-0079, ADR-0085,
+  ST-32-03
+- HuleEdu authenticated Sir Convert edge:
+  `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-07-expose-sir-convert-artifact-bundle-routes-through-huleedu-auth-edge.md`
+- Sir Convert artifact-bundle contract:
+  `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md`
 
-## Implementation Summary (as of 2026-03-26)
+## Implementation Summary (as of 2026-05-13)
 
 - PR-0063 (docs planning scaffold): done
 - PR-0064 (backend v2 client + curated app API surface): done
 - PR-0148 (local job ledger + owned status/download boundary): done
 - PR-0065 (SPA bespoke UI): pending after the local-ledger boundary lands
 - PR-0066 (migrate tests + retire html-to-pdf-preview): pending
+- ST-21-03 (Exam Converter public/authenticated lanes): in progress; `ADR-0085`
+  accepts the bounded public Exam Converter exception, and PR-0319 now freezes
+  the scoped public-capability registry/profile and route contract before
+  public runtime conversion ships.
+- PR-0318 (authenticated Exam Converter HuleEdu Sir Convert edge adapter):
+  done and approved by retained review `REV-PR-0318`; browser adapter package
+  now uses `/sir-convert/v2/convert/...` with deterministic
+  idempotency/correlation, named artifact reads, save-to-user-files metadata
+  mapping, Gateway base-URL fail-closed validation, a dedicated local Gateway
+  proxy target, and stricter blocked-artifact parser semantics.
+- PR-0319 (public Exam Converter profile and route-contract freeze): done;
+  `documents.conversion_hub` remains app-wide `authenticated_only`, exposes
+  only `public_capabilities: [{ scope: "exam_converter", profile:
+  "public_browser_runtime" }]`, freezes
+  `/public/apps/documents.conversion_hub/exam-converter` and
+  `/api/v1/public/apps/documents.conversion_hub/exam-converter`, and ships no
+  public runtime conversion behavior. Retained review `REV-PR-0319` is
+  approved.
+- PR-0321 (public active-runtime metadata and grant contract): done and approved
+  by `REV-PR-0321`; `documents.conversion_hub` remains app-wide
+  `authenticated_only`, while scoped `exam_converter` metadata can distinguish
+  `contract_only`, `grant_contract_ready`, and `active`, with disabled
+  grant-ready action affordances and opaque-handle authority boundaries.
+- PR-0320 (public Exam Converter one-time runtime lane): done; implemented the
+  backend/runtime public lane plus minimal host wiring behind the
+  PR-0319/PR-0321 metadata contract, with transient upload/job/artifact state,
+  anonymous abuse controls on each public action, cookie parity, direct
+  downloads, no Vault/MyFiles writes, and no browser direct-service
+  credentials. Live upstream public-grant proof remains in the end-to-end proof
+  slice.
+- PR-0322 (live upstream public grant proof): done and approved by
+  `REV-PR-0322` after Sir Convert `TASK-292` and Skriptoteket `PR-0323`
+  remediated the grant/read-lease contract drift. The approved proof retained
+  sanitized positive submit/status/result/manifest/download evidence, cookie
+  parity, negative abuse-control probes, TTL-expiry rejection, no-account-
+  persistence evidence, and forbidden browser-authority grep results across
+  local live HuleEdu Gateway, Sir Convert, and Skriptoteket services.
+- PR-0324 (authenticated Exam Converter end-to-end proof): blocked by
+  `REV-PR-0324`; proof preflight found no authenticated bespoke Exam Converter
+  host surface, no authenticated DigiExam artifact-bundle runtime surface, and
+  no save-to-user-files path for downloaded Sir Convert named artifacts.
+- PR-0325 (authenticated Exam Converter runtime UI and save remediation):
+  ready; add the authenticated host/runtime/save surface needed before
+  rerunning `PR-0324`.

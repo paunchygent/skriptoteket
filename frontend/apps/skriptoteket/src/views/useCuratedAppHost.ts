@@ -20,9 +20,13 @@ export type CuratedAppHostMetadata = {
   ui_mode: "generic_ok" | "bespoke_required";
 };
 
+export type CuratedAppRouteContext = {
+  publicCapabilitySlug: string | null;
+};
+
 type UseCuratedAppHostOptions<TApp extends CuratedAppHostMetadata> = {
   hostMode: CuratedAppHostMode;
-  loadApp: (appId: string) => Promise<TApp>;
+  loadApp: (appId: string, context: CuratedAppRouteContext) => Promise<TApp>;
   getErrorMessage: (error: unknown) => string;
 };
 
@@ -34,6 +38,11 @@ export function useCuratedAppHost<TApp extends CuratedAppHostMetadata>(
   const appId = computed(() => {
     const param = route.params.appId;
     return typeof param === "string" ? param : "";
+  });
+
+  const publicCapabilitySlug = computed(() => {
+    const param = route.params.publicCapabilitySlug;
+    return typeof param === "string" ? param : null;
   });
 
   const app = ref<TApp | null>(null);
@@ -64,7 +73,9 @@ export function useCuratedAppHost<TApp extends CuratedAppHostMetadata>(
     app.value = null;
 
     try {
-      app.value = await options.loadApp(appId.value);
+      app.value = await options.loadApp(appId.value, {
+        publicCapabilitySlug: publicCapabilitySlug.value,
+      });
     } catch (error: unknown) {
       errorMessage.value = options.getErrorMessage(error);
     } finally {
@@ -73,8 +84,8 @@ export function useCuratedAppHost<TApp extends CuratedAppHostMetadata>(
   }
 
   watch(
-    appId,
-    (value) => {
+    [appId, publicCapabilitySlug],
+    ([value]) => {
       resolveHostView(value);
       void load();
     },
@@ -88,6 +99,7 @@ export function useCuratedAppHost<TApp extends CuratedAppHostMetadata>(
     hostView,
     hostViewProps,
     isLoading,
+    publicCapabilitySlug,
     shouldBlock,
   };
 }
