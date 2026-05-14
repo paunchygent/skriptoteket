@@ -3,8 +3,9 @@
  * Authenticated Exam Converter host frame.
  *
  * Domain purpose:
- *   Provide the stable signed-in Exam Converter workspace frame before
- *   workflow, result, file, question, report, or save behavior is introduced.
+ *   Provide the stable signed-in Exam Converter workspace frame and
+ *   browser-local source-file intake before result, question, report, submit,
+ *   or save behavior is introduced.
  *
  * Relationships:
  *   - Mounted by `curatedAppHostRegistry` for authenticated Conversion Hub.
@@ -14,6 +15,14 @@
 
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
+import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
+
+const {
+  clearSourceFile,
+  selectSourceFile,
+  selectedSourceFile,
+  sourceFileError,
+} = useExamConverterSourceFile();
 </script>
 
 <template>
@@ -26,8 +35,15 @@ import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConv
       aria-label="Exam Converter"
       data-test="exam-converter-host-frame"
     >
-      <ExamConverterWorkflowRailShell />
-      <ExamConverterWorkspaceShell />
+      <ExamConverterWorkflowRailShell
+        :selected-source-file="selectedSourceFile"
+        @clear-source-file="clearSourceFile"
+      />
+      <ExamConverterWorkspaceShell
+        :selected-source-file="selectedSourceFile"
+        :source-file-error="sourceFileError"
+        @source-file-selected="selectSourceFile"
+      />
     </section>
   </main>
 </template>

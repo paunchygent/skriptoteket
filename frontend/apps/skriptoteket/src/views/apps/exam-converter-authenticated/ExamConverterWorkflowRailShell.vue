@@ -9,10 +9,20 @@
  *
  * Relationships:
  *   - Rendered by `ExamConverterAuthenticatedView`.
- *   - Replaced incrementally by later approved workflow-rail slices.
+ *   - Receives browser-local source-file state from the authenticated host.
  */
 
-import { Check, FileText, HelpCircle, Play, Upload } from "lucide-vue-next";
+import { Check, FileText, HelpCircle, Play, Upload, X } from "lucide-vue-next";
+
+import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceFile";
+
+defineProps<{
+  selectedSourceFile: ExamConverterSourceFileSelection | null;
+}>();
+
+const emit = defineEmits<{
+  clearSourceFile: [];
+}>();
 </script>
 
 <template>
@@ -38,7 +48,40 @@ import { Check, FileText, HelpCircle, Play, Upload } from "lucide-vue-next";
         <h2 class="text-sm font-semibold leading-tight text-navy">
           1. Provfil
         </h2>
-        <div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3">
+        <div
+          v-if="selectedSourceFile"
+          class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border border-navy/25 bg-panel px-3 py-3"
+          data-test="exam-converter-selected-source-file"
+        >
+          <FileText
+            class="h-5 w-5 text-navy"
+            aria-hidden="true"
+          />
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-medium leading-snug text-navy">
+              {{ selectedSourceFile.name }}
+            </span>
+            <span class="mt-0.5 block text-xs leading-none text-navy/65">
+              {{ selectedSourceFile.sizeLabel }}
+            </span>
+          </span>
+          <button
+            type="button"
+            class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas"
+            aria-label="Ta bort provfil"
+            data-test="exam-converter-clear-source-file"
+            @click="emit('clearSourceFile')"
+          >
+            <X
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+        <div
+          v-else
+          class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/25 bg-panel px-3 py-3"
+        >
           <Upload
             class="h-5 w-5 text-action"
             aria-hidden="true"
@@ -47,8 +90,21 @@ import { Check, FileText, HelpCircle, Play, Upload } from "lucide-vue-next";
             Välj provfil (.dxe)
           </span>
         </div>
-        <p class="text-xs leading-snug text-navy/65">
+        <p
+          v-if="!selectedSourceFile"
+          class="text-xs leading-snug text-navy/65"
+        >
           Ingen fil vald.
+        </p>
+        <p
+          v-else
+          class="flex items-center gap-2 text-xs leading-snug text-success"
+        >
+          <Check
+            class="h-3 w-3"
+            aria-hidden="true"
+          />
+          Filen är uppladdad
         </p>
       </section>
 

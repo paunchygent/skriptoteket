@@ -177,6 +177,32 @@ Out of scope for slice 1:
 - files/report modes;
 - runtime, Gateway, download, and save behavior.
 
+### Slice 2: Source File Intake
+
+Status: implemented after product approval.
+
+Implemented:
+
+- `ExamConverterAuthenticatedView` owns browser-local `.dxe` source-file state
+  through a small local composable.
+- `ExamConverterWorkspaceShell` exposes the working `.dxe` file input/drop zone
+  and rejects non-`.dxe` files with direct Swedish copy.
+- `ExamConverterWorkflowRailShell` reflects the selected source filename, size,
+  uploaded status, and remove affordance.
+- The conversion CTA remains disabled because submit/runtime behavior belongs
+  to the next slice.
+- `ExamConverterAuthenticatedView.spec.ts` now covers selected-file state,
+  invalid-file rejection, removal back to idle, and the no-runtime boundary.
+
+Out of scope for slice 2:
+
+- result-PDF selection;
+- submit/runtime calls;
+- result strip;
+- inspection tabs;
+- question/file/report modes;
+- download and save behavior.
+
 ## Test Plan
 
 - Focused frontend tests for authenticated host registration and Exam Converter

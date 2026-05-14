@@ -2,21 +2,21 @@
  * Exam Converter authenticated host-frame behavior.
  *
  * Slice purpose:
- *   Provide the stable authenticated app frame and source-file intake shell for
- *   Exam Converter before conversion, results, files, questions, reports, or
- *   save behavior is introduced.
+ *   Provide the stable authenticated app frame and browser-local source-file
+ *   intake for Exam Converter before conversion, results, files, questions,
+ *   reports, or save behavior is introduced.
  *
  * Expected behavior:
  *   The authenticated app host renders a two-zone workspace: a compact left
- *   setup rail and a dominant right workspace shell with the idle `.dxe` drop
- *   zone. It must not render conversion results, file rows, question rows,
- *   report content, runtime controls, or service jargon in this slice.
+ *   setup rail and a dominant right workspace shell with a `.dxe` drop zone.
+ *   Selecting a source file updates the rail and workspace locally only. It
+ *   must not render conversion results, file rows, question rows, report
+ *   content, runtime controls, or service jargon in this slice.
  *
  * Recommended implementation shape:
- *   Keep `ExamConverterAuthenticatedView` as a composition component and
- *   delegate the left and right structural regions to small presentational
- *   shell components. Runtime clients and conversion state stay out of this
- *   slice.
+ *   Keep `ExamConverterAuthenticatedView` as a composition component. Use a
+ *   tiny composable for local file selection, and keep runtime clients,
+ *   conversion state, and save behavior out of this slice.
  */
 
 import { mount } from "@vue/test-utils";
@@ -35,6 +35,17 @@ const FORBIDDEN_VISIBLE_WORDS = [
   "pipeline",
   "inloggad konvertering",
 ];
+
+async function chooseSourceFile(wrapper: ReturnType<typeof mount>, file: File) {
+  const input = wrapper.find<HTMLInputElement>(
+    '[data-test="exam-converter-source-file-input"]',
+  );
+  Object.defineProperty(input.element, "files", {
+    configurable: true,
+    value: [file],
+  });
+  await input.trigger("change");
+}
 
 describe("ExamConverterAuthenticatedView host frame", () => {
   it("renders the approved two-zone authenticated host frame", () => {
@@ -78,6 +89,64 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(text).not.toContain("Filer klara att hämta");
     expect(text).not.toContain("Öppna rapport");
     expect(text).not.toContain("Spara i mina filer");
+  });
+
+  it("updates the rail and workspace when a .dxe source file is selected", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await chooseSourceFile(
+      wrapper,
+      new File(["exam"], "Ma1c_NationelltProv_HT25.dxe", {
+        type: "application/octet-stream",
+      }),
+    );
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.text()).toContain("Ma1c_NationelltProv_HT25.dxe");
+    expect(wrapper.text()).toContain("Filen är uppladdad");
+    expect(wrapper.text()).toContain("Provfilen är vald");
+    expect(wrapper.find('[data-test="exam-converter-source-drop-zone"]').text()).toContain(
+      "Ma1c_NationelltProv_HT25.dxe",
+    );
+    expect(wrapper.find("button.btn-cta").attributes("disabled")).toBeDefined();
+  });
+
+  it("rejects non-.dxe files without inventing conversion state", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await chooseSourceFile(
+      wrapper,
+      new File(["pdf"], "Ma1c_HT25_Provblad.pdf", {
+        type: "application/pdf",
+      }),
+    );
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.text()).toContain("Välj en .dxe-fil från Exam.net.");
+    expect(wrapper.text()).toContain("Ingen fil vald");
+    expect(wrapper.text()).not.toContain("Konverterar provet");
+  });
+
+  it("returns to the idle intake state when the selected source file is removed", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await chooseSourceFile(
+      wrapper,
+      new File(["exam"], "Ma1c_NationelltProv_HT25.dxe", {
+        type: "application/octet-stream",
+      }),
+    );
+    await wrapper.find('[data-test="exam-converter-clear-source-file"]').trigger("click");
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.text()).toContain("Välj provfil för att börja");
+    expect(wrapper.text()).toContain("Ingen fil vald");
   });
 
   it("keeps the host frame free of service jargon and flat runtime leakage", () => {

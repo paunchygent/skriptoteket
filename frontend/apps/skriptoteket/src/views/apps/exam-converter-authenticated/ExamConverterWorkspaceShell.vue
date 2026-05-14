@@ -13,7 +13,36 @@
  *     result strip, inspection modes, and focused review surfaces.
  */
 
-import { Upload } from "lucide-vue-next";
+import { FileText, Upload } from "lucide-vue-next";
+
+import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceFile";
+
+defineProps<{
+  selectedSourceFile: ExamConverterSourceFileSelection | null;
+  sourceFileError: string | null;
+}>();
+
+const emit = defineEmits<{
+  sourceFileSelected: [file: File];
+}>();
+
+function selectFirstFile(fileList: FileList | null): void {
+  const [file] = Array.from(fileList ?? []);
+  if (file) {
+    emit("sourceFileSelected", file);
+  }
+}
+
+function handleFileInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  selectFirstFile(input.files);
+  input.value = "";
+}
+
+function handleDrop(event: DragEvent): void {
+  event.preventDefault();
+  selectFirstFile(event.dataTransfer?.files ?? null);
+}
 </script>
 
 <template>
@@ -28,33 +57,62 @@ import { Upload } from "lucide-vue-next";
           id="exam-converter-auth-title"
           class="text-lg font-semibold leading-tight text-navy"
         >
-          Välj provfil för att börja
+          {{ selectedSourceFile ? "Provfilen är vald" : "Välj provfil för att börja" }}
         </h2>
         <p class="mt-1 text-sm leading-snug text-navy/70">
-          Dra hit .dxe-filen eller välj fil från datorn.
+          {{ selectedSourceFile ? "Nästa steg är att starta konverteringen." : "Dra hit .dxe-filen eller välj fil från datorn." }}
         </p>
       </div>
     </header>
 
     <div class="flex min-h-0 flex-1 px-4 pb-4">
-      <div
+      <label
         class="grid min-h-0 w-full flex-1 border border-dashed border-navy/45 bg-canvas px-6 py-6"
+        :class="sourceFileError ? 'border-error bg-error/5' : undefined"
         data-test="exam-converter-source-drop-zone"
+        @dragover.prevent
+        @drop="handleDrop"
       >
+        <input
+          class="sr-only"
+          type="file"
+          accept=".dxe"
+          data-test="exam-converter-source-file-input"
+          @change="handleFileInput"
+        >
         <div class="flex h-full min-w-0 items-center justify-center gap-4">
           <span
             class="grid h-12 w-12 shrink-0 place-items-center border border-navy/25 bg-panel"
             aria-hidden="true"
           >
-            <Upload class="h-6 w-6 text-action" />
+            <FileText
+              v-if="selectedSourceFile"
+              class="h-6 w-6 text-navy"
+            />
+            <Upload
+              v-else
+              class="h-6 w-6 text-action"
+            />
           </span>
           <div class="min-w-0">
             <p class="text-base font-medium leading-tight text-navy">
-              Välj provfil
+              {{ selectedSourceFile?.name ?? "Välj provfil" }}
+            </p>
+            <p
+              v-if="selectedSourceFile"
+              class="mt-2 text-sm leading-snug text-navy/70"
+            >
+              {{ selectedSourceFile.sizeLabel }}
+            </p>
+            <p
+              v-else-if="sourceFileError"
+              class="mt-2 text-sm leading-snug text-error"
+            >
+              {{ sourceFileError }}
             </p>
           </div>
         </div>
-      </div>
+      </label>
     </div>
   </section>
 </template>
