@@ -167,6 +167,7 @@ describe("PlannerPhoneFixedSeatRulePanel", () => {
             student_ids: ["student-1"],
             seat_ids: ["seat-1"],
             reason_code: "near_teacher_row_first_rank",
+            freshness_key: "fresh-near-teacher",
           },
         ],
       },

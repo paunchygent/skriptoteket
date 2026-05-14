@@ -150,7 +150,7 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     topic: "apps_detail",
     title: "App",
     description: "Större arbetsytor med flera steg.",
-    routes: ["app-detail", "public-app-detail"],
+    routes: ["app-detail", "public-app-detail", "public-app-capability-detail"],
   },
   {
     topic: "admin_suggestions",

@@ -149,7 +149,7 @@ describe("Planner Smart settings drawers", () => {
     expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);
     expect(stateMocks.plannerState.setDraftSmartEnabled).toHaveBeenCalledWith(false);
     expect(stateMocks.plannerState.setDraftGroupingSeatingDistanceEnabled)
-      .toHaveBeenCalledWith(false);
+      .toHaveBeenCalledWith(true);
     expect(wrapper.emitted("close")).toBeUndefined();
 
     await wrapper.get('[data-test="grouping-settings-open-rules"]').trigger("click");
@@ -158,7 +158,7 @@ describe("Planner Smart settings drawers", () => {
     expect(wrapper.emitted("close")).toEqual([[]]);
   });
 
-  it("keeps grouping seating influence opt-out when no explicit draft flag exists", () => {
+  it("keeps grouping seating influence off when no explicit draft flag exists", () => {
     const wrapper = mount(PlannerGroupingSettingsDrawer, {
       props: {
         open: true,
@@ -168,7 +168,7 @@ describe("Planner Smart settings drawers", () => {
     });
 
     expect(wrapper.get('[data-test="grouping-settings-seating-toggle"]').attributes("aria-checked")).toBe(
-      "true",
+      "false",
     );
   });
 

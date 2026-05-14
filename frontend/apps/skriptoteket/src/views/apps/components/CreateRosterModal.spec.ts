@@ -263,7 +263,7 @@ describe("CreateRosterModal", () => {
     randomUuidSpy.mockRestore();
   });
 
-  it("shows the backend message when roster delete fails", async () => {
+  it("shows guarded delete copy when roster delete fails", async () => {
     clientMocks.apiDelete.mockRejectedValueOnce(
       new ApiError({
         code: "INTERNAL_ERROR",
@@ -286,8 +286,9 @@ describe("CreateRosterModal", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain(
-      "Kunde inte radera klasslistan just nu.",
+      "Det gick inte att ta bort klasslistan. Försök igen eller stäng dialogrutan.",
     );
+    expect(wrapper.text()).not.toContain("Kunde inte radera klasslistan just nu.");
     expect(wrapper.emitted("deleted")).toBeUndefined();
   });
 

@@ -294,6 +294,7 @@ describe("RoomCanvas", () => {
             student_ids: ["student-1"],
             seat_ids: ["seat-1"],
             reason_code: "near_teacher_row_front_compromise",
+            freshness_key: "fresh-near-teacher",
           },
           {
             rule_id: "near-1",
@@ -302,6 +303,7 @@ describe("RoomCanvas", () => {
             student_ids: ["student-1", "student-2"],
             seat_ids: ["seat-1", "seat-2"],
             reason_code: "keep_near_not_close",
+            freshness_key: "fresh-keep-near",
           },
         ],
         surfaceScale: 1,
