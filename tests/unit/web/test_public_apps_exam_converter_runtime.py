@@ -15,6 +15,11 @@ from starlette_dishka import setup_dishka
 from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
     PublicExamConverterRuntimeHandler,
 )
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
+    DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
@@ -126,7 +131,8 @@ class FakeSirConvertClient:
             "result": {
                 "conversion_metadata": {
                     "route_key": "digiexam_dxe_to_examnet_migration_bundle",
-                    "target_availability": {"examnet_pdf": "available"},
+                    "bundle_schema_version": DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+                    "target_readiness_report_artifact_key": "target_readiness_report",
                 }
             },
         }
@@ -142,7 +148,7 @@ class FakeSirConvertClient:
         assert public_conversion_grant == "opaque-public-grant"
         assert public_artifact_read_lease == "opaque-manifest-lease"
         return {
-            "schema_version": "digiexam_migration_bundle_v1",
+            "schema_version": DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
             "job_id": job_id,
             "bundle_status": "partial",
             "artifacts": [
@@ -160,6 +166,16 @@ class FakeSirConvertClient:
                     },
                 },
                 {
+                    "artifact_key": "target_readiness_report",
+                    "filename": "target-readiness-report.json",
+                    "content_type": "application/json",
+                    "availability": "available",
+                    "public_artifact_read_lease": {
+                        "token": "opaque-readiness-lease",
+                        "artifact_key": "target_readiness_report",
+                    },
+                },
+                {
                     "artifact_key": "qti_package",
                     "filename": "qti-package.zip",
                     "content_type": "application/zip",
@@ -167,6 +183,17 @@ class FakeSirConvertClient:
                 },
             ],
             "manual_follow_up": {"required": True, "count": 1},
+            "readiness": {
+                "artifact_key": "target_readiness_report",
+                "exportable_targets": ["examnet_pdf"],
+                "review_required": True,
+            },
+            "source_binding": {
+                "source_ir_schema_version": DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+                "source_ir_sha256": "sha256:source",
+                "effective_exam_schema_version": DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
+                "effective_exam_sha256": "sha256:source",
+            },
             "warnings": {"count": 0},
         }
 
@@ -420,6 +447,11 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_opaqu
     )
     assert manifest_response.status_code == 200
     manifest = manifest_response.json()
+    assert manifest["schema_version"] == DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION
+    assert manifest["readiness"]["artifact_key"] == "target_readiness_report"
+    assert manifest["source_binding"]["effective_exam_schema_version"] == (
+        DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION
+    )
     assert manifest["artifacts"][0]["download_url"].endswith(
         "/jobs/4f27d43f-7c2e-4c9c-a4df-2d799f88527a/artifacts/examnet_pdf/download"
     )

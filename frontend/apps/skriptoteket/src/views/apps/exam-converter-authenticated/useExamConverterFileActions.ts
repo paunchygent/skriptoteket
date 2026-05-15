@@ -74,6 +74,7 @@ function toArtifactEntry(file: ExamConverterReviewFile): SirConvertArtifactEntry
     filename: file.filename,
     sha256: file.sha256,
     size_bytes: file.sizeBytes,
+    ...(file.unavailableCode ? { unavailable_code: file.unavailableCode } : {}),
   };
 }
 

@@ -1057,6 +1057,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Exam Converter Artifact */
+        post: operations["save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/jobs": {
         parameters: {
             query?: never;
@@ -2658,6 +2675,13 @@ export interface components {
             /** Snapshot */
             snapshot: string;
         };
+        /** Body_save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post */
+        Body_save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post: {
+            /** Artifact */
+            artifact: string;
+            /** Metadata Json */
+            metadata_json: string;
+        };
         /** Body_start_tool_run_api_v1_tools__slug__run_post */
         Body_start_tool_run_api_v1_tools__slug__run_post: {
             /** File Fields */
@@ -2995,6 +3019,26 @@ export interface components {
             source_format: components["schemas"]["ConversionHubSourceFormatV2"];
             /** Title */
             title: string;
+        };
+        /**
+         * ConversionHubSavedVaultArtifact
+         * @description Teacher-facing summary of the saved user-file artifact.
+         */
+        ConversionHubSavedVaultArtifact: {
+            /** Bytes */
+            bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+            /** Name */
+            name: string;
         };
         /**
          * ConversionHubSourceFormatV2
@@ -4956,7 +5000,7 @@ export interface components {
              * Artifact Manifest Schema
              * @constant
              */
-            artifact_manifest_schema: "digiexam_migration_bundle_v1";
+            artifact_manifest_schema: "digiexam_migration_bundle_v3";
             /** Artifact Ttl Seconds */
             artifact_ttl_seconds: number;
             authority_boundary: components["schemas"]["PublicCapabilityAuthorityBoundary"];
@@ -5036,8 +5080,6 @@ export interface components {
             artifact_key: string;
             /** Availability */
             availability: string;
-            /** Blocker Code */
-            blocker_code?: string | null;
             /** Content Type */
             content_type?: string | null;
             /** Download Url */
@@ -5048,6 +5090,8 @@ export interface components {
             sha256?: string | null;
             /** Size Bytes */
             size_bytes?: number | null;
+            /** Unavailable Code */
+            unavailable_code?: string | null;
         };
         /** PublicExamConverterArtifactManifestResponse */
         PublicExamConverterArtifactManifestResponse: {
@@ -5066,11 +5110,20 @@ export interface components {
             } | null;
             /** Public Job Id */
             public_job_id: string;
+            /** Readiness */
+            readiness?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Schema Version
-             * @default digiexam_migration_bundle_v1
+             * @default digiexam_migration_bundle_v3
+             * @constant
              */
-            schema_version: string;
+            schema_version: "digiexam_migration_bundle_v3";
+            /** Source Binding */
+            source_binding?: {
+                [key: string]: unknown;
+            } | null;
             status: components["schemas"]["PublicExamConverterJobStatus"];
             /** Warnings */
             warnings?: {
@@ -6011,6 +6064,15 @@ export interface components {
             values?: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+        };
+        /**
+         * SaveConversionHubSirConvertArtifactResult
+         * @description Result returned after one Sir Convert artifact has been saved.
+         */
+        SaveConversionHubSirConvertArtifactResult: {
+            /** Source Artifact Id */
+            source_artifact_id: string;
+            vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
         };
         /** SaveDraftVersionRequest */
         SaveDraftVersionRequest: {
@@ -9457,6 +9519,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveConversionHubSirConvertArtifactResult"];
+                };
             };
             /** @description Validation Error */
             422: {

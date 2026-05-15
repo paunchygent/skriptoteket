@@ -19,6 +19,11 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+    DigiExamMigrationBundleSchemaVersion,
+)
+
 
 class PublicExamConverterTarget(StrEnum):
     """Target artifacts available in the public Exam Converter lane."""
@@ -118,19 +123,21 @@ class PublicExamConverterArtifactEntry(BaseModel):
     size_bytes: int | None = Field(default=None, ge=0)
     sha256: str | None = None
     download_url: str | None = None
-    blocker_code: str | None = None
+    unavailable_code: str | None = None
 
 
 class PublicExamConverterArtifactManifestResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: str = "digiexam_migration_bundle_v1"
+    schema_version: DigiExamMigrationBundleSchemaVersion = DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION
     public_job_id: str = Field(min_length=1)
     status: PublicExamConverterJobStatus
     expires_at: datetime
     bundle_status: str | None = None
     artifacts: list[PublicExamConverterArtifactEntry]
     manual_follow_up: dict[str, object] | None = None
+    readiness: dict[str, object] | None = None
+    source_binding: dict[str, object] | None = None
     warnings: dict[str, object] | None = None
 
 

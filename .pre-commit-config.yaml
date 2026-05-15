@@ -75,7 +75,7 @@ repos:
 
       - id: eslint
         name: ESLint (frontend)
-        entry: pnpm --filter @skriptoteket/spa lint
+        entry: pdm run fe-lint
         language: system
         files: ^frontend/apps/skriptoteket/src/.*\.(vue|ts|js)$
         pass_filenames: false

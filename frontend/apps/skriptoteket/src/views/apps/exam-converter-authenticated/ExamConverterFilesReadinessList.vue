@@ -14,6 +14,7 @@
 
 import { Download, Save } from "lucide-vue-next";
 
+import { DIGIEXAM_TARGET_READY_AFTER_ACCEPTED_CURRENT_STATE } from "../../../api/sirConvertGateway/contractValues";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
 import type {
   ExamConverterFileActionState,
@@ -22,7 +23,6 @@ import type {
 
 const props = defineProps<{
   actionsEnabled: boolean;
-  acceptedCurrentState: boolean;
   actionStates: ExamConverterFileActionStates;
   files: ExamConverterReviewFile[];
 }>();
@@ -43,7 +43,7 @@ function actionStateForFile(file: ExamConverterReviewFile): ExamConverterFileAct
 }
 
 function canUseFile(file: ExamConverterReviewFile): boolean {
-  return props.actionsEnabled && file.availability === "available";
+  return props.actionsEnabled && file.exportEnabled;
 }
 
 function statusLabelForFile(file: ExamConverterReviewFile): string {
@@ -60,13 +60,12 @@ function statusLabelForFile(file: ExamConverterReviewFile): string {
   if (state.download === "failed") {
     return "Kunde inte hämtas";
   }
-  if (file.availability !== "available") {
-    return file.statusLabel;
+  if (canUseFile(file)) {
+    return file.readiness === DIGIEXAM_TARGET_READY_AFTER_ACCEPTED_CURRENT_STATE
+      ? "Godkänt för export"
+      : "Kan hämtas";
   }
-  if (props.actionsEnabled) {
-    return props.acceptedCurrentState ? "Godkänt för export" : "Kan hämtas";
-  }
-  return "Granska eller godkänn först";
+  return file.statusLabel;
 }
 
 function downloadLabel(file: ExamConverterReviewFile): string {
@@ -100,7 +99,7 @@ function isSaveDisabled(file: ExamConverterReviewFile): boolean {
         Filer
       </h3>
       <p class="text-sm leading-tight text-navy/70">
-        {{ actionsEnabled ? "Filerna kan hämtas eller sparas." : "Granska eller godkänn provet först." }}
+        Filerna kan hämtas eller sparas när de är klara.
       </p>
     </div>
 

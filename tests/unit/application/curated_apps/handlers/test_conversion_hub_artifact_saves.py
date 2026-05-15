@@ -20,6 +20,9 @@ from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import
 from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
     SaveConversionHubSirConvertArtifactHandler,
 )
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
@@ -64,7 +67,7 @@ def _metadata(*, content: bytes) -> ConversionHubSirConvertArtifactSaveMetadata:
         content_type="application/pdf",
         size_bytes=len(content),
         sha256=sha256(content).hexdigest(),
-        bundle_schema_version="digiexam_migration_bundle_v1",
+        bundle_schema_version=DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
         correlation_id="correlation-1",
         saved_at=datetime(2026, 5, 13, 12, 0, tzinfo=timezone.utc),
     )

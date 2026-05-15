@@ -37,7 +37,7 @@ Target Python is 3.13-3.14.
 
 1. Read this file.
 1. Check `.codex/handoff.md` only for volatile current-state pointers.
-1. Select the task-relevant skill before planning or implementation.
+1. Select the task-relevant skill before planning, implementation, testing, or reviewing
 1. Load `.codex/rules/000-rule-index.md` only when repo rules are needed, then
    open the specific rule files the task requires.
 1. Use `docs/index.md` for durable docs discovery and backlog context.
@@ -50,6 +50,7 @@ Target Python is 3.13-3.14.
 | Planning, decomposition, tranche sequencing | `agent-planning` |
 | Next-session or developer handoff messages | `agent-session-handoff` |
 | Backend architecture, DDD/Clean boundaries, FastAPI, UoW, migrations, runner contracts | `.codex/skills/skriptoteket-backend-dev/SKILL.md` |
+| Testing strategy, pytest/integration/migration lanes, fixtures, and close-out gates | `.codex/skills/skriptoteket-testing/SKILL.md` |
 | Local dev, DB setup, dev stack, command wrappers, local logs | `local-devops` plus its Skriptoteket reference |
 | Hemma deploys, remote operations, shared host runtime, GPU/offload lanes | `hemma-devops` plus its Skriptoteket reference |
 | SPA, curated-app UI, auth continuation, dense workspaces, frontend tests | `integrated-frontend-stack` plus its Skriptoteket reference |

@@ -11,6 +11,8 @@
  */
 
 import type { SirConvertArtifactEntry, SirConvertUserFileSaveMetadata } from "./types";
+import { SIR_CONVERT_ARTIFACT_AVAILABLE } from "./contractValues";
+import { DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION } from "./schemaVersions";
 
 const SHA256_PREFIX = "sha256:";
 const SHA256_HEX_PATTERN = /^[a-f0-9]{64}$/i;
@@ -43,12 +45,12 @@ export function buildSirConvertUserFileSaveMetadata(params: {
     content_type: params.artifact.content_type,
     size_bytes: params.artifact.size_bytes,
     sha256: normalizeSha256(params.artifact.sha256),
-    bundle_schema_version: "digiexam_migration_bundle_v1",
+    bundle_schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     correlation_id: params.correlationId,
     saved_at: params.savedAt.toISOString(),
   };
 }
 
 export function isSirConvertArtifactAvailable(entry: SirConvertArtifactEntry): boolean {
-  return entry.availability === "available";
+  return entry.availability === SIR_CONVERT_ARTIFACT_AVAILABLE;
 }

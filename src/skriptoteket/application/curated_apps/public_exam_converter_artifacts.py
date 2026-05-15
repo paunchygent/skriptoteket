@@ -22,8 +22,9 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterSubmittedJob,
     PublicExamConverterUpload,
 )
-
-SCHEMA_VERSION = "digiexam_migration_bundle_v1"
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+)
 
 
 def upload_mime_types(
@@ -94,13 +95,16 @@ def project_public_exam_converter_manifest(
             if isinstance(entry, dict)
         ]
     return PublicExamConverterArtifactManifestResponse(
-        schema_version=_string_value(manifest.get("schema_version")) or SCHEMA_VERSION,
+        schema_version=_string_value(manifest.get("schema_version"))
+        or DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
         public_job_id=public_job_id,
         status=status,
         expires_at=expires_at,
         bundle_status=_string_value(manifest.get("bundle_status")),
         artifacts=artifacts,
         manual_follow_up=_dict_value(manifest.get("manual_follow_up")),
+        readiness=_dict_value(manifest.get("readiness")),
+        source_binding=_dict_value(manifest.get("source_binding")),
         warnings=_dict_value(manifest.get("warnings")),
     )
 
@@ -124,7 +128,7 @@ def _project_artifact_entry(
         size_bytes=_int_value(entry.get("size_bytes")),
         sha256=_string_value(entry.get("sha256")),
         download_url=download_url,
-        blocker_code=_string_value(entry.get("blocker_code")),
+        unavailable_code=_string_value(entry.get("unavailable_code")),
     )
 
 

@@ -202,6 +202,83 @@ watch(
           </dl>
         </section>
 
+        <section
+          v-if="selectedQuestion.alternatives.length > 0"
+          class="mt-7"
+          data-test="exam-converter-selected-question-alternatives"
+        >
+          <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">
+            Alternativ
+          </h4>
+          <ol class="mt-4 grid gap-2 text-sm text-navy">
+            <li
+              v-for="alternative in selectedQuestion.alternatives"
+              :key="alternative.id"
+              class="grid grid-cols-[2rem_minmax(0,1fr)] gap-3"
+            >
+              <span
+                class="inline-grid h-7 w-7 place-items-center border border-navy/25 text-xs font-semibold leading-none"
+              >
+                {{ alternative.id }}
+              </span>
+              <span class="leading-relaxed">
+                {{ alternative.text }}
+              </span>
+            </li>
+          </ol>
+        </section>
+
+        <section
+          v-if="selectedQuestion.lucktextStructure"
+          class="mt-7"
+          data-test="exam-converter-selected-question-lucktext"
+        >
+          <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">
+            Lucktext
+          </h4>
+          <dl class="mt-4 grid gap-3 text-sm">
+            <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+              <dt class="text-navy">
+                Luckor
+              </dt>
+              <dd class="text-navy">
+                {{ selectedQuestion.lucktextStructure.gapCount }}
+              </dd>
+            </div>
+            <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+              <dt class="text-navy">
+                Bilder
+              </dt>
+              <dd class="text-navy">
+                {{ selectedQuestion.lucktextStructure.imageCount }}
+              </dd>
+            </div>
+          </dl>
+          <div
+            v-if="selectedQuestion.lucktextStructure.images.length > 0"
+            class="mt-4 grid gap-3"
+          >
+            <figure
+              v-for="image in selectedQuestion.lucktextStructure.images"
+              :key="image.id"
+              class="border border-navy/20 p-3"
+            >
+              <img
+                v-if="image.dataUrl"
+                :alt="image.altText"
+                class="max-h-56 max-w-full object-contain"
+                :src="image.dataUrl"
+              >
+              <figcaption class="mt-2 text-xs leading-tight text-navy/70">
+                {{ image.altText }}
+                <span v-if="image.dimensionsLabel">
+                  · {{ image.dimensionsLabel }}
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
         <section class="mt-7">
           <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">
             Saknas

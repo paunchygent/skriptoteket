@@ -16,6 +16,10 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+    DigiExamMigrationBundleSchemaVersion,
+)
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPublicAccessProfile,
@@ -51,11 +55,19 @@ _EXAM_CONVERTER_ALLOWED_CONTENT_TYPES = [
 ]
 _EXAM_CONVERTER_ALLOWED_FILE_SUFFIXES = [".dxe", ".pdf"]
 _EXAM_CONVERTER_ARTIFACT_KEYS = [
+    "bundle_manifest",
     "examnet_pdf",
+    "ir_json",
+    "effective_ir_json",
+    "migration_manifest",
+    "target_readiness_report",
+    "ingestion_overlay_report",
+    "answer_key_completion_report",
     "manual_follow_up_report",
     "qti_package",
     "qti_validation_report",
     "warnings_report",
+    "asset_summary",
 ]
 _EXAM_CONVERTER_BLOCKED_AFFORDANCES = [
     "authenticated_route_discovery",
@@ -172,7 +184,7 @@ class PublicCapabilityMetadata(BaseModel):
     rate_limit: PublicCapabilityRateLimit
     artifact_ttl_seconds: int
     target_vocabulary: list[str]
-    artifact_manifest_schema: Literal["digiexam_migration_bundle_v1"]
+    artifact_manifest_schema: DigiExamMigrationBundleSchemaVersion
     artifact_keys: list[str]
     reason_codes: list[str]
     blocked_affordances: list[str]
@@ -299,7 +311,7 @@ def _build_exam_converter_capability_metadata(
         rate_limit=PublicCapabilityRateLimit(max_requests=3, window_seconds=60),
         artifact_ttl_seconds=3600,
         target_vocabulary=_EXAM_CONVERTER_TARGETS,
-        artifact_manifest_schema="digiexam_migration_bundle_v1",
+        artifact_manifest_schema=DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
         artifact_keys=_EXAM_CONVERTER_ARTIFACT_KEYS,
         reason_codes=_EXAM_CONVERTER_REASON_CODES,
         blocked_affordances=_EXAM_CONVERTER_BLOCKED_AFFORDANCES,

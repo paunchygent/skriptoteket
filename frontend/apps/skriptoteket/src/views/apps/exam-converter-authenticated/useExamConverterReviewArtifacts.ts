@@ -16,7 +16,13 @@ import { ref } from "vue";
 import {
   downloadDigiExamMigrationArtifact,
   listDigiExamMigrationArtifacts,
+  parseTargetReadinessReport,
 } from "../../../api/sirConvertGateway";
+import {
+  DIGIEXAM_ARTIFACT_IR_JSON,
+  DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
+  DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+} from "../../../api/sirConvertGateway/contractValues";
 import type { SirConvertArtifactBlob } from "../../../api/sirConvertGateway";
 import {
   parseExamConverterReviewProjection,
@@ -81,19 +87,26 @@ export function useExamConverterReviewArtifacts(
 
     try {
       const artifactManifest = await client.listDigiExamMigrationArtifacts(params);
-      const [irJson, migrationManifest] = await Promise.all([
+      const [irJson, migrationManifest, targetReadinessReport] = await Promise.all([
         client
           .downloadDigiExamMigrationArtifact({
             ...params,
-            artifactKey: "ir_json",
+            artifactKey: DIGIEXAM_ARTIFACT_IR_JSON,
           })
           .then(readArtifactJson),
         client
           .downloadDigiExamMigrationArtifact({
             ...params,
-            artifactKey: "migration_manifest",
+            artifactKey: DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
           })
           .then(readArtifactJson),
+        client
+          .downloadDigiExamMigrationArtifact({
+            ...params,
+            artifactKey: DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+          })
+          .then(readArtifactJson)
+          .then(parseTargetReadinessReport),
       ]);
       if (loadToken.value !== token) {
         return null;
@@ -102,6 +115,7 @@ export function useExamConverterReviewArtifacts(
         artifactManifest,
         irJson,
         migrationManifest,
+        targetReadinessReport,
       });
       projection.value = parsedProjection;
       status.value = "ready";

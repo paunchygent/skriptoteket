@@ -10,7 +10,33 @@
  *   - `client.ts` transports these envelopes without conversion policy.
  */
 
-export type DigiExamMigrationTarget = "examnet_pdf" | "qti_package";
+import type { components } from "../sirConvertOpenapi";
+import {
+  DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+  DIGIEXAM_INGESTION_OVERLAY_POLICY_APPLY_TEACHER,
+  DIGIEXAM_INGESTION_OVERLAY_POLICY_NONE,
+  DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE,
+  DIGIEXAM_MIGRATION_OUTPUT_FORMAT,
+  DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED,
+  DIGIEXAM_SOURCE_FORMAT,
+} from "./contractValues";
+import type {
+  DigiExamIntermediateExamSchemaVersion,
+  DigiExamMigrationBundleSchemaVersion,
+} from "./schemaVersions";
+
+type SirConvertOpenApiSchemas = components["schemas"];
+
+export type DigiExamMigrationTarget = SirConvertOpenApiSchemas["ExamMigrationTargetV2"];
+export type DigiExamMigrationArtifactKey =
+  SirConvertOpenApiSchemas["DigiExamMigrationArtifactKey"];
+export type DigiExamIngestionOverlay = SirConvertOpenApiSchemas["DigiExamIngestionOverlay"];
+export type DigiExamItemType = SirConvertOpenApiSchemas["DigiExamItemType"];
+export type DigiExamTargetReadiness = SirConvertOpenApiSchemas["DigiExamTargetReadiness"];
+export type DigiExamTargetReadinessRow =
+  SirConvertOpenApiSchemas["DigiExamTargetReadinessRowV1"];
+export type DigiExamTargetReadinessReport =
+  SirConvertOpenApiSchemas["DigiExamTargetReadinessReportV1"];
 
 export type SirConvertJobStatus =
   | "submitted"
@@ -22,25 +48,21 @@ export type SirConvertJobStatus =
   | "canceled"
   | "cancelled";
 
-export type SirConvertBundleStatus = "complete" | "partial" | "blocked";
+export type SirConvertBundleStatus =
+  SirConvertOpenApiSchemas["DigiExamMigrationBundleManifestV2"]["bundle_status"];
 
 export type SirConvertArtifactAvailability =
-  | "available"
-  | "blocked"
-  | "failed"
-  | "not_requested"
-  | "not_implemented"
-  | "not_supported_by_examnet";
+  SirConvertOpenApiSchemas["DigiExamMigrationArtifactAvailability"];
 
 export type SirConvertDigiExamJobSpec = {
   api_version: "v2";
   source: {
     kind: "upload";
     filename: string;
-    format: "digiexam_dxe";
+    format: typeof DIGIEXAM_SOURCE_FORMAT;
   };
   conversion: {
-    output_format: "examnet_migration_bundle";
+    output_format: typeof DIGIEXAM_MIGRATION_OUTPUT_FORMAT;
     targets: DigiExamMigrationTarget[];
     artifact_language: string;
     reference_docx_filename: null;
@@ -48,8 +70,12 @@ export type SirConvertDigiExamJobSpec = {
   digiexam_migration_options: {
     graded_result_pdf_filename?: string;
     parity_pdf_filename?: string;
-    result_pdf_usage: "correct_machine_marked_answers_only";
-    manual_follow_up_policy: "emit_item_addressable_report";
+    result_pdf_usage: typeof DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED;
+    manual_follow_up_policy: typeof DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE;
+    ingestion_overlay_filename?: string;
+    ingestion_overlay_policy?:
+      | typeof DIGIEXAM_INGESTION_OVERLAY_POLICY_NONE
+      | typeof DIGIEXAM_INGESTION_OVERLAY_POLICY_APPLY_TEACHER;
   };
   retention: {
     pin: false;
@@ -65,6 +91,7 @@ export type DigiExamMigrationSubmitParams = {
   waitSeconds?: number;
   correlationId?: string | null;
   sourceLabel?: string | null;
+  ingestionOverlay?: DigiExamIngestionOverlay | null;
 };
 
 export type SirConvertRequestContext = {
@@ -96,6 +123,7 @@ export type SirConvertTerminalResult = {
     bundle_schema_version: string;
     bundle_status: SirConvertBundleStatus;
     source_sha256: string | null;
+    target_readiness_report_artifact_key: typeof DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT | null;
     target_availability: Record<string, SirConvertArtifactAvailability>;
     manual_follow_up_required: boolean;
     warning_count: number;
@@ -104,19 +132,40 @@ export type SirConvertTerminalResult = {
 };
 
 export type SirConvertArtifactEntry = {
-  artifact_key: string;
+  artifact_key: DigiExamMigrationArtifactKey | string;
   filename: string;
   content_type: string;
   availability: SirConvertArtifactAvailability;
   size_bytes: number | null;
   sha256: string | null;
   download_path?: string;
-  blocker_code?: string;
+  unavailable_code?: string;
+  depends_on?: string;
+};
+
+export type SirConvertArtifactManifestSource = {
+  filename: string;
+  sha256: string;
+  format: typeof DIGIEXAM_SOURCE_FORMAT;
+};
+
+export type SirConvertArtifactManifestSourceBinding = {
+  source_ir_schema_version: DigiExamIntermediateExamSchemaVersion;
+  source_ir_sha256: string;
+  effective_exam_schema_version: string;
+  effective_exam_sha256: string;
+};
+
+export type SirConvertArtifactManifestReadiness = {
+  artifact_key: typeof DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT;
+  exportable_targets: string[];
+  review_required: boolean;
 };
 
 export type SirConvertArtifactManifest = {
-  schema_version: "digiexam_migration_bundle_v1";
+  schema_version: DigiExamMigrationBundleSchemaVersion;
   job_id: string;
+  source: SirConvertArtifactManifestSource;
   bundle_status: SirConvertBundleStatus;
   artifacts: SirConvertArtifactEntry[];
   manual_follow_up: {
@@ -128,6 +177,8 @@ export type SirConvertArtifactManifest = {
     artifact_key: string;
     count: number;
   } | null;
+  readiness: SirConvertArtifactManifestReadiness;
+  source_binding: SirConvertArtifactManifestSourceBinding;
 };
 
 export type SirConvertArtifactBlob = {
@@ -145,7 +196,7 @@ export type SirConvertUserFileSaveMetadata = {
   content_type: string;
   size_bytes: number | null;
   sha256: string | null;
-  bundle_schema_version: "digiexam_migration_bundle_v1";
+  bundle_schema_version: DigiExamMigrationBundleSchemaVersion;
   correlation_id: string;
   saved_at: string;
 };

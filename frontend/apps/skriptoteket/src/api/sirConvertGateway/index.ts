@@ -12,8 +12,10 @@
  */
 
 export * from "./client";
+export * from "./contractValues";
 export * from "./errors";
 export * from "./jobSpec";
+export { parseTargetReadinessReport } from "./parsers";
 export * from "./requestContext";
 export * from "./saveMetadata";
 export * from "./types";

@@ -12,6 +12,7 @@
  */
 
 import { computed, onBeforeUnmount, ref } from "vue";
+import type { SirConvertBundleStatus } from "../../../api/sirConvertGateway";
 
 export type ExamConverterConversionStatus =
   | "idle"
@@ -31,7 +32,7 @@ export type ExamConverterRunningProgress = {
 
 export type ExamConverterRuntimeOutcome = {
   artifactCount: number;
-  bundleStatus: "complete" | "partial" | "blocked";
+  bundleStatus: SirConvertBundleStatus;
   manualFollowUpCount: number | null;
   manualFollowUpRequired: boolean;
   warningCount: number;
@@ -121,7 +122,7 @@ function statusForRuntimeOutcome(
   ) {
     return "partial";
   }
-  if (outcome.bundleStatus === "blocked") {
+  if (outcome.bundleStatus === "failed") {
     return "failed";
   }
   return "success";

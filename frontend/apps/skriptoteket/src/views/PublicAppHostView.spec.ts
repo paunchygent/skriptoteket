@@ -10,6 +10,7 @@ import { defineComponent, nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
+import { DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION } from "../api/sirConvertGateway/schemaVersions";
 import PublicAppHostView from "./PublicAppHostView.vue";
 import type { components } from "../api/openapi";
 
@@ -171,7 +172,7 @@ function createScopedPublicBootstrap(
       rate_limit: { max_requests: 3, window_seconds: 60 },
       artifact_ttl_seconds: 3600,
       target_vocabulary: ["examnet_pdf", "qti_package"],
-      artifact_manifest_schema: "digiexam_migration_bundle_v1",
+      artifact_manifest_schema: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
       artifact_keys: ["examnet_pdf", "manual_follow_up_report", "qti_package"],
       reason_codes: ["public_exam_converter_rate_limited"],
       blocked_affordances: ["authenticated_route_discovery", "vault_or_myfiles_save"],

@@ -79,23 +79,12 @@ const canStartConversion = computed(
     !isConversionRunning.value,
 );
 
-const hasBlockingReviewState = computed(() => {
-  const report = reviewProjection.value?.report;
-  if (!report) {
-    return false;
-  }
-  return report.attentionQuestionCount > 0 || report.warningCount > 0;
-});
-
 const requiresReviewDecision = computed(() => {
-  return (reviewProjection.value?.report.attentionQuestionCount ?? 0) > 0;
+  return (reviewProjection.value?.report.attentionQuestionCount ?? 0) > 0 && !acceptedCurrentState.value;
 });
 
 const canUseFiles = computed(() => {
-  if (!reviewProjection.value) {
-    return false;
-  }
-  return !hasBlockingReviewState.value || acceptedCurrentState.value;
+  return reviewProjection.value !== null;
 });
 
 function handleResetLocalChoices(): void {
@@ -118,6 +107,39 @@ function toRuntimeOutcome(result: SirConvertTerminalResult): ExamConverterRuntim
   };
 }
 
+async function finishRuntimeResult(
+  result: SirConvertTerminalResult,
+  preferredMode: ExamConverterInspectionMode | null = null,
+): Promise<void> {
+  const runtimeOutcome = toRuntimeOutcome(result);
+  const correlationId = lastCorrelationId.value;
+  const jobId = lastJobId.value ?? result.job.jobId;
+  const projection = correlationId
+    ? await loadReviewArtifacts({
+        correlationId,
+        jobId,
+      })
+    : null;
+  if (projection) {
+    const projectedWarningCount = Math.max(
+      runtimeOutcome.warningCount,
+      projection.report.warningCount,
+    );
+    const requiresQuestionReview =
+      projection.report.attentionQuestionCount > 0 || projectedWarningCount > 0;
+    activeInspectionMode.value = preferredMode ?? projection.defaultMode;
+    finishConversion({
+      ...runtimeOutcome,
+      bundleStatus: requiresQuestionReview ? runtimeOutcome.bundleStatus : "complete",
+      manualFollowUpRequired: requiresQuestionReview,
+      manualFollowUpCount: projection.report.attentionQuestionCount,
+      warningCount: projectedWarningCount,
+    });
+    return;
+  }
+  finishConversion(runtimeOutcome);
+}
+
 async function handleStartConversion(): Promise<void> {
   const sourceSelection = selectedSourceFile.value;
   if (!canStartConversion.value || !sourceSelection) {
@@ -136,33 +158,7 @@ async function handleStartConversion(): Promise<void> {
       targetSelection: { ...selectedTargetFormats.value },
     });
     if (result) {
-      const runtimeOutcome = toRuntimeOutcome(result);
-      const correlationId = lastCorrelationId.value;
-      const jobId = lastJobId.value ?? result.job.jobId;
-      const projection = correlationId
-        ? await loadReviewArtifacts({
-            correlationId,
-            jobId,
-          })
-        : null;
-      if (projection) {
-        const projectedWarningCount = Math.max(
-          runtimeOutcome.warningCount,
-          projection.report.warningCount,
-        );
-        const requiresQuestionReview =
-          projection.report.attentionQuestionCount > 0 || projectedWarningCount > 0;
-        activeInspectionMode.value = projection.defaultMode;
-        finishConversion({
-          ...runtimeOutcome,
-          bundleStatus: requiresQuestionReview ? runtimeOutcome.bundleStatus : "complete",
-          manualFollowUpRequired: requiresQuestionReview,
-          manualFollowUpCount: projection.report.attentionQuestionCount,
-          warningCount: projectedWarningCount,
-        });
-      } else {
-        finishConversion(runtimeOutcome);
-      }
+      await finishRuntimeResult(result);
     }
   } catch {
     failConversion();
@@ -173,15 +169,35 @@ function selectInspectionMode(mode: ExamConverterInspectionMode): void {
   activeInspectionMode.value = mode;
 }
 
-function handleAcceptCurrentState(): void {
-  acceptedCurrentState.value = true;
-  activeInspectionMode.value = "files";
+async function handleAcceptCurrentState(): Promise<void> {
+  const sourceSelection = selectedSourceFile.value;
+  const overlay = reviewProjection.value?.acceptedStateOverlay ?? null;
+  if (!sourceSelection || !overlay || isConversionRunning.value) {
+    return;
+  }
+  resetFileActions();
+  startConversion();
+  try {
+    const result = await submitAndPoll({
+      sourceFile: sourceSelection.file,
+      supportingFile: selectedSupportingFile.value?.file ?? null,
+      targetSelection: { ...selectedTargetFormats.value },
+      ingestionOverlay: overlay,
+    });
+    if (result) {
+      acceptedCurrentState.value = true;
+      await finishRuntimeResult(result, "files");
+    }
+  } catch {
+    acceptedCurrentState.value = false;
+    failConversion();
+  }
 }
 
 async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> {
   const correlationId = lastCorrelationId.value;
   const jobId = lastJobId.value;
-  if (!correlationId || !jobId || !canUseFiles.value) {
+  if (!correlationId || !jobId || !canUseFiles.value || !file.exportEnabled) {
     return;
   }
   await downloadFile({ correlationId, file, jobId });
@@ -190,7 +206,7 @@ async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> 
 async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
   const correlationId = lastCorrelationId.value;
   const jobId = lastJobId.value;
-  if (!correlationId || !jobId || !canUseFiles.value) {
+  if (!correlationId || !jobId || !canUseFiles.value || !file.exportEnabled) {
     return;
   }
   await saveFile({ correlationId, file, jobId });

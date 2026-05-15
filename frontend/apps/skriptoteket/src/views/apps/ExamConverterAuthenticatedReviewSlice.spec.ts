@@ -17,15 +17,17 @@
  *   summary as focused presentation components.
  */
 
-import { flushPromises, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
-import type {
-  SirConvertJobStatus,
-  SirConvertSubmittedJob,
-  SirConvertTerminalResult,
-} from "../../api/sirConvertGateway";
+import {
+  finishConversion,
+  mockFreeTextOnlyReviewArtifacts,
+  mockReviewArtifacts,
+  submittedJob,
+  terminalResult,
+} from "./examConverterAuthenticatedReviewFixtures";
 
 const gatewayMocks = vi.hoisted(() => ({
   downloadDigiExamMigrationArtifact: vi.fn(),
@@ -36,314 +38,19 @@ const gatewayMocks = vi.hoisted(() => ({
   submitDigiExamMigration: vi.fn(),
 }));
 
-vi.mock("../../api/sirConvertGateway", () => ({
-  downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-  getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
-  getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
-  listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
-  saveDigiExamMigrationArtifactToUserFiles:
-    gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
-  submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
-}));
-
-function submittedJob(status: SirConvertJobStatus): SirConvertSubmittedJob {
+vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
   return {
-    idempotentReplay: false,
-    jobId: "job_exam_converter_review",
-    requestContext: {
-      correlationId: "corr_exam_converter_review",
-      idempotencyKey: "idem_exam_converter_review",
-      jobSpec: {} as SirConvertSubmittedJob["requestContext"]["jobSpec"],
-    },
-    status,
+    ...actual,
+    downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+    getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
+    getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+    listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+    saveDigiExamMigrationArtifactToUserFiles:
+      gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
+    submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
   };
-}
-
-function terminalResult(): SirConvertTerminalResult {
-  return {
-    artifact: {
-      content_type: "application/json",
-      filename: "exam-converter-result.json",
-      sha256: null,
-      size_bytes: 1024,
-    },
-    conversion_metadata: {
-      artifact_count: 2,
-      bundle_schema_version: "digiexam_migration_bundle_v1",
-      bundle_status: "partial",
-      manual_follow_up_required: true,
-      route_key: "digiexam_dxe_to_examnet_migration_bundle",
-      source_sha256: null,
-      target_availability: {
-        examnet_pdf: "available",
-        qti_package: "available",
-      },
-      warning_count: 1,
-    },
-    job: {
-      jobId: "job_exam_converter_review",
-      status: "succeeded",
-    },
-  };
-}
-
-function artifactJsonBlob(artifactKey: string, payload: unknown) {
-  return {
-    artifactKey,
-    blob: {
-      text: () => Promise.resolve(JSON.stringify(payload)),
-    } as Blob,
-    contentType: "application/json",
-    filename: `${artifactKey}.json`,
-  };
-}
-
-function reviewItem(overrides: Record<string, unknown> = {}) {
-  return {
-    answer_key: { provenance: "dxe_populated_key" },
-    item_id: "item-001",
-    item_type: "gap_fill",
-    max_score: 2,
-    prompt_html: null,
-    prompt_lines: ["Beräkna värdet av uttrycket 3x² − 2x + 5"],
-    sequence: 1,
-    title: "Beräkna värdet av uttrycket 3x² − 2x + 5",
-    warnings: [],
-    ...overrides,
-  };
-}
-
-function mockReviewArtifacts(): void {
-  gatewayMocks.listDigiExamMigrationArtifacts.mockResolvedValue({
-    artifacts: [
-      {
-        artifact_key: "examnet_pdf",
-        availability: "available",
-        content_type: "application/pdf",
-        filename: "Ma1c_Exam.net.pdf",
-        sha256: null,
-        size_bytes: 700_416,
-      },
-      {
-        artifact_key: "qti_package",
-        availability: "available",
-        content_type: "application/zip",
-        filename: "Ma1c_QTI.zip",
-        sha256: null,
-        size_bytes: 1_258_291,
-      },
-      {
-        artifact_key: "manual_follow_up_report",
-        availability: "available",
-        content_type: "application/json",
-        filename: "rapport.json",
-        sha256: null,
-        size_bytes: 2_048,
-      },
-    ],
-    bundle_status: "partial",
-    job_id: "job_exam_converter_review",
-    manual_follow_up: {
-      artifact_key: "manual_follow_up_report",
-      count: 2,
-      required: true,
-    },
-    schema_version: "digiexam_migration_bundle_v1",
-    warnings: {
-      artifact_key: "warnings_report",
-      count: 1,
-    },
-  });
-  gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
-    ({ artifactKey }: { artifactKey: string }) => {
-      if (artifactKey === "ir_json") {
-        return Promise.resolve(
-          artifactJsonBlob("ir_json", {
-            items: [
-              reviewItem(),
-              reviewItem({
-                answer_key: { provenance: "absent" },
-                item_id: "item-004",
-                item_type: "multiple_choice",
-                max_score: 1,
-                prompt_lines: ["Vilket av följande tal är ett primtal?"],
-                sequence: 4,
-                title: "Vilket av följande tal är ett primtal?",
-              }),
-              reviewItem({
-                answer_key: { provenance: "not_applicable" },
-                item_id: "item-012",
-                item_type: "open_ended",
-                max_score: null,
-                prompt_lines: ["Resonera om lösningsmetod."],
-                sequence: 12,
-                title: "Resonera om lösningsmetod",
-              }),
-              reviewItem({
-                answer_key: { provenance: "not_applicable" },
-                item_id: "item-013",
-                item_type: "open_ended",
-                max_score: 1,
-                prompt_lines: ["Förklara varför stål är hårdare än järn."],
-                sequence: 13,
-                title: "Fråga 13",
-              }),
-            ],
-            manual_follow_ups: [
-              {
-                item_id: "item-004",
-                message: "Manual answer key is required.",
-                reason: "manual_answer_key_required",
-                source_span: null,
-              },
-              {
-                item_id: "item-012",
-                message: "Manual marking is required.",
-                reason: "manual_marking_required",
-                source_span: null,
-              },
-              {
-                item_id: "item-013",
-                message: "Manual marking is required.",
-                reason: "manual_marking_required",
-                source_span: null,
-              },
-            ],
-            parse_status: "success",
-            renderer_ready: true,
-            schema_version: "digiexam_intermediate_exam_v2",
-            source_filename: "Ma1c_NationelltProv_HT25.dxe",
-            source_producer: null,
-            warnings: [],
-          }),
-        );
-      }
-      return Promise.resolve(
-        artifactJsonBlob("migration_manifest", {
-          asset_count: 0,
-          asset_summaries: [],
-          exam_schema_version: "digiexam_intermediate_exam_v2",
-          item_count: 4,
-          item_summaries: [],
-          manual_follow_up_count: 3,
-          parse_status: "success",
-          renderer_ready: true,
-          schema_version: "digiexam_ir_manifest_v2",
-          source_filename: "Ma1c_NationelltProv_HT25.dxe",
-          source_producer: null,
-          warning_count: 1,
-        }),
-      );
-    },
-  );
-}
-
-function mockFreeTextOnlyReviewArtifacts(): void {
-  gatewayMocks.listDigiExamMigrationArtifacts.mockResolvedValue({
-    artifacts: [
-      {
-        artifact_key: "examnet_pdf",
-        availability: "available",
-        content_type: "application/pdf",
-        filename: "Metaller_Exam.net.pdf",
-        sha256: null,
-        size_bytes: 700_416,
-      },
-      {
-        artifact_key: "qti_package",
-        availability: "available",
-        content_type: "application/zip",
-        filename: "Metaller_QTI.zip",
-        sha256: null,
-        size_bytes: 1_258_291,
-      },
-    ],
-    bundle_status: "partial",
-    job_id: "job_exam_converter_review",
-    manual_follow_up: {
-      artifact_key: "manual_follow_up_report",
-      count: 1,
-      required: true,
-    },
-    schema_version: "digiexam_migration_bundle_v1",
-    warnings: {
-      artifact_key: "warnings_report",
-      count: 0,
-    },
-  });
-  gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
-    ({ artifactKey }: { artifactKey: string }) => {
-      if (artifactKey === "ir_json") {
-        return Promise.resolve(
-          artifactJsonBlob("ir_json", {
-            items: [
-              reviewItem({
-                answer_key: { provenance: "not_applicable" },
-                item_id: "item-001",
-                item_type: "open_ended",
-                max_score: 1,
-                prompt_lines: ["Varför är stål hårdare och starkare än järn?"],
-                sequence: 1,
-                title: "Fråga 1",
-              }),
-            ],
-            manual_follow_ups: [
-              {
-                item_id: "item-001",
-                message: "Manual marking is required.",
-                reason: "manual_marking_required",
-                source_span: null,
-              },
-            ],
-            parse_status: "success",
-            renderer_ready: true,
-            schema_version: "digiexam_intermediate_exam_v2",
-            source_filename: "1819077059-e-metaller-och-elektrokemi-23c.dxe",
-            source_producer: null,
-            warnings: [],
-          }),
-        );
-      }
-      return Promise.resolve(
-        artifactJsonBlob("migration_manifest", {
-          asset_count: 0,
-          asset_summaries: [],
-          exam_schema_version: "digiexam_intermediate_exam_v2",
-          item_count: 1,
-          item_summaries: [],
-          manual_follow_up_count: 1,
-          parse_status: "success",
-          renderer_ready: true,
-          schema_version: "digiexam_ir_manifest_v2",
-          source_filename: "1819077059-e-metaller-och-elektrokemi-23c.dxe",
-          source_producer: null,
-          warning_count: 0,
-        }),
-      );
-    },
-  );
-}
-
-async function chooseSourceFile(wrapper: ReturnType<typeof mount>) {
-  const input = wrapper.find<HTMLInputElement>(
-    '[data-test="exam-converter-source-file-input"]',
-  );
-  Object.defineProperty(input.element, "files", {
-    configurable: true,
-    value: [
-      new File(["exam"], "Ma1c_NationelltProv_HT25.dxe", {
-        type: "application/octet-stream",
-      }),
-    ],
-  });
-  await input.trigger("change");
-}
-
-async function finishConversion(wrapper: ReturnType<typeof mount>) {
-  await chooseSourceFile(wrapper);
-  await wrapper.find('[data-test="exam-converter-start-conversion"]').trigger("click");
-  await flushPromises();
-}
+});
 
 beforeEach(() => {
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
@@ -354,7 +61,7 @@ beforeEach(() => {
   gatewayMocks.submitDigiExamMigration.mockReset();
   gatewayMocks.submitDigiExamMigration.mockResolvedValue(submittedJob("succeeded"));
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(terminalResult());
-  mockReviewArtifacts();
+  mockReviewArtifacts(gatewayMocks);
 });
 
 describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
@@ -374,7 +81,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     });
     expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
     expect(wrapper.text()).toContain("2 frågor saknar facit eller poäng.");
-    expect(wrapper.text()).toContain("Frågor (4)");
+    expect(wrapper.text()).toContain("Frågor (6)");
     expect(wrapper.text()).toContain("Filer (2)");
     expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(
       true,
@@ -411,7 +118,9 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     );
 
     expect(questions.text()).not.toContain("Nr");
-    expect(keyedRow.text()).toContain("4. Vilket av följande tal är ett primtal?");
+    expect(keyedRow.text()).toContain(
+      "4. Vilket av följande påståenden beskriver cellandning bäst?",
+    );
     expect(manualMarkedFreeTextRow.text()).toContain(
       "13. Förklara varför stål är hårdare än järn.",
     );
@@ -424,8 +133,29 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(manualMarkedFreeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
   });
 
+  it("uses the approved Swedish item labels and no Enval shortcut", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+
+    expect(wrapper.find('[data-test="exam-converter-question-row-item-001"]').text()).toContain(
+      "Lucktext",
+    );
+    expect(wrapper.find('[data-test="exam-converter-question-row-item-004"]').text()).toContain(
+      "Flerval: ett val",
+    );
+    expect(wrapper.find('[data-test="exam-converter-question-row-item-005"]').text()).toContain(
+      "Flerval: flera val",
+    );
+    expect(wrapper.find('[data-test="exam-converter-question-row-item-006"]').text()).toContain(
+      "Fritext",
+    );
+    expect(wrapper.text()).not.toContain("Enval");
+    expect(wrapper.text()).not.toContain("Flerval: matchning");
+  });
+
   it("does not present free-text manual marking as missing facit or poäng", async () => {
-    mockFreeTextOnlyReviewArtifacts();
+    mockFreeTextOnlyReviewArtifacts(gatewayMocks);
     const freeTextOnlyResult = terminalResult();
     gatewayMocks.getDigiExamMigrationResult.mockResolvedValue({
       ...freeTextOnlyResult,
@@ -464,11 +194,33 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(detail.text()).toContain("Fråga 4");
     expect(detail.text()).toContain("item-004");
     expect(detail.text()).toContain("Finns");
+    expect(detail.text()).toContain("Alternativ");
+    expect(detail.text()).toContain("Växter tar upp vatten ur marken.");
+    expect(detail.text()).toContain(
+      "Djur och växter frigör energi ur socker med hjälp av syre.",
+    );
     expect(detail.text()).toContain("Saknas");
     expect(detail.text()).toContain("Facit");
     expect(wrapper.text()).not.toContain("Markera som kontrollerad");
     expect(wrapper.text()).not.toContain("Spara ändring");
     expect(wrapper.text()).not.toContain("när redigering stöds");
+  });
+
+  it("surfaces Lucktext gaps and embedded image structure in the detail pane", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.find('[data-test="exam-converter-question-row-item-001"]').trigger("click");
+
+    const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
+    const lucktext = wrapper.find('[data-test="exam-converter-selected-question-lucktext"]');
+    expect(detail.text()).toContain("Fråga 1");
+    expect(detail.text()).toContain("Lucktext");
+    expect(lucktext.text()).toContain("Luckor");
+    expect(lucktext.text()).toContain("5");
+    expect(lucktext.text()).toContain("Bilder");
+    expect(lucktext.text()).toContain("1");
+    expect(lucktext.find("img").attributes("src")).toContain("data:image/png;base64,");
   });
 
   it("keeps file actions gated before the review decision is accepted", async () => {

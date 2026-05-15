@@ -9,7 +9,7 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-05-14.
+- Date: 2026-05-15.
 - Branch: `main`.
 - Current lane: `PR-0325` Exam Converter authenticated runtime UI and save
   remediation under `ST-21-03`; Slice 6 exposed an accepted-state export gap.
@@ -93,6 +93,11 @@ Keep this file updated so the next session can pick up work quickly.
   conversion rather than runtime failure. A Sir Convert `partial` bundle caused
   only by normal free-text manual marking stays teacher-visible as a converted
   exam.
+- Slice 5 review projection refinement is implemented: flerval rows now use
+  `Flerval: ett val`, `Flerval: flera val`, and `Flerval: matchning` instead
+  of `Enval`; the selected-question detail pane shows source-backed
+  alternatives; and `Lucktext` detail shows gap count plus embedded image
+  structure from the IR without changing missing `Facit`/`Poäng` counts.
 - Slice 6 is partially implemented: authenticated Exam Converter now shows a
   review-decision gate with short `Granska` / `Godkänn` actions when actual
   `Facit`/`Poäng` gaps exist, keeps long action explanations in help
@@ -118,8 +123,6 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0316/PR-0317 smart seating history was compacted to
   `.codex/long-term-memory/entries/session-2026-05-13-pr-0316-pr-0317-smart-seating-history.md`.
 ## Verification
-- `pdm run lint`
-- `pdm run typecheck`
 - `pdm run pytest tests/unit/web/test_public_apps_exam_converter_runtime.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_public_exam_converter_upstream_clients.py -q`
   (6 passed)
 - `pdm run fe-test -- --run src/views/apps/ExamConverterPublicView.spec.ts src/views/PublicAppHostView.spec.ts src/views/AppHostView.spec.ts`
@@ -137,6 +140,9 @@ Keep this file updated so the next session can pick up work quickly.
   (30 passed)
 - `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
   (26 passed)
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
+  (9 passed; verified flerval alternatives, corrected type labels, and
+  `Lucktext` gap/image detail)
 - `pdm run pytest tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py -q`
   (3 passed)
 - `pdm run fe-type-check`
@@ -169,9 +175,6 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run docs-validate`
 - `pdm run handoff-validate`
 - `git diff --check`
-- PR-0322 live proof: submit/status/result/manifest/download passed; cookie
-  parity passed; invalid target/missing `.dxe`/unsupported root/missing job/rate
-  limit/expired grant probes failed closed; no account-owned rows were created.
 ## How to Run
 ```bash
 pdm run pytest tests/unit/web/test_public_apps_exam_converter_runtime.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_public_exam_converter_upstream_clients.py -q
@@ -186,10 +189,9 @@ git diff --check
 ## Known Issues / Risks
 - `PR-0325` is not closeout-ready until `Godkänn` is backed by a real
   accepted-state export path for target files blocked only by accepted missing
-  `Facit`/`Poäng`; the same slice must first fix the review projection so
-  flerval details show alternatives and type labels use `Flerval: ett val`,
-  `Flerval: flera val`, `Flerval: matchning`, and `Lucktext`, with the audited
-  multi-gap `Lucktext` item kept distinct from ordinary missing-field counts.
+  `Facit`/`Poäng`. The prerequisite review-projection flaw is now fixed in
+  Skriptoteket; the remaining gap belongs in the governed Sir Convert
+  accepted-state export/readiness contract.
 ## Next Steps
 - Finish `PR-0325` closeout: run the full frontend closeout gates
   only after resolving the accepted-state export gap behind `Godkänn`.

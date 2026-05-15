@@ -12,6 +12,7 @@
  */
 
 import { useAuthStore } from "../../stores/auth";
+import { DIGIEXAM_INGESTION_OVERLAY_FILENAME } from "./contractValues";
 import { toSirConvertGatewayUrl } from "./urls";
 import { prepareDigiExamMigrationRequestContext, stableJsonStringify } from "./requestContext";
 import {
@@ -90,6 +91,18 @@ function appendOptionalFile(
   }
 }
 
+function appendOptionalIngestionOverlay(
+  formData: FormData,
+  overlay: DigiExamMigrationSubmitParams["ingestionOverlay"],
+): void {
+  if (!overlay) return;
+  formData.append(
+    "digiexam_ingestion_overlay",
+    new Blob([stableJsonStringify(overlay)], { type: "application/json" }),
+    DIGIEXAM_INGESTION_OVERLAY_FILENAME,
+  );
+}
+
 function normalizeWaitSeconds(value: number | undefined): number {
   const waitSeconds = value ?? 0;
   if (!Number.isInteger(waitSeconds) || waitSeconds < 0 || waitSeconds > 20) {
@@ -108,6 +121,7 @@ export function createSirConvertGatewayClient(
       formData.append("file", params.file, params.file.name);
       appendOptionalFile(formData, "graded_result_pdf", params.gradedResultPdf);
       appendOptionalFile(formData, "parity_pdf", params.parityPdf);
+      appendOptionalIngestionOverlay(formData, params.ingestionOverlay);
       formData.append("job_spec", stableJsonStringify(requestContext.jobSpec));
 
       const response = await dependencies.fetcher(

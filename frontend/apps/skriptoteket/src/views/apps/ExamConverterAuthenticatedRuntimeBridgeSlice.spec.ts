@@ -27,6 +27,11 @@ import type {
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
+import {
+  DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+  DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
+  DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+} from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
   downloadDigiExamMigrationArtifact: vi.fn(),
@@ -37,15 +42,19 @@ const gatewayMocks = vi.hoisted(() => ({
   submitDigiExamMigration: vi.fn(),
 }));
 
-vi.mock("../../api/sirConvertGateway", () => ({
-  downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-  getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
-  getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
-  listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
-  saveDigiExamMigrationArtifactToUserFiles:
-    gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
-  submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
-}));
+vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
+  return {
+    ...actual,
+    downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+    getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
+    getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+    listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+    saveDigiExamMigrationArtifactToUserFiles:
+      gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
+    submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
+  };
+});
 
 function submittedJob(status: SirConvertJobStatus): SirConvertSubmittedJob {
   return {
@@ -72,11 +81,12 @@ function terminalResult(
     },
     conversion_metadata: {
       artifact_count: 2,
-      bundle_schema_version: "digiexam_migration_bundle_v1",
+      bundle_schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
       bundle_status: "complete",
       manual_follow_up_required: false,
       route_key: "digiexam_dxe_to_examnet_migration_bundle",
       source_sha256: "sha256:source",
+      target_readiness_report_artifact_key: "target_readiness_report",
       target_availability: {
         examnet_pdf: "available",
         qti_package: "available",
@@ -140,15 +150,31 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
     ],
     bundle_status: "partial",
     job_id: "job_exam_converter_1",
+    source: {
+      filename: "Ma1c_NationelltProv_HT25.dxe",
+      format: "digiexam_dxe",
+      sha256: "sha256:source",
+    },
     manual_follow_up: {
       artifact_key: "manual_follow_up_report",
       count: requiresReview ? 1 : 0,
       required: requiresReview,
     },
-    schema_version: "digiexam_migration_bundle_v1",
+    schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     warnings: {
       artifact_key: "warnings_report",
       count: 0,
+    },
+    readiness: {
+      artifact_key: "target_readiness_report",
+      exportable_targets: requiresReview ? [] : ["examnet_pdf", "qti_package"],
+      review_required: requiresReview,
+    },
+    source_binding: {
+      source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+      source_ir_sha256: "sha256:ir",
+      effective_exam_schema_version: "digiexam_effective_exam_v2",
+      effective_exam_sha256: "sha256:effective",
     },
   });
   gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
@@ -179,10 +205,52 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
               : [],
             parse_status: "success",
             renderer_ready: true,
-            schema_version: "digiexam_intermediate_exam_v2",
+            schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
             source_filename: "Ma1c_NationelltProv_HT25.dxe",
             source_producer: null,
             warnings: [],
+          }),
+        );
+      }
+      if (artifactKey === "target_readiness_report") {
+        return Promise.resolve(
+          artifactJsonBlob("target_readiness_report", {
+            schema_version: "target_readiness_report_v1",
+            job_id: "job_exam_converter_1",
+            source_ir_sha256: "sha256:ir",
+            effective_exam_sha256: "sha256:effective",
+            targets: [
+              {
+                target: "examnet_pdf",
+                readiness: requiresReview ? "needs_teacher_answer_key" : "ready",
+                export_enabled: !requiresReview,
+                artifact_key: requiresReview ? null : "examnet_pdf",
+                reason_code: requiresReview ? "manual_answer_key_required" : "target_available",
+                teacher_action: requiresReview ? "supply_answer_key_overlay" : "none",
+                retryable: false,
+                message_key: requiresReview
+                  ? "exam_converter.target.needs_teacher_answer_key"
+                  : "exam_converter.target.ready",
+                item_id: requiresReview ? "item-002" : null,
+                sequence: requiresReview ? 2 : null,
+                source_item_fingerprint: requiresReview ? "sha256:item-002" : null,
+              },
+              {
+                target: "qti_package",
+                readiness: requiresReview ? "needs_teacher_answer_key" : "ready",
+                export_enabled: !requiresReview,
+                artifact_key: requiresReview ? null : "qti_package",
+                reason_code: requiresReview ? "manual_answer_key_required" : "target_available",
+                teacher_action: requiresReview ? "supply_answer_key_overlay" : "none",
+                retryable: false,
+                message_key: requiresReview
+                  ? "exam_converter.target.needs_teacher_answer_key"
+                  : "exam_converter.target.ready",
+                item_id: requiresReview ? "item-002" : null,
+                sequence: requiresReview ? 2 : null,
+                source_item_fingerprint: requiresReview ? "sha256:item-002" : null,
+              },
+            ],
           }),
         );
       }
@@ -190,13 +258,34 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
         artifactJsonBlob("migration_manifest", {
           asset_count: 0,
           asset_summaries: [],
-          exam_schema_version: "digiexam_intermediate_exam_v2",
+          exam_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
           item_count: 2,
-          item_summaries: [],
+          item_summaries: [
+            {
+              item_id: "item-001",
+              sequence: 1,
+              title: "Beräkna värdet.",
+              item_type: "multiple_choice",
+              source_item_fingerprint: "sha256:item-001",
+              answer_key_provenance: "dxe_populated_key",
+              manual_follow_up_required: false,
+              asset_summaries: [],
+            },
+            {
+              item_id: "item-002",
+              sequence: 2,
+              title: "Vilket av följande tal är ett primtal?",
+              item_type: "multiple_choice",
+              source_item_fingerprint: "sha256:item-002",
+              answer_key_provenance: requiresReview ? "absent" : "dxe_populated_key",
+              manual_follow_up_required: requiresReview,
+              asset_summaries: [],
+            },
+          ],
           manual_follow_up_count: requiresReview ? 1 : 0,
           parse_status: "success",
           renderer_ready: true,
-          schema_version: "digiexam_ir_manifest_v2",
+          schema_version: DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
           source_filename: "Ma1c_NationelltProv_HT25.dxe",
           source_producer: null,
           warning_count: 0,
@@ -324,7 +413,7 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
     gatewayMocks.submitDigiExamMigration.mockResolvedValueOnce(submittedJob("succeeded"));
     gatewayMocks.getDigiExamMigrationResult.mockResolvedValueOnce(
       terminalResult({
-        bundle_status: "blocked",
+        bundle_status: "needs_review",
         manual_follow_up_required: true,
         warning_count: 3,
       }),

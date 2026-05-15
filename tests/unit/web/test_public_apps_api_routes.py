@@ -6,6 +6,9 @@ from unittest.mock import Mock
 
 import pytest
 
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+)
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
@@ -172,8 +175,12 @@ async def test_get_public_app_capability_bootstrap_returns_active_exam_converter
     assert "raw_conversion_grant" in response.public_capability.authority_boundary.blocked_exposure
     assert "direct_upstream_host" in response.public_capability.authority_boundary.blocked_exposure
     assert response.public_capability.target_vocabulary == ["examnet_pdf", "qti_package"]
-    assert response.public_capability.artifact_manifest_schema == "digiexam_migration_bundle_v1"
+    assert (
+        response.public_capability.artifact_manifest_schema
+        == DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION
+    )
     assert "manual_follow_up_report" in response.public_capability.artifact_keys
+    assert "target_readiness_report" in response.public_capability.artifact_keys
     assert "public_exam_converter_rate_limited" in response.public_capability.reason_codes
     assert "vault_or_myfiles_save" in response.public_capability.blocked_affordances
     assert "authenticated_route_discovery" in response.public_capability.blocked_affordances

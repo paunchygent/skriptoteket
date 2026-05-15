@@ -78,7 +78,8 @@ function buildSourceLabel(params: DigiExamMigrationSubmitParams): string {
     ? `${params.gradedResultPdf.name}:${params.gradedResultPdf.size}`
     : "none";
   const parity = params.parityPdf ? `${params.parityPdf.name}:${params.parityPdf.size}` : "none";
-  return `${params.file.name}:${params.file.size}:${targets}:${graded}:${parity}`;
+  const overlay = params.ingestionOverlay ? stableJsonStringify(params.ingestionOverlay) : "none";
+  return `${params.file.name}:${params.file.size}:${targets}:${graded}:${parity}:${overlay}`;
 }
 
 async function buildDigestParts(
@@ -91,6 +92,9 @@ async function buildDigestParts(
   }
   if (params.parityPdf) {
     digestParts.push(`parity_pdf:${await sha256HexFromBlob(params.parityPdf)}`);
+  }
+  if (params.ingestionOverlay) {
+    digestParts.push(`digiexam_ingestion_overlay:${stableJsonStringify(params.ingestionOverlay)}`);
   }
   return digestParts;
 }

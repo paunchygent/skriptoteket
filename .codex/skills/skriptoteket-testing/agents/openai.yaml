@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skriptoteket Testing"
+  short_description: "Route Skriptoteket test lanes"
+  default_prompt: "Use $skriptoteket-testing to choose the right Skriptoteket test lane and verification gates."

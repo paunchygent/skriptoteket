@@ -11,6 +11,15 @@
  */
 
 import { SirConvertGatewayError } from "./errors";
+import {
+  DIGIEXAM_INGESTION_OVERLAY_FILENAME,
+  DIGIEXAM_INGESTION_OVERLAY_POLICY_APPLY_TEACHER,
+  DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE,
+  DIGIEXAM_MIGRATION_OUTPUT_FORMAT,
+  DIGIEXAM_MIGRATION_TARGETS,
+  DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED,
+  DIGIEXAM_SOURCE_FORMAT,
+} from "./contractValues";
 import type {
   DigiExamMigrationSubmitParams,
   DigiExamMigrationTarget,
@@ -18,8 +27,7 @@ import type {
 } from "./types";
 
 export const DEFAULT_DIGIEXAM_MIGRATION_TARGETS: DigiExamMigrationTarget[] = [
-  "examnet_pdf",
-  "qti_package",
+  ...DIGIEXAM_MIGRATION_TARGETS,
 ];
 
 function validatePrimaryFile(file: File): void {
@@ -38,8 +46,8 @@ export function buildDigiExamMigrationJobSpec(
   validatePrimaryFile(params.file);
 
   const options: SirConvertDigiExamJobSpec["digiexam_migration_options"] = {
-    result_pdf_usage: "correct_machine_marked_answers_only",
-    manual_follow_up_policy: "emit_item_addressable_report",
+    result_pdf_usage: DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED,
+    manual_follow_up_policy: DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE,
   };
   if (params.gradedResultPdf) {
     options.graded_result_pdf_filename = params.gradedResultPdf.name;
@@ -47,16 +55,20 @@ export function buildDigiExamMigrationJobSpec(
   if (params.parityPdf) {
     options.parity_pdf_filename = params.parityPdf.name;
   }
+  if (params.ingestionOverlay) {
+    options.ingestion_overlay_filename = DIGIEXAM_INGESTION_OVERLAY_FILENAME;
+    options.ingestion_overlay_policy = DIGIEXAM_INGESTION_OVERLAY_POLICY_APPLY_TEACHER;
+  }
 
   return {
     api_version: "v2",
     source: {
       kind: "upload",
       filename: params.file.name,
-      format: "digiexam_dxe",
+      format: DIGIEXAM_SOURCE_FORMAT,
     },
     conversion: {
-      output_format: "examnet_migration_bundle",
+      output_format: DIGIEXAM_MIGRATION_OUTPUT_FORMAT,
       targets: params.targets ?? DEFAULT_DIGIEXAM_MIGRATION_TARGETS,
       artifact_language: params.artifactLanguage?.trim() || "sv",
       reference_docx_filename: null,

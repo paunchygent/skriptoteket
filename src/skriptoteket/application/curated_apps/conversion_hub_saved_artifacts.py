@@ -12,10 +12,13 @@ Relationships:
 """
 
 from datetime import datetime
-from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from skriptoteket.application.curated_apps.sir_convert_contracts import (
+    DigiExamMigrationBundleSchemaVersion,
+)
 
 
 class ConversionHubSirConvertArtifactSaveMetadata(BaseModel):
@@ -30,7 +33,7 @@ class ConversionHubSirConvertArtifactSaveMetadata(BaseModel):
     content_type: str = Field(min_length=1, max_length=255)
     size_bytes: int | None = Field(default=None, ge=0)
     sha256: str | None = Field(default=None, min_length=64, max_length=64)
-    bundle_schema_version: Literal["digiexam_migration_bundle_v1"]
+    bundle_schema_version: DigiExamMigrationBundleSchemaVersion
     correlation_id: str = Field(min_length=1, max_length=128)
     saved_at: datetime
 

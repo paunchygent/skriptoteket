@@ -163,7 +163,6 @@ function handleDrop(event: DragEvent): void {
           />
           <ExamConverterFilesReadinessList
             v-else-if="activeInspectionMode === 'files'"
-            :accepted-current-state="acceptedCurrentState"
             :action-states="fileActionStates"
             :actions-enabled="canUseFiles"
             :files="reviewProjection.files"

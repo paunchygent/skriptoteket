@@ -20,11 +20,16 @@ import {
   submitDigiExamMigration,
 } from "../../../api/sirConvertGateway";
 import type {
+  DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
   SirConvertJobStatus,
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../../api/sirConvertGateway";
+import {
+  DIGIEXAM_TARGET_EXAMNET_PDF,
+  DIGIEXAM_TARGET_QTI_PACKAGE,
+} from "../../../api/sirConvertGateway/contractValues";
 import type { ExamConverterTargetSelection } from "./useExamConverterSourceFile";
 
 type AuthenticatedRuntimeClient = {
@@ -37,6 +42,7 @@ export type ExamConverterAuthenticatedRuntimeSubmission = {
   sourceFile: File;
   supportingFile: File | null;
   targetSelection: ExamConverterTargetSelection;
+  ingestionOverlay?: DigiExamIngestionOverlay | null;
 };
 
 export type ExamConverterAuthenticatedRuntimeOptions = {
@@ -78,10 +84,10 @@ function isFailedJobStatus(status: SirConvertJobStatus): boolean {
 function toGatewayTargets(selection: ExamConverterTargetSelection): DigiExamMigrationTarget[] {
   const targets: DigiExamMigrationTarget[] = [];
   if (selection.pdf) {
-    targets.push("examnet_pdf");
+    targets.push(DIGIEXAM_TARGET_EXAMNET_PDF);
   }
   if (selection.qti) {
-    targets.push("qti_package");
+    targets.push(DIGIEXAM_TARGET_QTI_PACKAGE);
   }
   return targets;
 }
@@ -171,6 +177,7 @@ export function useExamConverterAuthenticatedRuntime(
         artifactLanguage: "sv",
         file: submission.sourceFile,
         gradedResultPdf: submission.supportingFile,
+        ingestionOverlay: submission.ingestionOverlay,
         targets,
         waitSeconds: 0,
       });

@@ -11,15 +11,33 @@
  */
 
 import { SirConvertGatewayError } from "./errors";
+import {
+  DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+  DIGIEXAM_SOURCE_FORMAT,
+  DIGIEXAM_TARGET_READINESS_VALUES,
+  SIR_CONVERT_ARTIFACT_AVAILABILITIES,
+  SIR_CONVERT_ARTIFACT_FAILED,
+  SIR_CONVERT_ARTIFACT_UNAVAILABLE,
+  SIR_CONVERT_BUNDLE_STATUSES,
+} from "./contractValues";
 import type {
   SirConvertArtifactAvailability,
   SirConvertArtifactEntry,
   SirConvertArtifactManifest,
   SirConvertBundleStatus,
+  SirConvertArtifactManifestReadiness,
+  SirConvertArtifactManifestSource,
+  SirConvertArtifactManifestSourceBinding,
+  DigiExamTargetReadinessReport,
+  DigiExamTargetReadiness,
   SirConvertJob,
   SirConvertJobStatus,
   SirConvertTerminalResult,
 } from "./types";
+import {
+  DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+  TARGET_READINESS_REPORT_SCHEMA_VERSION,
+} from "./schemaVersions";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -58,6 +76,13 @@ function readBoolean(value: unknown, fieldName: string): boolean {
   throw new Error(`Sir Convert response field '${fieldName}' is not a boolean.`);
 }
 
+function readStringArray(value: unknown, fieldName: string): string[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`Sir Convert response field '${fieldName}' is not an array.`);
+  }
+  return value.map((entry, index) => readString(entry, `${fieldName}[${index}]`));
+}
+
 function readStatus(value: unknown): SirConvertJobStatus {
   const status = readString(value, "status");
   if (
@@ -77,23 +102,26 @@ function readStatus(value: unknown): SirConvertJobStatus {
 
 function readBundleStatus(value: unknown): SirConvertBundleStatus {
   const status = readString(value, "bundle_status");
-  if (status === "complete" || status === "partial" || status === "blocked") return status;
+  if (SIR_CONVERT_BUNDLE_STATUSES.includes(status as SirConvertBundleStatus)) {
+    return status as SirConvertBundleStatus;
+  }
   throw new Error(`Unknown Sir Convert bundle status '${status}'.`);
 }
 
 function readArtifactAvailability(value: unknown): SirConvertArtifactAvailability {
   const availability = readString(value, "availability");
-  if (
-    availability === "available" ||
-    availability === "blocked" ||
-    availability === "failed" ||
-    availability === "not_requested" ||
-    availability === "not_implemented" ||
-    availability === "not_supported_by_examnet"
-  ) {
-    return availability;
+  if (SIR_CONVERT_ARTIFACT_AVAILABILITIES.includes(availability as SirConvertArtifactAvailability)) {
+    return availability as SirConvertArtifactAvailability;
   }
   throw new Error(`Unknown Sir Convert artifact availability '${availability}'.`);
+}
+
+function readTargetReadiness(value: unknown, fieldName: string): DigiExamTargetReadiness {
+  const readiness = readString(value, fieldName);
+  if (DIGIEXAM_TARGET_READINESS_VALUES.includes(readiness as DigiExamTargetReadiness)) {
+    return readiness as DigiExamTargetReadiness;
+  }
+  throw new Error(`Unknown Sir Convert target readiness '${readiness}'.`);
 }
 
 export function parseJob(payload: unknown): SirConvertJob {
@@ -140,6 +168,16 @@ export function parseTerminalResult(payload: unknown): SirConvertTerminalResult 
       ),
       bundle_status: readBundleStatus(metadata.bundle_status),
       source_sha256: readNullableString(metadata.source_sha256, "source_sha256"),
+      target_readiness_report_artifact_key: (() => {
+        const artifactKey = readNullableString(
+          metadata.target_readiness_report_artifact_key,
+          "target_readiness_report_artifact_key",
+        );
+        if (artifactKey !== null && artifactKey !== DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT) {
+          throw new Error("Sir Convert terminal result points to an unknown readiness artifact.");
+        }
+        return artifactKey;
+      })(),
       target_availability: parseTargetAvailability(metadata.target_availability),
       manual_follow_up_required: readBoolean(
         metadata.manual_follow_up_required,
@@ -159,16 +197,21 @@ function parseArtifactEntry(payload: unknown): SirConvertArtifactEntry {
     typeof entry.download_path === "string" && entry.download_path.length > 0
       ? entry.download_path
       : undefined;
-  const blockerCode =
-    typeof entry.blocker_code === "string" && entry.blocker_code.length > 0
-      ? entry.blocker_code
+  const unavailableCode =
+    typeof entry.unavailable_code === "string" && entry.unavailable_code.length > 0
+      ? entry.unavailable_code
+      : undefined;
+  const dependsOn =
+    typeof entry.depends_on === "string" && entry.depends_on.length > 0
+      ? entry.depends_on
       : undefined;
   if (
-    (availability === "blocked" || availability === "failed" || availability === "not_implemented") &&
-    !blockerCode
+    (availability === SIR_CONVERT_ARTIFACT_UNAVAILABLE ||
+      availability === SIR_CONVERT_ARTIFACT_FAILED) &&
+    !unavailableCode
   ) {
     throw new Error(
-      `Sir Convert artifact '${artifactKey}' requires blocker_code for '${availability}' availability.`,
+      `Sir Convert artifact '${artifactKey}' requires unavailable_code for '${availability}' availability.`,
     );
   }
   return {
@@ -179,13 +222,59 @@ function parseArtifactEntry(payload: unknown): SirConvertArtifactEntry {
     size_bytes: readNullableNumber(entry.size_bytes, "size_bytes"),
     sha256: readNullableString(entry.sha256, "sha256"),
     ...(downloadPath ? { download_path: downloadPath } : {}),
-    ...(blockerCode ? { blocker_code: blockerCode } : {}),
+    ...(unavailableCode ? { unavailable_code: unavailableCode } : {}),
+    ...(dependsOn ? { depends_on: dependsOn } : {}),
+  };
+}
+
+function parseManifestSource(payload: unknown): SirConvertArtifactManifestSource {
+  const source = readRecord(payload, "source");
+  const format = readString(source.format, "source.format");
+  if (format !== DIGIEXAM_SOURCE_FORMAT) {
+    throw new Error(`Unknown Sir Convert DigiExam source format '${format}'.`);
+  }
+  return {
+    filename: readString(source.filename, "source.filename"),
+    sha256: readString(source.sha256, "source.sha256"),
+    format,
+  };
+}
+
+function parseManifestReadiness(payload: unknown): SirConvertArtifactManifestReadiness {
+  const readiness = readRecord(payload, "readiness");
+  const artifactKey = readString(readiness.artifact_key, "readiness.artifact_key");
+  if (artifactKey !== DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT) {
+    throw new Error("Sir Convert readiness summary does not point to target_readiness_report.");
+  }
+  return {
+    artifact_key: artifactKey,
+    exportable_targets: readStringArray(readiness.exportable_targets, "readiness.exportable_targets"),
+    review_required: readBoolean(readiness.review_required, "readiness.review_required"),
+  };
+}
+
+function parseManifestSourceBinding(payload: unknown): SirConvertArtifactManifestSourceBinding {
+  const sourceBinding = readRecord(payload, "source_binding");
+  return {
+    source_ir_schema_version: readString(
+      sourceBinding.source_ir_schema_version,
+      "source_binding.source_ir_schema_version",
+    ) as SirConvertArtifactManifestSourceBinding["source_ir_schema_version"],
+    source_ir_sha256: readString(sourceBinding.source_ir_sha256, "source_binding.source_ir_sha256"),
+    effective_exam_schema_version: readString(
+      sourceBinding.effective_exam_schema_version,
+      "source_binding.effective_exam_schema_version",
+    ),
+    effective_exam_sha256: readString(
+      sourceBinding.effective_exam_sha256,
+      "source_binding.effective_exam_sha256",
+    ),
   };
 }
 
 export function parseArtifactManifest(payload: unknown): SirConvertArtifactManifest {
   const root = readRecord(payload, "manifest");
-  if (root.schema_version !== "digiexam_migration_bundle_v1") {
+  if (root.schema_version !== DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION) {
     throw new Error("Sir Convert artifact manifest has an unknown schema version.");
   }
   if (!Array.isArray(root.artifacts)) {
@@ -194,8 +283,9 @@ export function parseArtifactManifest(payload: unknown): SirConvertArtifactManif
   const manualFollowUp = root.manual_follow_up;
   const warnings = root.warnings;
   return {
-    schema_version: "digiexam_migration_bundle_v1",
+    schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     job_id: readString(root.job_id, "job_id"),
+    source: parseManifestSource(root.source),
     bundle_status: readBundleStatus(root.bundle_status),
     artifacts: root.artifacts.map((entry) => parseArtifactEntry(entry)),
     manual_follow_up: isRecord(manualFollowUp)
@@ -211,6 +301,46 @@ export function parseArtifactManifest(payload: unknown): SirConvertArtifactManif
           count: readNumber(warnings.count, "warnings.count"),
         }
       : null,
+    readiness: parseManifestReadiness(root.readiness),
+    source_binding: parseManifestSourceBinding(root.source_binding),
+  };
+}
+
+export function parseTargetReadinessReport(payload: unknown): DigiExamTargetReadinessReport {
+  const root = readRecord(payload, DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT);
+  if (root.schema_version !== TARGET_READINESS_REPORT_SCHEMA_VERSION) {
+    throw new Error("Sir Convert target readiness report has an unknown schema version.");
+  }
+  if (!Array.isArray(root.targets)) {
+    throw new Error("Sir Convert target readiness report is missing targets.");
+  }
+  return {
+    schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
+    job_id: readString(root.job_id, "job_id"),
+    source_ir_sha256: readString(root.source_ir_sha256, "source_ir_sha256"),
+    effective_exam_sha256: readString(root.effective_exam_sha256, "effective_exam_sha256"),
+    targets: root.targets.map((entry, index) => {
+      const row = readRecord(entry, `targets[${index}]`);
+      return {
+        target: readString(row.target, `targets[${index}].target`),
+        readiness: readTargetReadiness(row.readiness, `targets[${index}].readiness`),
+        export_enabled: readBoolean(row.export_enabled, `targets[${index}].export_enabled`),
+        artifact_key: readNullableString(row.artifact_key, `targets[${index}].artifact_key`),
+        reason_code: readString(row.reason_code, `targets[${index}].reason_code`),
+        teacher_action: readString(row.teacher_action, `targets[${index}].teacher_action`),
+        retryable: readBoolean(row.retryable, `targets[${index}].retryable`),
+        message_key: readString(row.message_key, `targets[${index}].message_key`),
+        item_id: readNullableString(row.item_id, `targets[${index}].item_id`),
+        sequence:
+          row.sequence === null || row.sequence === undefined
+            ? null
+            : readNumber(row.sequence, `targets[${index}].sequence`),
+        source_item_fingerprint: readNullableString(
+          row.source_item_fingerprint,
+          `targets[${index}].source_item_fingerprint`,
+        ),
+      };
+    }),
   };
 }
 
