@@ -27,9 +27,11 @@ import type {
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
+  DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+  TARGET_READINESS_REPORT_SCHEMA_VERSION,
 } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
@@ -84,10 +86,6 @@ function terminalResult(): SirConvertTerminalResult {
       route_key: "digiexam_dxe_to_examnet_migration_bundle",
       source_sha256: null,
       target_readiness_report_artifact_key: "target_readiness_report",
-      target_availability: {
-        examnet_pdf: "unavailable",
-        qti_package: "unavailable",
-      },
       warning_count: 0,
     },
     job: {
@@ -122,7 +120,7 @@ let acceptedOverlaySubmitted = false;
 function targetReadinessReportPayload() {
   if (acceptedOverlaySubmitted) {
     return {
-      schema_version: "target_readiness_report_v1",
+      schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
       job_id: "job_exam_converter_files",
       source_ir_sha256: "sha256:ir",
       effective_exam_sha256: "sha256:effective",
@@ -157,7 +155,7 @@ function targetReadinessReportPayload() {
     };
   }
   return {
-    schema_version: "target_readiness_report_v1",
+    schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
     job_id: "job_exam_converter_files",
     source_ir_sha256: "sha256:ir",
     effective_exam_sha256: "sha256:effective",
@@ -241,7 +239,7 @@ function mockReviewArtifacts(): void {
     source_binding: {
       source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
       source_ir_sha256: "sha256:ir",
-      effective_exam_schema_version: "digiexam_effective_exam_v2",
+      effective_exam_schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
       effective_exam_sha256: "sha256:effective",
     },
   });

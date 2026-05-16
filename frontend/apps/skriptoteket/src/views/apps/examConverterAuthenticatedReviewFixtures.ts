@@ -86,10 +86,6 @@ export function terminalResult(): SirConvertTerminalResult {
       route_key: DIGIEXAM_MIGRATION_ROUTE_KEY,
       source_sha256: null,
       target_readiness_report_artifact_key: DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
-      target_availability: {
-        [DIGIEXAM_TARGET_EXAMNET_PDF]: SIR_CONVERT_ARTIFACT_AVAILABLE,
-        [DIGIEXAM_TARGET_QTI_PACKAGE]: SIR_CONVERT_ARTIFACT_AVAILABLE,
-      },
       warning_count: 1,
     },
     job: {

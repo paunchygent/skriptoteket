@@ -5,7 +5,7 @@ title: "ST-21-03 Exam Converter authenticated runtime UI and save remediation"
 status: ready
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-14
+updated: 2026-05-15
 stories:
   - "ST-21-03"
 tags:
@@ -469,14 +469,18 @@ Implementation notes:
   saved QTI to user files, and kept the upstream-blocked PDF row disabled.
   Screenshot retained locally at
   `.artifacts/pr-0325-live/slice-6-review-gate-files-save.png`.
-- Follow-up live audit with
-  `1811577114-ekologiprov-v-49-25d-e.dxe` exposed the incomplete end-state:
-  after `Godkänn`, both target rows remained disabled because Sir Convert
-  returned `examnet_pdf` as `blocked/manual_answer_key_required` and
-  `qti_package` as `blocked/qti_validation_failed`. That contradicts the
-  intended `Godkänn` semantics for accepted missing `Facit`/`Poäng`; the local
-  UI acceptance must be replaced or backed by a governed accepted-state export
-  path before `PR-0325` can be treated as closed.
+- Follow-up live audit with a fresh byte-distinct copy of
+  `1811577114-ekologiprov-v-49-25d-e.dxe` now proves the accepted-state
+  end-state against rebuilt Sir Convert. Before `Godkänn`, both target rows are
+  disabled. After `Godkänn`, Sir Convert returns `examnet_pdf` and
+  `qti_package` as available; both rows show `Godkänt för export`; QTI saves to
+  user files; and the generated PDF is retained locally at
+  `.artifacts/pr-0325-live/fresh-examnet-import.pdf`.
+- The fresh `target_readiness_report_v1` shows
+  `ready_after_accepted_current_state` for `examnet_pdf` on items 1, 2, 3, and
+  13 with reason `accepted_current_state_pdf_manual_unkeyed_profile`, and
+  `ready_after_accepted_current_state` for `qti_package` on the same items with
+  reason `accepted_current_state_manual_unkeyed_profile`.
 - The same audit exposed a prerequisite review-projection flaw that belongs in
   this save/export slice: Skriptoteket currently cannot let the teacher make a
   meaningful `Godkänn` decision for flerval questions because the UI projection
@@ -488,25 +492,23 @@ Implementation notes:
 - For the audited ecology `.dxe`, Sir Convert classifies question 13 as
   `Lucktext` because the source carries DigiExam `type: 3`, `bodyHTML`
   `dxWordGap` spans, five `blanks`, and one embedded image reference. That
-  classification is source-backed. The blocker is target readiness: the current
-  PDF/QTI outputs do not have a governed safe shape for this multi-gap
-  no-validation item. PR-0325 must keep that blocker distinct from ordinary
-  missing `Facit`/`Poäng` counts and must not treat `Godkänn` as enabling a file
-  Sir Convert cannot create safely.
+  classification is source-backed. The fresh accepted-state PDF render now
+  preserves it as manual/free-text output with the embedded image and five gap
+  placeholders; it must still not invent accepted values or claim fixed
+  `Facit`.
 
 Recommended solution retained for this slice:
 
 - tighten the Skriptoteket review projection so question type labels follow the
   approved Swedish taxonomy and selected flerval details include alternatives;
-- require Sir Convert to expose accepted-state export/readiness as a governed
+- keep consuming Sir Convert's governed accepted-state export/readiness
   contract, preserving per-target and per-item blocker reasons instead of a
   stale local `Godkänn` flag;
-- allow `Godkänn` to trigger or refresh that accepted-state export only for
-  target rows Sir Convert can actually create under the accepted-current-state
-  policy; and
-- keep unsupported target-shape blockers, such as the audited multi-gap
-  `Lucktext` item, disabled with a visible outcome until Sir Convert has a
-  governed renderer/import shape for them.
+- allow `Godkänn` to trigger or refresh accepted-state export only for target
+  rows Sir Convert can actually create under the accepted-current-state policy;
+  and
+- keep unsupported target-shape blockers disabled with a visible outcome if a
+  future source item still has no governed producer representation.
 
 Out of scope for slice 6 until separately approved:
 
@@ -515,6 +517,38 @@ Out of scope for slice 6 until separately approved:
 - batch answer-key editing;
 - unrelated Vault redesign;
 - public-lane save/persistence.
+
+### Task 306 Sir Convert Contract Consumer Sync
+
+Status: implemented after Sir Convert `Task 306` retained review.
+
+Implemented:
+
+- Regenerated Skriptoteket's checked-in Sir Convert OpenAPI consumer types from
+  Sir Convert's `sir-convert-a-lot-v2.openapi.json` snapshot so
+  `DigiExamEffectiveAnswerKeyLineageV1`,
+  `DigiExamEffectiveAnswerKeyV1.lineage`, and
+  `DigiExamIngestionOverlayItem.reviewed_completion_answer_key` are present in
+  the authenticated Exam Converter type surface.
+- Added a focused Gateway client contract fixture proving the Task 306
+  reviewed-completion overlay field and effective-answer-key lineage field are
+  accepted by the generated consumer types.
+- Removed the obsolete terminal-result `target_availability` consumer
+  expectation from handwritten Gateway types, parsers, and fixtures; target
+  file state now stays with the artifact manifest/readiness artifacts.
+- Replaced nearby hard-coded DigiExam schema-version literals in authenticated
+  frontend fixtures with the existing centralized schema-version constants.
+- Removed the production Tailwind Vite plugin from Vitest's jsdom config while
+  leaving Tailwind in the real Vite dev/build config, so `fe-test` no longer
+  loads `@tailwindcss/node` and no longer emits Node `DEP0205`.
+
+Boundary:
+
+- This pass does not add UI for reviewed advisory candidates.
+- This pass does not apply reviewed candidates inside Skriptoteket.
+- Sir Convert remains responsible for applying reviewed completions through the
+  overlay into effective IR; Skriptoteket only keeps the consumer contract
+  current.
 
 Stop conditions for slice 6:
 

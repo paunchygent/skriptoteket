@@ -28,9 +28,11 @@ import type {
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
+  DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+  TARGET_READINESS_REPORT_SCHEMA_VERSION,
 } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
@@ -87,10 +89,6 @@ function terminalResult(
       route_key: "digiexam_dxe_to_examnet_migration_bundle",
       source_sha256: "sha256:source",
       target_readiness_report_artifact_key: "target_readiness_report",
-      target_availability: {
-        examnet_pdf: "available",
-        qti_package: "available",
-      },
       warning_count: 0,
       ...overrides,
     },
@@ -173,7 +171,7 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
     source_binding: {
       source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
       source_ir_sha256: "sha256:ir",
-      effective_exam_schema_version: "digiexam_effective_exam_v2",
+      effective_exam_schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
       effective_exam_sha256: "sha256:effective",
     },
   });
@@ -215,7 +213,7 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
       if (artifactKey === "target_readiness_report") {
         return Promise.resolve(
           artifactJsonBlob("target_readiness_report", {
-            schema_version: "target_readiness_report_v1",
+            schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
             job_id: "job_exam_converter_1",
             source_ir_sha256: "sha256:ir",
             effective_exam_sha256: "sha256:effective",

@@ -477,6 +477,7 @@ function buildAcceptedCurrentStateOverlay(params: {
         note: null,
         accepted_targets: acceptedTargets,
       },
+      reviewed_completion_answer_key: null,
     }));
 
   if (items.length === 0 || acceptedTargets.length === 0) {

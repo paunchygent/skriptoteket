@@ -13,7 +13,13 @@ import {
   saveDigiExamMigrationArtifactToUserFiles,
   submitDigiExamMigration,
 } from ".";
-import { DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION } from "./schemaVersions";
+import type { DigiExamEffectiveAnswerKey, DigiExamIngestionOverlay } from "./types";
+import {
+  DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
+  DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
+  DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+  DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+} from "./schemaVersions";
 
 function jsonResponse(payload: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
@@ -123,10 +129,10 @@ describe("Sir Convert Gateway browser client", () => {
     await submitDigiExamMigration({
       file: dxeFile(),
       ingestionOverlay: {
-        schema_version: "digiexam_ingestion_overlay_v2",
+        schema_version: DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
         source_binding: {
           source_file_sha256: "sha256:source",
-          source_ir_schema_version: "digiexam_intermediate_exam_v3",
+          source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
           source_ir_sha256: "sha256:ir",
         },
         items: [
@@ -143,6 +149,7 @@ describe("Sir Convert Gateway browser client", () => {
               note: null,
               accepted_targets: ["qti_package"],
             },
+            reviewed_completion_answer_key: null,
           },
         ],
       },
@@ -169,6 +176,58 @@ describe("Sir Convert Gateway browser client", () => {
     );
   });
 
+  it("keeps Task 306 reviewed-completion fields in the generated Sir Convert contract", () => {
+    const reviewedOverlayItem = {
+      effective_item_patch: null,
+      item_id: "item-001",
+      item_type: "multiple_choice",
+      manual_answer_key: null,
+      review_decision: null,
+      reviewed_completion_answer_key: {
+        answer_payload: {
+          correct_alternative_ids: [1],
+          kind: "choice",
+        },
+        candidate_lineage: {
+          candidate_id: "candidate-001",
+          candidate_payload_digest: "sha256:candidate",
+          completion_report_sha256: "sha256:report",
+          prompt_template_version: "digiexam-choice-answer-key-v1",
+          provider_profile_id: "local-fixture",
+          schema_name: "digiexam_choice_answer_key_decision_v1",
+          schema_version: "digiexam_choice_answer_key_decision_v1",
+          validation_state: "valid",
+        },
+        kind: "choice",
+        review_decision_id: "review-001",
+        review_outcome: "accepted_unchanged",
+      },
+      sequence: 1,
+      source_item_fingerprint: "sha256:item",
+    } satisfies DigiExamIngestionOverlay["items"][number];
+    const effectiveAnswerKey = {
+      correct_alternative_ids: [1],
+      lineage: {
+        candidate_id: "candidate-001",
+        candidate_payload_digest: "sha256:candidate",
+        completion_report_sha256: "sha256:report",
+        prompt_template_version: "digiexam-choice-answer-key-v1",
+        provider_profile_id: "local-fixture",
+        review_decision_id: "review-001",
+        review_outcome: "accepted_unchanged",
+        schema_name: "digiexam_choice_answer_key_decision_v1",
+        schema_version: "digiexam_choice_answer_key_decision_v1",
+        validation_state: "valid",
+      },
+      provenance: "reviewed",
+    } satisfies DigiExamEffectiveAnswerKey;
+
+    expect(
+      reviewedOverlayItem.reviewed_completion_answer_key?.candidate_lineage.validation_state,
+    ).toBe("valid");
+    expect(effectiveAnswerKey.lineage?.review_outcome).toBe("accepted_unchanged");
+  });
+
   it("reads status, result, manifest, and named artifacts with one correlation ID", async () => {
     mockJson({ job: { job_id: "job_1", status: "running" } });
     mockJson({
@@ -188,10 +247,6 @@ describe("Sir Convert Gateway browser client", () => {
           bundle_status: "partial",
           source_sha256: "sha256:def",
           target_readiness_report_artifact_key: "target_readiness_report",
-          target_availability: {
-            examnet_pdf: "unavailable",
-            qti_package: "not_requested",
-          },
           manual_follow_up_required: true,
           warning_count: 3,
           artifact_count: 9,
@@ -241,9 +296,9 @@ describe("Sir Convert Gateway browser client", () => {
         review_required: true,
       },
       source_binding: {
-        source_ir_schema_version: "digiexam_intermediate_exam_v3",
+        source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
         source_ir_sha256: "sha256:ir",
-        effective_exam_schema_version: "digiexam_effective_exam_v2",
+        effective_exam_schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
         effective_exam_sha256: "sha256:effective",
       },
     });
@@ -275,7 +330,6 @@ describe("Sir Convert Gateway browser client", () => {
     });
 
     expect(result.conversion_metadata.bundle_status).toBe("partial");
-    expect(result.conversion_metadata.target_availability.qti_package).toBe("not_requested");
     expect(manifest.bundle_status).toBe("needs_review");
     expect(isSirConvertArtifactAvailable(manifest.artifacts[0])).toBe(false);
     expect(artifact.filename).toBe("examnet-import.pdf");
@@ -290,6 +344,42 @@ describe("Sir Convert Gateway browser client", () => {
       expect(requestHeaders(index).get("X-Correlation-ID")).toBe("corr_1");
       expect(requestHeaders(index).get("X-API-Key")).toBeNull();
     }
+  });
+
+  it("reads v3 terminal results without obsolete target availability state", async () => {
+    mockJson({
+      api_version: "v2",
+      job_id: "job_1",
+      status: "succeeded",
+      result: {
+        artifact: {
+          filename: "artifact-bundle.json",
+          content_type: "application/json",
+          sha256: "sha256:abc",
+          size_bytes: 6300,
+        },
+        conversion_metadata: {
+          route_key: "digiexam_dxe_to_examnet_migration_bundle",
+          bundle_schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+          bundle_status: "failed",
+          source_sha256: "sha256:def",
+          target_readiness_report_artifact_key: "target_readiness_report",
+          manual_follow_up_required: true,
+          warning_count: 11,
+          artifact_count: 13,
+        },
+      },
+    });
+
+    const result = await getDigiExamMigrationResult({
+      jobId: "job_1",
+      correlationId: "corr_1",
+    });
+
+    expect(result.conversion_metadata.bundle_status).toBe("failed");
+    expect(result.conversion_metadata.target_readiness_report_artifact_key).toBe(
+      "target_readiness_report",
+    );
   });
 
   it("uses a configured Gateway base without changing the route family", async () => {
@@ -367,9 +457,9 @@ describe("Sir Convert Gateway browser client", () => {
           review_required: true,
         },
         source_binding: {
-          source_ir_schema_version: "digiexam_intermediate_exam_v3",
+          source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
           source_ir_sha256: "sha256:ir",
-          effective_exam_schema_version: "digiexam_effective_exam_v2",
+          effective_exam_schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
           effective_exam_sha256: "sha256:effective",
         },
       });

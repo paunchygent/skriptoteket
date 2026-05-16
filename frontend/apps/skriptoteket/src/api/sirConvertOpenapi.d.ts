@@ -583,6 +583,38 @@ export interface components {
             schema_version: "answer_key_completion_report_v1";
         };
         /**
+         * DigiExamEffectiveAnswerKeyLineageV1
+         * @description Bounded reviewed-completion lineage in effective exam artifacts.
+         */
+        DigiExamEffectiveAnswerKeyLineageV1: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Candidate Payload Digest */
+            candidate_payload_digest: string;
+            /** Completion Report Sha256 */
+            completion_report_sha256: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+            /** Review Decision Id */
+            review_decision_id: string;
+            /**
+             * Review Outcome
+             * @enum {string}
+             */
+            review_outcome: "accepted_unchanged" | "teacher_edited";
+            /** Schema Name */
+            schema_name: string;
+            /** Schema Version */
+            schema_version: string;
+            /**
+             * Validation State
+             * @constant
+             */
+            validation_state: "valid";
+        };
+        /**
          * DigiExamEffectiveAnswerKeyV1
          * @description Effective answer-key summary without changing source provenance.
          */
@@ -593,6 +625,8 @@ export interface components {
             correct_gap_answers?: {
                 [key: string]: string;
             }[];
+            /** @default null */
+            lineage: components["schemas"]["DigiExamEffectiveAnswerKeyLineageV1"] | null;
             /** Provenance */
             provenance: string;
         };
@@ -725,6 +759,8 @@ export interface components {
             manual_answer_key: (components["schemas"]["DigiExamOverlayChoiceManualAnswerKey"] | components["schemas"]["DigiExamOverlayGapFillManualAnswerKey"]) | null;
             /** @default null */
             review_decision: components["schemas"]["DigiExamOverlayReviewDecision"] | null;
+            /** @default null */
+            reviewed_completion_answer_key: components["schemas"]["DigiExamOverlayReviewedCompletionAnswerKey"] | null;
             /** Sequence */
             sequence: number;
             /** Source Item Fingerprint */
@@ -1174,6 +1210,80 @@ export interface components {
              * @default null
              */
             note: string | null;
+        };
+        /**
+         * DigiExamOverlayReviewedChoiceAnswerPayload
+         * @description Reviewed choice answer payload using Task 297 candidate semantics.
+         */
+        DigiExamOverlayReviewedChoiceAnswerPayload: {
+            /** Correct Alternative Ids */
+            correct_alternative_ids: number[];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "choice";
+        };
+        /**
+         * DigiExamOverlayReviewedCompletionAnswerKey
+         * @description Teacher-reviewed advisory answer key applied only to effective IR.
+         */
+        DigiExamOverlayReviewedCompletionAnswerKey: {
+            /** Answer Payload */
+            answer_payload: components["schemas"]["DigiExamOverlayReviewedChoiceAnswerPayload"] | components["schemas"]["DigiExamOverlayReviewedGapFillAnswerPayload"];
+            candidate_lineage: components["schemas"]["DigiExamOverlayReviewedCompletionCandidateLineage"];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "choice" | "gap_fill";
+            /** Review Decision Id */
+            review_decision_id: string;
+            review_outcome: components["schemas"]["DigiExamOverlayReviewedCompletionOutcome"];
+        };
+        /**
+         * DigiExamOverlayReviewedCompletionCandidateLineage
+         * @description Bounded lineage for a reviewed advisory answer-key candidate.
+         */
+        DigiExamOverlayReviewedCompletionCandidateLineage: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Candidate Payload Digest */
+            candidate_payload_digest: string;
+            /** Completion Report Sha256 */
+            completion_report_sha256: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+            /** Schema Name */
+            schema_name: string;
+            /** Schema Version */
+            schema_version: string;
+            /**
+             * Validation State
+             * @constant
+             */
+            validation_state: "valid";
+        };
+        /**
+         * DigiExamOverlayReviewedCompletionOutcome
+         * @description Teacher review outcomes for applying an advisory candidate.
+         * @enum {string}
+         */
+        DigiExamOverlayReviewedCompletionOutcome: "accepted_unchanged" | "teacher_edited";
+        /**
+         * DigiExamOverlayReviewedGapFillAnswerPayload
+         * @description Reviewed gap-fill answer payload using Task 305 candidate semantics.
+         */
+        DigiExamOverlayReviewedGapFillAnswerPayload: {
+            /** Gap Answers */
+            gap_answers: components["schemas"]["DigiExamOverlayGapAnswer"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "gap_fill";
         };
         /**
          * DigiExamOverlaySourceBinding

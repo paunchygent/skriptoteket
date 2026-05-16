@@ -13,10 +13,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main`.
 - Current lane: `PR-0325` Exam Converter authenticated runtime UI and save
   remediation under `ST-21-03`; Slice 6 exposed an accepted-state export gap.
-- Current state: `ADR-0085` is accepted; `PR-0318`, `PR-0319`, `PR-0320`,
-  `PR-0321`, `PR-0322`, and `PR-0323` are done. Retained reviews
-  `REV-PR-0318` through `REV-PR-0322` are approved. Sir Convert `TASK-292`
-  completed the public verifier/read-lease runtime needed by `PR-0322`.
+- Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
+  `REV-PR-0318` through `REV-PR-0322` approved; Sir Convert `TASK-292` done.
 - Prior PR-0310 through PR-0314 history was compacted to
   `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`.
 ## Status
@@ -118,10 +116,12 @@ Keep this file updated so the next session can pick up work quickly.
   save precedent:
   `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py`
   and `apps_classroom_planner_export_job_contracts.py`.
-- Story, epic, PR docs, `docs/index.md`, and this handoff are synced to
-  `PR-0324` blocked / `PR-0325` ready state.
-- PR-0316/PR-0317 smart seating history was compacted to
-  `.codex/long-term-memory/entries/session-2026-05-13-pr-0316-pr-0317-smart-seating-history.md`.
+- `PR-0325` also includes the Task 306 Sir Convert consumer sync:
+  regenerated `sirConvertOpenapi.d.ts`, added a reviewed-completion lineage
+  type fixture, removed obsolete terminal-result `target_availability`
+  parsing, replaced nearby schema-version literals with constants, and removed
+  Tailwind's production Vite plugin from Vitest's jsdom config so `fe-test`
+  no longer emits Node `DEP0205`.
 ## Verification
 - `pdm run pytest tests/unit/web/test_public_apps_exam_converter_runtime.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_public_exam_converter_upstream_clients.py -q`
   (6 passed)
@@ -143,33 +143,33 @@ Keep this file updated so the next session can pick up work quickly.
 - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
   (9 passed; verified flerval alternatives, corrected type labels, and
   `Lucktext` gap/image detail)
+- `NODE_OPTIONS=--trace-deprecation pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts`
+  (25 passed; no `DEP0205` warning)
 - `pdm run pytest tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py -q`
   (3 passed)
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
-- Browser proof on `http://127.0.0.1:5173/apps/documents.conversion_hub`
-  confirmed the visible local intake copy and combined-drop announcement.
-- Browser proof on `http://127.0.0.1:5173/apps/documents.conversion_hub`
-  confirmed the authenticated Exam Converter route still renders after Slice 4;
-  screenshot retained locally at
-  `.artifacts/pr-0325-slice-4/authenticated-runtime-bridge.png`.
 - Live validation with local Sir Convert running at `http://127.0.0.1:8085`
   and the HuleEdu Gateway `/sir-convert` edge enabled passed end to end:
   submit/result/artifact manifest/`migration_manifest`/`ir_json` all returned
   200 through the authenticated browser flow, with screenshots retained under
   `.artifacts/pr-0325-live/`.
-- Slice 6 live validation with local Sir Convert running at
-  `http://127.0.0.1:8085` passed through the authenticated browser flow:
-  a DXE with one missing `Facit` showed `Granska` / `Godkänn`, kept QTI
-  `Hämta`/`Spara` disabled before `Godkänn`, enabled and saved QTI after
-  `Godkänn`, and kept the upstream-blocked PDF row disabled. Screenshot:
-  `.artifacts/pr-0325-live/slice-6-review-gate-files-save.png`.
-- Follow-up live audit with `1811577114-ekologiprov-v-49-25d-e.dxe` exposed
-  the current blocker: after `Godkänn`, Sir Convert still reports
-  `examnet_pdf` as `blocked/manual_answer_key_required` and `qti_package` as
-  `blocked/qti_validation_failed`, so both rows remain disabled. `Godkänn`
-  needs a governed accepted-state export/rebuild path or an upstream
-  best-effort artifact contract before `PR-0325` can close.
+- `pdm run python .artifacts/pr-0325-live/current_stack_live_validation.py`
+  passed against the current live stack after rebuilding Sir Convert and
+  enabling the HuleEdu `/sir-convert` edge from canonical dev compose:
+  authenticated submit/result/artifact reads succeeded; MCQ alternatives,
+  `Flerval: ett val`, `Lucktext` gap/image detail, and unavailable-code file
+  readiness all rendered; before `Godkänn`, PDF and QTI were disabled.
+- Fresh PR-0325 live probe after rebuilding Sir Convert image
+  `sha256:a2deed73aceab89acd1be3d1153ca1147388db683133aa391afeee8f68d1d7b0`
+  and using byte-distinct source
+  `.artifacts/pr-0325-live/fresh-inputs/1811577114-ekologiprov-v-49-25d-e-fresh-probe.dxe`
+  passed: after `Godkänn`, both `examnet_pdf` and `qti_package` became
+  `Godkänt för export`; QTI saved as `Sparad i mina filer`; generated PDF was
+  retained at `.artifacts/pr-0325-live/fresh-examnet-import.pdf` and the target
+  readiness report showed `ready_after_accepted_current_state` for
+  `examnet_pdf` on items 1, 2, 3, and 13 with
+  `accepted_current_state_pdf_manual_unkeyed_profile`.
 - `rg -n "convert\\.hule\\.education|X-API-Key|SIR_CONVERT_A_LOT_V2_API_KEY|127\\.0\\.0\\.1:9010|PublicConversionGrantV1|PublicArtifactReadLeaseV1" src/skriptoteket/web/static/spa`
   (no matches)
 - `pdm run docs-validate`
@@ -187,14 +187,14 @@ pdm run handoff-validate
 git diff --check
 ```
 ## Known Issues / Risks
-- `PR-0325` is not closeout-ready until `Godkänn` is backed by a real
-  accepted-state export path for target files blocked only by accepted missing
-  `Facit`/`Poäng`. The prerequisite review-projection flaw is now fixed in
-  Skriptoteket; the remaining gap belongs in the governed Sir Convert
-  accepted-state export/readiness contract.
+- Sir Convert `/readyz` is fail-closed in the local container because
+  `SIR_CONVERT_A_LOT_SERVICE_REVISION` and
+  `SIR_CONVERT_A_LOT_EXPECTED_REVISION` are unset/`unknown`; `/healthz` is 200
+  and the authenticated PR-0325 flow completed successfully through HuleEdu.
 ## Next Steps
-- Finish `PR-0325` closeout: run the full frontend closeout gates
-  only after resolving the accepted-state export gap behind `Godkänn`.
+- Finish `PR-0325` closeout by running the remaining repo gates and deciding
+  whether PDF accepted-state rendering is follow-up Sir Convert work or a
+  blocker for this PR.
 - Rerun `PR-0324` only after `PR-0325` lands and is reviewed.
 - Do not reopen the public grant/read-lease lane unless HuleEdu or Sir Convert
   changes the accepted contract.

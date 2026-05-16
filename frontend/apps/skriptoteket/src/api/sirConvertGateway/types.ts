@@ -31,6 +31,8 @@ export type DigiExamMigrationTarget = SirConvertOpenApiSchemas["ExamMigrationTar
 export type DigiExamMigrationArtifactKey =
   SirConvertOpenApiSchemas["DigiExamMigrationArtifactKey"];
 export type DigiExamIngestionOverlay = SirConvertOpenApiSchemas["DigiExamIngestionOverlay"];
+export type DigiExamEffectiveAnswerKey =
+  SirConvertOpenApiSchemas["DigiExamEffectiveAnswerKeyV1"];
 export type DigiExamItemType = SirConvertOpenApiSchemas["DigiExamItemType"];
 export type DigiExamTargetReadiness = SirConvertOpenApiSchemas["DigiExamTargetReadiness"];
 export type DigiExamTargetReadinessRow =
@@ -124,7 +126,6 @@ export type SirConvertTerminalResult = {
     bundle_status: SirConvertBundleStatus;
     source_sha256: string | null;
     target_readiness_report_artifact_key: typeof DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT | null;
-    target_availability: Record<string, SirConvertArtifactAvailability>;
     manual_follow_up_required: boolean;
     warning_count: number;
     artifact_count: number;

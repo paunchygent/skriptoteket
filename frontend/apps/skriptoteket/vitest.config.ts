@@ -1,10 +1,22 @@
+/**
+ * Skriptoteket SPA unit-test build configuration.
+ *
+ * Purpose:
+ *   Run jsdom-focused Vue and TypeScript tests without loading production CSS
+ *   compilers that are only needed for browser dev/build assets.
+ *
+ * Relationships:
+ *   - `vite.config.ts` owns Tailwind and production/development asset builds.
+ *   - `scripts/vitest-run.mjs` normalizes test path filters before Vitest
+ *     reads this config.
+ */
+
 import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
-import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [vue(), tailwindcss()],
+  plugins: [vue()],
   test: {
     globals: true,
     environment: "jsdom",

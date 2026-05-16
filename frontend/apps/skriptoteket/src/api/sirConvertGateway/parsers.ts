@@ -138,15 +138,6 @@ export function parseJob(payload: unknown): SirConvertJob {
   };
 }
 
-function parseTargetAvailability(value: unknown): Record<string, SirConvertArtifactAvailability> {
-  const availability = readRecord(value, "conversion_metadata.target_availability");
-  const result: Record<string, SirConvertArtifactAvailability> = {};
-  for (const [key, item] of Object.entries(availability)) {
-    result[key] = readArtifactAvailability(item);
-  }
-  return result;
-}
-
 export function parseTerminalResult(payload: unknown): SirConvertTerminalResult {
   const root = readRecord(payload, "payload");
   const result = readRecord(root.result, "result");
@@ -178,7 +169,6 @@ export function parseTerminalResult(payload: unknown): SirConvertTerminalResult 
         }
         return artifactKey;
       })(),
-      target_availability: parseTargetAvailability(metadata.target_availability),
       manual_follow_up_required: readBoolean(
         metadata.manual_follow_up_required,
         "manual_follow_up_required",
