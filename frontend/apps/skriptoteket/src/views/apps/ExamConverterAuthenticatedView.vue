@@ -101,8 +101,12 @@ const canStartConversion = computed(
 );
 
 const requiresReviewDecision = computed(() => {
+  const projection = reviewProjection.value;
   return (
-    (reviewProjection.value?.report.attentionQuestionCount ?? 0) > 0 &&
+    projection !== null &&
+    projection.acceptedStateOverlay !== null &&
+    (projection.report.attentionQuestionCount > 0 ||
+      projection.report.blockedTargetFileCount > 0) &&
     !acceptedCurrentState.value
   );
 });
@@ -167,8 +171,9 @@ async function finishRuntimeResult(
       runtimeOutcome.warningCount,
       projection.report.warningCount,
     );
+    const hasBlockedFiles = projection.files.some((file) => !file.exportEnabled);
     const requiresQuestionReview =
-      projection.report.attentionQuestionCount > 0 || projectedWarningCount > 0;
+      projection.report.attentionQuestionCount > 0 || hasBlockedFiles;
     activeInspectionMode.value = preferredMode ?? projection.defaultMode;
     finishConversion({
       ...runtimeOutcome,
@@ -287,11 +292,11 @@ async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
 
 <template>
   <main
-    class="min-h-[calc(100vh-72px)] overflow-x-auto bg-canvas px-4 py-5 text-navy md:px-6 lg:px-8"
+    class="min-h-[calc(100vh-72px)] overflow-x-hidden bg-canvas px-3 py-4 text-navy md:px-5 lg:px-6"
     aria-labelledby="exam-converter-auth-title"
   >
     <section
-      class="mx-auto grid min-h-[28rem] min-w-[62rem] max-w-[90rem] grid-cols-[18rem_minmax(0,1fr)] items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[19rem_minmax(0,1fr)]"
+      class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm lg:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
       aria-label="Exam Converter"
       data-test="exam-converter-host-frame"
     >

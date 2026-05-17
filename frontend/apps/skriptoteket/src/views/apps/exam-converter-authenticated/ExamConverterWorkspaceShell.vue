@@ -97,7 +97,7 @@ function handleDrop(event: DragEvent): void {
 
 <template>
   <section
-    class="flex h-full min-h-[26rem] flex-col bg-panel"
+    class="flex h-full min-h-[26rem] min-w-0 flex-col bg-panel"
     :aria-label="resultStrip ? 'Exam Converter' : undefined"
     :aria-labelledby="resultStrip ? undefined : 'exam-converter-auth-title'"
     data-test="exam-converter-workspace-shell"
@@ -122,6 +122,7 @@ function handleDrop(event: DragEvent): void {
         <ExamConverterReviewDecisionGate
           v-if="reviewProjection && requiresReviewDecision && !showAiReviewPanel"
           :accepted="acceptedCurrentState"
+          :blocked-file-count="reviewProjection.report.blockedTargetFileCount"
           :missing-count="reviewProjection.report.attentionQuestionCount"
           @accept-current-state="emit('acceptCurrentState')"
           @review-questions="emit('openQuestions')"
@@ -155,7 +156,7 @@ function handleDrop(event: DragEvent): void {
       </div>
       <div
         v-else-if="resultStrip"
-        class="min-h-0 w-full flex-1 bg-panel"
+        class="min-h-0 min-w-0 w-full flex-1 overflow-hidden bg-panel"
         data-test="exam-converter-inspection-surface"
       >
         <div
@@ -178,7 +179,7 @@ function handleDrop(event: DragEvent): void {
         </div>
         <div
           v-else
-          class="flex min-h-0 flex-1 flex-col"
+          class="flex min-h-0 min-w-0 flex-1 flex-col"
         >
           <ExamConverterInspectionTabs
             :active-mode="activeInspectionMode"

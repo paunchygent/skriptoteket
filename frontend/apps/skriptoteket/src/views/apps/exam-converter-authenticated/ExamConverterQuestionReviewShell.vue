@@ -138,10 +138,10 @@ watch(
 
 <template>
   <section
-    class="grid min-h-0 flex-1 grid-cols-[minmax(0,1.6fr)_minmax(18rem,0.84fr)] gap-6 py-5"
+    class="exam-converter-question-review-shell grid min-h-0 min-w-0 flex-1 gap-5 py-5"
     data-test="exam-converter-question-review-shell"
   >
-    <div class="min-w-0">
+    <div class="min-w-0 overflow-hidden">
       <h3 class="text-base font-semibold leading-tight text-navy">
         Frågor att kontrollera
       </h3>
@@ -155,23 +155,23 @@ watch(
 
       <table
         v-else
-        class="mt-6 w-full border-collapse text-left text-sm text-navy"
+        class="mt-6 w-full table-fixed border-collapse text-left text-sm text-navy"
       >
         <thead>
           <tr class="border-b border-navy/45">
             <th class="px-3 py-3 font-semibold">
               Fråga
             </th>
-            <th class="w-32 px-3 py-3 font-semibold">
+            <th class="w-24 px-2 py-3 font-semibold xl:w-28">
               Typ
             </th>
-            <th class="w-32 px-3 py-3 font-semibold">
+            <th class="w-24 px-2 py-3 font-semibold xl:w-28">
               Saknas
             </th>
-            <th class="w-24 px-3 py-3 font-semibold">
+            <th class="w-20 px-2 py-3 font-semibold">
               Poäng
             </th>
-            <th class="w-20 px-3 py-3 text-center font-semibold">
+            <th class="w-16 px-2 py-3 text-center font-semibold">
               Status
             </th>
           </tr>
@@ -191,10 +191,10 @@ watch(
                 {{ question.promptText }}
               </span>
             </td>
-            <td class="px-3 py-4 align-top">
+            <td class="px-2 py-4 align-top">
               {{ question.typeLabel }}
             </td>
-            <td class="px-3 py-4 align-top">
+            <td class="px-2 py-4 align-top">
               <span
                 v-if="question.missingFields.length === 0"
                 class="text-navy/70"
@@ -210,10 +210,10 @@ watch(
                 {{ missingField }}
               </span>
             </td>
-            <td class="px-3 py-4 align-top">
+            <td class="px-2 py-4 align-top">
               {{ question.pointsLabel }}
             </td>
-            <td class="px-3 py-4 text-center align-top">
+            <td class="px-2 py-4 text-center align-top">
               <span
                 class="inline-grid h-6 w-6 place-items-center"
                 :aria-label="question.statusSymbol === 'ai_suggestion' ? 'AI-förslag' : question.statusSymbol === 'complete' ? 'Klar' : 'Saknar facit'"
@@ -242,7 +242,7 @@ watch(
     </div>
 
     <aside
-      class="min-w-0 border-l border-navy/35 pl-6"
+      class="exam-converter-question-detail min-w-0 border-l border-navy/35 pl-5"
       data-test="exam-converter-selected-question-detail"
     >
       <template v-if="selectedQuestion">
@@ -498,3 +498,22 @@ watch(
     </aside>
   </section>
 </template>
+
+<style scoped>
+.exam-converter-question-review-shell {
+  grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.72fr);
+}
+
+@media (max-width: 92rem) {
+  .exam-converter-question-review-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .exam-converter-question-detail {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-navy) 35%, transparent);
+    padding-left: 0;
+    padding-top: 1.25rem;
+  }
+}
+</style>

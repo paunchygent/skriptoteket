@@ -115,15 +115,15 @@ function buildRunningProgress(elapsedSeconds: number): ExamConverterRunningProgr
 function statusForRuntimeOutcome(
   outcome: ExamConverterRuntimeOutcome,
 ): Exclude<ExamConverterConversionStatus, "idle" | "running"> {
-  if (
-    outcome.bundleStatus === "partial" ||
-    outcome.manualFollowUpRequired ||
-    outcome.warningCount > 0
-  ) {
-    return "partial";
-  }
   if (outcome.bundleStatus === "failed") {
     return "failed";
+  }
+  if (
+    outcome.bundleStatus === "partial" ||
+    outcome.bundleStatus === "needs_review" ||
+    outcome.manualFollowUpRequired
+  ) {
+    return "partial";
   }
   return "success";
 }

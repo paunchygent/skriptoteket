@@ -319,7 +319,7 @@ function handleSupportingFileInput(event: Event): void {
               />
             </div>
             <p class="mt-2 text-xs leading-snug text-navy/65">
-              För lagring och import. Exam.net-stöd är planerat.
+              För lagring och import av digitala prov.
             </p>
           </button>
         </div>

@@ -86,6 +86,7 @@ export type ExamConverterReviewFile = {
 export type ExamConverterReportProjection = {
   attentionQuestionCount: number;
   aiSuggestionCount: number;
+  blockedTargetFileCount: number;
   missingAnswerKeyCount: number;
   missingPointsCount: number;
   warningCount: number;
@@ -397,6 +398,15 @@ function projectFiles(
   });
 }
 
+function isTeacherDecisionBlockedFile(file: ExamConverterReviewFile): boolean {
+  return (
+    !file.exportEnabled &&
+    (file.unavailableCode === DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED ||
+      file.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY ||
+      file.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION)
+  );
+}
+
 function followUpsByItemId(
   followUps: DigiExamIrManualFollowUp[],
 ): Map<string, DigiExamIrManualFollowUp[]> {
@@ -437,17 +447,24 @@ export function parseExamConverterReviewProjection(params: {
     (question) => question.missingFields.length > 0,
   ).length;
   const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
-  const hasQuestionReview = missingDataQuestionCount > 0 || manifest.warningCount > 0;
+  const hasQuestionReview = missingDataQuestionCount > 0;
+  const files = projectFiles(params.artifactManifest, params.targetReadinessReport);
+  const acceptedStateOverlay = buildAcceptedCurrentStateOverlay({
+    artifactManifest: params.artifactManifest,
+    questions,
+    targetReadinessReport: params.targetReadinessReport,
+  });
 
   return {
     sourceFilename: exam.sourceFilename,
     sourceFileSha256: params.artifactManifest.source.sha256,
     artifactSourceBinding: params.artifactManifest.source_binding,
     questions,
-    files: projectFiles(params.artifactManifest, params.targetReadinessReport),
+    files,
     report: {
       attentionQuestionCount: missingDataQuestionCount,
       aiSuggestionCount: validAiSuggestionCount,
+      blockedTargetFileCount: files.filter(isTeacherDecisionBlockedFile).length,
       missingAnswerKeyCount: questions.filter((question) =>
         question.missingFields.includes("Facit"),
       ).length,
@@ -459,10 +476,7 @@ export function parseExamConverterReviewProjection(params: {
     defaultMode: hasQuestionReview || validAiSuggestionCount > 0 ? "questions" : "files",
     answerKeyCompletionReport: params.answerKeyCompletionReport ?? null,
     effectiveAnswerKeysByItem: params.effectiveAnswerKeysByItem ?? new Map(),
-    acceptedStateOverlay: buildAcceptedCurrentStateOverlay({
-      artifactManifest: params.artifactManifest,
-      questions,
-    }),
+    acceptedStateOverlay,
   };
 }
 

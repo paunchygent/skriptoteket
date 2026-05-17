@@ -92,6 +92,8 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(text).toContain("Målfiler");
     expect(text).toContain("PDF");
     expect(text).toContain("QTI-format");
+    expect(text).toContain("För lagring och import av digitala prov.");
+    expect(text).not.toContain("Exam.net-stöd är planerat");
   });
 
   it("keeps conversion results, generated files, question review, and report content out of slice one", () => {

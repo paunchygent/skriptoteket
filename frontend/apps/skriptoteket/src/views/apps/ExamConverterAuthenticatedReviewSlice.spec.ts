@@ -23,11 +23,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import { mockFreeTextOnlyReviewArtifacts } from "./examConverterAuthenticatedFreeTextFixtures";
 import {
+  artifactJsonBlob,
   finishConversion,
   mockReviewArtifacts,
   submittedJob,
   terminalResult,
 } from "./examConverterAuthenticatedReviewFixtures";
+import {
+  DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+  DIGIEXAM_TARGET_EXAMNET_PDF,
+  DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
+  DIGIEXAM_TARGET_QTI_PACKAGE,
+  DIGIEXAM_TARGET_READY,
+  SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+} from "../../api/sirConvertGateway/contractValues";
+import { TARGET_READINESS_REPORT_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
   downloadDigiExamMigrationArtifact: vi.fn(),
@@ -190,6 +200,117 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(freeTextRow.text()).toContain("1 p");
     expect(freeTextRow.find(".lucide-circle-check").exists()).toBe(true);
     expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
+  });
+
+  it("keeps the success banner when all question rows and target files are ready despite warnings", async () => {
+    mockFreeTextOnlyReviewArtifacts(gatewayMocks);
+    const resultWithNonBlockingWarning = terminalResult();
+    gatewayMocks.getDigiExamMigrationResult.mockResolvedValue({
+      ...resultWithNonBlockingWarning,
+      conversion_metadata: {
+        ...resultWithNonBlockingWarning.conversion_metadata,
+        bundle_status: SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+        manual_follow_up_required: false,
+        warning_count: 1,
+      },
+    });
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+
+    expect(wrapper.text()).toContain("Provet är konverterat");
+    expect(wrapper.text()).not.toContain("Konverteringen av provet lyckades delvis");
+    expect(wrapper.findAll(".lucide-circle-check").length).toBeGreaterThan(0);
+  });
+
+  it("offers Godkänn when QTI needs a target-level export decision even with green question rows", async () => {
+    mockFreeTextOnlyReviewArtifacts(gatewayMocks);
+    const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
+    gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
+      (params: { artifactKey: string }) => {
+        if (params.artifactKey === DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT) {
+          return Promise.resolve(
+            artifactJsonBlob(DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT, {
+              schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
+              job_id: "job_exam_converter_review",
+              source_ir_sha256: "sha256:ir",
+              effective_exam_sha256: "sha256:effective",
+              targets: [
+                {
+                  target: DIGIEXAM_TARGET_EXAMNET_PDF,
+                  readiness: DIGIEXAM_TARGET_READY,
+                  export_enabled: true,
+                  artifact_key: DIGIEXAM_TARGET_EXAMNET_PDF,
+                  reason_code: "target_available",
+                  teacher_action: "none",
+                  retryable: false,
+                  message_key: "exam_converter.target.ready",
+                  item_id: null,
+                  sequence: null,
+                  source_item_fingerprint: null,
+                },
+                {
+                  target: DIGIEXAM_TARGET_QTI_PACKAGE,
+                  readiness: DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
+                  export_enabled: false,
+                  artifact_key: null,
+                  reason_code: "manual_marking_required",
+                  teacher_action: "accept_current_state_for_export",
+                  retryable: false,
+                  message_key: "exam_converter.target.needs_teacher_review_decision",
+                  item_id: "item-001",
+                  sequence: 1,
+                  source_item_fingerprint: "sha256:item-001",
+                },
+              ],
+            }),
+          );
+        }
+        return baseDownload?.(params);
+      },
+    );
+    gatewayMocks.getDigiExamMigrationResult.mockResolvedValue({
+      ...terminalResult(),
+      conversion_metadata: {
+        ...terminalResult().conversion_metadata,
+        bundle_status: SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+        manual_follow_up_required: false,
+        warning_count: 0,
+      },
+    });
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+
+    expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
+    expect(wrapper.text()).toContain("1 målfil behöver godkännas för export.");
+    expect(wrapper.text()).not.toContain("1 fråga saknar facit eller poäng.");
+    expect(
+      wrapper.find('[data-test="exam-converter-review-questions-action"]').exists(),
+    ).toBe(false);
+    const reviewPlaceholder = wrapper.find(
+      '[data-test="exam-converter-review-questions-placeholder"]',
+    );
+    expect(reviewPlaceholder.exists()).toBe(true);
+    expect(reviewPlaceholder.attributes("aria-hidden")).toBe("true");
+
+    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
+    await flushPromises();
+
+    expect(gatewayMocks.submitDigiExamMigration).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        ingestionOverlay: expect.objectContaining({
+          items: [
+            expect.objectContaining({
+              item_id: "item-001",
+              review_decision: expect.objectContaining({
+                accepted_targets: expect.arrayContaining([DIGIEXAM_TARGET_QTI_PACKAGE]),
+              }),
+            }),
+          ],
+        }),
+      }),
+    );
   });
 
   it("shows one selected AI-facit detail with contextual review actions", async () => {

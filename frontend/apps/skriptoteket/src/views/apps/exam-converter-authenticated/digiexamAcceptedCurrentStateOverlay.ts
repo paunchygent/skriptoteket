@@ -15,12 +15,15 @@
 import type {
   DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
+  DigiExamTargetReadinessReport,
   SirConvertArtifactManifest,
   SirConvertArtifactEntry,
 } from "../../../api/sirConvertGateway";
 import {
   DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND,
   DIGIEXAM_TARGET_EXAMNET_PDF,
+  DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
+  DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
   DIGIEXAM_TARGET_QTI_PACKAGE,
   SIR_CONVERT_ARTIFACT_NOT_REQUESTED,
 } from "../../../api/sirConvertGateway/contractValues";
@@ -39,29 +42,55 @@ function isTargetFile(entry: SirConvertArtifactEntry): boolean {
 export function buildAcceptedCurrentStateOverlay(params: {
   artifactManifest: SirConvertArtifactManifest;
   questions: ExamConverterQuestionReviewRow[];
+  targetReadinessReport: DigiExamTargetReadinessReport;
 }): DigiExamIngestionOverlay | null {
   const acceptedTargets = params.artifactManifest.artifacts
     .filter(isTargetFile)
     .filter((entry) => entry.availability !== SIR_CONVERT_ARTIFACT_NOT_REQUESTED)
     .map((entry) => entry.artifact_key as DigiExamMigrationTarget);
+  const acceptedTargetSet = new Set<string>(acceptedTargets);
+  const reviewRowsByItemId = new Map(
+    params.targetReadinessReport.targets
+      .filter((row) => acceptedTargetSet.has(row.target))
+      .filter((row) => !row.export_enabled)
+      .filter(
+        (row) =>
+          row.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY ||
+          row.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
+      )
+      .filter((row) => row.item_id !== null)
+      .map((row) => [row.item_id as string, row]),
+  );
   const items = params.questions
-    .filter((question) => question.missingFields.length > 0)
-    .filter((question) => question.sourceItemFingerprint !== null)
-    .map((question) => ({
-      effective_item_patch: null,
-      item_id: question.itemId,
-      item_type: question.itemType,
-      manual_answer_key: null,
-      review_decision: {
-        kind: DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND,
-        decision_id: `accept-current-state-${question.itemId}`,
-        note: null,
-        accepted_targets: acceptedTargets,
-      },
-      reviewed_completion_answer_key: null,
-      sequence: question.sequence,
-      source_item_fingerprint: question.sourceItemFingerprint as string,
-    }));
+    .filter(
+      (question) =>
+        question.missingFields.length > 0 || reviewRowsByItemId.has(question.itemId),
+    )
+    .flatMap((question) => {
+      const readinessRow = reviewRowsByItemId.get(question.itemId);
+      const sourceItemFingerprint =
+        question.sourceItemFingerprint ?? readinessRow?.source_item_fingerprint ?? null;
+      if (sourceItemFingerprint === null) {
+        return [];
+      }
+      return [
+        {
+          effective_item_patch: null,
+          item_id: question.itemId,
+          item_type: question.itemType,
+          manual_answer_key: null,
+          review_decision: {
+            kind: DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND,
+            decision_id: `accept-current-state-${question.itemId}`,
+            note: null,
+            accepted_targets: acceptedTargets,
+          },
+          reviewed_completion_answer_key: null,
+          sequence: question.sequence,
+          source_item_fingerprint: sourceItemFingerprint,
+        },
+      ];
+    });
 
   if (items.length === 0 || acceptedTargets.length === 0) {
     return null;

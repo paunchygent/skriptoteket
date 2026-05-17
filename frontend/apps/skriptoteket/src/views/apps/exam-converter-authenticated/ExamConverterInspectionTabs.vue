@@ -49,9 +49,9 @@ function attentionLabel(count: number): string {
     class="border-b border-navy"
     data-test="exam-converter-inspection-tabs"
   >
-    <div class="flex items-end justify-between gap-4">
+    <div class="flex flex-wrap items-end justify-between gap-3">
       <div
-        class="grid min-w-[28rem] grid-cols-3 border border-navy border-b-0"
+        class="grid w-full min-w-0 grid-cols-3 border border-navy border-b-0 md:max-w-[30rem]"
         role="tablist"
         aria-label="Välj granskning"
       >
@@ -72,14 +72,16 @@ function attentionLabel(count: number): string {
 
       <p
         v-if="attentionCount > 0"
-        class="mb-3 flex shrink-0 items-center gap-2 text-sm font-semibold leading-none text-navy"
+        class="mb-3 flex min-w-0 items-center gap-2 text-sm font-semibold leading-tight text-navy"
         data-test="exam-converter-inspection-attention-count"
       >
         <AlertTriangle
           class="h-5 w-5 text-warning"
           aria-hidden="true"
         />
-        {{ attentionLabel(attentionCount) }}
+        <span class="min-w-0 truncate">
+          {{ attentionLabel(attentionCount) }}
+        </span>
       </p>
     </div>
   </div>
