@@ -27,7 +27,9 @@ import type {
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
+import { DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT } from "../../api/sirConvertGateway/contractValues";
 import {
+  ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
@@ -145,6 +147,14 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
         sha256: null,
         size_bytes: 1_200_000,
       },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+        availability: "available",
+        content_type: "application/json",
+        filename: "answer-key-completion-report.json",
+        sha256: "sha256:completion-report-runtime",
+        size_bytes: 512,
+      },
     ],
     bundle_status: "partial",
     job_id: "job_exam_converter_1",
@@ -252,6 +262,34 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
           }),
         );
       }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT, {
+            schema_version: ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
+            completion_mode: "local_llm_suggest_missing_machine_marked",
+            job_id: "job_exam_converter_1",
+            items: [
+              {
+                item_id: "item-002",
+                sequence: 2,
+                item_type: "multiple_choice",
+                decision_state: requiresReview ? "manual_follow_up_required" : "skipped",
+                validation_state: requiresReview ? "manual_follow_up_required" : "skipped",
+                backend_status: "skipped",
+                backend_failure_code: null,
+                candidate_id: null,
+                candidate_payload_digest: null,
+                provider_profile_id: null,
+                model_profile: null,
+                prompt_template_version: null,
+                schema_name: null,
+                schema_version: null,
+                answer_payload: null,
+              },
+            ],
+          }),
+        );
+      }
       return Promise.resolve(
         artifactJsonBlob("migration_manifest", {
           asset_count: 0,
@@ -351,6 +389,7 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
 
     expect(gatewayMocks.submitDigiExamMigration).toHaveBeenCalledWith({
       artifactLanguage: "sv",
+      completionMode: "local_llm_suggest_missing_machine_marked",
       file: expect.objectContaining({ name: "Ma1c_NationelltProv_HT25.dxe" }),
       gradedResultPdf: expect.objectContaining({ name: "Ma1c_HT25_Rattat_prov.pdf" }),
       targets: ["examnet_pdf", "qti_package"],

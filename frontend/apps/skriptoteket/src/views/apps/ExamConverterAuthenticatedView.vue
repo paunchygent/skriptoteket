@@ -15,12 +15,20 @@
 import { computed, ref } from "vue";
 
 import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
+import {
+  DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+} from "../../api/sirConvertGateway/contractValues";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
 import type {
   ExamConverterInspectionMode,
   ExamConverterReviewFile,
 } from "./exam-converter-authenticated/digiexamIrReviewParser";
+import {
+  ACCEPT_CURRENT_STATE_COMPLETION_MODE,
+  REVIEWED_COMPLETION_MODE,
+  useExamConverterAiFacitReview,
+} from "./exam-converter-authenticated/useExamConverterAiFacitReview";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
 import { useExamConverterFileActions } from "./exam-converter-authenticated/useExamConverterFileActions";
@@ -61,6 +69,19 @@ const {
 } = useExamConverterReviewArtifacts();
 const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
 const acceptedCurrentState = ref(false);
+const reviewedCompletionApplied = ref(false);
+const {
+  acceptAllSuggestions,
+  acceptEditedChoiceSuggestion,
+  acceptedSuggestionCount,
+  acceptSuggestion,
+  decisions: aiFacitDecisions,
+  focusReviewAction,
+  focusedReviewAction,
+  leaveSuggestion,
+  resetAiFacitReview,
+  reviewedCompletionOverlay,
+} = useExamConverterAiFacitReview();
 const {
   downloadFile,
   fileActionStates,
@@ -80,18 +101,37 @@ const canStartConversion = computed(
 );
 
 const requiresReviewDecision = computed(() => {
-  return (reviewProjection.value?.report.attentionQuestionCount ?? 0) > 0 && !acceptedCurrentState.value;
+  return (
+    (reviewProjection.value?.report.attentionQuestionCount ?? 0) > 0 &&
+    !acceptedCurrentState.value
+  );
 });
 
 const canUseFiles = computed(() => {
   return reviewProjection.value !== null;
 });
 
+const canApplyReviewedSuggestions = computed(() => {
+  return (
+    reviewedCompletionOverlay.value(reviewProjection.value) !== null &&
+    !isConversionRunning.value
+  );
+});
+
+const showAiReviewPanel = computed(() => {
+  return (
+    !reviewedCompletionApplied.value &&
+    (reviewProjection.value?.report.aiSuggestionCount ?? 0) > 0
+  );
+});
+
 function handleResetLocalChoices(): void {
   cancelRuntime();
   resetReviewArtifacts();
+  resetAiFacitReview();
   resetFileActions();
   acceptedCurrentState.value = false;
+  reviewedCompletionApplied.value = false;
   activeInspectionMode.value = "questions";
   resetLocalChoices();
   resetConversion();
@@ -110,12 +150,14 @@ function toRuntimeOutcome(result: SirConvertTerminalResult): ExamConverterRuntim
 async function finishRuntimeResult(
   result: SirConvertTerminalResult,
   preferredMode: ExamConverterInspectionMode | null = null,
+  completionReportRequired = false,
 ): Promise<void> {
   const runtimeOutcome = toRuntimeOutcome(result);
   const correlationId = lastCorrelationId.value;
   const jobId = lastJobId.value ?? result.job.jobId;
   const projection = correlationId
     ? await loadReviewArtifacts({
+        completionReportRequired,
         correlationId,
         jobId,
       })
@@ -147,18 +189,21 @@ async function handleStartConversion(): Promise<void> {
   }
 
   resetReviewArtifacts();
+  resetAiFacitReview();
   resetFileActions();
   acceptedCurrentState.value = false;
+  reviewedCompletionApplied.value = false;
   activeInspectionMode.value = "questions";
   startConversion();
   try {
     const result = await submitAndPoll({
+      completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
       sourceFile: sourceSelection.file,
       supportingFile: selectedSupportingFile.value?.file ?? null,
       targetSelection: { ...selectedTargetFormats.value },
     });
     if (result) {
-      await finishRuntimeResult(result);
+      await finishRuntimeResult(result, null, true);
     }
   } catch {
     failConversion();
@@ -182,6 +227,7 @@ async function handleAcceptCurrentState(): Promise<void> {
       sourceFile: sourceSelection.file,
       supportingFile: selectedSupportingFile.value?.file ?? null,
       targetSelection: { ...selectedTargetFormats.value },
+      completionMode: ACCEPT_CURRENT_STATE_COMPLETION_MODE,
       ingestionOverlay: overlay,
     });
     if (result) {
@@ -190,6 +236,32 @@ async function handleAcceptCurrentState(): Promise<void> {
     }
   } catch {
     acceptedCurrentState.value = false;
+    failConversion();
+  }
+}
+
+async function handleApplyReviewedSuggestions(): Promise<void> {
+  const sourceSelection = selectedSourceFile.value;
+  const overlay = reviewedCompletionOverlay.value(reviewProjection.value);
+  if (!sourceSelection || !overlay || isConversionRunning.value) {
+    return;
+  }
+  resetFileActions();
+  startConversion();
+  try {
+    const result = await submitAndPoll({
+      completionMode: REVIEWED_COMPLETION_MODE,
+      ingestionOverlay: overlay,
+      sourceFile: sourceSelection.file,
+      supportingFile: selectedSupportingFile.value?.file ?? null,
+      targetSelection: { ...selectedTargetFormats.value },
+    });
+    if (result) {
+      acceptedCurrentState.value = false;
+      reviewedCompletionApplied.value = true;
+      await finishRuntimeResult(result, "files", false);
+    }
+  } catch {
     failConversion();
   }
 }
@@ -241,19 +313,30 @@ async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
       <ExamConverterWorkspaceShell
         :active-inspection-mode="activeInspectionMode"
         :accepted-current-state="acceptedCurrentState"
+        :accepted-ai-suggestion-count="acceptedSuggestionCount"
+        :ai-facit-decisions="aiFacitDecisions"
+        :can-apply-reviewed-suggestions="canApplyReviewedSuggestions"
         :can-use-files="canUseFiles"
         :file-action-states="fileActionStates"
+        :focused-ai-review-action="focusedReviewAction"
         :result-strip="resultStrip"
         :review-projection="reviewProjection"
         :requires-review-decision="requiresReviewDecision"
         :review-status="reviewStatus"
         :selected-source-file="selectedSourceFile"
+        :show-ai-review-panel="showAiReviewPanel"
         :source-file-error="sourceFileError"
         @accept-current-state="handleAcceptCurrentState"
+        @accept-all-ai-suggestions="acceptAllSuggestions(reviewProjection)"
+        @accept-edited-choice-suggestion="acceptEditedChoiceSuggestion"
+        @accept-suggestion="acceptSuggestion"
+        @apply-reviewed-suggestions="handleApplyReviewedSuggestions"
         @download-file="handleDownloadFile"
         @files-dropped="selectDroppedFiles"
         @inspection-mode-selected="selectInspectionMode"
+        @leave-suggestion="leaveSuggestion"
         @open-questions="selectInspectionMode('questions')"
+        @review-action-focused="focusReviewAction"
         @save-file="handleSaveFile"
         @source-file-selected="selectSourceFile"
       />

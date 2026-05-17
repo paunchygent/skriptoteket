@@ -22,6 +22,7 @@ criteria, and implementation doctrine in governed docs.
 | 2026-05-09 | `entries/session-2026-05-09-pr-0308-smart-settings-preference-continuity.md` | Compacted PR-0308 Smart settings preference-continuity implementation and verification |
 | 2026-05-11 | `entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md` | Compacted PR-0310 through PR-0314 Klassrumskartan phone seating/rules history |
 | 2026-05-13 | `entries/session-2026-05-13-pr-0316-pr-0317-smart-seating-history.md` | Compacted PR-0316/PR-0317 smart seating history-diversity implementation and verification |
+| 2026-05-17 | `entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md` | Compacted PR-0325 live authenticated Exam Converter proof and PR-0326 LLM-enrichment task setup |
 | 2026-04-16 | `entries/session-2026-04-16-task-0042.md` | TASK-0042 long-term memory cutover and template-lane retirement |
 | 2026-04-16 | `entries/session-2026-04-16-st08-10-script-editor-intelligence-review.md` | Retained ST-08-10 script editor intelligence review prompt content |
 | 2026-04-16 | `entries/session-2026-04-16-epic-05-huleedu-design-harmonization.md` | Retained EPIC-05 HuleEdu design harmonization prompt content |

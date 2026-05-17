@@ -20,6 +20,8 @@ export const DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION = "digiexam_effective_exam_v
 export const DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION =
   "digiexam_ingestion_overlay_v2" as const;
 export const TARGET_READINESS_REPORT_SCHEMA_VERSION = "target_readiness_report_v1" as const;
+export const ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION =
+  "answer_key_completion_report_v1" as const;
 
 export type DigiExamMigrationBundleSchemaVersion =
   typeof DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION;
@@ -30,3 +32,5 @@ export type DigiExamEffectiveExamSchemaVersion = typeof DIGIEXAM_EFFECTIVE_EXAM_
 export type DigiExamIngestionOverlaySchemaVersion =
   typeof DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION;
 export type TargetReadinessReportSchemaVersion = typeof TARGET_READINESS_REPORT_SCHEMA_VERSION;
+export type AnswerKeyCompletionReportSchemaVersion =
+  typeof ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION;

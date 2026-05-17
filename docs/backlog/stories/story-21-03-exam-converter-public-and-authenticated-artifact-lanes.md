@@ -5,6 +5,7 @@ title: "Exam converter public and authenticated artifact lanes"
 status: in_progress
 owners: "agents"
 created: 2026-05-13
+updated: 2026-05-17
 epic: "EPIC-21"
 dependencies:
   - "ADR-0066"
@@ -18,6 +19,7 @@ acceptance_criteria:
   - "Given the public Exam Converter lane handles uploads and conversion compute, when public endpoints are specified, then they live under a dedicated public namespace, ignore ambient account authority, enforce MIME/type validation, upload-size caps, request-time budgets, concurrency limits, rate limits, structured reason codes, and short artifact TTLs before calling the conversion backend."
   - "Given the public lane is unauthenticated, when artifacts are produced, then Skriptoteket provides direct download only and never creates Vault/MyFiles records, owner-scoped job rows, recoverable guest jobs, or account history before login."
   - "Given a signed-in teacher uses the authenticated Exam Converter lane, when they upload `.dxe`, optional sanitized graded result PDF, choose targets, submit, poll, list artifacts, download, or save to user files, then Skriptoteket routes through the HuleEdu Gateway `/sir-convert/v2/convert/...` product edge and preserves the Sir Convert named artifact manifest."
+  - "Given Sir Convert supports advisory local-LLM completion for missing machine-marked answer keys, when a signed-in teacher uses the authenticated Exam Converter lane, then Skriptoteket treats suggestions as AI-suggested facit that require explicit teacher review and reviewed-overlay resubmission before export readiness can change."
   - "Given authenticated conversion work is user-originated, when Skriptoteket calls Sir Convert, then it does not self-sign identity, forward a `skriptoteket` audience context, embed Sir Convert service credentials in browser code, or call direct `convert.hule.education` product traffic; it relies on the HuleEdu auth edge to mint `aud=sir-convert-a-lot` with route-appropriate grants."
   - "Given public and authenticated lanes share the same teacher-facing converter, when limits and failures are surfaced, then both lanes use the same validation taxonomy, target vocabulary, manual-follow-up states, artifact manifest labels, and correlation-id display while allowing authenticated quotas and save-to-files affordances to be stricter or richer than the public baseline."
   - "Given Sir Convert supports target-selective artifact generation, when the teacher selects targets, then Skriptoteket sends `conversion.targets` and shows `not_requested`, blocked, partial, and manual-follow-up outcomes without inventing missing artifacts or hiding Sir Convert warnings."
@@ -140,11 +142,17 @@ opening anonymous conversion uploads.
    surface, the authenticated runtime API is still the generic Conversion Hub
    route set, and save-to-user-files is not wired for downloaded Sir Convert
    named artifacts.
-7. Authenticated runtime UI and save remediation (`PR-0325`, ready):
-   add the authenticated Exam Converter host/runtime/save surface needed for
+7. Authenticated runtime UI and save remediation (`PR-0325`, implemented):
+   added the authenticated Exam Converter host/runtime/save surface needed for
    `PR-0324` to prove submit, poll, result, artifact manifest, named download,
    save-to-user-files, missing-auth rejection, Gateway-only product traffic,
    and shared artifact taxonomy parity.
+8. Authenticated LLM-enrichment consumer sync (`PR-0326`, done):
+   added the two-pass reviewed-completion consumer flow behind auth. The first
+   submit requests advisory local-LLM suggestions only, the teacher reviews AI-
+   suggested facit explicitly in the right panel, reviewed suggestions become
+   `reviewed_completion_answer_key` overlay entries, and the second submit
+   applies that overlay through Sir Convert before PDF/QTI readiness can change.
 
 ## Notes
 

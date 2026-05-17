@@ -37,10 +37,14 @@ export const DIGIEXAM_MIGRATION_TARGETS = [
 
 export const DIGIEXAM_ARTIFACT_IR_JSON =
   "ir_json" as const satisfies DigiExamMigrationArtifactKey;
+export const DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON =
+  "effective_ir_json" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST =
   "migration_manifest" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT =
   "target_readiness_report" as const satisfies DigiExamMigrationArtifactKey;
+export const DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT =
+  "answer_key_completion_report" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT =
   "manual_follow_up_report" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_WARNINGS_REPORT =
@@ -48,6 +52,13 @@ export const DIGIEXAM_ARTIFACT_WARNINGS_REPORT =
 
 export const DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED =
   "correct_machine_marked_answers_only" as const;
+export const DIGIEXAM_COMPLETION_MODE_SOURCE_EVIDENCE_ONLY =
+  "source_evidence_only" as const;
+export const DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED =
+  "local_llm_suggest_missing_machine_marked" as const;
+export const DIGIEXAM_COMPLETION_MODE_APPLY_REVIEWED_MISSING_MACHINE_MARKED =
+  "local_llm_apply_missing_machine_marked_with_review" as const;
+export const DIGIEXAM_REMOTE_PROVIDER_POLICY_FORBIDDEN = "forbidden" as const;
 export const DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE =
   "emit_item_addressable_report" as const;
 export const DIGIEXAM_INGESTION_OVERLAY_POLICY_NONE = "none" as const;

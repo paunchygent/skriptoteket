@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-05-13
+updated: 2026-05-17
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -119,5 +119,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   host surface, no authenticated DigiExam artifact-bundle runtime surface, and
   no save-to-user-files path for downloaded Sir Convert named artifacts.
 - PR-0325 (authenticated Exam Converter runtime UI and save remediation):
-  ready; add the authenticated host/runtime/save surface needed before
+  implemented the authenticated host/runtime/save surface needed before
   rerunning `PR-0324`.
+- PR-0326 (authenticated LLM-enrichment consumer sync): done; the authenticated
+  consumer now requests advisory suggestions, shows AI-facit review in the
+  selected-question panel, builds `reviewed_completion_answer_key` overlays, and
+  resubmits reviewed apply jobs before PDF/QTI readiness can change.

@@ -15,6 +15,7 @@
 
 import { FileText, Upload } from "lucide-vue-next";
 
+import ExamConverterAiReviewActionPanel from "./ExamConverterAiReviewActionPanel.vue";
 import ExamConverterFilesReadinessList from "./ExamConverterFilesReadinessList.vue";
 import ExamConverterInspectionTabs from "./ExamConverterInspectionTabs.vue";
 import ExamConverterQuestionReviewShell from "./ExamConverterQuestionReviewShell.vue";
@@ -26,6 +27,10 @@ import type {
   ExamConverterReviewFile,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
+import type {
+  ExamConverterAiFacitReviewAction,
+  ExamConverterReviewedSuggestionDecision,
+} from "./useExamConverterAiFacitReview";
 import type { ExamConverterFileActionStates } from "./useExamConverterFileActions";
 import type { ExamConverterResultStripState } from "./useExamConverterConversionState";
 import type { ExamConverterReviewArtifactsStatus } from "./useExamConverterReviewArtifacts";
@@ -34,22 +39,36 @@ import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceF
 defineProps<{
   activeInspectionMode: ExamConverterInspectionMode;
   acceptedCurrentState: boolean;
+  acceptedAiSuggestionCount: number;
+  aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
+  canApplyReviewedSuggestions: boolean;
   canUseFiles: boolean;
   fileActionStates: ExamConverterFileActionStates;
+  focusedAiReviewAction: ExamConverterAiFacitReviewAction;
   resultStrip: ExamConverterResultStripState | null;
   reviewProjection: ExamConverterReviewProjection | null;
   requiresReviewDecision: boolean;
   reviewStatus: ExamConverterReviewArtifactsStatus;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
+  showAiReviewPanel: boolean;
   sourceFileError: string | null;
 }>();
 
 const emit = defineEmits<{
   acceptCurrentState: [];
+  acceptAllAiSuggestions: [];
+  acceptEditedChoiceSuggestion: [
+    question: ExamConverterReviewProjection["questions"][number],
+    correctIds: number[],
+  ];
+  acceptSuggestion: [question: ExamConverterReviewProjection["questions"][number]];
+  applyReviewedSuggestions: [];
   downloadFile: [file: ExamConverterReviewFile];
   filesDropped: [files: File[]];
+  leaveSuggestion: [question: ExamConverterReviewProjection["questions"][number]];
   openQuestions: [];
   inspectionModeSelected: [mode: ExamConverterInspectionMode];
+  reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
   saveFile: [file: ExamConverterReviewFile];
   sourceFileSelected: [file: File];
 }>();
@@ -85,12 +104,23 @@ function handleDrop(event: DragEvent): void {
   >
     <header class="px-4 py-4">
       <template v-if="resultStrip">
+        <ExamConverterAiReviewActionPanel
+          v-if="showAiReviewPanel && reviewProjection && resultStrip.status !== 'running'"
+          :accepted-count="acceptedAiSuggestionCount"
+          :action="focusedAiReviewAction"
+          :can-apply-reviewed-suggestions="canApplyReviewedSuggestions"
+          :suggestion-count="reviewProjection.report.aiSuggestionCount"
+          @accept-all-suggestions="emit('acceptAllAiSuggestions')"
+          @apply-reviewed-suggestions="emit('applyReviewedSuggestions')"
+          @open-questions="emit('openQuestions')"
+        />
         <ExamConverterResultStrip
+          v-else
           :result="resultStrip"
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterReviewDecisionGate
-          v-if="reviewProjection && requiresReviewDecision"
+          v-if="reviewProjection && requiresReviewDecision && !showAiReviewPanel"
           :accepted="acceptedCurrentState"
           :missing-count="reviewProjection.report.attentionQuestionCount"
           @accept-current-state="emit('acceptCurrentState')"
@@ -152,14 +182,19 @@ function handleDrop(event: DragEvent): void {
         >
           <ExamConverterInspectionTabs
             :active-mode="activeInspectionMode"
-            :attention-count="reviewProjection.report.attentionQuestionCount"
+            :attention-count="showAiReviewPanel ? 0 : reviewProjection.report.attentionQuestionCount"
             :file-count="reviewProjection.files.length"
             :question-count="reviewProjection.questions.length"
             @mode-selected="emit('inspectionModeSelected', $event)"
           />
           <ExamConverterQuestionReviewShell
             v-if="activeInspectionMode === 'questions'"
+            :ai-facit-decisions="aiFacitDecisions"
             :projection="reviewProjection"
+            @accept-edited-choice-suggestion="(question, correctIds) => emit('acceptEditedChoiceSuggestion', question, correctIds)"
+            @accept-suggestion="emit('acceptSuggestion', $event)"
+            @leave-suggestion="emit('leaveSuggestion', $event)"
+            @review-action-focused="emit('reviewActionFocused', $event)"
           />
           <ExamConverterFilesReadinessList
             v-else-if="activeInspectionMode === 'files'"

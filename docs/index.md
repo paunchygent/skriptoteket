@@ -198,6 +198,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0324-exam-converter-authenticated-end-to-end-proof.md`
 - ST-21-03 Exam Converter authenticated runtime UI and save remediation:
   `docs/backlog/prs/pr-0325-st-21-03-exam-converter-authenticated-runtime-ui-and-save-remediation.md`
+- ST-21-03 Exam Converter authenticated LLM-enrichment consumer sync:
+  `docs/backlog/prs/pr-0326-st-21-03-exam-converter-authenticated-llm-enrichment-consumer-sync.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
@@ -543,6 +545,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0324-exam-converter-authenticated-end-to-end-proof.md`
 - ST-21-03 Exam Converter authenticated runtime UI and save remediation:
   `docs/backlog/prs/pr-0325-st-21-03-exam-converter-authenticated-runtime-ui-and-save-remediation.md`
+- ST-21-03 Exam Converter authenticated LLM-enrichment consumer sync:
+  `docs/backlog/prs/pr-0326-st-21-03-exam-converter-authenticated-llm-enrichment-consumer-sync.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 share/export affordance consolidation task:

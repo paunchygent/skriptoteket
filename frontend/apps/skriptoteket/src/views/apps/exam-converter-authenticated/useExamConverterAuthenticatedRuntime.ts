@@ -20,6 +20,7 @@ import {
   submitDigiExamMigration,
 } from "../../../api/sirConvertGateway";
 import type {
+  DigiExamAnswerKeyCompletionMode,
   DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
   SirConvertJobStatus,
@@ -42,6 +43,7 @@ export type ExamConverterAuthenticatedRuntimeSubmission = {
   sourceFile: File;
   supportingFile: File | null;
   targetSelection: ExamConverterTargetSelection;
+  completionMode?: DigiExamAnswerKeyCompletionMode;
   ingestionOverlay?: DigiExamIngestionOverlay | null;
 };
 
@@ -175,6 +177,7 @@ export function useExamConverterAuthenticatedRuntime(
     try {
       const submittedJob = await client.submitDigiExamMigration({
         artifactLanguage: "sv",
+        completionMode: submission.completionMode,
         file: submission.sourceFile,
         gradedResultPdf: submission.supportingFile,
         ingestionOverlay: submission.ingestionOverlay,

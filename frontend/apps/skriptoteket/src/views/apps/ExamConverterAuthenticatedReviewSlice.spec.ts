@@ -17,13 +17,13 @@
  *   summary as focused presentation components.
  */
 
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
+import { mockFreeTextOnlyReviewArtifacts } from "./examConverterAuthenticatedFreeTextFixtures";
 import {
   finishConversion,
-  mockFreeTextOnlyReviewArtifacts,
   mockReviewArtifacts,
   submittedJob,
   terminalResult,
@@ -71,6 +71,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     await finishConversion(wrapper);
 
     expect(gatewayMocks.listDigiExamMigrationArtifacts).toHaveBeenCalledWith({
+      completionReportRequired: true,
       correlationId: "corr_exam_converter_review",
       jobId: "job_exam_converter_review",
     });
@@ -79,8 +80,12 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       correlationId: "corr_exam_converter_review",
       jobId: "job_exam_converter_review",
     });
-    expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
-    expect(wrapper.text()).toContain("2 frågor saknar facit eller poäng.");
+    expect(gatewayMocks.downloadDigiExamMigrationArtifact).toHaveBeenCalledWith({
+      artifactKey: "answer_key_completion_report",
+      correlationId: "corr_exam_converter_review",
+      jobId: "job_exam_converter_review",
+    });
+    expect(wrapper.text()).toContain("Granska AI-facit");
     expect(wrapper.text()).toContain("Frågor (6)");
     expect(wrapper.text()).toContain("Filer (2)");
     expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(
@@ -104,7 +109,10 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(questions.text()).not.toContain("Komplettering");
     expect(questions.text()).not.toContain("Behöver ses över");
     expect(questions.findAll(".lucide-circle-check").length).toBeGreaterThan(0);
-    expect(questions.findAll(".lucide-triangle-alert").length).toBeGreaterThan(0);
+    expect(questions.findAll(".lucide-bot").length).toBeGreaterThan(0);
+    expect(questions.find('[data-test="exam-converter-question-row-item-004"]').text()).not.toContain(
+      "Giltigt",
+    );
   });
 
   it("shows question number and prompt preview in one column and treats marked free text as normal", async () => {
@@ -142,10 +150,10 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       "Lucktext",
     );
     expect(wrapper.find('[data-test="exam-converter-question-row-item-004"]').text()).toContain(
-      "Flerval: ett val",
+      "Flerval",
     );
     expect(wrapper.find('[data-test="exam-converter-question-row-item-005"]').text()).toContain(
-      "Flerval: flera val",
+      "Flerval",
     );
     expect(wrapper.find('[data-test="exam-converter-question-row-item-006"]').text()).toContain(
       "Fritext",
@@ -184,7 +192,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
   });
 
-  it("shows only one selected question detail and does not offer local edit state", async () => {
+  it("shows one selected AI-facit detail with contextual review actions", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -193,17 +201,57 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
     expect(detail.text()).toContain("Fråga 4");
     expect(detail.text()).toContain("item-004");
+    expect(detail.text()).toContain("AI-förslag");
+    expect(detail.text()).toContain("Godkänn");
+    expect(detail.text()).toContain("Redigera");
+    expect(detail.text()).toContain("Lämna");
     expect(detail.text()).toContain("Finns");
-    expect(detail.text()).toContain("Alternativ");
     expect(detail.text()).toContain("Växter tar upp vatten ur marken.");
     expect(detail.text()).toContain(
       "Djur och växter frigör energi ur socker med hjälp av syre.",
     );
     expect(detail.text()).toContain("Saknas");
     expect(detail.text()).toContain("Facit");
-    expect(wrapper.text()).not.toContain("Markera som kontrollerad");
-    expect(wrapper.text()).not.toContain("Spara ändring");
-    expect(wrapper.text()).not.toContain("när redigering stöds");
+    expect(wrapper.text()).not.toContain("candidate-item-004");
+    expect(wrapper.text()).not.toContain("digiexam_choice_answer_key_decision_v1");
+  });
+
+  it("builds a reviewed-completion overlay when the teacher accepts an AI-facit", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-accept-ai-suggestion-action"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-apply-reviewed-ai-suggestions-action"]')
+      .trigger("click");
+    await flushPromises();
+
+    const reviewedSubmit = gatewayMocks.submitDigiExamMigration.mock.calls[1]?.[0];
+    expect(reviewedSubmit).toMatchObject({
+      completionMode: "local_llm_apply_missing_machine_marked_with_review",
+    });
+    expect(reviewedSubmit.ingestionOverlay.items).toEqual([
+      expect.objectContaining({
+        item_id: "item-004",
+        manual_answer_key: null,
+        review_decision: null,
+        effective_item_patch: null,
+        reviewed_completion_answer_key: expect.objectContaining({
+          kind: "choice",
+          review_outcome: "accepted_unchanged",
+          candidate_lineage: expect.objectContaining({
+            completion_report_sha256: "sha256:completion-report",
+            candidate_id: "candidate-item-004",
+            validation_state: "valid",
+          }),
+          answer_payload: {
+            kind: "choice",
+            correct_alternative_ids: [3],
+          },
+        }),
+      }),
+    ]);
   });
 
   it("surfaces Lucktext gaps and embedded image structure in the detail pane", async () => {

@@ -1,3 +1,15 @@
+/**
+ * Sir Convert Gateway browser client specs.
+ *
+ * Domain purpose:
+ *   Prove authenticated browser transport, artifact loading, and user-file save
+ *   behavior for the Skriptoteket Sir Convert Gateway integration.
+ *
+ * Relationships:
+ *   - Complements `completionContract.spec.ts`, which owns reviewed-completion
+ *     JobSpec and overlay contract coverage.
+ */
+
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
@@ -11,12 +23,9 @@ import {
   isSirConvertArtifactAvailable,
   listDigiExamMigrationArtifacts,
   saveDigiExamMigrationArtifactToUserFiles,
-  submitDigiExamMigration,
 } from ".";
-import type { DigiExamEffectiveAnswerKey, DigiExamIngestionOverlay } from "./types";
 import {
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
-  DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
 } from "./schemaVersions";
@@ -31,20 +40,6 @@ function jsonResponse(payload: unknown, init: ResponseInit = {}): Response {
 
 function mockJson(payload: unknown, init: ResponseInit = {}): void {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(payload, init));
-}
-
-function dxeFile(): File {
-  return new File(["dxe"], "exam.dxe", { type: "application/octet-stream" });
-}
-
-function expectFormDataFile(
-  value: FormDataEntryValue | null,
-  expected: { name: string; type: string },
-): void {
-  expect(value).toBeInstanceOf(File);
-  const file = value as File;
-  expect(file.name).toBe(expected.name);
-  expect(file.type).toBe(expected.type);
 }
 
 function requestHeaders(callIndex: number): Headers {
@@ -63,169 +58,6 @@ describe("Sir Convert Gateway browser client", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
-  });
-
-  it("submits governed multipart jobs through the HuleEdu Gateway edge", async () => {
-    mockJson(
-      { job: { job_id: "job_1", status: "queued" } },
-      { status: 202, headers: { "X-Idempotent-Replay": "true" } },
-    );
-
-    const file = dxeFile();
-    const gradedResultPdf = new File(["answers"], "graded-result.pdf", {
-      type: "application/pdf",
-    });
-    const submitted = await submitDigiExamMigration({
-      file,
-      gradedResultPdf,
-      targets: ["examnet_pdf"],
-      correlationId: "corr_teacher_action_001",
-    });
-
-    expect(submitted).toMatchObject({
-      jobId: "job_1",
-      status: "queued",
-      idempotentReplay: true,
-    });
-    expect(fetch).toHaveBeenCalledWith(
-      "/sir-convert/v2/convert/jobs?wait_seconds=0",
-      expect.objectContaining({
-        method: "POST",
-        credentials: "include",
-      }),
-    );
-    expect(vi.mocked(fetch).mock.contexts[0]).toBeUndefined();
-    const headers = requestHeaders(0);
-    expect(headers.get("X-Correlation-ID")).toBe("corr_teacher_action_001");
-    expect(headers.get("Idempotency-Key")).toMatch(/^idem_skriptoteket_[0-9a-f]{48}$/);
-    expect(headers.get("X-CSRF-Token")).toBe("csrf-token");
-    expect(headers.get("X-API-Key")).toBeNull();
-    expect(headers.get("Content-Type")).toBeNull();
-
-    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
-    const formData = init.body as FormData;
-    expectFormDataFile(formData.get("file"), {
-      name: "exam.dxe",
-      type: "application/octet-stream",
-    });
-    expectFormDataFile(formData.get("graded_result_pdf"), {
-      name: "graded-result.pdf",
-      type: "application/pdf",
-    });
-    expect(formData.has("parity_pdf")).toBe(false);
-
-    const jobSpec = JSON.parse(String(formData.get("job_spec"))) as {
-      conversion: { output_format: string; targets: string[] };
-      source: { format: string };
-    };
-    expect(jobSpec.source.format).toBe("digiexam_dxe");
-    expect(jobSpec.conversion.output_format).toBe("examnet_migration_bundle");
-    expect(jobSpec.conversion.targets).toEqual(["examnet_pdf"]);
-  });
-
-  it("submits accepted-current-state overlays as a governed multipart JSON part", async () => {
-    mockJson({ job: { job_id: "job_overlay", status: "queued" } }, { status: 202 });
-
-    await submitDigiExamMigration({
-      file: dxeFile(),
-      ingestionOverlay: {
-        schema_version: DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
-        source_binding: {
-          source_file_sha256: "sha256:source",
-          source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
-          source_ir_sha256: "sha256:ir",
-        },
-        items: [
-          {
-            effective_item_patch: null,
-            item_id: "item-001",
-            manual_answer_key: null,
-            sequence: 1,
-            item_type: "multiple_choice",
-            source_item_fingerprint: "sha256:item",
-            review_decision: {
-              kind: "accept_current_state_for_export",
-              decision_id: "accept-current-state-item-001",
-              note: null,
-              accepted_targets: ["qti_package"],
-            },
-            reviewed_completion_answer_key: null,
-          },
-        ],
-      },
-      targets: ["qti_package"],
-    });
-
-    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
-    const formData = init.body as FormData;
-    const overlay = formData.get("digiexam_ingestion_overlay");
-    expect(overlay).toBeInstanceOf(File);
-    expect((overlay as File).name).toBe("digiexam-ingestion-overlay.json");
-
-    const jobSpec = JSON.parse(String(formData.get("job_spec"))) as {
-      digiexam_migration_options: {
-        ingestion_overlay_filename?: string;
-        ingestion_overlay_policy?: string;
-      };
-    };
-    expect(jobSpec.digiexam_migration_options.ingestion_overlay_filename).toBe(
-      "digiexam-ingestion-overlay.json",
-    );
-    expect(jobSpec.digiexam_migration_options.ingestion_overlay_policy).toBe(
-      "apply_teacher_overlay",
-    );
-  });
-
-  it("keeps Task 306 reviewed-completion fields in the generated Sir Convert contract", () => {
-    const reviewedOverlayItem = {
-      effective_item_patch: null,
-      item_id: "item-001",
-      item_type: "multiple_choice",
-      manual_answer_key: null,
-      review_decision: null,
-      reviewed_completion_answer_key: {
-        answer_payload: {
-          correct_alternative_ids: [1],
-          kind: "choice",
-        },
-        candidate_lineage: {
-          candidate_id: "candidate-001",
-          candidate_payload_digest: "sha256:candidate",
-          completion_report_sha256: "sha256:report",
-          prompt_template_version: "digiexam-choice-answer-key-v1",
-          provider_profile_id: "local-fixture",
-          schema_name: "digiexam_choice_answer_key_decision_v1",
-          schema_version: "digiexam_choice_answer_key_decision_v1",
-          validation_state: "valid",
-        },
-        kind: "choice",
-        review_decision_id: "review-001",
-        review_outcome: "accepted_unchanged",
-      },
-      sequence: 1,
-      source_item_fingerprint: "sha256:item",
-    } satisfies DigiExamIngestionOverlay["items"][number];
-    const effectiveAnswerKey = {
-      correct_alternative_ids: [1],
-      lineage: {
-        candidate_id: "candidate-001",
-        candidate_payload_digest: "sha256:candidate",
-        completion_report_sha256: "sha256:report",
-        prompt_template_version: "digiexam-choice-answer-key-v1",
-        provider_profile_id: "local-fixture",
-        review_decision_id: "review-001",
-        review_outcome: "accepted_unchanged",
-        schema_name: "digiexam_choice_answer_key_decision_v1",
-        schema_version: "digiexam_choice_answer_key_decision_v1",
-        validation_state: "valid",
-      },
-      provenance: "reviewed",
-    } satisfies DigiExamEffectiveAnswerKey;
-
-    expect(
-      reviewedOverlayItem.reviewed_completion_answer_key?.candidate_lineage.validation_state,
-    ).toBe("valid");
-    expect(effectiveAnswerKey.lineage?.review_outcome).toBe("accepted_unchanged");
   });
 
   it("reads status, result, manifest, and named artifacts with one correlation ID", async () => {

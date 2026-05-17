@@ -3,28 +3,37 @@
  * Exam Converter question review shell.
  *
  * Domain purpose:
- *   Render the read-only question inspection surface from the DigiExam IR
- *   projection with one selected question detail pane.
- *
- * Relationships:
- *   - Rendered only when `Frågor` is the active inspection mode.
- *   - Receives already-projected teacher-facing rows from the IR parser.
- *   - Does not create local completion state or offer edit/export actions.
+ *   Render question rows and the selected-question AI-facit review pane.
  */
 
 import { computed, ref, watch } from "vue";
-import { AlertTriangle, CheckCircle2 } from "lucide-vue-next";
+import { Ban, Bot, CheckCheck, CheckCircle2, ChevronDown, Info, Pencil, XCircle } from "lucide-vue-next";
 
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
+import { hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
+import type {
+  ExamConverterAiFacitReviewAction,
+  ExamConverterReviewedSuggestionDecision,
+} from "./useExamConverterAiFacitReview";
 
 const props = defineProps<{
+  aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
   projection: ExamConverterReviewProjection;
 }>();
 
+const emit = defineEmits<{
+  acceptEditedChoiceSuggestion: [question: ExamConverterQuestionReviewRow, correctIds: number[]];
+  acceptSuggestion: [question: ExamConverterQuestionReviewRow];
+  leaveSuggestion: [question: ExamConverterQuestionReviewRow];
+  reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
+}>();
+
 const selectedItemId = ref<string | null>(null);
+const editingItemId = ref<string | null>(null);
+const editedChoiceIds = ref<number[]>([]);
 
 const selectedQuestion = computed(() => {
   return (
@@ -33,6 +42,10 @@ const selectedQuestion = computed(() => {
     null
   );
 });
+
+const selectedDecision = computed(() =>
+  selectedQuestion.value ? props.aiFacitDecisions[selectedQuestion.value.itemId] : undefined,
+);
 
 function defaultSelectedItemId(questions: ExamConverterQuestionReviewRow[]): string | null {
   return (
@@ -44,6 +57,72 @@ function defaultSelectedItemId(questions: ExamConverterQuestionReviewRow[]): str
 
 function selectQuestion(question: ExamConverterQuestionReviewRow): void {
   selectedItemId.value = question.itemId;
+  editingItemId.value = null;
+  editedChoiceIds.value = [];
+  emit("reviewActionFocused", hasUsableCompletionCandidate(question) ? "accept" : "review");
+}
+
+function choiceIdsForQuestion(question: ExamConverterQuestionReviewRow): number[] {
+  const payload = question.llmCandidate?.answerPayload;
+  return payload?.kind === "choice" ? payload.correctAlternativeIds : [];
+}
+
+function numericAlternativeId(id: string): number | null {
+  const value = Number.parseInt(id, 10);
+  return Number.isInteger(value) ? value : null;
+}
+
+function isSuggestedAlternative(
+  question: ExamConverterQuestionReviewRow,
+  alternativeId: string,
+): boolean {
+  const numericId = numericAlternativeId(alternativeId);
+  if (numericId === null) return false;
+  if (editingItemId.value === question.itemId) {
+    return editedChoiceIds.value.includes(numericId);
+  }
+  return choiceIdsForQuestion(question).includes(numericId);
+}
+
+function startEditing(question: ExamConverterQuestionReviewRow): void {
+  if (!hasUsableCompletionCandidate(question)) return;
+  const payload = question.llmCandidate?.answerPayload;
+  if (payload?.kind !== "choice") return;
+  editingItemId.value = question.itemId;
+  editedChoiceIds.value = [...payload.correctAlternativeIds];
+  emit("reviewActionFocused", "edit");
+}
+
+function toggleEditedAlternative(alternativeId: string): void {
+  const numericId = numericAlternativeId(alternativeId);
+  if (numericId === null) return;
+  editedChoiceIds.value = editedChoiceIds.value.includes(numericId)
+    ? editedChoiceIds.value.filter((id) => id !== numericId)
+    : [...editedChoiceIds.value, numericId].sort((left, right) => left - right);
+}
+
+function acceptQuestion(question: ExamConverterQuestionReviewRow): void {
+  if (editingItemId.value === question.itemId && editedChoiceIds.value.length > 0) {
+    emit("acceptEditedChoiceSuggestion", question, editedChoiceIds.value);
+  } else {
+    emit("acceptSuggestion", question);
+  }
+  editingItemId.value = null;
+  editedChoiceIds.value = [];
+  emit("reviewActionFocused", "accept");
+}
+
+function leaveQuestion(question: ExamConverterQuestionReviewRow): void {
+  emit("leaveSuggestion", question);
+  editingItemId.value = null;
+  editedChoiceIds.value = [];
+  emit("reviewActionFocused", "leave");
+}
+
+function isAcceptedDecision(
+  decision: ExamConverterReviewedSuggestionDecision | undefined,
+): boolean {
+  return decision?.outcome === "accepted_unchanged" || decision?.outcome === "teacher_edited";
 }
 
 watch(
@@ -137,17 +216,22 @@ watch(
             <td class="px-3 py-4 text-center align-top">
               <span
                 class="inline-grid h-6 w-6 place-items-center"
-                :aria-label="question.status === 'complete' ? 'Klar' : 'Kräver kontroll'"
+                :aria-label="question.statusSymbol === 'ai_suggestion' ? 'AI-förslag' : question.statusSymbol === 'complete' ? 'Klar' : 'Saknar facit'"
                 role="img"
               >
+                <Bot
+                  v-if="question.statusSymbol === 'ai_suggestion'"
+                  class="h-5 w-5 text-terracotta"
+                  aria-hidden="true"
+                />
                 <CheckCircle2
-                  v-if="question.status === 'complete'"
+                  v-else-if="question.statusSymbol === 'complete'"
                   class="h-5 w-5 text-success"
                   aria-hidden="true"
                 />
-                <AlertTriangle
+                <XCircle
                   v-else
-                  class="h-5 w-5 text-warning"
+                  class="h-5 w-5 text-error"
                   aria-hidden="true"
                 />
               </span>
@@ -174,6 +258,104 @@ watch(
         <p class="mt-5 text-sm leading-relaxed text-navy">
           {{ selectedQuestion.promptText }}
         </p>
+
+        <section
+          v-if="hasUsableCompletionCandidate(selectedQuestion)"
+          class="mt-7"
+          data-test="exam-converter-selected-question-ai-suggestion"
+        >
+          <div class="flex items-center gap-2 text-terracotta">
+            <Bot
+              class="h-5 w-5"
+              aria-hidden="true"
+            />
+            <h4 class="text-base font-semibold leading-tight">
+              AI-förslag
+            </h4>
+          </div>
+
+          <ol class="mt-4 grid gap-2 text-sm text-navy">
+            <li
+              v-for="alternative in selectedQuestion.alternatives"
+              :key="alternative.id"
+              class="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 border px-2 py-2"
+              :class="isSuggestedAlternative(selectedQuestion, alternative.id) ? 'border-terracotta bg-terracotta/10' : 'border-navy/15 bg-panel'"
+            >
+              <button
+                type="button"
+                class="inline-grid h-7 w-7 place-items-center border text-xs font-semibold leading-none"
+                :class="isSuggestedAlternative(selectedQuestion, alternative.id) ? 'border-terracotta bg-terracotta text-panel' : 'border-navy/25 bg-panel text-navy'"
+                :disabled="editingItemId !== selectedQuestion.itemId"
+                @click="toggleEditedAlternative(alternative.id)"
+              >
+                {{ alternative.id }}
+              </button>
+              <span class="leading-relaxed">
+                {{ alternative.text }}
+              </span>
+              <CheckCircle2
+                v-if="isSuggestedAlternative(selectedQuestion, alternative.id)"
+                class="h-5 w-5 text-terracotta"
+                aria-hidden="true"
+              />
+            </li>
+          </ol>
+
+          <div class="mt-5 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              class="btn-primary inline-flex items-center gap-2 shadow-none"
+              :class="isAcceptedDecision(selectedDecision) ? 'bg-success' : undefined"
+              data-test="exam-converter-accept-ai-suggestion-action"
+              @click="acceptQuestion(selectedQuestion)"
+              @focus="emit('reviewActionFocused', 'accept')"
+              @mouseenter="emit('reviewActionFocused', 'accept')"
+            >
+              <CheckCheck
+                class="h-4 w-4"
+                aria-hidden="true"
+              />
+              {{ isAcceptedDecision(selectedDecision) ? "Godkänt" : "Godkänn" }}
+            </button>
+            <button
+              type="button"
+              class="btn-ghost inline-flex items-center gap-2 shadow-none"
+              :disabled="selectedQuestion.llmCandidate?.answerPayload?.kind !== 'choice'"
+              data-test="exam-converter-edit-ai-suggestion-action"
+              @click="startEditing(selectedQuestion)"
+              @focus="emit('reviewActionFocused', 'edit')"
+              @mouseenter="emit('reviewActionFocused', 'edit')"
+            >
+              <Pencil
+                class="h-4 w-4 text-action"
+                aria-hidden="true"
+              />
+              Redigera
+            </button>
+            <button
+              type="button"
+              class="btn-ghost inline-flex items-center gap-2 shadow-none"
+              data-test="exam-converter-leave-ai-suggestion-action"
+              @click="leaveQuestion(selectedQuestion)"
+              @focus="emit('reviewActionFocused', 'leave')"
+              @mouseenter="emit('reviewActionFocused', 'leave')"
+            >
+              <Ban
+                class="h-4 w-4 text-navy/70"
+                aria-hidden="true"
+              />
+              Lämna
+            </button>
+          </div>
+
+          <p class="mt-4 flex items-center gap-2 text-sm leading-snug text-navy/70">
+            <Info
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+            Förslag från analysen. Läraren avgör.
+          </p>
+        </section>
 
         <section class="mt-7">
           <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">
@@ -203,7 +385,7 @@ watch(
         </section>
 
         <section
-          v-if="selectedQuestion.alternatives.length > 0"
+          v-if="selectedQuestion.alternatives.length > 0 && !hasUsableCompletionCandidate(selectedQuestion)"
           class="mt-7"
           data-test="exam-converter-selected-question-alternatives"
         >
@@ -300,6 +482,18 @@ watch(
             </span>
           </div>
         </section>
+
+        <button
+          type="button"
+          class="mt-7 flex w-full items-center justify-between border-t border-navy/25 pt-4 text-left text-base font-semibold leading-tight text-navy"
+          data-test="exam-converter-selected-question-details-disclosure"
+        >
+          Detaljer
+          <ChevronDown
+            class="h-5 w-5"
+            aria-hidden="true"
+          />
+        </button>
       </template>
     </aside>
   </section>

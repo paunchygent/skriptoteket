@@ -19,11 +19,18 @@ import {
   parseTargetReadinessReport,
 } from "../../../api/sirConvertGateway";
 import {
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+  SIR_CONVERT_ARTIFACT_AVAILABLE,
 } from "../../../api/sirConvertGateway/contractValues";
-import type { SirConvertArtifactBlob } from "../../../api/sirConvertGateway";
+import type { SirConvertArtifactBlob, SirConvertArtifactManifest } from "../../../api/sirConvertGateway";
+import {
+  parseAnswerKeyCompletionReport,
+  parseEffectiveAnswerKeysByItem,
+} from "./digiexamAnswerKeyCompletionReport";
 import {
   parseExamConverterReviewProjection,
   type ExamConverterReviewProjection,
@@ -37,6 +44,7 @@ type ReviewArtifactClient = {
 export type ExamConverterReviewArtifactsStatus = "idle" | "loading" | "ready" | "failed";
 
 export type ExamConverterReviewArtifactsLoadParams = {
+  completionReportRequired?: boolean;
   correlationId: string;
   jobId: string;
 };
@@ -63,6 +71,50 @@ async function readArtifactJson(artifact: SirConvertArtifactBlob): Promise<unkno
   return JSON.parse(text) as unknown;
 }
 
+function availableArtifactSha256(params: {
+  artifactKey: string;
+  artifactManifest: SirConvertArtifactManifest;
+  required: boolean;
+}): string | null {
+  const entry = params.artifactManifest.artifacts.find(
+    (artifact) => artifact.artifact_key === params.artifactKey,
+  );
+  if (!entry || entry.availability !== SIR_CONVERT_ARTIFACT_AVAILABLE) {
+    if (params.required) {
+      throw new Error(`Sir Convert bundle is missing ${params.artifactKey}.`);
+    }
+    return null;
+  }
+  if (!entry.sha256) {
+    throw new Error(`Sir Convert bundle artifact ${params.artifactKey} is missing sha256.`);
+  }
+  return entry.sha256;
+}
+
+async function loadOptionalArtifactJson(params: {
+  artifactKey: string;
+  artifactManifest: SirConvertArtifactManifest;
+  client: ReviewArtifactClient;
+  correlationId: string;
+  jobId: string;
+  required: boolean;
+}): Promise<{ payload: unknown; sha256: string } | null> {
+  const sha256 = availableArtifactSha256({
+    artifactKey: params.artifactKey,
+    artifactManifest: params.artifactManifest,
+    required: params.required,
+  });
+  if (!sha256) return null;
+  const payload = await params.client
+    .downloadDigiExamMigrationArtifact({
+      artifactKey: params.artifactKey,
+      correlationId: params.correlationId,
+      jobId: params.jobId,
+    })
+    .then(readArtifactJson);
+  return { payload, sha256 };
+}
+
 export function useExamConverterReviewArtifacts(
   options: ExamConverterReviewArtifactsOptions = {},
 ) {
@@ -87,32 +139,68 @@ export function useExamConverterReviewArtifacts(
 
     try {
       const artifactManifest = await client.listDigiExamMigrationArtifacts(params);
-      const [irJson, migrationManifest, targetReadinessReport] = await Promise.all([
+      const [
+        irJson,
+        migrationManifest,
+        targetReadinessReport,
+        completionReportArtifact,
+        effectiveIrArtifact,
+      ] = await Promise.all([
         client
           .downloadDigiExamMigrationArtifact({
-            ...params,
             artifactKey: DIGIEXAM_ARTIFACT_IR_JSON,
+            correlationId: params.correlationId,
+            jobId: params.jobId,
           })
           .then(readArtifactJson),
         client
           .downloadDigiExamMigrationArtifact({
-            ...params,
             artifactKey: DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
+            correlationId: params.correlationId,
+            jobId: params.jobId,
           })
           .then(readArtifactJson),
         client
           .downloadDigiExamMigrationArtifact({
-            ...params,
             artifactKey: DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+            correlationId: params.correlationId,
+            jobId: params.jobId,
           })
           .then(readArtifactJson)
           .then(parseTargetReadinessReport),
+        loadOptionalArtifactJson({
+          artifactKey: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+          artifactManifest,
+          client,
+          correlationId: params.correlationId,
+          jobId: params.jobId,
+          required: params.completionReportRequired === true,
+        }),
+        loadOptionalArtifactJson({
+          artifactKey: DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
+          artifactManifest,
+          client,
+          correlationId: params.correlationId,
+          jobId: params.jobId,
+          required: false,
+        }),
       ]);
       if (loadToken.value !== token) {
         return null;
       }
+      const answerKeyCompletionReport = completionReportArtifact
+        ? parseAnswerKeyCompletionReport({
+            completionReportSha256: completionReportArtifact.sha256,
+            payload: completionReportArtifact.payload,
+          })
+        : null;
+      const effectiveAnswerKeysByItem = effectiveIrArtifact
+        ? parseEffectiveAnswerKeysByItem(effectiveIrArtifact.payload)
+        : null;
       const parsedProjection = parseExamConverterReviewProjection({
+        answerKeyCompletionReport,
         artifactManifest,
+        effectiveAnswerKeysByItem,
         irJson,
         migrationManifest,
         targetReadinessReport,

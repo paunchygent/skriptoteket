@@ -23,9 +23,11 @@ import {
   DIGIEXAM_MANUAL_FOLLOW_UP_PARSER_WARNING_BLOCKS_RENDERING,
   DIGIEXAM_MANUAL_FOLLOW_UP_UNSUPPORTED_ITEM_TYPE,
 } from "../../../api/sirConvertGateway/contractValues";
+import type { ExamConverterLlmAnswerKeyCandidate } from "./digiexamAnswerKeyCompletionReport";
 
 export type ExamConverterMissingFieldLabel = "Facit" | "Poäng";
 export type ExamConverterQuestionReviewStatus = "complete" | "attention";
+export type ExamConverterQuestionStatusSymbol = "ai_suggestion" | "complete" | "missing";
 
 export type ExamConverterQuestionAlternative = {
   id: string;
@@ -56,6 +58,9 @@ export type ExamConverterQuestionReviewRow = {
   promptText: string;
   missingFields: ExamConverterMissingFieldLabel[];
   status: ExamConverterQuestionReviewStatus;
+  statusSymbol: ExamConverterQuestionStatusSymbol;
+  currentAnswerKeyProvenance: string;
+  llmCandidate: ExamConverterLlmAnswerKeyCandidate | null;
   manualFollowUpMessages: string[];
   alternatives: ExamConverterQuestionAlternative[];
   lucktextStructure: ExamConverterLucktextStructure | null;
@@ -130,9 +135,8 @@ function typeLabelForItemType(itemType: string): string {
       return "Lucktext";
     case DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE:
     case DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE:
-      return "Flerval: ett val";
     case DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE:
-      return "Flerval: flera val";
+      return "Flerval";
     case DIGIEXAM_ITEM_TYPE_OPEN_ENDED:
       return "Fritext";
     default:
@@ -273,10 +277,36 @@ function isAttentionRow(params: {
   );
 }
 
+function hasUsableCandidate(candidate: ExamConverterLlmAnswerKeyCandidate | null): boolean {
+  return (
+    candidate?.decisionState === "suggested" &&
+    candidate.validationState === "valid" &&
+    candidate.answerPayload !== null
+  );
+}
+
+function statusSymbolForItem(params: {
+  candidate: ExamConverterLlmAnswerKeyCandidate | null;
+  item: DigiExamIrItem;
+  missingFields: ExamConverterMissingFieldLabel[];
+}): ExamConverterQuestionStatusSymbol {
+  if (hasUsableCandidate(params.candidate)) {
+    return "ai_suggestion";
+  }
+  if (
+    params.missingFields.includes("Facit") &&
+    params.item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
+  ) {
+    return "missing";
+  }
+  return "complete";
+}
+
 export function projectQuestionReviewRow(
   item: DigiExamIrItem,
   itemFollowUps: DigiExamIrManualFollowUp[],
   sourceItemFingerprint: string | null,
+  llmCandidate: ExamConverterLlmAnswerKeyCandidate | null,
 ): ExamConverterQuestionReviewRow {
   const missingFields = missingFieldsForItem(item, itemFollowUps);
   const promptText = promptTextForItem(item);
@@ -293,6 +323,9 @@ export function projectQuestionReviewRow(
     status: isAttentionRow({ followUps: itemFollowUps, item, missingFields })
       ? "attention"
       : "complete",
+    statusSymbol: statusSymbolForItem({ candidate: llmCandidate, item, missingFields }),
+    currentAnswerKeyProvenance: item.answerKey.provenance,
+    llmCandidate,
     manualFollowUpMessages: itemFollowUps
       .map((followUp) => followUp.message)
       .filter((message) => message.length > 0),

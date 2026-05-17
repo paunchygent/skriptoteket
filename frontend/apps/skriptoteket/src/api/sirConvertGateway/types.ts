@@ -17,6 +17,7 @@ import {
   DIGIEXAM_INGESTION_OVERLAY_POLICY_NONE,
   DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE,
   DIGIEXAM_MIGRATION_OUTPUT_FORMAT,
+  DIGIEXAM_REMOTE_PROVIDER_POLICY_FORBIDDEN,
   DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED,
   DIGIEXAM_SOURCE_FORMAT,
 } from "./contractValues";
@@ -28,11 +29,18 @@ import type {
 type SirConvertOpenApiSchemas = components["schemas"];
 
 export type DigiExamMigrationTarget = SirConvertOpenApiSchemas["ExamMigrationTargetV2"];
+export type DigiExamAnswerKeyCompletionMode =
+  SirConvertOpenApiSchemas["DigiExamAnswerKeyCompletionModeV2"];
+export type DigiExamAnswerKeyCompletionReport =
+  SirConvertOpenApiSchemas["DigiExamAnswerKeyCompletionReportV1"];
+export type DigiExamAnswerKeyCompletionReportItem =
+  SirConvertOpenApiSchemas["DigiExamAnswerKeyCompletionReportItemV1"];
 export type DigiExamMigrationArtifactKey =
   SirConvertOpenApiSchemas["DigiExamMigrationArtifactKey"];
 export type DigiExamIngestionOverlay = SirConvertOpenApiSchemas["DigiExamIngestionOverlay"];
 export type DigiExamEffectiveAnswerKey =
   SirConvertOpenApiSchemas["DigiExamEffectiveAnswerKeyV1"];
+export type DigiExamEffectiveExam = SirConvertOpenApiSchemas["DigiExamEffectiveExamV1"];
 export type DigiExamItemType = SirConvertOpenApiSchemas["DigiExamItemType"];
 export type DigiExamTargetReadiness = SirConvertOpenApiSchemas["DigiExamTargetReadiness"];
 export type DigiExamTargetReadinessRow =
@@ -70,8 +78,10 @@ export type SirConvertDigiExamJobSpec = {
     reference_docx_filename: null;
   };
   digiexam_migration_options: {
+    completion_mode: DigiExamAnswerKeyCompletionMode;
     graded_result_pdf_filename?: string;
     parity_pdf_filename?: string;
+    remote_provider_policy: typeof DIGIEXAM_REMOTE_PROVIDER_POLICY_FORBIDDEN;
     result_pdf_usage: typeof DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED;
     manual_follow_up_policy: typeof DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE;
     ingestion_overlay_filename?: string;
@@ -90,6 +100,7 @@ export type DigiExamMigrationSubmitParams = {
   parityPdf?: File | null;
   targets?: DigiExamMigrationTarget[];
   artifactLanguage?: string;
+  completionMode?: DigiExamAnswerKeyCompletionMode;
   waitSeconds?: number;
   correlationId?: string | null;
   sourceLabel?: string | null;

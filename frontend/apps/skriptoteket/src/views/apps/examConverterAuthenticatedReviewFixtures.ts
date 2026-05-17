@@ -3,12 +3,10 @@
  *
  * Domain purpose:
  *   Provide compact Sir Convert gateway fixtures for IR-backed question review
- *   tests without burying contract payloads inside presentation assertions.
+ *   tests without burying contract payloads in presentation assertions.
  *
  * Relationships:
- *   - Used by `ExamConverterAuthenticatedReviewSlice.spec.ts`.
- *   - Mirrors the read-only Sir Convert `ir_json` and `migration_manifest`
- *     artifacts consumed by the authenticated Exam Converter view.
+ *   Used by review slice specs for read-only IR and manifest artifacts.
  */
 
 import { flushPromises, type VueWrapper } from "@vue/test-utils";
@@ -20,6 +18,7 @@ import type {
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
@@ -36,7 +35,6 @@ import {
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
   DIGIEXAM_TARGET_QTI_PACKAGE,
-  DIGIEXAM_TARGET_READY,
   SIR_CONVERT_ARTIFACT_AVAILABLE,
   SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
 } from "../../api/sirConvertGateway/contractValues";
@@ -46,6 +44,7 @@ import {
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
+  ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
 } from "../../api/sirConvertGateway/schemaVersions";
 
 export type ExamConverterGatewayMocks = {
@@ -95,7 +94,7 @@ export function terminalResult(): SirConvertTerminalResult {
   };
 }
 
-function artifactJsonBlob(artifactKey: string, payload: unknown) {
+export function artifactJsonBlob(artifactKey: string, payload: unknown) {
   return {
     artifactKey,
     blob: {
@@ -106,7 +105,7 @@ function artifactJsonBlob(artifactKey: string, payload: unknown) {
   };
 }
 
-function reviewItem(overrides: Record<string, unknown> = {}) {
+export function reviewItem(overrides: Record<string, unknown> = {}) {
   return {
     answer_key: { provenance: "dxe_populated_key" },
     embedded_asset_references: [
@@ -176,6 +175,14 @@ export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): vo
         filename: "rapport.json",
         sha256: null,
         size_bytes: 2_048,
+      },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        content_type: "application/json",
+        filename: "answer-key-completion-report.json",
+        sha256: "sha256:completion-report",
+        size_bytes: 1_024,
       },
     ],
     bundle_status: SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
@@ -359,6 +366,37 @@ export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): vo
           }),
         );
       }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT, {
+            schema_version: ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
+            completion_mode: "local_llm_suggest_missing_machine_marked",
+            job_id: "job_exam_converter_review",
+            items: [
+              {
+                item_id: "item-004",
+                sequence: 4,
+                item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+                decision_state: "suggested",
+                validation_state: "valid",
+                backend_status: "ok",
+                backend_failure_code: null,
+                candidate_id: "candidate-item-004",
+                candidate_payload_digest: "sha256:candidate-item-004",
+                provider_profile_id: "task309-llama-cpp",
+                model_profile: "local",
+                prompt_template_version: "digiexam-choice-answer-key-v1",
+                schema_name: "digiexam_choice_answer_key_decision_v1",
+                schema_version: "digiexam_choice_answer_key_decision_v1",
+                answer_payload: {
+                  kind: "choice",
+                  correct_alternative_ids: [3],
+                },
+              },
+            ],
+          }),
+        );
+      }
       return Promise.resolve(
         artifactJsonBlob(DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST, {
           asset_count: 0,
@@ -434,162 +472,6 @@ export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): vo
           source_filename: "Ma1c_NationelltProv_HT25.dxe",
           source_producer: null,
           warning_count: 1,
-        }),
-      );
-    },
-  );
-}
-
-export function mockFreeTextOnlyReviewArtifacts(
-  gatewayMocks: ExamConverterGatewayMocks,
-): void {
-  gatewayMocks.listDigiExamMigrationArtifacts.mockResolvedValue({
-    artifacts: [
-      {
-        artifact_key: DIGIEXAM_TARGET_EXAMNET_PDF,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
-        content_type: "application/pdf",
-        filename: "Metaller_Exam.net.pdf",
-        sha256: null,
-        size_bytes: 700_416,
-      },
-      {
-        artifact_key: DIGIEXAM_TARGET_QTI_PACKAGE,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
-        content_type: "application/zip",
-        filename: "Metaller_QTI.zip",
-        sha256: null,
-        size_bytes: 1_258_291,
-      },
-    ],
-    bundle_status: SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
-    job_id: "job_exam_converter_review",
-    source: {
-      filename: "1819077059-e-metaller-och-elektrokemi-23c.dxe",
-      format: DIGIEXAM_SOURCE_FORMAT,
-      sha256: "sha256:source",
-    },
-    manual_follow_up: {
-      artifact_key: DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
-      count: 1,
-      required: true,
-    },
-    schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-    warnings: {
-      artifact_key: DIGIEXAM_ARTIFACT_WARNINGS_REPORT,
-      count: 0,
-    },
-    readiness: {
-      artifact_key: DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
-      exportable_targets: [DIGIEXAM_TARGET_EXAMNET_PDF, DIGIEXAM_TARGET_QTI_PACKAGE],
-      review_required: false,
-    },
-    source_binding: {
-      source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
-      source_ir_sha256: "sha256:ir",
-      effective_exam_schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
-      effective_exam_sha256: "sha256:effective",
-    },
-  });
-  gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
-    ({ artifactKey }: { artifactKey: string }) => {
-      if (artifactKey === DIGIEXAM_ARTIFACT_IR_JSON) {
-        return Promise.resolve(
-          artifactJsonBlob(DIGIEXAM_ARTIFACT_IR_JSON, {
-            items: [
-              reviewItem({
-                answer_key: { provenance: "not_applicable" },
-                embedded_asset_references: [],
-                embedded_assets: [],
-                gaps: [],
-                item_id: "item-001",
-                item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
-                max_score: 1,
-                prompt_lines: ["Varför är stål hårdare och starkare än järn?"],
-                sequence: 1,
-                title: "Fråga 1",
-              }),
-            ],
-            manual_follow_ups: [
-              {
-                item_id: "item-001",
-                message: "Manual marking is required.",
-                reason: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_MARKING_REQUIRED,
-                source_span: null,
-              },
-            ],
-            parse_status: "success",
-            renderer_ready: true,
-            schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
-            source_filename: "1819077059-e-metaller-och-elektrokemi-23c.dxe",
-            source_producer: null,
-            warnings: [],
-          }),
-        );
-      }
-      if (artifactKey === DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT) {
-        return Promise.resolve(
-          artifactJsonBlob(DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT, {
-            schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
-            job_id: "job_exam_converter_review",
-            source_ir_sha256: "sha256:ir",
-            effective_exam_sha256: "sha256:effective",
-            targets: [
-              {
-                target: DIGIEXAM_TARGET_EXAMNET_PDF,
-                readiness: DIGIEXAM_TARGET_READY,
-                export_enabled: true,
-                artifact_key: DIGIEXAM_TARGET_EXAMNET_PDF,
-                reason_code: "target_available",
-                teacher_action: "none",
-                retryable: false,
-                message_key: "exam_converter.target.ready",
-                item_id: null,
-                sequence: null,
-                source_item_fingerprint: null,
-              },
-              {
-                target: DIGIEXAM_TARGET_QTI_PACKAGE,
-                readiness: DIGIEXAM_TARGET_READY,
-                export_enabled: true,
-                artifact_key: DIGIEXAM_TARGET_QTI_PACKAGE,
-                reason_code: "target_available",
-                teacher_action: "none",
-                retryable: false,
-                message_key: "exam_converter.target.ready",
-                item_id: null,
-                sequence: null,
-                source_item_fingerprint: null,
-              },
-            ],
-          }),
-        );
-      }
-      return Promise.resolve(
-        artifactJsonBlob(DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST, {
-          asset_count: 0,
-          asset_summaries: [],
-          exam_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
-          item_count: 1,
-          item_summaries: [
-            {
-              item_id: "item-001",
-              sequence: 1,
-              title: "Fråga 1",
-              item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
-              source_item_fingerprint: "sha256:item-001",
-              answer_key_provenance: "not_applicable",
-              manual_follow_up_required: true,
-              asset_summaries: [],
-            },
-          ],
-          manual_follow_up_count: 1,
-          parse_status: "success",
-          renderer_ready: true,
-          schema_version: DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
-          source_filename: "1819077059-e-metaller-och-elektrokemi-23c.dxe",
-          source_producer: null,
-          warning_count: 0,
         }),
       );
     },

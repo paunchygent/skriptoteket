@@ -34,7 +34,9 @@ describe("Sir Convert DigiExam request context", () => {
         reference_docx_filename: null,
       },
       digiexam_migration_options: {
+        completion_mode: "local_llm_suggest_missing_machine_marked",
         graded_result_pdf_filename: "graded-result.pdf",
+        remote_provider_policy: "forbidden",
         result_pdf_usage: "correct_machine_marked_answers_only",
         manual_follow_up_policy: "emit_item_addressable_report",
       },

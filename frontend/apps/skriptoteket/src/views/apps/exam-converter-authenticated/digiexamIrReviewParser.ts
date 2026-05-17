@@ -14,31 +14,32 @@
 import type {
   DigiExamIngestionOverlay,
   DigiExamItemType,
-  DigiExamMigrationTarget,
   DigiExamTargetReadinessReport,
   DigiExamTargetReadinessRow,
   SirConvertArtifactAvailability,
   SirConvertArtifactEntry,
   SirConvertArtifactManifest,
+  SirConvertArtifactManifestSourceBinding,
 } from "../../../api/sirConvertGateway";
 import {
-  DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
   DIGIEXAM_ITEM_TYPES,
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
-  DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
   DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
-  DIGIEXAM_TARGET_QTI_PACKAGE,
   SIR_CONVERT_ARTIFACT_AVAILABLE,
   SIR_CONVERT_ARTIFACT_NOT_REQUESTED,
 } from "../../../api/sirConvertGateway/contractValues";
 import {
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
-  DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
 } from "../../../api/sirConvertGateway/schemaVersions";
+import {
+  buildAcceptedCurrentStateOverlay,
+  digiExamTargetFileLabel,
+  isDigiExamTargetFile,
+} from "./digiexamAcceptedCurrentStateOverlay";
 import {
   projectQuestionReviewRow,
   type DigiExamIrAlternative,
@@ -49,6 +50,11 @@ import {
   type DigiExamIrManualFollowUp,
   type ExamConverterQuestionReviewRow,
 } from "./digiexamIrQuestionReviewProjection";
+import type {
+  ExamConverterAnswerKeyCompletionReport,
+  ExamConverterEffectiveAnswerKeyByItem,
+  ExamConverterLlmAnswerKeyCandidate,
+} from "./digiexamAnswerKeyCompletionReport";
 
 export type {
   ExamConverterLucktextImage,
@@ -79,6 +85,7 @@ export type ExamConverterReviewFile = {
 
 export type ExamConverterReportProjection = {
   attentionQuestionCount: number;
+  aiSuggestionCount: number;
   missingAnswerKeyCount: number;
   missingPointsCount: number;
   warningCount: number;
@@ -86,10 +93,14 @@ export type ExamConverterReportProjection = {
 
 export type ExamConverterReviewProjection = {
   sourceFilename: string;
+  sourceFileSha256: string;
+  artifactSourceBinding: SirConvertArtifactManifestSourceBinding;
   questions: ExamConverterQuestionReviewRow[];
   files: ExamConverterReviewFile[];
   report: ExamConverterReportProjection;
   defaultMode: ExamConverterInspectionMode;
+  answerKeyCompletionReport: ExamConverterAnswerKeyCompletionReport | null;
+  effectiveAnswerKeysByItem: ExamConverterEffectiveAnswerKeyByItem;
   acceptedStateOverlay: DigiExamIngestionOverlay | null;
 };
 
@@ -116,10 +127,6 @@ type DigiExamIrManifestItemSummary = {
 
 const IR_SCHEMA_VERSION = DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION;
 const MANIFEST_SCHEMA_VERSION = DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION;
-const TARGET_FILE_LABELS: Record<string, string> = {
-  [DIGIEXAM_TARGET_EXAMNET_PDF]: "PDF",
-  [DIGIEXAM_TARGET_QTI_PACKAGE]: "QTI-format",
-};
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -359,15 +366,11 @@ function statusLabelForFile(params: {
   return "Kunde inte skapas";
 }
 
-function isTargetFile(entry: SirConvertArtifactEntry): boolean {
-  return entry.artifact_key in TARGET_FILE_LABELS;
-}
-
 function projectFiles(
   artifactManifest: SirConvertArtifactManifest,
   targetReadinessReport: DigiExamTargetReadinessReport,
 ): ExamConverterReviewFile[] {
-  return artifactManifest.artifacts.filter(isTargetFile).map((entry) => {
+  return artifactManifest.artifacts.filter(isDigiExamTargetFile).map((entry) => {
     const rows = readinessRowsForTarget(targetReadinessReport, entry.artifact_key);
     const readinessRow = primaryReadinessRow(rows);
     const exportEnabled = exportEnabledForFile(entry, rows);
@@ -377,7 +380,7 @@ function projectFiles(
       contentType: entry.content_type,
       exportEnabled,
       filename: entry.filename,
-      kindLabel: TARGET_FILE_LABELS[entry.artifact_key] ?? entry.artifact_key,
+      kindLabel: digiExamTargetFileLabel(entry.artifact_key),
       reasonCode: readinessRow?.reason_code ?? entry.unavailable_code ?? null,
       readiness: readinessRow?.readiness ?? null,
       sha256: entry.sha256,
@@ -407,7 +410,9 @@ function followUpsByItemId(
 }
 
 export function parseExamConverterReviewProjection(params: {
+  answerKeyCompletionReport?: ExamConverterAnswerKeyCompletionReport | null;
   artifactManifest: SirConvertArtifactManifest;
+  effectiveAnswerKeysByItem?: ExamConverterEffectiveAnswerKeyByItem | null;
   irJson: unknown;
   migrationManifest: unknown;
   targetReadinessReport: DigiExamTargetReadinessReport;
@@ -415,6 +420,7 @@ export function parseExamConverterReviewProjection(params: {
   const exam = parseIntermediateExam(params.irJson);
   const manifest = parseIrManifest(params.migrationManifest);
   const followUps = followUpsByItemId(exam.manualFollowUps);
+  const candidates = params.answerKeyCompletionReport?.itemsByItemId ?? new Map();
 
   const questions = exam.items.map((item): ExamConverterQuestionReviewRow => {
     const itemFollowUps = followUps.get(item.itemId) ?? [];
@@ -423,20 +429,25 @@ export function parseExamConverterReviewProjection(params: {
       item,
       itemFollowUps,
       itemSummary?.sourceItemFingerprint ?? null,
+      candidates.get(item.itemId) ?? null,
     );
   });
 
   const missingDataQuestionCount = questions.filter(
     (question) => question.missingFields.length > 0,
   ).length;
+  const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
   const hasQuestionReview = missingDataQuestionCount > 0 || manifest.warningCount > 0;
 
   return {
     sourceFilename: exam.sourceFilename,
+    sourceFileSha256: params.artifactManifest.source.sha256,
+    artifactSourceBinding: params.artifactManifest.source_binding,
     questions,
     files: projectFiles(params.artifactManifest, params.targetReadinessReport),
     report: {
       attentionQuestionCount: missingDataQuestionCount,
+      aiSuggestionCount: validAiSuggestionCount,
       missingAnswerKeyCount: questions.filter((question) =>
         question.missingFields.includes("Facit"),
       ).length,
@@ -445,7 +456,9 @@ export function parseExamConverterReviewProjection(params: {
       ).length,
       warningCount: Math.max(manifest.warningCount, exam.warnings.length),
     },
-    defaultMode: hasQuestionReview ? "questions" : "files",
+    defaultMode: hasQuestionReview || validAiSuggestionCount > 0 ? "questions" : "files",
+    answerKeyCompletionReport: params.answerKeyCompletionReport ?? null,
+    effectiveAnswerKeysByItem: params.effectiveAnswerKeysByItem ?? new Map(),
     acceptedStateOverlay: buildAcceptedCurrentStateOverlay({
       artifactManifest: params.artifactManifest,
       questions,
@@ -453,43 +466,12 @@ export function parseExamConverterReviewProjection(params: {
   };
 }
 
-function buildAcceptedCurrentStateOverlay(params: {
-  artifactManifest: SirConvertArtifactManifest;
-  questions: ExamConverterQuestionReviewRow[];
-}): DigiExamIngestionOverlay | null {
-  const acceptedTargets = params.artifactManifest.artifacts
-    .filter(isTargetFile)
-    .filter((entry) => entry.availability !== SIR_CONVERT_ARTIFACT_NOT_REQUESTED)
-    .map((entry) => entry.artifact_key as DigiExamMigrationTarget);
-  const items = params.questions
-    .filter((question) => question.missingFields.length > 0)
-    .filter((question) => question.sourceItemFingerprint !== null)
-    .map((question) => ({
-      effective_item_patch: null,
-      item_id: question.itemId,
-      manual_answer_key: null,
-      sequence: question.sequence,
-      item_type: question.itemType,
-      source_item_fingerprint: question.sourceItemFingerprint as string,
-      review_decision: {
-        kind: DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND,
-        decision_id: `accept-current-state-${question.itemId}`,
-        note: null,
-        accepted_targets: acceptedTargets,
-      },
-      reviewed_completion_answer_key: null,
-    }));
-
-  if (items.length === 0 || acceptedTargets.length === 0) {
-    return null;
-  }
-  return {
-    schema_version: DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
-    source_binding: {
-      source_file_sha256: params.artifactManifest.source.sha256,
-      source_ir_schema_version: params.artifactManifest.source_binding.source_ir_schema_version,
-      source_ir_sha256: params.artifactManifest.source_binding.source_ir_sha256,
-    },
-    items,
-  };
+export function hasUsableCompletionCandidate(question: {
+  llmCandidate: ExamConverterLlmAnswerKeyCandidate | null;
+}): boolean {
+  return (
+    question.llmCandidate?.decisionState === "suggested" &&
+    question.llmCandidate.validationState === "valid" &&
+    question.llmCandidate.answerPayload !== null
+  );
 }

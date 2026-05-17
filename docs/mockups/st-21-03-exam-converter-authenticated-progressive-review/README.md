@@ -5,11 +5,11 @@ title: "ST-21-03 Exam Converter authenticated progressive review"
 status: approved
 owners: "agents"
 created: 2026-05-14
-updated: 2026-05-14
-tags: ["ST-21-03", "PR-0325", "exam-converter", "authenticated", "mockup"]
-summary: "Selected direction for the authenticated Exam Converter progressive-review workspace after replacing the rejected bottom files panel with segmented inspection modes."
+updated: 2026-05-17
+tags: ["ST-21-03", "PR-0325", "PR-0326", "exam-converter", "authenticated", "mockup"]
+summary: "Selected direction for the authenticated Exam Converter progressive-review workspace and the PR-0326 AI-facit review panel."
 canonical_preview: "exam-converter-authenticated-progressive-review-v2.png"
-submission_policy: "Use this bundle as the product-approved layout direction before production Vue changes under PR-0325."
+submission_policy: "Use this bundle as the product-approved layout direction before production Vue changes under PR-0325 and PR-0326."
 winner_policy: "Use the visual system, workspace hierarchy, and progressive-review model from this mockup. Keep files inside the Filer inspection mode and keep Frågor as the default follow-up surface."
 ---
 
@@ -28,6 +28,14 @@ hard structural lines, progressive disclosure, and teacher-facing Swedish copy.
 
 ![Exam Converter authenticated progressive review](exam-converter-authenticated-progressive-review-v2.png)
 
+## PR-0326 AI-Facit Review Preview
+
+![Exam Converter authenticated AI-facit review](exam-converter-authenticated-ai-facit-review-v1.png)
+
+Use this second preview as the accepted PR-0326 UI direction. It supersedes any
+earlier AI-facit mockup that introduced a separate `Facit` table column or
+duplicated service-state explanation in the grid.
+
 ## Design Verdict
 
 Accepted:
@@ -43,12 +51,31 @@ Accepted:
 - one selected question detail pane instead of multiple expanded details;
 - dynamic imported-information indicators per question row;
 - direct question-level completion controls in the detail pane.
+- PR-0326 AI-facit review belongs in the contextual right detail panel, not in
+  a new table column.
+- Rows use icon-only status semantics: terracotta robot for an AI-suggested
+  machine-marked key, green check for source-existing or not-needed keys, and
+  red cross for missing supported machine-marked keys without a usable
+  suggestion.
+- The old global `Öppna frågor` affordance becomes an AI-facit review message
+  with short `Granska` action copy when usable suggestions exist.
+- The contextual guidance panel explains the currently focused action where the
+  inline conversion status panel normally appears.
+- Button labels stay compact: `Granska`, `Godkänn`, `Redigera`, `Lämna`,
+  `Godkänn alla`, and `Skapa filer`.
 
 Rejected:
 
 - the bottom stretched reminder panel with a centered `Visa filer` affordance
   from the first draft. It reads as a strange extra panel and weakens the
   selected-mode model.
+- verbose table labels that expose the internal review state machine;
+- a dedicated `Facit` column for AI completion state;
+- duplicate affordances that explain every backend candidate status to the
+  teacher;
+- treating invalid, ineligible, unavailable, or unsupported candidates as a
+  separate teacher workflow. Those rows should look like today's missing-key
+  state and let the teacher provide a key, gapped words, or proceed as-is.
 
 Implementation must remove or redesign that bottom affordance. Acceptable
 alternatives include:
@@ -104,6 +131,11 @@ The result strip is the only global result state in the main workspace:
 
 Do not duplicate this status in other panels.
 
+For PR-0326, when usable AI-facit suggestions exist, replace this strip with
+the contextual `Granska AI-facit` panel from the approved preview. The panel
+must stay action-oriented and teacher-facing; it must not list backend decision
+states or validation-state names.
+
 ### Inspection Modes
 
 The main workspace uses a segmented control:
@@ -129,7 +161,6 @@ Do not expand several question details inline.
 
 Question list columns:
 
-- `Nr`;
 - `Fråga`;
 - `Typ`;
 - `Saknas`;
@@ -146,6 +177,10 @@ Do not render success pills for expected imported information. Do not invent
 missing labels such as `Svarsalternativ` unless the converter contract later
 proves that alternatives were expected and absent.
 
+Do not add a separate `Facit` column. Missing answer-key information belongs in
+`Saknas`, and suggestion availability belongs in `Status` through the icon
+semantics above.
+
 ### Selected Question Detail
 
 The detail pane shows only the currently selected question:
@@ -160,6 +195,18 @@ The detail pane shows only the currently selected question:
 The current detail pane is read-only. It must not offer local-only edit or
 review-complete controls until Sir Convert exposes an explicit mutation and
 rebuild contract.
+
+For PR-0326, the detail pane may offer AI-facit review controls only when Sir
+Convert returned a valid supported advisory candidate. The panel starts with
+`AI-förslag`, shows the proposed key in context, and offers compact per-item
+actions:
+
+- `Godkänn` for accept unchanged;
+- `Redigera` for supported edit-before-accept payloads;
+- `Lämna` to leave the item unresolved for manual follow-up.
+
+Invalid, ineligible, unavailable, unsupported, or missing candidates should
+fall back to the same missing-key presentation the teacher already sees.
 
 ## Component Translation
 
@@ -182,6 +229,14 @@ Likely production components:
 
 Keep transport, save/runtime calls, and parser types outside these presentation
 components.
+
+PR-0326 adds:
+
+- `ExamConverterAiReviewActionPanel`
+  - owns the contextual `Granska AI-facit` action guidance and compact bulk
+    affordances.
+- `useExamConverterAiFacitReview`
+  - owns explicit teacher AI-facit decisions and reviewed-overlay construction.
 
 ## Visual Rules
 
