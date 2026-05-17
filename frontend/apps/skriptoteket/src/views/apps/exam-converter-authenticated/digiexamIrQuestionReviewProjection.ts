@@ -12,7 +12,10 @@
  *   - Does not mutate IR, infer answers, or create local review state.
  */
 
-import type { DigiExamItemType } from "../../../api/sirConvertGateway";
+import type {
+  DigiExamEffectiveAnswerKey,
+  DigiExamItemType,
+} from "../../../api/sirConvertGateway";
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
@@ -265,6 +268,24 @@ function isActionableFollowUp(followUp: DigiExamIrManualFollowUp): boolean {
   );
 }
 
+function hasEffectiveAnswerKey(
+  answerKey: DigiExamEffectiveAnswerKey | null | undefined,
+): answerKey is DigiExamEffectiveAnswerKey {
+  return Boolean(answerKey?.provenance && answerKey.provenance !== "absent");
+}
+
+function followUpsForEffectiveAnswerKey(params: {
+  effectiveAnswerKey: DigiExamEffectiveAnswerKey | null | undefined;
+  followUps: DigiExamIrManualFollowUp[];
+}): DigiExamIrManualFollowUp[] {
+  if (!hasEffectiveAnswerKey(params.effectiveAnswerKey)) {
+    return params.followUps;
+  }
+  return params.followUps.filter(
+    (followUp) => followUp.reason !== DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
+  );
+}
+
 function isAttentionRow(params: {
   followUps: DigiExamIrManualFollowUp[];
   item: DigiExamIrItem;
@@ -307,8 +328,14 @@ export function projectQuestionReviewRow(
   itemFollowUps: DigiExamIrManualFollowUp[],
   sourceItemFingerprint: string | null,
   llmCandidate: ExamConverterLlmAnswerKeyCandidate | null,
+  effectiveAnswerKey: DigiExamEffectiveAnswerKey | null = null,
 ): ExamConverterQuestionReviewRow {
-  const missingFields = missingFieldsForItem(item, itemFollowUps);
+  const resolvedFollowUps = followUpsForEffectiveAnswerKey({
+    effectiveAnswerKey,
+    followUps: itemFollowUps,
+  });
+  const resolvedCandidate = hasEffectiveAnswerKey(effectiveAnswerKey) ? null : llmCandidate;
+  const missingFields = missingFieldsForItem(item, resolvedFollowUps);
   const promptText = promptTextForItem(item);
   return {
     itemId: item.itemId,
@@ -320,13 +347,15 @@ export function projectQuestionReviewRow(
     pointsLabel: item.maxScore === null ? "—" : `${item.maxScore.toLocaleString("sv-SE")} p`,
     promptText,
     missingFields,
-    status: isAttentionRow({ followUps: itemFollowUps, item, missingFields })
+    status: isAttentionRow({ followUps: resolvedFollowUps, item, missingFields })
       ? "attention"
       : "complete",
-    statusSymbol: statusSymbolForItem({ candidate: llmCandidate, item, missingFields }),
-    currentAnswerKeyProvenance: item.answerKey.provenance,
-    llmCandidate,
-    manualFollowUpMessages: itemFollowUps
+    statusSymbol: statusSymbolForItem({ candidate: resolvedCandidate, item, missingFields }),
+    currentAnswerKeyProvenance: hasEffectiveAnswerKey(effectiveAnswerKey)
+      ? effectiveAnswerKey.provenance
+      : item.answerKey.provenance,
+    llmCandidate: resolvedCandidate,
+    manualFollowUpMessages: resolvedFollowUps
       .map((followUp) => followUp.message)
       .filter((message) => message.length > 0),
     alternatives: projectAlternatives(item),

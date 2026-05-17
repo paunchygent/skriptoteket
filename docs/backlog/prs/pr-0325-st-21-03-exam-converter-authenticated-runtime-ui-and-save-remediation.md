@@ -507,8 +507,10 @@ Recommended solution retained for this slice:
 - allow `Godkänn` to trigger or refresh accepted-state export only for target
   rows Sir Convert can actually create under the accepted-current-state policy;
   and
-- keep unsupported target-shape blockers disabled with a visible outcome if a
-  future source item still has no governed producer representation.
+- keep true unsupported target-shape blockers disabled with a visible outcome
+  if a future source item still has no governed producer representation; this
+  blocker class must not be used for governed matching or single-/multi-gap
+  `Lucktext`/open-cloze shapes.
 
 Out of scope for slice 6 until separately approved:
 

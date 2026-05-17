@@ -37,16 +37,12 @@ type ActionCopy = {
 
 const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
   accept: {
-    body: "Sparar förslaget som granskat facit för den valda frågan.",
-    title: "Godkänn AI-facit",
+    body: "Markerar förslaget som godkänt facit för den valda frågan.",
+    title: "Använd AI-facit",
   },
   edit: {
     body: "Öppnar förslaget så att facit kan justeras innan det godkänns.",
     title: "Redigera AI-facit",
-  },
-  leave: {
-    body: "Lämnar frågan utan granskat AI-facit.",
-    title: "Lämna frågan",
   },
   review: {
     body: "Kontrollera föreslagna facit innan du skapar eller sparar filer.",
@@ -103,7 +99,7 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
             class="h-4 w-4"
             aria-hidden="true"
           />
-          Godkänn alla
+          Använd alla förslag
         </button>
         <button
           type="button"
@@ -116,7 +112,7 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
             class="h-4 w-4"
             aria-hidden="true"
           />
-          Skapa filer
+          Skapa filer med facit
         </button>
       </div>
     </div>

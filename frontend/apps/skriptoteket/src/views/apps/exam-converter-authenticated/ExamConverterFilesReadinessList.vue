@@ -14,7 +14,6 @@
 
 import { Download, Save } from "lucide-vue-next";
 
-import { DIGIEXAM_TARGET_READY_AFTER_ACCEPTED_CURRENT_STATE } from "../../../api/sirConvertGateway/contractValues";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
 import type {
   ExamConverterFileActionState,
@@ -61,9 +60,7 @@ function statusLabelForFile(file: ExamConverterReviewFile): string {
     return "Kunde inte hämtas";
   }
   if (canUseFile(file)) {
-    return file.readiness === DIGIEXAM_TARGET_READY_AFTER_ACCEPTED_CURRENT_STATE
-      ? "Godkänt för export"
-      : "Kan hämtas";
+    return "Kan hämtas";
   }
   return file.statusLabel;
 }
@@ -74,13 +71,28 @@ function reasonLabelForFile(file: ExamConverterReviewFile): string | null {
   }
   switch (file.reasonCode) {
     case "manual_answer_key_required":
-      return "Facit saknas.";
+      return "Facit eller poäng saknas.";
+    case "manual_marking_required":
+      return "Filen väntar på att skapas.";
     case "accepted_current_state_not_renderable":
-      return "Målfilen kan inte skapas från nuvarande granskningsläge.";
+      return "Målfilen kunde inte skapas. Granska rapporten.";
+    case "unsupported_target_shape":
+      return "Målfilen kunde inte skapas. Granska rapporten.";
+    case "target_validation_failed":
+      return "Målfilen kunde inte skapas i ett importklart format.";
     case "qti_package_export_disabled":
-      return "QTI-export saknas i den returnerade beredskapsrapporten.";
+      return "QTI-filen kunde inte skapas. Granska rapporten.";
+    case "provider_unavailable":
+      return "Facitförslag kunde inte tas fram just nu.";
+    case "not_requested":
+      return "Formatet valdes inte för den här konverteringen.";
+    case "not_implemented":
+      return "Formatet kan inte skapas i den här konverteringen.";
+    case "target_available":
+    case "accepted_current_state_manual_unkeyed_profile":
+      return null;
     default:
-      return `Orsak: ${file.reasonCode}`;
+      return "Målfilen kunde inte skapas. Granska rapporten.";
   }
 }
 

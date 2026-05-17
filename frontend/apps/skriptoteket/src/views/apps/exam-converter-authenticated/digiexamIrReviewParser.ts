@@ -352,7 +352,7 @@ function statusLabelForFile(params: {
     return "Kan hämtas";
   }
   if (availability === SIR_CONVERT_ARTIFACT_AVAILABLE) {
-    return "Granska eller godkänn först";
+    return "Granska facit först";
   }
   if (availability === SIR_CONVERT_ARTIFACT_NOT_REQUESTED) {
     return "Inte vald";
@@ -362,7 +362,7 @@ function statusLabelForFile(params: {
     readinessRow?.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY ||
     readinessRow?.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION
   ) {
-    return "Granska eller godkänn först";
+    return "Granska facit först";
   }
   return "Kunde inte skapas";
 }
@@ -440,6 +440,7 @@ export function parseExamConverterReviewProjection(params: {
       itemFollowUps,
       itemSummary?.sourceItemFingerprint ?? null,
       candidates.get(item.itemId) ?? null,
+      params.effectiveAnswerKeysByItem?.get(item.itemId) ?? null,
     );
   });
 
@@ -449,11 +450,14 @@ export function parseExamConverterReviewProjection(params: {
   const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
   const hasQuestionReview = missingDataQuestionCount > 0;
   const files = projectFiles(params.artifactManifest, params.targetReadinessReport);
-  const acceptedStateOverlay = buildAcceptedCurrentStateOverlay({
-    artifactManifest: params.artifactManifest,
-    questions,
-    targetReadinessReport: params.targetReadinessReport,
-  });
+  const acceptedStateOverlay =
+    params.effectiveAnswerKeysByItem && params.effectiveAnswerKeysByItem.size > 0
+      ? null
+      : buildAcceptedCurrentStateOverlay({
+          artifactManifest: params.artifactManifest,
+          questions,
+          targetReadinessReport: params.targetReadinessReport,
+        });
 
   return {
     sourceFilename: exam.sourceFilename,

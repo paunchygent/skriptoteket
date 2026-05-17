@@ -5,7 +5,7 @@ title: "Exam converter public and authenticated artifact lanes"
 status: in_progress
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-17
+updated: 2026-05-18
 epic: "EPIC-21"
 dependencies:
   - "ADR-0066"
@@ -176,6 +176,34 @@ opening anonymous conversion uploads.
    `reviewed_completion_answer_key` overlay entries through the second reviewed
    apply job, and proves file readiness is reloaded from the second Sir Convert
    bundle rather than from the first advisory job.
+12. Small-screen AI-facit review layout strategy (`PR-0330`, ready):
+    defines the phone layout as a separate reduced companion workflow below
+    `768px`, keeps tablet/narrow-laptop on its own navigator/detail
+    composition, and preserves desktop table/detail behavior. The strategy
+    exists because the phone screenshot showed the `PR-0329` action panel and
+    review surface inheriting a tablet/narrow-laptop grid instead of switching
+    to a phone-specific branch.
+13. Reviewed AI-facit contract and affordance reconciliation (`PR-0331`,
+    in progress):
+    captures the current blocker where teachers can approve AI-suggested keys
+    and later create/download PDF/QTI artifacts where those accepted keys have
+    been removed or omitted, while teacher-facing artifacts expose internal
+    fallback text such as
+    `Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.`
+    The first cleanup slice now prevents a reviewed apply bundle with effective
+    keys from being re-projected as source-missing state and blocks the
+    source-only accepted-current-state overwrite path. Remaining proof must
+    inspect target readiness and downloaded PDF/QTI artifacts before UI labels
+    or phone layouts can safely promise export readiness.
+14. Teacher-owned correction overlay contract (`PR-0332`, blocked by
+    Sir Convert Task 322 and pending `ADR-0086`):
+    separates the broader teacher edit workflow from `PR-0331`. It must map and
+    implement source-bound correction overlays for stems/prompts, points, choice
+    keys, matching keys, and gapped/open-cloze accepted values only after the
+    decision boundary is accepted. Points/scoring specifically requires the
+    small Sir Convert producer-owned Task 322 to land immediately before
+    `PR-0332`; Skriptoteket must consume that producer DTO rather than invent a
+    local point-editing path.
 
 ## Notes
 

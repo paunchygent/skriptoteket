@@ -134,3 +134,21 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   keeps retry state browser-runtime local, and renders the approved
   `Det gick inte att ta fram ett facitförslag.` / `Försök igen` UI without
   internal provider/idempotency wording.
+- PR-0329 (reviewed AI-facit handoff): done; valid choice and `gap_fill`
+  AI-facit suggestions now become teacher-reviewed
+  `reviewed_completion_answer_key` overlays before the reviewed apply job can
+  change file readiness.
+- PR-0330 (small-screen AI-facit review layout strategy): ready; the next UI
+  slice separates phone from tablet/narrow-laptop and desktop compositions so
+  the reviewed AI-facit flow no longer inherits a compressed two-column layout
+  on true phone screens.
+- PR-0331 (reviewed AI-facit contract and affordance reconciliation): in
+  progress;
+  user-supplied artifacts show accepted/reviewed AI keys being removed or
+  omitted from downloaded PDF/QTI output after teacher approval, and the PDF
+  leaks internal fallback text
+  (`Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.`)
+  into teacher-facing content. The first cleanup slice prevents post-apply
+  Skriptoteket projection from treating reviewed effective keys as still-missing
+  source state; remaining work must prove or escalate target artifact drift
+  before export-ready UI copy is trusted.

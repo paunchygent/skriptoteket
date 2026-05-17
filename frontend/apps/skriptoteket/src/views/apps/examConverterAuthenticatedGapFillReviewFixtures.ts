@@ -113,27 +113,24 @@ function artifactManifestPayload(jobId: string) {
   };
 }
 
-function irJsonPayload(jobId: string) {
-  const isApplyJob = isReviewedApplyJob(jobId);
+function irJsonPayload(_jobId: string) {
   return {
     items: [
       reviewItem({
-        answer_key: { provenance: isApplyJob ? "reviewed" : "absent" },
+        answer_key: { provenance: "absent" },
         item_id: "item-013",
         sequence: 13,
         title: "Lucktext med bild",
       }),
     ],
-    manual_follow_ups: isApplyJob
-      ? []
-      : [
-          {
-            item_id: "item-013",
-            message: "Manual answer key is required.",
-            reason: "manual_answer_key_required",
-            source_span: null,
-          },
-        ],
+    manual_follow_ups: [
+      {
+        item_id: "item-013",
+        message: "Manual answer key is required.",
+        reason: "manual_answer_key_required",
+        source_span: null,
+      },
+    ],
     parse_status: "success",
     renderer_ready: true,
     schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -143,8 +140,7 @@ function irJsonPayload(jobId: string) {
   };
 }
 
-function migrationManifestPayload(jobId: string) {
-  const isApplyJob = isReviewedApplyJob(jobId);
+function migrationManifestPayload(_jobId: string) {
   return {
     asset_count: 1,
     asset_summaries: [],
@@ -152,17 +148,17 @@ function migrationManifestPayload(jobId: string) {
     item_count: 1,
     item_summaries: [
       {
-        answer_key_provenance: isApplyJob ? "reviewed" : "absent",
+        answer_key_provenance: "absent",
         asset_summaries: [],
         item_id: "item-013",
         item_type: "gap_fill",
-        manual_follow_up_required: !isApplyJob,
+        manual_follow_up_required: true,
         sequence: 13,
         source_item_fingerprint: "sha256:item-013",
         title: "Lucktext med bild",
       },
     ],
-    manual_follow_up_count: isApplyJob ? 0 : 1,
+    manual_follow_up_count: 1,
     parse_status: "success",
     renderer_ready: true,
     schema_version: DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
@@ -232,20 +228,32 @@ function answerKeyCompletionReportPayload() {
 
 function effectiveIrPayload() {
   return {
+    answer_key_completion_report_sha256: "sha256:completion-report-gap",
+    ingestion_overlay_sha256: "sha256:reviewed-overlay",
     items: [
       {
         effective_answer_key: {
-          gap_answers: [{ accepted_values: ["kretslopp"], gap_id: "gap-001" }],
+          correct_gap_answers: [
+            { gap_id: "gap-001", value: "kretslopp" },
+            { gap_id: "gap-002", value: "näringsväv" },
+          ],
           lineage: {
             candidate_id: "candidate-item-013",
             review_outcome: "accepted_unchanged",
           },
           provenance: "reviewed",
         },
+        effective_item_patch: null,
         item_id: "item-013",
+        item_type: "gap_fill",
+        sequence: 13,
+        source_item_fingerprint: "sha256:item-013",
       },
     ],
     schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
+    source_file_sha256: "sha256:source",
+    source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+    source_ir_sha256: "sha256:ir",
   };
 }
 

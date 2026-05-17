@@ -224,7 +224,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.findAll(".lucide-circle-check").length).toBeGreaterThan(0);
   });
 
-  it("offers Godkänn when QTI needs a target-level export decision even with green question rows", async () => {
+  it("offers explicit export copy when QTI needs a target-level export decision even with green question rows", async () => {
     mockFreeTextOnlyReviewArtifacts(gatewayMocks);
     const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
     gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
@@ -284,7 +284,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     await finishConversion(wrapper);
 
     expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
-    expect(wrapper.text()).toContain("1 målfil behöver godkännas för export.");
+    expect(wrapper.text()).toContain("1 målfil väntar på att skapas.");
     expect(wrapper.text()).not.toContain("1 fråga saknar facit eller poäng.");
     expect(
       wrapper.find('[data-test="exam-converter-review-questions-action"]').exists(),
@@ -294,6 +294,8 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     );
     expect(reviewPlaceholder.exists()).toBe(true);
     expect(reviewPlaceholder.attributes("aria-hidden")).toBe("true");
+    expect(wrapper.text()).toContain("Skapa filer");
+    expect(wrapper.text()).not.toContain("Godkänn");
 
     await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
@@ -324,9 +326,10 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(detail.text()).toContain("Fråga 4");
     expect(detail.text()).toContain("item-004");
     expect(detail.text()).toContain("AI-förslag");
-    expect(detail.text()).toContain("Godkänn");
+    expect(detail.text()).toContain("Använd förslag");
     expect(detail.text()).toContain("Redigera");
-    expect(detail.text()).toContain("Lämna");
+    expect(detail.text()).not.toContain("Lämna");
+    expect(detail.text()).not.toContain("Avvisa förslag");
     expect(detail.text()).toContain("Finns");
     expect(detail.text()).toContain("Växter tar upp vatten ur marken.");
     expect(detail.text()).toContain(
@@ -432,8 +435,18 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.find('[data-test="exam-converter-ai-review-action-panel"]').exists()).toBe(
       false,
     );
+    expect(
+      wrapper.find('[data-test="exam-converter-accept-current-state-action"]').exists(),
+    ).toBe(false);
     expect(wrapper.text()).toContain("Filer (2)");
     expect(wrapper.text()).toContain("Kan hämtas");
+
+    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
+    const reviewedRow = wrapper.find('[data-test="exam-converter-question-row-item-013"]');
+    expect(reviewedRow.text()).toContain("Lucktext");
+    expect(reviewedRow.text()).not.toContain("Facit");
+    expect(reviewedRow.find(".lucide-circle-check").exists()).toBe(true);
+    expect(reviewedRow.find(".lucide-bot").exists()).toBe(false);
   });
 
   it("surfaces Lucktext gaps and embedded image structure in the detail pane", async () => {
@@ -463,7 +476,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(files.exists()).toBe(true);
     expect(files.text()).toContain("Ma1c_Exam.net.pdf");
     expect(files.text()).toContain("QTI-format");
-    expect(files.text()).toContain("Granska eller godkänn först");
+    expect(files.text()).toContain("Granska facit först");
     expect(files.text()).not.toContain("Åtgärd");
     expect(
       wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes(

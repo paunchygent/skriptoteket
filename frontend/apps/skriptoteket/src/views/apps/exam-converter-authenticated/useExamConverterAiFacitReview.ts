@@ -7,8 +7,8 @@
  *
  * Relationships:
  *   - Receives normalized question rows from `digiexamIrReviewParser`.
- *   - Builds `reviewed_completion_answer_key` overlay entries only for
- *     accepted or teacher-edited AI-facit candidates.
+ *   - Builds `reviewed_completion_answer_key` overlay entries for accepted or
+ *     teacher-edited AI-facit candidates.
  *   - Keeps accepted-current-state export decisions on their separate path.
  */
 
@@ -30,12 +30,12 @@ import {
   type ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
 
-export type ExamConverterAiFacitReviewAction = "review" | "accept" | "edit" | "leave";
+export type ExamConverterAiFacitReviewAction = "review" | "accept" | "edit";
 
 export type ExamConverterReviewedSuggestionDecision = {
   answerPayload: ExamConverterCompletionAnswerPayload | null;
   itemId: string;
-  outcome: "accepted_unchanged" | "teacher_edited" | "left_manual";
+  outcome: "accepted_unchanged" | "teacher_edited";
 };
 
 type ExamConverterAcceptedSuggestionDecision = ExamConverterReviewedSuggestionDecision & {
@@ -203,17 +203,6 @@ export function useExamConverterAiFacitReview() {
     };
   }
 
-  function leaveSuggestion(question: ExamConverterQuestionReviewRow): void {
-    decisions.value = {
-      ...decisions.value,
-      [question.itemId]: {
-        answerPayload: null,
-        itemId: question.itemId,
-        outcome: "left_manual",
-      },
-    };
-  }
-
   function acceptAllSuggestions(projection: ExamConverterReviewProjection | null): void {
     if (!projection) return;
     const next = { ...decisions.value };
@@ -246,7 +235,6 @@ export function useExamConverterAiFacitReview() {
     decisions,
     focusReviewAction,
     focusedReviewAction,
-    leaveSuggestion,
     resetAiFacitReview,
     reviewedCompletionOverlay,
   };

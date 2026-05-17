@@ -67,7 +67,6 @@ const emit = defineEmits<{
   applyReviewedSuggestions: [];
   downloadFile: [file: ExamConverterReviewFile];
   filesDropped: [files: File[]];
-  leaveSuggestion: [question: ExamConverterReviewProjection["questions"][number]];
   openQuestions: [];
   inspectionModeSelected: [mode: ExamConverterInspectionMode];
   retryAdvisoryFacitSuggestion: [];
@@ -202,7 +201,6 @@ function handleDrop(event: DragEvent): void {
             :projection="reviewProjection"
             @accept-edited-choice-suggestion="(question, correctIds) => emit('acceptEditedChoiceSuggestion', question, correctIds)"
             @accept-suggestion="emit('acceptSuggestion', $event)"
-            @leave-suggestion="emit('leaveSuggestion', $event)"
             @review-action-focused="emit('reviewActionFocused', $event)"
           />
           <ExamConverterFilesReadinessList

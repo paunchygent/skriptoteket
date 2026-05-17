@@ -125,19 +125,19 @@ in a dynamic help/info affordance, tooltip, or compact disclosure that appears
 only when the teacher asks for it or focuses the action.
 
 When a converted exam has actual missing `Facit` or `Poäng`, the teacher must
-be able to choose between reviewing the questions and accepting the current
-state for export/save. The end-state action copy is:
+be able to choose between reviewing the questions and creating files from the
+question data currently shown. The end-state action copy is:
 
 - button: `Granska`; help/info copy:
-  `Granska och redigera frågorna som saknar facit eller poäng.`
-- button: `Godkänn`; help/info copy:
-  `Hoppa över granskningen och exportera provet direkt.`
+  `Granska frågorna som saknar facit eller poäng.`
+- button: `Skapa filer`; help/info copy:
+  `Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.`
 
-`Godkänn` is a review-decision gate for the current conversion result. It must
-not mutate Sir Convert IR, invent missing data, or claim that questions have
-been fixed. It records that the teacher has accepted the current state for
-export/save. Starting a new conversion or clearing the selected files must clear
-that acceptance.
+`Skapa filer` submits the accepted-current-state export path. It is not a
+local-only toggle and it is not AI-facit acceptance. It creates files from the
+questions being shown plus any already accepted facit, and unreviewed AI-facit
+suggestions must not be used. Starting a new conversion or clearing the selected
+files must clear that acceptance.
 
 ## Left Workflow Rail Content
 
@@ -195,15 +195,16 @@ File actions are available when either:
 
 - the projection has no actual missing `Facit`/`Poäng` and no blocking warning;
   or
-- the teacher has clicked `Godkänn` to accept the current state for export/save.
+- the teacher has submitted `Skapa filer` to create files from the
+  question data currently shown.
 
-`Godkänn` is not only a local UI state. In the end-state workflow it must make
-the accepted current conversion exportable without claiming missing data has
-been fixed. If Sir Convert initially marks a requested file as blocked because
-`Facit` or `Poäng` is missing, Skriptoteket needs a governed accepted-state
-export path instead of merely enabling a stale blocked row. If a file is blocked
-for another reason, the row must stay disabled and show the visible outcome,
-for example `Kunde inte skapas`.
+`Skapa filer` is not only a local UI state. In the end-state workflow it
+must submit a governed accepted-state export path without claiming missing data
+has been fixed. If Sir Convert initially marks a requested file as blocked
+because `Facit` or `Poäng` is missing, Skriptoteket must create a governed
+accepted-state export job instead of merely enabling a stale blocked row. If a
+file is blocked for another reason, the row must stay disabled and show the
+visible outcome, for example `Kunde inte skapas`.
 
 Missing `Facit` or `Poäng` should guide the teacher toward `Granska`, but it
 must not force review when the teacher knowingly wants to export the current
@@ -274,10 +275,10 @@ choice items, do not use `Enval`. Use:
   identifies matching structure; and
 - `Lucktext` for source-backed gap-fill items.
 
-If a future `.dxe` sample exposes a matching shape with a type code or structure
-not yet covered by Sir Convert, the parser/export contract must fail closed and
-retain the source shape for review rather than relabeling it as another
-question type.
+Matching is a supported source-neutral IR and target-export shape when the
+source contract identifies matching structure. The UI must not treat matching
+as an unsupported or unknown target limitation merely because a source-specific
+adapter has not emitted that shape in a particular fixture.
 
 Missing-information indicators make the list useful across source formats
 without turning the happy path into visual noise. The UI should not render
@@ -327,13 +328,16 @@ When alternatives are present but no source-proven correct marker exists, the
 problem is missing `Facit`, not missing alternatives. The UI must not hide
 alternatives and then ask the teacher to accept the current state.
 
-`Lucktext` must be presented as source-backed gap-fill structure only when the
-IR proves gap blanks, source prompt text/HTML, and any embedded references. A
-multi-gap `Lucktext` item with no source validations can lack `Facit`, but it
-may also have a target-format support problem if the requested PDF or QTI
-target cannot safely represent multi-gap input yet. Do not collapse target
-support blockers into the same `saknar facit eller poäng` count unless the
-blocked field is specifically missing `Facit` or `Poäng`.
+`Lucktext` must be presented as source-backed gap-fill/open-cloze structure
+when the IR proves gap blanks, source prompt text/HTML, and any embedded
+references. Single-gap and multi-gap gapped items are supported by the
+intermediate IR and by the QTI/PDF export contract. QTI must preserve keyed
+gapped semantics when source, reviewed, or teacher-provided keys exist. PDF may
+render gapped items as free text, but the exported PDF must still include the
+accepted gapped-item key values. The UI must not present gapped items as
+unsupported target shapes, and it must not collapse an implementation adapter
+gap into `saknar facit eller poäng` unless `Facit` or `Poäng` is genuinely
+missing from the current effective exam.
 
 Expanded rows should eventually support direct, low-friction completion in the
 interface. That completion requires an explicit Sir Convert mutation and
@@ -450,7 +454,8 @@ Recommended UI slice order:
 3. result strip and next-action copy;
 4. inspection mode control;
 5. question list scanning surface;
-6. review decision gate: `Granska` / `Godkänn` with dynamic help/info copy;
+6. review decision gate: `Granska` / `Skapa filer` with dynamic help/info
+   copy;
 7. selected-question detail pane and completion actions;
 8. files inspection mode with download/save actions gated by review decision;
 9. report inspection mode;
@@ -532,3 +537,26 @@ table or the reduced question navigator is active, whether the inspector is
 visible, and whether the document has horizontal overflow. Do not claim live
 internal-browser proof for states that cannot be reached in the internal
 browser.
+
+## Breakpoint Composition Contract
+
+Exam Converter follows the Klassrumskartan workspace rule: responsiveness
+within breakpoints, not one responsive layout stretched across all breakpoints.
+Phone, tablet/narrow-laptop, and desktop are separate approved compositions.
+
+- Phone (`max-width: 767px`): a dedicated reduced companion workflow. It must
+  not render the table/detail or navigator/detail compositions. It should show
+  one primary review surface at a time, with readable AI-facit actions and no
+  horizontal document overflow.
+- Tablet and narrow laptop (`768px-1199px`): a reduced navigator plus visible
+  detail composition. It must not inherit phone-only bottom-sheet or one-screen
+  routing patterns.
+- Laptop and desktop (`min-width: 1200px`): the dense table plus
+  selected-question detail composition. It must not be flattened into stacked
+  phone cards.
+
+Structural breakpoint changes must be owned by CSS or by explicit Vue
+presentation branches selected by semantic layout state. JavaScript must not
+measure viewport width to own persistent layout geometry. All branches must
+reuse the same review projection, AI-facit decision state, reviewed-completion
+overlay builder, and Sir Convert Gateway submit path.

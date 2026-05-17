@@ -7,8 +7,8 @@
  *
  * Expected behavior:
  *   File actions stay disabled until Sir Convert's target-readiness report
- *   marks a generated target exportable. `Godkänn` submits a source-bound
- *   accepted-current-state overlay, then the refreshed producer report decides
+ *   marks a generated target exportable. The current-state export action
+ *   submits a source-bound overlay, then the refreshed producer report decides
  *   which targets can be downloaded or saved.
  *
  * Recommended implementation shape:
@@ -21,6 +21,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
+import ExamConverterFilesReadinessList from "./exam-converter-authenticated/ExamConverterFilesReadinessList.vue";
 import {
   artifactJsonBlob,
   fileArtifactBlob,
@@ -266,7 +267,39 @@ beforeEach(() => {
 });
 
 describe("ExamConverterAuthenticatedView review decision and file actions", () => {
-  it("uses short decision buttons and keeps explanations in help affordances", async () => {
+  it("maps producer reason codes to teacher-facing file copy without raw codes", () => {
+    const wrapper = mount(ExamConverterFilesReadinessList, {
+      props: {
+        actionStates: {},
+        actionsEnabled: true,
+        files: [
+          {
+            artifactKey: "qti_package",
+            availability: "unavailable",
+            contentType: "application/zip",
+            exportEnabled: false,
+            filename: "Ma1c_QTI.zip",
+            kindLabel: "QTI-format",
+            reasonCode: "unsupported_target_shape",
+            readiness: "unsupported_target_shape",
+            sha256: null,
+            sizeBytes: null,
+            sizeLabel: null,
+            statusLabel: "Kunde inte skapas",
+            unavailableCode: "unsupported_target_shape",
+          },
+        ],
+      },
+    });
+
+    expect(wrapper.text()).toContain(
+      "Målfilen kunde inte skapas. Granska rapporten.",
+    );
+    expect(wrapper.text()).not.toContain("Orsak:");
+    expect(wrapper.text()).not.toContain("unsupported_target_shape");
+  });
+
+  it("uses explicit current-state export copy and keeps explanations in help affordances", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -277,23 +310,24 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
 
     expect(gate.exists()).toBe(true);
     expect(review.text()).toBe("Granska");
-    expect(accept.text()).toBe("Godkänn");
+    expect(accept.text()).toBe("Skapa filer");
     expect(review.attributes("title")).toBe(
-      "Granska och redigera frågorna som saknar facit eller poäng.",
+      "Granska frågorna som saknar facit eller poäng.",
     );
     expect(accept.attributes("title")).toBe(
-      "Hoppa över granskningen och exportera provet direkt.",
+      "Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.",
     );
     expect(wrapper.text()).not.toContain(
-      "Granska och redigera frågorna som saknar facit eller poäng.",
+      "Granska frågorna som saknar facit eller poäng.",
     );
     expect(wrapper.text()).not.toContain(
-      "Hoppa över granskningen och exportera provet direkt.",
+      "Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.",
     );
     expect(wrapper.text()).not.toContain("Använd provet som det är");
+    expect(wrapper.text()).not.toContain("Godkänn");
   });
 
-  it("blocks generated file actions until the teacher approves the current state", async () => {
+  it("blocks generated file actions until the teacher exports the current state", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -305,7 +339,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     const saveBefore = wrapper.find('[data-test="exam-converter-save-file-examnet_pdf"]');
     expect(downloadBefore.attributes("disabled")).toBeDefined();
     expect(saveBefore.attributes("disabled")).toBeDefined();
-    expect(wrapper.text()).toContain("Granska eller godkänn först");
+    expect(wrapper.text()).toContain("Granska facit först");
 
     await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
@@ -320,7 +354,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     expect(
       wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists(),
     ).toBe(false);
-    expect(wrapper.text()).toContain("Godkänt för export");
+    expect(wrapper.text()).toContain("Kan hämtas");
     expect(pdfDownloadAfter.attributes("disabled")).toBeDefined();
     expect(qtiDownloadAfter.attributes("disabled")).toBeUndefined();
     expect(qtiSaveAfter.attributes("disabled")).toBeUndefined();

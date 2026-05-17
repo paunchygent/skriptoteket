@@ -24,8 +24,17 @@ const emit = defineEmits<{
   reviewQuestions: [];
 }>();
 
-const reviewHelp = "Granska och redigera frågorna som saknar facit eller poäng.";
-const acceptHelp = "Hoppa över granskningen och exportera provet direkt.";
+const reviewHelp = "Granska frågorna som saknar facit eller poäng.";
+function acceptHelp(missingCount: number): string {
+  if (missingCount > 0) {
+    return "Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.";
+  }
+  return "Skapar filer från frågorna som visas.";
+}
+
+function acceptLabel(): string {
+  return "Skapa filer";
+}
 </script>
 
 <template>
@@ -35,7 +44,7 @@ const acceptHelp = "Hoppa över granskningen och exportera provet direkt.";
   >
     <p class="min-w-0 text-sm font-medium leading-tight text-navy">
       <span v-if="accepted">
-        Godkänt som det är
+        Filskapandet är skickat.
       </span>
       <span v-else>
         <template v-if="missingCount > 0">
@@ -44,8 +53,8 @@ const acceptHelp = "Hoppa över granskningen och exportera provet direkt.";
         </template>
         <template v-else>
           {{ blockedFileCount.toLocaleString("sv-SE") }}
-          {{ blockedFileCount === 1 ? "målfil behöver" : "målfiler behöver" }}
-          godkännas för export.
+          {{ blockedFileCount === 1 ? "målfil väntar" : "målfiler väntar" }}
+          på att skapas.
         </template>
       </span>
     </p>
@@ -84,7 +93,7 @@ const acceptHelp = "Hoppa över granskningen och exportera provet direkt.";
       <button
         type="button"
         class="btn-primary inline-flex items-center gap-2 shadow-none"
-        :title="acceptHelp"
+        :title="acceptHelp(missingCount)"
         data-test="exam-converter-accept-current-state-action"
         @click="emit('acceptCurrentState')"
       >
@@ -92,7 +101,7 @@ const acceptHelp = "Hoppa över granskningen och exportera provet direkt.";
           class="h-4 w-4"
           aria-hidden="true"
         />
-        Godkänn
+        {{ acceptLabel() }}
       </button>
     </div>
   </section>

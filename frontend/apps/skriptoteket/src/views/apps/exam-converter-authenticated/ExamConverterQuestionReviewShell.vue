@@ -7,7 +7,7 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { Ban, Bot, CheckCheck, CheckCircle2, ChevronDown, Info, Pencil } from "lucide-vue-next";
+import { Bot, CheckCheck, CheckCircle2, ChevronDown, Info, Pencil } from "lucide-vue-next";
 
 import type {
   ExamConverterQuestionReviewRow,
@@ -29,7 +29,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   acceptEditedChoiceSuggestion: [question: ExamConverterQuestionReviewRow, correctIds: number[]];
   acceptSuggestion: [question: ExamConverterQuestionReviewRow];
-  leaveSuggestion: [question: ExamConverterQuestionReviewRow];
   reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
 }>();
 
@@ -117,13 +116,6 @@ function acceptQuestion(question: ExamConverterQuestionReviewRow): void {
   editingItemId.value = null;
   editedChoiceIds.value = [];
   emit("reviewActionFocused", "accept");
-}
-
-function leaveQuestion(question: ExamConverterQuestionReviewRow): void {
-  emit("leaveSuggestion", question);
-  editingItemId.value = null;
-  editedChoiceIds.value = [];
-  emit("reviewActionFocused", "leave");
 }
 
 function isAcceptedDecision(
@@ -272,7 +264,7 @@ watch(
                 class="h-4 w-4"
                 aria-hidden="true"
               />
-              {{ isAcceptedDecision(selectedDecision) ? "Godkänt" : "Godkänn" }}
+              {{ isAcceptedDecision(selectedDecision) ? "Förslag godkänt" : "Använd förslag" }}
             </button>
             <button
               type="button"
@@ -288,20 +280,6 @@ watch(
                 aria-hidden="true"
               />
               Redigera
-            </button>
-            <button
-              type="button"
-              class="btn-ghost inline-flex items-center gap-2 shadow-none"
-              data-test="exam-converter-leave-ai-suggestion-action"
-              @click="leaveQuestion(selectedQuestion)"
-              @focus="emit('reviewActionFocused', 'leave')"
-              @mouseenter="emit('reviewActionFocused', 'leave')"
-            >
-              <Ban
-                class="h-4 w-4 text-navy/70"
-                aria-hidden="true"
-              />
-              Lämna
             </button>
           </div>
 

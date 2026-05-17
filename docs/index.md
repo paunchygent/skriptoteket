@@ -41,8 +41,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`
 - ADR-0085 Exam Converter public conversion exception for Conversion Hub:
   `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`
+- ADR-0086 Exam Converter teacher-owned correction overlay boundary:
+  `docs/adr/adr-0086-exam-converter-teacher-owned-correction-overlay-boundary.md`
 - Exam Converter UI content model:
   `docs/reference/ref-exam-converter-ui-content-model-v1.md`
+- Exam Converter reviewed AI-facit contract map for PR-0331:
+  `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md`
 - Launch SEO and indexing readiness assessment:
   `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`
 - Public landing copy lock:
@@ -206,6 +210,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0328-st-21-03-exam-converter-advisory-idempotency-rerun.md`
 - ST-21-03 Exam Converter reviewed AI-facit handoff:
   `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`
+- ST-21-03 Exam Converter small-screen AI-facit review layout strategy:
+  `docs/backlog/prs/pr-0330-st-21-03-exam-converter-small-screen-ai-facit-review-layout-strategy.md`
+- ST-21-03 Exam Converter reviewed AI-facit contract and affordance reconciliation:
+  `docs/backlog/prs/pr-0331-st-21-03-exam-converter-reviewed-ai-facit-contract-affordance-reconciliation.md`
+- ST-21-03 Exam Converter teacher-owned correction overlay contract:
+  `docs/backlog/prs/pr-0332-st-21-03-exam-converter-teacher-owned-correction-overlay-contract.md`
+- Review gate for PR-0332 teacher-owned correction overlay contract:
+  `docs/backlog/reviews/review-pr-0332-teacher-owned-correction-overlay-contract.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
@@ -559,6 +571,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0328-st-21-03-exam-converter-advisory-idempotency-rerun.md`
 - ST-21-03 Exam Converter reviewed AI-facit handoff:
   `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`
+- ST-21-03 Exam Converter small-screen AI-facit review layout strategy:
+  `docs/backlog/prs/pr-0330-st-21-03-exam-converter-small-screen-ai-facit-review-layout-strategy.md`
+- ST-21-03 Exam Converter reviewed AI-facit contract and affordance reconciliation:
+  `docs/backlog/prs/pr-0331-st-21-03-exam-converter-reviewed-ai-facit-contract-affordance-reconciliation.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 share/export affordance consolidation task:

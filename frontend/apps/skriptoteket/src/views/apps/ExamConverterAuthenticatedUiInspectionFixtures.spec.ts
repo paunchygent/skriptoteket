@@ -59,8 +59,11 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
       "Kunde inte skapas",
     );
     expect(wrapper.get('[data-test="exam-converter-file-reason-qti_package"]').text()).toBe(
-      "QTI-export saknas i den returnerade beredskapsrapporten.",
+      "QTI-filen kunde inte skapas. Granska rapporten.",
     );
+    expect(wrapper.text()).not.toContain("Orsak:");
+    expect(wrapper.text()).not.toContain("qti_package_export_disabled");
+    expect(wrapper.text()).not.toContain("unsupported_target_shape");
   });
 
   it("renders missing-facit review state through the same question shell", async () => {

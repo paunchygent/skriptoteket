@@ -84,7 +84,6 @@ const {
   decisions: aiFacitDecisions,
   focusReviewAction,
   focusedReviewAction,
-  leaveSuggestion,
   resetAiFacitReview,
   reviewedCompletionOverlay,
 } = useExamConverterAiFacitReview();
@@ -415,7 +414,6 @@ onMounted(async () => {
         @download-file="handleDownloadFile"
         @files-dropped="selectDroppedFiles"
         @inspection-mode-selected="selectInspectionMode"
-        @leave-suggestion="leaveSuggestion"
         @open-questions="selectInspectionMode('questions')"
         @review-action-focused="focusReviewAction"
         @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
