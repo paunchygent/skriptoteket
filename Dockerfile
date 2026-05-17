@@ -14,6 +14,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy workspace config and SPA package
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./frontend/
+COPY frontend/patches/ ./frontend/patches/
 COPY frontend/apps/skriptoteket/package.json ./frontend/apps/skriptoteket/
 
 # Install dependencies from workspace root
