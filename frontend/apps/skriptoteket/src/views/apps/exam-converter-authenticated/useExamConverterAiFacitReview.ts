@@ -132,6 +132,7 @@ function buildReviewedCompletionOverlay(
         item_id: question.itemId,
         item_type: question.itemType,
         manual_answer_key: null,
+        point_correction: null,
         review_decision: null,
         reviewed_completion_answer_key: buildReviewedCompletionAnswerKey({
           candidate: question.llmCandidate,

@@ -79,6 +79,7 @@ export function buildAcceptedCurrentStateOverlay(params: {
           item_id: question.itemId,
           item_type: question.itemType,
           manual_answer_key: null,
+          point_correction: null,
           review_decision: {
             kind: DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND,
             decision_id: `accept-current-state-${question.itemId}`,

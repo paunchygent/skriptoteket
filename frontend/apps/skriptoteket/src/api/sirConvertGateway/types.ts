@@ -38,9 +38,13 @@ export type DigiExamAnswerKeyCompletionReportItem =
 export type DigiExamMigrationArtifactKey =
   SirConvertOpenApiSchemas["DigiExamMigrationArtifactKey"];
 export type DigiExamIngestionOverlay = SirConvertOpenApiSchemas["DigiExamIngestionOverlay"];
+export type DigiExamOverlayPointCorrection =
+  SirConvertOpenApiSchemas["DigiExamOverlayPointCorrection"];
 export type DigiExamEffectiveAnswerKey =
   SirConvertOpenApiSchemas["DigiExamEffectiveAnswerKeyV1"];
 export type DigiExamEffectiveExam = SirConvertOpenApiSchemas["DigiExamEffectiveExamV1"];
+export type DigiExamEffectivePointCorrection =
+  SirConvertOpenApiSchemas["DigiExamEffectivePointCorrectionV1"];
 export type DigiExamItemType = SirConvertOpenApiSchemas["DigiExamItemType"];
 export type DigiExamTargetReadiness = SirConvertOpenApiSchemas["DigiExamTargetReadiness"];
 export type DigiExamTargetReadinessRow =

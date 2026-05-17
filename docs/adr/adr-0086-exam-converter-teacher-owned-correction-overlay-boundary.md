@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0086
 title: "Exam Converter teacher-owned correction overlay boundary"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-05-17

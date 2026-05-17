@@ -16,7 +16,13 @@ import { createPinia, setActivePinia } from "pinia";
 import { createTestUser } from "../../stores/authTestHelpers";
 import { useAuthStore } from "../../stores/auth";
 import { submitDigiExamMigration } from ".";
-import type { DigiExamEffectiveAnswerKey, DigiExamIngestionOverlay } from "./types";
+import type {
+  DigiExamEffectiveAnswerKey,
+  DigiExamEffectiveExam,
+  DigiExamEffectivePointCorrection,
+  DigiExamIngestionOverlay,
+  DigiExamOverlayPointCorrection,
+} from "./types";
 import {
   DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -154,6 +160,7 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
             effective_item_patch: null,
             item_id: "item-001",
             manual_answer_key: null,
+            point_correction: null,
             sequence: 1,
             item_type: "multiple_choice",
             source_item_fingerprint: "sha256:item",
@@ -200,6 +207,7 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
       item_id: "item-001",
       item_type: "multiple_choice",
       manual_answer_key: null,
+      point_correction: null,
       review_decision: null,
       reviewed_completion_answer_key: {
         answer_payload: {
@@ -244,5 +252,53 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
       reviewedOverlayItem.reviewed_completion_answer_key?.candidate_lineage.validation_state,
     ).toBe("valid");
     expect(effectiveAnswerKey.lineage?.review_outcome).toBe("accepted_unchanged");
+  });
+
+  it("keeps Task 322 point-correction fields in the generated Sir Convert contract", () => {
+    const pointCorrection = {
+      kind: "item_points",
+      max_score: 4,
+    } satisfies DigiExamOverlayPointCorrection;
+    const effectivePointCorrection = {
+      effective_max_score: 4,
+      kind: "item_points",
+      source_item_fingerprint: "sha256:item",
+      source_max_score: 2,
+    } satisfies DigiExamEffectivePointCorrection;
+    const overlayItem = {
+      effective_item_patch: null,
+      item_id: "item-001",
+      item_type: "single_choice",
+      manual_answer_key: null,
+      point_correction: pointCorrection,
+      review_decision: null,
+      reviewed_completion_answer_key: null,
+      sequence: 1,
+      source_item_fingerprint: "sha256:item",
+    } satisfies DigiExamIngestionOverlay["items"][number];
+    const effectiveExam = {
+      answer_key_completion_report_sha256: null,
+      ingestion_overlay_sha256: "sha256:overlay",
+      items: [
+        {
+          applied_overlay_entry_ids: ["item-001"],
+          effective_answer_key: null,
+          effective_item_patch: null,
+          effective_point_correction: effectivePointCorrection,
+          item_id: "item-001",
+          item_type: "single_choice",
+          review_decisions: [],
+          sequence: 1,
+          source_item_fingerprint: "sha256:item",
+        },
+      ],
+      schema_version: "digiexam_effective_exam_v2",
+      source_file_sha256: "sha256:source",
+      source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+      source_ir_sha256: "sha256:ir",
+    } satisfies DigiExamEffectiveExam;
+
+    expect(overlayItem.point_correction.max_score).toBe(4);
+    expect(effectiveExam.items[0]?.effective_point_correction?.effective_max_score).toBe(4);
   });
 });

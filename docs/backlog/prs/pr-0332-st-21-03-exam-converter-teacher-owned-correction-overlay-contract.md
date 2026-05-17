@@ -2,7 +2,7 @@
 type: pr
 id: PR-0332
 title: "ST-21-03 Exam Converter teacher-owned correction overlay contract"
-status: blocked
+status: ready
 owners: "Codex"
 created: 2026-05-17
 updated: 2026-05-18
@@ -102,6 +102,22 @@ authenticated Exam Converter:
    clearing, post-apply projection, and blocked local-only downloads.
 9. Add live Playwright proof, or reuse the durable PR-0331 proof harness if it
    has landed, to show corrected effective IR and generated PDF/QTI artifacts.
+
+## Task 322 Producer Prerequisite Status
+
+Resolved on 2026-05-18.
+
+- Sir Convert Task 322 added the producer-owned `point_correction` DTO with
+  strict positive-integer `max_score`, effective IR reporting, target-readiness
+  behavior, and PDF/QTI proof.
+- Skriptoteket regenerated
+  `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` from the Task
+  322 OpenAPI snapshot.
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/completionContract.spec.ts`
+  now includes a producer-contract preflight assertion that generated consumer
+  types expose both `point_correction` and `effective_point_correction`.
+- Point-editing UI remains out of this prerequisite patch; this PR is now ready
+  for its separate implementation pass against the returned Sir Convert state.
 
 ## Test Plan
 

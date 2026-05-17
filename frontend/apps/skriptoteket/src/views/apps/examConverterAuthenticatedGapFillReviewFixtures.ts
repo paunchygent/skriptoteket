@@ -244,6 +244,7 @@ function effectiveIrPayload() {
           provenance: "reviewed",
         },
         effective_item_patch: null,
+        effective_point_correction: null,
         item_id: "item-013",
         item_type: "gap_fill",
         sequence: 13,

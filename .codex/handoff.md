@@ -9,7 +9,7 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-05-17.
+- Date: 2026-05-18.
 - Branch: `main`.
 - Current lanes under `ST-21-03`: `PR-0330` is outside-designer layout-only;
   `PR-0331` is Codex-owned reviewed AI-facit plumbing/export-contract
@@ -78,10 +78,9 @@ Keep this file updated so the next session can pick up work quickly.
   not a product decision made inside `PR-0331`. Proposed `ADR-0086` and
   independent `PR-0332` now govern stems/prompts, points, choice keys, matching
   keys, and gapped/open-cloze teacher correction overlays.
-- `REV-PR-0332` is approved for the corrected `ADR-0086`/`PR-0332` contract.
-  `PR-0332` itself remains blocked on Sir Convert Task 322, the small producer-
-  owned source-bound points/scoring DTO/proof prerequisite immediately before
-  Skriptoteket exposes point editing.
+- `ADR-0086` is accepted and `REV-PR-0332` is approved for the corrected
+  contract. Sir Convert Task 322 and Skriptoteket generated-type preflight are
+  complete, so `PR-0332` is ready for its separate implementation pass.
 - User-supplied `PR-0331` evidence was copied to:
   `.artifacts/pr-0331-user-evidence/`.
 - Local artifact inspection found:
@@ -130,6 +129,9 @@ Keep this file updated so the next session can pick up work quickly.
 - Current user-correction pass passed:
   `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`,
   `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run docs-validate`.
+- Current PR-0332 unblock pass passed:
+  `pdm run fe-test -- --run src/api/sirConvertGateway/completionContract.spec.ts`
+  and `pdm run fe-type-check`.
 - Current user-correction pass passed: `pdm run fe-build` (with existing Vite
   chunk-size warning), `pdm run handoff-validate`, and `git diff --check`.
 - Current `PR-0331` cleanup passed:
@@ -180,9 +182,9 @@ git diff --check
 - Continue `PR-0331`: add the durable live Playwright proof script in the
   sanctioned location and run it against auth edge, Sir Convert, and tunneled
   LLM. Local tests and generated-type no-diff proof are not final acceptance.
-- Keep `ADR-0086`/`PR-0332` separate from `PR-0331`; do not implement teacher
-  edit/correction controls until `ADR-0086` is accepted and Sir Convert
-  Task 322 has landed for the points/scoring prerequisite.
+- Keep `PR-0332` separate from `PR-0331`; the points/scoring producer
+  prerequisite is satisfied, but teacher edit/correction controls still need
+  the separate `PR-0332` implementation pass.
 - Implement `PR-0330` separately as phone/tablet/desktop layout strategy.
 - Rerun/unblock `PR-0324` authenticated proof only after reviewed-key export
   behavior is understood.

@@ -185,13 +185,15 @@ It is scoped to the producer DTO, binding validation, effective IR/report,
 target readiness, OpenAPI/consumer impact, and PDF/QTI artifact proof needed by
 `PR-0332`.
 
-Approval is for the corrected decision and backlog contract, not for starting
-`PR-0332` implementation before Task 322 lands.
+The initial approval was for the corrected decision and backlog contract, not
+for starting `PR-0332` implementation before Task 322 landed. The Task 322
+producer and consumer-type prerequisite is now complete.
 
 Decision approvals:
 
 - [x] Accept `ADR-0086` as written.
-- [ ] Unblock `PR-0332` implementation; still blocked by Sir Convert Task 322.
+- [x] Unblock `PR-0332` implementation; Sir Convert Task 322 and the
+  Skriptoteket generated consumer-type preflight are complete.
 
 ## Changes Made
 
@@ -204,3 +206,4 @@ Decision approvals:
 | 5 | `REV-PR-0332` | Re-review retained `changes_requested` because point correction remains promised but not classified as supported, blocked, or upstream-required. |
 | 6 | `ADR-0086`, `PR-0332`, `REV-PR-0332` | User clarification recorded points/scoring as a small Sir Convert producer-owned Task 322 immediately before `PR-0332`, with Skriptoteket point editing blocked until the producer DTO and proof land. |
 | 7 | `REV-PR-0332` | Re-review approved the corrected ADR/PR contract while keeping `PR-0332` implementation blocked until Sir Convert Task 322 lands. |
+| 8 | `PR-0332`, `REV-PR-0332`, `sirConvertOpenapi.d.ts` | Sir Convert Task 322 landed, Skriptoteket regenerated the generated Sir Convert DTOs, and the consumer preflight now proves `point_correction` plus `effective_point_correction` are present before point-editing implementation starts. |

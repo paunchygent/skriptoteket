@@ -685,6 +685,8 @@ export interface components {
             effective_answer_key: components["schemas"]["DigiExamEffectiveAnswerKeyV1"] | null;
             /** @default null */
             effective_item_patch: components["schemas"]["DigiExamEffectiveItemPatchSummaryV1"] | null;
+            /** @default null */
+            effective_point_correction: components["schemas"]["DigiExamEffectivePointCorrectionV1"] | null;
             /** Item Id */
             item_id: string;
             /** Item Type */
@@ -695,6 +697,26 @@ export interface components {
             sequence: number;
             /** Source Item Fingerprint */
             source_item_fingerprint: string;
+        };
+        /**
+         * DigiExamEffectivePointCorrectionV1
+         * @description Applied item point correction in effective exam artifacts.
+         */
+        DigiExamEffectivePointCorrectionV1: {
+            /** Effective Max Score */
+            effective_max_score: number;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "item_points";
+            /** Source Item Fingerprint */
+            source_item_fingerprint: string;
+            /**
+             * Source Max Score
+             * @default null
+             */
+            source_max_score: number | null;
         };
         /**
          * DigiExamEffectiveReviewDecisionV1
@@ -757,6 +779,8 @@ export interface components {
              * @default null
              */
             manual_answer_key: (components["schemas"]["DigiExamOverlayChoiceManualAnswerKey"] | components["schemas"]["DigiExamOverlayGapFillManualAnswerKey"]) | null;
+            /** @default null */
+            point_correction: components["schemas"]["DigiExamOverlayPointCorrection"] | null;
             /** @default null */
             review_decision: components["schemas"]["DigiExamOverlayReviewDecision"] | null;
             /** @default null */
@@ -1190,6 +1214,19 @@ export interface components {
              * @enum {string}
              */
             kind: "gap_fill";
+        };
+        /**
+         * DigiExamOverlayPointCorrection
+         * @description Bounded item point correction applied only to effective renderer input.
+         */
+        DigiExamOverlayPointCorrection: {
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "item_points";
+            /** Max Score */
+            max_score: number;
         };
         /**
          * DigiExamOverlayReviewDecision
