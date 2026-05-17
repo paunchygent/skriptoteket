@@ -517,3 +517,18 @@ Before changing Exam Converter UI code again:
 
 Backend save/runtime work remains separate. UI copy and layout must never drive
 service contract changes.
+
+## Live UI Inspection Gate
+
+Future Exam Converter layout or breakpoint changes must include live internal-
+browser inspection evidence for the approved slice. The inspection lane must
+use the normal HuleEdu browser-session ceremony and must not rely on temporary
+query hooks, direct product-backend credential posts, browser-local state
+injection, or unreviewed component mutation.
+
+Upload-gated post-conversion states require the governed dev/test-only fixture
+lane defined by `PR-0327`. Breakpoint proof must record whether the desktop
+table or the reduced question navigator is active, whether the inspector is
+visible, and whether the document has horizontal overflow. Do not claim live
+internal-browser proof for states that cannot be reached in the internal
+browser.

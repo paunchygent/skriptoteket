@@ -7,7 +7,7 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { Ban, Bot, CheckCheck, CheckCircle2, ChevronDown, Info, Pencil, XCircle } from "lucide-vue-next";
+import { Ban, Bot, CheckCheck, CheckCircle2, ChevronDown, Info, Pencil } from "lucide-vue-next";
 
 import type {
   ExamConverterQuestionReviewRow,
@@ -18,6 +18,8 @@ import type {
   ExamConverterAiFacitReviewAction,
   ExamConverterReviewedSuggestionDecision,
 } from "./useExamConverterAiFacitReview";
+import ExamConverterQuestionNavigator from "./ExamConverterQuestionNavigator.vue";
+import ExamConverterQuestionTable from "./ExamConverterQuestionTable.vue";
 
 const props = defineProps<{
   aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
@@ -153,92 +155,21 @@ watch(
         Inga frågor att visa.
       </div>
 
-      <table
+      <ExamConverterQuestionTable
         v-else
-        class="mt-6 w-full table-fixed border-collapse text-left text-sm text-navy"
-      >
-        <thead>
-          <tr class="border-b border-navy/45">
-            <th class="px-3 py-3 font-semibold">
-              Fråga
-            </th>
-            <th class="w-24 px-2 py-3 font-semibold xl:w-28">
-              Typ
-            </th>
-            <th class="w-24 px-2 py-3 font-semibold xl:w-28">
-              Saknas
-            </th>
-            <th class="w-20 px-2 py-3 font-semibold">
-              Poäng
-            </th>
-            <th class="w-16 px-2 py-3 text-center font-semibold">
-              Status
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="question in projection.questions"
-            :key="question.itemId"
-            class="cursor-pointer border-b border-navy/15 hover:bg-canvas"
-            :class="question.itemId === selectedQuestion?.itemId ? 'bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : undefined"
-            :data-test="`exam-converter-question-row-${question.itemId}`"
-            @click="selectQuestion(question)"
-          >
-            <td class="min-w-0 px-3 py-4 align-top">
-              <span class="line-clamp-2">
-                <span class="font-semibold">{{ question.sequence }}.</span>
-                {{ question.promptText }}
-              </span>
-            </td>
-            <td class="px-2 py-4 align-top">
-              {{ question.typeLabel }}
-            </td>
-            <td class="px-2 py-4 align-top">
-              <span
-                v-if="question.missingFields.length === 0"
-                class="text-navy/70"
-              >
-                —
-              </span>
-              <span
-                v-for="missingField in question.missingFields"
-                v-else
-                :key="missingField"
-                class="mr-1 inline-flex border border-warning/70 bg-panel px-2 py-1 text-xs font-medium leading-none text-warning"
-              >
-                {{ missingField }}
-              </span>
-            </td>
-            <td class="px-2 py-4 align-top">
-              {{ question.pointsLabel }}
-            </td>
-            <td class="px-2 py-4 text-center align-top">
-              <span
-                class="inline-grid h-6 w-6 place-items-center"
-                :aria-label="question.statusSymbol === 'ai_suggestion' ? 'AI-förslag' : question.statusSymbol === 'complete' ? 'Klar' : 'Saknar facit'"
-                role="img"
-              >
-                <Bot
-                  v-if="question.statusSymbol === 'ai_suggestion'"
-                  class="h-5 w-5 text-terracotta"
-                  aria-hidden="true"
-                />
-                <CheckCircle2
-                  v-else-if="question.statusSymbol === 'complete'"
-                  class="h-5 w-5 text-success"
-                  aria-hidden="true"
-                />
-                <XCircle
-                  v-else
-                  class="h-5 w-5 text-error"
-                  aria-hidden="true"
-                />
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        class="exam-converter-question-table mt-6"
+        :questions="projection.questions"
+        :selected-item-id="selectedQuestion?.itemId ?? null"
+        @question-selected="selectQuestion"
+      />
+
+      <ExamConverterQuestionNavigator
+        v-if="projection.questions.length > 0"
+        class="exam-converter-question-navigator mt-4"
+        :questions="projection.questions"
+        :selected-item-id="selectedQuestion?.itemId ?? null"
+        @question-selected="selectQuestion"
+      />
     </div>
 
     <aside
@@ -504,16 +435,27 @@ watch(
   grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.72fr);
 }
 
-@media (max-width: 92rem) {
+.exam-converter-question-navigator {
+  display: none;
+}
+
+@media (max-width: 1199px) {
   .exam-converter-question-review-shell {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(12rem, 0.42fr) minmax(0, 1fr);
+    gap: 1rem;
+    overflow-x: visible;
+  }
+
+  .exam-converter-question-table {
+    display: none;
+  }
+
+  .exam-converter-question-navigator {
+    display: grid;
   }
 
   .exam-converter-question-detail {
-    border-left: 0;
-    border-top: 1px solid color-mix(in srgb, var(--color-navy) 35%, transparent);
-    padding-left: 0;
-    padding-top: 1.25rem;
+    padding-left: 1rem;
   }
 }
 </style>

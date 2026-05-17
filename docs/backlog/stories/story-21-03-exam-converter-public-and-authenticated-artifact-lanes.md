@@ -153,6 +153,13 @@ opening anonymous conversion uploads.
    suggested facit explicitly in the right panel, reviewed suggestions become
    `reviewed_completion_answer_key` overlay entries, and the second submit
    applies that overlay through Sir Convert before PDF/QTI readiness can change.
+9. Authenticated internal-browser UI inspection lane (`PR-0327`, done):
+   added the governed dev/test-only fixture lane required for live Exam
+   Converter UI inspection in the Codex internal browser. The lane renders real
+   authenticated components after normal HuleEdu login, covers representative
+   post-conversion states without unsupported file upload, guards fixture access
+   out of production builds, and records desktop plus narrow-laptop
+   navigator/inspector layout proof.
 
 ## Notes
 

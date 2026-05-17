@@ -10,6 +10,21 @@ function getMissingAppsPrefixAppId(appId: unknown): string | null {
   return RESERVED_PUBLIC_ROUTE_SEGMENTS.has(appId) ? null : appId;
 }
 
+const EXAM_CONVERTER_UI_INSPECTION_ROUTES: RouteRecordRaw[] =
+  import.meta.env.DEV || import.meta.env.MODE === "test"
+    ? [
+        {
+          path: "/apps/documents.conversion_hub/exam-converter/ui-fixtures/:fixtureId",
+          name: "exam-converter-ui-inspection-fixture",
+          component: () => import("../views/apps/ExamConverterAuthenticatedView.vue"),
+          props: (route) => ({
+            inspectionFixtureId: route.params.fixtureId,
+          }),
+          meta: { requiresAuth: true },
+        },
+      ]
+    : [];
+
 export const routes: RouteRecordRaw[] = [
   {
     path: "/auth/login",
@@ -86,6 +101,7 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("../views/BrowseToolsView.vue"),
     meta: { requiresAuth: true },
   },
+  ...EXAM_CONVERTER_UI_INSPECTION_ROUTES,
   {
     path: "/apps/:appId",
     name: "app-detail",

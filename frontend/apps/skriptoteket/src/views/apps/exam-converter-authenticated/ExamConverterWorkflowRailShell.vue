@@ -65,7 +65,7 @@ function handleSupportingFileInput(event: Event): void {
 
 <template>
   <aside
-    class="bg-panel p-4 border-r border-navy/20"
+    class="exam-converter-workflow-rail-shell border-b border-navy/20 bg-panel p-4 xl:border-b-0 xl:border-r"
     aria-labelledby="exam-converter-workflow-title"
     data-test="exam-converter-workflow-rail-shell"
   >
@@ -78,7 +78,7 @@ function handleSupportingFileInput(event: Event): void {
       </h1>
     </div>
 
-    <div class="mt-5 grid gap-6">
+    <div class="exam-converter-workflow-rail-body mt-5 grid gap-6">
       <section
         class="grid gap-2"
         data-test="exam-converter-source-file-state"
@@ -141,7 +141,7 @@ function handleSupportingFileInput(event: Event): void {
         </label>
         <p
           v-if="!selectedSourceFile"
-          class="text-xs leading-snug text-navy/65"
+          class="exam-converter-workflow-rail-secondary text-xs leading-snug text-navy/65"
         >
           Ingen fil vald.
         </p>
@@ -238,11 +238,11 @@ function handleSupportingFileInput(event: Event): void {
         </p>
         <p
           v-else
-          class="text-xs leading-snug text-navy/65"
+          class="exam-converter-workflow-rail-secondary text-xs leading-snug text-navy/65"
         >
           Ingen fil vald.
         </p>
-        <p class="text-xs leading-snug text-navy/65">
+        <p class="exam-converter-workflow-rail-secondary text-xs leading-snug text-navy/65">
           Kan dras in samtidigt med provfilen.
         </p>
       </section>
@@ -284,7 +284,7 @@ function handleSupportingFileInput(event: Event): void {
                 aria-hidden="true"
               />
             </div>
-            <p class="mt-2 text-xs leading-snug text-navy/65">
+            <p class="exam-converter-workflow-rail-secondary mt-2 text-xs leading-snug text-navy/65">
               För direktimport av prov i Exam.net.
             </p>
           </button>
@@ -318,39 +318,106 @@ function handleSupportingFileInput(event: Event): void {
                 aria-hidden="true"
               />
             </div>
-            <p class="mt-2 text-xs leading-snug text-navy/65">
+            <p class="exam-converter-workflow-rail-secondary mt-2 text-xs leading-snug text-navy/65">
               För lagring och import av digitala prov.
             </p>
           </button>
         </div>
       </section>
 
-      <section class="grid gap-3">
+      <section class="exam-converter-workflow-rail-actions grid gap-3">
         <h2 class="text-sm font-semibold leading-tight text-navy">
           4. Konvertera
         </h2>
-        <button
-          type="button"
-          class="btn-cta justify-center gap-2 shadow-none"
-          :disabled="!canStartConversion || isConversionRunning"
-          data-test="exam-converter-start-conversion"
-          @click="emit('startConversion')"
-        >
-          <Play
-            class="h-4 w-4"
-            aria-hidden="true"
-          />
-          Starta konvertering
-        </button>
-        <button
-          type="button"
-          class="btn-ghost justify-center shadow-none"
-          data-test="exam-converter-reset-local-choices"
-          @click="emit('resetLocalChoices')"
-        >
-          Rensa val
-        </button>
+        <div class="exam-converter-workflow-actions-grid grid gap-3">
+          <button
+            type="button"
+            class="btn-cta justify-center gap-2 shadow-none"
+            :disabled="!canStartConversion || isConversionRunning"
+            data-test="exam-converter-start-conversion"
+            @click="emit('startConversion')"
+          >
+            <Play
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+            <span class="exam-converter-action-label-full">Starta konvertering</span>
+            <span class="exam-converter-action-label-compact">Starta</span>
+          </button>
+          <button
+            type="button"
+            class="btn-ghost justify-center shadow-none"
+            data-test="exam-converter-reset-local-choices"
+            @click="emit('resetLocalChoices')"
+          >
+            <span class="exam-converter-action-label-full">Rensa val</span>
+            <span class="exam-converter-action-label-compact">Rensa</span>
+          </button>
+        </div>
       </section>
     </div>
   </aside>
 </template>
+
+<style scoped>
+.exam-converter-action-label-compact {
+  display: none;
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .exam-converter-workflow-rail-shell {
+    padding-block: 0.875rem;
+  }
+
+  .exam-converter-workflow-rail-body {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .exam-converter-workflow-rail-secondary {
+    display: none;
+  }
+
+  .exam-converter-workflow-rail-body :deep([data-test="exam-converter-target-file-state"] > div) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .exam-converter-workflow-rail-body :deep([data-test="exam-converter-target-pdf"]),
+  .exam-converter-workflow-rail-body :deep([data-test="exam-converter-target-qti"]) {
+    min-height: 2.625rem;
+    padding-inline: 0.625rem;
+  }
+
+  .exam-converter-workflow-actions-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+    gap: 0.5rem;
+  }
+
+  .exam-converter-action-label-full {
+    display: none;
+  }
+
+  .exam-converter-action-label-compact {
+    display: inline;
+  }
+
+  .exam-converter-workflow-rail-actions :deep(.btn-cta),
+  .exam-converter-workflow-rail-actions :deep(.btn-ghost) {
+    min-height: 2.625rem;
+    padding-inline: 0.625rem;
+  }
+
+  .exam-converter-workflow-rail-body :deep(section) {
+    align-content: start;
+    gap: 0.5rem;
+  }
+
+  .exam-converter-workflow-rail-body :deep(button),
+  .exam-converter-workflow-rail-body :deep(label),
+  .exam-converter-workflow-rail-body :deep([data-test="exam-converter-selected-source-file"]),
+  .exam-converter-workflow-rail-body :deep([data-test="exam-converter-selected-supporting-file"]) {
+    padding-block: 0.625rem;
+  }
+}
+</style>

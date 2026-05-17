@@ -50,6 +50,18 @@ describe("routes", () => {
     expect(resolved.params.publicCapabilitySlug).toBe("exam-converter");
   });
 
+  it("adds the authenticated Exam Converter UI-inspection fixture route for test/dev", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve(
+      "/apps/documents.conversion_hub/exam-converter/ui-fixtures/complete-qti-blocked",
+    );
+
+    expect(resolved.name).toBe("exam-converter-ui-inspection-fixture");
+    expect(resolved.params.fixtureId).toBe("complete-qti-blocked");
+    expect(resolved.meta.requiresAuth).toBe(true);
+  });
+
   it("resolves malformed public app links to the dedicated recovery route", () => {
     const router = createTestRouter();
 

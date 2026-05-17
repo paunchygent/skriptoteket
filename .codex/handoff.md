@@ -11,8 +11,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-05-17.
 - Branch: `main`.
-- Current lane: `PR-0326` Exam Converter authenticated LLM-enrichment consumer
-  sync under `ST-21-03`.
+- Current lane: `PR-0327` Exam Converter authenticated internal-browser UI
+  inspection lane under `ST-21-03`.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
   `REV-PR-0318` through `REV-PR-0322` approved; Sir Convert `TASK-292` done;
   `PR-0325` live evidence exists; `PR-0326` is implemented.
@@ -65,6 +65,10 @@ Keep this file updated so the next session can pick up work quickly.
   right question panel plus compact `Godkänn alla`/`Skapa filer` affordances,
   reviewed decisions become `reviewed_completion_answer_key` overlay entries,
   and second submit applies the overlay before PDF/QTI readiness can change.
+- `PR-0327` is implemented: a dev/test-only internal-browser fixture lane
+  renders real authenticated Exam Converter post-conversion states after normal
+  HuleEdu login. Do not use throwaway query hooks or browser-local state
+  injection for future checks.
 ## Verification
 - PR-0325 verification history is retained in
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`.
@@ -84,6 +88,32 @@ Keep this file updated so the next session can pick up work quickly.
   - Live authenticated Gateway proof remains for the `PR-0324` rerun because
     deployed Sir Convert still has to prove `answer_key_completion_report`
     delivery through HuleEdu Gateway.
+- PR-0327 closeout:
+  - `docs/backlog/prs/pr-0327-st-21-03-exam-converter-authenticated-internal-browser-ui-inspection-lane.md`
+    created and closed as done.
+  - `docs/runbooks/runbook-agent-browser-automation.md` now documents the
+    internal-browser path and the upload-gated fixture requirement.
+  - Focused Vitest passed: `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/router/routes.spec.ts`
+    (4 files / 26 tests).
+  - `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`,
+    `pdm run docs-validate`, `pdm run handoff-validate`, and
+    `git diff --check` passed.
+  - `fe-build` ran on system Node `v26.0.0` without the Node `DEP0205`
+    `module.register()` warning after the checked-in Tailwind pnpm patch.
+  - Production bundle grep found no fixture-route or fixture-id strings:
+    `complete-qti-blocked`, `complete-qti-ready`, `missing-facit`,
+    `ai-facit-review`, `exam-converter-ui-inspection`, `ui-fixtures`.
+  - Internal browser proof:
+    `complete-qti-blocked` at 1512x900 showed success, no partial warning,
+    visible QTI reason, and no exact main-content `Granska` action;
+    `missing-facit` at 1512x900 preserved the desktop table + inspector;
+    `missing-facit` at 1024x768 used the designed narrow-laptop composition
+    with compact setup band, question navigator (`192px`), visible inspector
+    (`430px`), and no horizontal document overflow.
+  - Current visual proof files:
+    `.artifacts/pr-0327-ui-proof/missing-facit-1024x768-designed-navigator-inspector.png`
+    and
+    `.artifacts/pr-0327-ui-proof/missing-facit-1512x900-table-inspector-preserved.png`.
 ## How to Run
 ```bash
 pdm run pytest tests/unit/web/test_public_apps_exam_converter_runtime.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_public_exam_converter_upstream_clients.py -q

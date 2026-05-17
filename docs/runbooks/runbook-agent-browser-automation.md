@@ -5,7 +5,7 @@ title: "Runbook: Agent browser automation (MCP Chrome + Playwright)"
 status: active
 owners: "agents"
 created: 2026-03-26
-updated: 2026-03-31
+updated: 2026-05-17
 system: "skriptoteket-dev"
 ---
 
@@ -21,6 +21,9 @@ the same browser profile or when automation targets a regular human browsing pro
   authenticated UI validation.
 - Use MCP Chrome/browser tools for lightweight interactive inspection, DOM/network debugging, and
   one-off manual exploration that benefits from a live browser session.
+- Use the Codex internal browser for interactive UI-design inspection when the
+  user explicitly asks for the in-app browser or live design inspection in the
+  current app session.
 - Use attach mode instead of relaunching when the task explicitly depends on an already-open Chrome
   session or its existing signed-in state.
 
@@ -55,8 +58,40 @@ the same browser profile or when automation targets a regular human browsing pro
 |---|---|
 | Repeatable Skriptoteket UI proof or regression check | Repo Playwright |
 | Quick DOM/layout/network inspection in an isolated browser | MCP Chrome with isolated profile |
+| Interactive design inspection in the Codex app session | Codex internal browser |
 | Reuse the user's existing Chrome state, cookies, or manual setup | Attach mode via Chrome DevTools MCP / CDP |
 | MCP Chrome blocked but the task is still only a repo proof | Repo Playwright fallback |
+
+## Internal Browser UI Inspection For Upload-Gated Apps
+
+The Codex internal browser is the preferred live surface when the work is an
+interactive UI-design inspection in the current Codex app session. It gives the
+agent and product owner the same visible app state, but it cannot be treated as
+a generic replacement for every browser automation capability.
+
+For upload-gated flows such as authenticated Exam Converter, do not add
+throwaway query hooks, temporary component mutation, browser-local fixtures, or
+session-cookie shortcuts just to reach post-upload UI. The durable solution is
+a governed dev/test-only fixture or seed-state lane that renders the real app
+components after the normal HuleEdu browser-session ceremony.
+
+Procedure for future Exam Converter UI layout work:
+
+1. Start the Skriptoteket dev stack with the repo script and start the HuleEdu
+   auth-integration provider lane when authenticated entry is needed.
+2. Sign in through the HuleEdu browser-session ceremony in the internal
+   browser. Do not derive proof from direct backend credential posts.
+3. Navigate to the approved dev/test fixture state for the UI slice under
+   review.
+4. Inspect at the canonical desktop and compact workspace widths required by
+   the approved slice. Record the exact viewport widths in handoff.
+5. Capture screenshot or DOM evidence from the internal browser and pair it
+   with the focused Vitest/typecheck/lint/build commands for closeout.
+
+Until `PR-0327` implements the Exam Converter fixture lane, upload-dependent
+post-conversion states must be treated as blocked for internal-browser-only
+proof. Use existing tests or retained runtime evidence for code confidence, but
+do not present that as live visual proof of the post-upload UI state.
 
 ## Failure signatures
 

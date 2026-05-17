@@ -12,7 +12,7 @@
  *     authenticated Exam Converter runtime bridge.
  */
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
 import {
@@ -35,6 +35,9 @@ import { useExamConverterFileActions } from "./exam-converter-authenticated/useE
 import { useExamConverterReviewArtifacts } from "./exam-converter-authenticated/useExamConverterReviewArtifacts";
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
 import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated/useExamConverterConversionState";
+const props = defineProps<{
+  inspectionFixtureId?: string | null;
+}>();
 
 const {
   clearSupportingFile,
@@ -65,6 +68,7 @@ const {
   loadReviewArtifacts,
   projection: reviewProjection,
   resetReviewArtifacts,
+  setReviewArtifactsForInspection,
   status: reviewStatus,
 } = useExamConverterReviewArtifacts();
 const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
@@ -171,9 +175,9 @@ async function finishRuntimeResult(
       runtimeOutcome.warningCount,
       projection.report.warningCount,
     );
-    const hasBlockedFiles = projection.files.some((file) => !file.exportEnabled);
     const requiresQuestionReview =
-      projection.report.attentionQuestionCount > 0 || hasBlockedFiles;
+      projection.report.attentionQuestionCount > 0 ||
+      projection.report.blockedTargetFileCount > 0;
     activeInspectionMode.value = preferredMode ?? projection.defaultMode;
     finishConversion({
       ...runtimeOutcome,
@@ -288,6 +292,32 @@ async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
   }
   await saveFile({ correlationId, file, jobId });
 }
+
+onMounted(async () => {
+  if (!props.inspectionFixtureId) {
+    return;
+  }
+  if (!import.meta.env.DEV && import.meta.env.MODE !== "test") {
+    failConversion();
+    return;
+  }
+  const { getExamConverterUiInspectionFixture } = await import(
+    "./exam-converter-authenticated/examConverterUiInspectionFixtures"
+  );
+  const fixture = getExamConverterUiInspectionFixture(props.inspectionFixtureId);
+  if (!fixture) {
+    failConversion();
+    return;
+  }
+  selectSourceFile(fixture.sourceFile);
+  resetAiFacitReview();
+  resetFileActions();
+  acceptedCurrentState.value = false;
+  reviewedCompletionApplied.value = false;
+  activeInspectionMode.value = fixture.activeInspectionMode;
+  setReviewArtifactsForInspection(fixture.projection);
+  finishConversion(fixture.runtimeOutcome);
+});
 </script>
 
 <template>
@@ -296,8 +326,9 @@ async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
     aria-labelledby="exam-converter-auth-title"
   >
     <section
-      class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm lg:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
+      class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
       aria-label="Exam Converter"
+      :data-inspection-fixture-id="inspectionFixtureId ?? undefined"
       data-test="exam-converter-host-frame"
     >
       <ExamConverterWorkflowRailShell

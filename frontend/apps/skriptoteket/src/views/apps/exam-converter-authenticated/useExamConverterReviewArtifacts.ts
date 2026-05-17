@@ -129,6 +129,14 @@ export function useExamConverterReviewArtifacts(
     status.value = "idle";
   }
 
+  function setReviewArtifactsForInspection(
+    inspectionProjection: ExamConverterReviewProjection,
+  ): void {
+    loadToken.value += 1;
+    projection.value = inspectionProjection;
+    status.value = "ready";
+  }
+
   async function loadReviewArtifacts(
     params: ExamConverterReviewArtifactsLoadParams,
   ): Promise<ExamConverterReviewProjection | null> {
@@ -221,6 +229,7 @@ export function useExamConverterReviewArtifacts(
     loadReviewArtifacts,
     projection,
     resetReviewArtifacts,
+    setReviewArtifactsForInspection,
     status,
   };
 }

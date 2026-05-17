@@ -68,6 +68,22 @@ function statusLabelForFile(file: ExamConverterReviewFile): string {
   return file.statusLabel;
 }
 
+function reasonLabelForFile(file: ExamConverterReviewFile): string | null {
+  if (file.exportEnabled || !file.reasonCode) {
+    return null;
+  }
+  switch (file.reasonCode) {
+    case "manual_answer_key_required":
+      return "Facit saknas.";
+    case "accepted_current_state_not_renderable":
+      return "Målfilen kan inte skapas från nuvarande granskningsläge.";
+    case "qti_package_export_disabled":
+      return "QTI-export saknas i den returnerade beredskapsrapporten.";
+    default:
+      return `Orsak: ${file.reasonCode}`;
+  }
+}
+
 function downloadLabel(file: ExamConverterReviewFile): string {
   return actionStateForFile(file).download === "running" ? "Hämtar" : "Hämta";
 }
@@ -153,7 +169,16 @@ function isSaveDisabled(file: ExamConverterReviewFile): boolean {
             {{ file.sizeLabel ?? "—" }}
           </td>
           <td class="px-3 py-4">
-            {{ statusLabelForFile(file) }}
+            <span class="block">
+              {{ statusLabelForFile(file) }}
+            </span>
+            <span
+              v-if="reasonLabelForFile(file)"
+              class="mt-1 block text-xs leading-snug text-navy/65"
+              :data-test="`exam-converter-file-reason-${file.artifactKey}`"
+            >
+              {{ reasonLabelForFile(file) }}
+            </span>
           </td>
           <td class="px-3 py-4 text-center">
             <button
