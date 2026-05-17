@@ -202,6 +202,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0326-st-21-03-exam-converter-authenticated-llm-enrichment-consumer-sync.md`
 - ST-21-03 Exam Converter authenticated internal-browser UI inspection lane:
   `docs/backlog/prs/pr-0327-st-21-03-exam-converter-authenticated-internal-browser-ui-inspection-lane.md`
+- ST-21-03 Exam Converter advisory idempotency rerun:
+  `docs/backlog/prs/pr-0328-st-21-03-exam-converter-advisory-idempotency-rerun.md`
+- ST-21-03 Exam Converter reviewed AI-facit handoff:
+  `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:
@@ -551,6 +555,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0326-st-21-03-exam-converter-authenticated-llm-enrichment-consumer-sync.md`
 - ST-21-03 Exam Converter authenticated internal-browser UI inspection lane:
   `docs/backlog/prs/pr-0327-st-21-03-exam-converter-authenticated-internal-browser-ui-inspection-lane.md`
+- ST-21-03 Exam Converter advisory idempotency rerun:
+  `docs/backlog/prs/pr-0328-st-21-03-exam-converter-advisory-idempotency-rerun.md`
+- ST-21-03 Exam Converter reviewed AI-facit handoff:
+  `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 share/export affordance consolidation task:

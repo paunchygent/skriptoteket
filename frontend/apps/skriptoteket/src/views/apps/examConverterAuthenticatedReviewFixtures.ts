@@ -56,10 +56,13 @@ export type ExamConverterGatewayMocks = {
   submitDigiExamMigration: Mock;
 };
 
-export function submittedJob(status: SirConvertJobStatus): SirConvertSubmittedJob {
+export function submittedJob(
+  status: SirConvertJobStatus,
+  jobId = "job_exam_converter_review",
+): SirConvertSubmittedJob {
   return {
     idempotentReplay: false,
-    jobId: "job_exam_converter_review",
+    jobId,
     requestContext: {
       correlationId: "corr_exam_converter_review",
       idempotencyKey: "idem_exam_converter_review",

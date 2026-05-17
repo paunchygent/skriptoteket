@@ -29,6 +29,7 @@ import {
   submittedJob,
   terminalResult,
 } from "./examConverterAuthenticatedReviewFixtures";
+import { mockVisionBackedGapFillReviewArtifacts, REVIEWED_GAP_FILL_APPLY_JOB_ID } from "./examConverterAuthenticatedGapFillReviewFixtures";
 import {
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_TARGET_EXAMNET_PDF,
@@ -373,6 +374,66 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
         }),
       }),
     ]);
+  });
+
+  it("reviews and applies a vision-backed Lucktext AI-facit from the second bundle", async () => {
+    mockVisionBackedGapFillReviewArtifacts(gatewayMocks);
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.find('[data-test="exam-converter-question-row-item-013"]').trigger("click");
+
+    const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
+    expect(detail.text()).toContain("AI-förslag");
+    expect(detail.text()).toContain("Lucka 1");
+    expect(detail.text()).toContain("kretslopp");
+
+    await wrapper.find('[data-test="exam-converter-accept-ai-suggestion-action"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-apply-reviewed-ai-suggestions-action"]')
+      .trigger("click");
+    await flushPromises();
+
+    const reviewedSubmit = gatewayMocks.submitDigiExamMigration.mock.calls[1]?.[0];
+    expect(reviewedSubmit).toMatchObject({
+      completionMode: "local_llm_apply_missing_machine_marked_with_review",
+      ingestionOverlay: {
+        items: [
+          expect.objectContaining({
+            item_id: "item-013",
+            reviewed_completion_answer_key: expect.objectContaining({
+              answer_payload: {
+                gap_answers: [
+                  { accepted_values: ["kretslopp"], gap_id: "gap-001" },
+                  { accepted_values: ["näringsväv"], gap_id: "gap-002" },
+                ],
+                kind: "gap_fill",
+              },
+              candidate_lineage: expect.objectContaining({
+                candidate_id: "candidate-item-013",
+                candidate_payload_digest: "sha256:candidate-item-013",
+                completion_report_sha256: "sha256:completion-report-gap",
+                provider_profile_id: "task309-llama-cpp",
+                schema_name: "digiexam_gap_fill_answer_key_decision_v1",
+                validation_state: "valid",
+              }),
+              kind: "gap_fill",
+              review_outcome: "accepted_unchanged",
+            }),
+          }),
+        ],
+      },
+    });
+    expect(gatewayMocks.listDigiExamMigrationArtifacts).toHaveBeenLastCalledWith({
+      completionReportRequired: false,
+      correlationId: "corr_exam_converter_review",
+      jobId: REVIEWED_GAP_FILL_APPLY_JOB_ID,
+    });
+    expect(wrapper.find('[data-test="exam-converter-ai-review-action-panel"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.text()).toContain("Filer (2)");
+    expect(wrapper.text()).toContain("Kan hämtas");
   });
 
   it("surfaces Lucktext gaps and embedded image structure in the detail pane", async () => {

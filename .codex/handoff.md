@@ -11,12 +11,13 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-05-17.
 - Branch: `main`.
-- Current lane: `PR-0328` Exam Converter authenticated advisory idempotency
-  rerun under `ST-21-03`.
+- Current lane: `PR-0329` Exam Converter reviewed AI-facit handoff under
+  `ST-21-03`.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
   `REV-PR-0318` through `REV-PR-0322` approved; Sir Convert `TASK-292` done;
   `PR-0325` live evidence exists; `PR-0326`, `PR-0327`, and `PR-0328` are
-  implemented. Rerun `PR-0324` next with the same byte-identical `.dxe`.
+  implemented. `PR-0329` is ready to fix the remaining review/apply UI
+  handoff before rerunning `PR-0324` with the same byte-identical `.dxe`.
 - Prior PR-0310 through PR-0314 history was compacted to
   `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`.
 - Prior PR-0325 live-proof details and PR-0326 task setup were compacted to
@@ -84,6 +85,13 @@ Keep this file updated so the next session can pick up work quickly.
   `advisory_retry_attempt:<n>` only to the client idempotency digest, preserve
   the same Sir Convert job spec/options, avoid automatic retry, and increment
   only after a completed retry returns the same provider-only failure class.
+- `PR-0329` is done:
+  `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`.
+  It added teacher-visible Lucktext rows for valid `gap_fill` AI-facit
+  suggestions, proved accepted `item-013` suggestions build
+  `reviewed_completion_answer_key` overlays, and proved refreshed file
+  readiness comes from the reviewed apply job bundle rather than the advisory
+  bundle.
 ## Verification
 - PR-0325 verification history is retained in
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`.
@@ -145,6 +153,27 @@ Keep this file updated so the next session can pick up work quickly.
     panel.
   - `pdm run docs-validate`, `pdm run handoff-validate`, and
     `git diff --check` passed.
+- PR-0329 closeout:
+  - Focused Vitest passed: `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedAdvisoryRetry.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`
+    (8 files / 52 tests).
+  - `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build` passed;
+    build retained the existing Vite large-chunk warning.
+  - Real-service local proof used HuleEdu auth edge + Sir Convert dev:
+    `pdm run run-local-pdm auth-integration check` passed; `pdm run dev-check`
+    in `sir-convert-a-lot` passed; Sir Convert `/readyz` returned
+    `ready=true` with `service_profile=local_cpu_dev`.
+  - Restarted `pdm run fe-dev` with local auth env (`VITE_HULEEDU_AUTH_BASE_URL`,
+    `VITE_HULEEDU_AUTH_ENTRY_URL`, `VITE_DEV_PROXY_TARGET`) pointing to
+    `http://localhost:8080`; the earlier remote-auth redirect is rejected proof.
+  - Playwright proof opened
+    `/apps/documents.conversion_hub/exam-converter/ui-fixtures/ai-facit-review`
+    through `localhost:5173 -> localhost:8080 -> localhost:5174 -> localhost:5173`,
+    observed AI-facit, confirmed `huleedu_session` and no `skriptoteket_session`, and saved
+    `.artifacts/pr-0329-auth-edge-live/exam-converter-ai-facit-review-auth-edge.png`.
+  - Authenticated browser fetch to `/sir-convert/v2/convert/jobs/does-not-exist`
+    returned `404 job_not_found` through `api-gateway-service` with a
+    correlation id; unauthenticated fetch returned `401`, proving the
+    `/sir-convert` product edge is gated rather than bypassed.
 ## How to Run
 ```bash
 pdm run pytest tests/unit/web/test_public_apps_exam_converter_runtime.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_public_exam_converter_upstream_clients.py -q
@@ -157,19 +186,15 @@ pdm run handoff-validate
 git diff --check
 ```
 ## Known Issues / Risks
-- Sir Convert `/readyz` is fail-closed in the local container because
-  `SIR_CONVERT_A_LOT_SERVICE_REVISION` and
-  `SIR_CONVERT_A_LOT_EXPECTED_REVISION` are unset/`unknown`; `/healthz` is 200
-  and the authenticated PR-0325 flow completed successfully through HuleEdu.
 - Live authenticated facitförslag proof should not reuse stale
   `provider_request_failed` advisory reports. `PR-0328` now provides the
   explicit bounded retry attempt in the client idempotency digest for
   provider-only advisory failures.
 ## Next Steps
-- Rerun/unblock `PR-0324` authenticated proof after `PR-0328`: use the same
-  byte-identical `.dxe`, prove advisory first submit, explicit retry if stale
-  provider-only replay appears, `answer_key_completion_report` delivery,
-  reviewed facitförslag overlay submit, reviewed apply artifacts, and final
-  PDF/QTI readiness through HuleEdu Gateway.
+- Rerun/unblock `PR-0324` authenticated proof: use the same byte-identical
+  `.dxe`, prove advisory first submit, explicit retry if stale provider-only
+  replay appears, valid `answer_key_completion_report` delivery including
+  vision-backed `item-013`, reviewed facitförslag overlay submit, reviewed
+  apply artifacts, and final PDF/QTI readiness through HuleEdu Gateway.
 - Do not reopen the public grant/read-lease lane unless HuleEdu or Sir Convert
   changes the accepted contract.

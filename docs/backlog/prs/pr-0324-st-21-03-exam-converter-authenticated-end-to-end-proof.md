@@ -5,7 +5,7 @@ title: "ST-21-03 Exam Converter authenticated end-to-end proof"
 status: blocked
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-13
+updated: 2026-05-17
 stories:
   - "ST-21-03"
 tags:
@@ -59,12 +59,14 @@ Retain sanitized end-to-end evidence for the authenticated Exam Converter lane:
 
 ## Review Status
 
-`REV-PR-0324` is `changes_requested`. The first proof attempt hit this slice's
-stop condition before live execution: the authenticated `documents.conversion_hub`
-host has no bespoke Exam Converter surface, the authenticated runtime API remains
-the generic Conversion Hub route set, and no save-to-user-files path exists for
-downloaded Sir Convert named artifacts. `PR-0325` is the narrow remediation
-slice before this proof can be rerun.
+`REV-PR-0324` is still `changes_requested` until the authenticated live proof
+is rerun and retained. The original preflight blockers were remediated by
+`PR-0325`; the advisory/reviewed-completion follow-ups were then completed by
+`PR-0326`, `PR-0328`, and `PR-0329`. The next rerun should use the same
+byte-identical `.dxe` and prove advisory submit, valid AI-facit report delivery
+including vision-backed `item-013`, reviewed overlay apply, refreshed
+`effective_ir_json`, final target readiness, named download, save-to-user-files,
+and missing-auth rejection through the HuleEdu Gateway path.
 
 ## Dependencies
 

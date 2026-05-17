@@ -168,6 +168,14 @@ opening anonymous conversion uploads.
    `advisoryRetryAttempt`, preserves the same `.dxe` bytes and Sir Convert job
    spec, keeps retry state browser-runtime local, and does not automatically
    retry or expose provider/idempotency internals in the UI.
+11. Reviewed AI-facit handoff (`PR-0329`, done):
+   implemented the remaining authenticated UI handoff after the Task 320 live
+   proof showed Qwen vision and the Sir Convert advisory report are working.
+   The UI now renders valid `gap_fill` AI-facit suggestions as reviewable
+   Lucktext rows, submits accepted suggestions as
+   `reviewed_completion_answer_key` overlay entries through the second reviewed
+   apply job, and proves file readiness is reloaded from the second Sir Convert
+   bundle rather than from the first advisory job.
 
 ## Notes
 

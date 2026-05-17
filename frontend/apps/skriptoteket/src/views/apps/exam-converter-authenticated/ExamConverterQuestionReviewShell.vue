@@ -69,6 +69,11 @@ function choiceIdsForQuestion(question: ExamConverterQuestionReviewRow): number[
   return payload?.kind === "choice" ? payload.correctAlternativeIds : [];
 }
 
+function gapFillAnswersForQuestion(question: ExamConverterQuestionReviewRow) {
+  const payload = question.llmCandidate?.answerPayload;
+  return payload?.kind === "gap_fill" ? payload.gapAnswers : [];
+}
+
 function numericAlternativeId(id: string): number | null {
   const value = Number.parseInt(id, 10);
   return Number.isInteger(value) ? value : null;
@@ -205,7 +210,10 @@ watch(
             </h4>
           </div>
 
-          <ol class="mt-4 grid gap-2 text-sm text-navy">
+          <ol
+            v-if="selectedQuestion.llmCandidate?.answerPayload?.kind === 'choice'"
+            class="mt-4 grid gap-2 text-sm text-navy"
+          >
             <li
               v-for="alternative in selectedQuestion.alternatives"
               :key="alternative.id"
@@ -229,6 +237,24 @@ watch(
                 class="h-5 w-5 text-terracotta"
                 aria-hidden="true"
               />
+            </li>
+          </ol>
+          <ol
+            v-else-if="selectedQuestion.llmCandidate?.answerPayload?.kind === 'gap_fill'"
+            class="mt-4 grid gap-2 text-sm text-navy"
+            data-test="exam-converter-gap-fill-ai-suggestion"
+          >
+            <li
+              v-for="(gapAnswer, index) in gapFillAnswersForQuestion(selectedQuestion)"
+              :key="gapAnswer.gapId"
+              class="grid grid-cols-[5rem_minmax(0,1fr)] items-start gap-3 border border-terracotta bg-terracotta/10 px-3 py-2"
+            >
+              <span class="text-xs font-semibold leading-relaxed text-terracotta">
+                Lucka {{ index + 1 }}
+              </span>
+              <span class="leading-relaxed text-navy">
+                {{ gapAnswer.acceptedValues.join(", ") }}
+              </span>
             </li>
           </ol>
 
