@@ -21,6 +21,10 @@ import type {
 } from "../../../api/sirConvertGateway";
 import {
   DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+  DIGIEXAM_ITEM_TYPE_GAP_FILL,
+  DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
+  DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
+  DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
   DIGIEXAM_ITEM_TYPES,
 } from "../../../api/sirConvertGateway/contractValues";
 import {
@@ -77,6 +81,14 @@ export type ExamConverterAnswerKeyCompletionReport = {
 };
 
 export type ExamConverterEffectiveAnswerKeyByItem = Map<string, DigiExamEffectiveAnswerKey>;
+
+const PROVIDER_REQUEST_FAILED = "provider_request_failed";
+const ADVISORY_MACHINE_MARKED_ITEM_TYPES = new Set<string>([
+  DIGIEXAM_ITEM_TYPE_GAP_FILL,
+  DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
+  DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
+  DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+]);
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -250,6 +262,33 @@ export function parseAnswerKeyCompletionReport(params: {
     completionReportSha256: params.completionReportSha256,
     itemsByItemId,
   };
+}
+
+function isMachineMarkedAdvisoryCandidate(candidate: ExamConverterLlmAnswerKeyCandidate): boolean {
+  return ADVISORY_MACHINE_MARKED_ITEM_TYPES.has(candidate.itemType);
+}
+
+function isValidAnswerPayload(candidate: ExamConverterLlmAnswerKeyCandidate): boolean {
+  return (
+    candidate.answerPayload !== null &&
+    candidate.decisionState === "suggested" &&
+    candidate.validationState === "valid"
+  );
+}
+
+export function isProviderOnlyAdvisoryFailureReport(
+  report: ExamConverterAnswerKeyCompletionReport | null,
+): boolean {
+  if (!report) return false;
+  const candidates = Array.from(report.itemsByItemId.values());
+  const eligibleCandidates = candidates.filter(isMachineMarkedAdvisoryCandidate);
+  return (
+    eligibleCandidates.length > 0 &&
+    candidates.every((candidate) => !isValidAnswerPayload(candidate)) &&
+    eligibleCandidates.every(
+      (candidate) => candidate.backendFailureCode === PROVIDER_REQUEST_FAILED,
+    )
+  );
 }
 
 export function parseEffectiveAnswerKeysByItem(payload: unknown): ExamConverterEffectiveAnswerKeyByItem {

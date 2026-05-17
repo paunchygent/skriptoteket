@@ -99,6 +99,7 @@ export type DigiExamMigrationSubmitParams = {
   gradedResultPdf?: File | null;
   parityPdf?: File | null;
   targets?: DigiExamMigrationTarget[];
+  advisoryRetryAttempt?: number | null;
   artifactLanguage?: string;
   completionMode?: DigiExamAnswerKeyCompletionMode;
   waitSeconds?: number;

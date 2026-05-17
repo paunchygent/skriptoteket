@@ -125,3 +125,12 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   consumer now requests advisory suggestions, shows AI-facit review in the
   selected-question panel, builds `reviewed_completion_answer_key` overlays, and
   resubmits reviewed apply jobs before PDF/QTI readiness can change.
+- PR-0328 (authenticated advisory idempotency rerun): done; live
+  `paunchygent@gmail.com` testing proved that failed facitförslag enrichment
+  can be a stale Sir Convert idempotent replay rather than a current Qwen
+  failure. The remediation adds an explicit retry path for provider-only
+  advisory failures that changes only the client idempotency digest for a
+  bounded `advisoryRetryAttempt`, preserves normal duplicate-submit behavior,
+  keeps retry state browser-runtime local, and renders the approved
+  `Det gick inte att ta fram ett facitförslag.` / `Försök igen` UI without
+  internal provider/idempotency wording.

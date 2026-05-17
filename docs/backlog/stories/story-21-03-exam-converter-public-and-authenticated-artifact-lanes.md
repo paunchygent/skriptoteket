@@ -160,6 +160,14 @@ opening anonymous conversion uploads.
    post-conversion states without unsupported file upload, guards fixture access
    out of production builds, and records desktop plus narrow-laptop
    navigator/inspector layout proof.
+10. Advisory idempotency rerun (`PR-0328`, done):
+   fixed the live `paunchygent@gmail.com` proof blocker where the authenticated
+   UI replayed stale Sir Convert job `jobv2_c93420ae30f441cc8e4013cd2d`.
+   Provider-only advisory failures now surface an explicit teacher retry action
+   that changes only the client idempotency digest via a bounded
+   `advisoryRetryAttempt`, preserves the same `.dxe` bytes and Sir Convert job
+   spec, keeps retry state browser-runtime local, and does not automatically
+   retry or expose provider/idempotency internals in the UI.
 
 ## Notes
 

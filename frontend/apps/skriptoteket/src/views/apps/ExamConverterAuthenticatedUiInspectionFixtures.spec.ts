@@ -81,4 +81,20 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     );
     expect(wrapper.text()).toContain("Vilket påstående beskriver DNA bäst?");
   });
+
+  it("renders provider-only advisory failure with the approved retry affordance", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { inspectionFixtureId: "provider-only-advisory-failure" },
+    });
+
+    await flushPromises();
+
+    const retryPanel = wrapper.get('[data-test="exam-converter-advisory-retry-panel"]');
+    const retryButton = wrapper.get('[data-test="exam-converter-advisory-retry-action"]');
+    expect(retryPanel.text()).toContain("Det gick inte att ta fram ett facitförslag.");
+    expect(retryButton.text()).toBe("Försök igen");
+    expect(retryButton.html()).toContain("lucide-refresh-cw");
+    expect(retryPanel.text()).not.toContain("AI");
+    expect(retryPanel.text()).not.toContain("provider");
+  });
 });

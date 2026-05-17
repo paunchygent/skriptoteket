@@ -17,13 +17,12 @@ the same browser profile or when automation targets a regular human browsing pro
 
 ### 1. Default lane selection
 
-- Use repo Playwright scripts for repeatable Skriptoteket proofs, smoke checks, screenshots, and
-  authenticated UI validation.
+- Use repo Playwright scripts for repeatable Skriptoteket plumbing, UI state
+  setup, smoke checks, and regression proof.
 - Use MCP Chrome/browser tools for lightweight interactive inspection, DOM/network debugging, and
   one-off manual exploration that benefits from a live browser session.
-- Use the Codex internal browser for interactive UI-design inspection when the
-  user explicitly asks for the in-app browser or live design inspection in the
-  current app session.
+- Use the Codex internal browser by default for UI design, layout, and
+  affordance review.
 - Use attach mode instead of relaunching when the task explicitly depends on an already-open Chrome
   session or its existing signed-in state.
 
@@ -56,9 +55,9 @@ the same browser profile or when automation targets a regular human browsing pro
 
 | Task shape | Lane |
 |---|---|
-| Repeatable Skriptoteket UI proof or regression check | Repo Playwright |
+| Repeatable Skriptoteket plumbing, UI state, or regression check | Repo Playwright |
 | Quick DOM/layout/network inspection in an isolated browser | MCP Chrome with isolated profile |
-| Interactive design inspection in the Codex app session | Codex internal browser |
+| UI design, layout, or affordance review | Codex internal browser |
 | Reuse the user's existing Chrome state, cookies, or manual setup | Attach mode via Chrome DevTools MCP / CDP |
 | MCP Chrome blocked but the task is still only a repo proof | Repo Playwright fallback |
 

@@ -43,6 +43,7 @@ export type ExamConverterAuthenticatedRuntimeSubmission = {
   sourceFile: File;
   supportingFile: File | null;
   targetSelection: ExamConverterTargetSelection;
+  advisoryRetryAttempt?: number | null;
   completionMode?: DigiExamAnswerKeyCompletionMode;
   ingestionOverlay?: DigiExamIngestionOverlay | null;
 };
@@ -113,6 +114,7 @@ export function useExamConverterAuthenticatedRuntime(
   const activeRunId = ref(0);
   const isRuntimeBusy = ref(false);
   const lastCorrelationId = ref<string | null>(null);
+  const lastIdempotentReplay = ref<boolean | null>(null);
   const lastJobId = ref<string | null>(null);
 
   function isCurrentRun(runId: number): boolean {
@@ -172,10 +174,11 @@ export function useExamConverterAuthenticatedRuntime(
     activeRunId.value = runId;
     isRuntimeBusy.value = true;
     lastCorrelationId.value = null;
+    lastIdempotentReplay.value = null;
     lastJobId.value = null;
 
     try {
-      const submittedJob = await client.submitDigiExamMigration({
+      const submitParams: Parameters<typeof client.submitDigiExamMigration>[0] = {
         artifactLanguage: "sv",
         completionMode: submission.completionMode,
         file: submission.sourceFile,
@@ -183,13 +186,18 @@ export function useExamConverterAuthenticatedRuntime(
         ingestionOverlay: submission.ingestionOverlay,
         targets,
         waitSeconds: 0,
-      });
+      };
+      if (submission.advisoryRetryAttempt !== null && submission.advisoryRetryAttempt !== undefined) {
+        submitParams.advisoryRetryAttempt = submission.advisoryRetryAttempt;
+      }
+      const submittedJob = await client.submitDigiExamMigration(submitParams);
 
       if (!isCurrentRun(runId)) {
         return null;
       }
 
       lastCorrelationId.value = submittedJob.requestContext.correlationId;
+      lastIdempotentReplay.value = submittedJob.idempotentReplay;
       lastJobId.value = submittedJob.jobId;
       return await pollUntilTerminal(submittedJob, runId);
     } catch (error) {
@@ -210,6 +218,7 @@ export function useExamConverterAuthenticatedRuntime(
     cancelRuntime,
     isRuntimeBusy,
     lastCorrelationId,
+    lastIdempotentReplay,
     lastJobId,
     submitAndPoll,
   };

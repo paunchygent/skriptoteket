@@ -11,11 +11,12 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-05-17.
 - Branch: `main`.
-- Current lane: `PR-0327` Exam Converter authenticated internal-browser UI
-  inspection lane under `ST-21-03`.
+- Current lane: `PR-0328` Exam Converter authenticated advisory idempotency
+  rerun under `ST-21-03`.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
   `REV-PR-0318` through `REV-PR-0322` approved; Sir Convert `TASK-292` done;
-  `PR-0325` live evidence exists; `PR-0326` is implemented.
+  `PR-0325` live evidence exists; `PR-0326`, `PR-0327`, and `PR-0328` are
+  implemented. Rerun `PR-0324` next with the same byte-identical `.dxe`.
 - Prior PR-0310 through PR-0314 history was compacted to
   `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`.
 - Prior PR-0325 live-proof details and PR-0326 task setup were compacted to
@@ -69,6 +70,20 @@ Keep this file updated so the next session can pick up work quickly.
   renders real authenticated Exam Converter post-conversion states after normal
   HuleEdu login. Do not use throwaway query hooks or browser-local state
   injection for future checks.
+- `PR-0328` captures the current live proof blocker: authenticated testing as
+  `paunchygent@gmail.com` replayed stale Sir Convert job
+  `jobv2_c93420ae30f441cc8e4013cd2d` through deterministic idempotency. Its
+  completion report had 17 items, 8 eligible machine-marked items, all 8 with
+  `provider_request_failed`, and 0 answer payloads; current Qwen
+  in-container JSON Schema probe succeeds, and newer Sir jobs have valid
+  candidates.
+- `PR-0328` is implemented: provider-only advisory failures now show the
+  approved retry affordance (`Det gick inte att ta fram ett facitförslag.` +
+  Lucide retry icon / `Försök igen`), use browser-runtime-local
+  `advisoryRetryAttempt` starting at 1, add
+  `advisory_retry_attempt:<n>` only to the client idempotency digest, preserve
+  the same Sir Convert job spec/options, avoid automatic retry, and increment
+  only after a completed retry returns the same provider-only failure class.
 ## Verification
 - PR-0325 verification history is retained in
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`.
@@ -114,6 +129,22 @@ Keep this file updated so the next session can pick up work quickly.
     `.artifacts/pr-0327-ui-proof/missing-facit-1024x768-designed-navigator-inspector.png`
     and
     `.artifacts/pr-0327-ui-proof/missing-facit-1512x900-table-inspector-preserved.png`.
+- PR-0328 closeout:
+  - Focused Vitest passed: `pdm run fe-test -- --run src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedAdvisoryRetry.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts src/router/routes.spec.ts`
+    (6 files / 37 tests).
+  - `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build` passed;
+    build retained the existing Vite large-chunk warning.
+  - Production bundle grep found no fixture-route or fixture-id strings:
+    `provider-only-advisory-failure`, `complete-qti-blocked`,
+    `complete-qti-ready`, `missing-facit`, `ai-facit-review`,
+    `exam-converter-ui-inspection`, `ui-fixtures`.
+  - Internal browser proof via HuleEdu login opened
+    `/apps/documents.conversion_hub/exam-converter/ui-fixtures/provider-only-advisory-failure`
+    and verified visible retry panel/action, approved text, `Försök igen`, one
+    Lucide SVG icon, and no `AI-facit` or provider wording inside the retry
+    panel.
+  - `pdm run docs-validate`, `pdm run handoff-validate`, and
+    `git diff --check` passed.
 ## How to Run
 ```bash
 pdm run pytest tests/unit/web/test_public_apps_exam_converter_runtime.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_public_exam_converter_upstream_clients.py -q
@@ -130,9 +161,15 @@ git diff --check
   `SIR_CONVERT_A_LOT_SERVICE_REVISION` and
   `SIR_CONVERT_A_LOT_EXPECTED_REVISION` are unset/`unknown`; `/healthz` is 200
   and the authenticated PR-0325 flow completed successfully through HuleEdu.
+- Live authenticated facitförslag proof should not reuse stale
+  `provider_request_failed` advisory reports. `PR-0328` now provides the
+  explicit bounded retry attempt in the client idempotency digest for
+  provider-only advisory failures.
 ## Next Steps
-- Rerun/unblock `PR-0324` authenticated proof next: prove advisory first submit,
-  `answer_key_completion_report` delivery, reviewed AI-facit overlay submit,
-  reviewed apply artifacts, and final PDF/QTI readiness through HuleEdu Gateway.
+- Rerun/unblock `PR-0324` authenticated proof after `PR-0328`: use the same
+  byte-identical `.dxe`, prove advisory first submit, explicit retry if stale
+  provider-only replay appears, `answer_key_completion_report` delivery,
+  reviewed facitförslag overlay submit, reviewed apply artifacts, and final
+  PDF/QTI readiness through HuleEdu Gateway.
 - Do not reopen the public grant/read-lease lane unless HuleEdu or Sir Convert
   changes the accepted contract.

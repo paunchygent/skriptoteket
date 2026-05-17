@@ -59,7 +59,8 @@ export type ExamConverterUiInspectionFixtureId =
   | "complete-qti-ready"
   | "complete-qti-blocked"
   | "missing-facit"
-  | "ai-facit-review";
+  | "ai-facit-review"
+  | "provider-only-advisory-failure";
 
 export type ExamConverterUiInspectionFixture = {
   activeInspectionMode: ExamConverterInspectionMode;
@@ -113,7 +114,13 @@ const COMPLETE_QUESTIONS: FixtureQuestion[] = [
 ];
 
 export const EXAM_CONVERTER_UI_INSPECTION_FIXTURE_IDS: readonly ExamConverterUiInspectionFixtureId[] =
-  ["complete-qti-ready", "complete-qti-blocked", "missing-facit", "ai-facit-review"] as const;
+  [
+    "complete-qti-ready",
+    "complete-qti-blocked",
+    "missing-facit",
+    "ai-facit-review",
+    "provider-only-advisory-failure",
+  ] as const;
 
 export function isExamConverterUiInspectionEnabled(
   env: ImportMetaEnvLike = import.meta.env,
@@ -403,6 +410,35 @@ function completionReportForMissingFacit(): ExamConverterAnswerKeyCompletionRepo
   });
 }
 
+function providerOnlyFailureCompletionReport(): ExamConverterAnswerKeyCompletionReport {
+  return parseAnswerKeyCompletionReport({
+    completionReportSha256: "sha256:ui-inspection-provider-failure-report",
+    payload: {
+      completion_mode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+      items: [
+        {
+          answer_payload: null,
+          backend_failure_code: "provider_request_failed",
+          backend_status: "failed",
+          candidate_id: null,
+          candidate_payload_digest: null,
+          decision_state: "manual_follow_up_required",
+          item_id: "item-001",
+          item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+          model_profile: null,
+          prompt_template_version: null,
+          provider_profile_id: null,
+          schema_name: null,
+          schema_version: null,
+          sequence: 1,
+          validation_state: "manual_follow_up_required",
+        },
+      ],
+      schema_version: ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
+    },
+  });
+}
+
 const MISSING_FACIT_QUESTIONS = [missingFacitQuestion(), ...COMPLETE_QUESTIONS.slice(1, 8)];
 
 const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions> = {
@@ -437,6 +473,16 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
   "missing-facit": {
     activeInspectionMode: "questions",
     id: "missing-facit",
+    qtiAvailability: SIR_CONVERT_ARTIFACT_UNAVAILABLE,
+    qtiExportEnabled: false,
+    qtiReadiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
+    qtiReasonCode: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
+    questions: MISSING_FACIT_QUESTIONS,
+  },
+  "provider-only-advisory-failure": {
+    activeInspectionMode: "questions",
+    answerCompletionReport: providerOnlyFailureCompletionReport(),
+    id: "provider-only-advisory-failure",
     qtiAvailability: SIR_CONVERT_ARTIFACT_UNAVAILABLE,
     qtiExportEnabled: false,
     qtiReadiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,

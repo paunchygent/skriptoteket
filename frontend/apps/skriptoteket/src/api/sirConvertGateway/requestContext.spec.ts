@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 import { SirConvertGatewayError } from "./errors";
 import { buildDigiExamMigrationJobSpec } from "./jobSpec";
 import { prepareDigiExamMigrationRequestContext, stableJsonStringify } from "./requestContext";
+import {
+  DIGIEXAM_COMPLETION_MODE_APPLY_REVIEWED_MISSING_MACHINE_MARKED,
+  DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+} from "./contractValues";
 
 function dxeFile(content = "exam"): File {
   return new File([content], "exam.dxe", { type: "application/octet-stream" });
@@ -90,6 +94,52 @@ describe("Sir Convert DigiExam request context", () => {
     });
 
     expect(context.correlationId).toBe("corr_teacher_action_001");
+  });
+
+  it("scopes advisory retry attempts to deterministic idempotency only", async () => {
+    const file = dxeFile("same payload");
+    const firstSubmit = await prepareDigiExamMigrationRequestContext({
+      completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+      file,
+    });
+    const firstRetry = await prepareDigiExamMigrationRequestContext({
+      advisoryRetryAttempt: 1,
+      completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+      file: dxeFile("same payload"),
+    });
+    const duplicateFirstRetry = await prepareDigiExamMigrationRequestContext({
+      advisoryRetryAttempt: 1,
+      completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+      file: dxeFile("same payload"),
+    });
+    const secondRetry = await prepareDigiExamMigrationRequestContext({
+      advisoryRetryAttempt: 2,
+      completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+      file: dxeFile("same payload"),
+    });
+
+    expect(firstRetry.idempotencyKey).not.toBe(firstSubmit.idempotencyKey);
+    expect(duplicateFirstRetry.idempotencyKey).toBe(firstRetry.idempotencyKey);
+    expect(secondRetry.idempotencyKey).not.toBe(firstRetry.idempotencyKey);
+    expect(firstRetry.correlationId).toBe(firstSubmit.correlationId);
+    expect(firstRetry.jobSpec).toEqual(firstSubmit.jobSpec);
+    expect(stableJsonStringify(firstRetry.jobSpec)).not.toContain("advisoryRetryAttempt");
+  });
+
+  it("rejects invalid or non-advisory retry attempts", async () => {
+    await expect(
+      prepareDigiExamMigrationRequestContext({
+        advisoryRetryAttempt: 0,
+        file: dxeFile(),
+      }),
+    ).rejects.toThrow("advisoryRetryAttempt must be a positive integer.");
+    await expect(
+      prepareDigiExamMigrationRequestContext({
+        advisoryRetryAttempt: 1,
+        completionMode: DIGIEXAM_COMPLETION_MODE_APPLY_REVIEWED_MISSING_MACHINE_MARKED,
+        file: dxeFile(),
+      }),
+    ).rejects.toThrow("advisoryRetryAttempt is only valid for advisory completion submits.");
   });
 
   it("serializes JobSpec keys stably for hashing and multipart submission", () => {

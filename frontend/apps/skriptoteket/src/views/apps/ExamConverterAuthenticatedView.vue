@@ -29,6 +29,7 @@ import {
   REVIEWED_COMPLETION_MODE,
   useExamConverterAiFacitReview,
 } from "./exam-converter-authenticated/useExamConverterAiFacitReview";
+import { isProviderOnlyAdvisoryFailureReport } from "./exam-converter-authenticated/digiexamAnswerKeyCompletionReport";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
 import { useExamConverterFileActions } from "./exam-converter-authenticated/useExamConverterFileActions";
@@ -73,6 +74,7 @@ const {
 } = useExamConverterReviewArtifacts();
 const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
 const acceptedCurrentState = ref(false);
+const advisoryRetryAttempt = ref(0);
 const reviewedCompletionApplied = ref(false);
 const {
   acceptAllSuggestions,
@@ -133,12 +135,22 @@ const showAiReviewPanel = computed(() => {
   );
 });
 
+const canRetryAdvisoryFacitSuggestion = computed(() => {
+  return (
+    !isConversionRunning.value &&
+    isProviderOnlyAdvisoryFailureReport(
+      reviewProjection.value?.answerKeyCompletionReport ?? null,
+    )
+  );
+});
+
 function handleResetLocalChoices(): void {
   cancelRuntime();
   resetReviewArtifacts();
   resetAiFacitReview();
   resetFileActions();
   acceptedCurrentState.value = false;
+  advisoryRetryAttempt.value = 0;
   reviewedCompletionApplied.value = false;
   activeInspectionMode.value = "questions";
   resetLocalChoices();
@@ -201,11 +213,43 @@ async function handleStartConversion(): Promise<void> {
   resetAiFacitReview();
   resetFileActions();
   acceptedCurrentState.value = false;
+  advisoryRetryAttempt.value = 0;
   reviewedCompletionApplied.value = false;
   activeInspectionMode.value = "questions";
   startConversion();
   try {
     const result = await submitAndPoll({
+      completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+      sourceFile: sourceSelection.file,
+      supportingFile: selectedSupportingFile.value?.file ?? null,
+      targetSelection: { ...selectedTargetFormats.value },
+    });
+    if (result) {
+      await finishRuntimeResult(result, null, true);
+    }
+  } catch {
+    failConversion();
+  }
+}
+
+async function handleRetryAdvisoryFacitSuggestion(): Promise<void> {
+  const sourceSelection = selectedSourceFile.value;
+  if (!sourceSelection || !canRetryAdvisoryFacitSuggestion.value) {
+    return;
+  }
+
+  const nextRetryAttempt = advisoryRetryAttempt.value + 1;
+  advisoryRetryAttempt.value = nextRetryAttempt;
+  resetReviewArtifacts();
+  resetAiFacitReview();
+  resetFileActions();
+  acceptedCurrentState.value = false;
+  reviewedCompletionApplied.value = false;
+  activeInspectionMode.value = "questions";
+  startConversion();
+  try {
+    const result = await submitAndPoll({
+      advisoryRetryAttempt: nextRetryAttempt,
       completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
       sourceFile: sourceSelection.file,
       supportingFile: selectedSupportingFile.value?.file ?? null,
@@ -352,6 +396,7 @@ onMounted(async () => {
         :accepted-ai-suggestion-count="acceptedSuggestionCount"
         :ai-facit-decisions="aiFacitDecisions"
         :can-apply-reviewed-suggestions="canApplyReviewedSuggestions"
+        :can-retry-advisory-facit-suggestion="canRetryAdvisoryFacitSuggestion"
         :can-use-files="canUseFiles"
         :file-action-states="fileActionStates"
         :focused-ai-review-action="focusedReviewAction"
@@ -373,6 +418,7 @@ onMounted(async () => {
         @leave-suggestion="leaveSuggestion"
         @open-questions="selectInspectionMode('questions')"
         @review-action-focused="focusReviewAction"
+        @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
         @save-file="handleSaveFile"
         @source-file-selected="selectSourceFile"
       />

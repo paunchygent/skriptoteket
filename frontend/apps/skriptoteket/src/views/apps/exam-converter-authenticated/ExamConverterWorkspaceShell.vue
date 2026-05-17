@@ -15,6 +15,7 @@
 
 import { FileText, Upload } from "lucide-vue-next";
 
+import ExamConverterAdvisoryRetryPanel from "./ExamConverterAdvisoryRetryPanel.vue";
 import ExamConverterAiReviewActionPanel from "./ExamConverterAiReviewActionPanel.vue";
 import ExamConverterFilesReadinessList from "./ExamConverterFilesReadinessList.vue";
 import ExamConverterInspectionTabs from "./ExamConverterInspectionTabs.vue";
@@ -42,6 +43,7 @@ defineProps<{
   acceptedAiSuggestionCount: number;
   aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
   canApplyReviewedSuggestions: boolean;
+  canRetryAdvisoryFacitSuggestion: boolean;
   canUseFiles: boolean;
   fileActionStates: ExamConverterFileActionStates;
   focusedAiReviewAction: ExamConverterAiFacitReviewAction;
@@ -68,6 +70,7 @@ const emit = defineEmits<{
   leaveSuggestion: [question: ExamConverterReviewProjection["questions"][number]];
   openQuestions: [];
   inspectionModeSelected: [mode: ExamConverterInspectionMode];
+  retryAdvisoryFacitSuggestion: [];
   reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
   saveFile: [file: ExamConverterReviewFile];
   sourceFileSelected: [file: File];
@@ -126,6 +129,11 @@ function handleDrop(event: DragEvent): void {
           :missing-count="reviewProjection.report.attentionQuestionCount"
           @accept-current-state="emit('acceptCurrentState')"
           @review-questions="emit('openQuestions')"
+        />
+        <ExamConverterAdvisoryRetryPanel
+          v-if="canRetryAdvisoryFacitSuggestion"
+          :disabled="false"
+          @retry="emit('retryAdvisoryFacitSuggestion')"
         />
       </template>
       <div

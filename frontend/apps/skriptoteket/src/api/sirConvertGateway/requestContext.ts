@@ -10,6 +10,9 @@
  *   - `client.ts` forwards the resulting headers unchanged across the edge.
  */
 
+import {
+  DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+} from "./contractValues";
 import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS, buildDigiExamMigrationJobSpec } from "./jobSpec";
 import type { DigiExamMigrationSubmitParams, SirConvertRequestContext } from "./types";
 
@@ -96,13 +99,35 @@ async function buildDigestParts(
   if (params.ingestionOverlay) {
     digestParts.push(`digiexam_ingestion_overlay:${stableJsonStringify(params.ingestionOverlay)}`);
   }
+  if (params.advisoryRetryAttempt !== null && params.advisoryRetryAttempt !== undefined) {
+    digestParts.push(`advisory_retry_attempt:${params.advisoryRetryAttempt}`);
+  }
   return digestParts;
+}
+
+function validateAdvisoryRetryAttempt(
+  params: DigiExamMigrationSubmitParams,
+  jobSpec: SirConvertRequestContext["jobSpec"],
+): void {
+  if (params.advisoryRetryAttempt === null || params.advisoryRetryAttempt === undefined) {
+    return;
+  }
+  if (!Number.isSafeInteger(params.advisoryRetryAttempt) || params.advisoryRetryAttempt < 1) {
+    throw new Error("advisoryRetryAttempt must be a positive integer.");
+  }
+  if (
+    jobSpec.digiexam_migration_options.completion_mode !==
+    DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED
+  ) {
+    throw new Error("advisoryRetryAttempt is only valid for advisory completion submits.");
+  }
 }
 
 export async function prepareDigiExamMigrationRequestContext(
   params: DigiExamMigrationSubmitParams,
 ): Promise<SirConvertRequestContext> {
   const jobSpec = buildDigiExamMigrationJobSpec(params);
+  validateAdvisoryRetryAttempt(params, jobSpec);
   const sourceLabel = buildSourceLabel(params);
   const jobSpecJson = stableJsonStringify(jobSpec);
   const correlationId =
