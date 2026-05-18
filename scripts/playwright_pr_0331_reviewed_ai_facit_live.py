@@ -45,6 +45,7 @@ DEFAULT_SOURCE_DXE = Path(
 )
 APP_PATH = "/apps/documents.conversion_hub"
 SIR_CONVERT_MARKER = "/sir-convert/v2/convert/"
+PUBLIC_SIR_CONVERT_GATEWAY_BASE = "https://api.hule.education/sir-convert/v2/convert"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -137,6 +138,7 @@ def _summarize_response(response: Response) -> dict[str, Any]:
         "path": _safe_url(response.url),
         "status": response.status,
         "content_type": response.headers.get("content-type"),
+        "idempotent_replay": response.headers.get("x-idempotent-replay", "").lower() == "true",
     }
     if "application/json" not in (entry["content_type"] or ""):
         return entry
@@ -182,28 +184,24 @@ def _public_request_summary(entry: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in entry.items() if not key.startswith("_")}
 
 
+def _gateway_artifact_path(base_url: str, *, job_id: str, artifact_key: str) -> str:
+    suffix = f"/jobs/{job_id}/artifacts/{artifact_key}"
+    if base_url.rstrip("/") == "https://skriptoteket.hule.education":
+        return f"{PUBLIC_SIR_CONVERT_GATEWAY_BASE}{suffix}"
+    return f"/sir-convert/v2/convert{suffix}"
+
+
 def _browser_fetch_json(page: Page, *, path: str, correlation_id: str, artifact_dir: Path) -> Any:
-    result = page.evaluate(
-        """async ({ path, correlationId }) => {
-            const response = await fetch(path, {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Accept": "application/json",
-                    "X-Correlation-ID": correlationId,
-                },
-            });
-            const text = await response.text();
-            let body = null;
-            try {
-                body = text ? JSON.parse(text) : null;
-            } catch {
-                body = text;
-            }
-            return { ok: response.ok, status: response.status, body };
-        }""",
-        {"path": path, "correlationId": correlation_id},
+    response = page.context.request.get(
+        path,
+        headers={"Accept": "application/json", "X-Correlation-ID": correlation_id},
     )
+    text = response.text()
+    try:
+        body = json.loads(text) if text else None
+    except json.JSONDecodeError:
+        body = text
+    result = {"ok": response.ok, "status": response.status, "body": body}
     if not result["ok"]:
         failure_path = artifact_dir / "browser-fetch-failure.json"
         failure_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -316,6 +314,24 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 else None
             ),
         )
+        run_idempotency_token = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+        submit_sequence = 0
+
+        def force_fresh_idempotency(route: Any) -> None:
+            nonlocal submit_sequence
+            request = route.request
+            if SIR_CONVERT_MARKER in request.url and request.method == "POST":
+                submit_sequence += 1
+                headers = dict(request.headers)
+                headers["idempotency-key"] = (
+                    f"idem_skriptoteket_pr0331_{run_idempotency_token}_{submit_sequence}"
+                )
+                route.continue_(headers=headers)
+                return
+            route.continue_()
+
+        page.route("**/sir-convert/v2/convert/jobs?*", force_fresh_idempotency)
+        summary["fresh_idempotency_override"] = True
 
         try:
             login_via_auth_entry(
@@ -399,13 +415,21 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
 
             effective_ir = _browser_fetch_json(
                 page,
-                path=f"/sir-convert/v2/convert/jobs/{reviewed_job_id}/artifacts/effective_ir_json",
+                path=_gateway_artifact_path(
+                    args.base_url,
+                    job_id=reviewed_job_id,
+                    artifact_key="effective_ir_json",
+                ),
                 correlation_id=reviewed_correlation_id,
                 artifact_dir=artifact_dir,
             )
             ingestion_overlay_report = _browser_fetch_json(
                 page,
-                path=f"/sir-convert/v2/convert/jobs/{reviewed_job_id}/artifacts/ingestion_overlay_report",
+                path=_gateway_artifact_path(
+                    args.base_url,
+                    job_id=reviewed_job_id,
+                    artifact_key="ingestion_overlay_report",
+                ),
                 correlation_id=reviewed_correlation_id,
                 artifact_dir=artifact_dir,
             )

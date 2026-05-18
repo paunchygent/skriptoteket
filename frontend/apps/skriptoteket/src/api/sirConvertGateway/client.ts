@@ -13,7 +13,7 @@
 
 import { useAuthStore } from "../../stores/auth";
 import { DIGIEXAM_INGESTION_OVERLAY_FILENAME } from "./contractValues";
-import { toSirConvertGatewayUrl } from "./urls";
+import { toSirConvertGatewayProductUrl, toSirConvertGatewayUrl } from "./urls";
 import { prepareDigiExamMigrationRequestContext, stableJsonStringify } from "./requestContext";
 import {
   parseArtifactManifest,
@@ -25,6 +25,10 @@ import {
 } from "./parsers";
 import type {
   DigiExamMigrationSubmitParams,
+  ExamAuthoringCorrectionSourceStateIssueRequest,
+  ExamAuthoringCorrectionSourceStateIssueResult,
+  ExamAuthoringCorrectionsApplyRequest,
+  ExamAuthoringCorrectionsApplyResult,
   SirConvertArtifactBlob,
   SirConvertArtifactManifest,
   SirConvertJob,
@@ -58,6 +62,14 @@ export type SirConvertGatewayClient = {
     artifactKey: string;
     correlationId: string;
   }): Promise<SirConvertArtifactBlob>;
+  issueExamAuthoringCorrectionSourceState(params: {
+    correlationId: string;
+    request: ExamAuthoringCorrectionSourceStateIssueRequest;
+  }): Promise<ExamAuthoringCorrectionSourceStateIssueResult>;
+  applyExamAuthoringCorrections(params: {
+    correlationId: string;
+    request: ExamAuthoringCorrectionsApplyRequest;
+  }): Promise<ExamAuthoringCorrectionsApplyResult>;
 };
 
 function buildJsonHeaders(correlationId: string): Headers {
@@ -74,6 +86,19 @@ async function buildUnsafeHeaders(params: {
 }): Promise<Headers> {
   const headers = buildJsonHeaders(params.correlationId);
   headers.set("Idempotency-Key", params.idempotencyKey);
+  const csrfToken = await params.ensureCsrfToken();
+  if (csrfToken) {
+    headers.set("X-CSRF-Token", csrfToken);
+  }
+  return headers;
+}
+
+async function buildUnsafeJsonHeaders(params: {
+  correlationId: string;
+  ensureCsrfToken: CsrfTokenProvider;
+}): Promise<Headers> {
+  const headers = buildJsonHeaders(params.correlationId);
+  headers.set("Content-Type", "application/json");
   const csrfToken = await params.ensureCsrfToken();
   if (csrfToken) {
     headers.set("X-CSRF-Token", csrfToken);
@@ -197,6 +222,44 @@ export function createSirConvertGatewayClient(
         artifactKey: params.artifactKey,
       };
     },
+
+    async issueExamAuthoringCorrectionSourceState(params) {
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayProductUrl("/exam-authoring/corrections/source-state/issue"),
+        {
+          method: "POST",
+          headers: await buildUnsafeJsonHeaders({
+            correlationId: params.correlationId,
+            ensureCsrfToken: dependencies.ensureCsrfToken,
+          }),
+          body: stableJsonStringify(params.request),
+          credentials: "include",
+        },
+      );
+      return await readJsonOrThrow(
+        response,
+        (payload) => payload as ExamAuthoringCorrectionSourceStateIssueResult,
+      );
+    },
+
+    async applyExamAuthoringCorrections(params) {
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayProductUrl("/exam-authoring/corrections/apply"),
+        {
+          method: "POST",
+          headers: await buildUnsafeJsonHeaders({
+            correlationId: params.correlationId,
+            ensureCsrfToken: dependencies.ensureCsrfToken,
+          }),
+          body: stableJsonStringify(params.request),
+          credentials: "include",
+        },
+      );
+      return await readJsonOrThrow(
+        response,
+        (payload) => payload as ExamAuthoringCorrectionsApplyResult,
+      );
+    },
   };
 }
 
@@ -241,4 +304,18 @@ export async function downloadDigiExamMigrationArtifact(params: {
   correlationId: string;
 }): Promise<SirConvertArtifactBlob> {
   return await createBrowserSirConvertGatewayClient().downloadDigiExamMigrationArtifact(params);
+}
+
+export async function issueExamAuthoringCorrectionSourceState(params: {
+  correlationId: string;
+  request: ExamAuthoringCorrectionSourceStateIssueRequest;
+}): Promise<ExamAuthoringCorrectionSourceStateIssueResult> {
+  return await createBrowserSirConvertGatewayClient().issueExamAuthoringCorrectionSourceState(params);
+}
+
+export async function applyExamAuthoringCorrections(params: {
+  correlationId: string;
+  request: ExamAuthoringCorrectionsApplyRequest;
+}): Promise<ExamAuthoringCorrectionsApplyResult> {
+  return await createBrowserSirConvertGatewayClient().applyExamAuthoringCorrections(params);
 }

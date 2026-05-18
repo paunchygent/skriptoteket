@@ -43,6 +43,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`
 - ADR-0086 Exam Converter teacher-owned correction overlay boundary:
   `docs/adr/adr-0086-exam-converter-teacher-owned-correction-overlay-boundary.md`
+- ADR-0087 Exam Converter durable correction sessions with stateless apply:
+  `docs/adr/adr-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md`
 - Exam Converter UI content model:
   `docs/reference/ref-exam-converter-ui-content-model-v1.md`
 - Exam Converter reviewed AI-facit contract map for PR-0331:
@@ -218,6 +220,20 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0332-st-21-03-exam-converter-teacher-owned-correction-overlay-contract.md`
 - Review gate for PR-0332 teacher-owned correction overlay contract:
   `docs/backlog/reviews/review-pr-0332-teacher-owned-correction-overlay-contract.md`
+- ST-21-04 Exam Converter durable teacher correction sessions:
+  `docs/backlog/stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md`
+- Review gate for ST-21-04 durable teacher correction sessions:
+  `docs/backlog/reviews/review-st-21-04-exam-converter-durable-teacher-correction-sessions.md`
+- ST-21-04 correction-session backend aggregate and persistence:
+  `docs/backlog/prs/pr-0333-st-21-04-correction-session-backend-aggregate-and-persistence.md`
+- ST-21-04 correction-session API and generated types:
+  `docs/backlog/prs/pr-0334-st-21-04-correction-session-api-and-generated-types.md`
+- ST-21-04 correction-session replay orchestration:
+  `docs/backlog/prs/pr-0335-st-21-04-correction-session-replay-orchestration.md`
+- ST-21-04 correction-session frontend readback integration:
+  `docs/backlog/prs/pr-0336-st-21-04-correction-session-frontend-readback-integration.md`
+- ST-21-04 correction-session browser and artifact proof:
+  `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:

@@ -51,6 +51,26 @@ export type DigiExamTargetReadinessRow =
   SirConvertOpenApiSchemas["DigiExamTargetReadinessRowV1"];
 export type DigiExamTargetReadinessReport =
   SirConvertOpenApiSchemas["DigiExamTargetReadinessReportV1"];
+export type ExamAuthoringCorrectionSourceBinding =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionSourceBindingV1"];
+export type ExamAuthoringCorrectionSourceItem =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionSourceItemV1"];
+export type ExamAuthoringCorrectionSourceState =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionSourceStateV1"];
+export type ExamAuthoringCorrectionSourceStateIssueRequest =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionSourceStateIssueRequestV1"];
+export type ExamAuthoringCorrectionSourceStateIssueResult =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionSourceStateIssueResultV1"];
+export type ExamAuthoringCorrectionsApplyRequest =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionsApplyRequestV1"];
+export type ExamAuthoringCorrectionsApplyResult =
+  SirConvertOpenApiSchemas["ExamAuthoringCorrectionsApplyResultV1"];
+export type ExamAuthoringCorrectionEntry =
+  ExamAuthoringCorrectionsApplyRequest["corrections"][number];
+export type ExamAuthoringNonMatchingCorrectionEntry = Exclude<
+  ExamAuthoringCorrectionEntry,
+  { kind: "manual_matching_answer_key" }
+>;
 
 export type SirConvertJobStatus =
   | "submitted"

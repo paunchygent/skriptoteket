@@ -32,7 +32,10 @@ import type {
   ExamConverterAiFacitReviewAction,
   ExamConverterReviewedSuggestionDecision,
 } from "./useExamConverterAiFacitReview";
-import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
+import type {
+  ExamConverterItemTextPatchCorrection,
+  ExamConverterManualAnswerKeyCorrection,
+} from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterFileActionStates } from "./useExamConverterFileActions";
 import type { ExamConverterResultStripState } from "./useExamConverterConversionState";
 import type { ExamConverterReviewArtifactsStatus } from "./useExamConverterReviewArtifacts";
@@ -48,6 +51,7 @@ defineProps<{
   canUseFiles: boolean;
   fileActionStates: ExamConverterFileActionStates;
   focusedAiReviewAction: ExamConverterAiFacitReviewAction;
+  isCorrectionApplying: boolean;
   resultStrip: ExamConverterResultStripState | null;
   reviewProjection: ExamConverterReviewProjection | null;
   requiresReviewDecision: boolean;
@@ -68,6 +72,10 @@ const emit = defineEmits<{
   applyManualAnswerKey: [
     question: ExamConverterReviewProjection["questions"][number],
     answerKey: ExamConverterManualAnswerKeyCorrection,
+  ];
+  applyItemTextPatch: [
+    question: ExamConverterReviewProjection["questions"][number],
+    patch: ExamConverterItemTextPatchCorrection,
   ];
   applyPointCorrection: [
     question: ExamConverterReviewProjection["questions"][number],
@@ -207,9 +215,11 @@ function handleDrop(event: DragEvent): void {
           <ExamConverterQuestionReviewShell
             v-if="activeInspectionMode === 'questions'"
             :ai-facit-decisions="aiFacitDecisions"
+            :is-correction-applying="isCorrectionApplying"
             :projection="reviewProjection"
             @accept-edited-choice-suggestion="(question, correctIds) => emit('acceptEditedChoiceSuggestion', question, correctIds)"
             @accept-suggestion="emit('acceptSuggestion', $event)"
+            @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
             @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
             @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
             @review-action-focused="emit('reviewActionFocused', $event)"

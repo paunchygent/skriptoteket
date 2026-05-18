@@ -14,7 +14,9 @@
 
 import { computed, onMounted, ref } from "vue";
 
-import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
+import type {
+  SirConvertTerminalResult,
+} from "../../api/sirConvertGateway";
 import {
   DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
 } from "../../api/sirConvertGateway/contractValues";
@@ -29,19 +31,14 @@ import {
   REVIEWED_COMPLETION_MODE,
   useExamConverterAiFacitReview,
 } from "./exam-converter-authenticated/useExamConverterAiFacitReview";
-import {
-  buildManualAnswerKeyOverlay,
-  buildPointCorrectionOverlay,
-  type ExamConverterManualAnswerKeyCorrection,
-} from "./exam-converter-authenticated/digiexamTeacherCorrectionOverlay";
 import { isProviderOnlyAdvisoryFailureReport } from "./exam-converter-authenticated/digiexamAnswerKeyCompletionReport";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
 import { useExamConverterFileActions } from "./exam-converter-authenticated/useExamConverterFileActions";
 import { useExamConverterReviewArtifacts } from "./exam-converter-authenticated/useExamConverterReviewArtifacts";
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
+import { useExamConverterUnifiedCorrections } from "./exam-converter-authenticated/useExamConverterUnifiedCorrections";
 import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated/useExamConverterConversionState";
-import type { ExamConverterQuestionReviewRow } from "./exam-converter-authenticated/digiexamIrReviewParser";
 const props = defineProps<{
   inspectionFixtureId?: string | null;
 }>();
@@ -69,7 +66,14 @@ const {
   resultStrip,
   startConversion,
 } = useExamConverterConversionState();
-const { cancelRuntime, lastCorrelationId, lastJobId, submitAndPoll } =
+const {
+  applyCorrectionRequest,
+  cancelRuntime,
+  issueCorrectionSourceState,
+  lastCorrelationId,
+  lastJobId,
+  submitAndPoll,
+} =
   useExamConverterAuthenticatedRuntime();
 const {
   loadReviewArtifacts,
@@ -99,6 +103,30 @@ const {
   resetFileActions,
   saveFile,
 } = useExamConverterFileActions();
+const {
+  applyItemTextPatch: handleApplyItemTextPatch,
+  applyManualAnswerKey: handleApplyManualAnswerKey,
+  applyPointCorrection: handleApplyPointCorrection,
+  isCorrectionApplying,
+} = useExamConverterUnifiedCorrections({
+  acceptedCurrentState,
+  activeInspectionMode,
+  failConversion,
+  finishConversion,
+  isConversionRunning,
+  lastJobId,
+  resetFileActions,
+  reviewedCompletionApplied,
+  reviewProjection,
+  runtime: {
+    applyCorrectionRequest,
+    issueCorrectionSourceState,
+  },
+});
+
+const isExamConverterBusy = computed(
+  () => isConversionRunning.value || isCorrectionApplying.value,
+);
 
 const hasSelectedTargetFormat = computed(
   () => selectedTargetFormats.value.pdf || selectedTargetFormats.value.qti,
@@ -108,7 +136,7 @@ const canStartConversion = computed(
   () =>
     selectedSourceFile.value !== null &&
     hasSelectedTargetFormat.value &&
-    !isConversionRunning.value,
+    !isExamConverterBusy.value,
 );
 
 const requiresReviewDecision = computed(() => {
@@ -129,7 +157,7 @@ const canUseFiles = computed(() => {
 const canApplyReviewedSuggestions = computed(() => {
   return (
     reviewedCompletionOverlay.value(reviewProjection.value) !== null &&
-    !isConversionRunning.value
+    !isExamConverterBusy.value
   );
 });
 
@@ -143,6 +171,7 @@ const showAiReviewPanel = computed(() => {
 const canRetryAdvisoryFacitSuggestion = computed(() => {
   return (
     !isConversionRunning.value &&
+    !isCorrectionApplying.value &&
     isProviderOnlyAdvisoryFailureReport(
       reviewProjection.value?.answerKeyCompletionReport ?? null,
     )
@@ -275,7 +304,7 @@ function selectInspectionMode(mode: ExamConverterInspectionMode): void {
 async function handleAcceptCurrentState(): Promise<void> {
   const sourceSelection = selectedSourceFile.value;
   const overlay = reviewProjection.value?.acceptedStateOverlay ?? null;
-  if (!sourceSelection || !overlay || isConversionRunning.value) {
+  if (!sourceSelection || !overlay || isExamConverterBusy.value) {
     return;
   }
   resetFileActions();
@@ -301,7 +330,7 @@ async function handleAcceptCurrentState(): Promise<void> {
 async function handleApplyReviewedSuggestions(): Promise<void> {
   const sourceSelection = selectedSourceFile.value;
   const overlay = reviewedCompletionOverlay.value(reviewProjection.value);
-  if (!sourceSelection || !overlay || isConversionRunning.value) {
+  if (!sourceSelection || !overlay || isExamConverterBusy.value) {
     return;
   }
   resetFileActions();
@@ -318,74 +347,6 @@ async function handleApplyReviewedSuggestions(): Promise<void> {
       acceptedCurrentState.value = false;
       reviewedCompletionApplied.value = true;
       await finishRuntimeResult(result, "files", false);
-    }
-  } catch {
-    failConversion();
-  }
-}
-
-async function handleApplyPointCorrection(
-  question: ExamConverterQuestionReviewRow,
-  maxScore: number,
-): Promise<void> {
-  const sourceSelection = selectedSourceFile.value;
-  const projection = reviewProjection.value;
-  if (!sourceSelection || !projection || isConversionRunning.value) {
-    return;
-  }
-  const overlay = buildPointCorrectionOverlay({
-    maxScore,
-    projection,
-    question,
-  });
-  resetFileActions();
-  startConversion();
-  try {
-    const result = await submitAndPoll({
-      completionMode: ACCEPT_CURRENT_STATE_COMPLETION_MODE,
-      ingestionOverlay: overlay,
-      sourceFile: sourceSelection.file,
-      supportingFile: selectedSupportingFile.value?.file ?? null,
-      targetSelection: { ...selectedTargetFormats.value },
-    });
-    if (result) {
-      acceptedCurrentState.value = false;
-      reviewedCompletionApplied.value = false;
-      await finishRuntimeResult(result, "questions", false);
-    }
-  } catch {
-    failConversion();
-  }
-}
-
-async function handleApplyManualAnswerKey(
-  question: ExamConverterQuestionReviewRow,
-  answerKey: ExamConverterManualAnswerKeyCorrection,
-): Promise<void> {
-  const sourceSelection = selectedSourceFile.value;
-  const projection = reviewProjection.value;
-  if (!sourceSelection || !projection || isConversionRunning.value) {
-    return;
-  }
-  const overlay = buildManualAnswerKeyOverlay({
-    answerKey,
-    projection,
-    question,
-  });
-  resetFileActions();
-  startConversion();
-  try {
-    const result = await submitAndPoll({
-      completionMode: ACCEPT_CURRENT_STATE_COMPLETION_MODE,
-      ingestionOverlay: overlay,
-      sourceFile: sourceSelection.file,
-      supportingFile: selectedSupportingFile.value?.file ?? null,
-      targetSelection: { ...selectedTargetFormats.value },
-    });
-    if (result) {
-      acceptedCurrentState.value = false;
-      reviewedCompletionApplied.value = false;
-      await finishRuntimeResult(result, "questions", false);
     }
   } catch {
     failConversion();
@@ -450,7 +411,7 @@ onMounted(async () => {
     >
       <ExamConverterWorkflowRailShell
         :can-start-conversion="canStartConversion"
-        :is-conversion-running="isConversionRunning"
+        :is-conversion-running="isExamConverterBusy"
         :selected-supporting-file="selectedSupportingFile"
         :selected-source-file="selectedSourceFile"
         :selected-target-formats="selectedTargetFormats"
@@ -473,6 +434,7 @@ onMounted(async () => {
         :can-use-files="canUseFiles"
         :file-action-states="fileActionStates"
         :focused-ai-review-action="focusedReviewAction"
+        :is-correction-applying="isCorrectionApplying"
         :result-strip="resultStrip"
         :review-projection="reviewProjection"
         :requires-review-decision="requiresReviewDecision"
@@ -484,6 +446,7 @@ onMounted(async () => {
         @accept-all-ai-suggestions="acceptAllSuggestions(reviewProjection)"
         @accept-edited-choice-suggestion="acceptEditedChoiceSuggestion"
         @accept-suggestion="acceptSuggestion"
+        @apply-item-text-patch="handleApplyItemTextPatch"
         @apply-manual-answer-key="handleApplyManualAnswerKey"
         @apply-point-correction="handleApplyPointCorrection"
         @apply-reviewed-suggestions="handleApplyReviewedSuggestions"

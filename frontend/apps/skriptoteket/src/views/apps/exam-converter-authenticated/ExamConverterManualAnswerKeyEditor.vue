@@ -28,6 +28,7 @@ import type {
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
 
 const props = defineProps<{
+  disabled: boolean;
   question: ExamConverterQuestionReviewRow;
 }>();
 
@@ -77,6 +78,7 @@ const canApplyManualAnswerKey = computed(() => {
   if (!canRenderEditor.value || props.question.sourceItemFingerprint === null) {
     return false;
   }
+  if (props.disabled) return false;
   if (isChoiceItem.value) {
     return selectedChoiceIds.value.length > 0;
   }
@@ -145,20 +147,26 @@ watch(() => props.question.itemId, resetDrafts, { immediate: true });
       <li
         v-for="alternative in question.alternatives"
         :key="alternative.id"
-        class="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 border border-navy/15 bg-panel px-2 py-2"
+        class="min-w-0"
       >
         <button
           type="button"
-          class="inline-grid h-7 w-7 place-items-center border text-xs font-semibold leading-none"
-          :class="selectedChoiceIds.includes(Number.parseInt(alternative.id, 10)) ? 'border-success bg-success text-panel' : 'border-navy/25 bg-panel text-navy'"
+          class="grid w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 border border-navy/15 bg-panel px-2 py-2 text-left transition-colors hover:border-action/45 hover:bg-action/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:opacity-50"
           :data-test="`exam-converter-manual-choice-${alternative.id}`"
+          :disabled="disabled"
+          :aria-pressed="selectedChoiceIds.includes(Number.parseInt(alternative.id, 10))"
           @click="toggleChoice(alternative.id)"
         >
-          {{ alternative.id }}
+          <span
+            class="inline-grid h-7 w-7 place-items-center border text-xs font-semibold leading-none"
+            :class="selectedChoiceIds.includes(Number.parseInt(alternative.id, 10)) ? 'border-success bg-success text-panel' : 'border-navy/25 bg-panel text-navy'"
+          >
+            {{ alternative.id }}
+          </span>
+          <span class="leading-relaxed">
+            {{ alternative.text }}
+          </span>
         </button>
-        <span class="leading-relaxed">
-          {{ alternative.text }}
-        </span>
       </li>
     </ol>
     <div
@@ -177,6 +185,7 @@ watch(() => props.question.itemId, resetDrafts, { immediate: true });
           v-model="gapAnswerDrafts[gap.id]"
           class="min-h-10 border border-navy/35 bg-panel px-3 text-sm text-navy"
           :data-test="`exam-converter-manual-gap-${gap.id}`"
+          :disabled="disabled"
           type="text"
         >
       </label>

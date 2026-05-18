@@ -85,6 +85,28 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     expect(wrapper.text()).toContain("Vilket påstående beskriver DNA bäst?");
   });
 
+  it("renders producer-returned persisted corrections for browser proof", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { inspectionFixtureId: "persisted-corrections" },
+    });
+
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Vilket påstående beskriver DNA bäst?");
+    expect(wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.get('[data-test="exam-converter-effective-answer-key-summary"]').text()).toContain(
+      "2",
+    );
+    expect(
+      wrapper.get('[data-test="exam-converter-effective-choice-2"]').classes(),
+    ).not.toContain("bg-success");
+    expect(
+      wrapper.get('[data-test="exam-converter-effective-choice-ordinal-2"]').classes(),
+    ).toContain("bg-success");
+  });
+
   it("renders provider-only advisory failure with the approved retry affordance", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView, {
       props: { inspectionFixtureId: "provider-only-advisory-failure" },

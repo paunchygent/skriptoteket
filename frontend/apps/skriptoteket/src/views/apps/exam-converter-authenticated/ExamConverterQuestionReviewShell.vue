@@ -19,7 +19,10 @@ import type {
   ExamConverterReviewedSuggestionDecision,
 } from "./useExamConverterAiFacitReview";
 import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
+import type { ExamConverterItemTextPatchCorrection } from "./digiexamTeacherCorrectionOverlay";
+import { numericAlternativeId } from "./examConverterPersistedCorrectionDisplay";
 import ExamConverterEffectiveAnswerKeySummary from "./ExamConverterEffectiveAnswerKeySummary.vue";
+import ExamConverterItemTextPatchEditor from "./ExamConverterItemTextPatchEditor.vue";
 import ExamConverterManualAnswerKeyEditor from "./ExamConverterManualAnswerKeyEditor.vue";
 import ExamConverterPointCorrectionEditor from "./ExamConverterPointCorrectionEditor.vue";
 import ExamConverterQuestionNavigator from "./ExamConverterQuestionNavigator.vue";
@@ -27,6 +30,7 @@ import ExamConverterQuestionTable from "./ExamConverterQuestionTable.vue";
 
 const props = defineProps<{
   aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
+  isCorrectionApplying: boolean;
   projection: ExamConverterReviewProjection;
 }>();
 
@@ -36,6 +40,10 @@ const emit = defineEmits<{
   applyManualAnswerKey: [
     question: ExamConverterQuestionReviewRow,
     answerKey: ExamConverterManualAnswerKeyCorrection,
+  ];
+  applyItemTextPatch: [
+    question: ExamConverterQuestionReviewRow,
+    patch: ExamConverterItemTextPatchCorrection,
   ];
   applyPointCorrection: [question: ExamConverterQuestionReviewRow, maxScore: number];
   reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
@@ -80,11 +88,6 @@ function choiceIdsForQuestion(question: ExamConverterQuestionReviewRow): number[
 function gapFillAnswersForQuestion(question: ExamConverterQuestionReviewRow) {
   const payload = question.llmCandidate?.answerPayload;
   return payload?.kind === "gap_fill" ? payload.gapAnswers : [];
-}
-
-function numericAlternativeId(id: string): number | null {
-  const value = Number.parseInt(id, 10);
-  return Number.isInteger(value) ? value : null;
 }
 
 function isSuggestedAlternative(
@@ -218,26 +221,30 @@ watch(
             <li
               v-for="alternative in selectedQuestion.alternatives"
               :key="alternative.id"
-              class="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 border px-2 py-2"
-              :class="isSuggestedAlternative(selectedQuestion, alternative.id) ? 'border-terracotta bg-terracotta/10' : 'border-navy/15 bg-panel'"
+              class="min-w-0"
             >
               <button
                 type="button"
-                class="inline-grid h-7 w-7 place-items-center border text-xs font-semibold leading-none"
-                :class="isSuggestedAlternative(selectedQuestion, alternative.id) ? 'border-terracotta bg-terracotta text-panel' : 'border-navy/25 bg-panel text-navy'"
+                class="grid w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 border border-navy/15 bg-panel px-2 py-2 text-left transition-colors hover:border-action/45 hover:bg-action/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:opacity-50"
                 :disabled="editingItemId !== selectedQuestion.itemId"
+                :aria-pressed="isSuggestedAlternative(selectedQuestion, alternative.id)"
                 @click="toggleEditedAlternative(alternative.id)"
               >
-                {{ alternative.id }}
+                <span
+                  class="inline-grid h-7 w-7 place-items-center border text-xs font-semibold leading-none"
+                  :class="isSuggestedAlternative(selectedQuestion, alternative.id) ? 'border-terracotta bg-terracotta text-panel' : 'border-navy/25 bg-panel text-navy'"
+                >
+                  {{ alternative.id }}
+                </span>
+                <span class="leading-relaxed">
+                  {{ alternative.text }}
+                </span>
+                <CheckCircle2
+                  v-if="isSuggestedAlternative(selectedQuestion, alternative.id)"
+                  class="h-5 w-5 text-terracotta"
+                  aria-hidden="true"
+                />
               </button>
-              <span class="leading-relaxed">
-                {{ alternative.text }}
-              </span>
-              <CheckCircle2
-                v-if="isSuggestedAlternative(selectedQuestion, alternative.id)"
-                class="h-5 w-5 text-terracotta"
-                aria-hidden="true"
-              />
             </li>
           </ol>
           <ol
@@ -314,6 +321,17 @@ watch(
                 {{ selectedQuestion.typeLabel }}
               </dd>
             </div>
+            <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+              <dt class="text-navy">
+                Rubrik
+              </dt>
+              <dd
+                class="text-navy"
+                data-test="exam-converter-effective-item-title"
+              >
+                {{ selectedQuestion.title }}
+              </dd>
+            </div>
             <div
               v-if="selectedQuestion.pointsLabel !== '—'"
               class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3"
@@ -334,10 +352,17 @@ watch(
             <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
           </dl>
           <ExamConverterPointCorrectionEditor
+            :disabled="isCorrectionApplying"
             :question="selectedQuestion"
             @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
           />
+          <ExamConverterItemTextPatchEditor
+            :disabled="isCorrectionApplying"
+            :question="selectedQuestion"
+            @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
+          />
           <ExamConverterManualAnswerKeyEditor
+            :disabled="isCorrectionApplying"
             :question="selectedQuestion"
             @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
           />

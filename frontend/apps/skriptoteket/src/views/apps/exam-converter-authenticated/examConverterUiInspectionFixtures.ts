@@ -22,6 +22,7 @@ import {
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_ARTIFACT_WARNINGS_REPORT,
   DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
+  DIGIEXAM_ITEM_TYPE_GAP_FILL,
   DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
   DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
@@ -47,6 +48,8 @@ import {
 import {
   parseAnswerKeyCompletionReport,
   type ExamConverterAnswerKeyCompletionReport,
+  type ExamConverterEffectiveAnswerKeyByItem,
+  type ExamConverterEffectivePointCorrectionByItem,
 } from "./digiexamAnswerKeyCompletionReport";
 import {
   parseExamConverterReviewProjection,
@@ -59,6 +62,7 @@ export type ExamConverterUiInspectionFixtureId =
   | "complete-qti-ready"
   | "complete-qti-blocked"
   | "missing-facit"
+  | "persisted-corrections"
   | "ai-facit-review"
   | "provider-only-advisory-failure";
 
@@ -78,6 +82,7 @@ type ImportMetaEnvLike = {
 type FixtureQuestion = {
   alternatives?: string[];
   answerKeyProvenance: string;
+  gaps?: string[];
   itemId: string;
   itemType: DigiExamItemType;
   maxScore: number | null;
@@ -89,6 +94,8 @@ type FixtureQuestion = {
 type FixtureOptions = {
   activeInspectionMode: ExamConverterInspectionMode;
   answerCompletionReport?: ExamConverterAnswerKeyCompletionReport | null;
+  effectiveAnswerKeysByItem?: ExamConverterEffectiveAnswerKeyByItem | null;
+  effectivePointCorrectionsByItem?: ExamConverterEffectivePointCorrectionByItem | null;
   id: ExamConverterUiInspectionFixtureId;
   qtiAvailability: SirConvertArtifactAvailability;
   qtiExportEnabled: boolean;
@@ -118,6 +125,7 @@ export const EXAM_CONVERTER_UI_INSPECTION_FIXTURE_IDS: readonly ExamConverterUiI
     "complete-qti-ready",
     "complete-qti-blocked",
     "missing-facit",
+    "persisted-corrections",
     "ai-facit-review",
     "provider-only-advisory-failure",
   ] as const;
@@ -183,11 +191,98 @@ function missingFacitQuestion(): FixtureQuestion {
   };
 }
 
+function persistedCorrectionQuestions(): FixtureQuestion[] {
+  return [
+    {
+      alternatives: [
+        "DNA bär det genetiska materialet.",
+        "Proteiner lagras i cellkärnan.",
+        "Syre bildas när nervceller delar sig.",
+        "Hormoner skapar kromosomer.",
+      ],
+      answerKeyProvenance: "absent",
+      itemId: "item-001",
+      itemType: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+      maxScore: 1,
+      prompt: "Vilket påstående beskriver DNA bäst?",
+      sequence: 1,
+      title: "Fråga 1",
+    },
+    {
+      answerKeyProvenance: "absent",
+      gaps: ["gap-001", "gap-002"],
+      itemId: "item-002",
+      itemType: DIGIEXAM_ITEM_TYPE_GAP_FILL,
+      maxScore: 1,
+      prompt: "Fyll i luckorna om ekosystem.",
+      sequence: 2,
+      title: "Fråga 2",
+    },
+    {
+      answerKeyProvenance: "dxe_populated_key",
+      itemId: "item-003",
+      itemType: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+      maxScore: null,
+      prompt: "Beskriv fotosyntesens delar.",
+      sequence: 3,
+      title: "Fotosyntesens delar",
+    },
+  ];
+}
+
+function persistedCorrectionAnswerKeys(): ExamConverterEffectiveAnswerKeyByItem {
+  const gapAnswers: Record<string, string>[] = [
+    { "gap-001": "kretslopp" },
+    { "gap-002": "näringsväv" },
+  ];
+  return new Map([
+    [
+      "item-001",
+      {
+        correct_alternative_ids: [2],
+        lineage: null,
+        provenance: "teacher_provided",
+      },
+    ],
+    [
+      "item-002",
+      {
+        correct_gap_answers: gapAnswers,
+        lineage: null,
+        provenance: "teacher_provided",
+      },
+    ],
+  ]);
+}
+
+function persistedCorrectionPointCorrections(): ExamConverterEffectivePointCorrectionByItem {
+  return new Map([
+    [
+      "item-003",
+      {
+        effective_max_score: 3,
+        kind: "item_points",
+        source_item_fingerprint: "sha256:item-003",
+        source_max_score: null,
+      },
+    ],
+  ]);
+}
+
+function unresolvedAnswerKeyQuestionCount(options: FixtureOptions): number {
+  return options.questions.filter(
+    (question) =>
+      question.answerKeyProvenance === "absent" &&
+      !options.effectiveAnswerKeysByItem?.has(question.itemId),
+  ).length;
+}
+
 function buildFixture(options: FixtureOptions): ExamConverterUiInspectionFixture {
   const projection = parseExamConverterReviewProjection({
     answerKeyCompletionReport: options.answerCompletionReport ?? null,
     artifactManifest: buildArtifactManifest(options),
-    effectiveAnswerKeysByItem: null,
+    effectiveAnswerKeysByItem: options.effectiveAnswerKeysByItem ?? null,
+    effectivePointCorrectionsByItem: options.effectivePointCorrectionsByItem ?? null,
     irJson: buildIrPayload(options.questions),
     migrationManifest: buildMigrationManifest(options.questions),
     targetReadinessReport: buildTargetReadinessReport(options),
@@ -228,16 +323,15 @@ function buildArtifactManifest(options: FixtureOptions): SirConvertArtifactManif
     job_id: `job_${options.id}`,
     manual_follow_up: {
       artifact_key: DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
-      count: options.questions.filter((question) => question.answerKeyProvenance === "absent")
-        .length,
-      required: options.questions.some((question) => question.answerKeyProvenance === "absent"),
+      count: unresolvedAnswerKeyQuestionCount(options),
+      required: unresolvedAnswerKeyQuestionCount(options) > 0,
     },
     readiness: {
       artifact_key: DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
       exportable_targets: options.qtiExportEnabled
         ? [DIGIEXAM_TARGET_EXAMNET_PDF, DIGIEXAM_TARGET_QTI_PACKAGE]
         : [DIGIEXAM_TARGET_EXAMNET_PDF],
-      review_required: options.questions.some((question) => question.answerKeyProvenance === "absent"),
+      review_required: unresolvedAnswerKeyQuestionCount(options) > 0,
     },
     schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     source: {
@@ -329,7 +423,7 @@ function buildIrPayload(questions: FixtureQuestion[]) {
       answer_key: { provenance: question.answerKeyProvenance },
       embedded_asset_references: [],
       embedded_assets: [],
-      gaps: [],
+      gaps: question.gaps?.map((gapId) => ({ gap_id: gapId })) ?? [],
       item_id: question.itemId,
       item_type: question.itemType,
       max_score: question.maxScore,
@@ -478,6 +572,17 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
     qtiReadiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
     qtiReasonCode: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
     questions: MISSING_FACIT_QUESTIONS,
+  },
+  "persisted-corrections": {
+    activeInspectionMode: "questions",
+    effectiveAnswerKeysByItem: persistedCorrectionAnswerKeys(),
+    effectivePointCorrectionsByItem: persistedCorrectionPointCorrections(),
+    id: "persisted-corrections",
+    qtiAvailability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+    qtiExportEnabled: true,
+    qtiReadiness: DIGIEXAM_TARGET_READY,
+    qtiReasonCode: "target_available",
+    questions: persistedCorrectionQuestions(),
   },
   "provider-only-advisory-failure": {
     activeInspectionMode: "questions",

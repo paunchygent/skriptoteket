@@ -37,6 +37,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0315_phone_rules_active_management.py",
     "playwright_pr_0316_smart_history_first_run_soft_degrade.py",
     "playwright_pr_0331_reviewed_ai_facit_live.py",
+    "playwright_pr_0332_teacher_corrections_live.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

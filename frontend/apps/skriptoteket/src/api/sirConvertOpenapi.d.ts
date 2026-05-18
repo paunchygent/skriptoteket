@@ -242,7 +242,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v2/exam-authoring/matching/manual-answer-key/apply": {
+    "/v2/exam-authoring/corrections/apply": {
         parameters: {
             query?: never;
             header?: never;
@@ -251,8 +251,43 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Apply Matching Manual Answer Key */
-        post: operations["apply_matching_manual_answer_key_v2_exam_authoring_matching_manual_answer_key_apply_post"];
+        /** Apply Exam Authoring Corrections */
+        post: operations["apply_exam_authoring_corrections_v2_exam_authoring_corrections_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/exam-authoring/corrections/source-state/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue Exam Authoring Correction Source State */
+        post: operations["issue_exam_authoring_correction_source_state_v2_exam_authoring_corrections_source_state_issue_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/operator/structured-llm/provider-routing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Provider Routing Settings */
+        get: operations["get_provider_routing_settings_v2_operator_structured_llm_provider_routing_get"];
+        /** Replace Provider Routing Settings */
+        put: operations["replace_provider_routing_settings_v2_operator_structured_llm_provider_routing_put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -509,6 +544,40 @@ export interface components {
          */
         DigiExamAnswerKeyCompletionModeV2: "source_evidence_only" | "local_llm_suggest_missing_machine_marked" | "local_llm_apply_missing_machine_marked_with_review";
         /**
+         * DigiExamAnswerKeyCompletionProviderLineageV1
+         * @description Report-level admitted provider route lineage.
+         */
+        DigiExamAnswerKeyCompletionProviderLineageV1: {
+            /** Endpoint Kind */
+            endpoint_kind: string;
+            /** Model */
+            model: string;
+            /** Output Mode */
+            output_mode: string;
+            /** Provider Family */
+            provider_family: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+            /**
+             * Reasoning Effort
+             * @default null
+             */
+            reasoning_effort: string | null;
+            /** Remote Provider Authorized */
+            remote_provider_authorized: boolean;
+            /** Route Class */
+            route_class: string;
+            /** Route Decision */
+            route_decision: string;
+            /** Settings Version */
+            settings_version: number;
+            /**
+             * Text Verbosity
+             * @default null
+             */
+            text_verbosity: string | null;
+        };
+        /**
          * DigiExamAnswerKeyCompletionReportItemV1
          * @description One advisory answer-key candidate lineage report item.
          */
@@ -556,6 +625,8 @@ export interface components {
              * @default null
              */
             prompt_template_version: string | null;
+            /** @default null */
+            provider_error_diagnostic: components["schemas"]["StructuredLLMProviderErrorDiagnosticV1"] | null;
             /**
              * Provider Profile Id
              * @default null
@@ -593,6 +664,8 @@ export interface components {
             items: components["schemas"]["DigiExamAnswerKeyCompletionReportItemV1"][];
             /** Job Id */
             job_id: string;
+            /** @default null */
+            provider_lineage: components["schemas"]["DigiExamAnswerKeyCompletionProviderLineageV1"] | null;
             /**
              * Schema Version
              * @constant
@@ -1431,6 +1504,642 @@ export interface components {
             teacher_action: string;
         };
         /**
+         * ExamAuthoringCandidateLineageV1
+         * @description Bounded advisory-candidate lineage without raw provider data.
+         */
+        ExamAuthoringCandidateLineageV1: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Candidate Payload Digest */
+            candidate_payload_digest: string;
+            /** Completion Report Sha256 */
+            completion_report_sha256: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+            /** Schema Name */
+            schema_name: string;
+            /** Schema Version */
+            schema_version: string;
+            /**
+             * Validation State
+             * @constant
+             */
+            validation_state: "valid";
+        };
+        /**
+         * ExamAuthoringCandidateSuppressionCorrectionV1
+         * @description Candidate suppression entry reserved for unified runtime migration.
+         */
+        ExamAuthoringCandidateSuppressionCorrectionV1: {
+            candidate_lineage: components["schemas"]["ExamAuthoringCandidateLineageV1"];
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "candidate_suppression";
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+            /**
+             * Suppression Reason
+             * @constant
+             */
+            suppression_reason: "teacher_rejected_candidate";
+        };
+        /**
+         * ExamAuthoringChoiceAnswerKeyV1
+         * @description Current source-owned choice answer-key state.
+         */
+        ExamAuthoringChoiceAnswerKeyV1: {
+            /**
+             * Correct Choice Ids
+             * @default []
+             */
+            correct_choice_ids: string[];
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed" | "mixed";
+        };
+        /**
+         * ExamAuthoringChoiceInteractionV1
+         * @description Source-neutral choice interaction carried by source state.
+         */
+        ExamAuthoringChoiceInteractionV1: {
+            answer_key: components["schemas"]["ExamAuthoringChoiceAnswerKeyV1"];
+            /** Choices */
+            choices: components["schemas"]["ExamAuthoringChoiceOptionV1"][];
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["ExamAuthoringSourceEvidenceV1"][];
+            /** Interaction Id */
+            interaction_id: string;
+            /**
+             * Interaction Kind
+             * @enum {string}
+             */
+            interaction_kind: "single_choice" | "multiple_choice" | "multiple_response";
+            /** Max Correct Choices */
+            max_correct_choices: number;
+            /** Min Correct Choices */
+            min_correct_choices: number;
+            /**
+             * Schema Version
+             * @default exam_authoring_ir_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_ir_v1";
+        };
+        /**
+         * ExamAuthoringChoiceOptionV1
+         * @description One source-owned visible option in a choice interaction.
+         */
+        ExamAuthoringChoiceOptionV1: {
+            /** Choice Id */
+            choice_id: string;
+            /** Order */
+            order: number;
+            /** Source Id */
+            source_id?: string | null;
+            /** Text */
+            text: string;
+        };
+        /**
+         * ExamAuthoringCorrectionAcceptedEntryV1
+         * @description Accepted correction summary without raw submitted payloads.
+         */
+        ExamAuthoringCorrectionAcceptedEntryV1: {
+            /** Applied Fields */
+            applied_fields: string[];
+            /** Effective Provenance */
+            effective_provenance?: string | null;
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Kind */
+            kind: string;
+            /** Sequence */
+            sequence: number;
+        };
+        /**
+         * ExamAuthoringCorrectionArtifactAvailabilityRowV1
+         * @description Artifact availability projection for corrected authoring state.
+         */
+        ExamAuthoringCorrectionArtifactAvailabilityRowV1: {
+            /**
+             * Artifact Key
+             * @enum {string}
+             */
+            artifact_key: "examnet_pdf" | "qti_package";
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "available" | "unavailable";
+            /** Unavailable Code */
+            unavailable_code?: string | null;
+        };
+        /**
+         * ExamAuthoringCorrectionRejectedEntryV1
+         * @description Rejected correction summary without raw submitted payloads.
+         */
+        ExamAuthoringCorrectionRejectedEntryV1: {
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Kind */
+            kind: string;
+            /** Message Key */
+            message_key: string;
+            /** Reason Code */
+            reason_code: string;
+            /** Retryable */
+            retryable: boolean;
+            /** Sequence */
+            sequence: number;
+            /** Teacher Action */
+            teacher_action: string;
+        };
+        /**
+         * ExamAuthoringCorrectionReportV1
+         * @description Accepted and rejected correction report for consumers.
+         */
+        ExamAuthoringCorrectionReportV1: {
+            /** Accepted Entries */
+            accepted_entries: components["schemas"]["ExamAuthoringCorrectionAcceptedEntryV1"][];
+            /** Rejected Entries */
+            rejected_entries: components["schemas"]["ExamAuthoringCorrectionRejectedEntryV1"][];
+            /**
+             * Schema Version
+             * @default exam_authoring_correction_report_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_correction_report_v1";
+        };
+        /**
+         * ExamAuthoringCorrectionSourceBindingV1
+         * @description Request-level binding to the producer-returned authoring state.
+         */
+        ExamAuthoringCorrectionSourceBindingV1: {
+            /**
+             * Source Authoring Schema Version
+             * @constant
+             */
+            source_authoring_schema_version: "exam_authoring_ir_v1";
+            /** Source Bundle Id */
+            source_bundle_id?: string | null;
+            /** Source File Sha256 */
+            source_file_sha256?: string | null;
+            /** Source State Sha256 */
+            source_state_sha256: string;
+            /** Source State Signature */
+            source_state_signature: string;
+        };
+        /**
+         * ExamAuthoringCorrectionSourceItemV1
+         * @description One producer-returned source item used for correction binding.
+         */
+        ExamAuthoringCorrectionSourceItemV1: {
+            /**
+             * Choice Interactions
+             * @default []
+             */
+            choice_interactions: components["schemas"]["ExamAuthoringChoiceInteractionV1"][];
+            /**
+             * Gap Open Cloze Interactions
+             * @default []
+             */
+            gap_open_cloze_interactions: components["schemas"]["ExamAuthoringGapOpenClozeInteractionV1"][];
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /**
+             * Matching Interactions
+             * @default []
+             */
+            matching_interactions: components["schemas"]["ExamAuthoringMatchingInteractionV1"][];
+            /** Max Score */
+            max_score?: number | null;
+            /** Prompt Html */
+            prompt_html?: string | null;
+            /**
+             * Prompt Lines
+             * @default []
+             */
+            prompt_lines: string[];
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * ExamAuthoringCorrectionSourceStateIssueRequestV1
+         * @description Producer request for issuing a signed correction source-state bundle.
+         */
+        ExamAuthoringCorrectionSourceStateIssueRequestV1: {
+            /** Expected Source State Sha256 */
+            expected_source_state_sha256?: string | null;
+            /** Job Id */
+            job_id: string;
+            /**
+             * Schema Version
+             * @default exam_authoring_correction_source_state_issue_request_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_correction_source_state_issue_request_v1";
+        };
+        /**
+         * ExamAuthoringCorrectionSourceStateIssueResultV1
+         * @description Signed source-state bundle that downstream consumers can echo.
+         */
+        ExamAuthoringCorrectionSourceStateIssueResultV1: {
+            /**
+             * Schema Version
+             * @default exam_authoring_correction_source_state_issue_result_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_correction_source_state_issue_result_v1";
+            source_authoring_state: components["schemas"]["ExamAuthoringCorrectionSourceStateV1"];
+            source_binding: components["schemas"]["ExamAuthoringCorrectionSourceBindingV1"];
+        };
+        /**
+         * ExamAuthoringCorrectionSourceStateV1
+         * @description Sanitized producer-returned state used for correction validation.
+         */
+        ExamAuthoringCorrectionSourceStateV1: {
+            /** Items */
+            items: components["schemas"]["ExamAuthoringCorrectionSourceItemV1"][];
+            /**
+             * Schema Version
+             * @default exam_authoring_correction_source_state_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_correction_source_state_v1";
+            /**
+             * Source Authoring Schema Version
+             * @constant
+             */
+            source_authoring_schema_version: "exam_authoring_ir_v1";
+            /** Source State Sha256 */
+            source_state_sha256: string;
+        };
+        /**
+         * ExamAuthoringCorrectionTargetReadinessReportV1
+         * @description Source-neutral target readiness report for a correction batch.
+         */
+        ExamAuthoringCorrectionTargetReadinessReportV1: {
+            /**
+             * Schema Version
+             * @default target_readiness_report_v1
+             * @constant
+             */
+            schema_version: "target_readiness_report_v1";
+            /** Targets */
+            targets: components["schemas"]["ExamAuthoringCorrectionTargetReadinessRowV1"][];
+        };
+        /**
+         * ExamAuthoringCorrectionTargetReadinessRowV1
+         * @description Target readiness projection for corrected authoring state.
+         */
+        ExamAuthoringCorrectionTargetReadinessRowV1: {
+            /** Export Enabled */
+            export_enabled: boolean;
+            /** Item Id */
+            item_id?: string | null;
+            /** Message Key */
+            message_key: string;
+            /**
+             * Readiness
+             * @enum {string}
+             */
+            readiness: "ready" | "target_validation_failed" | "unsupported_target_shape";
+            /** Reason Code */
+            reason_code: string;
+            /** Sequence */
+            sequence?: number | null;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "examnet_pdf" | "qti_package";
+        };
+        /**
+         * ExamAuthoringCorrectionsApplyRequestV1
+         * @description Request body for applying a source-neutral correction batch.
+         */
+        ExamAuthoringCorrectionsApplyRequestV1: {
+            /** Corrections */
+            corrections: (components["schemas"]["ExamAuthoringItemTextPatchCorrectionV1"] | components["schemas"]["ExamAuthoringPointCorrectionV1"] | components["schemas"]["ExamAuthoringManualChoiceAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringManualGapOpenClozeAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringManualMatchingAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringReviewDecisionCorrectionV1"] | components["schemas"]["ExamAuthoringCandidateSuppressionCorrectionV1"])[];
+            /** Request Id */
+            request_id: string;
+            /**
+             * Requested Targets
+             * @default [
+             *       "examnet_pdf",
+             *       "qti_package"
+             *     ]
+             */
+            requested_targets: ("examnet_pdf" | "qti_package")[];
+            /**
+             * Schema Version
+             * @default exam_authoring_corrections_apply_request_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_corrections_apply_request_v1";
+            source_authoring_state: components["schemas"]["ExamAuthoringCorrectionSourceStateV1"];
+            source_binding: components["schemas"]["ExamAuthoringCorrectionSourceBindingV1"];
+        };
+        /**
+         * ExamAuthoringCorrectionsApplyResultV1
+         * @description Producer-owned result returned after correction application.
+         */
+        ExamAuthoringCorrectionsApplyResultV1: {
+            /** Artifact Availability */
+            artifact_availability: components["schemas"]["ExamAuthoringCorrectionArtifactAvailabilityRowV1"][];
+            correction_report: components["schemas"]["ExamAuthoringCorrectionReportV1"];
+            effective_state: components["schemas"]["ExamAuthoringEffectiveStateV1"];
+            /** Request Id */
+            request_id: string;
+            /**
+             * Schema Version
+             * @default exam_authoring_corrections_apply_result_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_corrections_apply_result_v1";
+            source_binding: components["schemas"]["ExamAuthoringCorrectionSourceBindingV1"];
+            target_readiness: components["schemas"]["ExamAuthoringCorrectionTargetReadinessReportV1"];
+        };
+        /**
+         * ExamAuthoringEffectiveStateV1
+         * @description Effective authoring state projection after accepted corrections.
+         */
+        ExamAuthoringEffectiveStateV1: {
+            /** Effective State Sha256 */
+            effective_state_sha256: string;
+            /** Items */
+            items: components["schemas"]["ExamAuthoringCorrectionSourceItemV1"][];
+            /**
+             * Schema Version
+             * @default exam_authoring_effective_state_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_effective_state_v1";
+        };
+        /**
+         * ExamAuthoringGapAcceptedValueV1
+         * @description One current accepted value bound to a source-owned gap.
+         */
+        ExamAuthoringGapAcceptedValueV1: {
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["ExamAuthoringSourceEvidenceV1"][];
+            /** Gap Id */
+            gap_id: string;
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed" | "mixed";
+            /** Value */
+            value: string;
+        };
+        /**
+         * ExamAuthoringGapAnswerKeyV1
+         * @description Current source-owned gap/open-cloze answer-key state.
+         */
+        ExamAuthoringGapAnswerKeyV1: {
+            /**
+             * Accepted Values
+             * @default []
+             */
+            accepted_values: components["schemas"]["ExamAuthoringGapAcceptedValueV1"][];
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed" | "mixed";
+        };
+        /**
+         * ExamAuthoringGapAnswerV1
+         * @description Accepted values for one source-bound gap.
+         */
+        ExamAuthoringGapAnswerV1: {
+            /** Accepted Values */
+            accepted_values: string[];
+            /** Gap Id */
+            gap_id: string;
+        };
+        /**
+         * ExamAuthoringGapOpenClozeInteractionV1
+         * @description Source-neutral gap/open-cloze interaction carried by source state.
+         */
+        ExamAuthoringGapOpenClozeInteractionV1: {
+            answer_key: components["schemas"]["ExamAuthoringGapAnswerKeyV1"];
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["ExamAuthoringSourceEvidenceV1"][];
+            /** Gaps */
+            gaps: components["schemas"]["ExamAuthoringGapV1"][];
+            /** Interaction Id */
+            interaction_id: string;
+            /** Normalization Profile */
+            normalization_profile: string;
+            /**
+             * Schema Version
+             * @default exam_authoring_ir_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_ir_v1";
+        };
+        /**
+         * ExamAuthoringGapPromptBindingV1
+         * @description One source-owned prompt/body locator for a gap placeholder.
+         */
+        ExamAuthoringGapPromptBindingV1: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "html_attribute" | "source_locator";
+            /** Locator */
+            locator: string;
+        };
+        /**
+         * ExamAuthoringGapV1
+         * @description One source-owned gap/open-cloze placeholder.
+         */
+        ExamAuthoringGapV1: {
+            /** Display Order */
+            display_order: number;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["ExamAuthoringSourceEvidenceV1"][];
+            /** Gap Id */
+            gap_id: string;
+            prompt_binding: components["schemas"]["ExamAuthoringGapPromptBindingV1"];
+            /** Required For Auto Evaluation */
+            required_for_auto_evaluation: boolean;
+        };
+        /**
+         * ExamAuthoringItemTextPatchCorrectionV1
+         * @description Visible item text patch entry applied against producer source state.
+         */
+        ExamAuthoringItemTextPatchCorrectionV1: {
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "item_text_patch";
+            /** Patches */
+            patches: components["schemas"]["ExamAuthoringItemTextPatchOperationV1"][];
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+        };
+        /**
+         * ExamAuthoringItemTextPatchOperationV1
+         * @description One visible text patch operation for source-neutral correction.
+         */
+        ExamAuthoringItemTextPatchOperationV1: {
+            /** Choice Id */
+            choice_id?: string | null;
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "item_title" | "stem_html" | "prompt_html" | "prompt_lines" | "body_html" | "visible_option_text" | "gap_prompt_text";
+            /** Gap Id */
+            gap_id?: string | null;
+            /** Value */
+            value: string;
+        };
+        /**
+         * ExamAuthoringManualChoiceAnswerKeyCorrectionV1
+         * @description Manual choice answer-key entry applied against producer source state.
+         */
+        ExamAuthoringManualChoiceAnswerKeyCorrectionV1: {
+            candidate_lineage?: components["schemas"]["ExamAuthoringCandidateLineageV1"] | null;
+            /** Correct Choice Ids */
+            correct_choice_ids: string[];
+            /** Entry Id */
+            entry_id: string;
+            /** Interaction Id */
+            interaction_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "manual_choice_answer_key";
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+            /**
+             * Submission Origin
+             * @enum {string}
+             */
+            submission_origin: "teacher_authored" | "accepted_advisory_candidate" | "teacher_edited_advisory_candidate";
+        };
+        /**
+         * ExamAuthoringManualGapOpenClozeAnswerKeyCorrectionV1
+         * @description Manual gap/open-cloze answer-key entry applied against source state.
+         */
+        ExamAuthoringManualGapOpenClozeAnswerKeyCorrectionV1: {
+            candidate_lineage?: components["schemas"]["ExamAuthoringCandidateLineageV1"] | null;
+            /** Entry Id */
+            entry_id: string;
+            /** Gap Answers */
+            gap_answers: components["schemas"]["ExamAuthoringGapAnswerV1"][];
+            /** Interaction Id */
+            interaction_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "manual_gap_open_cloze_answer_key";
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+            /**
+             * Submission Origin
+             * @enum {string}
+             */
+            submission_origin: "teacher_authored" | "accepted_advisory_candidate" | "teacher_edited_advisory_candidate";
+        };
+        /**
+         * ExamAuthoringManualMatchingAnswerKeyCorrectionV1
+         * @description Manual matching answer-key correction implemented by Task 330.
+         */
+        ExamAuthoringManualMatchingAnswerKeyCorrectionV1: {
+            candidate_lineage?: components["schemas"]["ExamAuthoringCandidateLineageV1"] | null;
+            /** Entry Id */
+            entry_id: string;
+            /** Interaction Id */
+            interaction_id: string;
+            /** Item Id */
+            item_id: string;
+            /**
+             * Item Type
+             * @constant
+             */
+            item_type: "matching";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "manual_matching_answer_key";
+            /** Pairs */
+            pairs: components["schemas"]["ExamAuthoringMatchingPairV1"][];
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+            /**
+             * Submission Origin
+             * @enum {string}
+             */
+            submission_origin: "teacher_authored" | "accepted_advisory_candidate" | "teacher_edited_advisory_candidate";
+        };
+        /**
          * ExamAuthoringMatchingAnswerKeyV1
          * @description Source-neutral matching answer key for effective authoring state.
          */
@@ -1445,24 +2154,6 @@ export interface components {
              * @enum {string}
              */
             provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed" | "mixed";
-        };
-        /**
-         * ExamAuthoringMatchingArtifactAvailabilityRowV1
-         * @description Artifact availability projection for a corrected matching interaction.
-         */
-        ExamAuthoringMatchingArtifactAvailabilityRowV1: {
-            /**
-             * Artifact Key
-             * @enum {string}
-             */
-            artifact_key: "examnet_pdf" | "qti_package";
-            /**
-             * Availability
-             * @enum {string}
-             */
-            availability: "available" | "unavailable";
-            /** Unavailable Code */
-            unavailable_code?: string | null;
         };
         /**
          * ExamAuthoringMatchingChoiceV1
@@ -1511,90 +2202,6 @@ export interface components {
             target_choices: components["schemas"]["ExamAuthoringMatchingChoiceV1"][];
         };
         /**
-         * ExamAuthoringMatchingManualAnswerKey
-         * @description Source-neutral matching manual answer-key submission.
-         */
-        ExamAuthoringMatchingManualAnswerKey: {
-            answer_key: components["schemas"]["ExamAuthoringMatchingManualAnswerKeyPayload"];
-            /** Interaction Id */
-            interaction_id: string;
-            /**
-             * Kind
-             * @constant
-             */
-            kind: "matching";
-            /**
-             * Schema Version
-             * @default exam_authoring_ir_v1
-             * @constant
-             */
-            schema_version: "exam_authoring_ir_v1";
-            /**
-             * Source Item Fingerprint
-             * @default null
-             */
-            source_item_fingerprint: string | null;
-        };
-        /**
-         * ExamAuthoringMatchingManualAnswerKeyApplyRequest
-         * @description Request body for applying a matching manual answer key.
-         */
-        ExamAuthoringMatchingManualAnswerKeyApplyRequest: {
-            exam_authoring_matching_manual_answer_key: components["schemas"]["ExamAuthoringMatchingManualAnswerKey"];
-            /**
-             * Requested Targets
-             * @default [
-             *       "examnet_pdf",
-             *       "qti_package"
-             *     ]
-             */
-            requested_targets: ("examnet_pdf" | "qti_package")[];
-            source_interaction: components["schemas"]["ExamAuthoringMatchingInteractionV1"];
-        };
-        /**
-         * ExamAuthoringMatchingManualAnswerKeyApplyResponse
-         * @description Producer-owned effective state returned after matching key application.
-         */
-        ExamAuthoringMatchingManualAnswerKeyApplyResponse: {
-            /** Artifact Availability */
-            artifact_availability: components["schemas"]["ExamAuthoringMatchingArtifactAvailabilityRowV1"][];
-            effective_interaction: components["schemas"]["ExamAuthoringMatchingInteractionV1"];
-            /**
-             * Schema Version
-             * @default exam_authoring_matching_apply_result_v1
-             * @constant
-             */
-            schema_version: "exam_authoring_matching_apply_result_v1";
-            /** Target Readiness */
-            target_readiness: components["schemas"]["ExamAuthoringMatchingTargetReadinessRowV1"][];
-        };
-        /**
-         * ExamAuthoringMatchingManualAnswerKeyPair
-         * @description One submitted source-to-target matching answer pair.
-         */
-        ExamAuthoringMatchingManualAnswerKeyPair: {
-            /** Source Id */
-            source_id: string;
-            /** Target Id */
-            target_id: string;
-        };
-        /**
-         * ExamAuthoringMatchingManualAnswerKeyPayload
-         * @description Whole-key matching answer payload with source-neutral provenance.
-         */
-        ExamAuthoringMatchingManualAnswerKeyPayload: {
-            /**
-             * Pairs
-             * @default []
-             */
-            pairs: components["schemas"]["ExamAuthoringMatchingManualAnswerKeyPair"][];
-            /**
-             * Provenance
-             * @enum {string}
-             */
-            provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed";
-        };
-        /**
          * ExamAuthoringMatchingPairV1
          * @description One directed source-to-target matching pair.
          */
@@ -1605,26 +2212,59 @@ export interface components {
             target_id: string;
         };
         /**
-         * ExamAuthoringMatchingTargetReadinessRowV1
-         * @description Target readiness projection for a corrected matching interaction.
+         * ExamAuthoringPointCorrectionV1
+         * @description Point correction entry applied against producer source state.
          */
-        ExamAuthoringMatchingTargetReadinessRowV1: {
-            /** Export Enabled */
-            export_enabled: boolean;
-            /** Message Key */
-            message_key: string;
+        ExamAuthoringPointCorrectionV1: {
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
             /**
-             * Readiness
+             * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            readiness: "ready" | "target_validation_failed" | "unsupported_target_shape";
-            /** Reason Code */
-            reason_code: string;
+            kind: "point_correction";
+            /** Max Score */
+            max_score: number;
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+        };
+        /**
+         * ExamAuthoringReviewDecisionCorrectionV1
+         * @description Review decision entry reserved for unified runtime migration.
+         */
+        ExamAuthoringReviewDecisionCorrectionV1: {
+            /** Accepted Targets */
+            accepted_targets: ("examnet_pdf" | "qti_package")[];
             /**
-             * Target
+             * Decision
+             * @constant
+             */
+            decision: "accept_current_state_for_export";
+            /** Decision Id */
+            decision_id: string;
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            target: "examnet_pdf" | "qti_package";
+            kind: "review_decision";
+            /** Note */
+            note?: string | null;
+            /** Sequence */
+            sequence: number;
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
         };
         /**
          * ExamAuthoringSourceEvidenceV1
@@ -2053,6 +2693,127 @@ export interface components {
             filename: string;
             format: components["schemas"]["SourceFormatV2"];
             kind: components["schemas"]["SourceKindV2"];
+        };
+        /**
+         * StructuredLLMInternalRouteClass
+         * @description Operator-internal route classes for structured provider routing.
+         * @enum {string}
+         */
+        StructuredLLMInternalRouteClass: "operator_default" | "operator_local_only" | "operator_api_only" | "operator_local_first";
+        /**
+         * StructuredLLMProviderErrorDiagnosticV1
+         * @description Redacted upstream provider HTTP error diagnostic.
+         */
+        StructuredLLMProviderErrorDiagnosticV1: {
+            /**
+             * Error Code
+             * @default null
+             */
+            error_code: string | null;
+            /**
+             * Error Param
+             * @default null
+             */
+            error_param: string | null;
+            /**
+             * Error Type
+             * @default null
+             */
+            error_type: string | null;
+            /**
+             * Message Sha256
+             * @default null
+             */
+            message_sha256: string | null;
+            /**
+             * Request Id
+             * @default null
+             */
+            request_id: string | null;
+            /**
+             * Status Code
+             * @default null
+             */
+            status_code: number | null;
+        };
+        /**
+         * StructuredLLMRoutingSettingsMutationResponseV2
+         * @description Response body for successful hot settings replacement.
+         */
+        StructuredLLMRoutingSettingsMutationResponseV2: {
+            audit_event: components["schemas"]["StructuredLLMSettingsAuditEventResponseV2"];
+            settings: components["schemas"]["StructuredLLMRoutingSettingsResponseV2"];
+        };
+        /**
+         * StructuredLLMRoutingSettingsRequestV2
+         * @description Operator request body for replacing hot provider routing settings.
+         */
+        StructuredLLMRoutingSettingsRequestV2: {
+            /** Active Provider Profile Id */
+            active_provider_profile_id: string;
+            /** Allowed Internal Route Classes */
+            allowed_internal_route_classes: components["schemas"]["StructuredLLMInternalRouteClass"][];
+            /** Operator Notes */
+            operator_notes?: string | null;
+            /**
+             * Remote Provider Authorized
+             * @default false
+             */
+            remote_provider_authorized: boolean;
+            /** Rollout Label */
+            rollout_label: string;
+            /** Version */
+            version: number;
+        };
+        /**
+         * StructuredLLMRoutingSettingsResponseV2
+         * @description Current hot provider routing settings.
+         */
+        StructuredLLMRoutingSettingsResponseV2: {
+            /** Active Provider Profile Id */
+            active_provider_profile_id: string;
+            /** Allowed Internal Route Classes */
+            allowed_internal_route_classes: string[];
+            /** Operator Notes */
+            operator_notes: string | null;
+            /** Remote Provider Authorized */
+            remote_provider_authorized: boolean;
+            /** Rollout Label */
+            rollout_label: string;
+            /** Version */
+            version: number;
+        };
+        /**
+         * StructuredLLMSettingsAuditEventResponseV2
+         * @description Metadata-only audit event response for a settings mutation.
+         */
+        StructuredLLMSettingsAuditEventResponseV2: {
+            /** Active Settings Version */
+            active_settings_version: number;
+            /** Actor Id */
+            actor_id: string;
+            /** Allowed Internal Route Classes */
+            allowed_internal_route_classes: string[];
+            /** Authority Source */
+            authority_source: string;
+            /** Correlation Id */
+            correlation_id: string;
+            /** Failure Code */
+            failure_code: string | null;
+            /** Previous Settings Version */
+            previous_settings_version: number;
+            /** Remote Provider Authorized */
+            remote_provider_authorized: boolean;
+            /** Requested Settings Version */
+            requested_settings_version: number;
+            /** Rollout Label */
+            rollout_label: string;
+            /** Selected Provider Profile */
+            selected_provider_profile: string;
+            /** Success */
+            success: boolean;
+            /** Timestamp */
+            timestamp: string;
         };
         /**
          * TableMode
@@ -2628,7 +3389,7 @@ export interface operations {
             };
         };
     };
-    apply_matching_manual_answer_key_v2_exam_authoring_matching_manual_answer_key_apply_post: {
+    apply_exam_authoring_corrections_v2_exam_authoring_corrections_apply_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2637,7 +3398,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ExamAuthoringMatchingManualAnswerKeyApplyRequest"];
+                "application/json": components["schemas"]["ExamAuthoringCorrectionsApplyRequestV1"];
             };
         };
         responses: {
@@ -2647,7 +3408,93 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamAuthoringMatchingManualAnswerKeyApplyResponse"];
+                    "application/json": components["schemas"]["ExamAuthoringCorrectionsApplyResultV1"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_exam_authoring_correction_source_state_v2_exam_authoring_corrections_source_state_issue_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamAuthoringCorrectionSourceStateIssueRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamAuthoringCorrectionSourceStateIssueResultV1"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_provider_routing_settings_v2_operator_structured_llm_provider_routing_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StructuredLLMRoutingSettingsResponseV2"];
+                };
+            };
+        };
+    };
+    replace_provider_routing_settings_v2_operator_structured_llm_provider_routing_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StructuredLLMRoutingSettingsRequestV2"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StructuredLLMRoutingSettingsMutationResponseV2"];
                 };
             };
             /** @description Validation Error */

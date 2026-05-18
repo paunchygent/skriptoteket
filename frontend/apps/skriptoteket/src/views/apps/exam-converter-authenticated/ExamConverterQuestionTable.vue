@@ -50,8 +50,8 @@ const emit = defineEmits<{
       <tr
         v-for="question in questions"
         :key="question.itemId"
-        class="cursor-pointer border-b border-navy/15 hover:bg-canvas"
-        :class="question.itemId === selectedItemId ? 'bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : undefined"
+        class="cursor-pointer border-b border-navy/15"
+        :class="question.itemId === selectedItemId ? 'bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : 'hover:bg-canvas'"
         :data-test="`exam-converter-question-row-${question.itemId}`"
         @click="emit('questionSelected', question)"
       >

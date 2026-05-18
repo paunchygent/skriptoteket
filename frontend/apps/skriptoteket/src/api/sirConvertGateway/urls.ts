@@ -3,8 +3,8 @@
  *
  * Purpose:
  *   Keep authenticated browser traffic on the HuleEdu-owned
- *   `/sir-convert/v2/convert` product edge in production and local proxy paths
- *   in development.
+ *   `/sir-convert/v2` product edge in production and local proxy paths in
+ *   development.
  *
  * Relationships:
  *   - `client.ts` uses this boundary for every Sir Convert request.
@@ -14,6 +14,7 @@
 export const DEFAULT_SIR_CONVERT_GATEWAY_BASE_URL =
   "https://api.hule.education/sir-convert/v2/convert";
 export const DEV_SIR_CONVERT_GATEWAY_BASE_PATH = "/sir-convert/v2/convert";
+export const SIR_CONVERT_GATEWAY_PRODUCT_ROOT_PATH = "/sir-convert/v2";
 
 const REQUIRED_GATEWAY_PATH = "/sir-convert/v2/convert";
 const LOCAL_GATEWAY_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
@@ -81,4 +82,10 @@ export function resolveSirConvertGatewayBaseUrl(): string {
 export function toSirConvertGatewayUrl(path: string): string {
   const suffix = path.startsWith("/") ? path : `/${path}`;
   return `${resolveSirConvertGatewayBaseUrl()}${suffix}`;
+}
+
+export function toSirConvertGatewayProductUrl(path: string): string {
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  const baseUrl = resolveSirConvertGatewayBaseUrl();
+  return `${baseUrl.slice(0, -"/convert".length)}${suffix}`;
 }

@@ -5,26 +5,29 @@ title: "Review: Teacher-owned correction overlay contract"
 status: approved
 owners: "agents"
 created: 2026-05-17
-updated: 2026-05-18
+updated: 2026-05-19
 reviewer: "Codex"
 prs:
   - PR-0332
 adrs:
   - ADR-0086
+  - ADR-0087
 links:
   - EPIC-21
   - ST-21-03
+  - ST-21-04
   - REF-exam-converter-reviewed-ai-facit-contract-map-pr-0331
 ---
 
 ## TL;DR
 
-`ADR-0086` now names an acceptable boundary: teacher corrections must go through
-a source-bound Sir Convert overlay and returned effective IR/artifact evidence,
-not browser-local state or parser mutation. The retained review approves the
-corrected decision and backlog contract while keeping `PR-0332` implementation
-blocked until Sir Convert Task 322 lands the points/scoring producer DTO and
-proof.
+`ADR-0086` names an acceptable overlay boundary: teacher corrections must go
+through source-bound Sir Convert apply and returned effective IR/artifact
+evidence, not browser-local state or parser mutation. This retained review no
+longer treats `PR-0332` as owner of durable correction-session persistence.
+Accepted `ADR-0087` and ready `ST-21-04` now own the architecture where
+Skriptoteket persists source-bound correction intents and replays the complete
+supported set through stateless Sir Convert apply.
 
 ## Problem Statement
 
@@ -56,18 +59,18 @@ bundle.
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Corrections are overlays, not source IR mutation | Preserves parser provenance and keeps rendering authority in Sir Convert | [ ] |
-| Browser-local edits never unlock downloads | Prevents fake success and stale local readiness | [ ] |
-| Returned effective IR/artifact evidence is authoritative | Keeps UI state downstream of the producer bundle | [ ] |
-| Teacher-edited AI suggestions use reviewed-completion lineage | Correct provenance split if source binding and item-shape rules are exact | [ ] |
-| Teacher-authored corrections use non-advisory overlay fields | Correct separation, but needs explicit shape/support matrix before implementation | [ ] |
+| Corrections are overlays, not source IR mutation | Preserves parser provenance and keeps rendering authority in Sir Convert | [x] |
+| Browser-local edits never unlock downloads | Prevents fake success and stale local readiness | [x] |
+| Returned effective IR/artifact evidence is authoritative | Keeps UI state downstream of the producer bundle | [x] |
+| Teacher-edited AI suggestions use reviewed-completion lineage | Correct provenance split when source binding and item-shape rules are exact | [x] |
+| Teacher-authored corrections use non-advisory overlay fields | Correct separation for Task 333-supported non-matching correction families | [x] |
 
 ## Review Checklist
 
 - [x] Scope is bounded and appropriate
-- [ ] Acceptance criteria or proof obligations are reviewable
+- [x] Acceptance criteria or proof obligations are reviewable
 - [x] Risks and structural fault lines are called out explicitly
-- [ ] Verification plan matches the claimed contract
+- [x] Verification plan matches the claimed contract
 
 ## Review Feedback
 
@@ -207,3 +210,131 @@ Decision approvals:
 | 6 | `ADR-0086`, `PR-0332`, `REV-PR-0332` | User clarification recorded points/scoring as a small Sir Convert producer-owned Task 322 immediately before `PR-0332`, with Skriptoteket point editing blocked until the producer DTO and proof land. |
 | 7 | `REV-PR-0332` | Re-review approved the corrected ADR/PR contract while keeping `PR-0332` implementation blocked until Sir Convert Task 322 lands. |
 | 8 | `PR-0332`, `REV-PR-0332`, `sirConvertOpenapi.d.ts` | Sir Convert Task 322 landed, Skriptoteket regenerated the generated Sir Convert DTOs, and the consumer preflight now proves `point_correction` plus `effective_point_correction` are present before point-editing implementation starts. |
+| 9 | `ADR-0087`, `ST-21-04`, `PR-0332`, `REV-PR-0332` | Durable correction-session persistence was moved out of `PR-0332` into `ADR-0087` and `ST-21-04`. `PR-0332` must not implement or claim persisted teacher-correction truth. |
+| 10 | `PR-0332`, `REV-PR-0332` | Closeout re-review approved the non-durable unified-correction consumer/projection slice. |
+| 11 | `ADR-0087`, `ST-21-04` | User-lead accepted `ADR-0087`; ordered durable-session implementation now belongs to `PR-0333` through `PR-0337`. |
+
+### 2026-05-18 Implementation-Contract Audit
+
+**Reviewer:** Codex
+**Verdict:** `changes_requested`
+
+This audit evaluates whether the `PR-0332` contract document remains authoritative after significant implementation work. The approved decision boundary (REV-PR-0332 2026-05-18) is not being reopened. This audit targets the PR document itself: its structure, acceptance criteria, and claimed verification burden against the current code surface.
+
+#### Required Changes (Implementation Audit)
+
+1. **Strip the implementation journal from the PR contract.**
+   The `Implementation Progress` section is ~250 lines of developer log. A PR contract must define scope, boundaries, and proof obligations, not replay commit history. Move the chronological progress notes to `.codex/handoff.md` or a transient tracking note. Keep only: what the PR implements, what is explicitly out of scope, and what verification closes it.
+
+2. **Replace temporal/process acceptance criteria with testable outcomes.**
+   AC #1 ("when this PR starts implementation, then..."), AC #4 ("when PR-0332 starts implementation, then..."), and AC #10 ("when this PR maps the gap, then...") are process gates, not verifiable acceptance criteria. Now that implementation has started, these are either moot or unverifiable. Replace them with concrete testable outcomes: e.g., "Given a point correction is submitted, when the Gateway request is inspected, then it carries `source_file_sha256`, `source_ir_sha256`, item id, sequence, and `source_item_fingerprint`."
+
+3. **Add the missing unified-route producer-contract preflight.**
+   The Test Plan claims: "Producer-contract preflight proving the generated Sir Convert consumer types include the unified source-state issue/apply routes and the non-matching correction entries implemented by Task 333." No such preflight exists in the current code surface. `frontend/apps/skriptoteket/src/api/sirConvertGateway/completionContract.spec.ts` guards the old DigiExam ingestion overlay types (`DigiExamOverlayPointCorrection`, `DigiExamEffectivePointCorrection`) but does not exercise the new unified v2 types (`ExamAuthoringCorrectionSourceStateIssueResult`, `ExamAuthoringCorrectionsApplyRequest`, `ExamAuthoringNonMatchingCorrectionEntry`). Add a dedicated `correctionsContract.spec.ts` or extend the existing contract spec to prove the generated unified route types are present and structurally sound before the UI consumes them.
+
+4. **Reconcile AC #8 with the still-open live-proof item.**
+   AC #8 requires: "Given corrected artifacts are inspected, when PDF/QTI proof is retained, then it verifies corrected point, choice, text, and gapped/open-cloze semantics..." The `Still open` section lists "Add live internal-browser proof" as pending. A PR cannot simultaneously claim an acceptance criterion is satisfied and list its proof as still open. Either move AC #8 to a follow-up PR, downgrade it to a stretch goal, or complete the live Playwright proof before updating the PR status toward `done`.
+
+5. **Fix the catch-silent-failure fault line in `useExamConverterUnifiedCorrections.ts`.**
+   `useExamConverterUnifiedCorrections.ts:240` contains `catch { options.failConversion(); }`. This swallows the underlying error without logging, correlation, or teacher-facing feedback. The PR does not describe error-handling behavior for correction apply failures. Add either: (a) explicit error classification and teacher-visible retry/dismiss behavior in the PR contract, or (b) a direct fix that preserves the error for diagnostics while still resetting UI state.
+
+#### Suggestions (Optional) — Implementation Audit
+
+- **Shrink the document.** At 345 lines, `PR-0332` is larger than many implementation modules. The contract sections (Problem, Goal, Non-goals, Implementation Plan, Test Plan, Rollback) should fit in ~120 lines. The prerequisite status addenda, superseded route archaeology, and source-neutral realignment are valuable historical context but belong in the ADR or a reference doc, not a PR contract.
+- **Clarify the `effectiveMaxScore === question.pointsValue` logic.** In `useExamConverterUnifiedCorrections.ts:158`, if a teacher explicitly corrects a point value back to the original source value, no `effectivePointCorrection` is recorded. This is a subtle behavioral choice that should be either documented in the PR or normalized so any submitted point correction is always retained as an effective correction.
+- **Name the dependency on `PR-0331` explicitly.** PR-0332 says "No reviewed AI-facit artifact-preservation cleanup; PR-0331 owns that." If PR-0332 assumes PR-0331 is merged or its projection fixes are present, add a dependency line so the ordering is explicit in the backlog.
+
+#### Decision Approvals — Implementation Audit
+
+- [x] PR-0332 contract document is refocused as scope/proof authority, not a developer journal.
+- [x] All acceptance criteria are testable outcomes, not process/temporal gates.
+- [x] Unified-route producer-contract preflight exists and passes.
+- [x] Live Playwright proof is completed or scoped out of this PR before status moves to `done`.
+- [x] Silent correction-failure fault line is addressed in contract or code.
+
+### 2026-05-18 Implementation-Audit Remediation
+
+**Reviewer:** Codex
+**Verdict:** `addressed`
+
+The previous implementation-audit findings are now addressed:
+
+- `PR-0332` was refocused to an implementation scope and test plan instead of a
+  chronological implementation journal.
+- The acceptance criteria now describe testable outcomes for unified-route
+  transport, Task 333 correction families, matching blockage, projection, draft
+  gating, error diagnostics, and durable-session exclusion.
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/correctionsContract.spec.ts`
+  now proves generated source-state issue/apply types and Task 333
+  non-matching correction entries are present while matching stays absent from
+  this slice.
+- PDF/QTI and durable readback proof are explicitly scoped out of `PR-0332` and
+  moved to the later `ST-21-04` chain after `ADR-0087` acceptance.
+- `useExamConverterUnifiedCorrections.ts` now logs the caught correction-apply
+  error before failing the UI state, preserving diagnostics instead of silently
+  swallowing the failure.
+
+### 2026-05-18 Durable-Session Ownership Correction
+
+**Reviewer:** Codex
+**Verdict:** `addressed`
+
+The implementation audit above is addressed. One additional architecture
+correction is now explicit and accepted: `PR-0332` must not own durable
+correction-session persistence, replay APIs, or any claim that a stateless Sir
+Convert apply response is persisted truth.
+
+The sound ownership split is:
+
+- `PR-0332` may consume the unified non-matching source-state/apply route and
+  project returned transaction-effective state.
+- Accepted `ADR-0087` decides the durable workflow: Skriptoteket persists
+  source-bound correction intents; Sir Convert remains stateless and applies
+  the full persisted set during replay/projection/export.
+- Ready `ST-21-04` owns the ordered implementation task chain after user-lead
+  acceptance of `ADR-0087`.
+- No implementation PR task for correction-session persistence should be
+  created or marked ready from this review alone.
+
+#### Required Changes (Durable-Session Audit)
+
+1. Remove or reword any `PR-0332` claim that teacher corrections are persisted
+   after submit. In this PR, corrected state is transaction-returned effective
+   state only.
+2. Keep all Skriptoteket DB persistence, correction-session aggregate design,
+   replay API design, and reload/readback proof out of `PR-0332`.
+3. Add `ADR-0087` and `ST-21-04` as the governing future architecture surfaces.
+4. Block implementation tasks for `ST-21-04` until `ADR-0087` is accepted.
+
+#### Decision Approvals — Durable-Session Audit
+
+- [x] `PR-0332` no longer claims durable correction persistence.
+- [x] `ADR-0087` was reviewed and accepted before `ST-21-04` implementation
+  tasks were created.
+
+### 2026-05-18 Closeout Re-review
+
+**Reviewer:** Codex
+**Verdict:** approved
+
+`PR-0332` is approved as a non-durable unified-correction consumer/projection
+slice. The retained blockers are resolved:
+
+1. The PR contract is refocused as scope/proof authority and no longer carries
+   the implementation journal.
+2. Acceptance criteria are testable outcomes for unified-route usage,
+   source-bound request construction, non-advisory correction fields, matching
+   blockage, returned-effective-state projection, local-draft gating, error
+   diagnostics, and durable-session exclusion.
+3. The generated-type preflight proves the unified source-state/apply types and
+   Task 333 non-matching correction entries are present.
+4. PDF/QTI artifact semantics and durable reload/readback proof are explicitly
+   out of scope for `PR-0332` and move to the `ST-21-04` chain authorized by
+   accepted `ADR-0087`.
+5. Correction apply failures preserve diagnostics before resetting UI state.
+6. The retired Task 324 matching route is not retained as a compatibility path,
+   and `manual_matching_answer_key` remains blocked until Task 332.
+
+This approval does not claim persisted correction truth for `PR-0332`. It
+closes only the `PR-0332` consumer/projection slice; durable correction
+workflow implementation is owned by `PR-0333` through `PR-0337`.

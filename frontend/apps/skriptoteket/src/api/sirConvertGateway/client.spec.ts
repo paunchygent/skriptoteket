@@ -16,10 +16,12 @@ import { createPinia, setActivePinia } from "pinia";
 import { createTestUser } from "../../stores/authTestHelpers";
 import { useAuthStore } from "../../stores/auth";
 import {
+  applyExamAuthoringCorrections,
   buildSirConvertUserFileSaveMetadata,
   downloadDigiExamMigrationArtifact,
   getDigiExamMigrationJob,
   getDigiExamMigrationResult,
+  issueExamAuthoringCorrectionSourceState,
   isSirConvertArtifactAvailable,
   listDigiExamMigrationArtifacts,
   saveDigiExamMigrationArtifactToUserFiles,
@@ -242,6 +244,104 @@ describe("Sir Convert Gateway browser client", () => {
       "http://127.0.0.1:8080/sir-convert/v2/convert/jobs/job_2",
       expect.objectContaining({ method: "GET" }),
     );
+  });
+
+  it("submits unified non-matching correction calls through the HuleEdu Gateway edge", async () => {
+    mockJson({
+      schema_version: "exam_authoring_correction_source_state_issue_result_v1",
+      source_binding: {
+        source_authoring_schema_version: "exam_authoring_ir_v1",
+        source_bundle_id: "job_1",
+        source_file_sha256: "sha256:source",
+        source_state_sha256: "sha256:source-state",
+        source_state_signature: "hmac-sha256:signature",
+      },
+      source_authoring_state: {
+        schema_version: "exam_authoring_correction_source_state_v1",
+        source_authoring_schema_version: "exam_authoring_ir_v1",
+        source_state_sha256: "sha256:source-state",
+        items: [],
+      },
+    });
+    mockJson({
+      schema_version: "exam_authoring_corrections_apply_result_v1",
+      request_id: "correction-point-item-001",
+      source_binding: {
+        source_authoring_schema_version: "exam_authoring_ir_v1",
+        source_bundle_id: "job_1",
+        source_file_sha256: "sha256:source",
+        source_state_sha256: "sha256:source-state",
+        source_state_signature: "hmac-sha256:signature",
+      },
+      effective_state: {
+        schema_version: "exam_authoring_effective_state_v1",
+        effective_state_sha256: "sha256:effective-state",
+        items: [],
+      },
+      correction_report: {
+        schema_version: "exam_authoring_correction_report_v1",
+        accepted_entries: [
+          {
+            applied_fields: ["point_correction"],
+            entry_id: "corr-1",
+            item_id: "item-001",
+            kind: "point_correction",
+            sequence: 1,
+          },
+        ],
+        rejected_entries: [],
+      },
+      target_readiness: {
+        schema_version: "target_readiness_report_v1",
+        targets: [],
+      },
+      artifact_availability: [],
+    });
+
+    const sourceState = await issueExamAuthoringCorrectionSourceState({
+      correlationId: "corr_1",
+      request: {
+        schema_version: "exam_authoring_correction_source_state_issue_request_v1",
+        job_id: "job_1",
+      },
+    });
+    await applyExamAuthoringCorrections({
+      correlationId: "corr_1",
+      request: {
+        schema_version: "exam_authoring_corrections_apply_request_v1",
+        request_id: "correction-point-item-001",
+        source_binding: sourceState.source_binding,
+        source_authoring_state: sourceState.source_authoring_state,
+        corrections: [
+          {
+            entry_id: "corr-point-item-001",
+            item_id: "item-001",
+            item_type: "open_ended",
+            kind: "point_correction",
+            max_score: 3,
+            sequence: 1,
+            source_item_fingerprint: "sha256:item",
+          },
+        ],
+        requested_targets: ["examnet_pdf"],
+      },
+    });
+
+    expect(vi.mocked(fetch).mock.calls.map((call) => call[0])).toEqual([
+      "/sir-convert/v2/exam-authoring/corrections/source-state/issue",
+      "/sir-convert/v2/exam-authoring/corrections/apply",
+    ]);
+    for (const index of [0, 1]) {
+      expect(requestHeaders(index).get("X-Correlation-ID")).toBe("corr_1");
+      expect(requestHeaders(index).get("X-CSRF-Token")).toBe("csrf-token");
+      expect(requestHeaders(index).get("X-API-Key")).toBeNull();
+    }
+    const applyBody = JSON.parse(String(vi.mocked(fetch).mock.calls[1][1]?.body));
+    expect(applyBody.corrections[0]).toMatchObject({
+      kind: "point_correction",
+      item_id: "item-001",
+    });
+    expect(JSON.stringify(applyBody)).not.toContain("manual_matching_answer_key");
   });
 
   it.each([

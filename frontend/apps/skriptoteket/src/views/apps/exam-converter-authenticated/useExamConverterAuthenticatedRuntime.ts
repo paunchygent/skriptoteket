@@ -15,14 +15,19 @@
 import { onBeforeUnmount, ref } from "vue";
 
 import {
+  applyExamAuthoringCorrections,
   getDigiExamMigrationJob,
   getDigiExamMigrationResult,
+  issueExamAuthoringCorrectionSourceState,
   submitDigiExamMigration,
 } from "../../../api/sirConvertGateway";
 import type {
   DigiExamAnswerKeyCompletionMode,
   DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
+  ExamAuthoringCorrectionSourceStateIssueResult,
+  ExamAuthoringCorrectionsApplyRequest,
+  ExamAuthoringCorrectionsApplyResult,
   SirConvertJobStatus,
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
@@ -37,6 +42,8 @@ type AuthenticatedRuntimeClient = {
   submitDigiExamMigration: typeof submitDigiExamMigration;
   getDigiExamMigrationJob: typeof getDigiExamMigrationJob;
   getDigiExamMigrationResult: typeof getDigiExamMigrationResult;
+  issueExamAuthoringCorrectionSourceState: typeof issueExamAuthoringCorrectionSourceState;
+  applyExamAuthoringCorrections: typeof applyExamAuthoringCorrections;
 };
 
 export type ExamConverterAuthenticatedRuntimeSubmission = {
@@ -64,6 +71,8 @@ const ACTIVE_JOB_STATUSES = new Set<SirConvertJobStatus>([
 const DEFAULT_CLIENT: AuthenticatedRuntimeClient = {
   getDigiExamMigrationJob,
   getDigiExamMigrationResult,
+  issueExamAuthoringCorrectionSourceState,
+  applyExamAuthoringCorrections,
   submitDigiExamMigration,
 };
 
@@ -212,14 +221,42 @@ export function useExamConverterAuthenticatedRuntime(
     }
   }
 
+  async function issueCorrectionSourceState(params: {
+    jobId: string;
+  }): Promise<ExamAuthoringCorrectionSourceStateIssueResult> {
+    const correlationId = lastCorrelationId.value;
+    if (!correlationId) {
+      throw new Error("Correction source-state issue requires a completed conversion.");
+    }
+    return await client.issueExamAuthoringCorrectionSourceState({
+      correlationId,
+      request: {
+        schema_version: "exam_authoring_correction_source_state_issue_request_v1",
+        job_id: params.jobId,
+      },
+    });
+  }
+
+  async function applyCorrectionRequest(
+    request: ExamAuthoringCorrectionsApplyRequest,
+  ): Promise<ExamAuthoringCorrectionsApplyResult> {
+    const correlationId = lastCorrelationId.value;
+    if (!correlationId) {
+      throw new Error("Correction apply requires a completed conversion.");
+    }
+    return await client.applyExamAuthoringCorrections({ correlationId, request });
+  }
+
   onBeforeUnmount(cancelRuntime);
 
   return {
     cancelRuntime,
     isRuntimeBusy,
+    issueCorrectionSourceState,
     lastCorrelationId,
     lastIdempotentReplay,
     lastJobId,
+    applyCorrectionRequest,
     submitAndPoll,
   };
 }

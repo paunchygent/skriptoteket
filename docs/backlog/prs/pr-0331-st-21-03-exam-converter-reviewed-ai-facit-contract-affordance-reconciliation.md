@@ -2,7 +2,7 @@
 type: pr
 id: PR-0331
 title: "ST-21-03 Exam Converter reviewed AI-facit contract and affordance reconciliation"
-status: in_progress
+status: ready
 owners: "Codex"
 created: 2026-05-17
 updated: 2026-05-18
@@ -24,7 +24,7 @@ acceptance_criteria:
   - "Given teacher-facing artifacts are produced, when the PDF, QTI package, or import-facing content is inspected, then no internal fallback diagnosis such as `Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.` appears in the exported artifact."
   - "Given Files is visible before, during, and after review, when a target is unavailable, then the UI shows a teacher-actionable explanation and never leaks raw producer reason codes such as `unsupported_target_shape` as primary copy."
   - "Given the screen has both accepted-current-state review and AI-facit review paths, when the teacher sees action buttons, then the labels, grouping, and enabled states make clear which action only records local review decisions and which action submits a reviewed apply job that can create new files."
-  - "Given this task records local cleanup evidence, when it is evaluated for completion, then final acceptance still requires a durable live Playwright proof against the authenticated dev stack, Sir Convert, and tunneled LLM runtime."
+  - "Given this task records local cleanup evidence, when it is evaluated for completion, then final acceptance requires a durable live Playwright proof against the authenticated Skriptoteket/HuleEdu public edge and Hemma Sir Convert runtime."
 ---
 
 # PR-0331: ST-21-03 Exam Converter Reviewed AI-Facit Contract And Affordance Reconciliation
@@ -261,18 +261,21 @@ Make the reviewed AI-facit workflow coherent and provable:
    governed DigiExam `.dxe`, records redacted Sir Convert request/response
    evidence, and, when suggestions exist, inspects `effective_ir_json`, PDF,
    and QTI output.
-7. Live proof on 2026-05-18 is blocked before reviewed apply by the provider
-   runtime, not by the Skriptoteket browser ceremony. Artifact evidence in
-   `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T174149Z/`
-   shows the authenticated conversion reached Sir Convert, but
-   `answer_key_completion_report` produced zero valid suggestions:
-   `provider_config_missing` for items 1-3 and `unsupported_assets` for item
-   13. The script now fails fast with retained advisory report evidence instead
-   of timing out on a missing AI-facit panel.
-8. Remaining: rerun the durable script against a correctly configured
-   provider-backed Sir Convert runtime so the reviewed overlay submit,
-   reviewed apply result, `effective_ir_json`, PDF inspection, QTI inspection,
-   and negative internal-diagnostic artifact-copy proof can complete.
+7. Done: harden the live proof harness so it cannot satisfy `PR-0331` with
+   stale AI suggestions. The script now overrides Sir Convert POST
+   idempotency keys per proof run, records `idempotent_replay`, and uses the
+   Playwright request context for public-edge artifact fetches so retained
+   `effective_ir_json` and `ingestion_overlay_report` evidence is not blocked
+   by browser route/CORS behavior.
+8. Done: complete the durable Hemma/public proof after Sir Convert commit
+   `166fea9140ac2e5709aa30f5b432ffe1e53fe2c3` fixed OpenAI Responses vision
+   image URLs. Retained proof in
+   `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T192044Z/`
+   shows both POSTs were fresh (`idempotent_replay=false`), reviewed overlay
+   accepted four suggestions (`item-001`, `item-002`, `item-003`, `item-013`),
+   `effective_ir_json` retained reviewed choice and gap-fill lineage, PDF/QTI
+   files unlocked and downloaded, exported artifacts contained no forbidden
+   diagnostic text, and QTI retained correct responses.
 
 ## Test Plan
 
@@ -285,6 +288,7 @@ pdm run fe-lint
 pdm run fe-build
 pdm run python -m py_compile scripts/playwright_pr_0331_reviewed_ai_facit_live.py scripts/_pr_0331_reviewed_ai_facit_artifacts.py
 pdm run python -m scripts.playwright_pr_0331_reviewed_ai_facit_live --base-url http://127.0.0.1:5173
+pdm run python -m scripts.playwright_pr_0331_reviewed_ai_facit_live --base-url https://skriptoteket.hule.education --dotenv .env
 pdm run test tests/unit/scripts/test_playwright_script_surface.py
 pdm run lint
 pdm run docs-validate
@@ -308,6 +312,10 @@ Manual/live proof must include:
 - browser proof that UI copy no longer leaks raw reason codes; and
 - proof that exported artifacts preserve accepted reviewed keys or fail with a
   retained upstream contract finding.
+
+The 2026-05-18 Hemma/public proof for the ecology `.dxe` fixture satisfied
+these manual/live proof requirements. The final manifest is
+`.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T192044Z/manifest.redacted.json`.
 
 ## Rollback Plan
 

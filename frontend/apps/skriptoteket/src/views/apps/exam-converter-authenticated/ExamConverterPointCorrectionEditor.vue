@@ -20,6 +20,7 @@ import { CheckCheck } from "lucide-vue-next";
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
 
 const props = defineProps<{
+  disabled: boolean;
   question: ExamConverterQuestionReviewRow;
 }>();
 
@@ -35,6 +36,7 @@ const canApplyPointCorrection = computed(() => {
   const value = pointCorrectionValue.value;
   return (
     props.question.sourceItemFingerprint !== null &&
+    !props.disabled &&
     Number.isInteger(value) &&
     value > 0 &&
     value !== props.question.pointsValue
@@ -76,6 +78,7 @@ watch(
         v-model="pointCorrectionDraft"
         class="min-h-10 w-24 border border-navy/35 bg-panel px-3 text-sm font-semibold text-navy"
         data-test="exam-converter-point-correction-input"
+        :disabled="disabled"
         min="1"
         step="1"
         type="number"

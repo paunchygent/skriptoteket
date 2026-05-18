@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-05-17
+updated: 2026-05-19
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -42,6 +42,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 1. [ST-21-01: Curated app: Conversion Hub (v1)](../stories/story-21-01-curated-app-conversion-hub-v1.md)
 - [ ] 2. [ST-21-02: Migration: retire html-to-pdf-preview + update tests](../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md)
 - [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md)
+- [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md)
 
 ## Risks
 
@@ -142,13 +143,17 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   slice separates phone from tablet/narrow-laptop and desktop compositions so
   the reviewed AI-facit flow no longer inherits a compressed two-column layout
   on true phone screens.
-- PR-0331 (reviewed AI-facit contract and affordance reconciliation): in
-  progress;
-  user-supplied artifacts show accepted/reviewed AI keys being removed or
-  omitted from downloaded PDF/QTI output after teacher approval, and the PDF
-  leaks internal fallback text
-  (`Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.`)
-  into teacher-facing content. The first cleanup slice prevents post-apply
-  Skriptoteket projection from treating reviewed effective keys as still-missing
-  source state; remaining work must prove or escalate target artifact drift
-  before export-ready UI copy is trusted.
+- PR-0331 (reviewed AI-facit contract and affordance reconciliation): ready;
+  retained Hemma/public proof shows accepted reviewed keys survive projection,
+  reviewed apply, target readiness, and PDF/QTI downloads without forbidden
+  internal fallback text.
+- PR-0332 (teacher-owned correction overlay contract): done; consumes the
+  unified Sir Convert/HuleEdu non-matching correction edge for point, choice,
+  gap/open-cloze, and item-text corrections, projects transaction-returned
+  effective state, keeps matching blocked, and does not claim durable
+  correction-session persistence.
+- ST-21-04 (durable teacher correction sessions): ready after accepted
+  `ADR-0087` and approved `REV-ST-21-04`. Implementation is split into ordered
+  PR-sized slices: `PR-0333` backend aggregate/persistence, `PR-0334` API/types,
+  `PR-0335` replay orchestration, `PR-0336` frontend readback, and `PR-0337`
+  browser/artifact proof.

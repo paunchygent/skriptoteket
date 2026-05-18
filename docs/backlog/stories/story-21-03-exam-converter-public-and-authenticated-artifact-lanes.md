@@ -5,7 +5,7 @@ title: "Exam converter public and authenticated artifact lanes"
 status: in_progress
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-18
+updated: 2026-05-19
 epic: "EPIC-21"
 dependencies:
   - "ADR-0066"
@@ -184,25 +184,34 @@ opening anonymous conversion uploads.
     review surface inheriting a tablet/narrow-laptop grid instead of switching
     to a phone-specific branch.
 13. Reviewed AI-facit contract and affordance reconciliation (`PR-0331`,
-    in progress):
-    captures the current blocker where teachers can approve AI-suggested keys
-    and later create/download PDF/QTI artifacts where those accepted keys have
-    been removed or omitted, while teacher-facing artifacts expose internal
-    fallback text such as
-    `Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.`
-    The first cleanup slice now prevents a reviewed apply bundle with effective
-    keys from being re-projected as source-missing state and blocks the
-    source-only accepted-current-state overwrite path. Remaining proof must
-    inspect target readiness and downloaded PDF/QTI artifacts before UI labels
-    or phone layouts can safely promise export readiness.
-14. Teacher-owned correction overlay contract (`PR-0332`, in progress):
-    separates the broader teacher edit workflow from `PR-0331`. It must map and
-    implement source-bound correction overlays for stems/prompts, points, choice
-    keys, and gapped/open-cloze accepted values. `ADR-0086` is accepted, Sir
-    Convert Tasks 322/323 have landed, Sir Convert Task 333 and HuleEdu
-    TASK-0567 now gate unified non-matching continuation, and matching remains
-    blocked until Sir Convert Task 332 provides a real matching-capable
-    producer.
+    ready):
+    reconciles the blocker where teachers could approve AI-suggested keys and
+    later create/download PDF/QTI artifacts where those accepted keys had been
+    removed or omitted, while teacher-facing artifacts exposed internal
+    fallback text. The cleanup prevents reviewed apply bundles with effective
+    keys from being re-projected as source-missing state, blocks the source-only
+    accepted-current-state overwrite path, removes raw producer reason-code
+    leakage, and clarifies local AI-facit selection versus reviewed file
+    creation. The retained Hemma/public proof at
+    `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T192044Z/`
+    shows fresh non-replayed Sir Convert jobs, four reviewed suggestions
+    including `item-013` gap-fill, unlocked PDF/QTI downloads, no forbidden
+    artifact text, and retained QTI correct responses.
+14. Teacher-owned correction overlay contract (`PR-0332`, done):
+    separates the broader teacher edit workflow from `PR-0331` and consumes the
+    unified Sir Convert/HuleEdu non-matching correction edge for points,
+    choice keys, gap/open-cloze keys, and item text patches. It projects the
+    transaction-returned effective state without claiming durable correction
+    persistence, keeps local drafts from unlocking downloads, and leaves
+    matching blocked until Sir Convert Task 332 provides a real matching-
+    capable producer.
+15. Durable teacher correction sessions (`ST-21-04`, ready):
+    moves stable authenticated correction persistence out of `PR-0332` and into
+    a story-level architecture governed by accepted `ADR-0087`. Sir Convert may
+    remain stateless; Skriptoteket must persist source-bound correction intents
+    and replay the complete supported set through the unified apply edge before
+    UI readback/export can claim durable correction truth. Ordered
+    implementation slices are `PR-0333` through `PR-0337`.
 
 ## Notes
 

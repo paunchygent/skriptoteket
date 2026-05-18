@@ -414,7 +414,34 @@ independent `PR-0332`. It must not be represented as parser metadata mutation
 after the source IR is written and must not reintroduce local-only controls that
 imply persisted correction or export readiness.
 
-The next boundary is producer/artifact proof: once Skriptoteket has retained
-reviewed effective keys, downloaded PDF/QTI artifacts must contain all reviewed
-key semantics. If they do not, Codex owns the Sir Convert source fix in this
-lane; the answer is not a downstream warning-only workaround.
+## 2026-05-18 Hemma/Public Proof Closeout
+
+The producer/artifact boundary is now proven for the retained ecology `.dxe`
+fixture after Sir Convert commit `166fea9140ac2e5709aa30f5b432ffe1e53fe2c3`
+fixed the OpenAI Responses vision image URL shape.
+
+Retained proof:
+
+- `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T192044Z/manifest.redacted.json`
+
+The proof script forces fresh Sir Convert idempotency keys for its POSTs and
+records `idempotent_replay`, so the result cannot be satisfied by old advisory
+jobs or stale AI suggestions. The retained manifest shows:
+
+- advisory job `jobv2_e9031daf34424bd6a729df167f` and reviewed-apply job
+  `jobv2_2fbff2f0d8d84f23aa4b0e83de` were fresh
+  (`idempotent_replay=false`);
+- the reviewed overlay contained four reviewed-completion entries:
+  `item-001`, `item-002`, `item-003`, and image-backed `item-013`;
+- `effective_ir_json` retained reviewed choice keys and item-013 reviewed
+  gap-fill values with OpenAI mini lineage;
+- `ingestion_overlay_report` accepted four entries and rejected none;
+- the post-apply UI reported `Provet är konverterat`, exposed PDF/QTI as
+  `Kan hämtas`, and did not show raw reason-code text; and
+- downloaded PDF/QTI inspection found no forbidden internal fallback
+  diagnostics, with the QTI package retaining correct responses.
+
+This closes the `PR-0331` contract-map concern for reviewed-key survival
+through Skriptoteket projection, reviewed apply, target readiness, and
+downloaded artifacts. Future teacher-owned correction work remains governed by
+`ADR-0086` and `PR-0332`.

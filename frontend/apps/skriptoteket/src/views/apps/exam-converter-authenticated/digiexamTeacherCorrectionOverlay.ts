@@ -2,25 +2,29 @@
  * DigiExam teacher correction overlay builder.
  *
  * Domain purpose:
- *   Build source-bound Sir Convert overlays for teacher-owned corrections that
- *   are applied to effective renderer input before PDF/QTI artifacts are used.
+ *   Build source-bound Sir Convert correction entries from producer-issued
+ *   source state before PDF/QTI artifacts are used.
  *
  * Relationships:
  *   - Consumes question rows from the Exam Converter review projection.
- *   - Produces `digiexam_ingestion_overlay_v2` payloads for the authenticated
- *     Sir Convert Gateway client.
+ *   - Produces unified Exam Authoring correction/apply payloads for the
+ *     authenticated Sir Convert Gateway client.
  *   - Keeps correction overlays separate from advisory AI-facit review state
  *     and accepted-current-state export decisions.
  */
 
-import type { DigiExamIngestionOverlay } from "../../../api/sirConvertGateway";
+import type {
+  ExamAuthoringCorrectionSourceItem,
+  ExamAuthoringCorrectionSourceStateIssueResult,
+  ExamAuthoringCorrectionsApplyRequest,
+  ExamAuthoringNonMatchingCorrectionEntry,
+} from "../../../api/sirConvertGateway";
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
   DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
 } from "../../../api/sirConvertGateway/contractValues";
-import { DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION } from "../../../api/sirConvertGateway/schemaVersions";
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,
@@ -39,33 +43,26 @@ export type ExamConverterManualAnswerKeyCorrection =
       kind: "gap_fill";
     };
 
+export type ExamConverterItemTextPatchCorrection = {
+  field: "item_title" | "prompt_html" | "prompt_lines";
+  value: string;
+};
+
+type CorrectionSourceContext = {
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+};
+
 function assertValidPointCorrection(maxScore: number): void {
   if (!Number.isInteger(maxScore) || maxScore <= 0) {
     throw new Error("Point correction requires a positive integer score.");
   }
 }
 
-function assertSourceItemFingerprint(
-  question: ExamConverterQuestionReviewRow,
-): string {
+function assertSourceItemFingerprint(question: ExamConverterQuestionReviewRow): string {
   if (!question.sourceItemFingerprint) {
     throw new Error("Teacher correction overlay requires source item fingerprints.");
   }
   return question.sourceItemFingerprint;
-}
-
-function baseOverlay(params: {
-  projection: ExamConverterReviewProjection;
-}): Pick<DigiExamIngestionOverlay, "schema_version" | "source_binding"> {
-  return {
-    schema_version: DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
-    source_binding: {
-      source_file_sha256: params.projection.sourceFileSha256,
-      source_ir_schema_version:
-        params.projection.artifactSourceBinding.source_ir_schema_version,
-      source_ir_sha256: params.projection.artifactSourceBinding.source_ir_sha256,
-    },
-  };
 }
 
 function assertChoiceItem(question: ExamConverterQuestionReviewRow): void {
@@ -117,71 +114,254 @@ function normalizedGapAnswers(params: {
   return normalized;
 }
 
-export function buildPointCorrectionOverlay(params: {
-  maxScore: number;
-  projection: ExamConverterReviewProjection;
+function sourceItemForQuestion(params: {
   question: ExamConverterQuestionReviewRow;
-}): DigiExamIngestionOverlay {
-  assertValidPointCorrection(params.maxScore);
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamAuthoringCorrectionSourceItem {
+  const sourceItem = params.sourceState.source_authoring_state.items.find(
+    (item) => item.item_id === params.question.itemId,
+  );
+  if (!sourceItem) {
+    throw new Error("Teacher correction requires producer-issued source state for the item.");
+  }
+  if (sourceItem.sequence !== params.question.sequence) {
+    throw new Error("Teacher correction source state has a stale item sequence.");
+  }
+  if (sourceItem.source_item_fingerprint !== assertSourceItemFingerprint(params.question)) {
+    throw new Error("Teacher correction source state has a stale item fingerprint.");
+  }
+  return sourceItem;
+}
+
+function baseEntry(params: {
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+  suffix: string;
+}) {
+  const sourceItem = sourceItemForQuestion({
+    question: params.question,
+    sourceState: params.sourceState,
+  });
   return {
-    ...baseOverlay({ projection: params.projection }),
-    items: [
-      {
-        effective_item_patch: null,
-        item_id: params.question.itemId,
-        item_type: params.question.itemType,
-        manual_answer_key: null,
-        point_correction: {
-          kind: "item_points",
-          max_score: params.maxScore,
-        },
-        review_decision: null,
-        reviewed_completion_answer_key: null,
-        sequence: params.question.sequence,
-        source_item_fingerprint: assertSourceItemFingerprint(params.question),
-      },
-    ],
+    entry_id: `corr-${params.suffix}-${params.question.itemId}`,
+    item_id: sourceItem.item_id,
+    item_type: sourceItem.item_type,
+    sequence: sourceItem.sequence,
+    source_item_fingerprint: sourceItem.source_item_fingerprint ?? null,
   };
 }
 
-export function buildManualAnswerKeyOverlay(params: {
+function choiceInteractionForQuestion(params: {
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}) {
+  const sourceItem = sourceItemForQuestion(params);
+  const [interaction] = sourceItem.choice_interactions;
+  if (!interaction) {
+    throw new Error("Choice answer-key correction requires producer choice state.");
+  }
+  return interaction;
+}
+
+function gapInteractionForQuestion(params: {
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}) {
+  const sourceItem = sourceItemForQuestion(params);
+  const [interaction] = sourceItem.gap_open_cloze_interactions;
+  if (!interaction) {
+    throw new Error("Gap-fill answer-key correction requires producer gap state.");
+  }
+  return interaction;
+}
+
+function sourceChoiceIdForDisplayId(params: {
+  displayId: number;
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): string {
+  const interaction = choiceInteractionForQuestion(params);
+  const displayId = String(params.displayId);
+  const choice = interaction.choices.find(
+    (candidate) => candidate.source_id === displayId || candidate.order === params.displayId,
+  );
+  if (!choice) {
+    throw new Error("Choice answer-key correction references an unknown producer choice.");
+  }
+  return choice.choice_id;
+}
+
+function pointCorrectionEntry(params: {
+  entrySuffix: string;
+  maxScore: number;
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamAuthoringNonMatchingCorrectionEntry {
+  return {
+    ...baseEntry({
+      question: params.question,
+      sourceState: params.sourceState,
+      suffix: params.entrySuffix,
+    }),
+    kind: "point_correction",
+    max_score: params.maxScore,
+  };
+}
+
+function choiceAnswerKeyEntry(params: {
+  correctAlternativeIds: number[];
+  entrySuffix: string;
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamAuthoringNonMatchingCorrectionEntry {
+  assertChoiceItem(params.question);
+  return {
+    ...baseEntry({
+      question: params.question,
+      sourceState: params.sourceState,
+      suffix: params.entrySuffix,
+    }),
+    candidate_lineage: null,
+    correct_choice_ids: normalizedChoiceIds(params.correctAlternativeIds).map((displayId) =>
+      sourceChoiceIdForDisplayId({
+        displayId,
+        question: params.question,
+        sourceState: params.sourceState,
+      }),
+    ),
+    interaction_id: choiceInteractionForQuestion({
+      question: params.question,
+      sourceState: params.sourceState,
+    }).interaction_id,
+    kind: "manual_choice_answer_key",
+    submission_origin: "teacher_authored",
+  };
+}
+
+function gapAnswerKeyEntry(params: {
+  entrySuffix: string;
+  gapAnswers: Extract<ExamConverterManualAnswerKeyCorrection, { kind: "gap_fill" }>["gapAnswers"];
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamAuthoringNonMatchingCorrectionEntry {
+  assertGapFillItem(params.question);
+  return {
+    ...baseEntry({
+      question: params.question,
+      sourceState: params.sourceState,
+      suffix: params.entrySuffix,
+    }),
+    candidate_lineage: null,
+    gap_answers: normalizedGapAnswers({
+      gapAnswers: params.gapAnswers,
+      question: params.question,
+    }),
+    interaction_id: gapInteractionForQuestion({
+      question: params.question,
+      sourceState: params.sourceState,
+    }).interaction_id,
+    kind: "manual_gap_open_cloze_answer_key",
+    submission_origin: "teacher_authored",
+  };
+}
+
+function itemTextPatchEntry(params: {
+  entrySuffix: string;
+  patches: { field: ExamConverterItemTextPatchCorrection["field"]; value: string }[];
+  question: ExamConverterQuestionReviewRow;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamAuthoringNonMatchingCorrectionEntry {
+  return {
+    ...baseEntry({
+      question: params.question,
+      sourceState: params.sourceState,
+      suffix: params.entrySuffix,
+    }),
+    kind: "item_text_patch",
+    patches: params.patches,
+  };
+}
+
+function correctionRequest(params: {
+  correction: ExamAuthoringNonMatchingCorrectionEntry;
+  projection: ExamConverterReviewProjection;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamAuthoringCorrectionsApplyRequest {
+  return {
+    schema_version: "exam_authoring_corrections_apply_request_v1",
+    request_id: `correction-${params.correction.kind}-${params.correction.item_id}`,
+    source_binding: params.sourceState.source_binding,
+    source_authoring_state: params.sourceState.source_authoring_state,
+    corrections: [params.correction],
+    requested_targets: params.projection.files
+      .map((file) => file.artifactKey)
+      .filter((artifactKey): artifactKey is "examnet_pdf" | "qti_package" =>
+        artifactKey === "examnet_pdf" || artifactKey === "qti_package",
+      ),
+  };
+}
+
+export function buildPointCorrectionRequest(params: {
+  maxScore: number;
+  projection: ExamConverterReviewProjection;
+  question: ExamConverterQuestionReviewRow;
+} & CorrectionSourceContext): ExamAuthoringCorrectionsApplyRequest {
+  assertValidPointCorrection(params.maxScore);
+  return correctionRequest({
+    projection: params.projection,
+    sourceState: params.sourceState,
+    correction: pointCorrectionEntry({
+      entrySuffix: "points",
+      maxScore: params.maxScore,
+      question: params.question,
+      sourceState: params.sourceState,
+    }),
+  });
+}
+
+export function buildManualAnswerKeyRequest(params: {
   answerKey: ExamConverterManualAnswerKeyCorrection;
   projection: ExamConverterReviewProjection;
   question: ExamConverterQuestionReviewRow;
-}): DigiExamIngestionOverlay {
-  const manualAnswerKey =
+} & CorrectionSourceContext): ExamAuthoringCorrectionsApplyRequest {
+  const correction: ExamAuthoringNonMatchingCorrectionEntry =
     params.answerKey.kind === "choice"
-      ? (() => {
-          assertChoiceItem(params.question);
-          return {
-            correct_alternative_ids: normalizedChoiceIds(params.answerKey.correctAlternativeIds),
-            kind: "choice" as const,
-          };
-        })()
-      : (() => {
-          assertGapFillItem(params.question);
-          return {
-            gap_answers: normalizedGapAnswers({
-              gapAnswers: params.answerKey.gapAnswers,
-              question: params.question,
-            }),
-            kind: "gap_fill" as const,
-          };
-        })();
-  return {
-    ...baseOverlay({ projection: params.projection }),
-    items: [
-      {
-        effective_item_patch: null,
-        item_id: params.question.itemId,
-        item_type: params.question.itemType,
-        manual_answer_key: manualAnswerKey,
-        point_correction: null,
-        review_decision: null,
-        reviewed_completion_answer_key: null,
-        sequence: params.question.sequence,
-        source_item_fingerprint: assertSourceItemFingerprint(params.question),
-      },
-    ],
-  };
+      ? choiceAnswerKeyEntry({
+          correctAlternativeIds: params.answerKey.correctAlternativeIds,
+          entrySuffix: "manual-choice",
+          question: params.question,
+          sourceState: params.sourceState,
+        })
+      : gapAnswerKeyEntry({
+          entrySuffix: "manual-gap",
+          gapAnswers: params.answerKey.gapAnswers,
+          question: params.question,
+          sourceState: params.sourceState,
+        });
+  return correctionRequest({
+    correction,
+    projection: params.projection,
+    sourceState: params.sourceState,
+  });
+}
+
+export function buildItemTextPatchRequest(params: {
+  patch: ExamConverterItemTextPatchCorrection;
+  projection: ExamConverterReviewProjection;
+  question: ExamConverterQuestionReviewRow;
+} & CorrectionSourceContext): ExamAuthoringCorrectionsApplyRequest {
+  const value = params.patch.value.trim();
+  if (value.length === 0) {
+    throw new Error("Item text correction requires a non-empty value.");
+  }
+  return correctionRequest({
+    projection: params.projection,
+    sourceState: params.sourceState,
+    correction: itemTextPatchEntry({
+      entrySuffix: "text",
+      patches: [{ field: params.patch.field, value }],
+      question: params.question,
+      sourceState: params.sourceState,
+    }),
+  });
 }
