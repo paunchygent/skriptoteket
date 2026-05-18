@@ -32,13 +32,14 @@ import {
 } from "./examConverterAuthenticatedReviewFixtures";
 
 export const REVIEWED_GAP_FILL_APPLY_JOB_ID = "job_reviewed_apply";
+export const MANUAL_GAP_FILL_APPLY_JOB_ID = "job_manual_gap_fill_apply";
 
-function isReviewedApplyJob(jobId: string): boolean {
-  return jobId === REVIEWED_GAP_FILL_APPLY_JOB_ID;
+function isCorrectedApplyJob(jobId: string): boolean {
+  return jobId === REVIEWED_GAP_FILL_APPLY_JOB_ID || jobId === MANUAL_GAP_FILL_APPLY_JOB_ID;
 }
 
 function artifactManifestPayload(jobId: string) {
-  const isApplyJob = isReviewedApplyJob(jobId);
+  const isApplyJob = isCorrectedApplyJob(jobId);
   return {
     artifacts: [
       {
@@ -118,6 +119,10 @@ function irJsonPayload(_jobId: string) {
     items: [
       reviewItem({
         answer_key: { provenance: "absent" },
+        gaps: [
+          { guid: "gap-001", validations: [] },
+          { guid: "gap-002", validations: [] },
+        ],
         item_id: "item-013",
         sequence: 13,
         title: "Lucktext med bild",
@@ -169,7 +174,7 @@ function migrationManifestPayload(_jobId: string) {
 }
 
 function targetReadinessReportPayload(jobId: string) {
-  const isApplyJob = isReviewedApplyJob(jobId);
+  const isApplyJob = isCorrectedApplyJob(jobId);
   return {
     effective_exam_sha256: isApplyJob ? "sha256:effective-ir" : "sha256:effective",
     job_id: jobId,
@@ -193,55 +198,80 @@ function targetReadinessReportPayload(jobId: string) {
   };
 }
 
-function answerKeyCompletionReportPayload() {
+function answerKeyCompletionReportPayload(candidateAvailable: boolean) {
   return {
     completion_mode: "local_llm_suggest_missing_machine_marked",
     items: [
-      {
-        answer_payload: {
-          gap_answers: [
-            { accepted_values: ["kretslopp"], gap_id: "gap-001" },
-            { accepted_values: ["näringsväv"], gap_id: "gap-002" },
-          ],
-          kind: "gap_fill",
-        },
-        backend_failure_code: null,
-        backend_status: "success",
-        candidate_id: "candidate-item-013",
-        candidate_payload_digest: "sha256:candidate-item-013",
-        decision_state: "suggested",
-        item_id: "item-013",
-        item_type: "gap_fill",
-        model_profile: "qwen3.6-27b-q6k-mtp",
-        prompt_template_version: "digiexam-gap-fill-answer-key-v1",
-        provider_profile_id: "task309-llama-cpp",
-        schema_name: "digiexam_gap_fill_answer_key_decision_v1",
-        schema_version: "digiexam_gap_fill_answer_key_decision_v1",
-        sequence: 13,
-        validation_state: "valid",
-      },
+      candidateAvailable
+        ? {
+            answer_payload: {
+              gap_answers: [
+                { accepted_values: ["kretslopp"], gap_id: "gap-001" },
+                { accepted_values: ["näringsväv"], gap_id: "gap-002" },
+              ],
+              kind: "gap_fill",
+            },
+            backend_failure_code: null,
+            backend_status: "success",
+            candidate_id: "candidate-item-013",
+            candidate_payload_digest: "sha256:candidate-item-013",
+            decision_state: "suggested",
+            item_id: "item-013",
+            item_type: "gap_fill",
+            model_profile: "qwen3.6-27b-q6k-mtp",
+            prompt_template_version: "digiexam-gap-fill-answer-key-v1",
+            provider_profile_id: "task309-llama-cpp",
+            schema_name: "digiexam_gap_fill_answer_key_decision_v1",
+            schema_version: "digiexam_gap_fill_answer_key_decision_v1",
+            sequence: 13,
+            validation_state: "valid",
+          }
+        : {
+            answer_payload: null,
+            backend_failure_code: null,
+            backend_status: "skipped",
+            candidate_id: null,
+            candidate_payload_digest: null,
+            decision_state: "skipped",
+            item_id: "item-013",
+            item_type: "gap_fill",
+            model_profile: null,
+            prompt_template_version: null,
+            provider_profile_id: null,
+            schema_name: null,
+            schema_version: null,
+            sequence: 13,
+            validation_state: "skipped",
+          },
     ],
     job_id: "job_exam_converter_review",
     schema_version: ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   };
 }
 
-function effectiveIrPayload() {
+function effectiveIrPayload(jobId: string) {
+  const isManualCorrection = jobId === MANUAL_GAP_FILL_APPLY_JOB_ID;
   return {
-    answer_key_completion_report_sha256: "sha256:completion-report-gap",
-    ingestion_overlay_sha256: "sha256:reviewed-overlay",
+    answer_key_completion_report_sha256: isManualCorrection
+      ? null
+      : "sha256:completion-report-gap",
+    ingestion_overlay_sha256: isManualCorrection
+      ? "sha256:manual-gap-fill-overlay"
+      : "sha256:reviewed-overlay",
     items: [
       {
         effective_answer_key: {
           correct_gap_answers: [
-            { gap_id: "gap-001", value: "kretslopp" },
-            { gap_id: "gap-002", value: "näringsväv" },
+            { "gap-001": "kretslopp" },
+            { "gap-002": "näringsväv" },
           ],
-          lineage: {
-            candidate_id: "candidate-item-013",
-            review_outcome: "accepted_unchanged",
-          },
-          provenance: "reviewed",
+          lineage: isManualCorrection
+            ? null
+            : {
+                candidate_id: "candidate-item-013",
+                review_outcome: "accepted_unchanged",
+              },
+          provenance: isManualCorrection ? "teacher_provided" : "reviewed",
         },
         effective_item_patch: null,
         effective_point_correction: null,
@@ -293,11 +323,57 @@ export function mockVisionBackedGapFillReviewArtifacts(
       }
       if (artifactKey === "answer_key_completion_report") {
         return Promise.resolve(
-          artifactJsonBlob("answer_key_completion_report", answerKeyCompletionReportPayload()),
+          artifactJsonBlob("answer_key_completion_report", answerKeyCompletionReportPayload(true)),
         );
       }
       if (artifactKey === "effective_ir_json") {
-        return Promise.resolve(artifactJsonBlob("effective_ir_json", effectiveIrPayload()));
+        return Promise.resolve(artifactJsonBlob("effective_ir_json", effectiveIrPayload(jobId)));
+      }
+      return Promise.resolve(artifactJsonBlob(artifactKey, {}));
+    },
+  );
+}
+
+export function mockManualGapFillCorrectionArtifacts(
+  gatewayMocks: ExamConverterGatewayMocks,
+): void {
+  gatewayMocks.submitDigiExamMigration.mockImplementation(
+    (params: { ingestionOverlay?: unknown }) =>
+      Promise.resolve(
+        submittedJob(
+          "succeeded",
+          params.ingestionOverlay ? MANUAL_GAP_FILL_APPLY_JOB_ID : undefined,
+        ),
+      ),
+  );
+  gatewayMocks.listDigiExamMigrationArtifacts.mockImplementation(
+    ({ jobId }: { jobId: string }) => Promise.resolve(artifactManifestPayload(jobId)),
+  );
+  gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
+    ({ artifactKey, jobId }: { artifactKey: string; jobId: string }) => {
+      if (artifactKey === "ir_json") {
+        return Promise.resolve(artifactJsonBlob("ir_json", irJsonPayload(jobId)));
+      }
+      if (artifactKey === "migration_manifest") {
+        return Promise.resolve(
+          artifactJsonBlob("migration_manifest", migrationManifestPayload(jobId)),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(
+            DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
+            targetReadinessReportPayload(jobId),
+          ),
+        );
+      }
+      if (artifactKey === "answer_key_completion_report") {
+        return Promise.resolve(
+          artifactJsonBlob("answer_key_completion_report", answerKeyCompletionReportPayload(false)),
+        );
+      }
+      if (artifactKey === "effective_ir_json") {
+        return Promise.resolve(artifactJsonBlob("effective_ir_json", effectiveIrPayload(jobId)));
       }
       return Promise.resolve(artifactJsonBlob(artifactKey, {}));
     },

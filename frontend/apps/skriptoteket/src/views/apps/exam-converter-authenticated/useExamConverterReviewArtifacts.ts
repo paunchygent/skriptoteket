@@ -29,7 +29,7 @@ import {
 import type { SirConvertArtifactBlob, SirConvertArtifactManifest } from "../../../api/sirConvertGateway";
 import {
   parseAnswerKeyCompletionReport,
-  parseEffectiveAnswerKeysByItem,
+  parseEffectiveItemState,
 } from "./digiexamAnswerKeyCompletionReport";
 import {
   parseExamConverterReviewProjection,
@@ -202,13 +202,14 @@ export function useExamConverterReviewArtifacts(
             payload: completionReportArtifact.payload,
           })
         : null;
-      const effectiveAnswerKeysByItem = effectiveIrArtifact
-        ? parseEffectiveAnswerKeysByItem(effectiveIrArtifact.payload)
+      const effectiveItemState = effectiveIrArtifact
+        ? parseEffectiveItemState(effectiveIrArtifact.payload)
         : null;
       const parsedProjection = parseExamConverterReviewProjection({
         answerKeyCompletionReport,
         artifactManifest,
-        effectiveAnswerKeysByItem,
+        effectiveAnswerKeysByItem: effectiveItemState?.answerKeysByItem ?? null,
+        effectivePointCorrectionsByItem: effectiveItemState?.pointCorrectionsByItem ?? null,
         irJson,
         migrationManifest,
         targetReadinessReport,

@@ -19,6 +19,7 @@ import type {
 } from "../../api/sirConvertGateway";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
@@ -152,7 +153,16 @@ export function reviewItem(overrides: Record<string, unknown> = {}) {
   };
 }
 
-export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): void {
+export type ExamConverterReviewArtifactOptions = {
+  choiceCandidateAvailable?: boolean;
+  manualAnswerKeyApplied?: boolean;
+  pointCorrectionApplied?: boolean;
+};
+
+export function mockReviewArtifacts(
+  gatewayMocks: ExamConverterGatewayMocks,
+  options: ExamConverterReviewArtifactOptions = {},
+): void {
   gatewayMocks.listDigiExamMigrationArtifacts.mockResolvedValue({
     artifacts: [
       {
@@ -187,6 +197,18 @@ export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): vo
         sha256: "sha256:completion-report",
         size_bytes: 1_024,
       },
+      ...(options.pointCorrectionApplied || options.manualAnswerKeyApplied
+        ? [
+            {
+              artifact_key: DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
+              availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+              content_type: "application/json",
+              filename: "effective-ir.json",
+              sha256: "sha256:effective-ir-with-correction",
+              size_bytes: 512,
+            },
+          ]
+        : []),
     ],
     bundle_status: SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
     job_id: "job_exam_converter_review",
@@ -338,34 +360,63 @@ export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): vo
             job_id: "job_exam_converter_review",
             source_ir_sha256: "sha256:ir",
             effective_exam_sha256: "sha256:effective",
-            targets: [
-              {
-                target: DIGIEXAM_TARGET_EXAMNET_PDF,
-                readiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
-                export_enabled: false,
-                artifact_key: null,
-                reason_code: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
-                teacher_action: "supply_answer_key_overlay",
-                retryable: false,
-                message_key: "exam_converter.target.needs_teacher_answer_key",
-                item_id: "item-004",
-                sequence: 4,
-                source_item_fingerprint: "sha256:item-004",
-              },
-              {
-                target: DIGIEXAM_TARGET_QTI_PACKAGE,
-                readiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
-                export_enabled: false,
-                artifact_key: null,
-                reason_code: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
-                teacher_action: "supply_answer_key_overlay",
-                retryable: false,
-                message_key: "exam_converter.target.needs_teacher_answer_key",
-                item_id: "item-004",
-                sequence: 4,
-                source_item_fingerprint: "sha256:item-004",
-              },
-            ],
+            targets: options.manualAnswerKeyApplied
+              ? [
+                  {
+                    target: DIGIEXAM_TARGET_EXAMNET_PDF,
+                    readiness: "ready",
+                    export_enabled: true,
+                    artifact_key: DIGIEXAM_TARGET_EXAMNET_PDF,
+                    reason_code: "target_available",
+                    teacher_action: "none",
+                    retryable: false,
+                    message_key: "exam_converter.target.ready",
+                    item_id: null,
+                    sequence: null,
+                    source_item_fingerprint: null,
+                  },
+                  {
+                    target: DIGIEXAM_TARGET_QTI_PACKAGE,
+                    readiness: "ready",
+                    export_enabled: true,
+                    artifact_key: DIGIEXAM_TARGET_QTI_PACKAGE,
+                    reason_code: "target_available",
+                    teacher_action: "none",
+                    retryable: false,
+                    message_key: "exam_converter.target.ready",
+                    item_id: null,
+                    sequence: null,
+                    source_item_fingerprint: null,
+                  },
+                ]
+              : [
+                  {
+                    target: DIGIEXAM_TARGET_EXAMNET_PDF,
+                    readiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
+                    export_enabled: false,
+                    artifact_key: null,
+                    reason_code: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
+                    teacher_action: "supply_answer_key_overlay",
+                    retryable: false,
+                    message_key: "exam_converter.target.needs_teacher_answer_key",
+                    item_id: "item-004",
+                    sequence: 4,
+                    source_item_fingerprint: "sha256:item-004",
+                  },
+                  {
+                    target: DIGIEXAM_TARGET_QTI_PACKAGE,
+                    readiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
+                    export_enabled: false,
+                    artifact_key: null,
+                    reason_code: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
+                    teacher_action: "supply_answer_key_overlay",
+                    retryable: false,
+                    message_key: "exam_converter.target.needs_teacher_answer_key",
+                    item_id: "item-004",
+                    sequence: 4,
+                    source_item_fingerprint: "sha256:item-004",
+                  },
+                ],
           }),
         );
       }
@@ -375,28 +426,102 @@ export function mockReviewArtifacts(gatewayMocks: ExamConverterGatewayMocks): vo
             schema_version: ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
             completion_mode: "local_llm_suggest_missing_machine_marked",
             job_id: "job_exam_converter_review",
+            items:
+              options.choiceCandidateAvailable === false
+                ? [
+                    {
+                      item_id: "item-004",
+                      sequence: 4,
+                      item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+                      decision_state: "skipped",
+                      validation_state: "skipped",
+                      backend_status: "skipped",
+                      backend_failure_code: null,
+                      candidate_id: null,
+                      candidate_payload_digest: null,
+                      provider_profile_id: null,
+                      model_profile: null,
+                      prompt_template_version: null,
+                      schema_name: null,
+                      schema_version: null,
+                      answer_payload: null,
+                    },
+                  ]
+                : [
+                    {
+                      item_id: "item-004",
+                      sequence: 4,
+                      item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+                      decision_state: "suggested",
+                      validation_state: "valid",
+                      backend_status: "ok",
+                      backend_failure_code: null,
+                      candidate_id: "candidate-item-004",
+                      candidate_payload_digest: "sha256:candidate-item-004",
+                      provider_profile_id: "task309-llama-cpp",
+                      model_profile: "local",
+                      prompt_template_version: "digiexam-choice-answer-key-v1",
+                      schema_name: "digiexam_choice_answer_key_decision_v1",
+                      schema_version: "digiexam_choice_answer_key_decision_v1",
+                      answer_payload: {
+                        kind: "choice",
+                        correct_alternative_ids: [3],
+                      },
+                    },
+                  ],
+          }),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON) {
+        return Promise.resolve(
+          artifactJsonBlob(DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON, {
+            answer_key_completion_report_sha256: null,
+            ingestion_overlay_sha256: "sha256:point-correction-overlay",
             items: [
-              {
-                item_id: "item-004",
-                sequence: 4,
-                item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
-                decision_state: "suggested",
-                validation_state: "valid",
-                backend_status: "ok",
-                backend_failure_code: null,
-                candidate_id: "candidate-item-004",
-                candidate_payload_digest: "sha256:candidate-item-004",
-                provider_profile_id: "task309-llama-cpp",
-                model_profile: "local",
-                prompt_template_version: "digiexam-choice-answer-key-v1",
-                schema_name: "digiexam_choice_answer_key_decision_v1",
-                schema_version: "digiexam_choice_answer_key_decision_v1",
-                answer_payload: {
-                  kind: "choice",
-                  correct_alternative_ids: [3],
-                },
-              },
+              ...(options.manualAnswerKeyApplied
+                ? [
+                    {
+                      applied_overlay_entry_ids: ["item-004"],
+                      effective_answer_key: {
+                        correct_alternative_ids: [2],
+                        lineage: null,
+                        provenance: "teacher_provided",
+                      },
+                      effective_item_patch: null,
+                      effective_point_correction: null,
+                      item_id: "item-004",
+                      item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+                      review_decisions: [],
+                      sequence: 4,
+                      source_item_fingerprint: "sha256:item-004",
+                    },
+                  ]
+                : []),
+              ...(options.pointCorrectionApplied
+                ? [
+                    {
+                      applied_overlay_entry_ids: ["item-012"],
+                      effective_answer_key: null,
+                      effective_item_patch: null,
+                      effective_point_correction: {
+                        effective_max_score: 3,
+                        kind: "item_points",
+                        source_item_fingerprint: "sha256:item-012",
+                        source_max_score: null,
+                      },
+                      item_id: "item-012",
+                      item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+                      review_decisions: [],
+                      sequence: 12,
+                      source_item_fingerprint: "sha256:item-012",
+                    },
+                  ]
+                : []),
             ],
+            schema_version: DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
+            source_file_sha256: "sha256:source",
+            source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
+            source_ir_sha256: "sha256:ir",
           }),
         );
       }

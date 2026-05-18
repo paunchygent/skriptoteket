@@ -18,6 +18,10 @@ import type {
   ExamConverterAiFacitReviewAction,
   ExamConverterReviewedSuggestionDecision,
 } from "./useExamConverterAiFacitReview";
+import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
+import ExamConverterEffectiveAnswerKeySummary from "./ExamConverterEffectiveAnswerKeySummary.vue";
+import ExamConverterManualAnswerKeyEditor from "./ExamConverterManualAnswerKeyEditor.vue";
+import ExamConverterPointCorrectionEditor from "./ExamConverterPointCorrectionEditor.vue";
 import ExamConverterQuestionNavigator from "./ExamConverterQuestionNavigator.vue";
 import ExamConverterQuestionTable from "./ExamConverterQuestionTable.vue";
 
@@ -29,6 +33,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   acceptEditedChoiceSuggestion: [question: ExamConverterQuestionReviewRow, correctIds: number[]];
   acceptSuggestion: [question: ExamConverterQuestionReviewRow];
+  applyManualAnswerKey: [
+    question: ExamConverterQuestionReviewRow,
+    answerKey: ExamConverterManualAnswerKeyCorrection,
+  ];
+  applyPointCorrection: [question: ExamConverterQuestionReviewRow, maxScore: number];
   reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
 }>();
 
@@ -314,9 +323,24 @@ watch(
               </dt>
               <dd class="text-navy">
                 {{ selectedQuestion.pointsLabel }}
+                <span
+                  v-if="selectedQuestion.effectivePointCorrection"
+                  class="ml-2 text-xs font-semibold uppercase tracking-[0.08em] text-success"
+                >
+                  Ändrad
+                </span>
               </dd>
             </div>
+            <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
           </dl>
+          <ExamConverterPointCorrectionEditor
+            :question="selectedQuestion"
+            @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
+          />
+          <ExamConverterManualAnswerKeyEditor
+            :question="selectedQuestion"
+            @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
+          />
         </section>
 
         <section

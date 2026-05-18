@@ -14,6 +14,7 @@
 
 import type {
   DigiExamEffectiveAnswerKey,
+  DigiExamEffectivePointCorrection,
   DigiExamItemType,
 } from "../../../api/sirConvertGateway";
 import {
@@ -50,6 +51,11 @@ export type ExamConverterLucktextStructure = {
   images: ExamConverterLucktextImage[];
 };
 
+export type ExamConverterQuestionGap = {
+  id: string;
+  label: string;
+};
+
 export type ExamConverterQuestionReviewRow = {
   itemId: string;
   itemType: DigiExamItemType;
@@ -57,15 +63,19 @@ export type ExamConverterQuestionReviewRow = {
   sourceItemFingerprint: string | null;
   title: string;
   typeLabel: string;
+  pointsValue: number | null;
   pointsLabel: string;
   promptText: string;
   missingFields: ExamConverterMissingFieldLabel[];
   status: ExamConverterQuestionReviewStatus;
   statusSymbol: ExamConverterQuestionStatusSymbol;
   currentAnswerKeyProvenance: string;
+  effectiveAnswerKey: DigiExamEffectiveAnswerKey | null;
+  effectivePointCorrection: DigiExamEffectivePointCorrection | null;
   llmCandidate: ExamConverterLlmAnswerKeyCandidate | null;
   manualFollowUpMessages: string[];
   alternatives: ExamConverterQuestionAlternative[];
+  gaps: ExamConverterQuestionGap[];
   lucktextStructure: ExamConverterLucktextStructure | null;
 };
 
@@ -94,6 +104,10 @@ export type DigiExamIrEmbeddedAssetReference = {
   referenceOrder: number;
 };
 
+export type DigiExamIrGap = {
+  id: string;
+};
+
 export type DigiExamIrManualFollowUp = {
   itemId: string;
   reason: string;
@@ -112,7 +126,7 @@ export type DigiExamIrItem = {
   warnings: Record<string, unknown>[];
   options: string[];
   alternatives: DigiExamIrAlternative[];
-  gaps: Record<string, unknown>[];
+  gaps: DigiExamIrGap[];
   embeddedAssets: DigiExamIrEmbeddedAsset[];
   embeddedAssetReferences: DigiExamIrEmbeddedAssetReference[];
 };
@@ -171,6 +185,13 @@ function projectAlternatives(item: DigiExamIrItem): ExamConverterQuestionAlterna
   }
 
   return [];
+}
+
+function projectGaps(item: DigiExamIrItem): ExamConverterQuestionGap[] {
+  return item.gaps.map((gap, index) => ({
+    id: gap.id,
+    label: `Lucka ${index + 1}`,
+  }));
 }
 
 function countPromptHtmlMatches(promptHtml: string | null, pattern: RegExp): number {
@@ -243,11 +264,12 @@ function uniqueLabels(labels: ExamConverterMissingFieldLabel[]): ExamConverterMi
 }
 
 function missingFieldsForItem(
+  effectivePointCorrection: DigiExamEffectivePointCorrection | null,
   item: DigiExamIrItem,
   followUps: DigiExamIrManualFollowUp[],
 ): ExamConverterMissingFieldLabel[] {
   const labels: ExamConverterMissingFieldLabel[] = [];
-  if (item.maxScore === null) {
+  if (item.maxScore === null && effectivePointCorrection === null) {
     labels.push("Poäng");
   }
   if (
@@ -329,14 +351,20 @@ export function projectQuestionReviewRow(
   sourceItemFingerprint: string | null,
   llmCandidate: ExamConverterLlmAnswerKeyCandidate | null,
   effectiveAnswerKey: DigiExamEffectiveAnswerKey | null = null,
+  effectivePointCorrection: DigiExamEffectivePointCorrection | null = null,
 ): ExamConverterQuestionReviewRow {
   const resolvedFollowUps = followUpsForEffectiveAnswerKey({
     effectiveAnswerKey,
     followUps: itemFollowUps,
   });
   const resolvedCandidate = hasEffectiveAnswerKey(effectiveAnswerKey) ? null : llmCandidate;
-  const missingFields = missingFieldsForItem(item, resolvedFollowUps);
+  const missingFields = missingFieldsForItem(
+    effectivePointCorrection,
+    item,
+    resolvedFollowUps,
+  );
   const promptText = promptTextForItem(item);
+  const pointsValue = effectivePointCorrection?.effective_max_score ?? item.maxScore;
   return {
     itemId: item.itemId,
     itemType: item.itemType,
@@ -344,7 +372,8 @@ export function projectQuestionReviewRow(
     sourceItemFingerprint,
     title: item.title || promptText,
     typeLabel: typeLabelForItemType(item.itemType),
-    pointsLabel: item.maxScore === null ? "—" : `${item.maxScore.toLocaleString("sv-SE")} p`,
+    pointsValue,
+    pointsLabel: pointsValue === null ? "—" : `${pointsValue.toLocaleString("sv-SE")} p`,
     promptText,
     missingFields,
     status: isAttentionRow({ followUps: resolvedFollowUps, item, missingFields })
@@ -354,11 +383,14 @@ export function projectQuestionReviewRow(
     currentAnswerKeyProvenance: hasEffectiveAnswerKey(effectiveAnswerKey)
       ? effectiveAnswerKey.provenance
       : item.answerKey.provenance,
+    effectiveAnswerKey,
+    effectivePointCorrection,
     llmCandidate: resolvedCandidate,
     manualFollowUpMessages: resolvedFollowUps
       .map((followUp) => followUp.message)
       .filter((message) => message.length > 0),
     alternatives: projectAlternatives(item),
+    gaps: projectGaps(item),
     lucktextStructure: projectLucktextStructure(item),
   };
 }

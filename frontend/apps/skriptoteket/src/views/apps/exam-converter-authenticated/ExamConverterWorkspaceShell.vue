@@ -32,6 +32,7 @@ import type {
   ExamConverterAiFacitReviewAction,
   ExamConverterReviewedSuggestionDecision,
 } from "./useExamConverterAiFacitReview";
+import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterFileActionStates } from "./useExamConverterFileActions";
 import type { ExamConverterResultStripState } from "./useExamConverterConversionState";
 import type { ExamConverterReviewArtifactsStatus } from "./useExamConverterReviewArtifacts";
@@ -64,6 +65,14 @@ const emit = defineEmits<{
     correctIds: number[],
   ];
   acceptSuggestion: [question: ExamConverterReviewProjection["questions"][number]];
+  applyManualAnswerKey: [
+    question: ExamConverterReviewProjection["questions"][number],
+    answerKey: ExamConverterManualAnswerKeyCorrection,
+  ];
+  applyPointCorrection: [
+    question: ExamConverterReviewProjection["questions"][number],
+    maxScore: number,
+  ];
   applyReviewedSuggestions: [];
   downloadFile: [file: ExamConverterReviewFile];
   filesDropped: [files: File[]];
@@ -201,6 +210,8 @@ function handleDrop(event: DragEvent): void {
             :projection="reviewProjection"
             @accept-edited-choice-suggestion="(question, correctIds) => emit('acceptEditedChoiceSuggestion', question, correctIds)"
             @accept-suggestion="emit('acceptSuggestion', $event)"
+            @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
+            @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
             @review-action-focused="emit('reviewActionFocused', $event)"
           />
           <ExamConverterFilesReadinessList

@@ -195,15 +195,14 @@ opening anonymous conversion uploads.
     source-only accepted-current-state overwrite path. Remaining proof must
     inspect target readiness and downloaded PDF/QTI artifacts before UI labels
     or phone layouts can safely promise export readiness.
-14. Teacher-owned correction overlay contract (`PR-0332`, blocked by
-    Sir Convert Task 322 and pending `ADR-0086`):
+14. Teacher-owned correction overlay contract (`PR-0332`, in progress):
     separates the broader teacher edit workflow from `PR-0331`. It must map and
     implement source-bound correction overlays for stems/prompts, points, choice
-    keys, matching keys, and gapped/open-cloze accepted values only after the
-    decision boundary is accepted. Points/scoring specifically requires the
-    small Sir Convert producer-owned Task 322 to land immediately before
-    `PR-0332`; Skriptoteket must consume that producer DTO rather than invent a
-    local point-editing path.
+    keys, and gapped/open-cloze accepted values. `ADR-0086` is accepted, Sir
+    Convert Tasks 322/323 have landed, Sir Convert Task 333 and HuleEdu
+    TASK-0567 now gate unified non-matching continuation, and matching remains
+    blocked until Sir Convert Task 332 provides a real matching-capable
+    producer.
 
 ## Notes
 

@@ -75,12 +75,16 @@ Keep this file updated so the next session can pick up work quickly.
   gapped key values must still be included. Do not treat current DigiExam
   adapter restrictions as product limitations.
 - `PR-0331` governance correction: teacher-owned correction/edit workflow is
-  not a product decision made inside `PR-0331`. Proposed `ADR-0086` and
-  independent `PR-0332` now govern stems/prompts, points, choice keys, matching
-  keys, and gapped/open-cloze teacher correction overlays.
-- `ADR-0086` is accepted and `REV-PR-0332` is approved for the corrected
-  contract. Sir Convert Task 322 and Skriptoteket generated-type preflight are
-  complete, so `PR-0332` is ready for its separate implementation pass.
+  not a product decision made inside `PR-0331`. Accepted `ADR-0086` and
+  independent `PR-0332` now govern stems/prompts, points, choice keys, and
+  gapped/open-cloze teacher correction overlays. Matching remains future work
+  until Sir Convert Task 332 provides a real matching-capable producer.
+- `ADR-0086` is accepted and `REV-PR-0332` is approved. Task 322 and Task 323
+  remain useful producer prerequisites; Task 324's matching route is
+  superseded/abandoned by accepted Sir Convert ADR-0011 and completed Task 327.
+  New `PR-0332` correction work must wait for Sir Convert Task 333 and HuleEdu
+  TASK-0567 for non-matching unified corrections, and must not preserve the old
+  route as a bridge, shim, alias, wrapper, adapter, or compatibility layer.
 - User-supplied `PR-0331` evidence was copied to:
   `.artifacts/pr-0331-user-evidence/`.
 - Local artifact inspection found:
@@ -116,6 +120,9 @@ Keep this file updated so the next session can pick up work quickly.
 - Remaining code pointers for `PR-0331`:
   - `useExamConverterAiFacitReview.ts` builds reviewed overlay items.
   - `useExamConverterReviewArtifacts.ts` loads optional `effective_ir_json`.
+- `PR-0331` durable live proof script is added:
+  `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`, with artifact checks
+  in `scripts/_pr_0331_reviewed_ai_facit_artifacts.py`.
 ## Verification
 - Current `PR-0331` second cleanup passed:
   `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`.
@@ -124,32 +131,31 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`.
 - Current `PR-0331` second cleanup passed: `pdm run fe-lint` and
   `pdm run docs-validate`.
-- Current user-correction pass passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`.
-- Current user-correction pass passed:
-  `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`,
-  `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run docs-validate`.
-- Current PR-0332 unblock pass passed:
-  `pdm run fe-test -- --run src/api/sirConvertGateway/completionContract.spec.ts`
-  and `pdm run fe-type-check`.
-- Current user-correction pass passed: `pdm run fe-build` (with existing Vite
-  chunk-size warning), `pdm run handoff-validate`, and `git diff --check`.
-- Current `PR-0331` cleanup passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`.
-- Current `PR-0331` focused suite passed:
-  `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts`.
-- Current `PR-0331` cleanup passed: `pdm run fe-type-check` and
-  `pdm run fe-lint`.
-- Current `PR-0331` cleanup passed: `pdm run fe-build` (with the existing
-  Vite chunk-size warning), `pdm run docs-validate`,
-  `pdm run handoff-validate`, and `git diff --check`.
+- Current PR-0332 point/manual-choice/manual-gap correction slice passed
+  focused Vitest for `ExamConverterAuthenticatedCorrectionSlice.spec.ts` and
+  `ExamConverterAuthenticatedReviewSlice.spec.ts` (2 files / 16 tests).
+- Current PR-0332 point/manual-choice/manual-gap correction slice passed
+  broader focused Vitest (9 files / 56 tests), `pdm run fe-type-check`,
+  `pdm run fe-lint`, `pdm run fe-build` with the existing Vite chunk-size
+  warning, `pdm run docs-validate`, `pdm run handoff-validate`, and
+  `git diff --check`.
+- Previous PR-0332 point/manual-choice correction slice passed focused Vitest
+  (9 files / 55 tests), `pdm run fe-type-check`, `pdm run fe-lint`, and
+  `pdm run fe-build` with the existing Vite chunk-size warning.
 - Current `PR-0331` governance correction proof:
   `frontend/apps/skriptoteket/node_modules/.bin/openapi-typescript /Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/_generated/openapi/sir-convert-a-lot-v2.openapi.json -o /tmp/sirConvertOpenapi.current.d.ts`
   and `diff -u frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts /tmp/sirConvertOpenapi.current.d.ts`
   produced no diff.
-- Earlier PR-0329 closeout passed focused Vitest, typecheck, lint, build,
-  docs/handoff validation, diff-check, and authenticated HuleEdu edge proof;
-  details are retained in long-term memory.
+- Current `PR-0331` script-surface proof passed:
+  `pdm run python -m py_compile scripts/playwright_pr_0331_reviewed_ai_facit_live.py scripts/_pr_0331_reviewed_ai_facit_artifacts.py`
+  plus `pdm run test tests/unit/scripts/test_playwright_script_surface.py` and
+  `pdm run lint`.
+- Current `PR-0331` live script reached authenticated Skriptoteket/HuleEdu/Sir
+  Convert, then failed fast before reviewed apply because
+  `answer_key_completion_report` returned zero valid suggestions:
+  `provider_config_missing` for items 1-3 and `unsupported_assets` for item 13.
+  Evidence:
+  `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T174149Z/`.
 ## How to Run
 ```bash
 pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts
@@ -161,14 +167,12 @@ pdm run handoff-validate
 git diff --check
 ```
 ## Known Issues / Risks
-- The first `PR-0331` cleanup blocks the source-only accepted-current-state
-  overwrite path when reviewed effective keys are present, but downloaded
-  PDF/QTI artifact proof is still required.
+- The live `PR-0331` proof script now exists, but final downloaded PDF/QTI
+  artifact proof is blocked until Sir Convert runs with a configured provider
+  that returns valid AI-facit suggestions.
 - Exported artifacts must not expose internal fallback/parser diagnostics.
 - Teacher edit of prompts/stems and correct keys is not governed by `PR-0331`;
-  proposed `ADR-0086` and `PR-0332` must be accepted/implemented before the UI
-  offers local edit controls that imply persisted correction or export
-  readiness.
+  accepted `ADR-0086` and in-progress `PR-0332` own those correction controls.
 - User correction: rejected AI suggestions and global
   rejection must become an explicit, non-confusing contract before PDF/QTI
   generation; the old local-only reject path has been removed.
@@ -179,12 +183,13 @@ git diff --check
 ## Next Steps
 - Keep lane boundaries strict: `PR-0330` outside-designer layout, `PR-0331`
   Codex plumbing/export contract.
-- Continue `PR-0331`: add the durable live Playwright proof script in the
-  sanctioned location and run it against auth edge, Sir Convert, and tunneled
-  LLM. Local tests and generated-type no-diff proof are not final acceptance.
-- Keep `PR-0332` separate from `PR-0331`; the points/scoring producer
-  prerequisite is satisfied, but teacher edit/correction controls still need
-  the separate `PR-0332` implementation pass.
-- Implement `PR-0330` separately as phone/tablet/desktop layout strategy.
-- Rerun/unblock `PR-0324` authenticated proof only after reviewed-key export
-  behavior is understood.
+- Continue `PR-0331`: rerun the durable live Playwright proof against auth edge,
+  Sir Convert, and a correctly configured provider-backed runtime. Local tests,
+  generated-type no-diff proof, and provider-missing evidence are not final
+  acceptance.
+- Keep `PR-0332` separate from `PR-0331`; do not continue the Task 324 route.
+  Next dependency is Sir Convert Task 333, then HuleEdu TASK-0567, then
+  Skriptoteket consumer migration for non-matching corrections only. Matching
+  remains blocked on Sir Convert Task 332.
+- Implement `PR-0330` separately as phone/tablet/desktop layout strategy; rerun
+  `PR-0324` proof only after reviewed-key export behavior is understood.

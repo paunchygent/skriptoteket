@@ -29,6 +29,11 @@ import {
   REVIEWED_COMPLETION_MODE,
   useExamConverterAiFacitReview,
 } from "./exam-converter-authenticated/useExamConverterAiFacitReview";
+import {
+  buildManualAnswerKeyOverlay,
+  buildPointCorrectionOverlay,
+  type ExamConverterManualAnswerKeyCorrection,
+} from "./exam-converter-authenticated/digiexamTeacherCorrectionOverlay";
 import { isProviderOnlyAdvisoryFailureReport } from "./exam-converter-authenticated/digiexamAnswerKeyCompletionReport";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
@@ -36,6 +41,7 @@ import { useExamConverterFileActions } from "./exam-converter-authenticated/useE
 import { useExamConverterReviewArtifacts } from "./exam-converter-authenticated/useExamConverterReviewArtifacts";
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
 import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated/useExamConverterConversionState";
+import type { ExamConverterQuestionReviewRow } from "./exam-converter-authenticated/digiexamIrReviewParser";
 const props = defineProps<{
   inspectionFixtureId?: string | null;
 }>();
@@ -318,6 +324,74 @@ async function handleApplyReviewedSuggestions(): Promise<void> {
   }
 }
 
+async function handleApplyPointCorrection(
+  question: ExamConverterQuestionReviewRow,
+  maxScore: number,
+): Promise<void> {
+  const sourceSelection = selectedSourceFile.value;
+  const projection = reviewProjection.value;
+  if (!sourceSelection || !projection || isConversionRunning.value) {
+    return;
+  }
+  const overlay = buildPointCorrectionOverlay({
+    maxScore,
+    projection,
+    question,
+  });
+  resetFileActions();
+  startConversion();
+  try {
+    const result = await submitAndPoll({
+      completionMode: ACCEPT_CURRENT_STATE_COMPLETION_MODE,
+      ingestionOverlay: overlay,
+      sourceFile: sourceSelection.file,
+      supportingFile: selectedSupportingFile.value?.file ?? null,
+      targetSelection: { ...selectedTargetFormats.value },
+    });
+    if (result) {
+      acceptedCurrentState.value = false;
+      reviewedCompletionApplied.value = false;
+      await finishRuntimeResult(result, "questions", false);
+    }
+  } catch {
+    failConversion();
+  }
+}
+
+async function handleApplyManualAnswerKey(
+  question: ExamConverterQuestionReviewRow,
+  answerKey: ExamConverterManualAnswerKeyCorrection,
+): Promise<void> {
+  const sourceSelection = selectedSourceFile.value;
+  const projection = reviewProjection.value;
+  if (!sourceSelection || !projection || isConversionRunning.value) {
+    return;
+  }
+  const overlay = buildManualAnswerKeyOverlay({
+    answerKey,
+    projection,
+    question,
+  });
+  resetFileActions();
+  startConversion();
+  try {
+    const result = await submitAndPoll({
+      completionMode: ACCEPT_CURRENT_STATE_COMPLETION_MODE,
+      ingestionOverlay: overlay,
+      sourceFile: sourceSelection.file,
+      supportingFile: selectedSupportingFile.value?.file ?? null,
+      targetSelection: { ...selectedTargetFormats.value },
+    });
+    if (result) {
+      acceptedCurrentState.value = false;
+      reviewedCompletionApplied.value = false;
+      await finishRuntimeResult(result, "questions", false);
+    }
+  } catch {
+    failConversion();
+  }
+}
+
 async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> {
   const correlationId = lastCorrelationId.value;
   const jobId = lastJobId.value;
@@ -410,6 +484,8 @@ onMounted(async () => {
         @accept-all-ai-suggestions="acceptAllSuggestions(reviewProjection)"
         @accept-edited-choice-suggestion="acceptEditedChoiceSuggestion"
         @accept-suggestion="acceptSuggestion"
+        @apply-manual-answer-key="handleApplyManualAnswerKey"
+        @apply-point-correction="handleApplyPointCorrection"
         @apply-reviewed-suggestions="handleApplyReviewedSuggestions"
         @download-file="handleDownloadFile"
         @files-dropped="selectDroppedFiles"

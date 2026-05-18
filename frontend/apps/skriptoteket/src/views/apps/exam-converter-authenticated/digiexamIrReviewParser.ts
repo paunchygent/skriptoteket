@@ -46,6 +46,7 @@ import {
   type DigiExamIrAnswerKey,
   type DigiExamIrEmbeddedAsset,
   type DigiExamIrEmbeddedAssetReference,
+  type DigiExamIrGap,
   type DigiExamIrItem,
   type DigiExamIrManualFollowUp,
   type ExamConverterQuestionReviewRow,
@@ -53,6 +54,7 @@ import {
 import type {
   ExamConverterAnswerKeyCompletionReport,
   ExamConverterEffectiveAnswerKeyByItem,
+  ExamConverterEffectivePointCorrectionByItem,
   ExamConverterLlmAnswerKeyCandidate,
 } from "./digiexamAnswerKeyCompletionReport";
 
@@ -61,6 +63,7 @@ export type {
   ExamConverterLucktextStructure,
   ExamConverterMissingFieldLabel,
   ExamConverterQuestionAlternative,
+  ExamConverterQuestionGap,
   ExamConverterQuestionReviewRow,
   ExamConverterQuestionReviewStatus,
 } from "./digiexamIrQuestionReviewProjection";
@@ -102,6 +105,7 @@ export type ExamConverterReviewProjection = {
   defaultMode: ExamConverterInspectionMode;
   answerKeyCompletionReport: ExamConverterAnswerKeyCompletionReport | null;
   effectiveAnswerKeysByItem: ExamConverterEffectiveAnswerKeyByItem;
+  effectivePointCorrectionsByItem: ExamConverterEffectivePointCorrectionByItem;
   acceptedStateOverlay: DigiExamIngestionOverlay | null;
 };
 
@@ -231,6 +235,14 @@ function parseEmbeddedAssetReference(
   };
 }
 
+function parseGap(value: unknown, fieldName: string): DigiExamIrGap {
+  const record = readRecord(value, fieldName);
+  const gapId = typeof record.gap_id === "string" ? record.gap_id : record.guid;
+  return {
+    id: readString(gapId, `${fieldName}.gap_id`),
+  };
+}
+
 function parseItem(value: unknown): DigiExamIrItem {
   const record = readRecord(value, "item");
   return {
@@ -247,7 +259,9 @@ function parseItem(value: unknown): DigiExamIrItem {
     alternatives: readOptionalRecordArray(record.alternatives, "item.alternatives").map(
       (entry, index) => parseAlternative(entry, `item.alternatives[${index}]`),
     ),
-    gaps: readOptionalRecordArray(record.gaps, "item.gaps"),
+    gaps: readOptionalRecordArray(record.gaps, "item.gaps").map((entry, index) =>
+      parseGap(entry, `item.gaps[${index}]`),
+    ),
     embeddedAssets: readOptionalRecordArray(
       record.embedded_assets,
       "item.embedded_assets",
@@ -423,6 +437,7 @@ export function parseExamConverterReviewProjection(params: {
   answerKeyCompletionReport?: ExamConverterAnswerKeyCompletionReport | null;
   artifactManifest: SirConvertArtifactManifest;
   effectiveAnswerKeysByItem?: ExamConverterEffectiveAnswerKeyByItem | null;
+  effectivePointCorrectionsByItem?: ExamConverterEffectivePointCorrectionByItem | null;
   irJson: unknown;
   migrationManifest: unknown;
   targetReadinessReport: DigiExamTargetReadinessReport;
@@ -441,6 +456,7 @@ export function parseExamConverterReviewProjection(params: {
       itemSummary?.sourceItemFingerprint ?? null,
       candidates.get(item.itemId) ?? null,
       params.effectiveAnswerKeysByItem?.get(item.itemId) ?? null,
+      params.effectivePointCorrectionsByItem?.get(item.itemId) ?? null,
     );
   });
 
@@ -480,6 +496,7 @@ export function parseExamConverterReviewProjection(params: {
     defaultMode: hasQuestionReview || validAiSuggestionCount > 0 ? "questions" : "files",
     answerKeyCompletionReport: params.answerKeyCompletionReport ?? null,
     effectiveAnswerKeysByItem: params.effectiveAnswerKeysByItem ?? new Map(),
+    effectivePointCorrectionsByItem: params.effectivePointCorrectionsByItem ?? new Map(),
     acceptedStateOverlay,
   };
 }

@@ -17,6 +17,7 @@ import type {
   DigiExamAnswerKeyCompletionReportItem,
   DigiExamEffectiveAnswerKey,
   DigiExamEffectiveExam,
+  DigiExamEffectivePointCorrection,
   DigiExamItemType,
 } from "../../../api/sirConvertGateway";
 import {
@@ -81,6 +82,14 @@ export type ExamConverterAnswerKeyCompletionReport = {
 };
 
 export type ExamConverterEffectiveAnswerKeyByItem = Map<string, DigiExamEffectiveAnswerKey>;
+export type ExamConverterEffectivePointCorrectionByItem = Map<
+  string,
+  DigiExamEffectivePointCorrection
+>;
+export type ExamConverterEffectiveItemState = {
+  answerKeysByItem: ExamConverterEffectiveAnswerKeyByItem;
+  pointCorrectionsByItem: ExamConverterEffectivePointCorrectionByItem;
+};
 
 const PROVIDER_REQUEST_FAILED = "provider_request_failed";
 const ADVISORY_MACHINE_MARKED_ITEM_TYPES = new Set<string>([
@@ -291,16 +300,29 @@ export function isProviderOnlyAdvisoryFailureReport(
   );
 }
 
-export function parseEffectiveAnswerKeysByItem(payload: unknown): ExamConverterEffectiveAnswerKeyByItem {
+export function parseEffectiveItemState(payload: unknown): ExamConverterEffectiveItemState {
   const root = readRecord(payload, "effective_ir_json") as DigiExamEffectiveExam;
   if (root.schema_version !== DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION) {
     throw new Error("DigiExam effective IR artifact has an unsupported schema version.");
   }
-  const itemsByItemId = new Map<string, DigiExamEffectiveAnswerKey>();
+  const answerKeysByItem = new Map<string, DigiExamEffectiveAnswerKey>();
+  const pointCorrectionsByItem = new Map<string, DigiExamEffectivePointCorrection>();
   for (const item of root.items) {
     if (item.effective_answer_key) {
-      itemsByItemId.set(item.item_id, item.effective_answer_key);
+      answerKeysByItem.set(item.item_id, item.effective_answer_key);
+    }
+    if (item.effective_point_correction) {
+      pointCorrectionsByItem.set(item.item_id, item.effective_point_correction);
     }
   }
-  return itemsByItemId;
+  return {
+    answerKeysByItem,
+    pointCorrectionsByItem,
+  };
+}
+
+export function parseEffectiveAnswerKeysByItem(
+  payload: unknown,
+): ExamConverterEffectiveAnswerKeyByItem {
+  return parseEffectiveItemState(payload).answerKeysByItem;
 }

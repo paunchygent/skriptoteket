@@ -242,6 +242,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v2/exam-authoring/matching/manual-answer-key/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Matching Manual Answer Key */
+        post: operations["apply_matching_manual_answer_key_v2_exam_authoring_matching_manual_answer_key_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v2/push/webhooks/subscriptions": {
         parameters: {
             query?: never;
@@ -1414,6 +1431,214 @@ export interface components {
             teacher_action: string;
         };
         /**
+         * ExamAuthoringMatchingAnswerKeyV1
+         * @description Source-neutral matching answer key for effective authoring state.
+         */
+        ExamAuthoringMatchingAnswerKeyV1: {
+            /**
+             * Pairs
+             * @default []
+             */
+            pairs: components["schemas"]["ExamAuthoringMatchingPairV1"][];
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed" | "mixed";
+        };
+        /**
+         * ExamAuthoringMatchingArtifactAvailabilityRowV1
+         * @description Artifact availability projection for a corrected matching interaction.
+         */
+        ExamAuthoringMatchingArtifactAvailabilityRowV1: {
+            /**
+             * Artifact Key
+             * @enum {string}
+             */
+            artifact_key: "examnet_pdf" | "qti_package";
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "available" | "unavailable";
+            /** Unavailable Code */
+            unavailable_code?: string | null;
+        };
+        /**
+         * ExamAuthoringMatchingChoiceV1
+         * @description One ordered source or target choice in a matching interaction.
+         */
+        ExamAuthoringMatchingChoiceV1: {
+            /** Choice Id */
+            choice_id: string;
+            /** Match Max */
+            match_max: number;
+            /** Match Min */
+            match_min: number;
+            /** Order */
+            order: number;
+            /** Text */
+            text: string;
+        };
+        /**
+         * ExamAuthoringMatchingInteractionV1
+         * @description Source-neutral matching interaction carried by a producer state surface.
+         */
+        ExamAuthoringMatchingInteractionV1: {
+            answer_key: components["schemas"]["ExamAuthoringMatchingAnswerKeyV1"];
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["ExamAuthoringSourceEvidenceV1"][];
+            /** Interaction Id */
+            interaction_id: string;
+            /** Max Associations */
+            max_associations: number;
+            /** Min Associations */
+            min_associations: number;
+            /**
+             * Schema Version
+             * @default exam_authoring_ir_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_ir_v1";
+            /** Source Choices */
+            source_choices: components["schemas"]["ExamAuthoringMatchingChoiceV1"][];
+            /** Source Item Fingerprint */
+            source_item_fingerprint?: string | null;
+            /** Target Choices */
+            target_choices: components["schemas"]["ExamAuthoringMatchingChoiceV1"][];
+        };
+        /**
+         * ExamAuthoringMatchingManualAnswerKey
+         * @description Source-neutral matching manual answer-key submission.
+         */
+        ExamAuthoringMatchingManualAnswerKey: {
+            answer_key: components["schemas"]["ExamAuthoringMatchingManualAnswerKeyPayload"];
+            /** Interaction Id */
+            interaction_id: string;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "matching";
+            /**
+             * Schema Version
+             * @default exam_authoring_ir_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_ir_v1";
+            /**
+             * Source Item Fingerprint
+             * @default null
+             */
+            source_item_fingerprint: string | null;
+        };
+        /**
+         * ExamAuthoringMatchingManualAnswerKeyApplyRequest
+         * @description Request body for applying a matching manual answer key.
+         */
+        ExamAuthoringMatchingManualAnswerKeyApplyRequest: {
+            exam_authoring_matching_manual_answer_key: components["schemas"]["ExamAuthoringMatchingManualAnswerKey"];
+            /**
+             * Requested Targets
+             * @default [
+             *       "examnet_pdf",
+             *       "qti_package"
+             *     ]
+             */
+            requested_targets: ("examnet_pdf" | "qti_package")[];
+            source_interaction: components["schemas"]["ExamAuthoringMatchingInteractionV1"];
+        };
+        /**
+         * ExamAuthoringMatchingManualAnswerKeyApplyResponse
+         * @description Producer-owned effective state returned after matching key application.
+         */
+        ExamAuthoringMatchingManualAnswerKeyApplyResponse: {
+            /** Artifact Availability */
+            artifact_availability: components["schemas"]["ExamAuthoringMatchingArtifactAvailabilityRowV1"][];
+            effective_interaction: components["schemas"]["ExamAuthoringMatchingInteractionV1"];
+            /**
+             * Schema Version
+             * @default exam_authoring_matching_apply_result_v1
+             * @constant
+             */
+            schema_version: "exam_authoring_matching_apply_result_v1";
+            /** Target Readiness */
+            target_readiness: components["schemas"]["ExamAuthoringMatchingTargetReadinessRowV1"][];
+        };
+        /**
+         * ExamAuthoringMatchingManualAnswerKeyPair
+         * @description One submitted source-to-target matching answer pair.
+         */
+        ExamAuthoringMatchingManualAnswerKeyPair: {
+            /** Source Id */
+            source_id: string;
+            /** Target Id */
+            target_id: string;
+        };
+        /**
+         * ExamAuthoringMatchingManualAnswerKeyPayload
+         * @description Whole-key matching answer payload with source-neutral provenance.
+         */
+        ExamAuthoringMatchingManualAnswerKeyPayload: {
+            /**
+             * Pairs
+             * @default []
+             */
+            pairs: components["schemas"]["ExamAuthoringMatchingManualAnswerKeyPair"][];
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "absent" | "source_provided" | "teacher_provided" | "reviewed";
+        };
+        /**
+         * ExamAuthoringMatchingPairV1
+         * @description One directed source-to-target matching pair.
+         */
+        ExamAuthoringMatchingPairV1: {
+            /** Source Id */
+            source_id: string;
+            /** Target Id */
+            target_id: string;
+        };
+        /**
+         * ExamAuthoringMatchingTargetReadinessRowV1
+         * @description Target readiness projection for a corrected matching interaction.
+         */
+        ExamAuthoringMatchingTargetReadinessRowV1: {
+            /** Export Enabled */
+            export_enabled: boolean;
+            /** Message Key */
+            message_key: string;
+            /**
+             * Readiness
+             * @enum {string}
+             */
+            readiness: "ready" | "target_validation_failed" | "unsupported_target_shape";
+            /** Reason Code */
+            reason_code: string;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "examnet_pdf" | "qti_package";
+        };
+        /**
+         * ExamAuthoringSourceEvidenceV1
+         * @description Source-neutral evidence reference for an authoring interaction.
+         */
+        ExamAuthoringSourceEvidenceV1: {
+            /** Locator */
+            locator?: string | null;
+            /** Source Family */
+            source_family: string;
+            /** Source Id */
+            source_id?: string | null;
+        };
+        /**
          * ExamMigrationTargetV2
          * @description Supported target artifacts for exam-migration bundle routes.
          * @enum {string}
@@ -2390,6 +2615,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobRecordResponseV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_matching_manual_answer_key_v2_exam_authoring_matching_manual_answer_key_apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamAuthoringMatchingManualAnswerKeyApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamAuthoringMatchingManualAnswerKeyApplyResponse"];
                 };
             };
             /** @description Validation Error */

@@ -5,7 +5,7 @@ title: "ST-21-03 Exam Converter reviewed AI-facit contract and affordance reconc
 status: in_progress
 owners: "Codex"
 created: 2026-05-17
-updated: 2026-05-17
+updated: 2026-05-18
 stories:
   - "ST-21-03"
 tags:
@@ -253,16 +253,26 @@ Make the reviewed AI-facit workflow coherent and provable:
    on 2026-05-17 produced no diff against
    `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts`, and the file
    contains the reviewed-completion lineage and overlay fields.
-6. Remaining: add a durable Playwright live-proof script in the sanctioned
-   repo script/test location after discovering the current convention. The
-   proof must exercise authenticated Skriptoteket, the HuleEdu auth edge, Sir
-   Convert, and the tunneled LLM runtime together.
-7. Remaining: the live proof must retain evidence for reviewed overlay submit,
-   reviewed apply result, `effective_ir_json`, PDF artifact inspection, QTI
-   package inspection, and negative artifact-copy proof that internal fallback
-   diagnostics are absent.
-8. Remaining: record the final proof in `.codex/handoff.md`, update this task's
-   status, and keep teacher-owned correction editor work out of `PR-0331`.
+6. Done locally: add durable Playwright live-proof coverage in
+   `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`, backed by
+   `scripts/_pr_0331_reviewed_ai_facit_artifacts.py` and the retained script
+   surface allowlist in `tests/unit/scripts/test_playwright_script_surface.py`.
+   The proof logs in through the HuleEdu browser-session ceremony, uploads the
+   governed DigiExam `.dxe`, records redacted Sir Convert request/response
+   evidence, and, when suggestions exist, inspects `effective_ir_json`, PDF,
+   and QTI output.
+7. Live proof on 2026-05-18 is blocked before reviewed apply by the provider
+   runtime, not by the Skriptoteket browser ceremony. Artifact evidence in
+   `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T174149Z/`
+   shows the authenticated conversion reached Sir Convert, but
+   `answer_key_completion_report` produced zero valid suggestions:
+   `provider_config_missing` for items 1-3 and `unsupported_assets` for item
+   13. The script now fails fast with retained advisory report evidence instead
+   of timing out on a missing AI-facit panel.
+8. Remaining: rerun the durable script against a correctly configured
+   provider-backed Sir Convert runtime so the reviewed overlay submit,
+   reviewed apply result, `effective_ir_json`, PDF inspection, QTI inspection,
+   and negative internal-diagnostic artifact-copy proof can complete.
 
 ## Test Plan
 
@@ -273,6 +283,10 @@ pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirCon
 pdm run fe-type-check
 pdm run fe-lint
 pdm run fe-build
+pdm run python -m py_compile scripts/playwright_pr_0331_reviewed_ai_facit_live.py scripts/_pr_0331_reviewed_ai_facit_artifacts.py
+pdm run python -m scripts.playwright_pr_0331_reviewed_ai_facit_live --base-url http://127.0.0.1:5173
+pdm run test tests/unit/scripts/test_playwright_script_surface.py
+pdm run lint
 pdm run docs-validate
 pdm run handoff-validate
 git diff --check

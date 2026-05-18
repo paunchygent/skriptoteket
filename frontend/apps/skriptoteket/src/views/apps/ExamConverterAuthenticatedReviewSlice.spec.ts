@@ -1,20 +1,10 @@
 /**
  * Exam Converter IR-backed review shell behavior.
  *
- * Slice purpose:
- *   Render the approved read-only inspection modes from Sir Convert's
- *   item-addressable DigiExam IR after an authenticated conversion finishes.
+ * Domain purpose: prove authenticated review projection for question, file,
+ * and report artifacts.
  *
- * Expected behavior:
- *   The teacher sees one active inspection mode at a time. `Frågor` leads when
- *   questions need attention, the table uses a sparse `Saknas` column with
- *   only field labels, status is icon-only in dense rows, and files/report do
- *   not introduce download, save, edit, or service-contract actions.
- *
- * Recommended implementation shape:
- *   Keep artifact fetching in a small composable, validate/project IR in a
- *   parser boundary, and keep tabs, question rows, file rows, and report
- *   summary as focused presentation components.
+ * Relationships: complements the correction-specific PR-0332 spec.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -38,7 +28,9 @@ import {
   DIGIEXAM_TARGET_READY,
   SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
 } from "../../api/sirConvertGateway/contractValues";
-import { TARGET_READINESS_REPORT_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
+import {
+  TARGET_READINESS_REPORT_SCHEMA_VERSION,
+} from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
   downloadDigiExamMigrationArtifact: vi.fn(),
@@ -99,9 +91,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.text()).toContain("Granska AI-facit");
     expect(wrapper.text()).toContain("Frågor (6)");
     expect(wrapper.text()).toContain("Filer (2)");
-    expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(
-      true,
-    );
+    expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(true);
   });
 
   it("uses sparse missing-field labels and icon-only row status in the dense question list", async () => {
