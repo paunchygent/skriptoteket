@@ -472,6 +472,68 @@ async def _assert_f2a7_share_checkpoint_provenance(engine: AsyncEngine) -> None:
         assert {kind_check, source_check}.issubset(constraints)
 
 
+async def _assert_9b2f_exam_converter_correction_sessions(engine: AsyncEngine) -> None:
+    await assert_b6c9_classroom_planner_profile_preferences(engine)
+    tables = await _table_names(engine)
+    assert {
+        "exam_converter_correction_sessions",
+        "exam_converter_correction_intents",
+    }.issubset(tables)
+
+    session_columns = await _column_map(engine, "exam_converter_correction_sessions")
+    assert {
+        "owner_user_id",
+        "conversion_hub_job_id",
+        "source_authoring_schema_version",
+        "source_state_sha256",
+        "source_state_signature",
+        "session_version",
+    }.issubset(session_columns)
+    assert session_columns["source_bundle_id"]["is_nullable"] == "YES"
+    assert session_columns["source_file_sha256"]["is_nullable"] == "YES"
+
+    intent_columns = await _column_map(engine, "exam_converter_correction_intents")
+    assert {
+        "session_id",
+        "entry_id",
+        "correction_kind",
+        "target_key",
+        "conflict_family",
+        "source_binding",
+        "target",
+        "payload",
+        "is_active",
+    }.issubset(intent_columns)
+
+    session_indexes = await _index_names(engine, "exam_converter_correction_sessions")
+    assert {
+        "ix_exam_converter_correction_sessions_owner_user_id",
+        "ix_exam_converter_correction_sessions_job_id",
+        "ix_exam_conv_corr_sessions_owner_updated",
+        "uq_exam_conv_corr_sessions_owner_job",
+    }.issubset(session_indexes)
+
+    intent_indexes = await _index_names(engine, "exam_converter_correction_intents")
+    assert {
+        "ix_exam_converter_correction_intents_session_id",
+        "ix_exam_conv_corr_intents_session_active",
+        "uq_exam_conv_corr_intents_active_target",
+        "uq_exam_conv_corr_intents_active_family",
+    }.issubset(intent_indexes)
+
+    session_foreign_keys = await _foreign_key_targets(
+        engine,
+        "exam_converter_correction_sessions",
+    )
+    assert session_foreign_keys["owner_user_id"] == "users"
+    assert session_foreign_keys["conversion_hub_job_id"] == "conversion_hub_jobs"
+    intent_foreign_keys = await _foreign_key_targets(
+        engine,
+        "exam_converter_correction_intents",
+    )
+    assert intent_foreign_keys["session_id"] == "exam_converter_correction_sessions"
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -520,6 +582,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "8a6d4c2f1b09": assert_8a6d_grouping_seating_distance_default_on,
     "f2a7c9d4e6b8": _assert_f2a7_share_checkpoint_provenance,
     "b6c9f2a1d4e8": assert_b6c9_classroom_planner_profile_preferences,
+    "9b2f4c6d8e10": _assert_9b2f_exam_converter_correction_sessions,
 }
 
 

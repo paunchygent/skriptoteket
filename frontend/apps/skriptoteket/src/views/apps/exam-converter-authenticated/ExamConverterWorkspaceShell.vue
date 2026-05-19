@@ -28,10 +28,7 @@ import type {
   ExamConverterReviewFile,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
-import type {
-  ExamConverterAiFacitReviewAction,
-  ExamConverterReviewedSuggestionDecision,
-} from "./useExamConverterAiFacitReview";
+import type { ExamConverterAiFacitReviewAction } from "./useExamConverterAiFacitReview";
 import type {
   ExamConverterItemTextPatchCorrection,
   ExamConverterManualAnswerKeyCorrection,
@@ -45,10 +42,11 @@ defineProps<{
   activeInspectionMode: ExamConverterInspectionMode;
   acceptedCurrentState: boolean;
   acceptedAiSuggestionCount: number;
-  aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
+  aiSuggestionFocusKey: number;
   canApplyReviewedSuggestions: boolean;
   canRetryAdvisoryFacitSuggestion: boolean;
   canUseFiles: boolean;
+  fileActionNotice: string | null;
   fileActionStates: ExamConverterFileActionStates;
   focusedAiReviewAction: ExamConverterAiFacitReviewAction;
   isCorrectionApplying: boolean;
@@ -64,11 +62,6 @@ defineProps<{
 const emit = defineEmits<{
   acceptCurrentState: [];
   acceptAllAiSuggestions: [];
-  acceptEditedChoiceSuggestion: [
-    question: ExamConverterReviewProjection["questions"][number],
-    correctIds: number[],
-  ];
-  acceptSuggestion: [question: ExamConverterReviewProjection["questions"][number]];
   applyManualAnswerKey: [
     question: ExamConverterReviewProjection["questions"][number],
     answerKey: ExamConverterManualAnswerKeyCorrection,
@@ -214,11 +207,9 @@ function handleDrop(event: DragEvent): void {
           />
           <ExamConverterQuestionReviewShell
             v-if="activeInspectionMode === 'questions'"
-            :ai-facit-decisions="aiFacitDecisions"
+            :ai-suggestion-focus-key="aiSuggestionFocusKey"
             :is-correction-applying="isCorrectionApplying"
             :projection="reviewProjection"
-            @accept-edited-choice-suggestion="(question, correctIds) => emit('acceptEditedChoiceSuggestion', question, correctIds)"
-            @accept-suggestion="emit('acceptSuggestion', $event)"
             @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
             @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
             @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
@@ -228,6 +219,7 @@ function handleDrop(event: DragEvent): void {
             v-else-if="activeInspectionMode === 'files'"
             :action-states="fileActionStates"
             :actions-enabled="canUseFiles"
+            :action-notice="fileActionNotice"
             :files="reviewProjection.files"
             @download-file="emit('downloadFile', $event)"
             @save-file="emit('saveFile', $event)"

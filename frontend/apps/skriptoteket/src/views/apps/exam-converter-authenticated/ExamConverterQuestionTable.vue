@@ -14,6 +14,7 @@
 import { Bot, CheckCircle2, XCircle } from "lucide-vue-next";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
+import { visibleMissingFieldsForQuestion } from "./digiexamIrReviewParser";
 
 defineProps<{
   questions: ExamConverterQuestionReviewRow[];
@@ -23,6 +24,7 @@ defineProps<{
 const emit = defineEmits<{
   questionSelected: [question: ExamConverterQuestionReviewRow];
 }>();
+
 </script>
 
 <template>
@@ -66,13 +68,13 @@ const emit = defineEmits<{
         </td>
         <td class="px-2 py-4 align-top">
           <span
-            v-if="question.missingFields.length === 0"
+            v-if="visibleMissingFieldsForQuestion(question).length === 0"
             class="text-navy/70"
           >
             —
           </span>
           <span
-            v-for="missingField in question.missingFields"
+            v-for="missingField in visibleMissingFieldsForQuestion(question)"
             v-else
             :key="missingField"
             class="mr-1 inline-flex border border-warning/70 bg-panel px-2 py-1 text-xs font-medium leading-none text-warning"
@@ -91,7 +93,7 @@ const emit = defineEmits<{
           >
             <Bot
               v-if="question.statusSymbol === 'ai_suggestion'"
-              class="h-5 w-5 text-terracotta"
+              class="h-5 w-5 text-success"
               aria-hidden="true"
             />
             <CheckCircle2

@@ -1,0 +1,428 @@
+/**
+ * Exam Converter correction-session projection.
+ *
+ * Domain purpose:
+ *   Convert fresh Sir Convert replay results into the authenticated Exam
+ *   Converter review projection shown to teachers.
+ *
+ * Relationships:
+ *   - Consumed by `useExamConverterUnifiedCorrections` after persisted intent
+ *     replay.
+ *   - Preserves question, file, and readiness display state as replayed truth.
+ */
+
+import type {
+  ExamConverterCorrectionIntentResponse,
+  ExamConverterCorrectionSessionResponse,
+} from "../../../api/examConverterCorrectionSessions";
+import type {
+  DigiExamEffectiveAnswerKey,
+  ExamAuthoringCorrectionSourceItem,
+  ExamAuthoringCorrectionSourceStateIssueResult,
+  ExamAuthoringCorrectionsApplyResult,
+} from "../../../api/sirConvertGateway";
+import type {
+  ExamConverterQuestionReviewRow,
+  ExamConverterReviewFile,
+  ExamConverterReviewProjection,
+} from "./digiexamIrReviewParser";
+import { hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
+import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/sirConvertGateway/contractValues";
+
+type JsonRecord = Record<string, unknown>;
+
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function promptTextForSourceItem(item: ExamAuthoringCorrectionSourceItem): string {
+  const joinedLines = item.prompt_lines.join(" ").trim();
+  if (joinedLines.length > 0) return joinedLines;
+  if (item.prompt_html) return stripHtml(item.prompt_html);
+  return item.title ?? "";
+}
+
+function sourceChoicesForAnswerKey(params: {
+  effectiveItem: ExamAuthoringCorrectionSourceItem;
+  sourceItem: ExamAuthoringCorrectionSourceItem | null;
+}) {
+  const effectiveChoices = params.effectiveItem.choice_interactions[0]?.choices ?? [];
+  if (effectiveChoices.length > 0) return effectiveChoices;
+  return params.sourceItem?.choice_interactions[0]?.choices ?? [];
+}
+
+function displayIdForSourceChoice(
+  choice: ReturnType<typeof sourceChoicesForAnswerKey>[number] | undefined,
+): number | null {
+  if (!choice) return null;
+  const sourceId = Number.parseInt(choice.source_id ?? "", 10);
+  if (Number.isInteger(sourceId)) return sourceId;
+  return Number.isInteger(choice.order) ? choice.order : null;
+}
+
+function isIntegerChoiceId(value: number | null): value is number {
+  return Number.isInteger(value);
+}
+
+function effectiveAnswerKeyForSourceItem(params: {
+  effectiveItem: ExamAuthoringCorrectionSourceItem;
+  sourceItem: ExamAuthoringCorrectionSourceItem | null;
+}): DigiExamEffectiveAnswerKey | null {
+  const { effectiveItem } = params;
+  const choiceAnswerKey = effectiveItem.choice_interactions[0]?.answer_key;
+  if (choiceAnswerKey?.provenance && choiceAnswerKey.provenance !== "absent") {
+    const choices = sourceChoicesForAnswerKey(params);
+    return {
+      correct_alternative_ids: choiceAnswerKey.correct_choice_ids
+        .map((choiceId) => choices.find((choice) => choice.choice_id === choiceId))
+        .map(displayIdForSourceChoice)
+        .filter(isIntegerChoiceId),
+      lineage: null,
+      provenance: choiceAnswerKey.provenance,
+    };
+  }
+  const gapAnswerKey = effectiveItem.gap_open_cloze_interactions[0]?.answer_key;
+  if (gapAnswerKey?.provenance && gapAnswerKey.provenance !== "absent") {
+    return {
+      correct_gap_answers: gapAnswerKey.accepted_values.map((acceptedValue) => ({
+        [acceptedValue.gap_id]: acceptedValue.value,
+      })),
+      lineage: null,
+      provenance: gapAnswerKey.provenance,
+    };
+  }
+  return null;
+}
+
+function savedAnswerKeyForIntent(params: {
+  intent: ExamConverterCorrectionIntentResponse | undefined;
+  sourceItem: ExamAuthoringCorrectionSourceItem | null;
+}): DigiExamEffectiveAnswerKey | null {
+  const { intent, sourceItem } = params;
+  if (!intent) return null;
+  if (intent.kind === "manual_choice_answer_key") {
+    const choices = sourceItem?.choice_interactions[0]?.choices ?? [];
+    const correctChoiceIds = Array.isArray(intent.payload.correct_choice_ids)
+      ? intent.payload.correct_choice_ids
+      : [];
+    const correctAlternativeIds = correctChoiceIds
+      .map((choiceId) =>
+        choices.find((choice) => choice.choice_id === choiceId),
+      )
+      .map(displayIdForSourceChoice)
+      .filter(isIntegerChoiceId);
+    if (correctAlternativeIds.length === 0) return null;
+    return {
+      correct_alternative_ids: correctAlternativeIds,
+      lineage: null,
+      provenance: "teacher_provided" as const,
+    };
+  }
+  if (intent.kind === "manual_gap_open_cloze_answer_key") {
+    const gapAnswers = Array.isArray(intent.payload.gap_answers)
+      ? intent.payload.gap_answers
+      : [];
+    const correctGapAnswers = gapAnswers.flatMap((gapAnswer): Record<string, string>[] => {
+      if (!isJsonRecord(gapAnswer)) {
+        return [];
+      }
+      const gapId = "gap_id" in gapAnswer ? String(gapAnswer.gap_id) : "";
+      const acceptedValues =
+        "accepted_values" in gapAnswer && Array.isArray(gapAnswer.accepted_values)
+          ? gapAnswer.accepted_values
+          : [];
+      return acceptedValues
+        .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+        .map((value: string) => ({ [gapId]: value }));
+    });
+    if (correctGapAnswers.length === 0) return null;
+    return {
+      correct_gap_answers: correctGapAnswers,
+      lineage: null,
+      provenance: "teacher_provided" as const,
+    };
+  }
+  return null;
+}
+
+function isJsonRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function savedAnswerKeyIntentsByItem(
+  intents: ExamConverterCorrectionIntentResponse[],
+): Map<string, ExamConverterCorrectionIntentResponse> {
+  return new Map(
+    intents
+      .filter(
+        (intent) =>
+          intent.kind === "manual_choice_answer_key" ||
+          intent.kind === "manual_gap_open_cloze_answer_key",
+      )
+      .map((intent) => [intent.item_id, intent]),
+  );
+}
+
+function savedPointCorrectionForIntent(params: {
+  intent: ExamConverterCorrectionIntentResponse | undefined;
+  question: ExamConverterQuestionReviewRow;
+}): ExamConverterQuestionReviewRow["effectivePointCorrection"] {
+  const { intent, question } = params;
+  if (!intent || intent.kind !== "point_correction") return null;
+  const maxScore =
+    typeof intent.payload.max_score === "number" ? intent.payload.max_score : null;
+  if (maxScore === null || maxScore === question.pointsValue) return null;
+  return {
+    effective_max_score: maxScore,
+    kind: "item_points",
+    source_item_fingerprint: question.sourceItemFingerprint ?? "",
+    source_max_score: question.pointsValue,
+  };
+}
+
+function savedPointIntentsByItem(
+  intents: ExamConverterCorrectionIntentResponse[],
+): Map<string, ExamConverterCorrectionIntentResponse> {
+  return new Map(
+    intents
+      .filter((intent) => intent.kind === "point_correction")
+      .map((intent) => [intent.item_id, intent]),
+  );
+}
+
+function savedTextPatchValue(params: {
+  field: "item_title" | "prompt_lines";
+  intent: ExamConverterCorrectionIntentResponse | undefined;
+}): string | null {
+  const { field, intent } = params;
+  if (!intent || intent.kind !== "item_text_patch" || !Array.isArray(intent.payload.patches)) {
+    return null;
+  }
+  const patch = intent.payload.patches.find(
+    (entry): entry is JsonRecord =>
+      isJsonRecord(entry) && entry.field === field && typeof entry.value === "string",
+  );
+  return typeof patch?.value === "string" && patch.value.trim().length > 0
+    ? patch.value
+    : null;
+}
+
+function savedTextPatchIntentsByItem(
+  intents: ExamConverterCorrectionIntentResponse[],
+): Map<string, ExamConverterCorrectionIntentResponse[]> {
+  const grouped = new Map<string, ExamConverterCorrectionIntentResponse[]>();
+  for (const intent of intents) {
+    if (intent.kind !== "item_text_patch") continue;
+    grouped.set(intent.item_id, [...(grouped.get(intent.item_id) ?? []), intent]);
+  }
+  return grouped;
+}
+
+function savedTextValue(params: {
+  field: "item_title" | "prompt_lines";
+  intents: ExamConverterCorrectionIntentResponse[] | undefined;
+}): string | null {
+  for (const intent of params.intents ?? []) {
+    const value = savedTextPatchValue({ field: params.field, intent });
+    if (value) return value;
+  }
+  return null;
+}
+
+function hasReplayableSavedIntent(
+  intents: ExamConverterCorrectionIntentResponse[],
+): boolean {
+  return intents.some(
+    (intent) =>
+      intent.kind === "item_text_patch" ||
+      intent.kind === "manual_choice_answer_key" ||
+      intent.kind === "manual_gap_open_cloze_answer_key" ||
+      intent.kind === "point_correction",
+  );
+}
+
+function correctedMissingFields(params: {
+  effectiveAnswerKey: ReturnType<typeof effectiveAnswerKeyForSourceItem>;
+  effectivePointCorrection: ExamConverterQuestionReviewRow["effectivePointCorrection"];
+  question: ExamConverterQuestionReviewRow;
+}): ExamConverterQuestionReviewRow["missingFields"] {
+  const fields = new Set(params.question.missingFields);
+  if (params.effectivePointCorrection) {
+    fields.delete("Poäng");
+  } else if (params.question.pointsValue === null) {
+    fields.add("Poäng");
+  }
+  if (params.effectiveAnswerKey) {
+    fields.delete("Facit");
+  } else if (params.question.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED) {
+    fields.add("Facit");
+  }
+  return [...fields];
+}
+
+function reportForCorrectedQuestions(
+  projection: ExamConverterReviewProjection,
+  questions: ExamConverterQuestionReviewRow[],
+  files: ExamConverterReviewFile[],
+) {
+  return {
+    ...projection.report,
+    aiSuggestionCount: questions.filter(hasUsableCompletionCandidate).length,
+    blockedTargetFileCount: files.filter((file) => !file.exportEnabled).length,
+    attentionQuestionCount: questions.filter((question) => question.missingFields.length > 0)
+      .length,
+    missingAnswerKeyCount: questions.filter((question) =>
+      question.missingFields.includes("Facit"),
+    ).length,
+    missingPointsCount: questions.filter((question) =>
+      question.missingFields.includes("Poäng"),
+    ).length,
+  };
+}
+
+function correctedFileStatusLabel(file: ExamConverterReviewFile): string {
+  if (file.exportEnabled) return "Kan hämtas";
+  if (file.availability === "available") return "Granska facit först";
+  return "Kunde inte skapas";
+}
+
+function projectCorrectedFiles(
+  projection: ExamConverterReviewProjection,
+  result: ExamAuthoringCorrectionsApplyResult,
+): ExamConverterReviewFile[] {
+  return projection.files.map((file) => {
+    const availabilityRow = result.artifact_availability.find(
+      (entry) => entry.artifact_key === file.artifactKey,
+    );
+    const readinessRows = result.target_readiness.targets.filter(
+      (row) => row.target === file.artifactKey,
+    );
+    const readinessRow = readinessRows.find((row) => !row.export_enabled) ?? readinessRows[0] ?? null;
+    const availability = availabilityRow?.availability ?? file.availability;
+    const exportEnabled = readinessRows.length > 0
+      ? availability === "available" && readinessRows.some((row) => row.export_enabled)
+      : file.exportEnabled;
+    const correctedFile = {
+      ...file,
+      availability,
+      exportEnabled,
+      reasonCode: readinessRow?.reason_code ?? availabilityRow?.unavailable_code ?? file.reasonCode,
+      readiness: readinessRow?.readiness ?? file.readiness,
+      unavailableCode: availabilityRow?.unavailable_code ?? file.unavailableCode,
+    };
+    return {
+      ...correctedFile,
+      statusLabel: correctedFileStatusLabel(correctedFile),
+    };
+  });
+}
+
+function suppressedCandidateItemIds(result: ExamAuthoringCorrectionsApplyResult): Set<string> {
+  return new Set(
+    result.correction_report.accepted_entries
+      .filter((entry) => entry.kind === "candidate_suppression")
+      .map((entry) => entry.item_id),
+  );
+}
+
+function savedSuppressedCandidateItemIds(
+  intents: ExamConverterCorrectionIntentResponse[],
+): Set<string> {
+  return new Set(
+    intents
+      .filter((intent) => intent.kind === "candidate_suppression")
+      .map((intent) => intent.item_id),
+  );
+}
+
+export function projectUnifiedCorrectionResult(params: {
+  correctionSession: ExamConverterCorrectionSessionResponse;
+  projection: ExamConverterReviewProjection;
+  result: ExamAuthoringCorrectionsApplyResult;
+  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+}): ExamConverterReviewProjection {
+  const suppressedItems = new Set([
+    ...suppressedCandidateItemIds(params.result),
+    ...savedSuppressedCandidateItemIds(params.correctionSession.active_intents),
+  ]);
+  const savedAnswerKeysByItem = savedAnswerKeyIntentsByItem(
+    params.correctionSession.active_intents,
+  );
+  const savedPointsByItem = savedPointIntentsByItem(params.correctionSession.active_intents);
+  const savedTextByItem = savedTextPatchIntentsByItem(params.correctionSession.active_intents);
+  const effectiveItemsById = new Map(
+    params.result.effective_state.items.map((item) => [item.item_id, item]),
+  );
+  const sourceItemsById = new Map(
+    params.sourceState.source_authoring_state.items.map((item) => [item.item_id, item]),
+  );
+  const questions = params.projection.questions.map((question): ExamConverterQuestionReviewRow => {
+    const effectiveItem = effectiveItemsById.get(question.itemId);
+    if (!effectiveItem) return question;
+    const sourceItem = sourceItemsById.get(question.itemId) ?? null;
+    const effectiveMaxScore =
+      typeof effectiveItem.max_score === "number" ? effectiveItem.max_score : null;
+    const replayedPointCorrection =
+      effectiveMaxScore === question.pointsValue || effectiveMaxScore === null
+        ? question.effectivePointCorrection
+        : {
+            effective_max_score: effectiveMaxScore,
+            kind: "item_points" as const,
+            source_item_fingerprint: question.sourceItemFingerprint ?? "",
+            source_max_score: question.pointsValue,
+          };
+    const savedPointCorrection = savedPointCorrectionForIntent({
+      intent: savedPointsByItem.get(question.itemId),
+      question,
+    });
+    const effectivePointCorrection = savedPointCorrection ?? replayedPointCorrection;
+    const effectiveAnswerKey =
+      savedAnswerKeyForIntent({
+        intent: savedAnswerKeysByItem.get(question.itemId),
+        sourceItem,
+      }) ?? effectiveAnswerKeyForSourceItem({ effectiveItem, sourceItem });
+    const pointsValue =
+      effectivePointCorrection?.effective_max_score ?? effectiveMaxScore ?? question.pointsValue;
+    const missingFields = correctedMissingFields({
+      effectiveAnswerKey,
+      effectivePointCorrection,
+      question,
+    });
+    const llmCandidate =
+      effectiveAnswerKey || suppressedItems.has(question.itemId) ? null : question.llmCandidate;
+    return {
+      ...question,
+      currentAnswerKeyProvenance:
+        effectiveAnswerKey?.provenance ?? question.currentAnswerKeyProvenance,
+      effectiveAnswerKey,
+      effectivePointCorrection,
+      llmCandidate: savedAnswerKeysByItem.has(question.itemId) ? null : llmCandidate,
+      missingFields,
+      pointsLabel: pointsValue === null ? "—" : `${pointsValue.toLocaleString("sv-SE")} p`,
+      pointsValue,
+      promptText:
+        savedTextValue({ field: "prompt_lines", intents: savedTextByItem.get(question.itemId) }) ??
+        (promptTextForSourceItem(effectiveItem) || question.promptText),
+      status: missingFields.length > 0 ? question.status : "complete",
+      statusSymbol: hasUsableCompletionCandidate({ llmCandidate })
+        ? "ai_suggestion"
+        : missingFields.includes("Facit") && question.itemType !== "open_ended"
+          ? "missing"
+          : "complete",
+      title:
+        savedTextValue({ field: "item_title", intents: savedTextByItem.get(question.itemId) }) ??
+        effectiveItem.title ??
+        question.title,
+    };
+  });
+  const files = projectCorrectedFiles(params.projection, params.result);
+  return {
+    ...params.projection,
+    acceptedStateOverlay: hasReplayableSavedIntent(params.correctionSession.active_intents)
+      ? null
+      : params.projection.acceptedStateOverlay,
+    files,
+    questions,
+    report: reportForCorrectedQuestions(params.projection, questions, files),
+  };
+}

@@ -154,6 +154,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   correction-session persistence.
 - ST-21-04 (durable teacher correction sessions): ready after accepted
   `ADR-0087` and approved `REV-ST-21-04`. Implementation is split into ordered
-  PR-sized slices: `PR-0333` backend aggregate/persistence, `PR-0334` API/types,
-  `PR-0335` replay orchestration, `PR-0336` frontend readback, and `PR-0337`
-  browser/artifact proof.
+  PR-sized slices: `PR-0333` backend aggregate/persistence, `PR-0334`
+  API/types, and `PR-0335` replay orchestration are done; `PR-0336` frontend
+  readback is ready; `PR-0337` browser/artifact proof remains the final
+  ordered follow-up.

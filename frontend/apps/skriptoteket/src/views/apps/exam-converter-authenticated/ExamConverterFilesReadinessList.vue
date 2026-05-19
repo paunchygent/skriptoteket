@@ -22,6 +22,7 @@ import type {
 
 const props = defineProps<{
   actionsEnabled: boolean;
+  actionNotice: string | null;
   actionStates: ExamConverterFileActionStates;
   files: ExamConverterReviewFile[];
 }>();
@@ -126,10 +127,14 @@ function isSaveDisabled(file: ExamConverterReviewFile): boolean {
       <h3 class="text-base font-semibold leading-tight text-navy">
         Filer
       </h3>
-      <p class="text-sm leading-tight text-navy/70">
-        Filerna kan hämtas eller sparas när de är klara.
-      </p>
     </div>
+    <p
+      v-if="actionNotice"
+      class="mt-3 border border-navy/15 bg-canvas px-3 py-2 text-sm leading-snug text-navy/75"
+      data-test="exam-converter-file-action-notice"
+    >
+      {{ actionNotice }}
+    </p>
 
     <div
       v-if="files.length === 0"

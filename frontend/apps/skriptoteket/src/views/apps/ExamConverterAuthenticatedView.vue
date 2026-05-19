@@ -3,34 +3,27 @@
  * Authenticated Exam Converter host frame.
  *
  * Domain purpose:
- *   Provide the stable signed-in Exam Converter workspace frame, browser-local
- *   intake, and the first authenticated submit/poll/result-strip bridge.
+ *   Provide the signed-in Exam Converter workspace, browser-local intake, and
+ *   authenticated submit/readback bridge.
  *
  * Relationships:
  *   - Mounted by `curatedAppHostRegistry` for authenticated Conversion Hub.
- *   - Composes shell components and delegates runtime transport to the
- *     authenticated Exam Converter runtime bridge.
+ *   - Composes shell components and delegates transport to runtime composables.
  */
 
 import { computed, onMounted, ref } from "vue";
 
-import type {
-  SirConvertTerminalResult,
-} from "../../api/sirConvertGateway";
-import {
-  DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
-} from "../../api/sirConvertGateway/contractValues";
+import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
+import { DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED } from "../../api/sirConvertGateway/contractValues";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
 import type {
   ExamConverterInspectionMode,
   ExamConverterReviewFile,
+  ExamConverterReviewProjection,
 } from "./exam-converter-authenticated/digiexamIrReviewParser";
-import {
-  ACCEPT_CURRENT_STATE_COMPLETION_MODE,
-  REVIEWED_COMPLETION_MODE,
-  useExamConverterAiFacitReview,
-} from "./exam-converter-authenticated/useExamConverterAiFacitReview";
+import { visibleMissingFieldsForQuestion } from "./exam-converter-authenticated/digiexamIrReviewParser";
+import { useExamConverterAiFacitReview } from "./exam-converter-authenticated/useExamConverterAiFacitReview";
 import { isProviderOnlyAdvisoryFailureReport } from "./exam-converter-authenticated/digiexamAnswerKeyCompletionReport";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
@@ -67,11 +60,12 @@ const {
   startConversion,
 } = useExamConverterConversionState();
 const {
-  applyCorrectionRequest,
   cancelRuntime,
   issueCorrectionSourceState,
+  lastConversionHubJobId,
   lastCorrelationId,
   lastJobId,
+  restoreLastJobHandle,
   submitAndPoll,
 } =
   useExamConverterAuthenticatedRuntime();
@@ -85,12 +79,11 @@ const {
 const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
 const acceptedCurrentState = ref(false);
 const advisoryRetryAttempt = ref(0);
+const aiSuggestionFocusKey = ref(0);
 const reviewedCompletionApplied = ref(false);
 const {
   acceptAllSuggestions,
-  acceptEditedChoiceSuggestion,
   acceptedSuggestionCount,
-  acceptSuggestion,
   decisions: aiFacitDecisions,
   focusReviewAction,
   focusedReviewAction,
@@ -107,19 +100,25 @@ const {
   applyItemTextPatch: handleApplyItemTextPatch,
   applyManualAnswerKey: handleApplyManualAnswerKey,
   applyPointCorrection: handleApplyPointCorrection,
+  applyReviewDecision,
+  applyReviewedSuggestions: persistReviewedSuggestions,
+  correctionProjectionFreshness,
   isCorrectionApplying,
+  refreshPersistedCorrections,
+  resetCorrectionSessionState,
 } = useExamConverterUnifiedCorrections({
   acceptedCurrentState,
   activeInspectionMode,
   failConversion,
   finishConversion,
   isConversionRunning,
+  lastConversionHubJobId,
+  lastCorrelationId,
   lastJobId,
   resetFileActions,
   reviewedCompletionApplied,
   reviewProjection,
   runtime: {
-    applyCorrectionRequest,
     issueCorrectionSourceState,
   },
 });
@@ -144,14 +143,44 @@ const requiresReviewDecision = computed(() => {
   return (
     projection !== null &&
     projection.acceptedStateOverlay !== null &&
-    (projection.report.attentionQuestionCount > 0 ||
+    (visibleReviewIssueCount(projection) > 0 ||
       projection.report.blockedTargetFileCount > 0) &&
     !acceptedCurrentState.value
   );
 });
 
+function visibleReviewIssueCount(projection: ExamConverterReviewProjection): number {
+  return projection.questions.filter(
+    (question) => visibleMissingFieldsForQuestion(question).length > 0,
+  ).length;
+}
+
 const canUseFiles = computed(() => {
-  return reviewProjection.value !== null;
+  const freshness = correctionProjectionFreshness.value;
+  return reviewProjection.value !== null && freshness !== "unavailable" && freshness !== "stale_source" && freshness !== "conflict";
+});
+
+const correctionSessionStatusLabel = computed(() => {
+  if (correctionProjectionFreshness.value === "conflict") {
+    return "Det gick inte att spara ändringen eftersom provet ändrades samtidigt. Läs in provet på nytt och försök igen.";
+  }
+  if (correctionProjectionFreshness.value === "stale_source") {
+    return "Provet har ändrats sedan ändringarna sparades. Läs in provet på nytt innan du skapar filer.";
+  }
+  return null;
+});
+
+const fileActionNotice = computed(() => {
+  if (correctionProjectionFreshness.value === "unavailable") {
+    return "Det går inte att hämta filerna just nu.";
+  }
+  if (correctionProjectionFreshness.value === "stale_source") {
+    return "Läs in provet på nytt innan du hämtar filer.";
+  }
+  if (correctionProjectionFreshness.value === "conflict") {
+    return "Lös sparfelet innan du hämtar filer.";
+  }
+  return null;
 });
 
 const canApplyReviewedSuggestions = computed(() => {
@@ -163,7 +192,6 @@ const canApplyReviewedSuggestions = computed(() => {
 
 const showAiReviewPanel = computed(() => {
   return (
-    !reviewedCompletionApplied.value &&
     (reviewProjection.value?.report.aiSuggestionCount ?? 0) > 0
   );
 });
@@ -182,6 +210,7 @@ function handleResetLocalChoices(): void {
   cancelRuntime();
   resetReviewArtifacts();
   resetAiFacitReview();
+  resetCorrectionSessionState();
   resetFileActions();
   acceptedCurrentState.value = false;
   advisoryRetryAttempt.value = 0;
@@ -222,14 +251,14 @@ async function finishRuntimeResult(
       projection.report.warningCount,
     );
     const requiresQuestionReview =
-      projection.report.attentionQuestionCount > 0 ||
+      visibleReviewIssueCount(projection) > 0 ||
       projection.report.blockedTargetFileCount > 0;
     activeInspectionMode.value = preferredMode ?? projection.defaultMode;
     finishConversion({
       ...runtimeOutcome,
       bundleStatus: requiresQuestionReview ? runtimeOutcome.bundleStatus : "complete",
       manualFollowUpRequired: requiresQuestionReview,
-      manualFollowUpCount: projection.report.attentionQuestionCount,
+      manualFollowUpCount: visibleReviewIssueCount(projection),
       warningCount: projectedWarningCount,
     });
     return;
@@ -245,6 +274,7 @@ async function handleStartConversion(): Promise<void> {
 
   resetReviewArtifacts();
   resetAiFacitReview();
+  resetCorrectionSessionState();
   resetFileActions();
   acceptedCurrentState.value = false;
   advisoryRetryAttempt.value = 0;
@@ -260,6 +290,7 @@ async function handleStartConversion(): Promise<void> {
     });
     if (result) {
       await finishRuntimeResult(result, null, true);
+      await refreshPersistedCorrections();
     }
   } catch {
     failConversion();
@@ -291,6 +322,7 @@ async function handleRetryAdvisoryFacitSuggestion(): Promise<void> {
     });
     if (result) {
       await finishRuntimeResult(result, null, true);
+      await refreshPersistedCorrections();
     }
   } catch {
     failConversion();
@@ -301,56 +333,44 @@ function selectInspectionMode(mode: ExamConverterInspectionMode): void {
   activeInspectionMode.value = mode;
 }
 
+function handleOpenQuestions(): void {
+  activeInspectionMode.value = "questions";
+  aiSuggestionFocusKey.value += 1;
+}
+
 async function handleAcceptCurrentState(): Promise<void> {
-  const sourceSelection = selectedSourceFile.value;
   const overlay = reviewProjection.value?.acceptedStateOverlay ?? null;
-  if (!sourceSelection || !overlay || isExamConverterBusy.value) {
+  if (!overlay || isExamConverterBusy.value) {
     return;
   }
-  resetFileActions();
-  startConversion();
-  try {
-    const result = await submitAndPoll({
-      sourceFile: sourceSelection.file,
-      supportingFile: selectedSupportingFile.value?.file ?? null,
-      targetSelection: { ...selectedTargetFormats.value },
-      completionMode: ACCEPT_CURRENT_STATE_COMPLETION_MODE,
-      ingestionOverlay: overlay,
-    });
-    if (result) {
-      acceptedCurrentState.value = true;
-      await finishRuntimeResult(result, "files");
-    }
-  } catch {
-    acceptedCurrentState.value = false;
-    failConversion();
+  if (await applyReviewDecision()) {
+    activeInspectionMode.value = "files";
   }
 }
 
 async function handleApplyReviewedSuggestions(): Promise<void> {
-  const sourceSelection = selectedSourceFile.value;
   const overlay = reviewedCompletionOverlay.value(reviewProjection.value);
-  if (!sourceSelection || !overlay || isExamConverterBusy.value) {
+  if (!overlay || isExamConverterBusy.value) {
     return;
   }
-  resetFileActions();
-  startConversion();
-  try {
-    const result = await submitAndPoll({
-      completionMode: REVIEWED_COMPLETION_MODE,
-      ingestionOverlay: overlay,
-      sourceFile: sourceSelection.file,
-      supportingFile: selectedSupportingFile.value?.file ?? null,
-      targetSelection: { ...selectedTargetFormats.value },
-    });
-    if (result) {
-      acceptedCurrentState.value = false;
-      reviewedCompletionApplied.value = true;
-      await finishRuntimeResult(result, "files", false);
-    }
-  } catch {
-    failConversion();
+  if (await persistReviewedSuggestions(aiFacitDecisions.value)) {
+    acceptedCurrentState.value = false;
+    activeInspectionMode.value = "files";
   }
+}
+
+async function handleAcceptAllSuggestions(): Promise<void> {
+  if (!reviewProjection.value || isExamConverterBusy.value) {
+    return;
+  }
+  const previousDecisions = { ...aiFacitDecisions.value };
+  acceptAllSuggestions(reviewProjection.value);
+  if (await persistReviewedSuggestions(aiFacitDecisions.value)) {
+    acceptedCurrentState.value = false;
+    activeInspectionMode.value = "files";
+    return;
+  }
+  aiFacitDecisions.value = previousDecisions;
 }
 
 async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> {
@@ -373,6 +393,30 @@ async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
 
 onMounted(async () => {
   if (!props.inspectionFixtureId) {
+    const handle = restoreLastJobHandle();
+    if (handle) {
+      try {
+        const projection = await loadReviewArtifacts({
+          completionReportRequired: false,
+          correlationId: handle.correlationId,
+          jobId: handle.sirConvertJobId,
+        });
+        if (projection) {
+          activeInspectionMode.value = projection.defaultMode;
+          finishConversion({
+            artifactCount: projection.files.length,
+            bundleStatus:
+              visibleReviewIssueCount(projection) > 0 ? "needs_review" : "complete",
+            manualFollowUpCount: visibleReviewIssueCount(projection),
+            manualFollowUpRequired: visibleReviewIssueCount(projection) > 0,
+            warningCount: projection.report.warningCount,
+          });
+          await refreshPersistedCorrections();
+        }
+      } catch {
+        failConversion();
+      }
+    }
     return;
   }
   if (!import.meta.env.DEV && import.meta.env.MODE !== "test") {
@@ -424,41 +468,49 @@ onMounted(async () => {
         @supporting-file-selected="selectSupportingFile"
         @toggle-target-format="toggleTargetFormat"
       />
-      <ExamConverterWorkspaceShell
-        :active-inspection-mode="activeInspectionMode"
-        :accepted-current-state="acceptedCurrentState"
-        :accepted-ai-suggestion-count="acceptedSuggestionCount"
-        :ai-facit-decisions="aiFacitDecisions"
-        :can-apply-reviewed-suggestions="canApplyReviewedSuggestions"
-        :can-retry-advisory-facit-suggestion="canRetryAdvisoryFacitSuggestion"
-        :can-use-files="canUseFiles"
-        :file-action-states="fileActionStates"
-        :focused-ai-review-action="focusedReviewAction"
-        :is-correction-applying="isCorrectionApplying"
-        :result-strip="resultStrip"
-        :review-projection="reviewProjection"
-        :requires-review-decision="requiresReviewDecision"
-        :review-status="reviewStatus"
-        :selected-source-file="selectedSourceFile"
-        :show-ai-review-panel="showAiReviewPanel"
-        :source-file-error="sourceFileError"
-        @accept-current-state="handleAcceptCurrentState"
-        @accept-all-ai-suggestions="acceptAllSuggestions(reviewProjection)"
-        @accept-edited-choice-suggestion="acceptEditedChoiceSuggestion"
-        @accept-suggestion="acceptSuggestion"
-        @apply-item-text-patch="handleApplyItemTextPatch"
-        @apply-manual-answer-key="handleApplyManualAnswerKey"
-        @apply-point-correction="handleApplyPointCorrection"
-        @apply-reviewed-suggestions="handleApplyReviewedSuggestions"
-        @download-file="handleDownloadFile"
-        @files-dropped="selectDroppedFiles"
-        @inspection-mode-selected="selectInspectionMode"
-        @open-questions="selectInspectionMode('questions')"
-        @review-action-focused="focusReviewAction"
-        @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
-        @save-file="handleSaveFile"
-        @source-file-selected="selectSourceFile"
-      />
+      <div class="min-w-0">
+        <p
+          v-if="correctionSessionStatusLabel"
+          class="border-b border-navy bg-saffron px-4 py-2 text-xs font-black uppercase tracking-normal"
+          data-test="exam-converter-correction-session-status"
+        >
+          {{ correctionSessionStatusLabel }}
+        </p>
+        <ExamConverterWorkspaceShell
+          :active-inspection-mode="activeInspectionMode"
+          :accepted-current-state="acceptedCurrentState"
+          :accepted-ai-suggestion-count="acceptedSuggestionCount"
+          :ai-suggestion-focus-key="aiSuggestionFocusKey"
+          :can-apply-reviewed-suggestions="canApplyReviewedSuggestions"
+          :can-retry-advisory-facit-suggestion="canRetryAdvisoryFacitSuggestion"
+          :can-use-files="canUseFiles"
+          :file-action-states="fileActionStates"
+          :file-action-notice="fileActionNotice"
+          :focused-ai-review-action="focusedReviewAction"
+          :is-correction-applying="isCorrectionApplying"
+          :result-strip="resultStrip"
+          :review-projection="reviewProjection"
+          :requires-review-decision="requiresReviewDecision"
+          :review-status="reviewStatus"
+          :selected-source-file="selectedSourceFile"
+          :show-ai-review-panel="showAiReviewPanel"
+          :source-file-error="sourceFileError"
+          @accept-current-state="handleAcceptCurrentState"
+          @accept-all-ai-suggestions="handleAcceptAllSuggestions"
+          @apply-item-text-patch="handleApplyItemTextPatch"
+          @apply-manual-answer-key="handleApplyManualAnswerKey"
+          @apply-point-correction="handleApplyPointCorrection"
+          @apply-reviewed-suggestions="handleApplyReviewedSuggestions"
+          @download-file="handleDownloadFile"
+          @files-dropped="selectDroppedFiles"
+          @inspection-mode-selected="selectInspectionMode"
+          @open-questions="handleOpenQuestions"
+          @review-action-focused="focusReviewAction"
+          @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
+          @save-file="handleSaveFile"
+          @source-file-selected="selectSourceFile"
+        />
+      </div>
     </section>
   </main>
 </template>

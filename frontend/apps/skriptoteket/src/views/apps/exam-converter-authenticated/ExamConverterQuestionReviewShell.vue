@@ -3,24 +3,20 @@
  * Exam Converter question review shell.
  *
  * Domain purpose:
- *   Render question rows and the selected-question AI-facit review pane.
+ *   Render question rows and the selected-question correction editor.
  */
 
 import { computed, ref, watch } from "vue";
-import { Bot, CheckCheck, CheckCircle2, ChevronDown, Info, Pencil } from "lucide-vue-next";
-
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
-import { hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
-import type {
-  ExamConverterAiFacitReviewAction,
-  ExamConverterReviewedSuggestionDecision,
-} from "./useExamConverterAiFacitReview";
+import {
+  hasUsableCompletionCandidate,
+} from "./digiexamIrReviewParser";
+import type { ExamConverterAiFacitReviewAction } from "./useExamConverterAiFacitReview";
 import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterItemTextPatchCorrection } from "./digiexamTeacherCorrectionOverlay";
-import { numericAlternativeId } from "./examConverterPersistedCorrectionDisplay";
 import ExamConverterEffectiveAnswerKeySummary from "./ExamConverterEffectiveAnswerKeySummary.vue";
 import ExamConverterItemTextPatchEditor from "./ExamConverterItemTextPatchEditor.vue";
 import ExamConverterManualAnswerKeyEditor from "./ExamConverterManualAnswerKeyEditor.vue";
@@ -29,14 +25,12 @@ import ExamConverterQuestionNavigator from "./ExamConverterQuestionNavigator.vue
 import ExamConverterQuestionTable from "./ExamConverterQuestionTable.vue";
 
 const props = defineProps<{
-  aiFacitDecisions: Record<string, ExamConverterReviewedSuggestionDecision>;
+  aiSuggestionFocusKey: number;
   isCorrectionApplying: boolean;
   projection: ExamConverterReviewProjection;
 }>();
 
 const emit = defineEmits<{
-  acceptEditedChoiceSuggestion: [question: ExamConverterQuestionReviewRow, correctIds: number[]];
-  acceptSuggestion: [question: ExamConverterQuestionReviewRow];
   applyManualAnswerKey: [
     question: ExamConverterQuestionReviewRow,
     answerKey: ExamConverterManualAnswerKeyCorrection,
@@ -50,8 +44,6 @@ const emit = defineEmits<{
 }>();
 
 const selectedItemId = ref<string | null>(null);
-const editingItemId = ref<string | null>(null);
-const editedChoiceIds = ref<number[]>([]);
 
 const selectedQuestion = computed(() => {
   return (
@@ -61,89 +53,79 @@ const selectedQuestion = computed(() => {
   );
 });
 
-const selectedDecision = computed(() =>
-  selectedQuestion.value ? props.aiFacitDecisions[selectedQuestion.value.itemId] : undefined,
-);
+const showsAnswerKeyEditor = computed(() => {
+  const question = selectedQuestion.value;
+  if (!question) return false;
+  const editableQuestionType = question.alternatives.length > 0 || question.gaps.length > 0;
+  return editableQuestionType && (
+    question.missingFields.includes("Facit") ||
+    question.effectiveAnswerKey !== null ||
+    hasUsableCompletionCandidate(question)
+  );
+});
+
+function firstAiSuggestedQuestion(questions: ExamConverterQuestionReviewRow[]): ExamConverterQuestionReviewRow | null {
+  return questions.find(hasUsableCompletionCandidate) ?? null;
+}
 
 function defaultSelectedItemId(questions: ExamConverterQuestionReviewRow[]): string | null {
   return (
+    firstAiSuggestedQuestion(questions)?.itemId ??
     questions.find((question) => question.status === "attention")?.itemId ??
     questions[0]?.itemId ??
     null
   );
 }
 
+function nextAiSuggestedQuestionId(
+  currentQuestion: ExamConverterQuestionReviewRow,
+  questions: ExamConverterQuestionReviewRow[],
+): string | null {
+  const startIndex = questions.findIndex((question) => question.itemId === currentQuestion.itemId);
+  if (startIndex === -1) return firstAiSuggestedQuestion(questions)?.itemId ?? null;
+  const orderedQuestions = [
+    ...questions.slice(startIndex + 1),
+    ...questions.slice(0, startIndex),
+  ];
+  return orderedQuestions.find(hasUsableCompletionCandidate)?.itemId ?? null;
+}
+
 function selectQuestion(question: ExamConverterQuestionReviewRow): void {
   selectedItemId.value = question.itemId;
-  editingItemId.value = null;
-  editedChoiceIds.value = [];
-  emit("reviewActionFocused", hasUsableCompletionCandidate(question) ? "accept" : "review");
+  emit("reviewActionFocused", hasUsableCompletionCandidate(question) ? "edit" : "review");
 }
 
-function choiceIdsForQuestion(question: ExamConverterQuestionReviewRow): number[] {
-  const payload = question.llmCandidate?.answerPayload;
-  return payload?.kind === "choice" ? payload.correctAlternativeIds : [];
-}
-
-function gapFillAnswersForQuestion(question: ExamConverterQuestionReviewRow) {
-  const payload = question.llmCandidate?.answerPayload;
-  return payload?.kind === "gap_fill" ? payload.gapAnswers : [];
-}
-
-function isSuggestedAlternative(
+function applyManualAnswerKey(
   question: ExamConverterQuestionReviewRow,
-  alternativeId: string,
-): boolean {
-  const numericId = numericAlternativeId(alternativeId);
-  if (numericId === null) return false;
-  if (editingItemId.value === question.itemId) {
-    return editedChoiceIds.value.includes(numericId);
+  answerKey: ExamConverterManualAnswerKeyCorrection,
+): void {
+  emit("applyManualAnswerKey", question, answerKey);
+  const nextItemId = nextAiSuggestedQuestionId(question, props.projection.questions);
+  if (nextItemId) {
+    selectedItemId.value = nextItemId;
   }
-  return choiceIdsForQuestion(question).includes(numericId);
-}
-
-function startEditing(question: ExamConverterQuestionReviewRow): void {
-  if (!hasUsableCompletionCandidate(question)) return;
-  const payload = question.llmCandidate?.answerPayload;
-  if (payload?.kind !== "choice") return;
-  editingItemId.value = question.itemId;
-  editedChoiceIds.value = [...payload.correctAlternativeIds];
-  emit("reviewActionFocused", "edit");
-}
-
-function toggleEditedAlternative(alternativeId: string): void {
-  const numericId = numericAlternativeId(alternativeId);
-  if (numericId === null) return;
-  editedChoiceIds.value = editedChoiceIds.value.includes(numericId)
-    ? editedChoiceIds.value.filter((id) => id !== numericId)
-    : [...editedChoiceIds.value, numericId].sort((left, right) => left - right);
-}
-
-function acceptQuestion(question: ExamConverterQuestionReviewRow): void {
-  if (editingItemId.value === question.itemId && editedChoiceIds.value.length > 0) {
-    emit("acceptEditedChoiceSuggestion", question, editedChoiceIds.value);
-  } else {
-    emit("acceptSuggestion", question);
-  }
-  editingItemId.value = null;
-  editedChoiceIds.value = [];
-  emit("reviewActionFocused", "accept");
-}
-
-function isAcceptedDecision(
-  decision: ExamConverterReviewedSuggestionDecision | undefined,
-): boolean {
-  return decision?.outcome === "accepted_unchanged" || decision?.outcome === "teacher_edited";
 }
 
 watch(
   () => props.projection.questions,
   (questions) => {
-    if (!questions.some((question) => question.itemId === selectedItemId.value)) {
+    const selectedQuestionAfterUpdate = questions.find(
+      (question) => question.itemId === selectedItemId.value,
+    );
+    if (!selectedQuestionAfterUpdate) {
       selectedItemId.value = defaultSelectedItemId(questions);
     }
   },
   { immediate: true },
+);
+
+watch(
+  () => props.aiSuggestionFocusKey,
+  () => {
+    const firstSuggestedQuestion = firstAiSuggestedQuestion(props.projection.questions);
+    selectedItemId.value =
+      firstSuggestedQuestion?.itemId ?? defaultSelectedItemId(props.projection.questions);
+  },
 );
 </script>
 
@@ -186,190 +168,28 @@ watch(
       data-test="exam-converter-selected-question-detail"
     >
       <template v-if="selectedQuestion">
-        <div class="flex items-baseline gap-5">
-          <h3 class="text-base font-semibold leading-tight text-navy">
-            Fråga {{ selectedQuestion.sequence }}
-          </h3>
-          <span class="text-sm leading-tight text-navy/60">
-            {{ selectedQuestion.itemId }}
-          </span>
-        </div>
+        <ExamConverterItemTextPatchEditor
+          :disabled="isCorrectionApplying"
+          :question="selectedQuestion"
+          @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
+        />
 
-        <p class="mt-5 text-sm leading-relaxed text-navy">
-          {{ selectedQuestion.promptText }}
-        </p>
-
-        <section
-          v-if="hasUsableCompletionCandidate(selectedQuestion)"
-          class="mt-7"
-          data-test="exam-converter-selected-question-ai-suggestion"
-        >
-          <div class="flex items-center gap-2 text-terracotta">
-            <Bot
-              class="h-5 w-5"
-              aria-hidden="true"
-            />
-            <h4 class="text-base font-semibold leading-tight">
-              AI-förslag
-            </h4>
-          </div>
-
-          <ol
-            v-if="selectedQuestion.llmCandidate?.answerPayload?.kind === 'choice'"
-            class="mt-4 grid gap-2 text-sm text-navy"
-          >
-            <li
-              v-for="alternative in selectedQuestion.alternatives"
-              :key="alternative.id"
-              class="min-w-0"
-            >
-              <button
-                type="button"
-                class="grid w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 border border-navy/15 bg-panel px-2 py-2 text-left transition-colors hover:border-action/45 hover:bg-action/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="editingItemId !== selectedQuestion.itemId"
-                :aria-pressed="isSuggestedAlternative(selectedQuestion, alternative.id)"
-                @click="toggleEditedAlternative(alternative.id)"
-              >
-                <span
-                  class="inline-grid h-7 w-7 place-items-center border text-xs font-semibold leading-none"
-                  :class="isSuggestedAlternative(selectedQuestion, alternative.id) ? 'border-terracotta bg-terracotta text-panel' : 'border-navy/25 bg-panel text-navy'"
-                >
-                  {{ alternative.id }}
-                </span>
-                <span class="leading-relaxed">
-                  {{ alternative.text }}
-                </span>
-                <CheckCircle2
-                  v-if="isSuggestedAlternative(selectedQuestion, alternative.id)"
-                  class="h-5 w-5 text-terracotta"
-                  aria-hidden="true"
-                />
-              </button>
-            </li>
-          </ol>
-          <ol
-            v-else-if="selectedQuestion.llmCandidate?.answerPayload?.kind === 'gap_fill'"
-            class="mt-4 grid gap-2 text-sm text-navy"
-            data-test="exam-converter-gap-fill-ai-suggestion"
-          >
-            <li
-              v-for="(gapAnswer, index) in gapFillAnswersForQuestion(selectedQuestion)"
-              :key="gapAnswer.gapId"
-              class="grid grid-cols-[5rem_minmax(0,1fr)] items-start gap-3 border border-terracotta bg-terracotta/10 px-3 py-2"
-            >
-              <span class="text-xs font-semibold leading-relaxed text-terracotta">
-                Lucka {{ index + 1 }}
-              </span>
-              <span class="leading-relaxed text-navy">
-                {{ gapAnswer.acceptedValues.join(", ") }}
-              </span>
-            </li>
-          </ol>
-
-          <div class="mt-5 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              class="btn-primary inline-flex items-center gap-2 shadow-none"
-              :class="isAcceptedDecision(selectedDecision) ? 'bg-success' : undefined"
-              data-test="exam-converter-accept-ai-suggestion-action"
-              @click="acceptQuestion(selectedQuestion)"
-              @focus="emit('reviewActionFocused', 'accept')"
-              @mouseenter="emit('reviewActionFocused', 'accept')"
-            >
-              <CheckCheck
-                class="h-4 w-4"
-                aria-hidden="true"
-              />
-              {{ isAcceptedDecision(selectedDecision) ? "Förslag godkänt" : "Använd förslag" }}
-            </button>
-            <button
-              type="button"
-              class="btn-ghost inline-flex items-center gap-2 shadow-none"
-              :disabled="selectedQuestion.llmCandidate?.answerPayload?.kind !== 'choice'"
-              data-test="exam-converter-edit-ai-suggestion-action"
-              @click="startEditing(selectedQuestion)"
-              @focus="emit('reviewActionFocused', 'edit')"
-              @mouseenter="emit('reviewActionFocused', 'edit')"
-            >
-              <Pencil
-                class="h-4 w-4 text-action"
-                aria-hidden="true"
-              />
-              Redigera
-            </button>
-          </div>
-
-          <p class="mt-4 flex items-center gap-2 text-sm leading-snug text-navy/70">
-            <Info
-              class="h-4 w-4"
-              aria-hidden="true"
-            />
-            Förslag från analysen. Läraren avgör.
-          </p>
-        </section>
-
-        <section class="mt-7">
-          <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">
-            Finns
-          </h4>
-          <dl class="mt-4 grid gap-3 text-sm">
-            <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
-              <dt class="text-navy">
-                Typ
-              </dt>
-              <dd class="text-navy">
-                {{ selectedQuestion.typeLabel }}
-              </dd>
-            </div>
-            <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
-              <dt class="text-navy">
-                Rubrik
-              </dt>
-              <dd
-                class="text-navy"
-                data-test="exam-converter-effective-item-title"
-              >
-                {{ selectedQuestion.title }}
-              </dd>
-            </div>
-            <div
-              v-if="selectedQuestion.pointsLabel !== '—'"
-              class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3"
-            >
-              <dt class="text-navy">
-                Poäng
-              </dt>
-              <dd class="text-navy">
-                {{ selectedQuestion.pointsLabel }}
-                <span
-                  v-if="selectedQuestion.effectivePointCorrection"
-                  class="ml-2 text-xs font-semibold uppercase tracking-[0.08em] text-success"
-                >
-                  Ändrad
-                </span>
-              </dd>
-            </div>
-            <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
-          </dl>
+        <section class="mt-5 grid gap-4">
+          <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
           <ExamConverterPointCorrectionEditor
             :disabled="isCorrectionApplying"
             :question="selectedQuestion"
             @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
           />
-          <ExamConverterItemTextPatchEditor
-            :disabled="isCorrectionApplying"
-            :question="selectedQuestion"
-            @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
-          />
           <ExamConverterManualAnswerKeyEditor
             :disabled="isCorrectionApplying"
             :question="selectedQuestion"
-            @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
+            @apply-manual-answer-key="applyManualAnswerKey"
           />
         </section>
 
         <section
-          v-if="selectedQuestion.alternatives.length > 0 && !hasUsableCompletionCandidate(selectedQuestion)"
+          v-if="selectedQuestion.alternatives.length > 0 && !hasUsableCompletionCandidate(selectedQuestion) && !showsAnswerKeyEditor"
           class="mt-7"
           data-test="exam-converter-selected-question-alternatives"
         >
@@ -444,40 +264,6 @@ watch(
             </figure>
           </div>
         </section>
-
-        <section class="mt-7">
-          <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">
-            Saknas
-          </h4>
-          <div class="mt-4">
-            <span
-              v-if="selectedQuestion.missingFields.length === 0"
-              class="text-sm text-navy/70"
-            >
-              —
-            </span>
-            <span
-              v-for="missingField in selectedQuestion.missingFields"
-              v-else
-              :key="missingField"
-              class="mr-2 inline-flex border border-warning/70 bg-panel px-2 py-1 text-sm font-medium leading-none text-warning"
-            >
-              {{ missingField }}
-            </span>
-          </div>
-        </section>
-
-        <button
-          type="button"
-          class="mt-7 flex w-full items-center justify-between border-t border-navy/25 pt-4 text-left text-base font-semibold leading-tight text-navy"
-          data-test="exam-converter-selected-question-details-disclosure"
-        >
-          Detaljer
-          <ChevronDown
-            class="h-5 w-5"
-            aria-hidden="true"
-          />
-        </button>
       </template>
     </aside>
   </section>

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0337
 title: "ST-21-04 Correction-session browser and artifact proof"
-status: blocked
+status: ready
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-19

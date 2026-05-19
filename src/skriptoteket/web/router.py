@@ -27,6 +27,9 @@ from skriptoteket.web.api.v1 import (
     apps_classroom_planner_smart_rules as api_v1_apps_classroom_planner_smart_rules,
 )
 from skriptoteket.web.api.v1 import apps_conversion_hub as api_v1_apps_conversion_hub
+from skriptoteket.web.api.v1 import (
+    apps_conversion_hub_correction_sessions as api_v1_apps_conversion_hub_correction_sessions,
+)
 from skriptoteket.web.api.v1 import apps_flunk_out_frenzy as api_v1_apps_flunk_out_frenzy
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as api_v1_apps_reagent_prep_chef
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
@@ -86,6 +89,7 @@ router.include_router(api_v1_apps_classroom_planner_shares.router)
 router.include_router(api_v1_apps_flunk_out_frenzy.router)
 router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
+router.include_router(api_v1_apps_conversion_hub_correction_sessions.router)
 router.include_router(api_v1_profile.router)
 router.include_router(api_v1_suggestions.router)
 router.include_router(api_v1_tools.router)

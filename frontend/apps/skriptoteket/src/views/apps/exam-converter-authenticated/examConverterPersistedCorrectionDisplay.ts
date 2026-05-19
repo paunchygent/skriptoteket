@@ -43,3 +43,21 @@ export function effectiveGapAnswerEntries(
     Object.entries(gapAnswer),
   ) ?? [];
 }
+
+export type EffectiveGapAnswerDisplayEntry = {
+  gapId: string;
+  label: string;
+  value: string;
+};
+
+export function effectiveGapAnswerDisplayEntries(
+  question: ExamConverterQuestionReviewRow,
+): EffectiveGapAnswerDisplayEntry[] {
+  const entries = effectiveGapAnswerEntries(question);
+  const gapIndexById = new Map(question.gaps.map((gap, index) => [gap.id, index + 1]));
+  return entries.map(([gapId, value], index) => ({
+    gapId,
+    label: `Lucka ${gapIndexById.get(gapId) ?? index + 1}`,
+    value,
+  }));
+}

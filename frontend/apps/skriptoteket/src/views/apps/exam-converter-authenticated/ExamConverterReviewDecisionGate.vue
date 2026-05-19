@@ -24,14 +24,6 @@ const emit = defineEmits<{
   reviewQuestions: [];
 }>();
 
-const reviewHelp = "Granska frågorna som saknar facit eller poäng.";
-function acceptHelp(missingCount: number): string {
-  if (missingCount > 0) {
-    return "Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.";
-  }
-  return "Skapar filer från frågorna som visas.";
-}
-
 function acceptLabel(): string {
   return "Skapa filer";
 }
@@ -68,7 +60,6 @@ function acceptLabel(): string {
         v-if="missingCount > 0"
         type="button"
         class="btn-ghost inline-flex items-center gap-2 shadow-none"
-        :title="reviewHelp"
         data-test="exam-converter-review-questions-action"
         @click="emit('reviewQuestions')"
       >
@@ -93,7 +84,6 @@ function acceptLabel(): string {
       <button
         type="button"
         class="btn-primary inline-flex items-center gap-2 shadow-none"
-        :title="acceptHelp(missingCount)"
         data-test="exam-converter-accept-current-state-action"
         @click="emit('acceptCurrentState')"
       >

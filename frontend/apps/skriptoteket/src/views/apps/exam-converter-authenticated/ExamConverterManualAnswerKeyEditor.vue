@@ -14,7 +14,7 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { CheckCheck } from "lucide-vue-next";
+import { Check, CheckCircle2 } from "lucide-vue-next";
 
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
@@ -57,13 +57,17 @@ const hasUsableAiSuggestion = computed(
     props.question.llmCandidate.answerPayload !== null,
 );
 
+const hasSavedAnswerKey = computed(() => props.question.effectiveAnswerKey !== null);
+
 const canRenderEditor = computed(() => {
-  if (!props.question.missingFields.includes("Facit") || hasUsableAiSuggestion.value) {
-    return false;
-  }
-  return (
+  const canEditQuestionType =
     (isChoiceItem.value && props.question.alternatives.length > 0) ||
-    (isGapFillItem.value && props.question.gaps.length > 0)
+    (isGapFillItem.value && props.question.gaps.length > 0);
+  if (!canEditQuestionType) return false;
+  return (
+    props.question.missingFields.includes("Facit") ||
+    hasSavedAnswerKey.value ||
+    hasUsableAnswerKeyCandidate()
   );
 });
 
@@ -85,16 +89,52 @@ const canApplyManualAnswerKey = computed(() => {
   return manualGapAnswers.value.every((gapAnswer) => gapAnswer.acceptedValues.length > 0);
 });
 
+function hasUsableAnswerKeyCandidate(): boolean {
+  if (!hasUsableAiSuggestion.value) return false;
+  const payload = props.question.llmCandidate?.answerPayload;
+  return (
+    (isChoiceItem.value && payload?.kind === "choice") ||
+    (isGapFillItem.value && payload?.kind === "gap_fill")
+  );
+}
+
 function valuesFromDraft(value: string): string[] {
   return [...new Set(value.split(",").map((entry) => entry.trim()))].filter(
     (entry) => entry.length > 0,
   );
 }
 
+function candidateChoiceIds(): number[] {
+  const payload = props.question.llmCandidate?.answerPayload;
+  return payload?.kind === "choice" ? [...payload.correctAlternativeIds] : [];
+}
+
+function candidateGapAnswers(): Map<string, string> {
+  const payload = props.question.llmCandidate?.answerPayload;
+  if (payload?.kind !== "gap_fill") return new Map();
+  return new Map(
+    payload.gapAnswers.map((gapAnswer) => [
+      gapAnswer.gapId,
+      gapAnswer.acceptedValues.join(", "),
+    ]),
+  );
+}
+
 function resetDrafts(): void {
-  selectedChoiceIds.value = [];
+  selectedChoiceIds.value = props.question.effectiveAnswerKey?.correct_alternative_ids?.length
+    ? [...props.question.effectiveAnswerKey.correct_alternative_ids]
+    : candidateChoiceIds();
+  const effectiveGapAnswers = new Map(
+    (props.question.effectiveAnswerKey?.correct_gap_answers ?? []).flatMap((gapAnswer) =>
+      Object.entries(gapAnswer),
+    ),
+  );
+  const candidateAnswers = candidateGapAnswers();
   gapAnswerDrafts.value = Object.fromEntries(
-    props.question.gaps.map((gap) => [gap.id, ""]),
+    props.question.gaps.map((gap) => [
+      gap.id,
+      effectiveGapAnswers.get(gap.id) ?? candidateAnswers.get(gap.id) ?? "",
+    ]),
   );
 }
 
@@ -106,6 +146,10 @@ function numericAlternativeId(id: string): number | null {
 function toggleChoice(alternativeId: string): void {
   const numericId = numericAlternativeId(alternativeId);
   if (numericId === null) return;
+  if (props.question.itemType === DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE) {
+    selectedChoiceIds.value = [numericId];
+    return;
+  }
   selectedChoiceIds.value = selectedChoiceIds.value.includes(numericId)
     ? selectedChoiceIds.value.filter((id) => id !== numericId)
     : [...selectedChoiceIds.value, numericId].sort((left, right) => left - right);
@@ -128,7 +172,16 @@ function applyManualAnswerKey(): void {
   );
 }
 
-watch(() => props.question.itemId, resetDrafts, { immediate: true });
+watch(
+  () => [
+    props.question.itemId,
+    props.question.effectiveAnswerKey?.correct_alternative_ids?.join(",") ?? "",
+    JSON.stringify(props.question.effectiveAnswerKey?.correct_gap_answers ?? []),
+    JSON.stringify(props.question.llmCandidate?.answerPayload ?? null),
+  ],
+  resetDrafts,
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -138,7 +191,7 @@ watch(() => props.question.itemId, resetDrafts, { immediate: true });
     data-test="exam-converter-manual-answer-key-editor"
   >
     <h5 class="text-sm font-semibold leading-tight text-navy">
-      Facit
+      {{ hasSavedAnswerKey ? "Ändra facit" : "Facit" }}
     </h5>
     <ol
       v-if="isChoiceItem"
@@ -151,7 +204,7 @@ watch(() => props.question.itemId, resetDrafts, { immediate: true });
       >
         <button
           type="button"
-          class="grid w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 border border-navy/15 bg-panel px-2 py-2 text-left transition-colors hover:border-action/45 hover:bg-action/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:opacity-50"
+          class="grid w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)_auto] items-start gap-3 border border-navy/15 bg-panel px-2 py-2 text-left transition-colors hover:border-action/45 hover:bg-action/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:opacity-50"
           :data-test="`exam-converter-manual-choice-${alternative.id}`"
           :disabled="disabled"
           :aria-pressed="selectedChoiceIds.includes(Number.parseInt(alternative.id, 10))"
@@ -166,6 +219,11 @@ watch(() => props.question.itemId, resetDrafts, { immediate: true });
           <span class="leading-relaxed">
             {{ alternative.text }}
           </span>
+          <CheckCircle2
+            v-if="selectedChoiceIds.includes(Number.parseInt(alternative.id, 10))"
+            class="mt-1 h-5 w-5 text-success"
+            aria-hidden="true"
+          />
         </button>
       </li>
     </ol>
@@ -197,11 +255,11 @@ watch(() => props.question.itemId, resetDrafts, { immediate: true });
       data-test="exam-converter-apply-manual-answer-key-action"
       @click="applyManualAnswerKey"
     >
-      <CheckCheck
+      <Check
         class="h-4 w-4"
         aria-hidden="true"
       />
-      Skicka facit
+      Spara facit
     </button>
   </section>
 </template>

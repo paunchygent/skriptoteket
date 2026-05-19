@@ -26,18 +26,22 @@ import ExamConverterResultStrip from "./exam-converter-authenticated/ExamConvert
 import type { ExamConverterResultStripState } from "./exam-converter-authenticated/useExamConverterConversionState";
 
 const gatewayMocks = vi.hoisted(() => ({
+  applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
 
 vi.mock("../../api/sirConvertGateway", () => ({
+  applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
   downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
   getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
   getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+  issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
   listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
   saveDigiExamMigrationArtifactToUserFiles:
     gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
@@ -64,9 +68,11 @@ function startButton(wrapper: ReturnType<typeof mount>) {
 }
 
 beforeEach(() => {
+  gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
@@ -169,7 +175,7 @@ describe("ExamConverterResultStrip", () => {
     {
       actionLabel: null,
       detail: null,
-      nextAction: "Kontrollera frågorna innan du sparar eller hämtar filer.",
+      nextAction: "Filerna kan sparas eller hämtas.",
       progress: null,
       status: "success",
       title: "Provet är konverterat",

@@ -15,6 +15,11 @@
 import { onBeforeUnmount, ref } from "vue";
 
 import {
+  registerExamConverterConversionHubJob,
+  type RegisterExamConverterConversionHubJobRequest,
+  type RegisterExamConverterConversionHubJobResult,
+} from "../../../api/examConverterCorrectionSessions";
+import {
   applyExamAuthoringCorrections,
   getDigiExamMigrationJob,
   getDigiExamMigrationResult,
@@ -44,6 +49,7 @@ type AuthenticatedRuntimeClient = {
   getDigiExamMigrationResult: typeof getDigiExamMigrationResult;
   issueExamAuthoringCorrectionSourceState: typeof issueExamAuthoringCorrectionSourceState;
   applyExamAuthoringCorrections: typeof applyExamAuthoringCorrections;
+  registerExamConverterConversionHubJob: typeof registerExamConverterConversionHubJob;
 };
 
 export type ExamConverterAuthenticatedRuntimeSubmission = {
@@ -73,7 +79,17 @@ const DEFAULT_CLIENT: AuthenticatedRuntimeClient = {
   getDigiExamMigrationResult,
   issueExamAuthoringCorrectionSourceState,
   applyExamAuthoringCorrections,
+  registerExamConverterConversionHubJob,
   submitDigiExamMigration,
+};
+
+const EXAM_CONVERTER_JOB_HANDLE_STORAGE_KEY = "skriptoteket.examConverter.jobHandle.v1";
+
+type ExamConverterJobHandle = {
+  conversionHubJobId: string;
+  correlationId: string;
+  inputFilename: string;
+  sirConvertJobId: string;
 };
 
 function wait(milliseconds: number): Promise<void> {
@@ -91,6 +107,52 @@ function isActiveJobStatus(status: SirConvertJobStatus): boolean {
 
 function isFailedJobStatus(status: SirConvertJobStatus): boolean {
   return status === "failed" || status === "canceled" || status === "cancelled";
+}
+
+function toRegisteredJobStatus(
+  status: SirConvertJobStatus,
+): RegisterExamConverterConversionHubJobRequest["status"] {
+  if (status === "running") return "processing";
+  if (status === "cancelled") return "canceled";
+  if (status === "succeeded" || status === "failed" || status === "submitted") return status;
+  if (status === "queued" || status === "processing" || status === "canceled") return status;
+  return "processing";
+}
+
+function saveJobHandle(handle: ExamConverterJobHandle | null): void {
+  try {
+    if (handle === null) {
+      window.sessionStorage.removeItem(EXAM_CONVERTER_JOB_HANDLE_STORAGE_KEY);
+      return;
+    }
+    window.sessionStorage.setItem(EXAM_CONVERTER_JOB_HANDLE_STORAGE_KEY, JSON.stringify(handle));
+  } catch {
+    // Session handle persistence is convenience only; durable truth is server-side.
+  }
+}
+
+function readJobHandle(): ExamConverterJobHandle | null {
+  try {
+    const raw = window.sessionStorage.getItem(EXAM_CONVERTER_JOB_HANDLE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ExamConverterJobHandle>;
+    if (
+      typeof parsed.conversionHubJobId !== "string" ||
+      typeof parsed.correlationId !== "string" ||
+      typeof parsed.inputFilename !== "string" ||
+      typeof parsed.sirConvertJobId !== "string"
+    ) {
+      return null;
+    }
+    return {
+      conversionHubJobId: parsed.conversionHubJobId,
+      correlationId: parsed.correlationId,
+      inputFilename: parsed.inputFilename,
+      sirConvertJobId: parsed.sirConvertJobId,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function toGatewayTargets(selection: ExamConverterTargetSelection): DigiExamMigrationTarget[] {
@@ -122,6 +184,7 @@ export function useExamConverterAuthenticatedRuntime(
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
   const activeRunId = ref(0);
   const isRuntimeBusy = ref(false);
+  const lastConversionHubJobId = ref<string | null>(null);
   const lastCorrelationId = ref<string | null>(null);
   const lastIdempotentReplay = ref<boolean | null>(null);
   const lastJobId = ref<string | null>(null);
@@ -133,6 +196,29 @@ export function useExamConverterAuthenticatedRuntime(
   function cancelRuntime(): void {
     activeRunId.value += 1;
     isRuntimeBusy.value = false;
+  }
+
+  function restoreLastJobHandle(): ExamConverterJobHandle | null {
+    const handle = readJobHandle();
+    if (!handle) return null;
+    lastConversionHubJobId.value = handle.conversionHubJobId;
+    lastCorrelationId.value = handle.correlationId;
+    lastJobId.value = handle.sirConvertJobId;
+    return handle;
+  }
+
+  async function registerLocalJob(params: {
+    inputFilename: string;
+    submittedJob: SirConvertSubmittedJob;
+  }): Promise<RegisterExamConverterConversionHubJobResult> {
+    return await client.registerExamConverterConversionHubJob({
+      request: {
+        correlation_id: params.submittedJob.requestContext.correlationId,
+        input_filename: params.inputFilename,
+        status: toRegisteredJobStatus(params.submittedJob.status),
+        upstream_job_id: params.submittedJob.jobId,
+      },
+    });
   }
 
   async function pollUntilTerminal(
@@ -183,8 +269,10 @@ export function useExamConverterAuthenticatedRuntime(
     activeRunId.value = runId;
     isRuntimeBusy.value = true;
     lastCorrelationId.value = null;
+    lastConversionHubJobId.value = null;
     lastIdempotentReplay.value = null;
     lastJobId.value = null;
+    saveJobHandle(null);
 
     try {
       const submitParams: Parameters<typeof client.submitDigiExamMigration>[0] = {
@@ -208,6 +296,17 @@ export function useExamConverterAuthenticatedRuntime(
       lastCorrelationId.value = submittedJob.requestContext.correlationId;
       lastIdempotentReplay.value = submittedJob.idempotentReplay;
       lastJobId.value = submittedJob.jobId;
+      const registeredJob = await registerLocalJob({
+        inputFilename: submission.sourceFile.name,
+        submittedJob,
+      });
+      lastConversionHubJobId.value = registeredJob.job_id;
+      saveJobHandle({
+        conversionHubJobId: registeredJob.job_id,
+        correlationId: submittedJob.requestContext.correlationId,
+        inputFilename: submission.sourceFile.name,
+        sirConvertJobId: submittedJob.jobId,
+      });
       return await pollUntilTerminal(submittedJob, runId);
     } catch (error) {
       if (!isCurrentRun(runId)) {
@@ -253,10 +352,12 @@ export function useExamConverterAuthenticatedRuntime(
     cancelRuntime,
     isRuntimeBusy,
     issueCorrectionSourceState,
+    lastConversionHubJobId,
     lastCorrelationId,
     lastIdempotentReplay,
     lastJobId,
     applyCorrectionRequest,
+    restoreLastJobHandle,
     submitAndPoll,
   };
 }

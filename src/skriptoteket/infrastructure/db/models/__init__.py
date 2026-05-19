@@ -42,6 +42,10 @@ from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact impo
     ClassroomPlannerShareArtifactModel,
 )
 from skriptoteket.infrastructure.db.models.conversion_hub_job import ConversionHubJobModel
+from skriptoteket.infrastructure.db.models.exam_converter_correction_session import (
+    ExamConverterCorrectionIntentModel,
+    ExamConverterCorrectionSessionModel,
+)
 from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionEventModel,
     IdentityProjectionModel,
@@ -59,6 +63,8 @@ __all__ = [
     "ClassroomPlannerShareArtifactModel",
     "DraftGroupModel",
     "ConversionHubJobModel",
+    "ExamConverterCorrectionIntentModel",
+    "ExamConverterCorrectionSessionModel",
     "GroupingExportCheckpointModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",

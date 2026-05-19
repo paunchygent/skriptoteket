@@ -81,6 +81,12 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     CreateConversionHubJobsHandler,
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
+    RegisterExamConverterConversionHubJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
+    GetExamConverterCorrectionSessionHandler,
+    RevertExamConverterCorrectionIntentHandler,
+    UpsertExamConverterCorrectionIntentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
     PublicExamConverterRuntimeHandler,
@@ -208,6 +214,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner_smart_rules impo
 from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
     PostgreSQLConversionHubJobRepository,
 )
+from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
+    PostgreSQLExamConverterCorrectionSessionRepository,
+)
 from skriptoteket.protocols.classroom_planner import (
     GroupingExportCheckpointRepositoryProtocol,
     PlanDraftRepositoryProtocol,
@@ -241,6 +250,9 @@ from skriptoteket.protocols.classroom_planner_shares import (
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.exam_converter_correction_sessions import (
+    ExamConverterCorrectionSessionRepositoryProtocol,
+)
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.public_exam_converter import (
@@ -1417,6 +1429,13 @@ class CuratedAppsProvider(Provider):
     ) -> ConversionHubJobRepositoryProtocol:
         return PostgreSQLConversionHubJobRepository(session=session)
 
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_correction_session_repository(
+        self,
+        session: AsyncSession,
+    ) -> ExamConverterCorrectionSessionRepositoryProtocol:
+        return PostgreSQLExamConverterCorrectionSessionRepository(session=session)
+
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
         return BrutalistPosterRenderer()
@@ -1520,6 +1539,21 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def register_exam_converter_conversion_hub_job_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RegisterExamConverterConversionHubJobHandler:
+        return RegisterExamConverterConversionHubJobHandler(
+            jobs=jobs,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def download_conversion_hub_artifact_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
@@ -1532,6 +1566,47 @@ class CuratedAppsProvider(Provider):
             client=client,
             uow=uow,
             clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_exam_converter_correction_session_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> GetExamConverterCorrectionSessionHandler:
+        return GetExamConverterCorrectionSessionHandler(
+            jobs=jobs,
+            sessions=sessions,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def upsert_exam_converter_correction_intent_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> UpsertExamConverterCorrectionIntentHandler:
+        return UpsertExamConverterCorrectionIntentHandler(
+            jobs=jobs,
+            sessions=sessions,
+            uow=uow,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def revert_exam_converter_correction_intent_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> RevertExamConverterCorrectionIntentHandler:
+        return RevertExamConverterCorrectionIntentHandler(
+            jobs=jobs,
+            sessions=sessions,
+            uow=uow,
         )
 
     @provide(scope=Scope.REQUEST)

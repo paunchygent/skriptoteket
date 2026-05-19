@@ -22,6 +22,7 @@ import {
 import { DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION } from "../../../api/sirConvertGateway/schemaVersions";
 import type {
   ExamConverterCompletionAnswerPayload,
+  ExamConverterGapFillAnswerPayload,
   ExamConverterLlmAnswerKeyCandidate,
 } from "./digiexamAnswerKeyCompletionReport";
 import {
@@ -35,7 +36,7 @@ export type ExamConverterAiFacitReviewAction = "review" | "accept" | "edit";
 export type ExamConverterReviewedSuggestionDecision = {
   answerPayload: ExamConverterCompletionAnswerPayload | null;
   itemId: string;
-  outcome: "accepted_unchanged" | "teacher_edited";
+  outcome: "accepted_unchanged" | "teacher_edited" | "rejected";
 };
 
 type ExamConverterAcceptedSuggestionDecision = ExamConverterReviewedSuggestionDecision & {
@@ -204,7 +205,25 @@ export function useExamConverterAiFacitReview() {
     };
   }
 
-  function acceptAllSuggestions(projection: ExamConverterReviewProjection | null): void {
+  function acceptEditedGapFillSuggestion(
+    question: ExamConverterQuestionReviewRow,
+    gapAnswers: ExamConverterGapFillAnswerPayload["gapAnswers"],
+  ): void {
+    if (!hasUsableCompletionCandidate(question)) return;
+    decisions.value = {
+      ...decisions.value,
+      [question.itemId]: {
+        answerPayload: {
+          kind: "gap_fill",
+          gapAnswers,
+        },
+        itemId: question.itemId,
+        outcome: "teacher_edited",
+      },
+    };
+  }
+
+function acceptAllSuggestions(projection: ExamConverterReviewProjection | null): void {
     if (!projection) return;
     const next = { ...decisions.value };
     for (const question of projection.questions) {
@@ -223,6 +242,18 @@ export function useExamConverterAiFacitReview() {
     decisions.value = next;
   }
 
+  function rejectSuggestion(question: ExamConverterQuestionReviewRow): void {
+    if (!hasUsableCompletionCandidate(question)) return;
+    decisions.value = {
+      ...decisions.value,
+      [question.itemId]: {
+        answerPayload: null,
+        itemId: question.itemId,
+        outcome: "rejected",
+      },
+    };
+  }
+
   const reviewedCompletionOverlay = computed(() => {
     return (projection: ExamConverterReviewProjection | null): DigiExamIngestionOverlay | null =>
       projection ? buildReviewedCompletionOverlay(projection, decisions.value) : null;
@@ -231,11 +262,13 @@ export function useExamConverterAiFacitReview() {
   return {
     acceptAllSuggestions,
     acceptEditedChoiceSuggestion,
+    acceptEditedGapFillSuggestion,
     acceptedSuggestionCount,
     acceptSuggestion,
     decisions,
     focusReviewAction,
     focusedReviewAction,
+    rejectSuggestion,
     resetAiFacitReview,
     reviewedCompletionOverlay,
   };

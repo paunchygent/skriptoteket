@@ -99,12 +99,6 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     expect(wrapper.get('[data-test="exam-converter-effective-answer-key-summary"]').text()).toContain(
       "2",
     );
-    expect(
-      wrapper.get('[data-test="exam-converter-effective-choice-2"]').classes(),
-    ).not.toContain("bg-success");
-    expect(
-      wrapper.get('[data-test="exam-converter-effective-choice-ordinal-2"]').classes(),
-    ).toContain("bg-success");
   });
 
   it("renders provider-only advisory failure with the approved retry affordance", async () => {

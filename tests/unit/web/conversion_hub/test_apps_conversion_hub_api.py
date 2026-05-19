@@ -19,6 +19,8 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
     ConversionHubSubmittedJob,
+    RegisterExamConverterConversionHubJobRequest,
+    RegisterExamConverterConversionHubJobResult,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -65,6 +67,16 @@ class FakeGetHandler:
 class FakeDownloadHandler:
     async def handle(self, **kwargs):
         return ("converted.pdf", "application/pdf", b"%PDF-1.7")
+
+
+class FakeRegisterExamConverterHandler:
+    def __init__(self, result: RegisterExamConverterConversionHubJobResult) -> None:
+        self.result = result
+        self.calls: list[dict[str, object]] = []
+
+    async def handle(self, **kwargs) -> RegisterExamConverterConversionHubJobResult:
+        self.calls.append(kwargs)
+        return self.result
 
 
 @pytest.mark.unit
@@ -125,6 +137,38 @@ async def test_get_job_status_returns_owned_local_job_status() -> None:
 
     assert result.job_id == local_job_id
     assert result.status is ConversionHubJobStatus.SUCCEEDED
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_register_exam_converter_job_returns_owner_scoped_local_job_id() -> None:
+    user = make_user()
+    local_job_id = uuid4()
+    handler = FakeRegisterExamConverterHandler(
+        RegisterExamConverterConversionHubJobResult(
+            job_id=local_job_id,
+            status=ConversionHubJobStatus.SUCCEEDED,
+            upstream_job_id="sir-job-1",
+        )
+    )
+
+    result = await _unwrap_dishka(api.register_exam_converter_job)(
+        register_request=RegisterExamConverterConversionHubJobRequest(
+            correlation_id="corr-exam",
+            input_filename="prov.dxe",
+            upstream_job_id="sir-job-1",
+        ),
+        registry=FakeRegistry(),
+        handler=handler,
+        user=user,
+    )
+
+    assert result.job_id == local_job_id
+    assert result.upstream_job_id == "sir-job-1"
+    assert handler.calls[0]["actor"] == user
+    captured_request = handler.calls[0]["request"]
+    assert isinstance(captured_request, RegisterExamConverterConversionHubJobRequest)
+    assert captured_request.upstream_job_id == "sir-job-1"
 
 
 @pytest.mark.unit

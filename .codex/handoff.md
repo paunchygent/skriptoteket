@@ -91,10 +91,26 @@ Keep this file updated so the next session can pick up work quickly.
   correction sessions: Skriptoteket persists source-bound correction intents;
   Sir Convert remains stateless and applies the complete supported persisted
   set during replay/projection/export.
-- `ST-21-04` implementation PR chain is created: `PR-0333` backend
-  aggregate/persistence is ready; `PR-0334` API/types, `PR-0335` replay
-  orchestration, `PR-0336` frontend readback, and `PR-0337` browser/artifact
-  proof are blocked in order behind their predecessors.
+- `PR-0333` is done: Skriptoteket now has the durable correction-session
+  aggregate, owner/job-scoped PostgreSQL persistence, active-target constraints,
+  exact source-binding round-trip, stale-version `CONFLICT` behavior, and
+  migration coverage.
+- `PR-0334` is done: authenticated owner-scoped correction-session read/upsert/
+  revert routes now expose the aggregate, stale writes map to `409 Conflict`,
+  and Skriptoteket OpenAPI/frontend types are regenerated. `PR-0335` replay
+  orchestration is done.
+- `PR-0335` is done: non-UI replay orchestration loads Skriptoteket persisted
+  active intents, issues fresh HuleEdu Sir Convert Gateway source state,
+  validates binding/fingerprints, submits the complete deterministic set to
+  unified apply, and marks projection freshness unavailable/stale without
+  claiming browser-local truth.
+- `PR-0336` is done: the authenticated Exam Converter UI persists supported
+  teacher changes through Skriptoteket correction-session APIs, restores saved
+  active intents after navigation/reload, renders replayed points/text/keys/
+  review decisions/candidate suppression/counters/file readiness, keeps drafts
+  distinct and matching blocked, and the teacher-visible Swedish copy was
+  audited to avoid internal projection/replay/session/Sir Convert terminology.
+  `PR-0337` browser and artifact proof is ready next.
 - `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` was regenerated
   from the current Sir Convert v2 OpenAPI snapshot for PR-0332. Skriptoteket's
   own backend `openapi.d.ts` was not regenerated because this slice adds no
@@ -117,6 +133,22 @@ Keep this file updated so the next session can pick up work quickly.
   and answer-key commits use correction-local applying state, not
   `startConversion()`, with focused correction/review tests, typecheck, lint,
   and internal-browser `missing-facit` smoke passing.
+- Current PR-0333 backend aggregate/persistence passed:
+  `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
+  `pdm run test tests/integration/infrastructure/repositories/test_exam_converter_correction_session_repository.py`,
+  `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k 9b2f4c6d8e10 --override-ini addopts=''`,
+  `pdm run lint`, and `pdm run typecheck`.
+- Current PR-0334 API/types passed:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_exam_converter_correction_sessions.py`,
+  `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_correction_sessions_api.py`,
+  `pdm run openapi-export-v1`, `pdm run fe-gen-api-types`, `pdm run lint`,
+  `pdm run typecheck`, and `pdm run fe-type-check`.
+- Current PR-0335 replay orchestration passed:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/correctionsContract.spec.ts`,
+  `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
+- Current PR-0336 frontend readback passed:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`,
+  `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
 - Previous PR-0332 point/manual-choice/manual-gap correction slice passed
   broader focused Vitest (9 files / 56 tests), `pdm run fe-type-check`,
   `pdm run fe-lint`, `pdm run fe-build` with the existing Vite chunk-size
@@ -164,15 +196,4 @@ git diff --check
   fixing Sir Convert source now rather than adding a downstream warning-only
   workaround.
 ## Next Steps
-- Keep lane boundaries strict: `PR-0330` outside-designer layout, `PR-0331`
-  Codex plumbing/export contract.
-- `PR-0331` is ready for review/closeout; keep the retained Hemma/public proof
-  as the final acceptance evidence for reviewed AI-facit artifact integrity.
-- Keep `PR-0332` separate from `PR-0331`; do not continue the Task 324 route.
-  Non-matching Skriptoteket consumer migration now uses the unified Task
-  333/TASK-0567 routes only. Matching remains blocked on Sir Convert Task 332.
-- Next governed implementation slice is `PR-0333`: correction-session backend
-  aggregate and persistence. Do not start API/replay/frontend proof slices until
-  their ordered predecessors land.
-- Implement `PR-0330` separately as phone/tablet/desktop layout strategy; rerun
-  `PR-0324` proof only after reviewed-key export behavior is understood.
+- Continue with ready `PR-0337`: canonical browser/artifact proof for the durable correction-session workflow. Keep matching blocked until Task 332.

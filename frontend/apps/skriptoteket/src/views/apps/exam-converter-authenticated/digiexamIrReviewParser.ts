@@ -510,3 +510,10 @@ export function hasUsableCompletionCandidate(question: {
     question.llmCandidate.answerPayload !== null
   );
 }
+
+export function visibleMissingFieldsForQuestion(
+  question: ExamConverterQuestionReviewRow,
+): ExamConverterQuestionReviewRow["missingFields"] {
+  if (!hasUsableCompletionCandidate(question)) return question.missingFields;
+  return question.missingFields.filter((field) => field !== "Facit");
+}

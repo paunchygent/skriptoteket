@@ -15,7 +15,7 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { CheckCheck } from "lucide-vue-next";
+import { Check } from "lucide-vue-next";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
 
@@ -88,14 +88,13 @@ watch(
         class="btn-ghost inline-flex items-center gap-2 shadow-none"
         :disabled="!canApplyPointCorrection"
         data-test="exam-converter-apply-point-correction-action"
-        title="Skickar poängändringen och uppdaterar frågan."
         @click="applyPointCorrection"
       >
-        <CheckCheck
+        <Check
           class="h-4 w-4"
           aria-hidden="true"
         />
-        Skicka ändring
+        Spara poäng
       </button>
     </div>
   </div>

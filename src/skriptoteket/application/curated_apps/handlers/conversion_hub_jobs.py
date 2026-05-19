@@ -22,8 +22,12 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJobSpecV2,
     ConversionHubJobStatus,
     ConversionHubJobStatusResult,
+    ConversionHubOutputFormatV2,
+    ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
     ConversionHubSubmittedJob,
+    RegisterExamConverterConversionHubJobRequest,
+    RegisterExamConverterConversionHubJobResult,
 )
 from skriptoteket.domain.errors import DomainError, not_found, validation_error
 from skriptoteket.domain.identity.models import User
@@ -185,6 +189,66 @@ class CreateConversionHubJobsHandler:
             job_id=job.id,
             status=job.status,
             error=job.error_message,
+        )
+
+
+class RegisterExamConverterConversionHubJobHandler:
+    """Register a HuleEdu Gateway Exam Converter job in the local job ledger."""
+
+    def __init__(
+        self,
+        *,
+        jobs: ConversionHubJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> None:
+        self._jobs = jobs
+        self._uow = uow
+        self._clock = clock
+        self._id_generator = id_generator
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        request: RegisterExamConverterConversionHubJobRequest,
+    ) -> RegisterExamConverterConversionHubJobResult:
+        async with self._uow:
+            existing = await self._jobs.get_by_upstream_job_id(
+                upstream_job_id=request.upstream_job_id
+            )
+            if existing is not None:
+                if existing.owner_user_id != actor.id:
+                    raise not_found("ConversionHubJob", request.upstream_job_id)
+                return self._to_result(existing)
+
+            now = self._clock.now()
+            job = await self._jobs.create(
+                job=ConversionHubJob(
+                    id=self._id_generator.new_uuid(),
+                    owner_user_id=actor.id,
+                    input_filename=request.input_filename,
+                    source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+                    output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+                    pdf_layout=None,
+                    upstream_job_id=request.upstream_job_id,
+                    status=request.status,
+                    correlation_id=request.correlation_id,
+                    error_message=None,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+            return self._to_result(job)
+
+    def _to_result(self, job: ConversionHubJob) -> RegisterExamConverterConversionHubJobResult:
+        if job.upstream_job_id is None:
+            raise validation_error("Exam Converter job is missing upstream identity.")
+        return RegisterExamConverterConversionHubJobResult(
+            job_id=job.id,
+            upstream_job_id=job.upstream_job_id,
+            status=job.status,
         )
 
 

@@ -58,7 +58,7 @@ const RESULT_STRIP_BY_STATUS: Record<
   success: {
     actionLabel: null,
     detail: null,
-    nextAction: "Kontrollera frågorna innan du sparar eller hämtar filer.",
+    nextAction: "Filerna kan sparas eller hämtas.",
     status: "success",
     title: "Provet är konverterat",
     tone: "success",

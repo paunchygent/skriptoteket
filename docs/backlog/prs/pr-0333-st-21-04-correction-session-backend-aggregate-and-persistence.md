@@ -2,7 +2,7 @@
 type: pr
 id: PR-0333
 title: "ST-21-04 Correction-session backend aggregate and persistence"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-19
@@ -67,3 +67,22 @@ surface can claim saved correction state.
   constraints, persisted source binding, and rollback-safe failures.
 - Backend lint/typecheck and focused persistence tests required by the
   Skriptoteket backend skill.
+
+## Implementation Summary
+
+- Added the pure correction-session aggregate, source-binding value object,
+  intent target semantics, replacement/revert behavior, deterministic replay
+  ordering, and `409 Conflict`-class stale-version domain errors.
+- Added PostgreSQL session/intent tables, repository protocol/implementation,
+  owner/job scoping through the Conversion Hub job ledger, active-target partial
+  unique constraints, and migration idempotency coverage.
+- Kept API routes, frontend readback, replay orchestration, browser proof, and
+  matching out of scope for the ordered follow-up PRs.
+
+## Verification
+
+- `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`
+- `pdm run test tests/integration/infrastructure/repositories/test_exam_converter_correction_session_repository.py`
+- `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k 9b2f4c6d8e10 --override-ini addopts=''`
+- `pdm run lint`
+- `pdm run typecheck`

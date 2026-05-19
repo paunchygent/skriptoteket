@@ -22,6 +22,8 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubRouteV2,
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
+    RegisterExamConverterConversionHubJobRequest,
+    RegisterExamConverterConversionHubJobResult,
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
     ConversionHubSirConvertArtifactSaveMetadata,
@@ -36,25 +38,25 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     CreateConversionHubJobsHandler,
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
+    RegisterExamConverterConversionHubJobHandler,
 )
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.web.api.v1.apps_conversion_hub_access import (
+    APP_ID,
+    require_conversion_hub_access,
+)
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
-APP_ID = "documents.conversion_hub"
 _MAX_WAIT_SECONDS = 20
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 
 
 def _require_app_access(*, registry: CuratedAppRegistryProtocol, user: User) -> None:
-    app = registry.get_by_app_id(app_id=APP_ID)
-    if app is None:
-        raise not_found("CuratedApp", APP_ID)
-    require_at_least_role(user=user, role=app.min_role)
+    require_conversion_hub_access(registry=registry, user=user)
 
 
 def _list_supported_routes() -> list[ConversionHubRouteV2]:
@@ -236,6 +238,20 @@ async def save_exam_converter_artifact(
             content=content,
         ),
     )
+
+
+@router.post(
+    "/exam-converter/jobs",
+    response_model=RegisterExamConverterConversionHubJobResult,
+)
+async def register_exam_converter_job(
+    register_request: RegisterExamConverterConversionHubJobRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[RegisterExamConverterConversionHubJobHandler],
+    user: User = Depends(require_app_user_api),
+) -> RegisterExamConverterConversionHubJobResult:
+    _require_app_access(registry=registry, user=user)
+    return await handler.handle(actor=user, request=register_request)
 
 
 @router.get("/jobs/{job_id}", response_model=ConversionHubJobStatusResult)

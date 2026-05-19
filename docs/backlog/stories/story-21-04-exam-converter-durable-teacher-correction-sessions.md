@@ -75,22 +75,22 @@ replay. This story owns that product capability. It is not owned by `PR-0332`.
 `ADR-0087` is accepted. Implementation is authorized through these ordered
 PR-sized slices:
 
-1. Correction-session backend aggregate and persistence (`PR-0333`):
+1. Correction-session backend aggregate and persistence (`PR-0333`, done):
    domain/application models, repository protocol, SQLAlchemy model, migration,
    owner scoping, active-target uniqueness, replace/delete semantics,
    optimistic versioning, and stale-source guards.
-2. Correction-session API and generated frontend types (`PR-0334`):
+2. Correction-session API and generated frontend types (`PR-0334`, done):
    authenticated read/upsert/delete or replace endpoints, `409 Conflict`
    behavior, OpenAPI export, and frontend type regeneration.
-3. Replay orchestration (`PR-0335`):
+3. Replay orchestration (`PR-0335`, done):
    load persisted intents, issue producer source state, validate binding,
    submit the complete supported set to Sir Convert via HuleEdu Gateway, and
    return replayed effective state/readiness.
-4. Frontend readback integration (`PR-0336`):
+4. Frontend readback integration (`PR-0336`, done):
    route teacher commits through Skriptoteket correction-session APIs, reload
    saved intents after navigation, and render replayed effective state while
    keeping drafts visually separate.
-5. Browser and artifact proof (`PR-0337`):
+5. Browser and artifact proof (`PR-0337`, ready):
    canonical Playwright proof that multiple committed corrections survive
    navigation/reload and that projection/export state is driven by backend
    readback plus Sir Convert replay.
@@ -99,6 +99,23 @@ PR-sized slices:
 
 - `PR-0332` remains the completed consumer/projection slice for the unified
   non-matching route, while durable teacher workflow stability belongs here.
+- `PR-0333` is done. It established the Skriptoteket-owned aggregate,
+  owner/job-scoped repository persistence, active-target constraints, exact
+  source-binding round-trip, and migration coverage before any API/replay/UI
+  surface was added.
+- `PR-0334` is done. It exposed the persisted aggregate through authenticated
+  owner-scoped read/upsert/revert routes, exported OpenAPI, and regenerated
+  frontend API types without adding replay or UI readback behavior.
+- `PR-0335` is done. It added non-UI replay orchestration over persisted
+  active intents, fresh HuleEdu Gateway source-state issue, source-binding and
+  item-fingerprint validation, complete-set unified apply submission, and
+  explicit unavailable/stale projection freshness states.
+- `PR-0336` is done. It routes supported teacher commits through Skriptoteket
+  correction-session APIs, restores saved active intents after navigation or
+  reload, renders replayed points/text/keys/review decisions/candidate
+  suppression/counters/readiness, keeps drafts distinct from persisted truth,
+  keeps matching blocked, and includes a Swedish copy audit so teacher-visible
+  messages do not expose internal projection/replay/session terminology.
 - If replay is unavailable, the product may show saved correction intents, but
   it must not show a fresh effective-state projection or unlock artifacts from
   stale derived evidence.

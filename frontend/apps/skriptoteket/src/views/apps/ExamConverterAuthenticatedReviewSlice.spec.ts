@@ -13,13 +13,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import { mockFreeTextOnlyReviewArtifacts } from "./examConverterAuthenticatedFreeTextFixtures";
 import {
+  correctionApplyResult,
+  correctionSourceState,
+  createCorrectionSessionRecorder,
+} from "./examConverterAuthenticatedCorrectionSessionFixtures";
+import {
   artifactJsonBlob,
   finishConversion,
   mockReviewArtifacts,
   submittedJob,
   terminalResult,
 } from "./examConverterAuthenticatedReviewFixtures";
-import { mockVisionBackedGapFillReviewArtifacts, REVIEWED_GAP_FILL_APPLY_JOB_ID } from "./examConverterAuthenticatedGapFillReviewFixtures";
 import {
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_TARGET_EXAMNET_PDF,
@@ -33,21 +37,31 @@ import {
 } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
+  applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
+const correctionSessionApiMocks = vi.hoisted(() => ({
+  getExamConverterCorrectionSession: vi.fn(),
+  registerExamConverterConversionHubJob: vi.fn(),
+  upsertExamConverterCorrectionIntent: vi.fn(),
+}));
+const correctionSessionRecorder = createCorrectionSessionRecorder();
 
 vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
   return {
     ...actual,
+    applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
     downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
     getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
     getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+    issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
     listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
     saveDigiExamMigrationArtifactToUserFiles:
       gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
@@ -55,15 +69,43 @@ vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
   };
 });
 
+vi.mock("../../api/examConverterCorrectionSessions", () => ({
+  getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
+  registerExamConverterConversionHubJob:
+    correctionSessionApiMocks.registerExamConverterConversionHubJob,
+  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+}));
+
 beforeEach(() => {
+  window.sessionStorage.clear();
+  correctionSessionRecorder.reset();
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockReset();
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockReset();
+  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockReset();
+  gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
   gatewayMocks.submitDigiExamMigration.mockResolvedValue(submittedJob("succeeded"));
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(terminalResult());
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
+  gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
+    job_id: "local-conversion-hub-job-1",
+    status: "succeeded",
+    upstream_job_id: "job_exam_converter_review",
+  });
+  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
+    ({ request }: { request: { intent: Record<string, unknown> } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  );
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
+    Promise.resolve(correctionSessionRecorder.current()),
+  );
   mockReviewArtifacts(gatewayMocks);
 });
 
@@ -88,7 +130,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       correlationId: "corr_exam_converter_review",
       jobId: "job_exam_converter_review",
     });
-    expect(wrapper.text()).toContain("Granska AI-facit");
+    expect(wrapper.text()).toContain("Kontrollera facit");
     expect(wrapper.text()).toContain("Frågor (6)");
     expect(wrapper.text()).toContain("Filer (2)");
     expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(true);
@@ -290,153 +332,34 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
 
-    expect(gatewayMocks.submitDigiExamMigration).toHaveBeenLastCalledWith(
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        ingestionOverlay: expect.objectContaining({
-          items: [
+        request: expect.objectContaining({
+          intent: expect.objectContaining({
+            kind: "review_decision",
+            payload: expect.objectContaining({
+              accepted_targets: expect.arrayContaining([DIGIEXAM_TARGET_QTI_PACKAGE]),
+            }),
+            target: expect.objectContaining({
+              accepted_target_family: "requested_artifacts",
+            }),
+          }),
+        }),
+      }),
+    );
+    expect(gatewayMocks.applyExamAuthoringCorrections).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          corrections: [
             expect.objectContaining({
               item_id: "item-001",
-              review_decision: expect.objectContaining({
-                accepted_targets: expect.arrayContaining([DIGIEXAM_TARGET_QTI_PACKAGE]),
-              }),
+              kind: "review_decision",
+              accepted_targets: expect.arrayContaining([DIGIEXAM_TARGET_QTI_PACKAGE]),
             }),
           ],
         }),
       }),
     );
-  });
-
-  it("shows one selected AI-facit detail with contextual review actions", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-
-    const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
-    expect(detail.text()).toContain("Fråga 4");
-    expect(detail.text()).toContain("item-004");
-    expect(detail.text()).toContain("AI-förslag");
-    expect(detail.text()).toContain("Använd förslag");
-    expect(detail.text()).toContain("Redigera");
-    expect(detail.text()).not.toContain("Lämna");
-    expect(detail.text()).not.toContain("Avvisa förslag");
-    expect(detail.text()).toContain("Finns");
-    expect(detail.text()).toContain("Växter tar upp vatten ur marken.");
-    expect(detail.text()).toContain(
-      "Djur och växter frigör energi ur socker med hjälp av syre.",
-    );
-    expect(detail.text()).toContain("Saknas");
-    expect(detail.text()).toContain("Facit");
-    expect(wrapper.text()).not.toContain("candidate-item-004");
-    expect(wrapper.text()).not.toContain("digiexam_choice_answer_key_decision_v1");
-  });
-
-  it("builds a reviewed-completion overlay when the teacher accepts an AI-facit", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-accept-ai-suggestion-action"]').trigger("click");
-    await wrapper
-      .find('[data-test="exam-converter-apply-reviewed-ai-suggestions-action"]')
-      .trigger("click");
-    await flushPromises();
-
-    const reviewedSubmit = gatewayMocks.submitDigiExamMigration.mock.calls[1]?.[0];
-    expect(reviewedSubmit).toMatchObject({
-      completionMode: "local_llm_apply_missing_machine_marked_with_review",
-    });
-    expect(reviewedSubmit.ingestionOverlay.items).toEqual([
-      expect.objectContaining({
-        item_id: "item-004",
-        manual_answer_key: null,
-        review_decision: null,
-        effective_item_patch: null,
-        reviewed_completion_answer_key: expect.objectContaining({
-          kind: "choice",
-          review_outcome: "accepted_unchanged",
-          candidate_lineage: expect.objectContaining({
-            completion_report_sha256: "sha256:completion-report",
-            candidate_id: "candidate-item-004",
-            validation_state: "valid",
-          }),
-          answer_payload: {
-            kind: "choice",
-            correct_alternative_ids: [3],
-          },
-        }),
-      }),
-    ]);
-  });
-
-  it("reviews and applies a vision-backed Lucktext AI-facit from the second bundle", async () => {
-    mockVisionBackedGapFillReviewArtifacts(gatewayMocks);
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-question-row-item-013"]').trigger("click");
-
-    const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
-    expect(detail.text()).toContain("AI-förslag");
-    expect(detail.text()).toContain("Lucka 1");
-    expect(detail.text()).toContain("kretslopp");
-
-    await wrapper.find('[data-test="exam-converter-accept-ai-suggestion-action"]').trigger("click");
-    await wrapper
-      .find('[data-test="exam-converter-apply-reviewed-ai-suggestions-action"]')
-      .trigger("click");
-    await flushPromises();
-
-    const reviewedSubmit = gatewayMocks.submitDigiExamMigration.mock.calls[1]?.[0];
-    expect(reviewedSubmit).toMatchObject({
-      completionMode: "local_llm_apply_missing_machine_marked_with_review",
-      ingestionOverlay: {
-        items: [
-          expect.objectContaining({
-            item_id: "item-013",
-            reviewed_completion_answer_key: expect.objectContaining({
-              answer_payload: {
-                gap_answers: [
-                  { accepted_values: ["kretslopp"], gap_id: "gap-001" },
-                  { accepted_values: ["näringsväv"], gap_id: "gap-002" },
-                ],
-                kind: "gap_fill",
-              },
-              candidate_lineage: expect.objectContaining({
-                candidate_id: "candidate-item-013",
-                candidate_payload_digest: "sha256:candidate-item-013",
-                completion_report_sha256: "sha256:completion-report-gap",
-                provider_profile_id: "task309-llama-cpp",
-                schema_name: "digiexam_gap_fill_answer_key_decision_v1",
-                validation_state: "valid",
-              }),
-              kind: "gap_fill",
-              review_outcome: "accepted_unchanged",
-            }),
-          }),
-        ],
-      },
-    });
-    expect(gatewayMocks.listDigiExamMigrationArtifacts).toHaveBeenLastCalledWith({
-      completionReportRequired: false,
-      correlationId: "corr_exam_converter_review",
-      jobId: REVIEWED_GAP_FILL_APPLY_JOB_ID,
-    });
-    expect(wrapper.find('[data-test="exam-converter-ai-review-action-panel"]').exists()).toBe(
-      false,
-    );
-    expect(
-      wrapper.find('[data-test="exam-converter-accept-current-state-action"]').exists(),
-    ).toBe(false);
-    expect(wrapper.text()).toContain("Filer (2)");
-    expect(wrapper.text()).toContain("Kan hämtas");
-
-    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
-    const reviewedRow = wrapper.find('[data-test="exam-converter-question-row-item-013"]');
-    expect(reviewedRow.text()).toContain("Lucktext");
-    expect(reviewedRow.text()).not.toContain("Facit");
-    expect(reviewedRow.find(".lucide-circle-check").exists()).toBe(true);
-    expect(reviewedRow.find(".lucide-bot").exists()).toBe(false);
   });
 
   it("surfaces Lucktext gaps and embedded image structure in the detail pane", async () => {
@@ -447,7 +370,10 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
 
     const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
     const lucktext = wrapper.find('[data-test="exam-converter-selected-question-lucktext"]');
-    expect(detail.text()).toContain("Fråga 1");
+    expect(
+      detail.find<HTMLInputElement>('[data-test="exam-converter-item-title-patch-input"]')
+        .element.value,
+    ).toBe("Begrepp i ekologi");
     expect(detail.text()).toContain("Lucktext");
     expect(lucktext.text()).toContain("Luckor");
     expect(lucktext.text()).toContain("5");

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.conversion_hub import (
@@ -85,6 +86,15 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
 
     async def get_by_id(self, *, job_id: UUID) -> ConversionHubJob | None:
         model = await self._session.get(ConversionHubJobModel, job_id)
+        return self._to_job(model) if model is not None else None
+
+    async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> ConversionHubJob | None:
+        result = await self._session.execute(
+            select(ConversionHubJobModel).where(
+                ConversionHubJobModel.upstream_job_id == upstream_job_id
+            )
+        )
+        model = result.scalar_one_or_none()
         return self._to_job(model) if model is not None else None
 
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:

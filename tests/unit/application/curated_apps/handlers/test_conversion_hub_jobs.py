@@ -17,12 +17,14 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubPdfOrientationV2,
     ConversionHubPdfPaperSizeV2,
     ConversionHubSourceFormatV2,
+    RegisterExamConverterConversionHubJobRequest,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
     CreateConversionHubJobsHandler,
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
+    RegisterExamConverterConversionHubJobHandler,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
@@ -48,6 +50,12 @@ class InMemoryConversionHubJobRepository:
 
     async def get_by_id(self, *, job_id: UUID) -> ConversionHubJob | None:
         return self.jobs.get(job_id)
+
+    async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> ConversionHubJob | None:
+        for job in self.jobs.values():
+            if job.upstream_job_id == upstream_job_id:
+                return job
+        return None
 
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:
         self.jobs[job.id] = job
@@ -158,6 +166,77 @@ def _build_job_spec(*, spec: ConversionHubJobSpecV2, filename: str) -> dict[str,
         "source": {"kind": "upload", "filename": filename, "format": spec.source_format.value},
         "conversion": {"output_format": spec.output_format.value},
     }
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_register_exam_converter_job_creates_local_owned_job_for_upstream_id() -> None:
+    actor = make_user()
+    local_job_id = uuid4()
+    repo = InMemoryConversionHubJobRepository()
+    handler = RegisterExamConverterConversionHubJobHandler(
+        jobs=repo,
+        uow=FakeUow(),
+        clock=SequenceClock(datetime(2026, 5, 19, tzinfo=timezone.utc)),
+        id_generator=SequenceIdGenerator([local_job_id]),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        request=RegisterExamConverterConversionHubJobRequest(
+            correlation_id="corr-exam",
+            input_filename="prov.dxe",
+            status=ConversionHubJobStatus.SUCCEEDED,
+            upstream_job_id="sir-job-1",
+        ),
+    )
+
+    assert result.job_id == local_job_id
+    assert result.upstream_job_id == "sir-job-1"
+    assert repo.jobs[local_job_id].owner_user_id == actor.id
+    assert repo.jobs[local_job_id].source_format is ConversionHubSourceFormatV2.DIGIEXAM_DXE
+    assert repo.jobs[local_job_id].output_format is ConversionHubOutputFormatV2.EXAMNET_BUNDLE
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_register_exam_converter_job_reuses_owned_existing_upstream_id() -> None:
+    actor = make_user()
+    local_job_id = uuid4()
+    now = datetime(2026, 5, 19, tzinfo=timezone.utc)
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[local_job_id] = ConversionHubJob(
+        id=local_job_id,
+        owner_user_id=actor.id,
+        input_filename="prov.dxe",
+        source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+        output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+        pdf_layout=None,
+        upstream_job_id="sir-job-1",
+        status=ConversionHubJobStatus.SUCCEEDED,
+        correlation_id="corr-exam",
+        error_message=None,
+        created_at=now,
+        updated_at=now,
+    )
+    handler = RegisterExamConverterConversionHubJobHandler(
+        jobs=repo,
+        uow=FakeUow(),
+        clock=SequenceClock(now),
+        id_generator=SequenceIdGenerator([uuid4()]),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        request=RegisterExamConverterConversionHubJobRequest(
+            correlation_id="corr-exam",
+            input_filename="prov.dxe",
+            upstream_job_id="sir-job-1",
+        ),
+    )
+
+    assert result.job_id == local_job_id
+    assert len(repo.jobs) == 1
 
 
 @pytest.mark.unit

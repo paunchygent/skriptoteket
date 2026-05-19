@@ -57,6 +57,10 @@ def _safe_url(url: str) -> str:
     return urlparse(url).path
 
 
+def _exam_converter_main(page: Page) -> Any:
+    return page.locator('main[aria-labelledby="exam-converter-auth-title"]')
+
+
 def _summarize_response(response: Response) -> dict[str, Any]:
     entry: dict[str, Any] = {
         "content_type": response.headers.get("content-type"),
@@ -361,7 +365,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         except Exception:
             page.screenshot(path=str(artifact_dir / "failure.png"), full_page=True)
             (artifact_dir / "failure-main-text.txt").write_text(
-                page.locator("main").inner_text(timeout=10_000),
+                _exam_converter_main(page).inner_text(timeout=10_000),
                 encoding="utf-8",
             )
             raise

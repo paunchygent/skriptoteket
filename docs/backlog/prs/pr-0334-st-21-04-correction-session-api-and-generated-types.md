@@ -2,7 +2,7 @@
 type: pr
 id: PR-0334
 title: "ST-21-04 Correction-session API and generated types"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-19
@@ -57,3 +57,22 @@ semantics clearly enough for generated frontend types to be useful.
   hard validation failures.
 - OpenAPI export and generated frontend type checks.
 - Backend lint/typecheck and focused route/application tests.
+
+## Implementation Summary
+
+- Added authenticated correction-session read/upsert/revert handlers and
+  FastAPI routes under the Conversion Hub Exam Converter job boundary.
+- Preserved owner-scoped local job access, expected session version writes,
+  structured domain errors, and `409 Conflict` stale-write behavior.
+- Exported the Skriptoteket OpenAPI schema and regenerated frontend API types
+  for the correction-session request/response contract.
+
+## Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_exam_converter_correction_sessions.py`
+- `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_correction_sessions_api.py`
+- `pdm run openapi-export-v1`
+- `pdm run fe-gen-api-types`
+- `pdm run lint`
+- `pdm run typecheck`
+- `pdm run fe-type-check`

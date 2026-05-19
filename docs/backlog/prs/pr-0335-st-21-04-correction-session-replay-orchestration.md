@@ -2,7 +2,7 @@
 type: pr
 id: PR-0335
 title: "ST-21-04 Correction-session replay orchestration"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-19
@@ -61,3 +61,25 @@ returned effective state as projection truth.
   Convert behavior, and returned effective-state projection.
 - Gateway client tests proving the unified source-state/apply routes are used.
 - Backend lint/typecheck and focused orchestration tests.
+
+## Implementation Summary
+
+- Added a non-UI correction-session replay service that loads Skriptoteket
+  persisted active intents, issues fresh source state through the authenticated
+  HuleEdu Sir Convert Gateway client, validates persisted source binding and
+  item fingerprints, and submits the complete deterministic active set to the
+  unified apply route.
+- Added a typed correction-session API client over the PR-0334 generated
+  Skriptoteket OpenAPI contract for read/upsert/revert consumption.
+- Preserved saved-intent truth when source-state or apply replay is
+  unavailable, while returning fresh projection fields only from Sir Convert's
+  replayed effective-state/readiness/artifact evidence.
+- Kept UI wiring, Sir Convert persistence, browser proof, and matching
+  enablement out of scope.
+
+## Verification
+
+- `pdm run fe-test -- --run src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/correctionsContract.spec.ts`
+- `pdm run fe-type-check`
+- `pdm run fe-lint`
+- `pdm run fe-build`

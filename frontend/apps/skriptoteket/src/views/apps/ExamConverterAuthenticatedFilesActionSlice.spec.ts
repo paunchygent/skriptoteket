@@ -23,6 +23,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import ExamConverterFilesReadinessList from "./exam-converter-authenticated/ExamConverterFilesReadinessList.vue";
 import {
+  correctionApplyResult,
+  correctionSourceState,
+  createCorrectionSessionRecorder,
+} from "./examConverterAuthenticatedCorrectionSessionFixtures";
+import {
   artifactJsonBlob,
   fileArtifactBlob,
   filesTerminalResult,
@@ -39,27 +44,46 @@ import {
 } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
+  applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
+const correctionSessionApiMocks = vi.hoisted(() => ({
+  getExamConverterCorrectionSession: vi.fn(),
+  registerExamConverterConversionHubJob: vi.fn(),
+  revertExamConverterCorrectionIntent: vi.fn(),
+  upsertExamConverterCorrectionIntent: vi.fn(),
+}));
+const correctionSessionRecorder = createCorrectionSessionRecorder();
 
 vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
   return {
     ...actual,
+    applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
     downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
     getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
     getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+    issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
     listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
     saveDigiExamMigrationArtifactToUserFiles:
       gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
     submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
   };
 });
+
+vi.mock("../../api/examConverterCorrectionSessions", () => ({
+  getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
+  registerExamConverterConversionHubJob:
+    correctionSessionApiMocks.registerExamConverterConversionHubJob,
+  revertExamConverterCorrectionIntent: correctionSessionApiMocks.revertExamConverterCorrectionIntent,
+  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+}));
 
 let acceptedOverlaySubmitted = false;
 
@@ -251,9 +275,13 @@ async function finishConversion(wrapper: ReturnType<typeof mount>) {
 
 beforeEach(() => {
   acceptedOverlaySubmitted = false;
+  correctionSessionRecorder.reset();
+  for (const mock of Object.values(correctionSessionApiMocks)) mock.mockReset();
+  gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
@@ -263,6 +291,20 @@ beforeEach(() => {
     return Promise.resolve(submittedFilesJob("succeeded"));
   });
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(filesTerminalResult());
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
+    job_id: "local-conversion-hub-job-files",
+    status: "succeeded",
+    upstream_job_id: "job_exam_converter_files",
+  });
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
+    Promise.resolve(correctionSessionRecorder.current()),
+  );
+  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
+    ({ request }: { request: { intent: Record<string, unknown> } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  );
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
+  gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
   mockReviewArtifacts();
 });
 
@@ -272,6 +314,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
       props: {
         actionStates: {},
         actionsEnabled: true,
+        actionNotice: null,
         files: [
           {
             artifactKey: "qti_package",
@@ -299,7 +342,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     expect(wrapper.text()).not.toContain("unsupported_target_shape");
   });
 
-  it("uses explicit current-state export copy and keeps explanations in help affordances", async () => {
+  it("uses explicit current-state export copy without duplicate help text", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -311,18 +354,8 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     expect(gate.exists()).toBe(true);
     expect(review.text()).toBe("Granska");
     expect(accept.text()).toBe("Skapa filer");
-    expect(review.attributes("title")).toBe(
-      "Granska frågorna som saknar facit eller poäng.",
-    );
-    expect(accept.attributes("title")).toBe(
-      "Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.",
-    );
-    expect(wrapper.text()).not.toContain(
-      "Granska frågorna som saknar facit eller poäng.",
-    );
-    expect(wrapper.text()).not.toContain(
-      "Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.",
-    );
+    expect(review.attributes("title")).toBeUndefined();
+    expect(accept.attributes("title")).toBeUndefined();
     expect(wrapper.text()).not.toContain("Använd provet som det är");
     expect(wrapper.text()).not.toContain("Godkänn");
   });
@@ -355,7 +388,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
       wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists(),
     ).toBe(false);
     expect(wrapper.text()).toContain("Kan hämtas");
-    expect(pdfDownloadAfter.attributes("disabled")).toBeDefined();
+    expect(pdfDownloadAfter.attributes("disabled")).toBeUndefined();
     expect(qtiDownloadAfter.attributes("disabled")).toBeUndefined();
     expect(qtiSaveAfter.attributes("disabled")).toBeUndefined();
   });

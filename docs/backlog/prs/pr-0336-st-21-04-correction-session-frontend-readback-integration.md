@@ -2,7 +2,7 @@
 type: pr
 id: PR-0336
 title: "ST-21-04 Correction-session frontend readback integration"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-19
@@ -59,3 +59,27 @@ browser-local truth.
 - Focused Vitest for correction commit/readback, projection, conflict handling,
   stale/unavailable replay states, draft gating, and matching blockage.
 - `fe-type-check`, `fe-lint`, and `fe-build`.
+
+## Closeout
+
+Implemented in PR-0336. The authenticated Exam Converter UI now:
+
+- registers/recovers the local Conversion Hub job handle, reads persisted active
+  intents from Skriptoteket after navigation/reload, and submits supported
+  teacher changes through correction-session APIs with expected session version;
+- persists points, text patches, manual answer keys, review decisions, accepted
+  AI-facit choices/gap keys, and candidate suppression as source-bound intents;
+- renders points, text, keys, review decisions, candidate suppression, counters,
+  and file readiness from Skriptoteket readback plus Sir Convert replayed
+  effective state;
+- keeps local drafts visually separate and keeps matching blocked until the
+  later governed Task 332 slice;
+- uses teacher-facing Swedish copy that avoids internal terms such as
+  projection/replay/session/Sir Convert and states only the user consequence.
+
+Validation:
+
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`
+- `pdm run fe-type-check`
+- `pdm run fe-lint`
+- `pdm run fe-build`

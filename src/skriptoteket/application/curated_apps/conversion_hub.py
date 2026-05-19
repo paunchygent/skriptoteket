@@ -30,6 +30,7 @@ class ConversionHubSourceFormatV2(StrEnum):
     MD = "md"
     HTML = "html"
     DOCX = "docx"
+    DIGIEXAM_DXE = "dxe"
 
 
 class ConversionHubOutputFormatV2(StrEnum):
@@ -38,6 +39,7 @@ class ConversionHubOutputFormatV2(StrEnum):
     MD = "md"
     PDF = "pdf"
     DOCX = "docx"
+    EXAMNET_BUNDLE = "examnet_bundle"
 
 
 class ConversionHubPdfPaperSizeV2(StrEnum):
@@ -161,3 +163,24 @@ class ConversionHubJobStatusResult(BaseModel):
     job_id: UUID
     status: ConversionHubJobStatus
     error: str | None = None
+
+
+class RegisterExamConverterConversionHubJobRequest(BaseModel):
+    """Register one upstream Exam Converter job in Skriptoteket's local ledger."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    upstream_job_id: str = Field(min_length=1, max_length=255)
+    input_filename: str = Field(min_length=1, max_length=255)
+    correlation_id: str | None = Field(default=None, max_length=64)
+    status: ConversionHubJobStatus = ConversionHubJobStatus.SUCCEEDED
+
+
+class RegisterExamConverterConversionHubJobResult(BaseModel):
+    """Return the owner-scoped local Conversion Hub job id for corrections."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: UUID
+    upstream_job_id: str
+    status: ConversionHubJobStatus

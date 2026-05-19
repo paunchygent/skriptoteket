@@ -1074,6 +1074,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register Exam Converter Job */
+        post: operations["register_exam_converter_job_api_v1_apps_documents_conversion_hub_exam_converter_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/correction-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Converter Correction Session */
+        get: operations["get_exam_converter_correction_session_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/correction-session/intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upsert Exam Converter Correction Intent */
+        put: operations["upsert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_put"];
+        post?: never;
+        /** Revert Exam Converter Correction Intent */
+        delete: operations["revert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/jobs": {
         parameters: {
             query?: never;
@@ -3009,7 +3061,7 @@ export interface components {
          * @description Output formats supported by Sir Convert-a-Lot v2 (mirrored).
          * @enum {string}
          */
-        ConversionHubOutputFormatV2: "md" | "pdf" | "docx";
+        ConversionHubOutputFormatV2: "md" | "pdf" | "docx" | "examnet_bundle";
         /**
          * ConversionHubRouteV2
          * @description One supported conversion route.
@@ -3045,7 +3097,7 @@ export interface components {
          * @description Uploaded source formats supported by Sir Convert-a-Lot v2 (mirrored).
          * @enum {string}
          */
-        ConversionHubSourceFormatV2: "pdf" | "md" | "html" | "docx";
+        ConversionHubSourceFormatV2: "pdf" | "md" | "html" | "docx" | "dxe";
         /** ConversionHubSubmitResult */
         ConversionHubSubmitResult: {
             /** Jobs */
@@ -3807,6 +3859,125 @@ export interface components {
             "tool.py": string;
             /** Usage Instructions.Md */
             "usage_instructions.md": string;
+        };
+        /**
+         * ExamConverterCorrectionIntentKind
+         * @description Supported durable Exam Converter correction intent kinds.
+         * @enum {string}
+         */
+        ExamConverterCorrectionIntentKind: "candidate_suppression" | "review_decision" | "item_text_patch" | "point_correction" | "manual_choice_answer_key" | "manual_gap_open_cloze_answer_key";
+        /**
+         * ExamConverterCorrectionIntentResponse
+         * @description Current active correction intent returned to clients.
+         */
+        ExamConverterCorrectionIntentResponse: {
+            /** Conflict Family */
+            conflict_family: string | null;
+            /** Entry Id */
+            entry_id: string;
+            /**
+             * Intent Id
+             * Format: uuid
+             */
+            intent_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            kind: components["schemas"]["ExamConverterCorrectionIntentKind"];
+            /** Payload */
+            payload: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Sequence */
+            sequence: number;
+            source_binding: components["schemas"]["ExamConverterCorrectionSourceBinding"];
+            /** Source Item Fingerprint */
+            source_item_fingerprint: string;
+            target: components["schemas"]["ExamConverterCorrectionTarget"];
+            /** Target Key */
+            target_key: string;
+        };
+        /**
+         * ExamConverterCorrectionIntentWrite
+         * @description Boundary model for one source-bound correction intent write.
+         */
+        ExamConverterCorrectionIntentWrite: {
+            /** Entry Id */
+            entry_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /** Kind */
+            kind: string;
+            /** Payload */
+            payload: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Sequence */
+            sequence: number;
+            source_binding: components["schemas"]["ExamConverterCorrectionSourceBinding"];
+            /** Source Item Fingerprint */
+            source_item_fingerprint: string;
+            target?: components["schemas"]["ExamConverterCorrectionTarget"];
+        };
+        /**
+         * ExamConverterCorrectionSessionResponse
+         * @description Owner-scoped current correction-session state.
+         */
+        ExamConverterCorrectionSessionResponse: {
+            /** Active Intents */
+            active_intents: components["schemas"]["ExamConverterCorrectionIntentResponse"][];
+            /**
+             * Conversion Hub Job Id
+             * Format: uuid
+             */
+            conversion_hub_job_id: string;
+            /**
+             * Owner User Id
+             * Format: uuid
+             */
+            owner_user_id: string;
+            /** Session Id */
+            session_id: string | null;
+            /** Session Version */
+            session_version: number;
+            source_binding: components["schemas"]["ExamConverterCorrectionSourceBinding"] | null;
+        };
+        /**
+         * ExamConverterCorrectionSourceBinding
+         * @description Producer-issued source binding that every durable correction intent carries.
+         */
+        ExamConverterCorrectionSourceBinding: {
+            /** Source Authoring Schema Version */
+            source_authoring_schema_version: string;
+            /** Source Bundle Id */
+            source_bundle_id?: string | null;
+            /** Source File Sha256 */
+            source_file_sha256?: string | null;
+            /** Source State Sha256 */
+            source_state_sha256: string;
+            /** Source State Signature */
+            source_state_signature: string;
+        };
+        /**
+         * ExamConverterCorrectionTarget
+         * @description Kind-specific item-local target identity for one correction intent.
+         */
+        ExamConverterCorrectionTarget: {
+            /** Accepted Target Family */
+            accepted_target_family?: string | null;
+            /** Candidate Lineage Id */
+            candidate_lineage_id?: string | null;
+            /** Candidate Payload Digest */
+            candidate_payload_digest?: string | null;
+            /** Interaction Id */
+            interaction_id?: string | null;
+            /** Text Field */
+            text_field?: string | null;
+            /** Text Field Target Id */
+            text_field_target_id?: string | null;
         };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
@@ -5773,6 +5944,34 @@ export interface components {
             title: string;
         };
         /**
+         * RegisterExamConverterConversionHubJobRequest
+         * @description Register one upstream Exam Converter job in Skriptoteket's local ledger.
+         */
+        RegisterExamConverterConversionHubJobRequest: {
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Input Filename */
+            input_filename: string;
+            /** @default succeeded */
+            status: components["schemas"]["ConversionHubJobStatus"];
+            /** Upstream Job Id */
+            upstream_job_id: string;
+        };
+        /**
+         * RegisterExamConverterConversionHubJobResult
+         * @description Return the owner-scoped local Conversion Hub job id for corrections.
+         */
+        RegisterExamConverterConversionHubJobResult: {
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            status: components["schemas"]["ConversionHubJobStatus"];
+            /** Upstream Job Id */
+            upstream_job_id: string;
+        };
+        /**
          * RelationshipKind
          * @description Enumerate supported relationship rule types.
          * @enum {string}
@@ -5834,6 +6033,16 @@ export interface components {
             roster_name: string;
             /** Template Name */
             template_name?: string | null;
+        };
+        /**
+         * RevertExamConverterCorrectionIntentRequest
+         * @description Delete/revert request for one active correction target.
+         */
+        RevertExamConverterCorrectionIntentRequest: {
+            /** Expected Session Version */
+            expected_session_version?: number | null;
+            /** Target Key */
+            target_key: string;
         };
         /**
          * RevokedPublicGuestShareDto
@@ -7144,6 +7353,15 @@ export interface components {
             max_files: number;
             /** Max Total Bytes */
             max_total_bytes: number;
+        };
+        /**
+         * UpsertExamConverterCorrectionIntentRequest
+         * @description Upsert/replace request requiring optimistic session concurrency.
+         */
+        UpsertExamConverterCorrectionIntentRequest: {
+            /** Expected Session Version */
+            expected_session_version?: number | null;
+            intent: components["schemas"]["ExamConverterCorrectionIntentWrite"];
         };
         /**
          * User
@@ -9551,6 +9769,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveConversionHubSirConvertArtifactResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_exam_converter_job_api_v1_apps_documents_conversion_hub_exam_converter_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterExamConverterConversionHubJobRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterExamConverterConversionHubJobResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_converter_correction_session_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamConverterCorrectionSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upsert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertExamConverterCorrectionIntentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamConverterCorrectionSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevertExamConverterCorrectionIntentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamConverterCorrectionSessionResponse"];
                 };
             };
             /** @description Validation Error */
