@@ -176,13 +176,11 @@ opening anonymous conversion uploads.
    `reviewed_completion_answer_key` overlay entries through the second reviewed
    apply job, and proves file readiness is reloaded from the second Sir Convert
    bundle rather than from the first advisory job.
-12. Small-screen AI-facit review layout strategy (`PR-0330`, ready):
-    defines the phone layout as a separate reduced companion workflow below
-    `768px`, keeps tablet/narrow-laptop on its own navigator/detail
-    composition, and preserves desktop table/detail behavior. The strategy
-    exists because the phone screenshot showed the `PR-0329` action panel and
-    review surface inheriting a tablet/narrow-laptop grid instead of switching
-    to a phone-specific branch.
+12. Small-screen AI-facit review layout strategy (`PR-0330`, canceled):
+    retained the useful breakpoint diagnosis but is superseded by `PR-0338`
+    because the reviewed-AI accept/bulk-apply workflow is no longer active
+    implementation guidance. Future phone work must target the durable
+    AI-prefill editor flow.
 13. Reviewed AI-facit contract and affordance reconciliation (`PR-0331`,
     ready):
     reconciles the blocker where teachers could approve AI-suggested keys and

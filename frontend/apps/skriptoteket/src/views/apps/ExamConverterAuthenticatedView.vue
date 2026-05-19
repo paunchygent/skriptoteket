@@ -23,7 +23,7 @@ import type {
   ExamConverterReviewProjection,
 } from "./exam-converter-authenticated/digiexamIrReviewParser";
 import { visibleMissingFieldsForQuestion } from "./exam-converter-authenticated/digiexamIrReviewParser";
-import type { ExamConverterAiFacitReviewAction } from "./exam-converter-authenticated/useExamConverterAiFacitReview";
+import type { ExamConverterAiPrefillFocus } from "./exam-converter-authenticated/useExamConverterAiPrefillFocus";
 import { isProviderOnlyAdvisoryFailureReport } from "./exam-converter-authenticated/digiexamAnswerKeyCompletionReport";
 import { useExamConverterAuthenticatedRuntime } from "./exam-converter-authenticated/useExamConverterAuthenticatedRuntime";
 import { useExamConverterConversionState } from "./exam-converter-authenticated/useExamConverterConversionState";
@@ -61,6 +61,7 @@ const {
 } = useExamConverterConversionState();
 const {
   cancelRuntime,
+  clearLastJobHandle,
   issueCorrectionSourceState,
   lastConversionHubJobId,
   lastCorrelationId,
@@ -80,7 +81,7 @@ const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
 const acceptedCurrentState = ref(false);
 const advisoryRetryAttempt = ref(0);
 const aiSuggestionFocusKey = ref(0);
-const focusedReviewAction = ref<ExamConverterAiFacitReviewAction>("review");
+const focusedAiPrefill = ref<ExamConverterAiPrefillFocus>("questions");
 const {
   downloadFile,
   fileActionStates,
@@ -175,7 +176,7 @@ const fileActionNotice = computed(() => {
   return null;
 });
 
-const showAiReviewPanel = computed(() => {
+const showAiPrefillPanel = computed(() => {
   return (
     (reviewProjection.value?.report.aiSuggestionCount ?? 0) > 0
   );
@@ -193,12 +194,13 @@ const canRetryAdvisoryFacitSuggestion = computed(() => {
 
 function handleResetLocalChoices(): void {
   cancelRuntime();
+  clearLastJobHandle();
   resetReviewArtifacts();
   resetCorrectionSessionState();
   resetFileActions();
   acceptedCurrentState.value = false;
   advisoryRetryAttempt.value = 0;
-  focusedReviewAction.value = "review";
+  focusedAiPrefill.value = "questions";
   activeInspectionMode.value = "questions";
   resetLocalChoices();
   resetConversion();
@@ -261,7 +263,7 @@ async function handleStartConversion(): Promise<void> {
   resetFileActions();
   acceptedCurrentState.value = false;
   advisoryRetryAttempt.value = 0;
-  focusedReviewAction.value = "review";
+  focusedAiPrefill.value = "questions";
   activeInspectionMode.value = "questions";
   startConversion();
   try {
@@ -291,7 +293,7 @@ async function handleRetryAdvisoryFacitSuggestion(): Promise<void> {
   resetReviewArtifacts();
   resetFileActions();
   acceptedCurrentState.value = false;
-  focusedReviewAction.value = "review";
+  focusedAiPrefill.value = "questions";
   activeInspectionMode.value = "questions";
   startConversion();
   try {
@@ -320,8 +322,8 @@ function handleOpenQuestions(): void {
   aiSuggestionFocusKey.value += 1;
 }
 
-function focusReviewAction(action: ExamConverterAiFacitReviewAction): void {
-  focusedReviewAction.value = action;
+function focusAiPrefill(focus: ExamConverterAiPrefillFocus): void {
+  focusedAiPrefill.value = focus;
 }
 
 async function handleAcceptCurrentState(): Promise<void> {
@@ -337,7 +339,13 @@ async function handleAcceptCurrentState(): Promise<void> {
 async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> {
   const correlationId = lastCorrelationId.value;
   const jobId = lastJobId.value;
-  if (!correlationId || !jobId || !canUseFiles.value || !file.exportEnabled) {
+  if (
+    !correlationId ||
+    !jobId ||
+    !canUseFiles.value ||
+    !file.exportEnabled ||
+    !file.artifactActionReference
+  ) {
     return;
   }
   await downloadFile({ correlationId, file, jobId });
@@ -346,7 +354,13 @@ async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> 
 async function handleSaveFile(file: ExamConverterReviewFile): Promise<void> {
   const correlationId = lastCorrelationId.value;
   const jobId = lastJobId.value;
-  if (!correlationId || !jobId || !canUseFiles.value || !file.exportEnabled) {
+  if (
+    !correlationId ||
+    !jobId ||
+    !canUseFiles.value ||
+    !file.exportEnabled ||
+    !file.artifactActionReference
+  ) {
     return;
   }
   await saveFile({ correlationId, file, jobId });
@@ -375,6 +389,7 @@ onMounted(async () => {
           await refreshPersistedCorrections();
         }
       } catch {
+        clearLastJobHandle();
         failConversion();
       }
     }
@@ -395,7 +410,7 @@ onMounted(async () => {
   selectSourceFile(fixture.sourceFile);
   resetFileActions();
   acceptedCurrentState.value = false;
-  focusedReviewAction.value = "review";
+  focusedAiPrefill.value = "questions";
   activeInspectionMode.value = fixture.activeInspectionMode;
   setReviewArtifactsForInspection(fixture.projection);
   finishConversion(fixture.runtimeOutcome);
@@ -444,14 +459,14 @@ onMounted(async () => {
           :can-use-files="canUseFiles"
           :file-action-states="fileActionStates"
           :file-action-notice="fileActionNotice"
-          :focused-ai-review-action="focusedReviewAction"
+          :focused-ai-prefill="focusedAiPrefill"
           :is-correction-applying="isCorrectionApplying"
           :result-strip="resultStrip"
           :review-projection="reviewProjection"
           :requires-review-decision="requiresReviewDecision"
           :review-status="reviewStatus"
           :selected-source-file="selectedSourceFile"
-          :show-ai-review-panel="showAiReviewPanel"
+          :show-ai-prefill-panel="showAiPrefillPanel"
           :source-file-error="sourceFileError"
           @accept-current-state="handleAcceptCurrentState"
           @apply-item-text-patch="handleApplyItemTextPatch"
@@ -461,7 +476,7 @@ onMounted(async () => {
           @files-dropped="selectDroppedFiles"
           @inspection-mode-selected="selectInspectionMode"
           @open-questions="handleOpenQuestions"
-          @review-action-focused="focusReviewAction"
+          @ai-prefill-focused="focusAiPrefill"
           @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
           @save-file="handleSaveFile"
           @source-file-selected="selectSourceFile"

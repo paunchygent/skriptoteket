@@ -13,8 +13,10 @@
  */
 
 import { computed } from "vue";
+import { Bot, CheckCircle2 } from "lucide-vue-next";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
+import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
 import { effectiveGapAnswerDisplayEntries } from "./examConverterPersistedCorrectionDisplay";
 
 const props = defineProps<{
@@ -36,6 +38,10 @@ const answerKeySummary = computed(() => {
 
 const gapAnswerEntries = computed(() => effectiveGapAnswerDisplayEntries(props.question));
 
+const isAiAnswerKey = computed(() =>
+  isAiAnswerKeyProvenance(props.question.currentAnswerKeyProvenance),
+);
+
 </script>
 
 <template>
@@ -44,8 +50,20 @@ const gapAnswerEntries = computed(() => effectiveGapAnswerDisplayEntries(props.q
     class="grid gap-1 text-sm text-navy"
     data-test="exam-converter-effective-answer-key-summary"
   >
-    <h5 class="font-semibold leading-tight">
-      Facit
+    <h5 class="inline-flex items-center gap-1.5 font-semibold leading-tight">
+      <Bot
+        v-if="isAiAnswerKey"
+        class="h-4 w-4 text-success"
+        data-test="exam-converter-effective-answer-key-ai-symbol"
+        aria-hidden="true"
+      />
+      <CheckCircle2
+        v-else
+        class="h-4 w-4 text-success"
+        data-test="exam-converter-effective-answer-key-teacher-symbol"
+        aria-hidden="true"
+      />
+      <span>Facit</span>
     </h5>
     <p>
       {{ answerKeySummary }}

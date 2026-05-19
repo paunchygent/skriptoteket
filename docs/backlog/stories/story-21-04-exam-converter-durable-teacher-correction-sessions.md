@@ -70,7 +70,7 @@ replay. This story owns that product capability. It is not owned by `PR-0332`.
 - No browser-local persistence or local replay ledger as product truth.
 - No parser/source IR mutation in Skriptoteket.
 - No matching correction persistence before Task 332.
-- No implementation outside the ordered `PR-0333` through `PR-0338` plus
+- No implementation outside the ordered `PR-0333` through `PR-0339` plus
   proof-closeout task chain.
 
 ## Implementation PR Chain
@@ -93,16 +93,22 @@ PR-sized slices:
    route teacher commits through Skriptoteket correction-session APIs, reload
    saved intents after navigation, and render replayed effective state while
    keeping drafts visually separate.
-5. AI prefill editor and replay artifact authority (`PR-0338`, ready):
+5. AI prefill editor and replay artifact authority (`PR-0338`, done):
    delete the abandoned reviewed-AI acceptance workflow, make AI candidates
    editor prefill only, preserve answer-key provenance at durable-intent build
    time, advance the UI only after upsert/readback/full replay/projection, and
    gate corrected file actions on replay artifact references rather than
    original job artifacts.
-6. Browser and artifact proof (`PR-0337`, ready after `PR-0338`):
+6. Sir Convert replay artifact reference contract (`PR-0339`, done):
+   upstream producer/Gateway contract follow-up so correction apply readiness
+   exposes replay-scoped corrected artifact references for exportable corrected
+   targets. Sir Convert owns this by default; Skriptoteket-owned replay
+   artifact storage requires separate product-owner approval.
+7. Browser and artifact proof (`PR-0337`, ready after `PR-0339`):
    canonical Playwright proof that multiple committed corrections survive
-   navigation/reload and that projection/export state is driven by backend
-   readback plus Sir Convert replay.
+   navigation/reload, that projection/export state is driven by backend
+   readback plus Sir Convert replay, and that corrected file actions use only
+   replay-supplied artifact references.
 
 ## Notes
 
@@ -125,9 +131,17 @@ PR-sized slices:
   suppression/counters/readiness, keeps drafts distinct from persisted truth,
   keeps matching blocked, and includes a Swedish copy audit so teacher-visible
   messages do not expose internal projection/replay/session terminology.
-- `PR-0338` is ready. It owns deletion of the abandoned reviewed-AI acceptance
-  interaction model and the corrected artifact authority fix before the final
-  browser/artifact proof can honestly pass.
+- `PR-0338` is done. AI candidates now seed only the normal facit editor,
+  answer-key provenance is computed during durable-intent construction, UI
+  advancement waits for readback/replay/projection, and corrected file actions
+  require replay-provided corrected artifact references.
+- `PR-0339` is done. Sir Convert owns replay-derived corrected artifact
+  references, HuleEdu Gateway passes them through unchanged, and Skriptoteket
+  only consumes the replay reference. A Skriptoteket-owned replay artifact
+  store is a heavier alternative that needs explicit separate approval.
+- Accepted unchanged AI-prefilled facit keeps AI provenance after replay, and
+  report warnings are conversion diagnostics rather than remaining teacher
+  actions.
 - If replay is unavailable, the product may show saved correction intents, but
   it must not show a fresh effective-state projection or unlock artifacts from
   stale derived evidence.

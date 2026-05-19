@@ -1819,6 +1819,8 @@ export interface components {
          * @description Target readiness projection for corrected authoring state.
          */
         ExamAuthoringCorrectionTargetReadinessRowV1: {
+            /** Artifact Key */
+            artifact_key?: string | null;
             /** Export Enabled */
             export_enabled: boolean;
             /** Item Id */

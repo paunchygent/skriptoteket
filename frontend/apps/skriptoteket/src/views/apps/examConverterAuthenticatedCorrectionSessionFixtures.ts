@@ -45,14 +45,6 @@ export function createCorrectionSessionRecorder() {
       });
       return current;
     },
-    revertTarget: (targetKey: string) => {
-      current = {
-        ...current,
-        active_intents: current.active_intents.filter((intent) => intent.target_key !== targetKey),
-        session_version: current.session_version + 1,
-      };
-      return current;
-    },
     reset: () => {
       current = emptyCorrectionSession();
     },

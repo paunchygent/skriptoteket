@@ -411,9 +411,16 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
 
     const report = wrapper.find('[data-test="exam-converter-report-summary"]');
-    expect(report.text()).toContain("Rapporten visar frågor som saknar facit eller poäng.");
+    expect(report.text()).toContain(
+      "Rapporten skiljer kvarvarande åtgärder från konverteringsvarningar.",
+    );
     expect(report.text()).toContain("Facit saknas");
     expect(report.text()).toContain("Poäng saknas");
+    expect(report.text()).toContain("Konverteringsdiagnostik");
+    expect(report.text()).toContain("Konverteringsvarningar");
+    expect(report.text()).toContain(
+      "När frågor, facit och poäng är klara kan filerna användas",
+    );
     expect(report.text()).not.toContain("manifest");
     expect(report.text()).not.toContain("bundle");
     expect(report.text()).not.toContain("Sir Convert");

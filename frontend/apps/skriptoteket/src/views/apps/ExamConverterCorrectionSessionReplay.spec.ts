@@ -227,6 +227,30 @@ describe("correction-session replay orchestration", () => {
         target_key: "point_correction:item-001",
       }),
       intent({
+        entry_id: "corr-choice-item-001",
+        kind: "manual_choice_answer_key",
+        payload: {
+          candidate_lineage: null,
+          correct_choice_ids: ["choice-001"],
+          interaction_id: "choice-item-001",
+          submission_origin: "teacher_authored",
+        },
+        target_key: "manual_choice_answer_key:item-001",
+      }),
+      intent({
+        entry_id: "corr-review-item-003",
+        item_id: "item-003",
+        item_type: "open_ended",
+        kind: "review_decision",
+        payload: {
+          accepted_targets: ["qti_package"],
+          decision_id: "review-item-003",
+          note: null,
+        },
+        source_item_fingerprint: "sha256:item-003",
+        target_key: "review_decision:item-003",
+      }),
+      intent({
         entry_id: "corr-suppress-item-001",
         kind: "candidate_suppression",
         payload: {
@@ -272,13 +296,15 @@ describe("correction-session replay orchestration", () => {
       "candidate_suppression",
       "item_text_patch",
       "point_correction",
+      "manual_choice_answer_key",
+      "review_decision",
       "manual_gap_open_cloze_answer_key",
     ]);
     expect(JSON.stringify(request)).not.toContain("manual_matching_answer_key");
     expect(result).toMatchObject({
       projectionFreshness: "fresh",
-      savedIntentCount: 4,
-      submittedCorrectionCount: 4,
+      savedIntentCount: 6,
+      submittedCorrectionCount: 6,
     });
   });
 

@@ -10,7 +10,7 @@
  *   - Consumed by replay orchestration and later UI readback integration.
  */
 
-import { apiFetch, apiGet, apiPost, apiPut } from "./client";
+import { apiGet, apiPost, apiPut } from "./client";
 import type { components } from "./openapi";
 
 export type ExamConverterCorrectionIntentResponse =
@@ -21,8 +21,6 @@ export type ExamConverterCorrectionSessionResponse =
   components["schemas"]["ExamConverterCorrectionSessionResponse"];
 export type ExamConverterCorrectionSourceBinding =
   components["schemas"]["ExamConverterCorrectionSourceBinding"];
-export type RevertExamConverterCorrectionIntentRequest =
-  components["schemas"]["RevertExamConverterCorrectionIntentRequest"];
 export type UpsertExamConverterCorrectionIntentRequest =
   components["schemas"]["UpsertExamConverterCorrectionIntentRequest"];
 
@@ -66,18 +64,5 @@ export async function upsertExamConverterCorrectionIntent(params: {
   return await apiPut<ExamConverterCorrectionSessionResponse>(
     correctionSessionIntentsPath(params.conversionHubJobId),
     params.request,
-  );
-}
-
-export async function revertExamConverterCorrectionIntent(params: {
-  conversionHubJobId: string;
-  request: RevertExamConverterCorrectionIntentRequest;
-}): Promise<ExamConverterCorrectionSessionResponse> {
-  return await apiFetch<ExamConverterCorrectionSessionResponse>(
-    correctionSessionIntentsPath(params.conversionHubJobId),
-    {
-      body: params.request,
-      method: "DELETE",
-    },
   );
 }

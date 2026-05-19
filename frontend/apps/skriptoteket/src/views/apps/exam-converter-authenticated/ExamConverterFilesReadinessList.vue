@@ -43,7 +43,7 @@ function actionStateForFile(file: ExamConverterReviewFile): ExamConverterFileAct
 }
 
 function canUseFile(file: ExamConverterReviewFile): boolean {
-  return props.actionsEnabled && file.exportEnabled;
+  return props.actionsEnabled && file.exportEnabled && file.artifactActionReference !== null;
 }
 
 function statusLabelForFile(file: ExamConverterReviewFile): string {
@@ -63,10 +63,16 @@ function statusLabelForFile(file: ExamConverterReviewFile): string {
   if (canUseFile(file)) {
     return "Kan hämtas";
   }
+  if (file.exportEnabled && !file.artifactActionReference) {
+    return "Filer kunde inte skapas";
+  }
   return file.statusLabel;
 }
 
 function reasonLabelForFile(file: ExamConverterReviewFile): string | null {
+  if (file.exportEnabled && !file.artifactActionReference) {
+    return "Filen kunde inte hämtas efter senaste sparningen.";
+  }
   if (file.exportEnabled || !file.reasonCode) {
     return null;
   }

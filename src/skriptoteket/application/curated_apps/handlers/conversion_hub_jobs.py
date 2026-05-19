@@ -221,7 +221,9 @@ class RegisterExamConverterConversionHubJobHandler:
             if existing is not None:
                 if existing.owner_user_id != actor.id:
                     raise not_found("ConversionHubJob", request.upstream_job_id)
-                return self._to_result(existing)
+                return self._to_result(
+                    await self._synchronize_existing_job(job=existing, request=request)
+                )
 
             now = self._clock.now()
             job = await self._jobs.create(
@@ -241,6 +243,34 @@ class RegisterExamConverterConversionHubJobHandler:
                 )
             )
             return self._to_result(job)
+
+    async def _synchronize_existing_job(
+        self,
+        *,
+        job: ConversionHubJob,
+        request: RegisterExamConverterConversionHubJobRequest,
+    ) -> ConversionHubJob:
+        next_status = request.status
+        if job.status in _TERMINAL_STATUSES and next_status not in _TERMINAL_STATUSES:
+            next_status = job.status
+        if (
+            job.status is next_status
+            and job.input_filename == request.input_filename
+            and job.correlation_id == request.correlation_id
+        ):
+            return job
+
+        return await self._jobs.update(
+            job=job.model_copy(
+                update={
+                    "correlation_id": request.correlation_id,
+                    "error_message": None,
+                    "input_filename": request.input_filename,
+                    "status": next_status,
+                    "updated_at": self._clock.now(),
+                }
+            )
+        )
 
     def _to_result(self, job: ConversionHubJob) -> RegisterExamConverterConversionHubJobResult:
         if job.upstream_job_id is None:

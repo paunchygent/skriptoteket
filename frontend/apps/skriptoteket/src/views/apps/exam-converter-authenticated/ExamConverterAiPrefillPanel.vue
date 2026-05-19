@@ -1,24 +1,24 @@
 <script setup lang="ts">
 /**
- * Exam Converter AI-facit action panel.
+ * Exam Converter AI prefill navigation panel.
  *
  * Domain purpose:
  *   Replace the generic conversion result strip with the contextual teacher
- *   action guidance shown while reviewing advisory AI-facit candidates.
+ *   navigation shown when advisory AI answer-key candidates can seed editors.
  *
  * Relationships:
- *   - Rendered by `ExamConverterWorkspaceShell` when valid AI-facit candidates
+ *   - Rendered by `ExamConverterWorkspaceShell` when valid AI candidates
  *     exist.
  *   - Receives focused action state from the selected-question detail pane.
- *   - Emits navigation and bulk-accept intent only.
+ *   - Emits navigation intent only; answer-key writes stay in the item editor.
  */
 
 import { Bot, ListChecks } from "lucide-vue-next";
 
-import type { ExamConverterAiFacitReviewAction } from "./useExamConverterAiFacitReview";
+import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
 
 const props = defineProps<{
-  action: ExamConverterAiFacitReviewAction;
+  focus: ExamConverterAiPrefillFocus;
   suggestionCount: number;
 }>();
 
@@ -30,14 +30,11 @@ type ActionCopy = {
   title: string;
 };
 
-const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
-  accept: {
-    title: "AI-förslag till facit",
-  },
-  edit: {
+const copyByFocus: Record<ExamConverterAiPrefillFocus, ActionCopy> = {
+  candidate: {
     title: "Kontrollera facit",
   },
-  review: {
+  questions: {
     title: "Kontrollera facit",
   },
 };
@@ -47,7 +44,7 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
   <section
     class="border border-success bg-success/10 px-4 py-3"
     aria-live="polite"
-    data-test="exam-converter-ai-review-action-panel"
+    data-test="exam-converter-ai-prefill-panel"
   >
     <div class="flex items-start gap-3">
       <span
@@ -59,7 +56,7 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
           <h2 class="text-base font-semibold leading-tight text-success">
-            {{ copyByAction[props.action].title }}
+            {{ copyByFocus[props.focus].title }}
           </h2>
           <div class="flex shrink-0 items-center gap-2">
             <span class="text-sm font-semibold leading-tight text-success">
@@ -68,7 +65,7 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
             <button
               type="button"
               class="btn-ghost inline-flex items-center gap-2 shadow-none"
-              data-test="exam-converter-open-ai-review-action"
+              data-test="exam-converter-open-ai-prefill-action"
               @click="emit('openQuestions')"
             >
               <ListChecks

@@ -15,6 +15,13 @@ winner_policy: "Use the visual system, workspace hierarchy, and progressive-revi
 
 # ST-21-03 Exam Converter Authenticated Progressive Review
 
+> Durable-flow supersession note (2026-05-19): `PR-0338` retires the
+> reviewed-AI acceptance workflow for current implementation. This mockup
+> remains historical layout evidence for `PR-0325`/`PR-0326`; do not implement
+> its `Godkänn`, `Lämna`, `Godkänn alla`, or reviewed apply affordances in the
+> durable correction-session UI. Current work uses the normal answer-key editor
+> as the only AI-prefill write surface.
+
 ## Purpose
 
 Retain the selected mockup direction for the authenticated Exam Converter

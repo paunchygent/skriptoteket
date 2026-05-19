@@ -79,7 +79,7 @@ Implemented in PR-0336. The authenticated Exam Converter UI now:
 
 Validation:
 
-- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
 - `pdm run fe-build`

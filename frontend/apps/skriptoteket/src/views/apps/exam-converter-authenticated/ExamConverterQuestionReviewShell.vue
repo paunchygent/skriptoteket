@@ -14,7 +14,7 @@ import type {
 import {
   hasUsableCompletionCandidate,
 } from "./digiexamIrReviewParser";
-import type { ExamConverterAiFacitReviewAction } from "./useExamConverterAiFacitReview";
+import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
 import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterItemTextPatchCorrection } from "./digiexamTeacherCorrectionOverlay";
 import ExamConverterEffectiveAnswerKeySummary from "./ExamConverterEffectiveAnswerKeySummary.vue";
@@ -40,10 +40,11 @@ const emit = defineEmits<{
     patch: ExamConverterItemTextPatchCorrection,
   ];
   applyPointCorrection: [question: ExamConverterQuestionReviewRow, maxScore: number];
-  reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
+  aiPrefillFocused: [focus: ExamConverterAiPrefillFocus];
 }>();
 
 const selectedItemId = ref<string | null>(null);
+const pendingAiAdvanceFromItemId = ref<string | null>(null);
 
 const selectedQuestion = computed(() => {
   return (
@@ -92,15 +93,33 @@ function nextAiSuggestedQuestionId(
 
 function selectQuestion(question: ExamConverterQuestionReviewRow): void {
   selectedItemId.value = question.itemId;
-  emit("reviewActionFocused", hasUsableCompletionCandidate(question) ? "edit" : "review");
+  emit("aiPrefillFocused", hasUsableCompletionCandidate(question) ? "candidate" : "questions");
 }
 
 function applyManualAnswerKey(
   question: ExamConverterQuestionReviewRow,
   answerKey: ExamConverterManualAnswerKeyCorrection,
 ): void {
+  pendingAiAdvanceFromItemId.value = question.itemId;
   emit("applyManualAnswerKey", question, answerKey);
-  const nextItemId = nextAiSuggestedQuestionId(question, props.projection.questions);
+}
+
+function advanceAfterSavedAiPrefill(): void {
+  const pendingItemId = pendingAiAdvanceFromItemId.value;
+  if (!pendingItemId || props.isCorrectionApplying) return;
+  const savedQuestion = props.projection.questions.find(
+    (question) => question.itemId === pendingItemId,
+  );
+  if (!savedQuestion) {
+    pendingAiAdvanceFromItemId.value = null;
+    selectedItemId.value = defaultSelectedItemId(props.projection.questions);
+    return;
+  }
+  if (hasUsableCompletionCandidate(savedQuestion) && savedQuestion.effectiveAnswerKey === null) {
+    return;
+  }
+  pendingAiAdvanceFromItemId.value = null;
+  const nextItemId = nextAiSuggestedQuestionId(savedQuestion, props.projection.questions);
   if (nextItemId) {
     selectedItemId.value = nextItemId;
   }
@@ -126,6 +145,11 @@ watch(
     selectedItemId.value =
       firstSuggestedQuestion?.itemId ?? defaultSelectedItemId(props.projection.questions);
   },
+);
+
+watch(
+  () => [props.projection.questions, props.isCorrectionApplying] as const,
+  advanceAfterSavedAiPrefill,
 );
 </script>
 

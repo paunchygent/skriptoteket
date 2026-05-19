@@ -15,9 +15,7 @@ import { ref, type Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
 import {
-  revertExamConverterCorrectionIntent,
   upsertExamConverterCorrectionIntent,
-  type ExamConverterCorrectionIntentResponse,
   type ExamConverterCorrectionIntentWrite,
   type ExamConverterCorrectionSessionResponse,
 } from "../../../api/examConverterCorrectionSessions";
@@ -383,69 +381,6 @@ export function useExamConverterUnifiedCorrections(
     }
   }
 
-  function answerKeyIntentForQuestion(
-    question: ExamConverterQuestionReviewRow,
-  ): ExamConverterCorrectionIntentResponse | null {
-    const session = currentCorrectionSession.value;
-    if (!session) return null;
-    return (
-      session.active_intents.find(
-        (intent) =>
-          intent.item_id === question.itemId &&
-          (intent.kind === "manual_choice_answer_key" ||
-            intent.kind === "manual_gap_open_cloze_answer_key"),
-      ) ?? null
-    );
-  }
-
-  async function revertAnswerKey(question: ExamConverterQuestionReviewRow): Promise<boolean> {
-    const projection = options.reviewProjection.value;
-    const jobId = options.lastJobId.value;
-    const conversionHubJobId = options.lastConversionHubJobId.value;
-    const correlationId = options.lastCorrelationId.value;
-    const intent = answerKeyIntentForQuestion(question);
-    if (
-      !projection ||
-      !jobId ||
-      !conversionHubJobId ||
-      !correlationId ||
-      !intent ||
-      options.isConversionRunning.value ||
-      isCorrectionApplying.value
-    ) {
-      return false;
-    }
-    options.resetFileActions();
-    isCorrectionApplying.value = true;
-    try {
-      const session = await revertExamConverterCorrectionIntent({
-        conversionHubJobId,
-        request: {
-          expected_session_version: sessionVersion.value,
-          target_key: intent.target_key,
-        },
-      });
-      setSession(session);
-      const sourceState = await options.runtime.issueCorrectionSourceState({ jobId });
-      return await replayAndProject({
-        conversionHubJobId,
-        correlationId,
-        jobId,
-        projectEmptySession: true,
-        projection,
-        sourceState,
-      });
-    } catch (error) {
-      console.error("Exam Converter answer-key revert failed.", error);
-      correctionProjectionFreshness.value =
-        isApiError(error) && error.status === 409 ? "conflict" : "unavailable";
-      options.failConversion();
-      return false;
-    } finally {
-      isCorrectionApplying.value = false;
-    }
-  }
-
   return {
     applyItemTextPatch,
     applyManualAnswerKey,
@@ -454,7 +389,6 @@ export function useExamConverterUnifiedCorrections(
     correctionProjectionFreshness,
     isCorrectionApplying,
     refreshPersistedCorrections,
-    revertAnswerKey,
     resetCorrectionSessionState,
     savedCorrectionIntentCount,
     suppressCandidate,

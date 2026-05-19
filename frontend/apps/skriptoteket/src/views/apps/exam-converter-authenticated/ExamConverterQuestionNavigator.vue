@@ -25,6 +25,13 @@ const emit = defineEmits<{
   questionSelected: [question: ExamConverterQuestionReviewRow];
 }>();
 
+function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
+  if (question.statusSymbol === "ai_answer_key") return "AI-facit";
+  if (question.statusSymbol === "ai_suggestion") return "AI-förslag";
+  if (question.statusSymbol === "complete") return "Klar";
+  return "Saknar facit";
+}
+
 </script>
 
 <template>
@@ -62,11 +69,11 @@ const emit = defineEmits<{
       </span>
       <span
         class="inline-grid h-6 w-6 place-items-center"
-        :aria-label="question.statusSymbol === 'ai_suggestion' ? 'AI-förslag' : question.statusSymbol === 'complete' ? 'Klar' : 'Saknar facit'"
+        :aria-label="statusSymbolLabel(question)"
         role="img"
       >
         <Bot
-          v-if="question.statusSymbol === 'ai_suggestion'"
+          v-if="question.statusSymbol === 'ai_suggestion' || question.statusSymbol === 'ai_answer_key'"
           class="h-4 w-4 text-success"
           aria-hidden="true"
         />

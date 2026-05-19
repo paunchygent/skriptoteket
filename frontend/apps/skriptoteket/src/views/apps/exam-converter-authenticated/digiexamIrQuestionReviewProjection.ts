@@ -31,7 +31,11 @@ import type { ExamConverterLlmAnswerKeyCandidate } from "./digiexamAnswerKeyComp
 
 export type ExamConverterMissingFieldLabel = "Facit" | "Poäng";
 export type ExamConverterQuestionReviewStatus = "complete" | "attention";
-export type ExamConverterQuestionStatusSymbol = "ai_suggestion" | "complete" | "missing";
+export type ExamConverterQuestionStatusSymbol =
+  | "ai_answer_key"
+  | "ai_suggestion"
+  | "complete"
+  | "missing";
 
 export type ExamConverterQuestionAlternative = {
   id: string;
@@ -296,6 +300,10 @@ function hasEffectiveAnswerKey(
   return Boolean(answerKey?.provenance && answerKey.provenance !== "absent");
 }
 
+export function isAiAnswerKeyProvenance(provenance: string | null | undefined): boolean {
+  return provenance === "accepted_advisory_candidate";
+}
+
 function followUpsForEffectiveAnswerKey(params: {
   effectiveAnswerKey: DigiExamEffectiveAnswerKey | null | undefined;
   followUps: DigiExamIrManualFollowUp[];
@@ -330,11 +338,15 @@ function hasUsableCandidate(candidate: ExamConverterLlmAnswerKeyCandidate | null
 
 function statusSymbolForItem(params: {
   candidate: ExamConverterLlmAnswerKeyCandidate | null;
+  effectiveAnswerKey: DigiExamEffectiveAnswerKey | null | undefined;
   item: DigiExamIrItem;
   missingFields: ExamConverterMissingFieldLabel[];
 }): ExamConverterQuestionStatusSymbol {
   if (hasUsableCandidate(params.candidate)) {
     return "ai_suggestion";
+  }
+  if (isAiAnswerKeyProvenance(params.effectiveAnswerKey?.provenance)) {
+    return "ai_answer_key";
   }
   if (
     params.missingFields.includes("Facit") &&
@@ -379,7 +391,12 @@ export function projectQuestionReviewRow(
     status: isAttentionRow({ followUps: resolvedFollowUps, item, missingFields })
       ? "attention"
       : "complete",
-    statusSymbol: statusSymbolForItem({ candidate: resolvedCandidate, item, missingFields }),
+    statusSymbol: statusSymbolForItem({
+      candidate: resolvedCandidate,
+      effectiveAnswerKey,
+      item,
+      missingFields,
+    }),
     currentAnswerKeyProvenance: hasEffectiveAnswerKey(effectiveAnswerKey)
       ? effectiveAnswerKey.provenance
       : item.answerKey.provenance,

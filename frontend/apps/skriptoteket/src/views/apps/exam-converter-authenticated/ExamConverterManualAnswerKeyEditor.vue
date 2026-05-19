@@ -14,7 +14,7 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { Check, CheckCircle2 } from "lucide-vue-next";
+import { Bot, Check, CheckCircle2 } from "lucide-vue-next";
 
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
@@ -26,6 +26,7 @@ import type {
   ExamConverterManualAnswerKeyCorrection,
 } from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
+import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
 
 const props = defineProps<{
   disabled: boolean;
@@ -58,6 +59,20 @@ const hasUsableAiSuggestion = computed(
 );
 
 const hasSavedAnswerKey = computed(() => props.question.effectiveAnswerKey !== null);
+
+const selectedChoiceIdsRepresentAiAnswerKey = computed(() => {
+  if (!isChoiceItem.value) return false;
+  if (
+    isAiAnswerKeyProvenance(props.question.currentAnswerKeyProvenance) &&
+    sameNumberSet(
+      selectedChoiceIds.value,
+      props.question.effectiveAnswerKey?.correct_alternative_ids ?? [],
+    )
+  ) {
+    return true;
+  }
+  return !hasSavedAnswerKey.value && sameNumberSet(selectedChoiceIds.value, candidateChoiceIds());
+});
 
 const canRenderEditor = computed(() => {
   const canEditQuestionType =
@@ -107,6 +122,13 @@ function valuesFromDraft(value: string): string[] {
 function candidateChoiceIds(): number[] {
   const payload = props.question.llmCandidate?.answerPayload;
   return payload?.kind === "choice" ? [...payload.correctAlternativeIds] : [];
+}
+
+function sameNumberSet(left: number[], right: number[]): boolean {
+  if (left.length === 0 || left.length !== right.length) return false;
+  const normalizedLeft = [...left].sort((a, b) => a - b);
+  const normalizedRight = [...right].sort((a, b) => a - b);
+  return normalizedLeft.every((value, index) => value === normalizedRight[index]);
 }
 
 function candidateGapAnswers(): Map<string, string> {
@@ -220,8 +242,21 @@ watch(
             {{ alternative.text }}
           </span>
           <CheckCircle2
-            v-if="selectedChoiceIds.includes(Number.parseInt(alternative.id, 10))"
+            v-if="
+              selectedChoiceIds.includes(Number.parseInt(alternative.id, 10)) &&
+                !selectedChoiceIdsRepresentAiAnswerKey
+            "
             class="mt-1 h-5 w-5 text-success"
+            data-test="exam-converter-manual-choice-teacher-symbol"
+            aria-hidden="true"
+          />
+          <Bot
+            v-if="
+              selectedChoiceIds.includes(Number.parseInt(alternative.id, 10)) &&
+                selectedChoiceIdsRepresentAiAnswerKey
+            "
+            class="mt-1 h-5 w-5 text-success"
+            data-test="exam-converter-manual-choice-ai-symbol"
             aria-hidden="true"
           />
         </button>

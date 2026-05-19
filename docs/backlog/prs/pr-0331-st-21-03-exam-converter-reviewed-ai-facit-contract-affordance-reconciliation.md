@@ -29,6 +29,12 @@ acceptance_criteria:
 
 # PR-0331: ST-21-03 Exam Converter Reviewed AI-Facit Contract And Affordance Reconciliation
 
+> Durable-flow supersession note (2026-05-19): `PR-0338` retires the
+> reviewed-AI acceptance interaction model for the current durable correction
+> session UI. This PR remains retained ST-21-03 reviewed-apply integrity
+> evidence, not active implementation guidance for `ST-21-04` AI-prefill
+> editor saves or replay artifact authority.
+
 ## Problem
 
 The current authenticated Exam Converter flow has two intertwined problems:

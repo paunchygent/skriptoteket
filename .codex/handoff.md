@@ -11,12 +11,12 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-05-19.
 - Branch: `main`.
-- Current lanes under `ST-21-03`: `PR-0330` is outside-designer layout-only;
+- Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
   `REV-PR-0318` through `REV-PR-0322` approved; Sir Convert `TASK-292` done;
   `PR-0325` live evidence exists; `PR-0326`, `PR-0327`, and `PR-0328` are
-  implemented; `PR-0329` is done; `PR-0330` is ready as a small-screen layout
+  implemented; `PR-0329` is done; `PR-0330` is canceled as a reviewed-AI phone
   strategy; `PR-0331` is ready with retained Hemma/public proof.
 - Prior PR-0310 through PR-0314 history:
   `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`.
@@ -50,12 +50,11 @@ Keep this file updated so the next session can pick up work quickly.
   `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`.
   It proved valid `gap_fill` suggestions can build reviewed-completion overlays
   and reload readiness from the reviewed apply job bundle.
-- `PR-0330` is ready:
+- `PR-0330` is canceled:
   `docs/backlog/prs/pr-0330-st-21-03-exam-converter-small-screen-ai-facit-review-layout-strategy.md`.
-  It defines phone (`<768px`) as a separate reduced companion layout, tablet/
-  narrow-laptop (`768px-1199px`) as navigator/detail, and desktop (`>=1200px`)
-  as table/detail. It must remain layout-only. Design package lives in
-  `.codex/repomix_packages/`.
+  Its breakpoint diagnosis remains useful, but the reviewed-AI accept/bulk
+  apply target was superseded by `PR-0338`; future phone work must target the
+  durable AI-prefill editor flow.
 - `PR-0331` is ready:
   `docs/backlog/prs/pr-0331-st-21-03-exam-converter-reviewed-ai-facit-contract-affordance-reconciliation.md`.
   It is not part of `PR-0330` and is not for the outside designer.
@@ -112,13 +111,22 @@ Keep this file updated so the next session can pick up work quickly.
   review decisions/candidate suppression/counters/file readiness, keeps drafts
   distinct and matching blocked, and the teacher-visible Swedish copy was
   audited to avoid internal projection/replay/session/Sir Convert terminology.
-  `PR-0338` is ready next to delete the abandoned reviewed-AI acceptance model
-  and tighten replay artifact authority before `PR-0337` proof.
-- `PR-0338` is ready:
+- `PR-0338` is done:
   `docs/backlog/prs/pr-0338-st-21-04-ai-prefill-editor-and-replay-artifact-authority.md`.
-  It owns AI-candidate-as-editor-prefill only, `submission_origin` provenance,
-  post-replay UI advancement, replay-reference-gated file actions, and stale
-  reviewed-AI surface deletion/rewrite.
+  AI candidates seed only the normal facit editor, `submission_origin`
+  provenance is computed at durable-intent build time, selection advances only
+  after readback/replay/projection, and corrected file actions require
+  replay-provided artifact references.
+- `PR-0339` is done:
+  `docs/backlog/prs/pr-0339-st-21-04-sir-convert-replay-artifact-reference-contract.md`.
+  Sir Convert returns replay-derived `artifact_key` values on exportable
+  correction target readiness rows; HuleEdu passes through; Skriptoteket only
+  consumes that replay authority for corrected downloads/saves.
+- Latest PR-0339 UI refinement: accepted unchanged AI-prefilled facit keeps
+  `accepted_advisory_candidate` provenance after replay and uses the Lucide
+  Bot symbol in the list/inspector; teacher-authored and teacher-edited keys keep
+  the normal check/selected-choice indicator. Report warnings are diagnostics,
+  not remaining teacher actions.
 - `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` was regenerated
   from the current Sir Convert v2 OpenAPI snapshot for PR-0332. Skriptoteket's
   own backend `openapi.d.ts` was not regenerated because this slice adds no
@@ -143,7 +151,7 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k 9b2f4c6d8e10 --override-ini addopts=''`,
   `pdm run lint`, and `pdm run typecheck`.
 - Current PR-0333 retained re-review passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
   `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`,
   `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
   and `pdm run test tests/unit/scripts/test_playwright_script_surface.py`.
@@ -156,8 +164,12 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run fe-test -- --run src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/correctionsContract.spec.ts`,
   `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
 - Current PR-0336 frontend readback passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`,
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`,
   `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
+- Current PR-0339 replay artifact/UI refinement passed:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts`,
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
+  `pdm run fe-type-check`, and `pdm run pytest -q tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py`.
 - Previous PR-0332 broader correction slice passed focused Vitest, typecheck,
   lint, build, docs/handoff validation, and `git diff --check`.
 - Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
@@ -180,17 +192,9 @@ git diff --check
 - Teacher edit of prompts/stems and correct keys is not governed by `PR-0331`;
   accepted `ADR-0086` and done `PR-0332` own non-durable correction controls;
   accepted `ADR-0087`/ready `ST-21-04` own durable correction sessions.
-- User correction: rejected AI suggestions and global
-  rejection must become an explicit, non-confusing contract before PDF/QTI
-  generation; the old local-only reject path has been removed.
-- User correction: if corrected reviewed-apply artifacts
-  drop any reviewed choice, matching, or gapped/open-cloze keys, Codex owns
-  fixing Sir Convert source now rather than adding a downstream warning-only
-  workaround.
-- `PR-0337` proof must still retain candidate-suppression evidence where
-  available; `REV-PR-0333` approval does not approve the final browser/artifact
-  proof slice.
+- `PR-0337` proof must retain candidate-suppression evidence where available
+  and prove corrected file actions through replay-supplied artifact references,
+  not original job artifacts.
 ## Next Steps
-- Continue with ready `PR-0338`, then run `PR-0337` canonical browser/artifact
-  proof for the durable correction-session workflow. Keep matching blocked
-  until Task 332.
+- Continue with `PR-0337` canonical browser/artifact proof for the durable
+  correction-session workflow, including enabled corrected PDF/QTI downloads/saves through replay authority. Keep matching blocked until Task 332.

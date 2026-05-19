@@ -112,17 +112,12 @@ contract regression that made persisted decisions non-effective.
    replay, and projection/readiness rendering. Local transitions may show
    pending progress only.
 
-3. `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`
-   wires `@apply-manual-answer-key` directly to `handleApplyManualAnswerKey`,
-   while `useExamConverterAiFacitReview` exposes `acceptSuggestion`,
-   `acceptEditedChoiceSuggestion`, and `acceptEditedGapFillSuggestion` that are
-   not consumed by the view. When the editor is prefilled from an AI candidate
-   and the teacher clicks "Spara facit", the UI does not commit through the AI
-   review decision path that preserves candidate lineage and accepted-vs-edited
-   semantics. Split the action handler so AI-seeded saves either commit
+3. The stale reviewed-AI action model has to be removed from the durable UI
+   path. When the editor is prefilled from an AI candidate and the teacher
+   clicks "Spara facit", the normal answer-key save must compute
    `accepted_advisory_candidate` when unchanged or
-   `teacher_edited_advisory_candidate` when changed, then persist/replay that
-   complete intent set.
+   `teacher_edited_advisory_candidate` when changed, then persist/read back/
+   replay that complete intent set before the UI advances.
 
 4. Remove UX copy and status surfaces that paper over invalid state. Messages,
    pills, disabled overlays, "missing facit", "changed", "partial conversion",
@@ -192,7 +187,9 @@ candidate suppression in the complete Sir Convert apply set.
 
 ## Verification
 
-- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`
+- `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`
+- Superseding PR-0338 verification path:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts`
 - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
 - `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`
 - `pdm run test tests/unit/scripts/test_playwright_script_surface.py`
@@ -204,3 +201,4 @@ candidate suppression in the complete Sir Convert apply set.
 | 1 | `REV-PR-0333` | Retained re-review created after direct blocker verification. |
 | 2 | `REV-PR-0333` | Verdict corrected to `changes_requested` after identifying that the per-question AI-seeded save path still bypasses the AI review-decision workflow. |
 | 3 | `REV-PR-0333` | User's UI/contract findings retained as active blockers: mixed state concepts, browser-local truth leakage, insufficient workflow proof, and UX papering over contract confusion. |
+| 4 | `PR-0338` | The durable UI remediation rewrote the stale reviewed-AI action path into AI-prefilled editor saves with durable provenance, replay-gated advancement, and replay-reference-gated file actions. |

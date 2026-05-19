@@ -23,10 +23,12 @@ import type {
 } from "../../../api/sirConvertGateway";
 import type {
   ExamConverterQuestionReviewRow,
+  ExamConverterReviewFileActionReference,
   ExamConverterReviewFile,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
 import { hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
+import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
 import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/sirConvertGateway/contractValues";
 
 type JsonRecord = Record<string, unknown>;
@@ -115,7 +117,7 @@ function savedAnswerKeyForIntent(params: {
     return {
       correct_alternative_ids: correctAlternativeIds,
       lineage: null,
-      provenance: "teacher_provided" as const,
+      provenance: savedAnswerKeyProvenance(intent),
     };
   }
   if (intent.kind === "manual_gap_open_cloze_answer_key") {
@@ -139,10 +141,16 @@ function savedAnswerKeyForIntent(params: {
     return {
       correct_gap_answers: correctGapAnswers,
       lineage: null,
-      provenance: "teacher_provided" as const,
+      provenance: savedAnswerKeyProvenance(intent),
     };
   }
   return null;
+}
+
+function savedAnswerKeyProvenance(intent: ExamConverterCorrectionIntentResponse): string {
+  return intent.payload.submission_origin === "accepted_advisory_candidate"
+    ? "accepted_advisory_candidate"
+    : "teacher_provided";
 }
 
 function isJsonRecord(value: unknown): value is JsonRecord {
@@ -280,10 +288,32 @@ function reportForCorrectedQuestions(
   };
 }
 
-function correctedFileStatusLabel(file: ExamConverterReviewFile): string {
-  if (file.exportEnabled) return "Kan hämtas";
+type CorrectionTargetReadinessRow =
+  ExamAuthoringCorrectionsApplyResult["target_readiness"]["targets"][number];
+
+function correctedFileStatusLabel(params: {
+  file: ExamConverterReviewFile;
+  replayExportEnabled: boolean;
+}): string {
+  const { file, replayExportEnabled } = params;
+  if (file.exportEnabled && file.artifactActionReference) return "Kan hämtas";
+  if (replayExportEnabled && !file.artifactActionReference) return "Filer kunde inte skapas";
   if (file.availability === "available") return "Granska facit först";
   return "Kunde inte skapas";
+}
+
+function replayArtifactActionReference(params: {
+  availability: ExamAuthoringCorrectionsApplyResult["artifact_availability"][number] | undefined;
+  readinessRows: CorrectionTargetReadinessRow[];
+}): ExamConverterReviewFileActionReference | null {
+  const readinessRow = params.readinessRows.find((row) => row.export_enabled) ?? null;
+  if (!readinessRow || params.availability?.availability !== "available") return null;
+  const artifactKey = readinessRow.artifact_key;
+  if (typeof artifactKey !== "string" || artifactKey.length === 0) return null;
+  return {
+    artifactKey,
+    authority: "replay_result",
+  };
 }
 
 function projectCorrectedFiles(
@@ -298,12 +328,17 @@ function projectCorrectedFiles(
       (row) => row.target === file.artifactKey,
     );
     const readinessRow = readinessRows.find((row) => !row.export_enabled) ?? readinessRows[0] ?? null;
-    const availability = availabilityRow?.availability ?? file.availability;
-    const exportEnabled = readinessRows.length > 0
-      ? availability === "available" && readinessRows.some((row) => row.export_enabled)
-      : file.exportEnabled;
+    const availability = availabilityRow?.availability ?? "unavailable";
+    const replayExportEnabled =
+      availability === "available" && readinessRows.some((row) => row.export_enabled);
+    const artifactActionReference = replayArtifactActionReference({
+      availability: availabilityRow,
+      readinessRows,
+    });
+    const exportEnabled = replayExportEnabled && artifactActionReference !== null;
     const correctedFile = {
       ...file,
+      artifactActionReference,
       availability,
       exportEnabled,
       reasonCode: readinessRow?.reason_code ?? availabilityRow?.unavailable_code ?? file.reasonCode,
@@ -312,7 +347,7 @@ function projectCorrectedFiles(
     };
     return {
       ...correctedFile,
-      statusLabel: correctedFileStatusLabel(correctedFile),
+      statusLabel: correctedFileStatusLabel({ file: correctedFile, replayExportEnabled }),
     };
   });
 }
@@ -406,9 +441,11 @@ export function projectUnifiedCorrectionResult(params: {
       status: missingFields.length > 0 ? question.status : "complete",
       statusSymbol: hasUsableCompletionCandidate({ llmCandidate })
         ? "ai_suggestion"
-        : missingFields.includes("Facit") && question.itemType !== "open_ended"
-          ? "missing"
-          : "complete",
+        : isAiAnswerKeyProvenance(effectiveAnswerKey?.provenance)
+          ? "ai_answer_key"
+          : missingFields.includes("Facit") && question.itemType !== "open_ended"
+            ? "missing"
+            : "complete",
       title:
         savedTextValue({ field: "item_title", intents: savedTextByItem.get(question.itemId) }) ??
         effectiveItem.title ??

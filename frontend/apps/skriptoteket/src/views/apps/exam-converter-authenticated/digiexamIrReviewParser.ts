@@ -71,6 +71,7 @@ export type {
 export type ExamConverterInspectionMode = "questions" | "files" | "report";
 
 export type ExamConverterReviewFile = {
+  artifactActionReference: ExamConverterReviewFileActionReference | null;
   artifactKey: string;
   availability: SirConvertArtifactAvailability;
   contentType: string;
@@ -84,6 +85,11 @@ export type ExamConverterReviewFile = {
   sizeLabel: string | null;
   statusLabel: string;
   unavailableCode: string | null;
+};
+
+export type ExamConverterReviewFileActionReference = {
+  artifactKey: string;
+  authority: "original_job" | "replay_result";
 };
 
 export type ExamConverterReportProjection = {
@@ -356,14 +362,19 @@ function exportEnabledForFile(
 }
 
 function statusLabelForFile(params: {
+  artifactActionReference: ExamConverterReviewFileActionReference | null;
   availability: SirConvertArtifactAvailability;
   exportEnabled: boolean;
   readinessRow: DigiExamTargetReadinessRow | null;
   unavailableCode: string | null;
 }): string {
-  const { availability, exportEnabled, readinessRow, unavailableCode } = params;
-  if (exportEnabled) {
+  const { artifactActionReference, availability, exportEnabled, readinessRow, unavailableCode } =
+    params;
+  if (exportEnabled && artifactActionReference) {
     return "Kan hämtas";
+  }
+  if (exportEnabled && !artifactActionReference) {
+    return "Filer kunde inte skapas";
   }
   if (availability === SIR_CONVERT_ARTIFACT_AVAILABLE) {
     return "Granska facit först";
@@ -389,7 +400,15 @@ function projectFiles(
     const rows = readinessRowsForTarget(targetReadinessReport, entry.artifact_key);
     const readinessRow = primaryReadinessRow(rows);
     const exportEnabled = exportEnabledForFile(entry, rows);
+    const artifactActionReference =
+      exportEnabled && entry.availability === SIR_CONVERT_ARTIFACT_AVAILABLE
+        ? {
+            artifactKey: entry.artifact_key,
+            authority: "original_job" as const,
+          }
+        : null;
     return {
+      artifactActionReference,
       artifactKey: entry.artifact_key,
       availability: entry.availability,
       contentType: entry.content_type,
@@ -402,6 +421,7 @@ function projectFiles(
       sizeBytes: entry.size_bytes,
       sizeLabel: sizeLabel(entry.size_bytes),
       statusLabel: statusLabelForFile({
+        artifactActionReference,
         availability: entry.availability,
         exportEnabled,
         readinessRow,

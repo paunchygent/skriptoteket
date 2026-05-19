@@ -1,9 +1,9 @@
 /**
- * Exam Converter reviewed AI durable-session behavior.
+ * Exam Converter AI-prefill durable-session behavior.
  *
  * Domain purpose:
- *   Prove reviewed AI-facit choices become persisted correction-session intents
- *   and are replayed before the UI exposes updated question/file truth.
+ *   Prove AI-prefilled editor values become persisted correction-session
+ *   intents and are replayed before the UI exposes updated question/file truth.
  *
  * Relationships:
  *   - Complements the general authenticated review shell spec.
@@ -40,7 +40,6 @@ const gatewayMocks = vi.hoisted(() => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  revertExamConverterCorrectionIntent: vi.fn(),
   upsertExamConverterCorrectionIntent: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
@@ -65,7 +64,6 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  revertExamConverterCorrectionIntent: correctionSessionApiMocks.revertExamConverterCorrectionIntent,
   upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
 }));
 
@@ -87,10 +85,6 @@ beforeEach(() => {
     ({ request }: { request: { intent: Record<string, unknown> } }) =>
       Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
   );
-  correctionSessionApiMocks.revertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { target_key: string } }) =>
-      Promise.resolve(correctionSessionRecorder.revertTarget(request.target_key)),
-  );
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(correctionSessionRecorder.current()),
   );
@@ -111,7 +105,7 @@ async function leaveAndReturnToQuestion(
   await wrapper.find(`[data-test="${rowPrefix}${itemId}"]`).trigger("click");
 }
 
-describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
+describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
   it("opens the first question with an AI-suggested facit from the top review button", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
@@ -122,7 +116,7 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
         .element.value,
     ).toBe("Resonera om lösningsmetod");
 
-    await wrapper.find('[data-test="exam-converter-open-ai-review-action"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
     await wrapper.vm.$nextTick();
 
     expect(
@@ -168,6 +162,14 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
     expect(
       wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
     ).toContain("2");
+    expect(
+      wrapper
+        .find('[data-test="exam-converter-effective-answer-key-teacher-symbol"]')
+        .exists(),
+    ).toBe(true);
+    expect(
+      wrapper.find('[data-test="exam-converter-effective-answer-key-ai-symbol"]').exists(),
+    ).toBe(false);
     expect(
       wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
     ).not.toContain("3");
@@ -251,7 +253,7 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
     ).toBe(false);
   });
 
-  it("persists a reviewed AI-facit when the teacher accepts a choice suggestion", async () => {
+  it("persists unchanged AI-prefilled choice facit with advisory candidate provenance", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -287,6 +289,22 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
     expect(
       wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
     ).toContain("3");
+    expect(
+      wrapper.find('[data-test="exam-converter-effective-answer-key-ai-symbol"]').exists(),
+    ).toBe(true);
+    expect(
+      wrapper
+        .find('[data-test="exam-converter-effective-answer-key-teacher-symbol"]')
+        .exists(),
+    ).toBe(false);
+    expect(
+      wrapper
+        .find('[data-test="exam-converter-question-row-item-004"] [aria-label="AI-facit"]')
+        .exists(),
+    ).toBe(true);
+    expect(
+      wrapper.findAll('[data-test="exam-converter-manual-choice-ai-symbol"]'),
+    ).toHaveLength(1);
     expect(gatewayMocks.applyExamAuthoringCorrections).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
@@ -346,7 +364,12 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
     );
     expect(wrapper.text()).toContain("Filer (2)");
     await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    expect(wrapper.text()).toContain("Kan hämtas");
+    expect(wrapper.text()).toContain("Filer kunde inte skapas");
+    expect(
+      wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes(
+        "disabled",
+      ),
+    ).toBeDefined();
     await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
     expect(wrapper.find('[data-test="exam-converter-question-row-item-013"]').text()).not.toContain(
       "Facit",
@@ -410,5 +433,9 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
     expect(
       wrapper.find('[data-test="exam-converter-manual-choice-3"]').attributes("aria-pressed"),
     ).toBe("true");
+    expect(wrapper.findAll('[data-test="exam-converter-manual-choice-ai-symbol"]')).toHaveLength(1);
+    expect(wrapper.find('[data-test="exam-converter-manual-choice-teacher-symbol"]').exists()).toBe(
+      false,
+    );
   });
 });

@@ -22,7 +22,8 @@ dependencies:
 acceptance_criteria:
   - "Given multiple supported corrections are committed with the bootstrap account, when the browser navigates between affected items and reloads the route, then the visible state is reconstructed from Skriptoteket readback and Sir Convert replay."
   - "Given committed corrections include points, choice keys, gap/open-cloze keys, item text, review decisions, and candidate suppression where available, when replay runs, then the retained proof shows the complete persisted set was submitted through the unified Sir Convert apply route."
-  - "Given artifacts are generated after replay, when PDF/QTI evidence is inspected, then corrected supported semantics are present and no internal diagnostics, raw overlay JSON, prompts, credentials, scores, student-result data, or identity markers leak."
+  - "Given replay does not yet return corrected artifact references, when the proof opens `Filer`, then corrected download/save actions remain disabled and no original-job artifact fallback is used."
+  - "Given PR-0339 later provides replay-scoped corrected artifact references, when enabled download/save proof is added, then PDF/QTI evidence shows corrected supported semantics and no internal diagnostics, raw overlay JSON, prompts, credentials, scores, student-result data, or identity markers leak."
   - "Given local drafts exist without submit, when the proof evaluates readiness and downloads, then drafts do not unlock artifacts."
   - "Given matching correction is still unsupported, when the proof inspects UI and requests, then no matching submit path or retired Task 324 route is used."
 ---
@@ -43,7 +44,8 @@ projection, not because local component state happened to remain in memory.
 - Use the authenticated HuleEdu/Skriptoteket browser-session ceremony and the
   real Gateway/Sir Convert route chain.
 - Retain evidence for committed corrections, backend readback, complete-set
-  replay, route usage, artifact readiness, and downloaded artifact inspection.
+  replay, route usage, artifact readiness, and disabled corrected file actions
+  while replay artifact references are absent.
 - Prove local drafts do not unlock files and matching stays blocked.
 - Update handoff with exact retained evidence paths.
 
@@ -52,11 +54,16 @@ projection, not because local component state happened to remain in memory.
 - No new production behavior beyond proof hardening and minor testability
   support.
 - No arbitrary shell Playwright snippets.
+- No enabled corrected artifact download/save proof until `PR-0339` lands the
+  upstream replay artifact reference contract.
 - No matching answer-key enablement.
 
 ## Test Plan
 
-- Canonical Playwright proof with retained artifacts.
+- Canonical Playwright proof with retained route/readback/replay evidence and
+  disabled corrected file-action evidence.
+- Add enabled corrected artifact download/save proof only after `PR-0339`
+  lands.
 - Focused script-surface tests for the proof entrypoint.
 - `fe-type-check`, `fe-lint`, `fe-build`, `docs-validate`,
   `handoff-validate`, and `git diff --check`.

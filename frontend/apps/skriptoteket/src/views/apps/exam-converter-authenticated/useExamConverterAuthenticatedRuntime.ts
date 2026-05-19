@@ -208,15 +208,17 @@ export function useExamConverterAuthenticatedRuntime(
   }
 
   async function registerLocalJob(params: {
+    correlationId: string;
     inputFilename: string;
-    submittedJob: SirConvertSubmittedJob;
+    status: RegisterExamConverterConversionHubJobRequest["status"];
+    upstreamJobId: string;
   }): Promise<RegisterExamConverterConversionHubJobResult> {
     return await client.registerExamConverterConversionHubJob({
       request: {
-        correlation_id: params.submittedJob.requestContext.correlationId,
+        correlation_id: params.correlationId,
         input_filename: params.inputFilename,
-        status: toRegisteredJobStatus(params.submittedJob.status),
-        upstream_job_id: params.submittedJob.jobId,
+        status: params.status,
+        upstream_job_id: params.upstreamJobId,
       },
     });
   }
@@ -224,6 +226,7 @@ export function useExamConverterAuthenticatedRuntime(
   async function pollUntilTerminal(
     submittedJob: SirConvertSubmittedJob,
     runId: number,
+    synchronizeTerminalStatus: (status: SirConvertJobStatus) => Promise<void>,
   ): Promise<SirConvertTerminalResult | null> {
     const correlationId = submittedJob.requestContext.correlationId;
     let currentStatus = submittedJob.status;
@@ -245,6 +248,7 @@ export function useExamConverterAuthenticatedRuntime(
       return null;
     }
     if (currentStatus === "succeeded") {
+      await synchronizeTerminalStatus(currentStatus);
       return await readTerminalResult({
         client,
         correlationId,
@@ -252,6 +256,7 @@ export function useExamConverterAuthenticatedRuntime(
       });
     }
     if (isFailedJobStatus(currentStatus)) {
+      await synchronizeTerminalStatus(currentStatus);
       throw new Error("Exam Converter job did not finish.");
     }
     throw new Error("Exam Converter job returned an unsupported status.");
@@ -296,9 +301,12 @@ export function useExamConverterAuthenticatedRuntime(
       lastCorrelationId.value = submittedJob.requestContext.correlationId;
       lastIdempotentReplay.value = submittedJob.idempotentReplay;
       lastJobId.value = submittedJob.jobId;
+      let lastRegisteredStatus = toRegisteredJobStatus(submittedJob.status);
       const registeredJob = await registerLocalJob({
+        correlationId: submittedJob.requestContext.correlationId,
         inputFilename: submission.sourceFile.name,
-        submittedJob,
+        status: lastRegisteredStatus,
+        upstreamJobId: submittedJob.jobId,
       });
       lastConversionHubJobId.value = registeredJob.job_id;
       saveJobHandle({
@@ -307,7 +315,20 @@ export function useExamConverterAuthenticatedRuntime(
         inputFilename: submission.sourceFile.name,
         sirConvertJobId: submittedJob.jobId,
       });
-      return await pollUntilTerminal(submittedJob, runId);
+      return await pollUntilTerminal(submittedJob, runId, async (status) => {
+        const nextRegisteredStatus = toRegisteredJobStatus(status);
+        if (nextRegisteredStatus === lastRegisteredStatus) {
+          return;
+        }
+        lastRegisteredStatus = nextRegisteredStatus;
+        const synchronizedJob = await registerLocalJob({
+          correlationId: submittedJob.requestContext.correlationId,
+          inputFilename: submission.sourceFile.name,
+          status: nextRegisteredStatus,
+          upstreamJobId: submittedJob.jobId,
+        });
+        lastConversionHubJobId.value = synchronizedJob.job_id;
+      });
     } catch (error) {
       if (!isCurrentRun(runId)) {
         return null;
@@ -346,10 +367,19 @@ export function useExamConverterAuthenticatedRuntime(
     return await client.applyExamAuthoringCorrections({ correlationId, request });
   }
 
+  function clearLastJobHandle(): void {
+    lastConversionHubJobId.value = null;
+    lastCorrelationId.value = null;
+    lastIdempotentReplay.value = null;
+    lastJobId.value = null;
+    saveJobHandle(null);
+  }
+
   onBeforeUnmount(cancelRuntime);
 
   return {
     cancelRuntime,
+    clearLastJobHandle,
     isRuntimeBusy,
     issueCorrectionSourceState,
     lastConversionHubJobId,

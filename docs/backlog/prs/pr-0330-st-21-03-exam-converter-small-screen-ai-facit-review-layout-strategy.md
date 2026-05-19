@@ -2,10 +2,10 @@
 type: pr
 id: PR-0330
 title: "ST-21-03 Exam Converter small-screen AI-facit review layout strategy"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-05-17
-updated: 2026-05-17
+updated: 2026-05-19
 stories:
   - "ST-21-03"
 tags:
@@ -16,14 +16,19 @@ tags:
   - small-screen
   - reviewed-completion
 acceptance_criteria:
-  - "Given the authenticated Exam Converter AI-facit review state renders below the phone breakpoint, when the teacher opens the view, then Skriptoteket uses a phone-specific review flow instead of the tablet/narrow-laptop two-column navigator and detail composition."
-  - "Given the tablet breakpoint renders, when the teacher reviews AI-facit, then Skriptoteket keeps the tablet/narrow-laptop composition distinct from the phone branch and does not inherit phone-only bottom sheets, one-column detail routing, or compressed action docks."
-  - "Given desktop and laptop widths render, when this slice is implemented, then the existing table-plus-detail and narrow-laptop navigator-plus-detail compositions remain protected and are not flattened into stacked phone cards."
-  - "Given valid AI-facit suggestions exist, when the phone layout renders, then `Granska`, per-question approve/leave/edit where supported, `Godkänn alla`, and `Skapa filer` remain reachable with readable labels, stable touch targets, and no horizontal document overflow."
-  - "Given the teacher applies reviewed suggestions, when the phone branch emits actions, then it uses the existing reviewed-completion overlay state and submit path without creating phone-only data, storage, or Sir Convert contract logic."
+  - "Given PR-0338 retired the reviewed-AI acceptance workflow, when this PR is consulted, then it is treated as canceled historical breakpoint analysis rather than an implementation task."
+  - "Given future phone layout work resumes, when a new PR is created, then it targets the durable AI-prefill editor flow and not reviewed-completion overlay actions."
+  - "Given the authenticated Exam Converter still needs responsive proof, when that replacement work runs, then phone, tablet/narrow-laptop, and desktop compositions remain separately verified."
 ---
 
 # PR-0330: ST-21-03 Exam Converter Small-Screen AI-Facit Review Layout Strategy
+
+> Superseded by `PR-0338`: the reviewed-AI acceptance workflow, bulk
+> `Godkänn alla`, and reviewed apply overlay path are no longer active
+> implementation guidance. Future phone-layout work must target the durable
+> AI-prefill editor flow, where the normal answer-key editor is the only write
+> surface and replayed file actions stay disabled unless replay supplies an
+> artifact reference.
 
 ## Problem
 
@@ -42,9 +47,13 @@ within a breakpoint, not across breakpoints.
 
 ## Goal
 
-Define and implement a phone-specific authenticated Exam Converter AI-facit
-review flow while preserving the existing tablet/narrow-laptop and desktop
-compositions.
+This slice is canceled rather than implemented. Its breakpoint diagnosis
+remains useful historical input, but its reviewed-AI interaction target is no
+longer the product contract.
+
+Future work should define and implement a phone-specific authenticated Exam
+Converter AI-prefill editor flow while preserving the existing tablet/
+narrow-laptop and desktop compositions.
 
 The phone branch should be a reduced companion workflow:
 
@@ -84,8 +93,8 @@ Keep the domain state shared and split only the presentation branch:
 - Reuse `ExamConverterQuestionNavigator` row semantics where useful, but do
   not force the existing navigator to be both phone queue and tablet rail if it
   makes either branch unclear.
-- Keep per-question AI-facit decisions in `useExamConverterAiFacitReview.ts`.
-- Keep overlay construction and reviewed apply submit unchanged.
+- Keep the durable answer-key editor as the only write surface.
+- Keep durable intent upsert/readback/replay/projection as the save authority.
 - Move only layout and phone-specific control placement into the phone branch.
 
 The phone layout should default to the question queue and open a focused
@@ -108,15 +117,16 @@ first advisory bundle unlocked files locally.
 1. Confirm the UI content model and this strategy with the product owner before
    changing production UI code.
 2. Add or extend a focused test-code specification for the small-screen
-   AI-facit review slice. The test must describe teacher-visible phone behavior,
+   AI-prefill editor slice. The test must describe teacher-visible phone behavior,
    not just selectors.
 3. Add a phone-specific branch below `768px` for the authenticated question
-   review state:
+   editor state:
    - queue/list state;
    - selected-question detail state;
-   - valid AI-facit suggestion state;
-   - accepted/left decision state; and
-   - reviewed apply ready/running/blocked state.
+   - usable AI-prefill suggestion state;
+   - durable save pending/saved/failed state; and
+   - corrected file action disabled/enabled state based on replay artifact
+     references.
 4. Keep tablet/narrow-laptop at `768px-1199px` on the existing
    navigator/detail composition, then harden it with proof so phone changes do
    not leak upward.
@@ -135,18 +145,20 @@ first advisory bundle unlocked files locally.
 
 ## Test Plan
 
-- Focused Vitest coverage for phone branch rendering:
+- Future replacement Vitest coverage for phone branch rendering:
   - phone queue appears instead of desktop table;
-  - phone detail view shows one selected question and valid AI-facit actions;
-  - bulk accept and reviewed apply actions emit the same events as desktop;
+  - phone detail view shows one selected question and the normal answer-key
+    editor seeded by usable AI candidates where available;
+  - answer-key saves emit the same durable correction-session events as
+    desktop;
   - file/report tabs remain reachable without stacked desktop panels; and
   - provider/internal wording remains hidden.
 - Regression coverage for tablet and desktop:
   - tablet/narrow-laptop keeps navigator plus detail;
   - desktop keeps table plus detail;
-  - accepted suggestions still build the shared reviewed-completion overlay.
+  - saved answer keys still build durable correction-session intents.
 - Live internal-browser proof through the governed fixture lane at the named
-  viewports above.
+  viewports above belongs in a replacement PR, not this canceled slice.
 
 Closeout commands:
 
@@ -162,7 +174,7 @@ git diff --check
 
 ## Rollback Plan
 
-Remove the phone-only presentation branch and its CSS/test proof while keeping
-the shared AI-facit review state, overlay construction, and existing
-tablet/desktop shells. The Sir Convert Gateway client and reviewed-completion
-contract must remain untouched.
+No production rollback is needed because this canceled slice should not be
+implemented. If an implementation branch exists, discard the phone-only
+presentation branch and retarget the work to the durable AI-prefill editor
+contract before review.

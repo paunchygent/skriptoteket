@@ -8,8 +8,8 @@
  * Relationships:
  *   - Used by `digiexamIrReviewParser` for the PR-0325 export-current-state
  *     path.
- *   - Stays separate from reviewed AI-facit overlays, which use
- *     `reviewed_completion_answer_key`.
+ *   - Stays separate from AI-prefilled answer-key editor saves, which persist
+ *     durable correction-session intents instead of source overlays.
  */
 
 import type {

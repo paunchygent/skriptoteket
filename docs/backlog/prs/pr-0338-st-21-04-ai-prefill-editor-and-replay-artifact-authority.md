@@ -2,7 +2,7 @@
 type: pr
 id: PR-0338
 title: "ST-21-04 AI prefill editor and replay artifact authority"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-19
@@ -158,13 +158,66 @@ file action may fall back to original job artifacts.
   to Sir Convert apply.
 - Backend aggregate tests only if the conflict-family implementation changes.
 - Closeout gates:
-  - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts`
+  - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts`
   - `pdm run fe-type-check`
   - `pdm run fe-lint`
   - `pdm run fe-build`
   - `pdm run docs-validate`
   - `pdm run handoff-validate`
   - `git diff --check`
+
+## Implementation closeout
+
+Completed in this slice:
+
+- Replaced the stale reviewed-AI action surface with AI-prefill focus state:
+  candidates seed the normal answer-key editor, and editor saves compute
+  `accepted_advisory_candidate`, `teacher_edited_advisory_candidate`, or
+  `teacher_authored` at durable-intent build time.
+- Moved AI-prefill next-item advancement behind the durable save/readback/
+  replay/projection sequence; local click state no longer advances the teacher
+  before replayed truth lands.
+- Added an explicit file action reference to projected file rows. Original job
+  artifacts are authorized only for original-job projections; replay-derived
+  rows require a replay-provided corrected artifact reference before `Hämta` or
+  `Spara` can enable.
+- `PR-0339` superseded the upstream contract gap: replay responses can now
+  expose corrected artifact references, and corrected file actions enable only
+  when those replay-scoped references are present.
+- Accepted unchanged AI-prefilled facit keeps AI provenance after replay, so
+  the question list and inspector use the Lucide Bot symbol. Teacher-authored
+  and teacher-edited facit keep the normal selected/check indicator.
+- Report warnings are presented as conversion diagnostics, not remaining
+  teacher actions, so warning counts can remain visible after all facit/poäng
+  checks are resolved and corrected artifacts are available.
+- Rewrote focused tests from the stale reviewed-AI acceptance wording to
+  AI-prefill durable-session behavior and expanded replay coverage for the
+  complete supported active intent set.
+
+### Follow-up decision for product-owner approval
+
+1. Corrected artifact delivery authority:
+   - Option A (recommended and now captured as `PR-0339`): create the governed
+     upstream Sir Convert producer task for replay-scoped corrected artifact
+     references. The unified correction apply result should return a corrected
+     artifact reference, for example an `artifact_key` or explicit
+     `artifact_reference`, on `ExamAuthoringCorrectionTargetReadinessRowV1`
+     only when the replay-created target is the downloadable/saveable
+     authority. HuleEdu Gateway should pass that reference through unchanged,
+     and Skriptoteket should only map it into `file.artifactActionReference =
+     { authority: "replay_result", artifactKey }`. Until that exists,
+     corrected file actions stay disabled. This preserves the strict authority
+     boundary and lets `PR-0337` prove the disabled state honestly.
+   - Option B: introduce Skriptoteket-owned replay artifact storage in a later
+     governed slice. This would make downloads/save actions available without
+     waiting for Sir Convert to retain replay artifacts, but it moves storage,
+     retention, and security authority into Skriptoteket.
+2. Final browser proof wording:
+   - Option A (recommended): make `PR-0337` prove durable correction readback,
+     replayed question truth, and disabled corrected file actions when no replay
+     artifact reference exists.
+   - Option B: defer `PR-0337` until upstream corrected artifact references are
+     available, so proof can include enabled downloads/saves.
 
 ## Rollback plan
 

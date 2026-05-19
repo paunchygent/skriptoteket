@@ -38,25 +38,43 @@ import {
 } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
+  applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
+}));
+const correctionSessionApiMocks = vi.hoisted(() => ({
+  getExamConverterCorrectionSession: vi.fn(),
+  registerExamConverterConversionHubJob: vi.fn(),
 }));
 
 vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
   return {
     ...actual,
+    applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
     downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
     getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
     getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+    issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
     listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
     saveDigiExamMigrationArtifactToUserFiles:
       gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
     submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
+  };
+});
+
+vi.mock("../../api/examConverterCorrectionSessions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../api/examConverterCorrectionSessions")>();
+  return {
+    ...actual,
+    getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
+    registerExamConverterConversionHubJob:
+      correctionSessionApiMocks.registerExamConverterConversionHubJob,
   };
 });
 
@@ -353,12 +371,45 @@ function startButton(wrapper: ReturnType<typeof mount>) {
 }
 
 beforeEach(() => {
+  gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockReset();
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockReset();
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue({
+    schema_version: "exam_authoring_correction_source_state_issue_result_v1",
+    source_authoring_state: {
+      effective_state_sha256: "sha256:source-state",
+      items: [],
+      schema_version: "exam_authoring_correction_source_state_v1",
+      source_state_sha256: "sha256:source-state",
+    },
+    source_binding: {
+      source_authoring_schema_version: "exam_authoring_ir_v1",
+      source_bundle_id: "job_exam_converter_1",
+      source_file_sha256: "sha256:source",
+      source_state_sha256: "sha256:source-state",
+      source_state_signature: "hmac-sha256:signature",
+    },
+  });
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockResolvedValue({
+    active_intents: [],
+    conversion_hub_job_id: "local-conversion-hub-job-1",
+    owner_user_id: "11111111-1111-4111-8111-111111111111",
+    session_id: null,
+    session_version: 0,
+    source_binding: null,
+  });
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
+    job_id: "local-conversion-hub-job-1",
+    status: "succeeded",
+    upstream_job_id: "job_exam_converter_1",
+  });
   mockReviewArtifacts();
 });
 
@@ -398,6 +449,14 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
     expect(gatewayMocks.getDigiExamMigrationResult).toHaveBeenCalledWith({
       correlationId: "corr_exam_converter_1",
       jobId: "job_exam_converter_1",
+    });
+    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).toHaveBeenCalledWith({
+      request: {
+        correlation_id: "corr_exam_converter_1",
+        input_filename: "Ma1c_NationelltProv_HT25.dxe",
+        status: "succeeded",
+        upstream_job_id: "job_exam_converter_1",
+      },
     });
     expect(wrapper.text()).toContain("Provet är konverterat");
     expect(wrapper.text()).toContain("Frågor (2)");
@@ -441,6 +500,28 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
       correlationId: "corr_exam_converter_1",
       jobId: "job_exam_converter_1",
     });
+    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).toHaveBeenNthCalledWith(
+      1,
+      {
+        request: {
+          correlation_id: "corr_exam_converter_1",
+          input_filename: "Ma1c_NationelltProv_HT25.dxe",
+          status: "queued",
+          upstream_job_id: "job_exam_converter_1",
+        },
+      },
+    );
+    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).toHaveBeenNthCalledWith(
+      2,
+      {
+        request: {
+          correlation_id: "corr_exam_converter_1",
+          input_filename: "Ma1c_NationelltProv_HT25.dxe",
+          status: "succeeded",
+          upstream_job_id: "job_exam_converter_1",
+        },
+      },
+    );
     expect(wrapper.text()).toContain("Provet är konverterat");
     wrapper.unmount();
   });

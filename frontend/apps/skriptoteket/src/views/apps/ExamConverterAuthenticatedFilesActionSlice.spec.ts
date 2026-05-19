@@ -6,10 +6,9 @@
  *   conversion state before downloading or saving generated files.
  *
  * Expected behavior:
- *   File actions stay disabled until Sir Convert's target-readiness report
- *   marks a generated target exportable. The current-state export action
- *   submits a source-bound overlay, then the refreshed producer report decides
- *   which targets can be downloaded or saved.
+ *   File actions stay disabled until the producer report marks a generated
+ *   target exportable and provides an authorized artifact reference for the
+ *   same artifact authority that drives the visible row.
  *
  * Recommended implementation shape:
  *   Keep file rows inside `Filer`, construct the accepted-current-state
@@ -56,7 +55,6 @@ const gatewayMocks = vi.hoisted(() => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  revertExamConverterCorrectionIntent: vi.fn(),
   upsertExamConverterCorrectionIntent: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
@@ -81,7 +79,6 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  revertExamConverterCorrectionIntent: correctionSessionApiMocks.revertExamConverterCorrectionIntent,
   upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
 }));
 
@@ -317,6 +314,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
         actionNotice: null,
         files: [
           {
+            artifactActionReference: null,
             artifactKey: "qti_package",
             availability: "unavailable",
             contentType: "application/zip",
@@ -360,7 +358,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     expect(wrapper.text()).not.toContain("Godkänn");
   });
 
-  it("blocks generated file actions until the teacher exports the current state", async () => {
+  it("keeps replayed file actions disabled when replay gives no artifact reference", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -387,38 +385,73 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     expect(
       wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists(),
     ).toBe(false);
-    expect(wrapper.text()).toContain("Kan hämtas");
-    expect(pdfDownloadAfter.attributes("disabled")).toBeUndefined();
-    expect(qtiDownloadAfter.attributes("disabled")).toBeUndefined();
-    expect(qtiSaveAfter.attributes("disabled")).toBeUndefined();
+    expect(wrapper.text()).toContain("Filer kunde inte skapas");
+    expect(pdfDownloadAfter.attributes("disabled")).toBeDefined();
+    expect(qtiDownloadAfter.attributes("disabled")).toBeDefined();
+    expect(qtiSaveAfter.attributes("disabled")).toBeDefined();
   });
 
-  it("saves an approved generated file through the owner-scoped user-file client", async () => {
+  it("does not save a replayed generated file without a replay artifact reference", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
-    await wrapper.find('[data-test="exam-converter-save-file-qti_package"]').trigger("click");
-    await flushPromises();
+    const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
 
-    expect(gatewayMocks.downloadDigiExamMigrationArtifact).toHaveBeenCalledWith({
-      artifactKey: "qti_package",
-      correlationId: "corr_exam_converter_files",
-      jobId: "job_exam_converter_files",
-    });
-    expect(gatewayMocks.saveDigiExamMigrationArtifactToUserFiles).toHaveBeenCalledWith(
+    expect(saveAction.attributes("disabled")).toBeDefined();
+    expect(gatewayMocks.saveDigiExamMigrationArtifactToUserFiles).not.toHaveBeenCalled();
+    expect(gatewayMocks.downloadDigiExamMigrationArtifact).not.toHaveBeenCalledWith(
       expect.objectContaining({
-        artifact: expect.objectContaining({
-          artifact_key: "qti_package",
-          content_type: "application/zip",
-          filename: "Ma1c_QTI.zip",
-        }),
+        artifactKey: "qti_package",
         correlationId: "corr_exam_converter_files",
         jobId: "job_exam_converter_files",
       }),
     );
-    expect(wrapper.text()).toContain("Sparad i mina filer");
+  });
+
+  it("uses a replay artifact reference when the correction replay result provides one", async () => {
+    const replayResult = correctionApplyResult();
+    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue({
+      ...replayResult,
+      target_readiness: {
+        ...replayResult.target_readiness,
+        targets: replayResult.target_readiness.targets.map((target) => ({
+          ...target,
+          artifact_key:
+            target.target === "qti_package"
+              ? "correction_replay_qti_package"
+              : "correction_replay_examnet_pdf",
+        })),
+      },
+    });
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
+    await flushPromises();
+    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
+    gatewayMocks.downloadDigiExamMigrationArtifact.mockClear();
+
+    const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
+    expect(saveAction.attributes("disabled")).toBeUndefined();
+    await saveAction.trigger("click");
+    await flushPromises();
+
+    expect(gatewayMocks.downloadDigiExamMigrationArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifactKey: "correction_replay_qti_package",
+        correlationId: "corr_exam_converter_files",
+        jobId: "job_exam_converter_files",
+      }),
+    );
+    expect(gatewayMocks.saveDigiExamMigrationArtifactToUserFiles).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifact: expect.objectContaining({
+          artifact_key: "correction_replay_qti_package",
+        }),
+      }),
+    );
   });
 
   it("clears the accepted state when local choices are reset", async () => {
@@ -431,7 +464,7 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
       wrapper.find('[data-test="exam-converter-download-file-qti_package"]').attributes(
         "disabled",
       ),
-    ).toBeUndefined();
+    ).toBeDefined();
 
     await wrapper.find('[data-test="exam-converter-reset-local-choices"]').trigger("click");
 

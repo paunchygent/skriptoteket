@@ -241,6 +241,94 @@ async def test_register_exam_converter_job_reuses_owned_existing_upstream_id() -
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_register_exam_converter_job_synchronizes_existing_terminal_status() -> None:
+    actor = make_user()
+    local_job_id = uuid4()
+    now = datetime(2026, 5, 19, tzinfo=timezone.utc)
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[local_job_id] = ConversionHubJob(
+        id=local_job_id,
+        owner_user_id=actor.id,
+        input_filename="prov.dxe",
+        source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+        output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+        pdf_layout=None,
+        upstream_job_id="sir-job-1",
+        status=ConversionHubJobStatus.PROCESSING,
+        correlation_id="corr-exam",
+        error_message=None,
+        created_at=now,
+        updated_at=now,
+    )
+    handler = RegisterExamConverterConversionHubJobHandler(
+        jobs=repo,
+        uow=FakeUow(),
+        clock=SequenceClock(now + timedelta(seconds=30)),
+        id_generator=SequenceIdGenerator([uuid4()]),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        request=RegisterExamConverterConversionHubJobRequest(
+            correlation_id="corr-exam",
+            input_filename="prov.dxe",
+            status=ConversionHubJobStatus.SUCCEEDED,
+            upstream_job_id="sir-job-1",
+        ),
+    )
+
+    assert result.job_id == local_job_id
+    assert result.status is ConversionHubJobStatus.SUCCEEDED
+    assert repo.jobs[local_job_id].status is ConversionHubJobStatus.SUCCEEDED
+    assert repo.jobs[local_job_id].updated_at == now + timedelta(seconds=30)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_register_exam_converter_job_does_not_downgrade_existing_terminal_status() -> None:
+    actor = make_user()
+    local_job_id = uuid4()
+    now = datetime(2026, 5, 19, tzinfo=timezone.utc)
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[local_job_id] = ConversionHubJob(
+        id=local_job_id,
+        owner_user_id=actor.id,
+        input_filename="prov.dxe",
+        source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+        output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+        pdf_layout=None,
+        upstream_job_id="sir-job-1",
+        status=ConversionHubJobStatus.SUCCEEDED,
+        correlation_id="corr-exam",
+        error_message=None,
+        created_at=now,
+        updated_at=now,
+    )
+    handler = RegisterExamConverterConversionHubJobHandler(
+        jobs=repo,
+        uow=FakeUow(),
+        clock=SequenceClock(now + timedelta(seconds=30)),
+        id_generator=SequenceIdGenerator([uuid4()]),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        request=RegisterExamConverterConversionHubJobRequest(
+            correlation_id="corr-exam",
+            input_filename="prov.dxe",
+            status=ConversionHubJobStatus.PROCESSING,
+            upstream_job_id="sir-job-1",
+        ),
+    )
+
+    assert result.job_id == local_job_id
+    assert result.status is ConversionHubJobStatus.SUCCEEDED
+    assert repo.jobs[local_job_id].status is ConversionHubJobStatus.SUCCEEDED
+    assert repo.jobs[local_job_id].updated_at == now
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_create_jobs_returns_local_ids_and_preserves_partial_batch_progress() -> None:
     actor = make_user()
     local_ids = [uuid4(), uuid4()]

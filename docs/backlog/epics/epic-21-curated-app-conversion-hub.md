@@ -139,10 +139,10 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   AI-facit suggestions now become teacher-reviewed
   `reviewed_completion_answer_key` overlays before the reviewed apply job can
   change file readiness.
-- PR-0330 (small-screen AI-facit review layout strategy): ready; the next UI
-  slice separates phone from tablet/narrow-laptop and desktop compositions so
-  the reviewed AI-facit flow no longer inherits a compressed two-column layout
-  on true phone screens.
+- PR-0330 (small-screen AI-facit review layout strategy): canceled after
+  PR-0338; the phone-layout diagnosis is retained as historical input, but the
+  reviewed-AI accept/bulk-apply workflow is no longer an implementation target.
+  Future phone work must target the durable AI-prefill editor flow.
 - PR-0331 (reviewed AI-facit contract and affordance reconciliation): ready;
   retained Hemma/public proof shows accepted reviewed keys survive projection,
   reviewed apply, target readiness, and PDF/QTI downloads without forbidden
@@ -155,6 +155,8 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - ST-21-04 (durable teacher correction sessions): ready after accepted
   `ADR-0087` and approved `REV-ST-21-04`. Implementation is split into ordered
   PR-sized slices: `PR-0333` backend aggregate/persistence, `PR-0334`
-  API/types, and `PR-0335` replay orchestration are done; `PR-0336` frontend
-  readback is ready; `PR-0337` browser/artifact proof remains the final
-  ordered follow-up.
+  API/types, `PR-0335` replay orchestration, `PR-0336` frontend readback, and
+  `PR-0338` AI-prefill/replay artifact authority are done. `PR-0339` is ready
+  as the Sir Convert-owned replay artifact reference contract follow-up.
+  `PR-0337` browser/artifact proof remains ready and must prove corrected file
+  actions stay disabled until replay provides corrected artifact references.

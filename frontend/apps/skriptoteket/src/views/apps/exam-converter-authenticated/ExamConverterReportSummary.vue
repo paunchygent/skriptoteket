@@ -33,7 +33,7 @@ const emit = defineEmits<{
         Rapport
       </h3>
       <p class="text-sm leading-tight text-navy/70">
-        Rapporten visar frågor som saknar facit eller poäng.
+        Rapporten skiljer kvarvarande åtgärder från konverteringsvarningar.
       </p>
     </div>
 
@@ -55,8 +55,16 @@ const emit = defineEmits<{
             <dt>Poäng saknas</dt>
             <dd>{{ report.missingPointsCount.toLocaleString("sv-SE") }}</dd>
           </div>
+        </dl>
+      </section>
+
+      <section class="border border-navy/20 bg-canvas px-4 py-4">
+        <h4 class="text-sm font-semibold leading-tight text-navy">
+          Konverteringsdiagnostik
+        </h4>
+        <dl class="mt-4 grid gap-3 text-sm text-navy">
           <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
-            <dt>Varningar</dt>
+            <dt>Konverteringsvarningar</dt>
             <dd>{{ report.warningCount.toLocaleString("sv-SE") }}</dd>
           </div>
         </dl>
@@ -64,7 +72,8 @@ const emit = defineEmits<{
 
       <div class="flex items-center justify-between gap-4 border border-navy/20 bg-canvas px-4 py-3">
         <p class="text-sm leading-snug text-navy/70">
-          Kontrollera frågorna i Frågor innan du använder filerna.
+          När frågor, facit och poäng är klara kan filerna användas även om
+          ursprungliga konverteringsvarningar finns kvar.
         </p>
         <button
           type="button"

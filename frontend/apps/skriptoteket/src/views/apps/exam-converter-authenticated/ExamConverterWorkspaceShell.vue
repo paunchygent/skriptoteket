@@ -16,7 +16,7 @@
 import { FileText, Upload } from "lucide-vue-next";
 
 import ExamConverterAdvisoryRetryPanel from "./ExamConverterAdvisoryRetryPanel.vue";
-import ExamConverterAiReviewActionPanel from "./ExamConverterAiReviewActionPanel.vue";
+import ExamConverterAiPrefillPanel from "./ExamConverterAiPrefillPanel.vue";
 import ExamConverterFilesReadinessList from "./ExamConverterFilesReadinessList.vue";
 import ExamConverterInspectionTabs from "./ExamConverterInspectionTabs.vue";
 import ExamConverterQuestionReviewShell from "./ExamConverterQuestionReviewShell.vue";
@@ -28,7 +28,7 @@ import type {
   ExamConverterReviewFile,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
-import type { ExamConverterAiFacitReviewAction } from "./useExamConverterAiFacitReview";
+import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
 import type {
   ExamConverterItemTextPatchCorrection,
   ExamConverterManualAnswerKeyCorrection,
@@ -46,14 +46,14 @@ defineProps<{
   canUseFiles: boolean;
   fileActionNotice: string | null;
   fileActionStates: ExamConverterFileActionStates;
-  focusedAiReviewAction: ExamConverterAiFacitReviewAction;
+  focusedAiPrefill: ExamConverterAiPrefillFocus;
   isCorrectionApplying: boolean;
   resultStrip: ExamConverterResultStripState | null;
   reviewProjection: ExamConverterReviewProjection | null;
   requiresReviewDecision: boolean;
   reviewStatus: ExamConverterReviewArtifactsStatus;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
-  showAiReviewPanel: boolean;
+  showAiPrefillPanel: boolean;
   sourceFileError: string | null;
 }>();
 
@@ -76,7 +76,7 @@ const emit = defineEmits<{
   openQuestions: [];
   inspectionModeSelected: [mode: ExamConverterInspectionMode];
   retryAdvisoryFacitSuggestion: [];
-  reviewActionFocused: [action: ExamConverterAiFacitReviewAction];
+  aiPrefillFocused: [focus: ExamConverterAiPrefillFocus];
   saveFile: [file: ExamConverterReviewFile];
   sourceFileSelected: [file: File];
 }>();
@@ -112,9 +112,9 @@ function handleDrop(event: DragEvent): void {
   >
     <header class="px-4 py-4">
       <template v-if="resultStrip">
-        <ExamConverterAiReviewActionPanel
-          v-if="showAiReviewPanel && reviewProjection && resultStrip.status !== 'running'"
-          :action="focusedAiReviewAction"
+        <ExamConverterAiPrefillPanel
+          v-if="showAiPrefillPanel && reviewProjection && resultStrip.status !== 'running'"
+          :focus="focusedAiPrefill"
           :suggestion-count="reviewProjection.report.aiSuggestionCount"
           @open-questions="emit('openQuestions')"
         />
@@ -124,7 +124,7 @@ function handleDrop(event: DragEvent): void {
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterReviewDecisionGate
-          v-if="reviewProjection && requiresReviewDecision && !showAiReviewPanel"
+          v-if="reviewProjection && requiresReviewDecision && !showAiPrefillPanel"
           :accepted="acceptedCurrentState"
           :blocked-file-count="reviewProjection.report.blockedTargetFileCount"
           :missing-count="reviewProjection.report.attentionQuestionCount"
@@ -192,7 +192,7 @@ function handleDrop(event: DragEvent): void {
         >
           <ExamConverterInspectionTabs
             :active-mode="activeInspectionMode"
-            :attention-count="showAiReviewPanel ? 0 : reviewProjection.report.attentionQuestionCount"
+            :attention-count="showAiPrefillPanel ? 0 : reviewProjection.report.attentionQuestionCount"
             :file-count="reviewProjection.files.length"
             :question-count="reviewProjection.questions.length"
             @mode-selected="emit('inspectionModeSelected', $event)"
@@ -205,7 +205,7 @@ function handleDrop(event: DragEvent): void {
             @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
             @apply-manual-answer-key="(question, answerKey) => emit('applyManualAnswerKey', question, answerKey)"
             @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
-            @review-action-focused="emit('reviewActionFocused', $event)"
+            @ai-prefill-focused="emit('aiPrefillFocused', $event)"
           />
           <ExamConverterFilesReadinessList
             v-else-if="activeInspectionMode === 'files'"

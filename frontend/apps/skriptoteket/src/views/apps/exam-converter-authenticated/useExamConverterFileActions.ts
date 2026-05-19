@@ -67,8 +67,12 @@ function defaultTriggerDownload(
 }
 
 function toArtifactEntry(file: ExamConverterReviewFile): SirConvertArtifactEntry {
+  const artifactKey = file.artifactActionReference?.artifactKey;
+  if (!artifactKey) {
+    throw new Error("Exam Converter file save requires an authorized artifact reference.");
+  }
   return {
-    artifact_key: file.artifactKey,
+    artifact_key: artifactKey,
     availability: file.availability,
     content_type: file.contentType,
     filename: file.filename,
@@ -116,8 +120,12 @@ export function useExamConverterFileActions(
     file: ExamConverterReviewFile;
     jobId: string;
   }): Promise<SirConvertArtifactBlob> {
+    const artifactKey = params.file.artifactActionReference?.artifactKey;
+    if (!artifactKey) {
+      throw new Error("Exam Converter file action requires an authorized artifact reference.");
+    }
     return await client.downloadDigiExamMigrationArtifact({
-      artifactKey: params.file.artifactKey,
+      artifactKey,
       correlationId: params.correlationId,
       jobId: params.jobId,
     });
