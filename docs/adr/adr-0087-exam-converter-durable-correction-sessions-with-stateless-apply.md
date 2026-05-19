@@ -18,6 +18,7 @@ links:
   - "PR-0334"
   - "PR-0335"
   - "PR-0336"
+  - "PR-0338"
   - "PR-0337"
   - "Sir Convert Task 333"
   - "Sir Convert Task 332"
@@ -63,6 +64,10 @@ The durable truth boundary is:
   evidence from the submitted full correction set.
 - The browser owns drafts and focus only. It does not own persisted correction
   truth and must not display local draft state as applied truth.
+- Advisory AI answer-key candidates are readable input data and editor initial
+  values only. They are not a persisted accepted/rejected answer-key state; the
+  durable answer-key intent records `submission_origin` and candidate lineage
+  as audit metadata when the teacher saves the normal editor value.
 - Source IR remains immutable parser output. Persisted correction intents are
   overlays against source-bound item identities.
 - `manual_matching_answer_key` remains blocked until Sir Convert Task 332
@@ -164,8 +169,10 @@ Convert, and displayed from replayed effective state.
   consume unified non-matching apply behavior, but persistent teacher workflow
   stability belongs to the follow-on story governed by this ADR.
 - `ST-21-04` is unblocked by this accepted ADR. Its implementation tasks are
-  `PR-0333` through `PR-0337` and must stay ordered so persistence precedes API
-  exposure, replay orchestration, frontend readback, and browser/artifact proof.
+  `PR-0333` through `PR-0338` plus the final proof closeout and must stay
+  ordered so persistence precedes API exposure, replay orchestration, frontend
+  readback, deletion of stale reviewed-AI state, replay artifact authority, and
+  browser/artifact proof.
 - Skriptoteket needs backend application/API/persistence work for correction
   sessions: domain/application models, repository protocol, SQLAlchemy model,
   migration, handlers, OpenAPI/types, and owner-scoped tests.

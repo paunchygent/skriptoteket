@@ -158,7 +158,7 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
             kind: "manual_choice_answer_key",
             payload: expect.objectContaining({
               correct_choice_ids: ["choice-2"],
-              submission_origin: "teacher_authored",
+              submission_origin: "teacher_edited_advisory_candidate",
             }),
           }),
         }),
@@ -203,7 +203,7 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
             kind: "manual_choice_answer_key",
             payload: expect.objectContaining({
               correct_choice_ids: ["choice-2"],
-              submission_origin: "teacher_authored",
+              submission_origin: "teacher_edited_advisory_candidate",
             }),
           }),
         }),
@@ -255,7 +255,10 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-accept-all-ai-suggestions-action"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .trigger("click");
     await flushPromises();
 
     expect(wrapper.text()).not.toContain("Kontrollera frågorna innan du sparar eller hämtar filer.");
@@ -311,7 +314,9 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
         .value,
     ).toBe("kretslopp");
 
-    await wrapper.find('[data-test="exam-converter-accept-all-ai-suggestions-action"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .trigger("click");
     await flushPromises();
 
     expect(gatewayMocks.submitDigiExamMigration).toHaveBeenCalledTimes(1);
@@ -376,7 +381,7 @@ describe("ExamConverterAuthenticatedView reviewed AI durable sessions", () => {
                 { accepted_values: ["kolets kretslopp"], gap_id: "gap-001" },
                 { accepted_values: ["fotosyntes"], gap_id: "gap-002" },
               ],
-              submission_origin: "teacher_authored",
+              submission_origin: "teacher_edited_advisory_candidate",
             }),
           }),
         }),

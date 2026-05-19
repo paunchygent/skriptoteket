@@ -52,9 +52,11 @@ const emit = defineEmits<{
       <tr
         v-for="question in questions"
         :key="question.itemId"
+        :aria-selected="question.itemId === selectedItemId ? 'true' : 'false'"
         class="cursor-pointer border-b border-navy/15"
         :class="question.itemId === selectedItemId ? 'bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : 'hover:bg-canvas'"
         :data-test="`exam-converter-question-row-${question.itemId}`"
+        role="row"
         @click="emit('questionSelected', question)"
       >
         <td class="min-w-0 px-3 py-4 align-top">

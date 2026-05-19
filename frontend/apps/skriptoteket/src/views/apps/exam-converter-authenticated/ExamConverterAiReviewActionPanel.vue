@@ -13,20 +13,16 @@
  *   - Emits navigation and bulk-accept intent only.
  */
 
-import { Bot, CheckCheck, FilePlus2, ListChecks } from "lucide-vue-next";
+import { Bot, ListChecks } from "lucide-vue-next";
 
 import type { ExamConverterAiFacitReviewAction } from "./useExamConverterAiFacitReview";
 
 const props = defineProps<{
-  acceptedCount: number;
   action: ExamConverterAiFacitReviewAction;
-  canApplyReviewedSuggestions: boolean;
   suggestionCount: number;
 }>();
 
 const emit = defineEmits<{
-  acceptAllSuggestions: [];
-  applyReviewedSuggestions: [];
   openQuestions: [];
 }>();
 
@@ -66,6 +62,9 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
             {{ copyByAction[props.action].title }}
           </h2>
           <div class="flex shrink-0 items-center gap-2">
+            <span class="text-sm font-semibold leading-tight text-success">
+              {{ props.suggestionCount.toLocaleString("sv-SE") }} att granska
+            </span>
             <button
               type="button"
               class="btn-ghost inline-flex items-center gap-2 shadow-none"
@@ -77,32 +76,6 @@ const copyByAction: Record<ExamConverterAiFacitReviewAction, ActionCopy> = {
                 aria-hidden="true"
               />
               Granska facit
-            </button>
-            <button
-              type="button"
-              class="btn-ghost inline-flex items-center gap-2 shadow-none"
-              :disabled="props.acceptedCount >= props.suggestionCount"
-              data-test="exam-converter-accept-all-ai-suggestions-action"
-              @click="emit('acceptAllSuggestions')"
-            >
-              <CheckCheck
-                class="h-4 w-4"
-                aria-hidden="true"
-              />
-              Spara alla som facit
-            </button>
-            <button
-              type="button"
-              class="btn-primary inline-flex items-center gap-2 shadow-none"
-              :disabled="!props.canApplyReviewedSuggestions"
-              data-test="exam-converter-apply-reviewed-ai-suggestions-action"
-              @click="emit('applyReviewedSuggestions')"
-            >
-              <FilePlus2
-                class="h-4 w-4"
-                aria-hidden="true"
-              />
-              Skapa filer med facit
             </button>
           </div>
         </div>

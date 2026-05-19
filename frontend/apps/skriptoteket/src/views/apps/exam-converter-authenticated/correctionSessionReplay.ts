@@ -80,13 +80,6 @@ export type CorrectionSessionReplayResult =
   | CorrectionSessionReplayStaleSourceResult;
 
 const DEFAULT_REPLAY_TARGETS: ReplayTarget[] = ["examnet_pdf", "qti_package"];
-const SUPPORTED_REPLAY_KINDS = new Set<ReplayIntentKind>([
-  "item_text_patch",
-  "manual_choice_answer_key",
-  "manual_gap_open_cloze_answer_key",
-  "point_correction",
-]);
-
 const KIND_REPLAY_ORDER: Record<ReplayIntentKind, number> = {
   candidate_suppression: 0,
   review_decision: 1,
@@ -138,8 +131,7 @@ export async function replayPersistedCorrectionSession(params: {
   const staleSource = staleSourceResult({ correctionSession, sourceState });
   if (staleSource) return staleSource;
 
-  const replayIntents = sortedReplayIntents(correctionSession.active_intents)
-    .filter((intent) => SUPPORTED_REPLAY_KINDS.has(intent.kind));
+  const replayIntents = sortedReplayIntents(correctionSession.active_intents);
   const corrections = replayIntents.map(correctionEntryFromIntent);
   if (corrections.length === 0) {
     return emptyFreshReplayResult({ correctionSession });

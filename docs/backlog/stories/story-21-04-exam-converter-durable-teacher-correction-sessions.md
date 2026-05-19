@@ -23,6 +23,8 @@ acceptance_criteria:
   - "Given a projection or export is requested, when Skriptoteket replays corrections, then it submits the complete supported persisted correction set through the HuleEdu Gateway unified Sir Convert apply edge and renders only the returned effective state/readiness evidence."
   - "Given a persisted intent no longer matches producer-issued source state, when replay is attempted, then Skriptoteket fails the replay/export with a stale-source state instead of silently dropping, rewriting, or locally applying the correction."
   - "Given matching correction is requested, when Sir Convert Task 332 is not yet landed and consumed by a later approved slice, then Skriptoteket keeps `manual_matching_answer_key` blocked and does not persist or replay matching intents."
+  - "Given AI answer-key candidates exist, when the authenticated teacher reviews facit, then candidates seed the normal editor only and no separate accepted/rejected AI answer-key state is persisted."
+  - "Given corrected files are exposed, when the teacher downloads or saves them, then the action is enabled only from replay-provided corrected artifact references, never original job artifacts."
   - "Given the workflow is verified, when browser proof is retained, then it shows multiple committed corrections survive navigation/reload because backend readback and Sir Convert replay drive the visible state."
 ui_impact: "Yes (authenticated Exam Converter correction controls must display saved/replayed state distinctly from local drafts and unavailable replay state)."
 data_impact: "Yes (new owner-scoped correction-session persistence for authenticated Conversion Hub jobs)."
@@ -68,7 +70,8 @@ replay. This story owns that product capability. It is not owned by `PR-0332`.
 - No browser-local persistence or local replay ledger as product truth.
 - No parser/source IR mutation in Skriptoteket.
 - No matching correction persistence before Task 332.
-- No implementation outside the ordered `PR-0333` through `PR-0337` task chain.
+- No implementation outside the ordered `PR-0333` through `PR-0338` plus
+  proof-closeout task chain.
 
 ## Implementation PR Chain
 
@@ -90,7 +93,13 @@ PR-sized slices:
    route teacher commits through Skriptoteket correction-session APIs, reload
    saved intents after navigation, and render replayed effective state while
    keeping drafts visually separate.
-5. Browser and artifact proof (`PR-0337`, ready):
+5. AI prefill editor and replay artifact authority (`PR-0338`, ready):
+   delete the abandoned reviewed-AI acceptance workflow, make AI candidates
+   editor prefill only, preserve answer-key provenance at durable-intent build
+   time, advance the UI only after upsert/readback/full replay/projection, and
+   gate corrected file actions on replay artifact references rather than
+   original job artifacts.
+6. Browser and artifact proof (`PR-0337`, ready after `PR-0338`):
    canonical Playwright proof that multiple committed corrections survive
    navigation/reload and that projection/export state is driven by backend
    readback plus Sir Convert replay.
@@ -116,6 +125,9 @@ PR-sized slices:
   suppression/counters/readiness, keeps drafts distinct from persisted truth,
   keeps matching blocked, and includes a Swedish copy audit so teacher-visible
   messages do not expose internal projection/replay/session terminology.
+- `PR-0338` is ready. It owns deletion of the abandoned reviewed-AI acceptance
+  interaction model and the corrected artifact authority fix before the final
+  browser/artifact proof can honestly pass.
 - If replay is unavailable, the product may show saved correction intents, but
   it must not show a fresh effective-state projection or unlock artifacts from
   stale derived evidence.

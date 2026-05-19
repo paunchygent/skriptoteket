@@ -52,6 +52,20 @@ type CorrectionSourceContext = {
   sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
 };
 
+type AnswerKeyCandidateLineage = NonNullable<
+  Extract<ExamAuthoringNonMatchingCorrectionEntry, { kind: "manual_choice_answer_key" }>[
+    "candidate_lineage"
+  ]
+>;
+
+type AnswerKeySubmissionProvenance = {
+  candidateLineage: AnswerKeyCandidateLineage | null;
+  submissionOrigin:
+    | "accepted_advisory_candidate"
+    | "teacher_authored"
+    | "teacher_edited_advisory_candidate";
+};
+
 function assertValidPointCorrection(maxScore: number): void {
   if (!Number.isInteger(maxScore) || maxScore <= 0) {
     throw new Error("Point correction requires a positive integer score.");
@@ -87,6 +101,94 @@ function normalizedChoiceIds(correctAlternativeIds: number[]): number[] {
     throw new Error("Choice answer-key correction requires one or more alternative ids.");
   }
   return normalized;
+}
+
+function candidateLineage(question: ExamConverterQuestionReviewRow): AnswerKeyCandidateLineage | null {
+  const candidate = question.llmCandidate;
+  if (
+    !candidate?.candidateId ||
+    !candidate.candidatePayloadDigest ||
+    !candidate.providerProfileId ||
+    !candidate.promptTemplateVersion ||
+    !candidate.schemaName ||
+    !candidate.schemaVersion
+  ) {
+    return null;
+  }
+  return {
+    candidate_id: candidate.candidateId,
+    candidate_payload_digest: candidate.candidatePayloadDigest,
+    completion_report_sha256: candidate.completionReportSha256,
+    prompt_template_version: candidate.promptTemplateVersion,
+    provider_profile_id: candidate.providerProfileId,
+    schema_name: candidate.schemaName,
+    schema_version: candidate.schemaVersion,
+    validation_state: "valid",
+  };
+}
+
+function sameNumberArray(left: number[], right: number[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function sameGapAnswers(
+  left: ReturnType<typeof normalizedGapAnswers>,
+  right: ReturnType<typeof normalizedGapAnswers>,
+): boolean {
+  if (left.length !== right.length) return false;
+  const leftByGap = new Map(left.map((gapAnswer) => [gapAnswer.gap_id, gapAnswer.accepted_values]));
+  return right.every((gapAnswer) => {
+    const leftValues = leftByGap.get(gapAnswer.gap_id);
+    return leftValues !== undefined && sameStringArray(leftValues, gapAnswer.accepted_values);
+  });
+}
+
+function sameStringArray(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function answerKeySubmissionProvenance(params: {
+  answerKey: ExamConverterManualAnswerKeyCorrection;
+  question: ExamConverterQuestionReviewRow;
+}): AnswerKeySubmissionProvenance {
+  const lineage = candidateLineage(params.question);
+  const payload = params.question.llmCandidate?.answerPayload;
+  if (!lineage || !payload || payload.kind !== params.answerKey.kind) {
+    return {
+      candidateLineage: null,
+      submissionOrigin: "teacher_authored",
+    };
+  }
+  if (params.answerKey.kind === "choice" && payload.kind === "choice") {
+    const savedIds = normalizedChoiceIds(params.answerKey.correctAlternativeIds);
+    const candidateIds = normalizedChoiceIds(payload.correctAlternativeIds);
+    return {
+      candidateLineage: lineage,
+      submissionOrigin: sameNumberArray(savedIds, candidateIds)
+        ? "accepted_advisory_candidate"
+        : "teacher_edited_advisory_candidate",
+    };
+  }
+  if (params.answerKey.kind === "gap_fill" && payload.kind === "gap_fill") {
+    const savedAnswers = normalizedGapAnswers({
+      gapAnswers: params.answerKey.gapAnswers,
+      question: params.question,
+    });
+    const candidateAnswers = normalizedGapAnswers({
+      gapAnswers: payload.gapAnswers,
+      question: params.question,
+    });
+    return {
+      candidateLineage: lineage,
+      submissionOrigin: sameGapAnswers(savedAnswers, candidateAnswers)
+        ? "accepted_advisory_candidate"
+        : "teacher_edited_advisory_candidate",
+    };
+  }
+  return {
+    candidateLineage: null,
+    submissionOrigin: "teacher_authored",
+  };
 }
 
 function normalizedGapAnswers(params: {
@@ -209,10 +311,12 @@ function pointCorrectionEntry(params: {
 }
 
 function choiceAnswerKeyEntry(params: {
+  candidateLineage: AnswerKeyCandidateLineage | null;
   correctAlternativeIds: number[];
   entrySuffix: string;
   question: ExamConverterQuestionReviewRow;
   sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+  submissionOrigin: AnswerKeySubmissionProvenance["submissionOrigin"];
 }): ExamAuthoringNonMatchingCorrectionEntry {
   assertChoiceItem(params.question);
   return {
@@ -221,7 +325,7 @@ function choiceAnswerKeyEntry(params: {
       sourceState: params.sourceState,
       suffix: params.entrySuffix,
     }),
-    candidate_lineage: null,
+    candidate_lineage: params.candidateLineage,
     correct_choice_ids: normalizedChoiceIds(params.correctAlternativeIds).map((displayId) =>
       sourceChoiceIdForDisplayId({
         displayId,
@@ -234,15 +338,17 @@ function choiceAnswerKeyEntry(params: {
       sourceState: params.sourceState,
     }).interaction_id,
     kind: "manual_choice_answer_key",
-    submission_origin: "teacher_authored",
+    submission_origin: params.submissionOrigin,
   };
 }
 
 function gapAnswerKeyEntry(params: {
+  candidateLineage: AnswerKeyCandidateLineage | null;
   entrySuffix: string;
   gapAnswers: Extract<ExamConverterManualAnswerKeyCorrection, { kind: "gap_fill" }>["gapAnswers"];
   question: ExamConverterQuestionReviewRow;
   sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
+  submissionOrigin: AnswerKeySubmissionProvenance["submissionOrigin"];
 }): ExamAuthoringNonMatchingCorrectionEntry {
   assertGapFillItem(params.question);
   return {
@@ -251,7 +357,7 @@ function gapAnswerKeyEntry(params: {
       sourceState: params.sourceState,
       suffix: params.entrySuffix,
     }),
-    candidate_lineage: null,
+    candidate_lineage: params.candidateLineage,
     gap_answers: normalizedGapAnswers({
       gapAnswers: params.gapAnswers,
       question: params.question,
@@ -261,7 +367,7 @@ function gapAnswerKeyEntry(params: {
       sourceState: params.sourceState,
     }).interaction_id,
     kind: "manual_gap_open_cloze_answer_key",
-    submission_origin: "teacher_authored",
+    submission_origin: params.submissionOrigin,
   };
 }
 
@@ -324,19 +430,27 @@ export function buildManualAnswerKeyRequest(params: {
   projection: ExamConverterReviewProjection;
   question: ExamConverterQuestionReviewRow;
 } & CorrectionSourceContext): ExamAuthoringCorrectionsApplyRequest {
+  const provenance = answerKeySubmissionProvenance({
+    answerKey: params.answerKey,
+    question: params.question,
+  });
   const correction: ExamAuthoringNonMatchingCorrectionEntry =
     params.answerKey.kind === "choice"
       ? choiceAnswerKeyEntry({
+          candidateLineage: provenance.candidateLineage,
           correctAlternativeIds: params.answerKey.correctAlternativeIds,
           entrySuffix: "manual-choice",
           question: params.question,
           sourceState: params.sourceState,
+          submissionOrigin: provenance.submissionOrigin,
         })
       : gapAnswerKeyEntry({
+          candidateLineage: provenance.candidateLineage,
           entrySuffix: "manual-gap",
           gapAnswers: params.answerKey.gapAnswers,
           question: params.question,
           sourceState: params.sourceState,
+          submissionOrigin: provenance.submissionOrigin,
         });
   return correctionRequest({
     correction,

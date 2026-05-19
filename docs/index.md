@@ -226,12 +226,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-st-21-04-exam-converter-durable-teacher-correction-sessions.md`
 - ST-21-04 correction-session backend aggregate and persistence:
   `docs/backlog/prs/pr-0333-st-21-04-correction-session-backend-aggregate-and-persistence.md`
+- Review gate for PR-0333 correction-session backend aggregate and persistence:
+  `docs/backlog/reviews/review-pr-0333-correction-session-backend-aggregate-and-persistence.md`
 - ST-21-04 correction-session API and generated types:
   `docs/backlog/prs/pr-0334-st-21-04-correction-session-api-and-generated-types.md`
 - ST-21-04 correction-session replay orchestration:
   `docs/backlog/prs/pr-0335-st-21-04-correction-session-replay-orchestration.md`
 - ST-21-04 correction-session frontend readback integration:
   `docs/backlog/prs/pr-0336-st-21-04-correction-session-frontend-readback-integration.md`
+- ST-21-04 AI prefill editor and replay artifact authority:
+  `docs/backlog/prs/pr-0338-st-21-04-ai-prefill-editor-and-replay-artifact-authority.md`
 - ST-21-04 correction-session browser and artifact proof:
   `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:

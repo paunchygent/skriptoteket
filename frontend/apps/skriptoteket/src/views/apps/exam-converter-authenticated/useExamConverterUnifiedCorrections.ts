@@ -46,12 +46,10 @@ import {
 } from "./correctionSessionReplay";
 import { projectUnifiedCorrectionResult } from "./correctionSessionProjection";
 import {
-  acceptedSuggestionIntents,
   candidateSuppressionIntent,
   intentFromCorrectionRequest,
   reviewDecisionIntents,
 } from "./correctionSessionIntentBuilders";
-import type { ExamConverterReviewedSuggestionDecision } from "./useExamConverterAiFacitReview";
 
 type UnifiedCorrectionRuntime = {
   issueCorrectionSourceState: (params: {
@@ -69,7 +67,6 @@ export type ExamConverterUnifiedCorrectionOptions = {
   lastCorrelationId: Ref<string | null>;
   lastJobId: Ref<string | null>;
   resetFileActions: () => void;
-  reviewedCompletionApplied: Ref<boolean>;
   reviewProjection: Ref<ExamConverterReviewProjection | null>;
   runtime: UnifiedCorrectionRuntime;
 };
@@ -295,7 +292,6 @@ export function useExamConverterUnifiedCorrections(
         return;
       }
       options.acceptedCurrentState.value = false;
-      options.reviewedCompletionApplied.value = false;
     } catch (error) {
       console.error("Exam Converter teacher correction apply failed.", error);
       correctionProjectionFreshness.value =
@@ -352,36 +348,6 @@ export function useExamConverterUnifiedCorrections(
       return projected;
     } catch (error) {
       console.error("Exam Converter review decision apply failed.", error);
-      correctionProjectionFreshness.value =
-        isApiError(error) && error.status === 409 ? "conflict" : "unavailable";
-      options.failConversion();
-      return false;
-    } finally {
-      isCorrectionApplying.value = false;
-    }
-  }
-
-  async function applyReviewedSuggestions(
-    decisions: Record<string, ExamConverterReviewedSuggestionDecision>,
-  ): Promise<boolean> {
-    const projection = options.reviewProjection.value;
-    const jobId = options.lastJobId.value;
-    if (!projection || !jobId || options.isConversionRunning.value || isCorrectionApplying.value) {
-      return false;
-    }
-    options.resetFileActions();
-    isCorrectionApplying.value = true;
-    try {
-      const sourceState = await options.runtime.issueCorrectionSourceState({ jobId });
-      const projected = await applyPersistedIntents({
-        intents: acceptedSuggestionIntents({ decisions, projection, sourceState }),
-        projection,
-        sourceState,
-      });
-      options.reviewedCompletionApplied.value = projected;
-      return projected;
-    } catch (error) {
-      console.error("Exam Converter reviewed suggestion apply failed.", error);
       correctionProjectionFreshness.value =
         isApiError(error) && error.status === 409 ? "conflict" : "unavailable";
       options.failConversion();
@@ -485,7 +451,6 @@ export function useExamConverterUnifiedCorrections(
     applyManualAnswerKey,
     applyPointCorrection,
     applyReviewDecision,
-    applyReviewedSuggestions,
     correctionProjectionFreshness,
     isCorrectionApplying,
     refreshPersistedCorrections,

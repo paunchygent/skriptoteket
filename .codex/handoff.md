@@ -94,7 +94,9 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0333` is done: Skriptoteket now has the durable correction-session
   aggregate, owner/job-scoped PostgreSQL persistence, active-target constraints,
   exact source-binding round-trip, stale-version `CONFLICT` behavior, and
-  migration coverage.
+  migration coverage. Retained review `REV-PR-0333` is `changes_requested`:
+  replay/conflict-family fixes passed, but per-question AI-seeded "Spara facit"
+  still bypasses the AI review-decision workflow.
 - `PR-0334` is done: authenticated owner-scoped correction-session read/upsert/
   revert routes now expose the aggregate, stale writes map to `409 Conflict`,
   and Skriptoteket OpenAPI/frontend types are regenerated. `PR-0335` replay
@@ -110,7 +112,13 @@ Keep this file updated so the next session can pick up work quickly.
   review decisions/candidate suppression/counters/file readiness, keeps drafts
   distinct and matching blocked, and the teacher-visible Swedish copy was
   audited to avoid internal projection/replay/session/Sir Convert terminology.
-  `PR-0337` browser and artifact proof is ready next.
+  `PR-0338` is ready next to delete the abandoned reviewed-AI acceptance model
+  and tighten replay artifact authority before `PR-0337` proof.
+- `PR-0338` is ready:
+  `docs/backlog/prs/pr-0338-st-21-04-ai-prefill-editor-and-replay-artifact-authority.md`.
+  It owns AI-candidate-as-editor-prefill only, `submission_origin` provenance,
+  post-replay UI advancement, replay-reference-gated file actions, and stale
+  reviewed-AI surface deletion/rewrite.
 - `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` was regenerated
   from the current Sir Convert v2 OpenAPI snapshot for PR-0332. Skriptoteket's
   own backend `openapi.d.ts` was not regenerated because this slice adds no
@@ -118,13 +126,9 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
 ## Verification
-- Current `PR-0331` second cleanup passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`.
-- Current `PR-0331` second cleanup passed: `pdm run fe-type-check`.
-- Current `PR-0331` broader focused suite passed:
-  `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/completionContract.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`.
-- Current `PR-0331` second cleanup passed: `pdm run fe-lint` and
-  `pdm run docs-validate`.
+- Current `PR-0331` cleanup passed focused review/file-action/UI-fixture Vitest,
+  broader gateway/review/file/runtime fixture Vitest, `fe-type-check`,
+  `fe-lint`, and `docs-validate`.
 - Current PR-0332 unified non-matching correction slice passed focused Vitest
   for `src/api/sirConvertGateway/client.spec.ts` and
   `src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts` (2 files /
@@ -138,6 +142,11 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run test tests/integration/infrastructure/repositories/test_exam_converter_correction_session_repository.py`,
   `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k 9b2f4c6d8e10 --override-ini addopts=''`,
   `pdm run lint`, and `pdm run typecheck`.
+- Current PR-0333 retained re-review passed:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`,
+  `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
+  and `pdm run test tests/unit/scripts/test_playwright_script_surface.py`.
 - Current PR-0334 API/types passed:
   `pdm run test tests/unit/application/curated_apps/handlers/test_exam_converter_correction_sessions.py`,
   `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_correction_sessions_api.py`,
@@ -149,27 +158,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Current PR-0336 frontend readback passed:
   `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewedAiDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`,
   `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
-- Previous PR-0332 point/manual-choice/manual-gap correction slice passed
-  broader focused Vitest (9 files / 56 tests), `pdm run fe-type-check`,
-  `pdm run fe-lint`, `pdm run fe-build` with the existing Vite chunk-size
-  warning, `pdm run docs-validate`, `pdm run handoff-validate`, and
-  `git diff --check`.
-- Current `PR-0331` governance correction proof:
-  `frontend/apps/skriptoteket/node_modules/.bin/openapi-typescript /Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/_generated/openapi/sir-convert-a-lot-v2.openapi.json -o /tmp/sirConvertOpenapi.current.d.ts`
-  and `diff -u frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts /tmp/sirConvertOpenapi.current.d.ts`
-  produced no diff.
-- Current `PR-0331` script-surface proof passed:
-  `pdm run python -m py_compile scripts/playwright_pr_0331_reviewed_ai_facit_live.py scripts/_pr_0331_reviewed_ai_facit_artifacts.py`
-  plus `pdm run test tests/unit/scripts/test_playwright_script_surface.py` and
-  `pdm run lint`.
-- Current `PR-0331` Hemma/public proof passed after Sir Convert revision
-  `166fea9140ac2e5709aa30f5b432ffe1e53fe2c3` fixed OpenAI vision image URLs.
-  Evidence:
-  `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T192044Z/`.
-  The proof forced fresh idempotency keys, recorded `idempotent_replay=false`
-  for both POSTs, reviewed four suggestions including item-013 gap-fill,
-  downloaded PDF/QTI, found no forbidden artifact text, and retained QTI
-  correct responses.
+- Previous PR-0332 broader correction slice passed focused Vitest, typecheck,
+  lint, build, docs/handoff validation, and `git diff --check`.
+- Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
+  and Hemma/public artifact proof are retained in the PR/reference docs.
 ## How to Run
 ```bash
 pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts
@@ -195,5 +187,10 @@ git diff --check
   drop any reviewed choice, matching, or gapped/open-cloze keys, Codex owns
   fixing Sir Convert source now rather than adding a downstream warning-only
   workaround.
+- `PR-0337` proof must still retain candidate-suppression evidence where
+  available; `REV-PR-0333` approval does not approve the final browser/artifact
+  proof slice.
 ## Next Steps
-- Continue with ready `PR-0337`: canonical browser/artifact proof for the durable correction-session workflow. Keep matching blocked until Task 332.
+- Continue with ready `PR-0338`, then run `PR-0337` canonical browser/artifact
+  proof for the durable correction-session workflow. Keep matching blocked
+  until Task 332.

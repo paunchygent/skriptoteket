@@ -2,7 +2,7 @@
 type: reference
 id: REF-exam-converter-reviewed-ai-facit-contract-map-pr-0331
 title: "Exam Converter reviewed AI-facit contract map for PR-0331"
-status: active
+status: deprecated
 owners: "Codex"
 created: 2026-05-17
 topic: "exam-converter-reviewed-ai-facit-contract"
@@ -17,6 +17,13 @@ links:
 ---
 
 # Exam Converter Reviewed AI-Facit Contract Map For PR-0331
+
+> Deprecated workflow note: `PR-0338` retires the reviewed-AI acceptance
+> interaction model for the durable authenticated correction-session flow. AI
+> answer-key candidates are now editor prefill data only; teacher saves go
+> through the normal `applyManualAnswerKey(question, answerKey)` path and carry
+> `submission_origin` plus candidate lineage as audit metadata. This reference
+> remains historical PR-0331 RCA/evidence, not active implementation guidance.
 
 ## Purpose
 

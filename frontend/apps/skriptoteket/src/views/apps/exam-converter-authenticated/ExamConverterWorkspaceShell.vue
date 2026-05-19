@@ -41,9 +41,7 @@ import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceF
 defineProps<{
   activeInspectionMode: ExamConverterInspectionMode;
   acceptedCurrentState: boolean;
-  acceptedAiSuggestionCount: number;
   aiSuggestionFocusKey: number;
-  canApplyReviewedSuggestions: boolean;
   canRetryAdvisoryFacitSuggestion: boolean;
   canUseFiles: boolean;
   fileActionNotice: string | null;
@@ -61,7 +59,6 @@ defineProps<{
 
 const emit = defineEmits<{
   acceptCurrentState: [];
-  acceptAllAiSuggestions: [];
   applyManualAnswerKey: [
     question: ExamConverterReviewProjection["questions"][number],
     answerKey: ExamConverterManualAnswerKeyCorrection,
@@ -74,7 +71,6 @@ const emit = defineEmits<{
     question: ExamConverterReviewProjection["questions"][number],
     maxScore: number,
   ];
-  applyReviewedSuggestions: [];
   downloadFile: [file: ExamConverterReviewFile];
   filesDropped: [files: File[]];
   openQuestions: [];
@@ -118,12 +114,8 @@ function handleDrop(event: DragEvent): void {
       <template v-if="resultStrip">
         <ExamConverterAiReviewActionPanel
           v-if="showAiReviewPanel && reviewProjection && resultStrip.status !== 'running'"
-          :accepted-count="acceptedAiSuggestionCount"
           :action="focusedAiReviewAction"
-          :can-apply-reviewed-suggestions="canApplyReviewedSuggestions"
           :suggestion-count="reviewProjection.report.aiSuggestionCount"
-          @accept-all-suggestions="emit('acceptAllAiSuggestions')"
-          @apply-reviewed-suggestions="emit('applyReviewedSuggestions')"
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterResultStrip

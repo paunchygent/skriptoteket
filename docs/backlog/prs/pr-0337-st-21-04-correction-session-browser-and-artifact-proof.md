@@ -18,6 +18,7 @@ tags:
 dependencies:
   - "ADR-0087"
   - "PR-0336"
+  - "PR-0338"
 acceptance_criteria:
   - "Given multiple supported corrections are committed with the bootstrap account, when the browser navigates between affected items and reloads the route, then the visible state is reconstructed from Skriptoteket readback and Sir Convert replay."
   - "Given committed corrections include points, choice keys, gap/open-cloze keys, item text, review decisions, and candidate suppression where available, when replay runs, then the retained proof shows the complete persisted set was submitted through the unified Sir Convert apply route."

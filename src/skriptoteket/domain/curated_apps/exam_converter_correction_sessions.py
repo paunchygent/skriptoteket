@@ -46,6 +46,7 @@ ANSWER_KEY_CONFLICT_KINDS: Final[frozenset[ExamConverterCorrectionIntentKind]] =
     {
         ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY,
         ExamConverterCorrectionIntentKind.MANUAL_GAP_OPEN_CLOZE_ANSWER_KEY,
+        ExamConverterCorrectionIntentKind.REVIEW_DECISION,
     }
 )
 

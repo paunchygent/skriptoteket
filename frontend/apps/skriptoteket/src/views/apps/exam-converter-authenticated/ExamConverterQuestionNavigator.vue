@@ -33,9 +33,11 @@ const emit = defineEmits<{
       v-for="question in questions"
       :key="question.itemId"
       type="button"
+      :aria-selected="question.itemId === selectedItemId ? 'true' : 'false'"
       class="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] gap-2 border px-2.5 py-2.5 text-left text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
       :class="question.itemId === selectedItemId ? 'border-navy bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : 'border-navy/15 bg-panel'"
       :data-test="`exam-converter-question-navigator-row-${question.itemId}`"
+      role="option"
       @click="emit('questionSelected', question)"
     >
       <span class="pt-0.5 text-sm font-semibold leading-tight">

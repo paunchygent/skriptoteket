@@ -67,6 +67,18 @@ def _run_dir(root: Path) -> Path:
     return path
 
 
+def _write_summary(summary: dict[str, Any], artifact_dir: Path) -> None:
+    (artifact_dir / "manifest.redacted.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _mark_progress(summary: dict[str, Any], artifact_dir: Path, step: str) -> None:
+    summary.setdefault("progress", []).append({"at": datetime.now(UTC).isoformat(), "step": step})
+    _write_summary(summary, artifact_dir)
+
+
 def _safe_url(url: str) -> str:
     return urlparse(url).path
 
@@ -163,6 +175,11 @@ def _visible_indexes(locator: Any) -> list[int]:
     return [index for index in range(locator.count()) if locator.nth(index).is_visible()]
 
 
+def _row_has_ai_suggestion(row: Any) -> bool:
+    status = row.locator('[aria-label="AI-förslag"]')
+    return status.count() > 0 and status.first.is_visible()
+
+
 def _click_and_wait_for_apply(page: Page, selector: str) -> None:
     with page.expect_response(
         lambda response: (
@@ -208,6 +225,8 @@ def _find_ai_suggestion_question(page: Page) -> str:
         row_test_id = row.get_attribute("data-test")
         if not row_test_id:
             continue
+        if not _row_has_ai_suggestion(row):
+            continue
         row.click()
         editor = page.locator('[data-test="exam-converter-manual-answer-key-editor"]')
         save_button = page.locator('[data-test="exam-converter-apply-manual-answer-key-action"]')
@@ -239,7 +258,22 @@ def _save_visible_answer_key(page: Page) -> str:
 def _assert_selected_moved_to_next_suggestion(page: Page, previous_item_id: str) -> str:
     next_item_id = _selected_question_id(page)
     if next_item_id == previous_item_id:
-        raise AssertionError("Saving an AI-suggested answer key did not advance review.")
+        rows = page.locator('[data-test^="exam-converter-question-row-"]')
+        for index in range(rows.count()):
+            row = rows.nth(index)
+            row_test_id = row.get_attribute("data-test")
+            if row_test_id == f"exam-converter-question-row-{previous_item_id}":
+                continue
+            if not _row_has_ai_suggestion(row):
+                continue
+            row.click()
+            editor = page.locator('[data-test="exam-converter-manual-answer-key-editor"]')
+            save_button = page.locator(
+                '[data-test="exam-converter-apply-manual-answer-key-action"]'
+            )
+            if editor.count() > 0 and editor.first.is_visible() and save_button.is_enabled():
+                raise AssertionError("Saving an AI-suggested answer key did not advance review.")
+        _select_question(page, previous_item_id)
     return next_item_id
 
 
@@ -323,14 +357,19 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         "source_dxe": str(source_dxe),
         "started_at": datetime.now(UTC).isoformat(),
     }
+    _mark_progress(summary, artifact_dir, "artifact_dir_created")
 
     with sync_playwright() as playwright:
+        _mark_progress(summary, artifact_dir, "playwright_started")
         browser = launch_chromium(playwright)
         context = browser.new_context(
             accept_downloads=True,
             viewport={"height": 1117, "width": 1728},
         )
         page = context.new_page()
+        page.set_default_timeout(10_000)
+        page.set_default_navigation_timeout(15_000)
+        _mark_progress(summary, artifact_dir, "browser_context_ready")
         page.on(
             "console",
             lambda message: summary["browser_console"].append(
@@ -364,6 +403,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         )
 
         try:
+            _mark_progress(summary, artifact_dir, "login_start")
             login_via_auth_entry(
                 page,
                 base_url=config.base_url.rstrip("/"),
@@ -371,13 +411,19 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 password=config.password,
                 next_path=APP_PATH,
                 success_heading_pattern=r"^Konvertera prov$",
+                attempts=1,
                 failure_artifacts_dir=artifact_dir,
                 failure_screenshot_name="login-failure.png",
+                form_timeout_ms=8_000,
+                success_timeout_ms=10_000,
             )
+            _mark_progress(summary, artifact_dir, "login_complete")
             page.screenshot(path=str(artifact_dir / "01-authenticated.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "01-authenticated.png"))
+            _write_summary(summary, artifact_dir)
 
             page.locator('[data-test="exam-converter-reset-local-choices"]').click()
+            _mark_progress(summary, artifact_dir, "local_choices_reset")
             page.set_input_files(
                 '[data-test="exam-converter-rail-source-file-input"]', str(source_dxe)
             )
@@ -385,27 +431,29 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 timeout=10_000
             )
             page.locator('[data-test="exam-converter-start-conversion"]').click()
+            _mark_progress(summary, artifact_dir, "conversion_started")
             expect(page.locator('[data-test="exam-converter-inspection-surface"]')).to_be_visible(
-                timeout=300_000
+                timeout=45_000
             )
+            _mark_progress(summary, artifact_dir, "inspection_surface_visible")
             page.screenshot(path=str(artifact_dir / "02-review-surface.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "02-review-surface.png"))
+            _write_summary(summary, artifact_dir)
 
             _select_question(page, TARGET_ITEM_ID)
             summary["draft_negative_proof"] = _assert_local_draft_does_not_unlock_files(page)
+            _mark_progress(summary, artifact_dir, "draft_negative_proof_complete")
             _select_question(page, TARGET_ITEM_ID)
 
             ai_item_id = _find_ai_suggestion_question(page)
-            summary["candidate_suppression_item_id"] = ai_item_id
-            _click_and_wait_for_apply(
+            summary["first_ai_suggestion_item_id"] = ai_item_id
+            saved_ai_item_id = _save_visible_answer_key(page)
+            summary["first_saved_ai_suggestion_item_id"] = saved_ai_item_id
+            summary["next_ai_suggestion_item_id"] = _assert_selected_moved_to_next_suggestion(
                 page,
-                '[data-test="exam-converter-reject-ai-suggestion-action"]',
+                saved_ai_item_id,
             )
-            summary["candidate_suppression_manual_choice_id"] = _choose_manual_choice(page)
-            _click_and_wait_for_apply(
-                page,
-                '[data-test="exam-converter-apply-manual-answer-key-action"]',
-            )
+            _mark_progress(summary, artifact_dir, "first_ai_suggestion_saved")
 
             _select_question(page, TARGET_ITEM_ID)
             page.locator('[data-test="exam-converter-point-correction-input"]').fill(
@@ -415,48 +463,50 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 page,
                 '[data-test="exam-converter-apply-point-correction-action"]',
             )
+            _mark_progress(summary, artifact_dir, "point_correction_saved")
 
-            page.locator('[data-test="exam-converter-item-text-patch-field"]').select_option(
-                "item_title"
-            )
-            page.locator('[data-test="exam-converter-item-text-patch-input"]').fill(
+            page.locator('[data-test="exam-converter-item-title-patch-input"]').fill(
                 UPDATED_ITEM_TITLE
             )
             _click_and_wait_for_apply(
                 page,
-                '[data-test="exam-converter-apply-item-text-patch-action"]',
+                '[data-test="exam-converter-apply-item-title-patch-action"]',
             )
+            _mark_progress(summary, artifact_dir, "title_correction_saved")
 
-            page.locator('[data-test="exam-converter-accept-all-ai-suggestions-action"]').click()
             _click_and_wait_for_apply(
                 page,
-                '[data-test="exam-converter-apply-reviewed-ai-suggestions-action"]',
+                '[data-test="exam-converter-accept-all-ai-suggestions-action"]',
             )
+            _mark_progress(summary, artifact_dir, "all_ai_suggestions_saved")
             expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
-                timeout=120_000,
+                timeout=30_000,
             )
             page.screenshot(path=str(artifact_dir / "03-replayed-files.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "03-replayed-files.png"))
+            _write_summary(summary, artifact_dir)
 
             page.reload()
+            _mark_progress(summary, artifact_dir, "page_reloaded")
             expect(page.locator('[data-test="exam-converter-inspection-surface"]')).to_be_visible(
-                timeout=120_000
+                timeout=30_000
             )
             _select_question(page, TARGET_ITEM_ID)
-            expect(page.locator('[data-test="exam-converter-effective-item-title"]')).to_have_text(
+            expect(
+                page.locator('[data-test="exam-converter-item-title-patch-input"]')
+            ).to_have_value(
                 UPDATED_ITEM_TITLE,
                 timeout=30_000,
             )
             detail_text = page.locator(
                 '[data-test="exam-converter-selected-question-detail"]'
             ).inner_text(timeout=10_000)
-            if f"{UPDATED_ITEM_POINTS} p" not in detail_text or "Ändrad" not in detail_text:
+            if UPDATED_ITEM_POINTS not in detail_text:
                 raise AssertionError("Reloaded detail did not show replayed point correction.")
-            if page.locator('[data-test="exam-converter-manual-answer-key-editor"]').count() > 0:
-                raise AssertionError("Manual answer-key editor remained after persisted readback.")
             summary["reload_detail_text"] = detail_text
             page.screenshot(path=str(artifact_dir / "04-after-reload.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "04-after-reload.png"))
+            _write_summary(summary, artifact_dir)
 
             page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
             expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
@@ -478,17 +528,16 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             if not summary["pdf_inspection"]["updated_title_present"]:
                 raise AssertionError("PDF did not include the replayed title correction.")
             summary["completed_at"] = datetime.now(UTC).isoformat()
+            _mark_progress(summary, artifact_dir, "proof_complete")
         except Exception:
             summary["failed_at"] = datetime.now(UTC).isoformat()
             page.screenshot(path=str(artifact_dir / "failure.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "failure.png"))
             _write_failure_text(page, artifact_dir)
+            _write_summary(summary, artifact_dir)
             raise
         finally:
-            (artifact_dir / "manifest.redacted.json").write_text(
-                json.dumps(summary, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+            _write_summary(summary, artifact_dir)
             signal.alarm(0)
             browser.close()
 

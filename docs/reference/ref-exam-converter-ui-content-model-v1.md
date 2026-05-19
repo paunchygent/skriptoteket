@@ -187,11 +187,18 @@ Each row may show:
 - readiness status
 - row disclosure for details
 
-Download and save actions belong in the `Filer` mode after the review-decision
-gate is clear. Do not render a generic `Åtgärd` column, and do not mix review
-actions, report-reading actions, and export/save actions in one column.
+Download and save actions belong in the `Filer` mode after review/replay has
+produced corrected artifact evidence. Do not render a generic `Åtgärd` column,
+and do not mix review actions, report-reading actions, and export/save actions
+in one column.
 
-File actions are available when either:
+File actions are available only when the same replay result that drives the
+visible file row provides a valid corrected artifact download/save reference.
+`exportEnabled` or a first-pass original job artifact is not enough after any
+teacher correction has been saved. There is no fallback to original
+`/jobs/{jobId}/artifacts/{artifactKey}` after corrections.
+
+The file row can reach that state when either:
 
 - the projection has no actual missing `Facit`/`Poäng` and no blocking warning;
   or
@@ -202,9 +209,11 @@ File actions are available when either:
 must submit a governed accepted-state export path without claiming missing data
 has been fixed. If Sir Convert initially marks a requested file as blocked
 because `Facit` or `Poäng` is missing, Skriptoteket must create a governed
-accepted-state export job instead of merely enabling a stale blocked row. If a
-file is blocked for another reason, the row must stay disabled and show the
-visible outcome, for example `Kunde inte skapas`.
+accepted-state export job or replay artifact reference instead of merely
+enabling a stale blocked row. If a file is blocked for another reason, or if
+the corrected replay does not provide a download/save reference, the row must
+stay disabled and show the visible outcome, for example `Filer kunde inte
+skapas`.
 
 Missing `Facit` or `Poäng` should guide the teacher toward `Granska`, but it
 must not force review when the teacher knowingly wants to export the current
@@ -222,8 +231,10 @@ that it is the final recommended export. Use visible outcome copy such as:
 - `Kunde inte skapas`
 
 Avoid internal staging language such as `beredskap`, `förhandsberedskap`,
-`export readiness`, or explanations of why a file is not final. The teacher
-needs to know what happened and what they can do next.
+`export readiness`, `projection`, `fresh`, `source binding`, or explanations
+of why a file is not final. The teacher-facing states should stay within:
+`Sparar`, `Sparat`, `Kunde inte sparas`, `Filer kan hämtas`, and
+`Filer kunde inte skapas`.
 
 The files list belongs inside the active `Filer` inspection mode. It must not
 remain as a large persistent panel while the teacher is reviewing questions.
@@ -457,7 +468,8 @@ Recommended UI slice order:
 6. review decision gate: `Granska` / `Skapa filer` with dynamic help/info
    copy;
 7. selected-question detail pane and completion actions;
-8. files inspection mode with download/save actions gated by review decision;
+8. files inspection mode with download/save actions gated by replay artifact
+   references;
 9. report inspection mode;
 10. empty, loading, failed, and partial states across the approved surfaces.
 
@@ -546,7 +558,7 @@ Phone, tablet/narrow-laptop, and desktop are separate approved compositions.
 
 - Phone (`max-width: 767px`): a dedicated reduced companion workflow. It must
   not render the table/detail or navigator/detail compositions. It should show
-  one primary review surface at a time, with readable AI-facit actions and no
+  one primary review surface at a time, with readable answer-key editing and no
   horizontal document overflow.
 - Tablet and narrow laptop (`768px-1199px`): a reduced navigator plus visible
   detail composition. It must not inherit phone-only bottom-sheet or one-screen
@@ -558,5 +570,5 @@ Phone, tablet/narrow-laptop, and desktop are separate approved compositions.
 Structural breakpoint changes must be owned by CSS or by explicit Vue
 presentation branches selected by semantic layout state. JavaScript must not
 measure viewport width to own persistent layout geometry. All branches must
-reuse the same review projection, AI-facit decision state, reviewed-completion
-overlay builder, and Sir Convert Gateway submit path.
+reuse the same review projection, normal answer-key editor, durable
+correction-session save path, and replay artifact authority.

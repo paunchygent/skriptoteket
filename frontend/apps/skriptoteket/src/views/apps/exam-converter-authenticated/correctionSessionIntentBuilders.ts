@@ -24,9 +24,6 @@ import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
-import type {
-  ExamConverterReviewedSuggestionDecision,
-} from "./useExamConverterAiFacitReview";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -134,98 +131,6 @@ function candidateLineage(question: ExamConverterQuestionReviewRow): JsonRecord 
   };
 }
 
-function sourceChoiceIdForDisplayId(params: {
-  displayId: number;
-  question: ExamConverterQuestionReviewRow;
-  sourceItem: ExamAuthoringCorrectionSourceItem;
-}): string {
-  const [interaction] = params.sourceItem.choice_interactions;
-  if (!interaction) {
-    throw new Error("Accepted suggestion requires producer choice state.");
-  }
-  const choice = interaction.choices.find(
-    (candidate) =>
-      candidate.source_id === String(params.displayId) || candidate.order === params.displayId,
-  );
-  if (!choice) {
-    throw new Error("Accepted suggestion references an unknown producer choice.");
-  }
-  return choice.choice_id;
-}
-
-function acceptedSuggestionSubmissionOrigin(
-  decision: ExamConverterReviewedSuggestionDecision,
-):
-  | "accepted_advisory_candidate"
-  | "teacher_edited_advisory_candidate" {
-  return decision.outcome === "teacher_edited"
-    ? "teacher_edited_advisory_candidate"
-    : "accepted_advisory_candidate";
-}
-
-function acceptedSuggestionIntent(params: {
-  decision: ExamConverterReviewedSuggestionDecision;
-  question: ExamConverterQuestionReviewRow;
-  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
-}): ExamConverterCorrectionIntentWrite | null {
-  if (!params.decision.answerPayload) {
-    return null;
-  }
-  const sourceItem = sourceItemForQuestion({
-    question: params.question,
-    sourceState: params.sourceState,
-  });
-  const lineage = candidateLineage(params.question);
-  const submissionOrigin = acceptedSuggestionSubmissionOrigin(params.decision);
-  if (params.decision.answerPayload.kind === "choice") {
-    const [interaction] = sourceItem.choice_interactions;
-    if (!interaction) {
-      throw new Error("Accepted suggestion requires producer choice state.");
-    }
-    return {
-      entry_id: `corr-ai-choice-${sourceItem.item_id}`,
-      item_id: sourceItem.item_id,
-      item_type: sourceItem.item_type,
-      kind: "manual_choice_answer_key",
-      payload: {
-        candidate_lineage: lineage,
-        correct_choice_ids: params.decision.answerPayload.correctAlternativeIds.map((displayId) =>
-          sourceChoiceIdForDisplayId({ displayId, question: params.question, sourceItem }),
-        ),
-        interaction_id: interaction.interaction_id,
-        submission_origin: submissionOrigin,
-      },
-      sequence: sourceItem.sequence,
-      source_binding: params.sourceState.source_binding,
-      source_item_fingerprint: sourceItem.source_item_fingerprint ?? "",
-      target: { interaction_id: interaction.interaction_id },
-    };
-  }
-  const [interaction] = sourceItem.gap_open_cloze_interactions;
-  if (!interaction) {
-    throw new Error("Accepted suggestion requires producer gap state.");
-  }
-  return {
-    entry_id: `corr-ai-gap-${sourceItem.item_id}`,
-    item_id: sourceItem.item_id,
-    item_type: sourceItem.item_type,
-    kind: "manual_gap_open_cloze_answer_key",
-    payload: {
-      candidate_lineage: lineage,
-      gap_answers: params.decision.answerPayload.gapAnswers.map((gapAnswer) => ({
-        accepted_values: gapAnswer.acceptedValues,
-        gap_id: gapAnswer.gapId,
-      })),
-      interaction_id: interaction.interaction_id,
-      submission_origin: submissionOrigin,
-    },
-    sequence: sourceItem.sequence,
-    source_binding: params.sourceState.source_binding,
-    source_item_fingerprint: sourceItem.source_item_fingerprint ?? "",
-    target: { interaction_id: interaction.interaction_id },
-  };
-}
-
 export function candidateSuppressionIntent(params: {
   question: ExamConverterQuestionReviewRow;
   sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
@@ -248,23 +153,6 @@ export function candidateSuppressionIntent(params: {
       candidate_payload_digest: candidatePayloadDigest,
     },
   };
-}
-
-export function acceptedSuggestionIntents(params: {
-  decisions: Record<string, ExamConverterReviewedSuggestionDecision>;
-  projection: ExamConverterReviewProjection;
-  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
-}): ExamConverterCorrectionIntentWrite[] {
-  return params.projection.questions.flatMap((question) => {
-    const decision = params.decisions[question.itemId];
-    if (!decision || decision.outcome === "rejected") return [];
-    const intent = acceptedSuggestionIntent({
-      decision,
-      question,
-      sourceState: params.sourceState,
-    });
-    return intent ? [intent] : [];
-  });
 }
 
 export function reviewDecisionIntents(params: {

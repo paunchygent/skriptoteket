@@ -269,6 +269,7 @@ describe("correction-session replay orchestration", () => {
     const request = vi.mocked(dependencies.applyCorrections).mock.calls[0]?.[0].request;
     expect(request?.requested_targets).toEqual(["qti_package"]);
     expect(request?.corrections.map((correction) => correction.kind)).toEqual([
+      "candidate_suppression",
       "item_text_patch",
       "point_correction",
       "manual_gap_open_cloze_answer_key",
@@ -277,7 +278,7 @@ describe("correction-session replay orchestration", () => {
     expect(result).toMatchObject({
       projectionFreshness: "fresh",
       savedIntentCount: 4,
-      submittedCorrectionCount: 3,
+      submittedCorrectionCount: 4,
     });
   });
 

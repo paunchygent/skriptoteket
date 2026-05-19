@@ -165,7 +165,7 @@ def test_duplicate_targets_in_one_batch_are_rejected() -> None:
     assert "Duplicate active correction target" in exc.value.message
 
 
-def test_answer_key_and_review_decision_can_coexist_without_superseding_facit() -> None:
+def test_answer_key_and_review_decision_in_same_batch_are_rejected() -> None:
     session = _session()
     choice = _intent(
         kind=ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY,
@@ -176,12 +176,14 @@ def test_answer_key_and_review_decision_can_coexist_without_superseding_facit() 
         binding=session.source_binding,
     )
 
-    saved = session.replace_intents(intents=(choice, review), expected_session_version=0)
+    with pytest.raises(DomainError) as exc:
+        session.replace_intents(intents=(choice, review), expected_session_version=0)
 
-    assert saved.active_replay_intents() == (review, choice)
+    assert exc.value.code is ErrorCode.VALIDATION_ERROR
+    assert "Incompatible answer-key/review-decision intents" in exc.value.message
 
 
-def test_review_decision_does_not_supersede_prior_answer_key() -> None:
+def test_review_decision_supersedes_prior_answer_key_for_same_family() -> None:
     session = _session()
     choice = _intent(
         kind=ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY,
@@ -195,7 +197,7 @@ def test_review_decision_does_not_supersede_prior_answer_key() -> None:
     saved = session.replace_intent(intent=choice, expected_session_version=0)
     updated = saved.replace_intent(intent=review, expected_session_version=1)
 
-    assert updated.active_replay_intents() == (review, choice)
+    assert updated.active_replay_intents() == (review,)
 
 
 def test_replay_order_is_deterministic() -> None:

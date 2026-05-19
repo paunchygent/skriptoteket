@@ -48,8 +48,11 @@ def login_via_auth_entry(
     password: str,
     next_path: str,
     success_heading_pattern: str,
+    attempts: int = 3,
     failure_artifacts_dir: Path | None = None,
     failure_screenshot_name: str = "login-failure.png",
+    form_timeout_ms: int = 15_000,
+    success_timeout_ms: int = 30_000,
 ) -> None:
     """Log in through `/auth/login` and wait for one authenticated destination."""
 
@@ -58,14 +61,14 @@ def login_via_auth_entry(
         "heading", name=re.compile(success_heading_pattern, re.IGNORECASE)
     )
 
-    for attempt in range(3):
+    for attempt in range(attempts):
         page.goto(auth_entry_url, wait_until="domcontentloaded")
         auth_form = page.locator("form").first
         visible_surface = _wait_for_auth_form_or_success(
             page=page,
             auth_form=auth_form,
             success_heading=success_heading,
-            timeout_ms=15_000,
+            timeout_ms=form_timeout_ms,
         )
         if visible_surface == "success":
             return
@@ -75,15 +78,15 @@ def login_via_auth_entry(
         auth_form.get_by_role("button", name=re.compile(r"^Logga in$", re.IGNORECASE)).click()
 
         try:
-            expect(success_heading).to_be_visible(timeout=30_000)
+            expect(success_heading).to_be_visible(timeout=success_timeout_ms)
             return
         except AssertionError:
-            if attempt == 2 and failure_artifacts_dir is not None:
+            if attempt == attempts - 1 and failure_artifacts_dir is not None:
                 page.screenshot(
                     path=str(failure_artifacts_dir / failure_screenshot_name),
                     full_page=True,
                 )
-            if attempt == 2:
+            if attempt == attempts - 1:
                 raise
             page.wait_for_timeout(1_000)
 
