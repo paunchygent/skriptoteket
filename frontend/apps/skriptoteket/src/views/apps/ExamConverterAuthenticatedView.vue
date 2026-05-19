@@ -106,6 +106,7 @@ const {
   isCorrectionApplying,
   refreshPersistedCorrections,
   resetCorrectionSessionState,
+  savedCorrectionIntentCount,
 } = useExamConverterUnifiedCorrections({
   acceptedCurrentState,
   activeInspectionMode,
@@ -143,6 +144,8 @@ const requiresReviewDecision = computed(() => {
   return (
     projection !== null &&
     projection.acceptedStateOverlay !== null &&
+    projection.report.aiSuggestionCount === 0 &&
+    savedCorrectionIntentCount.value === 0 &&
     (visibleReviewIssueCount(projection) > 0 ||
       projection.report.blockedTargetFileCount > 0) &&
     !acceptedCurrentState.value
