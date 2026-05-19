@@ -3,6 +3,7 @@
 ARG PANDOC_VERSION=3.8.3
 ARG PANDOC_SHA256=d7fac78b58b8c8da39254955eff321233ab97d74e8b2d461c0f0719a1fb5f357
 ARG PANDOC_SHA256_ARM64=566334d71769d15dfabf6514882ad6a41d57c0400ded1b6677bd72de7ec66a3d
+ARG DEV_YQ_VERSION=4.53.2
 
 # Stage 1: Build frontend assets (full SPA)
 FROM node:22-slim AS frontend-builder
@@ -106,6 +107,7 @@ RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
 FROM pandoc-base AS production
 
 ARG TARGETARCH
+ARG DEV_YQ_VERSION
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -116,12 +118,29 @@ WORKDIR /app
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-    jq \
-    ripgrep \
-    fd-find \
     bat \
+    bind9-dnsutils \
+    direnv \
+    eza \
+    fd-find \
     fzf \
+    gawk \
+    git \
+    git-delta \
+    htop \
+    iproute2 \
+    iputils-ping \
+    jq \
+    just \
+    less \
+    netcat-openbsd \
+    procps \
+    ripgrep \
+    shellcheck \
+    shfmt \
+    tmux \
     tree \
+    zoxide \
     && rm -rf /var/lib/apt/lists/*
 
 # DevOps DX parity tools (see skriptoteket-devops skill/runbook)
@@ -129,7 +148,7 @@ RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
     && ln -sf /usr/bin/batcat /usr/local/bin/bat \
     && YQ_ARCH="amd64" \
     && if [ "$TARGETARCH" = "arm64" ]; then YQ_ARCH="arm64"; fi \
-    && curl -fsSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${YQ_ARCH}" -o /usr/local/bin/yq \
+    && curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${DEV_YQ_VERSION}/yq_linux_${YQ_ARCH}" -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
 
 RUN pip install --no-cache-dir pdm==2.26.2
