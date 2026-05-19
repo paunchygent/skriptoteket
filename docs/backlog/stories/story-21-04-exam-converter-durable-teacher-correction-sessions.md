@@ -70,7 +70,7 @@ replay. This story owns that product capability. It is not owned by `PR-0332`.
 - No browser-local persistence or local replay ledger as product truth.
 - No parser/source IR mutation in Skriptoteket.
 - No matching correction persistence before Task 332.
-- No implementation outside the ordered `PR-0333` through `PR-0339` plus
+- No implementation outside the ordered `PR-0333` through `PR-0340` plus
   proof-closeout task chain.
 
 ## Implementation PR Chain
@@ -104,7 +104,13 @@ PR-sized slices:
    exposes replay-scoped corrected artifact references for exportable corrected
    targets. Sir Convert owns this by default; Skriptoteket-owned replay
    artifact storage requires separate product-owner approval.
-7. Browser and artifact proof (`PR-0337`, ready after `PR-0339`):
+7. AI suggestion outcome reporting (`PR-0340`, done):
+   replace the prominent raw conversion-warning count in the report with
+   teacher-relevant AI suggestion outcome counts: suggested, accepted
+   unchanged, teacher-edited, suppressed/rejected where present, and still
+   unresolved, with item-level mapping back to question rows.
+8. Browser and artifact proof (`PR-0337`, ready after `PR-0339` and
+   `PR-0340`):
    canonical Playwright proof that multiple committed corrections survive
    navigation/reload, that projection/export state is driven by backend
    readback plus Sir Convert replay, and that corrected file actions use only
@@ -139,9 +145,9 @@ PR-sized slices:
   references, HuleEdu Gateway passes them through unchanged, and Skriptoteket
   only consumes the replay reference. A Skriptoteket-owned replay artifact
   store is a heavier alternative that needs explicit separate approval.
-- Accepted unchanged AI-prefilled facit keeps AI provenance after replay, and
-  report warnings are conversion diagnostics rather than remaining teacher
-  actions.
+- Accepted unchanged AI-prefilled facit keeps AI provenance after replay.
+  `PR-0340` is done: the main teacher report shows AI suggestion outcomes
+  instead of a standalone raw conversion-warning count.
 - If replay is unavailable, the product may show saved correction intents, but
   it must not show a fresh effective-state projection or unlock artifacts from
   stale derived evidence.

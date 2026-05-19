@@ -23,30 +23,44 @@ const props = defineProps<{
   question: ExamConverterQuestionReviewRow;
 }>();
 
-const answerKeySummary = computed(() => {
+const choiceAnswerEntries = computed(() => {
   const answerKey = props.question.effectiveAnswerKey;
-  if (!answerKey) return null;
-  if (answerKey.correct_alternative_ids && answerKey.correct_alternative_ids.length > 0) {
-    return answerKey.correct_alternative_ids.join(", ");
-  }
-  const gapAnswers = effectiveGapAnswerDisplayEntries(props.question);
-  if (gapAnswers.length > 0) {
-    return gapAnswers.map((gapAnswer) => gapAnswer.value).join(", ");
-  }
-  return null;
+  const correctAlternativeIds = answerKey?.correct_alternative_ids ?? [];
+  const alternativesById = new Map(
+    props.question.alternatives.map((alternative) => [
+      Number.parseInt(alternative.id, 10),
+      alternative,
+    ]),
+  );
+  return correctAlternativeIds.map((id) => {
+    const alternative = alternativesById.get(id);
+    return {
+      id,
+      label: id.toLocaleString("sv-SE"),
+      text: alternative?.text ?? null,
+    };
+  });
 });
 
 const gapAnswerEntries = computed(() => effectiveGapAnswerDisplayEntries(props.question));
 
+const gapAnswerSummary = computed(() => {
+  if (gapAnswerEntries.value.length === 0) return null;
+  return gapAnswerEntries.value.map((gapAnswer) => gapAnswer.value).join(", ");
+});
+
+const hasAnswerKeySummary = computed(
+  () => choiceAnswerEntries.value.length > 0 || gapAnswerSummary.value !== null,
+);
+
 const isAiAnswerKey = computed(() =>
   isAiAnswerKeyProvenance(props.question.currentAnswerKeyProvenance),
 );
-
 </script>
 
 <template>
   <section
-    v-if="answerKeySummary"
+    v-if="hasAnswerKeySummary"
     class="grid gap-1 text-sm text-navy"
     data-test="exam-converter-effective-answer-key-summary"
   >
@@ -65,8 +79,29 @@ const isAiAnswerKey = computed(() =>
       />
       <span>Facit</span>
     </h5>
-    <p>
-      {{ answerKeySummary }}
+    <ol
+      v-if="choiceAnswerEntries.length > 0"
+      class="mt-1 grid gap-2"
+      data-test="exam-converter-effective-answer-key-choices"
+    >
+      <li
+        v-for="entry in choiceAnswerEntries"
+        :key="entry.id"
+        class="grid grid-cols-[2rem_minmax(0,1fr)] gap-3"
+        :data-test="`exam-converter-effective-answer-key-choice-${entry.id}`"
+      >
+        <span
+          class="inline-grid h-7 w-7 place-items-center border border-success bg-success text-xs font-semibold leading-none text-panel"
+        >
+          {{ entry.label }}
+        </span>
+        <span class="leading-relaxed">
+          {{ entry.text ?? `Alternativ ${entry.label}` }}
+        </span>
+      </li>
+    </ol>
+    <p v-else-if="gapAnswerSummary">
+      {{ gapAnswerSummary }}
     </p>
   </section>
   <section

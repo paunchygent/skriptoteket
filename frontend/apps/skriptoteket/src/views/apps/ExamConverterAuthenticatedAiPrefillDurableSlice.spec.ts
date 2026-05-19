@@ -163,6 +163,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
     ).toContain("2");
     expect(
+      wrapper.find('[data-test="exam-converter-effective-answer-key-choice-2"]').text(),
+    ).toContain("Växter omvandlar solljus till socker.");
+    expect(
       wrapper
         .find('[data-test="exam-converter-effective-answer-key-teacher-symbol"]')
         .exists(),
@@ -178,6 +181,12 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     expect(
       wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
     ).toContain("2");
+
+    await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
+    const report = wrapper.find('[data-test="exam-converter-report-summary"]');
+    expect(report.text()).toContain("AI-förslag");
+    expect(report.text()).toContain("Ändrat av lärare");
+    expect(report.text()).toContain("Alla AI-förslag är hanterade.");
   });
 
   it("keeps edited AI choices when the teacher edits before saving", async () => {
@@ -215,6 +224,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     expect(
       wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
     ).toContain("2");
+    expect(
+      wrapper.find('[data-test="exam-converter-effective-answer-key-choice-2"]').text(),
+    ).toContain("Växter omvandlar solljus till socker.");
   });
 
   it("keeps other question editors usable after saving an AI-seeded facit edit", async () => {
@@ -305,6 +317,11 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     expect(
       wrapper.findAll('[data-test="exam-converter-manual-choice-ai-symbol"]'),
     ).toHaveLength(1);
+    await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
+    const report = wrapper.find('[data-test="exam-converter-report-summary"]');
+    expect(report.text()).toContain("AI-förslag");
+    expect(report.text()).toContain("Accepterat");
+    expect(report.text()).toContain("Alla AI-förslag är hanterade.");
     expect(gatewayMocks.applyExamAuthoringCorrections).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({

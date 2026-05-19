@@ -99,6 +99,9 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     expect(wrapper.get('[data-test="exam-converter-effective-answer-key-summary"]').text()).toContain(
       "2",
     );
+    expect(wrapper.get('[data-test="exam-converter-effective-answer-key-choice-2"]').text()).toContain(
+      "Proteiner lagras i cellkärnan.",
+    );
   });
 
   it("renders provider-only advisory failure with the approved retry affordance", async () => {

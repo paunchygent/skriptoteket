@@ -92,8 +92,31 @@ export type ExamConverterReviewFileActionReference = {
   authority: "original_job" | "replay_result";
 };
 
+export type ExamConverterAiSuggestionOutcome =
+  | "accepted_unchanged"
+  | "suppressed"
+  | "teacher_edited"
+  | "unresolved";
+
+export type ExamConverterAiSuggestionReportItem = {
+  itemId: string;
+  outcome: ExamConverterAiSuggestionOutcome;
+  sequence: number;
+  title: string;
+};
+
+export type ExamConverterAiSuggestionReport = {
+  acceptedUnchangedCount: number;
+  items: ExamConverterAiSuggestionReportItem[];
+  suppressedCount: number;
+  teacherEditedCount: number;
+  totalCount: number;
+  unresolvedCount: number;
+};
+
 export type ExamConverterReportProjection = {
   attentionQuestionCount: number;
+  aiSuggestionOutcomes: ExamConverterAiSuggestionReport;
   aiSuggestionCount: number;
   blockedTargetFileCount: number;
   missingAnswerKeyCount: number;
@@ -441,6 +464,67 @@ function isTeacherDecisionBlockedFile(file: ExamConverterReviewFile): boolean {
   );
 }
 
+function sortedQuestionItems(
+  questions: ExamConverterQuestionReviewRow[],
+  itemIds: Set<string>,
+): ExamConverterQuestionReviewRow[] {
+  return questions
+    .filter((question) => itemIds.has(question.itemId))
+    .sort((left, right) => left.sequence - right.sequence || left.title.localeCompare(right.title));
+}
+
+export function buildAiSuggestionReport(params: {
+  acceptedUnchangedItemIds?: Set<string>;
+  questions: ExamConverterQuestionReviewRow[];
+  suppressedItemIds?: Set<string>;
+  teacherEditedItemIds?: Set<string>;
+}): ExamConverterAiSuggestionReport {
+  const acceptedUnchangedItemIds = params.acceptedUnchangedItemIds ?? new Set<string>();
+  const teacherEditedItemIds = params.teacherEditedItemIds ?? new Set<string>();
+  const suppressedItemIds = params.suppressedItemIds ?? new Set<string>();
+  const unresolvedItemIds = new Set(
+    params.questions
+      .filter(hasUsableCompletionCandidate)
+      .map((question) => question.itemId)
+      .filter(
+        (itemId) =>
+          !acceptedUnchangedItemIds.has(itemId) &&
+          !teacherEditedItemIds.has(itemId) &&
+          !suppressedItemIds.has(itemId),
+      ),
+  );
+  const itemIds = new Set([
+    ...acceptedUnchangedItemIds,
+    ...teacherEditedItemIds,
+    ...suppressedItemIds,
+    ...unresolvedItemIds,
+  ]);
+  const items = sortedQuestionItems(params.questions, itemIds).map((question) => {
+    let outcome: ExamConverterAiSuggestionOutcome = "unresolved";
+    if (acceptedUnchangedItemIds.has(question.itemId)) {
+      outcome = "accepted_unchanged";
+    } else if (teacherEditedItemIds.has(question.itemId)) {
+      outcome = "teacher_edited";
+    } else if (suppressedItemIds.has(question.itemId)) {
+      outcome = "suppressed";
+    }
+    return {
+      itemId: question.itemId,
+      outcome,
+      sequence: question.sequence,
+      title: question.title,
+    };
+  });
+  return {
+    acceptedUnchangedCount: items.filter((item) => item.outcome === "accepted_unchanged").length,
+    items,
+    suppressedCount: items.filter((item) => item.outcome === "suppressed").length,
+    teacherEditedCount: items.filter((item) => item.outcome === "teacher_edited").length,
+    totalCount: items.length,
+    unresolvedCount: items.filter((item) => item.outcome === "unresolved").length,
+  };
+}
+
 function followUpsByItemId(
   followUps: DigiExamIrManualFollowUp[],
 ): Map<string, DigiExamIrManualFollowUp[]> {
@@ -503,6 +587,7 @@ export function parseExamConverterReviewProjection(params: {
     files,
     report: {
       attentionQuestionCount: missingDataQuestionCount,
+      aiSuggestionOutcomes: buildAiSuggestionReport({ questions }),
       aiSuggestionCount: validAiSuggestionCount,
       blockedTargetFileCount: files.filter(isTeacherDecisionBlockedFile).length,
       missingAnswerKeyCount: questions.filter((question) =>

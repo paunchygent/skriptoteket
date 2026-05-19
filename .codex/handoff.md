@@ -127,6 +127,12 @@ Keep this file updated so the next session can pick up work quickly.
   Bot symbol in the list/inspector; teacher-authored and teacher-edited keys keep
   the normal check/selected-choice indicator. Report warnings are diagnostics,
   not remaining teacher actions.
+- `PR-0340` is done:
+  `docs/backlog/prs/pr-0340-st-21-04-ai-suggestion-outcome-reporting.md`.
+  It replaces the prominent raw `Konverteringsvarningar` count with
+  teacher-relevant AI suggestion outcome counts and item mapping; raw technical
+  source notes are not shown in the report summary. Saved choice facit now
+  renders as selected alternative rows with text, not detached numbers.
 - `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` was regenerated
   from the current Sir Convert v2 OpenAPI snapshot for PR-0332. Skriptoteket's
   own backend `openapi.d.ts` was not regenerated because this slice adds no
@@ -134,42 +140,21 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
 ## Verification
-- Current `PR-0331` cleanup passed focused review/file-action/UI-fixture Vitest,
-  broader gateway/review/file/runtime fixture Vitest, `fe-type-check`,
-  `fe-lint`, and `docs-validate`.
-- Current PR-0332 unified non-matching correction slice passed focused Vitest
-  for `src/api/sirConvertGateway/client.spec.ts` and
-  `src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts` (2 files /
-  19 tests), `pdm run fe-type-check`, and `pdm run fe-lint`.
-- Current PR-0332 correction UX refinement: teacher-authored item text, point,
-  and answer-key commits use correction-local applying state, not
-  `startConversion()`, with focused correction/review tests, typecheck, lint,
-  and internal-browser `missing-facit` smoke passing.
-- Current PR-0333 backend aggregate/persistence passed:
-  `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
-  `pdm run test tests/integration/infrastructure/repositories/test_exam_converter_correction_session_repository.py`,
-  `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k 9b2f4c6d8e10 --override-ini addopts=''`,
-  `pdm run lint`, and `pdm run typecheck`.
-- Current PR-0333 retained re-review passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`,
-  `pdm run test tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
-  and `pdm run test tests/unit/scripts/test_playwright_script_surface.py`.
-- Current PR-0334 API/types passed:
-  `pdm run test tests/unit/application/curated_apps/handlers/test_exam_converter_correction_sessions.py`,
-  `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_correction_sessions_api.py`,
-  `pdm run openapi-export-v1`, `pdm run fe-gen-api-types`, `pdm run lint`,
-  `pdm run typecheck`, and `pdm run fe-type-check`.
-- Current PR-0335 replay orchestration passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/correctionsContract.spec.ts`,
-  `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
-- Current PR-0336 frontend readback passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`,
-  `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build`.
+- Prior PR-0331 through PR-0336 verification details are retained in their
+  governed PR/review docs and long-term memory entries.
 - Current PR-0339 replay artifact/UI refinement passed:
   `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts`,
   `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
   `pdm run fe-type-check`, and `pdm run pytest -q tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py`.
+- Current PR-0340 AI suggestion outcome reporting passed:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`,
+  `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`,
+  Playwright smoke against
+  `http://127.0.0.1:5173/apps/documents.conversion_hub/exam-converter/ui-fixtures/persisted-corrections`
+  verifying `exam-converter-effective-answer-key-choice-2` includes the
+  selected alternative text,
+  `pdm run docs-validate`, `pdm run handoff-validate`, and
+  `git diff --check`.
 - Previous PR-0332 broader correction slice passed focused Vitest, typecheck,
   lint, build, docs/handoff validation, and `git diff --check`.
 - Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
@@ -197,4 +182,6 @@ git diff --check
   not original job artifacts.
 ## Next Steps
 - Continue with `PR-0337` canonical browser/artifact proof for the durable
-  correction-session workflow, including enabled corrected PDF/QTI downloads/saves through replay authority. Keep matching blocked until Task 332.
+  correction-session workflow after `PR-0340`, including enabled corrected
+  PDF/QTI downloads/saves through replay authority. Keep matching blocked until
+  Task 332.

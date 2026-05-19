@@ -156,7 +156,8 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `ADR-0087` and approved `REV-ST-21-04`. Implementation is split into ordered
   PR-sized slices: `PR-0333` backend aggregate/persistence, `PR-0334`
   API/types, `PR-0335` replay orchestration, `PR-0336` frontend readback, and
-  `PR-0338` AI-prefill/replay artifact authority are done. `PR-0339` is ready
+  `PR-0338` AI-prefill/replay artifact authority are done. `PR-0339` is done
   as the Sir Convert-owned replay artifact reference contract follow-up.
-  `PR-0337` browser/artifact proof remains ready and must prove corrected file
-  actions stay disabled until replay provides corrected artifact references.
+  `PR-0340` is done: the report now replaces raw conversion-warning counts
+  with teacher-relevant AI suggestion outcome reporting before the canonical
+  `PR-0337` browser/artifact proof.

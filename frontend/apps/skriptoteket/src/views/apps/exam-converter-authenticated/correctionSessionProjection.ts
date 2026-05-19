@@ -27,7 +27,7 @@ import type {
   ExamConverterReviewFile,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
-import { hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
+import { buildAiSuggestionReport, hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
 import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
 import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/sirConvertGateway/contractValues";
 
@@ -272,9 +272,16 @@ function reportForCorrectedQuestions(
   projection: ExamConverterReviewProjection,
   questions: ExamConverterQuestionReviewRow[],
   files: ExamConverterReviewFile[],
+  aiSuggestionOutcomes: ReturnType<typeof savedAiSuggestionOutcomeItemIds>,
 ) {
   return {
     ...projection.report,
+    aiSuggestionOutcomes: buildAiSuggestionReport({
+      acceptedUnchangedItemIds: aiSuggestionOutcomes.acceptedUnchangedItemIds,
+      questions,
+      suppressedItemIds: aiSuggestionOutcomes.suppressedItemIds,
+      teacherEditedItemIds: aiSuggestionOutcomes.teacherEditedItemIds,
+    }),
     aiSuggestionCount: questions.filter(hasUsableCompletionCandidate).length,
     blockedTargetFileCount: files.filter((file) => !file.exportEnabled).length,
     attentionQuestionCount: questions.filter((question) => question.missingFields.length > 0)
@@ -370,6 +377,36 @@ function savedSuppressedCandidateItemIds(
   );
 }
 
+function savedAiSuggestionOutcomeItemIds(
+  intents: ExamConverterCorrectionIntentResponse[],
+): {
+  acceptedUnchangedItemIds: Set<string>;
+  suppressedItemIds: Set<string>;
+  teacherEditedItemIds: Set<string>;
+} {
+  const acceptedUnchangedItemIds = new Set<string>();
+  const teacherEditedItemIds = new Set<string>();
+  for (const intent of intents) {
+    if (
+      intent.kind !== "manual_choice_answer_key" &&
+      intent.kind !== "manual_gap_open_cloze_answer_key"
+    ) {
+      continue;
+    }
+    if (intent.payload.submission_origin === "accepted_advisory_candidate") {
+      acceptedUnchangedItemIds.add(intent.item_id);
+    }
+    if (intent.payload.submission_origin === "teacher_edited_advisory_candidate") {
+      teacherEditedItemIds.add(intent.item_id);
+    }
+  }
+  return {
+    acceptedUnchangedItemIds,
+    suppressedItemIds: savedSuppressedCandidateItemIds(intents),
+    teacherEditedItemIds,
+  };
+}
+
 export function projectUnifiedCorrectionResult(params: {
   correctionSession: ExamConverterCorrectionSessionResponse;
   projection: ExamConverterReviewProjection;
@@ -380,6 +417,12 @@ export function projectUnifiedCorrectionResult(params: {
     ...suppressedCandidateItemIds(params.result),
     ...savedSuppressedCandidateItemIds(params.correctionSession.active_intents),
   ]);
+  const aiSuggestionOutcomes = savedAiSuggestionOutcomeItemIds(
+    params.correctionSession.active_intents,
+  );
+  for (const itemId of suppressedCandidateItemIds(params.result)) {
+    aiSuggestionOutcomes.suppressedItemIds.add(itemId);
+  }
   const savedAnswerKeysByItem = savedAnswerKeyIntentsByItem(
     params.correctionSession.active_intents,
   );
@@ -460,6 +503,11 @@ export function projectUnifiedCorrectionResult(params: {
       : params.projection.acceptedStateOverlay,
     files,
     questions,
-    report: reportForCorrectedQuestions(params.projection, questions, files),
+    report: reportForCorrectedQuestions(
+      params.projection,
+      questions,
+      files,
+      aiSuggestionOutcomes,
+    ),
   };
 }

@@ -236,6 +236,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0336-st-21-04-correction-session-frontend-readback-integration.md`
 - ST-21-04 AI prefill editor and replay artifact authority:
   `docs/backlog/prs/pr-0338-st-21-04-ai-prefill-editor-and-replay-artifact-authority.md`
+- ST-21-04 AI suggestion outcome reporting:
+  `docs/backlog/prs/pr-0340-st-21-04-ai-suggestion-outcome-reporting.md`
 - ST-21-04 correction-session browser and artifact proof:
   `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:

@@ -11,6 +11,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
+import ExamConverterReportSummary from "./exam-converter-authenticated/ExamConverterReportSummary.vue";
 import { mockFreeTextOnlyReviewArtifacts } from "./examConverterAuthenticatedFreeTextFixtures";
 import {
   correctionApplyResult,
@@ -412,15 +413,14 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
 
     const report = wrapper.find('[data-test="exam-converter-report-summary"]');
     expect(report.text()).toContain(
-      "Rapporten skiljer kvarvarande åtgärder från konverteringsvarningar.",
+      "Rapporten visar kvarvarande åtgärder och hur AI-förslag har hanterats.",
     );
     expect(report.text()).toContain("Facit saknas");
     expect(report.text()).toContain("Poäng saknas");
-    expect(report.text()).toContain("Konverteringsdiagnostik");
-    expect(report.text()).toContain("Konverteringsvarningar");
-    expect(report.text()).toContain(
-      "När frågor, facit och poäng är klara kan filerna användas",
-    );
+    expect(report.text()).toContain("AI-förslag");
+    expect(report.text()).toContain("Kvar att granska");
+    expect(report.text()).not.toContain("Konverteringsvarningar");
+    expect(report.text()).not.toContain("källnoteringar");
     expect(report.text()).not.toContain("manifest");
     expect(report.text()).not.toContain("bundle");
     expect(report.text()).not.toContain("Sir Convert");
@@ -429,5 +429,54 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(
       true,
     );
+  });
+
+  it("renders AI suggestion outcomes without making source diagnostics the main signal", () => {
+    const wrapper = mount(ExamConverterReportSummary, {
+      props: {
+        report: {
+          aiSuggestionCount: 0,
+          aiSuggestionOutcomes: {
+            acceptedUnchangedCount: 1,
+            items: [
+              {
+                itemId: "item-004",
+                outcome: "accepted_unchanged",
+                sequence: 4,
+                title: "Fråga 4",
+              },
+              {
+                itemId: "item-013",
+                outcome: "teacher_edited",
+                sequence: 13,
+                title: "Fråga 13",
+              },
+              {
+                itemId: "item-014",
+                outcome: "suppressed",
+                sequence: 14,
+                title: "Fråga 14",
+              },
+            ],
+            suppressedCount: 1,
+            teacherEditedCount: 1,
+            totalCount: 3,
+            unresolvedCount: 0,
+          },
+          attentionQuestionCount: 0,
+          blockedTargetFileCount: 0,
+          missingAnswerKeyCount: 0,
+          missingPointsCount: 0,
+          warningCount: 4,
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Alla AI-förslag är hanterade.");
+    expect(wrapper.text()).toContain("Accepterat");
+    expect(wrapper.text()).toContain("Ändrat av lärare");
+    expect(wrapper.text()).toContain("Avvisat");
+    expect(wrapper.text()).not.toContain("Konverteringsvarningar");
+    expect(wrapper.text()).not.toContain("källnoteringar");
   });
 });
