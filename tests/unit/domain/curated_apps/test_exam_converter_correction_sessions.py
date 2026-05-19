@@ -81,12 +81,6 @@ def _intent(
             "kind": kind.value,
             "patches": [{"field": "prompt_lines", "value": "Updated prompt"}],
         }
-    elif kind is ExamConverterCorrectionIntentKind.REVIEW_DECISION:
-        target = ExamConverterCorrectionTarget(accepted_target_family="answer_key")
-        payload = {
-            "kind": kind.value,
-            "accepted_targets": ["examnet_pdf", "qti_package"],
-        }
     elif kind is ExamConverterCorrectionIntentKind.CANDIDATE_SUPPRESSION:
         target = ExamConverterCorrectionTarget(
             candidate_lineage_id="lineage-001",
@@ -165,41 +159,6 @@ def test_duplicate_targets_in_one_batch_are_rejected() -> None:
     assert "Duplicate active correction target" in exc.value.message
 
 
-def test_answer_key_and_review_decision_in_same_batch_are_rejected() -> None:
-    session = _session()
-    choice = _intent(
-        kind=ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY,
-        binding=session.source_binding,
-    )
-    review = _intent(
-        kind=ExamConverterCorrectionIntentKind.REVIEW_DECISION,
-        binding=session.source_binding,
-    )
-
-    with pytest.raises(DomainError) as exc:
-        session.replace_intents(intents=(choice, review), expected_session_version=0)
-
-    assert exc.value.code is ErrorCode.VALIDATION_ERROR
-    assert "Incompatible answer-key/review-decision intents" in exc.value.message
-
-
-def test_review_decision_supersedes_prior_answer_key_for_same_family() -> None:
-    session = _session()
-    choice = _intent(
-        kind=ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY,
-        binding=session.source_binding,
-    )
-    review = _intent(
-        kind=ExamConverterCorrectionIntentKind.REVIEW_DECISION,
-        binding=session.source_binding,
-    )
-
-    saved = session.replace_intent(intent=choice, expected_session_version=0)
-    updated = saved.replace_intent(intent=review, expected_session_version=1)
-
-    assert updated.active_replay_intents() == (review,)
-
-
 def test_replay_order_is_deterministic() -> None:
     session = _session()
     point = _intent(
@@ -248,5 +207,12 @@ def test_intent_source_binding_must_match_session() -> None:
 def test_matching_kind_is_not_supported() -> None:
     with pytest.raises(DomainError) as exc:
         correction_kind_from_value("manual_matching_answer_key")
+
+    assert exc.value.code is ErrorCode.VALIDATION_ERROR
+
+
+def test_review_decision_kind_is_not_supported() -> None:
+    with pytest.raises(DomainError) as exc:
+        correction_kind_from_value("review_decision")
 
     assert exc.value.code is ErrorCode.VALIDATION_ERROR

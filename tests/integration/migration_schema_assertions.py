@@ -534,6 +534,19 @@ async def _assert_9b2f_exam_converter_correction_sessions(engine: AsyncEngine) -
     assert intent_foreign_keys["session_id"] == "exam_converter_correction_sessions"
 
 
+async def _assert_b3e7_remove_review_decision_correction_intents(engine: AsyncEngine) -> None:
+    intent_columns = await _column_map(engine, "exam_converter_correction_intents")
+    assert "conflict_family" not in intent_columns
+
+    intent_indexes = await _index_names(engine, "exam_converter_correction_intents")
+    assert "uq_exam_conv_corr_intents_active_family" not in intent_indexes
+    assert {
+        "ix_exam_converter_correction_intents_session_id",
+        "ix_exam_conv_corr_intents_session_active",
+        "uq_exam_conv_corr_intents_active_target",
+    }.issubset(intent_indexes)
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -583,6 +596,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "f2a7c9d4e6b8": _assert_f2a7_share_checkpoint_provenance,
     "b6c9f2a1d4e8": assert_b6c9_classroom_planner_profile_preferences,
     "9b2f4c6d8e10": _assert_9b2f_exam_converter_correction_sessions,
+    "b3e7a1c9d4f2": _assert_b3e7_remove_review_decision_correction_intents,
 }
 
 

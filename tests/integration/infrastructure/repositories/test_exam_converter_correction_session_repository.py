@@ -232,7 +232,6 @@ async def test_active_target_database_constraint_rejects_duplicates(
             entry_id="duplicate-active-target",
             correction_kind=intent.kind.value,
             target_key=intent.target_key,
-            conflict_family=intent.conflict_family,
             item_id=intent.item_id,
             sequence=intent.sequence,
             item_type=intent.item_type,

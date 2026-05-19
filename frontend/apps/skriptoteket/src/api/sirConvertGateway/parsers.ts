@@ -118,7 +118,11 @@ function readArtifactAvailability(value: unknown): SirConvertArtifactAvailabilit
 
 function readTargetReadiness(value: unknown, fieldName: string): DigiExamTargetReadiness {
   const readiness = readString(value, fieldName);
-  if (DIGIEXAM_TARGET_READINESS_VALUES.includes(readiness as DigiExamTargetReadiness)) {
+  if (
+    DIGIEXAM_TARGET_READINESS_VALUES.includes(
+      readiness as (typeof DIGIEXAM_TARGET_READINESS_VALUES)[number],
+    )
+  ) {
     return readiness as DigiExamTargetReadiness;
   }
   throw new Error(`Unknown Sir Convert target readiness '${readiness}'.`);

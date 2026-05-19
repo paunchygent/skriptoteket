@@ -5,7 +5,7 @@ title: "Exam Converter durable teacher correction sessions"
 status: ready
 owners: "agents"
 created: 2026-05-18
-updated: 2026-05-19
+updated: 2026-05-20
 epic: "EPIC-21"
 dependencies:
   - "ADR-0087"
@@ -18,13 +18,14 @@ acceptance_criteria:
   - "Given ADR-0087 is accepted, when the correction-session aggregate is implemented, then it enforces one active intent per correction target, deterministic replay ordering, explicit replace/delete semantics, incompatible active-intent rejection, and session-version 409 conflicts."
   - "Given ADR-0087 is accepted, when implementation tasks are created for this story, then they split persistence, replay, frontend readback, and proof into PR-sized slices instead of widening PR-0332."
   - "Given an authenticated teacher commits a supported correction, when Skriptoteket accepts it, then the correction is persisted as a source-bound intent owned by that teacher and local Conversion Hub job, not as browser-local state or claimed Sir Convert persistence."
-  - "Given a teacher submits accepted-current-state export or advisory-candidate rejection semantics, when Skriptoteket accepts the commit, then `review_decision` and `candidate_suppression` are persisted as durable source-bound intents instead of being recreated from browser-local UI state."
+  - "Given a teacher submits authoring corrections or advisory-candidate rejection semantics, when Skriptoteket accepts the commit, then only source-bound authoring/candidate-review intents are persisted; export policy such as `accept_current_state_for_export` is not durable authoring state."
   - "Given persisted correction intents exist for a job, when the teacher navigates away, reloads, or returns to another item, then the UI reads back Skriptoteket persisted intent truth and does not rely on component-local selection state."
   - "Given a projection or export is requested, when Skriptoteket replays corrections, then it submits the complete supported persisted correction set through the HuleEdu Gateway unified Sir Convert apply edge and renders only the returned effective state/readiness evidence."
   - "Given a persisted intent no longer matches producer-issued source state, when replay is attempted, then Skriptoteket fails the replay/export with a stale-source state instead of silently dropping, rewriting, or locally applying the correction."
   - "Given matching correction is requested, when Sir Convert Task 332 is not yet landed and consumed by a later approved slice, then Skriptoteket keeps `manual_matching_answer_key` blocked and does not persist or replay matching intents."
   - "Given AI answer-key candidates exist, when the authenticated teacher reviews facit, then candidates seed the normal editor only and no separate accepted/rejected AI answer-key state is persisted."
   - "Given corrected files are exposed, when the teacher downloads or saves them, then the action is enabled only from replay-provided corrected artifact references, never original job artifacts."
+  - "Given missing facit or poäng remains after replay, when the teacher opens files or report views, then the UI keeps corrected downloads blocked and does not offer accepted-current-state export as an authoring-session workaround."
   - "Given the workflow is verified, when browser proof is retained, then it shows multiple committed corrections survive navigation/reload because backend readback and Sir Convert replay drive the visible state."
 ui_impact: "Yes (authenticated Exam Converter correction controls must display saved/replayed state distinctly from local drafts and unavailable replay state)."
 data_impact: "Yes (new owner-scoped correction-session persistence for authenticated Conversion Hub jobs)."
@@ -41,10 +42,11 @@ effective-state application. Sir Convert Task 333 and HuleEdu TASK-0567 provide
 the unified non-matching apply edge, but that edge is stateless.
 
 The product now needs a durable authenticated workflow: teacher-authored point,
-choice, gap/open-cloze, item-text, accepted-current-state review, and
-candidate-suppression corrections must survive navigation and reload, and
-visible projection must come from persisted correction truth plus Sir Convert
-replay. This story owns that product capability. It is not owned by `PR-0332`.
+choice, gap/open-cloze, item-text, and candidate-suppression corrections must
+survive navigation and reload, and visible projection must come from persisted
+correction truth plus Sir Convert replay. Accepted-current-state export is no
+longer durable authoring state; export policy must stay outside the correction
+session. This story owns that product capability. It is not owned by `PR-0332`.
 
 ## Scope
 
@@ -60,6 +62,8 @@ replay. This story owns that product capability. It is not owned by `PR-0332`.
   Gateway unified Sir Convert apply route.
 - Render UI state from Skriptoteket readback and Sir Convert replayed effective
   state, not component-local state.
+- Keep export policy outside correction-session state. Missing answer keys or
+  points remain authoring blockers until the teacher supplies real corrections.
 - Keep matching disabled until Sir Convert Task 332 and a later approved slice.
 - Preserve the immutable source IR and source-binding invariants from
   `ADR-0086`.
@@ -70,7 +74,7 @@ replay. This story owns that product capability. It is not owned by `PR-0332`.
 - No browser-local persistence or local replay ledger as product truth.
 - No parser/source IR mutation in Skriptoteket.
 - No matching correction persistence before Task 332.
-- No implementation outside the ordered `PR-0333` through `PR-0340` plus
+- No implementation outside the ordered `PR-0333` through `PR-0341` plus
   proof-closeout task chain.
 
 ## Implementation PR Chain
@@ -109,8 +113,12 @@ PR-sized slices:
    teacher-relevant AI suggestion outcome counts: suggested, accepted
    unchanged, teacher-edited, suppressed/rejected where present, and still
    unresolved, with item-level mapping back to question rows.
-8. Browser and artifact proof (`PR-0337`, ready after `PR-0339` and
-   `PR-0340`):
+8. Authoring/export boundary separation (`PR-0341`, done):
+   remove `review_decision` / `accept_current_state_for_export` from durable
+   authoring state, replay request building, UI gates, fixtures, and tests.
+   Missing facit/poäng remains an authoring blocker. A future incomplete export
+   mode requires a separate export-only contract.
+9. Browser and artifact proof (`PR-0337`, ready):
    canonical Playwright proof that multiple committed corrections survive
    navigation/reload, that projection/export state is driven by backend
    readback plus Sir Convert replay, and that corrected file actions use only
@@ -133,10 +141,10 @@ PR-sized slices:
   explicit unavailable/stale projection freshness states.
 - `PR-0336` is done. It routes supported teacher commits through Skriptoteket
   correction-session APIs, restores saved active intents after navigation or
-  reload, renders replayed points/text/keys/review decisions/candidate
-  suppression/counters/readiness, keeps drafts distinct from persisted truth,
-  keeps matching blocked, and includes a Swedish copy audit so teacher-visible
-  messages do not expose internal projection/replay/session terminology.
+  reload, renders replayed points/text/keys/candidate suppression/counters/
+  readiness, keeps drafts distinct from persisted truth, keeps matching
+  blocked, and includes a Swedish copy audit so teacher-visible messages do
+  not expose internal projection/replay/session terminology.
 - `PR-0338` is done. AI candidates now seed only the normal facit editor,
   answer-key provenance is computed during durable-intent construction, UI
   advancement waits for readback/replay/projection, and corrected file actions
@@ -148,6 +156,12 @@ PR-sized slices:
 - Accepted unchanged AI-prefilled facit keeps AI provenance after replay.
   `PR-0340` is done: the main teacher report shows AI suggestion outcomes
   instead of a standalone raw conversion-warning count.
+- `PR-0341` is done. Accepted-current-state export is removed from
+  Skriptoteket authoring state: `review_decision` is no longer a supported
+  correction intent, the accepted-current-state UI gate and overlay builder are
+  deleted, legacy active rows are deactivated by migration `b3e7a1c9d4f2`,
+  and corrected downloads remain gated on replay artifact references from real
+  authoring corrections.
 - If replay is unavailable, the product may show saved correction intents, but
   it must not show a fresh effective-state projection or unlock artifacts from
   stale derived evidence.

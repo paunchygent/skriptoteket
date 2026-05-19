@@ -53,7 +53,7 @@ export function createCorrectionSessionRecorder() {
 
 function targetKeyForIntent(intent: Record<string, unknown>): string {
   const target = intent.target as Record<string, unknown> | undefined;
-  return `${String(intent.kind)}:${String(intent.item_id)}:${String(target?.interaction_id ?? target?.accepted_target_family ?? "-")}`;
+  return `${String(intent.kind)}:${String(intent.item_id)}:${String(target?.interaction_id ?? "-")}`;
 }
 
 function correctionSessionFromIntent(params: {
@@ -65,7 +65,6 @@ function correctionSessionFromIntent(params: {
     ...params.current.active_intents.filter((intent) => intent.target_key !== targetKey),
     {
       ...params.intent,
-      conflict_family: null,
       intent_id: "22222222-2222-4222-8222-222222222222",
       target: params.intent.target ?? {},
       target_key: targetKey,

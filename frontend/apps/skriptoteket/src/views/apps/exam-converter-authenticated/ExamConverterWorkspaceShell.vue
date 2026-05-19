@@ -21,7 +21,6 @@ import ExamConverterFilesReadinessList from "./ExamConverterFilesReadinessList.v
 import ExamConverterInspectionTabs from "./ExamConverterInspectionTabs.vue";
 import ExamConverterQuestionReviewShell from "./ExamConverterQuestionReviewShell.vue";
 import ExamConverterReportSummary from "./ExamConverterReportSummary.vue";
-import ExamConverterReviewDecisionGate from "./ExamConverterReviewDecisionGate.vue";
 import ExamConverterResultStrip from "./ExamConverterResultStrip.vue";
 import type {
   ExamConverterInspectionMode,
@@ -40,7 +39,6 @@ import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceF
 
 defineProps<{
   activeInspectionMode: ExamConverterInspectionMode;
-  acceptedCurrentState: boolean;
   aiSuggestionFocusKey: number;
   canRetryAdvisoryFacitSuggestion: boolean;
   canUseFiles: boolean;
@@ -50,7 +48,6 @@ defineProps<{
   isCorrectionApplying: boolean;
   resultStrip: ExamConverterResultStripState | null;
   reviewProjection: ExamConverterReviewProjection | null;
-  requiresReviewDecision: boolean;
   reviewStatus: ExamConverterReviewArtifactsStatus;
   selectedSourceFile: ExamConverterSourceFileSelection | null;
   showAiPrefillPanel: boolean;
@@ -58,7 +55,6 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  acceptCurrentState: [];
   applyManualAnswerKey: [
     question: ExamConverterReviewProjection["questions"][number],
     answerKey: ExamConverterManualAnswerKeyCorrection,
@@ -122,14 +118,6 @@ function handleDrop(event: DragEvent): void {
           v-else
           :result="resultStrip"
           @open-questions="emit('openQuestions')"
-        />
-        <ExamConverterReviewDecisionGate
-          v-if="reviewProjection && requiresReviewDecision && !showAiPrefillPanel"
-          :accepted="acceptedCurrentState"
-          :blocked-file-count="reviewProjection.report.blockedTargetFileCount"
-          :missing-count="reviewProjection.report.attentionQuestionCount"
-          @accept-current-state="emit('acceptCurrentState')"
-          @review-questions="emit('openQuestions')"
         />
         <ExamConverterAdvisoryRetryPanel
           v-if="canRetryAdvisoryFacitSuggestion"

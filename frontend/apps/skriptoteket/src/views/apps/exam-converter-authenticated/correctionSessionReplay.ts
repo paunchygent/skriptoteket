@@ -82,11 +82,10 @@ export type CorrectionSessionReplayResult =
 const DEFAULT_REPLAY_TARGETS: ReplayTarget[] = ["examnet_pdf", "qti_package"];
 const KIND_REPLAY_ORDER: Record<ReplayIntentKind, number> = {
   candidate_suppression: 0,
-  review_decision: 1,
-  item_text_patch: 2,
-  point_correction: 3,
-  manual_choice_answer_key: 4,
-  manual_gap_open_cloze_answer_key: 5,
+  item_text_patch: 1,
+  point_correction: 2,
+  manual_choice_answer_key: 3,
+  manual_gap_open_cloze_answer_key: 4,
 };
 
 const defaultDependencies: CorrectionSessionReplayDependencies = {
@@ -326,16 +325,6 @@ function correctionEntryFromIntent(
       suppression_reason: "teacher_rejected_candidate",
     } as Extract<ExamAuthoringNonMatchingCorrectionEntry, { kind: "candidate_suppression" }>;
   }
-  if (intent.kind === "review_decision") {
-    return {
-      ...baseEntry,
-      accepted_targets: requiredPayloadStringArray(payload, "accepted_targets"),
-      decision: "accept_current_state_for_export",
-      decision_id: requiredPayloadString(payload, "decision_id"),
-      kind: "review_decision",
-      note: optionalPayloadString(payload, "note"),
-    } as Extract<ExamAuthoringNonMatchingCorrectionEntry, { kind: "review_decision" }>;
-  }
   if (intent.kind === "item_text_patch") {
     return {
       ...baseEntry,
@@ -360,17 +349,20 @@ function correctionEntryFromIntent(
       submission_origin: requiredSubmissionOrigin(payload),
     } as Extract<ExamAuthoringNonMatchingCorrectionEntry, { kind: "manual_choice_answer_key" }>;
   }
-  return {
-    ...baseEntry,
-    candidate_lineage: optionalPayloadRecord(payload, "candidate_lineage"),
-    gap_answers: requiredPayloadRecordArray(payload, "gap_answers"),
-    interaction_id: requiredPayloadString(payload, "interaction_id"),
-    kind: "manual_gap_open_cloze_answer_key",
-    submission_origin: requiredSubmissionOrigin(payload),
-  } as Extract<
-    ExamAuthoringNonMatchingCorrectionEntry,
-    { kind: "manual_gap_open_cloze_answer_key" }
-  >;
+  if (intent.kind === "manual_gap_open_cloze_answer_key") {
+    return {
+      ...baseEntry,
+      candidate_lineage: optionalPayloadRecord(payload, "candidate_lineage"),
+      gap_answers: requiredPayloadRecordArray(payload, "gap_answers"),
+      interaction_id: requiredPayloadString(payload, "interaction_id"),
+      kind: "manual_gap_open_cloze_answer_key",
+      submission_origin: requiredSubmissionOrigin(payload),
+    } as Extract<
+      ExamAuthoringNonMatchingCorrectionEntry,
+      { kind: "manual_gap_open_cloze_answer_key" }
+    >;
+  }
+  throw new Error("Unsupported correction intent kind for replay.");
 }
 
 function payloadRecord(intent: ExamConverterCorrectionIntentResponse): JsonRecord {
@@ -408,13 +400,6 @@ function requiredPayloadString(payload: JsonRecord, fieldName: string): string {
   const value = payload[fieldName];
   if (typeof value === "string" && value.length > 0) return value;
   throw new Error(`Correction intent payload field '${fieldName}' is missing.`);
-}
-
-function optionalPayloadString(payload: JsonRecord, fieldName: string): string | null {
-  const value = payload[fieldName];
-  if (value === null || value === undefined) return null;
-  if (typeof value === "string") return value;
-  throw new Error(`Correction intent payload field '${fieldName}' is invalid.`);
 }
 
 function requiredPayloadNumber(payload: JsonRecord, fieldName: string): number {

@@ -46,7 +46,6 @@ import { projectUnifiedCorrectionResult } from "./correctionSessionProjection";
 import {
   candidateSuppressionIntent,
   intentFromCorrectionRequest,
-  reviewDecisionIntents,
 } from "./correctionSessionIntentBuilders";
 
 type UnifiedCorrectionRuntime = {
@@ -56,7 +55,6 @@ type UnifiedCorrectionRuntime = {
 };
 
 export type ExamConverterUnifiedCorrectionOptions = {
-  acceptedCurrentState: Ref<boolean>;
   activeInspectionMode: Ref<ExamConverterInspectionMode>;
   failConversion: () => void;
   finishConversion: (outcome: ExamConverterRuntimeOutcome) => void;
@@ -95,20 +93,14 @@ export function useExamConverterUnifiedCorrections(
 ) {
   const isCorrectionApplying = ref(false);
   const correctionProjectionFreshness = ref<ExamConverterCorrectionProjectionFreshness>(null);
-  const currentCorrectionSession = ref<ExamConverterCorrectionSessionResponse | null>(null);
-  const savedCorrectionIntentCount = ref(0);
   const sessionVersion = ref<number>(0);
 
   function setSession(session: ExamConverterCorrectionSessionResponse): void {
-    currentCorrectionSession.value = session;
-    savedCorrectionIntentCount.value = session.active_intents.length;
     sessionVersion.value = session.session_version;
   }
 
   function resetCorrectionSessionState(): void {
     correctionProjectionFreshness.value = null;
-    currentCorrectionSession.value = null;
-    savedCorrectionIntentCount.value = 0;
     sessionVersion.value = 0;
   }
 
@@ -289,7 +281,6 @@ export function useExamConverterUnifiedCorrections(
       if (!projected) {
         return;
       }
-      options.acceptedCurrentState.value = false;
     } catch (error) {
       console.error("Exam Converter teacher correction apply failed.", error);
       correctionProjectionFreshness.value =
@@ -327,34 +318,6 @@ export function useExamConverterUnifiedCorrections(
     );
   }
 
-  async function applyReviewDecision(): Promise<boolean> {
-    const projection = options.reviewProjection.value;
-    const jobId = options.lastJobId.value;
-    if (!projection || !jobId || options.isConversionRunning.value || isCorrectionApplying.value) {
-      return false;
-    }
-    options.resetFileActions();
-    isCorrectionApplying.value = true;
-    try {
-      const sourceState = await options.runtime.issueCorrectionSourceState({ jobId });
-      const projected = await applyPersistedIntents({
-        intents: reviewDecisionIntents({ projection, sourceState }),
-        projection,
-        sourceState,
-      });
-      options.acceptedCurrentState.value = projected;
-      return projected;
-    } catch (error) {
-      console.error("Exam Converter review decision apply failed.", error);
-      correctionProjectionFreshness.value =
-        isApiError(error) && error.status === 409 ? "conflict" : "unavailable";
-      options.failConversion();
-      return false;
-    } finally {
-      isCorrectionApplying.value = false;
-    }
-  }
-
   async function suppressCandidate(question: ExamConverterQuestionReviewRow): Promise<boolean> {
     const projection = options.reviewProjection.value;
     const jobId = options.lastJobId.value;
@@ -385,12 +348,10 @@ export function useExamConverterUnifiedCorrections(
     applyItemTextPatch,
     applyManualAnswerKey,
     applyPointCorrection,
-    applyReviewDecision,
     correctionProjectionFreshness,
     isCorrectionApplying,
     refreshPersistedCorrections,
     resetCorrectionSessionState,
-    savedCorrectionIntentCount,
     suppressCandidate,
   };
 }

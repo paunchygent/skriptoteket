@@ -6,19 +6,29 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-05-17
-updated: 2026-05-18
+updated: 2026-05-19
 links:
   - "ADR-0066"
   - "ADR-0085"
   - "EPIC-21"
   - "ST-21-03"
   - "PR-0332"
+  - "PR-0341"
   - "REV-PR-0332"
   - "REF-exam-converter-ui-content-model-v1"
   - "Sir Convert Task 322"
 ---
 
 ## Context
+
+### 2026-05-19 Amendment
+
+`PR-0341` supersedes the accepted-current-state export portion of this ADR. The
+product decision is now that accepted-current-state export is an export-owned
+concern, not teacher authoring state. `accept_current_state_for_export` must not
+be persisted or replayed as a teacher correction intent. Missing facit/poäng
+remain authoring blockers until the teacher supplies real corrections. A future
+incomplete/best-effort export path requires a separate export-only contract.
 
 Authenticated Exam Converter now has two distinct review contracts:
 
@@ -78,17 +88,18 @@ The correction capability decision is:
 | `effective_item_patch` | Visible item-content repair in effective renderer input only, such as prompt/body, choice option text, and source-bound gap visible fields where the upstream DTO validates the exact shape. | New source ids, raw/base64 assets, arbitrary external resources, scoring policy, answer-key provenance, parser provenance, or unbounded context. | Any visible-content correction shape whose source ids, item type, or target adapter validation are not yet represented by the upstream overlay contract. |
 | `manual_answer_key` | Teacher-authored answer keys with no AI lineage, including choice keys and gapped/open-cloze accepted values when source gap ids and accepted-value fields are present. | Free-text/manual-marking items as automatically keyed answers, parser/source provenance mutation, or keys that cannot bind to current item-local ids. | Matching keys or other key shapes not exposed by the active upstream route for the current source adapter. |
 | `reviewed_completion_answer_key` | Teacher-reviewed AI-facit output, including `accepted_unchanged` and `teacher_edited` outcomes with bounded candidate lineage, when the payload validates against the current item-local structure. | Raw prompts, raw provider output, cross-job trust without submitted lineage, or treating LLM lineage as parser/source provenance. | Reviewed-completion payload kinds not yet accepted by the upstream reviewed-completion contract for the current source adapter. |
-| `review_decision` | Accepted-current-state export decisions that explicitly allow a target to render without adding an answer key when the target has a governed unkeyed/manual profile. | Treating rejection as an answer key, treating rejection as export readiness, or using review decisions to hide validation/unsupported-shape failures. | Any rejection/global-rejection artifact effect beyond candidate suppression until the upstream contract defines a submitted review-decision result for it. |
+| `review_decision` | Superseded by `PR-0341`. Accepted-current-state export is not teacher authoring state and must not be persisted or replayed as a correction overlay. | Treating export policy as authoring state, treating rejection as an answer key, treating rejection as export readiness, or using review decisions to hide validation/unsupported-shape failures. | Any future incomplete/best-effort export behavior requires a separate export-only contract. |
 | Points/scoring correction | Supported only through the small Sir Convert producer-owned task immediately before `PR-0332`, which must add a dedicated source-bound points/scoring correction DTO before Skriptoteket exposes point editing. | Browser-local point edits, point changes through `effective_item_patch`, answer-key overlays, or review decisions, and any artifact that implies point changes were persisted before the returned Sir Convert bundle proves the correction. | Any point/scoring UI or full teacher-correction workflow step in Skriptoteket before Sir Convert Task 322 has landed, regenerated the consumer contract, and proved effective IR plus PDF/QTI behavior. |
 
 Rejected AI suggestions are candidate suppression only. Rejection means the
 teacher has declined that advisory candidate; it does not create an answer key,
 does not approve manual-unkeyed export, does not block a target by itself, and
-does not enable PDF/QTI generation. If the teacher wants to export without a
-machine-marked key, that is a separate accepted-current-state `review_decision`.
-If a future product flow needs rejected-candidate audit or global rejection to
-affect generated artifacts, it must be a submitted source-bound review decision
-with explicit upstream semantics before files are created.
+does not enable PDF/QTI generation. If a future product flow needs incomplete
+or best-effort export without a machine-marked key, it must be a separate
+export-only contract and must not ride the teacher correction overlay. If a
+future product flow needs rejected-candidate audit or global rejection to
+affect generated artifacts, it must first define explicit upstream semantics
+without conflating candidate review, authoring state, and export readiness.
 
 Artifact proof is part of the decision boundary. A corrected job is not proven
 by UI state or overlay submission alone. Proof must include:

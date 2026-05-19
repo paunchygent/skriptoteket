@@ -125,19 +125,17 @@ in a dynamic help/info affordance, tooltip, or compact disclosure that appears
 only when the teacher asks for it or focuses the action.
 
 When a converted exam has actual missing `Facit` or `Poäng`, the teacher must
-be able to choose between reviewing the questions and creating files from the
-question data currently shown. The end-state action copy is:
+be directed back to reviewing the questions. Missing authoring data remains a
+blocker for corrected PDF/QTI downloads until the teacher supplies the missing
+facit or points through the editor. The end-state action copy is:
 
 - button: `Granska`; help/info copy:
   `Granska frågorna som saknar facit eller poäng.`
-- button: `Skapa filer`; help/info copy:
-  `Skapar filer med befintliga och godkända facit. Ogranskade AI-förslag används inte.`
 
-`Skapa filer` submits the accepted-current-state export path. It is not a
-local-only toggle and it is not AI-facit acceptance. It creates files from the
-questions being shown plus any already accepted facit, and unreviewed AI-facit
-suggestions must not be used. Starting a new conversion or clearing the selected
-files must clear that acceptance.
+Do not offer `Skapa filer` or another accepted-current-state action for missing
+facit/poäng. Incomplete/best-effort export is an export-owned product concern,
+not teacher authoring state. If it returns later, it must be governed by a
+separate export-only contract and must not use the correction-session overlay.
 
 ## Left Workflow Rail Content
 
@@ -198,26 +196,12 @@ visible file row provides a valid corrected artifact download/save reference.
 teacher correction has been saved. There is no fallback to original
 `/jobs/{jobId}/artifacts/{artifactKey}` after corrections.
 
-The file row can reach that state when either:
-
-- the projection has no actual missing `Facit`/`Poäng` and no blocking warning;
-  or
-- the teacher has submitted `Skapa filer` to create files from the
-  question data currently shown.
-
-`Skapa filer` is not only a local UI state. In the end-state workflow it
-must submit a governed accepted-state export path without claiming missing data
-has been fixed. If Sir Convert initially marks a requested file as blocked
-because `Facit` or `Poäng` is missing, Skriptoteket must create a governed
-accepted-state export job or replay artifact reference instead of merely
-enabling a stale blocked row. If a file is blocked for another reason, or if
-the corrected replay does not provide a download/save reference, the row must
-stay disabled and show the visible outcome, for example `Filer kunde inte
-skapas`.
-
-Missing `Facit` or `Poäng` should guide the teacher toward `Granska`, but it
-must not force review when the teacher knowingly wants to export the current
-conversion.
+The file row can reach that state when the replayed projection has no actual
+missing `Facit`/`Poäng`, no blocking target issue, and the corrected replay
+provides a valid artifact reference. If Sir Convert marks a requested file as
+blocked because `Facit` or `Poäng` is missing, Skriptoteket must keep the file
+row disabled and guide the teacher back to `Granska`. Export policy must not
+be persisted or replayed as teacher authoring state.
 
 If a file cannot be created, the row copy should state the visible outcome and
 the next action, for example `Kunde inte skapa QTI-paketet. Öppna rapporten och

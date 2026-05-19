@@ -78,7 +78,6 @@ const {
   status: reviewStatus,
 } = useExamConverterReviewArtifacts();
 const activeInspectionMode = ref<ExamConverterInspectionMode>("questions");
-const acceptedCurrentState = ref(false);
 const advisoryRetryAttempt = ref(0);
 const aiSuggestionFocusKey = ref(0);
 const focusedAiPrefill = ref<ExamConverterAiPrefillFocus>("questions");
@@ -92,14 +91,11 @@ const {
   applyItemTextPatch: handleApplyItemTextPatch,
   applyManualAnswerKey: handleApplyManualAnswerKey,
   applyPointCorrection: handleApplyPointCorrection,
-  applyReviewDecision,
   correctionProjectionFreshness,
   isCorrectionApplying,
   refreshPersistedCorrections,
   resetCorrectionSessionState,
-  savedCorrectionIntentCount,
 } = useExamConverterUnifiedCorrections({
-  acceptedCurrentState,
   activeInspectionMode,
   failConversion,
   finishConversion,
@@ -128,19 +124,6 @@ const canStartConversion = computed(
     hasSelectedTargetFormat.value &&
     !isExamConverterBusy.value,
 );
-
-const requiresReviewDecision = computed(() => {
-  const projection = reviewProjection.value;
-  return (
-    projection !== null &&
-    projection.acceptedStateOverlay !== null &&
-    projection.report.aiSuggestionCount === 0 &&
-    savedCorrectionIntentCount.value === 0 &&
-    (visibleReviewIssueCount(projection) > 0 ||
-      projection.report.blockedTargetFileCount > 0) &&
-    !acceptedCurrentState.value
-  );
-});
 
 function visibleReviewIssueCount(projection: ExamConverterReviewProjection): number {
   return projection.questions.filter(
@@ -198,7 +181,6 @@ function handleResetLocalChoices(): void {
   resetReviewArtifacts();
   resetCorrectionSessionState();
   resetFileActions();
-  acceptedCurrentState.value = false;
   advisoryRetryAttempt.value = 0;
   focusedAiPrefill.value = "questions";
   activeInspectionMode.value = "questions";
@@ -261,7 +243,6 @@ async function handleStartConversion(): Promise<void> {
   resetReviewArtifacts();
   resetCorrectionSessionState();
   resetFileActions();
-  acceptedCurrentState.value = false;
   advisoryRetryAttempt.value = 0;
   focusedAiPrefill.value = "questions";
   activeInspectionMode.value = "questions";
@@ -292,7 +273,6 @@ async function handleRetryAdvisoryFacitSuggestion(): Promise<void> {
   advisoryRetryAttempt.value = nextRetryAttempt;
   resetReviewArtifacts();
   resetFileActions();
-  acceptedCurrentState.value = false;
   focusedAiPrefill.value = "questions";
   activeInspectionMode.value = "questions";
   startConversion();
@@ -324,16 +304,6 @@ function handleOpenQuestions(): void {
 
 function focusAiPrefill(focus: ExamConverterAiPrefillFocus): void {
   focusedAiPrefill.value = focus;
-}
-
-async function handleAcceptCurrentState(): Promise<void> {
-  const overlay = reviewProjection.value?.acceptedStateOverlay ?? null;
-  if (!overlay || isExamConverterBusy.value) {
-    return;
-  }
-  if (await applyReviewDecision()) {
-    activeInspectionMode.value = "files";
-  }
 }
 
 async function handleDownloadFile(file: ExamConverterReviewFile): Promise<void> {
@@ -409,7 +379,6 @@ onMounted(async () => {
   }
   selectSourceFile(fixture.sourceFile);
   resetFileActions();
-  acceptedCurrentState.value = false;
   focusedAiPrefill.value = "questions";
   activeInspectionMode.value = fixture.activeInspectionMode;
   setReviewArtifactsForInspection(fixture.projection);
@@ -453,7 +422,6 @@ onMounted(async () => {
         </p>
         <ExamConverterWorkspaceShell
           :active-inspection-mode="activeInspectionMode"
-          :accepted-current-state="acceptedCurrentState"
           :ai-suggestion-focus-key="aiSuggestionFocusKey"
           :can-retry-advisory-facit-suggestion="canRetryAdvisoryFacitSuggestion"
           :can-use-files="canUseFiles"
@@ -463,12 +431,10 @@ onMounted(async () => {
           :is-correction-applying="isCorrectionApplying"
           :result-strip="resultStrip"
           :review-projection="reviewProjection"
-          :requires-review-decision="requiresReviewDecision"
           :review-status="reviewStatus"
           :selected-source-file="selectedSourceFile"
           :show-ai-prefill-panel="showAiPrefillPanel"
           :source-file-error="sourceFileError"
-          @accept-current-state="handleAcceptCurrentState"
           @apply-item-text-patch="handleApplyItemTextPatch"
           @apply-manual-answer-key="handleApplyManualAnswerKey"
           @apply-point-correction="handleApplyPointCorrection"

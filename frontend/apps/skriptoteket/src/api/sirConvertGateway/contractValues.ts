@@ -64,8 +64,6 @@ export const DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE =
 export const DIGIEXAM_INGESTION_OVERLAY_POLICY_NONE = "none" as const;
 export const DIGIEXAM_INGESTION_OVERLAY_POLICY_APPLY_TEACHER =
   "apply_teacher_overlay" as const;
-export const DIGIEXAM_ACCEPT_CURRENT_STATE_DECISION_KIND =
-  "accept_current_state_for_export" as const;
 export const DIGIEXAM_INGESTION_OVERLAY_FILENAME = "digiexam-ingestion-overlay.json";
 export const DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED =
   "manual_answer_key_required" as const;
@@ -131,12 +129,8 @@ export const SIR_CONVERT_ARTIFACT_AVAILABILITIES = [
 ] as const satisfies readonly SirConvertArtifactAvailability[];
 
 export const DIGIEXAM_TARGET_READY = "ready" as const satisfies DigiExamTargetReadiness;
-export const DIGIEXAM_TARGET_READY_AFTER_ACCEPTED_CURRENT_STATE =
-  "ready_after_accepted_current_state" as const satisfies DigiExamTargetReadiness;
 export const DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY =
   "needs_teacher_answer_key" as const satisfies DigiExamTargetReadiness;
-export const DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION =
-  "needs_teacher_review_decision" as const satisfies DigiExamTargetReadiness;
 export const DIGIEXAM_TARGET_UNSUPPORTED_TARGET_SHAPE =
   "unsupported_target_shape" as const satisfies DigiExamTargetReadiness;
 export const DIGIEXAM_TARGET_VALIDATION_FAILED =
@@ -149,9 +143,7 @@ export const DIGIEXAM_TARGET_NOT_IMPLEMENTED =
   "not_implemented" as const satisfies DigiExamTargetReadiness;
 export const DIGIEXAM_TARGET_READINESS_VALUES = [
   DIGIEXAM_TARGET_READY,
-  DIGIEXAM_TARGET_READY_AFTER_ACCEPTED_CURRENT_STATE,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
-  DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
   DIGIEXAM_TARGET_UNSUPPORTED_TARGET_SHAPE,
   DIGIEXAM_TARGET_VALIDATION_FAILED,
   DIGIEXAM_TARGET_PROVIDER_UNAVAILABLE,

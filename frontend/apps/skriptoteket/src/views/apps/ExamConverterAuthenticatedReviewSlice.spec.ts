@@ -7,7 +7,7 @@
  * Relationships: complements the correction-specific PR-0332 spec.
  */
 
-import { flushPromises, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
@@ -28,7 +28,6 @@ import {
 import {
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_TARGET_EXAMNET_PDF,
-  DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
   DIGIEXAM_TARGET_QTI_PACKAGE,
   DIGIEXAM_TARGET_READY,
   SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
@@ -257,7 +256,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.findAll(".lucide-circle-check").length).toBeGreaterThan(0);
   });
 
-  it("offers explicit export copy when QTI needs a target-level export decision even with green question rows", async () => {
+  it("keeps target-level export blockers out of teacher authoring state", async () => {
     mockFreeTextOnlyReviewArtifacts(gatewayMocks);
     const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
     gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
@@ -285,13 +284,13 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
                 },
                 {
                   target: DIGIEXAM_TARGET_QTI_PACKAGE,
-                  readiness: DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
+                  readiness: "unsupported_target_shape",
                   export_enabled: false,
                   artifact_key: null,
-                  reason_code: "manual_marking_required",
-                  teacher_action: "accept_current_state_for_export",
+                  reason_code: "unsupported_target_shape",
+                  teacher_action: "manual_target_creation_required",
                   retryable: false,
-                  message_key: "exam_converter.target.needs_teacher_review_decision",
+                  message_key: "exam_converter.target.unsupported_target_shape",
                   item_id: "item-001",
                   sequence: 1,
                   source_item_fingerprint: "sha256:item-001",
@@ -316,51 +315,18 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
 
     await finishConversion(wrapper);
 
-    expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
-    expect(wrapper.text()).toContain("1 målfil väntar på att skapas.");
+    expect(wrapper.text()).toContain("Provet är konverterat");
+    expect(wrapper.text()).toContain("Målfilen kunde inte skapas. Granska rapporten.");
     expect(wrapper.text()).not.toContain("1 fråga saknar facit eller poäng.");
     expect(
       wrapper.find('[data-test="exam-converter-review-questions-action"]').exists(),
     ).toBe(false);
-    const reviewPlaceholder = wrapper.find(
-      '[data-test="exam-converter-review-questions-placeholder"]',
-    );
-    expect(reviewPlaceholder.exists()).toBe(true);
-    expect(reviewPlaceholder.attributes("aria-hidden")).toBe("true");
-    expect(wrapper.text()).toContain("Skapa filer");
+    expect(wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-converter-accept-current-state-action"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Skapa filer");
     expect(wrapper.text()).not.toContain("Godkänn");
-
-    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
-    await flushPromises();
-
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          intent: expect.objectContaining({
-            kind: "review_decision",
-            payload: expect.objectContaining({
-              accepted_targets: expect.arrayContaining([DIGIEXAM_TARGET_QTI_PACKAGE]),
-            }),
-            target: expect.objectContaining({
-              accepted_target_family: "requested_artifacts",
-            }),
-          }),
-        }),
-      }),
-    );
-    expect(gatewayMocks.applyExamAuthoringCorrections).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          corrections: [
-            expect.objectContaining({
-              item_id: "item-001",
-              kind: "review_decision",
-              accepted_targets: expect.arrayContaining([DIGIEXAM_TARGET_QTI_PACKAGE]),
-            }),
-          ],
-        }),
-      }),
-    );
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).not.toHaveBeenCalled();
+    expect(gatewayMocks.applyExamAuthoringCorrections).not.toHaveBeenCalled();
   });
 
   it("surfaces Lucktext gaps and embedded image structure in the detail pane", async () => {

@@ -22,7 +22,6 @@ import type {
 } from "../../../api/sirConvertGateway";
 import type {
   ExamConverterQuestionReviewRow,
-  ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
 
 type JsonRecord = Record<string, unknown>;
@@ -153,40 +152,4 @@ export function candidateSuppressionIntent(params: {
       candidate_payload_digest: candidatePayloadDigest,
     },
   };
-}
-
-export function reviewDecisionIntents(params: {
-  projection: ExamConverterReviewProjection;
-  sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
-}): ExamConverterCorrectionIntentWrite[] {
-  const overlayItems = params.projection.acceptedStateOverlay?.items ?? [];
-  const sourceItemsById = new Map(
-    params.sourceState.source_authoring_state.items.map((item) => [item.item_id, item]),
-  );
-  return overlayItems.flatMap((item) => {
-    if (!item.review_decision) return [];
-    const sourceItem = sourceItemsById.get(item.item_id);
-    if (!sourceItem || sourceItem.source_item_fingerprint !== item.source_item_fingerprint) {
-      throw new Error("Review decision no longer matches the current exam source.");
-    }
-    return [
-      {
-        entry_id: `corr-review-${sourceItem.item_id}`,
-        item_id: sourceItem.item_id,
-        item_type: sourceItem.item_type,
-        kind: "review_decision" as const,
-        payload: {
-          accepted_targets: item.review_decision.accepted_targets,
-          decision_id: item.review_decision.decision_id,
-          note: item.review_decision.note,
-        },
-        sequence: sourceItem.sequence,
-        source_binding: params.sourceState.source_binding,
-        source_item_fingerprint: sourceItem.source_item_fingerprint ?? "",
-        target: {
-          accepted_target_family: "requested_artifacts",
-        },
-      },
-    ];
-  });
 }

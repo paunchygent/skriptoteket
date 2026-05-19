@@ -56,7 +56,6 @@ function intent(
   const targetKey =
     overrides.target_key ?? `${kind}:${itemId}:${sequence}:multiple_choice:${sourceItemFingerprint}`;
   return {
-    conflict_family: null,
     entry_id: `corr-${kind}-${itemId}`,
     intent_id: "55555555-5555-4555-8555-555555555555",
     item_id: itemId,
@@ -238,19 +237,6 @@ describe("correction-session replay orchestration", () => {
         target_key: "manual_choice_answer_key:item-001",
       }),
       intent({
-        entry_id: "corr-review-item-003",
-        item_id: "item-003",
-        item_type: "open_ended",
-        kind: "review_decision",
-        payload: {
-          accepted_targets: ["qti_package"],
-          decision_id: "review-item-003",
-          note: null,
-        },
-        source_item_fingerprint: "sha256:item-003",
-        target_key: "review_decision:item-003",
-      }),
-      intent({
         entry_id: "corr-suppress-item-001",
         kind: "candidate_suppression",
         payload: {
@@ -297,14 +283,14 @@ describe("correction-session replay orchestration", () => {
       "item_text_patch",
       "point_correction",
       "manual_choice_answer_key",
-      "review_decision",
       "manual_gap_open_cloze_answer_key",
     ]);
+    expect(JSON.stringify(request)).not.toContain("review_decision");
     expect(JSON.stringify(request)).not.toContain("manual_matching_answer_key");
     expect(result).toMatchObject({
       projectionFreshness: "fresh",
-      savedIntentCount: 6,
-      submittedCorrectionCount: 6,
+      savedIntentCount: 5,
+      submittedCorrectionCount: 5,
     });
   });
 

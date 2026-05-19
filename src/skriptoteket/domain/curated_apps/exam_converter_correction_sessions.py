@@ -12,7 +12,7 @@ Relationships:
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from datetime import datetime
 from enum import StrEnum
 from typing import Final
@@ -27,7 +27,6 @@ class ExamConverterCorrectionIntentKind(StrEnum):
     """Supported durable Exam Converter correction intent kinds."""
 
     CANDIDATE_SUPPRESSION = "candidate_suppression"
-    REVIEW_DECISION = "review_decision"
     ITEM_TEXT_PATCH = "item_text_patch"
     POINT_CORRECTION = "point_correction"
     MANUAL_CHOICE_ANSWER_KEY = "manual_choice_answer_key"
@@ -36,19 +35,11 @@ class ExamConverterCorrectionIntentKind(StrEnum):
 
 KIND_REPLAY_ORDER: Final[dict[ExamConverterCorrectionIntentKind, int]] = {
     ExamConverterCorrectionIntentKind.CANDIDATE_SUPPRESSION: 0,
-    ExamConverterCorrectionIntentKind.REVIEW_DECISION: 1,
-    ExamConverterCorrectionIntentKind.ITEM_TEXT_PATCH: 2,
-    ExamConverterCorrectionIntentKind.POINT_CORRECTION: 3,
-    ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY: 4,
-    ExamConverterCorrectionIntentKind.MANUAL_GAP_OPEN_CLOZE_ANSWER_KEY: 5,
+    ExamConverterCorrectionIntentKind.ITEM_TEXT_PATCH: 1,
+    ExamConverterCorrectionIntentKind.POINT_CORRECTION: 2,
+    ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY: 3,
+    ExamConverterCorrectionIntentKind.MANUAL_GAP_OPEN_CLOZE_ANSWER_KEY: 4,
 }
-ANSWER_KEY_CONFLICT_KINDS: Final[frozenset[ExamConverterCorrectionIntentKind]] = frozenset(
-    {
-        ExamConverterCorrectionIntentKind.MANUAL_CHOICE_ANSWER_KEY,
-        ExamConverterCorrectionIntentKind.MANUAL_GAP_OPEN_CLOZE_ANSWER_KEY,
-        ExamConverterCorrectionIntentKind.REVIEW_DECISION,
-    }
-)
 
 
 class ExamConverterCorrectionSourceBinding(BaseModel):
@@ -93,7 +84,6 @@ class ExamConverterCorrectionTarget(BaseModel):
     interaction_id: str | None = None
     text_field: str | None = None
     text_field_target_id: str | None = None
-    accepted_target_family: str | None = None
     candidate_lineage_id: str | None = None
     candidate_payload_digest: str | None = None
 
@@ -101,7 +91,6 @@ class ExamConverterCorrectionTarget(BaseModel):
         "interaction_id",
         "text_field",
         "text_field_target_id",
-        "accepted_target_family",
         "candidate_lineage_id",
         "candidate_payload_digest",
     )
@@ -159,20 +148,9 @@ class SourceBoundCorrectionIntent(BaseModel):
             text_field = _require_target_field(self, "text_field")
             target_id = self.target.text_field_target_id or "-"
             return f"{self.kind.value}:{item_scope}:{text_field}:{target_id}"
-        if self.kind is ExamConverterCorrectionIntentKind.REVIEW_DECISION:
-            family = _require_target_field(self, "accepted_target_family")
-            return f"{self.kind.value}:{item_scope}:{family}"
         lineage = _require_target_field(self, "candidate_lineage_id")
         digest = _require_target_field(self, "candidate_payload_digest")
         return f"{self.kind.value}:{item_scope}:{lineage}:{digest}"
-
-    @property
-    def conflict_family(self) -> str | None:
-        """Return the mutually exclusive answer-key/review family, when relevant."""
-
-        if self.kind not in ANSWER_KEY_CONFLICT_KINDS:
-            return None
-        return f"answer-key:{self.item_id}:{self.sequence}:{self.source_item_fingerprint}"
 
     @property
     def replay_order_key(self) -> tuple[int, str, int, str, str]:
@@ -225,14 +203,8 @@ class ExamConverterCorrectionSession(BaseModel):
         self._assert_intents_bound_to_session(intents=intents)
 
         active = {intent.target_key: intent for intent in self.active_intents}
-        family_targets = _conflict_family_targets(active.values())
         for intent in intents:
-            family = intent.conflict_family
-            if family is not None and family in family_targets:
-                active.pop(family_targets[family], None)
             active[intent.target_key] = intent
-            if family is not None:
-                family_targets[family] = intent.target_key
 
         return self._next_version(active_intents=tuple(active.values()))
 
@@ -351,10 +323,8 @@ def _require_target_field(intent: SourceBoundCorrectionIntent, field_name: str) 
 
 def _assert_batch_unique(*, intents: Sequence[SourceBoundCorrectionIntent]) -> None:
     target_keys: set[str] = set()
-    conflict_families: dict[str, str] = {}
     for intent in intents:
         _assert_no_duplicate_target(intent=intent, target_keys=target_keys)
-        _assert_no_incompatible_family(intent=intent, conflict_families=conflict_families)
 
 
 def _assert_active_set_compatible(*, intents: Sequence[SourceBoundCorrectionIntent]) -> None:
@@ -373,33 +343,3 @@ def _assert_no_duplicate_target(
             details={"target_key": target_key, "entry_id": intent.entry_id},
         )
     target_keys.add(target_key)
-
-
-def _assert_no_incompatible_family(
-    *,
-    intent: SourceBoundCorrectionIntent,
-    conflict_families: dict[str, str],
-) -> None:
-    family = intent.conflict_family
-    if family is None:
-        return
-    existing_target = conflict_families.get(family)
-    if existing_target is not None:
-        raise validation_error(
-            "Incompatible answer-key/review-decision intents in submitted batch.",
-            details={
-                "conflict_family": family,
-                "existing_target_key": existing_target,
-                "entry_id": intent.entry_id,
-            },
-        )
-    conflict_families[family] = intent.target_key
-
-
-def _conflict_family_targets(intents: Iterable[SourceBoundCorrectionIntent]) -> dict[str, str]:
-    targets: dict[str, str] = {}
-    for intent in intents:
-        family = intent.conflict_family
-        if family is not None:
-            targets[family] = intent.target_key
-    return targets

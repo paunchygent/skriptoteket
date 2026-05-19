@@ -80,13 +80,6 @@ class ExamConverterCorrectionIntentModel(Base):
             unique=True,
             postgresql_where=text("is_active IS TRUE"),
         ),
-        Index(
-            "uq_exam_conv_corr_intents_active_family",
-            "session_id",
-            "conflict_family",
-            unique=True,
-            postgresql_where=text("is_active IS TRUE AND conflict_family IS NOT NULL"),
-        ),
         Index("ix_exam_conv_corr_intents_session_active", "session_id", "is_active"),
     )
 
@@ -100,7 +93,6 @@ class ExamConverterCorrectionIntentModel(Base):
     entry_id: Mapped[str] = mapped_column(String(255), nullable=False)
     correction_kind: Mapped[str] = mapped_column(String(64), nullable=False)
     target_key: Mapped[str] = mapped_column(Text, nullable=False)
-    conflict_family: Mapped[str | None] = mapped_column(Text, nullable=True)
     item_id: Mapped[str] = mapped_column(String(128), nullable=False)
     sequence: Mapped[int] = mapped_column(Integer, nullable=False)
     item_type: Mapped[str] = mapped_column(String(64), nullable=False)

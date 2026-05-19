@@ -265,6 +265,11 @@ The effective answer-key metadata includes:
 
 ## Accepted-Current-State Is A Different Contract
 
+2026-05-19 update: `PR-0341` supersedes this path as active product behavior.
+The analysis below remains the historical root cause for why the path was
+removed from the correction-session workflow. Accepted-current-state export is
+now treated as an export-owned concern, not teacher authoring state.
+
 Skriptoteket also has an older current-state export path for accepting the
 current conversion state. That path is intentionally not an answer-key path.
 

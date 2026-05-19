@@ -249,7 +249,6 @@ function correctionSessionFromIntent(intent: Record<string, unknown>) {
     active_intents: [
       {
         ...intent,
-        conflict_family: null,
         intent_id: "22222222-2222-4222-8222-222222222222",
         target: intent.target ?? {},
         target_key: targetKeyForIntent(intent),

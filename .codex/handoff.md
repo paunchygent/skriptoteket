@@ -9,7 +9,7 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-05-19.
+- Date: 2026-05-20.
 - Branch: `main`.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
@@ -133,35 +133,45 @@ Keep this file updated so the next session can pick up work quickly.
   teacher-relevant AI suggestion outcome counts and item mapping; raw technical
   source notes are not shown in the report summary. Saved choice facit now
   renders as selected alternative rows with text, not detached numbers.
+- `PR-0341` is done:
+  `docs/backlog/prs/pr-0341-st-21-04-authoring-export-boundary-separation.md`.
+  Accepted-current-state export is export-owned, not teacher authoring state.
+  Skriptoteket removed `review_decision` / `accept_current_state_for_export`
+  from durable correction sessions, UI gates, replay requests, fixtures, and
+  tests. Migration `b3e7a1c9d4f2` deactivates active legacy `review_decision`
+  rows and drops `conflict_family`; local and Docker DBs are upgraded to that
+  head. Missing facit/poäng stays blocked until real authoring corrections are
+  saved.
 - `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` was regenerated
   from the current Sir Convert v2 OpenAPI snapshot for PR-0332. Skriptoteket's
-  own backend `openapi.d.ts` was not regenerated because this slice adds no
-  Skriptoteket FastAPI routes or schema surface.
+  own `frontend/apps/skriptoteket/src/api/openapi.d.ts` was regenerated for
+  `PR-0341` after removing `review_decision` / `conflict_family` from the
+  local correction-session API surface.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
-- Current PR-0339 replay artifact/UI refinement passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts`,
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts`,
-  `pdm run fe-type-check`, and `pdm run pytest -q tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py`.
-- Current PR-0340 AI suggestion outcome reporting passed:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`,
-  `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`,
-  Playwright smoke against
-  `http://127.0.0.1:5173/apps/documents.conversion_hub/exam-converter/ui-fixtures/persisted-corrections`
-  verifying `exam-converter-effective-answer-key-choice-2` includes the
-  selected alternative text,
-  `pdm run docs-validate`, `pdm run handoff-validate`, and
-  `git diff --check`.
+- Current PR-0339/PR-0340 verification details are retained in their governed
+  PR docs; PR-0340 passed focused Vitest, typecheck, lint, build,
+  UI-fixture Playwright smoke, docs/handoff validation, and `git diff --check`.
+- Current PR-0341 authoring/export boundary separation passed:
+  `pdm run openapi-export-v1`, `pdm run fe-gen-api-types`,
+  `pdm run pytest tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
+  `pdm run pytest tests/integration/infrastructure/repositories/test_exam_converter_correction_session_repository.py`,
+  `pdm run pytest 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[b3e7a1c9d4f2]' --override-ini addopts=''`,
+  `pdm run db-upgrade`, `pdm run alembic current` -> `b3e7a1c9d4f2 (head)`,
+  `docker compose exec web pdm run db-upgrade`, `docker compose restart web`,
+  `/healthz`, `pdm run dev-stack ps` with web/worker healthy,
+  `pdm run fe-test -- src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/api/sirConvertGateway/completionContract.spec.ts`,
+  and `pdm run fe-type-check`.
 - Previous PR-0332 broader correction slice passed focused Vitest, typecheck,
   lint, build, docs/handoff validation, and `git diff --check`.
 - Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
   and Hemma/public artifact proof are retained in the PR/reference docs.
 ## How to Run
 ```bash
-pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts
+pdm run fe-test -- src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/api/sirConvertGateway/completionContract.spec.ts
 pdm run fe-type-check
 pdm run fe-lint
 pdm run fe-build
@@ -179,9 +189,8 @@ git diff --check
   accepted `ADR-0087`/ready `ST-21-04` own durable correction sessions.
 - `PR-0337` proof must retain candidate-suppression evidence where available
   and prove corrected file actions through replay-supplied artifact references,
-  not original job artifacts.
+  not original job artifacts. It must not use accepted-current-state export or
+  `review_decision` as proof setup.
 ## Next Steps
-- Continue with `PR-0337` canonical browser/artifact proof for the durable
-  correction-session workflow after `PR-0340`, including enabled corrected
-  PDF/QTI downloads/saves through replay authority. Keep matching blocked until
-  Task 332.
+- Continue `PR-0337` with enabled corrected PDF/QTI downloads/saves through
+  replay authority. Keep matching blocked until Task 332.

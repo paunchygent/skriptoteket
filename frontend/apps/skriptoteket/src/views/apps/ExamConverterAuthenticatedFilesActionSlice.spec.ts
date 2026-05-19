@@ -1,9 +1,9 @@
 /**
- * Exam Converter review decision and file-action behavior.
+ * Exam Converter corrected file-action behavior.
  *
  * Slice purpose:
- *   Let the teacher either review missing question data or approve the current
- *   conversion state before downloading or saving generated files.
+ *   Keep generated file actions bound to producer-authorized artifact
+ *   references after durable teacher corrections are replayed.
  *
  * Expected behavior:
  *   File actions stay disabled until the producer report marks a generated
@@ -11,9 +11,8 @@
  *   same artifact authority that drives the visible row.
  *
  * Recommended implementation shape:
- *   Keep file rows inside `Filer`, construct the accepted-current-state
- *   overlay from source binding and item fingerprints, and use the existing
- *   Gateway submit/download plus owner-scoped user-file save clients.
+ *   Keep file rows inside `Filer` and use replay-result artifact references
+ *   for corrected downloads and owner-scoped user-file saves.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -82,43 +81,35 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
 }));
 
-let acceptedOverlaySubmitted = false;
-
 function mockReviewArtifacts(): void {
   gatewayMocks.listDigiExamMigrationArtifacts.mockResolvedValue({
     artifacts: [
       {
         artifact_key: "examnet_pdf",
-        availability: acceptedOverlaySubmitted ? "unavailable" : "unavailable",
+        availability: "unavailable",
         content_type: "application/pdf",
         filename: "Ma1c_Exam.net.pdf",
-        unavailable_code: acceptedOverlaySubmitted
-          ? "accepted_current_state_not_renderable"
-          : "manual_answer_key_required",
+        unavailable_code: "manual_answer_key_required",
         sha256: null,
         size_bytes: null,
       },
       {
         artifact_key: "qti_package",
-        availability: acceptedOverlaySubmitted ? "available" : "unavailable",
+        availability: "unavailable",
         content_type: "application/zip",
         filename: "Ma1c_QTI.zip",
-        unavailable_code: acceptedOverlaySubmitted ? undefined : "manual_answer_key_required",
+        unavailable_code: "manual_answer_key_required",
         sha256: null,
-        size_bytes: acceptedOverlaySubmitted ? 4 : null,
+        size_bytes: null,
       },
-      ...(!acceptedOverlaySubmitted
-        ? [
-            {
-              artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
-              availability: "available",
-              content_type: "application/json",
-              filename: "answer-key-completion-report.json",
-              sha256: "sha256:completion-report",
-              size_bytes: 512,
-            },
-          ]
-        : []),
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+        availability: "available",
+        content_type: "application/json",
+        filename: "answer-key-completion-report.json",
+        sha256: "sha256:completion-report",
+        size_bytes: 512,
+      },
     ],
     bundle_status: "needs_review",
     job_id: "job_exam_converter_files",
@@ -139,8 +130,8 @@ function mockReviewArtifacts(): void {
     },
     readiness: {
       artifact_key: "target_readiness_report",
-      exportable_targets: acceptedOverlaySubmitted ? ["qti_package"] : [],
-      review_required: !acceptedOverlaySubmitted,
+      exportable_targets: [],
+      review_required: true,
     },
     source_binding: {
       source_ir_schema_version: DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -197,7 +188,7 @@ function mockReviewArtifacts(): void {
         return Promise.resolve(
           artifactJsonBlob(
             "target_readiness_report",
-            targetReadinessReportPayload(acceptedOverlaySubmitted),
+            targetReadinessReportPayload(),
           ),
         );
       }
@@ -271,7 +262,6 @@ async function finishConversion(wrapper: ReturnType<typeof mount>) {
 }
 
 beforeEach(() => {
-  acceptedOverlaySubmitted = false;
   correctionSessionRecorder.reset();
   for (const mock of Object.values(correctionSessionApiMocks)) mock.mockReset();
   gatewayMocks.applyExamAuthoringCorrections.mockReset();
@@ -282,8 +272,7 @@ beforeEach(() => {
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
-  gatewayMocks.submitDigiExamMigration.mockImplementation((params: { ingestionOverlay?: unknown }) => {
-    acceptedOverlaySubmitted = Boolean(params.ingestionOverlay);
+  gatewayMocks.submitDigiExamMigration.mockImplementation(() => {
     mockReviewArtifacts();
     return Promise.resolve(submittedFilesJob("succeeded"));
   });
@@ -305,7 +294,27 @@ beforeEach(() => {
   mockReviewArtifacts();
 });
 
-describe("ExamConverterAuthenticatedView review decision and file actions", () => {
+function seedManualChoiceCorrection(): void {
+  correctionSessionRecorder.recordIntent({
+    entry_id: "corr-choice-item-004",
+    item_id: "item-004",
+    item_type: "single_choice",
+    kind: "manual_choice_answer_key",
+    payload: {
+      correct_choice_ids: ["choice-3"],
+      interaction_id: "choice-item-004",
+      submission_origin: "teacher_authored",
+    },
+    sequence: 4,
+    source_binding: correctionSourceState().source_binding,
+    source_item_fingerprint: "sha256:item-004",
+    target: {
+      interaction_id: "choice-item-004",
+    },
+  });
+}
+
+describe("ExamConverterAuthenticatedView corrected file actions", () => {
   it("maps producer reason codes to teacher-facing file copy without raw codes", () => {
     const wrapper = mount(ExamConverterFilesReadinessList, {
       props: {
@@ -340,25 +349,30 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     expect(wrapper.text()).not.toContain("unsupported_target_shape");
   });
 
-  it("uses explicit current-state export copy without duplicate help text", async () => {
+  it("does not render the removed current-state export gate", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
 
-    const gate = wrapper.find('[data-test="exam-converter-review-decision-gate"]');
-    const review = wrapper.find('[data-test="exam-converter-review-questions-action"]');
-    const accept = wrapper.find('[data-test="exam-converter-accept-current-state-action"]');
-
-    expect(gate.exists()).toBe(true);
-    expect(review.text()).toBe("Granska");
-    expect(accept.text()).toBe("Skapa filer");
-    expect(review.attributes("title")).toBeUndefined();
-    expect(accept.attributes("title")).toBeUndefined();
+    expect(wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-converter-accept-current-state-action"]').exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Använd provet som det är");
     expect(wrapper.text()).not.toContain("Godkänn");
   });
 
   it("keeps replayed file actions disabled when replay gives no artifact reference", async () => {
+    const replayResult = correctionApplyResult();
+    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue({
+      ...replayResult,
+      target_readiness: {
+        ...replayResult.target_readiness,
+        targets: replayResult.target_readiness.targets.map((target) => ({
+          ...target,
+          artifact_key: null,
+        })),
+      },
+    });
+    seedManualChoiceCorrection();
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -370,9 +384,8 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     const saveBefore = wrapper.find('[data-test="exam-converter-save-file-examnet_pdf"]');
     expect(downloadBefore.attributes("disabled")).toBeDefined();
     expect(saveBefore.attributes("disabled")).toBeDefined();
-    expect(wrapper.text()).toContain("Granska facit först");
+    expect(wrapper.text()).toContain("Filer kunde inte skapas");
 
-    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
 
     const pdfDownloadAfter = wrapper.find(
@@ -382,9 +395,6 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
       '[data-test="exam-converter-download-file-qti_package"]',
     );
     const qtiSaveAfter = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
-    expect(
-      wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists(),
-    ).toBe(false);
     expect(wrapper.text()).toContain("Filer kunde inte skapas");
     expect(pdfDownloadAfter.attributes("disabled")).toBeDefined();
     expect(qtiDownloadAfter.attributes("disabled")).toBeDefined();
@@ -392,11 +402,23 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
   });
 
   it("does not save a replayed generated file without a replay artifact reference", async () => {
+    const replayResult = correctionApplyResult();
+    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue({
+      ...replayResult,
+      target_readiness: {
+        ...replayResult.target_readiness,
+        targets: replayResult.target_readiness.targets.map((target) => ({
+          ...target,
+          artifact_key: null,
+        })),
+      },
+    });
+    seedManualChoiceCorrection();
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
+    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
     const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
 
     expect(saveAction.attributes("disabled")).toBeDefined();
@@ -425,10 +447,10 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
         })),
       },
     });
+    seedManualChoiceCorrection();
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
     await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
     gatewayMocks.downloadDigiExamMigrationArtifact.mockClear();
@@ -454,12 +476,13 @@ describe("ExamConverterAuthenticatedView review decision and file actions", () =
     );
   });
 
-  it("clears the accepted state when local choices are reset", async () => {
+  it("clears corrected file state when local choices are reset", async () => {
+    seedManualChoiceCorrection();
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-accept-current-state-action"]').trigger("click");
     await flushPromises();
+    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
     expect(
       wrapper.find('[data-test="exam-converter-download-file-qti_package"]').attributes(
         "disabled",

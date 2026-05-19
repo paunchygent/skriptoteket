@@ -3,7 +3,7 @@
  *
  * Domain purpose:
  *   Keep authenticated file-action specs focused by isolating the Sir Convert
- *   job, artifact, and readiness payloads used by accepted-current-state tests.
+ *   job, artifact, and readiness payloads used by corrected-download tests.
  *
  * Relationships:
  *   - Used by `ExamConverterAuthenticatedFilesActionSlice.spec.ts`.
@@ -79,48 +79,12 @@ export function fileArtifactBlob(artifactKey: string, filename: string, contentT
   };
 }
 
-export function targetReadinessReportPayload(acceptedOverlaySubmitted: boolean) {
-  const base = {
+export function targetReadinessReportPayload() {
+  return {
     schema_version: TARGET_READINESS_REPORT_SCHEMA_VERSION,
     job_id: "job_exam_converter_files",
     source_ir_sha256: "sha256:ir",
     effective_exam_sha256: "sha256:effective",
-  };
-  if (acceptedOverlaySubmitted) {
-    return {
-      ...base,
-      targets: [
-        {
-          target: "examnet_pdf",
-          readiness: "unsupported_target_shape",
-          export_enabled: false,
-          artifact_key: null,
-          reason_code: "accepted_current_state_not_renderable",
-          teacher_action: "manual_target_creation_required",
-          retryable: false,
-          message_key: "exam_converter.target.accepted_current_state_not_renderable",
-          item_id: "item-001",
-          sequence: 1,
-          source_item_fingerprint: "sha256:item-001",
-        },
-        {
-          target: "qti_package",
-          readiness: "ready_after_accepted_current_state",
-          export_enabled: true,
-          artifact_key: "qti_package",
-          reason_code: "accepted_current_state_manual_unkeyed_profile",
-          teacher_action: "review_after_import",
-          retryable: false,
-          message_key: "exam_converter.target.ready_after_accepted_current_state",
-          item_id: "item-001",
-          sequence: 1,
-          source_item_fingerprint: "sha256:item-001",
-        },
-      ],
-    };
-  }
-  return {
-    ...base,
     targets: [
       {
         target: "examnet_pdf",

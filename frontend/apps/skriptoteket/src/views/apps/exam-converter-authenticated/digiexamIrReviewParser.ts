@@ -12,7 +12,6 @@
  */
 
 import type {
-  DigiExamIngestionOverlay,
   DigiExamItemType,
   DigiExamTargetReadinessReport,
   DigiExamTargetReadinessRow,
@@ -27,7 +26,6 @@ import {
   DIGIEXAM_ITEM_TYPES,
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
-  DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION,
   SIR_CONVERT_ARTIFACT_AVAILABLE,
   SIR_CONVERT_ARTIFACT_NOT_REQUESTED,
 } from "../../../api/sirConvertGateway/contractValues";
@@ -35,11 +33,7 @@ import {
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
 } from "../../../api/sirConvertGateway/schemaVersions";
-import {
-  buildAcceptedCurrentStateOverlay,
-  digiExamTargetFileLabel,
-  isDigiExamTargetFile,
-} from "./digiexamAcceptedCurrentStateOverlay";
+import { digiExamTargetFileLabel, isDigiExamTargetFile } from "./digiexamTargetArtifacts";
 import {
   projectQuestionReviewRow,
   type DigiExamIrAlternative,
@@ -135,7 +129,6 @@ export type ExamConverterReviewProjection = {
   answerKeyCompletionReport: ExamConverterAnswerKeyCompletionReport | null;
   effectiveAnswerKeysByItem: ExamConverterEffectiveAnswerKeyByItem;
   effectivePointCorrectionsByItem: ExamConverterEffectivePointCorrectionByItem;
-  acceptedStateOverlay: DigiExamIngestionOverlay | null;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -407,8 +400,7 @@ function statusLabelForFile(params: {
   }
   if (
     unavailableCode === DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED ||
-    readinessRow?.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY ||
-    readinessRow?.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION
+    readinessRow?.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY
   ) {
     return "Granska facit först";
   }
@@ -459,8 +451,7 @@ function isTeacherDecisionBlockedFile(file: ExamConverterReviewFile): boolean {
   return (
     !file.exportEnabled &&
     (file.unavailableCode === DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED ||
-      file.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY ||
-      file.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_REVIEW_DECISION)
+      file.readiness === DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY)
   );
 }
 
@@ -570,14 +561,6 @@ export function parseExamConverterReviewProjection(params: {
   const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
   const hasQuestionReview = missingDataQuestionCount > 0;
   const files = projectFiles(params.artifactManifest, params.targetReadinessReport);
-  const acceptedStateOverlay =
-    params.effectiveAnswerKeysByItem && params.effectiveAnswerKeysByItem.size > 0
-      ? null
-      : buildAcceptedCurrentStateOverlay({
-          artifactManifest: params.artifactManifest,
-          questions,
-          targetReadinessReport: params.targetReadinessReport,
-        });
 
   return {
     sourceFilename: exam.sourceFilename,
@@ -602,7 +585,6 @@ export function parseExamConverterReviewProjection(params: {
     answerKeyCompletionReport: params.answerKeyCompletionReport ?? null,
     effectiveAnswerKeysByItem: params.effectiveAnswerKeysByItem ?? new Map(),
     effectivePointCorrectionsByItem: params.effectivePointCorrectionsByItem ?? new Map(),
-    acceptedStateOverlay,
   };
 }
 

@@ -72,7 +72,6 @@ class ExamConverterCorrectionIntentResponse(BaseModel):
     kind: ExamConverterCorrectionIntentKind
     target: ExamConverterCorrectionTarget
     target_key: str
-    conflict_family: str | None
     payload: dict[str, JsonValue]
 
     @classmethod
@@ -93,7 +92,6 @@ class ExamConverterCorrectionIntentResponse(BaseModel):
             kind=intent.kind,
             target=intent.target,
             target_key=intent.target_key,
-            conflict_family=intent.conflict_family,
             payload=intent.payload,
         )
 

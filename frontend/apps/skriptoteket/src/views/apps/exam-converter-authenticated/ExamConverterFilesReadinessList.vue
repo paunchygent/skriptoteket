@@ -81,8 +81,6 @@ function reasonLabelForFile(file: ExamConverterReviewFile): string | null {
       return "Facit eller poäng saknas.";
     case "manual_marking_required":
       return "Filen väntar på att skapas.";
-    case "accepted_current_state_not_renderable":
-      return "Målfilen kunde inte skapas. Granska rapporten.";
     case "unsupported_target_shape":
       return "Målfilen kunde inte skapas. Granska rapporten.";
     case "target_validation_failed":
@@ -96,7 +94,6 @@ function reasonLabelForFile(file: ExamConverterReviewFile): string | null {
     case "not_implemented":
       return "Formatet kan inte skapas i den här konverteringen.";
     case "target_available":
-    case "accepted_current_state_manual_unkeyed_profile":
       return null;
     default:
       return "Målfilen kunde inte skapas. Granska rapporten.";

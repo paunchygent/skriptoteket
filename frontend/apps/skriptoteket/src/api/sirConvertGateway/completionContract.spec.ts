@@ -142,7 +142,7 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
     });
   });
 
-  it("submits accepted-current-state overlays as a governed multipart JSON part", async () => {
+  it("submits teacher answer-key overlays as a governed multipart JSON part", async () => {
     mockJson({ job: { job_id: "job_overlay", status: "queued" } }, { status: 202 });
 
     await submitDigiExamMigration({
@@ -159,17 +159,15 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
           {
             effective_item_patch: null,
             item_id: "item-001",
-            manual_answer_key: null,
+            manual_answer_key: {
+              correct_alternative_ids: [1],
+              kind: "choice",
+            },
             point_correction: null,
             sequence: 1,
             item_type: "multiple_choice",
             source_item_fingerprint: "sha256:item",
-            review_decision: {
-              kind: "accept_current_state_for_export",
-              decision_id: "accept-current-state-item-001",
-              note: null,
-              accepted_targets: ["qti_package"],
-            },
+            review_decision: null,
             reviewed_completion_answer_key: null,
           },
         ],

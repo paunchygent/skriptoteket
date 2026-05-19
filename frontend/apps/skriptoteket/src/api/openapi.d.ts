@@ -3865,14 +3865,12 @@ export interface components {
          * @description Supported durable Exam Converter correction intent kinds.
          * @enum {string}
          */
-        ExamConverterCorrectionIntentKind: "candidate_suppression" | "review_decision" | "item_text_patch" | "point_correction" | "manual_choice_answer_key" | "manual_gap_open_cloze_answer_key";
+        ExamConverterCorrectionIntentKind: "candidate_suppression" | "item_text_patch" | "point_correction" | "manual_choice_answer_key" | "manual_gap_open_cloze_answer_key";
         /**
          * ExamConverterCorrectionIntentResponse
          * @description Current active correction intent returned to clients.
          */
         ExamConverterCorrectionIntentResponse: {
-            /** Conflict Family */
-            conflict_family: string | null;
             /** Entry Id */
             entry_id: string;
             /**
@@ -3966,8 +3964,6 @@ export interface components {
          * @description Kind-specific item-local target identity for one correction intent.
          */
         ExamConverterCorrectionTarget: {
-            /** Accepted Target Family */
-            accepted_target_family?: string | null;
             /** Candidate Lineage Id */
             candidate_lineage_id?: string | null;
             /** Candidate Payload Digest */

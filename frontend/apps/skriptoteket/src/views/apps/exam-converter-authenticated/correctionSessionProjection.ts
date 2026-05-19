@@ -237,18 +237,6 @@ function savedTextValue(params: {
   return null;
 }
 
-function hasReplayableSavedIntent(
-  intents: ExamConverterCorrectionIntentResponse[],
-): boolean {
-  return intents.some(
-    (intent) =>
-      intent.kind === "item_text_patch" ||
-      intent.kind === "manual_choice_answer_key" ||
-      intent.kind === "manual_gap_open_cloze_answer_key" ||
-      intent.kind === "point_correction",
-  );
-}
-
 function correctedMissingFields(params: {
   effectiveAnswerKey: ReturnType<typeof effectiveAnswerKeyForSourceItem>;
   effectivePointCorrection: ExamConverterQuestionReviewRow["effectivePointCorrection"];
@@ -498,9 +486,6 @@ export function projectUnifiedCorrectionResult(params: {
   const files = projectCorrectedFiles(params.projection, params.result);
   return {
     ...params.projection,
-    acceptedStateOverlay: hasReplayableSavedIntent(params.correctionSession.active_intents)
-      ? null
-      : params.projection.acceptedStateOverlay,
     files,
     questions,
     report: reportForCorrectedQuestions(

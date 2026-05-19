@@ -10,7 +10,7 @@
  *   - Produces unified Exam Authoring correction/apply payloads for the
  *     authenticated Sir Convert Gateway client.
  *   - Keeps correction overlays separate from advisory AI-facit review state
- *     and accepted-current-state export decisions.
+ *     and export artifact readiness.
  */
 
 import type {

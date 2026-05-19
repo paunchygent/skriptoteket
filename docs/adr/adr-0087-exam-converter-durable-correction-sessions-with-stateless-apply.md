@@ -19,6 +19,7 @@ links:
   - "PR-0335"
   - "PR-0336"
   - "PR-0338"
+  - "PR-0341"
   - "PR-0337"
   - "Sir Convert Task 333"
   - "Sir Convert Task 332"
@@ -26,6 +27,15 @@ links:
 ---
 
 ## Context
+
+### 2026-05-19 Amendment
+
+`PR-0341` supersedes this ADR's inclusion of `review_decision` in durable
+teacher correction sessions. The accepted product boundary is now stricter:
+accepted-current-state export is export policy, not teacher authoring state.
+Skriptoteket correction sessions persist source-bound authoring/candidate-review
+intents only. Export policy consumes replayed effective state and may create
+artifacts, but it must not mutate state or masquerade as a correction intent.
 
 This ADR was reviewed and approved by `REV-ST-21-04` on 2026-05-18, then
 accepted by the user-lead on 2026-05-19.
@@ -83,7 +93,7 @@ current producer contract can be replayed through the unified apply route:
 | `manual_choice_answer_key` | Persisted in this aggregate | One active answer-key correction per source-bound choice interaction. |
 | `manual_gap_open_cloze_answer_key` | Persisted in this aggregate | One active answer-key correction per source-bound gap/open-cloze interaction. |
 | `item_text_patch` | Persisted in this aggregate | One active visible-text value per source-bound text field target. |
-| `review_decision` | Persisted in this aggregate | Accepted-current-state export decisions are durable submitted semantics and must not be recreated from local UI state. |
+| `review_decision` | Superseded by `PR-0341` | Accepted-current-state export is not durable authoring state and must not be persisted or replayed as a correction intent. |
 | `candidate_suppression` | Persisted in this aggregate | Teacher rejection of an advisory candidate is durable suppression semantics and must survive reload. |
 | `manual_matching_answer_key` | Blocked | Not persisted or replayed until Sir Convert Task 332 and a later accepted slice enable matching-capable producer state. |
 | Later correction kinds | Blocked until approved | Any new kind needs accepted upstream producer semantics and a governed implementation slice. |
@@ -119,7 +129,6 @@ projection or export.
     interaction id;
   - `item_text_patch`: item binding plus text field and optional choice id or
     gap id for each patch operation;
-  - `review_decision`: item binding plus accepted target family; and
   - `candidate_suppression`: item binding plus advisory candidate lineage
     identity and candidate payload digest.
 - Submitting a new correction for an existing target replaces the prior active
@@ -129,16 +138,16 @@ projection or export.
   never replayed.
 - The aggregate must reject duplicate active targets inside one submitted batch
   before persistence.
-- Answer-key corrections and accepted-current-state `review_decision` entries
-  are mutually exclusive for the same item and target family. Replacing one with
-  the other must be an explicit update that supersedes the prior active intent.
+- Answer-key corrections are mutually exclusive per source-bound answer-key
+  target. Export policy is not a competing correction target and must not be
+  used to supersede real authoring state.
 - `candidate_suppression` suppresses only the identified advisory candidate. It
   does not create an answer key, does not create export readiness, and does not
   suppress future distinct candidates unless their lineage identity matches.
 - Replay order is deterministic: sort active intents by sequence, item id,
   correction-kind order, interaction or field target, and entry id. The
-  correction-kind order is `candidate_suppression`, `review_decision`,
-  `item_text_patch`, `point_correction`, `manual_choice_answer_key`,
+  correction-kind order is `candidate_suppression`, `item_text_patch`,
+  `point_correction`, `manual_choice_answer_key`,
   `manual_gap_open_cloze_answer_key`; `manual_matching_answer_key` is absent
   until a later approved slice.
 - All write APIs must require the caller's expected session version. A stale
@@ -169,10 +178,10 @@ Convert, and displayed from replayed effective state.
   consume unified non-matching apply behavior, but persistent teacher workflow
   stability belongs to the follow-on story governed by this ADR.
 - `ST-21-04` is unblocked by this accepted ADR. Its implementation tasks are
-  `PR-0333` through `PR-0338` plus the final proof closeout and must stay
+  `PR-0333` through `PR-0341` plus the final proof closeout and must stay
   ordered so persistence precedes API exposure, replay orchestration, frontend
-  readback, deletion of stale reviewed-AI state, replay artifact authority, and
-  browser/artifact proof.
+  readback, deletion of stale reviewed-AI state, replay artifact authority,
+  authoring/export separation, and browser/artifact proof.
 - Skriptoteket needs backend application/API/persistence work for correction
   sessions: domain/application models, repository protocol, SQLAlchemy model,
   migration, handlers, OpenAPI/types, and owner-scoped tests.

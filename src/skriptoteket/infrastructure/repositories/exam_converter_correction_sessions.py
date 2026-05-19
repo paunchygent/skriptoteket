@@ -275,7 +275,6 @@ class PostgreSQLExamConverterCorrectionSessionRepository(
             entry_id=intent.entry_id,
             correction_kind=intent.kind.value,
             target_key=intent.target_key,
-            conflict_family=intent.conflict_family,
             item_id=intent.item_id,
             sequence=intent.sequence,
             item_type=intent.item_type,
