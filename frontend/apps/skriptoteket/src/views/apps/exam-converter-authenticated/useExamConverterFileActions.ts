@@ -3,7 +3,8 @@
  *
  * Domain purpose:
  *   Download and save authenticated Exam Converter target files after the
- *   teacher has either resolved or accepted the current review state.
+ *   teacher has resolved export-blocking authoring state and replay returned
+ *   artifact references authorized for file actions.
  *
  * Relationships:
  *   - Uses the HuleEdu Gateway Sir Convert artifact client for named downloads.
@@ -82,6 +83,16 @@ function toArtifactEntry(file: ExamConverterReviewFile): SirConvertArtifactEntry
   };
 }
 
+function withTeacherFacingFilename(
+  artifact: SirConvertArtifactBlob,
+  filename: string,
+): SirConvertArtifactBlob {
+  return {
+    ...artifact,
+    filename,
+  };
+}
+
 function initialState(): ExamConverterFileActionState {
   return {
     download: "idle",
@@ -141,7 +152,10 @@ export function useExamConverterFileActions(
     });
     try {
       const artifact = await fetchArtifact(params);
-      triggerDownload(artifact, params.file.filename);
+      triggerDownload(
+        withTeacherFacingFilename(artifact, params.file.filename),
+        params.file.filename,
+      );
       fileActionStates.value = setFileActionState(
         fileActionStates.value,
         params.file.artifactKey,
@@ -169,7 +183,10 @@ export function useExamConverterFileActions(
       save: "running",
     });
     try {
-      const artifactBlob = await fetchArtifact(params);
+      const artifactBlob = withTeacherFacingFilename(
+        await fetchArtifact(params),
+        params.file.filename,
+      );
       const saved = await client.saveDigiExamMigrationArtifactToUserFiles({
         artifact: toArtifactEntry(params.file),
         artifactBlob,

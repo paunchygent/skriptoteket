@@ -16,12 +16,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import signal
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+from zipfile import ZipFile
 
 from playwright.sync_api import Page, Response, expect, sync_playwright
 from pypdf import PdfReader
@@ -31,7 +33,6 @@ from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
 from scripts._pr_0331_reviewed_ai_facit_artifacts import (
     FORBIDDEN_ARTIFACT_TEXT,
-    download_file,
     inspect_qti,
 )
 
@@ -44,9 +45,10 @@ CORRECTION_APPLY_MARKER = "/sir-convert/v2/exam-authoring/corrections/apply"
 CORRECTION_SESSION_MARKER = "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/"
 CORRECTION_SOURCE_STATE_MARKER = "/sir-convert/v2/exam-authoring/corrections/source-state/issue"
 SIR_CONVERT_SUBMIT_MARKER = "/sir-convert/v2/convert/jobs"
-TARGET_ITEM_ID = "item-004"
+USER_FILE_SAVE_MARKER = "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save"
+TARGET_ITEM_ID = "item-001"
 UPDATED_ITEM_POINTS = "3"
-UPDATED_ITEM_TITLE = "Fråga 4 - ändrad i Skriptoteket"
+UPDATED_ITEM_PROMPT = "Vilken process frigör energi ur socker med hjälp av syre?"
 DEFAULT_PROOF_TIMEOUT_SECONDS = 60
 
 
@@ -81,6 +83,12 @@ def _mark_progress(summary: dict[str, Any], artifact_dir: Path, step: str) -> No
 
 def _safe_url(url: str) -> str:
     return urlparse(url).path
+
+
+def _fresh_source_copy(source_dxe: Path, artifact_dir: Path) -> Path:
+    fresh_path = artifact_dir / f"pr-0337-{artifact_dir.name}-{source_dxe.name}"
+    shutil.copyfile(source_dxe, fresh_path)
+    return fresh_path
 
 
 def _exam_converter_main(page: Page) -> Any:
@@ -125,11 +133,26 @@ def _summarize_apply_request(request: Any) -> dict[str, Any]:
 def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
     report = payload.get("correction_report")
     accepted_entries = report.get("accepted_entries", []) if isinstance(report, dict) else []
+    rejected_entries = report.get("rejected_entries", []) if isinstance(report, dict) else []
     target_readiness = payload.get("target_readiness")
     readiness_rows = (
         target_readiness.get("targets", []) if isinstance(target_readiness, dict) else []
     )
     effective_state = payload.get("effective_state")
+    target_rows = [
+        {
+            "artifact_key": row.get("artifact_key"),
+            "export_enabled": row.get("export_enabled"),
+            "message": row.get("message"),
+            "message_key": row.get("message_key"),
+            "readiness": row.get("readiness"),
+            "reason_code": row.get("reason_code"),
+            "target": row.get("target"),
+            "teacher_action": row.get("teacher_action"),
+        }
+        for row in readiness_rows
+        if isinstance(row, dict)
+    ]
     return {
         "accepted_correction_count": len(accepted_entries)
         if isinstance(accepted_entries, list)
@@ -137,9 +160,22 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "accepted_kinds": [
             entry.get("kind") for entry in accepted_entries if isinstance(entry, dict)
         ],
+        "rejected_correction_count": len(rejected_entries)
+        if isinstance(rejected_entries, list)
+        else 0,
         "effective_item_count": len(effective_state.get("items", []))
         if isinstance(effective_state, dict)
         else None,
+        "target_readiness_rows": target_rows,
+        "exportable_targets": [
+            {
+                "artifact_key": row.get("artifact_key"),
+                "readiness": row.get("readiness"),
+                "target": row.get("target"),
+            }
+            for row in readiness_rows
+            if isinstance(row, dict) and row.get("export_enabled") is True
+        ],
         "ready_targets": [
             row.get("target")
             for row in readiness_rows
@@ -147,6 +183,112 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         ],
         "request_id": payload.get("request_id"),
         "schema_version": payload.get("schema_version"),
+    }
+
+
+def _download_response_predicate(response: Response) -> bool:
+    path = _safe_url(response.url)
+    return (
+        "/sir-convert/v2/convert/jobs/" in path
+        and "/artifacts/" in path
+        and response.request.method == "GET"
+        and "application/json" not in (response.headers.get("content-type") or "")
+    )
+
+
+def _artifact_key_from_download_response(response: Response) -> str:
+    return _safe_url(response.url).rsplit("/", 1)[-1]
+
+
+def _download_replayed_file(
+    page: Page, *, artifact_key: str, artifact_dir: Path, expected_filename: str
+) -> tuple[Path, dict[str, Any]]:
+    button = page.locator(f'[data-test="exam-converter-download-file-{artifact_key}"]').first
+    expect(button).to_be_enabled(timeout=30_000)
+    with page.expect_response(_download_response_predicate, timeout=30_000) as response_info:
+        with page.expect_download() as download_info:
+            button.click()
+    response = response_info.value
+    if response.status >= 400:
+        raise AssertionError(f"Artifact download failed with HTTP {response.status}.")
+    replay_artifact_key = _artifact_key_from_download_response(response)
+    if not replay_artifact_key.startswith("correction_replay_"):
+        raise AssertionError("Corrected download did not use a replay-scoped artifact key.")
+    download = download_info.value
+    output_path = artifact_dir / (download.suggested_filename or f"{artifact_key}.bin")
+    if output_path.name != expected_filename:
+        raise AssertionError(
+            f"Replay download used {output_path.name}, expected {expected_filename}."
+        )
+    download.save_as(str(output_path))
+    return output_path, {
+        "content_type": response.headers.get("content-type"),
+        "path": _safe_url(response.url),
+        "replay_artifact_key": replay_artifact_key,
+        "status": response.status,
+        "suggested_filename": output_path.name,
+        "ui_artifact_key": artifact_key,
+    }
+
+
+def _save_replayed_file(page: Page, *, artifact_key: str, expected_filename: str) -> dict[str, Any]:
+    last_error = ""
+    for _ in range(3):
+        result = _save_replayed_file_once(page, artifact_key=artifact_key)
+        save_status = result["save_status"]
+        if save_status < 400:
+            saved_filename = result.get("saved_filename")
+            if saved_filename != expected_filename:
+                raise AssertionError(
+                    f"Replay save used {saved_filename}, expected {expected_filename}."
+                )
+            return result
+        last_error = f"HTTP {save_status}: {result.get('save_body', '')}"
+        if save_status == 429:
+            retry_after = _retry_after_seconds(str(result.get("save_body", "")))
+            retry_after = retry_after if retry_after is not None else 5
+            page.wait_for_timeout((retry_after + 3) * 1_000)
+            continue
+        break
+    raise AssertionError(f"Artifact save failed with {last_error}.")
+
+
+def _save_replayed_file_once(page: Page, *, artifact_key: str) -> dict[str, Any]:
+    button = page.locator(f'[data-test="exam-converter-save-file-{artifact_key}"]').first
+    expect(button).to_be_enabled(timeout=30_000)
+    with page.expect_response(
+        _download_response_predicate, timeout=30_000
+    ) as artifact_response_info:
+        with page.expect_response(
+            lambda response: (
+                USER_FILE_SAVE_MARKER in response.url and response.request.method == "POST"
+            ),
+            timeout=30_000,
+        ) as save_response_info:
+            button.click()
+    artifact_response = artifact_response_info.value
+    save_response = save_response_info.value
+    if artifact_response.status >= 400:
+        raise AssertionError(f"Artifact save download failed with HTTP {artifact_response.status}.")
+    replay_artifact_key = _artifact_key_from_download_response(artifact_response)
+    if not replay_artifact_key.startswith("correction_replay_"):
+        raise AssertionError("Corrected save did not use a replay-scoped artifact key.")
+    if save_response.status < 400:
+        expect(button).to_contain_text("Sparad", timeout=10_000)
+    save_payload = save_response.json() if save_response.status < 400 else {}
+    saved_filename = (
+        save_payload.get("vault_artifact", {}).get("name")
+        if isinstance(save_payload, dict)
+        else None
+    )
+    return {
+        "download_path": _safe_url(artifact_response.url),
+        "replay_artifact_key": replay_artifact_key,
+        "save_body": save_response.text() if save_response.status >= 400 else "",
+        "saved_filename": saved_filename,
+        "save_path": _safe_url(save_response.url),
+        "save_status": save_response.status,
+        "ui_artifact_key": artifact_key,
     }
 
 
@@ -169,6 +311,39 @@ def _summarize_response(response: Response) -> dict[str, Any]:
     if isinstance(payload, dict):
         entry["json"] = _summarize_json_payload(payload)
     return entry
+
+
+def _retry_after_seconds(response_body: str) -> int | None:
+    try:
+        payload = json.loads(response_body)
+    except json.JSONDecodeError:
+        return None
+    retry_after = payload.get("retry_after_seconds") if isinstance(payload, dict) else None
+    return retry_after if isinstance(retry_after, int) and retry_after >= 0 else None
+
+
+def _reload_and_wait_for_replay(page: Page) -> None:
+    last_error = ""
+    for _ in range(3):
+        with page.expect_response(
+            lambda response: (
+                CORRECTION_APPLY_MARKER in response.url and response.request.method == "POST"
+            ),
+            timeout=45_000,
+        ) as reload_apply_response_info:
+            page.reload()
+        reload_apply_response = reload_apply_response_info.value
+        if reload_apply_response.status < 400:
+            return
+        response_body = reload_apply_response.text()
+        last_error = f"HTTP {reload_apply_response.status}: {response_body}"
+        if reload_apply_response.status == 429:
+            retry_after = _retry_after_seconds(response_body)
+            retry_after = retry_after if retry_after is not None else 5
+            page.wait_for_timeout((retry_after + 3) * 1_000)
+            continue
+        break
+    raise AssertionError(f"Reload replay failed with {last_error}")
 
 
 def _visible_indexes(locator: Any) -> list[int]:
@@ -205,6 +380,7 @@ def _click_and_wait_for_apply(page: Page, selector: str) -> None:
         raise AssertionError(
             f"Correction replay failed with HTTP {apply_response.status}: {apply_response.text()}"
         )
+    page.wait_for_timeout(1_000)
 
 
 def _select_question(page: Page, item_id: str) -> None:
@@ -253,6 +429,20 @@ def _save_visible_answer_key(page: Page) -> str:
         '[data-test="exam-converter-apply-manual-answer-key-action"]',
     )
     return item_id
+
+
+def _save_all_ai_suggestion_answer_keys(page: Page) -> list[str]:
+    saved_item_ids: list[str] = []
+    for _ in range(12):
+        try:
+            item_id = _find_ai_suggestion_question(page)
+        except AssertionError:
+            return saved_item_ids
+        if item_id in saved_item_ids:
+            raise AssertionError(f"AI suggestion review did not advance past {item_id}.")
+        saved_item_ids.append(_save_visible_answer_key(page))
+        page.wait_for_timeout(250)
+    raise AssertionError("AI suggestion review exceeded the expected item count.")
 
 
 def _assert_selected_moved_to_next_suggestion(page: Page, previous_item_id: str) -> str:
@@ -306,15 +496,26 @@ def _choose_manual_choice(page: Page) -> str:
     return choice_test_id.removeprefix("exam-converter-manual-choice-")
 
 
-def _inspect_pdf(path: Path, *, expected_text: str) -> dict[str, Any]:
+def _inspect_pdf(path: Path, *, expected_texts: Sequence[str]) -> dict[str, Any]:
     reader = PdfReader(str(path))
     text = "\n".join(page.extract_text() or "" for page in reader.pages)
     return {
         "forbidden_text_hits": [value for value in FORBIDDEN_ARTIFACT_TEXT if value in text],
+        "missing_expected_texts": [value for value in expected_texts if value not in text],
         "page_count": len(reader.pages),
         "path": str(path),
-        "updated_title_present": expected_text in text,
     }
+
+
+def _qti_contains_text(path: Path, expected_text: str) -> bool:
+    with ZipFile(path) as archive:
+        for name in archive.namelist():
+            if not name.endswith(".xml"):
+                continue
+            text = archive.read(name).decode("utf-8", errors="ignore")
+            if expected_text in text:
+                return True
+    return False
 
 
 def _write_failure_text(page: Page, artifact_dir: Path) -> None:
@@ -343,18 +544,24 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
 
     artifact_dir = _run_dir(Path(args.artifact_root))
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
+    fresh_source_dxe = _fresh_source_copy(source_dxe, artifact_dir)
+    expected_pdf_filename = f"{fresh_source_dxe.stem}.pdf"
+    expected_qti_filename = f"{fresh_source_dxe.stem}.zip"
     summary: dict[str, Any] = {
         "artifact_dir": str(artifact_dir),
         "base_url": config.base_url,
+        "artifact_downloads": [],
         "browser_console": [],
         "browser_page_errors": [],
         "correction_apply_requests": [],
         "correction_apply_responses": [],
         "correction_session_responses": [],
         "correction_source_state_responses": [],
+        "file_saves": [],
         "screenshots": [],
         "sir_convert_submit_responses": [],
         "source_dxe": str(source_dxe),
+        "uploaded_source_dxe": str(fresh_source_dxe),
         "started_at": datetime.now(UTC).isoformat(),
     }
     _mark_progress(summary, artifact_dir, "artifact_dir_created")
@@ -425,7 +632,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             page.locator('[data-test="exam-converter-reset-local-choices"]').click()
             _mark_progress(summary, artifact_dir, "local_choices_reset")
             page.set_input_files(
-                '[data-test="exam-converter-rail-source-file-input"]', str(source_dxe)
+                '[data-test="exam-converter-rail-source-file-input"]', str(fresh_source_dxe)
             )
             expect(page.locator('[data-test="exam-converter-start-conversion"]')).to_be_enabled(
                 timeout=10_000
@@ -465,20 +672,19 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             )
             _mark_progress(summary, artifact_dir, "point_correction_saved")
 
-            page.locator('[data-test="exam-converter-item-title-patch-input"]').fill(
-                UPDATED_ITEM_TITLE
+            page.locator('[data-test="exam-converter-item-text-patch-input"]').fill(
+                UPDATED_ITEM_PROMPT
             )
             _click_and_wait_for_apply(
                 page,
-                '[data-test="exam-converter-apply-item-title-patch-action"]',
+                '[data-test="exam-converter-apply-item-text-patch-action"]',
             )
-            _mark_progress(summary, artifact_dir, "title_correction_saved")
+            _mark_progress(summary, artifact_dir, "prompt_correction_saved")
 
-            _click_and_wait_for_apply(
-                page,
-                '[data-test="exam-converter-accept-all-ai-suggestions-action"]',
-            )
-            _mark_progress(summary, artifact_dir, "all_ai_suggestions_saved")
+            remaining_saved_ai_item_ids = _save_all_ai_suggestion_answer_keys(page)
+            summary["remaining_saved_ai_suggestion_item_ids"] = remaining_saved_ai_item_ids
+            _mark_progress(summary, artifact_dir, "remaining_ai_suggestions_saved")
+            page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
             expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
                 timeout=30_000,
             )
@@ -486,23 +692,28 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             summary["screenshots"].append(str(artifact_dir / "03-replayed-files.png"))
             _write_summary(summary, artifact_dir)
 
-            page.reload()
+            page.wait_for_timeout(45_000)
+            _reload_and_wait_for_replay(page)
             _mark_progress(summary, artifact_dir, "page_reloaded")
             expect(page.locator('[data-test="exam-converter-inspection-surface"]')).to_be_visible(
                 timeout=30_000
             )
             _select_question(page, TARGET_ITEM_ID)
             expect(
-                page.locator('[data-test="exam-converter-item-title-patch-input"]')
+                page.locator('[data-test="exam-converter-item-text-patch-input"]')
             ).to_have_value(
-                UPDATED_ITEM_TITLE,
+                UPDATED_ITEM_PROMPT,
+                timeout=30_000,
+            )
+            expect(
+                page.locator('[data-test="exam-converter-point-correction-input"]')
+            ).to_have_value(
+                UPDATED_ITEM_POINTS,
                 timeout=30_000,
             )
             detail_text = page.locator(
                 '[data-test="exam-converter-selected-question-detail"]'
             ).inner_text(timeout=10_000)
-            if UPDATED_ITEM_POINTS not in detail_text:
-                raise AssertionError("Reloaded detail did not show replayed point correction.")
             summary["reload_detail_text"] = detail_text
             page.screenshot(path=str(artifact_dir / "04-after-reload.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "04-after-reload.png"))
@@ -515,18 +726,53 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             enabled_downloads = page.locator('[data-test^="exam-converter-download-file-"]:enabled')
             if enabled_downloads.count() < 2:
                 raise AssertionError("Replay did not expose both file downloads after reload.")
-            pdf_path = download_file(page, artifact_key="examnet_pdf", artifact_dir=artifact_dir)
-            qti_path = download_file(page, artifact_key="qti_package", artifact_dir=artifact_dir)
-            summary["pdf_inspection"] = _inspect_pdf(pdf_path, expected_text=UPDATED_ITEM_TITLE)
+            pdf_path, pdf_download = _download_replayed_file(
+                page,
+                artifact_key="examnet_pdf",
+                artifact_dir=artifact_dir,
+                expected_filename=expected_pdf_filename,
+            )
+            summary["artifact_downloads"].append(pdf_download)
+            qti_path, qti_download = _download_replayed_file(
+                page,
+                artifact_key="qti_package",
+                artifact_dir=artifact_dir,
+                expected_filename=expected_qti_filename,
+            )
+            summary["artifact_downloads"].append(qti_download)
+            summary["file_saves"].append(
+                _save_replayed_file(
+                    page,
+                    artifact_key="examnet_pdf",
+                    expected_filename=expected_pdf_filename,
+                )
+            )
+            summary["file_saves"].append(
+                _save_replayed_file(
+                    page,
+                    artifact_key="qti_package",
+                    expected_filename=expected_qti_filename,
+                )
+            )
+            summary["pdf_inspection"] = _inspect_pdf(
+                pdf_path,
+                expected_texts=(f"Poängvärde: {UPDATED_ITEM_POINTS}",),
+            )
             summary["qti_inspection"] = inspect_qti(qti_path)
+            summary["qti_inspection"]["expected_prompt_present"] = _qti_contains_text(
+                qti_path,
+                UPDATED_ITEM_PROMPT,
+            )
             if summary["pdf_inspection"]["forbidden_text_hits"]:
                 raise AssertionError("PDF exposes forbidden internal diagnostics.")
             if summary["qti_inspection"]["forbidden_text_hits"]:
                 raise AssertionError("QTI exposes forbidden internal diagnostics.")
             if summary["qti_inspection"]["correct_response_count"] == 0:
                 raise AssertionError("QTI contains no correctResponse entries.")
-            if not summary["pdf_inspection"]["updated_title_present"]:
-                raise AssertionError("PDF did not include the replayed title correction.")
+            if summary["pdf_inspection"]["missing_expected_texts"]:
+                raise AssertionError("PDF did not include the replayed point correction.")
+            if not summary["qti_inspection"]["expected_prompt_present"]:
+                raise AssertionError("QTI did not include the replayed prompt correction.")
             summary["completed_at"] = datetime.now(UTC).isoformat()
             _mark_progress(summary, artifact_dir, "proof_complete")
         except Exception:

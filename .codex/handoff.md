@@ -25,43 +25,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Prior PR-0326 through PR-0331 AI-facit history:
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0326-through-pr-0331-ai-facit-review-history.md`.
 ## Status
-- `ST-21-03` defines the public one-time Exam Converter lane plus the
-  authenticated artifact workflow under `EPIC-21`.
-- Public lane authority is settled: HuleEdu mints `PublicConversionGrantV1`;
-  Sir Convert verifies it, creates public-grant-owned jobs/artifacts, and
-  issues `PublicArtifactReadLeaseV1`; Skriptoteket keeps authorities server-side.
-- `PR-0324` authenticated proof remains blocked by retained
-  `docs/backlog/reviews/review-pr-0324-exam-converter-authenticated-end-to-end-proof.md`.
-- `PR-0325` implemented the authenticated host/runtime/save surface; key
-  surfaces include `ExamConverterAuthenticatedView.vue`,
-  `frontend/apps/skriptoteket/src/api/sirConvertGateway/`,
-  `digiexamIrReviewParser.ts`, `useExamConverterReviewArtifacts.ts`, and
-  `useExamConverterFileActions.ts`.
-- Current-state export from `PR-0325` remains distinct from the
-  reviewed-completion overlay path added in `PR-0326`; this distinction is now
-  a UX and contract risk in `PR-0331`.
-- `PR-0326` added the two-pass reviewed-completion consumer flow: advisory
-  submit, AI-facit suggestions, reviewed overlay entries, and reviewed apply.
-- `PR-0327` added the governed internal-browser fixture lane. Do not use
-  throwaway query hooks or browser-local state injection for future checks.
-- `PR-0328` added explicit provider-only advisory retry via bounded
-  `advisoryRetryAttempt` in the client idempotency digest.
-- `PR-0329` is done:
-  `docs/backlog/prs/pr-0329-st-21-03-exam-converter-reviewed-ai-facit-handoff.md`.
-  It proved valid `gap_fill` suggestions can build reviewed-completion overlays
-  and reload readiness from the reviewed apply job bundle.
-- `PR-0330` is canceled:
-  `docs/backlog/prs/pr-0330-st-21-03-exam-converter-small-screen-ai-facit-review-layout-strategy.md`.
-  Its breakpoint diagnosis remains useful, but the reviewed-AI accept/bulk
-  apply target was superseded by `PR-0338`; future phone work must target the
-  durable AI-prefill editor flow.
-- `PR-0331` is ready:
-  `docs/backlog/prs/pr-0331-st-21-03-exam-converter-reviewed-ai-facit-contract-affordance-reconciliation.md`.
-  It is not part of `PR-0330` and is not for the outside designer.
-- `PR-0331` RCA/contract map is updated:
-  `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md`.
-  Closeout proof shows reviewed keys survive projection, reviewed apply, target
-  readiness, and PDF/QTI downloads on the public Hemma lane.
+- Earlier ST-21-03 / PR-0325 through PR-0331 proof and contract history is
+  retained in the governed PR/reference docs and long-term memory entries above.
+  Keep the fresh-source/idempotency lessons from those proofs for future
+  artifact checks.
 - Corrected `PR-0331` item-type contract: matching and single-/multi-gap
   `Lucktext`/open-cloze are supported in the source-neutral IR and QTI/PDF
   export contract. PDF may render gapped items as free text, but accepted
@@ -147,6 +114,15 @@ Keep this file updated so the next session can pick up work quickly.
   own `frontend/apps/skriptoteket/src/api/openapi.d.ts` was regenerated for
   `PR-0341` after removing `review_decision` / `conflict_family` from the
   local correction-session API surface.
+- `PR-0337` is done:
+  `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`.
+  Live proof retained at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260520T001258Z`.
+  It proves local drafts do not unlock files, submitted supported corrections
+  survive reload through Skriptoteket readback/Sir Convert replay, final target
+  readiness exposes `correction_replay_*` artifact keys, and corrected PDF/QTI
+  downloads and saves use only those replay-scoped references while preserving
+  uploaded-source-derived target filenames.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
 ## Verification
@@ -155,16 +131,19 @@ Keep this file updated so the next session can pick up work quickly.
 - Current PR-0339/PR-0340 verification details are retained in their governed
   PR docs; PR-0340 passed focused Vitest, typecheck, lint, build,
   UI-fixture Playwright smoke, docs/handoff validation, and `git diff --check`.
-- Current PR-0341 authoring/export boundary separation passed:
-  `pdm run openapi-export-v1`, `pdm run fe-gen-api-types`,
-  `pdm run pytest tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`,
-  `pdm run pytest tests/integration/infrastructure/repositories/test_exam_converter_correction_session_repository.py`,
-  `pdm run pytest 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[b3e7a1c9d4f2]' --override-ini addopts=''`,
-  `pdm run db-upgrade`, `pdm run alembic current` -> `b3e7a1c9d4f2 (head)`,
-  `docker compose exec web pdm run db-upgrade`, `docker compose restart web`,
-  `/healthz`, `pdm run dev-stack ps` with web/worker healthy,
-  `pdm run fe-test -- src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/api/sirConvertGateway/completionContract.spec.ts`,
-  and `pdm run fe-type-check`.
+- Current PR-0341 authoring/export boundary separation passed its retained
+  backend, migration, DB-upgrade, container-health, focused frontend, and
+  typecheck gates; exact commands are retained in the PR doc.
+- Current PR-0337 live proof passed:
+  `pdm run python -m scripts.playwright_pr_0337_correction_session_live --base-url http://127.0.0.1:5173 --dotenv .env --timeout-seconds 580`.
+  Evidence:
+  `.artifacts/playwright-pr-0337-correction-session-live/20260520T001258Z`.
+  It retained zero enabled draft downloads/saves, six accepted final
+  corrections with no rejected entries, ready PDF/QTI target rows with
+  `correction_replay_examnet_pdf` / `correction_replay_qti_package`, replay-key
+  download/save `200` responses, uploaded-source-derived suggested/saved
+  filenames, clean PDF/QTI forbidden-text scans, PDF point correction evidence,
+  and QTI prompt/correctResponse evidence.
 - Previous PR-0332 broader correction slice passed focused Vitest, typecheck,
   lint, build, docs/handoff validation, and `git diff --check`.
 - Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
@@ -187,10 +166,9 @@ git diff --check
 - Teacher edit of prompts/stems and correct keys is not governed by `PR-0331`;
   accepted `ADR-0086` and done `PR-0332` own non-durable correction controls;
   accepted `ADR-0087`/ready `ST-21-04` own durable correction sessions.
-- `PR-0337` proof must retain candidate-suppression evidence where available
-  and prove corrected file actions through replay-supplied artifact references,
-  not original job artifacts. It must not use accepted-current-state export or
-  `review_decision` as proof setup.
+- Future correction-session proofs must keep using fresh uploaded source copies
+  and replay-scoped artifact assertions so they cannot pass via stale Sir
+  Convert idempotency state or original-job artifacts.
 ## Next Steps
-- Continue `PR-0337` with enabled corrected PDF/QTI downloads/saves through
-  replay authority. Keep matching blocked until Task 332.
+- Run closeout gates for the current `PR-0337` proof-script/docs changes, then
+  commit/push if requested. Keep matching blocked until Sir Convert Task 332.

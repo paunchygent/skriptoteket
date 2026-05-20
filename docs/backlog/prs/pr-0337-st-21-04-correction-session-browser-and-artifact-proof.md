@@ -2,7 +2,7 @@
 type: pr
 id: PR-0337
 title: "ST-21-04 Correction-session browser and artifact proof"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-19
 updated: 2026-05-20
@@ -81,3 +81,45 @@ authoring-to-replay-to-export path:
 - Focused script-surface tests for the proof entrypoint.
 - `fe-type-check`, `fe-lint`, `fe-build`, `docs-validate`,
   `handoff-validate`, and `git diff --check`.
+
+## Implementation Summary
+
+- Hardened the canonical live proof to upload a fresh `.dxe` copy per run so
+  Sir Convert idempotency cannot reuse stale correction/replay state.
+- Replaced the removed bulk AI-suggestion action with the current per-item
+  `Spara facit` flow and retained item IDs for the accepted AI suggestions.
+- Proved local point drafts keep file actions disabled before submission.
+- Proved submitted supported corrections survive navigation/reload through
+  Skriptoteket readback and Sir Convert replay: choice key, gap/open-cloze key,
+  point correction, and visible prompt correction.
+- Proved corrected PDF and QTI downloads and saves use only replay-scoped Sir
+  Convert artifact keys (`correction_replay_*`), not original job artifact
+  keys.
+- Proved corrected downloads and saves preserve the teacher-facing target
+  filenames threaded from the uploaded `.dxe`, even when the replay artifact
+  response carries Sir Convert replay artifact filenames.
+- Added retry handling for Gateway write-rate throttling during reload and file
+  save proof.
+
+## Verification
+
+- Live proof:
+  `pdm run python -m scripts.playwright_pr_0337_correction_session_live --base-url http://127.0.0.1:5173 --dotenv .env --timeout-seconds 580`
+- Retained evidence:
+  `.artifacts/playwright-pr-0337-correction-session-live/20260520T001258Z`
+- Proof summary:
+  - draft negative proof: `enabled_download_count=0`,
+    `enabled_save_count=0`;
+  - final correction apply accepted six corrections and no rejected
+    corrections;
+  - final readiness rows were `ready` for `examnet_pdf` and `qti_package` with
+    `correction_replay_examnet_pdf` and `correction_replay_qti_package`;
+  - PDF and QTI downloads returned `200` from replay artifact paths;
+  - PDF and QTI saves returned `200` after replay artifact downloads;
+  - PDF/QTI download `suggested_filename` values and saved Vault filenames were
+    the uploaded-source-derived target filenames, not
+    `correction_replay_*` names;
+  - PDF artifact inspection found no forbidden internal diagnostics and
+    included the replayed point correction;
+  - QTI artifact inspection found no forbidden internal diagnostics, contained
+    `correctResponse` entries, and included the replayed prompt correction.
