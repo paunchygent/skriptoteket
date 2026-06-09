@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-05-19
+updated: 2026-06-09
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -16,6 +16,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - Add an Exam Converter product lane under Conversion Hub for teacher-facing
   DigiExam/Exam.net migration workflows, split into public one-time conversion
   and authenticated owner-scoped artifact workflows.
+- Add an authenticated transcript product lane under Conversion Hub for
+  Sir Convert-backed speech-to-text jobs, diarization controls, Gateway-backed
+  transcript job lifecycle, and Skriptoteket-owned durable transcript saves.
 - Support batch conversions (multiple files) and a single-PDF preview UX that still uses the normal
   v2 job lifecycle, but through a Skriptoteket-owned local job ledger and download boundary rather
   than raw upstream job ids.
@@ -36,6 +39,8 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - No general public anonymous conversion upload route may ship outside the
   accepted `ADR-0085` scoped public capability contract for the bounded Exam
   Converter exception.
+- No public anonymous speech-to-text lane, no direct Sir Convert browser
+  traffic, and no Skriptoteket-owned STT/diarization runtime.
 
 ## Stories (ordered)
 
@@ -43,6 +48,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 2. [ST-21-02: Migration: retire html-to-pdf-preview + update tests](../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md)
 - [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md)
 - [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md)
+- [ ] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
+- [ ] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
+- [ ] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 
 ## Risks
 
@@ -70,6 +78,12 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-07-expose-sir-convert-artifact-bundle-routes-through-huleedu-auth-edge.md`
 - Sir Convert artifact-bundle contract:
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md`
+- Sir Convert speech-to-text authority:
+  `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/decisions/0013-speech-to-text-sidecar-and-audio-ingestion-governance.md`
+  and
+  `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/epics/epic-12-speech-to-text-audio-ingestion-and-transcript-delivery.md`
+- HuleEdu audio transcription Gateway story:
+  `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-08-expose-sir-convert-audio-transcription-jobs-through-huleedu-auth-edge.md`
 
 ## Implementation Summary (as of 2026-05-13)
 
@@ -161,3 +175,11 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `PR-0340` is done: the report now replaces raw conversion-warning counts
   with teacher-relevant AI suggestion outcome reporting before the canonical
   `PR-0337` browser/artifact proof.
+- ST-21-05 through ST-21-07 (speech-to-text transcript lane): ready planning
+  stories added on 2026-06-09. They split authenticated transcript intake and
+  diarization controls, Gateway-backed transcript job lifecycle, and durable
+  JSON-first transcript saves. Retained review `REV-ST-21-05` is approved for
+  downstream planning. Implementation remains blocked until Sir Convert
+  registers the `audio -> transcript_bundle` route, HuleEdu exposes the
+  corresponding authenticated Gateway edge, and canonical transcript JSON/
+  formatter authority is accepted.

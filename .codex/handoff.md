@@ -9,8 +9,11 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-05-20.
+- Date: 2026-06-09.
 - Branch: `main`.
+- Docs-only cross-repo STT planning added `ST-21-05` through `ST-21-07` under
+  EPIC-21 with approved retained review `REV-ST-21-05`; no transcript runtime
+  implementation is authorized until the upstream blockers are resolved.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -125,6 +128,11 @@ Keep this file updated so the next session can pick up work quickly.
   uploaded-source-derived target filenames.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
+- ST-21-05 through ST-21-07 are docs-only downstream transcript planning:
+  Gateway-only `/sir-convert/v2/convert` access, no public/no-login/direct Sir
+  Convert browser/sidecar access, no local STT/diarization/re-transcription,
+  ST-21-06 blocked on Sir Convert Story 53 and HuleEdu ST-01-08, and ST-21-07
+  blocked on canonical JSON/Sir Convert Story 54.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
@@ -148,6 +156,10 @@ Keep this file updated so the next session can pick up work quickly.
   lint, build, docs/handoff validation, and `git diff --check`.
 - Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
   and Hemma/public artifact proof are retained in the PR/reference docs.
+- Current ST-21-05 through ST-21-07 docs guard:
+  `pdm run test tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
+  failed red on missing exact Gateway-only/blocker/review constraints, then
+  passed after docs/review remediation.
 ## How to Run
 ```bash
 pdm run fe-test -- src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/api/sirConvertGateway/completionContract.spec.ts
@@ -170,5 +182,5 @@ git diff --check
   and replay-scoped artifact assertions so they cannot pass via stale Sir
   Convert idempotency state or original-job artifacts.
 ## Next Steps
-- Run closeout gates for the current `PR-0337` proof-script/docs changes, then
-  commit/push if requested. Keep matching blocked until Sir Convert Task 332.
+- Do not start transcript runtime work before Sir Convert Story 53, HuleEdu
+  `ST-01-08`, and canonical JSON/Sir Convert Story 54 blockers are resolved.
