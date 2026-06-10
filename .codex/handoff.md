@@ -9,7 +9,7 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-09.
+- Date: 2026-06-10.
 - Branch: `main`.
 - Docs-only cross-repo STT planning added `ST-21-05` through `ST-21-07` under
   EPIC-21 with approved retained review `REV-ST-21-05`; no transcript runtime
@@ -128,11 +128,13 @@ Keep this file updated so the next session can pick up work quickly.
   uploaded-source-derived target filenames.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
-- ST-21-05 through ST-21-07 are docs-only downstream transcript planning:
-  Gateway-only `/sir-convert/v2/convert` access, no public/no-login/direct Sir
-  Convert browser/sidecar access, no local STT/diarization/re-transcription,
-  ST-21-06 blocked on Sir Convert Story 53 and HuleEdu ST-01-08, and ST-21-07
-  blocked on canonical JSON/Sir Convert Story 54.
+- `PR-0342` is implemented locally:
+  `docs/backlog/prs/pr-0342-st-21-05-transcript-intake-and-gateway-lifecycle-client.md`.
+  It adds authenticated Conversion Hub transcript intake, speaker controls,
+  HuleEdu Gateway submit/status/result/artifact/cancel client methods, and
+  false-success `transcript_json` rejection. No public/no-login/direct Sir
+  Convert path, local STT/diarization, durable transcript save, or formatter
+  output was added.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
@@ -160,6 +162,11 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run test tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
   failed red on missing exact Gateway-only/blocker/review constraints, then
   passed after docs/review remediation.
+- Current PR-0342 local implementation proof:
+  `pdm run fe-test -- src/api/sirConvertGateway/transcriptOptions.spec.ts src/api/sirConvertGateway/transcriptClient.spec.ts src/views/apps/ConversionHubTranscriptMode.spec.ts`
+  passed with 8 tests; `pdm run fe-type-check`, `pdm run fe-lint`,
+  `pdm run docs-validate`, and `git diff --check` passed. Live authenticated
+  Hule/Sir end-to-end proof was not run in this slice.
 ## How to Run
 ```bash
 pdm run fe-test -- src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/api/sirConvertGateway/completionContract.spec.ts
@@ -178,9 +185,10 @@ git diff --check
 - Teacher edit of prompts/stems and correct keys is not governed by `PR-0331`;
   accepted `ADR-0086` and done `PR-0332` own non-durable correction controls;
   accepted `ADR-0087`/ready `ST-21-04` own durable correction sessions.
-- Future correction-session proofs must keep using fresh uploaded source copies
-  and replay-scoped artifact assertions so they cannot pass via stale Sir
-  Convert idempotency state or original-job artifacts.
+- Future PR-0342 live proof must use the authenticated HuleEdu browser-session
+  ceremony and verify Gateway-owned `transcript_json` download/cancel through
+  `/sir-convert/v2/convert/...`; do not claim public deployment proof from
+  local Vitest.
 ## Next Steps
-- Do not start transcript runtime work before Sir Convert Story 53, HuleEdu
-  `ST-01-08`, and canonical JSON/Sir Convert Story 54 blockers are resolved.
+- Review PR-0342 locally, then run authenticated shared-stack/live Gateway proof
+  when the HuleEdu TASK-0570 edge is available in the target environment.

@@ -5,7 +5,7 @@ title: "Transcript job lifecycle through HuleEdu Gateway"
 status: ready
 owners: "agents"
 created: 2026-06-09
-updated: 2026-06-09
+updated: 2026-06-10
 epic: "EPIC-21"
 dependencies:
   - "ST-21-05"
@@ -30,12 +30,11 @@ that product edge instead of adding direct Sir Convert browser calls or
 Skriptoteket-owned STT runtime logic.
 
 This story owns the transcript job lifecycle from submit through canonical JSON
-artifact retrieval. It is blocked on Sir Convert route registration and HuleEdu
-Gateway support for the accepted audio route.
-
-Implementation remains blocked on Sir Convert Story 53 and HuleEdu ST-01-08.
-Until both are accepted and available, this story is planning authority only and
-does not authorize a local transcript runtime or direct Sir Convert access.
+artifact retrieval. Sir Convert Task 356 and Review 42 accept the live
+`audio -> transcript_bundle` runtime with canonical `transcript_json`
+persistence. HuleEdu `TASK-0570` is the remaining upstream Gateway slice for
+cancel-route exposure and runtime OpenAPI wording before Skriptoteket can close
+live end-to-end proof.
 
 ## Scope
 
@@ -66,6 +65,13 @@ does not authorize a local transcript runtime or direct Sir Convert access.
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/stories/story-53-audio-transcript-bundle-route-execution-and-json-artifact-persistence.md`
 - HuleEdu Gateway story:
   `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-08-expose-sir-convert-audio-transcription-jobs-through-huleedu-auth-edge.md`
+- HuleEdu Gateway task:
+  `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/tasks/task-0570-expose-audio-transcript-lifecycle-through-sir-convert-gateway-edge.md`
+
+## Implementation Slices
+
+- `PR-0342` owns the first transcript intake and lifecycle client
+  implementation against the existing `sirConvertGateway` adapter family.
 
 ## Notes
 

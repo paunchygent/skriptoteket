@@ -17,7 +17,17 @@ export * from "./errors";
 export * from "./jobSpec";
 export { parseTargetReadinessReport } from "./parsers";
 export * from "./requestContext";
+export * from "./requestFingerprint";
 export * from "./saveMetadata";
+export * from "./transcriptOptions";
+export * from "./transcriptRequestContext";
+export {
+  parseTranscriptArtifactManifest,
+  parseTranscriptJob,
+  parseTranscriptJson,
+  parseTranscriptResult,
+} from "./transcriptParsers";
+export * from "./transcriptTypes";
 export * from "./types";
 export * from "./userFiles";
 export * from "./urls";

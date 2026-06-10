@@ -5,11 +5,12 @@ title: "Durable transcript saves and JSON-first downstream formatting"
 status: ready
 owners: "agents"
 created: 2026-06-09
-updated: 2026-06-09
+updated: 2026-06-10
 epic: "EPIC-21"
 dependencies:
   - "ST-21-06"
-  - "Sir Convert Story 54"
+  - "Sir Convert Task 356"
+  - "Sir Convert Story 54 for formatter outputs"
 acceptance_criteria:
   - "Given `transcript_json` is available, when the teacher saves it, then Skriptoteket persists an owner-scoped user file or transcript record with source, job, artifact, schema, language, diarization setting, and speaker-setting provenance."
   - "Given Sir Convert retention is short, when a teacher has not saved the transcript, then Skriptoteket does not imply durable availability after the Sir Convert job/artifact TTL."
@@ -28,9 +29,10 @@ artifacts under short operational retention. Product-facing durable transcript
 retention belongs in Skriptoteket after the teacher saves a transcript.
 Put plainly: durable transcript retention belongs in Skriptoteket after save.
 
-Implementation remains blocked on canonical JSON/Sir Convert Story 54. The
-story may plan the saved transcript contract now, but formatter work must wait
-for canonical JSON authority.
+Durable JSON save work may start after Sir Convert Task 356 and Review 42
+because canonical `transcript_json` runtime behavior is accepted. Formatter
+work for TXT, Markdown, VTT, or SRT remains blocked until Sir Convert Story 54
+or a later accepted formatter authority exists.
 
 This story owns the durable product handoff: preserving canonical JSON
 authority, provenance, and optional downstream formatter outputs without
@@ -63,10 +65,17 @@ turning Skriptoteket into an STT runtime.
 
 ## Upstream Dependencies
 
+- Sir Convert canonical JSON runtime task:
+  `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-356-execute-audio-transcript-jobs-and-persist-canonical-transcript-json.md`
 - Sir Convert formatter story:
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/stories/story-54-transcript-formatter-strategies-over-canonical-json.md`
 - Sir Convert route contract:
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/audio-transcription-service-api-artifact-contract.md`
+
+## Implementation Slices
+
+- `PR-0343` owns the durable saved `transcript_json` boundary after the
+  Gateway-backed lifecycle client retrieves a valid transcript artifact.
 
 ## Notes
 

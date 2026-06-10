@@ -15,6 +15,8 @@ import { computed, onMounted, ref } from "vue";
 
 import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
 import { DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED } from "../../api/sirConvertGateway/contractValues";
+import ConversionHubModeTabs, { type ConversionHubMode } from "./ConversionHubModeTabs.vue";
+import ConversionHubTranscriptHost from "./conversion-hub-transcript/ConversionHubTranscriptHost.vue";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
 import type {
@@ -35,6 +37,8 @@ import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated
 const props = defineProps<{
   inspectionFixtureId?: string | null;
 }>();
+
+const activeHubMode = ref<ConversionHubMode>("exam");
 
 const {
   clearSupportingFile,
@@ -391,63 +395,70 @@ onMounted(async () => {
     class="min-h-[calc(100vh-72px)] overflow-x-hidden bg-canvas px-3 py-4 text-navy md:px-5 lg:px-6"
     aria-labelledby="exam-converter-auth-title"
   >
+    <ConversionHubModeTabs
+      :active-mode="activeHubMode"
+      @mode-selected="activeHubMode = $event"
+    />
     <section
       class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
-      aria-label="Exam Converter"
+      aria-label="Conversion Hub"
       :data-inspection-fixture-id="inspectionFixtureId ?? undefined"
       data-test="exam-converter-host-frame"
     >
-      <ExamConverterWorkflowRailShell
-        :can-start-conversion="canStartConversion"
-        :is-conversion-running="isExamConverterBusy"
-        :selected-supporting-file="selectedSupportingFile"
-        :selected-source-file="selectedSourceFile"
-        :selected-target-formats="selectedTargetFormats"
-        :supporting-file-error="supportingFileError"
-        @clear-supporting-file="clearSupportingFile"
-        @clear-source-file="clearSourceFile"
-        @reset-local-choices="handleResetLocalChoices"
-        @start-conversion="handleStartConversion"
-        @source-file-selected="selectSourceFile"
-        @supporting-file-selected="selectSupportingFile"
-        @toggle-target-format="toggleTargetFormat"
-      />
-      <div class="min-w-0">
-        <p
-          v-if="correctionSessionStatusLabel"
-          class="border-b border-navy bg-saffron px-4 py-2 text-xs font-black uppercase tracking-normal"
-          data-test="exam-converter-correction-session-status"
-        >
-          {{ correctionSessionStatusLabel }}
-        </p>
-        <ExamConverterWorkspaceShell
-          :active-inspection-mode="activeInspectionMode"
-          :ai-suggestion-focus-key="aiSuggestionFocusKey"
-          :can-retry-advisory-facit-suggestion="canRetryAdvisoryFacitSuggestion"
-          :can-use-files="canUseFiles"
-          :file-action-states="fileActionStates"
-          :file-action-notice="fileActionNotice"
-          :focused-ai-prefill="focusedAiPrefill"
-          :is-correction-applying="isCorrectionApplying"
-          :result-strip="resultStrip"
-          :review-projection="reviewProjection"
-          :review-status="reviewStatus"
+      <template v-if="activeHubMode === 'exam'">
+        <ExamConverterWorkflowRailShell
+          :can-start-conversion="canStartConversion"
+          :is-conversion-running="isExamConverterBusy"
+          :selected-supporting-file="selectedSupportingFile"
           :selected-source-file="selectedSourceFile"
-          :show-ai-prefill-panel="showAiPrefillPanel"
-          :source-file-error="sourceFileError"
-          @apply-item-text-patch="handleApplyItemTextPatch"
-          @apply-manual-answer-key="handleApplyManualAnswerKey"
-          @apply-point-correction="handleApplyPointCorrection"
-          @download-file="handleDownloadFile"
-          @files-dropped="selectDroppedFiles"
-          @inspection-mode-selected="selectInspectionMode"
-          @open-questions="handleOpenQuestions"
-          @ai-prefill-focused="focusAiPrefill"
-          @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
-          @save-file="handleSaveFile"
+          :selected-target-formats="selectedTargetFormats"
+          :supporting-file-error="supportingFileError"
+          @clear-supporting-file="clearSupportingFile"
+          @clear-source-file="clearSourceFile"
+          @reset-local-choices="handleResetLocalChoices"
+          @start-conversion="handleStartConversion"
           @source-file-selected="selectSourceFile"
+          @supporting-file-selected="selectSupportingFile"
+          @toggle-target-format="toggleTargetFormat"
         />
-      </div>
+        <div class="min-w-0">
+          <p
+            v-if="correctionSessionStatusLabel"
+            class="border-b border-navy bg-saffron px-4 py-2 text-xs font-black uppercase tracking-normal"
+            data-test="exam-converter-correction-session-status"
+          >
+            {{ correctionSessionStatusLabel }}
+          </p>
+          <ExamConverterWorkspaceShell
+            :active-inspection-mode="activeInspectionMode"
+            :ai-suggestion-focus-key="aiSuggestionFocusKey"
+            :can-retry-advisory-facit-suggestion="canRetryAdvisoryFacitSuggestion"
+            :can-use-files="canUseFiles"
+            :file-action-states="fileActionStates"
+            :file-action-notice="fileActionNotice"
+            :focused-ai-prefill="focusedAiPrefill"
+            :is-correction-applying="isCorrectionApplying"
+            :result-strip="resultStrip"
+            :review-projection="reviewProjection"
+            :review-status="reviewStatus"
+            :selected-source-file="selectedSourceFile"
+            :show-ai-prefill-panel="showAiPrefillPanel"
+            :source-file-error="sourceFileError"
+            @apply-item-text-patch="handleApplyItemTextPatch"
+            @apply-manual-answer-key="handleApplyManualAnswerKey"
+            @apply-point-correction="handleApplyPointCorrection"
+            @download-file="handleDownloadFile"
+            @files-dropped="selectDroppedFiles"
+            @inspection-mode-selected="selectInspectionMode"
+            @open-questions="handleOpenQuestions"
+            @ai-prefill-focused="focusAiPrefill"
+            @retry-advisory-facit-suggestion="handleRetryAdvisoryFacitSuggestion"
+            @save-file="handleSaveFile"
+            @source-file-selected="selectSourceFile"
+          />
+        </div>
+      </template>
+      <ConversionHubTranscriptHost v-else />
     </section>
   </main>
 </template>

@@ -5,7 +5,7 @@ title: "Conversion Hub transcript intake and diarization controls"
 status: ready
 owners: "agents"
 created: 2026-06-09
-updated: 2026-06-09
+updated: 2026-06-10
 epic: "EPIC-21"
 dependencies:
   - "ST-21-01"
@@ -72,9 +72,15 @@ and no Skriptoteket-owned STT/diarization runtime.
 - HuleEdu Gateway story:
   `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-08-expose-sir-convert-audio-transcription-jobs-through-huleedu-auth-edge.md`
 
+## Implementation Slices
+
+- `PR-0342` owns the first authenticated transcript intake and Gateway
+  lifecycle client slice after Sir Convert Task 356 and Review 42 accepted the
+  canonical JSON runtime.
+
 ## Notes
 
-- The first implementation task should wait until Sir Convert Story 51 defines
-  concrete route-level concurrency/admission caps.
+- HuleEdu `TASK-0570` must land before the live Skriptoteket lifecycle proof
+  because the accepted Sir Convert contract includes cancel semantics.
 - Teacher copy should say what the teacher can do next, not expose STT model,
   diarization backend, Gateway, or sidecar terminology.

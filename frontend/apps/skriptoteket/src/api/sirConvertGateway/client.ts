@@ -15,6 +15,7 @@ import { useAuthStore } from "../../stores/auth";
 import { DIGIEXAM_INGESTION_OVERLAY_FILENAME } from "./contractValues";
 import { toSirConvertGatewayProductUrl, toSirConvertGatewayUrl } from "./urls";
 import { prepareDigiExamMigrationRequestContext, stableJsonStringify } from "./requestContext";
+import { prepareTranscriptRequestContext } from "./transcriptRequestContext";
 import {
   parseArtifactManifest,
   parseContentDispositionFilename,
@@ -35,6 +36,21 @@ import type {
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "./types";
+import {
+  parseTranscriptArtifactManifest,
+  parseTranscriptJob,
+  parseTranscriptJson,
+  parseTranscriptResult,
+} from "./transcriptParsers";
+import type {
+  SirConvertTranscriptArtifactManifest,
+  SirConvertTranscriptCancelResult,
+  SirConvertTranscriptJob,
+  SirConvertTranscriptSubmittedJob,
+  SirConvertTranscriptTerminalResult,
+  TranscriptJson,
+  TranscriptSubmitParams,
+} from "./transcriptTypes";
 
 export type CsrfTokenProvider = () => Promise<string | null>;
 
@@ -62,6 +78,27 @@ export type SirConvertGatewayClient = {
     artifactKey: string;
     correlationId: string;
   }): Promise<SirConvertArtifactBlob>;
+  submitTranscriptJob(params: TranscriptSubmitParams): Promise<SirConvertTranscriptSubmittedJob>;
+  getTranscriptJob(params: {
+    jobId: string;
+    correlationId: string;
+  }): Promise<SirConvertTranscriptJob>;
+  getTranscriptResult(params: {
+    jobId: string;
+    correlationId: string;
+  }): Promise<SirConvertTranscriptTerminalResult>;
+  listTranscriptArtifacts(params: {
+    jobId: string;
+    correlationId: string;
+  }): Promise<SirConvertTranscriptArtifactManifest>;
+  downloadTranscriptJson(params: {
+    jobId: string;
+    correlationId: string;
+  }): Promise<TranscriptJson>;
+  cancelTranscriptJob(params: {
+    jobId: string;
+    correlationId: string;
+  }): Promise<SirConvertTranscriptCancelResult>;
   issueExamAuthoringCorrectionSourceState(params: {
     correlationId: string;
     request: ExamAuthoringCorrectionSourceStateIssueRequest;
@@ -99,6 +136,18 @@ async function buildUnsafeJsonHeaders(params: {
 }): Promise<Headers> {
   const headers = buildJsonHeaders(params.correlationId);
   headers.set("Content-Type", "application/json");
+  const csrfToken = await params.ensureCsrfToken();
+  if (csrfToken) {
+    headers.set("X-CSRF-Token", csrfToken);
+  }
+  return headers;
+}
+
+async function buildUnsafeActionHeaders(params: {
+  correlationId: string;
+  ensureCsrfToken: CsrfTokenProvider;
+}): Promise<Headers> {
+  const headers = buildJsonHeaders(params.correlationId);
   const csrfToken = await params.ensureCsrfToken();
   if (csrfToken) {
     headers.set("X-CSRF-Token", csrfToken);
@@ -223,6 +272,93 @@ export function createSirConvertGatewayClient(
       };
     },
 
+    async submitTranscriptJob(params) {
+      const requestContext = await prepareTranscriptRequestContext(params);
+      const formData = new FormData();
+      formData.append("file", params.file, params.file.name);
+      formData.append("job_spec", stableJsonStringify(requestContext.jobSpec));
+
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayUrl(`/jobs?wait_seconds=${normalizeWaitSeconds(params.waitSeconds)}`),
+        {
+          method: "POST",
+          headers: await buildUnsafeHeaders({
+            correlationId: requestContext.correlationId,
+            idempotencyKey: requestContext.idempotencyKey,
+            ensureCsrfToken: dependencies.ensureCsrfToken,
+          }),
+          body: formData,
+          credentials: "include",
+        },
+      );
+      const submitted = await readJsonOrThrow(response, parseTranscriptJob);
+      return {
+        ...submitted,
+        idempotentReplay: response.headers.get("X-Idempotent-Replay")?.toLowerCase() === "true",
+        requestContext,
+      };
+    },
+
+    async getTranscriptJob(params) {
+      const response = await dependencies.fetcher(toSirConvertGatewayUrl(`/jobs/${params.jobId}`), {
+        method: "GET",
+        headers: buildJsonHeaders(params.correlationId),
+        credentials: "include",
+      });
+      return await readJsonOrThrow(response, parseTranscriptJob);
+    },
+
+    async getTranscriptResult(params) {
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayUrl(`/jobs/${params.jobId}/result`),
+        {
+          method: "GET",
+          headers: buildJsonHeaders(params.correlationId),
+          credentials: "include",
+        },
+      );
+      return await readJsonOrThrow(response, parseTranscriptResult);
+    },
+
+    async listTranscriptArtifacts(params) {
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayUrl(`/jobs/${params.jobId}/artifacts`),
+        {
+          method: "GET",
+          headers: buildJsonHeaders(params.correlationId),
+          credentials: "include",
+        },
+      );
+      return await readJsonOrThrow(response, parseTranscriptArtifactManifest);
+    },
+
+    async downloadTranscriptJson(params) {
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayUrl(`/jobs/${params.jobId}/artifacts/transcript_json`),
+        {
+          method: "GET",
+          headers: buildJsonHeaders(params.correlationId),
+          credentials: "include",
+        },
+      );
+      return await readJsonOrThrow(response, parseTranscriptJson);
+    },
+
+    async cancelTranscriptJob(params) {
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayUrl(`/jobs/${params.jobId}/cancel`),
+        {
+          method: "POST",
+          headers: await buildUnsafeActionHeaders({
+            correlationId: params.correlationId,
+            ensureCsrfToken: dependencies.ensureCsrfToken,
+          }),
+          credentials: "include",
+        },
+      );
+      return await readJsonOrThrow(response, parseTranscriptJob);
+    },
+
     async issueExamAuthoringCorrectionSourceState(params) {
       const response = await dependencies.fetcher(
         toSirConvertGatewayProductUrl("/exam-authoring/corrections/source-state/issue"),
@@ -304,6 +440,47 @@ export async function downloadDigiExamMigrationArtifact(params: {
   correlationId: string;
 }): Promise<SirConvertArtifactBlob> {
   return await createBrowserSirConvertGatewayClient().downloadDigiExamMigrationArtifact(params);
+}
+
+export async function submitTranscriptJob(
+  params: TranscriptSubmitParams,
+): Promise<SirConvertTranscriptSubmittedJob> {
+  return await createBrowserSirConvertGatewayClient().submitTranscriptJob(params);
+}
+
+export async function getTranscriptJob(params: {
+  jobId: string;
+  correlationId: string;
+}): Promise<SirConvertTranscriptJob> {
+  return await createBrowserSirConvertGatewayClient().getTranscriptJob(params);
+}
+
+export async function getTranscriptResult(params: {
+  jobId: string;
+  correlationId: string;
+}): Promise<SirConvertTranscriptTerminalResult> {
+  return await createBrowserSirConvertGatewayClient().getTranscriptResult(params);
+}
+
+export async function listTranscriptArtifacts(params: {
+  jobId: string;
+  correlationId: string;
+}): Promise<SirConvertTranscriptArtifactManifest> {
+  return await createBrowserSirConvertGatewayClient().listTranscriptArtifacts(params);
+}
+
+export async function downloadTranscriptJson(params: {
+  jobId: string;
+  correlationId: string;
+}): Promise<TranscriptJson> {
+  return await createBrowserSirConvertGatewayClient().downloadTranscriptJson(params);
+}
+
+export async function cancelTranscriptJob(params: {
+  jobId: string;
+  correlationId: string;
+}): Promise<SirConvertTranscriptCancelResult> {
+  return await createBrowserSirConvertGatewayClient().cancelTranscriptJob(params);
 }
 
 export async function issueExamAuthoringCorrectionSourceState(params: {
