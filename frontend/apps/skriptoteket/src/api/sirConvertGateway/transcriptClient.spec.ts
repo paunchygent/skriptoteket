@@ -135,7 +135,6 @@ describe("Sir Convert transcript Gateway client", () => {
         jsonResponse({
           api_version: "v2",
           job_id: "job_transcript_1",
-          status: "succeeded",
           result: {
             artifact: {
               filename: "transcript-bundle.json",

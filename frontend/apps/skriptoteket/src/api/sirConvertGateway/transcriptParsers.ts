@@ -126,6 +126,24 @@ export function parseTranscriptJob(payload: unknown): SirConvertTranscriptJob {
   };
 }
 
+function parseTranscriptResultJob(payload: unknown, root: JsonRecord): SirConvertTranscriptJob {
+  if (isRecord(root.job) || typeof root.status === "string") {
+    return parseTranscriptJob(payload);
+  }
+  return {
+    jobId: readString(root.job_id, "job_id"),
+    status: "succeeded",
+    stage: null,
+    audioProgress: {
+      totalMediaSeconds: null,
+      processedMediaSeconds: null,
+      percentComplete: null,
+      currentChunkIndex: null,
+      totalChunks: null,
+    },
+  };
+}
+
 function parseArtifactEntry(payload: unknown): SirConvertTranscriptArtifactEntry {
   const entry = readRecord(payload, "artifact");
   const artifactKey = readString(entry.artifact_key, "artifact_key");
@@ -170,7 +188,7 @@ export function parseTranscriptResult(payload: unknown): SirConvertTranscriptTer
     throw new Error("Transcript result points to an unknown transcript JSON artifact.");
   }
   return {
-    job: parseTranscriptJob(payload),
+    job: parseTranscriptResultJob(payload, root),
     artifact: {
       filename: readString(artifact.filename, "result.artifact.filename"),
       content_type: readString(artifact.content_type, "result.artifact.content_type"),
