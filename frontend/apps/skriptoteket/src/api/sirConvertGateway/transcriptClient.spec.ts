@@ -42,7 +42,7 @@ function validTranscriptJson(overrides: Record<string, unknown> = {}): Record<st
         },
       ],
     },
-    diarization: { status: "succeeded", mode_used: "known_speaker_count" },
+    diarization: { status: "succeeded", used_mode: "known_speaker_count" },
     alignment: { status: "succeeded" },
     ...overrides,
   };
@@ -206,7 +206,7 @@ describe("Sir Convert transcript Gateway client", () => {
             },
           ],
           language: { requested: "auto", detected: "sv", confidence: 0.98 },
-          diarization: { status: "succeeded", mode_used: "known_speaker_count" },
+          diarization: { status: "succeeded", used_mode: "known_speaker_count" },
           media: { duration_seconds: 3.2, chunk_count: 1, chunks: [] },
           metadata: {
             source: { sha256: "sha256:source" },
@@ -347,7 +347,7 @@ describe("Sir Convert transcript Gateway client", () => {
     [
       "diarization unavailable mode",
       validTranscriptJson({
-        diarization: { status: "succeeded", mode_used: "diarization_unavailable" },
+        diarization: { status: "succeeded", used_mode: "diarization_unavailable" },
       }),
     ],
     ["alignment failed", validTranscriptJson({ alignment: { status: "failed" } })],

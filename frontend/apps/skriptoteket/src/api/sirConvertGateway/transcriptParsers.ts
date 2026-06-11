@@ -266,11 +266,11 @@ function readOptionalStatus(record: JsonRecord, fieldName: string): string | nul
 function assertSuccessfulTranscriptState(root: JsonRecord): void {
   const diarizationStatus = readOptionalStatus(root, "diarization");
   const diarization = isRecord(root.diarization) ? root.diarization : {};
-  const modeUsed = readNullableString(diarization.mode_used, "diarization.mode_used");
+  const usedMode = readNullableString(diarization.used_mode, "diarization.used_mode");
   if (
     diarizationStatus === "failed" ||
     diarizationStatus === "unavailable" ||
-    modeUsed === "diarization_unavailable"
+    usedMode === "diarization_unavailable"
   ) {
     throw new Error("Transcript JSON reports failed or unavailable diarization.");
   }
