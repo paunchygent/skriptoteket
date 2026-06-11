@@ -193,17 +193,27 @@ describe("Sir Convert transcript Gateway client", () => {
           schema_version: "transcript_json_v1",
           transcript: {
             text: "Hej från lektionen.",
-            segments: [
-              {
-                id: "seg_1",
-                start_seconds: 0,
-                end_seconds: 3.2,
-                speaker_label: "SPEAKER_00",
-                text: "Hej från lektionen.",
-              },
-            ],
           },
+          segments: [
+            {
+              segment_id: "seg_1",
+              start_seconds: 0,
+              end_seconds: 3.2,
+              speaker_label: "SPEAKER_00",
+              text: "Hej från lektionen.",
+              language: "sv",
+              confidence: 0.97,
+            },
+          ],
+          language: { requested: "auto", detected: "sv", confidence: 0.98 },
           diarization: { status: "succeeded", mode_used: "known_speaker_count" },
+          media: { duration_seconds: 3.2, chunk_count: 1, chunks: [] },
+          metadata: {
+            source: { sha256: "sha256:source" },
+            normalized_audio_sha256: "sha256:normalized",
+            runtime: { acceleration_used: "rocm" },
+          },
+          warnings: [],
           alignment: { status: "succeeded" },
         }),
       )

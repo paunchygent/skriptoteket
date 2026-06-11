@@ -285,6 +285,13 @@ function transcriptRecord(root: JsonRecord): JsonRecord {
   return isRecord(root.transcript) ? root.transcript : root;
 }
 
+function transcriptSegments(root: JsonRecord, transcript: JsonRecord): unknown {
+  if (Array.isArray(root.segments)) {
+    return root.segments;
+  }
+  return transcript.segments;
+}
+
 function parseSegment(payload: unknown, index: number): TranscriptSegment {
   const segment = readRecord(payload, `segments[${index}]`);
   const speakerLabel = readNullableString(
@@ -295,7 +302,10 @@ function parseSegment(payload: unknown, index: number): TranscriptSegment {
     throw new Error("Transcript segment is missing a speaker label.");
   }
   return {
-    id: readString(segment.id ?? `segment_${index + 1}`, `segments[${index}].id`),
+    id: readString(
+      segment.id ?? segment.segment_id ?? `segment_${index + 1}`,
+      `segments[${index}].id`,
+    ),
     startSeconds: readNumber(segment.start_seconds, `segments[${index}].start_seconds`),
     endSeconds: readNumber(segment.end_seconds, `segments[${index}].end_seconds`),
     speakerLabel,
@@ -307,7 +317,7 @@ export function parseTranscriptJson(payload: unknown): TranscriptJson {
   const root = readRecord(payload, "transcript_json");
   assertSuccessfulTranscriptState(root);
   const transcript = transcriptRecord(root);
-  const rawSegments = transcript.segments;
+  const rawSegments = transcriptSegments(root, transcript);
   if (!Array.isArray(rawSegments) || rawSegments.length === 0) {
     throw new Error("Transcript JSON is missing non-empty segments.");
   }
