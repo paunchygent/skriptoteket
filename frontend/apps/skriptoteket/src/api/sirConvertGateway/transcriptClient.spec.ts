@@ -143,13 +143,10 @@ describe("Sir Convert transcript Gateway client", () => {
               size_bytes: 512,
             },
             conversion_metadata: {
-              route_key: "audio_to_transcript_bundle",
-              bundle_schema_version: "transcript_bundle_v1",
-              bundle_status: "complete",
-              source_sha256: "sha256:source",
-              transcript_json_artifact_key: "transcript_json",
-              warning_count: 0,
-              artifact_count: 1,
+              pipeline_used: "audio_to_transcript_bundle_v2",
+              backend_used: "stt_sidecar",
+              acceleration_used: "rocm",
+              options_fingerprint: "audio-options-fingerprint",
             },
           },
         }),
@@ -209,7 +206,7 @@ describe("Sir Convert transcript Gateway client", () => {
     await expect(
       client.getTranscriptResult({ correlationId: "corr_1", jobId: "job_transcript_1" }),
     ).resolves.toMatchObject({
-      conversion_metadata: { transcript_json_artifact_key: "transcript_json" },
+      conversion_metadata: { pipeline_used: "audio_to_transcript_bundle_v2" },
     });
     await expect(
       client.listTranscriptArtifacts({ correlationId: "corr_1", jobId: "job_transcript_1" }),
@@ -234,6 +231,35 @@ describe("Sir Convert transcript Gateway client", () => {
       "/sir-convert/v2/convert/jobs/job_transcript_1/cancel",
     ]);
     expect(fetchHeaders(fetcher, 4).get("X-CSRF-Token")).toBe("csrf-token");
+  });
+
+  it("rejects a successful result from a non-transcript pipeline", async () => {
+    fetcher.mockResolvedValueOnce(
+      jsonResponse({
+        api_version: "v2",
+        job_id: "job_transcript_1",
+        result: {
+          artifact: {
+            filename: "converted.pdf",
+            content_type: "application/pdf",
+            sha256: "sha256:pdf",
+            size_bytes: 512,
+          },
+          conversion_metadata: {
+            pipeline_used: "html_to_pdf_v2",
+            backend_used: "weasyprint",
+            acceleration_used: "cpu",
+            options_fingerprint: "pdf-options-fingerprint",
+          },
+        },
+      }),
+    );
+
+    await expect(
+      client.getTranscriptResult({ correlationId: "corr_1", jobId: "job_transcript_1" }),
+    ).rejects.toMatchObject({
+      code: "SIR_CONVERT_CONTRACT_DRIFT",
+    } satisfies Partial<SirConvertGatewayError>);
   });
 
   it.each([

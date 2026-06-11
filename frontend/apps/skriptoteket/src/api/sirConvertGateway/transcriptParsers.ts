@@ -144,6 +144,14 @@ function parseTranscriptResultJob(payload: unknown, root: JsonRecord): SirConver
   };
 }
 
+function readTranscriptPipeline(value: unknown): "audio_to_transcript_bundle_v2" {
+  const pipelineUsed = readString(value, "conversion_metadata.pipeline_used");
+  if (pipelineUsed === "audio_to_transcript_bundle_v2") {
+    return pipelineUsed;
+  }
+  throw new Error(`Unknown Sir Convert transcript pipeline '${pipelineUsed}'.`);
+}
+
 function parseArtifactEntry(payload: unknown): SirConvertTranscriptArtifactEntry {
   const entry = readRecord(payload, "artifact");
   const artifactKey = readString(entry.artifact_key, "artifact_key");
@@ -180,13 +188,6 @@ export function parseTranscriptResult(payload: unknown): SirConvertTranscriptTer
   const result = readRecord(root.result, "result");
   const artifact = readRecord(result.artifact, "result.artifact");
   const metadata = readRecord(result.conversion_metadata, "result.conversion_metadata");
-  const transcriptJsonArtifactKey = readNullableString(
-    metadata.transcript_json_artifact_key,
-    "transcript_json_artifact_key",
-  );
-  if (transcriptJsonArtifactKey !== null && transcriptJsonArtifactKey !== "transcript_json") {
-    throw new Error("Transcript result points to an unknown transcript JSON artifact.");
-  }
   return {
     job: parseTranscriptResultJob(payload, root),
     artifact: {
@@ -196,16 +197,16 @@ export function parseTranscriptResult(payload: unknown): SirConvertTranscriptTer
       size_bytes: readNullableNumber(artifact.size_bytes, "result.artifact.size_bytes"),
     },
     conversion_metadata: {
-      route_key: readString(metadata.route_key, "conversion_metadata.route_key"),
-      bundle_schema_version: readString(
-        metadata.bundle_schema_version,
-        "conversion_metadata.bundle_schema_version",
+      pipeline_used: readTranscriptPipeline(metadata.pipeline_used),
+      backend_used: readString(metadata.backend_used, "conversion_metadata.backend_used"),
+      acceleration_used: readString(
+        metadata.acceleration_used,
+        "conversion_metadata.acceleration_used",
       ),
-      bundle_status: readString(metadata.bundle_status, "conversion_metadata.bundle_status"),
-      source_sha256: readNullableString(metadata.source_sha256, "source_sha256"),
-      transcript_json_artifact_key: transcriptJsonArtifactKey,
-      warning_count: readNullableNumber(metadata.warning_count, "warning_count"),
-      artifact_count: readNumber(metadata.artifact_count, "artifact_count"),
+      options_fingerprint: readString(
+        metadata.options_fingerprint,
+        "conversion_metadata.options_fingerprint",
+      ),
     },
   };
 }

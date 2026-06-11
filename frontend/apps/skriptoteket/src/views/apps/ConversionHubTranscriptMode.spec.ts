@@ -86,13 +86,10 @@ describe("Conversion Hub transcript mode", () => {
     });
     gatewayMocks.getTranscriptResult.mockResolvedValue({
       conversion_metadata: {
-        artifact_count: 1,
-        bundle_schema_version: "transcript_bundle_v1",
-        bundle_status: "complete",
-        route_key: "audio_to_transcript_bundle",
-        source_sha256: "sha256:source",
-        transcript_json_artifact_key: "transcript_json",
-        warning_count: 0,
+        acceleration_used: "rocm",
+        backend_used: "stt_sidecar",
+        options_fingerprint: "audio-options-fingerprint",
+        pipeline_used: "audio_to_transcript_bundle_v2",
       },
       artifact: {
         content_type: "application/json",

@@ -97,13 +97,10 @@ export type SirConvertTranscriptTerminalResult = {
     size_bytes: number | null;
   };
   conversion_metadata: {
-    route_key: string;
-    bundle_schema_version: string;
-    bundle_status: string;
-    source_sha256: string | null;
-    transcript_json_artifact_key: "transcript_json" | null;
-    warning_count: number | null;
-    artifact_count: number;
+    pipeline_used: "audio_to_transcript_bundle_v2";
+    backend_used: string;
+    acceleration_used: string;
+    options_fingerprint: string;
   };
 };
 
