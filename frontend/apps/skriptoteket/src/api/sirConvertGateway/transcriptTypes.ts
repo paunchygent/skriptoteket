@@ -106,24 +106,19 @@ export type SirConvertTranscriptTerminalResult = {
 
 export type SirConvertTranscriptArtifactEntry = {
   artifact_key: string;
-  filename: string;
-  content_type: string;
   availability: SirConvertArtifactAvailability;
-  size_bytes: number | null;
-  sha256: string | null;
+  filename?: string;
+  content_type?: string;
+  size_bytes?: number | null;
+  sha256?: string | null;
   download_path?: string;
   unavailable_code?: string;
 };
 
 export type SirConvertTranscriptArtifactManifest = {
-  schema_version: string;
+  api_version: "v2";
   job_id: string;
-  source: {
-    filename: string;
-    sha256: string;
-    format: "audio";
-  };
-  bundle_status: string;
+  output_format: "transcript_bundle";
   artifacts: SirConvertTranscriptArtifactEntry[];
   transcriptJsonArtifact: SirConvertTranscriptArtifactEntry | null;
 };

@@ -153,10 +153,9 @@ describe("Sir Convert transcript Gateway client", () => {
       )
       .mockResolvedValueOnce(
         jsonResponse({
-          schema_version: "transcript_bundle_v1",
+          api_version: "v2",
           job_id: "job_transcript_1",
-          source: { filename: "lektion.m4a", sha256: "sha256:source", format: "audio" },
-          bundle_status: "complete",
+          output_format: "transcript_bundle",
           artifacts: [
             {
               artifact_key: "transcript_json",
@@ -165,6 +164,26 @@ describe("Sir Convert transcript Gateway client", () => {
               availability: "available",
               size_bytes: 512,
               sha256: "sha256:json",
+            },
+            {
+              artifact_key: "transcript_txt",
+              availability: "not_implemented",
+              unavailable_code: "audio_transcript_artifact_unavailable",
+            },
+            {
+              artifact_key: "transcript_md",
+              availability: "not_implemented",
+              unavailable_code: "audio_transcript_artifact_unavailable",
+            },
+            {
+              artifact_key: "transcript_vtt",
+              availability: "not_implemented",
+              unavailable_code: "audio_transcript_artifact_unavailable",
+            },
+            {
+              artifact_key: "transcript_srt",
+              availability: "not_implemented",
+              unavailable_code: "audio_transcript_artifact_unavailable",
             },
           ],
         }),

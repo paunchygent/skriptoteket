@@ -11,8 +11,10 @@
  */
 
 import {
+  SIR_CONVERT_ARTIFACT_AVAILABLE,
   SIR_CONVERT_ARTIFACT_AVAILABILITIES,
   SIR_CONVERT_ARTIFACT_FAILED,
+  SIR_CONVERT_ARTIFACT_NOT_IMPLEMENTED,
   SIR_CONVERT_ARTIFACT_UNAVAILABLE,
 } from "./contractValues";
 import type { SirConvertArtifactAvailability, SirConvertJobStatus } from "./types";
@@ -152,6 +154,14 @@ function readTranscriptPipeline(value: unknown): "audio_to_transcript_bundle_v2"
   throw new Error(`Unknown Sir Convert transcript pipeline '${pipelineUsed}'.`);
 }
 
+function readTranscriptApiVersion(value: unknown): "v2" {
+  const apiVersion = readString(value, "api_version");
+  if (apiVersion === "v2") {
+    return apiVersion;
+  }
+  throw new Error(`Unknown Sir Convert transcript API version '${apiVersion}'.`);
+}
+
 function parseArtifactEntry(payload: unknown): SirConvertTranscriptArtifactEntry {
   const entry = readRecord(payload, "artifact");
   const artifactKey = readString(entry.artifact_key, "artifact_key");
@@ -162,7 +172,8 @@ function parseArtifactEntry(payload: unknown): SirConvertTranscriptArtifactEntry
       : undefined;
   if (
     (availability === SIR_CONVERT_ARTIFACT_UNAVAILABLE ||
-      availability === SIR_CONVERT_ARTIFACT_FAILED) &&
+      availability === SIR_CONVERT_ARTIFACT_FAILED ||
+      availability === SIR_CONVERT_ARTIFACT_NOT_IMPLEMENTED) &&
     !unavailableCode
   ) {
     throw new Error(`Transcript artifact '${artifactKey}' requires unavailable_code.`);
@@ -171,6 +182,14 @@ function parseArtifactEntry(payload: unknown): SirConvertTranscriptArtifactEntry
     typeof entry.download_path === "string" && entry.download_path.length > 0
       ? entry.download_path
       : undefined;
+  if (availability !== SIR_CONVERT_ARTIFACT_AVAILABLE) {
+    return {
+      artifact_key: artifactKey,
+      availability,
+      ...(downloadPath ? { download_path: downloadPath } : {}),
+      ...(unavailableCode ? { unavailable_code: unavailableCode } : {}),
+    };
+  }
   return {
     artifact_key: artifactKey,
     filename: readString(entry.filename, "filename"),
@@ -215,24 +234,18 @@ export function parseTranscriptArtifactManifest(
   payload: unknown,
 ): SirConvertTranscriptArtifactManifest {
   const root = readRecord(payload, "manifest");
-  const source = readRecord(root.source, "source");
-  const format = readString(source.format, "source.format");
-  if (format !== "audio") {
-    throw new Error(`Unknown Sir Convert transcript source format '${format}'.`);
+  const outputFormat = readString(root.output_format, "output_format");
+  if (outputFormat !== "transcript_bundle") {
+    throw new Error(`Unknown Sir Convert transcript output format '${outputFormat}'.`);
   }
   if (!Array.isArray(root.artifacts)) {
     throw new Error("Sir Convert transcript manifest is missing artifacts.");
   }
   const artifacts = root.artifacts.map((entry) => parseArtifactEntry(entry));
   return {
-    schema_version: readString(root.schema_version, "schema_version"),
+    api_version: readTranscriptApiVersion(root.api_version),
     job_id: readString(root.job_id, "job_id"),
-    source: {
-      filename: readString(source.filename, "source.filename"),
-      sha256: readString(source.sha256, "source.sha256"),
-      format: "audio",
-    },
-    bundle_status: readString(root.bundle_status, "bundle_status"),
+    output_format: "transcript_bundle",
     artifacts,
     transcriptJsonArtifact:
       artifacts.find((entry) => entry.artifact_key === "transcript_json") ?? null,

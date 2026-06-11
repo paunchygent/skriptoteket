@@ -111,6 +111,7 @@ describe("Conversion Hub transcript mode", () => {
       },
     });
     gatewayMocks.listTranscriptArtifacts.mockResolvedValue({
+      api_version: "v2",
       artifacts: [
         {
           artifact_key: "transcript_json",
@@ -120,11 +121,29 @@ describe("Conversion Hub transcript mode", () => {
           sha256: "sha256:json",
           size_bytes: 512,
         },
+        {
+          artifact_key: "transcript_txt",
+          availability: "not_implemented",
+          unavailable_code: "audio_transcript_artifact_unavailable",
+        },
+        {
+          artifact_key: "transcript_md",
+          availability: "not_implemented",
+          unavailable_code: "audio_transcript_artifact_unavailable",
+        },
+        {
+          artifact_key: "transcript_vtt",
+          availability: "not_implemented",
+          unavailable_code: "audio_transcript_artifact_unavailable",
+        },
+        {
+          artifact_key: "transcript_srt",
+          availability: "not_implemented",
+          unavailable_code: "audio_transcript_artifact_unavailable",
+        },
       ],
-      bundle_status: "complete",
       job_id: "job_transcript_1",
-      schema_version: "transcript_bundle_v1",
-      source: { filename: "lektion.m4a", format: "audio", sha256: "sha256:source" },
+      output_format: "transcript_bundle",
       transcriptJsonArtifact: {
         artifact_key: "transcript_json",
         availability: "available",
