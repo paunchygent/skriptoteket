@@ -395,6 +395,134 @@ Focused validation:
   passed with malformed coverage for missing/non-list warnings, wrong result
   status, malformed artifact metadata, and malformed conversion metadata.
 
+### 2026-06-13 Formatter Artifact Download RCA
+
+Latest retained artifact:
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T203933Z/`.
+
+The replay-complete parser remediation above worked. The live proof reached
+upload/STT/save, initial overlay readback, persisted overlay save, replay
+prepare, Sir Convert replay submit, Sir Convert replay result, Sir Convert
+artifact listing, and Skriptoteket replay completion. The remaining blocker was
+artifact download:
+
+- `network.bounded.json` records `GET
+  /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-artifacts/transcript_txt/download`
+  returning HTTP `503`, message `Failed to download named v2 artifact.`
+- Browser console records only the same backend `503`; this was not a
+  Playwright download timeout.
+- The persisted artifact ref came from the Sir Convert artifact listing, so the
+  producer ref itself existed and passed Skriptoteket manifest validation.
+
+RCA:
+
+- Replay jobs and artifact listing are created through the HuleEdu Gateway
+  while the browser session carries the teacher owner identity.
+- Skriptoteket later tried to download the named Sir Convert artifact directly
+  from the backend using only its server-side transport identity.
+- Sir Convert named artifact reads are owner-scoped. API-key transport is not a
+  substitute for the browser-session owner that produced the artifact.
+- The contract mismatch was therefore between the producer context that listed
+  and persisted the artifact ref and the consumer context used for backend
+  download/save actions.
+
+Remediation in this slice:
+
+- The frontend now requires a HuleEdu Gateway artifact receipt on each selected
+  replay artifact download before `/formatter-replay/complete`.
+- Skriptoteket completion no longer trusts a browser-posted artifact manifest.
+  Artifact refs are derived from backend-verified HuleEdu detached RS256
+  receipts over job id, artifact key, content type, size, SHA-256, retrieval
+  path, issuer, audience, subject, and TTL.
+- Browser-forwarded bytes are accepted only as a transport cache after receipt
+  verification, exact key matching, content-type matching, byte-size matching,
+  SHA-256 matching, and per-artifact plus total replay byte-budget checks.
+- Backend download and Mina save now serve only those validated persisted bytes;
+  ref-only rows fail closed.
+- The direct backend Sir Convert artifact download dependency was removed from
+  transcript formatter artifact actions, preserving owner provenance instead of
+  adding an API-key identity fallback.
+
+Focused validation:
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py`
+  initially reproduced the live failure as `DomainError: Failed to download
+  named v2 artifact.` when the action still attempted a direct backend producer
+  read.
+- Green:
+  focused application-handler tests now reject unsigned self-consistent browser
+  payloads, reject malformed payloads and byte-budget breaches, then complete a
+  signed-receipt replay, persist validated bytes, and download/save to Mina.
+- Green:
+  focused frontend tests verify Gateway artifact receipt headers are required
+  and included with base64 payloads in replay completion.
+
+### 2026-06-13 Artifact Receipt Re-Review Remediation
+
+The re-review found that the first payload-persistence remediation still trusted
+browser self-consistency: `artifact_manifest` and `artifact_payloads` arrived in
+the same completion request. A forged but internally consistent payload could
+therefore be persisted as a producer artifact.
+
+The remediation now preserves the invariant that producer-owned artifact bytes
+must be fetched in the same owner authority lane or be bound to backend-
+verifiable delegated authority:
+
+- `/formatter-replay/complete` no longer accepts `artifact_manifest`.
+- Each artifact payload must include a HuleEdu-signed receipt with
+  `schema_version=huleedu.sir_convert_artifact_receipt.v1` and
+  `aud=skriptoteket`.
+- The backend verifies the detached RS256 signature against the configured
+  HuleEdu internal identity trust keys before deriving artifact refs or
+  persisting bytes.
+- Missing/forged receipts, bad base64, duplicate/missing keys, content-type
+  mismatch, size mismatch, checksum mismatch, over-budget payloads, and
+  ref-only rows all fail closed without persisted job/artifact bytes.
+
+Residual: the retained live Gateway artifact download response does not yet
+prove these receipt headers exist. Fresh Hemma proof remains blocked until the
+Gateway emits the signed receipt contract or a HuleEdu-owned delegated fetch
+contract replaces it.
+
+### 2026-06-13 Receipt Subject Binding Re-Review Remediation
+
+The follow-up re-review found that signed receipts were verified but not bound
+to the current authenticated HuleEdu projection subject. A receipt for subject A
+could therefore be submitted by subject B if the receipt job/key/payload checks
+matched B's local replay completion.
+
+Remediation:
+
+- `HuleEduAppUserProjection` now carries the resolved signed
+  `realm_subject_id`.
+- `/formatter-replay/complete` depends on
+  `require_app_user_projection_api`, keeps app access checks on the local
+  `User`, and forwards the signed projection subject into the completion
+  handler.
+- The completion handler rejects every verified artifact receipt whose `sub`
+  differs from the current projection subject before deriving artifact refs or
+  persisting any job/artifact bytes.
+- The fail-closed test covers a real RS256-verified receipt whose `sub` differs
+  from the current projection subject and asserts no replay job or artifact rows
+  are written.
+
+Focused validation:
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py -k different_huleedu_subject`
+  passed with `1 passed, 7 deselected`.
+- `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py -k complete_formatter_replay`
+  passed with `1 passed, 8 deselected`.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `33 passed`.
+- `pdm run test tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_dependencies_api.py tests/unit/web/test_profile_app_continuation_context_api.py`
+  passed with `38 passed`.
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, `pdm run docs-validate`, `pdm run handoff-validate`, and
+  `git diff --check` passed.
+
 ## Rollback Plan
 
 Leave PR-0344 through PR-0348 behavior intact and keep ST-21-08 open with the

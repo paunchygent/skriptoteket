@@ -19,7 +19,6 @@ from collections.abc import Mapping
 from functools import lru_cache
 from os import R_OK, access
 from pathlib import Path
-from typing import Any
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
@@ -140,6 +139,34 @@ def _decode_context(encoded_context: str) -> InternalIdentityContextV1:
     return InternalIdentityContextV1.model_validate(payload)
 
 
+def verify_huleedu_detached_rs256_signature(
+    *,
+    settings: Settings,
+    key_id: str,
+    encoded_payload: str,
+    signature: str,
+) -> None:
+    """Verify a detached HuleEdu RS256 signature over a base64url payload."""
+    normalized_key_id = key_id.strip()
+    if not normalized_key_id:
+        raise ValueError("HuleEdu signature key id must not be empty")
+    if not signature.startswith(INTERNAL_IDENTITY_SIGNATURE_PREFIX):
+        raise ValueError("HuleEdu signature must use the rs256 prefix")
+    public_key = _trusted_public_keys(settings).get(normalized_key_id)
+    if public_key is None:
+        raise ValueError("Unknown HuleEdu signature key id")
+    supplied_signature = signature[len(INTERNAL_IDENTITY_SIGNATURE_PREFIX) :]
+    try:
+        _load_public_key(public_key).verify(
+            _b64url_decode(supplied_signature),
+            encoded_payload.encode("ascii"),
+            padding.PKCS1v15(),
+            hashes.SHA256(),
+        )
+    except (InvalidSignature, ValueError, UnicodeEncodeError) as exc:
+        raise ValueError("Invalid HuleEdu detached signature") from exc
+
+
 class HuleEduInternalIdentityVerifier(HuleEduInternalIdentityVerifierProtocol):
     """Verify HuleEdu Gateway signed identity context headers."""
 
@@ -149,7 +176,7 @@ class HuleEduInternalIdentityVerifier(HuleEduInternalIdentityVerifierProtocol):
     def verify(
         self,
         *,
-        headers: Mapping[str, Any],
+        headers: Mapping[str, object],
         now_ts: int,
     ) -> InternalIdentityContextV1:
         """Verify HuleEdu internal identity headers and return the decoded context.
@@ -191,15 +218,14 @@ class HuleEduInternalIdentityVerifier(HuleEduInternalIdentityVerifierProtocol):
         if public_key is None:
             raise _unauthorized("unknown_internal_identity_key_id")
 
-        supplied_signature = signature_value[len(INTERNAL_IDENTITY_SIGNATURE_PREFIX) :]
         try:
-            _load_public_key(public_key).verify(
-                _b64url_decode(supplied_signature),
-                encoded_context.encode("ascii"),
-                padding.PKCS1v15(),
-                hashes.SHA256(),
+            verify_huleedu_detached_rs256_signature(
+                settings=self._settings,
+                key_id=normalized_key_id,
+                encoded_payload=encoded_context,
+                signature=signature_value,
             )
-        except (InvalidSignature, ValueError, UnicodeEncodeError):
+        except ValueError:
             raise _unauthorized("invalid_internal_identity_signature") from None
 
         try:

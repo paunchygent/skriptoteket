@@ -3323,6 +3323,36 @@ export interface components {
          */
         ConversionHubTranscriptFormatterArtifactKey: "transcript_txt" | "transcript_md" | "transcript_vtt" | "transcript_srt";
         /**
+         * ConversionHubTranscriptFormatterArtifactPayload
+         * @description Gateway-fetched artifact bytes paired with server-verifiable receipt authority.
+         */
+        ConversionHubTranscriptFormatterArtifactPayload: {
+            artifact_key: components["schemas"]["ConversionHubTranscriptFormatterArtifactKey"];
+            /** Content Base64 */
+            content_base64: string;
+            /** Content Type */
+            content_type: string;
+            receipt: components["schemas"]["ConversionHubTranscriptFormatterArtifactReceipt"];
+        };
+        /**
+         * ConversionHubTranscriptFormatterArtifactReceipt
+         * @description Detached Gateway receipt that proves Sir Convert artifact authority.
+         */
+        ConversionHubTranscriptFormatterArtifactReceipt: {
+            /** Key Id */
+            key_id: string;
+            /** Payload */
+            payload: string;
+            /**
+             * Receipt Version
+             * @default 1
+             * @constant
+             */
+            receipt_version: 1;
+            /** Signature */
+            signature: string;
+        };
+        /**
          * ConversionHubTranscriptFormatterArtifactRef
          * @description Producer-owned named replay artifact reference.
          */
@@ -3345,10 +3375,8 @@ export interface components {
          * @description Record a successfully parsed producer replay response.
          */
         ConversionHubTranscriptFormatterReplayCompleteRequest: {
-            /** Artifact Manifest */
-            artifact_manifest: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
+            /** Artifact Payloads */
+            artifact_payloads: components["schemas"]["ConversionHubTranscriptFormatterArtifactPayload"][];
             /** Correlation Id */
             correlation_id?: string | null;
             /** Requested Artifacts */

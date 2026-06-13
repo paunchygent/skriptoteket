@@ -37,6 +37,13 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_transcript
     SequentialIdGenerator,
 )
 
+_CONTENT_BY_KEY = {
+    "transcript_txt": b"Anna: transcript text\n",
+    "transcript_md": b"## Transcript\n\nAnna: transcript text\n",
+    "transcript_vtt": b"WEBVTT\n\n00:00.000 --> 00:01.000\nAnna\n",
+    "transcript_srt": b"1\n00:00:00,000 --> 00:00:01,000\nAnna\n",
+}
+
 
 def _service_result_envelope(*, job_id: str) -> dict[str, object]:
     return {
@@ -79,51 +86,33 @@ def _service_result_envelope(*, job_id: str) -> dict[str, object]:
     }
 
 
-def _four_artifact_manifest(*, job_id: str) -> dict[str, object]:
-    artifacts: list[dict[str, object]] = [
-        {
-            "artifact_key": "transcript_txt",
-            "availability": "available",
-            "content_type": "text/plain",
-            "filename": "transcript.txt",
-            "size_bytes": 128,
-            "sha256": "a" * 64,
-            "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/transcript_txt",
-        },
-        {
-            "artifact_key": "transcript_md",
-            "availability": "available",
-            "content_type": "text/markdown",
-            "filename": "transcript.md",
-            "size_bytes": 256,
-            "sha256": "b" * 64,
-            "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/transcript_md",
-        },
-        {
-            "artifact_key": "transcript_vtt",
-            "availability": "available",
-            "content_type": "text/vtt",
-            "filename": "transcript.vtt",
-            "size_bytes": 384,
-            "sha256": "d" * 64,
-            "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/transcript_vtt",
-        },
-        {
-            "artifact_key": "transcript_srt",
-            "availability": "available",
-            "content_type": "application/x-subrip",
-            "filename": "transcript.srt",
-            "size_bytes": 448,
-            "sha256": "e" * 64,
-            "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/transcript_srt",
-        },
-    ]
-    return {
-        "api_version": "v2",
-        "job_id": job_id,
-        "output_format": "transcript_bundle",
-        "artifacts": artifacts,
+def _four_artifact_payloads(
+    *,
+    receipt_authority: replay_fixtures.SignedArtifactReceiptAuthority,
+    job_id: str,
+) -> list[dict[str, object]]:
+    content_type_by_key = {
+        "transcript_txt": "text/plain",
+        "transcript_md": "text/markdown",
+        "transcript_vtt": "text/vtt",
+        "transcript_srt": "application/x-subrip",
     }
+    filename_by_key = {
+        "transcript_txt": "transcript.txt",
+        "transcript_md": "transcript.md",
+        "transcript_vtt": "transcript.vtt",
+        "transcript_srt": "transcript.srt",
+    }
+    return [
+        receipt_authority.artifact_payload(
+            artifact_key=ConversionHubTranscriptFormatterArtifactKey(artifact_key),
+            filename=filename_by_key[artifact_key],
+            content_type=content_type_by_key[artifact_key],
+            content=content,
+            job_id=job_id,
+        )
+        for artifact_key, content in _CONTENT_BY_KEY.items()
+    ]
 
 
 async def _assert_completion_rejects_result(
@@ -139,10 +128,12 @@ async def _assert_completion_rejects_result(
         transcript_id=transcript_id,
     )
     artifacts = replay_fixtures.InMemoryTranscriptFormatterArtifactRepository()
+    receipt_authority = replay_fixtures.SignedArtifactReceiptAuthority(now=replay_fixtures._now())
     handler = transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
         jobs=InMemoryConversionHubJobRepository(),
         transcripts=transcripts,
         artifacts=artifacts,
+        receipt_verifier=receipt_authority.verifier,
         uow=FakeUow(),
         clock=FixedClock(replay_fixtures._now()),
         id_generator=SequentialIdGenerator([uuid4(), uuid4(), uuid4(), uuid4(), uuid4()]),
@@ -151,6 +142,7 @@ async def _assert_completion_rejects_result(
     with pytest.raises(DomainError) as exc:
         await handler.handle(
             actor=actor,
+            authenticated_huleedu_subject="teacher-subject-1",
             transcript_id=transcript_id,
             request=ConversionHubTranscriptFormatterReplayCompleteRequest(
                 sir_convert_job_id=sir_convert_job_id,
@@ -158,7 +150,10 @@ async def _assert_completion_rejects_result(
                 status="succeeded",
                 requested_artifacts=["txt", "md", "vtt", "srt"],
                 result=result_payload,
-                artifact_manifest=_four_artifact_manifest(job_id=sir_convert_job_id),
+                artifact_payloads=_four_artifact_payloads(
+                    receipt_authority=receipt_authority,
+                    job_id=sir_convert_job_id,
+                ),
             ),
         )
 
@@ -198,10 +193,12 @@ async def test_complete_replay_accepts_service_v2_result_envelope_and_four_artif
         transcript_id=transcript_id,
     )
     artifacts = replay_fixtures.InMemoryTranscriptFormatterArtifactRepository()
+    receipt_authority = replay_fixtures.SignedArtifactReceiptAuthority(now=replay_fixtures._now())
     handler = transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
         jobs=InMemoryConversionHubJobRepository(),
         transcripts=transcripts,
         artifacts=artifacts,
+        receipt_verifier=receipt_authority.verifier,
         uow=FakeUow(),
         clock=FixedClock(replay_fixtures._now()),
         id_generator=SequentialIdGenerator([local_job_id, *artifact_ids]),
@@ -209,6 +206,7 @@ async def test_complete_replay_accepts_service_v2_result_envelope_and_four_artif
 
     result = await handler.handle(
         actor=actor,
+        authenticated_huleedu_subject="teacher-subject-1",
         transcript_id=transcript_id,
         request=ConversionHubTranscriptFormatterReplayCompleteRequest(
             sir_convert_job_id=sir_convert_job_id,
@@ -216,7 +214,10 @@ async def test_complete_replay_accepts_service_v2_result_envelope_and_four_artif
             status="succeeded",
             requested_artifacts=["txt", "md", "vtt", "srt"],
             result=_service_result_envelope(job_id=sir_convert_job_id),
-            artifact_manifest=_four_artifact_manifest(job_id=sir_convert_job_id),
+            artifact_payloads=_four_artifact_payloads(
+                receipt_authority=receipt_authority,
+                job_id=sir_convert_job_id,
+            ),
         ),
     )
 
@@ -244,10 +245,12 @@ async def test_complete_replay_rejects_result_envelope_for_different_job_id() ->
         owner_user_id=actor.id,
         transcript_id=transcript_id,
     )
+    receipt_authority = replay_fixtures.SignedArtifactReceiptAuthority(now=replay_fixtures._now())
     handler = transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
         jobs=InMemoryConversionHubJobRepository(),
         transcripts=transcripts,
         artifacts=replay_fixtures.InMemoryTranscriptFormatterArtifactRepository(),
+        receipt_verifier=receipt_authority.verifier,
         uow=FakeUow(),
         clock=FixedClock(replay_fixtures._now()),
         id_generator=SequentialIdGenerator([uuid4(), uuid4(), uuid4(), uuid4(), uuid4()]),
@@ -256,6 +259,7 @@ async def test_complete_replay_rejects_result_envelope_for_different_job_id() ->
     with pytest.raises(DomainError) as exc:
         await handler.handle(
             actor=actor,
+            authenticated_huleedu_subject="teacher-subject-1",
             transcript_id=transcript_id,
             request=ConversionHubTranscriptFormatterReplayCompleteRequest(
                 sir_convert_job_id="jobv2_replay_success",
@@ -263,7 +267,10 @@ async def test_complete_replay_rejects_result_envelope_for_different_job_id() ->
                 status="succeeded",
                 requested_artifacts=["txt", "md", "vtt", "srt"],
                 result=_service_result_envelope(job_id="jobv2_other"),
-                artifact_manifest=_four_artifact_manifest(job_id="jobv2_replay_success"),
+                artifact_payloads=_four_artifact_payloads(
+                    receipt_authority=receipt_authority,
+                    job_id="jobv2_replay_success",
+                ),
             ),
         )
 

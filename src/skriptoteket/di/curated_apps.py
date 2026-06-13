@@ -237,6 +237,9 @@ from skriptoteket.infrastructure.repositories.conversion_hub_transcript_formatte
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
 )
+from skriptoteket.infrastructure.security.huleedu_artifact_receipts import (
+    HuleEduArtifactReceiptVerifier,
+)
 from skriptoteket.protocols.classroom_planner import (
     GroupingExportCheckpointRepositoryProtocol,
     PlanDraftRepositoryProtocol,
@@ -271,6 +274,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import (
     ConversionHubJobRepositoryProtocol,
     ConversionHubSavedTranscriptRepositoryProtocol,
+    ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol,
     ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
     ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
 )
@@ -356,6 +360,13 @@ class CuratedAppsProvider(Provider):
             yield SirConvertALotClientV2(settings=settings, client=http_client)
         finally:
             await http_client.aclose()
+
+    @provide(scope=Scope.APP)
+    def transcript_formatter_artifact_receipt_verifier(
+        self,
+        settings: Settings,
+    ) -> ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol:
+        return HuleEduArtifactReceiptVerifier(settings)
 
     @provide(scope=Scope.APP)
     def public_exam_converter_grant_authority_settings(
@@ -1717,6 +1728,7 @@ class CuratedAppsProvider(Provider):
         jobs: ConversionHubJobRepositoryProtocol,
         transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
         artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+        receipt_verifier: ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -1725,6 +1737,7 @@ class CuratedAppsProvider(Provider):
             jobs=jobs,
             transcripts=transcripts,
             artifacts=artifacts,
+            receipt_verifier=receipt_verifier,
             uow=uow,
             clock=clock,
             id_generator=id_generator,
@@ -1736,14 +1749,12 @@ class CuratedAppsProvider(Provider):
         jobs: ConversionHubJobRepositoryProtocol,
         transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
         artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
-        client: SirConvertALotClientV2Protocol,
         uow: UnitOfWorkProtocol,
     ) -> DownloadTranscriptArtifactHandler:
         return DownloadTranscriptArtifactHandler(
             jobs=jobs,
             transcripts=transcripts,
             artifacts=artifacts,
-            client=client,
             uow=uow,
         )
 
@@ -1753,7 +1764,6 @@ class CuratedAppsProvider(Provider):
         jobs: ConversionHubJobRepositoryProtocol,
         transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
         artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
-        client: SirConvertALotClientV2Protocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -1766,7 +1776,6 @@ class CuratedAppsProvider(Provider):
             jobs=jobs,
             transcripts=transcripts,
             artifacts=artifacts,
-            client=client,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,

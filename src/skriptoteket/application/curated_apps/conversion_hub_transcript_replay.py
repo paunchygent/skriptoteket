@@ -23,6 +23,12 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
     ConversionHubTranscriptSpeakerOverlayEntry,
 )
 
+TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES = 4 * 1024 * 1024
+TRANSCRIPT_FORMATTER_REPLAY_TOTAL_ARTIFACT_MAX_BYTES = 8 * 1024 * 1024
+TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_BASE64_MAX_CHARS = (
+    (TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES + 2) // 3
+) * 4
+
 
 class ConversionHubTranscriptFormatterArtifactFormat(StrEnum):
     """Closed artifact format values accepted by Sir Convert replay."""
@@ -160,7 +166,10 @@ class ConversionHubTranscriptFormatterReplayCompleteRequest(BaseModel):
         max_length=4,
     )
     result: dict[str, JsonValue]
-    artifact_manifest: dict[str, JsonValue]
+    artifact_payloads: list[ConversionHubTranscriptFormatterArtifactPayload] = Field(
+        min_length=1,
+        max_length=4,
+    )
 
     @field_validator("requested_artifacts")
     @classmethod
@@ -185,6 +194,54 @@ class ConversionHubTranscriptFormatterArtifactRef(BaseModel):
     size_bytes: int = Field(ge=0)
     sha256: str = Field(min_length=1)
     retrieval_path: str = Field(min_length=1)
+
+
+class ConversionHubTranscriptFormatterArtifactReceipt(BaseModel):
+    """Detached Gateway receipt that proves Sir Convert artifact authority."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    receipt_version: Literal[1] = 1
+    payload: str = Field(min_length=1, max_length=8192)
+    key_id: str = Field(min_length=1, max_length=255)
+    signature: str = Field(min_length=1, max_length=2048)
+
+
+class ConversionHubTranscriptFormatterArtifactReceiptPayload(BaseModel):
+    """Verified HuleEdu receipt payload for one owner-scoped producer artifact."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal["huleedu.sir_convert_artifact_receipt.v1"]
+    iss: str = Field(min_length=1, max_length=255)
+    aud: Literal["skriptoteket"]
+    sub: str = Field(min_length=1, max_length=255)
+    source_app: Literal["skriptoteket"]
+    active_app: str | None = Field(default=None, max_length=255)
+    sir_convert_job_id: str = Field(min_length=1, max_length=255)
+    artifact_key: ConversionHubTranscriptFormatterArtifactKey
+    filename: str = Field(min_length=1, max_length=255)
+    content_type: str = Field(min_length=1, max_length=255)
+    size_bytes: int = Field(ge=0, le=TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES)
+    sha256: str = Field(min_length=1, max_length=128)
+    retrieval_path: str = Field(min_length=1, max_length=500)
+    iat: int
+    exp: int
+    jti: str = Field(min_length=1, max_length=255)
+
+
+class ConversionHubTranscriptFormatterArtifactPayload(BaseModel):
+    """Gateway-fetched artifact bytes paired with server-verifiable receipt authority."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    artifact_key: ConversionHubTranscriptFormatterArtifactKey
+    content_type: str = Field(min_length=1, max_length=255)
+    content_base64: str = Field(
+        min_length=1,
+        max_length=TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_BASE64_MAX_CHARS,
+    )
+    receipt: ConversionHubTranscriptFormatterArtifactReceipt
 
 
 class ConversionHubTranscriptFormatterReplayResponse(BaseModel):

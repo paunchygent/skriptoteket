@@ -333,3 +333,15 @@ export type SirConvertTranscriptFormatterReplayArtifactManifest = {
   >;
   rawManifest: Record<string, unknown>;
 };
+
+export type SirConvertTranscriptFormatterReplayArtifactBlob = {
+  artifactKey: SirConvertTranscriptFormatterArtifactKey;
+  contentType: string;
+  bytes: ArrayBuffer;
+  receipt: {
+    receipt_version: 1;
+    payload: string;
+    key_id: string;
+    signature: string;
+  };
+};

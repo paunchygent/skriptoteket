@@ -55,6 +55,7 @@ class PostgreSQLConversionHubTranscriptFormatterArtifactRepository(
             size_bytes=record.size_bytes,
             sha256=record.sha256,
             retrieval_path=record.retrieval_path,
+            content=record.content,
             created_at=record.created_at,
             updated_at=record.updated_at,
         )
@@ -76,6 +77,7 @@ class PostgreSQLConversionHubTranscriptFormatterArtifactRepository(
             size_bytes=model.size_bytes,
             sha256=model.sha256,
             retrieval_path=model.retrieval_path,
+            content=model.content,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

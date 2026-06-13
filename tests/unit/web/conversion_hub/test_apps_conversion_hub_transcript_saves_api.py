@@ -44,9 +44,13 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
     SaveConversionHubTranscriptRequest,
     UpdateConversionHubTranscriptSpeakerOverlaysRequest,
 )
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
+from skriptoteket.domain.identity.models import Role, User, UserProfile
 from skriptoteket.web.api.v1 import apps_conversion_hub_transcript_saves as api
 from tests.fixtures.identity_fixtures import make_user
+from tests.unit.application.curated_apps.handlers import (
+    test_conversion_hub_transcript_formatter_replay as replay_fixtures,
+)
 
 RouteCallable = Callable[..., Awaitable[object]]
 ResultT = TypeVar("ResultT", bound=object)
@@ -196,12 +200,19 @@ def _replay_prepare_response(
 
 
 def _replay_complete_request() -> ConversionHubTranscriptFormatterReplayCompleteRequest:
+    content = b"Anna: overlay-aware transcript\n"
+    receipt_authority = replay_fixtures.SignedArtifactReceiptAuthority(
+        now=datetime(2026, 6, 13, 12, 1, tzinfo=timezone.utc),
+    )
     return ConversionHubTranscriptFormatterReplayCompleteRequest(
         sir_convert_job_id="sir-replay-job-1",
         correlation_id="corr-replay-1",
         status="succeeded",
         requested_artifacts=["txt"],
         result={
+            "api_version": "v2",
+            "job_id": "sir-replay-job-1",
+            "status": "succeeded",
             "result": {
                 "artifact": {
                     "filename": "transcript_replay_bundle_manifest.json",
@@ -214,9 +225,17 @@ def _replay_complete_request() -> ConversionHubTranscriptFormatterReplayComplete
                     "pipeline_used": "transcript_json_to_transcript_bundle_replay_v2",
                     "options_fingerprint": "sha256:abc",
                 },
-            }
+                "warnings": [],
+            },
         },
-        artifact_manifest={"api_version": "v2", "job_id": "sir-replay-job-1", "artifacts": []},
+        artifact_payloads=[
+            receipt_authority.artifact_payload(
+                artifact_key=ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT,
+                filename="transcript_txt.txt",
+                content_type="text/plain",
+                content=content,
+            )
+        ],
     )
 
 
@@ -258,6 +277,24 @@ def _formatter_artifact_save_response() -> SaveConversionHubTranscriptFormatterA
             bytes=25,
             created_at=datetime(2026, 6, 13, 12, 5, tzinfo=timezone.utc),
         ),
+    )
+
+
+def _projection(user: User, *, subject: str = "teacher-subject-1") -> HuleEduAppUserProjection:
+    return HuleEduAppUserProjection(
+        user=user,
+        profile=UserProfile(
+            user_id=user.id,
+            first_name=None,
+            last_name=None,
+            display_name=None,
+            allow_remote_fallback=None,
+            inline_completion_provider=None,
+            locale="sv-SE",
+            created_at=datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc),
+            updated_at=datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc),
+        ),
+        realm_subject_id=subject,
     )
 
 
@@ -404,12 +441,13 @@ async def test_complete_formatter_replay_delegates_to_handler() -> None:
         replay_request=request,
         registry=FakeRegistry(),
         handler=handler,
-        user=user,
+        projection=_projection(user, subject="teacher-subject-1"),
     )
 
     assert isinstance(result, ConversionHubTranscriptFormatterReplayResponse)
     assert result.artifacts[0].artifact_key == "transcript_txt"
     assert handler.calls[0]["actor"] == user
+    assert handler.calls[0]["authenticated_huleedu_subject"] == "teacher-subject-1"
     assert handler.calls[0]["transcript_id"] == transcript_id
     assert handler.calls[0]["request"] == request
 

@@ -14,8 +14,9 @@
 import { apiPost } from "./client";
 import {
   createBrowserSirConvertGatewayClient,
+  SIR_CONVERT_TRANSCRIPT_ARTIFACT_KEY_BY_OUTPUT_ARTIFACT,
   type SirConvertTranscriptFormatterOutputArtifact,
-  type SirConvertTranscriptFormatterReplayArtifactManifest,
+  type SirConvertTranscriptFormatterReplayArtifactBlob,
   type SirConvertTranscriptFormatterReplayJobSpec,
   type SirConvertTranscriptFormatterReplayTerminalResult,
   type SirConvertTranscriptJob,
@@ -54,7 +55,12 @@ export type ConversionHubTranscriptFormatterReplayCompleteRequest = {
   status: "succeeded";
   requested_artifacts: SirConvertTranscriptFormatterOutputArtifact[];
   result: JsonRecord;
-  artifact_manifest: JsonRecord;
+  artifact_payloads: {
+    artifact_key: ConversionHubTranscriptFormatterArtifactRef["artifact_key"];
+    content_type: string;
+    content_base64: string;
+    receipt: SirConvertTranscriptFormatterReplayArtifactBlob["receipt"];
+  }[];
 };
 
 export type ConversionHubTranscriptFormatterReplayResponse = {
@@ -83,7 +89,12 @@ export type TranscriptFormatterReplayCommandGatewayClient = {
     jobId: string;
     correlationId: string;
     requestedArtifacts: readonly SirConvertTranscriptFormatterOutputArtifact[];
-  }): Promise<SirConvertTranscriptFormatterReplayArtifactManifest>;
+  }): Promise<unknown>;
+  downloadTranscriptFormatterReplayArtifact(params: {
+    artifactKey: ConversionHubTranscriptFormatterArtifactRef["artifact_key"];
+    jobId: string;
+    correlationId: string;
+  }): Promise<SirConvertTranscriptFormatterReplayArtifactBlob>;
 };
 
 const TRANSCRIPT_REPLAY_ROOT = "/api/v1/apps/documents.conversion_hub/transcripts";
@@ -128,6 +139,47 @@ async function waitForTerminalReplayJob(params: {
     status = job.status;
   }
   return status;
+}
+
+function artifactKeyForRequestedArtifact(
+  artifact: SirConvertTranscriptFormatterOutputArtifact,
+): ConversionHubTranscriptFormatterArtifactRef["artifact_key"] {
+  return SIR_CONVERT_TRANSCRIPT_ARTIFACT_KEY_BY_OUTPUT_ARTIFACT[artifact];
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+  return globalThis.btoa(binary);
+}
+
+async function downloadReplayArtifactPayloads(params: {
+  gatewayClient: TranscriptFormatterReplayCommandGatewayClient;
+  correlationId: string;
+  jobId: string;
+  requestedArtifacts: readonly SirConvertTranscriptFormatterOutputArtifact[];
+}): Promise<ConversionHubTranscriptFormatterReplayCompleteRequest["artifact_payloads"]> {
+  const payloads = await Promise.all(
+    params.requestedArtifacts.map(async (requestedArtifact) => {
+      const artifactKey = artifactKeyForRequestedArtifact(requestedArtifact);
+      const artifact = await params.gatewayClient.downloadTranscriptFormatterReplayArtifact({
+        artifactKey,
+        correlationId: params.correlationId,
+        jobId: params.jobId,
+      });
+      return {
+        artifact_key: artifact.artifactKey,
+        content_type: artifact.contentType,
+        content_base64: arrayBufferToBase64(artifact.bytes),
+        receipt: artifact.receipt,
+      };
+    }),
+  );
+  return payloads;
 }
 
 export async function prepareConversionHubTranscriptFormatterReplay(params: {
@@ -186,8 +238,9 @@ export async function requestConversionHubTranscriptFormatterReplay(params: {
     correlationId: prepared.correlation_id,
     jobId: submitted.jobId,
   });
-  const manifest = await gatewayClient.listTranscriptFormatterReplayArtifacts({
+  const artifactPayloads = await downloadReplayArtifactPayloads({
     correlationId: prepared.correlation_id,
+    gatewayClient,
     jobId: submitted.jobId,
     requestedArtifacts,
   });
@@ -199,7 +252,7 @@ export async function requestConversionHubTranscriptFormatterReplay(params: {
       status: "succeeded",
       requested_artifacts: requestedArtifacts,
       result: result.rawResult,
-      artifact_manifest: manifest.rawManifest,
+      artifact_payloads: artifactPayloads,
     },
   });
 }

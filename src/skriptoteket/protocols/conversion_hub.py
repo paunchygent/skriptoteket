@@ -21,6 +21,8 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
     ConversionHubTranscriptFormatterArtifactKey,
+    ConversionHubTranscriptFormatterArtifactReceipt,
+    ConversionHubTranscriptFormatterArtifactReceiptPayload,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
     ConversionHubSavedTranscript,
@@ -106,3 +108,14 @@ class ConversionHubTranscriptFormatterArtifactRepositoryProtocol(Protocol):
         owner_user_id: UUID,
         transcript_id: UUID,
     ) -> None: ...
+
+
+class ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol(Protocol):
+    """Verify HuleEdu-signed authority receipts for formatter artifacts."""
+
+    def verify(
+        self,
+        *,
+        receipt: ConversionHubTranscriptFormatterArtifactReceipt,
+        now_ts: int,
+    ) -> ConversionHubTranscriptFormatterArtifactReceiptPayload: ...

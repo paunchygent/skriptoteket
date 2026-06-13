@@ -15,8 +15,9 @@ Keep this file updated so the next session can pick up work quickly.
   `ST-21-08` / `PR-0344` through `PR-0348` are implemented for progress/cancel
   parity, formatter authority sync, saved speaker overlays, overlay-aware
   formatter replay, download, and Mina filer save. `PR-0349` live proof now has
-  reviewed trust/upload/client-state, replay-prepare, and replay-complete
-  parser remediations; final Hemma live proof is still pending.
+  reviewed trust/upload/client-state, replay-prepare, replay-complete parser,
+  and artifact-payload remediations; reviewer plus final Hemma live proof are
+  still pending.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -101,15 +102,14 @@ Keep this file updated so the next session can pick up work quickly.
   `PR-0349` live proof remains the closeout gate.
 - `PR-0349` is implemented but not live-proof closed:
   `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`.
-  HuleEdu `TASK-0676` and Sir Convert `task-361` are approved and the focused
-  cross-repo trust-profile smoke is green. Historical blockers at
-  `20260613T153843Z` (identity), `20260613T181847Z` (client overlay state), and
-  `20260613T194529Z` (replay-prepare segment extraction) are remediated. Latest
-  proof `20260613T201049Z` reached successful Sir Convert replay and four
-  formatter artifacts, then `/formatter-replay/complete` returned 503 because
-  Skriptoteket rejected the valid Service API v2 `/result` envelope. Backend
-  remediation now requires `warnings`, status/metadata validity, and `job_id`
-  provenance; fresh live proof remains pending.
+  HuleEdu `TASK-0676` and Sir Convert `task-361` are approved. Historical
+  blockers at `20260613T153843Z`, `20260613T181847Z`, `20260613T194529Z`,
+  `20260613T201049Z`, and `20260613T203933Z` are remediated. Current
+  remediation removes browser self-attested manifests, requires HuleEdu-signed
+  artifact receipts, binds `receipt.sub` to the authenticated HuleEdu
+  projection subject, enforces byte budgets, and serves download/Mina-save from
+  persisted validated bytes only. Fresh live proof remains pending until
+  Gateway emits receipt headers or an accepted delegated fetch contract exists.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
@@ -156,23 +156,19 @@ Keep this file updated so the next session can pick up work quickly.
   shows upload/STT/save passed but `GET` then `PUT /speaker-overlays` both
   returned `overlay_count=0`, no replay requests were sent, and the replay
   button stayed disabled.
-- Current PR-0349 replay-prepare and replay-complete backend remediations: red
-  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py`
-  failed with `Transcript JSON must contain at least one segment.` before the
-  shared-contract patch; red
-  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py`
-  failed before the parser patch on valid Service API v2 envelope fields. Green
-  focused replay suites passed with 7 tests; earlier replay/save/API suite
-  passed with 22 tests and `pdm run typecheck` passed. Latest retained live
-  artifact `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T201049Z/`
-  shows replay complete returned 503 after Sir Convert replay success.
+- Current PR-0349 replay/artifact remediations: red evidence covered missing
+  segments, Service API v2 result-envelope parsing, direct backend artifact
+  download, browser self-consistent forged payloads, and second-review
+  `receipt.sub` mismatch risk. Green focused backend replay/artifact/API suites,
+  focused frontend Gateway payload tests, migration idempotency for
+  `e9a4b6c8d2f0`, `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, `pdm run docs-validate`, `pdm run handoff-validate`, and
+  `git diff --check` passed in this slice.
 ## How to Run
 ```bash
-pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts
-pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
+pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
+pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts
 pdm run fe-type-check
-pdm run fe-lint
-pdm run fe-build
 pdm run docs-validate
 pdm run handoff-validate
 git diff --check
@@ -190,6 +186,6 @@ git diff --check
   source audio, local re-transcription, browser-local formatting, or invented
   parallel transcript truth.
 ## Next Steps
-- Run the required reviewer pass for the replay-complete backend remediation,
-  then rerun `PR-0349` live proof on Hemma through progress, cancel feedback,
+- Run the required reviewer pass for the artifact-payload remediation, then
+  rerun `PR-0349` live proof on Hemma through progress, cancel feedback,
   durable save, speaker rename, replay export, download, and Mina filer save.

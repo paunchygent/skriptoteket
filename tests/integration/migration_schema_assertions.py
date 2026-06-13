@@ -644,6 +644,14 @@ async def _assert_e1f2_conversion_hub_transcript_formatter_artifacts(
     assert foreign_keys["conversion_hub_job_id"] == "conversion_hub_jobs"
 
 
+async def _assert_e9a4_conversion_hub_transcript_formatter_artifact_content(
+    engine: AsyncEngine,
+) -> None:
+    await _assert_e1f2_conversion_hub_transcript_formatter_artifacts(engine)
+    columns = await _column_map(engine, "conversion_hub_transcript_formatter_artifacts")
+    assert "content" in columns
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -697,6 +705,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "c4e8f0a2d6b9": _assert_c4e8_conversion_hub_saved_transcripts,
     "d7c9a1e4b6f2": _assert_d7c9_conversion_hub_transcript_speaker_overlays,
     "e1f2a3b4c5d6": _assert_e1f2_conversion_hub_transcript_formatter_artifacts,
+    "e9a4b6c8d2f0": _assert_e9a4_conversion_hub_transcript_formatter_artifact_content,
 }
 
 

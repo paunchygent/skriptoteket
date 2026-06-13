@@ -43,6 +43,7 @@ class ConversionHubTranscriptFormatterArtifactRecord(BaseModel):
     size_bytes: int = Field(ge=0)
     sha256: str = Field(min_length=1, max_length=128)
     retrieval_path: str = Field(min_length=1, max_length=500)
+    content: bytes | None = None
     created_at: datetime
     updated_at: datetime
 

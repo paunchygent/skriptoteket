@@ -746,3 +746,364 @@ No findings. The two prior `changes_requested` findings are resolved.
 This approval covers only the replay-complete backend parser remediation slice.
 Full PR-0349 still requires fresh authenticated Hemma live proof through
 formatter replay completion, artifact download, and Mina filer save.
+
+## Formatter Artifact Download RCA Implementation Response
+
+**Date:** 2026-06-13
+**Responder:** GPT-5 implementation specialist
+**Scope:** backend/frontend artifact-download contract after successful replay
+completion.
+
+### Decision
+
+implementation_ready_for_review
+
+### RCA
+
+The retained proof artifact
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T203933Z/`
+shows upload/STT/save, overlay persistence, replay prepare, Sir Convert replay,
+Sir Convert artifact listing, and Skriptoteket replay completion succeeded.
+The first failed request was Skriptoteket artifact download, which returned HTTP
+`503` with `Failed to download named v2 artifact.`
+
+The persisted artifact ref was produced by Sir Convert artifact listing through
+the HuleEdu Gateway browser-session owner context. Skriptoteket then tried to
+download the named artifact directly from the backend using only server-side
+transport identity. Sir Convert named artifact reads are owner-scoped; API-key
+transport is not owner provenance. The contract mismatch was producer/listing
+context versus consumer/download context, not a Playwright timeout.
+
+### Remediation
+
+- Replay completion now requires owner-session Gateway-downloaded artifact
+  payloads for the requested formatter artifacts.
+- The backend validates exact artifact keys, content type, byte size, and
+  SHA-256 against the producer manifest before persisting bytes with the refs.
+- Download and Mina-save actions read validated persisted bytes only; ref-only
+  rows fail closed.
+- No API-key identity fallback, self-signed identity, stringly artifact shim,
+  or broad exception path was added.
+
+### Verification
+
+- Red: the focused artifact-payload test initially reproduced the retained live
+  failure as `DomainError: Failed to download named v2 artifact.` while the
+  action still used direct backend producer download.
+- Green:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `25 passed`.
+- Green:
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- Green: `pdm run typecheck`, `pdm run lint`,
+  `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k e9a4b6c8d2f0 --override-ini addopts=''`,
+  `pdm run fe-type-check`, and `pdm run db-upgrade` passed.
+
+### Residual Risk
+
+This response still needs review and a fresh authenticated Hemma live proof
+through replay completion, artifact download, and Mina filer save before
+PR-0349 can close.
+
+## Independent Review: Formatter Artifact Download RCA Remediation
+
+**Date:** 2026-06-13
+**Reviewer:** GPT-5 independent review agent
+**Scope:** PR-0349 artifact-download remediation after retained live proof
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T203933Z/`.
+
+### Decision
+
+changes_requested
+
+### Findings
+
+1. **blocker - replay completion can persist forged formatter artifacts without
+   Gateway-signed producer authority.**
+   `src/skriptoteket/web/api/v1/apps_conversion_hub_transcript_saves.py:158`
+   accepts the browser-supplied replay completion request; the handler then
+   derives refs from `request.artifact_manifest` and validates
+   `request.artifact_payloads` against those refs in
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:164`
+   through
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:199`.
+   The byte validation at
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:280`
+   through
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:320`
+   proves only self-consistency between two browser-supplied structures. An
+   authenticated user can call `/formatter-replay/complete` directly with a
+   fabricated `sir_convert_job_id`, manifest, digest, and base64 body for their
+   saved transcript; Skriptoteket will create a successful local replay job and
+   download/save the fabricated bytes as producer-owned artifacts. That is a
+   deceptive-degradation/false-authority path for the export truth boundary.
+   Fix by binding persisted bytes to a Gateway/Sir Convert authority the
+   backend can verify, for example a Gateway-signed owner/job/artifact receipt
+   over artifact key, content type, size, digest, owner subject, and job id, or
+   a server-mediated owner-delegated Gateway fetch. Add a behavioral test that
+   manually posts a self-consistent but unsigned completion payload and proves
+   no job/artifact bytes are persisted.
+
+2. **high - artifact payload persistence has no explicit byte budget before
+   base64 decode and database storage.**
+   `src/skriptoteket/application/curated_apps/conversion_hub_transcript_replay.py:154`
+   through
+   `src/skriptoteket/application/curated_apps/conversion_hub_transcript_replay.py:166`
+   bounds the list length but not `content_base64`; the parsed manifest
+   `size_bytes` is only `ge=0` in
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay_parsing.py:111`.
+   The frontend downloads all requested artifacts and base64-encodes them before
+   completion at
+   `frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.ts:161`
+   through
+   `frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.ts:178`,
+   and the backend decodes/persists the resulting bytes at
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:306`.
+   This leaves the new request body, application memory, and
+   `LargeBinary` column unprotected by the repo's existing `VAULT_MAX_FILE_BYTES`
+   / `UPLOAD_MAX_FILE_BYTES` limits. Fix by adding an explicit per-artifact and
+   total replay artifact byte limit at the completion boundary before decode
+   and before persistence, with matching frontend fail-closed handling. Add
+   tests for over-limit manifest sizes and over-limit decoded payloads.
+
+3. **medium - the new trust-boundary validators lack fail-closed negative
+   tests.**
+   The new end-to-end payload test at
+   `tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py:57`
+   covers the happy path from replay completion to download and Mina save, and
+   existing action tests cover missing artifact records. They do not cover bad
+   base64, duplicate payload keys, missing payload keys, wrong content type,
+   size mismatch, checksum mismatch, or a ref-only row whose `content` is
+   `None`. Those are the exact conditions guarded by
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:280`
+   through
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:320`
+   and
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_artifact_actions.py:305`
+   through
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_artifact_actions.py:316`.
+   Add focused behavioral tests proving each malformed payload fails closed
+   without persisting records, and that legacy/ref-only rows cannot be downloaded
+   or saved.
+
+### Confirmed
+
+- The retained artifact supports the stated immediate RCA: `network.bounded.json`
+  in `20260613T203933Z` shows `/formatter-replay/complete` succeeded and the
+  subsequent formatter artifact download returned HTTP `503` with `Failed to
+  download named v2 artifact.`
+- The direct backend Sir Convert named-artifact client was removed from
+  download/save handlers; download and Mina-save now read persisted bytes only.
+- Migration/model/repository wiring for the nullable `content` column is
+  coherent, and the new revision is covered by the focused migration idempotency
+  lane.
+- No new `Any`, `cast(...)`, or `type: ignore` appeared in the reviewed diff.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `25 passed`.
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- `pdm run typecheck` passed.
+- `pdm run lint` passed.
+- `pdm run fe-type-check` passed.
+- `pdm run test tests/integration/test_migration_revision_coverage_idempotent.py -k e9a4b6c8d2f0 --override-ini addopts=''`
+  passed with `1 passed, 52 deselected`.
+- `pdm run fe-lint` passed.
+- `pdm run docs-validate` passed before this review update.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+
+### Required Remediation Proof
+
+- Add backend authority proof for artifact payloads that cannot be forged by a
+  browser caller, plus tests proving forged self-consistent completions fail.
+- Add explicit replay artifact payload size limits and over-limit tests.
+- Add malformed payload/ref-only negative tests.
+- Rerun focused backend/frontend tests, migration idempotency, typecheck, lint,
+  `fe-type-check`, `fe-lint`, `docs-validate`, `handoff-validate`, and
+  `git diff --check`.
+
+## Artifact Receipt Remediation Response
+
+**Date:** 2026-06-13
+**Responder:** GPT-5 implementation specialist
+**Scope:** same artifact-download remediation slice after
+`changes_requested`.
+
+### Response To Findings
+
+1. Replaced browser self-consistency with backend-verifiable authority.
+   `/formatter-replay/complete` no longer accepts `artifact_manifest`; artifact
+   refs are derived only from HuleEdu detached-RS256 artifact receipts verified
+   against the configured HuleEdu trust key set. Browser-forwarded bytes are
+   accepted only after the receipt job/key/content-type/size/SHA-256 binding
+   matches the payload.
+2. Added replay artifact byte budgets: 4 MiB per artifact and 8 MiB total.
+   `content_base64` is bounded at the Pydantic boundary before decode, and the
+   handler rejects decoded aggregate over-budget payloads before persistence.
+3. Added fail-closed tests for forged self-consistent payloads, bad base64,
+   duplicate and missing keys, content-type mismatch, size mismatch, checksum
+   mismatch, total byte-budget breach, overlong base64 input, and ref-only
+   `content=None` rows.
+
+### Verification
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py -k browser_self_consistent`
+  failed before the receipt patch because the forged self-consistent browser
+  payload persisted.
+- Green:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `32 passed`.
+- Green:
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- Green: `pdm run fe-gen-api-types`, `pdm run typecheck`,
+  `pdm run fe-type-check`, and `pdm run lint` passed.
+
+### Residual Risk
+
+The code now fails closed without HuleEdu-signed artifact receipts. Fresh live
+proof remains blocked until HuleEdu Gateway emits the receipt headers on named
+artifact downloads, or an accepted HuleEdu-owned delegated artifact-fetch
+contract is implemented instead.
+
+## Independent Re-Review: Artifact Receipt Remediation
+
+**Date:** 2026-06-13
+**Reviewer:** GPT-5 independent reviewer
+**Decision:** changes_requested
+
+### Findings
+
+1. **high - signed artifact receipts are not bound to the authenticated
+   HuleEdu subject before persistence.**
+   The new receipt payload includes an owner-scoped `sub` claim at
+   `src/skriptoteket/application/curated_apps/conversion_hub_transcript_replay.py:218`,
+   but `/formatter-replay/complete` still receives only a local `User` via
+   `require_app_user_api` at
+   `src/skriptoteket/web/api/v1/apps_conversion_hub_transcript_saves.py:168`.
+   That dependency has already discarded the HuleEdu projection context, and
+   local `User` explicitly does not carry realm subjects
+   (`src/skriptoteket/domain/identity/models.py:74`). The completion handler
+   verifies receipt signature, artifact key, and Sir Convert job id at
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:350`
+   through
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:355`,
+   then persists the bytes under `actor.id` at
+   `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay.py:212`.
+   A valid HuleEdu-signed receipt for subject A can therefore be replayed by
+   subject B against B's local transcript/job as long as the job id/key/payload
+   checks match. This keeps the fix from proving owner-scoped authority. Bind
+   each verified receipt to the current signed HuleEdu projection subject before
+   deriving artifact refs or persisting bytes, and add a fail-closed test where
+   the authenticated actor/projection subject differs from `receipt.sub`.
+
+### Confirmed
+
+- The self-attested browser manifest was removed from the completion contract;
+  artifact refs are derived from signed receipts.
+- Detached RS256 verification uses the configured HuleEdu trust-key set and
+  rejects unknown key ids, malformed signatures, and bad payloads.
+- Browser-forwarded bytes are validated against the verified receipt's key,
+  content type, size, and SHA-256 before persistence.
+- Replay artifact budgets are present: 4 MiB per artifact and 8 MiB total.
+- Download and Mina-save handlers use persisted bytes only and fail closed for
+  ref-only `content=None` rows.
+- Migration/model/repository compatibility for nullable persisted artifact
+  content is coherent.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `32 passed`.
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- `pdm run test --override-ini addopts='' -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[e9a4b6c8d2f0]'`
+  passed with `1 passed`.
+- `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, `pdm run docs-validate`, `pdm run handoff-validate`, and
+  `git diff --check` passed.
+
+## Receipt Subject Binding Remediation Response
+
+**Date:** 2026-06-13
+**Responder:** GPT-5 implementation specialist
+**Scope:** same artifact receipt remediation slice after the second
+`changes_requested`.
+
+### Response To Finding
+
+- Bound artifact receipts to the authenticated HuleEdu projection subject.
+  `HuleEduAppUserProjection` now carries the resolved `realm_subject_id`, and
+  `/formatter-replay/complete` receives the full projection through
+  `require_app_user_projection_api` instead of only the local `User`.
+- The route still performs app access against the local `User`, then forwards
+  `projection.realm_subject_id` to the completion handler.
+- The completion handler verifies each receipt signature and then rejects any
+  receipt whose `sub` differs from the current projection subject before
+  deriving artifact refs or writing replay job/artifact bytes.
+- Added direct fail-closed coverage for a valid RS256 receipt belonging to a
+  different HuleEdu subject, asserting no persisted job/artifact side effects.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py -k different_huleedu_subject`
+  passed with `1 passed, 7 deselected`.
+- `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py -k complete_formatter_replay`
+  passed with `1 passed, 8 deselected`.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `33 passed`.
+- `pdm run test tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_dependencies_api.py tests/unit/web/test_profile_app_continuation_context_api.py`
+  passed with `38 passed`.
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, `pdm run docs-validate`, `pdm run handoff-validate`, and
+  `git diff --check` passed.
+
+## Independent Re-Review: Receipt Subject Binding
+
+**Date:** 2026-06-13
+**Reviewer:** GPT-5 independent reviewer
+**Decision:** approved
+
+### Findings
+
+No findings. The previous high-severity subject-binding finding is resolved.
+
+### Confirmed
+
+- `/formatter-replay/complete` now depends on
+  `require_app_user_projection_api`, keeps app access checks on
+  `projection.user`, and passes the verified `projection.realm_subject_id` into
+  replay completion.
+- `HuleEduAppUserProjection` carries `realm_subject_id` from the verified
+  projection key on both existing-projection and provisioning paths.
+- Replay completion verifies each detached RS256 receipt, rejects `receipt.sub`
+  mismatch before deriving artifact refs or opening the Unit of Work, and only
+  then validates/persists artifact bytes.
+- The prior confirmed areas still hold: no browser self-attested manifest in
+  the completion path, real HuleEdu trust-key RS256 verification, explicit 4 MiB
+  per-artifact and 8 MiB total budgets, persisted bytes only for download and
+  Mina-save, and ref-only `content=None` rows fail closed.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py -k different_huleedu_subject`
+  passed with `1 passed, 7 deselected`.
+- `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py -k complete_formatter_replay_delegates_to_handler`
+  passed with `1 passed, 8 deselected`.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `33 passed`.
+- `pdm run test tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_dependencies_api.py tests/unit/web/test_profile_app_continuation_context_api.py tests/unit/web/test_huleedu_identity_context_probe_api.py tests/unit/application/identity/test_bootstrap_projection_role_matrix.py tests/unit/application/identity/test_bootstrap_subject_export_schema.py`
+  passed with `63 passed`.
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts`
+  passed with `6 passed`.
+- `pdm run test --override-ini addopts='' -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[e9a4b6c8d2f0]'`
+  passed with `1 passed`.
+- `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, and `git diff --check` passed.

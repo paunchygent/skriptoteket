@@ -54,6 +54,7 @@ class HuleEduAppUserProjection(BaseModel):
 
     user: User
     profile: UserProfile
+    realm_subject_id: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -290,7 +291,11 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
             correlation_id=correlation_id,
             reason_code=reason_code,
         )
-        return HuleEduAppUserProjection(user=user, profile=profile)
+        return HuleEduAppUserProjection(
+            user=user,
+            profile=profile,
+            realm_subject_id=projection_key.subject_id,
+        )
 
     async def _provision_user_projection(
         self,
@@ -358,7 +363,11 @@ class HuleEduAppProjectionResolver(HuleEduAppProjectionResolverProtocol):
                     correlation_id=correlation_id,
                     reason_code="projection_provisioned",
                 )
-                return HuleEduAppUserProjection(user=user, profile=profile)
+                return HuleEduAppUserProjection(
+                    user=user,
+                    profile=profile,
+                    realm_subject_id=projection_key.subject_id,
+                )
         except _ProjectionAlreadyExists:
             return _ProvisioningProjectionConflict()
 

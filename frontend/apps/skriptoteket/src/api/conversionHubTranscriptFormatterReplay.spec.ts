@@ -7,7 +7,7 @@
  *
  * Relationships:
  *   - Exercises `conversionHubTranscriptFormatterReplay.ts`.
- *   - Uses a fake Gateway client instead of local formatter logic.
+ *   - Uses a Gateway client double only at the HuleEdu/Sir Convert boundary.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -69,6 +69,10 @@ function completedReplay(): Record<string, unknown> {
   };
 }
 
+function bytes(value: string): ArrayBuffer {
+  return new TextEncoder().encode(value).buffer;
+}
+
 describe("conversionHubTranscriptFormatterReplay", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -100,7 +104,26 @@ describe("conversionHubTranscriptFormatterReplay", () => {
     };
     const rawManifest = {
       api_version: "v2",
-      artifacts: [],
+      artifacts: [
+        {
+          artifact_key: "transcript_txt",
+          availability: "available",
+          content_type: "text/plain",
+          filename: "transcript_txt.txt",
+          size_bytes: 12,
+          sha256: "txt",
+          retrieval_path: "/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt",
+        },
+        {
+          artifact_key: "transcript_md",
+          availability: "available",
+          content_type: "text/markdown",
+          filename: "transcript_md.md",
+          size_bytes: 24,
+          sha256: "md",
+          retrieval_path: "/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_md",
+        },
+      ],
       job_id: "sir-replay-job-1",
       output_format: "transcript_bundle",
     };
@@ -121,6 +144,30 @@ describe("conversionHubTranscriptFormatterReplay", () => {
         },
         rawResult,
       }),
+      downloadTranscriptFormatterReplayArtifact: vi
+        .fn()
+        .mockResolvedValueOnce({
+          artifactKey: "transcript_txt",
+          bytes: bytes("txt-content"),
+          contentType: "text/plain; charset=utf-8",
+          receipt: {
+            key_id: "gateway-identity-rs256-v1",
+            payload: "receipt-payload-txt",
+            receipt_version: 1,
+            signature: "rs256=receipt-signature-txt",
+          },
+        })
+        .mockResolvedValueOnce({
+          artifactKey: "transcript_md",
+          bytes: bytes("md-content"),
+          contentType: "text/markdown; charset=utf-8",
+          receipt: {
+            key_id: "gateway-identity-rs256-v1",
+            payload: "receipt-payload-md",
+            receipt_version: 1,
+            signature: "rs256=receipt-signature-md",
+          },
+        }),
       getTranscriptJob: vi.fn(),
       listTranscriptFormatterReplayArtifacts: vi.fn().mockResolvedValue({
         api_version: "v2",
@@ -145,9 +192,25 @@ describe("conversionHubTranscriptFormatterReplay", () => {
           },
         ],
         formatterArtifacts: {
-          transcript_md: undefined,
+          transcript_md: {
+            artifact_key: "transcript_md",
+            availability: "available",
+            content_type: "text/markdown",
+            filename: "transcript_md.md",
+            size_bytes: 24,
+            sha256: "md",
+            retrieval_path: "/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_md",
+          },
           transcript_srt: undefined,
-          transcript_txt: undefined,
+          transcript_txt: {
+            artifact_key: "transcript_txt",
+            availability: "available",
+            content_type: "text/plain",
+            filename: "transcript_txt.txt",
+            size_bytes: 12,
+            sha256: "txt",
+            retrieval_path: "/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt",
+          },
           transcript_vtt: undefined,
         },
         job_id: "sir-replay-job-1",
@@ -174,6 +237,16 @@ describe("conversionHubTranscriptFormatterReplay", () => {
         requestedArtifacts: ["txt", "md"],
       }),
     );
+    expect(gatewayClient.downloadTranscriptFormatterReplayArtifact).toHaveBeenNthCalledWith(1, {
+      artifactKey: "transcript_txt",
+      correlationId: "corr-replay-1",
+      jobId: "sir-replay-job-1",
+    });
+    expect(gatewayClient.downloadTranscriptFormatterReplayArtifact).toHaveBeenNthCalledWith(2, {
+      artifactKey: "transcript_md",
+      correlationId: "corr-replay-1",
+      jobId: "sir-replay-job-1",
+    });
     expect(fetch).toHaveBeenNthCalledWith(
       1,
       "/api/v1/apps/documents.conversion_hub/transcripts/saved-transcript-1/formatter-replay/prepare",
@@ -184,9 +257,35 @@ describe("conversionHubTranscriptFormatterReplay", () => {
       "/api/v1/apps/documents.conversion_hub/transcripts/saved-transcript-1/formatter-replay/complete",
       expect.objectContaining({ method: "POST" }),
     );
+    const completeBody = JSON.parse(String(vi.mocked(fetch).mock.calls[1]?.[1]?.body));
+    expect(completeBody.artifact_payloads).toEqual([
+      {
+        artifact_key: "transcript_txt",
+        content_type: "text/plain; charset=utf-8",
+        content_base64: "dHh0LWNvbnRlbnQ=",
+        receipt: {
+          key_id: "gateway-identity-rs256-v1",
+          payload: "receipt-payload-txt",
+          receipt_version: 1,
+          signature: "rs256=receipt-signature-txt",
+        },
+      },
+      {
+        artifact_key: "transcript_md",
+        content_type: "text/markdown; charset=utf-8",
+        content_base64: "bWQtY29udGVudA==",
+        receipt: {
+          key_id: "gateway-identity-rs256-v1",
+          payload: "receipt-payload-md",
+          receipt_version: 1,
+          signature: "rs256=receipt-signature-md",
+        },
+      },
+    ]);
+    expect(gatewayClient.listTranscriptFormatterReplayArtifacts).not.toHaveBeenCalled();
   });
 
-  it("does not record completion when Gateway artifact parsing fails", async () => {
+  it("does not record completion when Gateway artifact receipt download fails", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(preparedReplay()));
     const gatewayClient = {
       getTranscriptFormatterReplayResult: vi.fn().mockResolvedValue({
@@ -206,9 +305,10 @@ describe("conversionHubTranscriptFormatterReplay", () => {
         rawResult: {},
       }),
       getTranscriptJob: vi.fn(),
-      listTranscriptFormatterReplayArtifacts: vi
+      downloadTranscriptFormatterReplayArtifact: vi
         .fn()
-        .mockRejectedValue(new Error("missing requested")),
+        .mockRejectedValue(new Error("Gateway artifact receipt is missing.")),
+      listTranscriptFormatterReplayArtifacts: vi.fn(),
       submitTranscriptFormatterReplay: vi.fn().mockResolvedValue({
         jobId: "sir-replay-job-1",
         status: "succeeded",
@@ -221,8 +321,9 @@ describe("conversionHubTranscriptFormatterReplay", () => {
         requestedArtifacts: ["txt", "md"],
         transcriptId: "saved-transcript-1",
       }),
-    ).rejects.toThrow("missing requested");
+    ).rejects.toThrow("Gateway artifact receipt is missing.");
 
     expect(fetch).toHaveBeenCalledTimes(1);
+    expect(gatewayClient.listTranscriptFormatterReplayArtifacts).not.toHaveBeenCalled();
   });
 });

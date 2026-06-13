@@ -49,13 +49,17 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_sa
     SaveConversionHubTranscriptHandler,
     UpdateConversionHubTranscriptSpeakerOverlaysHandler,
 )
+from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
 )
-from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_user_api,
+    require_app_user_projection_api,
+)
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
@@ -165,10 +169,16 @@ async def complete_conversion_hub_transcript_formatter_replay(
     handler: FromDishka[
         transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler
     ],
-    user: User = Depends(require_app_user_api),
+    projection: HuleEduAppUserProjection = Depends(require_app_user_projection_api),
 ) -> ConversionHubTranscriptFormatterReplayResponse:
+    user = projection.user
     _require_app_access(registry=registry, user=user)
-    return await handler.handle(actor=user, transcript_id=transcript_id, request=replay_request)
+    return await handler.handle(
+        actor=user,
+        authenticated_huleedu_subject=projection.realm_subject_id,
+        transcript_id=transcript_id,
+        request=replay_request,
+    )
 
 
 @router.get("/{transcript_id}/formatter-artifacts/{artifact_key}/download")

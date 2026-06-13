@@ -15,7 +15,6 @@ Relationships:
 from __future__ import annotations
 
 from hashlib import sha256
-from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.conversion_hub import (
@@ -50,9 +49,6 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.sir_convert_a_lot_v2 import (
-    SirConvertArtifactOutcomeV2,
-)
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
     VaultFileRepositoryProtocol,
@@ -68,16 +64,6 @@ _EXTENSION_BY_ARTIFACT_KEY = {
     ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_VTT: "vtt",
     ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_SRT: "srt",
 }
-
-
-class _NamedArtifactClientProtocol(Protocol):
-    async def download_named_artifact(
-        self,
-        job_id: str,
-        artifact_key: str,
-        *,
-        correlation_id: str | None,
-    ) -> SirConvertArtifactOutcomeV2: ...
 
 
 class _AuthorizedFormatterArtifact:
@@ -100,13 +86,11 @@ class _FormatterArtifactActionBase:
         jobs: ConversionHubJobRepositoryProtocol,
         transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
         artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
-        client: _NamedArtifactClientProtocol,
         uow: UnitOfWorkProtocol,
     ) -> None:
         self._jobs = jobs
         self._transcripts = transcripts
         self._artifacts = artifacts
-        self._client = client
         self._uow = uow
 
     async def _download_authorized_artifact(
@@ -117,22 +101,13 @@ class _FormatterArtifactActionBase:
         artifact_key: ConversionHubTranscriptFormatterArtifactKey,
         correlation_id: str | None,
     ) -> tuple[_AuthorizedFormatterArtifact, bytes]:
+        del correlation_id
         authorized = await self._load_authorized_artifact(
             actor=actor,
             transcript_id=transcript_id,
             artifact_key=artifact_key,
         )
-        outcome = await self._client.download_named_artifact(
-            authorized.record.sir_convert_job_id,
-            authorized.record.artifact_key.value,
-            correlation_id=correlation_id,
-        )
-        content = outcome.artifact.content
-        _validate_downloaded_artifact(
-            record=authorized.record,
-            content_type=outcome.artifact.content_type,
-            content=content,
-        )
+        content = _validated_persisted_content(record=authorized.record)
         return authorized, content
 
     async def _load_authorized_artifact(
@@ -197,7 +172,6 @@ class SaveConversionHubTranscriptFormatterArtifactHandler(_FormatterArtifactActi
         jobs: ConversionHubJobRepositoryProtocol,
         transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
         artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
-        client: _NamedArtifactClientProtocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -210,7 +184,6 @@ class SaveConversionHubTranscriptFormatterArtifactHandler(_FormatterArtifactActi
             jobs=jobs,
             transcripts=transcripts,
             artifacts=artifacts,
-            client=client,
             uow=uow,
         )
         self._vault_files = vault_files
@@ -329,7 +302,21 @@ def _validate_replay_provenance(
         raise validation_error("Replay artifact reference is not downloadable.")
 
 
-def _validate_downloaded_artifact(
+def _validated_persisted_content(
+    *,
+    record: ConversionHubTranscriptFormatterArtifactRecord,
+) -> bytes:
+    if record.content is None:
+        raise validation_error("Replay artifact reference is not downloadable.")
+    _validate_artifact_content(
+        record=record,
+        content_type=record.content_type,
+        content=record.content,
+    )
+    return record.content
+
+
+def _validate_artifact_content(
     *,
     record: ConversionHubTranscriptFormatterArtifactRecord,
     content_type: str,

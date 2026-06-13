@@ -206,6 +206,42 @@ describe("Sir Convert transcript formatter replay Gateway client", () => {
     ]);
   });
 
+  it("downloads replay formatter artifact bytes through the Gateway", async () => {
+    fetcher.mockResolvedValueOnce(
+      new Response("overlay-aware transcript\n", {
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "X-HuleEdu-Sir-Convert-Artifact-Receipt-Version": "1",
+          "X-HuleEdu-Sir-Convert-Artifact-Receipt": "receipt-payload",
+          "X-HuleEdu-Sir-Convert-Artifact-Receipt-Key-Id": "gateway-identity-rs256-v1",
+          "X-HuleEdu-Sir-Convert-Artifact-Receipt-Signature": "rs256=receipt-signature",
+        },
+        status: 200,
+      }),
+    );
+
+    const artifact = await client.downloadTranscriptFormatterReplayArtifact({
+      artifactKey: "transcript_txt",
+      correlationId: "corr-replay-1",
+      jobId: "job_replay_1",
+    });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      "/sir-convert/v2/convert/jobs/job_replay_1/artifacts/transcript_txt",
+      expect.objectContaining({ credentials: "include", method: "GET" }),
+    );
+    expect(fetchHeaders(fetcher, 0).get("X-Correlation-ID")).toBe("corr-replay-1");
+    expect(artifact.artifactKey).toBe("transcript_txt");
+    expect(artifact.contentType).toBe("text/plain; charset=utf-8");
+    expect(artifact.receipt).toEqual({
+      key_id: "gateway-identity-rs256-v1",
+      payload: "receipt-payload",
+      receipt_version: 1,
+      signature: "rs256=receipt-signature",
+    });
+    expect(new TextDecoder().decode(artifact.bytes)).toBe("overlay-aware transcript\n");
+  });
+
   it("rejects replay manifests with transcript_json or missing requested artifacts", async () => {
     fetcher.mockResolvedValueOnce(
       jsonResponse({

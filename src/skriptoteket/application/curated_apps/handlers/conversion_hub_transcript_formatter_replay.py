@@ -11,6 +11,8 @@ Relationships:
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
 import json
 from uuid import UUID
@@ -25,7 +27,12 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
     ConversionHubTranscriptFormatterArtifactRecord,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+    TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES,
+    TRANSCRIPT_FORMATTER_REPLAY_TOTAL_ARTIFACT_MAX_BYTES,
     ConversionHubTranscriptFormatterArtifactFormat,
+    ConversionHubTranscriptFormatterArtifactKey,
+    ConversionHubTranscriptFormatterArtifactReceiptPayload,
+    ConversionHubTranscriptFormatterArtifactRef,
     ConversionHubTranscriptFormatterReplayCompleteRequest,
     ConversionHubTranscriptFormatterReplayConversion,
     ConversionHubTranscriptFormatterReplayJobSpec,
@@ -53,6 +60,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import (
     ConversionHubJobRepositoryProtocol,
     ConversionHubSavedTranscriptRepositoryProtocol,
+    ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol,
     ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
     ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
 )
@@ -62,6 +70,20 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 _REPLAY_CONTENT_TYPE = "application/json"
 _IDEMPOTENCY_PREFIX = "idem_skriptoteket_transcript_replay_"
 _CORRELATION_PREFIX = "corr_skriptoteket_transcript_replay_"
+_REQUESTED_ARTIFACT_BY_KEY = {
+    ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT: (
+        ConversionHubTranscriptFormatterArtifactFormat.TXT
+    ),
+    ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_MD: (
+        ConversionHubTranscriptFormatterArtifactFormat.MD
+    ),
+    ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_VTT: (
+        ConversionHubTranscriptFormatterArtifactFormat.VTT
+    ),
+    ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_SRT: (
+        ConversionHubTranscriptFormatterArtifactFormat.SRT
+    ),
+}
 
 
 class PrepareConversionHubTranscriptFormatterReplayHandler:
@@ -139,6 +161,7 @@ class CompleteConversionHubTranscriptFormatterReplayHandler:
         jobs: ConversionHubJobRepositoryProtocol,
         transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
         artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+        receipt_verifier: ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -146,6 +169,7 @@ class CompleteConversionHubTranscriptFormatterReplayHandler:
         self._jobs = jobs
         self._transcripts = transcripts
         self._artifacts = artifacts
+        self._receipt_verifier = receipt_verifier
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
@@ -154,6 +178,7 @@ class CompleteConversionHubTranscriptFormatterReplayHandler:
         self,
         *,
         actor: User,
+        authenticated_huleedu_subject: str,
         transcript_id: UUID,
         request: ConversionHubTranscriptFormatterReplayCompleteRequest,
     ) -> ConversionHubTranscriptFormatterReplayResponse:
@@ -161,10 +186,19 @@ class CompleteConversionHubTranscriptFormatterReplayHandler:
             payload=request.result,
             sir_convert_job_id=request.sir_convert_job_id,
         )
-        artifact_refs = replay_parsing.parse_replay_artifact_refs(
-            payload=request.artifact_manifest,
-            sir_convert_job_id=request.sir_convert_job_id,
-            requested_artifacts=request.requested_artifacts,
+        verified_receipts = _verified_artifact_receipts(
+            request=request,
+            receipt_verifier=self._receipt_verifier,
+            authenticated_huleedu_subject=authenticated_huleedu_subject,
+            now_ts=int(self._clock.now().timestamp()),
+        )
+        artifact_refs = _artifact_refs_from_receipts(
+            receipts=verified_receipts,
+            request=request,
+        )
+        artifact_payloads = _validated_artifact_payloads(
+            artifact_refs=artifact_refs,
+            request=request,
         )
         async with self._uow:
             transcript = await self._load_transcript(actor=actor, transcript_id=transcript_id)
@@ -188,6 +222,7 @@ class CompleteConversionHubTranscriptFormatterReplayHandler:
                         size_bytes=artifact.size_bytes,
                         sha256=artifact.sha256,
                         retrieval_path=artifact.retrieval_path,
+                        content=artifact_payloads[artifact.artifact_key],
                         created_at=self._clock.now(),
                         updated_at=self._clock.now(),
                     )
@@ -266,6 +301,134 @@ def _validate_existing_replay_job(
         or job.input_filename != expected_input_filename
     ):
         raise validation_error("Replay job provenance does not match transcript exports.")
+
+
+def _validated_artifact_payloads(
+    *,
+    artifact_refs: list[ConversionHubTranscriptFormatterArtifactRef],
+    request: ConversionHubTranscriptFormatterReplayCompleteRequest,
+) -> dict[ConversionHubTranscriptFormatterArtifactKey, bytes]:
+    refs_by_key = {artifact.artifact_key: artifact for artifact in artifact_refs}
+    payloads: dict[ConversionHubTranscriptFormatterArtifactKey, bytes] = {}
+    total_bytes = 0
+    for payload in request.artifact_payloads:
+        if payload.artifact_key in payloads:
+            raise validation_error("Replay artifact payload keys are duplicated.")
+        ref = refs_by_key.get(payload.artifact_key)
+        if ref is None:
+            raise validation_error("Replay artifact payload is not in the producer manifest.")
+        content = _decode_artifact_payload(payload.content_base64)
+        if _content_type_base(payload.content_type) != _content_type_base(ref.content_type):
+            raise validation_error("Replay artifact payload content type is invalid.")
+        _validate_artifact_payload_content(ref=ref, content=content)
+        total_bytes += len(content)
+        if total_bytes > TRANSCRIPT_FORMATTER_REPLAY_TOTAL_ARTIFACT_MAX_BYTES:
+            raise validation_error("Replay artifact payloads exceed the total byte limit.")
+        payloads[payload.artifact_key] = content
+    missing = [
+        artifact.artifact_key for artifact in artifact_refs if artifact.artifact_key not in payloads
+    ]
+    if missing:
+        raise validation_error("Replay artifact payloads are incomplete.")
+    return payloads
+
+
+def _verified_artifact_receipts(
+    *,
+    request: ConversionHubTranscriptFormatterReplayCompleteRequest,
+    receipt_verifier: ConversionHubTranscriptFormatterArtifactReceiptVerifierProtocol,
+    authenticated_huleedu_subject: str,
+    now_ts: int,
+) -> dict[
+    ConversionHubTranscriptFormatterArtifactKey,
+    ConversionHubTranscriptFormatterArtifactReceiptPayload,
+]:
+    receipts: dict[
+        ConversionHubTranscriptFormatterArtifactKey,
+        ConversionHubTranscriptFormatterArtifactReceiptPayload,
+    ] = {}
+    for payload in request.artifact_payloads:
+        if payload.artifact_key in receipts:
+            raise validation_error("Replay artifact payload keys are duplicated.")
+        receipt = receipt_verifier.verify(receipt=payload.receipt, now_ts=now_ts)
+        if receipt.sub != authenticated_huleedu_subject:
+            raise validation_error("Replay artifact receipt subject does not match actor.")
+        if receipt.artifact_key != payload.artifact_key:
+            raise validation_error("Replay artifact receipt key does not match payload.")
+        if receipt.sir_convert_job_id != request.sir_convert_job_id:
+            raise validation_error("Replay artifact receipt job does not match replay.")
+        receipts[payload.artifact_key] = receipt
+    return receipts
+
+
+def _artifact_refs_from_receipts(
+    *,
+    receipts: dict[
+        ConversionHubTranscriptFormatterArtifactKey,
+        ConversionHubTranscriptFormatterArtifactReceiptPayload,
+    ],
+    request: ConversionHubTranscriptFormatterReplayCompleteRequest,
+) -> list[ConversionHubTranscriptFormatterArtifactRef]:
+    requested_keys = {
+        _artifact_key_for_requested_artifact(requested_artifact)
+        for requested_artifact in request.requested_artifacts
+    }
+    receipt_keys = set(receipts)
+    if receipt_keys != requested_keys:
+        raise validation_error("Replay artifact receipts do not match requested artifacts.")
+    artifact_refs: list[ConversionHubTranscriptFormatterArtifactRef] = []
+    for requested_artifact in request.requested_artifacts:
+        artifact_key = _artifact_key_for_requested_artifact(requested_artifact)
+        receipt = receipts[artifact_key]
+        artifact_refs.append(
+            ConversionHubTranscriptFormatterArtifactRef(
+                requested_artifact=requested_artifact,
+                artifact_key=artifact_key,
+                filename=receipt.filename,
+                content_type=receipt.content_type,
+                size_bytes=receipt.size_bytes,
+                sha256=receipt.sha256,
+                retrieval_path=receipt.retrieval_path,
+            )
+        )
+    return artifact_refs
+
+
+def _artifact_key_for_requested_artifact(
+    requested_artifact: ConversionHubTranscriptFormatterArtifactFormat,
+) -> ConversionHubTranscriptFormatterArtifactKey:
+    for artifact_key, artifact_format in _REQUESTED_ARTIFACT_BY_KEY.items():
+        if artifact_format == requested_artifact:
+            return artifact_key
+    raise validation_error("Requested replay artifact is unsupported.")
+
+
+def _decode_artifact_payload(content_base64: str) -> bytes:
+    try:
+        return base64.b64decode(content_base64, validate=True)
+    except binascii.Error as exc:
+        raise validation_error("Replay artifact payload is not valid base64.") from exc
+
+
+def _validate_artifact_payload_content(
+    *,
+    ref: ConversionHubTranscriptFormatterArtifactRef,
+    content: bytes,
+) -> None:
+    if len(content) != ref.size_bytes:
+        raise validation_error("Replay artifact payload size is invalid.")
+    if len(content) > TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES:
+        raise validation_error("Replay artifact payload exceeds the per-artifact byte limit.")
+    if hashlib.sha256(content).hexdigest() != _plain_sha256(ref.sha256):
+        raise validation_error("Replay artifact payload checksum is invalid.")
+
+
+def _plain_sha256(value: str) -> str:
+    return value.removeprefix("sha256:").lower()
+
+
+def _content_type_base(value: str) -> str:
+    return value.split(";", maxsplit=1)[0].strip().lower()
 
 
 def _build_replay_job_spec(

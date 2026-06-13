@@ -36,10 +36,6 @@ from skriptoteket.application.curated_apps.handlers import (
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
-from skriptoteket.protocols.sir_convert_a_lot_v2 import (
-    SirConvertArtifactOutcomeV2,
-    SirConvertArtifactV2,
-)
 from skriptoteket.protocols.vault import (
     VaultFileRepositoryProtocol,
     VaultStorageProtocol,
@@ -106,39 +102,6 @@ class InMemoryTranscriptFormatterArtifactRepository:
         }
 
 
-class FakeSirConvertClient:
-    """Named artifact downloader used by action-handler tests."""
-
-    def __init__(self, *, content: bytes, content_type: str = "text/plain") -> None:
-        self.calls: list[dict[str, object]] = []
-        self._content = content
-        self._content_type = content_type
-
-    async def download_named_artifact(
-        self,
-        job_id: str,
-        artifact_key: str,
-        *,
-        correlation_id: str | None,
-    ) -> SirConvertArtifactOutcomeV2:
-        self.calls.append(
-            {
-                "artifact_key": artifact_key,
-                "correlation_id": correlation_id,
-                "job_id": job_id,
-            }
-        )
-        return SirConvertArtifactOutcomeV2(
-            job_id=job_id,
-            status="succeeded",
-            artifact=SirConvertArtifactV2(
-                filename="upstream-transcript.txt",
-                content_type=self._content_type,
-                content=self._content,
-            ),
-        )
-
-
 def _settings(*, max_file_bytes: int = 1_000_000, max_total_bytes: int = 2_000_000) -> Settings:
     return Settings.model_construct(
         VAULT_MAX_FILE_BYTES=max_file_bytes,
@@ -169,8 +132,9 @@ def _artifact_record(
     owner_user_id: UUID,
     transcript_id: UUID,
     conversion_hub_job_id: UUID,
-    content: bytes,
+    content: bytes | None,
 ) -> ConversionHubTranscriptFormatterArtifactRecord:
+    actual_content = content or b""
     now = datetime(2026, 6, 13, 12, 1, tzinfo=timezone.utc)
     return ConversionHubTranscriptFormatterArtifactRecord(
         id=uuid4(),
@@ -182,9 +146,10 @@ def _artifact_record(
         artifact_key="transcript_txt",
         filename="producer-transcript.txt",
         content_type="text/plain",
-        size_bytes=len(content),
-        sha256=sha256(content).hexdigest(),
+        size_bytes=len(actual_content),
+        sha256=sha256(actual_content).hexdigest(),
         retrieval_path="/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt",
+        content=content,
         created_at=now,
         updated_at=now,
     )
@@ -193,7 +158,7 @@ def _artifact_record(
 async def _seed_provenance(
     *,
     actor_id: UUID,
-    content: bytes,
+    content: bytes | None,
 ) -> tuple[
     UUID,
     InMemoryConversionHubJobRepository,
@@ -236,12 +201,10 @@ async def test_download_uses_persisted_replay_artifact_ref_with_product_filename
         actor_id=actor.id,
         content=content,
     )
-    client = FakeSirConvertClient(content=content)
     handler = artifact_action_handlers.DownloadConversionHubTranscriptFormatterArtifactHandler(
         jobs=jobs,
         transcripts=transcripts,
         artifacts=artifacts,
-        client=client,
         uow=FakeUow(),
     )
 
@@ -255,14 +218,32 @@ async def test_download_uses_persisted_replay_artifact_ref_with_product_filename
     assert result.content == content
     assert result.content_type == "text/plain"
     assert result.filename == f"transkript-{transcript_id.hex[:8]}.txt"
-    assert result.filename != "upstream-transcript.txt"
-    assert client.calls == [
-        {
-            "artifact_key": "transcript_txt",
-            "correlation_id": "corr-download-1",
-            "job_id": "sir-replay-job-1",
-        }
-    ]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_download_rejects_ref_only_artifact_without_persisted_content() -> None:
+    actor = make_user()
+    transcript_id, jobs, transcripts, artifacts = await _seed_provenance(
+        actor_id=actor.id,
+        content=None,
+    )
+    handler = artifact_action_handlers.DownloadConversionHubTranscriptFormatterArtifactHandler(
+        jobs=jobs,
+        transcripts=transcripts,
+        artifacts=artifacts,
+        uow=FakeUow(),
+    )
+
+    with pytest.raises(DomainError) as exc:
+        await handler.handle(
+            actor=actor,
+            transcript_id=transcript_id,
+            artifact_key=ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT,
+            correlation_id="corr-download-1",
+        )
+
+    assert exc.value.code is ErrorCode.VALIDATION_ERROR
 
 
 @pytest.mark.unit
@@ -288,7 +269,6 @@ async def test_save_downloads_producer_artifact_and_saves_app_export_to_mina_fil
         jobs=jobs,
         transcripts=transcripts,
         artifacts=artifacts,
-        client=FakeSirConvertClient(content=content),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,
@@ -332,12 +312,10 @@ async def test_actions_fail_closed_without_persisted_replay_artifact_ref() -> No
         actor_id=actor.id,
         content=b"overlay-aware transcript\n",
     )
-    client = FakeSirConvertClient(content=b"overlay-aware transcript\n")
     handler = artifact_action_handlers.DownloadConversionHubTranscriptFormatterArtifactHandler(
         jobs=jobs,
         transcripts=transcripts,
         artifacts=InMemoryTranscriptFormatterArtifactRepository(),
-        client=client,
         uow=FakeUow(),
     )
 
@@ -350,7 +328,6 @@ async def test_actions_fail_closed_without_persisted_replay_artifact_ref() -> No
         )
 
     assert exc.value.code is ErrorCode.NOT_FOUND
-    assert client.calls == []
 
 
 @pytest.mark.unit
@@ -363,12 +340,10 @@ async def test_actions_fail_closed_for_other_owner_and_wrong_replay_job() -> Non
         actor_id=owner.id,
         content=content,
     )
-    client = FakeSirConvertClient(content=content)
     handler = artifact_action_handlers.DownloadConversionHubTranscriptFormatterArtifactHandler(
         jobs=jobs,
         transcripts=transcripts,
         artifacts=artifacts,
-        client=client,
         uow=FakeUow(),
     )
 
@@ -393,4 +368,3 @@ async def test_actions_fail_closed_for_other_owner_and_wrong_replay_job() -> Non
             correlation_id="corr-download-1",
         )
     assert provenance_exc.value.code is ErrorCode.VALIDATION_ERROR
-    assert client.calls == []

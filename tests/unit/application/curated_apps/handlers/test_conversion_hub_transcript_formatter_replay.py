@@ -1,24 +1,31 @@
-"""Domain purpose: prove replay requests; relationships: replay handlers and repos."""
+"""Tests for Conversion Hub transcript formatter replay handlers.
+
+Domain purpose:
+  Prove saved transcript JSON plus speaker overlays can prepare producer replay
+  requests and persist validated formatter artifact refs.
+
+Relationships:
+  - Exercises `conversion_hub_transcript_formatter_replay` handlers.
+  - Shares in-memory repository fixtures with transcript save tests.
+"""
 
 from __future__ import annotations
 
+import base64
+import json
 from datetime import datetime, timezone
+from hashlib import sha256
 from uuid import UUID, uuid4
 
 import pytest
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from skriptoteket.application.curated_apps.conversion_hub import (
-    ConversionHubJob,
-    ConversionHubJobStatus,
-    ConversionHubOutputFormatV2,
-    ConversionHubSourceFormatV2,
-)
 from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_actions import (
     ConversionHubTranscriptFormatterArtifactRecord,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
     ConversionHubTranscriptFormatterArtifactKey,
-    ConversionHubTranscriptFormatterReplayCompleteRequest,
     ConversionHubTranscriptFormatterReplayPrepareRequest,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
@@ -28,21 +35,30 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
 from skriptoteket.application.curated_apps.handlers import (
     conversion_hub_transcript_formatter_replay as transcript_replay_handlers,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.internal_identity_context import (
+    INTERNAL_IDENTITY_SIGNATURE_PREFIX,
+)
+from skriptoteket.infrastructure.security.huleedu_artifact_receipts import (
+    HuleEduArtifactReceiptVerifier,
+)
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_transcript_saves import (
-    FixedClock,
     FixedIdGenerator,
-    InMemoryConversionHubJobRepository,
     InMemorySavedTranscriptRepository,
     InMemoryTranscriptSpeakerOverlayRepository,
-    SequentialIdGenerator,
 )
 
 
 def _now() -> datetime:
     return datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc)
+
+
+_TXT_CONTENT = b"Anna: transcript text\n"
+_MD_CONTENT = b"## Transcript\n\nAnna: transcript text\n"
+_RECEIPT_KEY_ID = "gateway-identity-rs256-v1"
 
 
 class InMemoryTranscriptFormatterArtifactRepository:
@@ -88,6 +104,76 @@ class InMemoryTranscriptFormatterArtifactRepository:
             key: record
             for key, record in self.records.items()
             if not (record.owner_user_id == owner_user_id and record.transcript_id == transcript_id)
+        }
+
+
+class SignedArtifactReceiptAuthority:
+    """Issue and verify test receipts with the production verifier implementation."""
+
+    def __init__(self, *, now: datetime) -> None:
+        self._now = now
+        self._private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        public_key = self._private_key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        self.verifier = HuleEduArtifactReceiptVerifier(
+            Settings.model_construct(
+                HULEEDU_INTERNAL_IDENTITY_ISSUER="api_gateway_service",
+                HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID=_RECEIPT_KEY_ID,
+                HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY=public_key.decode("utf-8"),
+                HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH=None,
+                HULEEDU_INTERNAL_IDENTITY_TRUSTED_PUBLIC_KEYS_JSON=None,
+                HULEEDU_INTERNAL_IDENTITY_TTL_SECONDS=60,
+                HULEEDU_INTERNAL_IDENTITY_ALLOWED_CLOCK_SKEW_SECONDS=5,
+            )
+        )
+
+    def artifact_payload(
+        self,
+        *,
+        artifact_key: ConversionHubTranscriptFormatterArtifactKey,
+        filename: str,
+        content_type: str,
+        content: bytes,
+        job_id: str = "sir-replay-job-1",
+        subject: str = "teacher-subject-1",
+    ) -> dict[str, object]:
+        encoded_payload = _b64url_json(
+            {
+                "schema_version": "huleedu.sir_convert_artifact_receipt.v1",
+                "iss": "api_gateway_service",
+                "aud": "skriptoteket",
+                "sub": subject,
+                "source_app": "skriptoteket",
+                "active_app": "skriptoteket",
+                "sir_convert_job_id": job_id,
+                "artifact_key": artifact_key.value,
+                "filename": filename,
+                "content_type": content_type,
+                "size_bytes": len(content),
+                "sha256": sha256(content).hexdigest(),
+                "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/{artifact_key.value}",
+                "iat": int(self._now.timestamp()),
+                "exp": int(self._now.timestamp()) + 30,
+                "jti": f"receipt-{artifact_key.value}",
+            }
+        )
+        signature = self._private_key.sign(
+            encoded_payload.encode("ascii"),
+            padding.PKCS1v15(),
+            hashes.SHA256(),
+        )
+        return {
+            "artifact_key": artifact_key.value,
+            "content_type": f"{content_type}; charset=utf-8",
+            "content_base64": base64.b64encode(content).decode("ascii"),
+            "receipt": {
+                "receipt_version": 1,
+                "payload": encoded_payload,
+                "key_id": _RECEIPT_KEY_ID,
+                "signature": f"{INTERNAL_IDENTITY_SIGNATURE_PREFIX}{_b64url_bytes(signature)}",
+            },
         }
 
 
@@ -164,8 +250,8 @@ def _manifest(*, job_id: str = "sir-replay-job-1") -> dict[str, object]:
                 "availability": "available",
                 "content_type": "text/plain",
                 "filename": "transcript_txt.txt",
-                "size_bytes": 128,
-                "sha256": "a" * 64,
+                "size_bytes": len(_TXT_CONTENT),
+                "sha256": sha256(_TXT_CONTENT).hexdigest(),
                 "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/transcript_txt",
             },
             {
@@ -173,8 +259,8 @@ def _manifest(*, job_id: str = "sir-replay-job-1") -> dict[str, object]:
                 "availability": "available",
                 "content_type": "text/markdown",
                 "filename": "transcript_md.md",
-                "size_bytes": 256,
-                "sha256": "b" * 64,
+                "size_bytes": len(_MD_CONTENT),
+                "sha256": sha256(_MD_CONTENT).hexdigest(),
                 "retrieval_path": f"/v2/convert/jobs/{job_id}/artifacts/transcript_md",
             },
         ],
@@ -185,6 +271,34 @@ def _manifest_artifacts(manifest: dict[str, object]) -> list[object]:
     artifacts = manifest["artifacts"]
     assert isinstance(artifacts, list)
     return artifacts
+
+
+def _artifact_payloads(
+    receipt_authority: SignedArtifactReceiptAuthority,
+) -> list[dict[str, object]]:
+    return [
+        receipt_authority.artifact_payload(
+            artifact_key=ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT,
+            filename="transcript_txt.txt",
+            content_type="text/plain",
+            content=_TXT_CONTENT,
+        ),
+        receipt_authority.artifact_payload(
+            artifact_key=ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_MD,
+            filename="transcript_md.md",
+            content_type="text/markdown",
+            content=_MD_CONTENT,
+        ),
+    ]
+
+
+def _b64url_json(value: object) -> str:
+    encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    return _b64url_bytes(encoded.encode("utf-8"))
+
+
+def _b64url_bytes(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).decode("ascii").rstrip("=")
 
 
 def _result(*, job_id: str = "sir-replay-job-1") -> dict[str, object]:
@@ -320,177 +434,3 @@ async def test_prepare_replay_rejects_missing_overlay_without_canonical_label_fa
         )
 
     assert exc.value.code is ErrorCode.VALIDATION_ERROR
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_complete_replay_persists_local_job_and_returns_requested_artifact_refs() -> None:
-    actor = make_user()
-    transcript_id = uuid4()
-    job_id = uuid4()
-    transcripts = InMemorySavedTranscriptRepository()
-    transcripts.records[transcript_id] = _saved_transcript(
-        owner_user_id=actor.id,
-        transcript_id=transcript_id,
-    )
-    jobs = InMemoryConversionHubJobRepository()
-    artifacts = InMemoryTranscriptFormatterArtifactRepository()
-    artifact_txt_id = uuid4()
-    artifact_md_id = uuid4()
-    handler = transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
-        jobs=jobs,
-        transcripts=transcripts,
-        artifacts=artifacts,
-        uow=FakeUow(),
-        clock=FixedClock(_now()),
-        id_generator=SequentialIdGenerator([job_id, artifact_txt_id, artifact_md_id]),
-    )
-
-    result = await handler.handle(
-        actor=actor,
-        transcript_id=transcript_id,
-        request=ConversionHubTranscriptFormatterReplayCompleteRequest(
-            sir_convert_job_id="sir-replay-job-1",
-            correlation_id="corr-replay-1",
-            status="succeeded",
-            requested_artifacts=["txt", "md"],
-            result=_result(),
-            artifact_manifest=_manifest(),
-        ),
-    )
-
-    assert result.conversion_hub_job_id == job_id
-    assert [artifact.artifact_key for artifact in result.artifacts] == [
-        "transcript_txt",
-        "transcript_md",
-    ]
-    assert sorted(record.id for record in artifacts.records.values()) == sorted(
-        [artifact_txt_id, artifact_md_id]
-    )
-    persisted_txt = artifacts.records[
-        (actor.id, transcript_id, ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT)
-    ]
-    assert persisted_txt.conversion_hub_job_id == job_id
-    assert persisted_txt.sir_convert_job_id == "sir-replay-job-1"
-    assert persisted_txt.retrieval_path == (
-        "/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt"
-    )
-    assert jobs.jobs[job_id] == ConversionHubJob(
-        id=job_id,
-        owner_user_id=actor.id,
-        input_filename=f"saved-transcript-{transcript_id}.json",
-        source_format=ConversionHubSourceFormatV2.TRANSCRIPT_JSON,
-        output_format=ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE,
-        pdf_layout=None,
-        upstream_job_id="sir-replay-job-1",
-        status=ConversionHubJobStatus.SUCCEEDED,
-        correlation_id="corr-replay-1",
-        error_message=None,
-        created_at=_now(),
-        updated_at=_now(),
-    )
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_complete_replay_rejects_existing_replay_job_for_different_transcript() -> None:
-    actor = make_user()
-    transcript_a_id = uuid4()
-    transcript_b_id = uuid4()
-    existing_job_id = uuid4()
-    transcripts = InMemorySavedTranscriptRepository()
-    transcripts.records[transcript_a_id] = _saved_transcript(
-        owner_user_id=actor.id,
-        transcript_id=transcript_a_id,
-    )
-    transcripts.records[transcript_b_id] = _saved_transcript(
-        owner_user_id=actor.id,
-        transcript_id=transcript_b_id,
-    )
-    jobs = InMemoryConversionHubJobRepository()
-    jobs.jobs[existing_job_id] = ConversionHubJob(
-        id=existing_job_id,
-        owner_user_id=actor.id,
-        input_filename=f"saved-transcript-{transcript_a_id}.json",
-        source_format=ConversionHubSourceFormatV2.TRANSCRIPT_JSON,
-        output_format=ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE,
-        pdf_layout=None,
-        upstream_job_id="sir-replay-job-1",
-        status=ConversionHubJobStatus.SUCCEEDED,
-        correlation_id="corr-replay-a",
-        error_message=None,
-        created_at=_now(),
-        updated_at=_now(),
-    )
-    handler = transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
-        jobs=jobs,
-        transcripts=transcripts,
-        artifacts=InMemoryTranscriptFormatterArtifactRepository(),
-        uow=FakeUow(),
-        clock=FixedClock(_now()),
-        id_generator=FixedIdGenerator(uuid4()),
-    )
-
-    with pytest.raises(DomainError) as exc:
-        await handler.handle(
-            actor=actor,
-            transcript_id=transcript_b_id,
-            request=ConversionHubTranscriptFormatterReplayCompleteRequest(
-                sir_convert_job_id="sir-replay-job-1",
-                correlation_id="corr-replay-b",
-                status="succeeded",
-                requested_artifacts=["txt", "md"],
-                result=_result(),
-                artifact_manifest=_manifest(),
-            ),
-        )
-
-    assert exc.value.code is ErrorCode.VALIDATION_ERROR
-    assert len(jobs.jobs) == 1
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_complete_replay_rejects_unknown_or_missing_requested_artifacts() -> None:
-    actor = make_user()
-    transcript_id = uuid4()
-    transcripts = InMemorySavedTranscriptRepository()
-    transcripts.records[transcript_id] = _saved_transcript(
-        owner_user_id=actor.id,
-        transcript_id=transcript_id,
-    )
-    handler = transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
-        jobs=InMemoryConversionHubJobRepository(),
-        transcripts=transcripts,
-        artifacts=InMemoryTranscriptFormatterArtifactRepository(),
-        uow=FakeUow(),
-        clock=FixedClock(_now()),
-        id_generator=FixedIdGenerator(uuid4()),
-    )
-    malformed = _manifest()
-    malformed_artifacts = _manifest_artifacts(malformed)
-    malformed["artifacts"] = [
-        *malformed_artifacts,
-        {"artifact_key": "transcript_json", "availability": "available"},
-    ]
-    missing = _manifest()
-    missing["artifacts"] = [_manifest_artifacts(missing)[0]]
-
-    for manifest in [
-        malformed,
-        missing,
-    ]:
-        with pytest.raises(DomainError) as exc:
-            await handler.handle(
-                actor=actor,
-                transcript_id=transcript_id,
-                request=ConversionHubTranscriptFormatterReplayCompleteRequest(
-                    sir_convert_job_id="sir-replay-job-1",
-                    correlation_id="corr-replay-1",
-                    status="succeeded",
-                    requested_artifacts=["txt", "md"],
-                    result=_result(),
-                    artifact_manifest=manifest,
-                ),
-            )
-        assert exc.value.code is ErrorCode.SERVICE_UNAVAILABLE
