@@ -152,12 +152,9 @@ internal-identity verifier:
 - Download overlay-aware artifacts and save representative artifact to Mina
   filer: not proven in this PR-0349 run.
 
-The blocker is outside Skriptoteket product behavior: the HuleEdu/Sir Convert
-code-level trust-profile contract now smokes green, but the live Sir Convert
-runtime reached by the sanctioned local browser-session path still rejects the
-Gateway-signed identity context. Do not mark `PR-0349` or `ST-21-08` complete
-until the deployed/runtime trust lane is reconciled or a sanctioned Hemma/prod
-proof lane proves the same local changes.
+The signer/trust mismatch above is historical evidence only. Do not treat that
+earlier `401 auth_invalid_internal_identity` proof as the current `PR-0349`
+blocker.
 
 ### 2026-06-13 Post-Trust Upload/Admission RCA And Remediation
 
@@ -212,6 +209,70 @@ Focused validation:
 - `pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py`
   passed.
 - `git diff --check` passed.
+
+### 2026-06-13 Replay/Export Disabled RCA And Client Remediation
+
+Latest retained artifact:
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`.
+
+After the HuleEdu/Sir Convert trust-profile remediation landed, the sanctioned
+Hemma browser-session path progressed through upload, truthful running
+progress, cancel, durable transcript save, and saved-transcript readback. The
+new blocker was inside Skriptoteket client state, not in InternalIdentity,
+SHA/fingerprint alignment, or Sir Convert replay backend behavior:
+
+- `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/proof-summary.json`
+  shows transcript upload, cancel, progress, and save succeeded before the run
+  failed waiting for
+  `[data-test="transcript-formatter-replay-button"]` to become enabled.
+- `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/network.bounded.json`
+  records `GET .../speaker-overlays` with `overlay_count=0`, then `PUT
+  .../speaker-overlays` with `overlay_count=0`, and no
+  `/formatter-replay/prepare` or `/formatter-replay/complete` requests.
+- The retained `failure.png` shows the false-success UI state:
+  `Talarnamn sparade.` and `Exportfiler kan skapas.` were rendered while the
+  replay button stayed disabled and transcript segments still displayed
+  `SPEAKER_00` / `SPEAKER_01`.
+
+RCA:
+
+- `ConversionHubTranscriptHost.vue` set `savedTranscriptId` / `saveStatus`
+  before the initial `loadSpeakerOverlays()` request completed. That rendered
+  editable overlay inputs while the background `GET /speaker-overlays` was
+  still in flight.
+- If the teacher or retained proof typed names during that load, the later
+  empty `GET /speaker-overlays` response overwrote the newer browser-local
+  entries.
+- `handleSaveSpeakerOverlays()` then accepted an empty persisted overlay list
+  and still marked `speakerOverlayStatus='saved'`, which made the panel claim
+  export files could be created even though `canRequestFormatterReplay` stayed
+  false because `speakerOverlayEntries.length === 0`.
+
+Remediation in this slice:
+
+- `ConversionHubTranscriptHost.vue` now waits for the initial
+  `loadSpeakerOverlays()` readback before marking the transcript save complete
+  and rendering editable speaker inputs, so the background load cannot clobber
+  new local edits.
+- Empty `PUT /speaker-overlays` responses now leave
+  `speakerOverlayStatus='idle'` instead of false `saved` success.
+- `TranscriptFormatterReplayPanel.vue` now renders truthful idle copy:
+  `Spara talarnamnen innan exportfiler skapas.` whenever replay is still
+  disabled.
+- `ConversionHubTranscriptHost.spec.ts` adds DOM-first proof for the race,
+  empty-overlay false-success state, and replay enablement only after non-empty
+  persisted overlays.
+
+Focused validation:
+
+- Red:
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`
+  failed with 2 host-spec assertions before the patch:
+  overlay inputs rendered before readback completed, and empty overlay saves
+  still showed `Talarnamn sparade.`.
+- Green:
+  that same command passed with `12 passed`.
+- `pdm run fe-type-check` passed.
 
 ## Rollback Plan
 

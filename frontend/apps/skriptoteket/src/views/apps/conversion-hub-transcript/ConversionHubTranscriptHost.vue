@@ -188,8 +188,8 @@ async function handleSaveTranscript(): Promise<void> {
       }),
     });
     savedTranscriptId.value = saved.transcript_id;
-    saveStatus.value = "saved";
     await loadSpeakerOverlays(saved.transcript_id);
+    saveStatus.value = "saved";
   } catch {
     saveStatus.value = "failed";
     saveErrorMessage.value = "Transkriptet kunde inte sparas. Försök igen.";
@@ -242,7 +242,7 @@ async function handleSaveSpeakerOverlays(): Promise<void> {
       },
     });
     speakerOverlayEntries.value = response.overlays;
-    speakerOverlayStatus.value = "saved";
+    speakerOverlayStatus.value = response.overlays.length > 0 ? "saved" : "idle";
     resetFormatterReplayState();
   } catch {
     speakerOverlayStatus.value = "failed";

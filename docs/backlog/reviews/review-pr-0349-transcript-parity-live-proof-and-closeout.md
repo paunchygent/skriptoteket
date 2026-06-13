@@ -303,3 +303,114 @@ Remaining blocker:
 |--------|----------|-------------|
 | 1 | `REV-PR-0349` | Re-reviewed the remediated upload/admission slice, updated the retained review record, and marked it `approved` within the scoped boundary. |
 | 2 | Implementation | No production code changes were made by this reviewer. |
+| 3 | `REV-PR-0349` | Re-reviewed the replay/export disabled client-state remediation, recorded the retained artifact RCA check, and kept the follow-up decision `approved` while leaving full live parity blocked pending a fresh Hemma rerun. |
+
+## Follow-Up Client-State Review
+
+**Date:** 2026-06-13
+**Reviewer:** ruthless-code-reviewer
+**Scope:** follow-up review of the replay/export disabled client-state
+remediation inside `ConversionHubTranscriptHost.vue`,
+`TranscriptFormatterReplayPanel.vue`,
+`ConversionHubTranscriptHost.spec.ts`, the related transcript shell/mode
+frontend proof, and the refreshed PR/story/epic/handoff records.
+
+### Findings
+
+No findings.
+
+### Decision
+
+approved
+
+### Verification
+
+- Retained artifact check:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
+  confirms the RCA baseline for this slice: upload/STT/durable save succeeded,
+  `GET` then `PUT /speaker-overlays` both persisted `overlay_count=0`, no
+  formatter-replay request was sent, and the failure screenshot shows the false
+  `Talarnamn sparade.` / `Exportfiler kan skapas.` state while the replay
+  button remained disabled. This evidence rules out SHA/fingerprint drift,
+  internal-identity rejection, or a Sir Convert replay-backend failure as the
+  current blocker for this slice.
+- Red:
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`
+  failed with 2 assertions before the patch.
+- Green:
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts`
+  passed with `13 passed`.
+- `pdm run fe-type-check` passed.
+- `pdm run fe-lint` passed.
+- `pdm run docs-validate` passed.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+
+### Residual Risks
+
+- The earlier `401 auth_invalid_internal_identity` artifact is historical only,
+  but full `PR-0349` parity is still unproven until the authenticated Hemma
+  live proof is rerun successfully.
+- This follow-up approval covers the client-state remediation and its governed
+  docs updates, not the end-to-end live closeout itself.
+
+## Independent GPT-5.5 Remediation Review
+
+**Date:** 2026-06-13
+**Reviewer:** independent GPT-5.5 reviewer
+**Scope:** replay/export disabled remediation only, covering
+`ConversionHubTranscriptHost.vue`, `TranscriptFormatterReplayPanel.vue`,
+`ConversionHubTranscriptHost.spec.ts`, the retained
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
+evidence, and the refreshed PR/story/epic/handoff docs.
+
+### Decision
+
+approved
+
+### Findings
+
+No findings.
+
+### Review Notes
+
+- The code addresses the product root cause instead of masking the Playwright
+  proof: editable overlay inputs are gated behind completed initial readback,
+  empty persisted overlay responses stay `idle`, and replay copy now follows
+  the same `canRequest` truth as the disabled button.
+- The initial empty `GET /speaker-overlays` response can no longer clobber
+  teacher-entered overlay names through the observed UI path because the inputs
+  do not render until `loadSpeakerOverlays()` resolves and `saveStatus` becomes
+  `saved`.
+- Empty overlay saves remain truthful: an empty `PUT /speaker-overlays`
+  response does not mark names saved, does not enable replay, and does not
+  describe exports as ready.
+- Non-empty persisted overlays enable replay only after the returned overlay
+  list is stored and `speakerOverlayStatus` is `saved`.
+- The new host spec is behavioral: it observes DOM state, save/replay copy, and
+  the enabled/disabled replay control, and it would fail for the prior
+  readback race and false empty-save success.
+- The docs/RCA explicitly separate this blocker from the earlier
+  SHA/fingerprint/internal-identity failure and from Sir Convert replay backend
+  behavior. The retained `20260613T181847Z` network evidence shows
+  `overlay_count=0` for both overlay calls and no formatter-replay request.
+- No `Any`, `cast(...)`, `type ignore`, `@ts-ignore`, or `@ts-expect-error`
+  appears in the touched frontend/spec files. Existing UI catch boundaries
+  surface typed user-facing states and were not loosened by this remediation.
+- `.codex/handoff.md` is exactly 200 lines, which is compliant with the
+  repo's `<=200` rule.
+
+### Verification
+
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts`
+  passed with `13 passed`.
+- `pdm run fe-type-check` passed.
+- `pdm run docs-validate` passed.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+- `wc -l .codex/handoff.md` reported `200`.
+
+### Residual Risk
+
+Full PR-0349 remains blocked until fresh authenticated Hemma live proof passes
+through speaker rename, replay export, download, and Mina filer save.

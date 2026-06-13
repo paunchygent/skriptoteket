@@ -93,28 +93,33 @@ catch-all typed contract.
 - `PR-0347` is done: overlay-aware formatter replay client through HuleEdu
   Gateway.
 - `PR-0348` is done: overlay-aware download and Mina filer save actions.
-- `PR-0349` is blocked on live Sir Convert internal-identity trust: the
-  sanctioned local HuleEdu Gateway signer is rejected by the tunnel lane with
-  `auth_invalid_internal_identity` / `invalid_internal_identity_signature`
-  before a transcript job can be created.
+- `PR-0349` remains blocked pending a fresh live rerun, but the latest
+  retained blocker is now the client-side replay/export disabled state after
+  transcript save rather than the earlier trust-profile mismatch.
 
 ## Live Proof Status
 
-`PR-0349` retained sanitized evidence under
-`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T134340Z/`.
-The browser-session ceremony and local transcript lane are reachable, all
-HuleEdu shared PostgreSQL targets and the Skriptoteket dev DB are migrated to
-head, and Gateway reaches the canonical Sir Convert tunnel backend. The summary
-now records `blocker_kind=sir_convert_internal_identity_rejected` with
-`auth_invalid_internal_identity` /
-`invalid_internal_identity_signature`. The end-to-end parity acceptance criteria
-remain unproven because live Sir Convert rejects the local Gateway-signed
-submit before progress, cancel, save, overlay, replay, download, or Mina filer
-save actions can run.
+Historical proof
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
+captured the earlier local trust-lane `401 auth_invalid_internal_identity`
+failure and remains useful RCA evidence only.
 
-The story must stay open/blocked until HuleEdu/Sir Convert reconcile the
-signer/trusted-public-key lane for local authenticated proof or provide a
-sanctioned Hemma/prod browser proof lane for the same product path.
+Latest retained proof
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
+shows the sanctioned Hemma browser-session path now reaches upload, truthful
+running progress, cancel, durable transcript save, and saved-transcript
+readback. The blocker moved into Skriptoteket client state: `GET
+/speaker-overlays` returned `overlay_count=0`, the subsequent `PUT
+/speaker-overlays` also persisted `overlay_count=0`, no
+`/formatter-replay/prepare` or `/formatter-replay/complete` requests occurred,
+and the UI falsely rendered `Talarnamn sparade.` / `Exportfiler kan skapas.`
+while the replay button stayed disabled.
+
+The current remediation waits for initial overlay readback before exposing
+editable inputs, keeps empty overlay saves truthful, and aligns replay idle
+copy with the disabled button state. The story stays open/blocked until the
+authenticated live proof is rerun and retains successful overlay-aware replay,
+download, and Mina filer save evidence.
 
 ## Linked Artifacts
 

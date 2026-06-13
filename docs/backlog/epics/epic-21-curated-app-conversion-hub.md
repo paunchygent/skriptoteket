@@ -197,14 +197,17 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `ST-21-08` is blocked at closeout: `PR-0344` progress/cancel parity, `PR-0345`
   formatter authority sync, `PR-0346` saved speaker-name overlays, `PR-0347`
   overlay-aware formatter replay, and `PR-0348` download/Mina filer save
-  actions are implemented. `PR-0349` retained authenticated local proof up to
-  the transcript lane, DB migrations are verified at head, and Gateway reaches
-  the canonical Sir Convert tunnel, but live Sir Convert rejects the local
-  Gateway-signed submit with `auth_invalid_internal_identity` /
-  `invalid_internal_identity_signature` because the local HuleEdu signer
-  public-key fingerprint does not match the prod trusted public-key
-  fingerprint. The retained `PR-0349` summary now exposes
-  `blocker_kind=sir_convert_internal_identity_rejected` directly. The complete
-  progress/cancel/save/overlay/replay/download/Mina filer path is not accepted
-  until that HuleEdu/Sir Convert trust lane is reconciled or proved through a
-  sanctioned Hemma/prod browser lane.
+  actions are implemented. The earlier `PR-0349`
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
+  trust-lane `401 auth_invalid_internal_identity` failure is now historical
+  evidence only. Latest retained proof
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
+  shows the Hemma browser-session path now reaches upload, truthful progress,
+  cancel, and durable transcript save, but replay/export stayed blocked by a
+  Skriptoteket client race/false-success state: initial empty
+  `GET /speaker-overlays` readback could clobber fresh local names, empty
+  overlay saves still rendered `Talarnamn sparade.`, and the replay panel
+  claimed exports could be created while the button stayed disabled and no
+  replay requests were sent. The client remediation is implemented; the full
+  progress/cancel/save/overlay/replay/download/Mina filer path remains blocked
+  only until the authenticated live proof is rerun successfully.

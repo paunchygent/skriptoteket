@@ -101,7 +101,8 @@ function isSaveDisabled(artifact: ConversionHubTranscriptFormatterArtifactRef): 
         <template v-else-if="status === 'failed'">
           {{ errorMessage ?? "Exportfiler kunde inte skapas." }}
         </template>
-        <template v-else>Exportfiler kan skapas.</template>
+        <template v-else-if="canRequest">Exportfiler kan skapas.</template>
+        <template v-else>Spara talarnamnen innan exportfiler skapas.</template>
       </p>
     </div>
     <div class="flex flex-wrap items-center justify-between gap-3">

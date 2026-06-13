@@ -6,8 +6,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Do not paste large code blocks; link to files.
 - Never include secrets/tokens/passwords or personal data.
 - Keep this file under 200 lines.
-- When compacting this file, move non-session-vital history to
-  `.codex/long-term-memory/entries/` first.
+- When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
 - Date: 2026-06-13.
 - Branch: `codex/skriptoteket-pr-0349-trust-alignment`.
@@ -17,7 +16,8 @@ Keep this file updated so the next session can pick up work quickly.
   parity, formatter authority sync, saved speaker overlays, overlay-aware
   formatter replay, download, and Mina filer save. `PR-0349` live proof now has
   reviewed HuleEdu/Sir Convert trust alignment plus reviewed upload/admission
-  progress remediation; the final Hemma live proof is still pending.
+  progress remediation plus a focused replay/export disabled client-state
+  remediation; the final Hemma live proof is still pending.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -25,13 +25,10 @@ Keep this file updated so the next session can pick up work quickly.
   `PR-0325` live evidence exists; `PR-0326`, `PR-0327`, and `PR-0328` are
   implemented; `PR-0329` is done; `PR-0330` is canceled as a reviewed-AI phone
   strategy; `PR-0331` is ready with retained Hemma/public proof.
-- Prior PR-0310 through PR-0314 history:
-  `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`.
-- Prior PR-0325 through PR-0326 live-proof history:
-  `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`.
-- Prior PR-0326 through PR-0331 AI-facit history:
-  `.codex/long-term-memory/entries/session-2026-05-17-pr-0326-through-pr-0331-ai-facit-review-history.md`.
-- Prior PR-0332 through PR-0342 correction/transcript history:
+- Prior PR-0310 through PR-0342 history lives in
+  `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`,
+  `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`,
+  `.codex/long-term-memory/entries/session-2026-05-17-pr-0326-through-pr-0331-ai-facit-review-history.md`, and
   `.codex/long-term-memory/entries/session-2026-06-12-pr-0332-through-pr-0342-correction-transcript-history.md`.
 ## Status
 - Earlier ST-21-03 / PR-0325 through PR-0331 proof and contract history is
@@ -108,10 +105,14 @@ Keep this file updated so the next session can pick up work quickly.
   HuleEdu `TASK-0676` and Sir Convert `task-361` are approved and the focused
   cross-repo trust-profile smoke is green. The old retained identity failure
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
-  remains historical evidence only. The new upload/admission remediation adds
-  visible pre-job upload progress, local upload abort, fresh proof-upload file
-  names, and observed-network cancel-path classification; `REV-PR-0349` is
-  approved for this remediation slice but not for final live parity.
+  remains historical evidence only. Latest retained proof
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
+  showed the current blocker: initial empty `GET /speaker-overlays` readback
+  plus false `speakerOverlayStatus='saved'` left replay/export disabled while
+  the UI claimed names and exports were ready. The new client remediation keeps
+  overlay inputs hidden until initial readback finishes, treats empty overlay
+  saves as idle, and makes replay idle copy truthful; `REV-PR-0349` now needs a
+  follow-up review pass for this client-state slice before final live parity.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
@@ -139,9 +140,6 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run fe-lint`, `pdm run fe-build`, and `pdm run fe-gen-api-types`
   passed. The save-client spec pins raw canonical `transcript_json`
   preservation. `pdm run fe-dev` is running at `http://localhost:5173/`.
-  In-app browser transport closed during route navigation, and the SPA package
-  has no Playwright CLI binary, so no authenticated browser screenshot was
-  captured in this turn.
 - Current PR-0344 through PR-0348 proof details are retained in their PR/review
   docs. The key green gates were focused backend/frontend transcript tests,
   migration idempotency for `d7c9a1e4b6f2` and `e1f2a3b4c5d6`, OpenAPI/type
@@ -164,6 +162,14 @@ Keep this file updated so the next session can pick up work quickly.
   `46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992`;
   Sir Convert Task 361 focused suite passed with `39 passed`.
 - Current PR-0349 upload/admission proof gates: `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts` passed with 30 tests; `pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py` passed with 10 tests; `pdm run fe-type-check`, `pdm run docs-validate`, and `git diff --check` passed.
+- Current PR-0349 replay/export disabled remediation: red
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`
+  failed with 2 assertions before the patch; green that same command passed
+  with 12 tests. `pdm run fe-type-check` passed. Latest retained live artifact
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
+  shows upload/STT/save passed but `GET` then `PUT /speaker-overlays` both
+  returned `overlay_count=0`, no replay requests were sent, and the replay
+  button stayed disabled.
 ## How to Run
 ```bash
 pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts
@@ -188,6 +194,7 @@ git diff --check
   source audio, local re-transcription, browser-local formatting, or invented
   parallel transcript truth.
 ## Next Steps
-- Commit/push the reviewed upload/admission remediation, deploy Skriptoteket to
-  Hemma, then rerun `PR-0349` live proof through progress, cancel feedback,
-  durable save, speaker rename, replay export, download, and Mina filer save.
+- Run the required reviewer pass for the replay/export disabled client-state
+  remediation, then rerun `PR-0349` live proof on Hemma through progress,
+  cancel feedback, durable save, speaker rename, replay export, download, and
+  Mina filer save.
