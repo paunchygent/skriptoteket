@@ -197,11 +197,15 @@ describe("Conversion Hub transcript mode", () => {
     await flushPromises();
     await wrapper.vm.$nextTick();
 
-    expect(gatewayMocks.submitTranscriptJob).toHaveBeenCalledWith({
-      file: expect.any(File),
-      speakerControl: { mode: "known_speaker_count", speakerCount: 2 },
-      waitSeconds: 0,
-    });
+    expect(gatewayMocks.submitTranscriptJob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        abortSignal: expect.any(AbortSignal),
+        file: expect.any(File),
+        onUploadProgress: expect.any(Function),
+        speakerControl: { mode: "known_speaker_count", speakerCount: 2 },
+        waitSeconds: 0,
+      }),
+    );
     expect(wrapper.text()).toContain("Transkriptet är klart");
     expect(wrapper.text()).toContain("SPEAKER_00");
     expect(wrapper.text()).not.toContain("Sir Convert");

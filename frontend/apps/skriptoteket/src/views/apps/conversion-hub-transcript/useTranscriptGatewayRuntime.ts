@@ -19,6 +19,7 @@ import {
   type SirConvertTranscriptArtifactManifest,
   type SirConvertTranscriptJob,
   type SirConvertTranscriptSubmittedJob,
+  type SirConvertUploadProgress,
   type TranscriptJson,
   type TranscriptSpeakerControl,
   type TranscriptSubmitParams,
@@ -54,6 +55,15 @@ export type TranscriptAbortState = {
   message: string | null;
 };
 
+export type TranscriptUploadStatus = "idle" | "uploading" | "finalizing";
+
+export type TranscriptUploadState = {
+  status: TranscriptUploadStatus;
+  loadedBytes: number;
+  totalBytes: number | null;
+  percentComplete: number | null;
+};
+
 export type TranscriptRuntimeSubmission = {
   file: File;
   speakerControl: TranscriptSpeakerControl;
@@ -73,6 +83,12 @@ const ACTIVE_STATUSES = new Set<SirConvertJobStatus>([
 
 const DEFAULT_POLL_INTERVAL_MS = 2_000;
 const IDLE_ABORT_STATE: TranscriptAbortState = { status: "idle", message: null };
+const IDLE_UPLOAD_STATE: TranscriptUploadState = {
+  loadedBytes: 0,
+  percentComplete: null,
+  status: "idle",
+  totalBytes: null,
+};
 
 const DEFAULT_CLIENT: TranscriptGatewayClient = {
   async cancelTranscriptJob(params) {
@@ -140,6 +156,7 @@ function abortFailureState(error: unknown): TranscriptAbortState {
 export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOptions = {}) {
   const client = options.client ?? DEFAULT_CLIENT;
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
+  let activeUploadAbortController: AbortController | null = null;
   const activeRunId = ref(0);
   const status = ref<TranscriptRuntimeStatus>("idle");
   const errorMessage = ref<string | null>(null);
@@ -148,6 +165,7 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
   const lastCorrelationId = ref<string | null>(null);
   const lastJobId = ref<string | null>(null);
   const abortState = ref<TranscriptAbortState>(IDLE_ABORT_STATE);
+  const uploadState = ref<TranscriptUploadState>(IDLE_UPLOAD_STATE);
 
   function isCurrentRun(runId: number): boolean {
     return activeRunId.value === runId;
@@ -162,6 +180,21 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
     lastCorrelationId.value = null;
     lastJobId.value = null;
     abortState.value = IDLE_ABORT_STATE;
+    uploadState.value = IDLE_UPLOAD_STATE;
+    activeUploadAbortController?.abort();
+    activeUploadAbortController = null;
+  }
+
+  function setUploadProgress(progress: SirConvertUploadProgress): void {
+    const completed =
+      progress.totalBytes !== null && progress.totalBytes > 0 &&
+      progress.loadedBytes >= progress.totalBytes;
+    uploadState.value = {
+      loadedBytes: progress.loadedBytes,
+      percentComplete: progress.percentComplete,
+      status: completed ? "finalizing" : "uploading",
+      totalBytes: progress.totalBytes,
+    };
   }
 
   async function requestGatewayCancel(params: {
@@ -215,14 +248,27 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
     errorMessage.value = null;
     transcript.value = null;
     currentJob.value = null;
+    lastCorrelationId.value = null;
+    lastJobId.value = null;
     abortState.value = IDLE_ABORT_STATE;
+    uploadState.value = {
+      loadedBytes: 0,
+      percentComplete: submission.file.size > 0 ? 0 : null,
+      status: "uploading",
+      totalBytes: submission.file.size > 0 ? submission.file.size : null,
+    };
+    activeUploadAbortController = new AbortController();
     try {
       const submittedJob = await client.submitTranscriptJob({
+        abortSignal: activeUploadAbortController.signal,
         file: submission.file,
+        onUploadProgress: setUploadProgress,
         speakerControl: submission.speakerControl,
         waitSeconds: 0,
       });
       if (!isCurrentRun(runId)) return null;
+      activeUploadAbortController = null;
+      uploadState.value = IDLE_UPLOAD_STATE;
       currentJob.value = submittedJob;
       lastCorrelationId.value = submittedJob.requestContext.correlationId;
       lastJobId.value = submittedJob.jobId;
@@ -256,8 +302,18 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
       transcript.value = transcriptJson;
       status.value = "succeeded";
       return transcriptJson;
-    } catch {
-      if (isCurrentRun(runId) && status.value !== "canceled") {
+    } catch (error: unknown) {
+      activeUploadAbortController = null;
+      uploadState.value = IDLE_UPLOAD_STATE;
+      if (!isCurrentRun(runId)) return null;
+      if (
+        status.value === "canceled" &&
+        isSirConvertGatewayError(error) &&
+        error.code === "SIR_CONVERT_UPLOAD_ABORTED"
+      ) {
+        return null;
+      }
+      if (status.value !== "canceled") {
         status.value = "failed";
         errorMessage.value = "Det gick inte att skapa transkriptet. Kontrollera filen och försök igen.";
       }
@@ -274,10 +330,21 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
       message: "Avbryter transkriberingen.",
     };
     if (!correlationId || !jobId) {
-      abortState.value = {
-        status: "pending",
-        message: "Avbryter när transkriberingen har startat.",
-      };
+      if (activeUploadAbortController) {
+        activeUploadAbortController.abort();
+        activeUploadAbortController = null;
+        uploadState.value = IDLE_UPLOAD_STATE;
+        status.value = "canceled";
+        abortState.value = {
+          status: "accepted",
+          message: "Uppladdningen är avbruten.",
+        };
+      } else {
+        abortState.value = {
+          status: "pending",
+          message: "Avbryter när transkriberingen har startat.",
+        };
+      }
       return;
     }
     await requestGatewayCancel({ correlationId, jobId });
@@ -285,6 +352,8 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
 
   onBeforeUnmount(() => {
     activeRunId.value += 1;
+    activeUploadAbortController?.abort();
+    activeUploadAbortController = null;
   });
 
   return {
@@ -298,5 +367,6 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
     status,
     submitAndPoll,
     transcript,
+    uploadState,
   };
 }

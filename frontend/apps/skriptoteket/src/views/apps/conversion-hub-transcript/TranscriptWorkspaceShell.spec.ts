@@ -101,6 +101,42 @@ describe("TranscriptWorkspaceShell", () => {
     );
   });
 
+  it("renders upload progress before Sir Convert returns a job id", () => {
+    const wrapper = mount(TranscriptWorkspaceShell, {
+      props: {
+        abortState: { message: null, status: "idle" },
+        canEditSpeakerOverlays: false,
+        canSaveTranscript: false,
+        currentJob: null,
+        errorMessage: null,
+        runtimeStatus: "running",
+        saveErrorMessage: null,
+        saveStatus: "idle",
+        selectedTranscriptFile: null,
+        speakerOverlayEntries: [],
+        speakerOverlayErrorMessage: null,
+        speakerOverlayStatus: "idle",
+        transcript: null,
+        transcriptFileError: null,
+        uploadState: {
+          loadedBytes: 8 * 1024 * 1024,
+          percentComplete: 50,
+          status: "uploading",
+          totalBytes: 16 * 1024 * 1024,
+        },
+      },
+    });
+
+    expect(wrapper.get("[data-test='transcript-progress-phase']").text()).toContain(
+      "Laddar upp inspelningen.",
+    );
+    expect(wrapper.get("[data-test='transcript-progress-percent']").text()).toContain("50 %");
+    expect(wrapper.get("[data-test='transcript-upload-bytes']").text()).toContain(
+      "8.0 MB av 16.0 MB",
+    );
+    expect(wrapper.find("[data-test='transcript-progress-heartbeat']").exists()).toBe(false);
+  });
+
   it("renders abort pending and failure feedback without ending the running surface", () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {

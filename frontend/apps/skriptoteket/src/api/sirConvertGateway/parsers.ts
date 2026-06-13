@@ -342,7 +342,7 @@ export async function toGatewayError(response: Response): Promise<SirConvertGate
   const fallbackMessage = response.statusText || `Sir Convert request failed (${response.status})`;
   const contentType = response.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
-    const payload = (await response.json().catch(() => null)) as unknown;
+    const payload = await response.json().catch(() => null);
     if (isRecord(payload) && isRecord(payload.error)) {
       return new SirConvertGatewayError({
         status: response.status,

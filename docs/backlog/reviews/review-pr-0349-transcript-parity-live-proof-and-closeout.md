@@ -18,35 +18,41 @@ links:
 
 ## TL;DR
 
-The truthfulness remediation is now reviewable and correct. `PR-0349` and
-`ST-21-08` still remain blocked on the live HuleEdu/Sir Convert trust lane,
-but the retained `20260613T153843Z` artifact now reports the typed
-`sir_convert_internal_identity_rejected` failure as the primary blocker and the
-manifest lists only the evidence files that were actually captured.
+The upload/admission remediation is now reviewable and correct within its
+scoped approval boundary. The frontend surfaces pre-job multipart upload state,
+the RCA no longer confuses first-response latency with conversion processing,
+and the proof script now classifies `upload_abort` versus
+`sir_convert_job_cancel` from observed sanitized network evidence instead of a
+timeout heuristic.
 
 ## Problem Statement
 
 PR-0349 is the live parity proof and closeout gate for ST-21-08. Because the
-lane is blocked outside Skriptoteket production behavior, this review is not
-about shipping the full transcript parity flow. It is about whether the proof
-harness, retained artifacts, and closeout docs are truthful enough to approve
-the blocked state without accidentally implying that progress, cancel, save,
-overlay, replay, download, or Mina filer parity were proven.
+lane is still blocked outside Skriptoteket production behavior, this fresh
+review is not about approving full transcript parity. It is about whether the
+new upload/admission remediation, corrected RCA, cancel semantics, and updated
+proof-script truthfulness are strong enough to approve this narrower slice
+without overstating what the retained evidence proves.
 
 ## Proposed Solution
 
-The reviewed change set adds:
+The reviewed change set now adds:
 
 - a targeted Playwright proof entrypoint for the authenticated transcript parity
   lane;
 - shared sanitized evidence helpers for bounded network/console/summary output;
 - auth-helper hardening so the proof follows the HuleEdu browser-session
   ceremony and handoff link instead of product-local shortcuts;
+- a typed multipart upload transport plus runtime/UI upload-state rendering so
+  the transcript lane is no longer silent before Sir Convert returns a job id;
+- pre-job local upload abort semantics before a Gateway/Sir Convert job id
+  exists;
 - docs/handoff/epic/story updates that keep PR-0349 and ST-21-08 blocked and
   explicitly separate implemented slices from unproven live closeout.
 
-That overall shape is correct. The earlier retained-evidence truthfulness
-blockers have now been fixed, and the blocked-state wording remains honest.
+That overall shape is correct for this slice. The earlier cancel-path
+truthfulness blocker has now been fixed without broadening the approval scope
+beyond upload/admission remediation and proof-script truthfulness.
 
 ## Scope
 
@@ -69,16 +75,22 @@ Authority and adjacent governed items reviewed:
 
 Implementation and proof files reviewed:
 
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/uploadProgress.ts`
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/multipartUploadTransport.ts`
+- `scripts/_transcript_parity_cancel.py`
 - `scripts/playwright_pr_0349_transcript_parity_live.py`
-- `scripts/_transcript_parity_evidence.py`
-- `scripts/_playwright_auth.py`
-- `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
-- `tests/unit/scripts/test_playwright_script_surface.py`
-- `tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
-- `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/proof-summary.json`
-- `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/network.bounded.json`
-- `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/browser-console.bounded.json`
-- `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/failure.png`
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts`
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptTypes.ts`
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/parsers.ts`
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/index.ts`
+- `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.ts`
+- `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/transcriptProgressDisplay.ts`
+- `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.vue`
+- `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts`
+- `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`
 
 Out of scope for approval here:
 
@@ -107,9 +119,9 @@ Out of scope for approval here:
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Keep approval scoped to the blocked proof-harness/docs state only | The full parity acceptance criteria remain unproven by design. | [x] |
+| Keep approval scoped to the upload/admission remediation and proof-script truthfulness only | The full parity acceptance criteria remain unproven by design. | [x] |
 | Require HuleEdu browser-session ceremony and repo helpers for proof | Matches AGENTS.md, browser-automation rules, and the PR non-goals. | [x] |
-| Treat misleading retained evidence metadata as an approval blocker until fixed | This PR is a proof/closeout slice, so artifact truthfulness is the product. The earlier blockers are now resolved. | [x] |
+| Treat heuristic cancel-path classification as an approval blocker until fixed | This PR slice now claims truthful distinction between upload abort and Sir Convert job cancel, so the retained proof cannot guess the path from a timeout. The remediation now satisfies that requirement. | [x] |
 
 ## Review Checklist
 
@@ -117,11 +129,10 @@ Out of scope for approval here:
 - [x] Docs-as-code authority exists for ST-21-08 and PR-0349.
 - [x] The reviewed script uses the HuleEdu browser-session ceremony and repo helpers.
 - [x] No direct product-backend credential shortcut or direct Sir Convert browser proof was found.
-- [x] No new `Any`, `cast(...)`, or `# type: ignore` was introduced in the PR-0349 harness files reviewed here.
-- [x] The blocked-run truthfulness tests cover typed blocker promotion and captured-artifact manifests without `Any`, `cast(...)`, or `# type: ignore`.
-- [x] The new Playwright entrypoint is added to the script-surface allowlist.
-- [x] Story/epic/handoff docs keep PR-0349 and ST-21-08 blocked rather than falsely accepted.
-- [x] The retained proof summary is fully truthful about the blocker and the evidence actually captured.
+- [x] No `Any`, `cast(...)`, or `# type: ignore` appears in the newly touched frontend/runtime/spec files or in the updated proof script.
+- [x] The corrected RCA no longer overclaims 34-second conversion processing; it scopes the observed latency to first-response upload/admission.
+- [x] The new frontend/runtime tests prove visible pre-job upload state and local pre-id cancel behavior.
+- [x] The proof script truthfully distinguishes pre-job upload abort from Sir Convert job cancel from observed network evidence without relying on an arbitrary timeout.
 
 ## Verification
 
@@ -129,13 +140,12 @@ Commands run:
 
 ```bash
 git status --short
-git diff --stat
-git diff --name-only
 git diff --check
-pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py scripts/_transcript_parity_evidence.py scripts/_playwright_auth.py
 pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
-pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py
-pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py
+pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts
+pdm run fe-type-check
+pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py scripts/_transcript_parity_cancel.py
 ```
 
 Results:
@@ -143,32 +153,29 @@ Results:
 - The working tree includes broader ST-21-08 implementation and docs changes,
   so this review stayed intentionally bounded to the PR-0349 proof/closeout
   slice and its governed dependencies.
-- `git diff --check` passed before this review artifact was added.
-- `pdm run python -m py_compile ...` passed for the PR-0349 harness and helper
-  modules.
+- `git diff --check` passed.
 - `pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
-  passed: 2 tests.
-- `pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
-  passed: 6 tests.
-- `pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
-  passed: 8 tests.
-- The retained artifact directory exists and contains
-  `proof-summary.json`, `network.bounded.json`,
-  `browser-console.bounded.json`, and `failure.png`.
-- `failure.png` shows the authenticated transcript lane UI with the blocked
-  transcript-create failure surface visible.
-- `network.bounded.json` proves the sanctioned local app path reached
-  `POST /sir-convert/v2/convert/jobs?wait_seconds=0` and received HTTP `401`
-  with scrubbed `error_code=auth_invalid_internal_identity` and
-  `reason=invalid_internal_identity_signature`.
-- `proof-summary.json` now reports the typed
-  `sir_convert_internal_identity_rejected` object as the top-level `failure`
-  and keeps the generic Playwright timeout only as `raw_failure`.
-- The retained artifact manifest now lists only captured evidence:
-  `network.bounded.json`, `browser-console.bounded.json`, and `failure.png`.
-- I did not rerun the live PR-0349 browser script because the user asked for a
-  review of the current worktree changes and retained evidence, not a fresh
-  implementation/proof attempt.
+  passed: 4 tests.
+- `pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
+  passed: 10 tests.
+- `pdm run fe-test -- --run ...` passed: 4 files, 30 tests.
+- `pdm run fe-type-check` passed.
+- `pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py scripts/_transcript_parity_cancel.py`
+  passed.
+- The focused Vitest suite proves:
+  - the Gateway client surfaces typed upload progress through the multipart
+    transport;
+  - `useTranscriptGatewayRuntime` exposes pre-job upload state and resolves a
+    local pre-id cancel without sending `cancelTranscriptJob`;
+  - `TranscriptWorkspaceShell` renders upload-phase percent/byte feedback; and
+  - `ConversionHubTranscriptMode` passes `AbortSignal` and upload-progress
+    callback into transcript submission.
+- The focused script tests now prove both cancel classifications:
+  - no observed `/cancel` response remains `upload_abort`; and
+  - a delayed-but-observed `POST .../cancel` response is classified as
+    `sir_convert_job_cancel`.
+- I did not rerun the live PR-0349 browser proof, so this review does not
+  upgrade PR-0349 from blocked to parity-complete.
 
 ## Review Feedback
 
@@ -178,38 +185,33 @@ Results:
 
 ### Findings
 
-No findings. The two earlier truthfulness blockers were resolved in
-`scripts/_transcript_parity_evidence.py`, covered by
-`tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`, and
-confirmed in the retained
-`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
-artifact set.
+No findings. The earlier cancel-path truthfulness issue is resolved by
+`scripts/_transcript_parity_cancel.py`, the updated
+`scripts/playwright_pr_0349_transcript_parity_live.py` flow, and the new
+focused cases in `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`.
 
 ### Positive Checks
 
 - The docs/handoff state does not falsely claim parity acceptance. `PR-0349`
   and `ST-21-08` remain blocked in the PR doc, story doc, epic summary, and
   `.codex/handoff.md`.
-- The proof harness uses `login_via_auth_entry(...)` and stays on the
+- The corrected RCA in
+  `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`
+  no longer attributes the observed ~34-35 second latency to conversion
+  processing and now scopes it to first-response upload/admission latency.
+- The frontend/runtime path is well-typed and focused. I found no `Any`,
+  `cast(...)`, or `# type: ignore` in the newly touched frontend or proof
+  files.
+- The new frontend tests are behavior-first rather than implementation-detail
+  assertions and they prove the intended user-visible upload-state and pre-id
+  cancel outcomes.
+- The proof script now clicks cancel once, waits for the canceled UI surface,
+  and classifies the cancel path from observed sanitized network evidence
+  rather than from a timeout branch.
+- The proof harness still uses `login_via_auth_entry(...)` and stays on the
   sanctioned browser-session/Gateway path; I found no direct product-backend
   credential shortcut, no local session-cookie shortcut, and no direct Sir
   Convert browser lane.
-- The retained network artifact is sanitized and strong enough to prove the
-  immediate blocker: submit reaches the Gateway edge and is rejected before a
-  transcript job exists.
-- The retained `proof-summary.json` now leads with the typed
-  `sir_convert_internal_identity_rejected` failure and relegates the generic
-  timeout to `raw_failure`, which is the truthful blocked-run shape this slice
-  requires.
-- The retained artifact manifest matches the files that actually exist on disk
-  and no longer claims happy-path screenshots that were never captured.
-- The PR-0349 harness files reviewed here introduce no `Any`, `cast(...)`, or
-  `# type: ignore`.
-- The blocked-run truthfulness tests also introduce no `Any`, `cast(...)`, or
-  `# type: ignore`.
-- `tests/unit/scripts/test_playwright_script_surface.py` correctly adds the new
-  PR-0349 entrypoint to the allowlist, and the transcript docs guard stays
-  green.
 
 ### Suggestions (Optional)
 
@@ -217,9 +219,9 @@ artifact set.
 
 ### Decision Approvals
 
-- [x] Approval scope stays limited to blocked proof-harness/docs state
+- [x] Approval scope stays limited to the upload/admission remediation slice
 - [x] Authenticated proof uses the HuleEdu browser-session ceremony
-- [x] Retained evidence truth is strong enough for blocked closeout approval
+- [x] Proof-script cancel-path truth is strong enough for upload/admission remediation approval
 
 ## Implementation Response
 
@@ -287,14 +289,17 @@ Remaining blocker:
 
 ## Residual Risks
 
-- `PR-0349` remains product-blocked until the HuleEdu/Sir Convert signer trust
-  lane is reconciled or a sanctioned Hemma/prod browser proof lane is provided.
-- This approval is only for the truthfulness remediation and retained review
-  closeout quality, not for full ST-21-08 parity acceptance.
+- `PR-0349` still remains product-blocked until the HuleEdu/Sir Convert signer
+  trust lane is reconciled or a sanctioned Hemma/prod browser proof lane is
+  provided.
+- Even after this frontend remediation, full PR-0349 live parity must not be
+  approved until the live proof itself passes.
+- This approval is limited to the upload/admission remediation and proof-script
+  truthfulness slice. It does not approve full live parity.
 
 ## Changes Made
 
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | `REV-PR-0349` | Re-reviewed the truthfulness remediation, updated the retained review record, and marked it `approved`. |
+| 1 | `REV-PR-0349` | Re-reviewed the remediated upload/admission slice, updated the retained review record, and marked it `approved` within the scoped boundary. |
 | 2 | Implementation | No production code changes were made by this reviewer. |

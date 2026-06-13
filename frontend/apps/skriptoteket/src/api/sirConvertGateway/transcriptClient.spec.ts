@@ -14,6 +14,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSirConvertGatewayClient } from "./client";
 import { SirConvertGatewayError } from "./errors";
+import type { SirConvertMultipartUploadTransport } from "./multipartUploadTransport";
 
 function jsonResponse(payload: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
@@ -111,6 +112,51 @@ describe("Sir Convert transcript Gateway client", () => {
       },
       retention: { pin: false },
     });
+  });
+
+  it("reports transcript upload progress through the multipart upload transport", async () => {
+    const multipartUploadTransport = vi.fn<SirConvertMultipartUploadTransport>();
+    const progressEvents: { loadedBytes: number; percentComplete: number | null }[] = [];
+    multipartUploadTransport.mockImplementation(async (request) => {
+      request.onUploadProgress?.({
+        loadedBytes: 5,
+        percentComplete: 50,
+        totalBytes: 10,
+      });
+      return jsonResponse(
+        { job: { job_id: "job_transcript_1", status: "queued" } },
+        { headers: { "X-Idempotent-Replay": "false" } },
+      );
+    });
+    const uploadClient = createSirConvertGatewayClient({
+      ensureCsrfToken: async () => "csrf-token",
+      fetcher,
+      multipartUploadTransport,
+    });
+
+    const submitted = await uploadClient.submitTranscriptJob({
+      file: audioFile(),
+      onUploadProgress: (progress) => {
+        progressEvents.push({
+          loadedBytes: progress.loadedBytes,
+          percentComplete: progress.percentComplete,
+        });
+      },
+      speakerControl: { mode: "auto" },
+      waitSeconds: 0,
+    });
+
+    expect(submitted.jobId).toBe("job_transcript_1");
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(multipartUploadTransport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.any(FormData),
+        credentials: "include",
+        method: "POST",
+        url: "/sir-convert/v2/convert/jobs?wait_seconds=0",
+      }),
+    );
+    expect(progressEvents).toEqual([{ loadedBytes: 5, percentComplete: 50 }]);
   });
 
   it("polls status, reads result, lists transcript artifacts, downloads transcript_json, and cancels", async () => {

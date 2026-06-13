@@ -68,6 +68,7 @@ const {
   transcript,
   lastCorrelationId,
   lastJobId,
+  uploadState,
 } = useTranscriptGatewayRuntime();
 
 type TranscriptSaveStatus = "idle" | "saving" | "saved" | "failed";
@@ -376,6 +377,7 @@ async function handleSaveFormatterArtifact(
       :save-status="saveStatus"
       :transcript="transcript"
       :transcript-file-error="transcriptFileError"
+      :upload-state="uploadState"
       :can-edit-speaker-overlays="canEditSpeakerOverlays"
       :speaker-overlay-entries="speakerOverlayEntries"
       :speaker-overlay-error-message="speakerOverlayErrorMessage"

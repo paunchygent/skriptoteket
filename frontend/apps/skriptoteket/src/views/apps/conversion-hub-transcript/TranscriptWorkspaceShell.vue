@@ -19,10 +19,21 @@ import type { SirConvertTranscriptJob, TranscriptJson } from "../../../api/sirCo
 import type {
   TranscriptAbortState,
   TranscriptRuntimeStatus,
+  TranscriptUploadState,
 } from "./useTranscriptGatewayRuntime";
 import type { TranscriptSourceFileSelection } from "./useTranscriptSourceFile";
 import TranscriptFormatterReplayPanel from "./TranscriptFormatterReplayPanel.vue";
 import type { FormatterArtifactActionStates } from "./transcriptFormatterArtifactActions";
+import {
+  isUploading,
+  progressChunks,
+  progressDuration,
+  progressHeartbeat,
+  progressPercent,
+  transcriptProgressLabel,
+  uploadProgressBytes,
+  uploadProgressLabel,
+} from "./transcriptProgressDisplay";
 
 withDefaults(defineProps<{
   abortState: TranscriptAbortState;
@@ -44,12 +55,19 @@ withDefaults(defineProps<{
   speakerOverlayStatus: "idle" | "loading" | "saving" | "saved" | "failed";
   transcript: TranscriptJson | null;
   transcriptFileError: string | null;
+  uploadState?: TranscriptUploadState;
 }>(), {
   canRequestFormatterReplay: false,
   formatterArtifactActionStates: () => ({}),
   formatterReplayArtifacts: () => [],
   formatterReplayErrorMessage: null,
   formatterReplayStatus: "idle",
+  uploadState: () => ({
+    loadedBytes: 0,
+    percentComplete: null,
+    status: "idle",
+    totalBytes: null,
+  }),
 });
 
 const emit = defineEmits<{
@@ -62,81 +80,6 @@ const emit = defineEmits<{
   speakerOverlayChanged: [label: string, displayName: string];
   transcriptFileSelected: [file: File];
 }>();
-
-function transcriptProgressLabel(job: SirConvertTranscriptJob | null): string {
-  if (!job) return "Förbereder ljudet.";
-  if (job.status === "submitted" || job.status === "queued" || !job.progress.phase) {
-    return "Väntar på att starta.";
-  }
-  const phase = job.progress.phase;
-  if (phase === "starting" || phase === "normalizing_audio") {
-    return "Förbereder ljudet.";
-  }
-  if (phase === "probing_media") {
-    return "Kontrollerar inspelningen.";
-  }
-  if (phase === "transcribing") {
-    return "Skriver ut talet.";
-  }
-  if (phase === "diarizing") {
-    return "Identifierar talare.";
-  }
-  if (phase === "aligning_segments") {
-    return "Kontrollerar talare och text.";
-  }
-  if (phase === "packaging") {
-    return "Förbereder transkriptet.";
-  }
-  return "Bearbetar inspelningen.";
-}
-
-function progressPercent(job: SirConvertTranscriptJob | null): string | null {
-  const percent = job?.progress.percentComplete;
-  if (percent === null || percent === undefined) return null;
-  return `${Math.round(percent)} %`;
-}
-
-function formatDuration(seconds: number): string {
-  const rounded = Math.max(0, Math.round(seconds));
-  const minutes = Math.floor(rounded / 60);
-  const remainingSeconds = String(rounded % 60).padStart(2, "0");
-  return `${minutes}:${remainingSeconds}`;
-}
-
-function progressDuration(job: SirConvertTranscriptJob | null): string | null {
-  const processed = job?.progress.processedMediaSeconds;
-  const total = job?.progress.totalMediaSeconds;
-  if (processed === null || processed === undefined || total === null || total === undefined) {
-    return null;
-  }
-  return `${formatDuration(processed)} av ${formatDuration(total)}`;
-}
-
-function progressChunks(job: SirConvertTranscriptJob | null): string | null {
-  const currentChunkIndex = job?.progress.currentChunkIndex;
-  const totalChunks = job?.progress.totalChunks;
-  if (
-    currentChunkIndex === null ||
-    currentChunkIndex === undefined ||
-    totalChunks === null ||
-    totalChunks === undefined
-  ) {
-    return null;
-  }
-  return `Del ${currentChunkIndex + 1} av ${totalChunks}`;
-}
-
-function progressHeartbeat(job: SirConvertTranscriptJob | null): string | null {
-  const heartbeat = job?.progress.lastHeartbeatAt;
-  if (!heartbeat) return null;
-  const parsed = new Date(heartbeat);
-  if (!Number.isFinite(parsed.getTime())) return null;
-  return parsed.toLocaleTimeString("sv-SE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
 
 function firstFile(fileList: FileList | null): File | null {
   const [file] = Array.from(fileList ?? []);
@@ -232,20 +175,33 @@ function handleDrop(event: DragEvent): void {
       >
         <div class="grid max-w-sm gap-3">
           <p class="text-base font-medium leading-tight text-navy">
-            Transkriberar inspelningen.
+            <template v-if="!currentJob && isUploading(uploadState)">
+              Laddar upp inspelningen.
+            </template>
+            <template v-else>Transkriberar inspelningen.</template>
           </p>
           <p
             class="text-sm leading-snug text-navy/70"
             data-test="transcript-progress-phase"
           >
-            {{ transcriptProgressLabel(currentJob) }}
+            <template v-if="!currentJob && isUploading(uploadState)">
+              {{ uploadProgressLabel(uploadState) }}
+            </template>
+            <template v-else>{{ transcriptProgressLabel(currentJob) }}</template>
           </p>
           <p
-            v-if="progressPercent(currentJob)"
+            v-if="progressPercent(currentJob, uploadState)"
             class="text-xs font-semibold uppercase text-navy/65"
             data-test="transcript-progress-percent"
           >
-            {{ progressPercent(currentJob) }}
+            {{ progressPercent(currentJob, uploadState) }}
+          </p>
+          <p
+            v-if="!currentJob && uploadProgressBytes(uploadState)"
+            class="text-xs leading-snug text-navy/65"
+            data-test="transcript-upload-bytes"
+          >
+            {{ uploadProgressBytes(uploadState) }}
           </p>
           <p
             v-if="progressDuration(currentJob)"

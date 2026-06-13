@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -22,6 +23,7 @@ from playwright.sync_api import Page, expect, sync_playwright
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
+from scripts._transcript_parity_cancel import classify_cancel_path
 from scripts._transcript_parity_evidence import (
     CapturedResponse,
     capture_transcript_response,
@@ -73,6 +75,15 @@ def _run_dir(root: Path) -> Path:
     path.mkdir(parents=True, exist_ok=False)
     (path / "downloads").mkdir()
     return path
+
+
+def _copy_audio_for_submission(*, audio_path: Path, artifact_dir: Path, purpose: str) -> Path:
+    target = (
+        artifact_dir
+        / f"{purpose}-{datetime.now(tz=UTC).strftime('%Y%m%dT%H%M%S%fZ')}-{audio_path.name}"
+    )
+    shutil.copy2(audio_path, target)
+    return target
 
 
 def _open_transcript_lane(
@@ -149,25 +160,26 @@ def _capture_progress_snapshot(
 
 
 def _exercise_cancel(
-    page: Page, *, audio_path: Path, speaker_count: int, artifact_dir: Path
+    page: Page,
+    *,
+    audio_path: Path,
+    speaker_count: int,
+    artifact_dir: Path,
+    captured: list[CapturedResponse],
 ) -> dict[str, object]:
     _select_audio(page, audio_path=audio_path, speaker_count=speaker_count)
     _start_transcript(page)
     expect(page.locator('[data-test="transcript-cancel"]')).to_be_enabled(timeout=30_000)
-    with page.expect_response(
-        lambda r: "/cancel" in r.url and r.request.method == "POST", timeout=60_000
-    ) as info:
-        page.locator('[data-test="transcript-cancel"]').click()
-    response = info.value
-    payload = json_payload(response)
+    cancel_capture_start = len(captured)
+    page.locator('[data-test="transcript-cancel"]').click()
     expect(page.locator('[data-test="transcript-canceled-surface"]')).to_be_visible(timeout=60_000)
     page.screenshot(path=str(artifact_dir / "cancel-accepted.png"), full_page=True)
     if page.locator('[data-test="transcript-save-button"]').count() > 0:
         raise AssertionError("Canceled job exposed a transcript save action.")
+    cancel_evidence = classify_cancel_path(collect_network(captured[cancel_capture_start:]))
     page.locator('[data-test="transcript-reset"]').click()
     return {
-        "cancel_status": response.status,
-        "cancel_payload": scrub_payload(safe_path(response.url), payload),
+        **cancel_evidence,
         "canceled_surface_visible": True,
         "invalid_save_action_absent": True,
     }
@@ -347,6 +359,16 @@ def run(argv: Sequence[str] | None = None) -> None:
         raise SystemExit(f"Audio file does not exist: {audio_path}")
 
     artifact_dir = _run_dir(Path(args.artifact_root).resolve())
+    cancel_audio_path = _copy_audio_for_submission(
+        audio_path=audio_path,
+        artifact_dir=artifact_dir,
+        purpose="cancel",
+    )
+    main_audio_path = _copy_audio_for_submission(
+        audio_path=audio_path,
+        artifact_dir=artifact_dir,
+        purpose="main",
+    )
     captured: list[CapturedResponse] = []
     console_records: list[dict[str, str]] = []
     summary: dict[str, object] = {
@@ -357,6 +379,10 @@ def run(argv: Sequence[str] | None = None) -> None:
         "source_media": {
             "fixture": "sir-convert-stt-english-two-speaker",
             "size_bytes": audio_path.stat().st_size,
+            "proof_uploads": {
+                "cancel_filename": cancel_audio_path.name,
+                "main_filename": main_audio_path.name,
+            },
         },
         "artifacts": {"artifact_dir": str(artifact_dir)},
     }
@@ -387,11 +413,12 @@ def run(argv: Sequence[str] | None = None) -> None:
             )
             summary["cancel"] = _exercise_cancel(
                 page,
-                audio_path=audio_path,
+                audio_path=cancel_audio_path,
                 speaker_count=args.speaker_count,
                 artifact_dir=artifact_dir,
+                captured=captured,
             )
-            _select_audio(page, audio_path=audio_path, speaker_count=args.speaker_count)
+            _select_audio(page, audio_path=main_audio_path, speaker_count=args.speaker_count)
             _start_transcript(page)
             summary["progress_ui"] = _capture_progress_snapshot(
                 page,

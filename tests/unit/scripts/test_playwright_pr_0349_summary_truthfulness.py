@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts._transcript_parity_cancel import classify_cancel_path
 from scripts._transcript_parity_evidence import NetworkRecord
 from scripts.playwright_pr_0349_transcript_parity_live import (
     captured_artifact_summary,
@@ -33,6 +34,23 @@ def _internal_identity_record() -> NetworkRecord:
             "retryable": False,
             "reason": "invalid_internal_identity_signature",
         },
+    }
+
+
+def _network_record(
+    *,
+    method: str,
+    path: str,
+    status: int,
+    scrubbed_payload: object,
+) -> NetworkRecord:
+    return {
+        "observed_at": "2026-06-13T17:40:00Z",
+        "method": method,
+        "path": path,
+        "status": status,
+        "content_type": "application/json",
+        "scrubbed_payload": scrubbed_payload,
     }
 
 
@@ -91,3 +109,55 @@ def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) 
     assert "transcript-succeeded.png" not in str(summary)
     assert "replay-artifacts.png" not in str(summary)
     assert "complete.png" not in str(summary)
+
+
+def test_cancel_path_classifies_upload_abort_without_cancel_response() -> None:
+    evidence = classify_cancel_path(
+        [
+            _network_record(
+                method="POST",
+                path="/sir-convert/v2/convert/jobs?wait_seconds=0",
+                status=499,
+                scrubbed_payload=None,
+            )
+        ]
+    )
+
+    assert evidence["cancel_path"] == "upload_abort"
+    assert evidence["cancel_status"] is None
+    assert evidence["cancel_payload"] is None
+
+
+def test_cancel_path_uses_observed_delayed_job_cancel_response() -> None:
+    cancel_payload = {
+        "job_id": "job_transcript_1",
+        "status": "canceled",
+        "phase": "canceled",
+    }
+
+    evidence = classify_cancel_path(
+        [
+            _network_record(
+                method="POST",
+                path="/sir-convert/v2/convert/jobs?wait_seconds=0",
+                status=202,
+                scrubbed_payload={"job_id": "job_transcript_1", "status": "queued"},
+            ),
+            _network_record(
+                method="GET",
+                path="/sir-convert/v2/convert/jobs/job_transcript_1",
+                status=200,
+                scrubbed_payload={"job_id": "job_transcript_1", "status": "running"},
+            ),
+            _network_record(
+                method="POST",
+                path="/sir-convert/v2/convert/jobs/job_transcript_1/cancel",
+                status=202,
+                scrubbed_payload=cancel_payload,
+            ),
+        ]
+    )
+
+    assert evidence["cancel_path"] == "sir_convert_job_cancel"
+    assert evidence["cancel_status"] == 202
+    assert evidence["cancel_payload"] == cancel_payload

@@ -51,6 +51,10 @@ import {
   type CsrfTokenProvider,
 } from "./headers";
 import {
+  browserMultipartUploadTransport,
+  type SirConvertMultipartUploadTransport,
+} from "./multipartUploadTransport";
+import {
   createTranscriptFormatterReplayGatewayClient,
   type TranscriptFormatterReplayGatewayClient,
 } from "./transcriptReplayClient";
@@ -67,6 +71,7 @@ import type {
 export type SirConvertGatewayClientDependencies = {
   fetcher: typeof fetch;
   ensureCsrfToken: CsrfTokenProvider;
+  multipartUploadTransport?: SirConvertMultipartUploadTransport;
 };
 
 export type SirConvertGatewayClient = TranscriptFormatterReplayGatewayClient & {
@@ -234,20 +239,32 @@ export function createSirConvertGatewayClient(
       const formData = new FormData();
       formData.append("file", params.file, params.file.name);
       formData.append("job_spec", stableJsonStringify(requestContext.jobSpec));
-
-      const response = await dependencies.fetcher(
-        toSirConvertGatewayUrl(`/jobs?wait_seconds=${normalizeWaitSeconds(params.waitSeconds)}`),
-        {
-          method: "POST",
-          headers: await buildUnsafeHeaders({
-            correlationId: requestContext.correlationId,
-            idempotencyKey: requestContext.idempotencyKey,
-            ensureCsrfToken: dependencies.ensureCsrfToken,
-          }),
-          body: formData,
-          credentials: "include",
-        },
+      const url = toSirConvertGatewayUrl(
+        `/jobs?wait_seconds=${normalizeWaitSeconds(params.waitSeconds)}`,
       );
+      const headers = await buildUnsafeHeaders({
+        correlationId: requestContext.correlationId,
+        idempotencyKey: requestContext.idempotencyKey,
+        ensureCsrfToken: dependencies.ensureCsrfToken,
+      });
+
+      const response =
+        params.onUploadProgress || params.abortSignal
+          ? await (dependencies.multipartUploadTransport ?? browserMultipartUploadTransport)({
+              body: formData,
+              credentials: "include",
+              headers,
+              method: "POST",
+              onUploadProgress: params.onUploadProgress,
+              signal: params.abortSignal,
+              url,
+            })
+          : await dependencies.fetcher(url, {
+              method: "POST",
+              headers,
+              body: formData,
+              credentials: "include",
+            });
       const submitted = await readJsonOrThrow(response, parseTranscriptJob);
       return {
         ...submitted,
@@ -361,6 +378,7 @@ export function createBrowserSirConvertGatewayClient(): SirConvertGatewayClient 
   return createSirConvertGatewayClient({
     fetcher: (input, init) => fetch(input, init),
     ensureCsrfToken: () => auth.ensureCsrfToken(),
+    multipartUploadTransport: browserMultipartUploadTransport,
   });
 }
 

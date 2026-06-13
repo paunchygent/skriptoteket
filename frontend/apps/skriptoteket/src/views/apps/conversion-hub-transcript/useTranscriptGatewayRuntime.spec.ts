@@ -16,6 +16,10 @@ import { defineComponent, h } from "vue";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  SirConvertGatewayError,
+  type SirConvertTranscriptJobSpec,
+} from "../../../api/sirConvertGateway";
+import {
   type TranscriptGatewayRuntimeOptions,
   useTranscriptGatewayRuntime,
 } from "./useTranscriptGatewayRuntime";
@@ -27,6 +31,14 @@ type RuntimeWithAbort = ReturnType<typeof useTranscriptGatewayRuntime> & {
       status: string;
     };
   };
+  uploadState: {
+    value: {
+      loadedBytes: number;
+      percentComplete: number | null;
+      status: string;
+      totalBytes: number | null;
+    };
+  };
 };
 
 type GatewayRuntimeClient = NonNullable<TranscriptGatewayRuntimeOptions["client"]>;
@@ -35,7 +47,9 @@ function transcriptFile(): File {
   return new File(["lesson audio"], "lektion.m4a", { type: "audio/mp4" });
 }
 
-function transcriptJob(status: "running" | "succeeded" | "canceled") {
+function transcriptJob(
+  status: "running" | "succeeded" | "canceled",
+): Awaited<ReturnType<GatewayRuntimeClient["getTranscriptJob"]>> {
   return {
     jobId: "job_transcript_1",
     progress: {
@@ -51,7 +65,36 @@ function transcriptJob(status: "running" | "succeeded" | "canceled") {
       totalMediaSeconds: 120,
     },
     status,
-  } as Awaited<ReturnType<GatewayRuntimeClient["getTranscriptJob"]>>;
+  };
+}
+
+function transcriptJobSpec(): SirConvertTranscriptJobSpec {
+  return {
+    api_version: "v2",
+    audio_transcription_options: {
+      diarization: {
+        max_speakers: null,
+        min_speakers: null,
+        mode: "auto",
+        num_speakers: null,
+      },
+      language: "auto",
+      max_duration_seconds: 7200,
+      output_artifacts: ["json", "txt", "md", "vtt", "srt"],
+    },
+    conversion: { output_format: "transcript_bundle" },
+    execution: {
+      acceleration_policy: "gpu_required",
+      document_timeout_seconds: 7200,
+      priority: "normal",
+    },
+    retention: { pin: false },
+    source: {
+      filename: "lektion.m4a",
+      format: "audio",
+      kind: "upload",
+    },
+  };
 }
 
 function submittedTranscriptJob() {
@@ -61,7 +104,7 @@ function submittedTranscriptJob() {
     requestContext: {
       correlationId: "corr_transcript_1",
       idempotencyKey: "idem_transcript_1",
-      jobSpec: {} as never,
+      jobSpec: transcriptJobSpec(),
     },
   };
 }
@@ -103,6 +146,11 @@ function deferred<T>() {
     reject = promiseReject;
   });
   return { promise, reject, resolve };
+}
+
+function requireAbortSignal(signal: AbortSignal | null): AbortSignal {
+  if (!signal) throw new Error("Expected an abort signal.");
+  return signal;
 }
 
 function mountRuntime(client: GatewayRuntimeClient) {
@@ -157,11 +205,17 @@ describe("useTranscriptGatewayRuntime", () => {
     wrapper.unmount();
   });
 
-  it("does not report pre-id abort as accepted until Gateway cancel succeeds", async () => {
+  it("exposes upload progress before the Gateway returns a transcript job id", async () => {
     const client = runtimeClient();
     const submitted = deferred<Awaited<ReturnType<GatewayRuntimeClient["submitTranscriptJob"]>>>();
-    vi.mocked(client.submitTranscriptJob).mockReturnValueOnce(submitted.promise);
-    vi.mocked(client.cancelTranscriptJob).mockResolvedValueOnce(transcriptJob("canceled"));
+    vi.mocked(client.submitTranscriptJob).mockImplementationOnce(async (params) => {
+      params.onUploadProgress?.({
+        loadedBytes: 5,
+        percentComplete: 50,
+        totalBytes: 10,
+      });
+      return await submitted.promise;
+    });
     const { runtime, wrapper } = mountRuntime(client);
 
     const runPromise = runtime.submitAndPoll({
@@ -170,25 +224,63 @@ describe("useTranscriptGatewayRuntime", () => {
     });
     await flushPromises();
 
-    const cancelPromise = runtime.cancelTranscript();
-    await flushPromises();
-
     expect(runtime.status.value).toBe("running");
-    expect(runtime.abortState.value.status).toBe("pending");
-    expect(client.cancelTranscriptJob).not.toHaveBeenCalled();
-    expect(client.getTranscriptJob).not.toHaveBeenCalled();
+    expect(runtime.currentJob.value).toBeNull();
+    expect(runtime.uploadState.value).toMatchObject({
+      loadedBytes: 5,
+      percentComplete: 50,
+      status: "uploading",
+      totalBytes: 10,
+    });
 
-    submitted.resolve(submittedTranscriptJob());
-    await cancelPromise;
+    submitted.resolve({
+      ...transcriptJob("succeeded"),
+      idempotentReplay: false,
+      requestContext: submittedTranscriptJob().requestContext,
+    });
     await flushPromises();
 
-    expect(client.cancelTranscriptJob).toHaveBeenCalledWith({
-      correlationId: "corr_transcript_1",
-      jobId: "job_transcript_1",
+    await expect(runPromise).resolves.toMatchObject({ transcriptText: "Hej." });
+    expect(runtime.uploadState.value.status).toBe("idle");
+    wrapper.unmount();
+  });
+
+  it("aborts an upload before a Gateway job id exists", async () => {
+    const client = runtimeClient();
+    let capturedSignal: AbortSignal | null = null;
+    vi.mocked(client.submitTranscriptJob).mockImplementationOnce(async (params) => {
+      capturedSignal = params.abortSignal ?? null;
+      return await new Promise<Awaited<ReturnType<GatewayRuntimeClient["submitTranscriptJob"]>>>(
+        (_resolve, reject) => {
+        params.abortSignal?.addEventListener("abort", () => {
+          reject(
+            new SirConvertGatewayError({
+              code: "SIR_CONVERT_UPLOAD_ABORTED",
+              message: "Upload aborted.",
+              status: 0,
+            }),
+          );
+        });
+      });
     });
-    expect(client.getTranscriptJob).not.toHaveBeenCalled();
-    expect(runtime.abortState.value.status).toBe("accepted");
+    const { runtime, wrapper } = mountRuntime(client);
+
+    const runPromise = runtime.submitAndPoll({
+      file: transcriptFile(),
+      speakerControl: { mode: "auto" },
+    });
+    await flushPromises();
+
+    await runtime.cancelTranscript();
+    await flushPromises();
+
+    expect(requireAbortSignal(capturedSignal).aborted).toBe(true);
     expect(runtime.status.value).toBe("canceled");
+    expect(runtime.abortState.value).toMatchObject({
+      message: "Uppladdningen är avbruten.",
+      status: "accepted",
+    });
+    expect(client.cancelTranscriptJob).not.toHaveBeenCalled();
     await expect(runPromise).resolves.toBeNull();
     wrapper.unmount();
   });

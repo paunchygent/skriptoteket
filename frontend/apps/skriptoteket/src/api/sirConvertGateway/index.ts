@@ -35,5 +35,6 @@ export {
 } from "./transcriptReplayParsers";
 export * from "./transcriptTypes";
 export * from "./types";
+export * from "./uploadProgress";
 export * from "./userFiles";
 export * from "./urls";

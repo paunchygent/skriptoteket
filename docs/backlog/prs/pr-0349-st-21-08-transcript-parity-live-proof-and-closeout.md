@@ -24,6 +24,7 @@ dependencies:
   - "HuleEdu TASK-0676"
   - "Sir Convert task-361"
 acceptance_criteria:
+  - "Given a teacher uploads large source media, when the multipart transfer is still in flight before Sir Convert returns a job id, then the transcript lane shows upload progress and allows local upload abort instead of appearing silent."
   - "Given a signed-in teacher uses the transcript lane through the HuleEdu browser-session ceremony, when a long-running job is submitted, then retained evidence shows truthful progress fields rendering through Gateway."
   - "Given cancel is requested for a running transcript job, when the product receives the abort outcome, then retained evidence shows clear cancel feedback and no invalid follow-up action."
   - "Given a saved transcript has speaker names, when TXT, Markdown, VTT, and SRT are exported, then retained evidence proves exported artifacts use overlay display names and do not fall back to `speaker_00` labels."
@@ -45,13 +46,15 @@ overlay-aware exports, downloads, and Mina filer saves.
 
 ## Non-goals
 
-- No new production behavior beyond proof hardening and documentation closeout.
-- No direct product-backend credential shortcuts.
+- No identity fallback, Sir Convert browser bypass, or direct product-backend
+  credential shortcut.
 - No direct Sir Convert browser proof.
 
 ## Implementation Plan
 
 - Use the HuleEdu browser-session ceremony and repo proof helpers.
+- Surface the pre-job multipart upload phase with upload progress and local
+  upload abort so large files do not look like a silent conversion wait.
 - Run a fresh transcript job and capture progress rendering.
 - Exercise cancel feedback on a controlled job where cancellation is valid.
 - Save canonical transcript JSON, name speakers, replay formatter exports, and
@@ -64,6 +67,8 @@ overlay-aware exports, downloads, and Mina filer saves.
 ## Test Plan
 
 - Authenticated browser proof with retained sanitized artifacts.
+- Focused frontend tests for upload progress, upload abort, and visible
+  pre-job upload state.
 - Focused regression tests touched by proof harness adjustments.
 - Full docs/handoff validation and `git diff --check`.
 
@@ -153,6 +158,60 @@ runtime reached by the sanctioned local browser-session path still rejects the
 Gateway-signed identity context. Do not mark `PR-0349` or `ST-21-08` complete
 until the deployed/runtime trust lane is reconciled or a sanctioned Hemma/prod
 proof lane proves the same local changes.
+
+### 2026-06-13 Post-Trust Upload/Admission RCA And Remediation
+
+After the HuleEdu/Sir Convert trust-profile fix was deployed to Hemma, the
+production transcript submit no longer failed at internal identity
+verification. HuleEdu Gateway forwarded the signed request and Sir Convert
+accepted it, but the first `POST /v2/convert/jobs?wait_seconds=0` response
+headers arrived only after the multipart submit path completed. Retained logs
+showed fresh submit-response latencies around `35.232s` and `34.080s` for the
+16 MiB proof fixture, while Gateway's previous 30-second outbound read timeout
+returned `502 EXTERNAL_SERVICE_ERROR` before Sir Convert's response reached
+Skriptoteket.
+
+That was not a 34-second conversion-processing wait. Sir Convert's production
+public API lane is enqueue-only (`RUN_JOBS_ON_SUBMIT=0`), and
+`wait_seconds=0` does not long-poll for conversion completion. The root cause
+was that the browser product treated multipart upload transfer and admission as
+an invisible part of "job creation." For large source media, the browser cannot
+receive a Sir Convert job id until the browser -> Gateway -> Sir Convert
+multipart body has transferred and Sir Convert has parsed enough of the
+request to admit the job. A 500 MiB upload can therefore plausibly spend
+minutes before the first job response unless upload is represented as its own
+user-visible phase.
+
+Remediation in this PR-0349 slice:
+
+- `submitTranscriptJob` now supports a typed multipart upload transport with
+  `onUploadProgress` and `AbortSignal` for the transcript upload path.
+- The browser client uses `XMLHttpRequest.upload.onprogress` for multipart
+  transcript submits when upload progress or abort is requested; other Gateway
+  calls keep the existing `fetch` path.
+- `useTranscriptGatewayRuntime` now exposes a pre-job `uploadState`, resets it
+  after Sir Convert returns a job id, and aborts the local upload when cancel is
+  pressed before a job id exists.
+- `TranscriptWorkspaceShell` renders the upload phase and byte/percent progress
+  before Sir Convert progress fields exist, then renders the existing queued /
+  transcribing / diarizing progress once a job is admitted.
+- The live proof script now accepts truthful cancel evidence from either a
+  Sir Convert `/cancel` response after job admission or a local `upload_abort`
+  before job admission.
+- The live proof script copies the fixture to per-run cancel/main filenames
+  under the retained artifact directory so deterministic idempotency does not
+  replay an already-terminal job on repeated proof attempts.
+
+Focused validation:
+
+- `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts`
+  passed with `30 passed`.
+- `pdm run fe-type-check` passed.
+- `pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
+  passed with `2 passed`.
+- `pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py`
+  passed.
+- `git diff --check` passed.
 
 ## Rollback Plan
 

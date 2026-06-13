@@ -10,13 +10,14 @@ Keep this file updated so the next session can pick up work quickly.
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
 - Date: 2026-06-13.
-- Branch: `main`.
+- Branch: `codex/skriptoteket-pr-0349-trust-alignment`.
 - ST-21 transcript lane is active. `PR-0342` has accepted live Gateway proof;
   `ST-21-07` / `PR-0343` is implemented for durable saved `transcript_json`.
   `ST-21-08` / `PR-0344` through `PR-0348` are implemented for progress/cancel
   parity, formatter authority sync, saved speaker overlays, overlay-aware
-  formatter replay, download, and Mina filer save. `PR-0349` live proof is
-  blocked by Sir Convert rejecting the local Gateway-signed identity context.
+  formatter replay, download, and Mina filer save. `PR-0349` live proof now has
+  reviewed HuleEdu/Sir Convert trust alignment plus reviewed upload/admission
+  progress remediation; the final Hemma live proof is still pending.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -102,16 +103,15 @@ Keep this file updated so the next session can pick up work quickly.
   `docs/backlog/reviews/review-pr-0348-overlay-aware-download-and-mina-filer-save.md`.
   Re-review confirmed owner-scoped persisted-provenance checks for download/save;
   `PR-0349` live proof remains the closeout gate.
-- `PR-0349` is blocked:
+- `PR-0349` is implemented but not live-proof closed:
   `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`.
   HuleEdu `TASK-0676` and Sir Convert `task-361` are approved and the focused
-  cross-repo trust-profile smoke is green, but retained artifact
+  cross-repo trust-profile smoke is green. The old retained identity failure
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
-  still blocks on Sir Convert `auth_invalid_internal_identity` /
-  `invalid_internal_identity_signature` for
-  `POST /sir-convert/v2/convert/jobs?wait_seconds=0`. `proof-summary.json`
-  now uses typed `failure.type=sir_convert_internal_identity_rejected` as the
-  primary failure and lists only captured files.
+  remains historical evidence only. The new upload/admission remediation adds
+  visible pre-job upload progress, local upload abort, fresh proof-upload file
+  names, and observed-network cancel-path classification; `REV-PR-0349` is
+  approved for this remediation slice but not for final live parity.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
@@ -151,7 +151,7 @@ Keep this file updated so the next session can pick up work quickly.
   `HULEEDU_ENV_OVERLAY_FILE=output/tmp/pr0349-shared-postgres-migrations.env pdm run run-local-pdm db-lifecycle verify --all`
   passed for 13 HuleEdu shared PostgreSQL DBs, and
   `pdm run dev-stack db-upgrade` passed for Skriptoteket.
-- Current PR-0349 retained blocked proof:
+- Current PR-0349 retained historical blocked proof:
   `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --timeout-seconds 1200`
   wrote
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/proof-summary.json`
@@ -163,6 +163,7 @@ Keep this file updated so the next session can pick up work quickly.
   `local-auth-integration` and `hemma-production` with fingerprint
   `46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992`;
   Sir Convert Task 361 focused suite passed with `39 passed`.
+- Current PR-0349 upload/admission proof gates: `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts` passed with 30 tests; `pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py` passed with 10 tests; `pdm run fe-type-check`, `pdm run docs-validate`, and `git diff --check` passed.
 ## How to Run
 ```bash
 pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts
@@ -187,5 +188,6 @@ git diff --check
   source audio, local re-transcription, browser-local formatting, or invented
   parallel transcript truth.
 ## Next Steps
-- Reconcile the HuleEdu/Sir Convert internal-identity signer/trust lane, or
-  provide a sanctioned Hemma/prod browser proof lane, then rerun `PR-0349`.
+- Commit/push the reviewed upload/admission remediation, deploy Skriptoteket to
+  Hemma, then rerun `PR-0349` live proof through progress, cancel feedback,
+  durable save, speaker rename, replay export, download, and Mina filer save.

@@ -12,6 +12,7 @@
  */
 
 import type { SirConvertJobStatus } from "./types";
+import type { SirConvertUploadProgressHandler } from "./uploadProgress";
 
 export const SIR_CONVERT_TRANSCRIPT_OUTPUT_ARTIFACTS = [
   "json",
@@ -130,9 +131,11 @@ export type SirConvertTranscriptJobSpec = {
 };
 
 export type TranscriptSubmitParams = {
+  abortSignal?: AbortSignal;
   file: File;
   speakerControl: TranscriptSpeakerControl;
   language?: AudioTranscriptionOptions["language"];
+  onUploadProgress?: SirConvertUploadProgressHandler;
   waitSeconds?: number;
   correlationId?: string | null;
   sourceLabel?: string | null;
