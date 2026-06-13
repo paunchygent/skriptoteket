@@ -1,19 +1,32 @@
 """Shared Playwright auth helpers for canonical browser proofs.
 
-This module keeps the repo's Playwright login flows aligned with the shipped
-page-based `/auth/login` contract so canonical smoke entrypoints do not hardcode
-stale modal-era selectors or legacy `/login` routes.
+Purpose:
+    Drive Skriptoteket proof scripts through the HuleEdu-owned browser-session
+    ceremony without minting app-local cookies or calling protected APIs
+    directly.
+
+Relationships:
+    - Opens Skriptoteket's `/auth/login` handoff route.
+    - Follows the HuleEdu login UI and waits for the protected Skriptoteket
+      destination that proves app continuation succeeded.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urljoin, urlparse
 
 from playwright.sync_api import Locator, Page, expect
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 AUTH_ENTRY_PATH = "/auth/login"
+HULEEDU_LOGIN_API_PATH = "/v1/auth/login"
+
+
+def _is_visible(locator: Locator) -> bool:
+    return locator.count() > 0 and locator.first.is_visible()
 
 
 def _wait_for_auth_form_or_success(
@@ -28,16 +41,86 @@ def _wait_for_auth_form_or_success(
     elapsed_ms = 0
     interval_ms = 250
     while elapsed_ms <= timeout_ms:
-        if success_heading.count() > 0 and success_heading.first.is_visible():
+        if _is_visible(success_heading):
             return "success"
-        if auth_form.count() > 0 and auth_form.first.is_visible():
+        if _is_visible(page.locator("#email")) and _is_visible(page.locator("#password")):
+            return "huleedu_form"
+        if _is_visible(auth_form):
             return "form"
+        if _is_visible(page.get_by_role("link", name=re.compile("inloggningen", re.I))):
+            return "handoff_link"
         page.wait_for_timeout(interval_ms)
         elapsed_ms += interval_ms
 
     raise AssertionError(
         "Neither the auth-entry form nor the expected post-login destination became visible."
     )
+
+
+def _submit_huleedu_form(page: Page, *, email: str, password: str) -> None:
+    """Submit the HuleEdu browser login form and assert the login API accepted it."""
+
+    email_input = page.locator("#email")
+    password_input = page.locator("#password")
+    expect(email_input).to_be_visible(timeout=15_000)
+    expect(password_input).to_be_visible(timeout=15_000)
+    email_input.fill(email)
+    password_input.fill(password)
+
+    login_button = page.get_by_role("button", name=re.compile("logga in", re.I)).first
+    expect(login_button).to_be_enabled(timeout=15_000)
+    try:
+        with page.expect_response(
+            lambda response: HULEEDU_LOGIN_API_PATH in urlparse(response.url).path,
+            timeout=10_000,
+        ) as response_info:
+            login_button.click()
+    except PlaywrightTimeoutError:
+        with page.expect_response(
+            lambda response: HULEEDU_LOGIN_API_PATH in urlparse(response.url).path,
+            timeout=10_000,
+        ) as response_info:
+            password_input.press("Enter")
+
+    response = response_info.value
+    if response.status == 200:
+        return
+    response_text = response.text()[:500].replace(email, "<email>").replace(password, "<password>")
+    raise AssertionError(f"HuleEdu login API returned {response.status}: {response_text}")
+
+
+def _submit_auth_surface(
+    page: Page,
+    *,
+    auth_form: Locator,
+    visible_surface: str,
+    email: str,
+    password: str,
+) -> None:
+    """Submit whichever supported browser-auth surface is currently visible."""
+
+    if visible_surface == "huleedu_form":
+        _submit_huleedu_form(page, email=email, password=password)
+        return
+
+    if visible_surface == "form":
+        auth_form.get_by_label("E-post").fill(email)
+        auth_form.get_by_label("Lösenord").fill(password)
+        auth_form.get_by_role("button", name=re.compile(r"^Logga in$", re.IGNORECASE)).click()
+        return
+
+    raise AssertionError(f"Unsupported auth surface: {visible_surface}")
+
+
+def _follow_handoff_link(page: Page) -> None:
+    """Navigate through the visible HuleEdu ceremony link from the auth handoff."""
+
+    handoff_link = page.get_by_role("link", name=re.compile("inloggningen", re.I)).first
+    href = handoff_link.get_attribute("href")
+    if href:
+        page.goto(urljoin(page.url, href), wait_until="domcontentloaded")
+        return
+    handoff_link.click()
 
 
 def login_via_auth_entry(
@@ -72,10 +155,42 @@ def login_via_auth_entry(
         )
         if visible_surface == "success":
             return
+        if visible_surface == "handoff_link":
+            _follow_handoff_link(page)
+            visible_surface = _wait_for_auth_form_or_success(
+                page=page,
+                auth_form=auth_form,
+                success_heading=success_heading,
+                timeout_ms=form_timeout_ms,
+            )
+            if visible_surface == "success":
+                return
+            if visible_surface == "handoff_link":
+                if failure_artifacts_dir is not None:
+                    handoff_link = page.get_by_role(
+                        "link", name=re.compile("inloggningen", re.I)
+                    ).first
+                    state = {
+                        "url": page.url,
+                        "handoff_href": handoff_link.get_attribute("href"),
+                    }
+                    (failure_artifacts_dir / "auth-handoff-state.json").write_text(
+                        json.dumps(state, indent=2, sort_keys=True),
+                        encoding="utf-8",
+                    )
+                    page.screenshot(
+                        path=str(failure_artifacts_dir / failure_screenshot_name),
+                        full_page=True,
+                    )
+                raise AssertionError("HuleEdu auth handoff link did not open a login form.")
 
-        auth_form.get_by_label("E-post").fill(email)
-        auth_form.get_by_label("Lösenord").fill(password)
-        auth_form.get_by_role("button", name=re.compile(r"^Logga in$", re.IGNORECASE)).click()
+        _submit_auth_surface(
+            page,
+            auth_form=auth_form,
+            visible_surface=visible_surface,
+            email=email,
+            password=password,
+        )
 
         try:
             expect(success_heading).to_be_visible(timeout=success_timeout_ms)

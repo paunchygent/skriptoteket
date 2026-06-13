@@ -14,6 +14,7 @@ import { onBeforeUnmount, ref } from "vue";
 
 import {
   SIR_CONVERT_ARTIFACT_AVAILABLE,
+  isSirConvertGatewayError,
   type SirConvertJobStatus,
   type SirConvertTranscriptArtifactManifest,
   type SirConvertTranscriptJob,
@@ -40,6 +41,19 @@ type TranscriptGatewayClient = {
 
 export type TranscriptRuntimeStatus = "idle" | "running" | "succeeded" | "failed" | "canceled";
 
+export type TranscriptAbortStatus =
+  | "idle"
+  | "pending"
+  | "accepted"
+  | "failed"
+  | "rejected"
+  | "timed_out";
+
+export type TranscriptAbortState = {
+  status: TranscriptAbortStatus;
+  message: string | null;
+};
+
 export type TranscriptRuntimeSubmission = {
   file: File;
   speakerControl: TranscriptSpeakerControl;
@@ -58,6 +72,7 @@ const ACTIVE_STATUSES = new Set<SirConvertJobStatus>([
 ]);
 
 const DEFAULT_POLL_INTERVAL_MS = 2_000;
+const IDLE_ABORT_STATE: TranscriptAbortState = { status: "idle", message: null };
 
 const DEFAULT_CLIENT: TranscriptGatewayClient = {
   async cancelTranscriptJob(params) {
@@ -101,6 +116,27 @@ function assertTranscriptJsonAvailable(manifest: SirConvertTranscriptArtifactMan
   }
 }
 
+function abortFailureState(error: unknown): TranscriptAbortState {
+  if (isSirConvertGatewayError(error)) {
+    if (error.status === 408 || error.code.toLowerCase().includes("timeout")) {
+      return {
+        status: "timed_out",
+        message: "Avbrottet tog för lång tid. Transkriberingen fortsätter.",
+      };
+    }
+    if (error.status >= 400 && error.status < 500) {
+      return {
+        status: "rejected",
+        message: "Avbrottet kunde inte tas emot. Transkriberingen fortsätter.",
+      };
+    }
+  }
+  return {
+    status: "failed",
+    message: "Det gick inte att avbryta. Transkriberingen fortsätter.",
+  };
+}
+
 export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOptions = {}) {
   const client = options.client ?? DEFAULT_CLIENT;
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
@@ -111,6 +147,7 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
   const currentJob = ref<SirConvertTranscriptJob | null>(null);
   const lastCorrelationId = ref<string | null>(null);
   const lastJobId = ref<string | null>(null);
+  const abortState = ref<TranscriptAbortState>(IDLE_ABORT_STATE);
 
   function isCurrentRun(runId: number): boolean {
     return activeRunId.value === runId;
@@ -124,6 +161,34 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
     currentJob.value = null;
     lastCorrelationId.value = null;
     lastJobId.value = null;
+    abortState.value = IDLE_ABORT_STATE;
+  }
+
+  async function requestGatewayCancel(params: {
+    correlationId: string;
+    jobId: string;
+  }): Promise<boolean> {
+    try {
+      const canceledJob = await client.cancelTranscriptJob(params);
+      currentJob.value = canceledJob;
+      if (isCanceledStatus(canceledJob.status)) {
+        activeRunId.value += 1;
+        status.value = "canceled";
+        abortState.value = {
+          status: "accepted",
+          message: "Transkriberingen är avbruten.",
+        };
+        return true;
+      }
+      abortState.value = {
+        status: "rejected",
+        message: "Avbrottet kunde inte tas emot. Transkriberingen fortsätter.",
+      };
+      return false;
+    } catch (error: unknown) {
+      abortState.value = abortFailureState(error);
+      return false;
+    }
   }
 
   async function pollToTerminal(
@@ -150,6 +215,7 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
     errorMessage.value = null;
     transcript.value = null;
     currentJob.value = null;
+    abortState.value = IDLE_ABORT_STATE;
     try {
       const submittedJob = await client.submitTranscriptJob({
         file: submission.file,
@@ -160,6 +226,13 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
       currentJob.value = submittedJob;
       lastCorrelationId.value = submittedJob.requestContext.correlationId;
       lastJobId.value = submittedJob.jobId;
+      if (abortState.value.status === "pending") {
+        const canceled = await requestGatewayCancel({
+          correlationId: submittedJob.requestContext.correlationId,
+          jobId: submittedJob.jobId,
+        });
+        if (canceled || !isCurrentRun(runId)) return null;
+      }
       const terminalJob = await pollToTerminal(submittedJob, runId);
       if (!terminalJob || !isCurrentRun(runId)) return null;
       if (terminalJob.status !== "succeeded") {
@@ -195,13 +268,19 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
   async function cancelTranscript(): Promise<void> {
     const correlationId = lastCorrelationId.value;
     const jobId = lastJobId.value;
-    activeRunId.value += 1;
+    if (abortState.value.status === "pending") return;
+    abortState.value = {
+      status: "pending",
+      message: "Avbryter transkriberingen.",
+    };
     if (!correlationId || !jobId) {
-      status.value = "canceled";
+      abortState.value = {
+        status: "pending",
+        message: "Avbryter när transkriberingen har startat.",
+      };
       return;
     }
-    currentJob.value = await client.cancelTranscriptJob({ correlationId, jobId });
-    status.value = "canceled";
+    await requestGatewayCancel({ correlationId, jobId });
   }
 
   onBeforeUnmount(() => {
@@ -209,6 +288,7 @@ export function useTranscriptGatewayRuntime(options: TranscriptGatewayRuntimeOpt
   });
 
   return {
+    abortState,
     cancelTranscript,
     currentJob,
     errorMessage,

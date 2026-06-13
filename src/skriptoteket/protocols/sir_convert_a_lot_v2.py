@@ -90,6 +90,14 @@ class SirConvertALotClientV2Protocol(Protocol):
         self, job_id: str, *, correlation_id: str | None
     ) -> SirConvertArtifactOutcomeV2: ...
 
+    async def download_named_artifact(
+        self,
+        job_id: str,
+        artifact_key: str,
+        *,
+        correlation_id: str | None,
+    ) -> SirConvertArtifactOutcomeV2: ...
+
     async def create_webhook_subscription(
         self,
         *,

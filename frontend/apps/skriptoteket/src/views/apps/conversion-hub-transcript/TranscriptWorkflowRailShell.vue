@@ -17,8 +17,10 @@ import type {
   TranscriptSourceFileSelection,
   TranscriptSpeakerMode,
 } from "./useTranscriptSourceFile";
+import type { TranscriptAbortState } from "./useTranscriptGatewayRuntime";
 
 defineProps<{
+  abortState: TranscriptAbortState;
   canStartTranscript: boolean;
   isRunning: boolean;
   maxSpeakers: number;
@@ -270,13 +272,14 @@ function numericInputValue(event: Event): number {
           type="button"
           class="btn-secondary justify-center gap-2 shadow-none"
           data-test="transcript-cancel"
+          :disabled="abortState.status === 'pending'"
           @click="emit('cancelTranscript')"
         >
           <Square
             class="h-4 w-4"
             aria-hidden="true"
           />
-          Avbryt
+          {{ abortState.status === "pending" ? "Avbryter" : "Avbryt" }}
         </button>
         <button
           type="button"

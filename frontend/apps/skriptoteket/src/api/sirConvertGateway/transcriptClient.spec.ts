@@ -122,11 +122,17 @@ describe("Sir Convert transcript Gateway client", () => {
             status: "running",
             progress: {
               stage: "transcribing",
+              last_heartbeat_at: "2026-06-13T08:15:30Z",
+              current_phase_started_at: "2026-06-13T08:14:00Z",
               audio_processed_media_seconds: 42,
               audio_total_media_seconds: 120,
               audio_percent_complete: 35,
               audio_current_chunk_index: 1,
               audio_total_chunks: 3,
+              phase_timings_ms: {
+                chunk_total_ms: 32000,
+                conversion_total_ms: 45000,
+              },
             },
           },
         }),
@@ -164,25 +170,30 @@ describe("Sir Convert transcript Gateway client", () => {
               availability: "available",
               size_bytes: 512,
               sha256: "sha256:json",
+              retrieval_path: "/v2/convert/jobs/job_transcript_1/artifacts/transcript_json",
             },
             {
               artifact_key: "transcript_txt",
-              availability: "not_implemented",
-              unavailable_code: "audio_transcript_artifact_unavailable",
+              filename: "transcript_txt.txt",
+              content_type: "text/plain",
+              availability: "available",
+              size_bytes: 128,
+              sha256: "sha256:txt",
+              retrieval_path: "/v2/convert/jobs/job_transcript_1/artifacts/transcript_txt",
             },
             {
               artifact_key: "transcript_md",
-              availability: "not_implemented",
+              availability: "unrequested",
               unavailable_code: "audio_transcript_artifact_unavailable",
             },
             {
               artifact_key: "transcript_vtt",
-              availability: "not_implemented",
+              availability: "unrequested",
               unavailable_code: "audio_transcript_artifact_unavailable",
             },
             {
               artifact_key: "transcript_srt",
-              availability: "not_implemented",
+              availability: "unrequested",
               unavailable_code: "audio_transcript_artifact_unavailable",
             },
           ],
@@ -224,12 +235,20 @@ describe("Sir Convert transcript Gateway client", () => {
     await expect(
       client.getTranscriptJob({ correlationId: "corr_1", jobId: "job_transcript_1" }),
     ).resolves.toMatchObject({
-      audioProgress: {
+      progress: {
+        currentPhaseStartedAt: "2026-06-13T08:14:00Z",
+        currentChunkIndex: 1,
+        lastHeartbeatAt: "2026-06-13T08:15:30Z",
         percentComplete: 35,
+        phase: "transcribing",
+        phaseTimingsMs: {
+          chunk_total_ms: 32000,
+          conversion_total_ms: 45000,
+        },
         processedMediaSeconds: 42,
         totalMediaSeconds: 120,
+        totalChunks: 3,
       },
-      stage: "transcribing",
       status: "running",
     });
     await expect(
@@ -240,6 +259,10 @@ describe("Sir Convert transcript Gateway client", () => {
     await expect(
       client.listTranscriptArtifacts({ correlationId: "corr_1", jobId: "job_transcript_1" }),
     ).resolves.toMatchObject({
+      formatterArtifacts: {
+        transcript_txt: { artifact_key: "transcript_txt", availability: "available" },
+        transcript_srt: { artifact_key: "transcript_srt", availability: "unrequested" },
+      },
       transcriptJsonArtifact: { artifact_key: "transcript_json", availability: "available" },
     });
     await expect(
@@ -260,6 +283,81 @@ describe("Sir Convert transcript Gateway client", () => {
       "/sir-convert/v2/convert/jobs/job_transcript_1/cancel",
     ]);
     expect(fetchHeaders(fetcher, 4).get("X-CSRF-Token")).toBe("csrf-token");
+  });
+
+  it("rejects malformed transcript progress snapshots instead of accepting loose fields", async () => {
+    fetcher.mockResolvedValueOnce(
+      jsonResponse({
+        job: {
+          job_id: "job_transcript_1",
+          status: "running",
+          progress: {
+            stage: "transcribing",
+            last_heartbeat_at: "2026-06-13T08:15:30Z",
+            audio_processed_media_seconds: 180,
+            audio_total_media_seconds: 120,
+            audio_percent_complete: 140,
+            audio_current_chunk_index: 4,
+            audio_total_chunks: 3,
+          },
+        },
+      }),
+    );
+
+    await expect(
+      client.getTranscriptJob({ correlationId: "corr_1", jobId: "job_transcript_1" }),
+    ).rejects.toMatchObject({
+      code: "SIR_CONVERT_CONTRACT_DRIFT",
+    } satisfies Partial<SirConvertGatewayError>);
+  });
+
+  it("rejects terminal transcript jobs when progress is present but malformed", async () => {
+    fetcher.mockResolvedValueOnce(
+      jsonResponse({
+        job: {
+          job_id: "job_transcript_1",
+          status: "succeeded",
+          progress: ["not", "a", "progress", "object"],
+        },
+      }),
+    );
+
+    await expect(
+      client.getTranscriptJob({ correlationId: "corr_1", jobId: "job_transcript_1" }),
+    ).rejects.toMatchObject({
+      code: "SIR_CONVERT_CONTRACT_DRIFT",
+    } satisfies Partial<SirConvertGatewayError>);
+  });
+
+  it("rejects stale transcript artifact availability values from pre-formatter authority", async () => {
+    fetcher.mockResolvedValueOnce(
+      jsonResponse({
+        api_version: "v2",
+        job_id: "job_transcript_1",
+        output_format: "transcript_bundle",
+        artifacts: [
+          {
+            artifact_key: "transcript_json",
+            filename: "lektion.transcript.json",
+            content_type: "application/json",
+            availability: "available",
+            size_bytes: 512,
+            sha256: "sha256:json",
+          },
+          {
+            artifact_key: "transcript_txt",
+            availability: "not_implemented",
+            unavailable_code: "audio_transcript_artifact_unavailable",
+          },
+        ],
+      }),
+    );
+
+    await expect(
+      client.listTranscriptArtifacts({ correlationId: "corr_1", jobId: "job_transcript_1" }),
+    ).rejects.toMatchObject({
+      code: "SIR_CONVERT_CONTRACT_DRIFT",
+    } satisfies Partial<SirConvertGatewayError>);
   });
 
   it("rejects a successful result from a non-transcript pipeline", async () => {

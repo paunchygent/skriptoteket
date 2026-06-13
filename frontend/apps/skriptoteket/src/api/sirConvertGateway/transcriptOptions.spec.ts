@@ -62,6 +62,22 @@ describe("Sir Convert transcript speaker options", () => {
     });
   });
 
+  it("normalizes accepted formatter artifact requests while keeping transcript_json required", () => {
+    expect(
+      buildAudioTranscriptionOptions({
+        outputArtifacts: ["txt", "srt"],
+        speakerControl: { mode: "auto" },
+      }).output_artifacts,
+    ).toEqual(["json", "txt", "srt"]);
+
+    expect(
+      buildAudioTranscriptionOptions({
+        outputArtifacts: ["json", "md", "json"],
+        speakerControl: { mode: "auto" },
+      }).output_artifacts,
+    ).toEqual(["json", "md"]);
+  });
+
   it("rejects invalid speaker combinations before submit", () => {
     expect(() =>
       buildAudioTranscriptionOptions({
@@ -111,5 +127,15 @@ describe("Sir Convert transcript speaker options", () => {
         pin: false,
       },
     });
+  });
+
+  it("carries accepted output artifact selection into the JobSpec", () => {
+    expect(
+      buildTranscriptJobSpec({
+        file: audioFile("lektion.m4a"),
+        outputArtifacts: ["txt", "md", "vtt", "srt"],
+        speakerControl: { mode: "auto" },
+      }).audio_transcription_options.output_artifacts,
+    ).toEqual(["json", "txt", "md", "vtt", "srt"]);
   });
 });

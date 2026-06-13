@@ -547,6 +547,103 @@ async def _assert_b3e7_remove_review_decision_correction_intents(engine: AsyncEn
     }.issubset(intent_indexes)
 
 
+async def _assert_c4e8_conversion_hub_saved_transcripts(engine: AsyncEngine) -> None:
+    await _assert_b3e7_remove_review_decision_correction_intents(engine)
+    tables = await _table_names(engine)
+    assert "conversion_hub_saved_transcripts" in tables
+    columns = await _column_map(engine, "conversion_hub_saved_transcripts")
+    assert {
+        "owner_user_id",
+        "conversion_hub_job_id",
+        "sir_convert_job_id",
+        "artifact_key",
+        "source_filename",
+        "transcript_schema_version",
+        "diarization_mode",
+        "transcript_json",
+    }.issubset(columns)
+    assert columns["language_code"]["is_nullable"] == "YES"
+    assert columns["generated_at"]["is_nullable"] == "YES"
+    indexes = await _index_names(engine, "conversion_hub_saved_transcripts")
+    assert {
+        "ix_conversion_hub_saved_transcripts_owner_user_id",
+        "ix_conversion_hub_saved_transcripts_owner_created",
+        "ix_conversion_hub_saved_transcripts_job_id",
+        "uq_conversion_hub_saved_transcripts_owner_upstream",
+    }.issubset(indexes)
+    foreign_keys = await _foreign_key_targets(engine, "conversion_hub_saved_transcripts")
+    assert foreign_keys["owner_user_id"] == "users"
+    assert foreign_keys["conversion_hub_job_id"] == "conversion_hub_jobs"
+
+
+async def _assert_d7c9_conversion_hub_transcript_speaker_overlays(
+    engine: AsyncEngine,
+) -> None:
+    await _assert_c4e8_conversion_hub_saved_transcripts(engine)
+    tables = await _table_names(engine)
+    assert "conversion_hub_transcript_speaker_overlays" in tables
+    columns = await _column_map(engine, "conversion_hub_transcript_speaker_overlays")
+    assert {
+        "owner_user_id",
+        "saved_transcript_id",
+        "canonical_speaker_label",
+        "display_name",
+        "created_at",
+        "updated_at",
+    }.issubset(columns)
+    assert columns["canonical_speaker_label"]["is_nullable"] == "NO"
+    assert columns["display_name"]["is_nullable"] == "NO"
+    indexes = await _index_names(engine, "conversion_hub_transcript_speaker_overlays")
+    assert {
+        "ix_conversion_hub_transcript_speaker_overlays_owner_user_id",
+        "ix_conv_hub_transcript_speaker_overlays_owner_transcript",
+        "uq_conv_hub_transcript_speaker_overlays_label",
+        "uq_conv_hub_transcript_speaker_overlays_display",
+    }.issubset(indexes)
+    foreign_keys = await _foreign_key_targets(
+        engine,
+        "conversion_hub_transcript_speaker_overlays",
+    )
+    assert foreign_keys["owner_user_id"] == "users"
+    assert foreign_keys["saved_transcript_id"] == "conversion_hub_saved_transcripts"
+
+
+async def _assert_e1f2_conversion_hub_transcript_formatter_artifacts(
+    engine: AsyncEngine,
+) -> None:
+    await _assert_d7c9_conversion_hub_transcript_speaker_overlays(engine)
+    tables = await _table_names(engine)
+    assert "conversion_hub_transcript_formatter_artifacts" in tables
+    columns = await _column_map(engine, "conversion_hub_transcript_formatter_artifacts")
+    assert {
+        "owner_user_id",
+        "saved_transcript_id",
+        "conversion_hub_job_id",
+        "sir_convert_job_id",
+        "requested_artifact",
+        "artifact_key",
+        "filename",
+        "content_type",
+        "size_bytes",
+        "sha256",
+        "retrieval_path",
+    }.issubset(columns)
+    indexes = await _index_names(engine, "conversion_hub_transcript_formatter_artifacts")
+    assert {
+        "ix_conversion_hub_transcript_formatter_artifacts_owner_user_id",
+        "ix_conv_hub_transcript_formatter_artifacts_owner_transcript",
+        "ix_conv_hub_transcript_formatter_artifacts_job",
+        "uq_conv_hub_transcript_formatter_artifacts_key",
+    }.issubset(indexes)
+    foreign_keys = await _foreign_key_targets(
+        engine,
+        "conversion_hub_transcript_formatter_artifacts",
+    )
+    assert foreign_keys["owner_user_id"] == "users"
+    assert foreign_keys["saved_transcript_id"] == "conversion_hub_saved_transcripts"
+    assert foreign_keys["conversion_hub_job_id"] == "conversion_hub_jobs"
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -597,6 +694,9 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "b6c9f2a1d4e8": assert_b6c9_classroom_planner_profile_preferences,
     "9b2f4c6d8e10": _assert_9b2f_exam_converter_correction_sessions,
     "b3e7a1c9d4f2": _assert_b3e7_remove_review_decision_correction_intents,
+    "c4e8f0a2d6b9": _assert_c4e8_conversion_hub_saved_transcripts,
+    "d7c9a1e4b6f2": _assert_d7c9_conversion_hub_transcript_speaker_overlays,
+    "e1f2a3b4c5d6": _assert_e1f2_conversion_hub_transcript_formatter_artifacts,
 }
 
 

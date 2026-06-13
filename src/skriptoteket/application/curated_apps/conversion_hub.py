@@ -26,6 +26,8 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 class ConversionHubSourceFormatV2(StrEnum):
     """Uploaded source formats supported by Sir Convert-a-Lot v2 (mirrored)."""
 
+    AUDIO = "audio"
+    TRANSCRIPT_JSON = "transcript_json"
     PDF = "pdf"
     MD = "md"
     HTML = "html"
@@ -40,6 +42,7 @@ class ConversionHubOutputFormatV2(StrEnum):
     PDF = "pdf"
     DOCX = "docx"
     EXAMNET_BUNDLE = "examnet_bundle"
+    TRANSCRIPT_BUNDLE = "transcript_bundle"
 
 
 class ConversionHubPdfPaperSizeV2(StrEnum):
@@ -178,6 +181,27 @@ class RegisterExamConverterConversionHubJobRequest(BaseModel):
 
 class RegisterExamConverterConversionHubJobResult(BaseModel):
     """Return the owner-scoped local Conversion Hub job id for corrections."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: UUID
+    upstream_job_id: str
+    status: ConversionHubJobStatus
+
+
+class RegisterTranscriptConversionHubJobRequest(BaseModel):
+    """Register one upstream transcript job in Skriptoteket's local ledger."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    upstream_job_id: str = Field(min_length=1, max_length=255)
+    input_filename: str = Field(min_length=1, max_length=255)
+    correlation_id: str | None = Field(default=None, max_length=128)
+    status: ConversionHubJobStatus = ConversionHubJobStatus.SUCCEEDED
+
+
+class RegisterTranscriptConversionHubJobResult(BaseModel):
+    """Return the owner-scoped local Conversion Hub transcript job id."""
 
     model_config = ConfigDict(extra="forbid")
 

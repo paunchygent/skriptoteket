@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-06-09
+updated: 2026-06-13
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -18,7 +18,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   and authenticated owner-scoped artifact workflows.
 - Add an authenticated transcript product lane under Conversion Hub for
   Sir Convert-backed speech-to-text jobs, diarization controls, Gateway-backed
-  transcript job lifecycle, and Skriptoteket-owned durable transcript saves.
+  transcript job lifecycle, Skriptoteket-owned durable transcript saves,
+  progress/cancel parity, speaker overlays, and producer-owned formatter
+  exports.
 - Support batch conversions (multiple files) and a single-PDF preview UX that still uses the normal
   v2 job lifecycle, but through a Skriptoteket-owned local job ledger and download boundary rather
   than raw upstream job ids.
@@ -50,7 +52,8 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md)
 - [ ] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
 - [ ] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
-- [ ] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
+- [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
+- [ ] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 
 ## Risks
 
@@ -84,6 +87,10 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/epics/epic-12-speech-to-text-audio-ingestion-and-transcript-delivery.md`
 - HuleEdu audio transcription Gateway story:
   `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-08-expose-sir-convert-audio-transcription-jobs-through-huleedu-auth-edge.md`
+- HuleEdu transcript formatter replay Gateway story:
+  `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/stories/story-01-09-expose-transcript-formatter-replay-through-sir-convert-auth-edge.md`
+- Sir Convert transcript overlay replay story:
+  `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/stories/story-56-transcript-speaker-overlay-formatter-replay-over-canonical-json.md`
 
 ## Implementation Summary (as of 2026-05-13)
 
@@ -175,11 +182,29 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `PR-0340` is done: the report now replaces raw conversion-warning counts
   with teacher-relevant AI suggestion outcome reporting before the canonical
   `PR-0337` browser/artifact proof.
-- ST-21-05 through ST-21-07 (speech-to-text transcript lane): ready planning
-  stories added on 2026-06-09. They split authenticated transcript intake and
+- ST-21-05 through ST-21-07 (speech-to-text transcript lane): planning stories
+  added on 2026-06-09. They split authenticated transcript intake and
   diarization controls, Gateway-backed transcript job lifecycle, and durable
   JSON-first transcript saves. Retained review `REV-ST-21-05` is approved for
-  downstream planning. Implementation remains blocked until Sir Convert
-  registers the `audio -> transcript_bundle` route, HuleEdu exposes the
-  corresponding authenticated Gateway edge, and canonical transcript JSON/
-  formatter authority is accepted.
+  downstream planning. `PR-0342` is done with accepted live proof through
+  Skriptoteket -> HuleEdu Gateway -> Sir Convert -> STT/diarization ->
+  canonical `transcript_json` for English and Swedish fixtures. `ST-21-07` /
+  `PR-0343` is done: Skriptoteket now has an owner-scoped typed saved
+  transcript aggregate, authenticated save/readback API, migration coverage,
+  frontend save affordance over canonical JSON, and approved retained review
+  `REV-PR-0343`. Sir Convert Story 54 / Task 358 is now accepted for
+  product-neutral TXT, Markdown, WebVTT, and SRT formatter artifacts.
+  `ST-21-08` is blocked at closeout: `PR-0344` progress/cancel parity, `PR-0345`
+  formatter authority sync, `PR-0346` saved speaker-name overlays, `PR-0347`
+  overlay-aware formatter replay, and `PR-0348` download/Mina filer save
+  actions are implemented. `PR-0349` retained authenticated local proof up to
+  the transcript lane, DB migrations are verified at head, and Gateway reaches
+  the canonical Sir Convert tunnel, but live Sir Convert rejects the local
+  Gateway-signed submit with `auth_invalid_internal_identity` /
+  `invalid_internal_identity_signature` because the local HuleEdu signer
+  public-key fingerprint does not match the prod trusted public-key
+  fingerprint. The retained `PR-0349` summary now exposes
+  `blocker_kind=sir_convert_internal_identity_rejected` directly. The complete
+  progress/cancel/save/overlay/replay/download/Mina filer path is not accepted
+  until that HuleEdu/Sir Convert trust lane is reconciled or proved through a
+  sanctioned Hemma/prod browser lane.

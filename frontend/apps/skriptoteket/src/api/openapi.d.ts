@@ -1194,6 +1194,143 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/transcripts/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register Transcript Job */
+        post: operations["register_transcript_job_api_v1_apps_documents_conversion_hub_transcripts_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Conversion Hub Transcript */
+        post: operations["save_conversion_hub_transcript_api_v1_apps_documents_conversion_hub_transcripts_jobs__job_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/{transcript_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Conversion Hub Transcript */
+        get: operations["get_conversion_hub_transcript_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/{transcript_id}/formatter-artifacts/{artifact_key}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Conversion Hub Transcript Formatter Artifact */
+        get: operations["download_conversion_hub_transcript_formatter_artifact_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_artifacts__artifact_key__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/{transcript_id}/formatter-artifacts/{artifact_key}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Conversion Hub Transcript Formatter Artifact */
+        post: operations["save_conversion_hub_transcript_formatter_artifact_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_artifacts__artifact_key__save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/{transcript_id}/formatter-replay/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Conversion Hub Transcript Formatter Replay */
+        post: operations["complete_conversion_hub_transcript_formatter_replay_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_replay_complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/{transcript_id}/formatter-replay/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Conversion Hub Transcript Formatter Replay */
+        post: operations["prepare_conversion_hub_transcript_formatter_replay_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_replay_prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/transcripts/{transcript_id}/speaker-overlays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Conversion Hub Transcript Speaker Overlays */
+        get: operations["list_conversion_hub_transcript_speaker_overlays_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__speaker_overlays_get"];
+        /** Update Conversion Hub Transcript Speaker Overlays */
+        put: operations["update_conversion_hub_transcript_speaker_overlays_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__speaker_overlays_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/games.flunk_out_frenzy/bootstrap": {
         parameters: {
             query?: never;
@@ -3061,7 +3198,7 @@ export interface components {
          * @description Output formats supported by Sir Convert-a-Lot v2 (mirrored).
          * @enum {string}
          */
-        ConversionHubOutputFormatV2: "md" | "pdf" | "docx" | "examnet_bundle";
+        ConversionHubOutputFormatV2: "md" | "pdf" | "docx" | "examnet_bundle" | "transcript_bundle";
         /**
          * ConversionHubRouteV2
          * @description One supported conversion route.
@@ -3071,6 +3208,63 @@ export interface components {
             source_format: components["schemas"]["ConversionHubSourceFormatV2"];
             /** Title */
             title: string;
+        };
+        /**
+         * ConversionHubSavedTranscriptResponse
+         * @description API response for a saved transcript record.
+         */
+        ConversionHubSavedTranscriptResponse: {
+            /** Artifact Key */
+            artifact_key: string;
+            /**
+             * Conversion Hub Job Id
+             * Format: uuid
+             */
+            conversion_hub_job_id: string;
+            /** Correlation Id */
+            correlation_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Diarization Mode */
+            diarization_mode: string;
+            /** Generated At */
+            generated_at: string | null;
+            /** Language Code */
+            language_code: string | null;
+            /**
+             * Owner User Id
+             * Format: uuid
+             */
+            owner_user_id: string;
+            /** Sir Convert Job Id */
+            sir_convert_job_id: string;
+            /** Source Filename */
+            source_filename: string;
+            /** Speaker Count */
+            speaker_count: number | null;
+            /** Speaker Max */
+            speaker_max: number | null;
+            /** Speaker Min */
+            speaker_min: number | null;
+            /**
+             * Transcript Id
+             * Format: uuid
+             */
+            transcript_id: string;
+            /** Transcript Json */
+            transcript_json: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Transcript Schema Version */
+            transcript_schema_version: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /**
          * ConversionHubSavedVaultArtifact
@@ -3097,7 +3291,7 @@ export interface components {
          * @description Uploaded source formats supported by Sir Convert-a-Lot v2 (mirrored).
          * @enum {string}
          */
-        ConversionHubSourceFormatV2: "pdf" | "md" | "html" | "docx" | "dxe";
+        ConversionHubSourceFormatV2: "audio" | "transcript_json" | "pdf" | "md" | "html" | "docx" | "dxe";
         /** ConversionHubSubmitResult */
         ConversionHubSubmitResult: {
             /** Jobs */
@@ -3115,6 +3309,228 @@ export interface components {
              */
             job_id: string;
             status: components["schemas"]["ConversionHubJobStatus"];
+        };
+        /**
+         * ConversionHubTranscriptFormatterArtifactFormat
+         * @description Closed artifact format values accepted by Sir Convert replay.
+         * @enum {string}
+         */
+        ConversionHubTranscriptFormatterArtifactFormat: "txt" | "md" | "vtt" | "srt";
+        /**
+         * ConversionHubTranscriptFormatterArtifactKey
+         * @description Closed named replay artifact keys returned by Sir Convert.
+         * @enum {string}
+         */
+        ConversionHubTranscriptFormatterArtifactKey: "transcript_txt" | "transcript_md" | "transcript_vtt" | "transcript_srt";
+        /**
+         * ConversionHubTranscriptFormatterArtifactRef
+         * @description Producer-owned named replay artifact reference.
+         */
+        ConversionHubTranscriptFormatterArtifactRef: {
+            artifact_key: components["schemas"]["ConversionHubTranscriptFormatterArtifactKey"];
+            /** Content Type */
+            content_type: string;
+            /** Filename */
+            filename: string;
+            requested_artifact: components["schemas"]["ConversionHubTranscriptFormatterArtifactFormat"];
+            /** Retrieval Path */
+            retrieval_path: string;
+            /** Sha256 */
+            sha256: string;
+            /** Size Bytes */
+            size_bytes: number;
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayCompleteRequest
+         * @description Record a successfully parsed producer replay response.
+         */
+        ConversionHubTranscriptFormatterReplayCompleteRequest: {
+            /** Artifact Manifest */
+            artifact_manifest: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Requested Artifacts */
+            requested_artifacts: components["schemas"]["ConversionHubTranscriptFormatterArtifactFormat"][];
+            /** Result */
+            result: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Sir Convert Job Id */
+            sir_convert_job_id: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "succeeded";
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayConversion
+         * @description Replay conversion target descriptor.
+         */
+        ConversionHubTranscriptFormatterReplayConversion: {
+            /**
+             * Output Format
+             * @default transcript_bundle
+             * @constant
+             */
+            output_format: "transcript_bundle";
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayJobSpec
+         * @description Strict Sir Convert v2 JobSpec for `transcript_json -> transcript_bundle`.
+         */
+        ConversionHubTranscriptFormatterReplayJobSpec: {
+            /**
+             * Api Version
+             * @default v2
+             * @constant
+             */
+            api_version: "v2";
+            conversion: components["schemas"]["ConversionHubTranscriptFormatterReplayConversion"];
+            retention: components["schemas"]["ConversionHubTranscriptFormatterReplayRetention"];
+            source: components["schemas"]["ConversionHubTranscriptFormatterReplaySource"];
+            transcript_formatter_options: components["schemas"]["ConversionHubTranscriptFormatterReplayOptions"];
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayOptions
+         * @description Typed Sir Convert `transcript_formatter_replay_v1` options.
+         */
+        ConversionHubTranscriptFormatterReplayOptions: {
+            /** Requested Artifacts */
+            requested_artifacts: components["schemas"]["ConversionHubTranscriptFormatterArtifactFormat"][];
+            /**
+             * Schema Version
+             * @default transcript_formatter_replay_v1
+             * @constant
+             */
+            schema_version: "transcript_formatter_replay_v1";
+            /** Speaker Label Overrides */
+            speaker_label_overrides: components["schemas"]["ConversionHubTranscriptSpeakerOverlayEntry"][];
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayPrepareRequest
+         * @description Request overlay-aware formatter replay for selected artifact formats.
+         */
+        ConversionHubTranscriptFormatterReplayPrepareRequest: {
+            /** Requested Artifacts */
+            requested_artifacts?: components["schemas"]["ConversionHubTranscriptFormatterArtifactFormat"][];
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayPrepareResponse
+         * @description Prepared replay payload for the HuleEdu Sir Convert Gateway client.
+         */
+        ConversionHubTranscriptFormatterReplayPrepareResponse: {
+            /**
+             * Content Type
+             * @default application/json
+             * @constant
+             */
+            content_type: "application/json";
+            /** Correlation Id */
+            correlation_id: string;
+            /** Gateway Filename */
+            gateway_filename: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+            job_spec: components["schemas"]["ConversionHubTranscriptFormatterReplayJobSpec"];
+            /**
+             * Transcript Id
+             * Format: uuid
+             */
+            transcript_id: string;
+            /** Transcript Json */
+            transcript_json: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayResponse
+         * @description Replay provenance and available producer artifact references.
+         */
+        ConversionHubTranscriptFormatterReplayResponse: {
+            /** Artifacts */
+            artifacts: components["schemas"]["ConversionHubTranscriptFormatterArtifactRef"][];
+            /**
+             * Conversion Hub Job Id
+             * Format: uuid
+             */
+            conversion_hub_job_id: string;
+            /** Correlation Id */
+            correlation_id: string | null;
+            /** Requested Artifacts */
+            requested_artifacts: components["schemas"]["ConversionHubTranscriptFormatterArtifactFormat"][];
+            /** Sir Convert Job Id */
+            sir_convert_job_id: string;
+            /**
+             * Status
+             * @default succeeded
+             * @constant
+             */
+            status: "succeeded";
+            /**
+             * Transcript Id
+             * Format: uuid
+             */
+            transcript_id: string;
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplayRetention
+         * @description Replay retention descriptor; pinning remains producer-rejected.
+         */
+        ConversionHubTranscriptFormatterReplayRetention: {
+            /**
+             * Pin
+             * @default false
+             * @constant
+             */
+            pin: false;
+        };
+        /**
+         * ConversionHubTranscriptFormatterReplaySource
+         * @description Replay source descriptor for one uploaded canonical transcript JSON file.
+         */
+        ConversionHubTranscriptFormatterReplaySource: {
+            /** Filename */
+            filename: string;
+            /**
+             * Format
+             * @default transcript_json
+             * @constant
+             */
+            format: "transcript_json";
+            /**
+             * Kind
+             * @default upload
+             * @constant
+             */
+            kind: "upload";
+        };
+        /**
+         * ConversionHubTranscriptSpeakerOverlayEntry
+         * @description One display-name overlay for a canonical transcript speaker label.
+         */
+        ConversionHubTranscriptSpeakerOverlayEntry: {
+            /** Canonical Speaker Label */
+            canonical_speaker_label: string;
+            /** Display Name */
+            display_name: string;
+        };
+        /**
+         * ConversionHubTranscriptSpeakerOverlaysResponse
+         * @description API response containing display-name overlays for a saved transcript.
+         */
+        ConversionHubTranscriptSpeakerOverlaysResponse: {
+            /** Overlays */
+            overlays: components["schemas"]["ConversionHubTranscriptSpeakerOverlayEntry"][];
+            /**
+             * Transcript Id
+             * Format: uuid
+             */
+            transcript_id: string;
+            /** Updated At */
+            updated_at?: string | null;
         };
         /**
          * CreateClassroomPlannerShareRequest
@@ -5968,6 +6384,34 @@ export interface components {
             upstream_job_id: string;
         };
         /**
+         * RegisterTranscriptConversionHubJobRequest
+         * @description Register one upstream transcript job in Skriptoteket's local ledger.
+         */
+        RegisterTranscriptConversionHubJobRequest: {
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Input Filename */
+            input_filename: string;
+            /** @default succeeded */
+            status: components["schemas"]["ConversionHubJobStatus"];
+            /** Upstream Job Id */
+            upstream_job_id: string;
+        };
+        /**
+         * RegisterTranscriptConversionHubJobResult
+         * @description Return the owner-scoped local Conversion Hub transcript job id.
+         */
+        RegisterTranscriptConversionHubJobResult: {
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            status: components["schemas"]["ConversionHubJobStatus"];
+            /** Upstream Job Id */
+            upstream_job_id: string;
+        };
+        /**
          * RelationshipKind
          * @description Enumerate supported relationship rule types.
          * @enum {string}
@@ -6278,6 +6722,47 @@ export interface components {
             /** Source Artifact Id */
             source_artifact_id: string;
             vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
+        };
+        /**
+         * SaveConversionHubTranscriptFormatterArtifactResult
+         * @description Result returned after saving one transcript formatter artifact.
+         */
+        SaveConversionHubTranscriptFormatterArtifactResult: {
+            /** Source Artifact Id */
+            source_artifact_id: string;
+            vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
+        };
+        /**
+         * SaveConversionHubTranscriptRequest
+         * @description Request to save one Sir Convert transcript JSON artifact.
+         */
+        SaveConversionHubTranscriptRequest: {
+            /** Artifact Key */
+            artifact_key: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Diarization Mode */
+            diarization_mode: string;
+            /** Generated At */
+            generated_at?: string | null;
+            /** Language Code */
+            language_code?: string | null;
+            /** Sir Convert Job Id */
+            sir_convert_job_id: string;
+            /** Source Filename */
+            source_filename: string;
+            /** Speaker Count */
+            speaker_count?: number | null;
+            /** Speaker Max */
+            speaker_max?: number | null;
+            /** Speaker Min */
+            speaker_min?: number | null;
+            /** Transcript Json */
+            transcript_json: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Transcript Schema Version */
+            transcript_schema_version: string;
         };
         /** SaveDraftVersionRequest */
         SaveDraftVersionRequest: {
@@ -7245,6 +7730,14 @@ export interface components {
             smart_enabled?: boolean | null;
             /** Use History */
             use_history?: boolean | null;
+        };
+        /**
+         * UpdateConversionHubTranscriptSpeakerOverlaysRequest
+         * @description Replace the editable speaker-name overlays for one saved transcript.
+         */
+        UpdateConversionHubTranscriptSpeakerOverlaysRequest: {
+            /** Overlays */
+            overlays?: components["schemas"]["ConversionHubTranscriptSpeakerOverlayEntry"][];
         };
         /**
          * UpdatePlanDraftRequest
@@ -10023,6 +10516,305 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversionHubListRoutesResult"];
+                };
+            };
+        };
+    };
+    register_transcript_job_api_v1_apps_documents_conversion_hub_transcripts_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterTranscriptConversionHubJobRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterTranscriptConversionHubJobResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_conversion_hub_transcript_api_v1_apps_documents_conversion_hub_transcripts_jobs__job_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveConversionHubTranscriptRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubSavedTranscriptResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_conversion_hub_transcript_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubSavedTranscriptResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_conversion_hub_transcript_formatter_artifact_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_artifacts__artifact_key__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+                artifact_key: components["schemas"]["ConversionHubTranscriptFormatterArtifactKey"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_conversion_hub_transcript_formatter_artifact_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_artifacts__artifact_key__save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+                artifact_key: components["schemas"]["ConversionHubTranscriptFormatterArtifactKey"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveConversionHubTranscriptFormatterArtifactResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_conversion_hub_transcript_formatter_replay_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_replay_complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversionHubTranscriptFormatterReplayCompleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubTranscriptFormatterReplayResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_conversion_hub_transcript_formatter_replay_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__formatter_replay_prepare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversionHubTranscriptFormatterReplayPrepareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubTranscriptFormatterReplayPrepareResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversion_hub_transcript_speaker_overlays_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__speaker_overlays_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubTranscriptSpeakerOverlaysResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_conversion_hub_transcript_speaker_overlays_api_v1_apps_documents_conversion_hub_transcripts__transcript_id__speaker_overlays_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transcript_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateConversionHubTranscriptSpeakerOverlaysRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubTranscriptSpeakerOverlaysResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

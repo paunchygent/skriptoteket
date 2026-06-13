@@ -5,7 +5,7 @@ title: "Review: Transcript downstream planning for ST-21-05 through ST-21-07"
 status: approved
 owners: "agents"
 created: 2026-06-09
-updated: 2026-06-09
+updated: 2026-06-13
 reviewer: "fixed-reviewer"
 stories:
   - ST-21-05
@@ -36,6 +36,11 @@ conditions, durable-retention ownership, and JSON-first downstream formatting
 sequence. No runtime browser route, direct Sir Convert access, local STT engine,
 diarization fallback, or formatter implementation is approved by this review.
 
+Post-review status note, 2026-06-13: the Story 54 formatter blocker recorded
+below was true for this 2026-06-09 review. It is now superseded by accepted Sir
+Convert Story 54 / Task 358. Overlay-aware speaker-name exports are governed by
+Skriptoteket `ST-21-08`, Sir Convert Story 56, and HuleEdu `ST-01-09`.
+
 ## Artifacts to Review
 
 | File | Focus | Time |
@@ -55,7 +60,7 @@ diarization fallback, or formatter implementation is approved by this review.
 | Transcript access stays Gateway-only through `/sir-convert/v2/convert` | Preserves the HuleEdu authenticated product edge and avoids direct browser/sidecar authority | [x] |
 | ST-21-05 owns intake and diarization controls only | Keeps audio/video upload and speaker controls separate from job execution and durable saves | [x] |
 | ST-21-06 remains blocked on Sir Convert Story 53 and HuleEdu ST-01-08 | Runtime job lifecycle needs the accepted route and Gateway edge before implementation | [x] |
-| ST-21-07 remains blocked on canonical JSON/Sir Convert Story 54 | Durable saved records and formatters must derive from canonical transcript JSON | [x] |
+| ST-21-07 was then blocked on canonical JSON/Sir Convert Story 54 | Durable saved records and formatters had to derive from canonical transcript JSON; Story 54 / Task 358 is now accepted and ST-21-08 owns overlay-aware follow-up exports. | [x] |
 | Skriptoteket owns durable transcript retention after save | Matches product ownership while Sir Convert keeps short operational retention | [x] |
 
 ## Review Checklist
@@ -91,10 +96,11 @@ None.
   HuleEdu `ST-01-08` are accepted and available. Its acceptance criteria keep
   create, poll, artifact retrieval, cancel/error handling, CSRF, idempotency,
   and correlation on the HuleEdu Gateway path.
-- `ST-21-07` remains blocked on canonical JSON/Sir Convert Story 54, keeps
-  durable transcript retention in Skriptoteket after save, and requires
-  TXT/Markdown/VTT/SRT outputs to derive from canonical saved JSON or Sir
-  Convert formatter artifacts.
+- `ST-21-07` kept durable transcript retention in Skriptoteket after save and
+  required TXT/Markdown/VTT/SRT outputs to derive from canonical saved JSON or
+  Sir Convert formatter artifacts. The old Story 54 blocker is now superseded
+  by accepted Sir Convert Task 358; overlay-aware exports are follow-up
+  `ST-21-08` work.
 - The upstream authorities reviewed were Sir Convert Review 30, Sir Convert
   ADR-0013 and audio-transcription contract, Sir Convert Stories 53 and 54, and
   HuleEdu `ST-01-08`. They agree that the audio route is planned, not live
@@ -118,7 +124,7 @@ None.
 |--------|----------|-------------|
 | 1 | `ST-21-05` | Made Gateway-only `/sir-convert/v2/convert` access, no public/no-login/direct sidecar access, and diarization option mapping explicit. |
 | 2 | `ST-21-06` | Recorded the Sir Convert Story 53 and HuleEdu ST-01-08 implementation blockers. |
-| 3 | `ST-21-07` | Recorded canonical JSON/Sir Convert Story 54 blocking, Skriptoteket durable-retention ownership, and JSON-first formatter sequencing. |
+| 3 | `ST-21-07` | Recorded then-current canonical JSON/Sir Convert Story 54 blocking, Skriptoteket durable-retention ownership, and JSON-first formatter sequencing. |
 | 4 | `REV-ST-21-05` | Created the retained pending review gate for ST-21-05 through ST-21-07. |
 | 5 | Docs guard | Added a focused unit guard for the downstream transcript planning constraints. |
 | 6 | `REV-ST-21-05` | Fixed reviewer approved the downstream transcript planning lane and closed the decision checklist. |

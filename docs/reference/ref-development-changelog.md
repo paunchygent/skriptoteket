@@ -5,7 +5,7 @@ title: "Development changelog"
 status: active
 owners: "agents"
 created: 2026-04-07
-updated: 2026-04-12
+updated: 2026-06-13
 topic: "development-changelog"
 ---
 
@@ -14,6 +14,27 @@ Append-only development log and repo long-term memory for compacted handoff hist
 Rule:
 - When compacting `.codex/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
+
+## 2026-06-13 PR-0349 Live Proof Blocker
+
+- `PR-0349` added a retained authenticated browser proof harness for the
+  transcript parity path and proved the local HuleEdu/Skriptoteket stacks can
+  reach the transcript lane after DB migrations are applied.
+- HuleEdu shared PostgreSQL verification passed for all lifecycle targets, and
+  Skriptoteket `pdm run dev-stack db-upgrade` completed cleanly.
+- The complete progress/cancel/save/overlay/replay/download/Mina filer path is
+  blocked before job creation: live Sir Convert returns
+  `auth_invalid_internal_identity` with
+  `invalid_internal_identity_signature` for the local Gateway-signed submit.
+- Retained sanitized evidence:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T134340Z/`,
+  whose `proof-summary.json` exposes
+  `blocker_kind=sir_convert_internal_identity_rejected` plus the sanitized
+  error code and reason.
+- Root cause evidence: local HuleEdu internal-identity public-key fingerprint
+  differs from the Sir Convert prod trusted public-key fingerprint. Do not
+  retry the same local proof until the HuleEdu/Sir Convert signer/trust lane is
+  reconciled or a sanctioned Hemma/prod browser proof lane is provided.
 
 ## 2026-05-06 handoff compaction dump
 
