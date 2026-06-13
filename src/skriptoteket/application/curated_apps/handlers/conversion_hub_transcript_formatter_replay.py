@@ -157,7 +157,10 @@ class CompleteConversionHubTranscriptFormatterReplayHandler:
         transcript_id: UUID,
         request: ConversionHubTranscriptFormatterReplayCompleteRequest,
     ) -> ConversionHubTranscriptFormatterReplayResponse:
-        replay_parsing.parse_replay_result(request.result)
+        replay_parsing.parse_replay_result(
+            payload=request.result,
+            sir_convert_job_id=request.sir_convert_job_id,
+        )
         artifact_refs = replay_parsing.parse_replay_artifact_refs(
             payload=request.artifact_manifest,
             sir_convert_job_id=request.sir_convert_job_id,

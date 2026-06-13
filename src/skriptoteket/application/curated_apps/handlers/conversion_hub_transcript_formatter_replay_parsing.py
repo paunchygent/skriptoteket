@@ -89,11 +89,15 @@ class _ReplayResultBody(BaseModel):
 
     artifact: _ReplayResultArtifact
     conversion_metadata: _ReplayConversionMetadata
+    warnings: list[str]
 
 
 class _ReplayResultEnvelope(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    api_version: Literal["v2"]
+    job_id: str = Field(min_length=1)
+    status: Literal["succeeded"]
     result: _ReplayResultBody
 
 
@@ -119,11 +123,17 @@ class _ReplayArtifactManifest(BaseModel):
     artifacts: list[_ReplayArtifactEntry] = Field(min_length=1)
 
 
-def parse_replay_result(payload: dict[str, JsonValue]) -> None:
+def parse_replay_result(
+    *,
+    payload: dict[str, JsonValue],
+    sir_convert_job_id: str,
+) -> None:
     try:
-        _ReplayResultEnvelope.model_validate(payload)
+        result = _ReplayResultEnvelope.model_validate(payload)
     except ValidationError as exc:
         raise _malformed_replay_response("Sir Convert replay result is malformed.") from exc
+    if result.job_id != sir_convert_job_id:
+        raise _malformed_replay_response("Sir Convert replay result has wrong job id.")
 
 
 def parse_replay_artifact_refs(

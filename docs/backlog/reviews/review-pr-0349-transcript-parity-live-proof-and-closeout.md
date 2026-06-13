@@ -530,3 +530,219 @@ This approval covers only the backend remediation for parser divergence between
 save/overlay validation and replay prepare. Full PR-0349 still requires fresh
 authenticated Hemma live proof through progress, cancel feedback, durable save,
 speaker rename, formatter replay, download, and Mina filer save.
+
+## Formatter Replay Complete RCA And Implementation Response
+
+**Date:** 2026-06-13
+**Responder:** GPT-5.5 implementation specialist
+**Scope:** backend replay-complete parser remediation after retained artifact
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T201049Z/`.
+
+### RCA
+
+The replay prepare and Sir Convert replay execution stages succeeded. The
+retained live proof shows persisted `overlay_count=2`,
+`/formatter-replay/prepare` returning HTTP `200`, Sir Convert replay submit
+returning HTTP `200` with status `succeeded`, and Sir Convert replay artifacts
+listing exactly `transcript_txt`, `transcript_md`, `transcript_vtt`, and
+`transcript_srt`.
+
+The failure was isolated to Skriptoteket completion parsing:
+`/formatter-replay/complete` returned HTTP `503` with
+`Sir Convert replay result is malformed.` Sir Convert `/result` returns the
+normal Service API v2 envelope (`api_version`, `job_id`, `status`, and
+`result.warnings`) around the strict replay result body, while Skriptoteket
+expected only a bare `{result: ...}` object with extra fields forbidden.
+
+This rules out identity/fingerprint trust, overlay persistence, replay prepare,
+and Sir Convert replay execution for this blocker.
+
+### Implementation Response
+
+- Updated `parse_replay_result` to accept the real Service API v2 replay
+  result envelope while preserving strict validation of replay artifact and
+  conversion metadata.
+- Added `job_id` provenance validation against the completion request
+  `sir_convert_job_id` before local replay job/artifact refs are persisted.
+- Kept artifact manifest parsing fail-closed for malformed, duplicate, unknown,
+  unavailable, wrong-content-type, or missing requested artifacts.
+- Added a red-first regression that completes a successful replay result plus a
+  four-artifact producer manifest and proves local replay job/artifact refs are
+  persisted and returned.
+
+### Verification
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py`
+  failed before the patch because `api_version`, `job_id`, `status`, and
+  `result.warnings` were rejected as extra fields.
+- Green:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py`
+  passed with `7 passed`.
+
+### Residual Risk
+
+This implementation response does not approve full PR-0349 closeout. Fresh
+authenticated Hemma live proof still must pass through formatter replay
+completion, artifact download, and Mina filer save.
+
+## Independent Replay-Complete Remediation Review
+
+**Date:** 2026-06-13
+**Reviewer:** independent GPT-5.5 high reviewer
+**Scope:** backend replay-complete result-envelope remediation only, covering
+`conversion_hub_transcript_formatter_replay.py`,
+`conversion_hub_transcript_formatter_replay_parsing.py`,
+`test_conversion_hub_transcript_formatter_replay.py`,
+`test_conversion_hub_transcript_formatter_replay_result_envelope.py`, the
+retained `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T201049Z/`
+evidence, and refreshed PR/handoff docs.
+
+### Decision
+
+changes_requested
+
+### Findings
+
+1. `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_formatter_replay_parsing.py:92`
+   accepts a result body with missing `warnings` by defaulting to `[]`, while
+   the PR RCA says the Service API v2 result envelope includes
+   `result.warnings` and that this slice requires `warnings` as a list of
+   strings. That weakens the producer-envelope validation this remediation is
+   supposed to tighten. Remove the default so missing `warnings` is rejected,
+   keep the list-of-strings type validation, and add focused rejection tests for
+   missing and non-list/non-string `warnings`.
+2. `tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py:178`
+   only covers the happy Service API v2 envelope and mismatched result
+   `job_id`. The review brief requires tests that protect malformed producer
+   data and wrong status as part of this replay-complete slice. Add focused
+   negative cases for result `status != "succeeded"`, invalid
+   `conversion_metadata.pipeline_used`, invalid result artifact metadata, and
+   missing/invalid `warnings`. Keep the existing artifact-manifest cases for
+   mismatched job ids, unknown keys, unavailable refs, and missing requested
+   artifacts green.
+
+### Review Notes
+
+- The live failure is correctly reproduced by the new happy-path Service API v2
+  envelope test: the old bare-result parser would reject `api_version`,
+  `job_id`, `status`, and `result.warnings`, while the new parser accepts the
+  observed envelope shape.
+- The completion handler now validates result-envelope `job_id` against
+  `sir_convert_job_id` before opening the UoW and before local replay job or
+  artifact refs are persisted.
+- Artifact refs are still derived from the Sir Convert artifact manifest, not
+  inferred from requested keys alone. Missing requested artifacts, unknown
+  artifact keys, duplicate keys, wrong manifest job ids, unavailable requested
+  refs, wrong content types, and incomplete producer refs still fail closed.
+- I found no `Any`, `cast(...)`, `type: ignore`, or broad exception handling in
+  the reviewed production/test files.
+- The PR and handoff RCA correctly separate this blocker from the earlier
+  identity/fingerprint trust failure, overlay persistence/client-state failure,
+  replay-prepare segment extraction failure, and Sir Convert replay execution.
+- `.codex/handoff.md` remains within the repo limit at 195 lines.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `16 passed`.
+- `pdm run typecheck` passed.
+- `pdm run lint` passed.
+- `pdm run docs-validate` passed.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+- `wc -l .codex/handoff.md` reported `195`.
+
+### Residual Risk
+
+Full PR-0349 remains blocked until fresh authenticated Hemma live proof passes
+through formatter replay completion, artifact download, and Mina filer save.
+
+## Replay-Complete Changes-Requested Remediation Response
+
+**Date:** 2026-06-13
+**Responder:** GPT-5.5 implementation specialist
+**Scope:** same backend replay-complete parser slice.
+
+### Response To Findings
+
+1. Removed the parser fallback for missing `result.warnings`. The Service API
+   v2 `/result` envelope must now include `result.warnings` as a list of
+   strings; missing or non-list warnings fail closed as malformed producer data.
+2. Added malformed completion coverage for wrong result status, malformed result
+   artifact metadata, malformed conversion metadata, and missing/non-list
+   warnings. The existing happy Service API v2 envelope, mismatched result
+   `job_id`, and artifact-manifest failure tests remain in place.
+
+### Verification
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py`
+  failed before this follow-up patch because missing `result.warnings` did not
+  raise `DomainError`.
+- Green:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py`
+  passed with `6 passed`.
+
+### Residual Risk
+
+This response needs re-review before the retained review status can move out of
+`changes_requested`. Full PR-0349 still requires fresh authenticated Hemma live
+proof through replay completion, download, and Mina filer save.
+
+## Independent Replay-Complete Re-Review
+
+**Date:** 2026-06-13
+**Reviewer:** independent GPT-5.5 high reviewer
+**Scope:** re-review of the changes-requested remediation for the backend
+replay-complete parser slice.
+
+### Decision
+
+approved
+
+### Findings
+
+No findings. The two prior `changes_requested` findings are resolved.
+
+### Review Notes
+
+- `result.warnings` is now required as `list[str]`; missing or non-list
+  warnings fail closed through the same `DomainError(SERVICE_UNAVAILABLE)`
+  malformed-producer path as the rest of the result envelope.
+- The result parser still accepts the live-shaped Service API v2 envelope and
+  still validates `api_version=v2`, `status=succeeded`, result artifact
+  metadata, strict replay conversion metadata, and result `job_id` provenance
+  before any local replay job or artifact refs are persisted.
+- The added malformed coverage exercises the handler boundary and verifies no
+  artifact records are persisted when malformed producer result data is
+  rejected. It now covers missing/non-list warnings, wrong result status,
+  malformed result artifact metadata, and malformed conversion metadata.
+- Artifact refs remain producer-manifest-derived rather than inferred from
+  requested keys. Existing manifest tests continue to protect missing requested
+  artifacts and unknown keys, while the parser still protects duplicate keys,
+  wrong manifest job ids, unavailable refs, wrong content types, and incomplete
+  refs.
+- I found no `Any`, `cast(...)`, `type: ignore`, or broad exception handling in
+  the reviewed production/test files.
+- The PR/handoff RCA still correctly separates this replay-complete parser
+  issue from identity/fingerprint trust, overlay persistence/client state,
+  replay prepare, and Sir Convert replay execution.
+- `.codex/handoff.md` remains within the repo limit at 195 lines.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `20 passed`.
+- `pdm run typecheck` passed.
+- `pdm run lint` passed.
+- `pdm run docs-validate` passed.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+- `wc -l .codex/handoff.md` reported `195`.
+
+### Residual Risk
+
+This approval covers only the replay-complete backend parser remediation slice.
+Full PR-0349 still requires fresh authenticated Hemma live proof through
+formatter replay completion, artifact download, and Mina filer save.

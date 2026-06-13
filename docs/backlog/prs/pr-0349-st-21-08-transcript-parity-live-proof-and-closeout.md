@@ -332,6 +332,69 @@ Focused validation:
   passed with `22 passed`.
 - `pdm run typecheck` passed.
 
+### 2026-06-13 Formatter Replay Complete Result-Envelope RCA
+
+Latest retained artifact:
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T201049Z/`.
+
+The replay-prepare remediation above worked. The live proof progressed through
+saved transcript readback, persisted `overlay_count=2`, successful
+`/formatter-replay/prepare`, successful Sir Convert replay submit, and
+successful Sir Convert replay artifact listing for exactly `transcript_txt`,
+`transcript_md`, `transcript_vtt`, and `transcript_srt`. The new blocker was
+Skriptoteket completion parsing:
+
+- `network.bounded.json` records `POST
+  /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-replay/complete`
+  returning HTTP `503`, `error_code=SERVICE_UNAVAILABLE`, message
+  `Sir Convert replay result is malformed.`
+- The preceding Sir Convert replay job succeeded with HTTP `200`.
+- The preceding Sir Convert replay artifact manifest succeeded with HTTP `200`
+  and exactly the four requested formatter artifact keys.
+
+RCA:
+
+- Sir Convert `/v2/convert/jobs/{job_id}/result` returns the normal Service API
+  v2 result envelope: `api_version`, `job_id`, `status`, and
+  `result.warnings` wrap the strict replay `result.artifact` and
+  `result.conversion_metadata`.
+- Skriptoteket completion parsing modeled only a bare `{result: ...}` object
+  with `extra="forbid"`.
+- The valid Service API v2 envelope was therefore rejected before persisted
+  local replay job/artifact refs could be written.
+- This is not identity/fingerprint trust, overlay persistence, replay prepare,
+  or replay execution; those stages had already succeeded in the retained live
+  proof.
+
+Remediation in this slice:
+
+- `parse_replay_result` now accepts the real Service API v2 replay result
+  envelope and requires `api_version=v2`, `status=succeeded`, strict replay
+  artifact metadata, strict replay conversion metadata, and `warnings` as a
+  list of strings.
+- The parser now validates that the `/result` envelope `job_id` matches the
+  completion request `sir_convert_job_id` before artifact refs are persisted.
+- Artifact manifest parsing remains strict: requested artifact keys must be
+  present as available producer refs with correct content type, size, digest,
+  and retrieval path, and malformed, duplicate, unknown, unavailable, or
+  missing artifacts still fail closed.
+
+Focused validation:
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py`
+  failed before the patch because the valid Service API v2 fields
+  `api_version`, `job_id`, `status`, and `result.warnings` were rejected as
+  extra inputs.
+- Changes-requested red:
+  the same focused test module failed before the follow-up parser patch because
+  missing `result.warnings` did not raise `DomainError` and allowed replay
+  completion to persist.
+- Green:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py`
+  passed with malformed coverage for missing/non-list warnings, wrong result
+  status, malformed artifact metadata, and malformed conversion metadata.
+
 ## Rollback Plan
 
 Leave PR-0344 through PR-0348 behavior intact and keep ST-21-08 open with the

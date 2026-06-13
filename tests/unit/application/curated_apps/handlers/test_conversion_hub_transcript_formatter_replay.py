@@ -1,13 +1,4 @@
-"""Tests for Conversion Hub transcript formatter replay orchestration.
-
-Domain purpose:
-  Prove saved transcript JSON plus persisted speaker overlays become a strict
-  producer replay request and owner-authorized replay artifact provenance.
-
-Relationships:
-  - Exercises `handlers.conversion_hub_transcript_formatter_replay`.
-  - Reuses in-memory Conversion Hub transcript repositories from PR-0346 tests.
-"""
+"""Domain purpose: prove replay requests; relationships: replay handlers and repos."""
 
 from __future__ import annotations
 
@@ -196,8 +187,11 @@ def _manifest_artifacts(manifest: dict[str, object]) -> list[object]:
     return artifacts
 
 
-def _result() -> dict[str, object]:
+def _result(*, job_id: str = "sir-replay-job-1") -> dict[str, object]:
     return {
+        "api_version": "v2",
+        "job_id": job_id,
+        "status": "succeeded",
         "result": {
             "artifact": {
                 "filename": "transcript_replay_bundle_manifest.json",
@@ -212,7 +206,8 @@ def _result() -> dict[str, object]:
                 "acceleration_used": None,
                 "options_fingerprint": "sha256:replay",
             },
-        }
+            "warnings": [],
+        },
     }
 
 
