@@ -75,6 +75,9 @@ live end-to-end proof.
 
 ## Notes
 
+- Sequencing note: runtime implementation was blocked on Sir Convert Story 53 and HuleEdu ST-01-08;
+  future transcript lifecycle changes must keep those accepted authorities as
+  the Gateway/runtime boundary.
 - The UI should surface progress as work done and next action, not expose
   internal stages as implementation jargon.
 - Artifact reads must remain owner-scoped through Gateway identity. Raw upstream

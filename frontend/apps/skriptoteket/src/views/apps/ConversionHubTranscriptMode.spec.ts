@@ -67,10 +67,15 @@ describe("Conversion Hub transcript mode", () => {
       mock.mockReset();
     }
     gatewayMocks.submitTranscriptJob.mockResolvedValue({
-      audioProgress: {
+      progress: {
         currentChunkIndex: null,
+        currentPhaseStartedAt: null,
+        lastHeartbeatAt: null,
         percentComplete: null,
+        phase: null,
+        phaseTimingsMs: {},
         processedMediaSeconds: null,
+        status: "succeeded",
         totalChunks: null,
         totalMediaSeconds: null,
       },
@@ -81,7 +86,6 @@ describe("Conversion Hub transcript mode", () => {
         idempotencyKey: "idem_transcript_1",
         jobSpec: {},
       },
-      stage: null,
       status: "succeeded",
     });
     gatewayMocks.getTranscriptResult.mockResolvedValue({
@@ -98,15 +102,19 @@ describe("Conversion Hub transcript mode", () => {
         size_bytes: 512,
       },
       job: {
-        audioProgress: {
+        progress: {
           currentChunkIndex: null,
+          currentPhaseStartedAt: null,
+          lastHeartbeatAt: null,
           percentComplete: null,
+          phase: "succeeded",
+          phaseTimingsMs: {},
           processedMediaSeconds: null,
+          status: "succeeded",
           totalChunks: null,
           totalMediaSeconds: null,
         },
         jobId: "job_transcript_1",
-        stage: "succeeded",
         status: "succeeded",
       },
     });
@@ -123,27 +131,34 @@ describe("Conversion Hub transcript mode", () => {
         },
         {
           artifact_key: "transcript_txt",
-          availability: "not_implemented",
+          availability: "unrequested",
           unavailable_code: "audio_transcript_artifact_unavailable",
         },
         {
           artifact_key: "transcript_md",
-          availability: "not_implemented",
+          availability: "unrequested",
           unavailable_code: "audio_transcript_artifact_unavailable",
         },
         {
           artifact_key: "transcript_vtt",
-          availability: "not_implemented",
+          availability: "unrequested",
           unavailable_code: "audio_transcript_artifact_unavailable",
         },
         {
           artifact_key: "transcript_srt",
-          availability: "not_implemented",
+          availability: "unrequested",
           unavailable_code: "audio_transcript_artifact_unavailable",
         },
       ],
       job_id: "job_transcript_1",
       output_format: "transcript_bundle",
+      formatterArtifacts: {
+        transcript_txt: {
+          artifact_key: "transcript_txt",
+          availability: "unrequested",
+          unavailable_code: "audio_transcript_artifact_unavailable",
+        },
+      },
       transcriptJsonArtifact: {
         artifact_key: "transcript_json",
         availability: "available",
@@ -182,11 +197,15 @@ describe("Conversion Hub transcript mode", () => {
     await flushPromises();
     await wrapper.vm.$nextTick();
 
-    expect(gatewayMocks.submitTranscriptJob).toHaveBeenCalledWith({
-      file: expect.any(File),
-      speakerControl: { mode: "known_speaker_count", speakerCount: 2 },
-      waitSeconds: 0,
-    });
+    expect(gatewayMocks.submitTranscriptJob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        abortSignal: expect.any(AbortSignal),
+        file: expect.any(File),
+        onUploadProgress: expect.any(Function),
+        speakerControl: { mode: "known_speaker_count", speakerCount: 2 },
+        waitSeconds: 0,
+      }),
+    );
     expect(wrapper.text()).toContain("Transkriptet är klart");
     expect(wrapper.text()).toContain("SPEAKER_00");
     expect(wrapper.text()).not.toContain("Sir Convert");

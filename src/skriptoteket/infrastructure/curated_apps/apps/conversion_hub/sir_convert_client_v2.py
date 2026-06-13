@@ -118,6 +118,26 @@ def _read_job_id_and_status(payload: object) -> tuple[str, str]:
     return job_id_obj, status_obj
 
 
+def _read_artifact_outcome(*, job_id: str, response: httpx.Response) -> SirConvertArtifactOutcomeV2:
+    content_type = response.headers.get("Content-Type", "application/octet-stream")
+    disposition = response.headers.get("Content-Disposition", "")
+    filename = "artifact"
+    if "filename=" in disposition:
+        # best-effort: rely on upstream quoting behavior (we treat this as UI sugar only)
+        _, _, after = disposition.partition("filename=")
+        filename = after.strip().strip('"') or filename
+
+    return SirConvertArtifactOutcomeV2(
+        job_id=job_id,
+        status="succeeded",
+        artifact=SirConvertArtifactV2(
+            filename=filename,
+            content_type=content_type,
+            content=response.content,
+        ),
+    )
+
+
 def _build_pdf_text_extraction_job_spec(
     *,
     filename: str,
@@ -293,23 +313,27 @@ class SirConvertALotClientV2:
                 job_id=job_id,
             )
 
-        content_type = response.headers.get("Content-Type", "application/octet-stream")
-        disposition = response.headers.get("Content-Disposition", "")
-        filename = "artifact"
-        if "filename=" in disposition:
-            # best-effort: rely on upstream quoting behavior (we treat this as UI sugar only)
-            _, _, after = disposition.partition("filename=")
-            filename = after.strip().strip('"') or filename
+        return _read_artifact_outcome(job_id=job_id, response=response)
 
-        return SirConvertArtifactOutcomeV2(
-            job_id=job_id,
-            status="succeeded",
-            artifact=SirConvertArtifactV2(
-                filename=filename,
-                content_type=content_type,
-                content=response.content,
-            ),
+    async def download_named_artifact(
+        self,
+        job_id: str,
+        artifact_key: str,
+        *,
+        correlation_id: str | None,
+    ) -> SirConvertArtifactOutcomeV2:
+        response = await self._client.get(
+            f"/v2/convert/jobs/{job_id}/artifacts/{artifact_key}",
+            headers=self._headers(correlation_id=correlation_id),
         )
+        if response.status_code != 200:
+            raise _extract_service_error(
+                response,
+                message_fallback="Failed to download named v2 artifact.",
+                job_id=job_id,
+            )
+
+        return _read_artifact_outcome(job_id=job_id, response=response)
 
     async def create_webhook_subscription(
         self,

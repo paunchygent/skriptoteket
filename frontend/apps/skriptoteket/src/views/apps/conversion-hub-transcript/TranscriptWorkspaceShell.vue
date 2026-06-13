@@ -11,56 +11,112 @@
  *   - Receives runtime state from `useTranscriptGatewayRuntime`.
  */
 
-import { FileAudio, Upload } from "lucide-vue-next";
+import { FileAudio, Save, Upload } from "lucide-vue-next";
 
+import type { ConversionHubTranscriptFormatterArtifactRef } from "../../../api/conversionHubTranscriptFormatterReplay";
+import type { ConversionHubTranscriptSpeakerOverlayEntry } from "../../../api/conversionHubTranscriptSaves";
 import type { SirConvertTranscriptJob, TranscriptJson } from "../../../api/sirConvertGateway";
-import type { TranscriptRuntimeStatus } from "./useTranscriptGatewayRuntime";
+import type {
+  TranscriptAbortState,
+  TranscriptRuntimeStatus,
+  TranscriptUploadState,
+} from "./useTranscriptGatewayRuntime";
 import type { TranscriptSourceFileSelection } from "./useTranscriptSourceFile";
+import TranscriptFormatterReplayPanel from "./TranscriptFormatterReplayPanel.vue";
+import type { FormatterArtifactActionStates } from "./transcriptFormatterArtifactActions";
+import {
+  isUploading,
+  progressChunks,
+  progressDuration,
+  progressHeartbeat,
+  progressPercent,
+  transcriptProgressLabel,
+  uploadProgressBytes,
+  uploadProgressLabel,
+} from "./transcriptProgressDisplay";
 
-defineProps<{
+withDefaults(defineProps<{
+  abortState: TranscriptAbortState;
+  canSaveTranscript: boolean;
   currentJob: SirConvertTranscriptJob | null;
   errorMessage: string | null;
   runtimeStatus: TranscriptRuntimeStatus;
+  saveErrorMessage: string | null;
+  saveStatus: "idle" | "saving" | "saved" | "failed";
   selectedTranscriptFile: TranscriptSourceFileSelection | null;
+  canEditSpeakerOverlays: boolean;
+  canRequestFormatterReplay?: boolean;
+  formatterArtifactActionStates?: FormatterArtifactActionStates;
+  formatterReplayArtifacts?: readonly ConversionHubTranscriptFormatterArtifactRef[];
+  formatterReplayErrorMessage?: string | null;
+  formatterReplayStatus?: "idle" | "running" | "succeeded" | "failed";
+  speakerOverlayEntries: readonly ConversionHubTranscriptSpeakerOverlayEntry[];
+  speakerOverlayErrorMessage: string | null;
+  speakerOverlayStatus: "idle" | "loading" | "saving" | "saved" | "failed";
   transcript: TranscriptJson | null;
   transcriptFileError: string | null;
-}>();
+  uploadState?: TranscriptUploadState;
+}>(), {
+  canRequestFormatterReplay: false,
+  formatterArtifactActionStates: () => ({}),
+  formatterReplayArtifacts: () => [],
+  formatterReplayErrorMessage: null,
+  formatterReplayStatus: "idle",
+  uploadState: () => ({
+    loadedBytes: 0,
+    percentComplete: null,
+    status: "idle",
+    totalBytes: null,
+  }),
+});
 
 const emit = defineEmits<{
+  downloadFormatterArtifact: [artifact: ConversionHubTranscriptFormatterArtifactRef];
   filesDropped: [files: File[]];
+  requestFormatterReplay: [];
+  saveFormatterArtifact: [artifact: ConversionHubTranscriptFormatterArtifactRef];
+  saveTranscript: [];
+  saveSpeakerOverlays: [];
+  speakerOverlayChanged: [label: string, displayName: string];
   transcriptFileSelected: [file: File];
 }>();
-
-function transcriptProgressLabel(job: SirConvertTranscriptJob | null): string {
-  if (!job) return "Förbereder ljudet.";
-  if (job.status === "submitted" || job.status === "queued") {
-    return "Väntar på att starta.";
-  }
-  const stage = job.stage;
-  if (stage === "starting" || stage === "normalizing_audio") {
-    return "Förbereder ljudet.";
-  }
-  if (stage === "probing_media") {
-    return "Kontrollerar inspelningen.";
-  }
-  if (stage === "transcribing") {
-    return "Skriver ut talet.";
-  }
-  if (stage === "diarizing") {
-    return "Identifierar talare.";
-  }
-  if (stage === "aligning_segments") {
-    return "Kontrollerar talare och text.";
-  }
-  if (stage === "packaging") {
-    return "Förbereder transkriptet.";
-  }
-  return "Bearbetar inspelningen.";
-}
 
 function firstFile(fileList: FileList | null): File | null {
   const [file] = Array.from(fileList ?? []);
   return file ?? null;
+}
+
+function speakerLabels(transcript: TranscriptJson | null): string[] {
+  const labels: string[] = [];
+  const seen = new Set<string>();
+  for (const segment of transcript?.segments ?? []) {
+    if (!seen.has(segment.speakerLabel)) {
+      seen.add(segment.speakerLabel);
+      labels.push(segment.speakerLabel);
+    }
+  }
+  return labels;
+}
+
+function speakerOverlayValue(
+  entries: readonly ConversionHubTranscriptSpeakerOverlayEntry[],
+  label: string,
+): string {
+  return (
+    entries.find((entry) => entry.canonical_speaker_label === label)?.display_name ?? ""
+  );
+}
+
+function speakerDisplayName(
+  entries: readonly ConversionHubTranscriptSpeakerOverlayEntry[],
+  label: string,
+): string {
+  return speakerOverlayValue(entries, label).trim() || label;
+}
+
+function handleSpeakerOverlayInput(label: string, event: Event): void {
+  const input = event.target as HTMLInputElement;
+  emit("speakerOverlayChanged", label, input.value);
 }
 
 function handleFileInput(event: Event): void {
@@ -96,10 +152,14 @@ function handleDrop(event: DragEvent): void {
       </h2>
       <p class="mt-1 text-sm leading-snug text-navy/70">
         <template v-if="runtimeStatus === 'succeeded'">
-          Granska talare och text innan du sparar transkriptet i ett senare steg.
+          <span v-if="saveStatus === 'saved'">Transkriptet är sparat.</span>
+          <span v-else>Transkriptet är klart men inte sparat.</span>
         </template>
         <template v-else-if="runtimeStatus === 'running'">
           Sidan uppdateras när nästa steg är klart.
+        </template>
+        <template v-else-if="runtimeStatus === 'canceled'">
+          {{ abortState.message ?? "Transkriberingen är avbruten." }}
         </template>
         <template v-else>
           Ladda upp en ljudfil eller en video där ljudspåret ska skrivas ut.
@@ -113,18 +173,63 @@ function handleDrop(event: DragEvent): void {
         class="grid min-h-0 w-full flex-1 place-items-center border border-dashed border-navy/45 bg-canvas px-6 py-6 text-center"
         data-test="transcript-running-surface"
       >
-        <div class="grid gap-2">
+        <div class="grid max-w-sm gap-3">
           <p class="text-base font-medium leading-tight text-navy">
-            Transkriberar inspelningen.
-          </p>
-          <p class="text-sm leading-snug text-navy/70">
-            {{ transcriptProgressLabel(currentJob) }}
+            <template v-if="!currentJob && isUploading(uploadState)">
+              Laddar upp inspelningen.
+            </template>
+            <template v-else>Transkriberar inspelningen.</template>
           </p>
           <p
-            v-if="currentJob?.audioProgress.percentComplete != null"
-            class="text-xs font-semibold uppercase text-navy/65"
+            class="text-sm leading-snug text-navy/70"
+            data-test="transcript-progress-phase"
           >
-            {{ currentJob.audioProgress.percentComplete }} %
+            <template v-if="!currentJob && isUploading(uploadState)">
+              {{ uploadProgressLabel(uploadState) }}
+            </template>
+            <template v-else>{{ transcriptProgressLabel(currentJob) }}</template>
+          </p>
+          <p
+            v-if="progressPercent(currentJob, uploadState)"
+            class="text-xs font-semibold uppercase text-navy/65"
+            data-test="transcript-progress-percent"
+          >
+            {{ progressPercent(currentJob, uploadState) }}
+          </p>
+          <p
+            v-if="!currentJob && uploadProgressBytes(uploadState)"
+            class="text-xs leading-snug text-navy/65"
+            data-test="transcript-upload-bytes"
+          >
+            {{ uploadProgressBytes(uploadState) }}
+          </p>
+          <p
+            v-if="progressDuration(currentJob)"
+            class="text-xs leading-snug text-navy/65"
+            data-test="transcript-progress-duration"
+          >
+            Bearbetat {{ progressDuration(currentJob) }}
+          </p>
+          <p
+            v-if="progressChunks(currentJob)"
+            class="text-xs leading-snug text-navy/65"
+            data-test="transcript-progress-chunks"
+          >
+            {{ progressChunks(currentJob) }}
+          </p>
+          <p
+            v-if="progressHeartbeat(currentJob)"
+            class="text-xs leading-snug text-navy/65"
+            data-test="transcript-progress-heartbeat"
+          >
+            Senast uppdaterad {{ progressHeartbeat(currentJob) }}
+          </p>
+          <p
+            v-if="abortState.message"
+            class="border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium leading-snug text-navy"
+            data-test="transcript-abort-state"
+          >
+            {{ abortState.message }}
           </p>
         </div>
       </div>
@@ -140,18 +245,116 @@ function handleDrop(event: DragEvent): void {
       </div>
 
       <div
+        v-else-if="runtimeStatus === 'canceled'"
+        class="grid min-h-0 w-full flex-1 place-items-center border border-dashed border-navy/35 bg-canvas px-6 py-6 text-center"
+        data-test="transcript-canceled-surface"
+      >
+        <p class="text-sm font-medium leading-snug text-navy">
+          {{ abortState.message ?? "Transkriberingen är avbruten." }}
+        </p>
+      </div>
+
+      <div
         v-else-if="transcript"
-        class="min-h-0 w-full flex-1 overflow-auto border border-navy/20 bg-canvas"
+        class="flex min-h-0 w-full flex-1 flex-col overflow-hidden border border-navy/20 bg-canvas"
         data-test="transcript-result-surface"
       >
-        <ol class="grid gap-0 divide-y divide-navy/15">
+        <div class="flex shrink-0 items-center justify-between gap-3 border-b border-navy/15 px-4 py-3">
+          <p
+            class="min-w-0 text-xs font-semibold uppercase leading-tight text-navy/65"
+            data-test="transcript-save-state"
+          >
+            <template v-if="saveStatus === 'saved'">Sparat</template>
+            <template v-else-if="saveStatus === 'saving'">Sparar</template>
+            <template v-else-if="saveStatus === 'failed'">{{ saveErrorMessage }}</template>
+            <template v-else>Tillfälligt transkript</template>
+          </p>
+          <button
+            type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-2 border border-action bg-action px-3 text-sm font-semibold leading-none text-white transition hover:bg-action/90 disabled:cursor-not-allowed disabled:border-navy/20 disabled:bg-navy/10 disabled:text-navy/45"
+            :disabled="!canSaveTranscript"
+            data-test="transcript-save-button"
+            @click="emit('saveTranscript')"
+          >
+            <Save
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+            <span>{{ saveStatus === "saving" ? "Sparar" : "Spara" }}</span>
+          </button>
+        </div>
+        <div
+          v-if="canEditSpeakerOverlays && speakerLabels(transcript).length > 0"
+          class="grid shrink-0 gap-3 border-b border-navy/15 px-4 py-3"
+          data-test="transcript-speaker-overlays"
+        >
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label
+              v-for="label in speakerLabels(transcript)"
+              :key="label"
+              class="grid gap-1"
+            >
+              <span class="text-[0.7rem] font-black uppercase leading-none text-navy/60">
+                {{ label }}
+              </span>
+              <input
+                class="h-9 border border-navy/25 bg-panel px-3 text-sm font-medium text-navy outline-none transition focus:border-action"
+                type="text"
+                maxlength="120"
+                :value="speakerOverlayValue(speakerOverlayEntries, label)"
+                :placeholder="label"
+                :data-test="`transcript-speaker-name-${label}`"
+                @input="handleSpeakerOverlayInput(label, $event)"
+              >
+            </label>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p
+              class="text-xs font-medium leading-snug text-navy/65"
+              data-test="transcript-speaker-overlay-state"
+            >
+              <template v-if="speakerOverlayStatus === 'loading'">Hämtar talarnamn.</template>
+              <template v-else-if="speakerOverlayStatus === 'saving'">Sparar talarnamn.</template>
+              <template v-else-if="speakerOverlayStatus === 'saved'">Talarnamn sparade.</template>
+              <template v-else-if="speakerOverlayStatus === 'failed'">
+                {{ speakerOverlayErrorMessage }}
+              </template>
+              <template v-else>Talarnamn kan sparas.</template>
+            </p>
+            <button
+              type="button"
+              class="inline-flex h-9 shrink-0 items-center gap-2 border border-navy/25 bg-panel px-3 text-sm font-semibold leading-none text-navy transition hover:border-action disabled:cursor-not-allowed disabled:text-navy/45"
+              :disabled="speakerOverlayStatus === 'saving' || speakerOverlayStatus === 'loading'"
+              data-test="transcript-speaker-overlays-save"
+              @click="emit('saveSpeakerOverlays')"
+            >
+              <Save
+                class="h-4 w-4"
+                aria-hidden="true"
+              />
+              <span>{{ speakerOverlayStatus === "saving" ? "Sparar" : "Spara namn" }}</span>
+            </button>
+          </div>
+          <TranscriptFormatterReplayPanel
+            v-if="saveStatus === 'saved'"
+            :action-states="formatterArtifactActionStates"
+            :artifacts="formatterReplayArtifacts"
+            :can-request="canRequestFormatterReplay"
+            :error-message="formatterReplayErrorMessage"
+            :status="formatterReplayStatus"
+            @download-formatter-artifact="emit('downloadFormatterArtifact', $event)"
+            @request-formatter-replay="emit('requestFormatterReplay')"
+            @save-formatter-artifact="emit('saveFormatterArtifact', $event)"
+          />
+        </div>
+        <ol class="grid min-h-0 flex-1 gap-0 overflow-auto divide-y divide-navy/15">
           <li
             v-for="segment in transcript.segments"
             :key="segment.id"
             class="grid gap-1 px-4 py-3"
           >
             <p class="text-xs font-black uppercase leading-none text-action">
-              {{ segment.speakerLabel }}
+              {{ speakerDisplayName(speakerOverlayEntries, segment.speakerLabel) }}
             </p>
             <p class="text-sm leading-snug text-navy">
               {{ segment.text }}

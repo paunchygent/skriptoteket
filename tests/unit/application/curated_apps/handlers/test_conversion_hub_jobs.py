@@ -120,6 +120,16 @@ class FakeSirConvertClient:
         del correlation_id
         return self.artifacts_by_upstream_id[job_id]
 
+    async def download_named_artifact(
+        self,
+        job_id: str,
+        artifact_key: str,
+        *,
+        correlation_id: str | None,
+    ) -> SirConvertArtifactOutcomeV2:
+        del artifact_key, correlation_id
+        return self.artifacts_by_upstream_id[job_id]
+
     async def create_webhook_subscription(
         self,
         *,

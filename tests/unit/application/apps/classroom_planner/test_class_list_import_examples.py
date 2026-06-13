@@ -80,6 +80,18 @@ class RecordingSirConvertClient:
             "download_artifact should not be called in these example-corpus tests."
         )
 
+    async def download_named_artifact(
+        self,
+        job_id: str,
+        artifact_key: str,
+        *,
+        correlation_id: str | None,
+    ) -> SirConvertArtifactOutcomeV2:
+        del job_id, artifact_key, correlation_id
+        raise AssertionError(
+            "download_named_artifact should not be called in these example-corpus tests."
+        )
+
     async def create_webhook_subscription(
         self,
         *,

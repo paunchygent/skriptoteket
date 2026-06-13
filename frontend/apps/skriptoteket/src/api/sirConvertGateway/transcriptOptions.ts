@@ -13,6 +13,8 @@
 import { SirConvertGatewayError } from "./errors";
 import type {
   AudioTranscriptionOptions,
+  SirConvertTranscriptOutputArtifact,
+  SirConvertTranscriptOutputArtifacts,
   SirConvertTranscriptJobSpec,
   TranscriptSpeakerControl,
   TranscriptSubmitParams,
@@ -33,6 +35,11 @@ const ACCEPTED_AUDIO_EXTENSIONS = new Set([
   ".mov",
   ".mkv",
 ]);
+
+type MutableTranscriptOutputArtifacts = [
+  SirConvertTranscriptOutputArtifact,
+  ...SirConvertTranscriptOutputArtifact[],
+];
 
 function gatewayInputError(code: string, message: string): SirConvertGatewayError {
   return new SirConvertGatewayError({ code, message, status: 0 });
@@ -104,15 +111,48 @@ function buildDiarizationOptions(
   };
 }
 
+function isTranscriptOutputArtifact(value: string): value is SirConvertTranscriptOutputArtifact {
+  switch (value) {
+    case "json":
+    case "txt":
+    case "md":
+    case "vtt":
+    case "srt":
+      return true;
+    default:
+      return false;
+  }
+}
+
+function normalizeOutputArtifacts(
+  artifacts: SirConvertTranscriptOutputArtifacts | undefined,
+): SirConvertTranscriptOutputArtifacts {
+  const requested = artifacts ?? ["json"];
+  const orderedArtifacts: MutableTranscriptOutputArtifacts = ["json"];
+  for (const artifact of requested) {
+    if (!isTranscriptOutputArtifact(artifact)) {
+      throw gatewayInputError(
+        "INVALID_TRANSCRIPT_OUTPUT_ARTIFACT",
+        "Transcript output artifact is not supported.",
+      );
+    }
+    if (!orderedArtifacts.includes(artifact)) {
+      orderedArtifacts.push(artifact);
+    }
+  }
+  return orderedArtifacts;
+}
+
 export function buildAudioTranscriptionOptions(params: {
   language?: AudioTranscriptionOptions["language"];
   speakerControl: TranscriptSpeakerControl;
+  outputArtifacts?: SirConvertTranscriptOutputArtifacts;
 }): AudioTranscriptionOptions {
   return {
     language: params.language ?? "auto",
     diarization: buildDiarizationOptions(params.speakerControl),
     max_duration_seconds: 7200,
-    output_artifacts: ["json"],
+    output_artifacts: normalizeOutputArtifacts(params.outputArtifacts),
   };
 }
 
@@ -132,6 +172,7 @@ export function buildTranscriptJobSpec(
     },
     audio_transcription_options: buildAudioTranscriptionOptions({
       language: params.language,
+      outputArtifacts: params.outputArtifacts,
       speakerControl: params.speakerControl,
     }),
     execution: {

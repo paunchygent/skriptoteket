@@ -50,7 +50,7 @@ Target Python is 3.13-3.14.
 | Planning, decomposition, tranche sequencing | `agent-planning` |
 | Next-session or developer handoff messages | `agent-session-handoff` |
 | Backend architecture, DDD/Clean boundaries, FastAPI, UoW, migrations, runner contracts | `.codex/skills/skriptoteket-backend-dev/SKILL.md` |
-| Testing strategy, pytest/integration/migration lanes, fixtures, and close-out gates | `.codex/skills/skriptoteket-testing/SKILL.md` |
+| Testing strategy, test implementation, test repair, or test-quality audits | `testing` plus `.codex/skills/skriptoteket-testing/SKILL.md` when repo-specific fixtures, migrations, or gates matter |
 | Local dev, DB setup, dev stack, command wrappers, local logs | `local-devops` plus its Skriptoteket reference |
 | Hemma deploys, remote operations, shared host runtime, GPU/offload lanes | `hemma-devops` plus its Skriptoteket reference |
 | SPA, curated-app UI, auth continuation, dense workspaces, frontend tests | `integrated-frontend-stack` plus its Skriptoteket reference |

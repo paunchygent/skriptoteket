@@ -45,7 +45,7 @@ class ConversionHubJobModel(Base):
     )
     input_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     source_format: Mapped[str] = mapped_column(String(16), nullable=False)
-    output_format: Mapped[str] = mapped_column(String(16), nullable=False)
+    output_format: Mapped[str] = mapped_column(String(32), nullable=False)
     pdf_paper_size: Mapped[str | None] = mapped_column(String(16), nullable=True)
     pdf_orientation: Mapped[str | None] = mapped_column(String(16), nullable=True)
     pdf_margins_mm: Mapped[int | None] = mapped_column(Integer, nullable=True)

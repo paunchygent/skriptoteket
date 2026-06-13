@@ -74,6 +74,12 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.imports im
 from skriptoteket.application.curated_apps.flunk_out_frenzy import (
     GetFlunkOutFrenzyBootstrapHandler,
 )
+from skriptoteket.application.curated_apps.handlers import (
+    conversion_hub_transcript_artifact_actions as transcript_artifact_action_handlers,
+)
+from skriptoteket.application.curated_apps.handlers import (
+    conversion_hub_transcript_formatter_replay as transcript_replay_handlers,
+)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
     SaveConversionHubSirConvertArtifactHandler,
 )
@@ -82,6 +88,13 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
     RegisterExamConverterConversionHubJobHandler,
+    RegisterTranscriptConversionHubJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_saves import (
+    GetConversionHubTranscriptHandler,
+    ListConversionHubTranscriptSpeakerOverlaysHandler,
+    SaveConversionHubTranscriptHandler,
+    UpdateConversionHubTranscriptSpeakerOverlaysHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
@@ -214,6 +227,13 @@ from skriptoteket.infrastructure.repositories.classroom_planner_smart_rules impo
 from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
     PostgreSQLConversionHubJobRepository,
 )
+from skriptoteket.infrastructure.repositories.conversion_hub_saved_transcripts import (
+    PostgreSQLConversionHubSavedTranscriptRepository,
+    PostgreSQLConversionHubTranscriptSpeakerOverlayRepository,
+)
+from skriptoteket.infrastructure.repositories.conversion_hub_transcript_formatter_artifacts import (
+    PostgreSQLConversionHubTranscriptFormatterArtifactRepository,
+)
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
 )
@@ -248,7 +268,12 @@ from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
+from skriptoteket.protocols.conversion_hub import (
+    ConversionHubJobRepositoryProtocol,
+    ConversionHubSavedTranscriptRepositoryProtocol,
+    ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+    ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
+)
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_converter_correction_sessions import (
     ExamConverterCorrectionSessionRepositoryProtocol,
@@ -287,6 +312,13 @@ from skriptoteket.protocols.vault import (
     VaultFileRepositoryProtocol,
     VaultStorageProtocol,
     VaultUsageRepositoryProtocol,
+)
+
+DownloadTranscriptArtifactHandler = (
+    transcript_artifact_action_handlers.DownloadConversionHubTranscriptFormatterArtifactHandler
+)
+SaveTranscriptArtifactHandler = (
+    transcript_artifact_action_handlers.SaveConversionHubTranscriptFormatterArtifactHandler
 )
 
 
@@ -1430,6 +1462,27 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLConversionHubJobRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def conversion_hub_saved_transcript_repository(
+        self,
+        session: AsyncSession,
+    ) -> ConversionHubSavedTranscriptRepositoryProtocol:
+        return PostgreSQLConversionHubSavedTranscriptRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def conversion_hub_transcript_speaker_overlay_repository(
+        self,
+        session: AsyncSession,
+    ) -> ConversionHubTranscriptSpeakerOverlayRepositoryProtocol:
+        return PostgreSQLConversionHubTranscriptSpeakerOverlayRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def conversion_hub_transcript_formatter_artifact_repository(
+        self,
+        session: AsyncSession,
+    ) -> ConversionHubTranscriptFormatterArtifactRepositoryProtocol:
+        return PostgreSQLConversionHubTranscriptFormatterArtifactRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
     def exam_converter_correction_session_repository(
         self,
         session: AsyncSession,
@@ -1554,6 +1607,21 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def register_transcript_conversion_hub_job_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RegisterTranscriptConversionHubJobHandler:
+        return RegisterTranscriptConversionHubJobHandler(
+            jobs=jobs,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def download_conversion_hub_artifact_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
@@ -1566,6 +1634,146 @@ class CuratedAppsProvider(Provider):
             client=client,
             uow=uow,
             clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_conversion_hub_transcript_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> SaveConversionHubTranscriptHandler:
+        return SaveConversionHubTranscriptHandler(
+            jobs=jobs,
+            transcripts=transcripts,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_conversion_hub_transcript_handler(
+        self,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> GetConversionHubTranscriptHandler:
+        return GetConversionHubTranscriptHandler(
+            transcripts=transcripts,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_conversion_hub_transcript_speaker_overlays_handler(
+        self,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        speaker_overlays: ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ListConversionHubTranscriptSpeakerOverlaysHandler:
+        return ListConversionHubTranscriptSpeakerOverlaysHandler(
+            transcripts=transcripts,
+            speaker_overlays=speaker_overlays,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def update_conversion_hub_transcript_speaker_overlays_handler(
+        self,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        speaker_overlays: ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
+        formatter_artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> UpdateConversionHubTranscriptSpeakerOverlaysHandler:
+        return UpdateConversionHubTranscriptSpeakerOverlaysHandler(
+            transcripts=transcripts,
+            speaker_overlays=speaker_overlays,
+            formatter_artifacts=formatter_artifacts,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def prepare_conversion_hub_transcript_formatter_replay_handler(
+        self,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        speaker_overlays: ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> transcript_replay_handlers.PrepareConversionHubTranscriptFormatterReplayHandler:
+        return transcript_replay_handlers.PrepareConversionHubTranscriptFormatterReplayHandler(
+            transcripts=transcripts,
+            speaker_overlays=speaker_overlays,
+            uow=uow,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def complete_conversion_hub_transcript_formatter_replay_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler:
+        return transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler(
+            jobs=jobs,
+            transcripts=transcripts,
+            artifacts=artifacts,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def download_conversion_hub_transcript_formatter_artifact_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        uow: UnitOfWorkProtocol,
+    ) -> DownloadTranscriptArtifactHandler:
+        return DownloadTranscriptArtifactHandler(
+            jobs=jobs,
+            transcripts=transcripts,
+            artifacts=artifacts,
+            client=client,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_conversion_hub_transcript_formatter_artifact_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        transcripts: ConversionHubSavedTranscriptRepositoryProtocol,
+        artifacts: ConversionHubTranscriptFormatterArtifactRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> SaveTranscriptArtifactHandler:
+        return SaveTranscriptArtifactHandler(
+            jobs=jobs,
+            transcripts=transcripts,
+            artifacts=artifacts,
+            client=client,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
         )
 
     @provide(scope=Scope.REQUEST)

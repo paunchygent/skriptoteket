@@ -9,11 +9,15 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to
   `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-10.
-- Branch: `main`.
-- Docs-only cross-repo STT planning added `ST-21-05` through `ST-21-07` under
-  EPIC-21 with approved retained review `REV-ST-21-05`; no transcript runtime
-  implementation is authorized until the upstream blockers are resolved.
+- Date: 2026-06-13.
+- Branch: `codex/skriptoteket-pr-0349-trust-alignment`.
+- ST-21 transcript lane is active. `PR-0342` has accepted live Gateway proof;
+  `ST-21-07` / `PR-0343` is implemented for durable saved `transcript_json`.
+  `ST-21-08` / `PR-0344` through `PR-0348` are implemented for progress/cancel
+  parity, formatter authority sync, saved speaker overlays, overlay-aware
+  formatter replay, download, and Mina filer save. `PR-0349` live proof now has
+  reviewed HuleEdu/Sir Convert trust alignment plus reviewed upload/admission
+  progress remediation; the final Hemma live proof is still pending.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -27,6 +31,8 @@ Keep this file updated so the next session can pick up work quickly.
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`.
 - Prior PR-0326 through PR-0331 AI-facit history:
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0326-through-pr-0331-ai-facit-review-history.md`.
+- Prior PR-0332 through PR-0342 correction/transcript history:
+  `.codex/long-term-memory/entries/session-2026-06-12-pr-0332-through-pr-0342-correction-transcript-history.md`.
 ## Status
 - Earlier ST-21-03 / PR-0325 through PR-0331 proof and contract history is
   retained in the governed PR/reference docs and long-term memory entries above.
@@ -37,139 +43,131 @@ Keep this file updated so the next session can pick up work quickly.
   export contract. PDF may render gapped items as free text, but accepted
   gapped key values must still be included. Do not treat current DigiExam
   adapter restrictions as product limitations.
-- `PR-0331` governance correction: teacher-owned correction/edit workflow is
-  not a product decision made inside `PR-0331`. Accepted `ADR-0086` and
-  independent `PR-0332` now govern stems/prompts, points, choice keys, and
-  gapped/open-cloze teacher correction overlays. Matching remains future work
-  until Sir Convert Task 332 provides a real matching-capable producer.
-- `ADR-0086` is accepted and `REV-PR-0332` is approved. Task 322 and Task 323
-  remain useful producer prerequisites; Task 324's matching route is
-  superseded/abandoned by accepted Sir Convert ADR-0011 and completed Task 327.
-  Sir Convert Task 333 and HuleEdu TASK-0567 are now landed for non-matching
-  unified corrections. `PR-0332` must keep using only the unified HuleEdu
-  source-state/apply routes and must not preserve the old Task 324 matching
-  route as a bridge, shim, alias, wrapper, adapter, or compatibility layer.
-- `PR-0332` is done as the non-durable unified-correction consumer/projection
-  slice. It consumes only Task 333-supported non-matching correction families:
-  `point_correction`,
-  `manual_choice_answer_key`, `manual_gap_open_cloze_answer_key`, and
-  `item_text_patch`. `manual_matching_answer_key` stays blocked until Sir
-  Convert Task 332 issues matching-capable producer state.
-- `ADR-0087` is accepted by user-lead (2026-05-19) and `REV-ST-21-04` is
-  approved. `ST-21-04` is ready and owns durable authenticated teacher
-  correction sessions: Skriptoteket persists source-bound correction intents;
-  Sir Convert remains stateless and applies the complete supported persisted
-  set during replay/projection/export.
-- `PR-0333` is done: Skriptoteket now has the durable correction-session
-  aggregate, owner/job-scoped PostgreSQL persistence, active-target constraints,
-  exact source-binding round-trip, stale-version `CONFLICT` behavior, and
-  migration coverage. Retained review `REV-PR-0333` is `changes_requested`:
-  replay/conflict-family fixes passed, but per-question AI-seeded "Spara facit"
-  still bypasses the AI review-decision workflow.
-- `PR-0334` is done: authenticated owner-scoped correction-session read/upsert/
-  revert routes now expose the aggregate, stale writes map to `409 Conflict`,
-  and Skriptoteket OpenAPI/frontend types are regenerated. `PR-0335` replay
-  orchestration is done.
-- `PR-0335` is done: non-UI replay orchestration loads Skriptoteket persisted
-  active intents, issues fresh HuleEdu Sir Convert Gateway source state,
-  validates binding/fingerprints, submits the complete deterministic set to
-  unified apply, and marks projection freshness unavailable/stale without
-  claiming browser-local truth.
-- `PR-0336` is done: the authenticated Exam Converter UI persists supported
-  teacher changes through Skriptoteket correction-session APIs, restores saved
-  active intents after navigation/reload, renders replayed points/text/keys/
-  review decisions/candidate suppression/counters/file readiness, keeps drafts
-  distinct and matching blocked, and the teacher-visible Swedish copy was
-  audited to avoid internal projection/replay/session/Sir Convert terminology.
-- `PR-0338` is done:
-  `docs/backlog/prs/pr-0338-st-21-04-ai-prefill-editor-and-replay-artifact-authority.md`.
-  AI candidates seed only the normal facit editor, `submission_origin`
-  provenance is computed at durable-intent build time, selection advances only
-  after readback/replay/projection, and corrected file actions require
-  replay-provided artifact references.
-- `PR-0339` is done:
-  `docs/backlog/prs/pr-0339-st-21-04-sir-convert-replay-artifact-reference-contract.md`.
-  Sir Convert returns replay-derived `artifact_key` values on exportable
-  correction target readiness rows; HuleEdu passes through; Skriptoteket only
-  consumes that replay authority for corrected downloads/saves.
-- Latest PR-0339 UI refinement: accepted unchanged AI-prefilled facit keeps
-  `accepted_advisory_candidate` provenance after replay and uses the Lucide
-  Bot symbol in the list/inspector; teacher-authored and teacher-edited keys keep
-  the normal check/selected-choice indicator. Report warnings are diagnostics,
-  not remaining teacher actions.
-- `PR-0340` is done:
-  `docs/backlog/prs/pr-0340-st-21-04-ai-suggestion-outcome-reporting.md`.
-  It replaces the prominent raw `Konverteringsvarningar` count with
-  teacher-relevant AI suggestion outcome counts and item mapping; raw technical
-  source notes are not shown in the report summary. Saved choice facit now
-  renders as selected alternative rows with text, not detached numbers.
-- `PR-0341` is done:
-  `docs/backlog/prs/pr-0341-st-21-04-authoring-export-boundary-separation.md`.
-  Accepted-current-state export is export-owned, not teacher authoring state.
-  Skriptoteket removed `review_decision` / `accept_current_state_for_export`
-  from durable correction sessions, UI gates, replay requests, fixtures, and
-  tests. Migration `b3e7a1c9d4f2` deactivates active legacy `review_decision`
-  rows and drops `conflict_family`; local and Docker DBs are upgraded to that
-  head. Missing facit/poäng stays blocked until real authoring corrections are
-  saved.
+- `PR-0332` through `PR-0341` are done across non-durable correction controls,
+  durable correction sessions, replay/artifact authority, AI outcome reporting,
+  and authoring/export boundary separation. Matching remains blocked until Sir
+  Convert has an accepted matching-capable producer. Do not restore the old Task
+  324 matching route in any form.
 - `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` was regenerated
   from the current Sir Convert v2 OpenAPI snapshot for PR-0332. Skriptoteket's
   own `frontend/apps/skriptoteket/src/api/openapi.d.ts` was regenerated for
   `PR-0341` after removing `review_decision` / `conflict_family` from the
   local correction-session API surface.
-- `PR-0337` is done:
-  `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`.
-  Live proof retained at
-  `.artifacts/playwright-pr-0337-correction-session-live/20260520T001258Z`.
-  It proves local drafts do not unlock files, submitted supported corrections
-  survive reload through Skriptoteket readback/Sir Convert replay, final target
-  readiness exposes `correction_replay_*` artifact keys, and corrected PDF/QTI
-  downloads and saves use only those replay-scoped references while preserving
-  uploaded-source-derived target filenames.
 - `PR-0331` evidence and cleanup details are retained in the PR/reference docs;
   current proof script is `scripts/playwright_pr_0331_reviewed_ai_facit_live.py`.
-- `PR-0342` is implemented locally:
+- `PR-0342` is done with accepted live proof:
   `docs/backlog/prs/pr-0342-st-21-05-transcript-intake-and-gateway-lifecycle-client.md`.
-  It adds authenticated Conversion Hub transcript intake, speaker controls,
-  HuleEdu Gateway submit/status/result/artifact/cancel client methods, and
-  false-success `transcript_json` rejection. No public/no-login/direct Sir
-  Convert path, local STT/diarization, durable transcript save, or formatter
-  output was added.
+  Retained review
+  `docs/backlog/reviews/review-transcript-gateway-live-proof-remediation.md`
+  approved deployed proof for English and Swedish fixtures through
+  Skriptoteket -> HuleEdu Gateway -> Sir Convert -> STT/diarization ->
+  canonical `transcript_json`. No public/no-login/direct Sir Convert path,
+  local STT/diarization, durable transcript save, or formatter output was
+  added.
+- `PR-0343` is implemented:
+  `docs/backlog/prs/pr-0343-st-21-07-durable-transcript-json-save-boundary.md`.
+  It adds a typed `conversion_hub_saved_transcripts` aggregate, authenticated
+  transcript job registration/save/readback routes, frontend save affordance,
+  OpenAPI regeneration, migration coverage, and approved retained review
+  `docs/backlog/reviews/review-pr-0343-durable-transcript-json-save-boundary.md`.
+  Sir Convert Story 54 / Task 358 is now accepted for product-neutral TXT,
+  Markdown, WebVTT, and SRT formatter artifacts. Overlay-aware exports are
+  governed by new Sir Convert Story 56, HuleEdu ST-01-09/TASK-0675, and
+  Skriptoteket ST-21-08.
+- `PR-0344` is implemented:
+  `docs/backlog/prs/pr-0344-st-21-08-transcript-lifecycle-observability-and-abort-feedback.md`.
+  It replaces the narrow transcript `audioProgress` consumer shape with a
+  strict typed progress snapshot, renders Swedish phase/percent/duration/chunk/
+  heartbeat feedback, and adds abort states for pending, accepted, failed,
+  rejected, and timed-out cancel attempts. Formatter replay, exports, and
+  speaker overlays remain out of scope.
+- `REV-PR-0344` is now approved:
+  `docs/backlog/reviews/review-pr-0344-transcript-lifecycle-observability-and-abort-feedback.md`.
+  Re-review confirmed the pre-id cancel queue now waits for a real Gateway
+  cancel response before marking canceled/accepted, and malformed terminal
+  `progress` payloads now fail closed.
+- `PR-0345` and `PR-0346` are implemented:
+  `docs/backlog/prs/pr-0345-st-21-08-formatter-authority-sync-and-artifact-selection.md` and
+  `docs/backlog/prs/pr-0346-st-21-08-saved-transcript-speaker-overlay-aggregate.md`.
+  `PR-0345` adds closed transcript artifact values/keys and rejects stale
+  `not_implemented` formatter manifests. `PR-0346` adds owner-scoped speaker
+  overlay persistence, API routes, and saved-transcript UI naming controls
+  without mutating canonical `transcript_json`.
+- `PR-0347` and `PR-0348` are implemented:
+  `docs/backlog/prs/pr-0347-st-21-08-overlay-aware-formatter-replay-client.md`.
+  `docs/backlog/prs/pr-0348-st-21-08-overlay-aware-download-and-mina-filer-save.md`.
+  Replay now prepares owner-scoped saved transcript JSON plus overlays through
+  HuleEdu Gateway, persists producer-owned TXT/MD/VTT/SRT refs, and exposes
+  backend-authorized download/Mina filer save actions from those refs only.
+- `REV-PR-0348` is approved:
+  `docs/backlog/reviews/review-pr-0348-overlay-aware-download-and-mina-filer-save.md`.
+  Re-review confirmed owner-scoped persisted-provenance checks for download/save;
+  `PR-0349` live proof remains the closeout gate.
+- `PR-0349` is implemented but not live-proof closed:
+  `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`.
+  HuleEdu `TASK-0676` and Sir Convert `task-361` are approved and the focused
+  cross-repo trust-profile smoke is green. The old retained identity failure
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
+  remains historical evidence only. The new upload/admission remediation adds
+  visible pre-job upload progress, local upload abort, fresh proof-upload file
+  names, and observed-network cancel-path classification; `REV-PR-0349` is
+  approved for this remediation slice but not for final live parity.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
-- Current PR-0339/PR-0340 verification details are retained in their governed
-  PR docs; PR-0340 passed focused Vitest, typecheck, lint, build,
-  UI-fixture Playwright smoke, docs/handoff validation, and `git diff --check`.
-- Current PR-0341 authoring/export boundary separation passed its retained
-  backend, migration, DB-upgrade, container-health, focused frontend, and
-  typecheck gates; exact commands are retained in the PR doc.
-- Current PR-0337 live proof passed:
-  `pdm run python -m scripts.playwright_pr_0337_correction_session_live --base-url http://127.0.0.1:5173 --dotenv .env --timeout-seconds 580`.
-  Evidence:
-  `.artifacts/playwright-pr-0337-correction-session-live/20260520T001258Z`.
-  It retained zero enabled draft downloads/saves, six accepted final
-  corrections with no rejected entries, ready PDF/QTI target rows with
-  `correction_replay_examnet_pdf` / `correction_replay_qti_package`, replay-key
-  download/save `200` responses, uploaded-source-derived suggested/saved
-  filenames, clean PDF/QTI forbidden-text scans, PDF point correction evidence,
-  and QTI prompt/correctResponse evidence.
-- Previous PR-0332 broader correction slice passed focused Vitest, typecheck,
-  lint, build, docs/handoff validation, and `git diff --check`.
-- Current `PR-0331` generated Sir Convert DTO diff proof, script-surface proof,
-  and Hemma/public artifact proof are retained in the PR/reference docs.
-- Current ST-21-05 through ST-21-07 docs guard:
-  `pdm run test tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
-  failed red on missing exact Gateway-only/blocker/review constraints, then
-  passed after docs/review remediation.
-- Current PR-0342 local implementation proof:
-  `pdm run fe-test -- src/api/sirConvertGateway/transcriptOptions.spec.ts src/api/sirConvertGateway/transcriptClient.spec.ts src/views/apps/ConversionHubTranscriptMode.spec.ts`
-  passed with 8 tests; `pdm run fe-type-check`, `pdm run fe-lint`,
-  `pdm run docs-validate`, and `git diff --check` passed. Live authenticated
-  Hule/Sir end-to-end proof was not run in this slice.
+- PR-0339 through PR-0348 verification details are retained in their governed
+  PR/review docs.
+- Current PR-0342 live proof:
+  `.artifacts/transcript-live-gateway-proof/20260611T003730Z/proof-summary.json`
+  and
+  `.artifacts/transcript-live-gateway-proof/20260611T003748Z/proof-summary.json`
+  show Gateway POST/result/artifacts/`transcript_json` statuses all `200`, UI
+  terminal state `succeeded`, and canonical `transcript_json_v1` for English
+  and Swedish fixtures.
+- Current PR-0343 implementation proof:
+  backend red test failed on missing transcript-save modules, then
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/integration/infrastructure/repositories/test_conversion_hub_saved_transcript_repository.py`
+  passed with 8 tests. A follow-up hardening pass added owner+id saved-
+  transcript readback at the repository query boundary; that same command first
+  failed red before the repository method existed and now passes green.
+- Current PR-0343 migration proof:
+  `pdm run test 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[c4e8f0a2d6b9]' --override-ini addopts='' -m docker`
+  passed.
+- Current PR-0343 frontend/static proof:
+  `pdm run fe-test -- src/views/apps/ConversionHubTranscriptMode.spec.ts src/api/conversionHubTranscriptSaves.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/api/sirConvertGateway/transcriptClient.spec.ts`,
+  `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
+  `pdm run fe-lint`, `pdm run fe-build`, and `pdm run fe-gen-api-types`
+  passed. The save-client spec pins raw canonical `transcript_json`
+  preservation. `pdm run fe-dev` is running at `http://localhost:5173/`.
+  In-app browser transport closed during route navigation, and the SPA package
+  has no Playwright CLI binary, so no authenticated browser screenshot was
+  captured in this turn.
+- Current PR-0344 through PR-0348 proof details are retained in their PR/review
+  docs. The key green gates were focused backend/frontend transcript tests,
+  migration idempotency for `d7c9a1e4b6f2` and `e1f2a3b4c5d6`, OpenAPI/type
+  generation, lint, typecheck, frontend typecheck/lint/build, docs/handoff
+  validation, and `git diff --check`.
+- Current PR-0349 migration proof:
+  `HULEEDU_ENV_OVERLAY_FILE=output/tmp/pr0349-shared-postgres-migrations.env pdm run run-local-pdm db-lifecycle verify --all`
+  passed for 13 HuleEdu shared PostgreSQL DBs, and
+  `pdm run dev-stack db-upgrade` passed for Skriptoteket.
+- Current PR-0349 retained historical blocked proof:
+  `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --timeout-seconds 1200`
+  wrote
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/proof-summary.json`
+  with primary `failure.type=sir_convert_internal_identity_rejected`, HTTP
+  `401`, `blocker_error_code=auth_invalid_internal_identity`, and
+  `blocker_reason=invalid_internal_identity_signature`; manifest lists only
+  `network.bounded.json`, `browser-console.bounded.json`, and `failure.png`.
+- Current PR-0349 cross-repo smoke: HuleEdu profile publisher passed for
+  `local-auth-integration` and `hemma-production` with fingerprint
+  `46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992`;
+  Sir Convert Task 361 focused suite passed with `39 passed`.
+- Current PR-0349 upload/admission proof gates: `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts` passed with 30 tests; `pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py` passed with 10 tests; `pdm run fe-type-check`, `pdm run docs-validate`, and `git diff --check` passed.
 ## How to Run
 ```bash
-pdm run fe-test -- src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/ExamConverterAuthenticatedCorrectionSlice.spec.ts src/api/sirConvertGateway/completionContract.spec.ts
+pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts
+pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
 pdm run fe-type-check
 pdm run fe-lint
 pdm run fe-build
@@ -185,10 +183,11 @@ git diff --check
 - Teacher edit of prompts/stems and correct keys is not governed by `PR-0331`;
   accepted `ADR-0086` and done `PR-0332` own non-durable correction controls;
   accepted `ADR-0087`/ready `ST-21-04` own durable correction sessions.
-- Future PR-0342 live proof must use the authenticated HuleEdu browser-session
-  ceremony and verify Gateway-owned `transcript_json` download/cancel through
-  `/sir-convert/v2/convert/...`; do not claim public deployment proof from
-  local Vitest.
+- Transcript formatter/export follow-ups must persist only from saved canonical
+  `transcript_json` or accepted Sir Convert formatter/replay artifacts, not
+  source audio, local re-transcription, browser-local formatting, or invented
+  parallel transcript truth.
 ## Next Steps
-- Review PR-0342 locally, then run authenticated shared-stack/live Gateway proof
-  when the HuleEdu TASK-0570 edge is available in the target environment.
+- Commit/push the reviewed upload/admission remediation, deploy Skriptoteket to
+  Hemma, then rerun `PR-0349` live proof through progress, cancel feedback,
+  durable save, speaker rename, replay export, download, and Mina filer save.

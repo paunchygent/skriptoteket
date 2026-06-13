@@ -3,7 +3,7 @@ type: agent_session_long_term_memory_index
 id: skriptoteket-long-term-memory-index
 status: active
 created: '2026-04-16'
-last_updated: '2026-04-16'
+last_updated: '2026-06-12'
 ---
 
 # Skriptoteket Long-Term Memory
@@ -18,6 +18,7 @@ criteria, and implementation doctrine in governed docs.
 
 | Session Date | Entry File | Scope |
 | --- | --- | --- |
+| 2026-06-12 | `entries/session-2026-06-12-pr-0332-through-pr-0342-correction-transcript-history.md` | Compacted PR-0332 through PR-0342 correction and transcript lane history |
 | 2026-05-02 | `entries/session-2026-05-02-share-and-help-handoff-compaction.md` | Compacted ST-32-08, ST-08-35, ST-26-06, PR-0278, and EPIC-36 handoff history |
 | 2026-05-09 | `entries/session-2026-05-09-pr-0308-smart-settings-preference-continuity.md` | Compacted PR-0308 Smart settings preference-continuity implementation and verification |
 | 2026-05-11 | `entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md` | Compacted PR-0310 through PR-0314 Klassrumskartan phone seating/rules history |

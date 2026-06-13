@@ -47,7 +47,7 @@ def test_transcript_lane_records_gateway_only_access_and_no_local_runtime() -> N
     assert "No local STT, diarization, alignment, or re-transcription." in story_21_07
 
 
-def test_transcript_lane_records_diarization_and_blocked_sequencing() -> None:
+def test_transcript_lane_records_diarization_and_formatter_authority() -> None:
     story_21_05 = _read(STORY_21_05)
     story_21_06 = _read(STORY_21_06)
     story_21_07 = _read(STORY_21_07)
@@ -57,7 +57,9 @@ def test_transcript_lane_records_diarization_and_blocked_sequencing() -> None:
     assert "`speaker_range`" in story_21_05
     assert "min/max speaker range" in story_21_05
     assert "blocked on Sir Convert Story 53 and HuleEdu ST-01-08" in story_21_06
-    assert "blocked on canonical JSON/Sir Convert Story 54" in story_21_07
+    assert "Sir Convert Story 54" in story_21_07
+    assert "Task 358 are now accepted" in story_21_07
+    assert "blocked on canonical JSON/Sir Convert Story 54" not in story_21_07
     assert "durable transcript retention belongs in Skriptoteket after save" in story_21_07
     assert "JSON-first formatter sequencing" in story_21_07
 

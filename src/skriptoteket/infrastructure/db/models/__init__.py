@@ -42,6 +42,15 @@ from skriptoteket.infrastructure.db.models.classroom_planner_share_artifact impo
     ClassroomPlannerShareArtifactModel,
 )
 from skriptoteket.infrastructure.db.models.conversion_hub_job import ConversionHubJobModel
+from skriptoteket.infrastructure.db.models.conversion_hub_saved_transcript import (
+    ConversionHubSavedTranscriptModel,
+)
+from skriptoteket.infrastructure.db.models.conversion_hub_transcript_formatter_artifact import (
+    ConversionHubTranscriptFormatterArtifactModel,
+)
+from skriptoteket.infrastructure.db.models.conversion_hub_transcript_speaker_overlay import (
+    ConversionHubTranscriptSpeakerOverlayModel,
+)
 from skriptoteket.infrastructure.db.models.exam_converter_correction_session import (
     ExamConverterCorrectionIntentModel,
     ExamConverterCorrectionSessionModel,
@@ -63,6 +72,9 @@ __all__ = [
     "ClassroomPlannerShareArtifactModel",
     "DraftGroupModel",
     "ConversionHubJobModel",
+    "ConversionHubSavedTranscriptModel",
+    "ConversionHubTranscriptFormatterArtifactModel",
+    "ConversionHubTranscriptSpeakerOverlayModel",
     "ExamConverterCorrectionIntentModel",
     "ExamConverterCorrectionSessionModel",
     "GroupingExportCheckpointModel",

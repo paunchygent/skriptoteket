@@ -42,6 +42,22 @@ import {
   parseTranscriptJson,
   parseTranscriptResult,
 } from "./transcriptParsers";
+import {
+  buildJsonHeaders,
+  buildUnsafeActionHeaders,
+  buildUnsafeHeaders,
+  buildUnsafeJsonHeaders,
+  normalizeWaitSeconds,
+  type CsrfTokenProvider,
+} from "./headers";
+import {
+  browserMultipartUploadTransport,
+  type SirConvertMultipartUploadTransport,
+} from "./multipartUploadTransport";
+import {
+  createTranscriptFormatterReplayGatewayClient,
+  type TranscriptFormatterReplayGatewayClient,
+} from "./transcriptReplayClient";
 import type {
   SirConvertTranscriptArtifactManifest,
   SirConvertTranscriptCancelResult,
@@ -52,14 +68,13 @@ import type {
   TranscriptSubmitParams,
 } from "./transcriptTypes";
 
-export type CsrfTokenProvider = () => Promise<string | null>;
-
 export type SirConvertGatewayClientDependencies = {
   fetcher: typeof fetch;
   ensureCsrfToken: CsrfTokenProvider;
+  multipartUploadTransport?: SirConvertMultipartUploadTransport;
 };
 
-export type SirConvertGatewayClient = {
+export type SirConvertGatewayClient = TranscriptFormatterReplayGatewayClient & {
   submitDigiExamMigration(params: DigiExamMigrationSubmitParams): Promise<SirConvertSubmittedJob>;
   getDigiExamMigrationJob(params: {
     jobId: string;
@@ -109,52 +124,6 @@ export type SirConvertGatewayClient = {
   }): Promise<ExamAuthoringCorrectionsApplyResult>;
 };
 
-function buildJsonHeaders(correlationId: string): Headers {
-  const headers = new Headers();
-  headers.set("Accept", "application/json");
-  headers.set("X-Correlation-ID", correlationId);
-  return headers;
-}
-
-async function buildUnsafeHeaders(params: {
-  correlationId: string;
-  idempotencyKey: string;
-  ensureCsrfToken: CsrfTokenProvider;
-}): Promise<Headers> {
-  const headers = buildJsonHeaders(params.correlationId);
-  headers.set("Idempotency-Key", params.idempotencyKey);
-  const csrfToken = await params.ensureCsrfToken();
-  if (csrfToken) {
-    headers.set("X-CSRF-Token", csrfToken);
-  }
-  return headers;
-}
-
-async function buildUnsafeJsonHeaders(params: {
-  correlationId: string;
-  ensureCsrfToken: CsrfTokenProvider;
-}): Promise<Headers> {
-  const headers = buildJsonHeaders(params.correlationId);
-  headers.set("Content-Type", "application/json");
-  const csrfToken = await params.ensureCsrfToken();
-  if (csrfToken) {
-    headers.set("X-CSRF-Token", csrfToken);
-  }
-  return headers;
-}
-
-async function buildUnsafeActionHeaders(params: {
-  correlationId: string;
-  ensureCsrfToken: CsrfTokenProvider;
-}): Promise<Headers> {
-  const headers = buildJsonHeaders(params.correlationId);
-  const csrfToken = await params.ensureCsrfToken();
-  if (csrfToken) {
-    headers.set("X-CSRF-Token", csrfToken);
-  }
-  return headers;
-}
-
 function appendOptionalFile(
   formData: FormData,
   fieldName: string,
@@ -177,18 +146,11 @@ function appendOptionalIngestionOverlay(
   );
 }
 
-function normalizeWaitSeconds(value: number | undefined): number {
-  const waitSeconds = value ?? 0;
-  if (!Number.isInteger(waitSeconds) || waitSeconds < 0 || waitSeconds > 20) {
-    throw new Error("waitSeconds must be an integer between 0 and 20.");
-  }
-  return waitSeconds;
-}
-
 export function createSirConvertGatewayClient(
   dependencies: SirConvertGatewayClientDependencies,
 ): SirConvertGatewayClient {
   return {
+    ...createTranscriptFormatterReplayGatewayClient(dependencies),
     async submitDigiExamMigration(params) {
       const requestContext = await prepareDigiExamMigrationRequestContext(params);
       const formData = new FormData();
@@ -277,20 +239,32 @@ export function createSirConvertGatewayClient(
       const formData = new FormData();
       formData.append("file", params.file, params.file.name);
       formData.append("job_spec", stableJsonStringify(requestContext.jobSpec));
-
-      const response = await dependencies.fetcher(
-        toSirConvertGatewayUrl(`/jobs?wait_seconds=${normalizeWaitSeconds(params.waitSeconds)}`),
-        {
-          method: "POST",
-          headers: await buildUnsafeHeaders({
-            correlationId: requestContext.correlationId,
-            idempotencyKey: requestContext.idempotencyKey,
-            ensureCsrfToken: dependencies.ensureCsrfToken,
-          }),
-          body: formData,
-          credentials: "include",
-        },
+      const url = toSirConvertGatewayUrl(
+        `/jobs?wait_seconds=${normalizeWaitSeconds(params.waitSeconds)}`,
       );
+      const headers = await buildUnsafeHeaders({
+        correlationId: requestContext.correlationId,
+        idempotencyKey: requestContext.idempotencyKey,
+        ensureCsrfToken: dependencies.ensureCsrfToken,
+      });
+
+      const response =
+        params.onUploadProgress || params.abortSignal
+          ? await (dependencies.multipartUploadTransport ?? browserMultipartUploadTransport)({
+              body: formData,
+              credentials: "include",
+              headers,
+              method: "POST",
+              onUploadProgress: params.onUploadProgress,
+              signal: params.abortSignal,
+              url,
+            })
+          : await dependencies.fetcher(url, {
+              method: "POST",
+              headers,
+              body: formData,
+              credentials: "include",
+            });
       const submitted = await readJsonOrThrow(response, parseTranscriptJob);
       return {
         ...submitted,
@@ -404,6 +378,7 @@ export function createBrowserSirConvertGatewayClient(): SirConvertGatewayClient 
   return createSirConvertGatewayClient({
     fetcher: (input, init) => fetch(input, init),
     ensureCsrfToken: () => auth.ensureCsrfToken(),
+    multipartUploadTransport: browserMultipartUploadTransport,
   });
 }
 

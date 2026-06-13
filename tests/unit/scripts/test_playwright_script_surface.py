@@ -39,6 +39,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0331_reviewed_ai_facit_live.py",
     "playwright_pr_0332_teacher_corrections_live.py",
     "playwright_pr_0337_correction_session_live.py",
+    "playwright_pr_0349_transcript_parity_live.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (

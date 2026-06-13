@@ -10,28 +10,33 @@
  *   - `transcriptTypes.ts` defines the parsed consumer contracts.
  */
 
-import {
-  SIR_CONVERT_ARTIFACT_AVAILABLE,
-  SIR_CONVERT_ARTIFACT_AVAILABILITIES,
-  SIR_CONVERT_ARTIFACT_FAILED,
-  SIR_CONVERT_ARTIFACT_NOT_IMPLEMENTED,
-  SIR_CONVERT_ARTIFACT_UNAVAILABLE,
-} from "./contractValues";
-import type { SirConvertArtifactAvailability, SirConvertJobStatus } from "./types";
+import type { SirConvertJobStatus } from "./types";
 import type {
+  SirConvertTranscriptArtifactAvailability,
   SirConvertTranscriptArtifactEntry,
+  SirConvertTranscriptArtifactKey,
   SirConvertTranscriptArtifactManifest,
-  SirConvertTranscriptAudioProgress,
+  SirConvertTranscriptFormatterArtifactKey,
   SirConvertTranscriptJob,
+  SirConvertTranscriptPhaseTimingKey,
+  SirConvertTranscriptProgressPhase,
+  SirConvertTranscriptProgressSnapshot,
   SirConvertTranscriptTerminalResult,
   TranscriptJson,
   TranscriptSegment,
+} from "./transcriptTypes";
+import {
+  SIR_CONVERT_TRANSCRIPT_ARTIFACT_CONTENT_TYPES,
 } from "./transcriptTypes";
 
 type JsonRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasOwnField(record: JsonRecord, fieldName: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, fieldName);
 }
 
 function readRecord(value: unknown, fieldName: string): JsonRecord {
@@ -60,6 +65,31 @@ function readNullableNumber(value: unknown, fieldName: string): number | null {
   return readNumber(value, fieldName);
 }
 
+function readNullableNonNegativeNumber(value: unknown, fieldName: string): number | null {
+  const numberValue = readNullableNumber(value, fieldName);
+  if (numberValue === null || numberValue >= 0) return numberValue;
+  throw new Error(`Sir Convert transcript field '${fieldName}' is negative.`);
+}
+
+function readNullablePercent(value: unknown, fieldName: string): number | null {
+  const numberValue = readNullableNonNegativeNumber(value, fieldName);
+  if (numberValue === null || numberValue <= 100) return numberValue;
+  throw new Error(`Sir Convert transcript field '${fieldName}' is outside 0..100.`);
+}
+
+function readNullableNonNegativeInteger(value: unknown, fieldName: string): number | null {
+  const numberValue = readNullableNonNegativeNumber(value, fieldName);
+  if (numberValue === null || Number.isInteger(numberValue)) return numberValue;
+  throw new Error(`Sir Convert transcript field '${fieldName}' is not an integer.`);
+}
+
+function readNullableDateTime(value: unknown, fieldName: string): string | null {
+  const stringValue = readNullableString(value, fieldName);
+  if (stringValue === null) return null;
+  if (stringValue.length > 0 && Number.isFinite(Date.parse(stringValue))) return stringValue;
+  throw new Error(`Sir Convert transcript field '${fieldName}' is not a datetime.`);
+}
+
 function readStatus(value: unknown): SirConvertJobStatus {
   const status = readString(value, "status");
   if (
@@ -77,35 +107,160 @@ function readStatus(value: unknown): SirConvertJobStatus {
   throw new Error(`Unknown Sir Convert transcript status '${status}'.`);
 }
 
-function readAvailability(value: unknown): SirConvertArtifactAvailability {
-  const availability = readString(value, "availability");
-  if (SIR_CONVERT_ARTIFACT_AVAILABILITIES.includes(availability as SirConvertArtifactAvailability)) {
-    return availability as SirConvertArtifactAvailability;
+function readArtifactKey(value: unknown): SirConvertTranscriptArtifactKey {
+  const artifactKey = readString(value, "artifact_key");
+  switch (artifactKey) {
+    case "transcript_json":
+    case "transcript_txt":
+    case "transcript_md":
+    case "transcript_vtt":
+    case "transcript_srt":
+      return artifactKey;
+    default:
+      throw new Error(`Unknown Sir Convert transcript artifact key '${artifactKey}'.`);
   }
-  throw new Error(`Unknown Sir Convert transcript artifact availability '${availability}'.`);
 }
 
-function progressRecord(job: JsonRecord): JsonRecord {
-  return isRecord(job.progress) ? job.progress : job;
+function readAvailability(value: unknown): SirConvertTranscriptArtifactAvailability {
+  const availability = readString(value, "availability");
+  switch (availability) {
+    case "available":
+    case "unavailable":
+    case "failed":
+    case "unrequested":
+      return availability;
+    default:
+      throw new Error(`Unknown Sir Convert transcript artifact availability '${availability}'.`);
+  }
 }
 
-function parseAudioProgress(job: JsonRecord): SirConvertTranscriptAudioProgress {
-  const progress = progressRecord(job);
+function readProgressPhase(value: unknown, fieldName: string): SirConvertTranscriptProgressPhase {
+  const phase = readString(value, fieldName);
+  switch (phase) {
+    case "submitted":
+    case "queued":
+    case "starting":
+    case "probing_media":
+    case "normalizing_audio":
+    case "transcribing":
+    case "diarizing":
+    case "aligning_segments":
+    case "packaging":
+    case "succeeded":
+    case "failed":
+    case "canceled":
+    case "cancelled":
+      return phase;
+    default:
+      throw new Error(`Unknown Sir Convert transcript progress phase '${phase}'.`);
+  }
+}
+
+function readPhaseTimingKey(value: string): SirConvertTranscriptPhaseTimingKey {
+  switch (value) {
+    case "ocr_layout_extract_ms":
+    case "markdown_normalize_ms":
+    case "formula_enrichment_ms":
+    case "checkpoint_persist_ms":
+    case "final_artifact_persist_ms":
+    case "chunk_total_ms":
+    case "conversion_total_ms":
+      return value;
+    default:
+      throw new Error(`Unknown Sir Convert transcript phase timing '${value}'.`);
+  }
+}
+
+function parsePhaseTimings(
+  value: unknown,
+): Partial<Record<SirConvertTranscriptPhaseTimingKey, number>> {
+  if (value === null || value === undefined) return {};
+  const timings = readRecord(value, "phase_timings_ms");
+  const parsed: Partial<Record<SirConvertTranscriptPhaseTimingKey, number>> = {};
+  for (const [key, timingValue] of Object.entries(timings)) {
+    parsed[readPhaseTimingKey(key)] = readNullableNonNegativeInteger(
+      timingValue,
+      `phase_timings_ms.${key}`,
+    ) ?? 0;
+  }
+  return parsed;
+}
+
+function emptyProgress(status: SirConvertJobStatus): SirConvertTranscriptProgressSnapshot {
   return {
-    totalMediaSeconds: readNullableNumber(
-      progress.audio_total_media_seconds,
-      "audio_total_media_seconds",
+    status,
+    phase: null,
+    lastHeartbeatAt: null,
+    currentPhaseStartedAt: null,
+    processedMediaSeconds: null,
+    totalMediaSeconds: null,
+    percentComplete: null,
+    currentChunkIndex: null,
+    totalChunks: null,
+    phaseTimingsMs: {},
+  };
+}
+
+function progressRecord(job: JsonRecord): JsonRecord | null {
+  if (!hasOwnField(job, "progress")) return null;
+  if (isRecord(job.progress)) return job.progress;
+  throw new Error("Sir Convert transcript field 'progress' is not an object.");
+}
+
+function parseProgressSnapshot(
+  job: JsonRecord,
+  status: SirConvertJobStatus,
+): SirConvertTranscriptProgressSnapshot {
+  const progress = progressRecord(job);
+  if (!progress) {
+    if (status === "running" || status === "processing") {
+      throw new Error("Running Sir Convert transcript job is missing progress.");
+    }
+    return emptyProgress(status);
+  }
+  const processedMediaSeconds = readNullableNonNegativeNumber(
+    progress.audio_processed_media_seconds,
+    "audio_processed_media_seconds",
+  );
+  const totalMediaSeconds = readNullableNonNegativeNumber(
+    progress.audio_total_media_seconds,
+    "audio_total_media_seconds",
+  );
+  if (
+    processedMediaSeconds !== null &&
+    totalMediaSeconds !== null &&
+    processedMediaSeconds > totalMediaSeconds
+  ) {
+    throw new Error("Transcript processed media seconds exceed total media seconds.");
+  }
+  const currentChunkIndex = readNullableNonNegativeInteger(
+    progress.audio_current_chunk_index,
+    "audio_current_chunk_index",
+  );
+  const totalChunks = readNullableNonNegativeInteger(
+    progress.audio_total_chunks,
+    "audio_total_chunks",
+  );
+  if (currentChunkIndex !== null && totalChunks !== null && currentChunkIndex >= totalChunks) {
+    throw new Error("Transcript current chunk index exceeds total chunk count.");
+  }
+  return {
+    status,
+    phase: readProgressPhase(progress.stage, "progress.stage"),
+    lastHeartbeatAt: readNullableDateTime(progress.last_heartbeat_at, "last_heartbeat_at"),
+    currentPhaseStartedAt: readNullableDateTime(
+      progress.current_phase_started_at,
+      "current_phase_started_at",
     ),
-    processedMediaSeconds: readNullableNumber(
-      progress.audio_processed_media_seconds,
-      "audio_processed_media_seconds",
+    processedMediaSeconds,
+    totalMediaSeconds,
+    percentComplete: readNullablePercent(
+      progress.audio_percent_complete,
+      "audio_percent_complete",
     ),
-    percentComplete: readNullableNumber(progress.audio_percent_complete, "audio_percent_complete"),
-    currentChunkIndex: readNullableNumber(
-      progress.audio_current_chunk_index,
-      "audio_current_chunk_index",
-    ),
-    totalChunks: readNullableNumber(progress.audio_total_chunks, "audio_total_chunks"),
+    currentChunkIndex,
+    totalChunks,
+    phaseTimingsMs: parsePhaseTimings(progress.phase_timings_ms),
   };
 }
 
@@ -113,18 +268,16 @@ export function parseTranscriptJob(payload: unknown): SirConvertTranscriptJob {
   const root = readRecord(payload, "payload");
   const job = isRecord(root.job)
     ? root.job
-    : {
+    : ({
         job_id: root.job_id,
         status: root.status,
-        progress: root.progress,
-        stage: root.stage,
-      };
-  const progress = progressRecord(job);
+        ...(hasOwnField(root, "progress") ? { progress: root.progress } : {}),
+      } satisfies JsonRecord);
+  const status = readStatus(job.status);
   return {
     jobId: readString(job.job_id, "job.job_id"),
-    status: readStatus(job.status),
-    stage: readNullableString(progress.stage ?? job.stage, "stage"),
-    audioProgress: parseAudioProgress(job),
+    status,
+    progress: parseProgressSnapshot(job, status),
   };
 }
 
@@ -135,14 +288,7 @@ function parseTranscriptResultJob(payload: unknown, root: JsonRecord): SirConver
   return {
     jobId: readString(root.job_id, "job_id"),
     status: "succeeded",
-    stage: null,
-    audioProgress: {
-      totalMediaSeconds: null,
-      processedMediaSeconds: null,
-      percentComplete: null,
-      currentChunkIndex: null,
-      totalChunks: null,
-    },
+    progress: emptyProgress("succeeded"),
   };
 }
 
@@ -164,42 +310,79 @@ function readTranscriptApiVersion(value: unknown): "v2" {
 
 function parseArtifactEntry(payload: unknown): SirConvertTranscriptArtifactEntry {
   const entry = readRecord(payload, "artifact");
-  const artifactKey = readString(entry.artifact_key, "artifact_key");
+  const artifactKey = readArtifactKey(entry.artifact_key);
   const availability = readAvailability(entry.availability);
   const unavailableCode =
     typeof entry.unavailable_code === "string" && entry.unavailable_code.length > 0
       ? entry.unavailable_code
       : undefined;
   if (
-    (availability === SIR_CONVERT_ARTIFACT_UNAVAILABLE ||
-      availability === SIR_CONVERT_ARTIFACT_FAILED ||
-      availability === SIR_CONVERT_ARTIFACT_NOT_IMPLEMENTED) &&
+    (availability === "unavailable" ||
+      availability === "failed" ||
+      availability === "unrequested") &&
     !unavailableCode
   ) {
     throw new Error(`Transcript artifact '${artifactKey}' requires unavailable_code.`);
   }
-  const downloadPath =
-    typeof entry.download_path === "string" && entry.download_path.length > 0
-      ? entry.download_path
+  const retrievalPath =
+    typeof entry.retrieval_path === "string" && entry.retrieval_path.length > 0
+      ? entry.retrieval_path
       : undefined;
-  if (availability !== SIR_CONVERT_ARTIFACT_AVAILABLE) {
+  if (availability !== "available") {
     return {
       artifact_key: artifactKey,
       availability,
-      ...(downloadPath ? { download_path: downloadPath } : {}),
+      ...(retrievalPath ? { retrieval_path: retrievalPath } : {}),
       ...(unavailableCode ? { unavailable_code: unavailableCode } : {}),
     };
+  }
+  const contentType = readString(entry.content_type, "content_type");
+  const expectedContentType = SIR_CONVERT_TRANSCRIPT_ARTIFACT_CONTENT_TYPES[artifactKey];
+  if (contentType !== expectedContentType) {
+    throw new Error(
+      `Transcript artifact '${artifactKey}' has content type '${contentType}' instead of '${expectedContentType}'.`,
+    );
   }
   return {
     artifact_key: artifactKey,
     filename: readString(entry.filename, "filename"),
-    content_type: readString(entry.content_type, "content_type"),
+    content_type: contentType,
     availability,
     size_bytes: readNullableNumber(entry.size_bytes, "size_bytes"),
     sha256: readNullableString(entry.sha256, "sha256"),
-    ...(downloadPath ? { download_path: downloadPath } : {}),
+    ...(retrievalPath ? { retrieval_path: retrievalPath } : {}),
     ...(unavailableCode ? { unavailable_code: unavailableCode } : {}),
   };
+}
+
+function isFormatterArtifactKey(
+  artifactKey: SirConvertTranscriptArtifactKey,
+): artifactKey is SirConvertTranscriptFormatterArtifactKey {
+  return artifactKey !== "transcript_json";
+}
+
+function formatterArtifactsByKey(
+  artifacts: SirConvertTranscriptArtifactEntry[],
+): Partial<Record<SirConvertTranscriptFormatterArtifactKey, SirConvertTranscriptArtifactEntry>> {
+  const formatterArtifacts: Partial<
+    Record<SirConvertTranscriptFormatterArtifactKey, SirConvertTranscriptArtifactEntry>
+  > = {};
+  for (const artifact of artifacts) {
+    if (isFormatterArtifactKey(artifact.artifact_key)) {
+      formatterArtifacts[artifact.artifact_key] = artifact;
+    }
+  }
+  return formatterArtifacts;
+}
+
+function assertUniqueArtifactKeys(artifacts: SirConvertTranscriptArtifactEntry[]): void {
+  const seen = new Set<SirConvertTranscriptArtifactKey>();
+  for (const artifact of artifacts) {
+    if (seen.has(artifact.artifact_key)) {
+      throw new Error(`Duplicate Sir Convert transcript artifact key '${artifact.artifact_key}'.`);
+    }
+    seen.add(artifact.artifact_key);
+  }
 }
 
 export function parseTranscriptResult(payload: unknown): SirConvertTranscriptTerminalResult {
@@ -242,13 +425,23 @@ export function parseTranscriptArtifactManifest(
     throw new Error("Sir Convert transcript manifest is missing artifacts.");
   }
   const artifacts = root.artifacts.map((entry) => parseArtifactEntry(entry));
+  assertUniqueArtifactKeys(artifacts);
+  const transcriptJsonArtifact = artifacts.find(
+    (entry) => entry.artifact_key === "transcript_json",
+  );
+  if (!transcriptJsonArtifact) {
+    throw new Error("Sir Convert transcript manifest is missing transcript_json.");
+  }
+  if (transcriptJsonArtifact.availability !== "available") {
+    throw new Error("Sir Convert transcript_json artifact is not available.");
+  }
   return {
     api_version: readTranscriptApiVersion(root.api_version),
     job_id: readString(root.job_id, "job_id"),
     output_format: "transcript_bundle",
     artifacts,
-    transcriptJsonArtifact:
-      artifacts.find((entry) => entry.artifact_key === "transcript_json") ?? null,
+    transcriptJsonArtifact,
+    formatterArtifacts: formatterArtifactsByKey(artifacts),
   };
 }
 
@@ -327,6 +520,7 @@ export function parseTranscriptJson(payload: unknown): TranscriptJson {
   );
   const segments = rawSegments.map((entry, index) => parseSegment(entry, index));
   return {
+    rawJson: root,
     schemaVersion: readString(root.schema_version, "schema_version"),
     transcriptText,
     segments,
