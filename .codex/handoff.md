@@ -15,9 +15,9 @@ Keep this file updated so the next session can pick up work quickly.
   `ST-21-08` / `PR-0344` through `PR-0348` are implemented for progress/cancel
   parity, formatter authority sync, saved speaker overlays, overlay-aware
   formatter replay, download, and Mina filer save. `PR-0349` live proof now has
-  reviewed HuleEdu/Sir Convert trust alignment plus reviewed upload/admission
-  progress remediation plus a focused replay/export disabled client-state
-  remediation; the final Hemma live proof is still pending.
+  reviewed trust/upload/client-state remediations plus a focused backend
+  replay-prepare segment-extraction remediation; final Hemma live proof is
+  still pending.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -103,16 +103,13 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0349` is implemented but not live-proof closed:
   `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`.
   HuleEdu `TASK-0676` and Sir Convert `task-361` are approved and the focused
-  cross-repo trust-profile smoke is green. The old retained identity failure
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
-  remains historical evidence only. Latest retained proof
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
-  showed the current blocker: initial empty `GET /speaker-overlays` readback
-  plus false `speakerOverlayStatus='saved'` left replay/export disabled while
-  the UI claimed names and exports were ready. The new client remediation keeps
-  overlay inputs hidden until initial readback finishes, treats empty overlay
-  saves as idle, and makes replay idle copy truthful; `REV-PR-0349` now needs a
-  follow-up review pass for this client-state slice before final live parity.
+  cross-repo trust-profile smoke is green. Historical blockers at
+  `20260613T153843Z` (identity) and `20260613T181847Z` (client overlay state)
+  are remediated. Latest proof `20260613T194529Z` passed save and persisted
+  `overlay_count=2`, then `/formatter-replay/prepare` returned 422 because
+  replay used stricter segment extraction than save. Backend remediation now
+  shares strict saved-transcript segment/speaker-label extraction across save,
+  overlays, and replay prepare; fresh live proof remains pending.
 ## Verification
 - Prior PR-0331 through PR-0336 verification details are retained in their
   governed PR/review docs and long-term memory entries.
@@ -125,21 +122,10 @@ Keep this file updated so the next session can pick up work quickly.
   show Gateway POST/result/artifacts/`transcript_json` statuses all `200`, UI
   terminal state `succeeded`, and canonical `transcript_json_v1` for English
   and Swedish fixtures.
-- Current PR-0343 implementation proof:
-  backend red test failed on missing transcript-save modules, then
-  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/integration/infrastructure/repositories/test_conversion_hub_saved_transcript_repository.py`
-  passed with 8 tests. A follow-up hardening pass added owner+id saved-
-  transcript readback at the repository query boundary; that same command first
-  failed red before the repository method existed and now passes green.
-- Current PR-0343 migration proof:
-  `pdm run test 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[c4e8f0a2d6b9]' --override-ini addopts='' -m docker`
-  passed.
-- Current PR-0343 frontend/static proof:
-  `pdm run fe-test -- src/views/apps/ConversionHubTranscriptMode.spec.ts src/api/conversionHubTranscriptSaves.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/api/sirConvertGateway/transcriptClient.spec.ts`,
-  `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
-  `pdm run fe-lint`, `pdm run fe-build`, and `pdm run fe-gen-api-types`
-  passed. The save-client spec pins raw canonical `transcript_json`
-  preservation. `pdm run fe-dev` is running at `http://localhost:5173/`.
+- Current PR-0343 proof details are retained in its PR/review docs: focused
+  backend/API/repository tests, migration idempotency for `c4e8f0a2d6b9`,
+  lint/typecheck/frontend gates, OpenAPI regeneration, and raw canonical
+  `transcript_json` preservation all passed.
 - Current PR-0344 through PR-0348 proof details are retained in their PR/review
   docs. The key green gates were focused backend/frontend transcript tests,
   migration idempotency for `d7c9a1e4b6f2` and `e1f2a3b4c5d6`, OpenAPI/type
@@ -170,10 +156,17 @@ Keep this file updated so the next session can pick up work quickly.
   shows upload/STT/save passed but `GET` then `PUT /speaker-overlays` both
   returned `overlay_count=0`, no replay requests were sent, and the replay
   button stayed disabled.
+- Current PR-0349 replay-prepare segment remediation: red
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py`
+  failed with `Transcript JSON must contain at least one segment.` before the
+  shared-contract patch; green focused replay/save/API suite passed with 22
+  tests and `pdm run typecheck` passed. Latest retained live artifact
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T194529Z/`
+  shows save succeeded, `overlay_count=2`, then prepare returned 422.
 ## How to Run
 ```bash
 pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts
-pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
+pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
 pdm run fe-type-check
 pdm run fe-lint
 pdm run fe-build
@@ -194,7 +187,6 @@ git diff --check
   source audio, local re-transcription, browser-local formatting, or invented
   parallel transcript truth.
 ## Next Steps
-- Run the required reviewer pass for the replay/export disabled client-state
-  remediation, then rerun `PR-0349` live proof on Hemma through progress,
-  cancel feedback, durable save, speaker rename, replay export, download, and
-  Mina filer save.
+- Run the required reviewer pass for the replay-prepare backend remediation,
+  then rerun `PR-0349` live proof on Hemma through progress, cancel feedback,
+  durable save, speaker rename, replay export, download, and Mina filer save.

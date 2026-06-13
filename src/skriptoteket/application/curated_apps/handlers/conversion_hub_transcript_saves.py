@@ -34,6 +34,12 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
     SaveConversionHubTranscriptRequest,
     UpdateConversionHubTranscriptSpeakerOverlaysRequest,
 )
+from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_json_contract import (
+    canonical_speaker_labels,
+    canonical_transcript_segments,
+    string_value,
+    transcript_mapping,
+)
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
@@ -238,7 +244,7 @@ class UpdateConversionHubTranscriptSpeakerOverlaysHandler:
         async with self._uow:
             transcript = await self._load_transcript(actor=actor, transcript_id=transcript_id)
             overlay_entries = _validate_overlay_entries(
-                canonical_labels=_canonical_speaker_labels(transcript.transcript_json),
+                canonical_labels=canonical_speaker_labels(transcript.transcript_json),
                 entries=request.overlays,
             )
             now = self._clock.now()
@@ -286,33 +292,28 @@ def _validate_request_payload(request: SaveConversionHubTranscriptRequest) -> No
     if request.artifact_key != _TRANSCRIPT_ARTIFACT_KEY:
         raise validation_error("Only transcript_json artifacts can be saved here.")
     transcript_json = request.transcript_json
-    schema_version = _string_value(transcript_json, "schema_version") or _string_value(
+    schema_version = string_value(transcript_json, "schema_version") or string_value(
         transcript_json, "schemaVersion"
     )
     if schema_version != request.transcript_schema_version:
         raise validation_error("Transcript schema version does not match the JSON payload.")
 
-    transcript = _mapping_value(transcript_json, "transcript") or transcript_json
+    transcript = transcript_mapping(transcript_json)
     text = (
-        _string_value(transcript, "text")
-        or _string_value(transcript_json, "transcriptText")
-        or _string_value(transcript_json, "text")
+        string_value(transcript, "text")
+        or string_value(transcript_json, "transcriptText")
+        or string_value(transcript_json, "text")
     )
     if text is None or not text.strip():
         raise validation_error("Transcript JSON must contain transcript text.")
 
-    segments = _segments_value(transcript_json=transcript_json, transcript=transcript)
-    if not isinstance(segments, list) or not segments:
-        raise validation_error("Transcript JSON must contain at least one segment.")
-    for segment in segments:
-        if not isinstance(segment, Mapping):
-            raise validation_error("Transcript JSON contains an invalid segment.")
+    for segment in canonical_transcript_segments(transcript_json):
         _validate_segment(segment)
 
 
 def _validate_segment(segment: Mapping[str, JsonValue]) -> None:
-    text = _string_value(segment, "text")
-    speaker = _string_value(segment, "speaker_label") or _string_value(segment, "speakerLabel")
+    text = string_value(segment, "text")
+    speaker = string_value(segment, "speaker_label") or string_value(segment, "speakerLabel")
     start = segment.get("start_seconds", segment.get("startSeconds"))
     end = segment.get("end_seconds", segment.get("endSeconds"))
     if text is None or not text.strip():
@@ -323,36 +324,6 @@ def _validate_segment(segment: Mapping[str, JsonValue]) -> None:
         raise validation_error("Transcript JSON segments must contain numeric timestamps.")
     if float(end) < float(start):
         raise validation_error("Transcript JSON segment end must be after start.")
-
-
-def _segments_value(
-    *,
-    transcript_json: Mapping[str, JsonValue],
-    transcript: Mapping[str, JsonValue],
-) -> JsonValue | None:
-    segments = transcript.get("segments")
-    if isinstance(segments, list):
-        return segments
-    return transcript_json.get("segments")
-
-
-def _canonical_speaker_labels(transcript_json: Mapping[str, JsonValue]) -> list[str]:
-    transcript = _mapping_value(transcript_json, "transcript") or transcript_json
-    segments = _segments_value(transcript_json=transcript_json, transcript=transcript)
-    if not isinstance(segments, list):
-        raise validation_error("Transcript JSON must contain at least one segment.")
-    labels: list[str] = []
-    seen: set[str] = set()
-    for segment in segments:
-        if not isinstance(segment, Mapping):
-            raise validation_error("Transcript JSON contains an invalid segment.")
-        label = _string_value(segment, "speaker_label") or _string_value(segment, "speakerLabel")
-        if label is None or not label.strip():
-            raise validation_error("Transcript JSON segments must contain speaker labels.")
-        if label not in seen:
-            seen.add(label)
-            labels.append(label)
-    return labels
 
 
 def _has_control_character(value: str) -> bool:
@@ -393,16 +364,3 @@ def _validate_overlay_entries(
             )
         )
     return normalized_entries
-
-
-def _mapping_value(
-    value: Mapping[str, JsonValue],
-    key: str,
-) -> Mapping[str, JsonValue] | None:
-    nested = value.get(key)
-    return nested if isinstance(nested, Mapping) else None
-
-
-def _string_value(value: Mapping[str, JsonValue], key: str) -> str | None:
-    raw = value.get(key)
-    return raw if isinstance(raw, str) else None

@@ -274,6 +274,64 @@ Focused validation:
   that same command passed with `12 passed`.
 - `pdm run fe-type-check` passed.
 
+### 2026-06-13 Formatter Replay Prepare Segment-Extraction RCA
+
+Latest retained artifact:
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T194529Z/`.
+
+The client-state remediation above worked: the live proof progressed through
+upload/STT, transcript save, initial overlay readback, and persisted speaker
+overlays. The next blocker was backend replay preparation, not identity,
+fingerprint trust, overlay persistence, or the Sir Convert replay backend:
+
+- `proof-summary.json` records `save_transcript.status=200`,
+  `transcript_json.segment_count=27`, `transcript_json.speaker_label_count=2`,
+  and `speaker_overlays.status=200` with `overlay_count=2`.
+- `network.bounded.json` records `POST
+  /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-replay/prepare`
+  returning HTTP `422`, `error_code=VALIDATION_ERROR`, message
+  `Transcript JSON must contain at least one segment.`
+- No `/formatter-replay/complete` request was sent because the proof was
+  waiting for the prepare response.
+
+RCA:
+
+- Transcript save validation accepted the saved transcript payload by checking
+  canonical segments with the save contract: prefer `transcript.segments` when
+  present, otherwise accept top-level `segments`.
+- Formatter replay prepare had its own stricter speaker-label extractor and
+  only inspected `transcript.segments` after resolving the nested `transcript`
+  object.
+- A transcript JSON shape accepted and persisted by save could therefore be
+  rejected later by replay prepare even though it had non-empty segments,
+  speaker labels, text, timestamps, and persisted overlays.
+
+Remediation in this slice:
+
+- Added `conversion_hub_transcript_json_contract.py` as the shared
+  application-handler contract for strict, non-empty transcript segment and
+  canonical speaker-label extraction.
+- Wired transcript save, speaker overlay validation, and formatter replay
+  prepare to the shared extractor so saved transcript shapes cannot diverge
+  before replay.
+- Kept fail-closed validation for empty or missing segments, invalid segment
+  objects, missing speaker labels, missing text, and invalid timestamps.
+- Added a red-first regression test that saves a top-level `segments`
+  transcript, persists two overlays, and prepares formatter replay from that
+  saved record.
+
+Focused validation:
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py`
+  failed before the production patch with `Transcript JSON must contain at
+  least one segment.`
+- Green:
+  the same command passed with `1 passed`.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `22 passed`.
+- `pdm run typecheck` passed.
+
 ## Rollback Plan
 
 Leave PR-0344 through PR-0348 behavior intact and keep ST-21-08 open with the

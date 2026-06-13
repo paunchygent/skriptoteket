@@ -414,3 +414,119 @@ No findings.
 
 Full PR-0349 remains blocked until fresh authenticated Hemma live proof passes
 through speaker rename, replay export, download, and Mina filer save.
+
+## Formatter Replay Prepare RCA And Implementation Response
+
+**Date:** 2026-06-13
+**Responder:** GPT-5.5 implementation specialist
+**Scope:** backend replay-prepare contract remediation after retained artifact
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T194529Z/`.
+
+### RCA
+
+The prior replay/export disabled client-state fix succeeded. The next live
+blocker is backend validation divergence: transcript save accepted a canonical
+payload with non-empty top-level `segments`, but formatter replay prepare used
+its own stricter speaker-label extractor and only inspected
+`transcript.segments`. The retained network evidence shows durable save and
+speaker overlay persistence both returned HTTP `200` with `overlay_count=2`;
+`/formatter-replay/prepare` then returned HTTP `422` with
+`Transcript JSON must contain at least one segment.`
+
+This rules out identity/fingerprint drift, overlay persistence, and Sir Convert
+replay backend behavior for this blocker.
+
+### Implementation Response
+
+- Added a shared application-handler transcript JSON contract helper for
+  strict non-empty segment extraction and canonical speaker-label extraction.
+- Updated transcript save, speaker overlay validation, and formatter replay
+  prepare to use the same extractor.
+- Preserved fail-closed behavior for empty/missing segments, invalid segment
+  objects, missing speaker labels, missing segment text, invalid timestamps,
+  and overlay labels not present in the saved transcript.
+
+### Verification
+
+- Red:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py`
+  failed before the patch with `Transcript JSON must contain at least one
+  segment.`
+- Green:
+  the same command passed with `1 passed`.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `22 passed`.
+- `pdm run typecheck` passed.
+
+### Residual Risk
+
+This implementation response does not approve full PR-0349 closeout. Fresh
+authenticated Hemma live proof still must pass through formatter replay,
+download, and Mina filer save.
+
+## Independent Backend Remediation Review
+
+**Date:** 2026-06-13
+**Reviewer:** independent GPT-5.5 high reviewer
+**Scope:** backend replay-prepare segment-extraction remediation only, covering
+`conversion_hub_transcript_json_contract.py`,
+`conversion_hub_transcript_saves.py`,
+`conversion_hub_transcript_formatter_replay.py`,
+`test_conversion_hub_transcript_formatter_replay_saved_shapes.py`, the retained
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260613T194529Z/`
+evidence, and refreshed PR/handoff docs.
+
+### Decision
+
+approved
+
+### Findings
+
+No findings.
+
+### Review Notes
+
+- The root cause is correctly fixed for this backend slice: save validation,
+  speaker-overlay validation, and replay-prepare overlay inventory validation
+  now share the same strict saved-transcript segment and speaker-label
+  extraction helper. A transcript JSON shape accepted at save can no longer fail
+  replay prepare solely because replay only looked at `transcript.segments`
+  while save accepted top-level `segments`.
+- Validation remains fail-closed. The shared helper rejects missing or empty
+  segment lists and non-object segment entries; save validation still rejects
+  missing segment text, missing speaker labels, non-numeric timestamps, and
+  end-before-start timestamps; overlay/replay validation still rejects labels
+  not present in the saved transcript.
+- The helper is correctly layered in application handler code, has a
+  domain-purpose module docstring, uses concrete JSON object typing, and adds no
+  `Any`, `cast(...)`, `type: ignore`, or broad exception handling.
+- The new regression test is behavioral: it saves a top-level `segments`
+  transcript, persists two overlays, and prepares formatter replay from the
+  saved record. It would fail for the observed live 422 from
+  `20260613T194529Z`.
+- Existing replay, save, and web API tests still protect the public contract:
+  owner scope, overlay validity, missing-overlay replay rejection, replay job
+  spec shape, replay completion provenance, and route delegation all remain
+  green.
+- The refreshed RCA separates this blocker from prior identity/fingerprint
+  trust, overlay persistence/client state, and Sir Convert replay backend
+  blockers. Full PR-0349 closeout is still correctly held for fresh live proof.
+- `.codex/handoff.md` remains under the repo limit at 192 lines.
+
+### Verification
+
+- `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with `22 passed`.
+- `pdm run typecheck` passed.
+- `pdm run lint` passed.
+- `pdm run docs-validate` passed.
+- `pdm run handoff-validate` passed.
+- `git diff --check` passed.
+- `wc -l .codex/handoff.md` reported `192`.
+
+### Residual Risk
+
+This approval covers only the backend remediation for parser divergence between
+save/overlay validation and replay prepare. Full PR-0349 still requires fresh
+authenticated Hemma live proof through progress, cancel feedback, durable save,
+speaker rename, formatter replay, download, and Mina filer save.

@@ -13,10 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping
 from uuid import UUID
-
-from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJob,
@@ -46,6 +43,9 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
 )
 from skriptoteket.application.curated_apps.handlers import (
     conversion_hub_transcript_formatter_replay_parsing as replay_parsing,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_json_contract import (
+    canonical_speaker_labels,
 )
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
@@ -293,42 +293,10 @@ def _validate_overlay_inventory(
     transcript: ConversionHubSavedTranscript,
     overlays: list[ConversionHubTranscriptSpeakerOverlay],
 ) -> None:
-    canonical_labels = set(_canonical_speaker_labels(transcript.transcript_json))
+    canonical_labels = set(canonical_speaker_labels(transcript.transcript_json))
     for overlay in overlays:
         if overlay.canonical_speaker_label not in canonical_labels:
             raise validation_error("Speaker overlay labels must exist in the saved transcript.")
-
-
-def _canonical_speaker_labels(transcript_json: Mapping[str, JsonValue]) -> list[str]:
-    transcript = _mapping_value(transcript_json, "transcript") or transcript_json
-    segments = transcript.get("segments")
-    if not isinstance(segments, list) or not segments:
-        raise validation_error("Transcript JSON must contain at least one segment.")
-    labels: list[str] = []
-    seen: set[str] = set()
-    for segment in segments:
-        if not isinstance(segment, Mapping):
-            raise validation_error("Transcript JSON contains an invalid segment.")
-        label = _string_value(segment, "speaker_label") or _string_value(segment, "speakerLabel")
-        if label is None or not label.strip():
-            raise validation_error("Transcript JSON segments must contain speaker labels.")
-        if label not in seen:
-            seen.add(label)
-            labels.append(label)
-    return labels
-
-
-def _mapping_value(
-    value: Mapping[str, JsonValue],
-    key: str,
-) -> Mapping[str, JsonValue] | None:
-    nested = value.get(key)
-    return nested if isinstance(nested, Mapping) else None
-
-
-def _string_value(value: Mapping[str, JsonValue], key: str) -> str | None:
-    raw = value.get(key)
-    return raw if isinstance(raw, str) else None
 
 
 def _gateway_filename(*, transcript_id: UUID) -> str:
