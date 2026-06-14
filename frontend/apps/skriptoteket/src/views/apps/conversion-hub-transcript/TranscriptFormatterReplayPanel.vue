@@ -15,7 +15,8 @@ import { Download, FileText, Save } from "lucide-vue-next";
 
 import type {
   ConversionHubTranscriptFormatterArtifactRef,
-} from "../../../api/conversionHubTranscriptFormatterReplay";
+  ConversionHubTranscriptFormatterExportStatus,
+} from "../../../api/conversionHubTranscriptFormatterExports";
 import {
   formatterArtifactActionState,
   type FormatterArtifactActionStates,
@@ -26,7 +27,7 @@ const props = defineProps<{
   artifacts: readonly ConversionHubTranscriptFormatterArtifactRef[];
   canRequest: boolean;
   errorMessage: string | null;
-  status: "idle" | "running" | "succeeded" | "failed";
+  status: ConversionHubTranscriptFormatterExportStatus;
 }>();
 
 const emit = defineEmits<{
@@ -87,6 +88,21 @@ function isDownloadDisabled(artifact: ConversionHubTranscriptFormatterArtifactRe
 function isSaveDisabled(artifact: ConversionHubTranscriptFormatterArtifactRef): boolean {
   return formatterArtifactActionState(props.actionStates, artifact.artifact_key).save === "running";
 }
+
+function requestButtonLabel(): string {
+  switch (props.status) {
+    case "pending":
+      return "Uppdatera";
+    case "running":
+      return "Uppdatera";
+    case "failed":
+      return "Försök igen";
+    case "succeeded":
+      return "Skapa igen";
+    case "not_requested":
+      return "Skapa exportfiler";
+  }
+}
 </script>
 
 <template>
@@ -97,6 +113,9 @@ function isSaveDisabled(artifact: ConversionHubTranscriptFormatterArtifactRef): 
         data-test="transcript-formatter-replay-state"
       >
         <template v-if="status === 'running'">Skapar exportfiler.</template>
+        <template v-else-if="status === 'pending'">
+          Exporten är köad. Uppdatera om en stund.
+        </template>
         <template v-else-if="status === 'succeeded'">Exportfiler är klara.</template>
         <template v-else-if="status === 'failed'">
           {{ errorMessage ?? "Exportfiler kunde inte skapas." }}
@@ -156,7 +175,7 @@ function isSaveDisabled(artifact: ConversionHubTranscriptFormatterArtifactRef): 
       <button
         type="button"
         class="inline-flex h-9 shrink-0 items-center gap-2 border border-navy/25 bg-panel px-3 text-sm font-semibold leading-none text-navy transition hover:border-action disabled:cursor-not-allowed disabled:text-navy/45"
-        :disabled="!canRequest || status === 'running'"
+        :disabled="!canRequest"
         data-test="transcript-formatter-replay-button"
         @click="emit('requestFormatterReplay')"
       >
@@ -164,7 +183,7 @@ function isSaveDisabled(artifact: ConversionHubTranscriptFormatterArtifactRef): 
           class="h-4 w-4"
           aria-hidden="true"
         />
-        <span>{{ status === "running" ? "Skapar" : "Skapa exportfiler" }}</span>
+        <span>{{ requestButtonLabel() }}</span>
       </button>
     </div>
   </div>

@@ -31,12 +31,12 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
     ConversionHubTranscriptFormatterArtifactDownload,
     SaveConversionHubTranscriptFormatterArtifactResult,
 )
+from skriptoteket.application.curated_apps.conversion_hub_transcript_exports import (
+    ConversionHubTranscriptFormatterExportRequest,
+    ConversionHubTranscriptFormatterExportResponse,
+)
 from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
     ConversionHubTranscriptFormatterArtifactKey,
-    ConversionHubTranscriptFormatterReplayCompleteRequest,
-    ConversionHubTranscriptFormatterReplayPrepareRequest,
-    ConversionHubTranscriptFormatterReplayPrepareResponse,
-    ConversionHubTranscriptFormatterReplayResponse,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
     ConversionHubSavedTranscriptResponse,
@@ -44,13 +44,9 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
     SaveConversionHubTranscriptRequest,
     UpdateConversionHubTranscriptSpeakerOverlaysRequest,
 )
-from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
-from skriptoteket.domain.identity.models import Role, User, UserProfile
+from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_conversion_hub_transcript_saves as api
 from tests.fixtures.identity_fixtures import make_user
-from tests.unit.application.curated_apps.handlers import (
-    test_conversion_hub_transcript_formatter_replay as replay_fixtures,
-)
 
 RouteCallable = Callable[..., Awaitable[object]]
 ResultT = TypeVar("ResultT", bound=object)
@@ -170,81 +166,17 @@ def _register_response() -> RegisterTranscriptConversionHubJobResult:
     )
 
 
-def _replay_prepare_response(
+def _export_request() -> ConversionHubTranscriptFormatterExportRequest:
+    return ConversionHubTranscriptFormatterExportRequest(requested_artifacts=["txt"])
+
+
+def _export_response(
     transcript_id: UUID,
-) -> ConversionHubTranscriptFormatterReplayPrepareResponse:
-    return ConversionHubTranscriptFormatterReplayPrepareResponse(
-        transcript_id=transcript_id,
-        correlation_id="corr-replay-1",
-        idempotency_key="idem-replay-1",
-        gateway_filename=f"saved-transcript-{transcript_id}.json",
-        transcript_json={"schema_version": "transcript_json_v1"},
-        job_spec={
-            "api_version": "v2",
-            "source": {
-                "kind": "upload",
-                "filename": f"saved-transcript-{transcript_id}.json",
-                "format": "transcript_json",
-            },
-            "conversion": {"output_format": "transcript_bundle"},
-            "transcript_formatter_options": {
-                "schema_version": "transcript_formatter_replay_v1",
-                "requested_artifacts": ["txt"],
-                "speaker_label_overrides": [
-                    {"canonical_speaker_label": "SPEAKER_00", "display_name": "Anna"}
-                ],
-            },
-            "retention": {"pin": False},
-        },
-    )
-
-
-def _replay_complete_request() -> ConversionHubTranscriptFormatterReplayCompleteRequest:
-    content = b"Anna: overlay-aware transcript\n"
-    receipt_authority = replay_fixtures.SignedArtifactReceiptAuthority(
-        now=datetime(2026, 6, 13, 12, 1, tzinfo=timezone.utc),
-    )
-    return ConversionHubTranscriptFormatterReplayCompleteRequest(
-        sir_convert_job_id="sir-replay-job-1",
-        correlation_id="corr-replay-1",
-        status="succeeded",
-        requested_artifacts=["txt"],
-        result={
-            "api_version": "v2",
-            "job_id": "sir-replay-job-1",
-            "status": "succeeded",
-            "result": {
-                "artifact": {
-                    "filename": "transcript_replay_bundle_manifest.json",
-                    "format": "transcript_bundle",
-                    "content_type": "application/json",
-                    "size_bytes": 32,
-                    "sha256": "abc",
-                },
-                "conversion_metadata": {
-                    "pipeline_used": "transcript_json_to_transcript_bundle_replay_v2",
-                    "options_fingerprint": "sha256:abc",
-                },
-                "warnings": [],
-            },
-        },
-        artifact_payloads=[
-            receipt_authority.artifact_payload(
-                artifact_key=ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT,
-                filename="transcript_txt.txt",
-                content_type="text/plain",
-                content=content,
-            )
-        ],
-    )
-
-
-def _replay_response(transcript_id: UUID) -> ConversionHubTranscriptFormatterReplayResponse:
-    return ConversionHubTranscriptFormatterReplayResponse(
+) -> ConversionHubTranscriptFormatterExportResponse:
+    return ConversionHubTranscriptFormatterExportResponse(
         transcript_id=transcript_id,
         conversion_hub_job_id=uuid4(),
-        sir_convert_job_id="sir-replay-job-1",
-        correlation_id="corr-replay-1",
+        status="succeeded",
         requested_artifacts=["txt"],
         artifacts=[
             {
@@ -253,10 +185,11 @@ def _replay_response(transcript_id: UUID) -> ConversionHubTranscriptFormatterRep
                 "filename": "transcript_txt.txt",
                 "content_type": "text/plain",
                 "size_bytes": 12,
-                "sha256": "abc",
-                "retrieval_path": "/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt",
             }
         ],
+        error_message=None,
+        created_at=datetime(2026, 6, 13, 12, 1, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 6, 13, 12, 1, tzinfo=timezone.utc),
     )
 
 
@@ -277,24 +210,6 @@ def _formatter_artifact_save_response() -> SaveConversionHubTranscriptFormatterA
             bytes=25,
             created_at=datetime(2026, 6, 13, 12, 5, tzinfo=timezone.utc),
         ),
-    )
-
-
-def _projection(user: User, *, subject: str = "teacher-subject-1") -> HuleEduAppUserProjection:
-    return HuleEduAppUserProjection(
-        user=user,
-        profile=UserProfile(
-            user_id=user.id,
-            first_name=None,
-            last_name=None,
-            display_name=None,
-            allow_remote_fallback=None,
-            inline_completion_provider=None,
-            locale="sv-SE",
-            created_at=datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc),
-            updated_at=datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc),
-        ),
-        realm_subject_id=subject,
     )
 
 
@@ -406,50 +321,48 @@ async def test_update_speaker_overlays_delegates_to_handler() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_prepare_formatter_replay_delegates_to_handler() -> None:
+async def test_request_formatter_export_delegates_to_product_handler() -> None:
     user = make_user()
     transcript_id = uuid4()
-    request = ConversionHubTranscriptFormatterReplayPrepareRequest(requested_artifacts=["txt"])
-    handler = CapturingHandler(_replay_prepare_response(transcript_id))
+    request = _export_request()
+    correlation_id = uuid4()
+    handler = CapturingHandler(_export_response(transcript_id))
 
-    result = await _unwrap_dishka(api.prepare_conversion_hub_transcript_formatter_replay)(
+    result = await _unwrap_dishka(api.request_conversion_hub_transcript_formatter_export)(
         transcript_id=transcript_id,
-        replay_request=request,
-        request=SimpleNamespace(state=SimpleNamespace(correlation_id=None)),
+        export_request=request,
+        request=SimpleNamespace(state=SimpleNamespace(correlation_id=correlation_id)),
         registry=FakeRegistry(),
         handler=handler,
         user=user,
     )
 
-    assert isinstance(result, ConversionHubTranscriptFormatterReplayPrepareResponse)
-    assert result.job_spec.source.format == "transcript_json"
+    assert isinstance(result, ConversionHubTranscriptFormatterExportResponse)
+    assert result.status == "succeeded"
     assert handler.calls[0]["actor"] == user
     assert handler.calls[0]["transcript_id"] == transcript_id
     assert handler.calls[0]["request"] == request
+    assert handler.calls[0]["correlation_id"] == str(correlation_id)
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_complete_formatter_replay_delegates_to_handler() -> None:
+async def test_get_formatter_export_delegates_to_product_handler() -> None:
     user = make_user()
     transcript_id = uuid4()
-    request = _replay_complete_request()
-    handler = CapturingHandler(_replay_response(transcript_id))
+    handler = CapturingHandler(_export_response(transcript_id))
 
-    result = await _unwrap_dishka(api.complete_conversion_hub_transcript_formatter_replay)(
+    result = await _unwrap_dishka(api.get_conversion_hub_transcript_formatter_export)(
         transcript_id=transcript_id,
-        replay_request=request,
         registry=FakeRegistry(),
         handler=handler,
-        projection=_projection(user, subject="teacher-subject-1"),
+        user=user,
     )
 
-    assert isinstance(result, ConversionHubTranscriptFormatterReplayResponse)
+    assert isinstance(result, ConversionHubTranscriptFormatterExportResponse)
     assert result.artifacts[0].artifact_key == "transcript_txt"
     assert handler.calls[0]["actor"] == user
-    assert handler.calls[0]["authenticated_huleedu_subject"] == "teacher-subject-1"
     assert handler.calls[0]["transcript_id"] == transcript_id
-    assert handler.calls[0]["request"] == request
 
 
 @pytest.mark.unit

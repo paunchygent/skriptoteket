@@ -2,7 +2,7 @@
 
 Domain purpose:
     Prove the authenticated transcript lane across progress, cancel, save,
-    overlays, formatter replay, downloads, and Mina filer save.
+    overlays, formatter exports, downloads, and Mina filer save.
 
 Relationships:
     Uses HuleEdu browser-session helpers and writes sanitized PR-0349 evidence
@@ -54,7 +54,7 @@ SCREENSHOTS = (
     "cancel-accepted.png",
     "progress.png",
     "transcript-succeeded.png",
-    "replay-artifacts.png",
+    "formatter-artifacts.png",
     "complete.png",
 )
 
@@ -253,20 +253,23 @@ def _string_keyed_dicts(values: object) -> list[dict[str, object]]:
     return items
 
 
-def _request_replay(page: Page) -> list[dict[str, object]]:
+def _request_formatter_export(page: Page) -> list[dict[str, object]]:
     with page.expect_response(
-        lambda r: r.url.endswith("/formatter-replay/complete") and r.request.method == "POST",
+        lambda r: r.url.endswith("/formatter-exports") and r.request.method == "POST",
         timeout=180_000,
     ) as info:
         page.locator('[data-test="transcript-formatter-replay-button"]').click()
     response = info.value
     if response.status >= 400:
-        raise AssertionError(f"Formatter replay failed with HTTP {response.status}.")
+        raise AssertionError(f"Formatter export failed with HTTP {response.status}.")
     payload = json_payload(response)
+    status = payload.get("status") if isinstance(payload, dict) else None
+    if status != "succeeded":
+        raise AssertionError(f"Formatter export did not succeed: status={status!r}.")
     artifacts_payload = payload.get("artifacts") if isinstance(payload, dict) else None
     artifacts = _string_keyed_dicts(artifacts_payload)
     if len(artifacts) != len(ARTIFACT_KEYS):
-        raise AssertionError("Formatter replay did not return all requested artifacts.")
+        raise AssertionError("Formatter export did not return all requested artifacts.")
     for key in ARTIFACT_KEYS:
         expect(page.locator(f'[data-test="transcript-download-artifact-{key}"]')).to_be_visible(
             timeout=30_000
@@ -306,7 +309,7 @@ def _download_artifacts(
     for key in ARTIFACT_KEYS:
         artifact = by_key.get(key)
         if artifact is None:
-            raise AssertionError(f"Missing replay artifact {key}.")
+            raise AssertionError(f"Missing formatter export artifact {key}.")
         button = page.locator(f'[data-test="transcript-download-artifact-{key}"]')
         expect(button).to_be_enabled(timeout=30_000)
         with page.expect_response(
@@ -435,17 +438,17 @@ def run(argv: Sequence[str] | None = None) -> None:
             speaker_labels = speaker_labels_from_transcript(transcript_payload)
             summary["transcript_json"] = transcript_summary(transcript_payload)
             summary["speaker_overlays"] = _save_speaker_overlays(page, speaker_labels)
-            replay_artifacts = _request_replay(page)
-            page.screenshot(path=str(artifact_dir / "replay-artifacts.png"), full_page=True)
-            summary["formatter_replay"] = {
+            formatter_artifacts = _request_formatter_export(page)
+            page.screenshot(path=str(artifact_dir / "formatter-artifacts.png"), full_page=True)
+            summary["formatter_export"] = {
                 "artifact_keys": sorted(
-                    str(artifact.get("artifact_key")) for artifact in replay_artifacts
+                    str(artifact.get("artifact_key")) for artifact in formatter_artifacts
                 ),
-                "artifact_count": len(replay_artifacts),
+                "artifact_count": len(formatter_artifacts),
             }
             summary["downloads"] = _download_artifacts(
                 page,
-                artifacts=replay_artifacts,
+                artifacts=formatter_artifacts,
                 artifact_dir=artifact_dir,
                 forbidden_labels=speaker_labels,
             )

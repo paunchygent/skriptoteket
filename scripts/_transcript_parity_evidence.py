@@ -160,6 +160,8 @@ def scrub_payload(path: str, payload: object) -> object:
         return {"transcript_json": transcript_summary(payload)}
     if "job" in payload and isinstance(payload["job"], dict):
         return _scrub_job(payload["job"])
+    if path.endswith("/formatter-exports"):
+        return _scrub_formatter_export(payload)
     if "artifacts" in payload and isinstance(payload["artifacts"], list):
         return {
             "artifact_count": len(payload["artifacts"]),
@@ -168,10 +170,6 @@ def scrub_payload(path: str, payload: object) -> object:
     if path.endswith("/speaker-overlays"):
         overlays = payload.get("overlays")
         return {"overlay_count": len(overlays) if isinstance(overlays, list) else None}
-    if path.endswith("/formatter-replay/prepare"):
-        return _scrub_replay_prepare(payload)
-    if path.endswith("/formatter-replay/complete") or "/formatter-replay/complete" in path:
-        return {"status": payload.get("status"), "artifact_keys": _artifact_keys(payload)}
     if path.endswith("/save"):
         vault = payload.get("vault_artifact")
         return {
@@ -327,14 +325,14 @@ def _scrub_job(job: dict[str, object]) -> dict[str, object]:
     }
 
 
-def _scrub_replay_prepare(payload: dict[str, object]) -> dict[str, object]:
-    job_spec = payload.get("job_spec") if isinstance(payload.get("job_spec"), dict) else {}
-    options = job_spec.get("transcript_formatter_options") if isinstance(job_spec, dict) else {}
-    overrides = options.get("speaker_label_overrides") if isinstance(options, dict) else []
+def _scrub_formatter_export(payload: dict[str, object]) -> dict[str, object]:
+    requested_artifacts = payload.get("requested_artifacts")
+    artifacts = payload.get("artifacts")
     return {
-        "requested_artifacts": options.get("requested_artifacts")
-        if isinstance(options, dict)
+        "status": payload.get("status"),
+        "requested_artifacts": requested_artifacts
+        if isinstance(requested_artifacts, list)
         else None,
-        "speaker_override_count": len(overrides) if isinstance(overrides, list) else None,
-        "has_transcript_json": isinstance(payload.get("transcript_json"), dict),
+        "artifact_count": len(artifacts) if isinstance(artifacts, list) else None,
+        "artifact_keys": _artifact_keys(payload),
     }

@@ -48,6 +48,9 @@ from skriptoteket.infrastructure.db.models.conversion_hub_saved_transcript impor
 from skriptoteket.infrastructure.db.models.conversion_hub_transcript_formatter_artifact import (
     ConversionHubTranscriptFormatterArtifactModel,
 )
+from skriptoteket.infrastructure.db.models.conversion_hub_transcript_formatter_export_state import (
+    ConversionHubTranscriptFormatterExportStateModel,
+)
 from skriptoteket.infrastructure.db.models.conversion_hub_transcript_speaker_overlay import (
     ConversionHubTranscriptSpeakerOverlayModel,
 )
@@ -74,6 +77,7 @@ __all__ = [
     "ConversionHubJobModel",
     "ConversionHubSavedTranscriptModel",
     "ConversionHubTranscriptFormatterArtifactModel",
+    "ConversionHubTranscriptFormatterExportStateModel",
     "ConversionHubTranscriptSpeakerOverlayModel",
     "ExamConverterCorrectionIntentModel",
     "ExamConverterCorrectionSessionModel",

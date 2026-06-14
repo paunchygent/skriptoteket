@@ -2,7 +2,7 @@
  * Conversion Hub transcript formatter artifact action API client.
  *
  * Domain purpose:
- *   Download and save replay-returned transcript formatter artifacts through
+ *   Download and save product-owned transcript formatter artifacts through
  *   Skriptoteket-owned authorization and Mina filer persistence routes.
  *
  * Relationships:
@@ -14,7 +14,7 @@
 import { apiFetchBlobResponse, apiPost, type ApiBlobResponse } from "./client";
 import type {
   ConversionHubTranscriptFormatterArtifactRef,
-} from "./conversionHubTranscriptFormatterReplay";
+} from "./conversionHubTranscriptFormatterExports";
 
 export type TranscriptFormatterArtifactKey =
   ConversionHubTranscriptFormatterArtifactRef["artifact_key"];

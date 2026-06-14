@@ -30,16 +30,6 @@ export type SirConvertTranscriptOutputArtifacts = readonly [
   ...SirConvertTranscriptOutputArtifact[],
 ];
 
-export const SIR_CONVERT_TRANSCRIPT_FORMATTER_OUTPUT_ARTIFACTS = [
-  "txt",
-  "md",
-  "vtt",
-  "srt",
-] as const;
-
-export type SirConvertTranscriptFormatterOutputArtifact =
-  (typeof SIR_CONVERT_TRANSCRIPT_FORMATTER_OUTPUT_ARTIFACTS)[number];
-
 export const SIR_CONVERT_TRANSCRIPT_ARTIFACT_KEYS = [
   "transcript_json",
   "transcript_txt",
@@ -258,90 +248,3 @@ export type TranscriptJson = {
 };
 
 export type SirConvertTranscriptCancelResult = SirConvertTranscriptJob;
-
-export type SirConvertTranscriptFormatterReplayJobSpec = {
-  api_version: "v2";
-  source: {
-    kind: "upload";
-    filename: string;
-    format: "transcript_json";
-  };
-  conversion: {
-    output_format: "transcript_bundle";
-  };
-  transcript_formatter_options: {
-    schema_version: "transcript_formatter_replay_v1";
-    requested_artifacts: SirConvertTranscriptFormatterOutputArtifact[];
-    speaker_label_overrides: {
-      canonical_speaker_label: string;
-      display_name: string;
-    }[];
-  };
-  retention: {
-    pin: false;
-  };
-};
-
-export type TranscriptFormatterReplaySubmitParams = {
-  contentType: "application/json";
-  correlationId: string;
-  gatewayFilename: string;
-  idempotencyKey: string;
-  jobSpec: SirConvertTranscriptFormatterReplayJobSpec;
-  requestedArtifacts: SirConvertTranscriptFormatterOutputArtifact[];
-  transcriptJson: Record<string, unknown>;
-  waitSeconds?: number;
-};
-
-export type SirConvertTranscriptFormatterReplayRequestContext = {
-  correlationId: string;
-  idempotencyKey: string;
-  jobSpec: SirConvertTranscriptFormatterReplayJobSpec;
-  requestedArtifacts: SirConvertTranscriptFormatterOutputArtifact[];
-};
-
-export type SirConvertTranscriptFormatterReplaySubmittedJob = SirConvertTranscriptJob & {
-  idempotentReplay: boolean;
-  requestContext: SirConvertTranscriptFormatterReplayRequestContext;
-};
-
-export type SirConvertTranscriptFormatterReplayTerminalResult = {
-  artifact: {
-    filename: "transcript_replay_bundle_manifest.json";
-    content_type: "application/json";
-    format: "transcript_bundle";
-    sha256: string;
-    size_bytes: number;
-  };
-  conversion_metadata: {
-    pipeline_used: "transcript_json_to_transcript_bundle_replay_v2";
-    backend_used: null;
-    acceleration_used: null;
-    options_fingerprint: string;
-  };
-  rawResult: Record<string, unknown>;
-};
-
-export type SirConvertTranscriptFormatterReplayArtifactManifest = {
-  api_version: "v2";
-  job_id: string;
-  output_format: "transcript_bundle";
-  artifacts: SirConvertTranscriptArtifactEntry[];
-  formatterArtifacts: Record<
-    SirConvertTranscriptFormatterArtifactKey,
-    SirConvertTranscriptArtifactEntry | undefined
-  >;
-  rawManifest: Record<string, unknown>;
-};
-
-export type SirConvertTranscriptFormatterReplayArtifactBlob = {
-  artifactKey: SirConvertTranscriptFormatterArtifactKey;
-  contentType: string;
-  bytes: ArrayBuffer;
-  receipt: {
-    receipt_version: 1;
-    payload: string;
-    key_id: string;
-    signature: string;
-  };
-};

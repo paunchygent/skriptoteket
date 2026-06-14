@@ -101,6 +101,22 @@ class PostgreSQLConversionHubTranscriptFormatterArtifactRepository(
         await self._session.flush()
         return records
 
+    async def list_for_transcript(
+        self,
+        *,
+        owner_user_id: UUID,
+        transcript_id: UUID,
+    ) -> list[ConversionHubTranscriptFormatterArtifactRecord]:
+        result = await self._session.execute(
+            select(ConversionHubTranscriptFormatterArtifactModel)
+            .where(
+                ConversionHubTranscriptFormatterArtifactModel.owner_user_id == owner_user_id,
+                ConversionHubTranscriptFormatterArtifactModel.saved_transcript_id == transcript_id,
+            )
+            .order_by(ConversionHubTranscriptFormatterArtifactModel.artifact_key)
+        )
+        return [self._to_record(model) for model in result.scalars().all()]
+
     async def get_by_owner_transcript_and_key(
         self,
         *,

@@ -1,0 +1,292 @@
+"""Sir Convert producer client for product-owned transcript formatter exports.
+
+Domain purpose:
+  Call the accepted Service API v2 task-363 transcript replay lane from
+  Skriptoteket backend code and return result, manifest, and named artifact
+  bytes for application-layer verification.
+
+Relationships:
+  - Implements `ConversionHubTranscriptFormatterProducerProtocol`.
+  - Shares Sir Convert settings and HTTP client construction with the
+    Conversion Hub v2 client.
+"""
+
+from __future__ import annotations
+
+import io
+import json
+from typing import Any
+
+import httpx
+
+from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+    ConversionHubTranscriptFormatterArtifactFormat,
+    ConversionHubTranscriptFormatterArtifactKey,
+)
+from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
+    SirConvertClientSettingsV2,
+)
+from skriptoteket.protocols.conversion_hub import (
+    ConversionHubTranscriptFormatterProducerArtifact,
+    ConversionHubTranscriptFormatterProducerProtocol,
+    ConversionHubTranscriptFormatterProducerRequest,
+    ConversionHubTranscriptFormatterProducerResult,
+)
+
+_ARTIFACT_KEY_BY_FORMAT = {
+    ConversionHubTranscriptFormatterArtifactFormat.TXT: (
+        ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT
+    ),
+    ConversionHubTranscriptFormatterArtifactFormat.MD: (
+        ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_MD
+    ),
+    ConversionHubTranscriptFormatterArtifactFormat.VTT: (
+        ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_VTT
+    ),
+    ConversionHubTranscriptFormatterArtifactFormat.SRT: (
+        ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_SRT
+    ),
+}
+
+
+class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterProducerProtocol):
+    """Submit saved transcript JSON to Sir Convert and download named artifacts."""
+
+    def __init__(self, *, settings: SirConvertClientSettingsV2, client: httpx.AsyncClient) -> None:
+        self._settings = settings
+        self._client = client
+
+    async def create_transcript_formatter_export(
+        self,
+        *,
+        request: ConversionHubTranscriptFormatterProducerRequest,
+    ) -> ConversionHubTranscriptFormatterProducerResult:
+        response = await self._post(
+            "/v2/convert/jobs",
+            message_fallback="Failed to create transcript formatter export.",
+            params={"wait_seconds": request.wait_seconds},
+            headers=self._headers(
+                idempotency_key=request.idempotency_key,
+                correlation_id=request.correlation_id,
+            ),
+            data={"job_spec": json.dumps(request.job_spec, separators=(",", ":"), sort_keys=True)},
+            files={
+                "file": (
+                    request.filename,
+                    io.BytesIO(request.file_bytes),
+                    request.content_type,
+                )
+            },
+        )
+        if response.status_code != 200:
+            raise _extract_service_error(
+                response,
+                message_fallback="Failed to create transcript formatter export.",
+            )
+        job_id, status, error_message = _read_job_status(response.json())
+        if status != "succeeded":
+            return ConversionHubTranscriptFormatterProducerResult(
+                sir_convert_job_id=job_id,
+                status=status,
+                result=None,
+                artifact_manifest=None,
+                artifacts={},
+                error_message=error_message,
+            )
+        result_payload = await self._read_json_path(
+            f"/v2/convert/jobs/{job_id}/result",
+            correlation_id=request.correlation_id,
+            message_fallback="Failed to read transcript formatter result.",
+            job_id=job_id,
+        )
+        manifest_payload = await self._read_json_path(
+            f"/v2/convert/jobs/{job_id}/artifacts",
+            correlation_id=request.correlation_id,
+            message_fallback="Failed to read transcript formatter artifacts.",
+            job_id=job_id,
+        )
+        artifacts: dict[
+            ConversionHubTranscriptFormatterArtifactKey,
+            ConversionHubTranscriptFormatterProducerArtifact,
+        ] = {}
+        for requested_artifact in request.requested_artifacts:
+            artifact_key = _ARTIFACT_KEY_BY_FORMAT[requested_artifact]
+            artifact_response = await self._get(
+                f"/v2/convert/jobs/{job_id}/artifacts/{artifact_key.value}",
+                message_fallback="Failed to download transcript formatter artifact.",
+                job_id=job_id,
+                headers=self._headers(correlation_id=request.correlation_id),
+            )
+            if artifact_response.status_code != 200:
+                raise _extract_service_error(
+                    artifact_response,
+                    message_fallback="Failed to download transcript formatter artifact.",
+                    job_id=job_id,
+                )
+            artifacts[artifact_key] = ConversionHubTranscriptFormatterProducerArtifact(
+                artifact_key=artifact_key,
+                content_type=artifact_response.headers.get(
+                    "content-type",
+                    "application/octet-stream",
+                ),
+                content=artifact_response.content,
+            )
+        return ConversionHubTranscriptFormatterProducerResult(
+            sir_convert_job_id=job_id,
+            status=status,
+            result=result_payload,
+            artifact_manifest=manifest_payload,
+            artifacts=artifacts,
+            error_message=None,
+        )
+
+    def _headers(
+        self,
+        *,
+        idempotency_key: str | None = None,
+        correlation_id: str | None = None,
+    ) -> dict[str, str]:
+        headers = {"X-API-Key": self._settings.api_key}
+        if idempotency_key is not None:
+            headers["Idempotency-Key"] = idempotency_key
+        if correlation_id is not None:
+            headers["X-Correlation-ID"] = correlation_id
+        return headers
+
+    async def _post(
+        self,
+        path: str,
+        *,
+        message_fallback: str,
+        job_id: str | None = None,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        try:
+            return await self._client.post(path, **kwargs)
+        except httpx.RequestError as exc:
+            raise _extract_transport_error(
+                exc,
+                message_fallback=message_fallback,
+                job_id=job_id,
+            ) from exc
+
+    async def _get(
+        self,
+        path: str,
+        *,
+        message_fallback: str,
+        job_id: str | None = None,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        try:
+            return await self._client.get(path, **kwargs)
+        except httpx.RequestError as exc:
+            raise _extract_transport_error(
+                exc,
+                message_fallback=message_fallback,
+                job_id=job_id,
+            ) from exc
+
+    async def _read_json_path(
+        self,
+        path: str,
+        *,
+        correlation_id: str | None,
+        message_fallback: str,
+        job_id: str,
+    ) -> dict[str, object]:
+        response = await self._get(
+            path,
+            message_fallback=message_fallback,
+            job_id=job_id,
+            headers=self._headers(correlation_id=correlation_id),
+        )
+        if response.status_code != 200:
+            raise _extract_service_error(
+                response,
+                message_fallback=message_fallback,
+                job_id=job_id,
+            )
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message=message_fallback,
+                details={"job_id": job_id},
+            )
+        return payload
+
+
+def _read_job_status(payload: object) -> tuple[str, str, str | None]:
+    if not isinstance(payload, dict):
+        raise _malformed_submit_response()
+    job_obj = payload.get("job")
+    if not isinstance(job_obj, dict):
+        raise _malformed_submit_response()
+    job_id_obj = job_obj.get("job_id")
+    status_obj = job_obj.get("status")
+    if not isinstance(job_id_obj, str) or not isinstance(status_obj, str):
+        raise _malformed_submit_response()
+    error_message = None
+    error_obj = job_obj.get("error")
+    if isinstance(error_obj, str):
+        error_message = error_obj
+    elif isinstance(error_obj, dict) and isinstance(error_obj.get("message"), str):
+        error_message = error_obj["message"]
+    return job_id_obj, status_obj, error_message
+
+
+def _malformed_submit_response() -> DomainError:
+    return DomainError(
+        code=ErrorCode.SERVICE_UNAVAILABLE,
+        message="Sir Convert transcript formatter response is malformed.",
+        details={"upstream": "sir_convert_transcript_formatter_replay"},
+    )
+
+
+def _extract_transport_error(
+    exc: httpx.RequestError,
+    *,
+    message_fallback: str,
+    job_id: str | None = None,
+) -> DomainError:
+    return DomainError(
+        code=ErrorCode.SERVICE_UNAVAILABLE,
+        message=message_fallback,
+        details={
+            "job_id": job_id,
+            "upstream_error_type": type(exc).__name__,
+        },
+    )
+
+
+def _extract_service_error(
+    response: httpx.Response,
+    *,
+    message_fallback: str,
+    job_id: str | None = None,
+) -> DomainError:
+    payload: object
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = None
+    upstream_message = None
+    upstream_code = None
+    if isinstance(payload, dict):
+        error_obj = payload.get("error")
+        if isinstance(error_obj, dict):
+            message_obj = error_obj.get("message")
+            code_obj = error_obj.get("code")
+            upstream_message = message_obj if isinstance(message_obj, str) else None
+            upstream_code = code_obj if isinstance(code_obj, str) else None
+    return DomainError(
+        code=ErrorCode.SERVICE_UNAVAILABLE,
+        message=upstream_message or message_fallback,
+        details={
+            "job_id": job_id,
+            "upstream_status_code": response.status_code,
+            "upstream_code": upstream_code,
+        },
+    )

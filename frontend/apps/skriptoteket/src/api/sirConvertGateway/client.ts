@@ -54,10 +54,6 @@ import {
   browserMultipartUploadTransport,
   type SirConvertMultipartUploadTransport,
 } from "./multipartUploadTransport";
-import {
-  createTranscriptFormatterReplayGatewayClient,
-  type TranscriptFormatterReplayGatewayClient,
-} from "./transcriptReplayClient";
 import type {
   SirConvertTranscriptArtifactManifest,
   SirConvertTranscriptCancelResult,
@@ -74,7 +70,7 @@ export type SirConvertGatewayClientDependencies = {
   multipartUploadTransport?: SirConvertMultipartUploadTransport;
 };
 
-export type SirConvertGatewayClient = TranscriptFormatterReplayGatewayClient & {
+export type SirConvertGatewayClient = {
   submitDigiExamMigration(params: DigiExamMigrationSubmitParams): Promise<SirConvertSubmittedJob>;
   getDigiExamMigrationJob(params: {
     jobId: string;
@@ -150,7 +146,6 @@ export function createSirConvertGatewayClient(
   dependencies: SirConvertGatewayClientDependencies,
 ): SirConvertGatewayClient {
   return {
-    ...createTranscriptFormatterReplayGatewayClient(dependencies),
     async submitDigiExamMigration(params) {
       const requestContext = await prepareDigiExamMigrationRequestContext(params);
       const formData = new FormData();

@@ -652,6 +652,37 @@ async def _assert_e9a4_conversion_hub_transcript_formatter_artifact_content(
     assert "content" in columns
 
 
+async def _assert_f4c8_conversion_hub_transcript_formatter_export_states(
+    engine: AsyncEngine,
+) -> None:
+    await _assert_e9a4_conversion_hub_transcript_formatter_artifact_content(engine)
+    tables = await _table_names(engine)
+    assert "conversion_hub_transcript_formatter_export_states" in tables
+    columns = await _column_map(engine, "conversion_hub_transcript_formatter_export_states")
+    assert {
+        "owner_user_id",
+        "saved_transcript_id",
+        "conversion_hub_job_id",
+        "requested_artifacts",
+        "created_at",
+        "updated_at",
+    }.issubset(columns)
+    assert columns["requested_artifacts"]["is_nullable"] == "NO"
+    indexes = await _index_names(engine, "conversion_hub_transcript_formatter_export_states")
+    assert {
+        "ix_conv_hub_formatter_export_states_owner_transcript",
+        "ix_conv_hub_formatter_export_states_owner_job",
+        "uq_conv_hub_transcript_formatter_export_states_job",
+    }.issubset(indexes)
+    foreign_keys = await _foreign_key_targets(
+        engine,
+        "conversion_hub_transcript_formatter_export_states",
+    )
+    assert foreign_keys["owner_user_id"] == "users"
+    assert foreign_keys["saved_transcript_id"] == "conversion_hub_saved_transcripts"
+    assert foreign_keys["conversion_hub_job_id"] == "conversion_hub_jobs"
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -706,6 +737,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "d7c9a1e4b6f2": _assert_d7c9_conversion_hub_transcript_speaker_overlays,
     "e1f2a3b4c5d6": _assert_e1f2_conversion_hub_transcript_formatter_artifacts,
     "e9a4b6c8d2f0": _assert_e9a4_conversion_hub_transcript_formatter_artifact_content,
+    "f4c8e2a6b9d1": _assert_f4c8_conversion_hub_transcript_formatter_export_states,
 }
 
 

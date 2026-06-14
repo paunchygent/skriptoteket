@@ -30,6 +30,9 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
 from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
+from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
+    ConversionHubSavedTranscript,
+)
 from skriptoteket.application.curated_apps.handlers import (
     conversion_hub_transcript_artifact_actions as artifact_action_handlers,
 )
@@ -43,9 +46,6 @@ from skriptoteket.protocols.vault import (
 )
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
-from tests.unit.application.curated_apps.handlers import (
-    test_conversion_hub_transcript_formatter_replay as replay_fixtures,
-)
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_transcript_saves import (
     FixedClock,
     FixedIdGenerator,
@@ -155,6 +155,47 @@ def _artifact_record(
     )
 
 
+def _saved_transcript(
+    *,
+    owner_user_id: UUID,
+    transcript_id: UUID,
+) -> ConversionHubSavedTranscript:
+    now = datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc)
+    return ConversionHubSavedTranscript(
+        id=transcript_id,
+        owner_user_id=owner_user_id,
+        conversion_hub_job_id=uuid4(),
+        sir_convert_job_id="sir-transcript-job-1",
+        artifact_key="transcript_json",
+        source_filename="seminarium.m4a",
+        transcript_schema_version="transcript_json_v1",
+        language_code="sv",
+        diarization_mode="known_speaker_count",
+        speaker_count=2,
+        speaker_min=None,
+        speaker_max=None,
+        generated_at=now,
+        correlation_id="corr-transcript-1",
+        transcript_json={
+            "schema_version": "transcript_json_v1",
+            "transcript": {
+                "text": "Hej.",
+                "segments": [
+                    {
+                        "id": "seg_1",
+                        "start_seconds": 0,
+                        "end_seconds": 2,
+                        "speaker_label": "SPEAKER_00",
+                        "text": "Hej.",
+                    }
+                ],
+            },
+        },
+        created_at=now,
+        updated_at=now,
+    )
+
+
 async def _seed_provenance(
     *,
     actor_id: UUID,
@@ -174,7 +215,7 @@ async def _seed_provenance(
         transcript_id=transcript_id,
     )
     transcripts = InMemorySavedTranscriptRepository()
-    transcripts.records[transcript_id] = replay_fixtures._saved_transcript(
+    transcripts.records[transcript_id] = _saved_transcript(
         owner_user_id=actor_id,
         transcript_id=transcript_id,
     )

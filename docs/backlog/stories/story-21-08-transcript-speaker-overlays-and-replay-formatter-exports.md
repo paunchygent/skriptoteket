@@ -93,9 +93,12 @@ catch-all typed contract.
 - `PR-0347` is done: overlay-aware formatter replay client through HuleEdu
   Gateway.
 - `PR-0348` is done: overlay-aware download and Mina filer save actions.
-- `PR-0349` remains blocked pending a fresh live rerun, but the latest
-  retained blocker is now the client-side replay/export disabled state after
-  transcript save rather than the earlier trust-profile mismatch.
+- `PR-0349` remains blocked pending retained review, deploy, and live proof over
+  the product-owned replay/export boundary.
+- `PR-0350` is implemented pending review: the browser-owned replay saga is
+  removed, and the DXE/converter pattern is restored so the browser records
+  intent and observes product state while Skriptoteket and the producer
+  contracts own orchestration and artifact authority.
 
 ## Live Proof Status
 
@@ -115,11 +118,16 @@ readback. The blocker moved into Skriptoteket client state: `GET
 and the UI falsely rendered `Talarnamn sparade.` / `Exportfiler kan skapas.`
 while the replay button stayed disabled.
 
-The current remediation waits for initial overlay readback before exposing
-editable inputs, keeps empty overlay saves truthful, and aligns replay idle
-copy with the disabled button state. The story stays open/blocked until the
-authenticated live proof is rerun and retains successful overlay-aware replay,
-download, and Mina filer save evidence.
+The later production/manual finding is architectural: replay/export can still
+become a foreground browser-owned workflow. A manual production export for
+transcript `aaf12956-67c3-4cd6-8094-b2e264ad2b59` spent about 119 seconds
+between `formatter-replay/prepare` and `formatter-replay/complete` because the
+browser was coordinating Sir Convert submit, polling, artifact fetch, and
+completion. That violates the DXE/converter boundary requested for this story.
+
+The story stays open/blocked until `PR-0350` passes retained review, is deployed,
+and authenticated live proof retains successful overlay-aware replay, download,
+and Mina filer save evidence through the product-owned boundary.
 
 ## Linked Artifacts
 
