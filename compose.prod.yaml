@@ -103,7 +103,7 @@ services:
       LLM_CHAT_OPS_FALLBACK_MODEL: ${LLM_CHAT_OPS_FALLBACK_MODEL:-gpt-5.2}
       LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT: ${LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT:-low}
       # Conversion Hub -> Sir Convert-a-Lot v2
-      SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-https://convert.hule.education}
+      SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
       SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
       SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
       SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}
@@ -148,7 +148,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       # Keep worker runtime on the same canonical Sir Convert v2 env contract as web
       # so queue/CLI flows never depend on stale aliases or partial recreates.
-      SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-https://convert.hule.education}
+      SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
       SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
       SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
       SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}

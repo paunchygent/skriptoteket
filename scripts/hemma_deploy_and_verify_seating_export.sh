@@ -64,6 +64,13 @@ require_env "BOOTSTRAP_SUPERUSER_PASSWORD"
 require_env "SKRIPTOTEKET_DB_PASSWORD"
 require_env "SECRET_KEY"
 
+sir_convert_base_url="${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}"
+if [[ "${sir_convert_base_url}" == "https://convert.hule.education" ]]; then
+    echo "SIR_CONVERT_A_LOT_V2_BASE_URL must target the hule-network Sir Convert service; convert.hule.education is a reserved public edge." >&2
+    exit 1
+fi
+export SIR_CONVERT_A_LOT_V2_BASE_URL="${sir_convert_base_url}"
+
 export HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR="${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR:-/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity}"
 HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH="${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR}/gateway-internal-identity-public-key.pem"
 if [[ ! -r "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_PATH}" ]]; then
