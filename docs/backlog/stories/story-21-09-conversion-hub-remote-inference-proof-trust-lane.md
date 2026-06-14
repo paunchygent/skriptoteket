@@ -2,7 +2,7 @@
 type: story
 id: ST-21-09
 title: "Conversion Hub remote inference proof trust lane"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-14
 updated: 2026-06-14
@@ -90,10 +90,10 @@ blocker and a documented default, not session memory.
 
 ## Implementation Slices
 
-- `PR-0352` is implemented and live-proofed locally and on Hemma production,
-  and is awaiting independent review approval. It adds the transcript
-  live-proof trust-lane preflight and makes remote inference with coherent
-  trust the default behavior.
+- `PR-0352` is done, live-proofed locally and on Hemma production, and
+  approved by `REV-PR-0352`. It adds the transcript live-proof trust-lane
+  preflight and makes remote inference with coherent trust the default
+  behavior.
 
 ## Evidence
 
@@ -103,3 +103,4 @@ blocker and a documented default, not session memory.
   `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260614T191738Z/proof-summary.json`.
 - Container-log evidence for the successful native proof is retained at
   `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0352-native-proof-logs/20260614T191737Z/`.
+- Independent retained review `REV-PR-0352` is approved.

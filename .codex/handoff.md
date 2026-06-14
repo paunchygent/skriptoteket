@@ -49,7 +49,7 @@ Keep this file updated so the next session can pick up work quickly.
   HuleEdu Gateway/Sir Convert trust-lane drift: keep Sir Convert's hosted
   model/runtime estate remote, but make signer/verifier lane coherence a
   default preflight before upload or producer job creation.
-- `PR-0352` implementation is in progress pending ruthless review. New helper:
+- `PR-0352` / `ST-21-09` is done and approved by `REV-PR-0352`. New helper:
   `scripts/_sir_convert_trust_lane_preflight.py`; proof hook:
   `scripts/playwright_pr_0349_transcript_parity_live.py`; focused tests:
   `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`.
@@ -105,6 +105,9 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run test tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_transcript_formatter_producer.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_client_v2.py`
   passed with 18 tests.
 - Green PR-0352 static gates: `pdm run lint` and `pdm run typecheck`.
+- Independent ruthless review `REV-PR-0352` approved the current implementation
+  and retained proof evidence after re-running focused preflight, formatter, and
+  Sir Convert recovery tests.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
@@ -143,9 +146,6 @@ ssh hemma "cd /home/paunchygent/apps/skriptoteket && /home/paunchygent/.local/bi
   `transcript_json`, saved overlays, accepted Sir Convert artifacts, no browser
   submit/poll/download/base64/complete saga.
 ## Next Steps
-- Next governed step: send the now-working PR-0352/async-export patch to the
-  ruthless review subagent and remediate findings until `REV-PR-0352` is
-  accepted.
-- Separate follow-up: implement `PR-0353` after/alongside PR-0352 closeout to
+- Separate follow-up: implement `PR-0353` after PR-0352 closeout to
   remove production Playwright `DEP0169` build warnings without breaking
   `ST-26-07` share-preview thumbnails.

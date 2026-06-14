@@ -57,7 +57,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
-- [ ] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
+- [x] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
 
 ## Risks
 
@@ -216,9 +216,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   Mina filer save. The production producer URL is now the internal Hemma Sir
   Convert service `http://sir_convert_a_lot_prod:8085`, not the reserved public
   `convert.hule.education` edge.
-- `ST-21-09` / `PR-0352` is ready as a remediation slice after the later local
-  `PR-0351` live-proof blocker. It must make remote inference with coherent
-  HuleEdu Gateway/Sir Convert trust the default, block mixed local-signer to
-  Hemma-verifier lanes before upload, and avoid requiring local hosting of
-  Sir Convert's STT, diarization, alignment, OCR/vision, LLM/enrichment,
-  correction/replay, or future hosted-model workers.
+- `ST-21-09` / `PR-0352` is done and approved by `REV-PR-0352`: remote
+  inference with coherent HuleEdu Gateway/Sir Convert trust is enforced before
+  upload, mixed local-signer to Hemma-verifier lanes fail closed unless
+  explicitly verified, local heavy model/runtime hosting remains out of scope,
+  and both local remote-proof plus native Hemma production STT E2E proofs are
+  retained.

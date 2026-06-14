@@ -2,7 +2,7 @@
 type: pr
 id: PR-0352
 title: "ST-21-09 Remote inference live-proof trust-lane preflight"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-14
 updated: 2026-06-14
@@ -106,8 +106,8 @@ Make transcript live-proof lane coherence executable and default:
 
 ## Implementation Summary
 
-Implementation is complete with both local remote-proof and native Hemma
-production proof passed. It is awaiting independent `REV-PR-0352` approval.
+Implementation is complete, live-proofed locally and natively on Hemma
+production, and approved by independent `REV-PR-0352`.
 
 - Added `scripts/_sir_convert_trust_lane_preflight.py` as the proof-lane
   preflight module. It resolves public lane metadata from CLI, environment,
