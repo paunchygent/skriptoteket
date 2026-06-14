@@ -13,8 +13,10 @@ Relationships:
 
 from __future__ import annotations
 
+import asyncio
 import io
 import json
+import time
 from typing import Any
 
 import httpx
@@ -48,6 +50,8 @@ _ARTIFACT_KEY_BY_FORMAT = {
         ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_SRT
     ),
 }
+_FORMATTER_EXPORT_POLL_INTERVAL_SECONDS = 0.5
+_FORMATTER_EXPORT_TERMINAL_FAILURES = frozenset({"failed", "canceled", "cancelled"})
 
 
 class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterProducerProtocol):
@@ -79,12 +83,18 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
                 )
             },
         )
-        if response.status_code != 200:
+        if response.status_code not in {200, 202}:
             raise _extract_service_error(
                 response,
                 message_fallback="Failed to create transcript formatter export.",
             )
         job_id, status, error_message = _read_job_status(response.json())
+        status, error_message = await self._wait_for_terminal_status(
+            job_id=job_id,
+            initial_status=status,
+            initial_error_message=error_message,
+            correlation_id=request.correlation_id,
+        )
         if status != "succeeded":
             return ConversionHubTranscriptFormatterProducerResult(
                 sir_convert_job_id=job_id,
@@ -140,6 +150,39 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
             artifacts=artifacts,
             error_message=None,
         )
+
+    async def _wait_for_terminal_status(
+        self,
+        *,
+        job_id: str,
+        initial_status: str,
+        initial_error_message: str | None,
+        correlation_id: str | None,
+    ) -> tuple[str, str | None]:
+        current_status = initial_status.strip().lower()
+        current_error_message = initial_error_message
+        deadline = time.monotonic() + self._settings.timeout_seconds
+
+        while True:
+            if current_status == "succeeded":
+                return current_status, current_error_message
+            if current_status in _FORMATTER_EXPORT_TERMINAL_FAILURES:
+                return current_status, current_error_message
+            if time.monotonic() >= deadline:
+                raise DomainError(
+                    code=ErrorCode.SERVICE_UNAVAILABLE,
+                    message="Sir Convert transcript formatter export timed out.",
+                    details={"job_id": job_id, "upstream_status": current_status},
+                )
+
+            await asyncio.sleep(_FORMATTER_EXPORT_POLL_INTERVAL_SECONDS)
+            payload = await self._read_json_path(
+                f"/v2/convert/jobs/{job_id}",
+                correlation_id=correlation_id,
+                message_fallback="Failed to read transcript formatter job status.",
+                job_id=job_id,
+            )
+            _, current_status, current_error_message = _read_job_status(payload)
 
     def _headers(
         self,
