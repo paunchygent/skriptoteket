@@ -70,7 +70,7 @@ describe("TranscriptWorkspaceShell", () => {
     expect(wrapper.text()).not.toContain("pyannote");
   });
 
-  it("renders full running progress from the Gateway snapshot", () => {
+  it("renders stable running progress from the Gateway snapshot", () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {
         abortState: { message: null, status: "idle" },
@@ -93,14 +93,13 @@ describe("TranscriptWorkspaceShell", () => {
     expect(wrapper.get("[data-test='transcript-progress-phase']").text()).toContain(
       "Skriver ut samtalet",
     );
-    expect(wrapper.get("[data-test='transcript-progress-percent']").text()).toContain("35 %");
-    expect(wrapper.get("[data-test='transcript-progress-duration']").text()).toContain(
-      "0:42 av 2:00",
+    expect(wrapper.get("[data-test='transcript-progress-current-step']").text()).toContain(
+      "Vi arbetar med ljudet.",
     );
-    expect(wrapper.get("[data-test='transcript-progress-chunks']").text()).toContain("Del 2 av 3");
-    expect(wrapper.get("[data-test='transcript-progress-heartbeat']").text()).toContain(
-      "Senast uppdaterad",
-    );
+    expect(wrapper.find("[data-test='transcript-progress-percent']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='transcript-progress-duration']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='transcript-progress-chunks']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='transcript-progress-heartbeat']").exists()).toBe(false);
   });
 
   it("renders upload progress before Sir Convert returns a job id", () => {
@@ -136,7 +135,11 @@ describe("TranscriptWorkspaceShell", () => {
     expect(wrapper.get("[data-test='transcript-upload-bytes']").text()).toContain(
       "8.0 MB av 16.0 MB",
     );
-    expect(wrapper.find("[data-test='transcript-progress-heartbeat']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='transcript-progress-steps']").exists()).toBe(false);
+    expect(wrapper.get("[data-test='transcript-abort-state']").classes()).toContain("invisible");
+    expect(wrapper.get("[data-test='transcript-abort-state']").attributes("aria-hidden")).toBe(
+      "true",
+    );
   });
 
   it("renders abort pending and failure feedback without ending the running surface", () => {
@@ -165,6 +168,9 @@ describe("TranscriptWorkspaceShell", () => {
     expect(wrapper.find("[data-test='transcript-running-surface']").exists()).toBe(true);
     expect(wrapper.get("[data-test='transcript-abort-state']").text()).toContain(
       "Det gick inte att avbryta. Transkriberingen fortsätter.",
+    );
+    expect(wrapper.get("[data-test='transcript-abort-state']").classes()).not.toContain(
+      "invisible",
     );
   });
 
@@ -290,13 +296,16 @@ describe("TranscriptWorkspaceShell", () => {
 
     expect(wrapper.text()).toContain("Anna Andersson");
     expect(wrapper.text()).toContain("SPEAKER_01");
+    expect(wrapper.get("[data-test='transcript-speaker-overlay-state']").text()).toContain(
+      "Fyll i namn för alla talare",
+    );
+    expect(wrapper.find("[data-test='transcript-speaker-overlays-save']").exists()).toBe(false);
+
     await wrapper
       .get<HTMLInputElement>("[data-test='transcript-speaker-name-SPEAKER_01']")
       .setValue("Bo Berg");
-    await wrapper.get("[data-test='transcript-speaker-overlays-save']").trigger("click");
 
     expect(wrapper.emitted("speakerOverlayChanged")).toEqual([["SPEAKER_01", "Bo Berg"]]);
-    expect(wrapper.emitted("saveSpeakerOverlays")).toHaveLength(1);
   });
 
   it("emits selected formatter actions without rendering producer artifact rows", async () => {

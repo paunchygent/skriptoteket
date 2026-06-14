@@ -12,7 +12,7 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   ConversionHubTranscriptSpeakerOverlaysResponse,
@@ -33,7 +33,12 @@ import {
 
 describe("ConversionHubTranscriptHost", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     resetTranscriptHostHarness();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("waits for overlay readback before rendering editable speaker inputs", async () => {

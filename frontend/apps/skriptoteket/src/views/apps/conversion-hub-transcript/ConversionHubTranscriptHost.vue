@@ -12,7 +12,7 @@
  *   - Keeps transcript state out of the existing Exam Converter components.
  */
 
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 
 import {
   downloadConversionHubTranscriptFormatterArtifact,
@@ -79,6 +79,7 @@ type SpeakerOverlayStatus = "idle" | "loading" | "saving" | "saved" | "failed";
 type FormatterExportStatus = ConversionHubTranscriptFormatterExportStatus;
 type TranscriptFormatterRequestedArtifact =
   ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
+const SPEAKER_OVERLAY_AUTOSAVE_DELAY_MS = 500;
 
 const conversionHubJobId = ref<string | null>(null);
 const savedTranscriptId = ref<string | null>(null);
@@ -92,6 +93,11 @@ const formatterExportStatus = ref<FormatterExportStatus>("not_requested");
 const formatterExportErrorMessage = ref<string | null>(null);
 const formatterExportRequestInFlight = ref(false);
 const formatterArtifactActionStates = ref<FormatterArtifactActionStates>({});
+const speakerOverlayRevision = ref(0);
+let speakerOverlayAutosaveTimer: ReturnType<typeof window.setTimeout> | null = null;
+let speakerOverlayGeneration = 0;
+let speakerOverlaySaveInFlight = false;
+let speakerOverlaySaveQueued = false;
 const isRunning = computed(() => runtimeStatus.value === "running");
 const canStartTranscript = computed(
   () => selectedTranscriptFile.value !== null && speakerError.value === null && !isRunning.value,
@@ -127,13 +133,29 @@ function resetFormatterExportState(): void {
   formatterArtifactActionStates.value = {};
 }
 
+function clearSpeakerOverlayAutosave(): void {
+  if (speakerOverlayAutosaveTimer === null) return;
+  window.clearTimeout(speakerOverlayAutosaveTimer);
+  speakerOverlayAutosaveTimer = null;
+}
+
 function resetSpeakerOverlayState(): void {
+  clearSpeakerOverlayAutosave();
+  speakerOverlayGeneration += 1;
+  speakerOverlaySaveInFlight = false;
+  speakerOverlaySaveQueued = false;
+  speakerOverlayRevision.value = 0;
   savedTranscriptId.value = null;
   speakerOverlayEntries.value = [];
   speakerOverlayStatus.value = "idle";
   speakerOverlayErrorMessage.value = null;
   resetFormatterExportState();
 }
+
+onBeforeUnmount(() => {
+  clearSpeakerOverlayAutosave();
+  speakerOverlayGeneration += 1;
+});
 
 async function handleStartTranscript(): Promise<void> {
   const selection = selectedTranscriptFile.value;
@@ -225,6 +247,7 @@ async function loadSpeakerOverlays(transcriptId: string): Promise<void> {
   try {
     const response = await getConversionHubTranscriptSpeakerOverlays({ transcriptId });
     speakerOverlayEntries.value = response.overlays;
+    speakerOverlayRevision.value = 0;
     speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
       ? "saved"
       : "idle";
@@ -242,38 +265,73 @@ function handleSpeakerOverlayChanged(label: string, displayName: string): void {
     nextEntries.push({ canonical_speaker_label: label, display_name: displayName });
   }
   speakerOverlayEntries.value = nextEntries;
-  if (speakerOverlayStatus.value === "saved") {
-    speakerOverlayStatus.value = "idle";
-  }
+  speakerOverlayRevision.value += 1;
+  speakerOverlayStatus.value = "idle";
   speakerOverlayErrorMessage.value = null;
   resetFormatterExportState();
+  scheduleSpeakerOverlayAutosave();
 }
 
-async function handleSaveSpeakerOverlays(): Promise<void> {
+function scheduleSpeakerOverlayAutosave(): void {
   const transcriptId = savedTranscriptId.value;
   if (!transcriptId) return;
+  clearSpeakerOverlayAutosave();
+  speakerOverlayAutosaveTimer = window.setTimeout(() => {
+    speakerOverlayAutosaveTimer = null;
+    void persistSpeakerOverlays();
+  }, SPEAKER_OVERLAY_AUTOSAVE_DELAY_MS);
+}
+
+async function persistSpeakerOverlays(): Promise<void> {
+  const transcriptId = savedTranscriptId.value;
+  if (!transcriptId) return;
+  if (speakerOverlaySaveInFlight) {
+    speakerOverlaySaveQueued = true;
+    return;
+  }
+  const generationAtStart = speakerOverlayGeneration;
+  const revisionAtStart = speakerOverlayRevision.value;
+  const overlays = speakerOverlayEntries.value
+    .map((entry) => ({
+      canonical_speaker_label: entry.canonical_speaker_label,
+      display_name: entry.display_name.trim(),
+    }))
+    .filter((entry) => entry.display_name.length > 0);
+  speakerOverlaySaveInFlight = true;
   speakerOverlayStatus.value = "saving";
   speakerOverlayErrorMessage.value = null;
   try {
     const response = await updateConversionHubTranscriptSpeakerOverlays({
       transcriptId,
-      request: {
-        overlays: speakerOverlayEntries.value
-          .map((entry) => ({
-            canonical_speaker_label: entry.canonical_speaker_label,
-            display_name: entry.display_name.trim(),
-          }))
-          .filter((entry) => entry.display_name.length > 0),
-      },
+      request: { overlays },
     });
-    speakerOverlayEntries.value = response.overlays;
-    speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
-      ? "saved"
-      : "idle";
-    resetFormatterExportState();
+    if (
+      generationAtStart === speakerOverlayGeneration &&
+      revisionAtStart === speakerOverlayRevision.value
+    ) {
+      speakerOverlayEntries.value = response.overlays;
+      speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
+        ? "saved"
+        : "idle";
+    }
   } catch {
-    speakerOverlayStatus.value = "failed";
-    speakerOverlayErrorMessage.value = "Namnen kunde inte sparas.";
+    if (
+      generationAtStart === speakerOverlayGeneration &&
+      revisionAtStart === speakerOverlayRevision.value
+    ) {
+      speakerOverlayStatus.value = "failed";
+      speakerOverlayErrorMessage.value = "Namnen kunde inte sparas.";
+    }
+  } finally {
+    const changedDuringSave = revisionAtStart !== speakerOverlayRevision.value;
+    speakerOverlaySaveInFlight = false;
+    if (
+      generationAtStart === speakerOverlayGeneration &&
+      (speakerOverlaySaveQueued || changedDuringSave)
+    ) {
+      speakerOverlaySaveQueued = false;
+      scheduleSpeakerOverlayAutosave();
+    }
   }
 }
 
@@ -426,56 +484,60 @@ async function handleSaveFormatterArtifact(
 </script>
 
 <template>
-  <TranscriptWorkflowRailShell
-    :abort-state="abortState"
-    :can-start-transcript="canStartTranscript"
-    :is-running="isRunning"
-    :max-speakers="maxSpeakers"
-    :min-speakers="minSpeakers"
-    :selected-transcript-file="selectedTranscriptFile"
-    :speaker-count="speakerCount"
-    :speaker-error="speakerError"
-    :speaker-mode="speakerMode"
-    :transcript-file-error="transcriptFileError"
-    @cancel-transcript="cancelTranscript"
-    @clear-transcript-file="clearTranscriptFile"
-    @max-speakers-changed="maxSpeakers = $event"
-    @min-speakers-changed="minSpeakers = $event"
-    @reset-transcript-choices="handleResetTranscriptChoices"
-    @speaker-count-changed="speakerCount = $event"
-    @speaker-mode-changed="setSpeakerMode"
-    @start-transcript="handleStartTranscript"
-    @transcript-file-selected="selectTranscriptFile"
-  />
-  <div class="min-w-0">
-    <TranscriptWorkspaceShell
+  <div
+    class="col-span-full grid min-h-0 min-w-0 grid-cols-1 items-stretch min-[821px]:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] min-[1181px]:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
+    data-test="transcript-host-layout"
+  >
+    <TranscriptWorkflowRailShell
       :abort-state="abortState"
-      :current-job="currentJob"
-      :can-request-formatter-export="canRequestFormatterExport"
-      :can-save-transcript="canSaveTranscript"
-      :error-message="errorMessage"
-      :formatter-artifact-action-states="formatterArtifactActionStates"
-      :formatter-export-artifacts="formatterExportArtifacts"
-      :formatter-export-error-message="formatterExportErrorMessage"
-      :formatter-export-status="formatterExportStatus"
-      :runtime-status="runtimeStatus"
+      :can-start-transcript="canStartTranscript"
+      :is-running="isRunning"
+      :max-speakers="maxSpeakers"
+      :min-speakers="minSpeakers"
       :selected-transcript-file="selectedTranscriptFile"
-      :save-error-message="saveErrorMessage"
-      :save-status="saveStatus"
-      :transcript="transcript"
+      :speaker-count="speakerCount"
+      :speaker-error="speakerError"
+      :speaker-mode="speakerMode"
       :transcript-file-error="transcriptFileError"
-      :upload-state="uploadState"
-      :can-edit-speaker-overlays="canEditSpeakerOverlays"
-      :speaker-overlay-entries="speakerOverlayEntries"
-      :speaker-overlay-error-message="speakerOverlayErrorMessage"
-      :speaker-overlay-status="speakerOverlayStatus"
-      @download-formatter-artifact="handleDownloadFormatterArtifact"
-      @files-dropped="selectDroppedTranscriptFiles"
-      @save-formatter-artifact="handleSaveFormatterArtifact"
-      @save-transcript="handleSaveTranscript"
-      @save-speaker-overlays="handleSaveSpeakerOverlays"
-      @speaker-overlay-changed="handleSpeakerOverlayChanged"
+      @cancel-transcript="cancelTranscript"
+      @clear-transcript-file="clearTranscriptFile"
+      @max-speakers-changed="maxSpeakers = $event"
+      @min-speakers-changed="minSpeakers = $event"
+      @reset-transcript-choices="handleResetTranscriptChoices"
+      @speaker-count-changed="speakerCount = $event"
+      @speaker-mode-changed="setSpeakerMode"
+      @start-transcript="handleStartTranscript"
       @transcript-file-selected="selectTranscriptFile"
     />
+    <div class="min-h-0 min-w-0">
+      <TranscriptWorkspaceShell
+        :abort-state="abortState"
+        :current-job="currentJob"
+        :can-request-formatter-export="canRequestFormatterExport"
+        :can-save-transcript="canSaveTranscript"
+        :error-message="errorMessage"
+        :formatter-artifact-action-states="formatterArtifactActionStates"
+        :formatter-export-artifacts="formatterExportArtifacts"
+        :formatter-export-error-message="formatterExportErrorMessage"
+        :formatter-export-status="formatterExportStatus"
+        :runtime-status="runtimeStatus"
+        :selected-transcript-file="selectedTranscriptFile"
+        :save-error-message="saveErrorMessage"
+        :save-status="saveStatus"
+        :transcript="transcript"
+        :transcript-file-error="transcriptFileError"
+        :upload-state="uploadState"
+        :can-edit-speaker-overlays="canEditSpeakerOverlays"
+        :speaker-overlay-entries="speakerOverlayEntries"
+        :speaker-overlay-error-message="speakerOverlayErrorMessage"
+        :speaker-overlay-status="speakerOverlayStatus"
+        @download-formatter-artifact="handleDownloadFormatterArtifact"
+        @files-dropped="selectDroppedTranscriptFiles"
+        @save-formatter-artifact="handleSaveFormatterArtifact"
+        @save-transcript="handleSaveTranscript"
+        @speaker-overlay-changed="handleSpeakerOverlayChanged"
+        @transcript-file-selected="selectTranscriptFile"
+      />
+    </div>
   </div>
 </template>

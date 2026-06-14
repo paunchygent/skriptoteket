@@ -62,6 +62,18 @@ describe("routes", () => {
     expect(resolved.meta.requiresAuth).toBe(true);
   });
 
+  it("adds the authenticated transcript UI-inspection fixture route for test/dev", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve(
+      "/apps/documents.conversion_hub/transcript/ui-fixtures/completed-export",
+    );
+
+    expect(resolved.name).toBe("transcript-ui-inspection-fixture");
+    expect(resolved.params.fixtureId).toBe("completed-export");
+    expect(resolved.meta.requiresAuth).toBe(true);
+  });
+
   it("resolves malformed public app links to the dedicated recovery route", () => {
     const router = createTestRouter();
 

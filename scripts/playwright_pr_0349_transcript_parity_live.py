@@ -235,16 +235,19 @@ def _wait_for_transcript_autosave(
 def _save_speaker_overlays(page: Page, labels: list[str]) -> dict[str, object]:
     if len(labels) < 2:
         raise AssertionError("PR-0349 proof requires at least two canonical speaker labels.")
-    for label, display_name in zip(labels[:2], OVERLAY_LABELS, strict=True):
-        page.locator(f'[data-test="transcript-speaker-name-{label}"]').fill(display_name)
     with page.expect_response(
         lambda r: r.url.endswith("/speaker-overlays") and r.request.method == "PUT",
         timeout=60_000,
     ) as info:
-        page.locator('[data-test="transcript-speaker-overlays-save"]').click()
+        for label, display_name in zip(labels[:2], OVERLAY_LABELS, strict=True):
+            page.locator(f'[data-test="transcript-speaker-name-{label}"]').fill(display_name)
     response = info.value
     if response.status >= 400:
         raise AssertionError(f"Speaker overlay save failed with HTTP {response.status}.")
+    expect(page.locator('[data-test="transcript-speaker-overlay-state"]')).to_contain_text(
+        "Namnen är sparade.",
+        timeout=30_000,
+    )
     expect(page.locator('[data-test="transcript-download-selected-format"]')).to_be_enabled(
         timeout=30_000
     )

@@ -17,6 +17,8 @@ import asyncio
 import io
 import json
 import time
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -52,6 +54,18 @@ _ARTIFACT_KEY_BY_FORMAT = {
 }
 _FORMATTER_EXPORT_POLL_INTERVAL_SECONDS = 0.5
 _FORMATTER_EXPORT_TERMINAL_FAILURES = frozenset({"failed", "canceled", "cancelled"})
+_STALE_IDEMPOTENCY_STATUSES = frozenset({"queued", "submitted"})
+_RECOVERY_IDEMPOTENCY_MIN_WINDOW_SECONDS = 60
+
+
+@dataclass(frozen=True, slots=True)
+class _ProducerJobStatus:
+    """Normalized Sir Convert job status metadata used by the producer."""
+
+    job_id: str
+    status: str
+    error_message: str | None
+    updated_at: datetime | None
 
 
 class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterProducerProtocol):
@@ -66,12 +80,93 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
         *,
         request: ConversionHubTranscriptFormatterProducerRequest,
     ) -> ConversionHubTranscriptFormatterProducerResult:
+        job_status = await self._submit_formatter_job(
+            request=request,
+            idempotency_key=request.idempotency_key,
+        )
+        if self._is_stale_idempotency_job(job_status):
+            job_status = await self._submit_formatter_job(
+                request=request,
+                idempotency_key=_recovery_idempotency_key(
+                    base_key=request.idempotency_key,
+                    stale_job_id=job_status.job_id,
+                    timeout_seconds=self._settings.timeout_seconds,
+                ),
+            )
+        status, error_message = await self._wait_for_terminal_status(
+            job_id=job_status.job_id,
+            initial_status=job_status.status,
+            initial_error_message=job_status.error_message,
+            correlation_id=request.correlation_id,
+        )
+        if status != "succeeded":
+            return ConversionHubTranscriptFormatterProducerResult(
+                sir_convert_job_id=job_status.job_id,
+                status=status,
+                result=None,
+                artifact_manifest=None,
+                artifacts={},
+                error_message=error_message,
+            )
+        result_payload = await self._read_json_path(
+            f"/v2/convert/jobs/{job_status.job_id}/result",
+            correlation_id=request.correlation_id,
+            message_fallback="Failed to read transcript formatter result.",
+            job_id=job_status.job_id,
+        )
+        manifest_payload = await self._read_json_path(
+            f"/v2/convert/jobs/{job_status.job_id}/artifacts",
+            correlation_id=request.correlation_id,
+            message_fallback="Failed to read transcript formatter artifacts.",
+            job_id=job_status.job_id,
+        )
+        artifacts: dict[
+            ConversionHubTranscriptFormatterArtifactKey,
+            ConversionHubTranscriptFormatterProducerArtifact,
+        ] = {}
+        for requested_artifact in request.requested_artifacts:
+            artifact_key = _ARTIFACT_KEY_BY_FORMAT[requested_artifact]
+            artifact_response = await self._get(
+                f"/v2/convert/jobs/{job_status.job_id}/artifacts/{artifact_key.value}",
+                message_fallback="Failed to download transcript formatter artifact.",
+                job_id=job_status.job_id,
+                headers=self._headers(correlation_id=request.correlation_id),
+            )
+            if artifact_response.status_code != 200:
+                raise _extract_service_error(
+                    artifact_response,
+                    message_fallback="Failed to download transcript formatter artifact.",
+                    job_id=job_status.job_id,
+                )
+            artifacts[artifact_key] = ConversionHubTranscriptFormatterProducerArtifact(
+                artifact_key=artifact_key,
+                content_type=artifact_response.headers.get(
+                    "content-type",
+                    "application/octet-stream",
+                ),
+                content=artifact_response.content,
+            )
+        return ConversionHubTranscriptFormatterProducerResult(
+            sir_convert_job_id=job_status.job_id,
+            status=status,
+            result=result_payload,
+            artifact_manifest=manifest_payload,
+            artifacts=artifacts,
+            error_message=None,
+        )
+
+    async def _submit_formatter_job(
+        self,
+        *,
+        request: ConversionHubTranscriptFormatterProducerRequest,
+        idempotency_key: str,
+    ) -> _ProducerJobStatus:
         response = await self._post(
             "/v2/convert/jobs",
             message_fallback="Failed to create transcript formatter export.",
             params={"wait_seconds": request.wait_seconds},
             headers=self._headers(
-                idempotency_key=request.idempotency_key,
+                idempotency_key=idempotency_key,
                 correlation_id=request.correlation_id,
             ),
             data={"job_spec": json.dumps(request.job_spec, separators=(",", ":"), sort_keys=True)},
@@ -88,68 +183,18 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
                 response,
                 message_fallback="Failed to create transcript formatter export.",
             )
-        job_id, status, error_message = _read_job_status(response.json())
-        status, error_message = await self._wait_for_terminal_status(
-            job_id=job_id,
-            initial_status=status,
-            initial_error_message=error_message,
-            correlation_id=request.correlation_id,
+        return _read_job_status(response.json())
+
+    def _is_stale_idempotency_job(self, job_status: _ProducerJobStatus) -> bool:
+        if job_status.status.strip().lower() not in _STALE_IDEMPOTENCY_STATUSES:
+            return False
+        if job_status.updated_at is None:
+            return False
+        stale_after = max(
+            self._settings.timeout_seconds,
+            _RECOVERY_IDEMPOTENCY_MIN_WINDOW_SECONDS,
         )
-        if status != "succeeded":
-            return ConversionHubTranscriptFormatterProducerResult(
-                sir_convert_job_id=job_id,
-                status=status,
-                result=None,
-                artifact_manifest=None,
-                artifacts={},
-                error_message=error_message,
-            )
-        result_payload = await self._read_json_path(
-            f"/v2/convert/jobs/{job_id}/result",
-            correlation_id=request.correlation_id,
-            message_fallback="Failed to read transcript formatter result.",
-            job_id=job_id,
-        )
-        manifest_payload = await self._read_json_path(
-            f"/v2/convert/jobs/{job_id}/artifacts",
-            correlation_id=request.correlation_id,
-            message_fallback="Failed to read transcript formatter artifacts.",
-            job_id=job_id,
-        )
-        artifacts: dict[
-            ConversionHubTranscriptFormatterArtifactKey,
-            ConversionHubTranscriptFormatterProducerArtifact,
-        ] = {}
-        for requested_artifact in request.requested_artifacts:
-            artifact_key = _ARTIFACT_KEY_BY_FORMAT[requested_artifact]
-            artifact_response = await self._get(
-                f"/v2/convert/jobs/{job_id}/artifacts/{artifact_key.value}",
-                message_fallback="Failed to download transcript formatter artifact.",
-                job_id=job_id,
-                headers=self._headers(correlation_id=request.correlation_id),
-            )
-            if artifact_response.status_code != 200:
-                raise _extract_service_error(
-                    artifact_response,
-                    message_fallback="Failed to download transcript formatter artifact.",
-                    job_id=job_id,
-                )
-            artifacts[artifact_key] = ConversionHubTranscriptFormatterProducerArtifact(
-                artifact_key=artifact_key,
-                content_type=artifact_response.headers.get(
-                    "content-type",
-                    "application/octet-stream",
-                ),
-                content=artifact_response.content,
-            )
-        return ConversionHubTranscriptFormatterProducerResult(
-            sir_convert_job_id=job_id,
-            status=status,
-            result=result_payload,
-            artifact_manifest=manifest_payload,
-            artifacts=artifacts,
-            error_message=None,
-        )
+        return (datetime.now(UTC) - job_status.updated_at).total_seconds() >= stale_after
 
     async def _wait_for_terminal_status(
         self,
@@ -182,7 +227,9 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
                 message_fallback="Failed to read transcript formatter job status.",
                 job_id=job_id,
             )
-            _, current_status, current_error_message = _read_job_status(payload)
+            status_snapshot = _read_job_status(payload)
+            current_status = status_snapshot.status
+            current_error_message = status_snapshot.error_message
 
     def _headers(
         self,
@@ -261,7 +308,7 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
         return payload
 
 
-def _read_job_status(payload: object) -> tuple[str, str, str | None]:
+def _read_job_status(payload: object) -> _ProducerJobStatus:
     if not isinstance(payload, dict):
         raise _malformed_submit_response()
     job_obj = payload.get("job")
@@ -277,7 +324,36 @@ def _read_job_status(payload: object) -> tuple[str, str, str | None]:
         error_message = error_obj
     elif isinstance(error_obj, dict) and isinstance(error_obj.get("message"), str):
         error_message = error_obj["message"]
-    return job_id_obj, status_obj, error_message
+    return _ProducerJobStatus(
+        job_id=job_id_obj,
+        status=status_obj,
+        error_message=error_message,
+        updated_at=_read_datetime(job_obj.get("updated_at")),
+    )
+
+
+def _read_datetime(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    normalized = value.strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _recovery_idempotency_key(
+    *,
+    base_key: str,
+    stale_job_id: str,
+    timeout_seconds: float,
+) -> str:
+    window_seconds = max(int(timeout_seconds), _RECOVERY_IDEMPOTENCY_MIN_WINDOW_SECONDS)
+    window = int(time.time() // window_seconds)
+    return f"{base_key}:recover:{stale_job_id}:{window}"
 
 
 def _malformed_submit_response() -> DomainError:

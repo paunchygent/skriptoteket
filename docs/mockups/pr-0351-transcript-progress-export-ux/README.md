@@ -38,8 +38,11 @@ calculator-like rows of small buttons.
   checkbox, toggle, delayed-cancel mode, or any `avbryt efter klar` behavior.
 - Progress copy uses normal Swedish product language: `Hittar talare`,
   `Skriver ut samtalet`, and `Gör texten klar`.
-- The running state shows a measured progress bar, elapsed time, and estimated
-  time remaining.
+- The running state may show measured browser upload progress while bytes are
+  still uploading. After Sir Convert owns the job, `PR-0354` amends this
+  contract: do not render raw percent, ETA, processed-audio, chunk, or heartbeat
+  counters until the upstream contract can make them stable enough for
+  teacher-facing progress.
 - Completion autosaves the transcript. The completed workspace shows
   `Sparat automatiskt`, not a primary generic `Spara` gate.
 - Restart actions use direct user language such as `Ny transkribering`, not
@@ -47,6 +50,9 @@ calculator-like rows of small buttons.
 - Speaker names and export controls live in a right-side inspector titled
   `Talare och export`; do not add redundant subsection labels such as
   `Talarnamn` and `Export` when the controls are already self-describing.
+- Speaker-name editing autosaves on input. The completed workspace shows a
+  compact incomplete/saving/saved/failed status row and does not require a
+  separate speaker-name save button.
 - Export uses one compact control block: a single segmented format selector
   for `TXT`, `MD`, `VTT`, and `SRT`, followed by two named actions for the
   selected format: `Ladda ner` and `Mina filer`.
@@ -62,13 +68,14 @@ calculator-like rows of small buttons.
   for the inspector.
 - User-facing progress copy must only promise behavior the product actually
   supports. Do not claim that the user can leave the workspace or keep working
-  elsewhere unless that has been verified in the implementation.
+  elsewhere unless that has been verified in the implementation, and do not
+  surface unstable upstream counters as reliable ETA/progress.
 - Runtime symbols must follow the approved semantic icon dictionary. Use
-  `IconX` for removing/dismissing the selected file, `IconCheck` for success,
-  `IconRun` for start/play actions, `IconDownload` for download/export,
-  `IconSave` for saving speaker names, `IconVaultFiles` for `Mina filer`,
-  `IconFileAudio` for uploaded audio/video source files, and `IconFileText`
-  for text/document export files.
+  `IconX` for removing/dismissing the selected file, `IconCheck` for success
+  and saved autosave state, `IconRun` for start/play actions, `IconDownload`
+  for download/export, `IconVaultFiles` for `Mina filer`, `IconFileAudio` for
+  uploaded audio/video source files, and `IconFileText` for text/document
+  export files.
 - The completed workspace needs a real transcript width. The transcript column
   must not be squeezed between fixed setup and inspector rails; at narrower
   widths the inspector moves below the transcript, and on small widths the rail

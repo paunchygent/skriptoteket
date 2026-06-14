@@ -96,17 +96,17 @@ function stateMessage(): string {
     return props.errorMessage ?? "Filerna kunde inte skapas. Försök igen.";
   }
   if (props.canRequest) return "Välj format och använd en av åtgärderna.";
-  return "Spara namnen innan filer kan skapas.";
+  return "Fyll i namn för alla talare innan filer kan skapas.";
 }
 </script>
 
 <template>
   <section
-    class="grid gap-3 border-t border-navy/15 pt-4"
+    class="grid min-w-0 gap-3 border-t border-navy/15 pt-4"
     aria-label="Exportera transkript"
   >
     <div
-      class="grid grid-cols-4 border border-navy/25"
+      class="grid min-w-0 grid-cols-4 border border-navy/25"
       aria-label="Välj format"
       data-test="transcript-format-selector"
     >
@@ -114,8 +114,12 @@ function stateMessage(): string {
         v-for="format in FORMAT_OPTIONS"
         :key="format"
         type="button"
-        class="h-9 border-r border-navy/25 bg-panel text-xs font-black text-navy transition last:border-r-0 hover:bg-canvas"
-        :class="selectedFormat === format ? 'bg-navy text-canvas hover:bg-navy' : undefined"
+        class="h-9 border-r border-navy/25 text-xs font-black transition last:border-r-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-action"
+        :class="
+          selectedFormat === format
+            ? 'bg-navy text-canvas hover:bg-navy'
+            : 'bg-panel text-navy hover:bg-action/10'
+        "
         :aria-pressed="selectedFormat === format"
         :data-test="`transcript-format-option-${format}`"
         @click="selectedFormat = format"
@@ -124,10 +128,10 @@ function stateMessage(): string {
       </button>
     </div>
 
-    <div class="grid grid-cols-2 gap-2">
+    <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
       <button
         type="button"
-        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 border border-navy bg-navy px-3 text-xs font-black uppercase leading-none text-canvas transition disabled:cursor-not-allowed disabled:border-navy/20 disabled:bg-navy/10 disabled:text-navy/45"
+        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 overflow-hidden border border-navy bg-navy px-3 text-xs font-black uppercase leading-none text-canvas transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 disabled:cursor-not-allowed disabled:border-navy/20 disabled:bg-navy/10 disabled:text-navy/45"
         :disabled="!selectedActionEnabled"
         data-test="transcript-download-selected-format"
         @click="emit('downloadFormatterArtifact', selectedFormat)"
@@ -136,11 +140,11 @@ function stateMessage(): string {
           class="h-4 w-4"
           aria-hidden="true"
         />
-        <span>Ladda ner</span>
+        <span class="truncate">Ladda ner</span>
       </button>
       <button
         type="button"
-        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 border border-navy/25 bg-panel px-3 text-xs font-black uppercase leading-none text-navy transition hover:border-action disabled:cursor-not-allowed disabled:text-navy/45"
+        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 overflow-hidden border border-navy/25 bg-panel px-3 text-xs font-black uppercase leading-none text-navy transition hover:border-action focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 disabled:cursor-not-allowed disabled:text-navy/45"
         :disabled="!selectedActionEnabled"
         data-test="transcript-save-selected-format"
         @click="emit('saveFormatterArtifact', selectedFormat)"
@@ -149,7 +153,7 @@ function stateMessage(): string {
           class="h-4 w-4"
           aria-hidden="true"
         />
-        <span>Mina filer</span>
+        <span class="truncate">Mina filer</span>
       </button>
     </div>
 

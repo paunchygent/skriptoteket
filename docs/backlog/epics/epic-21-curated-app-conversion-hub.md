@@ -208,6 +208,10 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `PR-0350` product-owned export boundary are complete. `PR-0351` then hardened
   completion/progress/export UX around autosave, selected-format export
   actions, absence of forbidden legacy controls, and Task-364 progress fields.
+  `PR-0354` is done as the manual remediation follow-up: it fixes export
+  selector selected-state readability, removes unstable post-upload progress
+  counters from teacher-facing UI, recovers stale formatter idempotency jobs,
+  autosaves speaker-name edits, and proves transcript breakpoint ownership.
   Final retained proof
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`
   used the HuleEdu browser-session ceremony and proved upload cancel feedback,
@@ -216,6 +220,11 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   Mina filer save. The production producer URL is now the internal Hemma Sir
   Convert service `http://sir_convert_a_lot_prod:8085`, not the reserved public
   `convert.hule.education` edge.
+  Later retained `PR-0354` proof
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T210105Z/proof-summary.json`
+  passed the same local dev E2E path after the UI remediation, and
+  `.artifacts/pr-0354-transcript-ui-remediation/20260614T2104Z/` records
+  in-app browser layout proof at 1440px and 1800px.
 - `ST-21-09` / `PR-0352` is done and approved by `REV-PR-0352`: remote
   inference with coherent HuleEdu Gateway/Sir Convert trust is enforced before
   upload, mixed local-signer to Hemma-verifier lanes fail closed unless

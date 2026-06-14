@@ -14,7 +14,7 @@ dependencies:
   - "Sir Convert Story 56"
   - "HuleEdu ST-01-09"
 acceptance_criteria:
-  - "Given a transcript job is running, when Sir Convert reports progress through Gateway, then Skriptoteket renders truthful status, heartbeat, processed seconds, total seconds, chunk progress, retry state, and cancel/abort outcome without spinner-only waiting states."
+  - "Given a transcript job is running, when Sir Convert reports progress through Gateway, then Skriptoteket renders truthful phase/status, retry state, and cancel/abort outcome without spinner-only waiting states or unstable raw counters presented as reliable progress."
   - "Given a saved canonical transcript contains diarized speaker labels, when the teacher names speakers, then Skriptoteket persists a typed owner-scoped overlay from canonical speaker labels to display names without mutating the canonical transcript JSON."
   - "Given the teacher requests TXT, Markdown, VTT, or SRT for a saved transcript, when overlay-aware export runs, then Skriptoteket submits saved canonical JSON plus the speaker overlay through HuleEdu Gateway to Sir Convert `transcript_json -> transcript_bundle` replay and uses only returned artifact references."
   - "Given export artifacts are available, when the teacher downloads or saves to Mina filer, then actions use producer-returned overlay-aware artifact references and never browser-local formatting, source-audio reprocessing, loose string parsing, or catch-all typing."
@@ -63,7 +63,8 @@ catch-all typed contract.
 
 ## Scope
 
-- Consume full Sir Convert/HuleEdu progress snapshots in the transcript lane.
+- Consume Sir Convert/HuleEdu progress snapshots in the transcript lane and
+  render only stable teacher-facing phase/status from them.
 - Persist saved-transcript speaker display-name overlays as Skriptoteket-owned
   intent.
 - Request producer formatter replay from saved canonical JSON plus overlay
@@ -104,6 +105,12 @@ catch-all typed contract.
   approved mockup contract, autosaves completed transcripts, removes the generic
   manual save gate and old per-artifact export rows, and keeps selected-format
   actions stable as `Ladda ner` and `Mina filer`.
+- `PR-0354` is done: follow-up remediation for manual UI findings where
+  selected export-format chips rendered as hover/fill without readable selected
+  labels, post-upload progress exposed unstable counters, stale formatter
+  idempotency jobs could block exports, speaker-name edits needed autosave
+  instead of a separate unclear save affordance, and the transcript route did
+  not own the mockup's desktop/tablet/small breakpoint contract cleanly.
 
 ## Live Proof Status
 
@@ -160,6 +167,18 @@ backend with `auth_invalid_internal_identity` /
 is therefore retained through focused red-first frontend/backend tests,
 legacy-surface grep, and approved `REV-PR-0351` review rather than a new
 completion-path live artifact.
+
+`PR-0354` then closed the manual remediation findings with fresh local proof.
+Retained E2E artifact
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260614T210105Z/proof-summary.json`
+passed through HuleEdu browser-session auth, transcript creation, product-owned
+formatter export, TXT/Markdown/WebVTT/SRT downloads, overlay-label assertions,
+autosaved speaker overlays, and Mina filer save. Retained in-app browser
+artifacts under `.artifacts/pr-0354-transcript-ui-remediation/20260614T2104Z/`
+prove the completed fixture at 1440px stacks the inspector below the
+transcript, at 1800px uses side-by-side transcript plus inspector, keeps
+selected MD readable, renders no speaker save button, and shows the compact
+saved-name status.
 
 ## Linked Artifacts
 

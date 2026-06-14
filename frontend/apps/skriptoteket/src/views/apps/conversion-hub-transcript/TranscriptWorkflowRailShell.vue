@@ -65,7 +65,7 @@ function numericInputValue(event: Event): number {
 
 <template>
   <aside
-    class="border-b border-navy/20 bg-panel p-4 xl:border-b-0 xl:border-r"
+    class="border-b border-navy/20 bg-panel p-4 min-[821px]:border-b-0 min-[821px]:border-r"
     aria-labelledby="transcript-workflow-title"
     data-test="transcript-workflow-rail-shell"
   >

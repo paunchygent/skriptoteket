@@ -44,7 +44,7 @@ function transcriptJob(phase: SirConvertTranscriptProgressPhase): SirConvertTran
 }
 
 describe("TranscriptWorkspaceShell PR-0351 UX", () => {
-  it("renders Task-364 pipeline progress without showing a fake transcript workspace", () => {
+  it("renders running progress without raw pipeline counters or a fake transcript workspace", () => {
     const job = transcriptJob("diarizing");
     job.progress = {
       ...job.progress,
@@ -82,8 +82,11 @@ describe("TranscriptWorkspaceShell PR-0351 UX", () => {
     expect(wrapper.get("[data-test='transcript-progress-phase']").text()).toContain(
       "Hittar talare",
     );
-    expect(wrapper.get("[data-test='transcript-progress-percent']").text()).toContain("18 %");
-    expect(wrapper.get("[data-test='transcript-progress-eta']").text()).toContain("ca 2:10");
+    expect(wrapper.find("[data-test='transcript-progress-percent']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='transcript-progress-eta']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='transcript-progress-duration']").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("18 %");
+    expect(wrapper.text()).not.toContain("2:10");
     expect(wrapper.find("[data-test='transcript-result-surface']").exists()).toBe(false);
     expect(wrapper.find("[data-test='transcript-speaker-overlays']").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("0 %");
@@ -160,6 +163,10 @@ describe("TranscriptWorkspaceShell PR-0351 UX", () => {
     expect(wrapper.get("[data-test='transcript-inspector']").text()).toContain(
       "Talare och export",
     );
+    expect(wrapper.get("[data-test='transcript-speaker-overlay-state']").text()).toContain(
+      "Namnen är sparade.",
+    );
+    expect(wrapper.find("[data-test='transcript-speaker-overlays-save']").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Talarnamn");
     expect(wrapper.text()).not.toContain("Skapa exportfiler");
     expect(wrapper.text()).not.toContain("Skapa igen");
@@ -169,15 +176,38 @@ describe("TranscriptWorkspaceShell PR-0351 UX", () => {
     expect(wrapper.find("[data-test='transcript-save-artifact-transcript_txt']").exists()).toBe(
       false,
     );
+    expect(wrapper.get("[data-test='transcript-result-surface']").classes()).toContain(
+      "@container",
+    );
+    expect(wrapper.get("[data-test='transcript-result-grid']").classes()).toContain(
+      "@min-[56rem]:grid-cols-[minmax(0,1fr)_minmax(18rem,21rem)]",
+    );
 
     const formatOptions = wrapper.findAll("[data-test^='transcript-format-option-']");
     expect(formatOptions).toHaveLength(4);
+    expect(wrapper.get("[data-test='transcript-format-option-txt']").classes()).toContain(
+      "text-canvas",
+    );
+    expect(wrapper.get("[data-test='transcript-format-option-txt']").classes()).not.toContain(
+      "text-navy",
+    );
     expect(wrapper.get("[data-test='transcript-download-selected-format']").text()).toBe(
       "Ladda ner",
     );
     expect(wrapper.get("[data-test='transcript-save-selected-format']").text()).toBe("Mina filer");
 
     await wrapper.get("[data-test='transcript-format-option-md']").trigger("click");
+    expect(wrapper.get("[data-test='transcript-format-option-md']").classes()).toContain(
+      "text-canvas",
+    );
+    expect(wrapper.get("[data-test='transcript-format-option-md']").classes()).not.toContain(
+      "text-navy",
+    );
+    expect(wrapper.get("[data-test='transcript-format-option-txt']").classes()).toContain(
+      "text-navy",
+    );
+    expect(wrapper.get("[data-test='transcript-format-option-md']").attributes("aria-pressed"))
+      .toBe("true");
     await wrapper.get("[data-test='transcript-download-selected-format']").trigger("click");
     await wrapper.get("[data-test='transcript-save-selected-format']").trigger("click");
 

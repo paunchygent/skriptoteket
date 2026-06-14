@@ -309,7 +309,7 @@ export async function saveSpeakerNames(wrapper: ReturnType<typeof mountHost>): P
   await wrapper
     .get<HTMLInputElement>("[data-test='transcript-speaker-name-SPEAKER_01']")
     .setValue("Bo Berg");
-  await wrapper.get("[data-test='transcript-speaker-overlays-save']").trigger("click");
+  await vi.advanceTimersByTimeAsync(600);
   await flushPromises();
 }
 

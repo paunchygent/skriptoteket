@@ -19,13 +19,6 @@ import type { SirConvertTranscriptJob } from "../../../api/sirConvertGateway";
 import type { TranscriptAbortState, TranscriptUploadState } from "./useTranscriptGatewayRuntime";
 import {
   isUploading,
-  progressChunks,
-  progressDuration,
-  progressElapsed,
-  progressEta,
-  progressHeartbeat,
-  progressPercent,
-  progressPercentValue,
   transcriptProgressLabel,
   uploadProgressBytes,
   uploadProgressLabel,
@@ -39,18 +32,24 @@ const props = defineProps<{
 
 type ProgressStep = "speakers" | "transcription" | "finalizing";
 
-const percentValue = computed(() =>
-  progressPercentValue(props.currentJob, props.uploadState),
+const uploadPercentValue = computed(() => {
+  if (props.currentJob || !isUploading(props.uploadState)) return null;
+  const percent = props.uploadState.percentComplete;
+  if (percent === null || percent === undefined || percent <= 0) return null;
+  return Math.max(0, Math.min(100, percent));
+});
+const uploadPercentLabel = computed(() =>
+  uploadPercentValue.value === null ? null : `${Math.round(uploadPercentValue.value)} %`,
 );
-const percentLabel = computed(() => progressPercent(props.currentJob, props.uploadState));
 const phaseLabel = computed(() =>
   !props.currentJob && isUploading(props.uploadState)
     ? uploadProgressLabel(props.uploadState)
     : transcriptProgressLabel(props.currentJob),
 );
-const progressBarStyle = computed(() => ({
-  width: `${Math.max(0, Math.min(100, percentValue.value ?? 0))}%`,
+const uploadProgressBarStyle = computed(() => ({
+  width: `${uploadPercentValue.value ?? 0}%`,
 }));
+const shouldShowAbortState = computed(() => props.abortState.message !== null);
 
 function activeStep(job: SirConvertTranscriptJob | null): ProgressStep {
   const phase = job?.progress.phase;
@@ -60,6 +59,7 @@ function activeStep(job: SirConvertTranscriptJob | null): ProgressStep {
 }
 
 function stepState(step: ProgressStep): "done" | "active" | "todo" {
+  if (!props.currentJob) return "todo";
   const active = activeStep(props.currentJob);
   const order: readonly ProgressStep[] = ["speakers", "transcription", "finalizing"];
   const stepIndex = order.indexOf(step);
@@ -95,6 +95,7 @@ function stepClasses(step: ProgressStep): string {
       </div>
 
       <div
+        v-if="currentJob"
         class="grid grid-cols-3 gap-2"
         aria-label="Aktuellt arbete"
         data-test="transcript-progress-steps"
@@ -130,67 +131,44 @@ function stepClasses(step: ProgressStep): string {
           {{ phaseLabel }}
         </p>
         <p
-          v-if="percentLabel"
-          class="text-5xl font-black leading-none text-navy"
+          v-if="uploadPercentLabel"
+          class="text-4xl font-black leading-none text-navy"
           data-test="transcript-progress-percent"
         >
-          {{ percentLabel }}
+          {{ uploadPercentLabel }}
         </p>
         <div
-          class="h-7 border-2 border-navy bg-canvas"
-          aria-label="Transkriberingsprogress"
-          :aria-valuenow="percentValue ?? undefined"
+          v-if="uploadPercentValue !== null"
+          class="h-4 border-2 border-navy bg-canvas"
+          aria-label="Uppladdningsprogress"
+          :aria-valuenow="uploadPercentValue"
           aria-valuemin="0"
           aria-valuemax="100"
           role="progressbar"
         >
           <div
             class="h-full bg-navy transition-[width]"
-            :style="progressBarStyle"
+            :style="uploadProgressBarStyle"
           />
         </div>
       </div>
 
-      <dl class="grid min-h-[3.5rem] grid-cols-1 gap-2 text-left text-xs font-semibold leading-snug text-navy/75 sm:grid-cols-2">
-        <div data-test="transcript-progress-elapsed">
-          <dt>Förfluten tid</dt>
-          <dd>{{ progressElapsed(currentJob) ?? "Mäts" }}</dd>
-        </div>
-        <div data-test="transcript-progress-eta">
-          <dt>Beräknad tid kvar</dt>
-          <dd>{{ progressEta(currentJob) ? `ca ${progressEta(currentJob)}` : "Beräknas" }}</dd>
-        </div>
+      <dl
+        v-if="!currentJob && uploadProgressBytes(uploadState)"
+        class="grid min-h-[2rem] grid-cols-1 gap-2 text-left text-xs font-semibold leading-snug text-navy/75"
+      >
         <div
-          v-if="progressDuration(currentJob)"
-          data-test="transcript-progress-duration"
-        >
-          <dt>Ljud</dt>
-          <dd>{{ progressDuration(currentJob) }}</dd>
-        </div>
-        <div
-          v-if="progressChunks(currentJob)"
-          data-test="transcript-progress-chunks"
-        >
-          <dt>Delar</dt>
-          <dd>{{ progressChunks(currentJob) }}</dd>
-        </div>
-        <div
-          v-if="!currentJob && uploadProgressBytes(uploadState)"
           data-test="transcript-upload-bytes"
         >
           <dt>Uppladdning</dt>
           <dd>{{ uploadProgressBytes(uploadState) }}</dd>
         </div>
-        <div
-          v-if="progressHeartbeat(currentJob)"
-          data-test="transcript-progress-heartbeat"
-        >
-          <dt>Senast uppdaterad</dt>
-          <dd>{{ progressHeartbeat(currentJob) }}</dd>
-        </div>
       </dl>
 
-      <div class="grid min-h-[4.25rem] grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/15 bg-canvas px-4 py-3 text-left">
+      <div
+        class="grid min-h-[4.25rem] grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/15 bg-canvas px-4 py-3 text-left"
+        data-test="transcript-progress-current-step"
+      >
         <Info
           class="h-5 w-5 text-navy"
           aria-hidden="true"
@@ -206,9 +184,15 @@ function stepClasses(step: ProgressStep): string {
       </div>
 
       <p
-        class="min-h-[2.5rem] border border-warning/35 bg-warning/10 px-3 py-2 text-xs font-medium leading-snug text-navy"
+        class="min-h-[2.5rem] border px-3 py-2 text-xs font-medium leading-snug"
+        :class="
+          shouldShowAbortState
+            ? 'border-warning/35 bg-warning/10 text-navy'
+            : 'invisible border-transparent bg-transparent text-transparent'
+        "
         data-test="transcript-abort-state"
-        aria-live="polite"
+        :aria-hidden="shouldShowAbortState ? undefined : true"
+        :aria-live="shouldShowAbortState ? 'polite' : 'off'"
       >
         {{ abortState.message ?? "" }}
       </p>

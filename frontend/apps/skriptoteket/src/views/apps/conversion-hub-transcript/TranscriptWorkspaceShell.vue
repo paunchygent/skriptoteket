@@ -72,7 +72,6 @@ const emit = defineEmits<{
   filesDropped: [files: File[]];
   saveFormatterArtifact: [requestedArtifact: TranscriptFormatterRequestedArtifact];
   saveTranscript: [];
-  saveSpeakerOverlays: [];
   speakerOverlayChanged: [label: string, displayName: string];
   transcriptFileSelected: [file: File];
 }>();
@@ -175,7 +174,6 @@ function handleDrop(event: DragEvent): void {
         @download-formatter-artifact="emit('downloadFormatterArtifact', $event)"
         @retry-transcript-save="emit('saveTranscript')"
         @save-formatter-artifact="emit('saveFormatterArtifact', $event)"
-        @save-speaker-overlays="emit('saveSpeakerOverlays')"
         @speaker-overlay-changed="
           (label, displayName) => emit('speakerOverlayChanged', label, displayName)
         "

@@ -562,7 +562,7 @@
 
       .speaker-field {
         display: grid;
-        grid-template-columns: 28px minmax(0, 1fr) 34px;
+        grid-template-columns: 28px minmax(0, 1fr);
         align-items: center;
         gap: 8px;
       }
@@ -575,14 +575,13 @@
         font-weight: 800;
       }
 
-      .icon-button {
-        display: inline-grid;
-        width: 34px;
-        height: 34px;
-        place-items: center;
-        border: 1px solid var(--line-strong);
-        background: var(--paper);
-        font-weight: 900;
+      .speaker-save-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--success);
+        font-size: 12px;
+        font-weight: 850;
       }
 
       .export-row {
@@ -716,11 +715,6 @@
         <path d="M12 3v12" />
         <path d="m7 10 5 5 5-5" />
         <path d="M5 21h14" />
-      </symbol>
-      <symbol id="icon-save" viewBox="0 0 24 24">
-        <path d="M5 3h12l2 2v16H5Z" />
-        <path d="M8 3v6h8" />
-        <path d="M8 17h8" />
       </symbol>
       <symbol id="icon-folder" viewBox="0 0 24 24">
         <path d="M3 7h7l2 3h9v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
@@ -949,24 +943,19 @@
                     <label class="speaker-field">
                       <span class="speaker-badge">K</span>
                       <input value="Kalle" aria-label="Namn för talare K" />
-                      <button class="icon-button" type="button" title="Spara namn" aria-label="Spara namn" data-semantic-icon="IconSave">
-                        <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
-                      </button>
                     </label>
                     <label class="speaker-field">
                       <span class="speaker-badge speaker-blue">O</span>
                       <input value="Olof" aria-label="Namn för talare O" />
-                      <button class="icon-button" type="button" title="Spara namn" aria-label="Spara namn" data-semantic-icon="IconSave">
-                        <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
-                      </button>
                     </label>
                     <label class="speaker-field">
                       <span class="speaker-badge speaker-gold">P</span>
                       <input value="Pelle" aria-label="Namn för talare P" />
-                      <button class="icon-button" type="button" title="Spara namn" aria-label="Spara namn" data-semantic-icon="IconSave">
-                        <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
-                      </button>
                     </label>
+                    <div class="speaker-save-status" data-semantic-icon="IconCheck">
+                      <svg class="icon icon-sm" aria-hidden="true"><use href="#icon-check"></use></svg>
+                      Namnen sparas automatiskt.
+                    </div>
                   </div>
                 </section>
 

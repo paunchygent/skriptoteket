@@ -60,6 +60,11 @@ Keep this file updated so the next session can pick up work quickly.
   Playwright browser-install `[DEP0169]` warning. It requires removing the
   warning in a traced BuildKit production build while preserving
   Klassrumskartan 1200x630 share-preview PNG generation in-container.
+- `PR-0354` is done for `ST-21-08` transcript UI remediation:
+  `docs/backlog/prs/pr-0354-st-21-08-transcript-export-selector-and-responsive-layout-remediation.md`.
+  It fixes selected export-chip readability, removes unstable post-upload
+  progress counters, recovers stale formatter idempotency jobs, autosaves
+  speaker-name edits, and proves responsive layout.
 ## Verification
 - Green PR-0351 focused backend:
   `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
@@ -108,6 +113,27 @@ Keep this file updated so the next session can pick up work quickly.
 - Independent ruthless review `REV-PR-0352` approved the current implementation
   and retained proof evidence after re-running focused preflight, formatter, and
   Sir Convert recovery tests.
+- Green PR-0354 focused frontend:
+  `pdm run fe-test -- --run src/router/routes.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts`
+  passed with 5 files / 29 tests.
+- Green PR-0354 backend producer:
+  `pdm run test tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_transcript_formatter_producer.py`
+  passed with 2 tests.
+- Green PR-0354 gates: `pdm run fe-type-check`, `pdm run fe-lint`,
+  `pdm run fe-build`; build retained existing Vite warnings.
+- Mandatory local dev E2E passed after UI changes. Retained artifact:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T210105Z/proof-summary.json`.
+  It created transcript `ee18650e-5a3e-4e51-841c-7bea9e91abbb`, autosaved two
+  speaker overlays, exported and downloaded TXT/MD/VTT/SRT with overlay labels,
+  saved TXT to Mina filer, and proved upload percent visible while
+  duration/chunk/heartbeat counters absent.
+- In-app browser proof used HuleEdu auth and dev-container frontend fixture:
+  `/apps/documents.conversion_hub/transcript/ui-fixtures/completed-export`.
+  Retained artifacts:
+  `.artifacts/pr-0354-transcript-ui-remediation/20260614T2104Z/`.
+  1440px proved stacked transcript/inspector and readable MD selection; 1800px
+  proved side-by-side layout with export actions unclipped; both show no
+  speaker save button and no click focus outline on `Ladda ner`.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py

@@ -13,7 +13,7 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   artifactActionMocks,
@@ -32,7 +32,12 @@ import {
 
 describe("ConversionHubTranscriptHost PR-0351 UX", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     resetTranscriptHostHarness();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("autosaves the completed transcript and skips the generic manual save gate", async () => {
@@ -40,6 +45,14 @@ describe("ConversionHubTranscriptHost PR-0351 UX", () => {
 
     await startSuccessfulTranscript(wrapper);
 
+    expect(wrapper.get("[data-test='transcript-host-layout']").classes()).toEqual(
+      expect.arrayContaining([
+        "col-span-full",
+        "grid-cols-1",
+        "min-[821px]:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)]",
+        "min-[1181px]:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]",
+      ]),
+    );
     expect(transcriptSaveMocks.saveConversionHubTranscript).toHaveBeenCalledTimes(1);
     expect(wrapper.find("[data-test='transcript-save-button']").exists()).toBe(false);
     expect(wrapper.get("[data-test='transcript-save-state']").text()).toContain(
@@ -114,11 +127,12 @@ describe("ConversionHubTranscriptHost PR-0351 UX", () => {
     await startExportReadyTranscript(wrapper);
 
     expect(wrapper.get("[data-test='transcript-speaker-overlay-state']").text()).toContain(
-      "Namnen kan sparas.",
+      "Fyll i namn för alla talare",
     );
     expect(wrapper.get("[data-test='transcript-formatter-export-state']").text()).toContain(
-      "Spara namnen innan filer kan skapas.",
+      "Fyll i namn för alla talare innan filer kan skapas.",
     );
+    expect(wrapper.find("[data-test='transcript-speaker-overlays-save']").exists()).toBe(false);
     expect(wrapper.get("[data-test='transcript-download-selected-format']").attributes("disabled"))
       .toBe("");
     expect(wrapper.get("[data-test='transcript-save-selected-format']").attributes("disabled"))
@@ -137,11 +151,12 @@ describe("ConversionHubTranscriptHost PR-0351 UX", () => {
     await startExportReadyTranscript(wrapper);
 
     expect(wrapper.get("[data-test='transcript-speaker-overlay-state']").text()).toContain(
-      "Namnen kan sparas.",
+      "Fyll i namn för alla talare",
     );
     expect(wrapper.get("[data-test='transcript-formatter-export-state']").text()).toContain(
-      "Spara namnen innan filer kan skapas.",
+      "Fyll i namn för alla talare innan filer kan skapas.",
     );
+    expect(wrapper.find("[data-test='transcript-speaker-overlays-save']").exists()).toBe(false);
     expect(wrapper.get("[data-test='transcript-download-selected-format']").attributes("disabled"))
       .toBe("");
     expect(wrapper.get("[data-test='transcript-save-selected-format']").attributes("disabled"))
@@ -162,17 +177,31 @@ describe("ConversionHubTranscriptHost PR-0351 UX", () => {
     await startSuccessfulTranscript(wrapper);
     await saveTranscript(wrapper);
 
+    expect(wrapper.get("[data-test='transcript-speaker-overlay-state']").text()).toContain(
+      "Fyll i namn för alla talare",
+    );
+    expect(wrapper.find("[data-test='transcript-speaker-overlays-save']").exists()).toBe(false);
     expect(wrapper.get("[data-test='transcript-download-selected-format']").attributes("disabled"))
       .toBe("");
 
     await saveSpeakerNames(wrapper);
 
+    expect(transcriptSaveMocks.updateConversionHubTranscriptSpeakerOverlays).toHaveBeenCalledWith({
+      request: {
+        overlays: [
+          { canonical_speaker_label: "SPEAKER_00", display_name: "Anna Andersson" },
+          { canonical_speaker_label: "SPEAKER_01", display_name: "Bo Berg" },
+        ],
+      },
+      transcriptId: "saved_transcript_1",
+    });
     expect(wrapper.get("[data-test='transcript-speaker-overlay-state']").text()).toContain(
       "Namnen är sparade.",
     );
     expect(wrapper.get("[data-test='transcript-formatter-export-state']").text()).toContain(
       "Välj format och använd en av åtgärderna.",
     );
+    expect(wrapper.find("[data-test='transcript-speaker-overlays-save']").exists()).toBe(false);
     expect(
       wrapper.get("[data-test='transcript-download-selected-format']").attributes("disabled"),
     ).toBeUndefined();
