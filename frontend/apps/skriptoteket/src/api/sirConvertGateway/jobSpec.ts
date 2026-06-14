@@ -53,9 +53,6 @@ export function buildDigiExamMigrationJobSpec(
     result_pdf_usage: DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED,
     manual_follow_up_policy: DIGIEXAM_MANUAL_FOLLOW_UP_POLICY_ITEM_ADDRESSABLE,
   };
-  if (params.gradedResultPdf) {
-    options.graded_result_pdf_filename = params.gradedResultPdf.name;
-  }
   if (params.parityPdf) {
     options.parity_pdf_filename = params.parityPdf.name;
   }

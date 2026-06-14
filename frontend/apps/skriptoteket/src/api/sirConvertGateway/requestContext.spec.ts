@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { SirConvertGatewayError } from "./errors";
-import { buildDigiExamMigrationJobSpec } from "./jobSpec";
+import {
+  buildDigiExamMigrationJobSpec,
+  DEFAULT_DIGIEXAM_MIGRATION_TARGETS,
+} from "./jobSpec";
 import { prepareDigiExamMigrationRequestContext, stableJsonStringify } from "./requestContext";
 import {
   DIGIEXAM_COMPLETION_MODE_APPLY_REVIEWED_MISSING_MACHINE_MARKED,
@@ -13,14 +16,9 @@ function dxeFile(content = "exam"): File {
 }
 
 describe("Sir Convert DigiExam request context", () => {
-  it("builds the governed DigiExam migration JobSpec only", () => {
-    const gradedResultPdf = new File(["answers"], "graded-result.pdf", {
-      type: "application/pdf",
-    });
+  it("builds the governed DigiExam migration JobSpec with default artifact targets", () => {
     const jobSpec = buildDigiExamMigrationJobSpec({
       file: dxeFile(),
-      gradedResultPdf,
-      targets: ["examnet_pdf"],
       artifactLanguage: "sv-SE",
     });
 
@@ -33,13 +31,12 @@ describe("Sir Convert DigiExam request context", () => {
       },
       conversion: {
         output_format: "examnet_migration_bundle",
-        targets: ["examnet_pdf"],
+        targets: DEFAULT_DIGIEXAM_MIGRATION_TARGETS,
         artifact_language: "sv-SE",
         reference_docx_filename: null,
       },
       digiexam_migration_options: {
         completion_mode: "local_llm_suggest_missing_machine_marked",
-        graded_result_pdf_filename: "graded-result.pdf",
         remote_provider_policy: "forbidden",
         result_pdf_usage: "correct_machine_marked_answers_only",
         manual_follow_up_policy: "emit_item_addressable_report",
@@ -48,20 +45,12 @@ describe("Sir Convert DigiExam request context", () => {
     });
   });
 
-  it("generates deterministic idempotency and fallback correlation headers", async () => {
-    const params = {
-      file: dxeFile("same payload"),
-      gradedResultPdf: new File(["same result"], "graded-result.pdf", {
-        type: "application/pdf",
-      }),
-    };
+  it("generates deterministic idempotency and fallback correlation headers for source-only submits", async () => {
+    const params = { file: dxeFile("same payload") };
 
     const first = await prepareDigiExamMigrationRequestContext(params);
     const second = await prepareDigiExamMigrationRequestContext({
       file: dxeFile("same payload"),
-      gradedResultPdf: new File(["same result"], "graded-result.pdf", {
-        type: "application/pdf",
-      }),
     });
 
     expect(second.idempotencyKey).toBe(first.idempotencyKey);
@@ -70,18 +59,12 @@ describe("Sir Convert DigiExam request context", () => {
     expect(first.correlationId).toMatch(/^corr_skriptoteket_[0-9a-f]{16}$/);
   });
 
-  it("changes idempotency when companion evidence changes", async () => {
+  it("changes idempotency when the source exam changes", async () => {
     const first = await prepareDigiExamMigrationRequestContext({
-      file: dxeFile("same payload"),
-      gradedResultPdf: new File(["answer A"], "graded-result.pdf", {
-        type: "application/pdf",
-      }),
+      file: dxeFile("payload A"),
     });
     const second = await prepareDigiExamMigrationRequestContext({
-      file: dxeFile("same payload"),
-      gradedResultPdf: new File(["answer B"], "graded-result.pdf", {
-        type: "application/pdf",
-      }),
+      file: dxeFile("payload B"),
     });
 
     expect(second.idempotencyKey).not.toBe(first.idempotencyKey);

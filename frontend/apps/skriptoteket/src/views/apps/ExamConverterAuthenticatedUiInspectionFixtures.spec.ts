@@ -66,6 +66,32 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     expect(wrapper.text()).not.toContain("unsupported_target_shape");
   });
 
+  it("renders PDF and QTI file actions when the ready fixture is selected", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { inspectionFixtureId: "complete-qti-ready" },
+    });
+
+    await flushPromises();
+    await wrapper.get('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
+
+    expect(wrapper.text()).toContain("Provet är konverterat");
+    expect(wrapper.find('[data-test="exam-converter-files-readiness-list"]').exists()).toBe(
+      true,
+    );
+    expect(
+      wrapper.get('[data-test="exam-converter-download-file-examnet_pdf"]').attributes("disabled"),
+    ).toBeUndefined();
+    expect(
+      wrapper.get('[data-test="exam-converter-download-file-qti_package"]').attributes("disabled"),
+    ).toBeUndefined();
+    expect(
+      wrapper.get('[data-test="exam-converter-save-file-examnet_pdf"]').attributes("disabled"),
+    ).toBeUndefined();
+    expect(
+      wrapper.get('[data-test="exam-converter-save-file-qti_package"]').attributes("disabled"),
+    ).toBeUndefined();
+  });
+
   it("renders missing-facit review state through the same question shell", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView, {
       props: { inspectionFixtureId: "missing-facit" },
@@ -76,12 +102,11 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(
       true,
     );
-    expect(wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists()).toBe(
-      true,
-    );
-    expect(wrapper.get('[data-test="exam-converter-review-questions-action"]').text()).toContain(
-      "Granska",
-    );
+    expect(
+      wrapper.get('[data-test="exam-converter-inspection-tab-questions"]').attributes(
+        "aria-selected",
+      ),
+    ).toBe("true");
     expect(wrapper.text()).toContain("Vilket påstående beskriver DNA bäst?");
   });
 

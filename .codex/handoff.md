@@ -8,18 +8,11 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-14.
-- Branch: `main` after merging `codex/skriptoteket-pr-0350-product-owned-transcript-replay-export`;
-  the PR branch was fast-forwarded to `14f4b3af930b02f7b587b0b87c168418730fd28f`.
-- Sir Convert `task-363` is complete, reviewed, deployed, and consumed by
-  Skriptoteket. Producer contract revision:
-  `4b09baa989d38f582573a810f045e50c676139a9`.
-- Skriptoteket `PR-0350` is implemented, reviewed, merged, pushed, and deployed.
-  It removes the browser-owned formatter replay saga and replaces it with
-  product-owned `POST/GET /formatter-exports` state over saved transcripts.
-- Production wiring fix `14f4b3af` makes Hemma use internal Sir Convert base
-  `http://sir_convert_a_lot_prod:8085`; `https://convert.hule.education` is a
-  reserved public edge and returned `421` during the first live proof attempt.
+- Date: 2026-06-15.
+- Branch: `codex/pr-0356-source-only-exam-converter`.
+- Sir Convert `task-363` is complete, reviewed, deployed, and consumed by Skriptoteket. Producer contract revision: `4b09baa989d38f582573a810f045e50c676139a9`.
+- Skriptoteket `PR-0350` is implemented, reviewed, merged, pushed, and deployed. It removes the browser-owned formatter replay saga and replaces it with product-owned `POST/GET /formatter-exports` state over saved transcripts.
+- Production wiring fix `14f4b3af` makes Hemma use internal Sir Convert base `http://sir_convert_a_lot_prod:8085`; `https://convert.hule.education` is the reserved public edge and returned `421` during the first live proof attempt.
 - Prior PR-0310 through PR-0342 history lives in
   `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`,
   `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`,
@@ -65,75 +58,42 @@ Keep this file updated so the next session can pick up work quickly.
   It fixes selected export-chip readability, removes unstable post-upload
   progress counters, recovers stale formatter idempotency jobs, autosaves
   speaker-name edits, and proves responsive layout.
+- `PR-0355` is implemented locally but not closed:
+  `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`.
+  It reserves the `Avbryt` row above `Starta transkribering`, removes the
+  checkbox-like square icon, and waits on Offload before E2E/deploy proof.
+- `PR-0356` is implemented locally on `codex/pr-0356-source-only-exam-converter`: authenticated Exam Converter intake is now source-only, early PDF/QTI target controls are removed, authenticated submit/retry always request default artifacts without `graded_result_pdf`, and `PR-0357` is the governed public-lane cleanup follow-up.
 ## Verification
-- Green PR-0351 focused backend:
-  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
-  passed with 31 tests.
-- Green PR-0351 focused frontend:
-  `pdm run fe-test -- --run src/api/sirConvertGateway/transcriptClient.spec.ts src/api/sirConvertGateway/transcriptProgressParsers.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts`
-  passed with 8 files / 44 tests.
-- Green frontend gates: `pdm run fe-type-check`, `pdm run fe-lint`, and
-  `pdm run fe-build`. Build retained existing Vite dynamic/static import and
-  large-chunk warnings.
-- Local live proof command:
-  `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --sir-convert-proof-lane hemma-remote-proof --sir-convert-gateway-backend-url http://host.docker.internal:28085 --sir-convert-producer-backend-url http://host.docker.internal:28085 --sir-convert-ready-url http://127.0.0.1:28085/readyz --gateway-signer-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --sir-convert-trusted-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --timeout-seconds 1200`.
-- Local live proof passed through the sanctioned remote-proof tunnel. Retained
-  artifact:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/proof-summary.json`.
-- Docker proof evidence retained alongside the local proof:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/backend-container.json`
-  shows `SIR_CONVERT_A_LOT_V2_BASE_URL=http://host.docker.internal:28085`, and
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/backend-live.log`
-  shows formatter export and all four artifact downloads using
-  `host.docker.internal:28085` with HTTP 200 responses.
-- Sir Convert production is deployed at
-  `159e82d5e674213ba58d5e2d959e8baba383dadb`; `/readyz` reports prod
-  `service_revision=159e82d5`.
-- Skriptoteket production is deployed at
-  `2fa27cfb85c8e64d9d0a9e9fb15c26091a09946e`; deploy log
-  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260614-191250.log`
-  passed build, migrations, and seating export readiness.
-- Native Hemma production transcript proof passed. Retained artifact:
-  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260614T191738Z/proof-summary.json`.
-  Docker logs for the same interval:
-  `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0352-native-proof-logs/20260614T191737Z/`.
-- Prior retained production proof from PR-0349/PR-0350 remains:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
-- Green PR-0352 focused preflight: initial red command failed with missing
-  `scripts._sir_convert_trust_lane_preflight`; after implementation,
-  `pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`
-  passed with 20 tests.
-- Green PR-0352 adjacent script bundle:
-  `pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py`
-  passed with 28 tests.
-- Green async formatter producer bundle:
-  `pdm run test tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_transcript_formatter_producer.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_client_v2.py`
-  passed with 18 tests.
-- Green PR-0352 static gates: `pdm run lint` and `pdm run typecheck`.
-- Independent ruthless review `REV-PR-0352` approved the current implementation
-  and retained proof evidence after re-running focused preflight, formatter, and
-  Sir Convert recovery tests.
-- Green PR-0354 focused frontend:
-  `pdm run fe-test -- --run src/router/routes.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts`
-  passed with 5 files / 29 tests.
-- Green PR-0354 backend producer:
-  `pdm run test tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_transcript_formatter_producer.py`
-  passed with 2 tests.
-- Green PR-0354 gates: `pdm run fe-type-check`, `pdm run fe-lint`,
-  `pdm run fe-build`; build retained existing Vite warnings.
-- Mandatory local dev E2E passed after UI changes. Retained artifact:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T210105Z/proof-summary.json`.
-  It created transcript `ee18650e-5a3e-4e51-841c-7bea9e91abbb`, autosaved two
-  speaker overlays, exported and downloaded TXT/MD/VTT/SRT with overlay labels,
-  saved TXT to Mina filer, and proved upload percent visible while
-  duration/chunk/heartbeat counters absent.
-- In-app browser proof used HuleEdu auth and dev-container frontend fixture:
-  `/apps/documents.conversion_hub/transcript/ui-fixtures/completed-export`.
-  Retained artifacts:
-  `.artifacts/pr-0354-transcript-ui-remediation/20260614T2104Z/`.
-  1440px proved stacked transcript/inspector and readable MD selection; 1800px
-  proved side-by-side layout with export actions unclipped; both show no
-  speaker save button and no click focus outline on `Ladda ner`.
+- Archived PR-0351 through PR-0354 proof detail now lives in
+  `.codex/long-term-memory/entries/session-2026-06-15-pr-0351-pr-0354-proof-compaction.md`
+  so this handoff can stay focused on the current PR-0355/PR-0356 work.
+- Green PR-0355 focused local checks: `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`,
+  `pdm run fe-type-check`, and `pdm run docs-validate`. Required E2E is deferred
+  because the Offload experiment is occupying the GPU/STT lane.
+- Red then green PR-0356 focused frontend/request-context bundle:
+  first `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/api/sirConvertGateway/completionContract.spec.ts`
+  failed with 3 expectation mismatches while the source-only slice was mid-edit;
+  final overseer rerun passed with 7 files / 55 tests.
+- Green PR-0356 frontend gates: `pdm run fe-type-check`, `pdm run fe-lint`,
+  and `pdm run fe-build`; build retained the existing Vite dynamic/static import
+  note plus large-chunk warnings.
+- Green PR-0356 invalid-replacement regression:
+  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts`
+  passed with 1 file / 20 tests after preserving the current `.dxe` across
+  invalid `.pdf`, `.docx`, and multi-`.dxe` replacement attempts.
+- Green PR-0356 authenticated fixture proof through the sanctioned HuleEdu
+  browser-session helper:
+  `pdm run python -m scripts.playwright_pr_0356_source_only_fixture_proof --base-url http://127.0.0.1:5173 --dotenv .env`
+  wrote
+  `.artifacts/playwright-pr-0356-source-only-fixture-proof/20260614T233419Z/manifest.redacted.json`
+  plus `complete-qti-ready-{desktop,compact}.png` and
+  `missing-facit-{desktop,compact}.png`. Desktop `1512x900` and compact
+  `1024x768` both prove no optional marked-PDF/supporting upload or target
+  selector, while the fixture tabs still show ready PDF/QTI save/download
+  actions and the missing-facit review shell.
+- PR-0356 fixed overseer review is accepted in
+  `docs/backlog/reviews/review-pr-0356-source-only-intake-export-owned-formats.md`
+  after Goodall fixed the browser-proof gap and invalid-replacement state loss.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py

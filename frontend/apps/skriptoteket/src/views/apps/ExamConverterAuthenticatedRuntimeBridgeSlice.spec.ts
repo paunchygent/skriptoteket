@@ -362,10 +362,6 @@ async function chooseSourceFile(wrapper: ReturnType<typeof mount>, file: File) {
   await chooseFile(wrapper, '[data-test="exam-converter-source-file-input"]', file);
 }
 
-async function chooseSupportingFile(wrapper: ReturnType<typeof mount>, file: File) {
-  await chooseFile(wrapper, '[data-test="exam-converter-supporting-file-input"]', file);
-}
-
 function startButton(wrapper: ReturnType<typeof mount>) {
   return wrapper.find('[data-test="exam-converter-start-conversion"]');
 }
@@ -418,7 +414,7 @@ afterEach(() => {
 });
 
 describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
-  it("submits selected files and declared target formats through the Gateway client", async () => {
+  it("submits the source file with default target artifacts and no supporting upload", async () => {
     gatewayMocks.submitDigiExamMigration.mockResolvedValueOnce(submittedJob("succeeded"));
     gatewayMocks.getDigiExamMigrationResult.mockResolvedValueOnce(terminalResult());
     const wrapper = mount(ExamConverterAuthenticatedView);
@@ -429,12 +425,6 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
         type: "application/octet-stream",
       }),
     );
-    await chooseSupportingFile(
-      wrapper,
-      new File(["answers"], "Ma1c_HT25_Rattat_prov.pdf", {
-        type: "application/pdf",
-      }),
-    );
     await startButton(wrapper).trigger("click");
     await flushPromises();
 
@@ -442,7 +432,6 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
       artifactLanguage: "sv",
       completionMode: "local_llm_suggest_missing_machine_marked",
       file: expect.objectContaining({ name: "Ma1c_NationelltProv_HT25.dxe" }),
-      gradedResultPdf: expect.objectContaining({ name: "Ma1c_HT25_Rattat_prov.pdf" }),
       targets: ["examnet_pdf", "qti_package"],
       waitSeconds: 0,
     });

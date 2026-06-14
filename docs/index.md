@@ -246,6 +246,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md`
 - ST-21-09 remote inference live-proof trust-lane preflight:
   `docs/backlog/prs/pr-0352-st-21-09-remote-inference-live-proof-trust-lane-preflight.md`
+- ST-21-10 Exam Converter source-only intake and export-owned formats:
+  `docs/backlog/stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md`
+- ST-21-10 Exam Converter source-only intake and export-owned formats PR slice:
+  `docs/backlog/prs/pr-0356-st-21-10-exam-converter-source-only-intake-and-export-owned-formats.md`
+- ST-21-10 public Exam Converter source-only alignment follow-up:
+  `docs/backlog/prs/pr-0357-st-21-10-public-exam-converter-source-only-alignment.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:

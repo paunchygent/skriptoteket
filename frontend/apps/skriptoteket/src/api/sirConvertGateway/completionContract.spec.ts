@@ -16,6 +16,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { createTestUser } from "../../stores/authTestHelpers";
 import { useAuthStore } from "../../stores/auth";
 import { submitDigiExamMigration } from ".";
+import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS } from "./jobSpec";
 import type {
   DigiExamEffectiveAnswerKey,
   DigiExamEffectiveExam,
@@ -78,14 +79,8 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
       { status: 202, headers: { "X-Idempotent-Replay": "true" } },
     );
 
-    const file = dxeFile();
-    const gradedResultPdf = new File(["answers"], "graded-result.pdf", {
-      type: "application/pdf",
-    });
     const submitted = await submitDigiExamMigration({
-      file,
-      gradedResultPdf,
-      targets: ["examnet_pdf"],
+      file: dxeFile(),
       correlationId: "corr_teacher_action_001",
     });
 
@@ -115,10 +110,7 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
       name: "exam.dxe",
       type: "application/octet-stream",
     });
-    expectFormDataFile(formData.get("graded_result_pdf"), {
-      name: "graded-result.pdf",
-      type: "application/pdf",
-    });
+    expect(formData.has("graded_result_pdf")).toBe(false);
     expect(formData.has("parity_pdf")).toBe(false);
 
     const jobSpec = JSON.parse(String(formData.get("job_spec"))) as {
@@ -133,7 +125,7 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
     };
     expect(jobSpec.source.format).toBe("digiexam_dxe");
     expect(jobSpec.conversion.output_format).toBe("examnet_migration_bundle");
-    expect(jobSpec.conversion.targets).toEqual(["examnet_pdf"]);
+    expect(jobSpec.conversion.targets).toEqual(DEFAULT_DIGIEXAM_MIGRATION_TARGETS);
     expect(jobSpec.digiexam_migration_options).toMatchObject({
       completion_mode: "local_llm_suggest_missing_machine_marked",
       remote_provider_policy: "forbidden",

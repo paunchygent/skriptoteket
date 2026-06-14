@@ -37,11 +37,7 @@ import type {
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../../api/sirConvertGateway";
-import {
-  DIGIEXAM_TARGET_EXAMNET_PDF,
-  DIGIEXAM_TARGET_QTI_PACKAGE,
-} from "../../../api/sirConvertGateway/contractValues";
-import type { ExamConverterTargetSelection } from "./useExamConverterSourceFile";
+import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS } from "../../../api/sirConvertGateway/jobSpec";
 
 type AuthenticatedRuntimeClient = {
   submitDigiExamMigration: typeof submitDigiExamMigration;
@@ -54,8 +50,6 @@ type AuthenticatedRuntimeClient = {
 
 export type ExamConverterAuthenticatedRuntimeSubmission = {
   sourceFile: File;
-  supportingFile: File | null;
-  targetSelection: ExamConverterTargetSelection;
   advisoryRetryAttempt?: number | null;
   completionMode?: DigiExamAnswerKeyCompletionMode;
   ingestionOverlay?: DigiExamIngestionOverlay | null;
@@ -153,17 +147,6 @@ function readJobHandle(): ExamConverterJobHandle | null {
   } catch {
     return null;
   }
-}
-
-function toGatewayTargets(selection: ExamConverterTargetSelection): DigiExamMigrationTarget[] {
-  const targets: DigiExamMigrationTarget[] = [];
-  if (selection.pdf) {
-    targets.push(DIGIEXAM_TARGET_EXAMNET_PDF);
-  }
-  if (selection.qti) {
-    targets.push(DIGIEXAM_TARGET_QTI_PACKAGE);
-  }
-  return targets;
 }
 
 async function readTerminalResult(params: {
@@ -265,11 +248,6 @@ export function useExamConverterAuthenticatedRuntime(
   async function submitAndPoll(
     submission: ExamConverterAuthenticatedRuntimeSubmission,
   ): Promise<SirConvertTerminalResult | null> {
-    const targets = toGatewayTargets(submission.targetSelection);
-    if (targets.length === 0) {
-      throw new Error("At least one target format is required.");
-    }
-
     const runId = activeRunId.value + 1;
     activeRunId.value = runId;
     isRuntimeBusy.value = true;
@@ -284,9 +262,8 @@ export function useExamConverterAuthenticatedRuntime(
         artifactLanguage: "sv",
         completionMode: submission.completionMode,
         file: submission.sourceFile,
-        gradedResultPdf: submission.supportingFile,
         ingestionOverlay: submission.ingestionOverlay,
-        targets,
+        targets: [...DEFAULT_DIGIEXAM_MIGRATION_TARGETS] satisfies DigiExamMigrationTarget[],
         waitSeconds: 0,
       };
       if (submission.advisoryRetryAttempt !== null && submission.advisoryRetryAttempt !== undefined) {

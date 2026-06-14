@@ -31,12 +31,9 @@ function buildSourceLabel(params: DigiExamMigrationSubmitParams): string {
     return params.sourceLabel.trim();
   }
   const targets = (params.targets ?? DEFAULT_DIGIEXAM_MIGRATION_TARGETS).join(",");
-  const graded = params.gradedResultPdf
-    ? `${params.gradedResultPdf.name}:${params.gradedResultPdf.size}`
-    : "none";
   const parity = params.parityPdf ? `${params.parityPdf.name}:${params.parityPdf.size}` : "none";
   const overlay = params.ingestionOverlay ? stableJsonStringify(params.ingestionOverlay) : "none";
-  return `${params.file.name}:${params.file.size}:${targets}:${graded}:${parity}:${overlay}`;
+  return `${params.file.name}:${params.file.size}:${targets}:${parity}:${overlay}`;
 }
 
 async function buildDigestParts(
@@ -44,9 +41,6 @@ async function buildDigestParts(
   jobSpecJson: string,
 ): Promise<string[]> {
   const digestParts = [`job_spec:${jobSpecJson}`, `file:${await sha256HexFromBlob(params.file)}`];
-  if (params.gradedResultPdf) {
-    digestParts.push(`graded_result_pdf:${await sha256HexFromBlob(params.gradedResultPdf)}`);
-  }
   if (params.parityPdf) {
     digestParts.push(`parity_pdf:${await sha256HexFromBlob(params.parityPdf)}`);
   }

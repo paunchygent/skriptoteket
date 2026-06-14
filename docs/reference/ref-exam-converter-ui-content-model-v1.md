@@ -10,7 +10,9 @@ links:
   [
     "EPIC-21",
     "ST-21-03",
+    "ST-21-10",
     "PR-0325",
+    "PR-0356",
     "MOCK-st-21-03-exam-converter-authenticated-progressive-review",
     "045-huleedu-design-system",
     "REF-klassrumskartan-workspace-ui-doctrine-2026-03-28",
@@ -65,7 +67,7 @@ The authenticated Exam Converter screen has four content regions.
 
 | Region | Default visibility | Purpose | Content |
 |---|---:|---|---|
-| Left workflow rail | Always visible | Collect inputs and start work | source upload, optional supporting files, target file choices, start/reset actions |
+| Left workflow rail | Always visible | Collect inputs and start work | source upload, start/reset actions, compact status |
 | Result strip | Visible after activity starts | State what happened and the next action | one status headline, one concise next-step line, report action when relevant |
 | Inspection surface | One active mode at a time | Let the teacher inspect files, questions, or report details without flattening everything | segmented modes or equivalent disclosure: `Filer`, `Frågor`, `Rapport`; only the active mode renders its list/detail surface |
 
@@ -114,7 +116,7 @@ Next-step copy must be action-level and direct. Good examples:
 
 - `Hämta filerna och kontrollera provet innan du använder det.`
 - `Öppna frågorna som saknar facit eller poäng.`
-- `Försök igen med en ny provfil eller välj färre målformat.`
+- `Försök igen med en ny provfil.`
 
 Avoid vague states such as `Konverteringen behöver kontrolleras` or
 `Provet är delvis klart`.
@@ -141,19 +143,16 @@ separate export-only contract and must not use the correction-session overlay.
 
 The workflow rail is an ordered action rail, not an explanatory card stack.
 
+Current direction is governed by `ST-21-10` / `PR-0356`: the active setup rail
+is source-only. It must not ask the teacher to supply an optional marked,
+graded, result, or supporting exam file. Missing machine-marked facit is handled
+through the configured LLM answer-key enrichment plus teacher review/editor
+workflow.
+
 1. `Ladda upp provfil (.dxe)`
    - uploaded state: `Filen är uppladdad`
-   - empty state: `Välj provfil`
-2. `Valfri: Resultat-PDF (för svarsmall)`
-   - uploaded state: `Filen är uppladdad`
-   - empty state: `Välj fil`
-3. `Välj målfiler`
-   - visible label: `PDF`
-   - tooltip or inline explanation: `För direktimport av prov i Exam.net.`
-   - visible label: `QTI-format`
-   - tooltip or inline explanation:
-     `För lagring och import av digitala prov. OBS! QTI-import är en planerad funktion i Exam.net och saknar stöd i nuläget.`
-4. `Konvertera`
+   - empty state: `Välj en .dxe-fil för att fortsätta.`
+2. `Konvertera`
    - primary action: `Starta konvertering`
    - secondary action: `Rensa val`
 
@@ -165,11 +164,15 @@ The current PR-0325 runtime may still label the required source upload as
 rail pattern with source-specific upload labels rather than creating a separate
 application surface.
 
-The workflow rail target-format step is a preview/declaration of intended
-output formats, not the final save or download decision. The teacher should
-review and complete question data first. Final download/save actions belong in
-the `Filer` inspection mode after review, so generated target files are as
-complete as possible.
+The workflow rail must not expose PDF/QTI target toggles before conversion.
+Skriptoteket may still request the currently supported target artifacts by
+default in the producer job spec. The teacher-facing choice belongs later:
+download/save PDF, QTI, and future DOCX from the `Filer` inspection mode after
+conversion, review, and replay have produced artifact readiness evidence.
+
+If a help or question-mark icon is visible anywhere in this flow, it must open
+an accessible tooltip/popover on hover, focus, or activation. Otherwise the icon
+should be removed rather than suggesting unavailable help.
 
 ## Files List Content
 

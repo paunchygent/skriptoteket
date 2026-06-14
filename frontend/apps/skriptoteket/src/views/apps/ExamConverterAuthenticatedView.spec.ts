@@ -78,21 +78,16 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(workspace.find('[data-test="exam-converter-source-drop-zone"]').exists()).toBe(true);
     expect(rail.find('[data-test="exam-converter-source-drop-zone"]').exists()).toBe(false);
     expect(dropZone.text()).toContain("Välj provfil");
-    expect(workspace.text()).toContain(
-      "Dra hit .dxe-filen. Om du har ett rättat prov som PDF kan du dra in båda samtidigt.",
-    );
-    expect(workspace.text()).toContain(
-      ".dxe och rättat prov som PDF kan dras in samtidigt.",
-    );
+    expect(workspace.text()).toContain("Dra hit .dxe-filen eller välj provfilen här.");
+    expect(workspace.text()).toContain("Endast en .dxe-fil kan användas här.");
     expect(text).toContain("Provfil");
-    expect(text).toContain("Ingen fil vald");
-    expect(text).toContain("Valfritt rättat prov");
-    expect(text).toContain("Välj fil (.pdf)");
-    expect(text).toContain("Kan dras in samtidigt med provfilen.");
-    expect(text).toContain("Målfiler");
-    expect(text).toContain("PDF");
-    expect(text).toContain("QTI-format");
-    expect(text).toContain("För lagring och import av digitala prov.");
+    expect(text).toContain("Välj en .dxe-fil för att fortsätta.");
+    expect(text).toContain("Konvertera");
+    expect(text).not.toContain("Valfritt rättat prov");
+    expect(text).not.toContain("Välj fil (.pdf)");
+    expect(text).not.toContain("Målfiler");
+    expect(text).not.toContain("QTI-format");
+    expect(wrapper.html()).not.toContain("lucide-help-circle");
     expect(text).not.toContain("Exam.net-stöd är planerat");
   });
 
@@ -144,9 +139,52 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
       false,
     );
-    expect(wrapper.text()).toContain("Välj en .dxe-fil från Exam.net.");
-    expect(wrapper.text()).toContain("Ingen fil vald");
+    expect(wrapper.text()).toContain(
+      "Det gick inte att använda filen. Välj en .dxe-fil från Exam.net.",
+    );
+    expect(wrapper.text()).toContain("Välj en .dxe-fil för att fortsätta.");
     expect(wrapper.text()).not.toContain("Konverterar provet");
+  });
+
+  it("preserves the current .dxe when an invalid picker replacement is attempted", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await chooseSourceFile(
+      wrapper,
+      new File(["exam"], "Ma1c_NationelltProv_HT25.dxe", {
+        type: "application/octet-stream",
+      }),
+    );
+    await chooseSourceFile(
+      wrapper,
+      new File(["pdf"], "Ma1c_HT25_Rattat_prov.pdf", {
+        type: "application/pdf",
+      }),
+    );
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.text()).toContain("Ma1c_NationelltProv_HT25.dxe");
+
+    await chooseSourceFile(
+      wrapper,
+      new File(
+        ["docx"],
+        "Ma1c_HT25_Stodmaterial.docx",
+        {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        },
+      ),
+    );
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.text()).toContain("Ma1c_NationelltProv_HT25.dxe");
+    expect(
+      wrapper.find('[data-test="exam-converter-start-conversion"]').attributes("disabled"),
+    ).toBeUndefined();
   });
 
   it("returns to the idle intake state when the selected source file is removed", async () => {
@@ -164,7 +202,7 @@ describe("ExamConverterAuthenticatedView host frame", () => {
       false,
     );
     expect(wrapper.text()).toContain("Välj provfil för att börja");
-    expect(wrapper.text()).toContain("Ingen fil vald");
+    expect(wrapper.text()).toContain("Välj en .dxe-fil för att fortsätta.");
   });
 
   it("lets the rail source-file action use the same local .dxe intake", async () => {
@@ -184,38 +222,20 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(wrapper.text()).toContain("Ma1c_Rail_Selected.dxe");
   });
 
-  it("selects, rejects, and removes the optional result-PDF locally", async () => {
+  it("keeps supporting upload controls out of the authenticated rail", () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
-    await chooseFile(
-      wrapper,
-      '[data-test="exam-converter-supporting-file-input"]',
-      new File(["answers"], "Ma1c_HT25_Provblad.pdf", {
-        type: "application/pdf",
-      }),
-    );
-
-    expect(wrapper.find('[data-test="exam-converter-selected-supporting-file"]').exists()).toBe(
-      true,
-    );
-    expect(wrapper.text()).toContain("Ma1c_HT25_Provblad.pdf");
-    await wrapper.find('[data-test="exam-converter-clear-supporting-file"]').trigger("click");
-    expect(wrapper.find('[data-test="exam-converter-selected-supporting-file"]').exists()).toBe(
+    expect(wrapper.find('[data-test="exam-converter-supporting-file-input"]').exists()).toBe(
       false,
     );
-
-    await chooseFile(
-      wrapper,
-      '[data-test="exam-converter-supporting-file-input"]',
-      new File(["word"], "Ma1c_HT25_Provblad.docx", {
-        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      }),
+    expect(wrapper.find('[data-test="exam-converter-supporting-file-state"]').exists()).toBe(
+      false,
     );
-
-    expect(wrapper.text()).toContain("Välj en PDF-fil för svarsmall.");
+    expect(wrapper.find('[data-test="exam-converter-target-pdf"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-converter-target-qti"]').exists()).toBe(false);
   });
 
-  it("announces and supports dropping a .dxe and corrected PDF together", async () => {
+  it("accepts a dropped .dxe while ignoring extra files instead of treating them as supporting input", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await dropFiles(wrapper, [
@@ -230,11 +250,8 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
       true,
     );
-    expect(wrapper.find('[data-test="exam-converter-selected-supporting-file"]').exists()).toBe(
-      true,
-    );
     expect(wrapper.text()).toContain("Ma1c_NationelltProv_HT25.dxe");
-    expect(wrapper.text()).toContain("Ma1c_HT25_Rattat_prov.pdf");
+    expect(wrapper.text()).not.toContain("Ma1c_HT25_Rattat_prov.pdf");
   });
 
   it("keeps single-exam intake explicit when several .dxe files are dropped", async () => {
@@ -255,22 +272,48 @@ describe("ExamConverterAuthenticatedView host frame", () => {
     expect(wrapper.text()).toContain("Välj en provfil åt gången.");
   });
 
-  it("toggles output formats as local true/false choices", async () => {
+  it("preserves the current .dxe when an ambiguous multi-DXE replacement is dropped", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
-    const pdfTarget = wrapper.find('[data-test="exam-converter-target-pdf"]');
-    const qtiTarget = wrapper.find('[data-test="exam-converter-target-qti"]');
 
-    expect(pdfTarget.attributes("aria-pressed")).toBe("true");
-    expect(qtiTarget.attributes("aria-pressed")).toBe("true");
-
-    await pdfTarget.trigger("click");
-    await qtiTarget.trigger("click");
-
-    expect(wrapper.find('[data-test="exam-converter-target-pdf"]').attributes("aria-pressed")).toBe(
-      "false",
+    await chooseSourceFile(
+      wrapper,
+      new File(["exam"], "Ma1c_NationelltProv_HT25.dxe", {
+        type: "application/octet-stream",
+      }),
     );
-    expect(wrapper.find('[data-test="exam-converter-target-qti"]').attributes("aria-pressed")).toBe(
-      "false",
+
+    await dropFiles(wrapper, [
+      new File(["exam"], "Prov_A.dxe", {
+        type: "application/octet-stream",
+      }),
+      new File(["exam"], "Prov_B.dxe", {
+        type: "application/octet-stream",
+      }),
+    ]);
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.text()).toContain("Ma1c_NationelltProv_HT25.dxe");
+    expect(
+      wrapper.find('[data-test="exam-converter-start-conversion"]').attributes("disabled"),
+    ).toBeUndefined();
+  });
+
+  it("shows source-file guidance when a dropped PDF cannot be used", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await dropFiles(wrapper, [
+      new File(["answers"], "Ma1c_HT25_Rattat_prov.pdf", {
+        type: "application/pdf",
+      }),
+    ]);
+
+    expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.text()).toContain(
+      "Det gick inte att använda filen. Välj en .dxe-fil från Exam.net.",
     );
   });
 
@@ -283,14 +326,10 @@ describe("ExamConverterAuthenticatedView host frame", () => {
         type: "application/octet-stream",
       }),
     );
-    await wrapper.find('[data-test="exam-converter-target-pdf"]').trigger("click");
     await wrapper.find("button.btn-ghost").trigger("click");
 
     expect(wrapper.find('[data-test="exam-converter-selected-source-file"]').exists()).toBe(
       false,
-    );
-    expect(wrapper.find('[data-test="exam-converter-target-pdf"]').attributes("aria-pressed")).toBe(
-      "true",
     );
     expect(wrapper.text()).not.toContain("Konverterar provet");
   });
@@ -356,7 +395,6 @@ describe("ExamConverterAuthenticatedView host frame", () => {
       .find('[data-test="exam-converter-workflow-rail-shell"]')
       .html();
 
-    expect(railHtml).not.toContain("border-b");
     expect(railHtml).not.toContain("last:border-b");
     expect(railHtml).not.toContain("divide-y");
   });

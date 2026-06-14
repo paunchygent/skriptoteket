@@ -150,7 +150,6 @@ export function createSirConvertGatewayClient(
       const requestContext = await prepareDigiExamMigrationRequestContext(params);
       const formData = new FormData();
       formData.append("file", params.file, params.file.name);
-      appendOptionalFile(formData, "graded_result_pdf", params.gradedResultPdf);
       appendOptionalFile(formData, "parity_pdf", params.parityPdf);
       appendOptionalIngestionOverlay(formData, params.ingestionOverlay);
       formData.append("job_spec", stableJsonStringify(requestContext.jobSpec));

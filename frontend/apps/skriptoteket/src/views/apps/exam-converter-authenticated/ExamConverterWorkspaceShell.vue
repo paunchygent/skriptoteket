@@ -136,7 +136,7 @@ function handleDrop(event: DragEvent): void {
           {{ selectedSourceFile ? "Provfilen är vald" : "Välj provfil för att börja" }}
         </h2>
         <p class="mt-1 text-sm leading-snug text-navy/70">
-          {{ selectedSourceFile ? "Nästa steg är att starta konverteringen." : "Dra hit .dxe-filen. Om du har ett rättat prov som PDF kan du dra in båda samtidigt." }}
+          {{ selectedSourceFile ? "Nästa steg är att starta konverteringen." : "Dra hit .dxe-filen eller välj provfilen här." }}
         </p>
       </div>
     </header>
@@ -260,7 +260,7 @@ function handleDrop(event: DragEvent): void {
               v-else
               class="mt-2 text-sm leading-snug text-navy/70"
             >
-              .dxe och rättat prov som PDF kan dras in samtidigt.
+              Endast en .dxe-fil kan användas här.
             </p>
           </div>
         </div>

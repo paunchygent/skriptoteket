@@ -103,7 +103,6 @@ export type SirConvertDigiExamJobSpec = {
   };
   digiexam_migration_options: {
     completion_mode: DigiExamAnswerKeyCompletionMode;
-    graded_result_pdf_filename?: string;
     parity_pdf_filename?: string;
     remote_provider_policy: typeof DIGIEXAM_REMOTE_PROVIDER_POLICY_FORBIDDEN;
     result_pdf_usage: typeof DIGIEXAM_RESULT_PDF_USAGE_CORRECT_MACHINE_MARKED;
@@ -120,7 +119,6 @@ export type SirConvertDigiExamJobSpec = {
 
 export type DigiExamMigrationSubmitParams = {
   file: File;
-  gradedResultPdf?: File | null;
   parityPdf?: File | null;
   targets?: DigiExamMigrationTarget[];
   advisoryRetryAttempt?: number | null;

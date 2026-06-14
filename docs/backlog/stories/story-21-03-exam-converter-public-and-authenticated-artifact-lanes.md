@@ -5,7 +5,7 @@ title: "Exam converter public and authenticated artifact lanes"
 status: in_progress
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-19
+updated: 2026-06-15
 epic: "EPIC-21"
 dependencies:
   - "ADR-0066"
@@ -30,6 +30,15 @@ data_impact: "Yes (public lane transient job/artifact state only; authenticated 
 ---
 
 ## Context
+
+2026-06-15 supersession note: `ST-21-10` supersedes the optional marked/result
+PDF upload and early target-selection assumptions in this story for new work.
+The historical acceptance criteria and implementation notes below remain useful
+audit history for the public/authenticated artifact lanes that shipped, but
+future Exam Converter intake should be source-only and should expose file-format
+choices as post-conversion download/save actions. Follow-up `PR-0357` owns the
+public one-time lane cleanup because `PR-0356` is scoped to the authenticated
+source-only intake.
 
 Teachers need two related but distinct product paths for exam conversion:
 

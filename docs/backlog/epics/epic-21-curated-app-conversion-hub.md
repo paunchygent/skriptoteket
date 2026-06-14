@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-06-14
+updated: 2026-06-15
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -58,6 +58,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 - [x] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
+- [ ] 10. [ST-21-10: Exam Converter source-only intake and export-owned formats](../stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md)
 
 ## Risks
 
@@ -225,9 +226,20 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   passed the same local dev E2E path after the UI remediation, and
   `.artifacts/pr-0354-transcript-ui-remediation/20260614T2104Z/` records
   in-app browser layout proof at 1440px and 1800px.
+  `PR-0355` is in progress as a narrow follow-up: the rail keeps an invisible
+  reserved `Avbryt` slot directly above `Starta transkribering` and removes the
+  checkbox-like square icon. Live E2E/deploy proof waits for the active Offload
+  experiment to release the GPU/STT lane.
 - `ST-21-09` / `PR-0352` is done and approved by `REV-PR-0352`: remote
   inference with coherent HuleEdu Gateway/Sir Convert trust is enforced before
   upload, mixed local-signer to Hemma-verifier lanes fail closed unless
   explicitly verified, local heavy model/runtime hosting remains out of scope,
   and both local remote-proof plus native Hemma production STT E2E proofs are
   retained.
+- `ST-21-10` is ready as the next Exam Converter product-direction follow-up:
+  current intake should require only the governed source `.dxe` file, rely on
+  LLM answer-key enrichment plus teacher review instead of optional marked
+  exams, hide early target selection, and treat PDF/QTI/future DOCX as
+  post-conversion file actions. `PR-0356` is the immediate authenticated
+  source-only intake and export-owned format UX slice, and `PR-0357` is the
+  separate governed public-lane cleanup follow-up.

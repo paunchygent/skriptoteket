@@ -41,18 +41,12 @@ const props = defineProps<{
 const activeHubMode = ref<ConversionHubMode>("exam");
 
 const {
-  clearSupportingFile,
   clearSourceFile,
   resetLocalChoices,
   selectDroppedFiles,
-  selectSupportingFile,
   selectSourceFile,
-  selectedSupportingFile,
   selectedSourceFile,
-  selectedTargetFormats,
-  supportingFileError,
   sourceFileError,
-  toggleTargetFormat,
 } = useExamConverterSourceFile();
 
 const {
@@ -118,14 +112,9 @@ const isExamConverterBusy = computed(
   () => isConversionRunning.value || isCorrectionApplying.value,
 );
 
-const hasSelectedTargetFormat = computed(
-  () => selectedTargetFormats.value.pdf || selectedTargetFormats.value.qti,
-);
-
 const canStartConversion = computed(
   () =>
     selectedSourceFile.value !== null &&
-    hasSelectedTargetFormat.value &&
     !isExamConverterBusy.value,
 );
 
@@ -255,8 +244,6 @@ async function handleStartConversion(): Promise<void> {
     const result = await submitAndPoll({
       completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
       sourceFile: sourceSelection.file,
-      supportingFile: selectedSupportingFile.value?.file ?? null,
-      targetSelection: { ...selectedTargetFormats.value },
     });
     if (result) {
       await finishRuntimeResult(result, null, true);
@@ -285,8 +272,6 @@ async function handleRetryAdvisoryFacitSuggestion(): Promise<void> {
       advisoryRetryAttempt: nextRetryAttempt,
       completionMode: DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
       sourceFile: sourceSelection.file,
-      supportingFile: selectedSupportingFile.value?.file ?? null,
-      targetSelection: { ...selectedTargetFormats.value },
     });
     if (result) {
       await finishRuntimeResult(result, null, true);
@@ -409,17 +394,11 @@ onMounted(async () => {
         <ExamConverterWorkflowRailShell
           :can-start-conversion="canStartConversion"
           :is-conversion-running="isExamConverterBusy"
-          :selected-supporting-file="selectedSupportingFile"
           :selected-source-file="selectedSourceFile"
-          :selected-target-formats="selectedTargetFormats"
-          :supporting-file-error="supportingFileError"
-          @clear-supporting-file="clearSupportingFile"
           @clear-source-file="clearSourceFile"
           @reset-local-choices="handleResetLocalChoices"
           @start-conversion="handleStartConversion"
           @source-file-selected="selectSourceFile"
-          @supporting-file-selected="selectSupportingFile"
-          @toggle-target-format="toggleTargetFormat"
         />
         <div class="min-w-0">
           <p

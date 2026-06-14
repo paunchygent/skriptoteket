@@ -84,18 +84,13 @@ afterEach(() => {
 });
 
 describe("ExamConverterAuthenticatedView conversion-start slice", () => {
-  it("enables start only after one exam file and at least one target format are selected", async () => {
+  it("enables start only after one exam file is selected", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     expect(startButton(wrapper).attributes("disabled")).toBeDefined();
 
     await chooseSourceFile(wrapper);
     expect(startButton(wrapper).attributes("disabled")).toBeUndefined();
-
-    await wrapper.find('[data-test="exam-converter-target-pdf"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-target-qti"]').trigger("click");
-
-    expect(startButton(wrapper).attributes("disabled")).toBeDefined();
   });
 
   it("starts the local running state with dynamic progress but no question, file, or report modes", async () => {
