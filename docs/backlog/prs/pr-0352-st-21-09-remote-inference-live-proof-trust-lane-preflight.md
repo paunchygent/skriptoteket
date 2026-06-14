@@ -106,8 +106,8 @@ Make transcript live-proof lane coherence executable and default:
 
 ## Implementation Summary
 
-Implementation is complete locally and awaiting native Hemma production proof
-and independent `REV-PR-0352` approval.
+Implementation is complete with both local remote-proof and native Hemma
+production proof passed. It is awaiting independent `REV-PR-0352` approval.
 
 - Added `scripts/_sir_convert_trust_lane_preflight.py` as the proof-lane
   preflight module. It resolves public lane metadata from CLI, environment,
@@ -132,6 +132,11 @@ and independent `REV-PR-0352` approval.
 - Added `scripts/_proof_live_monitoring.py` and extended sanitized evidence
   summaries so retained local proof artifacts include `backend-container.json`,
   `backend-live.log`, and `backend-monitor.json`.
+- Closed the downstream async formatter-export consumer gap exposed by the
+  production proof path: `SirConvertTranscriptFormatterProducerV2` now accepts
+  `202 Accepted`, polls `GET /v2/convert/jobs/{job_id}` until terminal state,
+  and only then reads result/artifact bytes. Red-first coverage lives in
+  `tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_transcript_formatter_producer.py`.
 - Kept remote hosted model/runtime compute as the normal proof assumption; no
   local Sir Convert model/runtime stack or secret-copy path was introduced.
 
@@ -188,16 +193,53 @@ pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url h
 ```
 
 Result: passed. Retained artifact:
-`.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/proof-summary.json`.
-Docker evidence in the same artifact directory proves the local product backend
-used `http://host.docker.internal:28085` for formatter export and all four
-artifact downloads.
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/proof-summary.json`.
+The proof shows trust-lane preflight passed, remote compute stayed on the
+`remote-proof` lane, the completed transcript autosaved, formatter export
+returned four artifacts, all four downloads returned `200`, and Mina filer save
+returned `200`.
+
+Native Hemma production proof after deploying Sir Convert
+`159e82d5e674213ba58d5e2d959e8baba383dadb` and Skriptoteket
+`2fa27cfb85c8e64d9d0a9e9fb15c26091a09946e`:
+
+```bash
+ssh hemma
+cd /home/paunchygent/apps/skriptoteket
+/home/paunchygent/.local/bin/pdm run python -m scripts.playwright_pr_0349_transcript_parity_live \
+  --audio-file /home/paunchygent/apps/sir-convert-a-lot/build/verification/stt-sidecar-live-fixtures/source-media/english-dialogue-two-speakers.mp3 \
+  --base-url https://skriptoteket.hule.education \
+  --dotenv .artifacts/proof-env/prod-transcript-20260614T191737Z.env \
+  --artifact-root .artifacts/playwright-pr-0352-transcript-parity-native \
+  --sir-convert-proof-lane hemma-production \
+  --timeout-seconds 1200 \
+  --no-capture-local-backend-logs
+```
+
+Result: passed. Retained artifact:
+`/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260614T191738Z/proof-summary.json`.
+Container-log evidence for the same interval is retained at:
+`/home/paunchygent/apps/skriptoteket/.artifacts/pr-0352-native-proof-logs/20260614T191737Z/`.
+The retained proof shows `trust_lane_preflight.status=passed`,
+`lane_kind=hemma_production`, `remote_compute=true`, `mixed_tunnel=false`,
+autosaved `transcript_json_v1` with 27 segments and two speaker labels, two
+speaker overlays, formatter export artifact count 4, TXT/MD/VTT/SRT downloads
+all `200`, and Mina filer save `200`.
+
+The matching container evidence shows Skriptoteket production returned `200`
+for `POST /formatter-exports`, all four formatter-artifact downloads, and
+`POST /formatter-artifacts/transcript_txt/save`. Sir Convert production logs
+show the STT job accepted as `202`, polled through
+`GET /v2/convert/jobs/{job_id}`, result/artifacts read as `200`, formatter
+fast lane `transcript_json -> transcript_bundle` completed with
+`status=succeeded`, and all four formatter artifacts read as `200`.
 
 Focused commands expected for the implementation slice:
 
 ```bash
 pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py
 pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py
+pdm run test tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_transcript_formatter_producer.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_client_v2.py
 pdm run lint
 pdm run typecheck
 pdm run docs-validate

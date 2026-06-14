@@ -214,14 +214,17 @@ Observed result:
   speaker overlays, produced four formatter artifacts, downloaded TXT/MD/VTT/SRT,
   and saved the representative TXT artifact to Mina filer.
 - Retained proof artifact:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/proof-summary.json`.
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/proof-summary.json`.
 - Docker-backed runtime evidence:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/backend-container.json`
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/backend-container.json`
   shows the local product backend producer lane as
   `http://host.docker.internal:28085`, and
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/backend-live.log`
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/backend-live.log`
   shows formatter export plus all four artifact downloads through that lane
   with HTTP 200 responses.
+- Native Hemma production proof is retained under `PR-0352` at
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260614T191738Z/proof-summary.json`
+  after deploying Sir Convert `159e82d5` and Skriptoteket `2fa27cfb`.
 
 ## Test Plan
 

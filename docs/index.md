@@ -633,6 +633,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md`
 - ST-26-07 share-link Teams preview thumbnails task:
   `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`
+- ST-26-07 production Playwright DEP0169 remediation task:
+  `docs/backlog/prs/pr-0353-st-26-07-production-playwright-dep0169-remediation.md`
 - Review gate for ST-26-07 share-link Teams preview thumbnails:
   `docs/backlog/reviews/review-st-26-07-share-link-teams-preview-thumbnails.md`
 - Post-implementation review gate for PR-0277 share-link Teams preview thumbnails:
@@ -1143,6 +1145,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0275-st-26-06-share-link-popover-and-bottom-sheet-management.md`
 - `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`
 - `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`
+- `docs/backlog/prs/pr-0353-st-26-07-production-playwright-dep0169-remediation.md`
 - `docs/backlog/prs/pr-0278-st-26-08-shared-print-pdf-visual-redesign.md`
 - `docs/backlog/prs/pr-0279-st-26-06-shared-link-seating-label-typography-and-long-name-fit.md`
 - `docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md`

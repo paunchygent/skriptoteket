@@ -5,7 +5,7 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-05-02
+updated: 2026-06-14
 outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, publish immutable shareable HTML/CSS export links for grouping and seating with reliable renderer-derived Teams/social previews, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 ---
@@ -95,7 +95,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
 - [ ] [ST-26-06: Klassrumskartan shareable HTML/CSS export links](../stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md) — `PR-0276` static share-renderer and share-chrome/PDF remediation is approved after fixing merged-bench label overlay, wall-fixture geometry, owned chrome finalization, and relative public-app attribution proof gaps; `PR-0279` is closed and deployed after fixing shared-link seating label typography, long-name fit, and active seating preview backfill refresh semantics; `PR-0282` is closed after `REV-PR-0282` approved the seating/grouping shared-link `Ladda ner PDF` busy remediation through a tiny public-share browser-handoff guard plus canonical disabled/busy styling and duplicate-activation suppression, without Vue hydration, token logging, API calls, or share/PDF semantic changes; `PR-0303` is done and remediates public guest overview `Dela och exportera` state wiring without widening the accepted public guest share boundary.
-- [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — `PR-0277` is implemented and deployed to Hemma production with renderer-derived preview assets, active-only metadata routes, production backfill, and BuildKit Chromium smoke; `PR-0279` production backfill rerun confirmed no stale active seating preview rows remained after the seating renderer refresh; retained post-implementation review and fresh Teams unfurl proof remain before closeout.
+- [ ] [ST-26-07: Klassrumskartan share-link Teams preview thumbnails](../stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) — `PR-0277` is implemented and deployed to Hemma production with renderer-derived preview assets, active-only metadata routes, production backfill, and BuildKit Chromium smoke; `PR-0279` production backfill rerun confirmed no stale active seating preview rows remained after the seating renderer refresh; `PR-0353` is ready to remediate the production Playwright browser-install `DEP0169` warning without dropping the thumbnail runtime; retained post-implementation review and fresh Teams unfurl proof remain before closeout.
 - [ ] [ST-26-08: Klassrumskartan shared print PDF visual parity](../stories/story-26-08-klassrumskartan-shared-print-pdf-visual-parity.md) — `PR-0278` is ready for pre-implementation review and governs the PDF body redesign across workspace `Exportera PDF` and shared-link `Ladda ner PDF` for both seating and grouping.
 
 ## Implementation Summary (as of 2026-03-26)
@@ -159,8 +159,11 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   3 active preview assets, passed the on-host Playwright PNG smoke, and proved
   the current production share URL exposes OG/Twitter/JSON-LD plus a 1200x630
   PNG preview route. The story remains open until retained post-implementation
-  review and a never-before-posted Teams unfurl proof are recorded. `PR-0279`
-  closed the linked static seating share-label correction: it keeps the opened
+  review and a never-before-posted Teams unfurl proof are recorded. A
+  2026-06-14 Hemma production build warning investigation created `PR-0353` to
+  upgrade or isolate the Playwright browser runtime so Node `DEP0169` warnings
+  from Playwright's browser downloader do not remain in production build logs.
+  `PR-0279` closed the linked static seating share-label correction: it keeps the opened
   share page as HTML/CSS, removes first/second-line label collision, handles
   ordinary long names without default ellipsis, and deployed the
   renderer-version/backfill refresh path for persisted seating preview PNGs.

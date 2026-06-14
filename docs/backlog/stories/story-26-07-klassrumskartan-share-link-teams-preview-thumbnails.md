@@ -5,7 +5,7 @@ title: "Klassrumskartan share-link Teams preview thumbnails"
 status: in_progress
 owners: "agents"
 created: 2026-05-01
-updated: 2026-05-03
+updated: 2026-06-14
 epic: "EPIC-26"
 dependencies:
   - "ST-26-06"
@@ -76,3 +76,9 @@ Klassrumskartan share links. Retained review gate: `REV-ST-26-07`.
   for the current production share URL. It remains `in_progress` until fresh
   Teams unfurl proof and retained post-implementation review are recorded.
   Production-like and on-host BuildKit Chromium smoke are recorded in `PR-0277`.
+- `PR-0353` is the follow-up remediation task for the Node `[DEP0169]`
+  warnings observed during the Hemma production Playwright browser install on
+  2026-06-14. The task keeps the Playwright-backed thumbnail contract intact
+  while removing the build warning or, if the supported upgrade path cannot do
+  that, moving browser rendering behind an explicit renderer image/service
+  boundary.

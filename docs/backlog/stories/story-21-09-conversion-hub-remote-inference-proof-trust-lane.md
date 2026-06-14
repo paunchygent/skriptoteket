@@ -90,6 +90,16 @@ blocker and a documented default, not session memory.
 
 ## Implementation Slices
 
-- `PR-0352` is implemented and awaiting independent review: it adds the
-  transcript live-proof trust-lane preflight and makes remote inference with
-  coherent trust the default behavior.
+- `PR-0352` is implemented and live-proofed locally and on Hemma production,
+  and is awaiting independent review approval. It adds the transcript
+  live-proof trust-lane preflight and makes remote inference with coherent
+  trust the default behavior.
+
+## Evidence
+
+- Local remote-proof STT E2E proof passed with retained artifact
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T184817Z/proof-summary.json`.
+- Native Hemma production STT E2E proof passed with retained artifact
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260614T191738Z/proof-summary.json`.
+- Container-log evidence for the successful native proof is retained at
+  `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0352-native-proof-logs/20260614T191737Z/`.
