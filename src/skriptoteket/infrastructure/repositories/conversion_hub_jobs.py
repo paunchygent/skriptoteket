@@ -97,6 +97,29 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
         model = result.scalar_one_or_none()
         return self._to_job(model) if model is not None else None
 
+    async def get_latest_transcript_formatter_export(
+        self,
+        *,
+        owner_user_id: UUID,
+        input_filename: str,
+    ) -> ConversionHubJob | None:
+        result = await self._session.execute(
+            select(ConversionHubJobModel)
+            .where(
+                ConversionHubJobModel.owner_user_id == owner_user_id,
+                ConversionHubJobModel.input_filename == input_filename,
+                ConversionHubJobModel.source_format == "transcript_json",
+                ConversionHubJobModel.output_format == "transcript_bundle",
+            )
+            .order_by(
+                ConversionHubJobModel.updated_at.desc(),
+                ConversionHubJobModel.created_at.desc(),
+            )
+            .limit(1)
+        )
+        model = result.scalar_one_or_none()
+        return self._to_job(model) if model is not None else None
+
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:
         model = await self._session.get(ConversionHubJobModel, job.id)
         if model is None:

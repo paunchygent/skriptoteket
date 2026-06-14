@@ -8,16 +8,18 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-13.
-- Branch: `codex/skriptoteket-pr-0349-trust-alignment`.
+- Date: 2026-06-14.
+- Branch: `codex/skriptoteket-pr-0350-product-owned-transcript-replay-export`.
 - ST-21 transcript lane is active. `PR-0342` has accepted live Gateway proof;
   `ST-21-07` / `PR-0343` is implemented for durable saved `transcript_json`.
   `ST-21-08` / `PR-0344` through `PR-0348` are implemented for progress/cancel
   parity, formatter authority sync, saved speaker overlays, overlay-aware
   formatter replay, download, and Mina filer save. `PR-0349` live proof now has
   reviewed trust/upload/client-state, replay-prepare, replay-complete parser,
-  and artifact-payload remediations; reviewer plus final Hemma live proof are
-  still pending.
+  and artifact-payload remediations, but final closeout is blocked by a new
+  architecture finding: replay/export is a browser-owned saga. Sir Convert
+  `task-363` is completed/deployed at `4b09baa989d38f582573a810f045e50c676139a9`;
+  `PR-0350` owns consuming it through a product-owned backend export boundary.
 - Current lanes under `ST-21-03`: `PR-0330` is canceled after `PR-0338`;
   `PR-0331` is Codex-owned reviewed AI-facit export integrity and is ready.
 - Current state: `ADR-0085` accepted; `PR-0318` through `PR-0323` done;
@@ -148,27 +150,29 @@ Keep this file updated so the next session can pick up work quickly.
   `46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992`;
   Sir Convert Task 361 focused suite passed with `39 passed`.
 - Current PR-0349 upload/admission proof gates: `pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts` passed with 30 tests; `pdm run test tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py` passed with 10 tests; `pdm run fe-type-check`, `pdm run docs-validate`, and `git diff --check` passed.
-- Current PR-0349 replay/export disabled remediation: red
-  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`
-  failed with 2 assertions before the patch; green that same command passed
-  with 12 tests. `pdm run fe-type-check` passed. Latest retained live artifact
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
-  shows upload/STT/save passed but `GET` then `PUT /speaker-overlays` both
-  returned `overlay_count=0`, no replay requests were sent, and the replay
-  button stayed disabled.
-- Current PR-0349 replay/artifact remediations: red evidence covered missing
-  segments, Service API v2 result-envelope parsing, direct backend artifact
-  download, browser self-consistent forged payloads, and second-review
-  `receipt.sub` mismatch risk. Green focused backend replay/artifact/API suites,
-  focused frontend Gateway payload tests, migration idempotency for
-  `e9a4b6c8d2f0`, `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`,
-  `pdm run fe-lint`, `pdm run docs-validate`, `pdm run handoff-validate`, and
-  `git diff --check` passed in this slice.
+- Current PR-0349 disabled replay/export proof is retained in its PR/review
+  docs; latest live artifact `20260613T181847Z` reached upload/STT/save but
+  stayed blocked before export, which is why PR-0350 exists.
+- `REV-PR-0350` is now `approved` at
+  `docs/backlog/reviews/review-pr-0350-product-owned-transcript-replay-export-boundary.md`.
+  Re-review verified the retained fixes: producer transport failures now
+  record product `failed` state, `running` exports are refreshable through the
+  product GET path, and requested artifact subsets persist in export-state
+  rows across pending/running/failed/succeeded responses.
+- PR-0350 evidence: focused backend/frontend suites, migration idempotency for
+  `f4c8e2a6b9d1`, `pdm run db-upgrade`, lint, typecheck, fe-type-check,
+  fe-lint, fe-build, docs/handoff validation, and `git diff --check` passed;
+  API typegen was not needed because the public OpenAPI shape did not change.
 ## How to Run
 ```bash
-pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_completion.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_result_envelope.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
-pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterReplay.spec.ts frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptReplayClient.spec.ts
+pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterExports.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/transcriptClient.spec.ts
+pdm run fe-gen-api-types
+pdm run lint
+pdm run typecheck
 pdm run fe-type-check
+pdm run fe-lint
+pdm run fe-build
 pdm run docs-validate
 pdm run handoff-validate
 git diff --check
@@ -186,6 +190,6 @@ git diff --check
   source audio, local re-transcription, browser-local formatting, or invented
   parallel transcript truth.
 ## Next Steps
-- Run the required reviewer pass for the artifact-payload remediation, then
-  rerun `PR-0349` live proof on Hemma through progress, cancel feedback,
-  durable save, speaker rename, replay export, download, and Mina filer save.
+- After `REV-PR-0350` approval, rerun `PR-0349` live proof on Hemma through
+  progress, cancel feedback, durable save, speaker rename, product export,
+  download, and Mina filer save.

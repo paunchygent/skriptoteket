@@ -21,8 +21,10 @@ dependencies:
   - "PR-0346"
   - "PR-0347"
   - "PR-0348"
+  - "PR-0350"
   - "HuleEdu TASK-0676"
   - "Sir Convert task-361"
+  - "Sir Convert task-363"
 acceptance_criteria:
   - "Given a teacher uploads large source media, when the multipart transfer is still in flight before Sir Convert returns a job id, then the transcript lane shows upload progress and allows local upload abort instead of appearing silent."
   - "Given a signed-in teacher uses the transcript lane through the HuleEdu browser-session ceremony, when a long-running job is submitted, then retained evidence shows truthful progress fields rendering through Gateway."
@@ -73,6 +75,37 @@ overlay-aware exports, downloads, and Mina filer saves.
 - Full docs/handoff validation and `git diff --check`.
 
 ## Evidence Log
+
+### 2026-06-14 Browser-Owned Replay Saga Architecture Blocker
+
+PR-0349 is blocked by a product-boundary defect, not by the earlier
+InternalIdentity fingerprint mismatch.
+
+The current replay/export implementation lets the browser coordinate producer
+work: Skriptoteket prepares replay input, the browser submits through HuleEdu
+Gateway, waits on Sir Convert, polls status, downloads named artifacts, collects
+Gateway receipts, base64-encodes artifact bytes, and then calls
+`formatter-replay/complete`. That is not the DXE/converter pattern requested
+for ST-21-08. Browser code must record teacher intent and observe product
+state; it must not become the producer workflow runner or byte courier.
+
+Production evidence from the manual run for transcript
+`aaf12956-67c3-4cd6-8094-b2e264ad2b59` showed about 119 seconds between
+`formatter-replay/prepare` 200 and `formatter-replay/complete` 200 while the UI
+sat in `Skapar exportfiler.`. During that interval replay was waiting across
+Sir Convert submit/poll/artifact fetch/complete rather than completing the
+deterministic formatter export under the expected fast budget.
+
+Required remediation:
+
+- Sir Convert `task-363` must make `transcript_json -> transcript_bundle`
+  replay a fast producer lane outside the generic heavy conversion queue.
+- Skriptoteket `PR-0350` must remove the browser-owned prepare/submit/poll/
+  download/base64/complete saga and replace it with product-owned replay/export
+  orchestration.
+- `REV-PR-0349` must not approve final closeout until the old saga is removed,
+  saga-specific tests are deleted or rewritten around the new behavior, and
+  fresh live proof passes through the product-owned boundary.
 
 ### 2026-06-13 Cross-Repo Smoke And Blocked Live Proof Rerun
 

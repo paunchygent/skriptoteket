@@ -20,9 +20,12 @@ import {
   type TranscriptFormatterArtifactKey,
 } from "../../../api/conversionHubTranscriptFormatterArtifactActions";
 import {
-  requestConversionHubTranscriptFormatterReplay,
   type ConversionHubTranscriptFormatterArtifactRef,
-} from "../../../api/conversionHubTranscriptFormatterReplay";
+  type ConversionHubTranscriptFormatterExportResponse,
+  type ConversionHubTranscriptFormatterExportStatus,
+  getConversionHubTranscriptFormatterExport,
+  requestConversionHubTranscriptFormatterExport,
+} from "../../../api/conversionHubTranscriptFormatterExports";
 import {
   buildSaveTranscriptRequest,
   getConversionHubTranscriptSpeakerOverlays,
@@ -73,7 +76,7 @@ const {
 
 type TranscriptSaveStatus = "idle" | "saving" | "saved" | "failed";
 type SpeakerOverlayStatus = "idle" | "loading" | "saving" | "saved" | "failed";
-type FormatterReplayStatus = "idle" | "running" | "succeeded" | "failed";
+type FormatterReplayStatus = ConversionHubTranscriptFormatterExportStatus;
 
 const conversionHubJobId = ref<string | null>(null);
 const savedTranscriptId = ref<string | null>(null);
@@ -83,8 +86,9 @@ const speakerOverlayEntries = ref<ConversionHubTranscriptSpeakerOverlayEntry[]>(
 const speakerOverlayStatus = ref<SpeakerOverlayStatus>("idle");
 const speakerOverlayErrorMessage = ref<string | null>(null);
 const formatterReplayArtifacts = ref<ConversionHubTranscriptFormatterArtifactRef[]>([]);
-const formatterReplayStatus = ref<FormatterReplayStatus>("idle");
+const formatterReplayStatus = ref<FormatterReplayStatus>("not_requested");
 const formatterReplayErrorMessage = ref<string | null>(null);
+const formatterReplayRequestInFlight = ref(false);
 const formatterArtifactActionStates = ref<FormatterArtifactActionStates>({});
 const isRunning = computed(() => runtimeStatus.value === "running");
 const canStartTranscript = computed(
@@ -107,13 +111,14 @@ const canRequestFormatterReplay = computed(
     savedTranscriptId.value !== null &&
     speakerOverlayEntries.value.length > 0 &&
     speakerOverlayStatus.value === "saved" &&
-    formatterReplayStatus.value !== "running",
+    !formatterReplayRequestInFlight.value,
 );
 
 function resetFormatterReplayState(): void {
   formatterReplayArtifacts.value = [];
-  formatterReplayStatus.value = "idle";
+  formatterReplayStatus.value = "not_requested";
   formatterReplayErrorMessage.value = null;
+  formatterReplayRequestInFlight.value = false;
   formatterArtifactActionStates.value = {};
 }
 
@@ -250,20 +255,39 @@ async function handleSaveSpeakerOverlays(): Promise<void> {
   }
 }
 
+function applyFormatterExportState(
+  response: ConversionHubTranscriptFormatterExportResponse,
+): void {
+  formatterReplayStatus.value = response.status;
+  formatterReplayArtifacts.value = response.status === "succeeded" ? response.artifacts : [];
+  formatterArtifactActionStates.value = {};
+  formatterReplayErrorMessage.value =
+    response.status === "failed"
+      ? response.error_message ?? "Exportfiler kunde inte skapas. Försök igen."
+      : null;
+}
+
 async function handleRequestFormatterReplay(): Promise<void> {
   const transcriptId = savedTranscriptId.value;
   if (!transcriptId || !canRequestFormatterReplay.value) return;
-  formatterReplayStatus.value = "running";
+  const shouldRefresh =
+    formatterReplayStatus.value === "pending" || formatterReplayStatus.value === "running";
+  if (!shouldRefresh) {
+    formatterReplayStatus.value = "running";
+    formatterReplayArtifacts.value = [];
+  }
+  formatterReplayRequestInFlight.value = true;
   formatterReplayErrorMessage.value = null;
-  formatterReplayArtifacts.value = [];
   try {
-    const replay = await requestConversionHubTranscriptFormatterReplay({ transcriptId });
-    formatterReplayArtifacts.value = replay.artifacts;
-    formatterArtifactActionStates.value = {};
-    formatterReplayStatus.value = "succeeded";
+    const exportState = shouldRefresh
+      ? await getConversionHubTranscriptFormatterExport({ transcriptId })
+      : await requestConversionHubTranscriptFormatterExport({ transcriptId });
+    applyFormatterExportState(exportState);
   } catch {
     formatterReplayStatus.value = "failed";
     formatterReplayErrorMessage.value = "Exportfiler kunde inte skapas. Försök igen.";
+  } finally {
+    formatterReplayRequestInFlight.value = false;
   }
 }
 

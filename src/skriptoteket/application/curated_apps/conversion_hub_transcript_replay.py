@@ -1,23 +1,21 @@
-"""Conversion Hub transcript formatter replay contracts.
+"""Conversion Hub transcript replay producer contracts.
 
 Domain purpose:
-  Define typed request, JobSpec, and artifact-reference envelopes for replaying
-  producer-owned transcript formatter artifacts from saved canonical JSON plus
-  Skriptoteket speaker overlays.
+  Define the strict Sir Convert transcript replay JobSpec and named artifact
+  descriptors used by Skriptoteket-owned formatter export workflows.
 
 Relationships:
-  - Built by `handlers.conversion_hub_transcript_formatter_replay`.
-  - Serialized by `web.api.v1.apps_conversion_hub_transcript_saves`.
-  - Submitted through the browser-session HuleEdu Sir Convert Gateway client.
+  - Built by `handlers.conversion_hub_transcript_formatter_exports`.
+  - Validated by `handlers.conversion_hub_transcript_formatter_replay_parsing`.
+  - Persisted through transcript formatter artifact repositories and actions.
 """
 
 from __future__ import annotations
 
 from enum import StrEnum
 from typing import Literal
-from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
     ConversionHubTranscriptSpeakerOverlayEntry,
@@ -25,9 +23,6 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
 
 TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES = 4 * 1024 * 1024
 TRANSCRIPT_FORMATTER_REPLAY_TOTAL_ARTIFACT_MAX_BYTES = 8 * 1024 * 1024
-TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_BASE64_MAX_CHARS = (
-    (TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES + 2) // 3
-) * 4
 
 
 class ConversionHubTranscriptFormatterArtifactFormat(StrEnum):
@@ -49,12 +44,12 @@ class ConversionHubTranscriptFormatterArtifactKey(StrEnum):
 
 
 class ConversionHubTranscriptFormatterReplaySource(BaseModel):
-    """Replay source descriptor for one uploaded canonical transcript JSON file."""
+    """Replay source descriptor for the uploaded canonical transcript JSON file."""
 
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["upload"] = "upload"
-    filename: str = Field(min_length=1, max_length=255)
+    filename: Literal["saved-transcript.json"] = "saved-transcript.json"
     format: Literal["transcript_json"] = "transcript_json"
 
 
@@ -67,7 +62,7 @@ class ConversionHubTranscriptFormatterReplayConversion(BaseModel):
 
 
 class ConversionHubTranscriptFormatterReplayRetention(BaseModel):
-    """Replay retention descriptor; pinning remains producer-rejected."""
+    """Replay retention descriptor; transcript replay exports are never pinned."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -112,76 +107,6 @@ class ConversionHubTranscriptFormatterReplayJobSpec(BaseModel):
     retention: ConversionHubTranscriptFormatterReplayRetention
 
 
-class ConversionHubTranscriptFormatterReplayPrepareRequest(BaseModel):
-    """Request overlay-aware formatter replay for selected artifact formats."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat] = Field(
-        default_factory=lambda: [
-            ConversionHubTranscriptFormatterArtifactFormat.TXT,
-            ConversionHubTranscriptFormatterArtifactFormat.MD,
-            ConversionHubTranscriptFormatterArtifactFormat.VTT,
-            ConversionHubTranscriptFormatterArtifactFormat.SRT,
-        ],
-        min_length=1,
-        max_length=4,
-    )
-
-    @field_validator("requested_artifacts")
-    @classmethod
-    def _requested_artifacts_are_unique(
-        cls,
-        value: list[ConversionHubTranscriptFormatterArtifactFormat],
-    ) -> list[ConversionHubTranscriptFormatterArtifactFormat]:
-        if len(set(value)) != len(value):
-            raise ValueError("requested_artifacts must be unique")
-        return value
-
-
-class ConversionHubTranscriptFormatterReplayPrepareResponse(BaseModel):
-    """Prepared replay payload for the HuleEdu Sir Convert Gateway client."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    transcript_id: UUID
-    correlation_id: str
-    idempotency_key: str
-    gateway_filename: str
-    content_type: Literal["application/json"] = "application/json"
-    transcript_json: dict[str, JsonValue]
-    job_spec: ConversionHubTranscriptFormatterReplayJobSpec
-
-
-class ConversionHubTranscriptFormatterReplayCompleteRequest(BaseModel):
-    """Record a successfully parsed producer replay response."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    sir_convert_job_id: str = Field(min_length=1, max_length=255)
-    correlation_id: str | None = Field(default=None, max_length=128)
-    status: Literal["succeeded"]
-    requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat] = Field(
-        min_length=1,
-        max_length=4,
-    )
-    result: dict[str, JsonValue]
-    artifact_payloads: list[ConversionHubTranscriptFormatterArtifactPayload] = Field(
-        min_length=1,
-        max_length=4,
-    )
-
-    @field_validator("requested_artifacts")
-    @classmethod
-    def _requested_artifacts_are_unique(
-        cls,
-        value: list[ConversionHubTranscriptFormatterArtifactFormat],
-    ) -> list[ConversionHubTranscriptFormatterArtifactFormat]:
-        if len(set(value)) != len(value):
-            raise ValueError("requested_artifacts must be unique")
-        return value
-
-
 class ConversionHubTranscriptFormatterArtifactRef(BaseModel):
     """Producer-owned named replay artifact reference."""
 
@@ -189,70 +114,8 @@ class ConversionHubTranscriptFormatterArtifactRef(BaseModel):
 
     requested_artifact: ConversionHubTranscriptFormatterArtifactFormat
     artifact_key: ConversionHubTranscriptFormatterArtifactKey
-    filename: str = Field(min_length=1)
-    content_type: str = Field(min_length=1)
-    size_bytes: int = Field(ge=0)
-    sha256: str = Field(min_length=1)
-    retrieval_path: str = Field(min_length=1)
-
-
-class ConversionHubTranscriptFormatterArtifactReceipt(BaseModel):
-    """Detached Gateway receipt that proves Sir Convert artifact authority."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    receipt_version: Literal[1] = 1
-    payload: str = Field(min_length=1, max_length=8192)
-    key_id: str = Field(min_length=1, max_length=255)
-    signature: str = Field(min_length=1, max_length=2048)
-
-
-class ConversionHubTranscriptFormatterArtifactReceiptPayload(BaseModel):
-    """Verified HuleEdu receipt payload for one owner-scoped producer artifact."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    schema_version: Literal["huleedu.sir_convert_artifact_receipt.v1"]
-    iss: str = Field(min_length=1, max_length=255)
-    aud: Literal["skriptoteket"]
-    sub: str = Field(min_length=1, max_length=255)
-    source_app: Literal["skriptoteket"]
-    active_app: str | None = Field(default=None, max_length=255)
-    sir_convert_job_id: str = Field(min_length=1, max_length=255)
-    artifact_key: ConversionHubTranscriptFormatterArtifactKey
     filename: str = Field(min_length=1, max_length=255)
     content_type: str = Field(min_length=1, max_length=255)
-    size_bytes: int = Field(ge=0, le=TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES)
+    size_bytes: int = Field(ge=0)
     sha256: str = Field(min_length=1, max_length=128)
     retrieval_path: str = Field(min_length=1, max_length=500)
-    iat: int
-    exp: int
-    jti: str = Field(min_length=1, max_length=255)
-
-
-class ConversionHubTranscriptFormatterArtifactPayload(BaseModel):
-    """Gateway-fetched artifact bytes paired with server-verifiable receipt authority."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    artifact_key: ConversionHubTranscriptFormatterArtifactKey
-    content_type: str = Field(min_length=1, max_length=255)
-    content_base64: str = Field(
-        min_length=1,
-        max_length=TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_BASE64_MAX_CHARS,
-    )
-    receipt: ConversionHubTranscriptFormatterArtifactReceipt
-
-
-class ConversionHubTranscriptFormatterReplayResponse(BaseModel):
-    """Replay provenance and available producer artifact references."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    transcript_id: UUID
-    conversion_hub_job_id: UUID
-    sir_convert_job_id: str
-    correlation_id: str | None
-    status: Literal["succeeded"] = "succeeded"
-    requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat]
-    artifacts: list[ConversionHubTranscriptFormatterArtifactRef]

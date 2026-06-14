@@ -15,6 +15,9 @@ import { computed, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
+  ConversionHubTranscriptFormatterExportResponse,
+} from "../../../api/conversionHubTranscriptFormatterExports";
+import type {
   ConversionHubSavedTranscriptResponse,
   ConversionHubTranscriptSpeakerOverlaysResponse,
 } from "../../../api/conversionHubTranscriptSaves";
@@ -42,8 +45,9 @@ const transcriptSaveMocks = vi.hoisted(() => ({
   updateConversionHubTranscriptSpeakerOverlays: vi.fn(),
 }));
 
-const replayMocks = vi.hoisted(() => ({
-  requestConversionHubTranscriptFormatterReplay: vi.fn(),
+const formatterExportMocks = vi.hoisted(() => ({
+  getConversionHubTranscriptFormatterExport: vi.fn(),
+  requestConversionHubTranscriptFormatterExport: vi.fn(),
 }));
 
 const artifactActionMocks = vi.hoisted(() => ({
@@ -71,9 +75,11 @@ vi.mock("../../../api/conversionHubTranscriptSaves", () => ({
     transcriptSaveMocks.updateConversionHubTranscriptSpeakerOverlays,
 }));
 
-vi.mock("../../../api/conversionHubTranscriptFormatterReplay", () => ({
-  requestConversionHubTranscriptFormatterReplay:
-    replayMocks.requestConversionHubTranscriptFormatterReplay,
+vi.mock("../../../api/conversionHubTranscriptFormatterExports", () => ({
+  getConversionHubTranscriptFormatterExport:
+    formatterExportMocks.getConversionHubTranscriptFormatterExport,
+  requestConversionHubTranscriptFormatterExport:
+    formatterExportMocks.requestConversionHubTranscriptFormatterExport,
 }));
 
 vi.mock("../../../api/conversionHubTranscriptFormatterArtifactActions", () => ({
@@ -210,6 +216,30 @@ function overlaysResponse(
   };
 }
 
+function formatterExportResponse(
+  patch: Partial<ConversionHubTranscriptFormatterExportResponse> = {},
+): ConversionHubTranscriptFormatterExportResponse {
+  return {
+    artifacts: [
+      {
+        artifact_key: "transcript_txt",
+        content_type: "text/plain",
+        filename: "transcript_txt.txt",
+        requested_artifact: "txt",
+        size_bytes: 12,
+      },
+    ],
+    conversion_hub_job_id: "local_export_job_1",
+    created_at: "2026-06-14T08:00:00Z",
+    error_message: null,
+    requested_artifacts: ["txt", "md", "vtt", "srt"],
+    status: "succeeded",
+    transcript_id: "saved_transcript_1",
+    updated_at: "2026-06-14T08:00:01Z",
+    ...patch,
+  };
+}
+
 type Deferred<T> = {
   promise: Promise<T>;
   reject: (reason?: unknown) => void;
@@ -248,6 +278,8 @@ describe("ConversionHubTranscriptHost", () => {
     transcriptSaveMocks.saveConversionHubTranscript.mockReset();
     transcriptSaveMocks.getConversionHubTranscriptSpeakerOverlays.mockReset();
     transcriptSaveMocks.updateConversionHubTranscriptSpeakerOverlays.mockReset();
+    formatterExportMocks.requestConversionHubTranscriptFormatterExport.mockReset();
+    formatterExportMocks.getConversionHubTranscriptFormatterExport.mockReset();
     transcriptSaveMocks.registerTranscriptConversionHubJob.mockResolvedValue({
       job_id: "local_job_1",
       status: "succeeded",
@@ -261,6 +293,12 @@ describe("ConversionHubTranscriptHost", () => {
       overlaysResponse([
         { canonical_speaker_label: "SPEAKER_00", display_name: "Anna Andersson" },
       ]),
+    );
+    formatterExportMocks.requestConversionHubTranscriptFormatterExport.mockResolvedValue(
+      formatterExportResponse(),
+    );
+    formatterExportMocks.getConversionHubTranscriptFormatterExport.mockResolvedValue(
+      formatterExportResponse(),
     );
   });
 
@@ -285,7 +323,7 @@ describe("ConversionHubTranscriptHost", () => {
     expect(wrapper.get("[data-test='transcript-save-state']").text()).toContain("Sparat");
   });
 
-  it("keeps replay disabled and truthful when overlay save returns an empty persisted list", async () => {
+  it("keeps export disabled and truthful when overlay save returns an empty persisted list", async () => {
     transcriptSaveMocks.updateConversionHubTranscriptSpeakerOverlays.mockResolvedValueOnce(
       overlaysResponse([]),
     );
@@ -312,7 +350,7 @@ describe("ConversionHubTranscriptHost", () => {
     expect(wrapper.text()).toContain("SPEAKER_00");
   });
 
-  it("enables replay only after non-empty overlays are persisted", async () => {
+  it("enables export only after non-empty overlays are persisted", async () => {
     transcriptSaveMocks.updateConversionHubTranscriptSpeakerOverlays.mockResolvedValueOnce(
       overlaysResponse([
         { canonical_speaker_label: "SPEAKER_00", display_name: "Anna Andersson" },
@@ -348,5 +386,153 @@ describe("ConversionHubTranscriptHost", () => {
     ).toBeUndefined();
     expect(wrapper.text()).toContain("Anna Andersson");
     expect(wrapper.text()).toContain("Bo Berg");
+  });
+
+  it("requests product-owned formatter export state and renders verified artifacts", async () => {
+    const wrapper = mountHost();
+    await startSuccessfulTranscript(wrapper);
+    await saveTranscript(wrapper);
+    await wrapper
+      .get<HTMLInputElement>("[data-test='transcript-speaker-name-SPEAKER_00']")
+      .setValue("Anna Andersson");
+    await wrapper.get("[data-test='transcript-speaker-overlays-save']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+    expect(formatterExportMocks.requestConversionHubTranscriptFormatterExport).toHaveBeenCalledWith({
+      transcriptId: "saved_transcript_1",
+    });
+    expect(formatterExportMocks.getConversionHubTranscriptFormatterExport).not.toHaveBeenCalled();
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Exportfiler är klara.",
+    );
+    expect(
+      wrapper.find("[data-test='transcript-download-artifact-transcript_txt']").exists(),
+    ).toBe(true);
+  });
+
+  it("renders pending export state and refreshes it through the product endpoint", async () => {
+    formatterExportMocks.requestConversionHubTranscriptFormatterExport.mockResolvedValueOnce(
+      formatterExportResponse({
+        artifacts: [],
+        conversion_hub_job_id: "local_export_job_1",
+        status: "pending",
+        updated_at: "2026-06-14T08:00:00Z",
+      }),
+    );
+    formatterExportMocks.getConversionHubTranscriptFormatterExport.mockResolvedValueOnce(
+      formatterExportResponse(),
+    );
+    const wrapper = mountHost();
+    await startSuccessfulTranscript(wrapper);
+    await saveTranscript(wrapper);
+    await wrapper
+      .get<HTMLInputElement>("[data-test='transcript-speaker-name-SPEAKER_00']")
+      .setValue("Anna Andersson");
+    await wrapper.get("[data-test='transcript-speaker-overlays-save']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Exporten är köad.",
+    );
+    expect(wrapper.get("[data-test='transcript-formatter-replay-button']").text()).toContain(
+      "Uppdatera",
+    );
+
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+
+    expect(formatterExportMocks.getConversionHubTranscriptFormatterExport).toHaveBeenCalledWith({
+      transcriptId: "saved_transcript_1",
+    });
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Exportfiler är klara.",
+    );
+  });
+
+  it("keeps running export state refreshable through the product endpoint", async () => {
+    formatterExportMocks.requestConversionHubTranscriptFormatterExport.mockResolvedValueOnce(
+      formatterExportResponse({
+        artifacts: [],
+        conversion_hub_job_id: "local_export_job_1",
+        status: "running",
+        updated_at: "2026-06-14T08:00:00Z",
+      }),
+    );
+    formatterExportMocks.getConversionHubTranscriptFormatterExport.mockResolvedValueOnce(
+      formatterExportResponse(),
+    );
+    const wrapper = mountHost();
+    await startSuccessfulTranscript(wrapper);
+    await saveTranscript(wrapper);
+    await wrapper
+      .get<HTMLInputElement>("[data-test='transcript-speaker-name-SPEAKER_00']")
+      .setValue("Anna Andersson");
+    await wrapper.get("[data-test='transcript-speaker-overlays-save']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Skapar exportfiler.",
+    );
+    expect(
+      wrapper.get("[data-test='transcript-formatter-replay-button']").attributes("disabled"),
+    ).toBeUndefined();
+
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+
+    expect(formatterExportMocks.getConversionHubTranscriptFormatterExport).toHaveBeenCalledWith({
+      transcriptId: "saved_transcript_1",
+    });
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Exportfiler är klara.",
+    );
+  });
+
+  it("renders failed product export state and retries by recording a new intent", async () => {
+    formatterExportMocks.requestConversionHubTranscriptFormatterExport
+      .mockResolvedValueOnce(
+        formatterExportResponse({
+          artifacts: [],
+          conversion_hub_job_id: "local_export_job_1",
+          error_message: "Exportfiler kunde inte skapas. Försök igen.",
+          status: "failed",
+        }),
+      )
+      .mockResolvedValueOnce(formatterExportResponse());
+
+    const wrapper = mountHost();
+
+    await startSuccessfulTranscript(wrapper);
+    await saveTranscript(wrapper);
+    await wrapper
+      .get<HTMLInputElement>("[data-test='transcript-speaker-name-SPEAKER_00']")
+      .setValue("Anna Andersson");
+    await wrapper.get("[data-test='transcript-speaker-overlays-save']").trigger("click");
+    await flushPromises();
+
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Exportfiler kunde inte skapas.",
+    );
+    expect(wrapper.get("[data-test='transcript-formatter-replay-button']").text()).toContain(
+      "Försök igen",
+    );
+
+    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await flushPromises();
+
+    expect(formatterExportMocks.requestConversionHubTranscriptFormatterExport).toHaveBeenCalledTimes(
+      2,
+    );
+    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
+      "Exportfiler är klara.",
+    );
   });
 });

@@ -13,7 +13,10 @@
 
 import { FileAudio, Save, Upload } from "lucide-vue-next";
 
-import type { ConversionHubTranscriptFormatterArtifactRef } from "../../../api/conversionHubTranscriptFormatterReplay";
+import type {
+  ConversionHubTranscriptFormatterArtifactRef,
+  ConversionHubTranscriptFormatterExportStatus,
+} from "../../../api/conversionHubTranscriptFormatterExports";
 import type { ConversionHubTranscriptSpeakerOverlayEntry } from "../../../api/conversionHubTranscriptSaves";
 import type { SirConvertTranscriptJob, TranscriptJson } from "../../../api/sirConvertGateway";
 import type {
@@ -49,7 +52,7 @@ withDefaults(defineProps<{
   formatterArtifactActionStates?: FormatterArtifactActionStates;
   formatterReplayArtifacts?: readonly ConversionHubTranscriptFormatterArtifactRef[];
   formatterReplayErrorMessage?: string | null;
-  formatterReplayStatus?: "idle" | "running" | "succeeded" | "failed";
+  formatterReplayStatus?: ConversionHubTranscriptFormatterExportStatus;
   speakerOverlayEntries: readonly ConversionHubTranscriptSpeakerOverlayEntry[];
   speakerOverlayErrorMessage: string | null;
   speakerOverlayStatus: "idle" | "loading" | "saving" | "saved" | "failed";
@@ -61,7 +64,7 @@ withDefaults(defineProps<{
   formatterArtifactActionStates: () => ({}),
   formatterReplayArtifacts: () => [],
   formatterReplayErrorMessage: null,
-  formatterReplayStatus: "idle",
+  formatterReplayStatus: "not_requested",
   uploadState: () => ({
     loadedBytes: 0,
     percentComplete: null,

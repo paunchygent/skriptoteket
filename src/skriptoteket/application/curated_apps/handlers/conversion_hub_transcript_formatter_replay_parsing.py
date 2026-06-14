@@ -125,7 +125,7 @@ class _ReplayArtifactManifest(BaseModel):
 
 def parse_replay_result(
     *,
-    payload: dict[str, JsonValue],
+    payload: dict[str, object],
     sir_convert_job_id: str,
 ) -> None:
     try:
@@ -138,7 +138,7 @@ def parse_replay_result(
 
 def parse_replay_artifact_refs(
     *,
-    payload: dict[str, JsonValue],
+    payload: dict[str, object],
     sir_convert_job_id: str,
     requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat],
 ) -> list[ConversionHubTranscriptFormatterArtifactRef]:
@@ -166,6 +166,10 @@ def parse_replay_artifact_refs(
         if entry.unavailable_code == "not_implemented":
             raise _malformed_replay_response("Sir Convert replay artifact is not implemented.")
         if entry.artifact_key not in requested_keys:
+            if entry.availability == "available":
+                raise _malformed_replay_response(
+                    "Sir Convert replay artifact manifest includes unrequested artifacts."
+                )
             continue
         accepted[entry.artifact_key] = _available_artifact_ref(entry)
 

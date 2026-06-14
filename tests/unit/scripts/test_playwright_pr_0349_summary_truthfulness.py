@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts._transcript_parity_cancel import classify_cancel_path
-from scripts._transcript_parity_evidence import NetworkRecord
+from scripts._transcript_parity_evidence import NetworkRecord, scrub_payload
 from scripts.playwright_pr_0349_transcript_parity_live import (
     captured_artifact_summary,
     finalize_proof_summary,
@@ -107,6 +107,7 @@ def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) 
     assert "cancel-accepted.png" not in str(summary)
     assert "progress.png" not in str(summary)
     assert "transcript-succeeded.png" not in str(summary)
+    assert "formatter-artifacts.png" not in str(summary)
     assert "replay-artifacts.png" not in str(summary)
     assert "complete.png" not in str(summary)
 
@@ -126,6 +127,34 @@ def test_cancel_path_classifies_upload_abort_without_cancel_response() -> None:
     assert evidence["cancel_path"] == "upload_abort"
     assert evidence["cancel_status"] is None
     assert evidence["cancel_payload"] is None
+
+
+def test_formatter_export_scrub_keeps_product_state_without_payloads() -> None:
+    scrubbed = scrub_payload(
+        "/api/v1/apps/documents.conversion_hub/transcripts/saved_1/formatter-exports",
+        {
+            "unexpected_byte_payloads": [{"content_base64": "secret-bytes"}],
+            "artifacts": [
+                {
+                    "artifact_key": "transcript_txt",
+                    "filename": "transcript_txt.txt",
+                    "sha256": "producer-hash",
+                }
+            ],
+            "requested_artifacts": ["txt", "md", "vtt", "srt"],
+            "status": "succeeded",
+            "transcript_json": {"segments": [{"text": "secret text"}]},
+        },
+    )
+
+    assert scrubbed == {
+        "artifact_count": 1,
+        "artifact_keys": ["transcript_txt"],
+        "requested_artifacts": ["txt", "md", "vtt", "srt"],
+        "status": "succeeded",
+    }
+    assert "secret" not in str(scrubbed)
+    assert "producer-hash" not in str(scrubbed)
 
 
 def test_cancel_path_uses_observed_delayed_job_cancel_response() -> None:

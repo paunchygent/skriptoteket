@@ -21,12 +21,12 @@ from skriptoteket.application.curated_apps.conversion_hub import (
 from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_actions import (
     SaveConversionHubTranscriptFormatterArtifactResult,
 )
+from skriptoteket.application.curated_apps.conversion_hub_transcript_exports import (
+    ConversionHubTranscriptFormatterExportRequest,
+    ConversionHubTranscriptFormatterExportResponse,
+)
 from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
     ConversionHubTranscriptFormatterArtifactKey,
-    ConversionHubTranscriptFormatterReplayCompleteRequest,
-    ConversionHubTranscriptFormatterReplayPrepareRequest,
-    ConversionHubTranscriptFormatterReplayPrepareResponse,
-    ConversionHubTranscriptFormatterReplayResponse,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
     ConversionHubSavedTranscriptResponse,
@@ -38,7 +38,7 @@ from skriptoteket.application.curated_apps.handlers import (
     conversion_hub_transcript_artifact_actions as transcript_artifact_action_handlers,
 )
 from skriptoteket.application.curated_apps.handlers import (
-    conversion_hub_transcript_formatter_replay as transcript_replay_handlers,
+    conversion_hub_transcript_formatter_exports as transcript_export_handlers,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     RegisterTranscriptConversionHubJobHandler,
@@ -49,7 +49,6 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_sa
     SaveConversionHubTranscriptHandler,
     UpdateConversionHubTranscriptSpeakerOverlaysHandler,
 )
-from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
@@ -58,7 +57,6 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
 )
 from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_user_api,
-    require_app_user_projection_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
@@ -134,50 +132,45 @@ async def update_conversion_hub_transcript_speaker_overlays(
 
 
 @router.post(
-    "/{transcript_id}/formatter-replay/prepare",
-    response_model=ConversionHubTranscriptFormatterReplayPrepareResponse,
+    "/{transcript_id}/formatter-exports",
+    response_model=ConversionHubTranscriptFormatterExportResponse,
 )
-async def prepare_conversion_hub_transcript_formatter_replay(
+async def request_conversion_hub_transcript_formatter_export(
     transcript_id: UUID,
-    replay_request: ConversionHubTranscriptFormatterReplayPrepareRequest,
+    export_request: ConversionHubTranscriptFormatterExportRequest,
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[
-        transcript_replay_handlers.PrepareConversionHubTranscriptFormatterReplayHandler
+        transcript_export_handlers.RequestConversionHubTranscriptFormatterExportHandler
     ],
     user: User = Depends(require_app_user_api),
-) -> ConversionHubTranscriptFormatterReplayPrepareResponse:
+) -> ConversionHubTranscriptFormatterExportResponse:
     _require_app_access(registry=registry, user=user)
     correlation_id_uuid = get_correlation_id(request)
-    correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
     return await handler.handle(
         actor=user,
         transcript_id=transcript_id,
-        request=replay_request,
-        correlation_id=correlation_id,
+        request=export_request,
+        correlation_id=str(correlation_id_uuid) if correlation_id_uuid is not None else None,
     )
 
 
-@router.post(
-    "/{transcript_id}/formatter-replay/complete",
-    response_model=ConversionHubTranscriptFormatterReplayResponse,
+@router.get(
+    "/{transcript_id}/formatter-exports",
+    response_model=ConversionHubTranscriptFormatterExportResponse,
 )
-async def complete_conversion_hub_transcript_formatter_replay(
+async def get_conversion_hub_transcript_formatter_export(
     transcript_id: UUID,
-    replay_request: ConversionHubTranscriptFormatterReplayCompleteRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[
-        transcript_replay_handlers.CompleteConversionHubTranscriptFormatterReplayHandler
+        transcript_export_handlers.GetConversionHubTranscriptFormatterExportHandler
     ],
-    projection: HuleEduAppUserProjection = Depends(require_app_user_projection_api),
-) -> ConversionHubTranscriptFormatterReplayResponse:
-    user = projection.user
+    user: User = Depends(require_app_user_api),
+) -> ConversionHubTranscriptFormatterExportResponse:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(
         actor=user,
-        authenticated_huleedu_subject=projection.realm_subject_id,
         transcript_id=transcript_id,
-        request=replay_request,
     )
 
 

@@ -2,10 +2,10 @@
 type: review
 id: REV-PR-0349
 title: "Review: PR-0349 Transcript Parity Live Proof And Closeout"
-status: approved
+status: changes_requested
 owners: "agents"
 created: 2026-06-13
-updated: 2026-06-13
+updated: 2026-06-14
 reviewer: "ruthless-code-reviewer"
 prs:
   - PR-0349
@@ -17,6 +17,17 @@ links:
 ---
 
 ## TL;DR
+
+2026-06-14 update: final PR-0349 closeout is not approved. A production manual
+export exposed an architecture blocker: replay/export is implemented as a
+browser-owned saga instead of the DXE/converter product-owned workflow pattern.
+The retained approval below remains historical for narrower upload,
+truthfulness, parser, and receipt-remediation slices only; it must not be read
+as final parity approval.
+
+Required follow-up: Sir Convert `task-363` and Skriptoteket `PR-0350` must
+remove the heavy-queue replay latency hazard and browser-owned
+prepare/submit/poll/download/base64/complete path before PR-0349 can close.
 
 The upload/admission remediation is now reviewable and correct within its
 scoped approval boundary. The frontend surfaces pre-job multipart upload state,
@@ -185,7 +196,32 @@ Results:
 
 ### Findings
 
-No findings. The earlier cancel-path truthfulness issue is resolved by
+#### P0 - Browser-Owned Replay Saga Violates The Required Product Boundary
+
+The replay/export implementation currently lets browser code coordinate a
+producer workflow: prepare in Skriptoteket, submit to Sir Convert through
+HuleEdu Gateway, wait/poll until terminal, download producer artifacts, collect
+Gateway receipts, base64 artifact bytes, and post them back to Skriptoteket for
+completion.
+
+That is not the DXE/converter pattern requested for this lane. It makes a
+simple text export button depend on foreground browser orchestration and allows
+Sir Convert admission/queue latency to appear as a disabled or silent export
+UI. Production manual evidence showed about 119 seconds between
+`formatter-replay/prepare` and `formatter-replay/complete` for transcript
+`aaf12956-67c3-4cd6-8094-b2e264ad2b59`.
+
+Required remediation:
+
+- Sir Convert `task-363`: replay must be a fast producer lane outside the
+  generic heavy conversion queue.
+- Skriptoteket `PR-0350`: remove the browser-owned replay saga, delete or
+  rewrite tests that assert it, and replace it with product-owned export
+  workflow state.
+- PR-0349 live proof must be rerun only after those slices pass and are
+  reviewed.
+
+Historical scoped finding state: the earlier cancel-path truthfulness issue is resolved by
 `scripts/_transcript_parity_cancel.py`, the updated
 `scripts/playwright_pr_0349_transcript_parity_live.py` flow, and the new
 focused cases in `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`.
