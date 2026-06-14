@@ -2,10 +2,10 @@
 type: pr
 id: PR-0349
 title: "ST-21-08 Transcript parity live proof and closeout"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-06-13
-updated: 2026-06-13
+updated: 2026-06-14
 stories:
   - "ST-21-08"
 tags:
@@ -76,9 +76,49 @@ overlay-aware exports, downloads, and Mina filer saves.
 
 ## Evidence Log
 
+### 2026-06-14 Product-Owned Export Proof Passed
+
+After Sir Convert `task-363`, Skriptoteket `PR-0350`, and production URL fix
+`14f4b3af930b02f7b587b0b87c168418730fd28f` were deployed, the final
+authenticated proof passed:
+
+```bash
+CREDS_JSON="$(cd /Users/olofs_mba/Documents/Repos/huleedu && pdm run run-local-pdm run-hemma -- bash scripts/hemma/fetch_bootstrap_browser_credentials.sh)"
+export PLAYWRIGHT_EMAIL="$(printf '%s' "$CREDS_JSON" | jq -r '.BOOTSTRAP_SUPERUSER_EMAIL')"
+export PLAYWRIGHT_PASSWORD="$(printf '%s' "$CREDS_JSON" | jq -r '.BOOTSTRAP_SUPERUSER_PASSWORD')"
+pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url https://skriptoteket.hule.education --dotenv .env.prod-smoke --timeout-seconds 1200
+```
+
+Credential source: HuleEdu Hemma bootstrap browser-credential helper, injected
+as `PLAYWRIGHT_EMAIL` / `PLAYWRIGHT_PASSWORD` without printing secret values.
+
+Retained artifact:
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
+
+The proof retained:
+
+- HuleEdu browser-session ceremony into the protected Conversion Hub transcript
+  lane.
+- Upload cancel feedback with no invalid save action.
+- Running progress UI.
+- Durable transcript save for canonical `transcript_json_v1` with 27 segments,
+  two speaker labels, English detection, and succeeded diarization.
+- Saved speaker overlays with `overlay_count=2`.
+- Product-owned formatter export success with `transcript_txt`,
+  `transcript_md`, `transcript_vtt`, and `transcript_srt`.
+- Downloads for all four artifacts, each with overlay labels present and
+  fallback labels absent.
+- Mina filer save of representative TXT artifact `transkript-a35745cd.txt`.
+
+Earlier same-day proof failed at product export with explicit product
+`failed` state because Skriptoteket still targeted the reserved public
+`https://convert.hule.education` edge and received HTTP `421`. Production now
+uses `http://sir_convert_a_lot_prod:8085` over `hule-network`; the deploy
+script fails closed if the reserved public host is configured.
+
 ### 2026-06-14 Browser-Owned Replay Saga Architecture Blocker
 
-PR-0349 is blocked by a product-boundary defect, not by the earlier
+PR-0349 was blocked by a product-boundary defect, not by the earlier
 InternalIdentity fingerprint mismatch.
 
 The current replay/export implementation lets the browser coordinate producer
@@ -171,19 +211,17 @@ internal-identity verifier:
 ### Acceptance State
 
 - Signed-in teacher reaches the transcript lane through the HuleEdu
-  browser-session ceremony: proven locally before submit.
-- Truthful progress rendering through Gateway: not proven; submit is rejected
-  before a job exists.
-- Cancel feedback on a valid controlled job: not proven; no cancellable job is
-  created after the rejected submit.
-- Save canonical transcript JSON: not proven in this PR-0349 run.
-- Rename speakers via saved transcript overlay UI/API: not proven in this
-  PR-0349 run.
-- Replay export TXT, Markdown, VTT, and SRT: not proven in this PR-0349 run.
-- Exported artifact content overlay-label check: not proven in this PR-0349
-  run.
+  browser-session ceremony: proven in final Hemma proof.
+- Truthful progress rendering through Gateway: proven in final Hemma proof.
+- Cancel feedback on a controlled job/upload path: proven in final Hemma proof.
+- Save canonical transcript JSON: proven in final Hemma proof.
+- Rename speakers via saved transcript overlay UI/API: proven in final Hemma
+  proof with two overlays.
+- Replay export TXT, Markdown, VTT, and SRT: proven in final Hemma proof through
+  the product-owned `/formatter-exports` boundary.
+- Exported artifact content overlay-label check: proven for all four downloads.
 - Download overlay-aware artifacts and save representative artifact to Mina
-  filer: not proven in this PR-0349 run.
+  filer: proven in final Hemma proof.
 
 The signer/trust mismatch above is historical evidence only. Do not treat that
 earlier `401 auth_invalid_internal_identity` proof as the current `PR-0349`

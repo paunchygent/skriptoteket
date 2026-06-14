@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-06-13
+updated: 2026-06-14
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -53,7 +53,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
 - [ ] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
-- [ ] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
+- [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 
 ## Risks
 
@@ -194,20 +194,14 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   frontend save affordance over canonical JSON, and approved retained review
   `REV-PR-0343`. Sir Convert Story 54 / Task 358 is now accepted for
   product-neutral TXT, Markdown, WebVTT, and SRT formatter artifacts.
-  `ST-21-08` is blocked at closeout: `PR-0344` progress/cancel parity, `PR-0345`
-  formatter authority sync, `PR-0346` saved speaker-name overlays, `PR-0347`
-  overlay-aware formatter replay, and `PR-0348` download/Mina filer save
-  actions are implemented. The earlier `PR-0349`
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/`
-  trust-lane `401 auth_invalid_internal_identity` failure is now historical
-  evidence only. Latest retained proof
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
-  shows the Hemma browser-session path now reaches upload, truthful progress,
-  cancel, and durable transcript save, but replay/export stayed blocked by a
-  Skriptoteket client race/false-success state: initial empty
-  `GET /speaker-overlays` readback could clobber fresh local names, empty
-  overlay saves still rendered `Talarnamn sparade.`, and the replay panel
-  claimed exports could be created while the button stayed disabled and no
-  replay requests were sent. The client remediation is implemented; the full
-  progress/cancel/save/overlay/replay/download/Mina filer path remains blocked
-  only until the authenticated live proof is rerun successfully.
+  `ST-21-08` is done: `PR-0344` progress/cancel parity, `PR-0345` formatter
+  authority sync, `PR-0346` saved speaker-name overlays, `PR-0347` and
+  `PR-0348` overlay-aware export actions, `PR-0349` live parity proof, and
+  `PR-0350` product-owned export boundary are complete. Final retained proof
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`
+  used the HuleEdu browser-session ceremony and proved upload cancel feedback,
+  running progress, durable transcript save, two speaker overlays, backend-owned
+  formatter export, TXT/Markdown/WebVTT/SRT downloads with overlay labels, and
+  Mina filer save. The production producer URL is now the internal Hemma Sir
+  Convert service `http://sir_convert_a_lot_prod:8085`, not the reserved public
+  `convert.hule.education` edge.

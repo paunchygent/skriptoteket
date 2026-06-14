@@ -2,7 +2,7 @@
 type: pr
 id: PR-0350
 title: "ST-21-08 Product-owned transcript replay export boundary"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-14
 updated: 2026-06-14
@@ -184,8 +184,13 @@ Implemented in this branch as a product-owned boundary:
   `error_message`, `created_at`, and `updated_at`.
 - Browser-owned prepare/submit/poll/download/base64/complete replay saga files,
   direct replay Gateway client, and saga tests were removed or rewritten.
-- No migration was added; existing local Conversion Hub job rows and formatter
-  artifact rows represent pending, failed, and succeeded export state.
+- Migration `f4c8e2a6b9d1` adds explicit formatter export-state rows so
+  requested artifact intent and pending/running/failed/succeeded product state
+  survive readback.
+- Production wiring now targets Sir Convert over the Hemma internal Docker
+  network at `http://sir_convert_a_lot_prod:8085`. The public
+  `https://convert.hule.education` host remains reserved/fail-closed and is not
+  a valid server-side producer base for this workflow.
 
 Red evidence:
 
@@ -205,6 +210,27 @@ Green evidence:
   `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build` passed.
   `fe-build` retained the existing Vite dynamic/static import and large chunk
   warnings.
+
+Production and live proof:
+
+- `pdm run hemma-deploy` passed for merge commit
+  `6378fe3d2978eedd541eccd9471bc14ea8e19fd6`.
+- The first live proof reached product export but returned explicit product
+  `failed` state because the old production base URL hit the reserved Sir
+  Convert public edge with HTTP `421`.
+- Commit `14f4b3af930b02f7b587b0b87c168418730fd28f` changed production
+  Compose defaults and the Hemma deploy guard to require the internal Sir
+  Convert producer URL.
+- Hemma `.env` was corrected to
+  `SIR_CONVERT_A_LOT_V2_BASE_URL=http://sir_convert_a_lot_prod:8085`, and
+  `pdm run hemma-deploy` passed again for commit
+  `14f4b3af930b02f7b587b0b87c168418730fd28f`.
+- Final authenticated HuleEdu browser-session proof passed:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
+  It shows product formatter export success with `transcript_txt`,
+  `transcript_md`, `transcript_vtt`, and `transcript_srt`, overlay labels
+  present in all four downloads, fallback labels absent, and Mina filer save of
+  the representative TXT artifact.
 
 ## Rollback Plan
 

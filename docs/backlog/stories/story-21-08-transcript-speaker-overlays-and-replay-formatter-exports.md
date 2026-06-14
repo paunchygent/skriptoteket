@@ -2,10 +2,10 @@
 type: story
 id: ST-21-08
 title: "Transcript speaker overlays and replay formatter exports"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-06-13
-updated: 2026-06-13
+updated: 2026-06-14
 epic: "EPIC-21"
 dependencies:
   - "ST-21-06"
@@ -93,12 +93,13 @@ catch-all typed contract.
 - `PR-0347` is done: overlay-aware formatter replay client through HuleEdu
   Gateway.
 - `PR-0348` is done: overlay-aware download and Mina filer save actions.
-- `PR-0349` remains blocked pending retained review, deploy, and live proof over
-  the product-owned replay/export boundary.
-- `PR-0350` is implemented pending review: the browser-owned replay saga is
-  removed, and the DXE/converter pattern is restored so the browser records
-  intent and observes product state while Skriptoteket and the producer
-  contracts own orchestration and artifact authority.
+- `PR-0349` is done: retained live proof now covers upload/cancel progress,
+  durable transcript save, speaker overlays, product export, downloads, and
+  Mina filer save.
+- `PR-0350` is done: the browser-owned replay saga is removed, and the
+  DXE/converter pattern is restored so the browser records intent and observes
+  product state while Skriptoteket and the producer contracts own orchestration
+  and artifact authority.
 
 ## Live Proof Status
 
@@ -125,9 +126,25 @@ between `formatter-replay/prepare` and `formatter-replay/complete` because the
 browser was coordinating Sir Convert submit, polling, artifact fetch, and
 completion. That violates the DXE/converter boundary requested for this story.
 
-The story stays open/blocked until `PR-0350` passes retained review, is deployed,
-and authenticated live proof retains successful overlay-aware replay, download,
-and Mina filer save evidence through the product-owned boundary.
+Final retained proof
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`
+passed after `PR-0350` and production URL fix `14f4b3af...` were deployed. It
+shows:
+
+- HuleEdu browser-session ceremony reached the protected transcript lane.
+- Upload cancel feedback and running progress rendered.
+- Canonical `transcript_json_v1` was saved durably with 27 segments and two
+  speaker labels.
+- Two speaker display-name overlays were saved.
+- Product-owned formatter export succeeded with `transcript_txt`,
+  `transcript_md`, `transcript_vtt`, and `transcript_srt`.
+- All four downloaded artifacts contained overlay labels and excluded fallback
+  labels.
+- A representative TXT artifact was saved to Mina filer.
+
+This closes `ST-21-08`. Future transcript work should build on the
+product-owned export state boundary rather than restoring browser replay
+orchestration.
 
 ## Linked Artifacts
 

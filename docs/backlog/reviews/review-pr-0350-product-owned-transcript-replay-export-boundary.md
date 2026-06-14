@@ -24,9 +24,9 @@ transport failures fail closed into product state, `running` exports remain
 refreshable through the product GET endpoint, and requested artifact subsets
 persist across pending/running/failed/succeeded export states.
 
-Implementation review is approved. Authenticated live browser proof is still
-outstanding and remains a closeout requirement for PR-0349/PR-0350, but it is
-not a blocking code-review finding against this remediated PR slice.
+Implementation review is approved, and the authenticated live browser proof now
+passes after the production Sir Convert producer base was corrected to the
+internal Hemma service URL.
 
 ## Problem Statement
 
@@ -69,7 +69,7 @@ actions.
 - [x] Backend verifies producer artifact authority before persistence.
 - [x] Pending, running, failure, and success states are explicit and product-owned.
 - [x] Tests prove product behavior rather than retired saga internals.
-- [ ] Live proof uses the HuleEdu browser-session ceremony.
+- [x] Live proof uses the HuleEdu browser-session ceremony.
 
 ## Verification
 
@@ -82,6 +82,11 @@ rg -n "requestConversionHubTranscriptFormatterReplay|transcriptReplayClient|arti
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
 pdm run fe-test -- --run frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterExports.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts
 pdm run test --override-ini addopts='' 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[f4c8e2a6b9d1]'
+pdm run hemma-deploy
+CREDS_JSON="$(cd /Users/olofs_mba/Documents/Repos/huleedu && pdm run run-local-pdm run-hemma -- bash scripts/hemma/fetch_bootstrap_browser_credentials.sh)"
+export PLAYWRIGHT_EMAIL="$(printf '%s' "$CREDS_JSON" | jq -r '.BOOTSTRAP_SUPERUSER_EMAIL')"
+export PLAYWRIGHT_PASSWORD="$(printf '%s' "$CREDS_JSON" | jq -r '.BOOTSTRAP_SUPERUSER_PASSWORD')"
+pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url https://skriptoteket.hule.education --dotenv .env.prod-smoke --timeout-seconds 1200
 ```
 
 Results:
@@ -97,8 +102,19 @@ Results:
 - `pdm run fe-test -- --run ...` passed with `18 passed`.
 - Migration idempotency for `f4c8e2a6b9d1` passed with `1 passed` using the
   docker-marked revision coverage test lane.
-- I did not rerun authenticated live browser proof for PR-0349/PR-0350, so
-  closeout still requires that separate proof lane.
+- Production deploy passed for merge commit `6378fe3d...`, but the first live
+  proof hit the reserved public Sir Convert edge (`convert.hule.education`) and
+  product export correctly returned `failed` state with zero artifacts.
+- Production wiring commit `14f4b3af...` changed the Hemma producer base to
+  `http://sir_convert_a_lot_prod:8085`, added a deploy guard against the
+  reserved public host, and was redeployed successfully.
+- Final authenticated live proof passed through the HuleEdu browser-session
+  ceremony:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
+  The proof reached upload cancel feedback, progress rendering, durable
+  transcript save, two saved speaker overlays, product formatter export,
+  four artifact downloads with overlay labels present and fallback labels
+  absent, and Mina filer save.
 
 ## Review Feedback
 

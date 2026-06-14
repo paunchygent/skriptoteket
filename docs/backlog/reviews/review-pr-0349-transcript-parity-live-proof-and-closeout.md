@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0349
 title: "Review: PR-0349 Transcript Parity Live Proof And Closeout"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-06-13
 updated: 2026-06-14
@@ -18,16 +18,13 @@ links:
 
 ## TL;DR
 
-2026-06-14 update: final PR-0349 closeout is not approved. A production manual
-export exposed an architecture blocker: replay/export is implemented as a
-browser-owned saga instead of the DXE/converter product-owned workflow pattern.
-The retained approval below remains historical for narrower upload,
-truthfulness, parser, and receipt-remediation slices only; it must not be read
-as final parity approval.
+2026-06-14 final update: PR-0349 closeout is approved after Sir Convert
+`task-363`, Skriptoteket `PR-0350`, the Hemma production producer URL fix, and
+the final authenticated HuleEdu browser-session proof.
 
-Required follow-up: Sir Convert `task-363` and Skriptoteket `PR-0350` must
-remove the heavy-queue replay latency hazard and browser-owned
-prepare/submit/poll/download/base64/complete path before PR-0349 can close.
+The former P0 architecture blocker is resolved. Replay/export is now
+product-owned by Skriptoteket backend state instead of a browser-owned
+prepare/submit/poll/download/base64/complete saga.
 
 The upload/admission remediation is now reviewable and correct within its
 scoped approval boundary. The frontend surfaces pre-job multipart upload state,
@@ -58,8 +55,9 @@ The reviewed change set now adds:
   the transcript lane is no longer silent before Sir Convert returns a job id;
 - pre-job local upload abort semantics before a Gateway/Sir Convert job id
   exists;
-- docs/handoff/epic/story updates that keep PR-0349 and ST-21-08 blocked and
-  explicitly separate implemented slices from unproven live closeout.
+- docs/handoff/epic/story updates that, at the time, kept PR-0349 and
+  ST-21-08 blocked and explicitly separated implemented slices from unproven
+  live closeout.
 
 That overall shape is correct for this slice. The earlier cancel-path
 truthfulness blocker has now been fixed without broadening the approval scope
@@ -185,8 +183,26 @@ Results:
   - no observed `/cancel` response remains `upload_abort`; and
   - a delayed-but-observed `POST .../cancel` response is classified as
     `sir_convert_job_cancel`.
-- I did not rerun the live PR-0349 browser proof, so this review does not
-  upgrade PR-0349 from blocked to parity-complete.
+- Historical scoped-review note: the earlier upload/admission review did not
+  rerun the live PR-0349 browser proof and therefore did not upgrade PR-0349
+  from blocked to parity-complete at that time.
+
+Final closeout verification:
+
+- `pdm run hemma-deploy` passed for merge commit `6378fe3d...`.
+- First final proof attempt reached `/formatter-exports` but returned explicit
+  product `failed` state because the production producer base still pointed at
+  the reserved public Sir Convert edge and received HTTP `421`.
+- `14f4b3af...` changed production Compose defaults and the Hemma deploy guard
+  to use `http://sir_convert_a_lot_prod:8085`; Hemma `.env` was corrected to
+  the same internal URL.
+- `pdm run hemma-deploy` passed again for commit `14f4b3af...`.
+- Final authenticated proof passed through the HuleEdu browser-session
+  ceremony:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
+  It proves progress, cancel feedback, durable transcript save, two speaker
+  overlays, product-owned formatter export, TXT/Markdown/WebVTT/SRT downloads
+  with overlay labels present and fallback labels absent, and Mina filer save.
 
 ## Review Feedback
 
@@ -197,6 +213,10 @@ Results:
 ### Findings
 
 #### P0 - Browser-Owned Replay Saga Violates The Required Product Boundary
+
+Status: resolved by Sir Convert `task-363`, Skriptoteket `PR-0350`, and final
+proof artifact
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
 
 The replay/export implementation currently lets browser code coordinate a
 producer workflow: prepare in Skriptoteket, submit to Sir Convert through
@@ -228,9 +248,9 @@ focused cases in `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulnes
 
 ### Positive Checks
 
-- The docs/handoff state does not falsely claim parity acceptance. `PR-0349`
-  and `ST-21-08` remain blocked in the PR doc, story doc, epic summary, and
-  `.codex/handoff.md`.
+- Historical scoped review state: the docs/handoff did not falsely claim parity
+  acceptance at that point; `PR-0349` and `ST-21-08` remained blocked until the
+  final 2026-06-14 proof passed.
 - The corrected RCA in
   `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`
   no longer attributes the observed ~34-35 second latency to conversion
@@ -316,22 +336,20 @@ Fresh PR-0349 live proof rerun:
 - The artifact manifest lists only captured evidence:
   `network.bounded.json`, `browser-console.bounded.json`, and `failure.png`.
 
-Remaining blocker:
+Historical blocker:
 
 - The code-level HuleEdu/Sir Convert trust-profile contract now smokes green,
   but the live Sir Convert runtime reached by the sanctioned local browser
-  proof still rejects the Gateway-signed identity context. Full PR-0349 parity
-  remains blocked until that deployed/runtime trust lane is reconciled.
+  proof still rejected the Gateway-signed identity context. This blocker was
+  later superseded and closed by the final 2026-06-14 Hemma proof.
 
 ## Residual Risks
 
-- `PR-0349` still remains product-blocked until the HuleEdu/Sir Convert signer
-  trust lane is reconciled or a sanctioned Hemma/prod browser proof lane is
-  provided.
-- Even after this frontend remediation, full PR-0349 live parity must not be
-  approved until the live proof itself passes.
-- This approval is limited to the upload/admission remediation and proof-script
-  truthfulness slice. It does not approve full live parity.
+- Historical risk state for this scoped review: PR-0349 remained blocked until
+  a sanctioned Hemma/prod browser proof passed.
+- Resolved final state: the 2026-06-14 proof artifact
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`
+  passes and closes full live parity.
 
 ## Changes Made
 
@@ -339,7 +357,7 @@ Remaining blocker:
 |--------|----------|-------------|
 | 1 | `REV-PR-0349` | Re-reviewed the remediated upload/admission slice, updated the retained review record, and marked it `approved` within the scoped boundary. |
 | 2 | Implementation | No production code changes were made by this reviewer. |
-| 3 | `REV-PR-0349` | Re-reviewed the replay/export disabled client-state remediation, recorded the retained artifact RCA check, and kept the follow-up decision `approved` while leaving full live parity blocked pending a fresh Hemma rerun. |
+| 3 | `REV-PR-0349` | Re-reviewed the replay/export disabled client-state remediation, recorded the retained artifact RCA check, and kept the follow-up decision `approved`; final live parity was closed later by the 2026-06-14 Hemma rerun. |
 
 ## Follow-Up Client-State Review
 
@@ -448,8 +466,9 @@ No findings.
 
 ### Residual Risk
 
-Full PR-0349 remains blocked until fresh authenticated Hemma live proof passes
-through speaker rename, replay export, download, and Mina filer save.
+Historical residual risk: full PR-0349 remained blocked until fresh
+authenticated Hemma live proof passed through speaker rename, replay export,
+download, and Mina filer save. That proof passed on 2026-06-14.
 
 ## Formatter Replay Prepare RCA And Implementation Response
 
@@ -562,10 +581,11 @@ No findings.
 
 ### Residual Risk
 
-This approval covers only the backend remediation for parser divergence between
-save/overlay validation and replay prepare. Full PR-0349 still requires fresh
-authenticated Hemma live proof through progress, cancel feedback, durable save,
-speaker rename, formatter replay, download, and Mina filer save.
+Historical residual risk: this approval covered only the backend remediation
+for parser divergence between save/overlay validation and replay prepare. Full
+PR-0349 still required fresh authenticated Hemma live proof at that time; the
+final 2026-06-14 proof passed through progress, cancel feedback, durable save,
+speaker rename, formatter export, download, and Mina filer save.
 
 ## Formatter Replay Complete RCA And Implementation Response
 
@@ -691,8 +711,9 @@ changes_requested
 
 ### Residual Risk
 
-Full PR-0349 remains blocked until fresh authenticated Hemma live proof passes
-through formatter replay completion, artifact download, and Mina filer save.
+Historical residual risk: full PR-0349 remained blocked until fresh
+authenticated Hemma live proof passed through formatter replay completion,
+artifact download, and Mina filer save. That proof passed on 2026-06-14.
 
 ## Replay-Complete Changes-Requested Remediation Response
 
@@ -722,9 +743,10 @@ through formatter replay completion, artifact download, and Mina filer save.
 
 ### Residual Risk
 
-This response needs re-review before the retained review status can move out of
-`changes_requested`. Full PR-0349 still requires fresh authenticated Hemma live
-proof through replay completion, download, and Mina filer save.
+Historical residual risk: this response needed re-review before the retained
+review status could move out of `changes_requested`; full PR-0349 still
+required fresh authenticated Hemma live proof at that time. Both were resolved
+by later re-review and the 2026-06-14 proof.
 
 ## Independent Replay-Complete Re-Review
 
@@ -779,9 +801,9 @@ No findings. The two prior `changes_requested` findings are resolved.
 
 ### Residual Risk
 
-This approval covers only the replay-complete backend parser remediation slice.
-Full PR-0349 still requires fresh authenticated Hemma live proof through
-formatter replay completion, artifact download, and Mina filer save.
+Historical residual risk: this approval covered only the replay-complete
+backend parser remediation slice; full PR-0349 still required fresh
+authenticated Hemma live proof at that time. That proof passed on 2026-06-14.
 
 ## Formatter Artifact Download RCA Implementation Response
 
