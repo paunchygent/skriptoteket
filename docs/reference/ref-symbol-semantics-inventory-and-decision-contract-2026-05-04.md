@@ -101,6 +101,7 @@ These decisions are accepted inputs for `PR-0293` and `PR-0294`.
 | Actual link/share link | `IconLink2` / `Link2` | Real links, share links, copy-link affordances, and link lists. | Prohibited for relationship/proximity rules such as keep-near. |
 | PDF/document file | new `IconFileText` / `FileText` | PDF/document file type. | Do not use as download action. |
 | Spreadsheet file | new `IconFileSpreadsheet` / `FileSpreadsheet` | Spreadsheet/Excel file type. | Do not use as download action. |
+| Audio file | new `IconFileAudio` / `FileAudio` | Uploaded audio/video source files and transcript-conversion source file affordances. | Do not use as play/run/transcription action; those stay `IconRun` or progress/status surfaces. |
 | Search | `IconSearch` / `Search` | Search/filter input affordance. | None. |
 | Help | `IconHelp` / `CircleHelp` | Help and guidance entry points. | None. |
 | Warning | `IconWarning` / `AlertTriangle` | Warning or risk state. | Do not use for neutral info. |
@@ -159,6 +160,7 @@ toolbar priority, workflow behavior, labels, colors, or breakpoint policy.
 | `IconCopy` | `Copy` | Lucide | Replace direct `Copy` imports in share/link panels. |
 | `IconFileText` | `FileText` | Lucide | Replace direct PDF/document file-type imports in export file sections. |
 | `IconFileSpreadsheet` | `FileSpreadsheet` | Lucide | Replace direct spreadsheet/Excel file-type imports in export file sections. |
+| `IconFileAudio` | `FileAudio` | Lucide | Replace ad hoc uploaded-audio/file glyphs in transcript conversion surfaces. |
 | `IconOverview` | `LayoutDashboard` | Lucide | Replace overview mode `IconClipboardList`. |
 | `IconGroupsWorkspace` | `users-group` | Tabler | Replace `Grupper` workspace/mode icon. |
 | `IconSeatingPlan` | `LayoutGrid` | Lucide | Replace `Sittplatser` workspace/mode icon. |

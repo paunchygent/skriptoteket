@@ -34,5 +34,6 @@ Bundle rules:
 - [ST-29 small-screen workspace redesign](st-29-small-screen-workspace-redesign/README.md)
 - [ST-26-06 share link UX and page renderer](st-26-06-share-link-ux-and-page-renderer/README.md)
 - [ST-21-03 Exam Converter authenticated progressive review](st-21-03-exam-converter-authenticated-progressive-review/README.md)
+- [PR-0351 transcript progress and export workspace UX](pr-0351-transcript-progress-export-ux/README.md)
 - [ST-32-07 public landing discoverability](st-32-07-public-landing-discoverability/README.md)
 - [ST-32-08 landing authenticated-value copy alternatives](st-32-08-landing-authenticated-value-copy-alternatives/README.md)

@@ -22,6 +22,7 @@ export { default as IconCopy } from "./IconCopy.vue";
 export { default as IconDebug } from "./IconDebug.vue";
 export { default as IconDownload } from "./IconDownload.vue";
 export { default as IconEdit } from "./IconEdit.vue";
+export { default as IconFileAudio } from "./IconFileAudio.vue";
 export { default as IconFileSpreadsheet } from "./IconFileSpreadsheet.vue";
 export { default as IconFileText } from "./IconFileText.vue";
 export { default as IconFitView } from "./IconFitView.vue";
