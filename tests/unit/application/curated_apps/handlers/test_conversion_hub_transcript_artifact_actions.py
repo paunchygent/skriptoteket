@@ -2,11 +2,11 @@
 
 Domain purpose:
   Prove overlay-aware transcript formatter artifacts can be downloaded and
-  saved only from owner-scoped replay provenance recorded by Skriptoteket.
+  saved only from owner-scoped formatter export provenance recorded by Skriptoteket.
 
 Relationships:
   - Exercises `handlers.conversion_hub_transcript_artifact_actions`.
-  - Reuses PR-0347 replay job and saved-transcript fixtures.
+  - Reuses product export job and saved-transcript fixtures.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from skriptoteket.application.curated_apps.conversion_hub import (
 from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_actions import (
     ConversionHubTranscriptFormatterArtifactRecord,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
@@ -63,7 +63,7 @@ class InMemoryTranscriptFormatterArtifactRepository:
             (ConversionHubTranscriptFormatterArtifactRecord),
         ] = {}
 
-    async def replace_for_replay(
+    async def replace_for_export(
         self,
         *,
         records: list[ConversionHubTranscriptFormatterArtifactRecord],
@@ -109,7 +109,7 @@ def _settings(*, max_file_bytes: int = 1_000_000, max_total_bytes: int = 2_000_0
     )
 
 
-def _replay_job(*, owner_user_id: UUID, job_id: UUID, transcript_id: UUID) -> ConversionHubJob:
+def _export_job(*, owner_user_id: UUID, job_id: UUID, transcript_id: UUID) -> ConversionHubJob:
     now = datetime(2026, 6, 13, 12, 0, tzinfo=timezone.utc)
     return ConversionHubJob(
         id=job_id,
@@ -118,9 +118,9 @@ def _replay_job(*, owner_user_id: UUID, job_id: UUID, transcript_id: UUID) -> Co
         source_format=ConversionHubSourceFormatV2.TRANSCRIPT_JSON,
         output_format=ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE,
         pdf_layout=None,
-        upstream_job_id="sir-replay-job-1",
+        upstream_job_id="sir-export-job-1",
         status=ConversionHubJobStatus.SUCCEEDED,
-        correlation_id="corr-replay-1",
+        correlation_id="corr-export-1",
         error_message=None,
         created_at=now,
         updated_at=now,
@@ -141,14 +141,14 @@ def _artifact_record(
         owner_user_id=owner_user_id,
         transcript_id=transcript_id,
         conversion_hub_job_id=conversion_hub_job_id,
-        sir_convert_job_id="sir-replay-job-1",
+        sir_convert_job_id="sir-export-job-1",
         requested_artifact="txt",
         artifact_key="transcript_txt",
         filename="producer-transcript.txt",
         content_type="text/plain",
         size_bytes=len(actual_content),
         sha256=sha256(actual_content).hexdigest(),
-        retrieval_path="/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt",
+        retrieval_path="/v2/convert/jobs/sir-export-job-1/artifacts/transcript_txt",
         content=content,
         created_at=now,
         updated_at=now,
@@ -207,11 +207,11 @@ async def _seed_provenance(
     InMemoryTranscriptFormatterArtifactRepository,
 ]:
     transcript_id = uuid4()
-    replay_job_id = uuid4()
+    export_job_id = uuid4()
     jobs = InMemoryConversionHubJobRepository()
-    jobs.jobs[replay_job_id] = _replay_job(
+    jobs.jobs[export_job_id] = _export_job(
         owner_user_id=actor_id,
-        job_id=replay_job_id,
+        job_id=export_job_id,
         transcript_id=transcript_id,
     )
     transcripts = InMemorySavedTranscriptRepository()
@@ -220,12 +220,12 @@ async def _seed_provenance(
         transcript_id=transcript_id,
     )
     artifacts = InMemoryTranscriptFormatterArtifactRepository()
-    await artifacts.replace_for_replay(
+    await artifacts.replace_for_export(
         records=[
             _artifact_record(
                 owner_user_id=actor_id,
                 transcript_id=transcript_id,
-                conversion_hub_job_id=replay_job_id,
+                conversion_hub_job_id=export_job_id,
                 content=content,
             )
         ],
@@ -235,7 +235,7 @@ async def _seed_provenance(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_download_uses_persisted_replay_artifact_ref_with_product_filename() -> None:
+async def test_download_uses_persisted_export_artifact_ref_with_product_filename() -> None:
     actor = make_user()
     content = b"overlay-aware transcript\n"
     transcript_id, jobs, transcripts, artifacts = await _seed_provenance(
@@ -327,13 +327,13 @@ async def test_save_downloads_producer_artifact_and_saves_app_export_to_mina_fil
     )
 
     saved_file = vault_files.create.call_args.kwargs["file"]
-    replay_job_id = next(iter(jobs.jobs.keys()))
+    export_job_id = next(iter(jobs.jobs.keys()))
     assert isinstance(saved_file, VaultFile)
     assert saved_file.user_id == actor.id
     assert saved_file.name == f"transkript-{transcript_id.hex[:8]}.txt"
     assert saved_file.source_kind is VaultFileSourceKind.APP_EXPORT
     assert saved_file.source_artifact_id == (
-        f"documents.conversion_hub:transcript-replay:{replay_job_id}:transcript_txt"
+        f"documents.conversion_hub:transcript-export:{export_job_id}:transcript_txt"
     )
     vault_storage.store_file.assert_awaited_once_with(
         user_id=actor.id,
@@ -347,7 +347,7 @@ async def test_save_downloads_producer_artifact_and_saves_app_export_to_mina_fil
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_actions_fail_closed_without_persisted_replay_artifact_ref() -> None:
+async def test_actions_fail_closed_without_persisted_export_artifact_ref() -> None:
     actor = make_user()
     transcript_id, jobs, transcripts, _artifacts = await _seed_provenance(
         actor_id=actor.id,
@@ -373,7 +373,7 @@ async def test_actions_fail_closed_without_persisted_replay_artifact_ref() -> No
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_actions_fail_closed_for_other_owner_and_wrong_replay_job() -> None:
+async def test_actions_fail_closed_for_other_owner_and_wrong_export_job() -> None:
     owner = make_user()
     other_user = make_user()
     content = b"overlay-aware transcript\n"
@@ -397,8 +397,8 @@ async def test_actions_fail_closed_for_other_owner_and_wrong_replay_job() -> Non
         )
     assert owner_exc.value.code is ErrorCode.NOT_FOUND
 
-    replay_job = next(iter(jobs.jobs.values()))
-    jobs.jobs[replay_job.id] = replay_job.model_copy(
+    export_job = next(iter(jobs.jobs.values()))
+    jobs.jobs[export_job.id] = export_job.model_copy(
         update={"input_filename": f"saved-transcript-{uuid4()}.json"}
     )
     with pytest.raises(DomainError) as provenance_exc:

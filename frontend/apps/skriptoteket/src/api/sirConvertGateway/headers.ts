@@ -7,7 +7,7 @@
  *   behavior.
  *
  * Relationships:
- *   - Used by `client.ts` and transcript replay companion clients.
+ *   - Used by `client.ts` and transcript formatter export companion clients.
  *   - Keeps transport modules aligned with HuleEdu Gateway write semantics.
  */
 

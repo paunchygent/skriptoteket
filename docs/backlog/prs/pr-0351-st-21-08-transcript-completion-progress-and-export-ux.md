@@ -2,7 +2,7 @@
 type: pr
 id: PR-0351
 title: "ST-21-08 Transcript completion, progress, and export UX"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-14
 updated: 2026-06-14
@@ -131,6 +131,97 @@ Mockup lessons that are part of this PR contract:
 8. Run focused frontend tests, focused backend tests if DTO/API behavior
    changes, browser proof through the sanctioned HuleEdu ceremony, and docs
    closeout.
+
+## Implementation Summary
+
+`PR-0351` is implemented and independently reviewed in `REV-PR-0351`.
+
+- The running transcript surface now uses Task-364 progress fields, maps
+  producer phases to normal Swedish copy, reserves abort/status layout, and does
+  not render a fake completed workspace before transcript content exists.
+- Successful transcript completion autosaves through the product save API and
+  lands directly in the transcript workspace. The generic manual `Spara` gate is
+  removed from the normal completion path.
+- The completed workspace is split into a readable transcript surface and a
+  `Talare och export` inspector without redundant `Talarnamn` / `Export`
+  labels.
+- Formatter export UI is now selected-format only: `TXT`, `MD`, `VTT`, and
+  `SRT` are selected in one control; visible actions stay `Ladda ner` and
+  `Mina filer` without dynamic suffixes or duplicated per-artifact rows.
+- Skriptoteket-owned legacy replay code was removed. The deleted surfaces
+  include the frontend replay panel, old replay parser modules, old replay
+  command naming, and old per-artifact download/save rows. Remaining
+  `transcript_formatter_replay_v1`,
+  `transcript_replay_bundle_manifest.json`, and
+  `transcript_json_to_transcript_bundle_replay_v2` strings are upstream Sir
+  Convert contract literals consumed by the product export boundary.
+- The reviewer-requested remediation now requires saved non-empty speaker names
+  for every canonical speaker label before selected-format export can run, both
+  in the frontend readiness gate and in the backend producer-submission
+  boundary.
+
+## Red-First Evidence
+
+- Frontend PR-0351 tests were added to assert the forbidden old UX is absent,
+  not merely that new components render:
+  `TranscriptWorkspaceShell.pr0351.spec.ts` and
+  `ConversionHubTranscriptHost.pr0351.spec.ts`.
+- Backend red-first remediation proved partial speaker overlays were previously
+  accepted before producer submission; the production fix now raises
+  `validation_error` before any export job is created.
+- Frontend red-first remediation proved a two-speaker transcript with only one
+  persisted overlay previously allowed export readiness; the production fix now
+  keeps both selected-format actions disabled.
+
+## Verification Evidence
+
+Focused green checks after implementation:
+
+```bash
+pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py::test_product_export_rejects_partial_speaker_overlays_before_producer_submission
+pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts -t "keeps export disabled until all transcript speakers have persisted names"
+pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py
+pdm run fe-test -- --run src/api/sirConvertGateway/transcriptClient.spec.ts src/api/sirConvertGateway/transcriptProgressParsers.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts
+pdm run fe-type-check
+pdm run fe-lint
+pdm run fe-build
+```
+
+Observed results:
+
+- Backend remediation test passed.
+- Frontend remediation test passed.
+- Focused backend transcript/export bundle passed: 31 tests.
+- Focused frontend transcript/export bundle passed: 8 files, 44 tests.
+- `fe-type-check`, `fe-lint`, and `fe-build` passed. `fe-build` retained the
+  existing Vite dynamic/static import and large chunk warnings.
+- Legacy-surface grep found forbidden PR-0351 UI strings only in negative
+  assertions. Backend replay-string grep found only upstream Sir Convert
+  contract literals.
+
+Live proof:
+
+```bash
+pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --sir-convert-proof-lane hemma-remote-proof --sir-convert-gateway-backend-url http://host.docker.internal:28085 --sir-convert-producer-backend-url http://host.docker.internal:28085 --sir-convert-ready-url http://127.0.0.1:28085/readyz --gateway-signer-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --sir-convert-trusted-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --timeout-seconds 1200
+```
+
+Observed result:
+
+- Local proof passed through the HuleEdu browser-session ceremony with real
+  remote-proof Sir Convert STT/diarization/alignment compute.
+- The proof retained cancel/progress/completion screenshots, autosaved a
+  `transcript_json_v1` transcript with 27 segments and two speakers, saved two
+  speaker overlays, produced four formatter artifacts, downloaded TXT/MD/VTT/SRT,
+  and saved the representative TXT artifact to Mina filer.
+- Retained proof artifact:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/proof-summary.json`.
+- Docker-backed runtime evidence:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/backend-container.json`
+  shows the local product backend producer lane as
+  `http://host.docker.internal:28085`, and
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/backend-live.log`
+  shows formatter export plus all four artifact downloads through that lane
+  with HTTP 200 responses.
 
 ## Test Plan
 

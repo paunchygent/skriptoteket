@@ -1,8 +1,7 @@
-"""PR-0349 live transcript parity proof.
+"""PR-0349/PR-0351 live transcript parity proof.
 
 Domain purpose:
-    Prove the authenticated transcript lane across progress, cancel, save,
-    overlays, formatter exports, downloads, and Mina filer save.
+    Prove authenticated transcript progress, autosave, export, download, and file-save lanes.
 
 Relationships:
     Uses HuleEdu browser-session helpers and writes sanitized PR-0349 evidence
@@ -14,15 +13,27 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
-from playwright.sync_api import Page, expect, sync_playwright
+from playwright.sync_api import Page, Response, expect, sync_playwright
 
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
+from scripts._proof_live_monitoring import (
+    ProofLogMonitor,
+    block_if_running_backend_target_differs,
+    start_local_backend_log_monitor,
+)
+from scripts._sir_convert_trust_lane_preflight import (
+    SirConvertTrustLanePreflightError,
+    build_trust_lane_input,
+    preflight_failure_summary,
+    preflight_result_summary,
+    run_trust_lane_preflight,
+)
 from scripts._transcript_parity_cancel import classify_cancel_path
 from scripts._transcript_parity_evidence import (
     CapturedResponse,
@@ -37,9 +48,6 @@ from scripts._transcript_parity_evidence import (
     utc_now,
     write_json,
 )
-from scripts._transcript_parity_evidence import (
-    captured_artifact_summary as captured_artifact_summary,
-)
 
 APP_PATH = "/apps/documents.conversion_hub"
 ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0349-transcript-parity-live")
@@ -50,13 +58,6 @@ DEFAULT_AUDIO_FILE = Path(
 )
 ARTIFACT_KEYS = ("transcript_txt", "transcript_md", "transcript_vtt", "transcript_srt")
 OVERLAY_LABELS = ("PR0349 Speaker A", "PR0349 Speaker B")
-SCREENSHOTS = (
-    "cancel-accepted.png",
-    "progress.png",
-    "transcript-succeeded.png",
-    "formatter-artifacts.png",
-    "complete.png",
-)
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -67,6 +68,18 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
     parser.add_argument("--speaker-count", default=2, type=int)
     parser.add_argument("--timeout-seconds", default=1_200, type=int)
+    parser.add_argument("--allow-mixed-sir-convert-tunnel", action="store_true")
+    parser.add_argument("--sir-convert-proof-lane", default=None)
+    parser.add_argument("--sir-convert-gateway-backend-url", default=None)
+    parser.add_argument("--sir-convert-producer-backend-url", default=None)
+    parser.add_argument("--gateway-signer-fingerprint", default=None)
+    parser.add_argument("--sir-convert-trusted-fingerprint", default=None)
+    parser.add_argument("--sir-convert-ready-url", default=None)
+    parser.add_argument(
+        "--capture-local-backend-logs",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
     return parser.parse_args(argv)
 
 
@@ -174,7 +187,7 @@ def _exercise_cancel(
     page.locator('[data-test="transcript-cancel"]').click()
     expect(page.locator('[data-test="transcript-canceled-surface"]')).to_be_visible(timeout=60_000)
     page.screenshot(path=str(artifact_dir / "cancel-accepted.png"), full_page=True)
-    if page.locator('[data-test="transcript-save-button"]').count() > 0:
+    if page.get_by_role("button", name="Spara").count() > 0:
         raise AssertionError("Canceled job exposed a transcript save action.")
     cancel_evidence = classify_cancel_path(collect_network(captured[cancel_capture_start:]))
     page.locator('[data-test="transcript-reset"]').click()
@@ -199,21 +212,24 @@ def _wait_for_success(page: Page, *, artifact_dir: Path, timeout_seconds: int) -
     raise AssertionError("Timed out waiting for transcript success.")
 
 
-def _save_transcript(page: Page) -> dict[str, object]:
-    expect(page.locator('[data-test="transcript-save-button"]')).to_be_enabled(timeout=60_000)
-    with page.expect_response(
-        lambda r: "/transcripts/jobs/" in r.url and r.request.method == "POST",
-        timeout=60_000,
-    ) as info:
-        page.locator('[data-test="transcript-save-button"]').click()
-    response = info.value
-    if response.status >= 400:
-        raise AssertionError(f"Transcript save failed with HTTP {response.status}.")
+def _wait_for_transcript_autosave(
+    page: Page, *, captured: Sequence[CapturedResponse]
+) -> dict[str, object]:
+    expect(page.locator('[data-test="transcript-save-state"]')).to_contain_text(
+        "Sparat automatiskt",
+        timeout=90_000,
+    )
     expect(page.locator('[data-test="transcript-speaker-overlays"]')).to_be_visible(timeout=30_000)
-    payload = json_payload(response)
-    if not isinstance(payload, dict) or not isinstance(payload.get("transcript_id"), str):
-        raise AssertionError("Transcript save response did not include a transcript id.")
-    return {"transcript_id": payload["transcript_id"], "status": response.status}
+    for item in reversed(captured):
+        response = item.response
+        if "/transcripts/jobs/" not in response.url or response.request.method != "POST":
+            continue
+        payload = json_payload(response)
+        if response.status < 400 and isinstance(payload, dict):
+            transcript_id = payload.get("transcript_id")
+            if isinstance(transcript_id, str):
+                return {"transcript_id": transcript_id, "status": response.status}
+    raise AssertionError("Autosave response did not include a transcript id.")
 
 
 def _save_speaker_overlays(page: Page, labels: list[str]) -> dict[str, object]:
@@ -229,7 +245,7 @@ def _save_speaker_overlays(page: Page, labels: list[str]) -> dict[str, object]:
     response = info.value
     if response.status >= 400:
         raise AssertionError(f"Speaker overlay save failed with HTTP {response.status}.")
-    expect(page.locator('[data-test="transcript-formatter-replay-button"]')).to_be_enabled(
+    expect(page.locator('[data-test="transcript-download-selected-format"]')).to_be_enabled(
         timeout=30_000
     )
     return {"status": response.status, "overlay_count": 2}
@@ -253,28 +269,70 @@ def _string_keyed_dicts(values: object) -> list[dict[str, object]]:
     return items
 
 
-def _request_formatter_export(page: Page) -> list[dict[str, object]]:
+def _download_selected_format_artifacts(
+    page: Page, *, artifact_dir: Path, forbidden_labels: list[str]
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    downloaded: dict[str, object] = {}
+    formatter_artifacts: list[dict[str, object]] = []
+    first_format = True
+    for key in ARTIFACT_KEYS:
+        requested_format = key.removeprefix("transcript_")
+        page.locator(f'[data-test="transcript-format-option-{requested_format}"]').click()
+
+        def response_matcher(response: Response, expected: str = key) -> bool:
+            return (
+                f"/formatter-artifacts/{expected}/download" in response.url
+                and response.request.method == "GET"
+            )
+
+        if first_format:
+            with page.expect_response(
+                lambda r: r.url.endswith("/formatter-exports") and r.request.method == "POST",
+                timeout=180_000,
+            ) as export_info:
+                with page.expect_response(response_matcher, timeout=60_000) as response_info:
+                    with page.expect_download(timeout=60_000) as download_info:
+                        page.locator('[data-test="transcript-download-selected-format"]').click()
+            export_payload = json_payload(export_info.value)
+            status = export_payload.get("status") if isinstance(export_payload, dict) else None
+            if export_info.value.status >= 400 or status != "succeeded":
+                raise AssertionError(f"Formatter export did not succeed: status={status!r}.")
+            formatter_artifacts = _string_keyed_dicts(export_payload.get("artifacts"))
+            first_format = False
+        else:
+            with page.expect_response(response_matcher, timeout=60_000) as response_info:
+                with page.expect_download(timeout=60_000) as download_info:
+                    page.locator('[data-test="transcript-download-selected-format"]').click()
+        response = response_info.value
+        if response.status >= 400:
+            raise AssertionError(f"Download for {key} failed with HTTP {response.status}.")
+        download = download_info.value
+        filename = download.suggested_filename or f"{key}.txt"
+        output_path = artifact_dir / "downloads" / filename
+        download.save_as(str(output_path))
+        downloaded[key] = {
+            **_verify_download_content(output_path, forbidden_labels=forbidden_labels),
+            "status": response.status,
+            "content_type": response.headers.get("content-type"),
+        }
+    if len(formatter_artifacts) != len(ARTIFACT_KEYS):
+        raise AssertionError("Formatter export did not return all requested artifacts.")
+    return formatter_artifacts, downloaded
+
+
+def _save_representative_artifact(page: Page, key: str = "transcript_txt") -> dict[str, object]:
+    requested_format = key.removeprefix("transcript_")
+    page.locator(f'[data-test="transcript-format-option-{requested_format}"]').click()
     with page.expect_response(
-        lambda r: r.url.endswith("/formatter-exports") and r.request.method == "POST",
-        timeout=180_000,
+        lambda r: f"/formatter-artifacts/{key}/save" in r.url and r.request.method == "POST",
+        timeout=60_000,
     ) as info:
-        page.locator('[data-test="transcript-formatter-replay-button"]').click()
+        page.locator('[data-test="transcript-save-selected-format"]').click()
     response = info.value
     if response.status >= 400:
-        raise AssertionError(f"Formatter export failed with HTTP {response.status}.")
+        raise AssertionError(f"Mina filer save for {key} failed with HTTP {response.status}.")
     payload = json_payload(response)
-    status = payload.get("status") if isinstance(payload, dict) else None
-    if status != "succeeded":
-        raise AssertionError(f"Formatter export did not succeed: status={status!r}.")
-    artifacts_payload = payload.get("artifacts") if isinstance(payload, dict) else None
-    artifacts = _string_keyed_dicts(artifacts_payload)
-    if len(artifacts) != len(ARTIFACT_KEYS):
-        raise AssertionError("Formatter export did not return all requested artifacts.")
-    for key in ARTIFACT_KEYS:
-        expect(page.locator(f'[data-test="transcript-download-artifact-{key}"]')).to_be_visible(
-            timeout=30_000
-        )
-    return artifacts
+    return {"status": response.status, "saved": scrub_payload(safe_path(response.url), payload)}
 
 
 def _verify_download_content(path: Path, *, forbidden_labels: list[str]) -> dict[str, object]:
@@ -293,67 +351,6 @@ def _verify_download_content(path: Path, *, forbidden_labels: list[str]) -> dict
     }
 
 
-def _download_artifacts(
-    page: Page,
-    *,
-    artifacts: Sequence[Mapping[str, object]],
-    artifact_dir: Path,
-    forbidden_labels: list[str],
-) -> dict[str, object]:
-    downloaded: dict[str, object] = {}
-    by_key: dict[str, Mapping[str, object]] = {}
-    for artifact in artifacts:
-        artifact_key = artifact.get("artifact_key")
-        if isinstance(artifact_key, str):
-            by_key[artifact_key] = artifact
-    for key in ARTIFACT_KEYS:
-        artifact = by_key.get(key)
-        if artifact is None:
-            raise AssertionError(f"Missing formatter export artifact {key}.")
-        button = page.locator(f'[data-test="transcript-download-artifact-{key}"]')
-        expect(button).to_be_enabled(timeout=30_000)
-        with page.expect_response(
-            lambda r, expected=key: (
-                f"/formatter-artifacts/{expected}/download" in r.url and r.request.method == "GET"
-            ),
-            timeout=60_000,
-        ) as response_info:
-            with page.expect_download(timeout=60_000) as download_info:
-                button.click()
-        response = response_info.value
-        if response.status >= 400:
-            raise AssertionError(f"Download for {key} failed with HTTP {response.status}.")
-        download = download_info.value
-        artifact_filename = artifact.get("filename")
-        fallback_filename = (
-            artifact_filename if isinstance(artifact_filename, str) else f"{key}.txt"
-        )
-        filename = download.suggested_filename or fallback_filename
-        output_path = artifact_dir / "downloads" / filename
-        download.save_as(str(output_path))
-        downloaded[key] = {
-            **_verify_download_content(output_path, forbidden_labels=forbidden_labels),
-            "status": response.status,
-            "content_type": response.headers.get("content-type"),
-        }
-    return downloaded
-
-
-def _save_representative_artifact(page: Page, key: str = "transcript_txt") -> dict[str, object]:
-    button = page.locator(f'[data-test="transcript-save-artifact-{key}"]')
-    expect(button).to_be_enabled(timeout=30_000)
-    with page.expect_response(
-        lambda r: f"/formatter-artifacts/{key}/save" in r.url and r.request.method == "POST",
-        timeout=60_000,
-    ) as info:
-        button.click()
-    response = info.value
-    if response.status >= 400:
-        raise AssertionError(f"Mina filer save for {key} failed with HTTP {response.status}.")
-    payload = json_payload(response)
-    return {"status": response.status, "saved": scrub_payload(safe_path(response.url), payload)}
-
-
 def run(argv: Sequence[str] | None = None) -> None:
     args = _parse_args(argv)
     config = get_config(["--dotenv", args.dotenv, "--base-url", args.base_url])
@@ -362,6 +359,38 @@ def run(argv: Sequence[str] | None = None) -> None:
         raise SystemExit(f"Audio file does not exist: {audio_path}")
 
     artifact_dir = _run_dir(Path(args.artifact_root).resolve())
+    try:
+        trust_lane_preflight = run_trust_lane_preflight(
+            build_trust_lane_input(
+                base_url=config.base_url,
+                dotenv_path=Path(args.dotenv),
+                allow_mixed_sir_convert_tunnel=args.allow_mixed_sir_convert_tunnel,
+                proof_lane=args.sir_convert_proof_lane,
+                gateway_backend_url=args.sir_convert_gateway_backend_url,
+                producer_backend_url=args.sir_convert_producer_backend_url,
+                gateway_signer_fingerprint=args.gateway_signer_fingerprint,
+                sir_convert_trusted_fingerprint=args.sir_convert_trusted_fingerprint,
+                sir_convert_ready_url=args.sir_convert_ready_url,
+            )
+        )
+    except SirConvertTrustLanePreflightError as exc:
+        summary = preflight_failure_summary(
+            exc,
+            base_url=config.base_url,
+            app_path=APP_PATH,
+            artifact_dir=str(artifact_dir),
+        )
+        write_json(artifact_dir / "proof-summary.json", summary)
+        raise SystemExit(exc.blocker_kind) from exc
+
+    trust_lane_summary = preflight_result_summary(trust_lane_preflight)
+    if trust_lane_summary["base_url_kind"] == "local":
+        block_if_running_backend_target_differs(
+            artifact_dir=artifact_dir,
+            app_path=APP_PATH,
+            config_base_url=config.base_url,
+            trust_lane_summary=trust_lane_summary,
+        )
     cancel_audio_path = _copy_audio_for_submission(
         audio_path=audio_path,
         artifact_dir=artifact_dir,
@@ -377,7 +406,7 @@ def run(argv: Sequence[str] | None = None) -> None:
     summary: dict[str, object] = {
         "proof_kind": "pr_0349_transcript_parity_live",
         "observed_at": utc_now(),
-        "base_url": config.base_url,
+        "base_url": trust_lane_summary["base_url"],
         "app_path": APP_PATH,
         "source_media": {
             "fixture": "sir-convert-stt-english-two-speaker",
@@ -387,8 +416,12 @@ def run(argv: Sequence[str] | None = None) -> None:
                 "main_filename": main_audio_path.name,
             },
         },
+        "trust_lane_preflight": trust_lane_summary,
         "artifacts": {"artifact_dir": str(artifact_dir)},
     }
+    backend_log_monitor: ProofLogMonitor | None = None
+    if args.capture_local_backend_logs and trust_lane_summary["base_url_kind"] == "local":
+        backend_log_monitor = start_local_backend_log_monitor(artifact_dir=artifact_dir)
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
@@ -429,7 +462,10 @@ def run(argv: Sequence[str] | None = None) -> None:
                 timeout_seconds=min(args.timeout_seconds, 240),
             )
             _wait_for_success(page, artifact_dir=artifact_dir, timeout_seconds=args.timeout_seconds)
-            summary["save_transcript"] = _save_transcript(page)
+            summary["save_transcript"] = _wait_for_transcript_autosave(
+                page,
+                captured=captured,
+            )
 
             transcript_payload = None
             for item in captured:
@@ -438,20 +474,19 @@ def run(argv: Sequence[str] | None = None) -> None:
             speaker_labels = speaker_labels_from_transcript(transcript_payload)
             summary["transcript_json"] = transcript_summary(transcript_payload)
             summary["speaker_overlays"] = _save_speaker_overlays(page, speaker_labels)
-            formatter_artifacts = _request_formatter_export(page)
-            page.screenshot(path=str(artifact_dir / "formatter-artifacts.png"), full_page=True)
+            formatter_artifacts, downloaded = _download_selected_format_artifacts(
+                page,
+                artifact_dir=artifact_dir,
+                forbidden_labels=speaker_labels,
+            )
+            page.screenshot(path=str(artifact_dir / "selected-format-exports.png"), full_page=True)
             summary["formatter_export"] = {
                 "artifact_keys": sorted(
                     str(artifact.get("artifact_key")) for artifact in formatter_artifacts
                 ),
                 "artifact_count": len(formatter_artifacts),
             }
-            summary["downloads"] = _download_artifacts(
-                page,
-                artifacts=formatter_artifacts,
-                artifact_dir=artifact_dir,
-                forbidden_labels=speaker_labels,
-            )
+            summary["downloads"] = downloaded
             summary["mina_filer_save"] = _save_representative_artifact(page)
             page.screenshot(path=str(artifact_dir / "complete.png"), full_page=True)
             summary["status"] = "passed"
@@ -467,6 +502,9 @@ def run(argv: Sequence[str] | None = None) -> None:
                 pass
             raise
         finally:
+            if backend_log_monitor is not None:
+                backend_log_monitor.stop()
+                backend_log_monitor = None
             network_records = collect_network(captured)
             write_json(artifact_dir / "network.bounded.json", network_records)
             write_json(artifact_dir / "browser-console.bounded.json", console_records)

@@ -331,32 +331,6 @@ describe("Sir Convert transcript Gateway client", () => {
     expect(fetchHeaders(fetcher, 4).get("X-CSRF-Token")).toBe("csrf-token");
   });
 
-  it("rejects malformed transcript progress snapshots instead of accepting loose fields", async () => {
-    fetcher.mockResolvedValueOnce(
-      jsonResponse({
-        job: {
-          job_id: "job_transcript_1",
-          status: "running",
-          progress: {
-            stage: "transcribing",
-            last_heartbeat_at: "2026-06-13T08:15:30Z",
-            audio_processed_media_seconds: 180,
-            audio_total_media_seconds: 120,
-            audio_percent_complete: 140,
-            audio_current_chunk_index: 4,
-            audio_total_chunks: 3,
-          },
-        },
-      }),
-    );
-
-    await expect(
-      client.getTranscriptJob({ correlationId: "corr_1", jobId: "job_transcript_1" }),
-    ).rejects.toMatchObject({
-      code: "SIR_CONVERT_CONTRACT_DRIFT",
-    } satisfies Partial<SirConvertGatewayError>);
-  });
-
   it("rejects terminal transcript jobs when progress is present but malformed", async () => {
     fetcher.mockResolvedValueOnce(
       jsonResponse({

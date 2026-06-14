@@ -29,7 +29,10 @@ INTERNAL_IDENTITY_REASON = "invalid_internal_identity_signature"
 EVIDENCE_JSON_FILES = (
     ("network", "network.bounded.json"),
     ("console", "browser-console.bounded.json"),
+    ("backend_monitor", "backend-monitor.json"),
+    ("backend_container", "backend-container.json"),
 )
+EVIDENCE_TEXT_FILES = (("backend_log", "backend-live.log"),)
 
 
 class ScrubbedError(TypedDict, total=False):
@@ -87,6 +90,11 @@ def captured_artifact_summary(artifact_dir: Path) -> dict[str, object]:
         "downloaded_files": [str(path) for path in downloaded_files],
     }
     for key, filename in EVIDENCE_JSON_FILES:
+        path = artifact_dir / filename
+        if path.is_file():
+            summary[key] = str(path)
+            evidence_paths.append(path)
+    for key, filename in EVIDENCE_TEXT_FILES:
         path = artifact_dir / filename
         if path.is_file():
             summary[key] = str(path)

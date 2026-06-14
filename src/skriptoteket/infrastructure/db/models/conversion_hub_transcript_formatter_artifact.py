@@ -1,9 +1,9 @@
-"""SQLAlchemy model for transcript formatter replay artifacts.
+"""SQLAlchemy model for transcript formatter export artifacts.
 
 Domain purpose:
-  Persist owner-scoped Sir Convert replay artifact references for saved
+  Persist owner-scoped Sir Convert formatter artifact references for saved
   transcripts so download and Mina filer actions can authorize against the
-  replay result without trusting browser-supplied job keys.
+  product export result without trusting browser-supplied job keys.
 
 Relationships:
   - References `users.id`, `conversion_hub_saved_transcripts.id`, and
@@ -33,7 +33,7 @@ from skriptoteket.infrastructure.db.base import Base
 
 
 class ConversionHubTranscriptFormatterArtifactModel(Base):
-    """Persist one replay-returned formatter artifact reference."""
+    """Persist one producer-returned formatter artifact reference."""
 
     __tablename__ = "conversion_hub_transcript_formatter_artifacts"
     __table_args__ = (

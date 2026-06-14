@@ -23,6 +23,8 @@ function transcriptJob(phase: SirConvertTranscriptProgressPhase): SirConvertTran
   return {
     jobId: "job_transcript_1",
     progress: {
+      audioPipelineEtaSeconds: null,
+      audioPipelinePercentComplete: null,
       currentChunkIndex: 1,
       currentPhaseStartedAt: "2026-06-13T08:14:00Z",
       lastHeartbeatAt: "2026-06-13T08:15:30Z",
@@ -62,7 +64,7 @@ describe("TranscriptWorkspaceShell", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Förbereder ljudet.");
+    expect(wrapper.text()).toContain("Förbereder ljudet");
     expect(wrapper.text()).not.toContain("sidecar");
     expect(wrapper.text()).not.toContain("model");
     expect(wrapper.text()).not.toContain("pyannote");
@@ -89,7 +91,7 @@ describe("TranscriptWorkspaceShell", () => {
     });
 
     expect(wrapper.get("[data-test='transcript-progress-phase']").text()).toContain(
-      "Skriver ut talet.",
+      "Skriver ut samtalet",
     );
     expect(wrapper.get("[data-test='transcript-progress-percent']").text()).toContain("35 %");
     expect(wrapper.get("[data-test='transcript-progress-duration']").text()).toContain(
@@ -166,7 +168,7 @@ describe("TranscriptWorkspaceShell", () => {
     );
   });
 
-  it("emits save when a completed transcript can be persisted", async () => {
+  it("emits retry when automatic transcript persistence fails", async () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {
         abortState: { message: null, status: "idle" },
@@ -175,8 +177,8 @@ describe("TranscriptWorkspaceShell", () => {
         currentJob: null,
         errorMessage: null,
         runtimeStatus: "succeeded",
-        saveErrorMessage: null,
-        saveStatus: "idle",
+        saveErrorMessage: "Transkriptet kunde inte sparas. Försök igen.",
+        saveStatus: "failed",
         selectedTranscriptFile: null,
         speakerOverlayEntries: [],
         speakerOverlayErrorMessage: null,
@@ -198,15 +200,16 @@ describe("TranscriptWorkspaceShell", () => {
       },
     });
 
-    await wrapper.get("[data-test='transcript-save-button']").trigger("click");
+    await wrapper.get("[data-test='transcript-save-retry']").trigger("click");
 
     expect(wrapper.emitted("saveTranscript")).toHaveLength(1);
     expect(wrapper.get("[data-test='transcript-save-state']").text()).toContain(
-      "Tillfälligt transkript",
+      "Transkriptet kunde inte sparas",
     );
+    expect(wrapper.find("[data-test='transcript-save-button']").exists()).toBe(false);
   });
 
-  it("shows saved state and disables duplicate saves", () => {
+  it("shows automatic saved state without a duplicate manual save control", () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {
         abortState: { message: null, status: "idle" },
@@ -238,8 +241,10 @@ describe("TranscriptWorkspaceShell", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Transkriptet är sparat.");
-    expect(wrapper.get("[data-test='transcript-save-button']").attributes("disabled")).toBe("");
+    expect(wrapper.get("[data-test='transcript-save-state']").text()).toContain(
+      "Sparat automatiskt",
+    );
+    expect(wrapper.find("[data-test='transcript-save-button']").exists()).toBe(false);
   });
 
   it("renders editable speaker overlays over saved transcript segments", async () => {
@@ -294,18 +299,18 @@ describe("TranscriptWorkspaceShell", () => {
     expect(wrapper.emitted("saveSpeakerOverlays")).toHaveLength(1);
   });
 
-  it("renders formatter replay command and producer artifact actions only for valid refs", async () => {
+  it("emits selected formatter actions without rendering producer artifact rows", async () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {
         abortState: { message: null, status: "idle" },
         canEditSpeakerOverlays: true,
-        canRequestFormatterReplay: true,
+        canRequestFormatterExport: true,
         canSaveTranscript: false,
         currentJob: null,
         errorMessage: null,
-        formatterReplayArtifacts: [],
-        formatterReplayErrorMessage: null,
-        formatterReplayStatus: "not_requested",
+        formatterExportArtifacts: [],
+        formatterExportErrorMessage: null,
+        formatterExportStatus: "not_requested",
         runtimeStatus: "succeeded",
         saveErrorMessage: null,
         saveStatus: "saved",
@@ -332,9 +337,11 @@ describe("TranscriptWorkspaceShell", () => {
       },
     });
 
-    await wrapper.get("[data-test='transcript-formatter-replay-button']").trigger("click");
+    await wrapper.get("[data-test='transcript-download-selected-format']").trigger("click");
+    await wrapper.get("[data-test='transcript-save-selected-format']").trigger("click");
 
-    expect(wrapper.emitted("requestFormatterReplay")).toHaveLength(1);
+    expect(wrapper.emitted("downloadFormatterArtifact")?.[0]?.[0]).toBe("txt");
+    expect(wrapper.emitted("saveFormatterArtifact")?.[0]?.[0]).toBe("txt");
     expect(wrapper.find("[data-test='transcript-download-artifact-transcript_txt']").exists()).toBe(
       false,
     );
@@ -342,8 +349,8 @@ describe("TranscriptWorkspaceShell", () => {
       false,
     );
     await wrapper.setProps({
-      canRequestFormatterReplay: false,
-      formatterReplayArtifacts: [
+      canRequestFormatterExport: false,
+      formatterExportArtifacts: [
         {
           artifact_key: "transcript_txt",
           content_type: "text/plain",
@@ -352,48 +359,44 @@ describe("TranscriptWorkspaceShell", () => {
           size_bytes: 12,
         },
       ],
-      formatterReplayStatus: "succeeded",
+      formatterExportStatus: "succeeded",
     });
 
-    expect(wrapper.get("[data-test='transcript-formatter-replay-state']").text()).toContain(
-      "Exportfiler är klara",
+    expect(wrapper.get("[data-test='transcript-formatter-export-state']").text()).toContain(
+      "Filer är klara",
     );
     expect(wrapper.text()).toContain("TXT");
     expect(wrapper.find("a[download]").exists()).toBe(false);
 
-    const download = wrapper.get("[data-test='transcript-download-artifact-transcript_txt']");
-    const save = wrapper.get("[data-test='transcript-save-artifact-transcript_txt']");
+    const download = wrapper.get("[data-test='transcript-download-selected-format']");
+    const save = wrapper.get("[data-test='transcript-save-selected-format']");
     expect(download.attributes("disabled")).toBeUndefined();
     expect(save.attributes("disabled")).toBeUndefined();
 
     await download.trigger("click");
     await save.trigger("click");
 
-    expect(wrapper.emitted("downloadFormatterArtifact")?.[0]?.[0]).toMatchObject({
-      artifact_key: "transcript_txt",
-    });
-    expect(wrapper.emitted("saveFormatterArtifact")?.[0]?.[0]).toMatchObject({
-      artifact_key: "transcript_txt",
-    });
+    expect(wrapper.emitted("downloadFormatterArtifact")?.[1]?.[0]).toBe("txt");
+    expect(wrapper.emitted("saveFormatterArtifact")?.[1]?.[0]).toBe("txt");
   });
 
-  it("shows formatter artifact action progress and failure states", () => {
+  it("shows selected-format action progress without per-artifact controls", () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {
         abortState: { message: null, status: "idle" },
         canEditSpeakerOverlays: true,
-        canRequestFormatterReplay: false,
+        canRequestFormatterExport: false,
         canSaveTranscript: false,
         currentJob: null,
         errorMessage: null,
         formatterArtifactActionStates: {
           transcript_txt: {
-            download: "failed",
+            download: "idle",
             save: "running",
             savedFilename: null,
           },
         },
-        formatterReplayArtifacts: [
+        formatterExportArtifacts: [
           {
             artifact_key: "transcript_txt",
             content_type: "text/plain",
@@ -402,8 +405,8 @@ describe("TranscriptWorkspaceShell", () => {
             size_bytes: 12,
           },
         ],
-        formatterReplayErrorMessage: null,
-        formatterReplayStatus: "succeeded",
+        formatterExportErrorMessage: null,
+        formatterExportStatus: "succeeded",
         runtimeStatus: "succeeded",
         saveErrorMessage: null,
         saveStatus: "saved",
@@ -430,17 +433,20 @@ describe("TranscriptWorkspaceShell", () => {
       },
     });
 
-    expect(wrapper.get("[data-test='transcript-download-artifact-transcript_txt']").text()).toContain(
-      "Försök igen",
+    expect(wrapper.get("[data-test='transcript-download-selected-format']").text()).toBe(
+      "Ladda ner",
     );
-    expect(wrapper.get("[data-test='transcript-save-artifact-transcript_txt']").text()).toContain(
-      "Sparar",
+    expect(wrapper.get("[data-test='transcript-save-selected-format']").text()).toBe(
+      "Mina filer",
     );
     expect(
-      wrapper.get("[data-test='transcript-save-artifact-transcript_txt']").attributes("disabled"),
+      wrapper.get("[data-test='transcript-save-selected-format']").attributes("disabled"),
     ).toBe("");
-    expect(wrapper.get("[data-test='transcript-artifact-action-state-transcript_txt']").text()).toContain(
-      "Det gick inte att hämta filen.",
+    expect(wrapper.find("[data-test='transcript-download-artifact-transcript_txt']").exists()).toBe(
+      false,
+    );
+    expect(wrapper.get("[data-test='transcript-formatter-export-state']").text()).toContain(
+      "Sparar i Mina filer.",
     );
   });
 });

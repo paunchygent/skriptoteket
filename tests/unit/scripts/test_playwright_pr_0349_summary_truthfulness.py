@@ -14,10 +14,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts._transcript_parity_cancel import classify_cancel_path
-from scripts._transcript_parity_evidence import NetworkRecord, scrub_payload
-from scripts.playwright_pr_0349_transcript_parity_live import (
+from scripts._transcript_parity_evidence import (
+    NetworkRecord,
     captured_artifact_summary,
     finalize_proof_summary,
+    scrub_payload,
 )
 
 
@@ -97,6 +98,9 @@ def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) 
     (artifact_dir / "failure.png").write_bytes(b"png")
     (artifact_dir / "network.bounded.json").write_text("[]\n", encoding="utf-8")
     (artifact_dir / "browser-console.bounded.json").write_text("[]\n", encoding="utf-8")
+    (artifact_dir / "backend-live.log").write_text("safe backend metadata\n", encoding="utf-8")
+    (artifact_dir / "backend-monitor.json").write_text("{}\n", encoding="utf-8")
+    (artifact_dir / "backend-container.json").write_text("{}\n", encoding="utf-8")
 
     summary = captured_artifact_summary(artifact_dir)
 
@@ -104,6 +108,9 @@ def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) 
     assert summary["failure_screenshot"] == str(artifact_dir / "failure.png")
     assert summary["network"] == str(artifact_dir / "network.bounded.json")
     assert summary["console"] == str(artifact_dir / "browser-console.bounded.json")
+    assert summary["backend_log"] == str(artifact_dir / "backend-live.log")
+    assert summary["backend_monitor"] == str(artifact_dir / "backend-monitor.json")
+    assert summary["backend_container"] == str(artifact_dir / "backend-container.json")
     assert "cancel-accepted.png" not in str(summary)
     assert "progress.png" not in str(summary)
     assert "transcript-succeeded.png" not in str(summary)

@@ -1,4 +1,4 @@
-"""PostgreSQL repository for transcript formatter replay artifacts.
+"""PostgreSQL repository for transcript formatter export artifacts.
 
 Domain purpose:
   Map persisted overlay-aware formatter artifact references between the
@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_actions import (
     ConversionHubTranscriptFormatterArtifactRecord,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.infrastructure.db.models.conversion_hub_transcript_formatter_artifact import (
@@ -33,7 +33,7 @@ from skriptoteket.protocols.conversion_hub import (
 class PostgreSQLConversionHubTranscriptFormatterArtifactRepository(
     ConversionHubTranscriptFormatterArtifactRepositoryProtocol
 ):
-    """Persist transcript formatter replay artifact references in PostgreSQL."""
+    """Persist transcript formatter export artifact references in PostgreSQL."""
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -82,7 +82,7 @@ class PostgreSQLConversionHubTranscriptFormatterArtifactRepository(
             updated_at=model.updated_at,
         )
 
-    async def replace_for_replay(
+    async def replace_for_export(
         self,
         *,
         records: list[ConversionHubTranscriptFormatterArtifactRecord],

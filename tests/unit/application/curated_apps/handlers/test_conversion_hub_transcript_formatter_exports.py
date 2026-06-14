@@ -32,12 +32,13 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_exports imp
     ConversionHubTranscriptFormatterExportRequest,
     ConversionHubTranscriptFormatterExportStatus,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.handlers import (
     conversion_hub_transcript_formatter_exports as export_handlers,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     sir_convert_transcript_formatter_producer as producer_client,
 )
@@ -139,6 +140,56 @@ async def test_product_export_calls_producer_and_persists_verified_artifacts() -
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_product_export_rejects_partial_speaker_overlays_before_producer_submission() -> None:
+    actor = make_user()
+    transcript_id = uuid4()
+    local_job_id = uuid4()
+    transcripts = InMemorySavedTranscriptRepository()
+    overlays = InMemoryTranscriptSpeakerOverlayRepository()
+    jobs = fx.ExportJobRepository()
+    artifacts = fx.ExportArtifactRepository()
+    producer = fx.FakeFormatterProducer(fx.producer_success())
+    await fx.seed_transcript(
+        actor_id=actor.id,
+        transcript_id=transcript_id,
+        transcripts=transcripts,
+        overlays=overlays,
+    )
+    await overlays.replace_for_transcript(
+        owner_user_id=actor.id,
+        transcript_id=transcript_id,
+        overlays=[
+            fx.overlay(
+                owner_user_id=actor.id,
+                transcript_id=transcript_id,
+                canonical_speaker_label="SPEAKER_00",
+                display_name="Anna",
+            ),
+        ],
+    )
+
+    with pytest.raises(DomainError) as exc:
+        await fx.handler(
+            jobs=jobs,
+            transcripts=transcripts,
+            overlays=overlays,
+            artifacts=artifacts,
+            producer=producer,
+            ids=[local_job_id],
+        ).handle(
+            actor=actor,
+            transcript_id=transcript_id,
+            request=ConversionHubTranscriptFormatterExportRequest(),
+            correlation_id="corr-export-1",
+        )
+
+    assert exc.value.code is ErrorCode.VALIDATION_ERROR
+    assert producer.requests == []
+    assert jobs.jobs == {}
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_succeeded_export_state_preserves_requested_artifacts_for_post_and_get() -> None:
     actor = make_user()
     transcript_id = uuid4()
@@ -227,7 +278,7 @@ async def test_product_export_records_failed_terminal_state_without_artifact_row
     )
 
     assert result.status is ConversionHubTranscriptFormatterExportStatus.FAILED
-    assert result.error_message == "Exportfiler kunde inte skapas. Försök igen."
+    assert result.error_message == "Filerna kunde inte skapas. Försök igen."
     assert result.artifacts == []
     assert jobs.jobs[local_job_id].status is ConversionHubJobStatus.FAILED
     assert artifacts.records == {}
@@ -274,7 +325,7 @@ async def test_product_export_maps_producer_transport_failure_to_failed_state() 
 
     assert result.status is ConversionHubTranscriptFormatterExportStatus.FAILED
     assert result.requested_artifacts == ["txt"]
-    assert result.error_message == "Exportfiler kunde inte skapas. Försök igen."
+    assert result.error_message == "Filerna kunde inte skapas. Försök igen."
     assert jobs.jobs[local_job_id].status is ConversionHubJobStatus.FAILED
     assert artifacts.records == {}
 
@@ -482,7 +533,7 @@ async def test_get_product_export_state_uses_local_job_and_artifacts_only() -> N
             source_format=ConversionHubSourceFormatV2.TRANSCRIPT_JSON,
             output_format=ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE,
             pdf_layout=None,
-            upstream_job_id="sir-replay-job-1",
+            upstream_job_id="sir-export-job-1",
             status=ConversionHubJobStatus.SUCCEEDED,
             correlation_id="corr-export-1",
             error_message=None,
@@ -490,21 +541,21 @@ async def test_get_product_export_state_uses_local_job_and_artifacts_only() -> N
             updated_at=fx.NOW,
         )
     )
-    await artifacts.replace_for_replay(
+    await artifacts.replace_for_export(
         records=[
             ConversionHubTranscriptFormatterArtifactRecord(
                 id=artifact_id,
                 owner_user_id=actor.id,
                 transcript_id=transcript_id,
                 conversion_hub_job_id=local_job_id,
-                sir_convert_job_id="sir-replay-job-1",
+                sir_convert_job_id="sir-export-job-1",
                 requested_artifact="txt",
                 artifact_key="transcript_txt",
                 filename="transcript_txt.txt",
                 content_type="text/plain",
                 size_bytes=len(fx.TXT),
                 sha256=sha256(fx.TXT).hexdigest(),
-                retrieval_path="/v2/convert/jobs/sir-replay-job-1/artifacts/transcript_txt",
+                retrieval_path="/v2/convert/jobs/sir-export-job-1/artifacts/transcript_txt",
                 content=fx.TXT,
                 created_at=fx.NOW,
                 updated_at=fx.NOW,

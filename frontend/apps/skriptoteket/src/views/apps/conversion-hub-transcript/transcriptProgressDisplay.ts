@@ -25,41 +25,48 @@ export function uploadProgressLabel(uploadState: TranscriptUploadState): string 
 }
 
 export function transcriptProgressLabel(job: SirConvertTranscriptJob | null): string {
-  if (!job) return "Förbereder ljudet.";
+  if (!job) return "Förbereder ljudet";
   if (job.status === "submitted" || job.status === "queued" || !job.progress.phase) {
-    return "Väntar på att starta.";
+    return "Väntar";
   }
   const phase = job.progress.phase;
   if (phase === "starting" || phase === "normalizing_audio") {
-    return "Förbereder ljudet.";
+    return "Förbereder ljudet";
   }
   if (phase === "probing_media") {
-    return "Kontrollerar inspelningen.";
+    return "Läser in ljud";
   }
   if (phase === "transcribing") {
-    return "Skriver ut talet.";
+    return "Skriver ut samtalet";
   }
   if (phase === "diarizing") {
-    return "Identifierar talare.";
+    return "Hittar talare";
   }
   if (phase === "aligning_segments") {
-    return "Kontrollerar talare och text.";
+    return "Gör texten klar";
   }
   if (phase === "packaging") {
-    return "Förbereder transkriptet.";
+    return "Gör texten klar";
   }
-  return "Bearbetar inspelningen.";
+  return "Bearbetar inspelningen";
+}
+
+export function progressPercentValue(
+  job: SirConvertTranscriptJob | null,
+  uploadState: TranscriptUploadState,
+): number | null {
+  if (!job && isUploading(uploadState)) return uploadState.percentComplete;
+  const pipelinePercent = job?.progress.audioPipelinePercentComplete;
+  if (pipelinePercent !== null && pipelinePercent !== undefined) return pipelinePercent;
+  return job?.progress.percentComplete ?? null;
 }
 
 export function progressPercent(
   job: SirConvertTranscriptJob | null,
   uploadState: TranscriptUploadState,
 ): string | null {
-  if (!job && isUploading(uploadState) && uploadState.percentComplete !== null) {
-    return `${Math.round(uploadState.percentComplete)} %`;
-  }
-  const percent = job?.progress.percentComplete;
-  if (percent === null || percent === undefined) return null;
+  const percent = progressPercentValue(job, uploadState);
+  if (percent === null || percent <= 0) return null;
   return `${Math.round(percent)} %`;
 }
 
@@ -77,6 +84,37 @@ export function progressDuration(job: SirConvertTranscriptJob | null): string | 
     return null;
   }
   return `${formatDuration(processed)} av ${formatDuration(total)}`;
+}
+
+function parseTimestamp(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function completedPhaseTimingsMs(job: SirConvertTranscriptJob | null): number {
+  return Object.values(job?.progress.phaseTimingsMs ?? {}).reduce(
+    (sum, timing) => sum + Math.max(0, timing ?? 0),
+    0,
+  );
+}
+
+export function progressElapsed(job: SirConvertTranscriptJob | null): string | null {
+  const phaseStart = parseTimestamp(job?.progress.currentPhaseStartedAt);
+  const heartbeat = parseTimestamp(job?.progress.lastHeartbeatAt);
+  const activePhaseMs =
+    phaseStart !== null && heartbeat !== null && heartbeat >= phaseStart
+      ? heartbeat - phaseStart
+      : 0;
+  const elapsedMs = completedPhaseTimingsMs(job) + activePhaseMs;
+  if (elapsedMs <= 0) return null;
+  return formatDuration(elapsedMs / 1000);
+}
+
+export function progressEta(job: SirConvertTranscriptJob | null): string | null {
+  const etaSeconds = job?.progress.audioPipelineEtaSeconds;
+  if (etaSeconds === null || etaSeconds === undefined) return null;
+  return formatDuration(etaSeconds);
 }
 
 export function progressChunks(job: SirConvertTranscriptJob | null): string | null {

@@ -100,6 +100,10 @@ catch-all typed contract.
   DXE/converter pattern is restored so the browser records intent and observes
   product state while Skriptoteket and the producer contracts own orchestration
   and artifact authority.
+- `PR-0351` is done: transcript completion/progress/export UX now follows the
+  approved mockup contract, autosaves completed transcripts, removes the generic
+  manual save gate and old per-artifact export rows, and keeps selected-format
+  actions stable as `Ladda ner` and `Mina filer`.
 
 ## Live Proof Status
 
@@ -145,6 +149,17 @@ shows:
 This closes `ST-21-08`. Future transcript work should build on the
 product-owned export state boundary rather than restoring browser replay
 orchestration.
+
+`PR-0351` added the final transcript workspace UX hardening after this retained
+production proof. Its local live proof attempt reached the HuleEdu
+browser-session route and captured cancel/progress surfaces, then failed before
+completion because the local Sir Convert trust lane rejected the product
+backend with `auth_invalid_internal_identity` /
+`invalid_internal_identity_signature` on
+`POST /sir-convert/v2/convert/jobs?wait_seconds=0`. PR-0351-specific behavior
+is therefore retained through focused red-first frontend/backend tests,
+legacy-surface grep, and approved `REV-PR-0351` review rather than a new
+completion-path live artifact.
 
 ## Linked Artifacts
 

@@ -1,12 +1,12 @@
-"""Conversion Hub transcript formatter replay response parsing.
+"""Conversion Hub transcript formatter export response parsing.
 
 Domain purpose:
-  Validate Sir Convert replay result and artifact manifest envelopes before
+  Validate Sir Convert formatter result and artifact manifest envelopes before
   Skriptoteket records downloadable transcript formatter artifact references.
 
 Relationships:
-  - Used by `conversion_hub_transcript_formatter_replay` completion handling.
-  - Emits typed artifact refs from `conversion_hub_transcript_replay`.
+  - Used by `conversion_hub_transcript_formatter_exports`.
+  - Emits typed artifact refs from `conversion_hub_transcript_formatter_contracts`.
   - Fails with domain service errors for malformed producer responses.
 """
 
@@ -17,32 +17,32 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, ValidationError, model_validator
 from typing_extensions import Self
 
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
     ConversionHubTranscriptFormatterArtifactRef,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-_ReplayFormat = ConversionHubTranscriptFormatterArtifactFormat
-_ReplayArtifactKey = ConversionHubTranscriptFormatterArtifactKey
+_ExportFormat = ConversionHubTranscriptFormatterArtifactFormat
+_ExportArtifactKey = ConversionHubTranscriptFormatterArtifactKey
 
 _ARTIFACT_KEY_BY_FORMAT = {
-    _ReplayFormat.TXT: _ReplayArtifactKey.TRANSCRIPT_TXT,
-    _ReplayFormat.MD: _ReplayArtifactKey.TRANSCRIPT_MD,
-    _ReplayFormat.VTT: _ReplayArtifactKey.TRANSCRIPT_VTT,
-    _ReplayFormat.SRT: _ReplayArtifactKey.TRANSCRIPT_SRT,
+    _ExportFormat.TXT: _ExportArtifactKey.TRANSCRIPT_TXT,
+    _ExportFormat.MD: _ExportArtifactKey.TRANSCRIPT_MD,
+    _ExportFormat.VTT: _ExportArtifactKey.TRANSCRIPT_VTT,
+    _ExportFormat.SRT: _ExportArtifactKey.TRANSCRIPT_SRT,
 }
 _FORMAT_BY_ARTIFACT_KEY = {value: key for key, value in _ARTIFACT_KEY_BY_FORMAT.items()}
 _CONTENT_TYPE_BY_ARTIFACT_KEY = {
-    _ReplayArtifactKey.TRANSCRIPT_TXT: "text/plain",
-    _ReplayArtifactKey.TRANSCRIPT_MD: "text/markdown",
-    _ReplayArtifactKey.TRANSCRIPT_VTT: "text/vtt",
-    _ReplayArtifactKey.TRANSCRIPT_SRT: "application/x-subrip",
+    _ExportArtifactKey.TRANSCRIPT_TXT: "text/plain",
+    _ExportArtifactKey.TRANSCRIPT_MD: "text/markdown",
+    _ExportArtifactKey.TRANSCRIPT_VTT: "text/vtt",
+    _ExportArtifactKey.TRANSCRIPT_SRT: "application/x-subrip",
 }
 
 
-class _ReplayResultArtifact(BaseModel):
+class _ExportResultArtifact(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     filename: Literal["transcript_replay_bundle_manifest.json"]
@@ -52,7 +52,7 @@ class _ReplayResultArtifact(BaseModel):
     sha256: str = Field(min_length=1)
 
 
-class _ReplayConversionMetadata(BaseModel):
+class _ExportConversionMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     pipeline_used: Literal["transcript_json_to_transcript_bundle_replay_v2"]
@@ -80,28 +80,28 @@ class _ReplayConversionMetadata(BaseModel):
     @model_validator(mode="after")
     def _formula_authority_is_empty(self) -> Self:
         if self.formula_authority:
-            raise ValueError("replay metadata must not include formula authority details")
+            raise ValueError("formatter metadata must not include formula authority details")
         return self
 
 
-class _ReplayResultBody(BaseModel):
+class _ExportResultBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    artifact: _ReplayResultArtifact
-    conversion_metadata: _ReplayConversionMetadata
+    artifact: _ExportResultArtifact
+    conversion_metadata: _ExportConversionMetadata
     warnings: list[str]
 
 
-class _ReplayResultEnvelope(BaseModel):
+class _ExportResultEnvelope(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_version: Literal["v2"]
     job_id: str = Field(min_length=1)
     status: Literal["succeeded"]
-    result: _ReplayResultBody
+    result: _ExportResultBody
 
 
-class _ReplayArtifactEntry(BaseModel):
+class _ExportArtifactEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     artifact_key: ConversionHubTranscriptFormatterArtifactKey
@@ -114,42 +114,44 @@ class _ReplayArtifactEntry(BaseModel):
     unavailable_code: str | None = None
 
 
-class _ReplayArtifactManifest(BaseModel):
+class _ExportArtifactManifest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_version: Literal["v2"]
     job_id: str = Field(min_length=1)
     output_format: Literal["transcript_bundle"]
-    artifacts: list[_ReplayArtifactEntry] = Field(min_length=1)
+    artifacts: list[_ExportArtifactEntry] = Field(min_length=1)
 
 
-def parse_replay_result(
+def parse_export_result(
     *,
     payload: dict[str, object],
     sir_convert_job_id: str,
 ) -> None:
     try:
-        result = _ReplayResultEnvelope.model_validate(payload)
+        result = _ExportResultEnvelope.model_validate(payload)
     except ValidationError as exc:
-        raise _malformed_replay_response("Sir Convert replay result is malformed.") from exc
+        raise _malformed_export_response("Sir Convert formatter result is malformed.") from exc
     if result.job_id != sir_convert_job_id:
-        raise _malformed_replay_response("Sir Convert replay result has wrong job id.")
+        raise _malformed_export_response("Sir Convert formatter result has wrong job id.")
 
 
-def parse_replay_artifact_refs(
+def parse_export_artifact_refs(
     *,
     payload: dict[str, object],
     sir_convert_job_id: str,
     requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat],
 ) -> list[ConversionHubTranscriptFormatterArtifactRef]:
     try:
-        manifest = _ReplayArtifactManifest.model_validate(payload)
+        manifest = _ExportArtifactManifest.model_validate(payload)
     except ValidationError as exc:
-        raise _malformed_replay_response(
-            "Sir Convert replay artifact manifest is malformed."
+        raise _malformed_export_response(
+            "Sir Convert formatter artifact manifest is malformed."
         ) from exc
     if manifest.job_id != sir_convert_job_id:
-        raise _malformed_replay_response("Sir Convert replay artifact manifest has wrong job id.")
+        raise _malformed_export_response(
+            "Sir Convert formatter artifact manifest has wrong job id."
+        )
 
     requested_keys = {
         _ARTIFACT_KEY_BY_FORMAT[requested_artifact] for requested_artifact in requested_artifacts
@@ -161,39 +163,39 @@ def parse_replay_artifact_refs(
     seen: set[ConversionHubTranscriptFormatterArtifactKey] = set()
     for entry in manifest.artifacts:
         if entry.artifact_key in seen:
-            raise _malformed_replay_response("Sir Convert replay artifact keys are duplicated.")
+            raise _malformed_export_response("Sir Convert formatter artifact keys are duplicated.")
         seen.add(entry.artifact_key)
         if entry.unavailable_code == "not_implemented":
-            raise _malformed_replay_response("Sir Convert replay artifact is not implemented.")
+            raise _malformed_export_response("Sir Convert formatter artifact is not implemented.")
         if entry.artifact_key not in requested_keys:
             if entry.availability == "available":
-                raise _malformed_replay_response(
-                    "Sir Convert replay artifact manifest includes unrequested artifacts."
+                raise _malformed_export_response(
+                    "Sir Convert formatter artifact manifest includes unrequested artifacts."
                 )
             continue
         accepted[entry.artifact_key] = _available_artifact_ref(entry)
 
     missing = [artifact_key for artifact_key in requested_keys if artifact_key not in accepted]
     if missing:
-        raise _malformed_replay_response("Sir Convert replay artifact manifest is incomplete.")
+        raise _malformed_export_response("Sir Convert formatter artifact manifest is incomplete.")
     return [accepted[_ARTIFACT_KEY_BY_FORMAT[artifact]] for artifact in requested_artifacts]
 
 
 def _available_artifact_ref(
-    entry: _ReplayArtifactEntry,
+    entry: _ExportArtifactEntry,
 ) -> ConversionHubTranscriptFormatterArtifactRef:
     expected_content_type = _CONTENT_TYPE_BY_ARTIFACT_KEY[entry.artifact_key]
     if entry.availability != "available":
-        raise _malformed_replay_response("Requested Sir Convert replay artifact is unavailable.")
+        raise _malformed_export_response("Requested Sir Convert formatter artifact is unavailable.")
     if entry.content_type != expected_content_type:
-        raise _malformed_replay_response("Sir Convert replay artifact content type is invalid.")
+        raise _malformed_export_response("Sir Convert formatter artifact content type is invalid.")
     if (
         entry.filename is None
         or entry.size_bytes is None
         or entry.sha256 is None
         or entry.retrieval_path is None
     ):
-        raise _malformed_replay_response("Sir Convert replay artifact ref is incomplete.")
+        raise _malformed_export_response("Sir Convert formatter artifact ref is incomplete.")
     return ConversionHubTranscriptFormatterArtifactRef(
         requested_artifact=_FORMAT_BY_ARTIFACT_KEY[entry.artifact_key],
         artifact_key=entry.artifact_key,
@@ -205,9 +207,9 @@ def _available_artifact_ref(
     )
 
 
-def _malformed_replay_response(message: str) -> DomainError:
+def _malformed_export_response(message: str) -> DomainError:
     return DomainError(
         code=ErrorCode.SERVICE_UNAVAILABLE,
         message=message,
-        details={"upstream": "sir_convert_transcript_formatter_replay"},
+        details={"upstream": "sir_convert_transcript_formatter_export"},
     )

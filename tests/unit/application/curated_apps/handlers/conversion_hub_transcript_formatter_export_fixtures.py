@@ -29,7 +29,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
 from skriptoteket.application.curated_apps.conversion_hub_transcript_exports import (
     ConversionHubTranscriptFormatterExportStateRecord,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
@@ -110,7 +110,7 @@ class ExportArtifactRepository:
             ConversionHubTranscriptFormatterArtifactRecord,
         ] = {}
 
-    async def replace_for_replay(
+    async def replace_for_export(
         self,
         *,
         records: list[ConversionHubTranscriptFormatterArtifactRecord],
@@ -302,7 +302,7 @@ async def seed_transcript(
 
 def producer_success(
     *,
-    job_id: str = "sir-replay-job-1",
+    job_id: str = "sir-export-job-1",
     artifacts: dict[ConversionHubTranscriptFormatterArtifactKey, bytes] | None = None,
 ) -> ConversionHubTranscriptFormatterProducerResult:
     artifact_bytes = artifacts or {
@@ -331,7 +331,7 @@ def producer_success(
 def producer_status(
     *,
     status: str,
-    job_id: str = "sir-replay-job-1",
+    job_id: str = "sir-export-job-1",
     error_message: str | None = "Replay failed.",
 ) -> ConversionHubTranscriptFormatterProducerResult:
     return ConversionHubTranscriptFormatterProducerResult(

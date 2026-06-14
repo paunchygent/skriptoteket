@@ -2,7 +2,7 @@
 
 Domain purpose:
   Own saved-transcript formatter export intent and state inside Skriptoteket
-  while consuming Sir Convert's task-363 replay producer from the backend.
+  while consuming Sir Convert's task-363 formatter producer from the backend.
 
 Relationships:
   - Uses saved transcript, speaker overlay, job, and artifact repository
@@ -31,7 +31,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_exports imp
     ConversionHubTranscriptFormatterExportStateRecord,
     ConversionHubTranscriptFormatterExportStatus,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
     ConversionHubTranscriptFormatterArtifactRef,
@@ -102,7 +102,7 @@ class RequestConversionHubTranscriptFormatterExportHandler:
         if not overlays:
             raise validation_error("Save speaker names before requesting transcript export.")
         export_support.validate_overlay_inventory(transcript=transcript, overlays=overlays)
-        job_spec = export_support.build_replay_job_spec(
+        job_spec = export_support.build_export_job_spec(
             requested_artifacts=request.requested_artifacts,
             overlays=overlays,
         )
@@ -213,7 +213,7 @@ class RequestConversionHubTranscriptFormatterExportHandler:
         requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat],
     ) -> ConversionHubTranscriptFormatterExportResponse:
         if producer_result.sir_convert_job_id is None:
-            raise validation_error("Sir Convert replay response is missing job id.")
+            raise validation_error("Sir Convert formatter response is missing job id.")
         async with self._uow:
             job = await self._create_or_update_job(
                 actor=actor,
@@ -229,7 +229,7 @@ class RequestConversionHubTranscriptFormatterExportHandler:
                 job=job,
                 requested_artifacts=requested_artifacts,
             )
-            records = await self._artifacts.replace_for_replay(
+            records = await self._artifacts.replace_for_export(
                 records=_artifact_records(
                     actor=actor,
                     transcript=transcript,

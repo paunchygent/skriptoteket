@@ -24,7 +24,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
 from skriptoteket.application.curated_apps.conversion_hub_transcript_exports import (
     ConversionHubTranscriptFormatterExportStateRecord,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
 )
@@ -101,9 +101,9 @@ class ConversionHubTranscriptSpeakerOverlayRepositoryProtocol(Protocol):
 
 
 class ConversionHubTranscriptFormatterArtifactRepositoryProtocol(Protocol):
-    """Persist replay-returned transcript formatter artifact references."""
+    """Persist producer-returned transcript formatter artifact references."""
 
-    async def replace_for_replay(
+    async def replace_for_export(
         self,
         *,
         records: list[ConversionHubTranscriptFormatterArtifactRecord],
@@ -192,7 +192,7 @@ class ConversionHubTranscriptFormatterProducerResult:
 
 
 class ConversionHubTranscriptFormatterProducerProtocol(Protocol):
-    """Submit saved transcript JSON to the accepted Sir Convert replay producer."""
+    """Submit saved transcript JSON to the accepted Sir Convert formatter producer."""
 
     async def create_transcript_formatter_export(
         self,

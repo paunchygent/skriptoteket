@@ -10,7 +10,21 @@
  *   - `transcriptTypes.ts` defines the parsed consumer contracts.
  */
 
-import type { SirConvertJobStatus } from "./types";
+import {
+  emptyTranscriptProgress,
+  parseTranscriptProgressSnapshot,
+} from "./transcriptProgressParsers";
+import {
+  hasOwnField,
+  isRecord,
+  readNullableNumber,
+  readNullableString,
+  readNumber,
+  readRecord,
+  readStatus,
+  readString,
+  type JsonRecord,
+} from "./transcriptParserScalars";
 import type {
   SirConvertTranscriptArtifactAvailability,
   SirConvertTranscriptArtifactEntry,
@@ -18,9 +32,6 @@ import type {
   SirConvertTranscriptArtifactManifest,
   SirConvertTranscriptFormatterArtifactKey,
   SirConvertTranscriptJob,
-  SirConvertTranscriptPhaseTimingKey,
-  SirConvertTranscriptProgressPhase,
-  SirConvertTranscriptProgressSnapshot,
   SirConvertTranscriptTerminalResult,
   TranscriptJson,
   TranscriptSegment,
@@ -28,84 +39,6 @@ import type {
 import {
   SIR_CONVERT_TRANSCRIPT_ARTIFACT_CONTENT_TYPES,
 } from "./transcriptTypes";
-
-type JsonRecord = Record<string, unknown>;
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function hasOwnField(record: JsonRecord, fieldName: string): boolean {
-  return Object.prototype.hasOwnProperty.call(record, fieldName);
-}
-
-function readRecord(value: unknown, fieldName: string): JsonRecord {
-  if (isRecord(value)) return value;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is not an object.`);
-}
-
-function readString(value: unknown, fieldName: string): string {
-  if (typeof value === "string" && value.length > 0) return value;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is missing.`);
-}
-
-function readNullableString(value: unknown, fieldName: string): string | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "string") return value;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is not a string.`);
-}
-
-function readNumber(value: unknown, fieldName: string): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is not a number.`);
-}
-
-function readNullableNumber(value: unknown, fieldName: string): number | null {
-  if (value === null || value === undefined) return null;
-  return readNumber(value, fieldName);
-}
-
-function readNullableNonNegativeNumber(value: unknown, fieldName: string): number | null {
-  const numberValue = readNullableNumber(value, fieldName);
-  if (numberValue === null || numberValue >= 0) return numberValue;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is negative.`);
-}
-
-function readNullablePercent(value: unknown, fieldName: string): number | null {
-  const numberValue = readNullableNonNegativeNumber(value, fieldName);
-  if (numberValue === null || numberValue <= 100) return numberValue;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is outside 0..100.`);
-}
-
-function readNullableNonNegativeInteger(value: unknown, fieldName: string): number | null {
-  const numberValue = readNullableNonNegativeNumber(value, fieldName);
-  if (numberValue === null || Number.isInteger(numberValue)) return numberValue;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is not an integer.`);
-}
-
-function readNullableDateTime(value: unknown, fieldName: string): string | null {
-  const stringValue = readNullableString(value, fieldName);
-  if (stringValue === null) return null;
-  if (stringValue.length > 0 && Number.isFinite(Date.parse(stringValue))) return stringValue;
-  throw new Error(`Sir Convert transcript field '${fieldName}' is not a datetime.`);
-}
-
-function readStatus(value: unknown): SirConvertJobStatus {
-  const status = readString(value, "status");
-  if (
-    status === "submitted" ||
-    status === "queued" ||
-    status === "running" ||
-    status === "processing" ||
-    status === "succeeded" ||
-    status === "failed" ||
-    status === "canceled" ||
-    status === "cancelled"
-  ) {
-    return status;
-  }
-  throw new Error(`Unknown Sir Convert transcript status '${status}'.`);
-}
 
 function readArtifactKey(value: unknown): SirConvertTranscriptArtifactKey {
   const artifactKey = readString(value, "artifact_key");
@@ -134,136 +67,6 @@ function readAvailability(value: unknown): SirConvertTranscriptArtifactAvailabil
   }
 }
 
-function readProgressPhase(value: unknown, fieldName: string): SirConvertTranscriptProgressPhase {
-  const phase = readString(value, fieldName);
-  switch (phase) {
-    case "submitted":
-    case "queued":
-    case "starting":
-    case "probing_media":
-    case "normalizing_audio":
-    case "transcribing":
-    case "diarizing":
-    case "aligning_segments":
-    case "packaging":
-    case "succeeded":
-    case "failed":
-    case "canceled":
-    case "cancelled":
-      return phase;
-    default:
-      throw new Error(`Unknown Sir Convert transcript progress phase '${phase}'.`);
-  }
-}
-
-function readPhaseTimingKey(value: string): SirConvertTranscriptPhaseTimingKey {
-  switch (value) {
-    case "ocr_layout_extract_ms":
-    case "markdown_normalize_ms":
-    case "formula_enrichment_ms":
-    case "checkpoint_persist_ms":
-    case "final_artifact_persist_ms":
-    case "chunk_total_ms":
-    case "conversion_total_ms":
-      return value;
-    default:
-      throw new Error(`Unknown Sir Convert transcript phase timing '${value}'.`);
-  }
-}
-
-function parsePhaseTimings(
-  value: unknown,
-): Partial<Record<SirConvertTranscriptPhaseTimingKey, number>> {
-  if (value === null || value === undefined) return {};
-  const timings = readRecord(value, "phase_timings_ms");
-  const parsed: Partial<Record<SirConvertTranscriptPhaseTimingKey, number>> = {};
-  for (const [key, timingValue] of Object.entries(timings)) {
-    parsed[readPhaseTimingKey(key)] = readNullableNonNegativeInteger(
-      timingValue,
-      `phase_timings_ms.${key}`,
-    ) ?? 0;
-  }
-  return parsed;
-}
-
-function emptyProgress(status: SirConvertJobStatus): SirConvertTranscriptProgressSnapshot {
-  return {
-    status,
-    phase: null,
-    lastHeartbeatAt: null,
-    currentPhaseStartedAt: null,
-    processedMediaSeconds: null,
-    totalMediaSeconds: null,
-    percentComplete: null,
-    currentChunkIndex: null,
-    totalChunks: null,
-    phaseTimingsMs: {},
-  };
-}
-
-function progressRecord(job: JsonRecord): JsonRecord | null {
-  if (!hasOwnField(job, "progress")) return null;
-  if (isRecord(job.progress)) return job.progress;
-  throw new Error("Sir Convert transcript field 'progress' is not an object.");
-}
-
-function parseProgressSnapshot(
-  job: JsonRecord,
-  status: SirConvertJobStatus,
-): SirConvertTranscriptProgressSnapshot {
-  const progress = progressRecord(job);
-  if (!progress) {
-    if (status === "running" || status === "processing") {
-      throw new Error("Running Sir Convert transcript job is missing progress.");
-    }
-    return emptyProgress(status);
-  }
-  const processedMediaSeconds = readNullableNonNegativeNumber(
-    progress.audio_processed_media_seconds,
-    "audio_processed_media_seconds",
-  );
-  const totalMediaSeconds = readNullableNonNegativeNumber(
-    progress.audio_total_media_seconds,
-    "audio_total_media_seconds",
-  );
-  if (
-    processedMediaSeconds !== null &&
-    totalMediaSeconds !== null &&
-    processedMediaSeconds > totalMediaSeconds
-  ) {
-    throw new Error("Transcript processed media seconds exceed total media seconds.");
-  }
-  const currentChunkIndex = readNullableNonNegativeInteger(
-    progress.audio_current_chunk_index,
-    "audio_current_chunk_index",
-  );
-  const totalChunks = readNullableNonNegativeInteger(
-    progress.audio_total_chunks,
-    "audio_total_chunks",
-  );
-  if (currentChunkIndex !== null && totalChunks !== null && currentChunkIndex >= totalChunks) {
-    throw new Error("Transcript current chunk index exceeds total chunk count.");
-  }
-  return {
-    status,
-    phase: readProgressPhase(progress.stage, "progress.stage"),
-    lastHeartbeatAt: readNullableDateTime(progress.last_heartbeat_at, "last_heartbeat_at"),
-    currentPhaseStartedAt: readNullableDateTime(
-      progress.current_phase_started_at,
-      "current_phase_started_at",
-    ),
-    processedMediaSeconds,
-    totalMediaSeconds,
-    percentComplete: readNullablePercent(
-      progress.audio_percent_complete,
-      "audio_percent_complete",
-    ),
-    currentChunkIndex,
-    totalChunks,
-    phaseTimingsMs: parsePhaseTimings(progress.phase_timings_ms),
-  };
-}
-
 export function parseTranscriptJob(payload: unknown): SirConvertTranscriptJob {
   const root = readRecord(payload, "payload");
   const job = isRecord(root.job)
@@ -277,7 +80,7 @@ export function parseTranscriptJob(payload: unknown): SirConvertTranscriptJob {
   return {
     jobId: readString(job.job_id, "job.job_id"),
     status,
-    progress: parseProgressSnapshot(job, status),
+    progress: parseTranscriptProgressSnapshot(job, status),
   };
 }
 
@@ -288,7 +91,7 @@ function parseTranscriptResultJob(payload: unknown, root: JsonRecord): SirConver
   return {
     jobId: readString(root.job_id, "job_id"),
     status: "succeeded",
-    progress: emptyProgress("succeeded"),
+    progress: emptyTranscriptProgress("succeeded"),
   };
 }
 

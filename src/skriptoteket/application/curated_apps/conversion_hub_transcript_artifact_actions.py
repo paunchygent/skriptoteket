@@ -1,7 +1,7 @@
 """Conversion Hub transcript formatter artifact action contracts.
 
 Domain purpose:
-  Define owner-scoped replay artifact provenance and action results for
+  Define owner-scoped formatter export artifact provenance and action results for
   downloading or saving overlay-aware transcript formatter outputs.
 
 Relationships:
@@ -20,14 +20,14 @@ from pydantic import BaseModel, ConfigDict, Field
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
     ConversionHubSavedVaultArtifact,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
 )
 
 
 class ConversionHubTranscriptFormatterArtifactRecord(BaseModel):
-    """Persisted producer replay artifact reference for one saved transcript."""
+    """Persisted producer formatter artifact reference for one saved transcript."""
 
     model_config = ConfigDict(frozen=True)
 

@@ -158,6 +158,11 @@ export type SirConvertTranscriptProgressPhase =
   (typeof SIR_CONVERT_TRANSCRIPT_PROGRESS_PHASES)[number];
 
 export const SIR_CONVERT_TRANSCRIPT_PHASE_TIMING_KEYS = [
+  "audio_probe_normalize_ms",
+  "audio_diarization_ms",
+  "audio_transcription_ms",
+  "audio_alignment_ms",
+  "audio_packaging_ms",
   "ocr_layout_extract_ms",
   "markdown_normalize_ms",
   "formula_enrichment_ms",
@@ -178,6 +183,8 @@ export type SirConvertTranscriptProgressSnapshot = {
   processedMediaSeconds: number | null;
   totalMediaSeconds: number | null;
   percentComplete: number | null;
+  audioPipelinePercentComplete: number | null;
+  audioPipelineEtaSeconds: number | null;
   currentChunkIndex: number | null;
   totalChunks: number | null;
   phaseTimingsMs: Partial<Record<SirConvertTranscriptPhaseTimingKey, number>>;

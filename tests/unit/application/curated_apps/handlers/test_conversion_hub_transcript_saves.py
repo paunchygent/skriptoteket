@@ -27,7 +27,7 @@ from skriptoteket.application.curated_apps.conversion_hub import (
 from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_actions import (
     ConversionHubTranscriptFormatterArtifactRecord,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
@@ -157,7 +157,7 @@ class InMemoryTranscriptFormatterArtifactRepository:
         ] = {}
         self.delete_calls: list[tuple[UUID, UUID]] = []
 
-    async def replace_for_replay(
+    async def replace_for_export(
         self,
         *,
         records: list[ConversionHubTranscriptFormatterArtifactRecord],

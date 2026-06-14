@@ -2,10 +2,10 @@
 
 Domain purpose:
   Authorize overlay-aware transcript formatter artifact downloads and Mina filer
-  saves from persisted replay artifact references only.
+  saves from persisted formatter export artifact references only.
 
 Relationships:
-  - Consumes PR-0347 replay provenance persisted through
+  - Consumes formatter export provenance persisted through
     `ConversionHubTranscriptFormatterArtifactRepositoryProtocol`.
   - Retrieves producer bytes through `SirConvertALotClientV2Protocol` named
     artifact downloads instead of formatting transcript content locally.
@@ -31,7 +31,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_artifact_ac
     ConversionHubTranscriptFormatterArtifactRecord,
     SaveConversionHubTranscriptFormatterArtifactResult,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
@@ -132,7 +132,7 @@ class _FormatterArtifactActionBase:
             )
         if transcript is None or record is None or job is None:
             raise not_found("ConversionHubTranscriptFormatterArtifact", str(transcript_id))
-        _validate_replay_provenance(transcript=transcript, record=record, job=job)
+        _validate_export_provenance(transcript=transcript, record=record, job=job)
         return _AuthorizedFormatterArtifact(transcript=transcript, record=record, job=job)
 
 
@@ -280,7 +280,7 @@ class SaveConversionHubTranscriptFormatterArtifactHandler(_FormatterArtifactActi
         )
 
 
-def _validate_replay_provenance(
+def _validate_export_provenance(
     *,
     transcript: ConversionHubSavedTranscript,
     record: ConversionHubTranscriptFormatterArtifactRecord,
@@ -289,17 +289,17 @@ def _validate_replay_provenance(
     if job.owner_user_id != transcript.owner_user_id:
         raise not_found("ConversionHubJob", str(record.conversion_hub_job_id))
     if job.upstream_job_id != record.sir_convert_job_id:
-        raise validation_error("Replay artifact provenance does not match the replay job.")
+        raise validation_error("Formatter artifact provenance does not match the export job.")
     if job.input_filename != _gateway_filename(transcript_id=transcript.id):
-        raise validation_error("Replay artifact provenance does not match the saved transcript.")
+        raise validation_error("Formatter artifact provenance does not match the saved transcript.")
     if (
         job.source_format is not ConversionHubSourceFormatV2.TRANSCRIPT_JSON
         or job.output_format is not ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE
         or job.status is not ConversionHubJobStatus.SUCCEEDED
     ):
-        raise validation_error("Replay job provenance does not match transcript exports.")
+        raise validation_error("Formatter job provenance does not match transcript exports.")
     if record.retrieval_path != _retrieval_path(record=record):
-        raise validation_error("Replay artifact reference is not downloadable.")
+        raise validation_error("Formatter artifact reference is not downloadable.")
 
 
 def _validated_persisted_content(
@@ -307,7 +307,7 @@ def _validated_persisted_content(
     record: ConversionHubTranscriptFormatterArtifactRecord,
 ) -> bytes:
     if record.content is None:
-        raise validation_error("Replay artifact reference is not downloadable.")
+        raise validation_error("Formatter artifact reference is not downloadable.")
     _validate_artifact_content(
         record=record,
         content_type=record.content_type,
@@ -370,12 +370,12 @@ def _product_filename(
 
 def _source_artifact_id(authorized: _AuthorizedFormatterArtifact) -> str:
     source = (
-        f"{APP_ID}:transcript-replay:"
+        f"{APP_ID}:transcript-export:"
         f"{authorized.record.conversion_hub_job_id}:{authorized.record.artifact_key.value}"
     )
     if len(source) <= 255:
         return source
-    return f"{APP_ID}:transcript-replay:{sha256(source.encode('utf-8')).hexdigest()}"
+    return f"{APP_ID}:transcript-export:{sha256(source.encode('utf-8')).hexdigest()}"
 
 
 def _retrieval_path(*, record: ConversionHubTranscriptFormatterArtifactRecord) -> str:

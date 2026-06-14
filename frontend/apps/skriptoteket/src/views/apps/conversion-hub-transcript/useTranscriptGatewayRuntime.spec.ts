@@ -53,6 +53,8 @@ function transcriptJob(
   return {
     jobId: "job_transcript_1",
     progress: {
+      audioPipelineEtaSeconds: null,
+      audioPipelinePercentComplete: null,
       currentChunkIndex: status === "running" ? 1 : null,
       currentPhaseStartedAt: "2026-06-13T08:14:00Z",
       lastHeartbeatAt: "2026-06-13T08:15:30Z",

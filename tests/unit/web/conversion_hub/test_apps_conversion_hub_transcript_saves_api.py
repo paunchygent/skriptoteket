@@ -35,7 +35,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_exports imp
     ConversionHubTranscriptFormatterExportRequest,
     ConversionHubTranscriptFormatterExportResponse,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
@@ -203,7 +203,7 @@ def _formatter_artifact_download() -> ConversionHubTranscriptFormatterArtifactDo
 
 def _formatter_artifact_save_response() -> SaveConversionHubTranscriptFormatterArtifactResult:
     return SaveConversionHubTranscriptFormatterArtifactResult(
-        source_artifact_id="documents.conversion_hub:transcript-replay:local-job:transcript_txt",
+        source_artifact_id="documents.conversion_hub:transcript-export:local-job:transcript_txt",
         vault_artifact=ConversionHubSavedVaultArtifact(
             file_id=uuid4(),
             name="transkript-abcdef12.txt",

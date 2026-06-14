@@ -76,7 +76,9 @@ const {
 
 type TranscriptSaveStatus = "idle" | "saving" | "saved" | "failed";
 type SpeakerOverlayStatus = "idle" | "loading" | "saving" | "saved" | "failed";
-type FormatterReplayStatus = ConversionHubTranscriptFormatterExportStatus;
+type FormatterExportStatus = ConversionHubTranscriptFormatterExportStatus;
+type TranscriptFormatterRequestedArtifact =
+  ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
 
 const conversionHubJobId = ref<string | null>(null);
 const savedTranscriptId = ref<string | null>(null);
@@ -85,10 +87,10 @@ const saveErrorMessage = ref<string | null>(null);
 const speakerOverlayEntries = ref<ConversionHubTranscriptSpeakerOverlayEntry[]>([]);
 const speakerOverlayStatus = ref<SpeakerOverlayStatus>("idle");
 const speakerOverlayErrorMessage = ref<string | null>(null);
-const formatterReplayArtifacts = ref<ConversionHubTranscriptFormatterArtifactRef[]>([]);
-const formatterReplayStatus = ref<FormatterReplayStatus>("not_requested");
-const formatterReplayErrorMessage = ref<string | null>(null);
-const formatterReplayRequestInFlight = ref(false);
+const formatterExportArtifacts = ref<ConversionHubTranscriptFormatterArtifactRef[]>([]);
+const formatterExportStatus = ref<FormatterExportStatus>("not_requested");
+const formatterExportErrorMessage = ref<string | null>(null);
+const formatterExportRequestInFlight = ref(false);
 const formatterArtifactActionStates = ref<FormatterArtifactActionStates>({});
 const isRunning = computed(() => runtimeStatus.value === "running");
 const canStartTranscript = computed(
@@ -98,27 +100,30 @@ const canSaveTranscript = computed(
   () =>
     runtimeStatus.value === "succeeded" &&
     transcript.value !== null &&
-    conversionHubJobId.value !== null &&
-    saveStatus.value !== "saving" &&
-    saveStatus.value !== "saved",
+    selectedTranscriptFile.value !== null &&
+    lastJobId.value !== null &&
+    saveStatus.value === "failed",
 );
 const canEditSpeakerOverlays = computed(
   () => saveStatus.value === "saved" && savedTranscriptId.value !== null,
 );
-const canRequestFormatterReplay = computed(
+const canRequestFormatterExport = computed(
   () =>
     saveStatus.value === "saved" &&
     savedTranscriptId.value !== null &&
-    speakerOverlayEntries.value.length > 0 &&
+    speakerOverlayCoverageComplete.value &&
     speakerOverlayStatus.value === "saved" &&
-    !formatterReplayRequestInFlight.value,
+    !formatterExportRequestInFlight.value,
+);
+const speakerOverlayCoverageComplete = computed(() =>
+  speakerOverlayEntriesCoverTranscript(speakerOverlayEntries.value),
 );
 
-function resetFormatterReplayState(): void {
-  formatterReplayArtifacts.value = [];
-  formatterReplayStatus.value = "not_requested";
-  formatterReplayErrorMessage.value = null;
-  formatterReplayRequestInFlight.value = false;
+function resetFormatterExportState(): void {
+  formatterExportArtifacts.value = [];
+  formatterExportStatus.value = "not_requested";
+  formatterExportErrorMessage.value = null;
+  formatterExportRequestInFlight.value = false;
   formatterArtifactActionStates.value = {};
 }
 
@@ -127,7 +132,7 @@ function resetSpeakerOverlayState(): void {
   speakerOverlayEntries.value = [];
   speakerOverlayStatus.value = "idle";
   speakerOverlayErrorMessage.value = null;
-  resetFormatterReplayState();
+  resetFormatterExportState();
 }
 
 async function handleStartTranscript(): Promise<void> {
@@ -143,19 +148,11 @@ async function handleStartTranscript(): Promise<void> {
       speakerControl: speakerControl.value,
     });
     if (!transcriptJson || !lastJobId.value) return;
-    const registered = await registerTranscriptConversionHubJob({
-      request: {
-        upstream_job_id: lastJobId.value,
-        input_filename: selection.name,
-        correlation_id: lastCorrelationId.value,
-        status: "succeeded",
-      },
-    });
-    conversionHubJobId.value = registered.job_id;
+    await persistTranscript();
   } catch {
     if (runtimeStatus.value === "succeeded") {
       saveStatus.value = "failed";
-      saveErrorMessage.value = "Transkriptet är klart men kunde inte förberedas för sparning.";
+      saveErrorMessage.value = "Transkriptet kunde inte sparas. Försök igen.";
     }
   }
 }
@@ -174,14 +171,35 @@ function setSpeakerMode(mode: TranscriptSpeakerMode): void {
 }
 
 async function handleSaveTranscript(): Promise<void> {
+  await persistTranscript();
+}
+
+async function ensureRegisteredTranscriptJob(selectionName: string): Promise<string | null> {
+  if (conversionHubJobId.value) return conversionHubJobId.value;
+  const sirJobId = lastJobId.value;
+  if (!sirJobId) return null;
+  const registered = await registerTranscriptConversionHubJob({
+    request: {
+      upstream_job_id: sirJobId,
+      input_filename: selectionName,
+      correlation_id: lastCorrelationId.value,
+      status: "succeeded",
+    },
+  });
+  conversionHubJobId.value = registered.job_id;
+  return registered.job_id;
+}
+
+async function persistTranscript(): Promise<void> {
   const selection = selectedTranscriptFile.value;
   const transcriptJson = transcript.value;
-  const localJobId = conversionHubJobId.value;
   const sirJobId = lastJobId.value;
-  if (!selection || !transcriptJson || !localJobId || !sirJobId) return;
+  if (!selection || !transcriptJson || !sirJobId) return;
   saveStatus.value = "saving";
   saveErrorMessage.value = null;
   try {
+    const localJobId = await ensureRegisteredTranscriptJob(selection.name);
+    if (!localJobId) throw new Error("Missing transcript job registration");
     const saved = await saveConversionHubTranscript({
       conversionHubJobId: localJobId,
       request: buildSaveTranscriptRequest({
@@ -207,10 +225,12 @@ async function loadSpeakerOverlays(transcriptId: string): Promise<void> {
   try {
     const response = await getConversionHubTranscriptSpeakerOverlays({ transcriptId });
     speakerOverlayEntries.value = response.overlays;
-    speakerOverlayStatus.value = response.overlays.length > 0 ? "saved" : "idle";
+    speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
+      ? "saved"
+      : "idle";
   } catch {
     speakerOverlayStatus.value = "failed";
-    speakerOverlayErrorMessage.value = "Talarnamn kunde inte hämtas.";
+    speakerOverlayErrorMessage.value = "Namnen kunde inte hämtas.";
   }
 }
 
@@ -226,7 +246,7 @@ function handleSpeakerOverlayChanged(label: string, displayName: string): void {
     speakerOverlayStatus.value = "idle";
   }
   speakerOverlayErrorMessage.value = null;
-  resetFormatterReplayState();
+  resetFormatterExportState();
 }
 
 async function handleSaveSpeakerOverlays(): Promise<void> {
@@ -247,48 +267,93 @@ async function handleSaveSpeakerOverlays(): Promise<void> {
       },
     });
     speakerOverlayEntries.value = response.overlays;
-    speakerOverlayStatus.value = response.overlays.length > 0 ? "saved" : "idle";
-    resetFormatterReplayState();
+    speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
+      ? "saved"
+      : "idle";
+    resetFormatterExportState();
   } catch {
     speakerOverlayStatus.value = "failed";
-    speakerOverlayErrorMessage.value = "Talarnamnen kunde inte sparas.";
+    speakerOverlayErrorMessage.value = "Namnen kunde inte sparas.";
   }
+}
+
+function speakerOverlayEntriesCoverTranscript(
+  entries: readonly ConversionHubTranscriptSpeakerOverlayEntry[],
+): boolean {
+  const speakerLabels = new Set(transcript.value?.segments.map((segment) => segment.speakerLabel));
+  if (speakerLabels.size === 0) return false;
+  const namedLabels = new Set(
+    entries
+      .filter((entry) => entry.display_name.trim().length > 0)
+      .map((entry) => entry.canonical_speaker_label),
+  );
+  return [...speakerLabels].every((label) => namedLabels.has(label));
 }
 
 function applyFormatterExportState(
   response: ConversionHubTranscriptFormatterExportResponse,
 ): void {
-  formatterReplayStatus.value = response.status;
-  formatterReplayArtifacts.value = response.status === "succeeded" ? response.artifacts : [];
+  formatterExportStatus.value = response.status;
+  formatterExportArtifacts.value = response.status === "succeeded" ? response.artifacts : [];
   formatterArtifactActionStates.value = {};
-  formatterReplayErrorMessage.value =
+  formatterExportErrorMessage.value =
     response.status === "failed"
-      ? response.error_message ?? "Exportfiler kunde inte skapas. Försök igen."
+      ? response.error_message ?? "Filerna kunde inte skapas. Försök igen."
       : null;
 }
 
-async function handleRequestFormatterReplay(): Promise<void> {
+async function requestOrRefreshFormatterExport():
+  Promise<ConversionHubTranscriptFormatterExportResponse | null> {
   const transcriptId = savedTranscriptId.value;
-  if (!transcriptId || !canRequestFormatterReplay.value) return;
+  if (!transcriptId || !canRequestFormatterExport.value) return null;
   const shouldRefresh =
-    formatterReplayStatus.value === "pending" || formatterReplayStatus.value === "running";
+    formatterExportStatus.value === "pending" || formatterExportStatus.value === "running";
   if (!shouldRefresh) {
-    formatterReplayStatus.value = "running";
-    formatterReplayArtifacts.value = [];
+    formatterExportStatus.value = "running";
+    formatterExportArtifacts.value = [];
   }
-  formatterReplayRequestInFlight.value = true;
-  formatterReplayErrorMessage.value = null;
+  formatterExportRequestInFlight.value = true;
+  formatterExportErrorMessage.value = null;
   try {
     const exportState = shouldRefresh
       ? await getConversionHubTranscriptFormatterExport({ transcriptId })
       : await requestConversionHubTranscriptFormatterExport({ transcriptId });
     applyFormatterExportState(exportState);
+    return exportState;
   } catch {
-    formatterReplayStatus.value = "failed";
-    formatterReplayErrorMessage.value = "Exportfiler kunde inte skapas. Försök igen.";
+    formatterExportStatus.value = "failed";
+    formatterExportErrorMessage.value = "Filerna kunde inte skapas. Försök igen.";
+    return null;
   } finally {
-    formatterReplayRequestInFlight.value = false;
+    formatterExportRequestInFlight.value = false;
   }
+}
+
+function artifactForRequestedArtifact(
+  requestedArtifact: TranscriptFormatterRequestedArtifact,
+): ConversionHubTranscriptFormatterArtifactRef | null {
+  return (
+    formatterExportArtifacts.value.find(
+      (artifact) => artifact.requested_artifact === requestedArtifact,
+    ) ?? null
+  );
+}
+
+async function ensureFormatterArtifact(
+  requestedArtifact: TranscriptFormatterRequestedArtifact,
+): Promise<ConversionHubTranscriptFormatterArtifactRef | null> {
+  const existingArtifact = artifactForRequestedArtifact(requestedArtifact);
+  if (existingArtifact) return existingArtifact;
+  const exportState = await requestOrRefreshFormatterExport();
+  const createdArtifact =
+    exportState?.artifacts.find(
+      (artifact) => artifact.requested_artifact === requestedArtifact,
+    ) ?? null;
+  if (createdArtifact) return createdArtifact;
+  if (exportState?.status === "pending" || exportState?.status === "running") return null;
+  formatterExportStatus.value = "failed";
+  formatterExportErrorMessage.value = "Filerna kunde inte skapas. Försök igen.";
+  return null;
 }
 
 function setFormatterArtifactActionState(
@@ -309,13 +374,12 @@ function setFormatterArtifactActionState(
 }
 
 async function handleDownloadFormatterArtifact(
-  artifact: ConversionHubTranscriptFormatterArtifactRef,
+  requestedArtifact: TranscriptFormatterRequestedArtifact,
 ): Promise<void> {
   const transcriptId = savedTranscriptId.value;
-  if (!transcriptId) {
-    setFormatterArtifactActionState(artifact.artifact_key, { download: "failed" });
-    return;
-  }
+  if (!transcriptId) return;
+  const artifact = await ensureFormatterArtifact(requestedArtifact);
+  if (!artifact) return;
   setFormatterArtifactActionState(artifact.artifact_key, {
     download: "running",
     save: formatterArtifactActionState(
@@ -336,13 +400,12 @@ async function handleDownloadFormatterArtifact(
 }
 
 async function handleSaveFormatterArtifact(
-  artifact: ConversionHubTranscriptFormatterArtifactRef,
+  requestedArtifact: TranscriptFormatterRequestedArtifact,
 ): Promise<void> {
   const transcriptId = savedTranscriptId.value;
-  if (!transcriptId) {
-    setFormatterArtifactActionState(artifact.artifact_key, { save: "failed" });
-    return;
-  }
+  if (!transcriptId) return;
+  const artifact = await ensureFormatterArtifact(requestedArtifact);
+  if (!artifact) return;
   setFormatterArtifactActionState(artifact.artifact_key, {
     save: "running",
     savedFilename: null,
@@ -388,13 +451,13 @@ async function handleSaveFormatterArtifact(
     <TranscriptWorkspaceShell
       :abort-state="abortState"
       :current-job="currentJob"
-      :can-request-formatter-replay="canRequestFormatterReplay"
+      :can-request-formatter-export="canRequestFormatterExport"
       :can-save-transcript="canSaveTranscript"
       :error-message="errorMessage"
       :formatter-artifact-action-states="formatterArtifactActionStates"
-      :formatter-replay-artifacts="formatterReplayArtifacts"
-      :formatter-replay-error-message="formatterReplayErrorMessage"
-      :formatter-replay-status="formatterReplayStatus"
+      :formatter-export-artifacts="formatterExportArtifacts"
+      :formatter-export-error-message="formatterExportErrorMessage"
+      :formatter-export-status="formatterExportStatus"
       :runtime-status="runtimeStatus"
       :selected-transcript-file="selectedTranscriptFile"
       :save-error-message="saveErrorMessage"
@@ -408,7 +471,6 @@ async function handleSaveFormatterArtifact(
       :speaker-overlay-status="speakerOverlayStatus"
       @download-formatter-artifact="handleDownloadFormatterArtifact"
       @files-dropped="selectDroppedTranscriptFiles"
-      @request-formatter-replay="handleRequestFormatterReplay"
       @save-formatter-artifact="handleSaveFormatterArtifact"
       @save-transcript="handleSaveTranscript"
       @save-speaker-overlays="handleSaveSpeakerOverlays"

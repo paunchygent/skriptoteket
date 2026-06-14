@@ -2,13 +2,13 @@
  * Transcript formatter artifact action view state.
  *
  * Domain purpose:
- *   Share compact download and Mina filer save state for replay-returned
- *   transcript formatter artifact controls.
+ *   Share compact download and Mina filer save state for selected transcript
+ *   formatter export controls.
  *
  * Relationships:
  *   - Used by `ConversionHubTranscriptHost`, `TranscriptWorkspaceShell`, and
- *     `TranscriptFormatterReplayPanel`.
- *   - Keys match owner-scoped backend artifact refs from PR-0347 replay.
+ *     `TranscriptFormatterExportPanel`.
+ *   - Keys match owner-scoped backend formatter export artifact refs.
  */
 
 import type {

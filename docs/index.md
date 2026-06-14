@@ -242,6 +242,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0341-st-21-04-authoring-export-boundary-separation.md`
 - ST-21-04 correction-session browser and artifact proof:
   `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`
+- ST-21-09 Conversion Hub remote inference proof trust lane:
+  `docs/backlog/stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md`
+- ST-21-09 remote inference live-proof trust-lane preflight:
+  `docs/backlog/prs/pr-0352-st-21-09-remote-inference-live-proof-trust-lane-preflight.md`
 - Review gate for PR-0316 Smart history first-run soft-degrade:
   `docs/backlog/reviews/review-pr-0316-smart-history-first-run-soft-degrade.md`
 - ST-29-11 Smart settings preference continuity and seating-influence default:

@@ -25,7 +25,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_exports imp
     ConversionHubTranscriptFormatterExportRequest,
     ConversionHubTranscriptFormatterExportResponse,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactKey,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (

@@ -1,7 +1,7 @@
 """Sir Convert producer client for product-owned transcript formatter exports.
 
 Domain purpose:
-  Call the accepted Service API v2 task-363 transcript replay lane from
+  Call the accepted Service API v2 task-363 transcript formatter lane from
   Skriptoteket backend code and return result, manifest, and named artifact
   bytes for application-layer verification.
 
@@ -19,7 +19,7 @@ from typing import Any
 
 import httpx
 
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
 )
@@ -241,7 +241,7 @@ def _malformed_submit_response() -> DomainError:
     return DomainError(
         code=ErrorCode.SERVICE_UNAVAILABLE,
         message="Sir Convert transcript formatter response is malformed.",
-        details={"upstream": "sir_convert_transcript_formatter_replay"},
+        details={"upstream": "sir_convert_transcript_formatter_export"},
     )
 
 

@@ -32,38 +32,63 @@ Keep this file updated so the next session can pick up work quickly.
   complete with backend-owned Sir Convert replay submission, manifest/artifact
   verification, persisted product export state, and Swedish pending/running/
   succeeded/failed UI.
-- Old browser saga clients/tests were deleted or rewritten. Browser traffic now
-  calls Skriptoteket product endpoints only for formatter exports.
-- `ST-21-08` and `PR-0349` are now closeout-ready from the transcript parity
-  perspective; update durable docs before starting unrelated ST-21 work.
+- `PR-0351` is implemented and `REV-PR-0351` is approved. It consumes the
+  Task-364 progress-field contract, autosaves completed transcripts, removes
+  the generic manual `Spara` gate, removes old per-artifact export rows, keeps
+  selected-format actions as `Ladda ner` and `Mina filer`, and gates export on
+  complete persisted speaker overlays.
+- Skriptoteket-owned legacy replay/export UI and parser code was removed. The
+  remaining `replay` strings in the transcript formatter export path are
+  upstream Sir Convert literal contract values:
+  `transcript_formatter_replay_v1`,
+  `transcript_replay_bundle_manifest.json`, and
+  `transcript_json_to_transcript_bundle_replay_v2`.
+- `ST-21-08`, `EPIC-21`, `PR-0351`, and `.codex/handoff.md` were updated with
+  PR-0351 closeout evidence and the successful local live proof.
+- `ST-21-09` and `PR-0352` now govern remediation for the recurring local
+  HuleEdu Gateway/Sir Convert trust-lane drift: keep Sir Convert's hosted
+  model/runtime estate remote, but make signer/verifier lane coherence a
+  default preflight before upload or producer job creation.
+- `PR-0352` implementation is in progress pending ruthless review. New helper:
+  `scripts/_sir_convert_trust_lane_preflight.py`; proof hook:
+  `scripts/playwright_pr_0349_transcript_parity_live.py`; focused tests:
+  `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`.
 ## Verification
-- Feature commit: `ae70ddbdc6f7c586374b7d1bda59e95e454b4eff`.
-- Merge commit: `6378fe3d2978eedd541eccd9471bc14ea8e19fd6`.
-- Production URL fix: `14f4b3af930b02f7b587b0b87c168418730fd28f`.
-- Hemma deploy passed for `6378fe3d`; first PR-0349 live proof then failed at
-  product export because public `convert.hule.education` returned `421`.
-- Hemma `.env` was corrected to
-  `SIR_CONVERT_A_LOT_V2_BASE_URL=http://sir_convert_a_lot_prod:8085`.
-- Hemma redeploy passed for `14f4b3af`; log:
-  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260614-030634.log`.
-- Final live proof passed through HuleEdu browser-session ceremony:
+- Green PR-0351 focused backend:
+  `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
+  passed with 31 tests.
+- Green PR-0351 focused frontend:
+  `pdm run fe-test -- --run src/api/sirConvertGateway/transcriptClient.spec.ts src/api/sirConvertGateway/transcriptProgressParsers.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts`
+  passed with 8 files / 44 tests.
+- Green frontend gates: `pdm run fe-type-check`, `pdm run fe-lint`, and
+  `pdm run fe-build`. Build retained existing Vite dynamic/static import and
+  large-chunk warnings.
+- Local live proof command:
+  `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --sir-convert-proof-lane hemma-remote-proof --sir-convert-gateway-backend-url http://host.docker.internal:28085 --sir-convert-producer-backend-url http://host.docker.internal:28085 --sir-convert-ready-url http://127.0.0.1:28085/readyz --gateway-signer-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --sir-convert-trusted-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --timeout-seconds 1200`.
+- Local live proof passed after aligning the local Docker `web` and `worker`
+  producer lane to the sanctioned remote-proof tunnel. Retained artifact:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/proof-summary.json`.
+- Docker proof evidence retained alongside the local proof:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/backend-container.json`
+  shows `SIR_CONVERT_A_LOT_V2_BASE_URL=http://host.docker.internal:28085`, and
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T164758Z/backend-live.log`
+  shows formatter export and all four artifact downloads using
+  `host.docker.internal:28085` with HTTP 200 responses.
+- Prior retained production proof from PR-0349/PR-0350 remains:
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`.
-- Final proof showed upload cancel feedback, running progress, durable transcript
-  save, two speaker overlays, product export success with four artifacts,
-  overlay labels present in TXT/MD/VTT/SRT downloads, fallback labels absent,
-  and Mina filer save of `transkript-a35745cd.txt`.
-- Sir Convert downstream-consumption docs were also committed and redeployed at
-  `147479fdf92d5ec4c1891403c5986ef0a48d8292`; deploy verification passed with
-  remote/service revision parity.
-- Green local gates: focused backend pytest, focused Vitest, migration
-  idempotency for `f4c8e2a6b9d1`, `pdm run db-upgrade`, `pdm run lint`,
-  `pdm run typecheck`, `pdm run fe-type-check`, `pdm run fe-lint`,
-  `pdm run fe-build`, `pdm run docs-validate`, `pdm run handoff-validate`,
-  and `git diff --check`.
+- Green PR-0352 focused preflight: initial red command failed with missing
+  `scripts._sir_convert_trust_lane_preflight`; after implementation,
+  `pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`
+  passed with 20 tests.
+- Green PR-0352 adjacent script bundle:
+  `pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py`
+  passed with 28 tests.
+- Green PR-0352 static gates: `pdm run lint` and `pdm run typecheck`.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
-pdm run fe-test -- --run src/api/conversionHubTranscriptFormatterExports.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/api/sirConvertGateway/client.spec.ts src/api/sirConvertGateway/transcriptClient.spec.ts
+pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py
+pdm run fe-test -- --run src/api/sirConvertGateway/transcriptClient.spec.ts src/api/sirConvertGateway/transcriptProgressParsers.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts
 pdm run fe-gen-api-types
 pdm run lint
 pdm run typecheck
@@ -84,11 +109,15 @@ pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url h
 ## Known Issues / Risks
 - `.env.prod-smoke` credentials are stale; use the HuleEdu Hemma credential
   helper for live browser proof and do not print secret values.
+- Native Hemma production proof still needs to run after pushing and redeploying
+  the committed PR-0351/PR-0352 changes. Hemma currently uses the production
+  container lane `http://sir_convert_a_lot_prod:8085`.
 - Production formatter export must not use `https://convert.hule.education` as
   server-side producer base; that public edge is reserved/fail-closed.
 - Keep transcript formatter/export follow-ups product-owned: saved canonical
   `transcript_json`, saved overlays, accepted Sir Convert artifacts, no browser
   submit/poll/download/base64/complete saga.
 ## Next Steps
-- No PR-0350/ST-21-08 closeout work remains after committing and redeploying
-  this handoff/docs evidence. Continue with the next governed backlog item.
+- Next governed step: commit, push to `main`, redeploy via `pdm run
+  hemma-deploy`, run native Hemma production transcript proof, then complete
+  ruthless review for `PR-0352` and remediate findings until accepted.

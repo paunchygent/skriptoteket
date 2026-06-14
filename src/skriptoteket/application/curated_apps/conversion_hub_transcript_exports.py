@@ -2,7 +2,7 @@
 
 Domain purpose:
   Define product-owned saved-transcript export requests and state snapshots
-  returned to the Skriptoteket browser after backend-owned producer replay.
+  returned to the Skriptoteket browser after backend-owned producer export.
 
 Relationships:
   - Returned by `web.api.v1.apps_conversion_hub_transcript_saves`.
@@ -19,7 +19,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
 )

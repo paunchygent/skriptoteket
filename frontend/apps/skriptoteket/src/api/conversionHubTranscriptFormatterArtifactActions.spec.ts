@@ -3,7 +3,7 @@
  *
  * Domain purpose:
  *   Prove download and Mina filer save commands use Skriptoteket's
- *   owner-scoped replay-artifact API rather than browser-local formatting or
+ *   owner-scoped formatter artifact API rather than browser-local formatting or
  *   direct Sir Convert paths.
  *
  * Relationships:
@@ -35,7 +35,7 @@ describe("conversionHubTranscriptFormatterArtifactActions", () => {
     auth.csrfToken = "csrf-token";
   });
 
-  it("downloads a replay artifact through the protected Skriptoteket API", async () => {
+  it("downloads a formatter artifact through the protected Skriptoteket API", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response("overlay-aware transcript", {
         headers: {
@@ -65,12 +65,12 @@ describe("conversionHubTranscriptFormatterArtifactActions", () => {
     expect(headers.get("X-API-Key")).toBeNull();
   });
 
-  it("saves a replay artifact through the protected Skriptoteket API", async () => {
+  it("saves a formatter artifact through the protected Skriptoteket API", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           source_artifact_id:
-            "documents.conversion_hub:transcript-replay:local-job:transcript_txt",
+            "documents.conversion_hub:transcript-export:local-job:transcript_txt",
           vault_artifact: {
             bytes: 24,
             created_at: "2026-06-13T12:05:00Z",

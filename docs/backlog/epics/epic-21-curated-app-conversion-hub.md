@@ -21,6 +21,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   transcript job lifecycle, Skriptoteket-owned durable transcript saves,
   progress/cancel parity, speaker overlays, and producer-owned formatter
   exports.
+- Keep live proof compatible with Sir Convert's hosted model/runtime estate by
+  enforcing coherent HuleEdu Gateway/Sir Convert internal identity trust lanes
+  before upload or producer job creation.
 - Support batch conversions (multiple files) and a single-PDF preview UX that still uses the normal
   v2 job lifecycle, but through a Skriptoteket-owned local job ledger and download boundary rather
   than raw upstream job ids.
@@ -54,6 +57,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
+- [ ] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
 
 ## Risks
 
@@ -70,6 +74,10 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   public curated-app boundary before opening the Exam Converter lane.
 - Over-scoping in one PR:
   mitigate via PR-sized tasks with strict ordering (PR-0063..).
+- Remote proof trust-lane drift:
+  mitigate with a default preflight that verifies signer/verifier profile
+  coherence before upload or producer job creation while keeping heavy hosted
+  model/runtime work on remote Sir Convert compute.
 
 ## Dependencies
 
@@ -197,7 +205,10 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   `ST-21-08` is done: `PR-0344` progress/cancel parity, `PR-0345` formatter
   authority sync, `PR-0346` saved speaker-name overlays, `PR-0347` and
   `PR-0348` overlay-aware export actions, `PR-0349` live parity proof, and
-  `PR-0350` product-owned export boundary are complete. Final retained proof
+  `PR-0350` product-owned export boundary are complete. `PR-0351` then hardened
+  completion/progress/export UX around autosave, selected-format export
+  actions, absence of forbidden legacy controls, and Task-364 progress fields.
+  Final retained proof
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260614T030725Z/proof-summary.json`
   used the HuleEdu browser-session ceremony and proved upload cancel feedback,
   running progress, durable transcript save, two speaker overlays, backend-owned
@@ -205,3 +216,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   Mina filer save. The production producer URL is now the internal Hemma Sir
   Convert service `http://sir_convert_a_lot_prod:8085`, not the reserved public
   `convert.hule.education` edge.
+- `ST-21-09` / `PR-0352` is ready as a remediation slice after the later local
+  `PR-0351` live-proof blocker. It must make remote inference with coherent
+  HuleEdu Gateway/Sir Convert trust the default, block mixed local-signer to
+  Hemma-verifier lanes before upload, and avoid requiring local hosting of
+  Sir Convert's STT, diarization, alignment, OCR/vision, LLM/enrichment,
+  correction/replay, or future hosted-model workers.

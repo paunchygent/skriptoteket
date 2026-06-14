@@ -7,7 +7,7 @@
  *
  * Relationships:
  *   - Consumed by `ConversionHubTranscriptHost`.
- *   - Keeps Sir Convert replay submission and artifact verification on the
+ *   - Keeps Sir Convert formatter submission and artifact verification on the
  *     backend side of the Conversion Hub boundary.
  */
 

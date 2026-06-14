@@ -1,12 +1,12 @@
 """Pure helpers for product-owned transcript formatter exports.
 
 Domain purpose:
-  Build Sir Convert replay requests, verify producer artifact authority, and
+  Build Sir Convert formatter requests, verify producer artifact authority, and
   project local Conversion Hub export rows into product-safe response state.
 
 Relationships:
   - Used by `conversion_hub_transcript_formatter_exports`.
-  - Reuses the replay parser for task-363 result and artifact manifest
+  - Reuses the formatter export parser for task-363 result and artifact manifest
     validation.
 """
 
@@ -30,17 +30,17 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_exports imp
     ConversionHubTranscriptFormatterExportResponse,
     ConversionHubTranscriptFormatterExportStatus,
 )
-from skriptoteket.application.curated_apps.conversion_hub_transcript_replay import (
-    TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES,
-    TRANSCRIPT_FORMATTER_REPLAY_TOTAL_ARTIFACT_MAX_BYTES,
+from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_contracts import (
+    TRANSCRIPT_FORMATTER_EXPORT_ARTIFACT_MAX_BYTES,
+    TRANSCRIPT_FORMATTER_EXPORT_TOTAL_ARTIFACT_MAX_BYTES,
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
     ConversionHubTranscriptFormatterArtifactRef,
-    ConversionHubTranscriptFormatterReplayConversion,
-    ConversionHubTranscriptFormatterReplayJobSpec,
-    ConversionHubTranscriptFormatterReplayOptions,
-    ConversionHubTranscriptFormatterReplayRetention,
-    ConversionHubTranscriptFormatterReplaySource,
+    ConversionHubTranscriptFormatterExportConversion,
+    ConversionHubTranscriptFormatterExportJobSpec,
+    ConversionHubTranscriptFormatterExportOptions,
+    ConversionHubTranscriptFormatterExportRetention,
+    ConversionHubTranscriptFormatterExportSource,
 )
 from skriptoteket.application.curated_apps.conversion_hub_transcript_saves import (
     ConversionHubSavedTranscript,
@@ -48,7 +48,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
     ConversionHubTranscriptSpeakerOverlayEntry,
 )
 from skriptoteket.application.curated_apps.handlers import (
-    conversion_hub_transcript_formatter_replay_parsing as replay_parsing,
+    conversion_hub_transcript_formatter_export_parsing as export_parsing,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_json_contract import (
     canonical_speaker_labels,
@@ -61,20 +61,20 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptFormatterProducerResult,
 )
 
-USER_EXPORT_ERROR = "Exportfiler kunde inte skapas. Försök igen."
+USER_EXPORT_ERROR = "Filerna kunde inte skapas. Försök igen."
 
 
-def build_replay_job_spec(
+def build_export_job_spec(
     *,
     requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat],
     overlays: list[ConversionHubTranscriptSpeakerOverlay],
-) -> ConversionHubTranscriptFormatterReplayJobSpec:
-    """Build the accepted task-363 replay JobSpec."""
+) -> ConversionHubTranscriptFormatterExportJobSpec:
+    """Build the accepted task-363 formatter export JobSpec."""
 
-    return ConversionHubTranscriptFormatterReplayJobSpec(
-        source=ConversionHubTranscriptFormatterReplaySource(),
-        conversion=ConversionHubTranscriptFormatterReplayConversion(),
-        transcript_formatter_options=ConversionHubTranscriptFormatterReplayOptions(
+    return ConversionHubTranscriptFormatterExportJobSpec(
+        source=ConversionHubTranscriptFormatterExportSource(),
+        conversion=ConversionHubTranscriptFormatterExportConversion(),
+        transcript_formatter_options=ConversionHubTranscriptFormatterExportOptions(
             requested_artifacts=requested_artifacts,
             speaker_label_overrides=[
                 ConversionHubTranscriptSpeakerOverlayEntry(
@@ -84,14 +84,14 @@ def build_replay_job_spec(
                 for overlay in overlays
             ],
         ),
-        retention=ConversionHubTranscriptFormatterReplayRetention(),
+        retention=ConversionHubTranscriptFormatterExportRetention(),
     )
 
 
 def build_producer_request(
     *,
     transcript: ConversionHubSavedTranscript,
-    job_spec: ConversionHubTranscriptFormatterReplayJobSpec,
+    job_spec: ConversionHubTranscriptFormatterExportJobSpec,
     requested_artifacts: list[ConversionHubTranscriptFormatterArtifactFormat],
     correlation_id: str | None,
 ) -> ConversionHubTranscriptFormatterProducerRequest:
@@ -123,14 +123,14 @@ def verify_successful_export(
     """Validate result, artifact manifest, and downloaded bytes before persistence."""
 
     if producer_result.sir_convert_job_id is None:
-        raise malformed_producer_response("Sir Convert replay response is missing job id.")
+        raise malformed_producer_response("Sir Convert formatter response is missing job id.")
     if producer_result.result is None or producer_result.artifact_manifest is None:
-        raise malformed_producer_response("Sir Convert replay response is incomplete.")
-    replay_parsing.parse_replay_result(
+        raise malformed_producer_response("Sir Convert formatter response is incomplete.")
+    export_parsing.parse_export_result(
         payload=producer_result.result,
         sir_convert_job_id=producer_result.sir_convert_job_id,
     )
-    artifact_refs = replay_parsing.parse_replay_artifact_refs(
+    artifact_refs = export_parsing.parse_export_artifact_refs(
         payload=producer_result.artifact_manifest,
         sir_convert_job_id=producer_result.sir_convert_job_id,
         requested_artifacts=requested_artifacts,
@@ -154,26 +154,28 @@ def validated_producer_artifacts(
 
     expected_keys = {artifact.artifact_key for artifact in artifact_refs}
     if set(producer_artifacts) != expected_keys:
-        raise malformed_producer_response("Sir Convert replay artifact downloads are incomplete.")
+        raise malformed_producer_response(
+            "Sir Convert formatter artifact downloads are incomplete."
+        )
     total_bytes = 0
     artifact_content: dict[ConversionHubTranscriptFormatterArtifactKey, bytes] = {}
     for artifact_ref in artifact_refs:
         artifact = producer_artifacts[artifact_ref.artifact_key]
         if artifact.artifact_key != artifact_ref.artifact_key:
-            raise malformed_producer_response("Sir Convert replay artifact key is invalid.")
+            raise malformed_producer_response("Sir Convert formatter artifact key is invalid.")
         if content_type_base(artifact.content_type) != content_type_base(artifact_ref.content_type):
             raise malformed_producer_response(
-                "Sir Convert replay artifact content type is invalid."
+                "Sir Convert formatter artifact content type is invalid."
             )
         if len(artifact.content) != artifact_ref.size_bytes:
-            raise malformed_producer_response("Sir Convert replay artifact size is invalid.")
-        if len(artifact.content) > TRANSCRIPT_FORMATTER_REPLAY_ARTIFACT_MAX_BYTES:
-            raise malformed_producer_response("Sir Convert replay artifact exceeds byte limit.")
+            raise malformed_producer_response("Sir Convert formatter artifact size is invalid.")
+        if len(artifact.content) > TRANSCRIPT_FORMATTER_EXPORT_ARTIFACT_MAX_BYTES:
+            raise malformed_producer_response("Sir Convert formatter artifact exceeds byte limit.")
         if hashlib.sha256(artifact.content).hexdigest() != plain_sha256(artifact_ref.sha256):
-            raise malformed_producer_response("Sir Convert replay artifact checksum is invalid.")
+            raise malformed_producer_response("Sir Convert formatter artifact checksum is invalid.")
         total_bytes += len(artifact.content)
-        if total_bytes > TRANSCRIPT_FORMATTER_REPLAY_TOTAL_ARTIFACT_MAX_BYTES:
-            raise malformed_producer_response("Sir Convert replay artifacts exceed byte limit.")
+        if total_bytes > TRANSCRIPT_FORMATTER_EXPORT_TOTAL_ARTIFACT_MAX_BYTES:
+            raise malformed_producer_response("Sir Convert formatter artifacts exceed byte limit.")
         artifact_content[artifact_ref.artifact_key] = artifact.content
     return artifact_content
 
@@ -183,12 +185,17 @@ def validate_overlay_inventory(
     transcript: ConversionHubSavedTranscript,
     overlays: list[ConversionHubTranscriptSpeakerOverlay],
 ) -> None:
-    """Ensure speaker overlays reference canonical labels in the saved JSON."""
+    """Ensure speaker overlays fully cover canonical labels in the saved JSON."""
 
     canonical_labels = set(canonical_speaker_labels(transcript.transcript_json))
+    overlay_labels: set[str] = set()
     for overlay in overlays:
         if overlay.canonical_speaker_label not in canonical_labels:
             raise validation_error("Speaker overlay labels must exist in the saved transcript.")
+        if overlay.display_name.strip():
+            overlay_labels.add(overlay.canonical_speaker_label)
+    if overlay_labels != canonical_labels:
+        raise validation_error("Save speaker names for every speaker before requesting export.")
 
 
 def validate_existing_export_job(
@@ -206,7 +213,7 @@ def validate_existing_export_job(
         or job.output_format is not ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE
         or job.input_filename != local_export_input_filename(transcript_id=transcript_id)
     ):
-        raise validation_error("Replay job provenance does not match transcript exports.")
+        raise validation_error("Formatter job provenance does not match transcript exports.")
 
 
 def response_from_job_and_records(
@@ -276,7 +283,7 @@ def local_export_input_filename(*, transcript_id: UUID) -> str:
 def export_digest(
     *,
     transcript: ConversionHubSavedTranscript,
-    job_spec: ConversionHubTranscriptFormatterReplayJobSpec,
+    job_spec: ConversionHubTranscriptFormatterExportJobSpec,
 ) -> str:
     """Create a stable replay idempotency digest from transcript JSON and options."""
 
@@ -320,5 +327,5 @@ def malformed_producer_response(message: str) -> DomainError:
     return DomainError(
         code=ErrorCode.SERVICE_UNAVAILABLE,
         message=message,
-        details={"upstream": "sir_convert_transcript_formatter_replay"},
+        details={"upstream": "sir_convert_transcript_formatter_export"},
     )

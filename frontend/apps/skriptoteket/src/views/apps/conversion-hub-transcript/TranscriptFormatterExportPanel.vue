@@ -1,0 +1,164 @@
+<script setup lang="ts">
+/**
+ * Transcript formatter export panel.
+ *
+ * Domain purpose:
+ *   Render a single selected-format export control for saved transcript
+ *   formatter artifacts without letting the browser own producer work.
+ *
+ * Relationships:
+ *   - Used by `TranscriptCompletedWorkspace` after a transcript is autosaved.
+ *   - Emits selected format intent to `ConversionHubTranscriptHost`.
+ */
+
+import { computed, ref } from "vue";
+import { Download, FolderInput } from "lucide-vue-next";
+
+import type {
+  ConversionHubTranscriptFormatterArtifactRef,
+  ConversionHubTranscriptFormatterExportStatus,
+} from "../../../api/conversionHubTranscriptFormatterExports";
+import {
+  formatterArtifactActionState,
+  type FormatterArtifactActionStates,
+} from "./transcriptFormatterArtifactActions";
+
+type TranscriptFormatterRequestedArtifact =
+  ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
+
+const FORMAT_OPTIONS: readonly TranscriptFormatterRequestedArtifact[] = [
+  "txt",
+  "md",
+  "vtt",
+  "srt",
+];
+
+const props = defineProps<{
+  actionStates: FormatterArtifactActionStates;
+  artifacts: readonly ConversionHubTranscriptFormatterArtifactRef[];
+  canRequest: boolean;
+  errorMessage: string | null;
+  status: ConversionHubTranscriptFormatterExportStatus;
+}>();
+
+const emit = defineEmits<{
+  downloadFormatterArtifact: [requestedArtifact: TranscriptFormatterRequestedArtifact];
+  saveFormatterArtifact: [requestedArtifact: TranscriptFormatterRequestedArtifact];
+}>();
+
+const selectedFormat = ref<TranscriptFormatterRequestedArtifact>("txt");
+
+const selectedArtifact = computed(() =>
+  props.artifacts.find((artifact) => artifact.requested_artifact === selectedFormat.value) ?? null,
+);
+const selectedActionState = computed(() =>
+  selectedArtifact.value
+    ? formatterArtifactActionState(props.actionStates, selectedArtifact.value.artifact_key)
+    : null,
+);
+const selectedActionRunning = computed(
+  () =>
+    selectedActionState.value?.download === "running" ||
+    selectedActionState.value?.save === "running",
+);
+const selectedActionEnabled = computed(
+  () => !selectedActionRunning.value && (props.canRequest || selectedArtifact.value !== null),
+);
+
+function formatLabel(format: TranscriptFormatterRequestedArtifact): string {
+  switch (format) {
+    case "txt":
+      return "TXT";
+    case "md":
+      return "MD";
+    case "vtt":
+      return "VTT";
+    case "srt":
+      return "SRT";
+  }
+}
+
+function stateMessage(): string {
+  if (selectedActionState.value?.download === "running") return "Hämtar filen.";
+  if (selectedActionState.value?.save === "running") return "Sparar i Mina filer.";
+  if (selectedActionState.value?.download === "failed") return "Det gick inte att hämta filen.";
+  if (selectedActionState.value?.save === "failed") return "Det gick inte att spara filen.";
+  if (selectedActionState.value?.save === "succeeded") {
+    return selectedActionState.value.savedFilename
+      ? `Sparad i Mina filer: ${selectedActionState.value.savedFilename}.`
+      : "Sparad i Mina filer.";
+  }
+  if (selectedActionState.value?.download === "succeeded") return "Fil hämtad.";
+  if (props.status === "running") return "Filer skapas.";
+  if (props.status === "pending") return "Filerna är köade. Försök igen om en stund.";
+  if (props.status === "succeeded") return "Filer är klara.";
+  if (props.status === "failed") {
+    return props.errorMessage ?? "Filerna kunde inte skapas. Försök igen.";
+  }
+  if (props.canRequest) return "Välj format och använd en av åtgärderna.";
+  return "Spara namnen innan filer kan skapas.";
+}
+</script>
+
+<template>
+  <section
+    class="grid gap-3 border-t border-navy/15 pt-4"
+    aria-label="Exportera transkript"
+  >
+    <div
+      class="grid grid-cols-4 border border-navy/25"
+      aria-label="Välj format"
+      data-test="transcript-format-selector"
+    >
+      <button
+        v-for="format in FORMAT_OPTIONS"
+        :key="format"
+        type="button"
+        class="h-9 border-r border-navy/25 bg-panel text-xs font-black text-navy transition last:border-r-0 hover:bg-canvas"
+        :class="selectedFormat === format ? 'bg-navy text-canvas hover:bg-navy' : undefined"
+        :aria-pressed="selectedFormat === format"
+        :data-test="`transcript-format-option-${format}`"
+        @click="selectedFormat = format"
+      >
+        {{ formatLabel(format) }}
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 border border-navy bg-navy px-3 text-xs font-black uppercase leading-none text-canvas transition disabled:cursor-not-allowed disabled:border-navy/20 disabled:bg-navy/10 disabled:text-navy/45"
+        :disabled="!selectedActionEnabled"
+        data-test="transcript-download-selected-format"
+        @click="emit('downloadFormatterArtifact', selectedFormat)"
+      >
+        <Download
+          class="h-4 w-4"
+          aria-hidden="true"
+        />
+        <span>Ladda ner</span>
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 border border-navy/25 bg-panel px-3 text-xs font-black uppercase leading-none text-navy transition hover:border-action disabled:cursor-not-allowed disabled:text-navy/45"
+        :disabled="!selectedActionEnabled"
+        data-test="transcript-save-selected-format"
+        @click="emit('saveFormatterArtifact', selectedFormat)"
+      >
+        <FolderInput
+          class="h-4 w-4"
+          aria-hidden="true"
+        />
+        <span>Mina filer</span>
+      </button>
+    </div>
+
+    <p
+      class="min-h-[2rem] text-xs font-medium leading-snug text-navy/65"
+      data-test="transcript-formatter-export-state"
+      aria-live="polite"
+    >
+      {{ stateMessage() }}
+    </p>
+  </section>
+</template>
