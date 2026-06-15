@@ -9,7 +9,7 @@ Keep this file updated so the next session can pick up work quickly.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
 - Date: 2026-06-15.
-- Branch: `codex/pr-0356-source-only-exam-converter`.
+- Branch: `main`.
 - Sir Convert `task-363` is complete, reviewed, deployed, and consumed by Skriptoteket. Producer contract revision: `4b09baa989d38f582573a810f045e50c676139a9`.
 - Skriptoteket `PR-0350` is implemented, reviewed, merged, pushed, and deployed. It removes the browser-owned formatter replay saga and replaces it with product-owned `POST/GET /formatter-exports` state over saved transcripts.
 - Production wiring fix `14f4b3af` makes Hemma use internal Sir Convert base `http://sir_convert_a_lot_prod:8085`; `https://convert.hule.education` is the reserved public edge and returned `421` during the first live proof attempt.
@@ -58,15 +58,18 @@ Keep this file updated so the next session can pick up work quickly.
   It fixes selected export-chip readability, removes unstable post-upload
   progress counters, recovers stale formatter idempotency jobs, autosaves
   speaker-name edits, and proves responsive layout.
-- `PR-0355` is implemented locally but not closed:
+- `PR-0355` is done, approved, pushed to `main`, and deployed at `fe56307c`:
   `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`.
   It reserves the `Avbryt` row above `Starta transkribering`, removes the
   checkbox-like square icon, updates the empty upload copy, and has local
   remote-proof E2E evidence. Independent retained review
   `docs/backlog/reviews/review-pr-0355-transcript-cancel-slot-rail-remediation.md`
-  is approved. Deploy/native production proof waits until this slice is
-  separated from the mixed PR-0356 branch state.
-- `PR-0356` is implemented locally on `codex/pr-0356-source-only-exam-converter`: authenticated Exam Converter intake is now source-only, early PDF/QTI target controls are removed, authenticated submit/retry always request default artifacts without `graded_result_pdf`, and `PR-0357` is the governed public-lane cleanup follow-up.
+  is approved.
+- `PR-0356` is done, approved, pushed to `main`, and deployed at `fe56307c`:
+  authenticated Exam Converter intake is now source-only, early PDF/QTI target
+  controls are removed, authenticated submit/retry always request default
+  artifacts without `graded_result_pdf`, and `PR-0357` is the governed
+  public-lane cleanup follow-up.
 ## Verification
 - Archived PR-0351 through PR-0354 proof detail now lives in
   `.codex/long-term-memory/entries/session-2026-06-15-pr-0351-pr-0354-proof-compaction.md`
@@ -101,6 +104,13 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0356 fixed overseer review is accepted in
   `docs/backlog/reviews/review-pr-0356-source-only-intake-export-owned-formats.md`
   after Goodall fixed the browser-proof gap and invalid-replacement state loss.
+- Hemma deploy for `fe56307c` passed from log
+  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260615-154707.log`.
+  Remote checkout is `fe56307c`, `skriptoteket-web` and `skriptoteket-worker`
+  are healthy, public `https://skriptoteket.hule.education/healthz` returned
+  `{"status":"healthy","message":"Service is healthy"}`, and the deploy smoke
+  artifact is
+  `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260615-154707/smoke-result.json`.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py

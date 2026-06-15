@@ -111,12 +111,11 @@ catch-all typed contract.
   idempotency jobs could block exports, speaker-name edits needed autosave
   instead of a separate unclear save affordance, and the transcript route did
   not own the mockup's desktop/tablet/small breakpoint contract cleanly.
-- `PR-0355` is in progress: follow-up rail remediation keeps `Avbryt` as a
+- `PR-0355` is done: follow-up rail remediation keeps `Avbryt` as a
   reserved, invisible idle slot directly above `Starta transkribering`, removes
   the checkbox-like square icon, updates the empty upload copy to teacher-intent
-  language, and now has retained local remote-proof E2E evidence. Deploy/native
-  production proof remains separate because the workspace is currently mixed
-  with PR-0356 branch work.
+  language, has retained local remote-proof E2E evidence, and was deployed at
+  commit `fe56307c`.
 
 ## Live Proof Status
 
@@ -194,8 +193,8 @@ dev E2E passed at
 `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`,
 showing cancel feedback, transcript autosave, saved speaker overlays, all four
 formatter downloads, and Mina filer save. Deploy/native Hemma production proof
-is deferred until the PR-0355 slice is separated from the mixed PR-0356 branch
-state.
+passed at commit `fe56307c` with deploy log
+`/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260615-154707.log`.
 
 ## Linked Artifacts
 

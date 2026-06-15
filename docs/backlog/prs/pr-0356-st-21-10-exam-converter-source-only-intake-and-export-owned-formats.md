@@ -2,7 +2,7 @@
 type: pr
 id: PR-0356
 title: "ST-21-10 Exam Converter source-only intake and export-owned formats"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-15
 updated: 2026-06-15

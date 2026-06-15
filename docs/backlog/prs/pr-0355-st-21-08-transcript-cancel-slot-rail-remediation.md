@@ -2,7 +2,7 @@
 type: pr
 id: PR-0355
 title: "ST-21-08 Transcript cancel slot rail remediation"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-14
 updated: 2026-06-15
@@ -44,7 +44,7 @@ Keep cancellation as one direct action:
 - No runtime cancellation API changes.
 - No progress-panel redesign.
 - No transcript export changes.
-- No production deploy from a mixed PR-0355/PR-0356 worktree.
+- No transcript runtime cancellation API changes.
 
 ## Implementation plan
 
@@ -68,8 +68,11 @@ Keep cancellation as one direct action:
 - `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --sir-convert-proof-lane hemma-remote-proof --sir-convert-gateway-backend-url http://host.docker.internal:28085 --sir-convert-producer-backend-url http://host.docker.internal:28085 --sir-convert-ready-url http://127.0.0.1:28085/readyz --gateway-signer-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --sir-convert-trusted-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --timeout-seconds 1200` - passed.
 - Retained E2E artifact:
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`.
-- Deferred: commit/push/deploy and native Hemma production transcript live proof
-  until this PR-0355 slice is separated from the mixed PR-0356 branch state.
+- `pdm run hemma-deploy` - passed for commit `fe56307c`; deploy log:
+  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260615-154707.log`.
+- Production health after deploy: `https://skriptoteket.hule.education/healthz`
+  returned `{"status":"healthy","message":"Service is healthy"}`; Hemma
+  `skriptoteket-web` and `skriptoteket-worker` containers were healthy.
 
 ## Rollback plan
 
