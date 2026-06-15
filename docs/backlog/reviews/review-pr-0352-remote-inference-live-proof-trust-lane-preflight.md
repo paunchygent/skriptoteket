@@ -5,7 +5,7 @@ title: "Review: PR-0352 remote inference live-proof trust-lane preflight"
 status: approved
 owners: "agents"
 created: 2026-06-14
-updated: 2026-06-14
+updated: 2026-06-15
 reviewer: "ruthless-review-subagent"
 prs:
   - PR-0352
@@ -17,11 +17,11 @@ links:
 
 ## TL;DR
 
-Approved after independent re-review of the committed Skriptoteket, Sir Convert,
-and shared skill-repo state plus retained local and native Hemma proof evidence.
-The previous blocker is resolved: `remote-proof-gateway` no longer passes on
-fingerprints alone, and the full local-first, native-production-second proof
-sequence is retained with matching container logs.
+Approved on the latest 2026-06-15 re-review. The scoped working tree now
+governs the new native progress semantics, the focused snapshot tests are
+typed without escapes, and the PR-0354 validation timeline is split cleanly
+between the 2026-06-14 closeout bundle and the 2026-06-15 follow-up script
+regression lane.
 
 ## Problem Statement
 
@@ -80,6 +80,215 @@ matching public signer/verifier fingerprints.
 **Reviewer:** @ruthless-review-subagent
 **Date:** 2026-06-14
 **Verdict:** approved
+
+### Current Review Pass - 2026-06-15
+
+Decision: `changes_requested`.
+
+Scope: uncommitted delta limited to
+`scripts/playwright_pr_0349_transcript_parity_live.py`.
+
+#### Findings
+
+1. `blocker` `scripts/playwright_pr_0349_transcript_parity_live.py:145`
+
+   What is wrong:
+   The patch changes the accepted transcript-proof contract from the previous
+   raw-counter snapshot to a new shape: phase text plus workflow
+   steps/current-step, optional upload percent/bytes, and
+   `terminal_reached_before_snapshot=true` as an allowed fast-completion case.
+   The working tree does not amend the governing docs surfaces that own those
+   proof semantics: `PR-0354` for the progress contract, `PR-0352` for the
+   native proof lane, and `.codex/handoff.md` for current-state guidance.
+
+   Why it matters:
+   This repo requires docs-as-code authority before implementation, especially
+   when a retained proof script changes what counts as passing evidence. Without
+   a governed amendment, future agents will keep reading the closed PR-0352 /
+   PR-0354 records as if native proof still required the removed raw fields and
+   did not allow terminal-before-snapshot fast completion.
+
+   Concrete fix:
+   Amend the relevant governed docs to record the 2026-06-15 native Hemma proof
+   failure, the current honest progress contract, and the explicit
+   fast-completion allowance. At minimum, update `PR-0354`, `REV-PR-0352`, and
+   `.codex/handoff.md`, then rerun the repo validators.
+
+   Proof requirement:
+   `pdm run docs-validate`
+   `pdm run handoff-validate`
+   `git diff --check`
+
+2. `medium` `scripts/playwright_pr_0349_transcript_parity_live.py:145`
+
+   What is wrong:
+   There is still no focused regression test for `_capture_progress_snapshot`
+   covering the three cases this patch now depends on:
+   current job with phase + steps/current-step, upload-owned percent/bytes
+   before job handoff, and terminal-before-snapshot fast completion.
+
+   Why it matters:
+   This exact proof drift already escaped until a native Hemma run failed. With
+   no boundary test on the snapshot classifier, the next selector or truthfulness
+   drift will again only surface in an expensive live proof lane.
+
+   Concrete fix:
+   Add a focused `tests/unit/scripts/` module for this function. If direct
+   Playwright fakes are awkward, extract the snapshot acceptance predicate into
+   a small pure helper and test that helper instead of relying only on live
+   browser proof.
+
+   Proof requirement:
+   `pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
+   `pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py`
+
+Validation rerun for this review:
+
+```bash
+pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_sir_convert_trust_lane_preflight.py
+pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts
+pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py
+```
+
+Results: 25 passed, 12 passed, and `py_compile` passed. No focused
+`_capture_progress_snapshot` test exists yet.
+
+#### Resolution Applied Before Re-Review
+
+- `PR-0354` now governs the native transcript proof's honest progress snapshot:
+  phase + workflow steps/current-step after job handoff, upload percent/bytes
+  only while the browser owns upload, and `terminal_reached_before_snapshot=true`
+  for fast completion.
+- `PR-0354` splits the original 2026-06-14 remediation validation from the
+  2026-06-15 proof-script regression validation.
+- `.codex/handoff.md` records the 2026-06-15 native Hemma failure at
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T155823Z/proof-summary.json`
+  and the pending rerun sequence.
+- `tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py` covers
+  job-owned progress, upload-owned progress, no-evidence rejection, and
+  terminal-before-snapshot fast completion.
+- `_capture_progress_snapshot` now accepts a small page/locator protocol, so the
+  focused test uses a typed fake without `type: ignore`.
+
+Validation before re-review:
+
+```bash
+pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py
+```
+
+Results: 10 passed and `py_compile` passed.
+
+### Follow-Up Re-Review - 2026-06-15
+
+Decision: `changes_requested`.
+
+Scope:
+
+- `scripts/playwright_pr_0349_transcript_parity_live.py`
+- `tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py`
+- `docs/backlog/prs/pr-0354-st-21-08-transcript-export-selector-and-responsive-layout-remediation.md`
+- `docs/backlog/reviews/review-pr-0352-remote-inference-live-proof-trust-lane-preflight.md`
+- `.codex/handoff.md`
+
+#### Findings
+
+1. `medium` `tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py:126`
+
+   What is wrong:
+   The new focused regression lane still suppresses the script boundary's type
+   contract with `# type: ignore[arg-type]` when calling
+   `_capture_progress_snapshot`.
+
+   Why it matters:
+   This repo's review standard forbids `type: ignore` escapes because they hide
+   interface drift. Here the test is meant to protect a proof-critical boundary,
+   so bypassing the `Page` contract weakens the exact surface we want the test
+   to keep honest.
+
+   Concrete fix:
+   Remove the ignore by typing the capture helper against a small protocol that
+   covers the methods it actually uses, or extract the terminal-fast-completion
+   branch into a pure/helper seam that the fake page can satisfy without a type
+   escape.
+
+   Proof requirement:
+   `pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
+   `pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py`
+
+2. `low` `docs/backlog/prs/pr-0354-st-21-08-transcript-export-selector-and-responsive-layout-remediation.md:206`
+
+   What is wrong:
+   The PR doc now adds the new focused script-regression command to the test
+   plan, but still says "All listed commands passed on 2026-06-14." That is no
+   longer strictly true because this specific command was added and run as a
+   2026-06-15 follow-up after the failed native Hemma proof.
+
+   Why it matters:
+   Retained proof docs are supposed to be audit-grade. Blending the original
+   2026-06-14 closeout bundle with the 2026-06-15 follow-up regression lane
+   makes the validation timeline less trustworthy than it should be.
+
+   Concrete fix:
+   Split the original 2026-06-14 closeout commands from the 2026-06-15 follow-up
+   proof-script validation, or revise the sentence so it names which commands
+   passed on which date.
+
+   Proof requirement:
+   `pdm run docs-validate`
+
+Validation rerun for this re-review:
+
+```bash
+pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py
+pdm run docs-validate
+pdm run handoff-validate
+git diff --check
+```
+
+Results: 10 passed, `py_compile` passed, `docs-validate` passed,
+`handoff-validate` passed, and `git diff --check` passed.
+
+### Final Re-Review - 2026-06-15
+
+Decision: `approved`.
+
+Scope:
+
+- `scripts/playwright_pr_0349_transcript_parity_live.py`
+- `tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py`
+- `docs/backlog/prs/pr-0354-st-21-08-transcript-export-selector-and-responsive-layout-remediation.md`
+- `docs/backlog/reviews/review-pr-0352-remote-inference-live-proof-trust-lane-preflight.md`
+- `.codex/handoff.md`
+
+No findings.
+
+Resolved since the previous pass:
+
+- `_capture_progress_snapshot` now uses the small
+  `_ProgressSnapshotPage` / `_ProgressSnapshotLocator` protocol seam, so the
+  focused fake-page regression test is fully typed with no `type: ignore`.
+- `PR-0354` now separates the original 2026-06-14 remediation validation from
+  the 2026-06-15 proof-script regression commands, so the retained validation
+  timeline is truthful.
+- `.codex/handoff.md` still records the failed native Hemma artifact and the
+  pending redeploy/rerun follow-up, which is the correct remaining operational
+  state.
+
+Validation rerun for this final re-review:
+
+```bash
+pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py
+pdm run typecheck
+pdm run docs-validate
+pdm run handoff-validate
+git diff --check
+```
+
+Results: 10 passed, `py_compile` passed, `typecheck` passed, `docs-validate`
+passed, `handoff-validate` passed, and `git diff --check` passed.
 
 ### Current Review Pass - 2026-06-14
 

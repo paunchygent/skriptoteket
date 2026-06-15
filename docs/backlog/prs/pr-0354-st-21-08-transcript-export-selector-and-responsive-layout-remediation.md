@@ -105,6 +105,7 @@ Track every production and proof change in this slice here.
 |---|---|---|
 | Export selector | Remove conflicting selected/unselected text and fill utility classes from format chips. Selected chips use persistent navy fill with readable canvas text; unselected chips keep navy text and light hover only. | Focused Vitest asserts selected TXT/MD chips contain `text-canvas` and not `text-navy`; in-app browser proof must click TXT/MD/VTT/SRT and inspect visible text. |
 | Transcript progress | Stop rendering raw Sir Convert post-upload percent/ETA/audio-processed/chunk counters as precise progress. Keep measured browser upload percent/bytes, then switch to stable phase labels and workflow markers once the backend owns the job. | Focused Vitest must assert upload percent remains visible, post-upload percent/ETA are absent, and phase copy remains teacher-facing; in-app browser proof must inspect the running state. |
+| Native transcript proof progress snapshot | Align `scripts.playwright_pr_0349_transcript_parity_live` with the honest progress contract. The proof accepts phase text plus workflow steps/current-step after job handoff, accepts upload percent/bytes only while the browser owns upload, and treats terminal-before-snapshot as a valid fast-completion path instead of demanding removed raw counters. | Focused pytest covers job-owned progress, upload-owned progress, no-evidence rejection, and terminal-before-snapshot fast completion; native Hemma proof must rerun after deploy. |
 | Formatter export idempotency | Detect stale Sir Convert formatter jobs returned by deterministic export idempotency keys and recover with a bounded retry idempotency key before polling/artifact download. | Infrastructure unit test proves stale queued idempotency response is not reused for artifact reads and recovered artifacts come from the new job; dev local E2E must still prove transcript export behavior. |
 | Speaker overlay autosave | Remove the isolated save control. Speaker-name inputs now debounce autosave on change; export stays disabled until the latest full overlay set is persisted. The inspector shows compact copy for incomplete, saving, saved, and failed states. | Focused Vitest asserts name input triggers autosave and export only enables after persisted full coverage; in-app browser proof verifies there is no dead save button and the status row stays aligned. |
 | Transcript route layout | Wrap the transcript lane in a `col-span-full` responsive grid owned by `ConversionHubTranscriptHost`, rather than relying on the Exam Converter parent grid. | Focused Vitest asserts the transcript host exposes small, tablet, and desktop breakpoint classes. |
@@ -118,6 +119,11 @@ Track every production and proof change in this slice here.
 - `TranscriptProgressPanel.vue` keeps measured browser upload percent/bytes
   before job handoff, then renders stable phase/workflow state without raw
   Sir Convert percent, ETA, processed-audio, chunk, or heartbeat counters.
+- `scripts.playwright_pr_0349_transcript_parity_live` now treats that same
+  progress contract as the native proof surface. It no longer requires removed
+  duration/chunk/heartbeat fields and records fast terminal completion as
+  `terminal_reached_before_snapshot=true` when the result surface appears before
+  a running-state screenshot can be captured.
 - `TranscriptCompletedWorkspace.vue` uses a container-query result grid and a
   compact speaker-name autosave row. Name edits do not require a separate save
   button; the saved state is status text, not a disabled control.
@@ -159,6 +165,14 @@ Retained local E2E proof:
 - Captured progress UI truthfulness: upload percent visible while uploading;
   duration/chunk/heartbeat counters absent after job handoff.
 
+Native Hemma proof on 2026-06-15 exposed one stale proof-script assertion after
+this remediation: the deployed script still required old progress fields and
+failed with `Progress fields did not render before terminal state.` Retained
+failed artifact:
+`/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T155823Z/proof-summary.json`.
+The follow-up proof-script contract above is governed here so the next native
+run proves the current UI rather than the removed counters.
+
 Retained in-app browser proof artifacts:
 `.artifacts/pr-0354-transcript-ui-remediation/20260614T2104Z/`.
 
@@ -190,6 +204,19 @@ git diff --check
 
 All listed commands passed on 2026-06-14. `pdm run fe-build` retained the
 existing Vite dynamic/static import and large-chunk warnings.
+
+Follow-up proof-script regression added after the 2026-06-15 native Hemma proof
+found the stale raw-counter assertion:
+
+```bash
+pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py
+pdm run docs-validate
+pdm run handoff-validate
+git diff --check
+```
+
+All follow-up commands passed on 2026-06-15.
 
 ## Rollback plan
 

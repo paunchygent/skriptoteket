@@ -13,9 +13,10 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Protocol
 
 from playwright.sync_api import Page, Response, expect, sync_playwright
 
@@ -58,6 +59,25 @@ DEFAULT_AUDIO_FILE = Path(
 )
 ARTIFACT_KEYS = ("transcript_txt", "transcript_md", "transcript_vtt", "transcript_srt")
 OVERLAY_LABELS = ("PR0349 Speaker A", "PR0349 Speaker B")
+
+
+class _ProgressSnapshotLocator(Protocol):
+    @property
+    def first(self) -> "_ProgressSnapshotLocator": ...
+
+    def count(self) -> int: ...
+
+    def is_visible(self) -> bool: ...
+
+    def inner_text(self, *, timeout: int) -> str: ...
+
+
+class _ProgressSnapshotPage(Protocol):
+    def locator(self, selector: str) -> _ProgressSnapshotLocator: ...
+
+    def screenshot(self, *, path: str, full_page: bool) -> object: ...
+
+    def wait_for_timeout(self, timeout: int) -> object: ...
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -129,7 +149,7 @@ def _start_transcript(page: Page) -> None:
     expect(page.locator('[data-test="transcript-running-surface"]')).to_be_visible(timeout=45_000)
 
 
-def _first_non_empty_text(page: Page, selector: str) -> str | None:
+def _first_non_empty_text(page: _ProgressSnapshotPage, selector: str) -> str | None:
     locator = page.locator(selector)
     if locator.count() == 0 or not locator.first.is_visible():
         return None
@@ -137,16 +157,44 @@ def _first_non_empty_text(page: Page, selector: str) -> str | None:
     return text or None
 
 
+def _visible_locator_exists(page: _ProgressSnapshotPage, selector: str) -> bool:
+    locator = page.locator(selector)
+    return locator.count() > 0 and locator.first.is_visible()
+
+
+def _progress_snapshot_has_evidence(values: Mapping[str, object]) -> bool:
+    return bool(values.get("phase_visible")) and (
+        bool(values.get("steps_visible"))
+        or bool(values.get("current_step_visible"))
+        or bool(values.get("percent_visible"))
+        or bool(values.get("upload_bytes_visible"))
+    )
+
+
 def _capture_progress_snapshot(
-    page: Page, *, artifact_dir: Path, timeout_seconds: int
+    page: _ProgressSnapshotPage, *, artifact_dir: Path, timeout_seconds: int
 ) -> dict[str, object]:
     deadline = datetime.now(tz=UTC).timestamp() + timeout_seconds
     while datetime.now(tz=UTC).timestamp() < deadline:
+        phase_text = _first_non_empty_text(page, '[data-test="transcript-progress-phase"]')
         values = {
-            "phase_visible": _first_non_empty_text(page, '[data-test="transcript-progress-phase"]')
-            is not None,
+            "running_visible": _visible_locator_exists(
+                page, '[data-test="transcript-running-surface"]'
+            ),
+            "phase_visible": phase_text is not None,
+            "phase_text": phase_text,
+            "steps_visible": _visible_locator_exists(
+                page, '[data-test="transcript-progress-steps"]'
+            ),
+            "current_step_visible": _visible_locator_exists(
+                page, '[data-test="transcript-progress-current-step"]'
+            ),
             "percent_visible": _first_non_empty_text(
                 page, '[data-test="transcript-progress-percent"]'
+            )
+            is not None,
+            "upload_bytes_visible": _first_non_empty_text(
+                page, '[data-test="transcript-upload-bytes"]'
             )
             is not None,
             "duration_visible": _first_non_empty_text(
@@ -162,11 +210,17 @@ def _capture_progress_snapshot(
             )
             is not None,
         }
-        if values["phase_visible"] and any(values[key] for key in values if key != "phase_visible"):
+        if _progress_snapshot_has_evidence(values):
             page.screenshot(path=str(artifact_dir / "progress.png"), full_page=True)
+            values["terminal_reached_before_snapshot"] = False
             return values
         if page.locator('[data-test="transcript-result-surface"]').count() > 0:
-            break
+            page.screenshot(
+                path=str(artifact_dir / "progress-terminal-before-snapshot.png"),
+                full_page=True,
+            )
+            values["terminal_reached_before_snapshot"] = True
+            return values
         page.wait_for_timeout(1_000)
     page.screenshot(path=str(artifact_dir / "progress-timeout.png"), full_page=True)
     raise AssertionError("Progress fields did not render before terminal state.")
