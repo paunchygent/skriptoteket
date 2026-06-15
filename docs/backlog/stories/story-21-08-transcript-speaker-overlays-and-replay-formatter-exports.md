@@ -111,6 +111,12 @@ catch-all typed contract.
   idempotency jobs could block exports, speaker-name edits needed autosave
   instead of a separate unclear save affordance, and the transcript route did
   not own the mockup's desktop/tablet/small breakpoint contract cleanly.
+- `PR-0355` is in progress: follow-up rail remediation keeps `Avbryt` as a
+  reserved, invisible idle slot directly above `Starta transkribering`, removes
+  the checkbox-like square icon, updates the empty upload copy to teacher-intent
+  language, and now has retained local remote-proof E2E evidence. Deploy/native
+  production proof remains separate because the workspace is currently mixed
+  with PR-0356 branch work.
 
 ## Live Proof Status
 
@@ -179,6 +185,17 @@ prove the completed fixture at 1440px stacks the inspector below the
 transcript, at 1800px uses side-by-side transcript plus inspector, keeps
 selected MD readable, renders no speaker save button, and shows the compact
 saved-name status.
+
+`PR-0355` has focused DOM/type proof plus retained local remote-proof E2E:
+`pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`,
+`pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`,
+`pdm run fe-type-check`, and `pdm run docs-validate` passed. The required local
+dev E2E passed at
+`.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`,
+showing cancel feedback, transcript autosave, saved speaker overlays, all four
+formatter downloads, and Mina filer save. Deploy/native Hemma production proof
+is deferred until the PR-0355 slice is separated from the mixed PR-0356 branch
+state.
 
 ## Linked Artifacts
 

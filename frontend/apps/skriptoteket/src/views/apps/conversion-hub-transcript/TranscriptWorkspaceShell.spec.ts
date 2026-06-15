@@ -44,6 +44,31 @@ function transcriptJob(phase: SirConvertTranscriptProgressPhase): SirConvertTran
 }
 
 describe("TranscriptWorkspaceShell", () => {
+  it("renders direct upload intent copy before a source is selected", () => {
+    const wrapper = mount(TranscriptWorkspaceShell, {
+      props: {
+        abortState: { message: null, status: "idle" },
+        canEditSpeakerOverlays: false,
+        canSaveTranscript: false,
+        currentJob: null,
+        errorMessage: null,
+        runtimeStatus: "idle",
+        saveErrorMessage: null,
+        saveStatus: "idle",
+        selectedTranscriptFile: null,
+        speakerOverlayEntries: [],
+        speakerOverlayErrorMessage: null,
+        speakerOverlayStatus: "idle",
+        transcript: null,
+        transcriptFileError: null,
+      },
+    });
+
+    expect(wrapper.text()).toContain(
+      "Ladda upp en ljudfil eller en video som du vill ha transkriberad.",
+    );
+  });
+
   it("maps upstream progress phases to safe teacher-facing progress copy", () => {
     const wrapper = mount(TranscriptWorkspaceShell, {
       props: {

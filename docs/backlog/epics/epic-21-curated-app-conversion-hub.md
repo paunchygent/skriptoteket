@@ -228,8 +228,12 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   in-app browser layout proof at 1440px and 1800px.
   `PR-0355` is in progress as a narrow follow-up: the rail keeps an invisible
   reserved `Avbryt` slot directly above `Starta transkribering` and removes the
-  checkbox-like square icon. Live E2E/deploy proof waits for the active Offload
-  experiment to release the GPU/STT lane.
+  checkbox-like square icon. The empty upload copy now says
+  `Ladda upp en ljudfil eller en video som du vill ha transkriberad`, and local
+  remote-proof E2E passed at
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`.
+  Deploy/native Hemma production proof is still deferred until the PR-0355 slice
+  is separated from the mixed PR-0356 branch state.
 - `ST-21-09` / `PR-0352` is done and approved by `REV-PR-0352`: remote
   inference with coherent HuleEdu Gateway/Sir Convert trust is enforced before
   upload, mixed local-signer to Hemma-verifier lanes fail closed unless

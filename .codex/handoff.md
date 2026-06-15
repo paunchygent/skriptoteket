@@ -61,15 +61,22 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0355` is implemented locally but not closed:
   `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`.
   It reserves the `Avbryt` row above `Starta transkribering`, removes the
-  checkbox-like square icon, and waits on Offload before E2E/deploy proof.
+  checkbox-like square icon, updates the empty upload copy, and has local
+  remote-proof E2E evidence. Independent retained review
+  `docs/backlog/reviews/review-pr-0355-transcript-cancel-slot-rail-remediation.md`
+  is approved. Deploy/native production proof waits until this slice is
+  separated from the mixed PR-0356 branch state.
 - `PR-0356` is implemented locally on `codex/pr-0356-source-only-exam-converter`: authenticated Exam Converter intake is now source-only, early PDF/QTI target controls are removed, authenticated submit/retry always request default artifacts without `graded_result_pdf`, and `PR-0357` is the governed public-lane cleanup follow-up.
 ## Verification
 - Archived PR-0351 through PR-0354 proof detail now lives in
   `.codex/long-term-memory/entries/session-2026-06-15-pr-0351-pr-0354-proof-compaction.md`
   so this handoff can stay focused on the current PR-0355/PR-0356 work.
-- Green PR-0355 focused local checks: `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`,
-  `pdm run fe-type-check`, and `pdm run docs-validate`. Required E2E is deferred
-  because the Offload experiment is occupying the GPU/STT lane.
+- Green PR-0355 checks: `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`,
+  `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`,
+  `pdm run fe-type-check`, and `pdm run docs-validate`. Required local dev E2E
+  passed via `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --sir-convert-proof-lane hemma-remote-proof --sir-convert-gateway-backend-url http://host.docker.internal:28085 --sir-convert-producer-backend-url http://host.docker.internal:28085 --sir-convert-ready-url http://127.0.0.1:28085/readyz --gateway-signer-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --sir-convert-trusted-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --timeout-seconds 1200`;
+  retained artifact:
+  `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`.
 - Red then green PR-0356 focused frontend/request-context bundle:
   first `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/api/sirConvertGateway/completionContract.spec.ts`
   failed with 3 expectation mismatches while the source-only slice was mid-edit;

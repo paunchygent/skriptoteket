@@ -11,7 +11,7 @@
  *   - Receives local intake state from `useTranscriptSourceFile`.
  */
 
-import { Check, FileAudio, Play, Square, Upload, X } from "lucide-vue-next";
+import { Check, FileAudio, Play, Upload, X } from "lucide-vue-next";
 
 import type {
   TranscriptSourceFileSelection,
@@ -256,6 +256,18 @@ function numericInputValue(event: Event): number {
         </h2>
         <button
           type="button"
+          class="btn-secondary justify-center shadow-none"
+          :class="isRunning ? undefined : 'invisible pointer-events-none'"
+          data-test="transcript-cancel"
+          :aria-hidden="isRunning ? undefined : 'true'"
+          :disabled="!isRunning || abortState.status === 'pending'"
+          :tabindex="isRunning ? 0 : -1"
+          @click="emit('cancelTranscript')"
+        >
+          {{ abortState.status === "pending" ? "Avbryter" : "Avbryt" }}
+        </button>
+        <button
+          type="button"
           class="btn-cta justify-center gap-2 shadow-none"
           data-test="transcript-start"
           :disabled="!canStartTranscript || isRunning"
@@ -266,20 +278,6 @@ function numericInputValue(event: Event): number {
             aria-hidden="true"
           />
           Starta transkribering
-        </button>
-        <button
-          v-if="isRunning"
-          type="button"
-          class="btn-secondary justify-center gap-2 shadow-none"
-          data-test="transcript-cancel"
-          :disabled="abortState.status === 'pending'"
-          @click="emit('cancelTranscript')"
-        >
-          <Square
-            class="h-4 w-4"
-            aria-hidden="true"
-          />
-          {{ abortState.status === "pending" ? "Avbryter" : "Avbryt" }}
         </button>
         <button
           type="button"

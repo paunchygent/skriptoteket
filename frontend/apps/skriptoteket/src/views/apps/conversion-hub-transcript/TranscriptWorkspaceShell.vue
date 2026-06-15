@@ -123,7 +123,7 @@ function handleDrop(event: DragEvent): void {
           {{ abortState.message ?? "Transkriberingen är avbruten." }}
         </template>
         <template v-else>
-          Ladda upp en ljudfil eller en video där ljudspåret ska skrivas ut.
+          Ladda upp en ljudfil eller en video som du vill ha transkriberad.
         </template>
       </p>
     </header>
