@@ -26,6 +26,7 @@ from scripts._playwright_config import get_config
 from scripts._proof_live_monitoring import (
     ProofLogMonitor,
     block_if_running_backend_target_differs,
+    start_hemma_native_service_monitors,
     start_local_backend_log_monitor,
 )
 from scripts._sir_convert_trust_lane_preflight import (
@@ -97,6 +98,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--sir-convert-ready-url", default=None)
     parser.add_argument(
         "--capture-local-backend-logs",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+    parser.add_argument(
+        "--capture-hemma-service-logs",
         action=argparse.BooleanOptionalAction,
         default=True,
     )
@@ -479,6 +485,9 @@ def run(argv: Sequence[str] | None = None) -> None:
     backend_log_monitor: ProofLogMonitor | None = None
     if args.capture_local_backend_logs and trust_lane_summary["base_url_kind"] == "local":
         backend_log_monitor = start_local_backend_log_monitor(artifact_dir=artifact_dir)
+    native_service_monitors: list[ProofLogMonitor] = []
+    if args.capture_hemma_service_logs and trust_lane_summary["lane_kind"] == "hemma_production":
+        native_service_monitors = start_hemma_native_service_monitors(artifact_dir=artifact_dir)
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
@@ -562,6 +571,9 @@ def run(argv: Sequence[str] | None = None) -> None:
             if backend_log_monitor is not None:
                 backend_log_monitor.stop()
                 backend_log_monitor = None
+            for monitor in native_service_monitors:
+                monitor.stop()
+            native_service_monitors = []
             network_records = collect_network(captured)
             write_json(artifact_dir / "network.bounded.json", network_records)
             write_json(artifact_dir / "browser-console.bounded.json", console_records)

@@ -209,8 +209,8 @@ Follow-up proof-script regression added after the 2026-06-15 native Hemma proof
 found the stale raw-counter assertion:
 
 ```bash
-pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
-pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py
+pdm run test tests/unit/scripts/test_proof_live_monitoring.py tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run python -m py_compile scripts/_proof_live_monitoring.py scripts/_transcript_parity_evidence.py scripts/playwright_pr_0349_transcript_parity_live.py
 pdm run docs-validate
 pdm run handoff-validate
 git diff --check

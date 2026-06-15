@@ -58,13 +58,11 @@ Keep this file updated so the next session can pick up work quickly.
   It fixes selected export-chip readability, removes unstable post-upload
   progress counters, recovers stale formatter idempotency jobs, autosaves
   speaker-name edits, and proves responsive layout.
-- Local uncommitted follow-up in
-  `scripts/playwright_pr_0349_transcript_parity_live.py` aligns the native proof
-  with the PR-0354 honest progress contract: phase + steps/current-step after
-  job handoff, upload bytes/percent while the browser owns upload, and
-  `terminal_reached_before_snapshot=true` for fast completion. `REV-PR-0352`
-  re-review is now approved; remaining work is commit, push, redeploy, and rerun
-  the native Hemma production transcript proof.
+- Latest local uncommitted follow-up in the transcript proof scripts adds
+  Hemma-native Docker service monitoring. The previous `f33dc205` proof-script
+  commit fixed the PR-0354 honest progress contract and was deployed, but the
+  rerun then exposed that the native proof was not retaining Docker service
+  evidence for HuleEdu Gateway/Sir Convert failures.
 - `PR-0355` is done, approved, pushed to `main`, and deployed at `fe56307c`:
   `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`.
   It reserves the `Avbryt` row above `Starta transkribering`, removes the
@@ -118,15 +116,19 @@ Keep this file updated so the next session can pick up work quickly.
   `{"status":"healthy","message":"Service is healthy"}`, and the deploy smoke
   artifact is
   `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260615-154707/smoke-result.json`.
-- Native Hemma production transcript proof after deploy reached the workflow
-  but failed because the retained script still required removed raw progress
-  fields: `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T155823Z/proof-summary.json`.
-- Focused proof-script regression added and green:
+- Native Hemma production transcript proof after deploy at `f33dc205` proved the
+  fixed progress contract and then failed on the real submit path:
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T162415Z/proof-summary.json`.
+  Sanitized network evidence shows `POST /sir-convert/v2/convert/jobs` returned
+  `502` with `Name or service not known`, so the next proof must retain
+  service-side Docker evidence for the exact interval.
+- Focused proof-script regressions added and green:
   `pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
-  plus `pdm run python -m py_compile scripts/playwright_pr_0349_transcript_parity_live.py`
-  and `pdm run typecheck`. Independent `REV-PR-0352` re-review is now approved.
-  Remaining steps: commit, push, redeploy, rerun native Hemma production
-  transcript proof.
+  plus `pdm run test tests/unit/scripts/test_proof_live_monitoring.py
+  tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`, compile
+  checks for the proof helpers, and `pdm run typecheck`. Remaining steps:
+  reviewer pass for monitoring delta, commit, push, redeploy, rerun native Hemma
+  production transcript proof with service logs.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py

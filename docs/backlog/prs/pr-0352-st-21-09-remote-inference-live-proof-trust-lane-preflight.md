@@ -131,7 +131,11 @@ production, and approved by independent `REV-PR-0352`.
   preflight blocker or a running-container producer-lane mismatch.
 - Added `scripts/_proof_live_monitoring.py` and extended sanitized evidence
   summaries so retained local proof artifacts include `backend-container.json`,
-  `backend-live.log`, and `backend-monitor.json`.
+  `backend-live.log`, and `backend-monitor.json`. The 2026-06-15 follow-up also
+  makes native Hemma production proof capture safe `service-monitoring.json`
+  plus bounded `service-logs/*.log` for the proof interval across Skriptoteket,
+  HuleEdu Gateway/auth, and Sir Convert containers, without retaining container
+  environment variables.
 - Closed the downstream async formatter-export consumer gap exposed by the
   production proof path: `SirConvertTranscriptFormatterProducerV2` now accepts
   `202 Accepted`, polls `GET /v2/convert/jobs/{job_id}` until terminal state,

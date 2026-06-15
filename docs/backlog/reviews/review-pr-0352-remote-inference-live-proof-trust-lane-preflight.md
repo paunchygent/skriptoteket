@@ -81,6 +81,51 @@ matching public signer/verifier fingerprints.
 **Date:** 2026-06-14
 **Verdict:** approved
 
+### Monitoring Delta Review - 2026-06-15
+
+Decision: `approved`.
+
+Scope:
+
+- `scripts/_proof_live_monitoring.py`
+- `scripts/_transcript_parity_evidence.py`
+- `scripts/playwright_pr_0349_transcript_parity_live.py`
+- `tests/unit/scripts/test_proof_live_monitoring.py`
+- `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
+- `docs/backlog/prs/pr-0352-st-21-09-remote-inference-live-proof-trust-lane-preflight.md`
+- `docs/backlog/prs/pr-0354-st-21-08-transcript-export-selector-and-responsive-layout-remediation.md`
+- `.codex/handoff.md`
+
+No findings.
+
+Verified in this pass:
+
+- Native Hemma monitoring stays inside the governed `PR-0352` / `ST-21-09`
+  proof lane and does not change the proof command's public contract beyond
+  adding retained evidence artifacts.
+- The new capture helper retains bounded Docker state plus per-service logs
+  without reintroducing container environment retention.
+- Proof-summary truthfulness remains aligned with the retained artifact lane:
+  `service-monitoring.json` and `service-logs/*.log` are surfaced when present,
+  while the existing redacted network/console summary behavior is unchanged.
+- Focused tests cover the safe Docker-state snapshot and the proof-summary
+  artifact listing for native service monitoring.
+
+Residual validation gap:
+
+- This review did not include a fresh native Hemma rerun; it validates the
+  uncommitted monitoring delta, docs authority, and focused automated evidence
+  only.
+
+Validation rerun for this monitoring review:
+
+```bash
+pdm run test tests/unit/scripts/test_proof_live_monitoring.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
+pdm run python -m py_compile scripts/_proof_live_monitoring.py scripts/_transcript_parity_evidence.py scripts/playwright_pr_0349_transcript_parity_live.py
+```
+
+Results: 7 passed and `py_compile` passed.
+
 ### Current Review Pass - 2026-06-15
 
 Decision: `changes_requested`.

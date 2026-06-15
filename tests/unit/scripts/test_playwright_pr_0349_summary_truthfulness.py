@@ -119,6 +119,32 @@ def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) 
     assert "complete.png" not in str(summary)
 
 
+def test_captured_artifact_summary_lists_native_service_monitoring(tmp_path: Path) -> None:
+    artifact_dir = tmp_path / "pr-0349"
+    service_logs_dir = artifact_dir / "service-logs"
+    service_logs_dir.mkdir(parents=True)
+    (artifact_dir / "downloads").mkdir()
+    (artifact_dir / "service-monitoring.json").write_text("{}\n", encoding="utf-8")
+    (service_logs_dir / "huleedu_api_gateway_service.log").write_text(
+        "safe gateway metadata\n",
+        encoding="utf-8",
+    )
+    (service_logs_dir / "sir_convert_a_lot_prod.log").write_text(
+        "safe sir convert metadata\n",
+        encoding="utf-8",
+    )
+
+    summary = captured_artifact_summary(artifact_dir)
+
+    assert summary["service_monitoring"] == str(artifact_dir / "service-monitoring.json")
+    assert summary["service_logs"] == [
+        str(service_logs_dir / "huleedu_api_gateway_service.log"),
+        str(service_logs_dir / "sir_convert_a_lot_prod.log"),
+    ]
+    assert str(artifact_dir / "service-monitoring.json") in summary["captured_files"]
+    assert str(service_logs_dir / "huleedu_api_gateway_service.log") in summary["captured_files"]
+
+
 def test_cancel_path_classifies_upload_abort_without_cancel_response() -> None:
     evidence = classify_cancel_path(
         [

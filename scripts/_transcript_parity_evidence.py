@@ -31,6 +31,7 @@ EVIDENCE_JSON_FILES = (
     ("console", "browser-console.bounded.json"),
     ("backend_monitor", "backend-monitor.json"),
     ("backend_container", "backend-container.json"),
+    ("service_monitoring", "service-monitoring.json"),
 )
 EVIDENCE_TEXT_FILES = (("backend_log", "backend-live.log"),)
 
@@ -99,6 +100,10 @@ def captured_artifact_summary(artifact_dir: Path) -> dict[str, object]:
         if path.is_file():
             summary[key] = str(path)
             evidence_paths.append(path)
+    service_logs = sorted((artifact_dir / "service-logs").glob("*.log"))
+    if service_logs:
+        summary["service_logs"] = [str(path) for path in service_logs if path.is_file()]
+        evidence_paths.extend(service_logs)
     failure_screenshot = artifact_dir / "failure.png"
     if failure_screenshot.is_file():
         summary["failure_screenshot"] = str(failure_screenshot)
