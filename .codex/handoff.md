@@ -58,11 +58,10 @@ Keep this file updated so the next session can pick up work quickly.
   It fixes selected export-chip readability, removes unstable post-upload
   progress counters, recovers stale formatter idempotency jobs, autosaves
   speaker-name edits, and proves responsive layout.
-- Latest local uncommitted follow-up in the transcript proof scripts adds
-  Hemma-native Docker service monitoring. The previous `f33dc205` proof-script
-  commit fixed the PR-0354 honest progress contract and was deployed, but the
-  rerun then exposed that the native proof was not retaining Docker service
-  evidence for HuleEdu Gateway/Sir Convert failures.
+- Latest transcript proof follow-ups are pushed, deployed, and live-proven.
+  `f33dc205` fixed the PR-0354 honest progress contract in the native proof;
+  `ddd2bcf1` added Hemma-native Docker service monitoring for the same proof
+  lane.
 - `PR-0355` is done, approved, pushed to `main`, and deployed at `fe56307c`:
   `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`.
   It reserves the `Avbryt` row above `Starta transkribering`, removes the
@@ -116,19 +115,30 @@ Keep this file updated so the next session can pick up work quickly.
   `{"status":"healthy","message":"Service is healthy"}`, and the deploy smoke
   artifact is
   `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260615-154707/smoke-result.json`.
-- Native Hemma production transcript proof after deploy at `f33dc205` proved the
-  fixed progress contract and then failed on the real submit path:
-  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T162415Z/proof-summary.json`.
-  Sanitized network evidence shows `POST /sir-convert/v2/convert/jobs` returned
-  `502` with `Name or service not known`, so the next proof must retain
-  service-side Docker evidence for the exact interval.
-- Focused proof-script regressions added and green:
+- Hemma deploy for `ddd2bcf1` passed from log
+  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260615-163905.log`;
+  public health returned `{"status":"healthy","message":"Service is healthy"}`,
+  and the deploy smoke artifact is
+  `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260615-163905/smoke-result.json`.
+- Native Hemma production transcript proof after `ddd2bcf1` initially retained
+  the intended service logs and showed the real blocker: Gateway `/sir-convert`
+  returned `502` because `sir_convert_a_lot_prod` was not running/resolvable.
+  After `sudo docker compose up -d --no-build sir_convert_a_lot_prod`, host
+  `http://127.0.0.1:28085/readyz` returned ready and Gateway DNS resolved
+  `sir_convert_a_lot_prod`.
+- Final native Hemma production transcript proof passed:
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T164255Z/proof-summary.json`.
+  It proves `lane_kind=hemma_production`, fixed progress snapshot, transcript
+  save `200`, `transcript_json_v1` with 27 segments / two speakers,
+  speaker-overlays save `200`, TXT/MD/VTT/SRT downloads with overlay labels,
+  Mina filer save `200`, and retained `service-monitoring.json` plus
+  `service-logs/*.log` for Skriptoteket, HuleEdu, and Sir Convert.
+- Focused proof-script regressions are green:
   `pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
   plus `pdm run test tests/unit/scripts/test_proof_live_monitoring.py
   tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`, compile
-  checks for the proof helpers, and `pdm run typecheck`. Remaining steps:
-  reviewer pass for monitoring delta, commit, push, redeploy, rerun native Hemma
-  production transcript proof with service logs.
+  checks for the proof helpers, `pdm run typecheck`, `pdm run lint`,
+  `pdm run docs-validate`, `pdm run handoff-validate`, and `git diff --check`.
 ## How to Run
 ```bash
 pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py

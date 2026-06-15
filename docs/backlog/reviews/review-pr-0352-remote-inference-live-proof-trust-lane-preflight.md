@@ -111,11 +111,16 @@ Verified in this pass:
 - Focused tests cover the safe Docker-state snapshot and the proof-summary
   artifact listing for native service monitoring.
 
-Residual validation gap:
+Post-review native proof:
 
-- This review did not include a fresh native Hemma rerun; it validates the
-  uncommitted monitoring delta, docs authority, and focused automated evidence
-  only.
+- After the monitoring delta was committed, pushed, and deployed at `ddd2bcf1`,
+  the native Hemma transcript proof first exposed that `sir_convert_a_lot_prod`
+  was stopped. The service was restored with
+  `sudo docker compose up -d --no-build sir_convert_a_lot_prod`, host readiness
+  returned `200`, and the rerun passed at
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T164255Z/proof-summary.json`.
+  The passing artifact retains `service-monitoring.json` and bounded
+  `service-logs/*.log` for the proof interval.
 
 Validation rerun for this monitoring review:
 

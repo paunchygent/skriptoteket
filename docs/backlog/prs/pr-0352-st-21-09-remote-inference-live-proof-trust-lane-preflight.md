@@ -136,6 +136,11 @@ production, and approved by independent `REV-PR-0352`.
   plus bounded `service-logs/*.log` for the proof interval across Skriptoteket,
   HuleEdu Gateway/auth, and Sir Convert containers, without retaining container
   environment variables.
+- The 2026-06-15 native Hemma rerun retained the service evidence, exposed that
+  `sir_convert_a_lot_prod` was stopped, restored it with
+  `sudo docker compose up -d --no-build sir_convert_a_lot_prod`, and then passed
+  the full transcript proof at
+  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T164255Z/proof-summary.json`.
 - Closed the downstream async formatter-export consumer gap exposed by the
   production proof path: `SirConvertTranscriptFormatterProducerV2` now accepts
   `202 Accepted`, polls `GET /v2/convert/jobs/{job_id}` until terminal state,

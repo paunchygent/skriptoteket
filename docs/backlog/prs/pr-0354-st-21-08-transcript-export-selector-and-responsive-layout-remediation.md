@@ -218,6 +218,12 @@ git diff --check
 
 All follow-up commands passed on 2026-06-15.
 
+Native Hemma production proof after deploying `ddd2bcf1` passed at:
+`/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T164255Z/proof-summary.json`.
+The proof includes `service-monitoring.json` and `service-logs/*.log`, and
+shows the fixed progress snapshot plus successful transcript save, speaker
+overlays, TXT/MD/VTT/SRT downloads, and Mina filer save.
+
 ## Rollback plan
 
 Revert only the transcript Vue component layout/style changes while preserving
