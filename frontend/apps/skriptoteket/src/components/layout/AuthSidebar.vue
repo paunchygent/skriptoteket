@@ -93,13 +93,6 @@ function onHelp(event: MouseEvent): void {
           Katalog
         </RouterLink>
         <RouterLink
-          to="/my-runs"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Mina körningar
-        </RouterLink>
-        <RouterLink
           to="/vault"
           class="sidebar-nav-item"
           @click="onClose"

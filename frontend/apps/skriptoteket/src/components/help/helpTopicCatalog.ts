@@ -16,7 +16,6 @@ export type HelpTopicId =
   | "browse_tools"
   | "tools_run"
   | "tools_result"
-  | "my_runs"
   | "vault"
   | "profile"
   | "my_tools"
@@ -100,21 +99,14 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     indexSection: "starter",
   },
   {
-    topic: "my_runs",
-    title: "Mina körningar",
-    description: "Se status, resultat och filer.",
-    routes: ["my-runs"],
-    indexSection: "starter",
-  },
-  {
     topic: "tools_result",
     title: "Körningsresultat",
     routes: ["my-runs-detail"],
   },
   {
     topic: "vault",
-    title: "Kassaskåpet",
-    description: "Dina sparade filer.",
+    title: "Mina filer",
+    description: "Sparade filer och exporter.",
     routes: ["vault"],
     indexSection: "starter",
   },

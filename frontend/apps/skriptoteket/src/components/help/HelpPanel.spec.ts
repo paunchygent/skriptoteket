@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HelpPanel from "./HelpPanel.vue";
 import { useHelp } from "./useHelp";
+import { useAuthStore } from "../../stores/auth";
 
 const routeMocks = vi.hoisted(() => ({
   route: {
@@ -124,6 +125,32 @@ describe("HelpPanel", () => {
     expect(document.body.textContent).toContain("Logga in");
     expect(document.body.textContent).toContain("Konto och lösenord");
     expect(document.body.textContent).not.toContain("Start samlar");
+
+    wrapper.unmount();
+  });
+
+  it("does not list retired run-history help in the authenticated help index", async () => {
+    routeMocks.route.name = "unmapped-route";
+    routeMocks.route.fullPath = "/missing";
+
+    const auth = useAuthStore();
+    auth.user = {
+      id: "user-1",
+      email: "teacher@example.com",
+      role: "user",
+      auth_provider: "huleedu",
+    };
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(document.body.textContent).toContain("Hjälpindex");
+    expect(document.body.textContent).toContain("Mina filer");
+    expect(document.body.textContent).not.toContain("Mina körningar");
 
     wrapper.unmount();
   });

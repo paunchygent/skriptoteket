@@ -196,6 +196,10 @@ Out of scope:
 - `Kodredigerare` now lives in the primary app shelf for contributors and
   above, links directly to `/editor`, and reuses the route's existing
   contributor gate through a reusable `minRole` app-card field.
+- Post-deploy shell correction removed the stale `Mina körningar` link from
+  `AuthSidebar.vue` and retired the discoverable help-index topic. The legacy
+  `/my-runs` route remains in place for compatibility until a planned route
+  retirement slice handles it.
 
 ## Red-To-Green Test Plan
 
@@ -225,7 +229,7 @@ Required coverage:
 - `Kodredigerare` appears as a primary app entry for contributors and above
   and links to `/editor`;
 - `Mina körningar`, latest-used app rows, and recent-used vanity rows are
-  absent from authenticated home;
+  absent from authenticated home and persistent shell navigation;
 - the app shelf does not expose separate `Öppna`, `Direkt i appen`, or
   `Arbetsappar` labels;
 - secondary surfaces are flat ledgers, not cards nested inside cards/panels;
@@ -319,6 +323,15 @@ Browser proof:
   The first local proof attempt found exited HuleEdu and Skriptoteket Vite dev
   lanes; both were restarted with the documented Gateway-proxy setup before the
   retained proof passed.
+- Post-deploy sidebar/help correction proof passed with:
+  - `pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts src/components/layout/AuthSidebar.spec.ts src/components/help/HelpPanel.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
+  - `pdm run fe-build`
+  - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-no-my-runs-nav.json`
+  - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav`
+  Retained artifact:
+  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav/20260619T174051Z/manifest.redacted.json`.
 
 ## Stop Conditions
 

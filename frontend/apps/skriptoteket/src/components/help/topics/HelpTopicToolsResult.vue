@@ -13,7 +13,7 @@ const { showIndex } = useHelp();
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
       <li>
         Här ser du vad verktyget gjorde och det som blev resultatet. Filer kan
-        laddas ner direkt eller sparas i Kassaskåpet.
+        laddas ner direkt eller sparas i Mina filer.
       </li>
       <li>Gick något fel visar vi ett begripligt meddelande om vad som hände och vad du kan prova.</li>
       <li>Behöver du köra om med samma inställningar klickar du <strong>Kör igen</strong>.</li>

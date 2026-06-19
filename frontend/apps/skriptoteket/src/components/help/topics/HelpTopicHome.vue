@@ -19,13 +19,12 @@ const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
       <li>
-        Start samlar de vanligaste vägarna vidare: katalogen, dina körningar och
-        de bidrags- eller adminvyer du har behörighet till.
+        Start samlar arbetsappar, filer, katalog och de bidrags- eller
+        adminvyer du har behörighet till.
       </li>
       <li>
-        Välj <strong>Katalog</strong> när du vill hitta ett verktyg eller en app.
-        Välj <strong>Mina körningar</strong> när du vill gå tillbaka till ett
-        tidigare resultat.
+        <strong>Katalog</strong> innehåller tillgängliga verktyg och appar.
+        <strong>Mina filer</strong> samlar sparade filer och exporter.
       </li>
       <li>
         Om en genväg eller sektion saknas beror det oftast på din roll eller på

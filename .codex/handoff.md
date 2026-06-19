@@ -58,11 +58,11 @@ Keep this file updated so the next session can pick up work quickly.
   classroom-map symbol; the other visible app-card labels are Swedish:
   `Provhantering`, `Ljudtranskribering`, `Dokumentkonvertering`, and
   `Kodredigerare`.
-- Post-deploy copy correction: authenticated home copy now removes generic
+- Post-deploy copy/navigation correction: authenticated home copy now removes generic
   helper phrases such as `nästa arbetsmoment`, `filspår`,
   `transkriptarbetsyta`, and `publiceringsflödet`; the redundant
-  `Arbetsappar` and `Direkt i appen` labels are gone; prior direct ledger copy
-  was restored where it still matched the product.
+  `Arbetsappar` and `Direkt i appen` labels are gone; the stale
+  `Mina körningar` sidebar/help-index entry is removed.
 - The PR-0364 rejected card-grid and service-foyer attempts were deleted at
   user request on 2026-06-19; do not implement either layout. Approved C2 also
   removes `Mina körningar`, latest-used/recent-used home chrome, separate
@@ -137,17 +137,14 @@ Keep this file updated so the next session can pick up work quickly.
   - Captures:
     `authenticated-home-desktop.png` at `1512x900` and
     `authenticated-home-compact.png` at `390x844`.
-- PR-0364 post-deploy copy correction proof passed:
-  - First local attempts found the HuleEdu login UI `:5174` and Skriptoteket
-    Vite `:5173` lanes had exited; both were restarted with the documented
-    Gateway-proxy setup.
+- PR-0364 copy/navigation correction proof passed:
   - Correct preflight:
-    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-home-labels-final.json`
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-no-my-runs-nav.json`
     passed with all checks `ok`.
   - Retained proof:
-    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final`
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav`
     passed; artifact:
-    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final/20260619T172451Z/manifest.redacted.json`.
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav/20260619T174051Z/manifest.redacted.json`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -191,5 +188,6 @@ pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base
 - `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
   `PR-0364` and `PR-0365`.
 ## Next Steps
-- Continue with `PR-0365` authenticated shell navigation realignment.
+- Continue with `PR-0365` authenticated shell navigation realignment without
+  reintroducing `Mina körningar`; route retirement remains a later slice.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

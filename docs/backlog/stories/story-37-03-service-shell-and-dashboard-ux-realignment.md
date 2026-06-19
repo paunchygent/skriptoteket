@@ -55,8 +55,9 @@ is explicit.
   [C2 authenticated home mockup](../../mockups/pr-0364-authenticated-home-work-apps-surface/README.md).
   It should make authenticated `/` app-first, treat `Kodredigerare` as a
   primary app, remove `Mina körningar`/latest-used/recent-used home chrome,
-  and avoid nested card layouts. The deleted card-grid and service-foyer
-  mockup attempts from 2026-06-19 must not guide implementation.
+  keep `Mina körningar` out of persistent shell navigation, and avoid nested
+  card layouts. The deleted card-grid and service-foyer mockup attempts from
+  2026-06-19 must not guide implementation.
 - Implementation must use the integrated frontend stack guidance: CSS-owned
   geometry, dense workspace doctrine where applicable, focused Vitest coverage,
   and live browser proof for route-visible changes.

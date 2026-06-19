@@ -105,6 +105,8 @@ def _assert_home_contract(page: Page) -> None:
     expect(work_apps.get_by_text("Kommer senare")).to_be_visible()
     for copy in REJECTED_COPY:
         expect(home_surface.get_by_text(copy)).to_have_count(0)
+    expect(page.get_by_text("Mina körningar")).to_have_count(0)
+    expect(page.locator('a[href="/my-runs"]')).to_have_count(0)
     expect(home_surface.get_by_text("Mina körningar")).to_have_count(0)
     expect(home_surface.get_by_text("Dina favoriter")).to_have_count(0)
     expect(home_surface.get_by_text("Senast använda")).to_have_count(0)

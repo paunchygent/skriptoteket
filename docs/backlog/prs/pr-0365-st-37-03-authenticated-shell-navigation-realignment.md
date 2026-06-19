@@ -5,7 +5,7 @@ title: "ST-37-03 authenticated shell navigation realignment"
 status: blocked
 owners: "agents"
 created: 2026-06-18
-updated: 2026-06-18
+updated: 2026-06-19
 stories:
   - "ST-37-03"
 tags:
@@ -56,9 +56,13 @@ contributor, and admin surfaces accessible and role-gated.
    primary app-lane section.
 2. Update `AuthSidebar.vue` and any shared shell navigation helpers to present
    app-lane links first.
-3. Keep platform links such as `Katalog`, `Mina körningar`, `Mina filer`,
-   `Kodredigerare`, suggestions, and admin pages available below the app lanes.
-4. Preserve focus mode, mobile drawer behavior, immersive route behavior, and
+3. Keep platform links such as `Katalog` and `Mina filer`, plus role-gated
+   surfaces such as `Kodredigerare`, suggestions, and admin pages, available
+   below the app lanes.
+4. Do not reintroduce `Mina körningar` as persistent shell navigation; the
+   legacy route may remain for deep-link compatibility until a separate
+   route-retirement slice handles it.
+5. Preserve focus mode, mobile drawer behavior, immersive route behavior, and
    Klassrumskartan's `xl` sidebar breakpoint.
 
 ## Test plan
