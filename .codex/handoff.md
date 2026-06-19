@@ -31,9 +31,9 @@ Keep this file updated so the next session can pick up work quickly.
   design-rule alignment of the C2 authenticated home mockup:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`.
   It should make authenticated `/` app-first with primary shelves for
-  Klassrumskartan, Exam Converter `?mode=exam`, Audio Transcription
-  `?mode=transcript`, Document Converter, and Kodredigerare. Do not fake the
-  Document Converter route; stop/attach a route-visible slice if no truthful
+  Klassrumskartan, Provkonverteraren `?mode=exam`, Ljudtranskribering
+  `?mode=transcript`, Dokumentkonverteraren, and Kodredigerare. Do not fake the
+  Dokumentkonverteraren route; stop/attach a route-visible slice if no truthful
   target exists.
 - `PR-0364` runtime frontend implementation is now in
   `frontend/apps/skriptoteket/src/views/HomeView.vue`,
@@ -42,8 +42,8 @@ Keep this file updated so the next session can pick up work quickly.
   `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`. Follow-up review
   fixes are now in `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`
   and `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.spec.ts`.
-  Authenticated `/` is app-first, `Kodredigerare` is primary, Document
-  Converter is visible but non-linkable, the default home loader no longer
+  Authenticated `/` is app-first, `Kodredigerare` is primary,
+  Dokumentkonverteraren is visible but non-linkable, the default home loader no longer
   hits retired runs/favorites/recent endpoints, and the old home
   `dashboard-card` grid plus `Mina körningar`/latest/recent chrome are
   removed.
@@ -53,6 +53,11 @@ Keep this file updated so the next session can pick up work quickly.
   auth-integration `local-shared-verify-export.json` that matches the running
   Identity service DB. See
   `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md`.
+- Post-deploy correction: authenticated home app cards now use image identities
+  instead of CSS graph-paper sketches. `Klassrumskartan` reuses the existing
+  classroom-map symbol; the other visible app-card labels are Swedish:
+  `Provkonverteraren`, `Ljudtranskribering`, `Dokumentkonverteraren`, and
+  `Kodredigerare`.
 - The PR-0364 rejected card-grid and service-foyer attempts were deleted at
   user request on 2026-06-19; do not implement either layout. Approved C2 also
   removes `Mina körningar`, latest-used/recent-used home chrome, separate
@@ -68,7 +73,7 @@ Keep this file updated so the next session can pick up work quickly.
   `skriptoteket_web` on `hule-network` with alias `skriptoteket-web`; do not
   use host Uvicorn for this lane.
 ## Verification
-- Correct local runtime for PR-0363 proof:
+- Current local shared-auth runtime:
   - HuleEdu Gateway container `huleedu_api_gateway_service` healthy on
     `http://localhost:8080`.
   - Skriptoteket Docker service `skriptoteket_web` running and reachable from
@@ -77,12 +82,6 @@ Keep this file updated so the next session can pick up work quickly.
     `VITE_DEV_PROXY_TARGET=http://localhost:8080`.
 - Gateway-to-Skriptoteket Docker check passed:
   `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`.
-- PR-0363 authenticated browser proof passed:
-  `pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink`.
-- Retained artifact:
-  `.artifacts/playwright-pr-0363-conversion-mode-deeplink/20260618T225544Z/manifest.redacted.json`.
-- Proof covered `/apps/documents.conversion_hub?mode=exam` and
-  `/apps/documents.conversion_hub?mode=transcript` at viewport `1512x900`.
 - Focused verification passed:
   - Red-first loader proof:
     `pdm run fe-test -- --run src/composables/home/useHomeDashboard.spec.ts`
@@ -101,20 +100,8 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run docs-validate`
   - `pdm run handoff-validate`
   - `git diff --check`
-  - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`
-    passed with 4 files / 44 tests.
-  - `pdm run fe-type-check`
-  - `pdm run fe-lint`
-  - `pdm run fe-build` passed with existing dynamic/static import and
-    large-chunk warnings.
   - `pdm run test tests/unit/scripts/test_playwright_script_surface.py`
     passed with 3 tests.
-  - `pdm run docs-validate`, `pdm run handoff-validate`, and
-    `pdm run skills-validate` passed in this repo.
-  - `git diff --check` passed in this repo.
-  - Shared skill repo `pdm run skills-validate` and `pdm run docs-validate`
-    passed after the `local-devops` breadcrumb update; shared skill repo
-    `git diff --check` also passed.
 - PR-0364 live browser proof passed:
   - Docker/Gateway lane is healthy and `skriptoteket_web` resolves from
     `huleedu_api_gateway_service`.
@@ -128,6 +115,18 @@ Keep this file updated so the next session can pick up work quickly.
     passed.
   - Retained artifact:
     `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface/20260619T102703Z/manifest.redacted.json`.
+  - Captures:
+    `authenticated-home-desktop.png` at `1512x900` and
+    `authenticated-home-compact.png` at `390x844`.
+- PR-0364 post-deploy app-card visual identity proof passed:
+  - Correct preflight:
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-visual-identity.json`
+    passed with all checks `ok`.
+  - Retained proof:
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-visual-identity`
+    passed.
+  - Retained artifact:
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-visual-identity/20260619T135320Z/manifest.redacted.json`.
   - Captures:
     `authenticated-home-desktop.png` at `1512x900` and
     `authenticated-home-compact.png` at `390x844`.
@@ -157,18 +156,6 @@ git diff --check
 pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-local-shared.json
 pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173
 
-# Focused PR-0363 checks retained below.
-pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts
-pdm run fe-type-check
-pdm run fe-lint
-pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink
-pdm run test tests/unit/scripts/test_playwright_script_surface.py
-pdm run fe-build
-pdm run docs-validate
-pdm run handoff-validate
-pdm run skills-validate
-git diff --check
-git -C /Users/olofs_mba/Documents/Repos/skill-repository diff --check
 ```
 ## Known Issues / Risks
 - Do not start host `pdm run dev`/Uvicorn for Gateway-authenticated backend dev

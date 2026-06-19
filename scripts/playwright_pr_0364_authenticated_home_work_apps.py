@@ -31,9 +31,9 @@ from scripts._playwright_config import get_config
 ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0364-authenticated-home-work-apps-surface")
 APP_ORDER = [
     "Klassrumskartan",
-    "Exam Converter",
-    "Audio Transcription",
-    "Document Converter",
+    "Provkonverteraren",
+    "Ljudtranskribering",
+    "Dokumentkonverteraren",
     "Kodredigerare",
 ]
 APP_LINK_TARGETS = {
@@ -83,8 +83,12 @@ def _assert_home_contract(page: Page) -> None:
     expect(secondary_ledgers).to_be_visible()
     expect(work_apps.get_by_role("heading", name="Arbetsappar")).to_be_visible()
     expect(work_apps.locator("h3")).to_have_text(APP_ORDER)
+    expect(work_apps.locator("img")).to_have_count(5)
     expect(secondary_ledgers.get_by_text("Mina filer", exact=True)).to_be_visible()
     expect(secondary_ledgers.get_by_text("Katalog", exact=True)).to_be_visible()
+    expect(work_apps.get_by_text("Exam Converter")).to_have_count(0)
+    expect(work_apps.get_by_text("Audio Transcription")).to_have_count(0)
+    expect(work_apps.get_by_text("Document Converter")).to_have_count(0)
     expect(home_surface.get_by_text("Mina körningar")).to_have_count(0)
     expect(home_surface.get_by_text("Dina favoriter")).to_have_count(0)
     expect(home_surface.get_by_text("Senast använda")).to_have_count(0)

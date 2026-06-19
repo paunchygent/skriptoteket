@@ -7,18 +7,17 @@
  *   `HomeView` and `HomeWorkAppsSection` share one reviewed lane model
  */
 
-export type HomeWorkAppGraphic =
-  | "classroom"
-  | "exam"
-  | "audio"
-  | "document"
-  | "code";
+import classroomMapSymbolUrl from "../../assets/home/klassrumskartan/catalog/classroom-map-symbol.png";
+import documentConverterSymbolUrl from "../../assets/home/work-apps/dokumentkonverteraren.png";
+import codeEditorSymbolUrl from "../../assets/home/work-apps/kodredigerare.png";
+import audioTranscriptionSymbolUrl from "../../assets/home/work-apps/ljudtranskribering.png";
+import examConverterSymbolUrl from "../../assets/home/work-apps/provkonverteraren.png";
 
 export type HomeWorkApp = {
   id: string;
   title: string;
   description: string;
-  graphic: HomeWorkAppGraphic;
+  imageSrc: string;
   to?: string;
   availabilityLabel: string;
 };
@@ -28,38 +27,38 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     id: "classroom",
     title: "Klassrumskartan",
     description: "Planera salar, grupper och placeringar i den egna arbetsytan.",
-    graphic: "classroom",
+    imageSrc: classroomMapSymbolUrl,
     to: "/apps/classroom.group-seating-studio",
     availabilityLabel: "Direkt i appen",
   },
   {
     id: "exam-converter",
-    title: "Exam Converter",
+    title: "Provkonverteraren",
     description: "Importera prov, arbeta vidare med facit och spara filspår.",
-    graphic: "exam",
+    imageSrc: examConverterSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=exam",
     availabilityLabel: "Direkt i appen",
   },
   {
     id: "audio-transcription",
-    title: "Audio Transcription",
+    title: "Ljudtranskribering",
     description: "Konvertera ljud till sparad transkriptarbetsyta och exportera vidare.",
-    graphic: "audio",
+    imageSrc: audioTranscriptionSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=transcript",
     availabilityLabel: "Direkt i appen",
   },
   {
     id: "document-converter",
-    title: "Document Converter",
+    title: "Dokumentkonverteraren",
     description: "PDF, DOCX, HTML och mallformat i en egen dokumentyta när den är redo.",
-    graphic: "document",
+    imageSrc: documentConverterSymbolUrl,
     availabilityLabel: "Visas här när arbetsytan är redo",
   },
   {
     id: "editor",
     title: "Kodredigerare",
     description: "Skriv, underhåll och vidareutveckla verktyg utan att lämna startsidan först.",
-    graphic: "code",
+    imageSrc: codeEditorSymbolUrl,
     to: "/editor",
     availabilityLabel: "Direkt i appen",
   },

@@ -210,9 +210,9 @@ describe("HomeView", () => {
       wrapper.text().indexOf("Katalog"),
     );
     expect(workAppsSection.text()).toContain("Klassrumskartan");
-    expect(workAppsSection.text()).toContain("Exam Converter");
-    expect(workAppsSection.text()).toContain("Audio Transcription");
-    expect(workAppsSection.text()).toContain("Document Converter");
+    expect(workAppsSection.text()).toContain("Provkonverteraren");
+    expect(workAppsSection.text()).toContain("Ljudtranskribering");
+    expect(workAppsSection.text()).toContain("Dokumentkonverteraren");
     expect(workAppsSection.text()).toContain("Kodredigerare");
     expect(
       workAppsSection.findAll('[data-testid^="home-work-app-"]').map((app) => {
@@ -221,11 +221,15 @@ describe("HomeView", () => {
       }),
     ).toEqual([
       "Klassrumskartan",
-      "Exam Converter",
-      "Audio Transcription",
-      "Document Converter",
+      "Provkonverteraren",
+      "Ljudtranskribering",
+      "Dokumentkonverteraren",
       "Kodredigerare",
     ]);
+    expect(workAppsSection.findAll('[data-testid^="home-work-app-"] img')).toHaveLength(5);
+    expect(workAppsSection.text()).not.toContain("Exam Converter");
+    expect(workAppsSection.text()).not.toContain("Audio Transcription");
+    expect(workAppsSection.text()).not.toContain("Document Converter");
     expect(workAppsSection.text()).not.toContain("Öppna");
     expect(wrapper.text()).not.toContain("Mina körningar");
     expect(wrapper.text()).not.toContain("Dina favoriter");
@@ -237,20 +241,20 @@ describe("HomeView", () => {
     expect(secondaryLedgers.text()).not.toContain("Att granska");
   });
 
-  it("uses truthful authenticated route targets and keeps Document Converter non-clickable", async () => {
+  it("uses truthful authenticated route targets and keeps Dokumentkonverteraren non-clickable", async () => {
     const wrapper = await mountAuthenticatedHomeView();
 
     expect(findRouterLinkByText(wrapper, "Klassrumskartan")?.props("to")).toBe(
       "/apps/classroom.group-seating-studio",
     );
-    expect(findRouterLinkByText(wrapper, "Exam Converter")?.props("to")).toBe(
+    expect(findRouterLinkByText(wrapper, "Provkonverteraren")?.props("to")).toBe(
       "/apps/documents.conversion_hub?mode=exam",
     );
-    expect(findRouterLinkByText(wrapper, "Audio Transcription")?.props("to")).toBe(
+    expect(findRouterLinkByText(wrapper, "Ljudtranskribering")?.props("to")).toBe(
       "/apps/documents.conversion_hub?mode=transcript",
     );
     expect(findRouterLinkByText(wrapper, "Kodredigerare")?.props("to")).toBe("/editor");
-    expect(findRouterLinkByText(wrapper, "Document Converter")).toBeUndefined();
+    expect(findRouterLinkByText(wrapper, "Dokumentkonverteraren")).toBeUndefined();
     expect(
       wrapper
         .get('[data-testid="home-work-app-document-converter"]')
