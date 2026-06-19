@@ -2,10 +2,10 @@
 type: pr
 id: PR-0054
 title: "User file vault: backend + resolver"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-24
-updated: 2026-01-28
+updated: 2026-06-18
 stories:
   - "ST-14-36"
 tags: ["backend"]
@@ -107,3 +107,9 @@ retention cleanup, without impacting existing session-file flows.
 ## Rollback plan
 
 - Revert commit; rollback migration; disable vault resolver path.
+
+## Closeout Status (as of 2026-06-18)
+
+`PR-0359` repairs this slice to `done`. The backend vault persistence, owner
+checks, soft-delete/restore/retention path, dedicated `/api/v1/vault` module,
+and `vault:*` resolver support are present in the current repo.

@@ -12,10 +12,17 @@
  */
 
 import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
 import { DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED } from "../../api/sirConvertGateway/contractValues";
-import ConversionHubModeTabs, { type ConversionHubMode } from "./ConversionHubModeTabs.vue";
+import ConversionHubModeTabs from "./ConversionHubModeTabs.vue";
+import {
+  CONVERSION_HUB_DEFAULT_MODE,
+  resolveConversionHubModeQueryValue,
+  type ConversionHubMode,
+  withConversionHubModeQuery,
+} from "./conversionHubModeRoute";
 import ConversionHubTranscriptHost from "./conversion-hub-transcript/ConversionHubTranscriptHost.vue";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
@@ -38,7 +45,15 @@ const props = defineProps<{
   inspectionFixtureId?: string | null;
 }>();
 
-const activeHubMode = ref<ConversionHubMode>("exam");
+const route = useRoute();
+const router = useRouter();
+const isExamInspectionFixtureRoute = computed(() => Boolean(props.inspectionFixtureId));
+const activeHubMode = computed<ConversionHubMode>(() => {
+  if (isExamInspectionFixtureRoute.value) {
+    return CONVERSION_HUB_DEFAULT_MODE;
+  }
+  return resolveConversionHubModeQueryValue(route.query.mode);
+});
 
 const {
   clearSourceFile,
@@ -286,6 +301,15 @@ function selectInspectionMode(mode: ExamConverterInspectionMode): void {
   activeInspectionMode.value = mode;
 }
 
+function selectHubMode(mode: ConversionHubMode): void {
+  if (isExamInspectionFixtureRoute.value) {
+    return;
+  }
+  void router.replace({
+    query: withConversionHubModeQuery(route.query, mode),
+  });
+}
+
 function handleOpenQuestions(): void {
   activeInspectionMode.value = "questions";
   aiSuggestionFocusKey.value += 1;
@@ -382,7 +406,7 @@ onMounted(async () => {
   >
     <ConversionHubModeTabs
       :active-mode="activeHubMode"
-      @mode-selected="activeHubMode = $event"
+      @mode-selected="selectHubMode"
     />
     <section
       class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"

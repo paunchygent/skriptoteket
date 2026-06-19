@@ -2,10 +2,10 @@
 type: pr
 id: PR-0196
 title: "ST-29-11: planner wrapper thinning and action-surface adapter cleanup"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-04-01
-updated: 2026-04-01
+updated: 2026-06-18
 stories:
   - "ST-29-11"
 tags: ["frontend", "design-system", "klassrumskartan", "planner", "refactor"]
@@ -76,3 +76,9 @@ map planner-specific copy, events, and test ids.
 - Revert the planner-wrapper cleanup pass if adapter thinning destabilizes shipped planner controls.
 - Keep the shared primitive tightening from `PR-0195` intact unless the bug is truly in the
   primitive contract itself.
+
+## Supersession Note (2026-06-18)
+
+Canceled during `PR-0359` as absorbed by the later shipped `ST-29-11` planner
+hardening set. Shared planner wrapper and action-surface work now lives in the
+implemented later slices rather than in this older generic cleanup draft.

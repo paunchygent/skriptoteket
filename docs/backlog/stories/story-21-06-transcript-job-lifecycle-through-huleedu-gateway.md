@@ -2,10 +2,10 @@
 type: story
 id: ST-21-06
 title: "Transcript job lifecycle through HuleEdu Gateway"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-09
-updated: 2026-06-10
+updated: 2026-06-18
 epic: "EPIC-21"
 dependencies:
   - "ST-21-05"
@@ -72,6 +72,16 @@ live end-to-end proof.
 
 - `PR-0342` owns the first transcript intake and lifecycle client
   implementation against the existing `sirConvertGateway` adapter family.
+
+## Implementation Summary (as of 2026-06-18)
+
+- `PR-0342` shipped the authenticated HuleEdu Gateway `/sir-convert/v2/convert`
+  submit, poll, cancel/error handling, and named `transcript_json` retrieval
+  flow that this story planned.
+- Later transcript work (`ST-21-07` through `ST-21-09`) keeps using the same
+  owner-scoped Gateway lifecycle instead of reopening direct-browser or
+  product-local runtime paths, so this story is repaired to `done` during
+  `PR-0359`.
 
 ## Notes
 

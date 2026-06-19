@@ -20,9 +20,23 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
+
+const routeMocks = vi.hoisted(() => ({
+  route: {
+    query: {},
+  },
+  router: {
+    replace: vi.fn(),
+  },
+}));
+
+vi.mock("vue-router", () => ({
+  useRoute: () => routeMocks.route,
+  useRouter: () => routeMocks.router,
+}));
 
 const FORBIDDEN_VISIBLE_WORDS = [
   "artefakt",
@@ -35,6 +49,12 @@ const FORBIDDEN_VISIBLE_WORDS = [
   "pipeline",
   "inloggad konvertering",
 ];
+
+beforeEach(() => {
+  routeMocks.route.query = {};
+  routeMocks.router.replace.mockReset();
+  routeMocks.router.replace.mockResolvedValue(undefined);
+});
 
 async function chooseFile(wrapper: ReturnType<typeof mount>, selector: string, file: File) {
   const input = wrapper.find<HTMLInputElement>(selector);

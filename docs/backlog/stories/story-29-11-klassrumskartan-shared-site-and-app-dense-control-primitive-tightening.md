@@ -5,7 +5,7 @@ title: "Klassrumskartan — Shared site/app dense-control primitive tightening"
 status: ready
 owners: "agents"
 created: 2026-04-01
-updated: 2026-05-09
+updated: 2026-06-18
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -140,6 +140,11 @@ instead of treating it as unfinished planner-layout implementation.
   remediation: `Dela` now moves into overflow at the iPhone 15 Pro portrait
   proof width so the group-count split control remains reachable, while seating
   keeps its existing phone ladder.
+- `PR-0359` backlog cleanup canceled `PR-0195`, `PR-0196`, and `PR-0197` on
+  2026-06-18 as absorbed by the later shipped `ST-29-11` primitive and planner
+  hardening slices above. The story stays open in docs because the cleanup
+  slice was scoped only to those stale early PR rows, not to a broader
+  `ST-29-11` closeout decision.
 
 ## References
 

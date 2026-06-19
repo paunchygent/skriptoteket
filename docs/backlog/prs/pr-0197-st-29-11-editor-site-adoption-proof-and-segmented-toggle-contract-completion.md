@@ -2,10 +2,10 @@
 type: pr
 id: PR-0197
 title: "ST-29-11: editor/site adoption proof and segmented-toggle contract completion"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-04-01
-updated: 2026-04-01
+updated: 2026-06-18
 stories:
   - "ST-29-11"
 tags: ["frontend", "design-system", "editor", "site", "segmented-toggle"]
@@ -79,3 +79,10 @@ surfaces, with `UiSegmentedToggle` as the main cross-app contract seam.
   primitive contract.
 - Keep the earlier primitive and planner cleanup slices unless the issue proves the shared contract
   itself is wrong.
+
+## Supersession Note (2026-06-18)
+
+Canceled during `PR-0359` as absorbed by the later shipped `ST-29-11`
+primitive and non-planner adoption work. Shared segmented-toggle and adjacent
+cross-surface tightening now exist in later implemented slices and current SPA
+primitives, so this older draft no longer needs an open backlog status.

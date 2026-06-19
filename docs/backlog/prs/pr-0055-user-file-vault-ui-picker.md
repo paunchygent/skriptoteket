@@ -2,10 +2,10 @@
 type: pr
 id: PR-0055
 title: "User file vault: UI picker + defaults"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-24
-updated: 2026-01-28
+updated: 2026-06-18
 stories:
   - "ST-14-36"
 tags: ["frontend"]
@@ -90,3 +90,9 @@ Deliver the vault picker UI for runs/actions, handle defaults, and support save/
 ## Rollback plan
 
 - Revert commit; hide vault picker UI; keep backend intact.
+
+## Closeout Status (as of 2026-06-18)
+
+`PR-0359` repairs this slice to `done`. The current SPA ships the vault picker,
+defaults handling, explicit save/delete/restore flows, and the governed vault
+management UI described here.

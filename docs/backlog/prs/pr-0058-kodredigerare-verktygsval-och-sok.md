@@ -2,10 +2,10 @@
 type: pr
 id: PR-0058
 title: "Kodredigerare: tool picking, search, and editor menu"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-26
-updated: 2026-01-26
+updated: 2026-06-18
 stories:
   - "ST-14-38"
 tags: ["frontend", "ux"]
@@ -50,3 +50,9 @@ acceptance_criteria:
 
 - Revert the `/editor` route and related UI components (hub + editor menu).
 - Fall back to tool navigation via `/my-tools` and `/admin/tools`.
+
+## Closeout Status (as of 2026-06-18)
+
+`PR-0359` repairs this slice to `done`. The current `/editor` hub, MRU reopen,
+bounded editable-tool search, and `EditorToolMenu` picker/menu behavior match
+the implemented scope described here.

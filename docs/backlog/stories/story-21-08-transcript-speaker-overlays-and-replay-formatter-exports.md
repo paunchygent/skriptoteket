@@ -5,7 +5,7 @@ title: "Transcript speaker overlays and replay formatter exports"
 status: done
 owners: "agents"
 created: 2026-06-13
-updated: 2026-06-14
+updated: 2026-06-18
 epic: "EPIC-21"
 dependencies:
   - "ST-21-06"
@@ -13,6 +13,7 @@ dependencies:
   - "Sir Convert Story 54"
   - "Sir Convert Story 56"
   - "HuleEdu ST-01-09"
+  - "REF-current-product-lanes-and-sir-convert-boundary-v1"
 acceptance_criteria:
   - "Given a transcript job is running, when Sir Convert reports progress through Gateway, then Skriptoteket renders truthful phase/status, retry state, and cancel/abort outcome without spinner-only waiting states or unstable raw counters presented as reliable progress."
   - "Given a saved canonical transcript contains diarized speaker labels, when the teacher names speakers, then Skriptoteket persists a typed owner-scoped overlay from canonical speaker labels to display names without mutating the canonical transcript JSON."
@@ -161,6 +162,13 @@ shows:
 This closes `ST-21-08`. Future transcript work should build on the
 product-owned export state boundary rather than restoring browser replay
 orchestration.
+
+`PR-0360` / `ST-37-02` adds
+[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+as the durable product-lane boundary reference. For the transcript lane, Sir
+Convert owns STT, diarization, formatter replay, and returned artifacts;
+Skriptoteket owns saved transcript state, speaker overlays, teacher-facing
+export intent, sharing/file actions, and app presentation.
 
 `PR-0351` added the final transcript workspace UX hardening after this retained
 production proof. Its local live proof attempt reached the HuleEdu

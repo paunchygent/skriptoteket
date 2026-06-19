@@ -5,7 +5,7 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-06-14
+updated: 2026-06-18
 outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, publish immutable shareable HTML/CSS export links for grouping and seating with reliable renderer-derived Teams/social previews, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 ---
@@ -163,6 +163,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   2026-06-14 Hemma production build warning investigation created `PR-0353` to
   upgrade or isolate the Playwright browser runtime so Node `DEP0169` warnings
   from Playwright's browser downloader do not remain in production build logs.
+  `PR-0359` reviewed `PR-0277` for stale-state repair on 2026-06-18 and left it
+  open intentionally: the implementation shipped, but the retained
+  post-implementation review `REV-PR-0277` and the never-before-posted Teams
+  unfurl proof are still outstanding, so `ST-26-07` remains active.
   `PR-0279` closed the linked static seating share-label correction: it keeps the opened
   share page as HTML/CSS, removes first/second-line label collision, handles
   ordinary long names without default ellipsis, and deployed the

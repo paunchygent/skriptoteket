@@ -8,175 +8,112 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-15.
+- Date: 2026-06-19.
 - Branch: `main`.
-- Sir Convert `task-363` is complete, reviewed, deployed, and consumed by Skriptoteket. Producer contract revision: `4b09baa989d38f582573a810f045e50c676139a9`.
-- Skriptoteket `PR-0350` is implemented, reviewed, merged, pushed, and deployed. It removes the browser-owned formatter replay saga and replaces it with product-owned `POST/GET /formatter-exports` state over saved transcripts.
-- Production wiring fix `14f4b3af` makes Hemma use internal Sir Convert base `http://sir_convert_a_lot_prod:8085`; `https://convert.hule.education` is the reserved public edge and returned `421` during the first live proof attempt.
-- Prior PR-0310 through PR-0342 history lives in
-  `.codex/long-term-memory/entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`,
-  `.codex/long-term-memory/entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`,
-  `.codex/long-term-memory/entries/session-2026-05-17-pr-0326-through-pr-0331-ai-facit-review-history.md`, and
-  `.codex/long-term-memory/entries/session-2026-06-12-pr-0332-through-pr-0342-correction-transcript-history.md`.
+- Latest closed slice: `PR-0363` under `ST-37-03`; current planned slice:
+  `PR-0364` authenticated home work-apps surface.
+- Older PR-0355/PR-0356 proof and Hemma deploy detail was compacted to
+  `.codex/long-term-memory/entries/session-2026-06-19-pr-0355-pr-0356-and-pr-0363-runtime-compaction.md`.
+- Prior PR-0310 through PR-0354 history lives in existing entries under
+  `.codex/long-term-memory/entries/`.
 ## Status
-- `REV-PR-0350` is approved:
-  `docs/backlog/reviews/review-pr-0350-product-owned-transcript-replay-export-boundary.md`.
-- `PR-0350` code replaced browser replay prepare/submit/poll/download/base64/
-  complete with backend-owned Sir Convert replay submission, manifest/artifact
-  verification, persisted product export state, and Swedish pending/running/
-  succeeded/failed UI.
-- `PR-0351` is implemented and `REV-PR-0351` is approved. It consumes the
-  Task-364 progress-field contract, autosaves completed transcripts, removes
-  the generic manual `Spara` gate, removes old per-artifact export rows, keeps
-  selected-format actions as `Ladda ner` and `Mina filer`, and gates export on
-  complete persisted speaker overlays.
-- Skriptoteket-owned legacy replay/export UI and parser code was removed. The
-  remaining `replay` strings in the transcript formatter export path are
-  upstream Sir Convert literal contract values:
-  `transcript_formatter_replay_v1`,
-  `transcript_replay_bundle_manifest.json`, and
-  `transcript_json_to_transcript_bundle_replay_v2`.
-- `ST-21-08`, `EPIC-21`, `PR-0351`, and `.codex/handoff.md` were updated with
-  PR-0351 closeout evidence and the successful local live proof.
-- `ST-21-09` and `PR-0352` now govern remediation for the recurring local
-  HuleEdu Gateway/Sir Convert trust-lane drift: keep Sir Convert's hosted
-  model/runtime estate remote, but make signer/verifier lane coherence a
-  default preflight before upload or producer job creation.
-- `PR-0352` / `ST-21-09` is done and approved by `REV-PR-0352`. New helper:
-  `scripts/_sir_convert_trust_lane_preflight.py`; proof hook:
-  `scripts/playwright_pr_0349_transcript_parity_live.py`; focused tests:
-  `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`.
-- Follow-up commit `2fa27cfb` fixes the production formatter-export failure by
-  making `SirConvertTranscriptFormatterProducerV2` accept `202 Accepted`, poll
-  `/v2/convert/jobs/{job_id}`, then read result/artifacts.
-- `PR-0353` is ready under `ST-26-07` for the 2026-06-14 Hemma production
-  Playwright browser-install `[DEP0169]` warning. It requires removing the
-  warning in a traced BuildKit production build while preserving
-  Klassrumskartan 1200x630 share-preview PNG generation in-container.
-- `PR-0354` is done for `ST-21-08` transcript UI remediation:
-  `docs/backlog/prs/pr-0354-st-21-08-transcript-export-selector-and-responsive-layout-remediation.md`.
-  It fixes selected export-chip readability, removes unstable post-upload
-  progress counters, recovers stale formatter idempotency jobs, autosaves
-  speaker-name edits, and proves responsive layout.
-- Latest transcript proof follow-ups are pushed, deployed, and live-proven.
-  `f33dc205` fixed the PR-0354 honest progress contract in the native proof;
-  `ddd2bcf1` added Hemma-native Docker service monitoring for the same proof
-  lane.
-- `PR-0355` is done, approved, pushed to `main`, and deployed at `fe56307c`:
-  `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`.
-  It reserves the `Avbryt` row above `Starta transkribering`, removes the
-  checkbox-like square icon, updates the empty upload copy, and has local
-  remote-proof E2E evidence. Independent retained review
-  `docs/backlog/reviews/review-pr-0355-transcript-cancel-slot-rail-remediation.md`
-  is approved.
-- `PR-0356` is done, approved, pushed to `main`, and deployed at `fe56307c`:
-  authenticated Exam Converter intake is now source-only, early PDF/QTI target
-  controls are removed, authenticated submit/retry always request default
-  artifacts without `graded_result_pdf`, and `PR-0357` is the governed
-  public-lane cleanup follow-up.
+- `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the
+  current product direction, Sir Convert boundary, shell plan, and app
+  presentation sequence.
+- `PR-0363` is done and approved by `REV-PR-0363`:
+  `frontend/apps/skriptoteket/src/views/apps/conversionHubModeRoute.ts`,
+  `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`,
+  `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue`, and
+  focused specs under `frontend/apps/skriptoteket/src/views/apps/`.
+- `ST-37-03` remains open for `PR-0364` authenticated home work-apps surface
+  and `PR-0365` authenticated shell navigation realignment.
+- `PR-0364` is ready for `REV-PR-0364` after user approval of the C2
+  authenticated home mockup:
+  `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`.
+  It should make authenticated `/` app-first with primary shelves for
+  Klassrumskartan, Exam Converter `?mode=exam`, Audio Transcription
+  `?mode=transcript`, Document Converter, and Kodredigerare. Do not fake the
+  Document Converter route; stop/attach a route-visible slice if no truthful
+  target exists.
+- The PR-0364 rejected card-grid and service-foyer attempts were deleted at
+  user request on 2026-06-19; do not implement either layout. Approved C2 also
+  removes `Mina körningar`, latest-used/recent-used home chrome, separate
+  `Öppna` links, and nested card layouts.
+- `PR-0364` mockup/docs alignment validation passed: `pdm run docs-validate`,
+  `pdm run handoff-validate`, and `git diff --check`.
+- Docker-service breadcrumb is now encoded in
+  `.codex/skills/skriptoteket-testing/references/browser-automation.md`,
+  `.codex/skills/skriptoteket-testing/references/backend-pytest.md`,
+  `docs/runbooks/runbook-testing.md`, and the shared
+  `local-devops/references/skriptoteket.md`.
+- Protected HuleEdu Gateway/browser-session proof must use Docker
+  `skriptoteket_web` on `hule-network` with alias `skriptoteket-web`; do not
+  use host Uvicorn for this lane.
 ## Verification
-- Archived PR-0351 through PR-0354 proof detail now lives in
-  `.codex/long-term-memory/entries/session-2026-06-15-pr-0351-pr-0354-proof-compaction.md`
-  so this handoff can stay focused on the current PR-0355/PR-0356 work.
-- Green PR-0355 checks: `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`,
-  `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`,
-  `pdm run fe-type-check`, and `pdm run docs-validate`. Required local dev E2E
-  passed via `pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --base-url http://127.0.0.1:5173 --dotenv .env --sir-convert-proof-lane hemma-remote-proof --sir-convert-gateway-backend-url http://host.docker.internal:28085 --sir-convert-producer-backend-url http://host.docker.internal:28085 --sir-convert-ready-url http://127.0.0.1:28085/readyz --gateway-signer-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --sir-convert-trusted-fingerprint 46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992 --timeout-seconds 1200`;
-  retained artifact:
-  `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`.
-- Red then green PR-0356 focused frontend/request-context bundle:
-  first `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedRuntimeBridgeSlice.spec.ts src/views/apps/ExamConverterAuthenticatedConversionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts src/api/sirConvertGateway/requestContext.spec.ts src/api/sirConvertGateway/completionContract.spec.ts`
-  failed with 3 expectation mismatches while the source-only slice was mid-edit;
-  final overseer rerun passed with 7 files / 55 tests.
-- Green PR-0356 frontend gates: `pdm run fe-type-check`, `pdm run fe-lint`,
-  and `pdm run fe-build`; build retained the existing Vite dynamic/static import
-  note plus large-chunk warnings.
-- Green PR-0356 invalid-replacement regression:
-  `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts`
-  passed with 1 file / 20 tests after preserving the current `.dxe` across
-  invalid `.pdf`, `.docx`, and multi-`.dxe` replacement attempts.
-- Green PR-0356 authenticated fixture proof through the sanctioned HuleEdu
-  browser-session helper:
-  `pdm run python -m scripts.playwright_pr_0356_source_only_fixture_proof --base-url http://127.0.0.1:5173 --dotenv .env`
-  wrote
-  `.artifacts/playwright-pr-0356-source-only-fixture-proof/20260614T233419Z/manifest.redacted.json`
-  plus `complete-qti-ready-{desktop,compact}.png` and
-  `missing-facit-{desktop,compact}.png`. Desktop `1512x900` and compact
-  `1024x768` both prove no optional marked-PDF/supporting upload or target
-  selector, while the fixture tabs still show ready PDF/QTI save/download
-  actions and the missing-facit review shell.
-- PR-0356 fixed overseer review is accepted in
-  `docs/backlog/reviews/review-pr-0356-source-only-intake-export-owned-formats.md`
-  after Goodall fixed the browser-proof gap and invalid-replacement state loss.
-- Hemma deploy for `fe56307c` passed from log
-  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260615-154707.log`.
-  Remote checkout is `fe56307c`, `skriptoteket-web` and `skriptoteket-worker`
-  are healthy, public `https://skriptoteket.hule.education/healthz` returned
-  `{"status":"healthy","message":"Service is healthy"}`, and the deploy smoke
-  artifact is
-  `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260615-154707/smoke-result.json`.
-- Hemma deploy for `ddd2bcf1` passed from log
-  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260615-163905.log`;
-  public health returned `{"status":"healthy","message":"Service is healthy"}`,
-  and the deploy smoke artifact is
-  `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260615-163905/smoke-result.json`.
-- Native Hemma production transcript proof after `ddd2bcf1` initially retained
-  the intended service logs and showed the real blocker: Gateway `/sir-convert`
-  returned `502` because `sir_convert_a_lot_prod` was not running/resolvable.
-  After `sudo docker compose up -d --no-build sir_convert_a_lot_prod`, host
-  `http://127.0.0.1:28085/readyz` returned ready and Gateway DNS resolved
-  `sir_convert_a_lot_prod`.
-- Final native Hemma production transcript proof passed:
-  `/home/paunchygent/apps/skriptoteket/.artifacts/playwright-pr-0352-transcript-parity-native/20260615T164255Z/proof-summary.json`.
-  It proves `lane_kind=hemma_production`, fixed progress snapshot, transcript
-  save `200`, `transcript_json_v1` with 27 segments / two speakers,
-  speaker-overlays save `200`, TXT/MD/VTT/SRT downloads with overlay labels,
-  Mina filer save `200`, and retained `service-monitoring.json` plus
-  `service-logs/*.log` for Skriptoteket, HuleEdu, and Sir Convert.
-- Focused proof-script regressions are green:
-  `pdm run test tests/unit/scripts/test_playwright_pr_0349_progress_snapshot.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
-  plus `pdm run test tests/unit/scripts/test_proof_live_monitoring.py
-  tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`, compile
-  checks for the proof helpers, `pdm run typecheck`, `pdm run lint`,
-  `pdm run docs-validate`, `pdm run handoff-validate`, and `git diff --check`.
+- Correct local runtime for PR-0363 proof:
+  - HuleEdu Gateway container `huleedu_api_gateway_service` healthy on
+    `http://localhost:8080`.
+  - Skriptoteket Docker service `skriptoteket_web` running and reachable from
+    Gateway as `http://skriptoteket-web:8000`.
+  - Host Skriptoteket Vite at `http://localhost:5173` with
+    `VITE_DEV_PROXY_TARGET=http://localhost:8080`.
+- Gateway-to-Skriptoteket Docker check passed:
+  `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`.
+- PR-0363 authenticated browser proof passed:
+  `pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink`.
+- Retained artifact:
+  `.artifacts/playwright-pr-0363-conversion-mode-deeplink/20260618T225544Z/manifest.redacted.json`.
+- Proof covered `/apps/documents.conversion_hub?mode=exam` and
+  `/apps/documents.conversion_hub?mode=transcript` at viewport `1512x900`.
+- Focused verification passed:
+  - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`
+    passed with 4 files / 44 tests.
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
+  - `pdm run fe-build` passed with existing dynamic/static import and
+    large-chunk warnings.
+  - `pdm run test tests/unit/scripts/test_playwright_script_surface.py`
+    passed with 3 tests.
+  - `pdm run docs-validate`, `pdm run handoff-validate`, and
+    `pdm run skills-validate` passed in this repo.
+  - `git diff --check` passed in this repo.
+  - Shared skill repo `pdm run skills-validate` and `pdm run docs-validate`
+    passed after the `local-devops` breadcrumb update; shared skill repo
+    `git diff --check` also passed.
 ## How to Run
 ```bash
-pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_exports.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py
-pdm run test tests/unit/scripts/test_sir_convert_trust_lane_preflight.py tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py
-pdm run fe-test -- --run src/api/sirConvertGateway/transcriptClient.spec.ts src/api/sirConvertGateway/transcriptProgressParsers.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts src/api/conversionHubTranscriptFormatterArtifactActions.spec.ts src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.spec.ts
-pdm run fe-gen-api-types
-pdm run lint
-pdm run typecheck
+# Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
+DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f compose.yaml -f compose.dev.yaml up -d web
+
+# Start/reuse Skriptoteket Vite with protected API traffic proxied to HuleEdu Gateway.
+VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080 VITE_HULEEDU_AUTH_ENTRY_URL=http://localhost:8080/auth/login VITE_DEV_PROXY_TARGET=http://localhost:8080 pdm run fe-dev
+
+# Verify Gateway can resolve the product backend by Docker alias.
+docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz
+
+# Focused PR-0363 checks.
+pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts
 pdm run fe-type-check
 pdm run fe-lint
+pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink
+pdm run test tests/unit/scripts/test_playwright_script_surface.py
 pdm run fe-build
 pdm run docs-validate
 pdm run handoff-validate
+pdm run skills-validate
 git diff --check
-pdm run hemma-deploy
-pdm run hemma-deploy-monitor -- /home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-YYYYMMDD-HHMMSS.log
-# On Hemma, create .artifacts/proof-env/prod-transcript-<stamp>.env from HuleEdu
-# bootstrap credentials without printing secret values, then run:
-ssh hemma "cd /home/paunchygent/apps/skriptoteket && /home/paunchygent/.local/bin/pdm run python -m scripts.playwright_pr_0349_transcript_parity_live --audio-file /home/paunchygent/apps/sir-convert-a-lot/build/verification/stt-sidecar-live-fixtures/source-media/english-dialogue-two-speakers.mp3 --base-url https://skriptoteket.hule.education --dotenv .artifacts/proof-env/prod-transcript-YYYYMMDDTHHMMSSZ.env --artifact-root .artifacts/playwright-pr-0352-transcript-parity-native --sir-convert-proof-lane hemma-production --timeout-seconds 1200 --no-capture-local-backend-logs"
+git -C /Users/olofs_mba/Documents/Repos/skill-repository diff --check
 ```
 ## Known Issues / Risks
-- For native Hemma proof, create a gitignored/ignored dotenv under
-  `.artifacts/proof-env/` from HuleEdu Hemma bootstrap credentials without
-  printing secrets. Use the user-owned
-  `.artifacts/playwright-pr-0352-transcript-parity-native` artifact root; the
-  older `.artifacts/playwright-pr-0349-transcript-parity-live` directory is
-  root-owned on Hemma from a prior run.
-- Production formatter export must not use `https://convert.hule.education` as
-  server-side producer base; that public edge is reserved/fail-closed.
-- Production builds currently warn during `pdm run playwright install
-  --with-deps chromium` because Playwright `1.58.0` browser downloads run on a
-  vendored Node 24 driver path that reaches legacy `url.parse()` via proxy
-  detection. `PR-0353` governs remediation; do not remove Playwright from the
-  production image unless thumbnail rendering is rehomed or replaced.
-- Keep transcript formatter/export follow-ups product-owned: saved canonical
-  `transcript_json`, saved overlays, accepted Sir Convert artifacts, no browser
-  submit/poll/download/base64/complete saga.
+- Do not start host `pdm run dev`/Uvicorn for Gateway-authenticated backend dev
+  tests or browser proof. Gateway app continuation uses Docker DNS
+  `skriptoteket-web:8000`, so host Uvicorn reproduces a false failure.
+- If Gateway `:8080` appears occupied by Docker while no container publishes
+  it, suspect stale Docker Desktop port-proxy state; restart Docker Desktop and
+  recreate the affected HuleEdu services before blaming app code.
+- `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
+  `PR-0364` and `PR-0365`.
 ## Next Steps
-- Separate follow-up: implement `PR-0353` after PR-0352 closeout to
-  remove production Playwright `DEP0169` build warnings without breaking
-  `ST-26-07` share-preview thumbnails.
+- Send `REV-PR-0364` to an independent reviewer before implementation, then
+  run the approved C2 contract through red-first frontend implementation.
+- `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

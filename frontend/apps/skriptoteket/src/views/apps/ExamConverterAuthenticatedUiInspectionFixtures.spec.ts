@@ -17,13 +17,33 @@
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import {
   getExamConverterUiInspectionFixture,
   isExamConverterUiInspectionEnabled,
 } from "./exam-converter-authenticated/examConverterUiInspectionFixtures";
+
+const routeMocks = vi.hoisted(() => ({
+  route: {
+    query: {},
+  },
+  router: {
+    replace: vi.fn(),
+  },
+}));
+
+vi.mock("vue-router", () => ({
+  useRoute: () => routeMocks.route,
+  useRouter: () => routeMocks.router,
+}));
+
+beforeEach(() => {
+  routeMocks.route.query = {};
+  routeMocks.router.replace.mockReset();
+  routeMocks.router.replace.mockResolvedValue(undefined);
+});
 
 describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
   it("guards the fixture catalog to dev/test surfaces", () => {

@@ -2,9 +2,10 @@
 type: story
 id: ST-14-38
 title: "Kodredigerare: tool picking, search, and navigation"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-26
+updated: 2026-06-18
 epic: "EPIC-14"
 ui_impact: "Yes (new /editor hub + editor tool menu)"
 data_impact: "No (localStorage only)"
@@ -27,3 +28,12 @@ Tool authoring needs a cohesive way to switch, search, and create tools without 
 - “Alla verktyg” means “all tools the user is allowed to edit (role/flags)”. For now, admin uses `/api/v1/admin/tools`,
   contributors use `/api/v1/my-tools`.
 - Keep the picker UI compact and aligned with the tool editor’s design language (Brutalist Academic + tokens-first).
+
+## Implementation Summary (as of 2026-06-18)
+
+- The current SPA ships `/editor` through `EditorHubView.vue` and
+  `EditorToolMenu.vue`, including MRU reopen, `/editor?pick=1`, bounded search,
+  the compact picker, and the governed `Kodredigerare`/`Kodredigeraren`
+  labeling.
+- Because those teacher/contributor-facing surfaces are already in active use,
+  `PR-0359` repairs this story to `done`.

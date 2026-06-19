@@ -62,6 +62,32 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Help copy signoff reference:
   `docs/reference/ref-skriptoteket-help-copy-signoff.md`
 - Development changelog: `docs/reference/ref-development-changelog.md`
+- Current product direction + backlog inventory rules:
+  `docs/reference/ref-current-product-direction-and-backlog-inventory-2026-06-17.md`
+- Current product lanes + Sir Convert boundary:
+  `docs/reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md`
+- Service shell UX realignment plan:
+  `docs/reference/ref-service-shell-ux-realignment-plan-v1.md`
+- App presentation decomposition + naming plan:
+  `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`
+- Backlog product-direction inventory and app-surface realignment epic:
+  `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md`
+- Backlog inventory first PR slice:
+  `docs/backlog/prs/pr-0358-st-37-01-active-backlog-inventory-and-classification-matrix.md`
+- PR-0358 active backlog inventory artifact:
+  `docs/reference/ref-pr-0358-active-backlog-inventory-2026-06-17.md`
+- Service shell UX planning PR slice:
+  `docs/backlog/prs/pr-0361-st-37-03-service-shell-ux-realignment-planning-package.md`
+- App presentation naming PR slice:
+  `docs/backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md`
+- Conversion lane deep-link PR slice:
+  `docs/backlog/prs/pr-0363-st-37-03-conversion-lane-mode-deep-link-contract.md`
+- Authenticated home work-apps PR slice:
+  `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md`
+- Authenticated home work-apps review:
+  `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md`
+- Authenticated home work-apps approved mockup:
+  `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`
 - Mockup bundle index: `docs/mockups/INDEX.md`
 - Docs mockup bundle contract and existing preview indexes:
   `docs/backlog/prs/pr-0265-docs-mockup-bundle-contract-and-existing-preview-indexes.md`

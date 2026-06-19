@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-06-15
+updated: 2026-06-18
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -53,8 +53,8 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [ ] 2. [ST-21-02: Migration: retire html-to-pdf-preview + update tests](../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md)
 - [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md)
 - [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md)
-- [ ] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
-- [ ] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
+- [x] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
+- [x] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 - [x] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
@@ -83,6 +83,8 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 ## Dependencies
 
 - ADR-0066 (this epic's conversion strategy decision)
+- Current product lanes and Sir Convert/Skriptoteket ownership boundary:
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
 - Existing curated apps platform: ADR-0022, ADR-0023, ADR-0024
 - Public curated-app access and abuse-control authority: ADR-0079, ADR-0085,
   ST-32-03
@@ -239,6 +241,17 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   explicitly verified, local heavy model/runtime hosting remains out of scope,
   and both local remote-proof plus native Hemma production STT E2E proofs are
   retained.
+- `PR-0359` backlog cleanup repaired stale open transcript/runtime rows on
+  2026-06-18. `ST-21-05` and `ST-21-06` are now marked `done` because the
+  authenticated transcript intake, Gateway-backed job lifecycle, and canonical
+  `transcript_json` delivery shipped through `PR-0342`, then stayed in active
+  product use through `ST-21-07`, `ST-21-08`, and `ST-21-09`. `PR-0325` is
+  now marked `done` as the authenticated Exam Converter runtime/save
+  remediation that shipped before the later source-only direction. `PR-0324` is
+  canceled as a superseded proof slice because its original blocker was
+  remediated by `PR-0325`, and the remaining forward direction is governed by
+  `ST-21-10`, `PR-0356`, and `PR-0357` rather than by reopening the old
+  optional-result/early-target proof lane.
 - `ST-21-10` is ready as the next Exam Converter product-direction follow-up:
   current intake should require only the governed source `.dxe` file, rely on
   LLM answer-key enrichment plus teacher review instead of optional marked
@@ -246,3 +259,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   post-conversion file actions. `PR-0356` is the immediate authenticated
   source-only intake and export-owned format UX slice, and `PR-0357` is the
   separate governed public-lane cleanup follow-up.
+- `PR-0360` / `ST-37-02` added
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+  on 2026-06-18. Future `EPIC-21` cleanup should treat broad "Conversion Hub"
+  language as technical/historical unless it is explicitly describing the
+  compatibility shell. Teacher-facing planning should use the separate Exam
+  Converter, Audio Transcription, and Document Converter lanes.

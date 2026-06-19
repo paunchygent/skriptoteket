@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PR-0364 authenticated home work-apps surface</title>
+    <style>
+      :root {
+        --canvas: #fafaf6;
+        --panel: rgba(255, 254, 248, 0.92);
+        --navy: #0f2b4c;
+        --navy-70: rgba(15, 43, 76, 0.7);
+        --navy-55: rgba(15, 43, 76, 0.55);
+        --line: rgba(15, 43, 76, 0.28);
+        --action: #3f7f78;
+        --critical: #4d1521;
+        --serif: Georgia, "Times New Roman", serif;
+        --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        background:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px),
+          var(--canvas);
+        background-size: 24px 24px;
+        color: var(--navy);
+        font-family: var(--sans);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 900px;
+        background: rgba(250, 250, 246, 0.96);
+      }
+
+      .sidebar {
+        border-right: 2px solid var(--navy);
+        background: var(--canvas);
+        padding: 24px 16px;
+      }
+
+      .brand {
+        display: block;
+        margin-bottom: 28px;
+        font-family: var(--serif);
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      .nav {
+        display: grid;
+        gap: 6px;
+      }
+
+      .nav-heading {
+        margin: 18px 8px 4px;
+        color: var(--navy-55);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .nav a,
+      .nav button {
+        border: 0;
+        background: transparent;
+        color: var(--navy-70);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 650;
+        padding: 8px 10px;
+        text-align: left;
+      }
+
+      .nav .active {
+        border-left: 4px solid var(--action);
+        background: var(--panel);
+        color: var(--navy);
+      }
+
+      .main {
+        min-width: 0;
+        padding: 32px 40px 56px;
+      }
+
+      .shell-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 28px;
+        margin-bottom: 24px;
+      }
+
+      .title {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 32px;
+        line-height: 1.08;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--navy-70);
+        font-size: 14px;
+      }
+
+      .account-strip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--navy-70);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .account-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border: 1px solid var(--navy);
+        background: var(--panel);
+        color: var(--navy);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .section-title {
+        margin: 0 0 10px;
+      }
+
+      .section-title h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 850;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .app-shelf-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+
+      .app-shelf {
+        display: grid;
+        grid-template-rows: 96px minmax(128px, 1fr);
+        min-height: 252px;
+        border: 2px solid var(--navy);
+        background: var(--panel);
+      }
+
+      .app-shelf:hover {
+        background: #fffef8;
+      }
+
+      .app-graphic {
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--navy);
+        background: var(--canvas);
+      }
+
+      .app-graphic::after {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        border: 1px solid rgba(15, 43, 76, 0.28);
+      }
+
+      .graphic-classroom {
+        background:
+          linear-gradient(90deg, transparent 0 18%, rgba(15, 43, 76, 0.22) 18% 19%, transparent 19% 40%, rgba(15, 43, 76, 0.22) 40% 41%, transparent 41% 62%, rgba(15, 43, 76, 0.22) 62% 63%, transparent 63%),
+          linear-gradient(transparent 0 34%, rgba(15, 43, 76, 0.2) 34% 35%, transparent 35% 67%, rgba(15, 43, 76, 0.2) 67% 68%, transparent 68%),
+          var(--canvas);
+      }
+
+      .graphic-classroom .seat,
+      .graphic-exam .item,
+      .graphic-docs .doc,
+      .graphic-audio .bar,
+      .graphic-code .line,
+      .graphic-code .cursor {
+        position: absolute;
+        border: 2px solid var(--navy);
+        background: #fffef8;
+      }
+
+      .graphic-classroom .seat:nth-child(1) { left: 22px; top: 22px; width: 34px; height: 22px; }
+      .graphic-classroom .seat:nth-child(2) { left: 70px; top: 22px; width: 34px; height: 22px; }
+      .graphic-classroom .seat:nth-child(3) { left: 118px; top: 22px; width: 34px; height: 22px; }
+      .graphic-classroom .seat:nth-child(4) { left: 42px; top: 62px; width: 34px; height: 22px; }
+      .graphic-classroom .seat:nth-child(5) { left: 92px; top: 62px; width: 34px; height: 22px; }
+
+      .graphic-exam .paper {
+        position: absolute;
+        left: 28px;
+        top: 17px;
+        width: 116px;
+        height: 70px;
+        border: 2px solid var(--navy);
+        background: var(--canvas);
+      }
+
+      .graphic-exam .item {
+        left: 42px;
+        width: 74px;
+        height: 6px;
+        border-width: 1px;
+      }
+
+      .graphic-exam .item:nth-child(2) { top: 34px; }
+      .graphic-exam .item:nth-child(3) { top: 50px; }
+      .graphic-exam .item:nth-child(4) { top: 66px; width: 52px; }
+
+      .graphic-audio {
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        align-items: center;
+        gap: 6px;
+        padding: 24px;
+      }
+
+      .graphic-audio .bar {
+        position: static;
+        width: 100%;
+        border-width: 0;
+        background: var(--navy);
+      }
+
+      .graphic-audio .bar:nth-child(1) { height: 18px; opacity: 0.38; }
+      .graphic-audio .bar:nth-child(2) { height: 42px; opacity: 0.72; }
+      .graphic-audio .bar:nth-child(3) { height: 30px; opacity: 0.52; }
+      .graphic-audio .bar:nth-child(4) { height: 58px; opacity: 0.86; }
+      .graphic-audio .bar:nth-child(5) { height: 74px; opacity: 1; }
+      .graphic-audio .bar:nth-child(6) { height: 54px; opacity: 0.78; }
+      .graphic-audio .bar:nth-child(7) { height: 34px; opacity: 0.56; }
+      .graphic-audio .bar:nth-child(8) { height: 48px; opacity: 0.68; }
+      .graphic-audio .bar:nth-child(9) { height: 22px; opacity: 0.42; }
+
+      .graphic-docs .doc:nth-child(1) { left: 34px; top: 28px; width: 62px; height: 48px; }
+      .graphic-docs .doc:nth-child(2) { left: 76px; top: 18px; width: 62px; height: 58px; background: var(--canvas); }
+      .graphic-docs .doc:nth-child(3) { left: 58px; top: 46px; width: 86px; height: 18px; border-width: 1px 0; background: var(--critical); }
+
+      .graphic-code {
+        background:
+          linear-gradient(90deg, rgba(15, 43, 76, 0.18) 0 34px, transparent 34px),
+          #fffef8;
+      }
+
+      .graphic-code .line {
+        left: 48px;
+        height: 5px;
+        border-width: 0;
+        background: var(--navy);
+      }
+
+      .graphic-code .line:nth-child(1) { top: 24px; width: 76px; opacity: 0.72; }
+      .graphic-code .line:nth-child(2) { top: 40px; width: 112px; opacity: 0.5; }
+      .graphic-code .line:nth-child(3) { top: 56px; width: 92px; opacity: 0.62; }
+      .graphic-code .cursor { left: 144px; top: 52px; width: 8px; height: 18px; border-width: 0; background: var(--critical); }
+
+      .app-shelf-body {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 10px;
+        padding: 14px;
+      }
+
+      .app-shelf h3 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.12;
+      }
+
+      .app-shelf p {
+        margin: 0;
+        color: var(--navy-70);
+        font-size: 13px;
+        line-height: 1.42;
+      }
+
+      .shelf-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-top: 1px solid var(--line);
+        padding-top: 9px;
+        color: var(--navy-55);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .shelf-arrow {
+        color: var(--navy);
+        font-size: 16px;
+      }
+
+      .support-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 24px;
+        margin-top: 28px;
+      }
+
+      .panel {
+        border: 1px solid var(--navy);
+        background: var(--panel);
+      }
+
+      .panel-head {
+        border-bottom: 1px solid var(--navy);
+        padding: 12px 14px;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .ledger {
+        display: grid;
+        grid-auto-rows: 1fr;
+        min-height: 172px;
+      }
+
+      .ledger-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 34px;
+        align-items: center;
+        gap: 16px;
+        min-height: 86px;
+        padding: 14px;
+      }
+
+      .ledger-row + .ledger-row {
+        border-top: 1px solid var(--line);
+      }
+
+      .ledger-row p {
+        margin: 4px 0 0;
+        color: var(--navy-70);
+        font-size: 13px;
+        line-height: 1.42;
+      }
+
+      .arrow {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 1px solid var(--navy);
+        font-weight: 900;
+      }
+
+      @media (max-width: 1180px) {
+        .app-shelf-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 2px solid var(--navy);
+        }
+
+        .main {
+          padding: 24px 16px 40px;
+        }
+
+        .shell-head,
+        .support-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .app-shelf-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="#">Skriptoteket</a>
+        <nav class="nav" aria-label="Huvudnavigation">
+          <button type="button">Hjälp</button>
+          <div class="nav-heading">Arbetsappar</div>
+          <a href="#">Klassrumskartan</a>
+          <a href="#">Exam Converter</a>
+          <a href="#">Audio Transcription</a>
+          <a href="#">Document Converter</a>
+          <a href="#">Kodredigerare</a>
+          <div class="nav-heading">Plattform</div>
+          <a class="active" href="#">Hem</a>
+          <a href="#">Profil</a>
+          <a href="#">Mina filer</a>
+          <a href="#">Katalog</a>
+          <a href="#">Föreslå verktyg</a>
+        </nav>
+      </aside>
+      <main class="main">
+        <header class="shell-head">
+          <div>
+            <h1 class="title">Hem</h1>
+            <p class="subtitle">Välj arbetsyta, hitta material eller fortsätt bygga verktyg.</p>
+          </div>
+          <div class="account-strip"><span>Olof</span><span class="account-mark">OL</span></div>
+        </header>
+
+        <div class="section-title">
+          <h2>Arbetsappar</h2>
+        </div>
+        <section class="app-shelf-grid" aria-label="Arbetsappar">
+          <a class="app-shelf" href="#">
+            <div class="app-graphic graphic-classroom">
+              <span class="seat"></span><span class="seat"></span><span class="seat"></span><span class="seat"></span><span class="seat"></span>
+            </div>
+            <div class="app-shelf-body">
+              <h3>Klassrumskartan</h3>
+              <p>Planera klassrum, grupper, placeringar, regler och export.</p>
+              <div class="shelf-meta"><span>Planering</span><span class="shelf-arrow">→</span></div>
+            </div>
+          </a>
+          <a class="app-shelf" href="#">
+            <div class="app-graphic graphic-exam">
+              <span class="paper"></span><span class="item"></span><span class="item"></span><span class="item"></span>
+            </div>
+            <div class="app-shelf-body">
+              <h3>Exam Converter</h3>
+              <p>Importera, granska och förbered provmaterial för QTI-arbete.</p>
+              <div class="shelf-meta"><span>Prov</span><span class="shelf-arrow">→</span></div>
+            </div>
+          </a>
+          <a class="app-shelf" href="#">
+            <div class="app-graphic graphic-audio">
+              <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </div>
+            <div class="app-shelf-body">
+              <h3>Audio Transcription</h3>
+              <p>Skapa transkript från ljud eller video och arbeta vidare med texten.</p>
+              <div class="shelf-meta"><span>Transkript</span><span class="shelf-arrow">→</span></div>
+            </div>
+          </a>
+          <a class="app-shelf" href="#">
+            <div class="app-graphic graphic-docs">
+              <span class="doc"></span><span class="doc"></span><span class="doc"></span>
+            </div>
+            <div class="app-shelf-body">
+              <h3>Document Converter</h3>
+              <p>Konvertera dokument mellan PDF, DOCX, HTML och presentationsformat.</p>
+              <div class="shelf-meta"><span>Dokument</span><span class="shelf-arrow">→</span></div>
+            </div>
+          </a>
+          <a class="app-shelf" href="#">
+            <div class="app-graphic graphic-code">
+              <span class="line"></span><span class="line"></span><span class="line"></span><span class="cursor"></span>
+            </div>
+            <div class="app-shelf-body">
+              <h3>Kodredigerare</h3>
+              <p>Bygg, underhåll och kör egna eller delade verktyg.</p>
+              <div class="shelf-meta"><span>Utveckling</span><span class="shelf-arrow">→</span></div>
+            </div>
+          </a>
+        </section>
+
+        <div class="support-grid">
+          <section class="panel">
+            <div class="panel-head">Filer och material</div>
+            <div class="ledger">
+              <a class="ledger-row" href="#"><div><strong>Mina filer</strong><p>Hämta sparade filer, export och underlag.</p></div><span class="arrow">→</span></a>
+              <a class="ledger-row" href="#"><div><strong>Katalog</strong><p>Hitta fler tillgängliga arbetsytor när apphyllan inte räcker.</p></div><span class="arrow">→</span></a>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">Bidra</div>
+            <div class="ledger">
+              <a class="ledger-row" href="#"><div><strong>Föreslå verktyg</strong><p>Skicka in ett arbetsmoment som bör bli en ny app.</p></div><span class="arrow">→</span></a>
+              <a class="ledger-row" href="#"><div><strong>Mina verktyg</strong><p>Se och förvalta egna publicerade verktyg.</p></div><span class="arrow">→</span></a>
+            </div>
+          </section>
+        </div>
+      </main>
+    </section>
+  </body>
+</html>

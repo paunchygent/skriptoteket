@@ -2,10 +2,10 @@
 type: pr
 id: PR-0172
 title: "Local password reset via emailed token"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-06-18
 stories:
   - "ST-02-07"
 tags: ["identity", "security", "email", "backend", "frontend"]
@@ -162,3 +162,10 @@ one active reset token at a time.
   the existing profile password-change flow.
 - The previous manual operator recovery path remains an emergency fallback until the runbook is
   updated after the slice is proven locally.
+
+## Supersession Note (2026-06-18)
+
+Canceled during `PR-0359` as browser-auth lifecycle work superseded by
+`ST-28-08` / `PR-0257`. Shared HuleEdu lifecycle handoff now owns the browser
+registration/reset/verification path. Existing backend token artifacts remain
+outside this docs-only cleanup scope.

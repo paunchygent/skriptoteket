@@ -17,6 +17,7 @@ tags:
 dependencies:
   - "ST-21-03"
   - "ST-21-10"
+  - "REF-current-product-lanes-and-sir-convert-boundary-v1"
 acceptance_criteria:
   - "Given the public one-time Exam Converter lane remains available, when the public upload surface renders, then it requires only the governed `.dxe` source file and shows no optional graded-result/supporting PDF upload or early target selection controls."
   - "Given the public browser runtime submits a job, when Skriptoteket builds the public multipart request and backend job spec, then it sends no `graded_result_pdf`, no `targets_json`, and requests the currently supported target artifacts by default."
@@ -54,6 +55,14 @@ contract used by the authenticated lane.
    target state.
 4. Refresh `ST-21-03`, `ST-21-10`, and the relevant public Exam Converter docs
    with the final source-only public contract.
+
+## Boundary Reference
+
+[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+is the governing product-boundary reference for this slice. The public lane must
+remove stale UI/API fields together, while preserving Sir Convert ownership of
+heavy import/artifact generation and Skriptoteket ownership of the public route
+contract, request validation, and teacher-facing workflow.
 
 ## Test plan
 

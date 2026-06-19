@@ -23,6 +23,11 @@ application tests.
   UoW owns transaction behavior.
 - Keep fixtures named by domain purpose. Shared fixtures live under
   `tests/fixtures/`, not as hidden behavior in `tests/conftest.py`.
+- Backend dev tests or live probes that cross the HuleEdu Gateway shared-auth
+  boundary must use the Docker `skriptoteket_web` service, not host Uvicorn.
+  The Gateway resolves `skriptoteket-web:8000` on `hule-network`; host
+  `pdm run dev` is only valid for isolated backend work that does not claim
+  Gateway/browser-session proof.
 
 ## Commands
 

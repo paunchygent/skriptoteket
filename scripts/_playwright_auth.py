@@ -23,10 +23,18 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 AUTH_ENTRY_PATH = "/auth/login"
 HULEEDU_LOGIN_API_PATH = "/v1/auth/login"
+AUTH_HANDOFF_ACTION_PATTERN = re.compile(
+    r"(inloggningen|öppna inloggningen|logga in igen)",
+    re.IGNORECASE,
+)
 
 
 def _is_visible(locator: Locator) -> bool:
     return locator.count() > 0 and locator.first.is_visible()
+
+
+def _handoff_link(page: Page) -> Locator:
+    return page.get_by_role("link", name=AUTH_HANDOFF_ACTION_PATTERN).first
 
 
 def _wait_for_auth_form_or_success(
@@ -47,7 +55,7 @@ def _wait_for_auth_form_or_success(
             return "huleedu_form"
         if _is_visible(auth_form):
             return "form"
-        if _is_visible(page.get_by_role("link", name=re.compile("inloggningen", re.I))):
+        if _is_visible(_handoff_link(page)):
             return "handoff_link"
         page.wait_for_timeout(interval_ms)
         elapsed_ms += interval_ms
@@ -115,7 +123,7 @@ def _submit_auth_surface(
 def _follow_handoff_link(page: Page) -> None:
     """Navigate through the visible HuleEdu ceremony link from the auth handoff."""
 
-    handoff_link = page.get_by_role("link", name=re.compile("inloggningen", re.I)).first
+    handoff_link = _handoff_link(page)
     href = handoff_link.get_attribute("href")
     if href:
         page.goto(urljoin(page.url, href), wait_until="domcontentloaded")
@@ -167,9 +175,7 @@ def login_via_auth_entry(
                 return
             if visible_surface == "handoff_link":
                 if failure_artifacts_dir is not None:
-                    handoff_link = page.get_by_role(
-                        "link", name=re.compile("inloggningen", re.I)
-                    ).first
+                    handoff_link = _handoff_link(page)
                     state = {
                         "url": page.url,
                         "handoff_href": handoff_link.get_attribute("href"),

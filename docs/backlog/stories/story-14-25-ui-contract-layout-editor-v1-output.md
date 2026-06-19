@@ -2,9 +2,10 @@
 type: story
 id: ST-14-25
 title: "UI contract v2.x: layout editor output (layout_editor_v1)"
-status: ready
+status: canceled
 owners: "agents"
 created: 2025-12-29
+updated: 2026-06-18
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool returns a ui_payload output with kind=layout_editor_v1, when normalizing the payload, then the server accepts it (policy-allowed), applies deterministic size limits, and stores it for replay."
@@ -30,3 +31,8 @@ limits.
 ## Notes
 
 Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
+
+Superseded on 2026-06-18 by the bespoke Klassrumskartan architecture. The repo
+retains historical `layout_editor_v1` references for audit/codemap purposes,
+but current classroom layout/seating value no longer belongs under a generic
+tool-output lane.

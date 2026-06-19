@@ -2,10 +2,10 @@
 type: pr
 id: PR-0195
 title: "ST-29-11: dense-control primitive contract normalization and generic menu/split behavior"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-04-01
-updated: 2026-04-01
+updated: 2026-06-18
 stories:
   - "ST-29-11"
 tags: ["frontend", "design-system", "components", "klassrumskartan", "editor"]
@@ -78,3 +78,12 @@ wave of surface adoption:
 - Revert the shared primitive contract tightening as one unit if generic menu/split behavior proves
   unstable.
 - Do not keep half-migrated split/menu APIs in both shared and planner-local forms.
+
+## Supersession Note (2026-06-18)
+
+Canceled during `PR-0359` as absorbed by the later `ST-29-11` implementation
+sequence. The current dense-control primitive and shared toolbar behavior is
+recorded through `PR-0224`, `PR-0225`, `PR-0226`, `PR-0227`, `PR-0228`,
+`PR-0281`, `PR-0286`, `PR-0287`, `PR-0301`, `PR-0302`, `PR-0305`, `PR-0306`,
+`PR-0308`, and `PR-0309`, so this older generic draft is no longer an active
+backlog slice.

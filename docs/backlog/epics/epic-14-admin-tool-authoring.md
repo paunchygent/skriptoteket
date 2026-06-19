@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-23
+updated: 2026-06-18
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -103,3 +103,22 @@ settings and action prefill (preselect when available; show validation error whe
 - ST-14-19 shipped: `skriptoteket_toolkit` is the canonical runner helper API for inputs/settings/actions/state, with docs + updated starter template and AI KB.
 - ST-14-20 shipped: editor intelligence now treats `skriptoteket_toolkit` as first-class (import completions + hover docs + best-practice lints) and fixes the `outputs` false-positive for list variables.
 - ST-14-23 shipped: `next_actions[].prefill` supported (validated + deterministic stripping with system notice), and the SPA renders action forms with initial prefill values.
+- `PR-0359` backlog cleanup repaired the remaining stale editor/platform rows on
+  2026-06-18. `ST-14-24` is now `done`: first-class file refs ship through
+  `/api/v1/tools/{tool_id}/file-refs`, `/api/v1/editor/tool-versions/{version_id}/file-refs`,
+  `ToolFileFieldPicker.vue`, `UiActionFieldFileRef.vue`, and the shared
+  resolver-backed request manifest path. `ST-14-36` is now `done`: the user
+  vault ships through `/api/v1/vault`, `VaultPanel.vue`, vault save/delete/
+  restore/download handlers, and `vault:*` resolver support. `ST-14-38` is now
+  `done`: `/editor` uses `EditorHubView.vue` and `EditorToolMenu.vue` for MRU
+  reopen, compact picking, bounded search, and the governed
+  `Kodredigerare`/`Kodredigeraren` labels.
+- `PR-0053`, `PR-0054`, `PR-0055`, `PR-0056`, and `PR-0058` are now repaired
+  to `done` because their planned UI/backend surfaces are present in the current
+  repo. `PR-0056` stays credited as a bounded shared-primitive slice under
+  `ST-14-22`; the parent story remains outside this cleanup batch.
+- `ST-14-25` through `ST-14-28` are now canceled as generic
+  `layout_editor_v1` backlog lanes. The repo retains historical contract/code
+  references, but current classroom layout/seating product value moved into the
+  bespoke Klassrumskartan architecture rather than a generic tool-output
+  renderer lane.

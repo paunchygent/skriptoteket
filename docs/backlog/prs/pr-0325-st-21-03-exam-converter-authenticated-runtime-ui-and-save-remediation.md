@@ -2,10 +2,10 @@
 type: pr
 id: PR-0325
 title: "ST-21-03 Exam Converter authenticated runtime UI and save remediation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-15
+updated: 2026-06-18
 stories:
   - "ST-21-03"
 tags:
@@ -593,6 +593,13 @@ Stop conditions for slice 6:
 - `pdm run docs-validate`
 - `pdm run handoff-validate`
 - `git diff --check`
+
+## Closeout Status (as of 2026-06-18)
+
+`PR-0325` is repaired to `done` during `PR-0359`. The authenticated Exam
+Converter host/runtime/save remediation shipped, unblocked the later
+authenticated lane, and its teacher-facing behaviors remain the implemented
+baseline that `ST-21-10` now narrows to source-only intake.
 
 ## Stop Conditions
 

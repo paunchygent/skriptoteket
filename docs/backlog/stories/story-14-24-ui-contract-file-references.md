@@ -2,10 +2,10 @@
 type: story
 id: ST-14-24
 title: "UI contract: first-class file references (picker + action fields)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-24
+updated: 2026-06-18
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool emits next_actions with file fields, when the UI renders the action form, then it shows a picker per file field (multiple file fields in the same action are supported) without exposing runner filesystem paths."
@@ -69,3 +69,15 @@ Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
   - submitting selected file refs as action input values.
 - Do not introduce a UI-only “file id” or path-based fallback; the only identity is `FileRef` values and the only
   staging pipeline is the platform resolver.
+
+## Implementation Summary (as of 2026-06-18)
+
+- The file-ref contract ships in the current platform through
+  `ToolFileFieldPicker.vue`, `UiActionFieldFileRef.vue`,
+  `/api/v1/tools/{tool_id}/file-refs`,
+  `/api/v1/editor/tool-versions/{version_id}/file-refs`, and the shared
+  resolver-backed request/manifest path.
+- Current runtime/editor surfaces use opaque `session:*` and `vault:*` refs
+  rather than filesystem paths, preserve per-field mapping, and support
+  defaults plus actionable validation, so `PR-0359` repairs this story to
+  `done`.

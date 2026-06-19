@@ -21,6 +21,12 @@ and authenticated UI validation in Skriptoteket.
 - Protected Skriptoteket SPA/API proof must enter through HuleEdu Gateway and
   the browser-session ceremony. Do not use product-backend credential POSTs,
   local cookie shortcuts, or old `/login` flows.
+- For any protected shared-auth or backend-dev proof that exercises the
+  HuleEdu Gateway `/api` proxy, Skriptoteket backend must be the Docker
+  `skriptoteket_web` service on `hule-network` with the `skriptoteket-web`
+  alias. Do not run host Uvicorn for this lane: Gateway containers cannot use
+  that process as `skriptoteket-web`, so app continuation will fail before the
+  UI proof reaches the requested route.
 - Public routes can be checked directly only when the route is genuinely public
   and the proof does not claim protected-auth coverage.
 - General Vite/Vitest frontend testing belongs to `integrated-frontend-stack`;

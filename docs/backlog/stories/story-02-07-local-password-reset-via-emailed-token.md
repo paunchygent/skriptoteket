@@ -2,10 +2,10 @@
 type: story
 id: ST-02-07
 title: "Local password reset via emailed token"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-06-18
 epic: "EPIC-02"
 acceptance_criteria:
   - "Given a visitor on the landing page or login modal, when they choose 'Glömt lösenord?', then they can request a password-reset email without being logged in."
@@ -109,5 +109,13 @@ Required error codes and statuses for reset execution:
   - receive reset link
   - request a second reset and confirm the first token is no longer usable
   - reset password
-  - confirm old password fails and new password works
-  - confirm at least two pre-existing sessions or cookie jars are both invalid after reset
+- confirm old password fails and new password works
+- confirm at least two pre-existing sessions or cookie jars are both invalid after reset
+
+## Supersession Note (2026-06-18)
+
+Canceled during `PR-0359` as browser-auth lifecycle work superseded by
+`ST-28-08` / `PR-0257`. Old browser URLs now hand off to the shared HuleEdu
+registration/password-reset/email-verification ceremony. Backend token artifacts
+remain in code and need a separate backend/ops ownership decision before any
+retirement work.

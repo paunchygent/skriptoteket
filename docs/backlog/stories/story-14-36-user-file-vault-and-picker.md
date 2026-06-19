@@ -2,10 +2,10 @@
 type: story
 id: ST-14-36
 title: "User file vault: reusable uploads + picker"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-12
-updated: 2026-01-24
+updated: 2026-06-18
 epic: "EPIC-14"
 dependencies: ["ADR-0059", "ST-19-02", "ST-14-24"]
 acceptance_criteria:
@@ -53,3 +53,13 @@ This story should treat vault files as a `FileRef` source (`vault:*`) and rely o
 - listing available vault file refs for the picker,
 - validating access to selected vault refs,
 - staging selected vault files into `/work/input/` for a run (no vault-specific staging path).
+
+## Implementation Summary (as of 2026-06-18)
+
+- The user vault ships in the current repo through `/api/v1/vault`,
+  `VaultPanel.vue`, `VaultPickerModal.vue`, `useVaultFiles.ts`,
+  `LocalVaultStorage`, the vault repositories/handlers, and `vault:*`
+  file-ref resolution.
+- Current surfaces cover explicit save-to-vault, soft delete, restore,
+  retention-aware management, quota display, picker defaults, and owner-scoped
+  access, so `PR-0359` repairs this story to `done`.

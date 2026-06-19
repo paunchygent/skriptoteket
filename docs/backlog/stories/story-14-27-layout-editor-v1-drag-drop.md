@@ -2,9 +2,10 @@
 type: story
 id: ST-14-27
 title: "Layout editor v1: drag/drop interactions (library-based)"
-status: ready
+status: canceled
 owners: "agents"
 created: 2025-12-29
+updated: 2026-06-18
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given the layout editor renders student 'chips' and slots, when a user drags a student onto an empty slot, then the UI assigns the student locally and marks unsaved changes."
@@ -22,3 +23,7 @@ data_impact: "No"
 Use a well-known drag/drop library to avoid reinventing DnD edge cases and improve cross-browser behavior.
 
 Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
+
+Superseded on 2026-06-18 by the bespoke Klassrumskartan architecture. Current
+layout/seating interaction work is owned by that product lane rather than by a
+generic `layout_editor_v1` backlog sequence.

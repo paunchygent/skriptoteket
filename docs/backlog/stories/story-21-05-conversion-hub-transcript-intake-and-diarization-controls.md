@@ -2,10 +2,10 @@
 type: story
 id: ST-21-05
 title: "Conversion Hub transcript intake and diarization controls"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-09
-updated: 2026-06-10
+updated: 2026-06-18
 epic: "EPIC-21"
 dependencies:
   - "ST-21-01"
@@ -77,6 +77,17 @@ and no Skriptoteket-owned STT/diarization runtime.
 - `PR-0342` owns the first authenticated transcript intake and Gateway
   lifecycle client slice after Sir Convert Task 356 and Review 42 accepted the
   canonical JSON runtime.
+
+## Implementation Summary (as of 2026-06-18)
+
+- `PR-0342` implemented the authenticated transcript intake mode under
+  `documents.conversion_hub`, including governed audio/video upload, diarization
+  controls, teacher-facing validation, and live Gateway-backed proof through
+  Skriptoteket -> HuleEdu Gateway -> Sir Convert -> canonical
+  `transcript_json`.
+- Later transcript stories (`ST-21-07`, `ST-21-08`, and `ST-21-09`) built on
+  the same intake surface rather than replacing it with a different product
+  lane, so this story is repaired to `done` during `PR-0359`.
 
 ## Notes
 

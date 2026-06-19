@@ -11,7 +11,7 @@
  *   - Selects between Exam Converter and transcript intake hosts.
  */
 
-export type ConversionHubMode = "exam" | "transcript";
+import type { ConversionHubMode } from "./conversionHubModeRoute";
 
 defineProps<{
   activeMode: ConversionHubMode;

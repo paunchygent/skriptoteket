@@ -2,9 +2,10 @@
 type: story
 id: ST-14-26
 title: "UI renderer: layout editor v1 (click-to-assign + apply)"
-status: ready
+status: canceled
 owners: "agents"
 created: 2025-12-29
+updated: 2026-06-18
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a run returns a layout_editor_v1 output, when the UI renders it, then it shows a room, desk groups/rows, and student slots with current assignments."
@@ -32,3 +33,7 @@ back to the tool.
 ## Notes
 
 Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
+
+Superseded on 2026-06-18 by the bespoke Klassrumskartan architecture. Current
+classroom layout/seating work is no longer governed as a generic
+tool-output renderer follow-up.

@@ -98,6 +98,11 @@ pdm run fe-test-coverage
 
 Use Playwright for browser-level flows and regressions (never Vitest).
 
+For protected shared-auth flows, run Skriptoteket through the Docker `web`
+service (`skriptoteket_web`, alias `skriptoteket-web`) so HuleEdu Gateway can
+reach app continuation through `hule-network`. Host Uvicorn is not a valid
+backend for Gateway-authenticated browser proof.
+
 Commands:
 
 ```bash

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0056
 title: "UI cohesion: shared segmented toggle + cohesive file picker row"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-25
-updated: 2026-01-25
+updated: 2026-06-18
 stories:
   - "ST-14-22"
 tags: ["frontend"]
@@ -98,3 +98,10 @@ button), applied consistently in both tool runs and the editor sandbox run panel
 
 - Revert the PR-0056 commit(s).
 - Restore `EditorWorkspaceModeSelector.vue` and `ToolFileFieldPicker.vue` to their previous local implementations.
+
+## Closeout Status (as of 2026-06-18)
+
+`PR-0359` repairs this slice to `done`. The shared `UiSegmentedToggle`
+component is in active use across editor, planner, vault, and file-picker
+surfaces, and the integrated file-picker row is present in the current runtime
+and sandbox UI.

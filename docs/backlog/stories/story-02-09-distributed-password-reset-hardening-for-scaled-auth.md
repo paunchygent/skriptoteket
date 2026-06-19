@@ -2,10 +2,10 @@
 type: story
 id: ST-02-09
 title: "Distributed password-reset hardening for scaled auth"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-06-18
 epic: "EPIC-02"
 acceptance_criteria:
   - "Given Skriptoteket runs with multiple web processes or instances, when repeated `forgot-password` requests for the same normalized email hit different instances inside the cooldown window, then the public response remains the same generic `202 Accepted` contract and only the shared cooldown owner decides whether a new reset token may be issued."
@@ -60,3 +60,11 @@ multiple auth-serving processes race or receive traffic unevenly.
   requests.
 - Migration/schema assertions for the database invariant.
 - Docs/runbook verification that any future scaling plan references this prerequisite explicitly.
+
+## Supersession Note (2026-06-18)
+
+Canceled during `PR-0359` as browser-auth lifecycle work superseded by
+`ST-28-08` / `PR-0257`. The product no longer treats Skriptoteket-local browser
+forgot/reset flows as the forward lane. Existing backend token/cooldown code
+remains in the repo and must be retired only through a separate owned backend
+or ops decision.

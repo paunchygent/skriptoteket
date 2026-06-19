@@ -5,7 +5,7 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-05-06
+updated: 2026-06-18
 outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, coherent grouping/seating/rules work surfaces, and a mockup-first small-screen companion lane that replaces cramped phone rails with mode-specific reduced layouts."
 dependencies:
   [
@@ -136,3 +136,10 @@ into the `laptop` proof width.
   band, and grouping/seating share the same `480px` class-list rail pattern. Close-out keeps the
   retained live browser proof on the authenticated real-data path while guest/auth parity is
   enforced through the shared shell implementation plus focused guest/auth shell specs.
+- `PR-0359` backlog cleanup canceled the original `ST-29-11` planning trio
+  `PR-0195`, `PR-0196`, and `PR-0197` on 2026-06-18 as absorbed by the later
+  shipped dense-control/primitives work. The current `ST-29-11` implementation
+  record is the later done sequence `PR-0224`, `PR-0225`, `PR-0226`,
+  `PR-0227`, `PR-0228`, `PR-0281`, `PR-0286`, `PR-0287`, `PR-0301`,
+  `PR-0302`, `PR-0305`, `PR-0306`, `PR-0308`, and `PR-0309`, not the older
+  generic cleanup draft.

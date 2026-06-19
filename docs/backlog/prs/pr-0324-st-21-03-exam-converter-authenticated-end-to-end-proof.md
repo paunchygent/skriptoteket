@@ -2,10 +2,10 @@
 type: pr
 id: PR-0324
 title: "ST-21-03 Exam Converter authenticated end-to-end proof"
-status: blocked
+status: canceled
 owners: "agents"
 created: 2026-05-13
-updated: 2026-05-17
+updated: 2026-06-18
 stories:
   - "ST-21-03"
 tags:
@@ -67,6 +67,14 @@ byte-identical `.dxe` and prove advisory submit, valid AI-facit report delivery
 including vision-backed `item-013`, reviewed overlay apply, refreshed
 `effective_ir_json`, final target readiness, named download, save-to-user-files,
 and missing-auth rejection through the HuleEdu Gateway path.
+
+## Supersession Note (2026-06-18)
+
+`PR-0359` cancels this slice as superseded. The original blocker was remediated
+by `PR-0325`, and the Exam Converter intake/export direction has since been
+narrowed by `ST-21-10`, `PR-0356`, and `PR-0357` to a source-only product
+lane. Retained `REV-PR-0324` still explains why the first proof stopped, but
+it is no longer the governing forward implementation slice.
 
 ## Dependencies
 

@@ -2,10 +2,10 @@
 type: epic
 id: EPIC-30
 title: "Frontend transition continuity for same-shell selectors"
-status: active
+status: done
 owners: "agents"
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-06-18
 outcome: "Teachers and authors experience selector-driven same-shell transitions as seamless continuity instead of blank fades or shell jump cuts across planner, editor, and other dense SPA workspaces."
 dependencies:
   [

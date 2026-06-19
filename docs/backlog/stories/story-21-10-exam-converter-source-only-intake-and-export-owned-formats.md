@@ -12,6 +12,7 @@ dependencies:
   - "ST-21-04"
   - "ST-21-09"
   - "ADR-0087"
+  - "REF-current-product-lanes-and-sir-convert-boundary-v1"
 acceptance_criteria:
   - "Given a teacher starts an Exam Converter job, when intake renders or submits, then the active product flow requires only one governed source exam file and no optional marked, graded, result, or supporting exam upload is shown, accepted as current product intent, or included in the job spec unless a future accepted contract reintroduces it."
   - "Given the answer-key enrichment stage is available, when the source exam lacks machine-readable facit, then Skriptoteket uses the configured LLM enrichment plus teacher review/editor workflow instead of asking the teacher to supply a marked exam file."
@@ -111,3 +112,8 @@ authoring and assembly belongs in Skriptoteket.
 - `PR-0357` is the governed follow-up for removing the historical public
   one-time `graded_result_pdf`/target-selection contract after the
   authenticated source-only intake slice.
+- [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+  is the current ownership doctrine for later Exam Converter work: Sir Convert
+  owns heavy source import, enrichment, source bindings, and producer artifacts;
+  Skriptoteket owns native exam state, review, editing, sharing, QTI/editor
+  direction, and post-conversion file actions.

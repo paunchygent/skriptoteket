@@ -2,10 +2,10 @@
 type: pr
 id: PR-0053
 title: "UI contract: file-ref picker + defaults + validation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-24
-updated: 2026-01-24
+updated: 2026-06-18
 stories:
   - "ST-14-24"
 tags: ["frontend", "api"]
@@ -93,3 +93,9 @@ without adding parallel identifiers or path-based fallbacks.
 ## Rollback plan
 
 - Revert commit; remove UI field kind and picker wiring; restore previous form rendering.
+
+## Closeout Status (as of 2026-06-18)
+
+`PR-0359` repairs this slice to `done`. The current repo ships the dedicated
+file-ref field rendering, defaults/validation behavior, available-file-refs
+endpoints, and resolver-backed per-field submission path described here.
