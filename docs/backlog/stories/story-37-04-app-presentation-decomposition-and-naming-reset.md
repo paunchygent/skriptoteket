@@ -36,6 +36,7 @@ dashboard direction are settled.
 ## Planned PR Slices
 
 - [x] [PR-0362: ST-37-04 app presentation decomposition and naming package](../prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md)
+- [ ] [PR-0370: ST-37-04 public landing authenticated-app preview mockup approval](../prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md)
 - [ ] [PR-0366: ST-37-04 copy-only app lane naming and description alignment](../prs/pr-0366-st-37-04-copy-only-app-lane-naming-and-description-alignment.md)
 - [ ] [PR-0367: ST-37-04 curated app registry presentation alignment](../prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md)
 - [ ] [PR-0368: ST-37-04 route-visible app entrypoint and presentation alignment](../prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md)
@@ -53,6 +54,10 @@ dashboard direction are settled.
   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
   as the ownership boundary before proposing names, descriptions, route impacts,
   or registry changes.
+- `PR-0370` is a public landing mockup and copy-approval package only. It
+  must finish image direction approval before any HTML/CSS mockup work, and
+  must finish HTML/CSS plus Swedish copy approval before any production landing
+  implementation slice begins.
 - `PR-0361` closed the service-shell planning package through
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through

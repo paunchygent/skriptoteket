@@ -1,0 +1,503 @@
+<!--
+Domain purpose:
+Static PR-0370 public landing mockup for the minimal Vue landing change:
+preserve the current signed-out shell and hero, remove the repeated
+Klassrumskartan showcase, and replace the authenticated preview ledger with
+the approved account-backed workflow preview.
+-->
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PR-0370 public landing authenticated-app preview</title>
+    <style>
+      @import url("../../../src/skriptoteket/web/static/css/huleedu-design-tokens.css");
+
+      :root {
+        --canvas: var(--huleedu-canvas, #fafaf6);
+        --paper: var(--huleedu-paper, #fafaf6);
+        --panel: var(--huleedu-panel, rgba(250, 250, 246, 0.92));
+        --navy: var(--huleedu-navy, #082b4c);
+        --navy-70: var(--huleedu-navy-70, rgba(8, 43, 76, 0.7));
+        --navy-40: var(--huleedu-navy-40, rgba(8, 43, 76, 0.4));
+        --navy-20: var(--huleedu-navy-20, rgba(8, 43, 76, 0.2));
+        --action: var(--huleedu-action, #3f7f78);
+        --serif: var(--huleedu-font-serif, Georgia, "Times New Roman", serif);
+        --sans: var(--huleedu-font-sans, system-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+        --space-2: var(--huleedu-space-2, 0.5rem);
+        --space-3: var(--huleedu-space-3, 0.75rem);
+        --space-4: var(--huleedu-space-4, 1rem);
+        --space-5: var(--huleedu-space-5, 1.25rem);
+        --space-6: var(--huleedu-space-6, 1.5rem);
+        --space-8: var(--huleedu-space-8, 2rem);
+        --space-10: var(--huleedu-space-10, 2.5rem);
+        --max-width-6xl: var(--huleedu-max-width-6xl, 72rem);
+        --border-width: var(--huleedu-border-width, 2px);
+        --shadow-brutal: 4px 4px 0 0 var(--navy);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color: var(--navy);
+        font-family: var(--sans);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--canvas);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+          linear-gradient(var(--navy) 1px, transparent 1px),
+          linear-gradient(90deg, var(--navy) 1px, transparent 1px);
+        background-size: var(--huleedu-grid-size, 24px) var(--huleedu-grid-size, 24px);
+        opacity: 0.04;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .landing-shell {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+
+      .landing-header {
+        border-bottom: var(--border-width) solid var(--navy);
+        background: var(--canvas);
+      }
+
+      .landing-header-inner {
+        display: flex;
+        width: 100%;
+        max-width: var(--max-width-6xl);
+        margin: 0 auto;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3) var(--space-6);
+        padding: var(--space-4) var(--space-6);
+      }
+
+      .landing-header-leading,
+      .landing-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3) var(--space-6);
+      }
+
+      .landing-brand {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+      }
+
+      .brand-logo {
+        display: block;
+        width: auto;
+        height: 28px;
+      }
+
+      .landing-nav,
+      .landing-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-4);
+      }
+
+      .landing-nav-link,
+      .landing-header-link,
+      .help-link {
+        position: relative;
+        display: inline-flex;
+        min-height: 2rem;
+        align-items: center;
+        color: var(--navy);
+        font-size: 0.875rem;
+        font-weight: 700;
+        line-height: 1.3;
+        text-decoration: none;
+      }
+
+      .landing-header-link {
+        color: var(--navy-70);
+      }
+
+      .help-link {
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .landing-main {
+        display: flex;
+        width: 100%;
+        max-width: var(--max-width-6xl);
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-6);
+      }
+
+      .hero-section {
+        border-bottom: 1px solid var(--navy);
+        padding: 3rem 0;
+      }
+
+      .hero-grid {
+        display: grid;
+        align-items: start;
+        gap: 2.5rem;
+      }
+
+      .hero-copy {
+        max-width: 40rem;
+      }
+
+      .hero-title {
+        max-width: 14ch;
+        margin: 0;
+        color: var(--navy);
+        font-family: var(--serif);
+        font-size: clamp(3rem, 7vw, 4.25rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.98;
+        overflow-wrap: break-word;
+      }
+
+      .section-rule {
+        width: 6rem;
+        height: 2px;
+        margin-top: 2rem;
+        background: var(--navy);
+      }
+
+      .hero-lead {
+        max-width: 42ch;
+        margin: 1.5rem 0 0;
+        color: var(--navy);
+        font-size: 1.125rem;
+        line-height: 2rem;
+      }
+
+      .hero-action {
+        margin-top: 2rem;
+      }
+
+      .btn-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        border: 1px solid var(--navy);
+        border-radius: 4px;
+        background: var(--action);
+        box-shadow: var(--shadow-brutal);
+        color: var(--paper);
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        padding: 1rem 1.75rem;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .account-line {
+        margin: 1.25rem 0 0;
+        color: var(--navy-70);
+        font-size: 0.875rem;
+        line-height: 1.5rem;
+      }
+
+      .account-line a,
+      .footer-actions a {
+        color: var(--navy);
+        font-weight: 700;
+        text-underline-offset: 3px;
+      }
+
+      .hero-preview {
+        border: 2px solid var(--navy);
+        background: var(--canvas);
+        box-shadow: var(--shadow-brutal);
+        padding: 1.125rem;
+      }
+
+      .hero-preview img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .account-preview {
+        padding: 4rem 0;
+      }
+
+      .account-heading {
+        margin: 0;
+        color: var(--navy);
+        font-family: var(--serif);
+        font-size: clamp(1.875rem, 4vw, 2.25rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.12;
+      }
+
+      .account-preview .section-rule {
+        width: 4rem;
+        margin-top: 1.5rem;
+      }
+
+      .workflow-grid {
+        display: grid;
+        margin-top: 2.5rem;
+        border: 2px solid var(--navy);
+        background: var(--panel);
+      }
+
+      .workflow-panel {
+        min-height: 15rem;
+        padding: 1.5rem;
+        border-bottom: 2px solid var(--navy);
+      }
+
+      .workflow-panel:last-child {
+        border-bottom: 0;
+      }
+
+      .workflow-graphic {
+        display: flex;
+        min-height: 8.25rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--navy-40);
+        background: var(--canvas);
+        padding: 1rem;
+      }
+
+      .workflow-graphic svg {
+        width: min(100%, 13rem);
+        height: auto;
+        overflow: visible;
+      }
+
+      .workflow-graphic .stroke {
+        fill: none;
+        stroke: var(--navy);
+        stroke-linecap: square;
+        stroke-linejoin: miter;
+        stroke-width: 4;
+      }
+
+      .workflow-graphic .thin {
+        stroke-width: 2.25;
+      }
+
+      .workflow-graphic .fill {
+        fill: var(--canvas);
+        stroke: var(--navy);
+        stroke-width: 3;
+      }
+
+      .workflow-title {
+        margin: 1.25rem 0 0;
+        color: var(--navy);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+
+      .footer-actions {
+        margin: 2rem 0 0;
+        color: var(--navy-70);
+        font-size: 0.875rem;
+        line-height: 1.5rem;
+      }
+
+      @media (min-width: 48rem) {
+        .hero-section {
+          padding-block: 4rem;
+        }
+
+        .account-preview {
+          padding-block: 5rem;
+        }
+      }
+
+      @media (min-width: 64rem) {
+        .hero-section {
+          padding-block: 5rem;
+        }
+
+        .hero-grid {
+          grid-template-columns: minmax(0, 7fr) minmax(18rem, 5fr);
+          gap: 4rem;
+        }
+
+        .workflow-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .workflow-panel {
+          border-right: 2px solid var(--navy);
+          border-bottom: 0;
+        }
+
+        .workflow-panel:last-child {
+          border-right: 0;
+        }
+      }
+
+      @media (max-width: 48rem) {
+        .landing-header-inner,
+        .landing-main {
+          padding-inline: var(--space-4);
+        }
+
+        .landing-header-actions {
+          gap: var(--space-2) var(--space-3);
+        }
+
+        .hero-title {
+          max-width: 14ch;
+          font-size: clamp(2.45rem, 10vw, 3.2rem);
+          overflow-wrap: normal;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="landing-shell">
+      <header class="landing-header">
+        <div class="landing-header-inner">
+          <div class="landing-header-leading">
+            <a class="landing-brand" href="#">
+              <img
+                src="../../../frontend/apps/skriptoteket/public/logo-horizontal.svg"
+                alt="Skriptoteket"
+                class="brand-logo"
+              />
+            </a>
+            <nav class="landing-nav" aria-label="Publika genvägar">
+              <a class="landing-nav-link" href="#">Klassrumskartan</a>
+            </nav>
+          </div>
+
+          <div class="landing-header-actions">
+            <a class="landing-header-link" href="#">Logga in</a>
+            <a class="help-link" href="#">Hjälp</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="landing-main">
+        <section class="hero-section">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <h1 class="hero-title">Lektionsplanera direkt i webbläsaren.</h1>
+              <div class="section-rule" aria-hidden="true"></div>
+              <p class="hero-lead">
+                Klassrumskartan är en av Skriptotekets appar. Den är öppen för alla.
+                Du behöver inget konto för att komma igång.
+              </p>
+              <div class="hero-action">
+                <a class="btn-cta" href="#">
+                  Öppna Klassrumskartan
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+              <p class="account-line">
+                eller <a href="#">skapa ett konto</a> för att spara ditt arbete.
+              </p>
+            </div>
+
+            <aside class="hero-preview">
+              <img
+                src="../../../frontend/apps/skriptoteket/src/assets/home/klassrumskartan/landing/redesign-v5/hero-preview.svg"
+                alt="Klassrum med tavla, dörr och placerade elever"
+                width="320"
+                height="220"
+              />
+            </aside>
+          </div>
+        </section>
+
+        <section class="account-preview" aria-labelledby="account-preview-heading">
+          <h2 id="account-preview-heading" class="account-heading">När du loggar in</h2>
+          <div class="section-rule" aria-hidden="true"></div>
+
+          <div class="workflow-grid">
+            <article class="workflow-panel">
+              <div class="workflow-graphic" aria-hidden="true">
+                <svg viewBox="0 0 220 120" role="img">
+                  <path class="stroke" d="M28 30v32a22 22 0 0 0 44 0V30a22 22 0 0 0-44 0Z" />
+                  <path class="stroke thin" d="M50 84v24M30 108h40" />
+                  <path class="stroke thin" d="M91 62h14l8-28 12 58 11-42 9 24h15" />
+                  <path class="stroke thin" d="M166 62h26" />
+                  <path class="stroke thin" d="M184 52l10 10-10 10" />
+                  <path class="fill" d="M198 28h38l18 18v60h-56Z" />
+                  <path class="stroke thin" d="M236 28v18h18M211 66h28M211 80h34M211 94h22" />
+                </svg>
+              </div>
+              <h3 class="workflow-title">Transkribera tal till text</h3>
+            </article>
+
+            <article class="workflow-panel">
+              <div class="workflow-graphic" aria-hidden="true">
+                <svg viewBox="0 0 220 120" role="img">
+                  <path class="fill" d="M18 25h92v66H18Z" />
+                  <path class="stroke thin" d="M18 43h92M30 35h1M44 35h1M58 35h1" />
+                  <path class="stroke thin" d="M54 61 39 76l15 15M74 58l-16 36M80 61l15 15-15 15" />
+                  <path class="stroke thin" d="M123 62h26" />
+                  <path class="stroke thin" d="M141 52l10 10-10 10" />
+                  <path class="fill" d="M160 22h38l18 18v64h-56Z" />
+                  <path class="stroke thin" d="M198 22v18h18M173 61h27M173 76h31M173 91h21" />
+                </svg>
+              </div>
+              <h3 class="workflow-title">Skapa PDF:er med hjälp av HTML och CSS</h3>
+            </article>
+
+            <article class="workflow-panel">
+              <div class="workflow-graphic" aria-hidden="true">
+                <svg viewBox="0 0 220 120" role="img">
+                  <path class="fill" d="M26 20h78v82H26Z" />
+                  <circle class="stroke thin" cx="45" cy="43" r="7" />
+                  <circle class="stroke thin" cx="45" cy="62" r="7" />
+                  <circle class="stroke thin" cx="45" cy="81" r="7" />
+                  <path class="stroke thin" d="M62 43h24M62 62h28M62 81h20" />
+                  <path class="stroke thin" d="M120 62h28" />
+                  <path class="stroke thin" d="M140 52l10 10-10 10" />
+                  <path class="fill" d="M164 32h48v48h-48Z" />
+                  <path class="stroke thin" d="M178 66 200 44M185 44h15v15" />
+                </svg>
+              </div>
+              <h3 class="workflow-title">Skapa, redigera och konvertera prov</h3>
+            </article>
+          </div>
+
+          <p class="footer-actions">
+            <a href="#">Logga in</a>
+            <span aria-hidden="true">·</span>
+            <a href="#">Skapa konto</a>
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

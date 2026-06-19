@@ -69,8 +69,14 @@ Keep this file updated so the next session can pick up work quickly.
   `Öppna` links, and nested card layouts.
 - `PR-0364` mockup/docs alignment and independent review validation passed:
   `pdm run docs-validate`, `pdm run handoff-validate`, and `git diff --check`.
-- `PR-0370` is in progress for public landing mockups: image-gen concepts first,
-  then user-approved HTML/CSS/copy before implementation.
+- `PR-0370` public landing image direction is approved:
+  `docs/mockups/pr-0370-public-landing-authenticated-app-preview/round-4-no-index-markers.png`.
+  Final copy is approved under
+  `docs/mockups/pr-0370-public-landing-authenticated-app-preview/approved-copy.md`.
+  HTML/CSS mockup candidate is
+  `docs/mockups/pr-0370-public-landing-authenticated-app-preview/index.html`;
+  defer
+  `docs/reference/ref-public-landing-copy-lock.md` until implementation.
 - Docker-service breadcrumb is now encoded in
   `.codex/skills/skriptoteket-testing/references/browser-automation.md`,
   `.codex/skills/skriptoteket-testing/references/backend-pytest.md`,

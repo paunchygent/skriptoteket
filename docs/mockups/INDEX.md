@@ -36,5 +36,8 @@ Bundle rules:
 - [ST-21-03 Exam Converter authenticated progressive review](st-21-03-exam-converter-authenticated-progressive-review/README.md)
 - [PR-0351 transcript progress and export workspace UX](pr-0351-transcript-progress-export-ux/README.md)
 - [PR-0364 authenticated home work-apps surface](pr-0364-authenticated-home-work-apps-surface/README.md)
+- [PR-0370 public landing authenticated-app preview](pr-0370-public-landing-authenticated-app-preview/README.md)
+  - [Copy requirements review](pr-0370-public-landing-authenticated-app-preview/copy-requirements-review.md)
+  - [Approved copy](pr-0370-public-landing-authenticated-app-preview/approved-copy.md)
 - [ST-32-07 public landing discoverability](st-32-07-public-landing-discoverability/README.md)
 - [ST-32-08 landing authenticated-value copy alternatives](st-32-08-landing-authenticated-value-copy-alternatives/README.md)
