@@ -31,9 +31,9 @@ Keep this file updated so the next session can pick up work quickly.
   design-rule alignment of the C2 authenticated home mockup:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`.
   It should make authenticated `/` app-first with primary shelves for
-  Klassrumskartan, Provkonverteraren `?mode=exam`, Ljudtranskribering
-  `?mode=transcript`, Dokumentkonverteraren, and Kodredigerare. Do not fake the
-  Dokumentkonverteraren route; stop/attach a route-visible slice if no truthful
+  Klassrumskartan, Provhantering `?mode=exam`, Ljudtranskribering
+  `?mode=transcript`, Dokumentkonvertering, and Kodredigerare. Do not fake the
+  Dokumentkonvertering route; stop/attach a route-visible slice if no truthful
   target exists.
 - `PR-0364` runtime frontend implementation is now in
   `frontend/apps/skriptoteket/src/views/HomeView.vue`,
@@ -43,7 +43,7 @@ Keep this file updated so the next session can pick up work quickly.
   fixes are now in `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`
   and `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.spec.ts`.
   Authenticated `/` is app-first, `Kodredigerare` is primary for contributors
-  and above, Dokumentkonverteraren is visible but non-linkable, the default home loader no longer
+  and above, Dokumentkonvertering is visible but non-linkable, the default home loader no longer
   hits retired runs/favorites/recent endpoints, and the old home
   `dashboard-card` grid plus `Mina körningar`/latest/recent chrome are
   removed.
@@ -56,7 +56,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Post-deploy correction: authenticated home app cards now use image identities
   instead of CSS graph-paper sketches. `Klassrumskartan` reuses the existing
   classroom-map symbol; the other visible app-card labels are Swedish:
-  `Provkonverteraren`, `Ljudtranskribering`, `Dokumentkonverteraren`, and
+  `Provhantering`, `Ljudtranskribering`, `Dokumentkonvertering`, and
   `Kodredigerare`.
 - Post-deploy copy correction: authenticated home copy now removes generic
   helper phrases such as `nästa arbetsmoment`, `filspår`,
@@ -69,6 +69,8 @@ Keep this file updated so the next session can pick up work quickly.
   `Öppna` links, and nested card layouts.
 - `PR-0364` mockup/docs alignment and independent review validation passed:
   `pdm run docs-validate`, `pdm run handoff-validate`, and `git diff --check`.
+- `PR-0370` is in progress for public landing mockups: image-gen concepts first,
+  then user-approved HTML/CSS/copy before implementation.
 - Docker-service breadcrumb is now encoded in
   `.codex/skills/skriptoteket-testing/references/browser-automation.md`,
   `.codex/skills/skriptoteket-testing/references/backend-pytest.md`,
@@ -140,12 +142,12 @@ Keep this file updated so the next session can pick up work quickly.
     Vite `:5173` lanes had exited; both were restarted with the documented
     Gateway-proxy setup.
   - Correct preflight:
-    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-role-copy-final.json`
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-home-labels-final.json`
     passed with all checks `ok`.
   - Retained proof:
-    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final`
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final`
     passed; artifact:
-    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final/20260619T170928Z/manifest.redacted.json`.
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final/20260619T172451Z/manifest.redacted.json`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.

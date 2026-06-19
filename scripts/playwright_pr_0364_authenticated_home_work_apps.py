@@ -31,9 +31,9 @@ from scripts._playwright_config import get_config
 ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0364-authenticated-home-work-apps-surface")
 APP_ORDER = [
     "Klassrumskartan",
-    "Provkonverteraren",
+    "Provhantering",
     "Ljudtranskribering",
-    "Dokumentkonverteraren",
+    "Dokumentkonvertering",
     "Kodredigerare",
 ]
 APP_LINK_TARGETS = {
@@ -53,6 +53,8 @@ REJECTED_COPY = (
     "Visas här när arbetsytan är redo",
     "Arbetsappar",
     "Direkt i appen",
+    "Provkonverteraren",
+    "Dokumentkonverteraren",
 )
 VIEWPORTS = (
     {"label": "desktop", "width": 1512, "height": 900},

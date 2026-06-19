@@ -23,11 +23,11 @@ dependencies:
   - "REF-app-presentation-decomposition-and-naming-plan-v1"
 acceptance_criteria:
   - "Given a teacher signs in, when `/` renders, then the first actionable signed-in work surface after any alert/greeting is the approved work-app card shelf rather than favorites, recent tools, latest-used apps, run history, catalog, contributor/admin cards, or vanity highlight copy."
-  - "Given the approved C2 mockup is the product direction, when the app shelf renders, then it presents `Klassrumskartan`, `Provkonverteraren`, `Ljudtranskribering`, and `Dokumentkonverteraren` as first-class app entries with identifying image identities and whole-card click targets."
+  - "Given the approved C2 mockup is the product direction, when the app shelf renders, then it presents `Klassrumskartan`, `Provhantering`, `Ljudtranskribering`, and `Dokumentkonvertering` as first-class app entries with identifying image identities and whole-card click targets."
   - "Given `Kodredigerare` is an app surface restricted to contributors and above, when an eligible user opens authenticated home, then it appears in the primary app shelf and is not demoted into a secondary create/develop form, suggestion card, or nested card."
   - "Given `Mina körningar` and latest-used rows are no longer part of the active home direction, when the authenticated home renders, then it does not present `Mina körningar`, run-count summaries, latest-used apps, or recent-used vanity rows on the home surface."
-  - "Given `PR-0363` added direct conversion-lane mode links, when the signed-in home presents Provkonverteraren and Ljudtranskribering, then those entries link to `/apps/documents.conversion_hub?mode=exam` and `/apps/documents.conversion_hub?mode=transcript` respectively."
-  - "Given Dokumentkonverteraren is approved as a visible product lane but still lacks a proven current route, when implementation reaches that card, then it must use a truthful reviewed route or stop and create/attach the required route-visible slice; it must not point teachers to Provkonverteraren, Ljudtranskribering, the current compatibility host under a false label, or a generic catalog dead end."
+  - "Given `PR-0363` added direct conversion-lane mode links, when the signed-in home presents Provhantering and Ljudtranskribering, then those entries link to `/apps/documents.conversion_hub?mode=exam` and `/apps/documents.conversion_hub?mode=transcript` respectively."
+  - "Given Dokumentkonvertering is approved as a visible product lane but still lacks a proven current route, when implementation reaches that card, then it must use a truthful reviewed route or stop and create/attach the required route-visible slice; it must not point teachers to Provhantering, Ljudtranskribering, the current compatibility host under a false label, or a generic catalog dead end."
   - "Given nested cards are forbidden, when the secondary file/catalog/contribution affordances render, then they use flat ledger rows or equivalent un-nested structures, not cards inside panels/cards."
 ---
 
@@ -50,8 +50,8 @@ Make authenticated `/` app-first by implementing the approved C2 work-app
 surface:
 
 - The work-app card shelf is the first actionable signed-in surface.
-- `Klassrumskartan`, `Provkonverteraren`, `Ljudtranskribering`,
-  `Dokumentkonverteraren`, and eligible `Kodredigerare` are presented as app
+- `Klassrumskartan`, `Provhantering`, `Ljudtranskribering`,
+  `Dokumentkonvertering`, and eligible `Kodredigerare` are presented as app
   shelves.
 - `Mina filer`, catalog, suggestions, and owned-tool management remain
   secondary flat ledger affordances below the app shelf.
@@ -91,7 +91,7 @@ Out of scope:
 - public landing rewrite;
 - backend/API, Sir Convert, HuleEdu Gateway, QTI, DOCX, or document-converter
   implementation work;
-- fake Dokumentkonverteraren routing;
+- fake Dokumentkonvertering routing;
 - full persistent sidebar/mobile drawer implementation unless this PR is
   explicitly widened to absorb `PR-0365`;
 - final copy-only polish beyond labels needed to express the approved
@@ -106,10 +106,10 @@ Out of scope:
   decomposition authority.
 - `PR-0363` is done and approved. The current compatibility routes are:
   - `Klassrumskartan`: `/apps/classroom.group-seating-studio`
-  - `Provkonverteraren`: `/apps/documents.conversion_hub?mode=exam`
+  - `Provhantering`: `/apps/documents.conversion_hub?mode=exam`
   - `Ljudtranskribering`: `/apps/documents.conversion_hub?mode=transcript`
   - `Kodredigerare`: `/editor`
-- `Dokumentkonverteraren` is approved as a visible product lane in the C2 shell
+- `Dokumentkonvertering` is approved as a visible product lane in the C2 shell
   direction, but the current codebase still has no proven truthful route for
   it. Implementation must stop rather than fake this link if no reviewed route
   target is available.
@@ -132,7 +132,7 @@ Out of scope:
 
 | Decision | Options | Recommendation |
 |----------|---------|----------------|
-| Dokumentkonverteraren target | A: use a reviewed truthful route if it exists by implementation time. B: stop and create/attach a route-visible document-lane slice. C: point to the current `documents.conversion_hub` or catalog. | Choose A only if the route exists and is truthful; otherwise choose B. Reject C because it breaks the approved product direction. |
+| Dokumentkonvertering target | A: use a reviewed truthful route if it exists by implementation time. B: stop and create/attach a route-visible document-lane slice. C: point to the current `documents.conversion_hub` or catalog. | Choose A only if the route exists and is truthful; otherwise choose B. Reject C because it breaks the approved product direction. |
 | Persistent navigation scope | A: implement only home content in `PR-0364`, keeping sidebar changes for `PR-0365`. B: widen `PR-0364` to include sidebar realignment. | Choose A unless the user explicitly merges the scopes. The C2 mockup remains the shared target for both slices. |
 
 ## Implementation Plan
@@ -145,10 +145,10 @@ Out of scope:
    `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`, with a
    Google-style domain-purpose module docstring and closed entries for:
    - `Klassrumskartan` -> `/apps/classroom.group-seating-studio`
-   - `Provkonverteraren` -> `/apps/documents.conversion_hub?mode=exam`
+   - `Provhantering` -> `/apps/documents.conversion_hub?mode=exam`
    - `Ljudtranskribering` -> `/apps/documents.conversion_hub?mode=transcript`
    - `Kodredigerare` -> `/editor`, with `minRole: "contributor"`
-   - `Dokumentkonverteraren` -> only a truthful reviewed route; otherwise stop.
+   - `Dokumentkonvertering` -> only a truthful reviewed route; otherwise stop.
 3. Add a focused `HomeWorkAppsSection.vue` component that renders equal-height
    app shelves with identifying graphics, whole-card links, no separate
    `Öppna` links, and no hard per-card shadow treatment.
@@ -178,13 +178,13 @@ Out of scope:
   coverage in
   `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.spec.ts`.
 - Signed-out landing behavior remains unchanged.
-- `Dokumentkonverteraren` is rendered as a visible non-linkable lane with the
+- `Dokumentkonvertering` is rendered as a visible non-linkable lane with the
   explicit runtime contract `data-app-linkable="false"` because the current
   codebase still has no reviewed truthful route target.
 - Post-deploy visual correction replaced the CSS-drawn graph-paper app-card
   panels with bitmap app identities. `Klassrumskartan` reuses the existing
-  `classroom-map-symbol.png`; `Provkonverteraren`, `Ljudtranskribering`,
-  `Dokumentkonverteraren`, and `Kodredigerare` use generated companion PNGs
+  `classroom-map-symbol.png`; `Provhantering`, `Ljudtranskribering`,
+  `Dokumentkonvertering`, and `Kodredigerare` use generated companion PNGs
   under `frontend/apps/skriptoteket/src/assets/home/work-apps/`.
 - Post-deploy copy correction removed generic/meta Swedish introduced on the
   authenticated home surface, removed the redundant `Arbetsappar` and
@@ -274,7 +274,7 @@ Browser proof:
   - `pdm run handoff-validate`
   - `git diff --check`
 - `HomeView.spec.ts` was trimmed back to behavioral assertions only:
-  app order, truthful route targets, non-linkable Dokumentkonverteraren, retired
+  app order, truthful route targets, non-linkable Dokumentkonvertering, retired
   text absence, role-gated ledgers, and signed-out behavior remain covered;
   removed class-name and helper-call assertions moved to the dedicated loader
   boundary spec.
@@ -297,7 +297,7 @@ Browser proof:
     `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface/20260619T102703Z/manifest.redacted.json`
   - Proof captured authenticated `/` at `1512x900` desktop and `390x844`
     compact widths and asserted app order, truthful route targets,
-    non-linkable Dokumentkonverteraren, home-surface retired text absence, and
+    non-linkable Dokumentkonvertering, home-surface retired text absence, and
     app shelf position above secondary ledgers.
 - Post-deploy visual identity proof passed with:
   `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-visual-identity`
@@ -312,18 +312,18 @@ Browser proof:
   - `pdm run fe-type-check`
   - `pdm run fe-lint`
   - `pdm run fe-build`
-  - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-role-copy-final.json`
-  - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final`
+  - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-home-labels-final.json`
+  - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final`
   Retained artifact:
-  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final/20260619T170928Z/manifest.redacted.json`.
+  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final/20260619T172451Z/manifest.redacted.json`.
   The first local proof attempt found exited HuleEdu and Skriptoteket Vite dev
   lanes; both were restarted with the documented Gateway-proxy setup before the
   retained proof passed.
 
 ## Stop Conditions
 
-- Stop if no truthful Dokumentkonverteraren route target exists and the
-  implementation would need to fake it with Provkonverteraren,
+- Stop if no truthful Dokumentkonvertering route target exists and the
+  implementation would need to fake it with Provhantering,
   Ljudtranskribering, generic catalog, or the current compatibility host.
 - Stop if the work expands into route/app-id split, curated-app registry
   changes, backend/API changes, Sir Convert, HuleEdu Gateway, QTI, DOCX, or

@@ -35,7 +35,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
   },
   {
     id: "exam-converter",
-    title: "Provkonverteraren",
+    title: "Provhantering",
     description: "Importera prov, kontrollera frågor och facit, exportera vidare.",
     imageSrc: examConverterSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=exam",
@@ -49,7 +49,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
   },
   {
     id: "document-converter",
-    title: "Dokumentkonverteraren",
+    title: "Dokumentkonvertering",
     description: "Konvertera mellan PDF, DOCX, HTML och andra dokumentformat.",
     imageSrc: documentConverterSymbolUrl,
     availabilityLabel: "Kommer senare",
