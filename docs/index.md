@@ -86,12 +86,18 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md`
 - Authenticated home work-apps review:
   `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md`
+- Authenticated shell navigation realignment PR slice:
+  `docs/backlog/prs/pr-0365-st-37-03-authenticated-shell-navigation-realignment.md`
+- Authenticated shell navigation realignment review:
+  `docs/backlog/reviews/review-pr-0365-authenticated-shell-navigation-realignment.md`
 - Authenticated home work-apps approved mockup:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`
 - Public landing authenticated-app preview mockup slice:
   `docs/backlog/prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md`
 - Public landing authenticated-app preview implementation slice:
   `docs/backlog/prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md`
+- Public landing header simplification slice:
+  `docs/backlog/prs/pr-0372-st-37-04-public-landing-header-simplification.md`
 - Public landing authenticated-app preview mockup bundle:
   `docs/mockups/pr-0370-public-landing-authenticated-app-preview/README.md`
 - Mockup bundle index: `docs/mockups/INDEX.md`

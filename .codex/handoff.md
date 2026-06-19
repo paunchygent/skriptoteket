@@ -10,9 +10,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-19.
 - Branch: `main`.
-- Latest closed slice: `PR-0371` under `ST-37-04`; next planned slice remains
-  `PR-0365` authenticated shell navigation realignment or `PR-0366` copy-only
-  app-lane alignment.
+- Latest closed slice: `PR-0365` under `ST-37-03`.
+- Active slice: none; the current repo session closed `PR-0365`.
+- Next planned slice remains `PR-0366` copy-only app-lane alignment under
+  `ST-37-04`.
 - Older PR-0355/PR-0356 proof and Hemma deploy detail was compacted to
   `.codex/long-term-memory/entries/session-2026-06-19-pr-0355-pr-0356-and-pr-0363-runtime-compaction.md`.
 - Prior PR-0310 through PR-0354 history lives in existing entries under
@@ -26,8 +27,15 @@ Keep this file updated so the next session can pick up work quickly.
   `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`,
   `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue`, and
   focused specs under `frontend/apps/skriptoteket/src/views/apps/`.
-- `ST-37-03` remains open for `PR-0365` authenticated shell navigation
-  realignment.
+- `PR-0365` is done. `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`,
+  `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.spec.ts`, and
+  `scripts/playwright_pr_0365_authenticated_shell_navigation.py` now keep the
+  persistent sidebar/mobile drawer utility-first with `Hem`, `Mina filer`,
+  `Föreslå verktyg`, `Katalog`, and `Profil`; keep `Hjälp` owned only by the
+  top auth bar; keep contributor/admin links below the utility block; and keep
+  duplicate app links plus `Mina körningar`/`Dokumentkonvertering` out of
+  persistent nav. `ST-37-03` is now done with retained shared-auth proof at
+  `.artifacts/playwright-pr-0365-authenticated-shell-navigation/20260619T212625Z/`.
 - `PR-0364` is done and approved by `REV-PR-0364`; detailed proof and
   post-deploy correction history was compacted to
   `.codex/long-term-memory/entries/session-2026-06-19-pr-0364-auth-home-proof-compaction.md`.
@@ -49,6 +57,12 @@ Keep this file updated so the next session can pick up work quickly.
   same app symbols as authenticated home. The review-fix pass made those three
   public preview images eager, synchronous, and high-priority after the first
   retained mobile proof left lower preview symbols blank.
+- `PR-0372` is done:
+  `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue` and
+  `frontend/apps/skriptoteket/src/components/layout/LandingLayout.spec.ts` now
+  keep the signed-out header to brand + `Logga in` + `Hjälp`, remove the
+  duplicate public `Klassrumskartan` link, and keep the small-screen header on
+  one row.
 - Docker-service breadcrumb is now encoded in
   `.codex/skills/skriptoteket-testing/references/browser-automation.md`,
   `.codex/skills/skriptoteket-testing/references/backend-pytest.md`,
@@ -67,30 +81,40 @@ Keep this file updated so the next session can pick up work quickly.
     `VITE_DEV_PROXY_TARGET=http://localhost:8080`.
 - Gateway-to-Skriptoteket Docker check passed:
   `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`.
-- PR-0371 public landing implementation proof passed:
-  - Red-first: `pdm run fe-test -- --run src/views/HomeView.spec.ts` failed
-    against the old production component because `När du loggar in` was absent.
-  - Green: `pdm run fe-test -- --run src/views/HomeView.spec.ts` passed with
-    5 tests.
-  - Review-fix rerun: `pdm run fe-test -- --run src/views/HomeView.spec.ts`
-    passed with 5 tests after locking eager/synchronous/high-priority loading
-    on the three public landing preview symbols.
-  - `pdm run fe-type-check`
-  - `pdm run fe-lint`
-  - `pdm run docs-validate`
-  - `pdm run handoff-validate`
-  - `git diff --check`
-  - Refreshed mockup captures:
-    `.artifacts/pr-0370-public-landing-authenticated-app-preview/html-mockup-desktop.png`
+- PR-0365 / PR-0372 current focused evidence:
+  - Red-first: `pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts`
+    failed because the sidebar still rendered duplicate `Hjälp` after `Profil`
+    instead of leaving help solely in the top auth bar.
+  - Red-first: `pdm run fe-test -- --run src/components/layout/LandingLayout.spec.ts`
+    failed because the old public header still rendered `Klassrumskartan`.
+  - Focused green: `pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts`
+    passed with 10 tests.
+  - Script-surface green:
+    `pdm run test tests/unit/scripts/test_playwright_script_surface.py`
+    passed with 3 tests.
+  - Frontend static gates:
+    `pdm run fe-type-check`
     and
-    `.artifacts/pr-0370-public-landing-authenticated-app-preview/html-mockup-mobile.png`.
-  - Live public landing captures:
-    `.artifacts/pr-0371-public-landing-authenticated-app-preview/public-landing-desktop.png`
-    and
-    `.artifacts/pr-0371-public-landing-authenticated-app-preview/public-landing-mobile.png`.
-  - Direct visual inspection of the refreshed mobile artifact confirms all
-    three approved reused app symbols now render.
-  - `REV-PR-0371` approved the slice.
+    `pdm run fe-lint`
+    both passed.
+  - Focused green: `pdm run fe-test -- --run src/components/layout/LandingLayout.spec.ts`
+    passed with 2 tests.
+  - Combined green: `pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts src/components/layout/LandingLayout.spec.ts src/views/HomeView.spec.ts`
+    passed with 17 tests.
+  - `pdm run run-local-pdm auth-integration check` passed from the HuleEdu
+    repo, confirming Gateway/login UI/proxy readiness for shared-auth proof.
+  - In-app browser public proof on `http://localhost:5173/` confirmed:
+    - desktop header contains only brand, `Logga in`, and `Hjälp`
+    - mobile header keeps brand, `Logga in`, and `Hjälp` on one row
+    - the public header no longer renders `Klassrumskartan`
+    - retained screenshots:
+      `.artifacts/pr-0372-public-landing-header-simplification/public-landing-desktop.png`
+      and
+      `.artifacts/pr-0372-public-landing-header-simplification/public-landing-mobile.png`
+  - Protected authenticated sidebar/mobile-drawer proof now passed with:
+    `pdm run python -m scripts.playwright_pr_0365_authenticated_shell_navigation --base-url http://localhost:5173`
+    retaining artifacts at
+    `.artifacts/playwright-pr-0365-authenticated-shell-navigation/20260619T212625Z/`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -105,8 +129,8 @@ VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080 VITE_HULEEDU_AUTH_ENTRY_URL=htt
 # Verify Gateway can resolve the product backend by Docker alias.
 docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz
 
-# Focused PR-0371 checks.
-pdm run fe-test -- --run src/views/HomeView.spec.ts
+# Focused PR-0365 / PR-0372 checks.
+pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts src/components/layout/LandingLayout.spec.ts src/views/HomeView.spec.ts
 pdm run fe-type-check
 pdm run fe-lint
 pdm run docs-validate
@@ -130,7 +154,7 @@ git diff --check
 - `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
   `PR-0364` and `PR-0365`.
 ## Next Steps
-- Continue with `PR-0365` authenticated shell navigation realignment or
-  `PR-0366` copy-only app-lane naming alignment without reintroducing
-  `Mina körningar`; route retirement remains a later slice.
+- After `PR-0365`, continue with `PR-0366` copy-only app-lane naming
+  alignment without reintroducing `Mina körningar`; route retirement remains a
+  later slice.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

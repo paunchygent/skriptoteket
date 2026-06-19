@@ -14,8 +14,9 @@ topic: "public-landing-copy"
 ## Purpose
 
 This reference locks the approved signed-out public landing copy after
-`PR-0371`. Future changes to the landing-page words must update this reference,
-the focused landing tests, and the governing backlog task or follow-up task.
+`PR-0371` and the public header simplification after `PR-0372`. Future changes
+to the landing-page words must update this reference, the focused landing
+tests, and the governing backlog task or follow-up task.
 
 ## Scope
 
@@ -27,6 +28,7 @@ Runtime sources:
 - `frontend/apps/skriptoteket/src/views/HomeView.vue`
 - `frontend/apps/skriptoteket/src/components/home/LandingClassroomPreview.vue`
 - `frontend/apps/skriptoteket/src/components/home/LandingAuthenticatedPreview.vue`
+- `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue`
 - `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`
 
 Governance sources:
@@ -35,7 +37,20 @@ Governance sources:
 - `ST-37-04`
 - `PR-0370`
 - `PR-0371`
+- `PR-0372`
 - `MOCK-pr-0370-public-landing-approved-copy`
+
+## Approved Public Header Copy
+
+Header actions:
+
+```text
+Logga in
+Hjälp
+```
+
+The public header must not render a separate `Klassrumskartan` navigation link.
+The hero section owns the public Klassrumskartan CTA.
 
 ## Approved Signed-Out Hero Copy
 
@@ -103,6 +118,9 @@ Skapa konto
   compositions.
 - The hero keeps the existing Klassrumskartan illustration direction through
   `LandingClassroomPreview`.
+- The public header keeps `Logga in` and `Hjälp` as same-style actions on one
+  row and does not add a hamburger or extra public navigation for
+  `Klassrumskartan`.
 - The footer actions `Logga in` and `Skapa konto` must continue to open shared
   HuleEdu ceremony URLs through `resolveLandingAuthContinuation(...)` and
   `sharedAuthCeremonyUrl(...)`.

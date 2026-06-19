@@ -114,23 +114,43 @@ onward plus the ST-37-04 follow-up slices.
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md)
   and the route-visible implementation sequence `PR-0363` through `PR-0365`
   for conversion-lane deep links, authenticated home app-lane hierarchy, and
-  authenticated shell navigation. `ST-37-03` remains open for implementation.
+  authenticated shell navigation.
 - `PR-0362` is done as of 2026-06-18. It added
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md),
   which closes the planning baseline for lane names, descriptions, truthful
   entrypoints, proof gates, and follow-up sequencing for `Klassrumskartan`,
   `Audio Transcription`, `Exam Converter`, and future `Document Converter`.
-  `ST-37-04` remains open for implementation through the new follow-up slices
+  `ST-37-04` remains open for implementation through public-landing follow-up
+  slices `PR-0370` through `PR-0372` and the remaining app-presentation slices
   `PR-0366` through `PR-0369`, while `PR-0363` through `PR-0365` are now
-  unblocked by planning and remain gated by their own review docs before code
-  implementation begins.
+  unblocked by planning and remain governed by their own review docs.
 - `PR-0363` is done as of 2026-06-19. It added the authenticated
   `/apps/documents.conversion_hub?mode=exam|transcript` compatibility bridge,
   kept app-id/route/registry/public/backend/Sir Convert/HuleEdu/QTI/DOCX
   surfaces unchanged, retained HuleEdu browser-session proof, and encoded the
-  Docker-service breadcrumb for Gateway-backed proof. `ST-37-03` remains open
-  for `PR-0364` and `PR-0365`.
-- `PR-0364` is ready as of 2026-06-19 and awaits `REV-PR-0364`. It defines
-  the authenticated home work-app surface plan: current runnable lanes first,
-  no fake Document Converter entry, and script/editor/platform surfaces
-  preserved as secondary continuation.
+  Docker-service breadcrumb for Gateway-backed proof.
+- `PR-0364` is done and approved as of 2026-06-19. It implemented the
+  authenticated home work-app surface with current runnable lanes first, no
+  fake Document Converter route, and script/editor/platform surfaces preserved
+  as secondary continuation.
+- `PR-0365` is done as of 2026-06-19. It corrected the authenticated shell so
+  authenticated home remains the owned app-entry surface, removed duplicate
+  `Klassrumskartan`/`Provhantering`/`Ljudtranskribering`/`Kodredigerare` links
+  from the persistent sidebar and mobile drawer, kept `Föreslå verktyg`
+  visible to all signed-in users, kept role-gated links below the utility
+  block while leaving `Hjälp` to the top auth bar, and retained truthful
+  shared-auth browser proof under
+  `.artifacts/playwright-pr-0365-authenticated-shell-navigation/20260619T212625Z/`.
+- `ST-37-03` is now done as of 2026-06-19. The service-shell/dashboard
+  realignment sequence is closed by `PR-0361`, `PR-0363`, `PR-0364`, and
+  `PR-0365`, while the epic remains active for the remaining `ST-37-04`
+  follow-up slices.
+- `PR-0370` and `PR-0371` are done as of 2026-06-19. They approved and then
+  implemented the public landing authenticated-app preview, removing the
+  repeated signed-out Klassrumskartan showcase while preserving the hero-owned
+  Klassrumskartan CTA.
+- `PR-0372` is done as of 2026-06-19. It simplified the signed-out public
+  header so the hero retains sole ownership of the `Klassrumskartan` CTA while
+  the header keeps only the brand, `Logga in`, and `Hjälp` as same-style
+  single-row actions on small screens, with retained in-app-browser desktop
+  and mobile proof from `http://localhost:5173/`.

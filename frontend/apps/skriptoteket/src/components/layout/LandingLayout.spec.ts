@@ -2,8 +2,8 @@
  * Signed-out landing shell tests.
  *
  * These tests keep the shared signed-out header aligned with the public-entry
- * contract so unauthenticated routes expose Klassrumskartan quietly and open
- * login through the shared HuleEdu ceremony.
+ * contract so the hero owns the Klassrumskartan CTA while the header keeps a
+ * simple shared-auth login action plus help entry.
  */
 
 import { mount } from "@vue/test-utils";
@@ -37,7 +37,7 @@ describe("LandingLayout", () => {
     layoutMocks.route.params = {};
   });
 
-  it("shows the quiet public-app link and opens login through the HuleEdu ceremony", () => {
+  it("keeps only login and help as header actions and opens login through the HuleEdu ceremony", () => {
     layoutMocks.route.name = "public-app-detail";
     layoutMocks.route.params = {
       appId: "classroom.group-seating-studio",
@@ -57,9 +57,14 @@ describe("LandingLayout", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Klassrumskartan");
-    expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
+    expect(wrapper.text()).not.toContain("Klassrumskartan");
+    expect(wrapper.find('nav[aria-label="Publika genvägar"]').exists()).toBe(false);
+
+    const headerActions = wrapper.get(".landing-header-actions");
     const loginLink = wrapper.get("a.landing-header-link");
+
+    expect(headerActions.text()).toContain("Logga in");
+    expect(headerActions.text()).toContain("Hjälp");
     expect(loginLink.text()).toBe("Logga in");
     expect(loginLink.attributes("href")).toBe(
       "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2Fapps%2Fclassroom.group-seating-studio",

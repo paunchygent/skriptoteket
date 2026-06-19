@@ -4,8 +4,8 @@
  *
  * This layout frames public-entry routes that share the unauthenticated
  * Skriptoteket shell, keeping header actions quiet so route-level hero
- * surfaces can own the strongest next step while login affordances open the
- * HuleEdu ceremony directly.
+ * surfaces can own the strongest next step while login/help stay on one quiet
+ * header row and login affordances open the HuleEdu ceremony directly.
  */
 
 import { computed } from "vue";
@@ -16,7 +16,6 @@ import HelpButton from "../help/HelpButton.vue";
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
 
-const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
 const route = useRoute();
 const loginUrl = computed(() => {
   const continuation = resolveLandingAuthContinuation(route);
@@ -31,26 +30,12 @@ const loginUrl = computed(() => {
   <div class="landing-shell">
     <header class="landing-header">
       <div class="landing-header-inner">
-        <div class="landing-header-leading">
-          <RouterLink
-            to="/"
-            class="landing-brand"
-          >
-            <BrandLogo height="28px" />
-          </RouterLink>
-
-          <nav
-            class="landing-nav"
-            aria-label="Publika genvägar"
-          >
-            <RouterLink
-              :to="publicClassroomPlannerPath"
-              class="landing-nav-link"
-            >
-              Klassrumskartan
-            </RouterLink>
-          </nav>
-        </div>
+        <RouterLink
+          to="/"
+          class="landing-brand"
+        >
+          <BrandLogo height="28px" />
+        </RouterLink>
 
         <div class="landing-header-actions">
           <a
@@ -85,39 +70,24 @@ const loginUrl = computed(() => {
 
 .landing-header-inner {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--huleedu-space-3) var(--huleedu-space-6);
+  gap: var(--huleedu-space-4);
   width: 100%;
   max-width: var(--huleedu-max-width-6xl);
   margin: 0 auto;
   padding: var(--huleedu-space-4) var(--huleedu-space-6);
 }
 
-.landing-header-leading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--huleedu-space-3) var(--huleedu-space-6);
-}
-
 .landing-brand {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   cursor: pointer;
   text-decoration: none;
   user-select: none;
 }
 
-.landing-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--huleedu-space-4);
-}
-
-.landing-nav-link,
 .landing-header-link {
   position: relative;
   display: inline-flex;
@@ -133,7 +103,6 @@ const loginUrl = computed(() => {
     opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.landing-nav-link::after,
 .landing-header-link::after {
   content: "";
   position: absolute;
@@ -151,7 +120,7 @@ const loginUrl = computed(() => {
 }
 
 .landing-header-link {
-  color: var(--huleedu-navy-70);
+  color: var(--huleedu-navy);
   padding: 0;
   border: 0;
   background: transparent;
@@ -161,29 +130,81 @@ const loginUrl = computed(() => {
 
 .landing-header-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--huleedu-space-3);
 }
 
 .landing-brand:hover,
-.landing-nav-link:hover,
 .landing-header-link:hover {
   color: var(--huleedu-action);
 }
 
-.landing-nav-link:hover::after,
-.landing-nav-link:focus-visible::after,
 .landing-header-link:hover::after,
 .landing-header-link:focus-visible::after {
   opacity: 1;
   transform: scaleX(1);
 }
 
-.landing-nav-link:focus-visible,
 .landing-header-link:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--huleedu-action) 40%, transparent);
   outline-offset: 4px;
+}
+
+.landing-header-actions :deep(button) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--huleedu-navy);
+  font-family: inherit;
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-semibold);
+  line-height: 1.3;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  transition:
+    color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.landing-header-actions :deep(button::after) {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.1rem;
+  height: 1px;
+  background-color: currentcolor;
+  opacity: 0;
+  transform: scaleX(0.55);
+  transform-origin: left center;
+  transition:
+    opacity var(--huleedu-duration-default) var(--huleedu-ease-default),
+    transform var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.landing-header-actions :deep(button:hover) {
+  color: var(--huleedu-action);
+}
+
+.landing-header-actions :deep(button:hover::after),
+.landing-header-actions :deep(button:focus-visible::after) {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.landing-header-actions :deep(button:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--huleedu-action) 40%, transparent);
+  outline-offset: 4px;
+}
+
+.landing-header-actions :deep(button[aria-expanded="true"]) {
+  color: var(--huleedu-action);
 }
 
 .landing-main {

@@ -3,16 +3,22 @@
  * Authenticated application sidebar.
  *
  * Relationships:
- * - renders the shared authenticated navigation as either a drawer or fixed rail
+ * - renders the shared authenticated navigation as either a drawer or fixed
+ *   rail with utility/platform links first while authenticated home owns app
+ *   entry affordances and the top auth bar owns help access
  * - lets planner routes defer the desktop rail until a wider `xl` breakpoint
  * - stays coordinated with `AuthLayout` so header, backdrop, and content margin
  *   all switch at the same shell cutoff
  */
 
 import BrandLogo from "../brand/BrandLogo.vue";
-import { useHelp } from "../help/useHelp";
 
-defineProps<{
+type SidebarNavLink = {
+  label: string;
+  to: string;
+};
+
+const props = defineProps<{
   isOpen: boolean;
   isFocusMode: boolean;
   preferXlDesktopBreakpoint: boolean;
@@ -36,22 +42,37 @@ function onLogout(): void {
   emit("logout");
 }
 
-const { open: openHelp } = useHelp();
-
-function onHelp(event: MouseEvent): void {
-  const opener = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-  emit("close");
-  openHelp(opener);
-}
+const standardLinks: readonly SidebarNavLink[] = [
+  {
+    label: "Hem",
+    to: "/",
+  },
+  {
+    label: "Mina filer",
+    to: "/vault",
+  },
+  {
+    label: "Föreslå verktyg",
+    to: "/suggestions/new",
+  },
+  {
+    label: "Katalog",
+    to: "/browse",
+  },
+  {
+    label: "Profil",
+    to: "/profile",
+  },
+];
 </script>
 
 <template>
   <aside
     class="sidebar"
     :class="{
-      'is-open': isOpen,
-      'is-focus-mode': isFocusMode,
-      'sidebar--xl-desktop-breakpoint': preferXlDesktopBreakpoint,
+      'is-open': props.isOpen,
+      'is-focus-mode': props.isFocusMode,
+      'sidebar--xl-desktop-breakpoint': props.preferXlDesktopBreakpoint,
     }"
   >
     <div class="sidebar-content">
@@ -64,43 +85,17 @@ function onHelp(event: MouseEvent): void {
       </RouterLink>
 
       <nav class="sidebar-nav">
-        <button
-          type="button"
-          class="sidebar-nav-item sidebar-nav-button sidebar-nav-help"
-          @click="onHelp"
-        >
-          Hjälp
-        </button>
         <RouterLink
-          to="/"
+          v-for="link in standardLinks"
+          :key="link.to"
+          :to="link.to"
           class="sidebar-nav-item"
           @click="onClose"
         >
-          Hem
+          {{ link.label }}
         </RouterLink>
         <RouterLink
-          to="/profile"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Profil
-        </RouterLink>
-        <RouterLink
-          to="/browse"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Katalog
-        </RouterLink>
-        <RouterLink
-          to="/vault"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Mina filer
-        </RouterLink>
-        <RouterLink
-          v-if="canSeeContributor"
+          v-if="props.canSeeContributor"
           to="/my-tools"
           class="sidebar-nav-item"
           @click="onClose"
@@ -108,23 +103,7 @@ function onHelp(event: MouseEvent): void {
           Mina verktyg
         </RouterLink>
         <RouterLink
-          v-if="canSeeContributor"
-          to="/editor"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Kodredigerare
-        </RouterLink>
-        <RouterLink
-          v-if="canSeeContributor"
-          to="/suggestions/new"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Föreslå verktyg
-        </RouterLink>
-        <RouterLink
-          v-if="canSeeAdmin"
+          v-if="props.canSeeAdmin"
           to="/admin/tools"
           class="sidebar-nav-item"
           @click="onClose"
@@ -132,7 +111,7 @@ function onHelp(event: MouseEvent): void {
           Hantera verktyg
         </RouterLink>
         <RouterLink
-          v-if="canSeeSuperuser"
+          v-if="props.canSeeSuperuser"
           to="/admin/users"
           class="sidebar-nav-item"
           @click="onClose"
@@ -140,7 +119,7 @@ function onHelp(event: MouseEvent): void {
           Användare
         </RouterLink>
         <RouterLink
-          v-if="canSeeAdmin"
+          v-if="props.canSeeAdmin"
           to="/admin/suggestions"
           class="sidebar-nav-item"
           @click="onClose"
@@ -152,15 +131,15 @@ function onHelp(event: MouseEvent): void {
       <!-- Sidebar footer: user info + logout (mobile only) -->
       <div class="sidebar-footer md:hidden">
         <div class="sidebar-user-info">
-          {{ user?.email }}
+          {{ props.user?.email }}
         </div>
         <button
           type="button"
           class="sidebar-logout-btn"
-          :disabled="logoutInProgress"
+          :disabled="props.logoutInProgress"
           @click="onLogout"
         >
-          {{ logoutInProgress ? "Loggar ut…" : "Logga ut" }}
+          {{ props.logoutInProgress ? "Loggar ut…" : "Logga ut" }}
         </button>
       </div>
     </div>
@@ -272,22 +251,6 @@ function onHelp(event: MouseEvent): void {
               border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.sidebar-nav-button {
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.sidebar-nav-help {
-  display: block;
-}
-
-.sidebar-nav-help::after {
-  content: none;
-}
-
 .sidebar-nav-item:hover {
   color: var(--huleedu-action);
 }
@@ -295,12 +258,6 @@ function onHelp(event: MouseEvent): void {
 .sidebar-nav-item.router-link-active {
   color: var(--huleedu-navy);
   border-left-color: var(--huleedu-action);
-}
-
-@media (min-width: 768px) {
-  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-nav-help {
-    display: none;
-  }
 }
 
 @media (min-width: 1280px) {
@@ -336,10 +293,6 @@ function onHelp(event: MouseEvent): void {
 
   .sidebar.sidebar--xl-desktop-breakpoint .sidebar-brand {
     transform: translateY(1px);
-  }
-
-  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-nav-help {
-    display: none;
   }
 }
 

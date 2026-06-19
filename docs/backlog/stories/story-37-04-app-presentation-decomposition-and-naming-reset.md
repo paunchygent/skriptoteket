@@ -38,6 +38,7 @@ dashboard direction are settled.
 - [x] [PR-0362: ST-37-04 app presentation decomposition and naming package](../prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md)
 - [x] [PR-0370: ST-37-04 public landing authenticated-app preview mockup approval](../prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md)
 - [x] [PR-0371: ST-37-04 public landing authenticated-app preview implementation](../prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md)
+- [x] [PR-0372: ST-37-04 public landing header simplification](../prs/pr-0372-st-37-04-public-landing-header-simplification.md)
 - [ ] [PR-0366: ST-37-04 copy-only app lane naming and description alignment](../prs/pr-0366-st-37-04-copy-only-app-lane-naming-and-description-alignment.md)
 - [ ] [PR-0367: ST-37-04 curated app registry presentation alignment](../prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md)
 - [ ] [PR-0368: ST-37-04 route-visible app entrypoint and presentation alignment](../prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md)
@@ -68,6 +69,15 @@ dashboard direction are settled.
   `LandingAuthenticatedPreview.vue`; verification and retained review evidence
   are recorded in the PR slice, `.codex/handoff.md`, and approved
   `REV-PR-0371`.
+- `PR-0372` is the follow-up public header simplification approved after the
+  `PR-0371` landing direction: remove the redundant header `Klassrumskartan`
+  link because the hero owns that CTA, and keep `Logga in` plus `Hjälp` as
+  same-style single-row header actions on small screens. The runtime
+  implementation now lives in
+  `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue` with
+  focused header coverage in
+  `frontend/apps/skriptoteket/src/components/layout/LandingLayout.spec.ts`
+  and retained in-app-browser desktop/mobile proof from `http://localhost:5173/`.
 - `PR-0361` closed the service-shell planning package through
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
