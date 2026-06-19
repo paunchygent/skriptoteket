@@ -42,6 +42,16 @@ APP_LINK_TARGETS = {
     "home-work-app-audio-transcription": "/apps/documents.conversion_hub?mode=transcript",
     "home-work-app-editor": "/editor",
 }
+REJECTED_COPY = (
+    "nästa arbetsmoment",
+    "nästa steg i ditt arbete",
+    "filspår",
+    "transkriptarbetsyta",
+    "publiceringsflödet",
+    "app-första startsidan",
+    "nästa arbetsflöde",
+    "Visas här när arbetsytan är redo",
+)
 VIEWPORTS = (
     {"label": "desktop", "width": 1512, "height": 900},
     {"label": "compact", "width": 390, "height": 844},
@@ -89,6 +99,9 @@ def _assert_home_contract(page: Page) -> None:
     expect(work_apps.get_by_text("Exam Converter")).to_have_count(0)
     expect(work_apps.get_by_text("Audio Transcription")).to_have_count(0)
     expect(work_apps.get_by_text("Document Converter")).to_have_count(0)
+    expect(work_apps.get_by_text("Kommer senare")).to_be_visible()
+    for copy in REJECTED_COPY:
+        expect(home_surface.get_by_text(copy)).to_have_count(0)
     expect(home_surface.get_by_text("Mina körningar")).to_have_count(0)
     expect(home_surface.get_by_text("Dina favoriter")).to_have_count(0)
     expect(home_surface.get_by_text("Senast använda")).to_have_count(0)

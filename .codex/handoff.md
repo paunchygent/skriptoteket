@@ -58,6 +58,10 @@ Keep this file updated so the next session can pick up work quickly.
   classroom-map symbol; the other visible app-card labels are Swedish:
   `Provkonverteraren`, `Ljudtranskribering`, `Dokumentkonverteraren`, and
   `Kodredigerare`.
+- Post-deploy copy correction: authenticated home copy now removes generic
+  helper phrases such as `nästa arbetsmoment`, `filspår`,
+  `transkriptarbetsyta`, and `publiceringsflödet`; prior direct ledger copy was
+  restored where it still matched the product.
 - The PR-0364 rejected card-grid and service-foyer attempts were deleted at
   user request on 2026-06-19; do not implement either layout. Approved C2 also
   removes `Mina körningar`, latest-used/recent-used home chrome, separate
@@ -130,6 +134,17 @@ Keep this file updated so the next session can pick up work quickly.
   - Captures:
     `authenticated-home-desktop.png` at `1512x900` and
     `authenticated-home-compact.png` at `390x844`.
+- PR-0364 post-deploy copy correction proof passed:
+  - First local attempts found the HuleEdu login UI `:5174` and Skriptoteket
+    Vite `:5173` lanes had exited; both were restarted with the documented
+    Gateway-proxy setup.
+  - Correct preflight:
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-copy-correction.json`
+    passed with all checks `ok`.
+  - Retained proof:
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction`
+    passed; artifact:
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction/20260619T150422Z/manifest.redacted.json`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.

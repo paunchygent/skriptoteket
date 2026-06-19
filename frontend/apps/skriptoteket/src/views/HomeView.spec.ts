@@ -214,6 +214,21 @@ describe("HomeView", () => {
     expect(workAppsSection.text()).toContain("Ljudtranskribering");
     expect(workAppsSection.text()).toContain("Dokumentkonverteraren");
     expect(workAppsSection.text()).toContain("Kodredigerare");
+    expect(wrapper.text()).toContain("Vad vill du göra?");
+    expect(workAppsSection.text()).toContain(
+      "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
+    );
+    expect(workAppsSection.text()).toContain(
+      "Importera prov, kontrollera frågor och facit, exportera vidare.",
+    );
+    expect(workAppsSection.text()).toContain(
+      "Transkribera ljudfiler och spara texten bland dina filer.",
+    );
+    expect(workAppsSection.text()).toContain("PDF, DOCX, HTML och andra dokumentformat.");
+    expect(workAppsSection.text()).toContain(
+      "Fortsätt där du slutade eller välj ett verktyg att redigera.",
+    );
+    expect(workAppsSection.text()).toContain("Kommer senare");
     expect(
       workAppsSection.findAll('[data-testid^="home-work-app-"]').map((app) => {
         const heading = app.find("h3");
@@ -231,11 +246,29 @@ describe("HomeView", () => {
     expect(workAppsSection.text()).not.toContain("Audio Transcription");
     expect(workAppsSection.text()).not.toContain("Document Converter");
     expect(workAppsSection.text()).not.toContain("Öppna");
+    [
+      "nästa arbetsmoment",
+      "nästa steg i ditt arbete",
+      "filspår",
+      "transkriptarbetsyta",
+      "publiceringsflödet",
+      "app-första startsidan",
+      "nästa arbetsflöde",
+      "Visas här när arbetsytan är redo",
+    ].forEach((copy) => {
+      expect(wrapper.text()).not.toContain(copy);
+    });
     expect(wrapper.text()).not.toContain("Mina körningar");
     expect(wrapper.text()).not.toContain("Dina favoriter");
     expect(wrapper.text()).not.toContain("Senast använda");
+    expect(secondaryLedgers.text()).toContain("Filer och katalog");
     expect(secondaryLedgers.text()).toContain("Mina filer");
+    expect(secondaryLedgers.text()).toContain("Öppna sparade filer och exporter.");
     expect(secondaryLedgers.text()).toContain("Katalog");
+    expect(secondaryLedgers.text()).toContain(
+      "Sök och filtrera bland tillgängliga verktyg.",
+    );
+    expect(secondaryLedgers.text()).not.toContain("Fortsätt");
     expect(secondaryLedgers.text()).not.toContain("Mina verktyg");
     expect(secondaryLedgers.text()).not.toContain("Föreslå verktyg");
     expect(secondaryLedgers.text()).not.toContain("Att granska");
@@ -267,7 +300,9 @@ describe("HomeView", () => {
     const contributorLedgers = contributorWrapper.get('[data-testid="home-secondary-ledgers"]');
 
     expect(contributorLedgers.text()).toContain("Mina verktyg");
+    expect(contributorLedgers.text()).toContain("Hantera verktyg du ansvarar för.");
     expect(contributorLedgers.text()).toContain("Föreslå verktyg");
+    expect(contributorLedgers.text()).toContain("Har du en idé? Skicka in ett förslag.");
     expect(contributorLedgers.text()).not.toContain("Att granska");
 
     const adminWrapper = await mountAuthenticatedHomeView("admin");
@@ -276,5 +311,6 @@ describe("HomeView", () => {
     expect(adminLedgers.text()).toContain("Mina verktyg");
     expect(adminLedgers.text()).toContain("Föreslå verktyg");
     expect(adminLedgers.text()).toContain("Att granska");
+    expect(adminLedgers.text()).toContain("Granska och publicera verktyg.");
   });
 });

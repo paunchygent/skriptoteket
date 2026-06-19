@@ -29,6 +29,20 @@ const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
 const userName = computed(() => auth.displayName);
 const workApps = HOME_PRIMARY_WORK_APPS;
+
+type SecondaryLedgerEntry = {
+  title: string;
+  to: string;
+  description: string;
+};
+
+type SecondaryLedgerSection = {
+  id: string;
+  title: string;
+  description?: string;
+  entries: SecondaryLedgerEntry[];
+};
+
 const registerUrl = computed(() =>
   sharedAuthCeremonyUrl({
     kind: "register",
@@ -36,23 +50,23 @@ const registerUrl = computed(() =>
     origin: window.location.origin,
   }),
 );
-const contributorLedgerEntries = computed(() =>
+const contributorLedgerEntries = computed<SecondaryLedgerEntry[]>(() =>
   canSeeContributor.value
     ? [
         {
           title: "Mina verktyg",
           to: "/my-tools",
-          description: "Hantera verktyg du ansvarar för och följ deras fortsättning.",
+          description: "Hantera verktyg du ansvarar för.",
         },
         {
           title: "Föreslå verktyg",
           to: "/suggestions/new",
-          description: "Lämna ett nytt arbetsmoment som du vill göra till en app.",
+          description: "Har du en idé? Skicka in ett förslag.",
         },
       ]
     : [],
 );
-const adminLedgerEntries = computed(() =>
+const adminLedgerEntries = computed<SecondaryLedgerEntry[]>(() =>
   canSeeAdmin.value
     ? [
         {
@@ -61,27 +75,26 @@ const adminLedgerEntries = computed(() =>
           description:
             adminPendingReview.value > 0
               ? `${adminPendingReview.value} verktyg väntar på granskning just nu.`
-              : "Granska och publicera inkomna verktyg.",
+              : "Granska och publicera verktyg.",
         },
       ]
     : [],
 );
-const secondaryLedgerSections = computed(() => {
-  const sections = [
+const secondaryLedgerSections = computed<SecondaryLedgerSection[]>(() => {
+  const sections: SecondaryLedgerSection[] = [
     {
       id: "materials",
-      title: "Fortsätt",
-      description: "Gå vidare till sparade filer, material och fler publicerade verktyg.",
+      title: "Filer och katalog",
       entries: [
         {
           title: "Mina filer",
           to: "/vault",
-          description: "Öppna sparade filer, exporter och material du vill jobba vidare med.",
+          description: "Öppna sparade filer och exporter.",
         },
         {
           title: "Katalog",
           to: "/browse",
-          description: "Hitta fler publicerade appar och verktyg i Skriptoteket.",
+          description: "Sök och filtrera bland tillgängliga verktyg.",
         },
       ],
     },
@@ -90,8 +103,7 @@ const secondaryLedgerSections = computed(() => {
   if (contributorLedgerEntries.value.length > 0) {
     sections.push({
       id: "contribution",
-      title: "Bidra",
-      description: "Fortsätt bygga, underhålla och föreslå verktyg för nästa arbetsflöde.",
+      title: "Skapa och utveckla",
       entries: contributorLedgerEntries.value,
     });
   }
@@ -100,7 +112,6 @@ const secondaryLedgerSections = computed(() => {
     sections.push({
       id: "review",
       title: "Granskning",
-      description: "Håll publiceringsflödet igång utan att lämna den app-första startsidan.",
       entries: adminLedgerEntries.value,
     });
   }
@@ -192,7 +203,7 @@ onMounted(async () => {
             Välkommen<template v-if="userName">, {{ userName }}</template>
           </h1>
           <p class="text-sm leading-6 text-navy/70 md:text-base">
-            Fortsätt i den app som passar nästa arbetsmoment.
+            Vad vill du göra?
           </p>
         </section>
 
@@ -211,7 +222,10 @@ onMounted(async () => {
               <h2 class="text-lg font-semibold text-navy">
                 {{ section.title }}
               </h2>
-              <p class="mt-1 text-sm leading-6 text-navy/70">
+              <p
+                v-if="section.description"
+                class="mt-1 text-sm leading-6 text-navy/70"
+              >
                 {{ section.description }}
               </p>
             </header>
@@ -223,7 +237,7 @@ onMounted(async () => {
               >
                 <RouterLink
                   :to="entry.to"
-                  class="flex items-start justify-between gap-4 px-5 py-4 no-underline transition-colors hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-[-2px]"
+                  class="group flex items-start justify-between gap-4 px-5 py-4 no-underline transition-colors hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-[-2px]"
                 >
                   <div class="min-w-0">
                     <p class="text-base font-semibold text-navy">
@@ -233,9 +247,11 @@ onMounted(async () => {
                       {{ entry.description }}
                     </p>
                   </div>
-                  <span class="shrink-0 pt-1 text-xs font-semibold text-navy/55">
-                    Fortsätt
-                  </span>
+                  <IconArrow
+                    :size="16"
+                    class="mt-1 shrink-0 text-navy/55 transition-transform duration-150 group-hover:translate-x-1 group-hover:text-action"
+                    aria-hidden="true"
+                  />
                 </RouterLink>
               </li>
             </ul>

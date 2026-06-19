@@ -20,13 +20,10 @@ defineProps<{
     data-testid="home-work-apps"
     class="space-y-4"
   >
-    <div class="max-w-[40rem] space-y-2">
+    <div class="max-w-[40rem]">
       <h2 class="font-serif text-3xl font-semibold text-navy md:text-[2.35rem]">
         Arbetsappar
       </h2>
-      <p class="text-sm leading-6 text-navy/70 md:text-base">
-        Välj den arbetsyta som matchar nästa steg i ditt arbete.
-      </p>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">

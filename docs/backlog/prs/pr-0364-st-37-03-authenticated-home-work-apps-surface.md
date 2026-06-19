@@ -184,6 +184,10 @@ Out of scope:
   `classroom-map-symbol.png`; `Provkonverteraren`, `Ljudtranskribering`,
   `Dokumentkonverteraren`, and `Kodredigerare` use generated companion PNGs
   under `frontend/apps/skriptoteket/src/assets/home/work-apps/`.
+- Post-deploy copy correction removed generic/meta Swedish introduced on the
+  authenticated home surface, restored prior direct ledger copy where it still
+  matched the product, and kept `PR-0366` as the later lane-wide copy alignment
+  slice.
 - The authenticated home no longer renders favorites, recent-used sections,
   `Mina körningar`, or the old `dashboard-card`/`action-cards-grid` surface.
 - `Kodredigerare` now lives in the primary app shelf and links directly to
@@ -297,6 +301,17 @@ Browser proof:
   `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-visual-identity/20260619T135320Z/manifest.redacted.json`.
   The proof asserts Swedish app-card labels, five image identities, truthful
   route targets, and absence of the English app-card labels.
+- Post-deploy copy correction proof passed with:
+  - `pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
+  - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-copy-correction.json`
+  - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction`
+  Retained artifact:
+  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction/20260619T150422Z/manifest.redacted.json`.
+  The first local proof attempt found exited HuleEdu and Skriptoteket Vite dev
+  lanes; both were restarted with the documented Gateway-proxy setup before the
+  retained proof passed.
 
 ## Stop Conditions
 

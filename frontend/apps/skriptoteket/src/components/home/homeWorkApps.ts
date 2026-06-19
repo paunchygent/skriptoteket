@@ -26,7 +26,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
   {
     id: "classroom",
     title: "Klassrumskartan",
-    description: "Planera salar, grupper och placeringar i den egna arbetsytan.",
+    description: "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
     imageSrc: classroomMapSymbolUrl,
     to: "/apps/classroom.group-seating-studio",
     availabilityLabel: "Direkt i appen",
@@ -34,7 +34,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
   {
     id: "exam-converter",
     title: "Provkonverteraren",
-    description: "Importera prov, arbeta vidare med facit och spara filspår.",
+    description: "Importera prov, kontrollera frågor och facit, exportera vidare.",
     imageSrc: examConverterSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=exam",
     availabilityLabel: "Direkt i appen",
@@ -42,7 +42,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
   {
     id: "audio-transcription",
     title: "Ljudtranskribering",
-    description: "Konvertera ljud till sparad transkriptarbetsyta och exportera vidare.",
+    description: "Transkribera ljudfiler och spara texten bland dina filer.",
     imageSrc: audioTranscriptionSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=transcript",
     availabilityLabel: "Direkt i appen",
@@ -50,14 +50,14 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
   {
     id: "document-converter",
     title: "Dokumentkonverteraren",
-    description: "PDF, DOCX, HTML och mallformat i en egen dokumentyta när den är redo.",
+    description: "PDF, DOCX, HTML och andra dokumentformat.",
     imageSrc: documentConverterSymbolUrl,
-    availabilityLabel: "Visas här när arbetsytan är redo",
+    availabilityLabel: "Kommer senare",
   },
   {
     id: "editor",
     title: "Kodredigerare",
-    description: "Skriv, underhåll och vidareutveckla verktyg utan att lämna startsidan först.",
+    description: "Fortsätt där du slutade eller välj ett verktyg att redigera.",
     imageSrc: codeEditorSymbolUrl,
     to: "/editor",
     availabilityLabel: "Direkt i appen",
