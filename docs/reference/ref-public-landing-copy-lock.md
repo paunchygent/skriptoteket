@@ -5,7 +5,7 @@ title: "Reference: public landing copy lock"
 status: active
 owners: "agents"
 created: 2026-04-19
-updated: 2026-04-19
+updated: 2026-06-19
 topic: "public-landing-copy"
 ---
 
@@ -13,28 +13,29 @@ topic: "public-landing-copy"
 
 ## Purpose
 
-This reference locks the approved signed-out public landing copy after `PR-0270`.
-Future changes to the landing-page words must update this reference, the focused
-landing tests, and the governing backlog task or follow-up task.
+This reference locks the approved signed-out public landing copy after
+`PR-0371`. Future changes to the landing-page words must update this reference,
+the focused landing tests, and the governing backlog task or follow-up task.
 
 ## Scope
 
-This copy applies to the signed-out `/` landing route and its current
-Klassrumskartan showcase plus authenticated-value preview.
+This copy applies to the signed-out `/` landing route, including the
+Klassrumskartan hero and the below-hero authenticated-app preview.
 
 Runtime sources:
 
 - `frontend/apps/skriptoteket/src/views/HomeView.vue`
-- `frontend/apps/skriptoteket/src/components/home/LandingFeaturedClassroom.vue`
+- `frontend/apps/skriptoteket/src/components/home/LandingClassroomPreview.vue`
 - `frontend/apps/skriptoteket/src/components/home/LandingAuthenticatedPreview.vue`
 - `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`
 
 Governance sources:
 
-- `EPIC-32`
-- `ST-32-08`
-- `PR-0270`
-- `MOCK-st-32-08-landing-authenticated-value-copy-alternatives`
+- `EPIC-37`
+- `ST-37-04`
+- `PR-0370`
+- `PR-0371`
+- `MOCK-pr-0370-public-landing-approved-copy`
 
 ## Approved Signed-Out Hero Copy
 
@@ -63,76 +64,20 @@ Secondary line:
 eller skapa ett konto för att spara ditt arbete.
 ```
 
-## Approved Klassrumskartan Showcase Copy
+## Approved Authenticated-App Preview Copy
 
 Section heading:
 
 ```text
-Klassrumskartan
+När du loggar in
 ```
 
-Description:
+Panels:
 
 ```text
-Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad är alla dina klasser, grupperingar och klassrumsplaceringar sparade.
-```
-
-Action:
-
-```text
-Öppna appen
-```
-
-Step labels:
-
-```text
-I
-Skapa salen
-
-II
-Placera eleverna
-
-III
-Exportera
-```
-
-Accessibility label:
-
-```text
-Tre steg i Klassrumskartan
-```
-
-## Approved Authenticated-Value Preview Copy
-
-Section heading:
-
-```text
-Mer när du loggar in
-```
-
-Lead:
-
-```text
-Få tillgång till fler appar och arbetsverktyg. Du kan också ge förslag på nya appar som du anser skulle underlätta ditt arbete.
-```
-
-Rows:
-
-```text
-I
-Fler färdiga lärarverktyg
-Använd alla Skriptotekets appar och verktyg som finns tillgängliga.
-Kräver konto
-
-II
-Dina förslag kan bli nya appar
-Berätta vilka arbetsmoment du vill slippa göra för hand.
-Kräver konto
-
-III
-Spara arbetet över tid
-Kom tillbaka till klasser, filer, inställningar och placeringar.
-Kräver konto
+Transkribera tal till text
+Skapa PDF:er med hjälp av HTML och CSS
+Skapa, redigera och konvertera prov
 ```
 
 Footer actions:
@@ -144,14 +89,23 @@ Skapa konto
 
 ## Explicit Copy Decisions
 
-- `PR-0270` selected the mockup's Alternative B direction.
-- The final row I description is the product-owner tweak:
-  `Använd alla Skriptotekets appar och verktyg som finns tillgängliga.`
-- The landing page no longer presents the code editor as a signed-out ledger
-  row.
-- The authenticated-value preview does not use `Kräver ansökan` in the current
-  landing copy.
-- The step markers are Roman numerals: `I`, `II`, `III`.
+- The signed-out landing page no longer renders the repeated
+  Klassrumskartan showcase from `LandingFeaturedClassroom`.
+- The signed-out landing page no longer renders the retired generic
+  authenticated-value ledger, its lead paragraph, or its `Kräver konto`
+  badges.
+- The authenticated-app preview must not render Roman numerals, numeric
+  markers, category labels, metadata labels, `Direkt i appen`, `Vad du gör`,
+  `Nytta`, or similar explanatory chrome.
+- The authenticated-app preview must reuse the same app symbol assets used on
+  authenticated home for audio transcription, document conversion, and exam
+  handling. Do not replace them with custom SVG diagrams or alternate icon
+  compositions.
+- The hero keeps the existing Klassrumskartan illustration direction through
+  `LandingClassroomPreview`.
+- The footer actions `Logga in` and `Skapa konto` must continue to open shared
+  HuleEdu ceremony URLs through `resolveLandingAuthContinuation(...)` and
+  `sharedAuthCeremonyUrl(...)`.
 
 ## Change Policy
 
@@ -160,7 +114,7 @@ When public landing copy changes:
 1. Update this reference in the same docs-as-code slice.
 2. Update `HomeView.spec.ts` or more specific component tests to lock the new
    approved words.
-3. Record whether the change affects `ST-32-07` hero/header hierarchy,
-   `ST-32-08` below-the-fold showcase copy, or a new follow-up task.
+3. Record whether the change affects `ST-37-04`, the public Klassrumskartan
+   hero, or the signed-out authenticated-app preview.
 4. Keep the signed-out copy short, conversational, teacher-facing, and free of
    implementation terms.

@@ -101,6 +101,10 @@ function findRouterLinkByText(
     .find((link) => link.text().includes(text));
 }
 
+function normalizedText(wrapper: ReturnType<typeof mountPublicHomeView>) {
+  return wrapper.text().replace(/\s+/g, " ").trim();
+}
+
 describe("HomeView", () => {
   beforeEach(() => {
     homeMocks.auth.isAuthenticated = false;
@@ -112,76 +116,83 @@ describe("HomeView", () => {
 
   it("shows the public-entry hero hierarchy for signed-out users", () => {
     const wrapper = mountPublicHomeView();
+    const text = normalizedText(wrapper);
 
-    expect(wrapper.text()).toContain("Lektionsplanera direkt i webbläsaren.");
-    expect(wrapper.text()).toContain("Klassrumskartan är en av Skriptotekets appar.");
-    expect(wrapper.text()).toContain("Öppna Klassrumskartan");
-    expect(wrapper.text()).toContain("skapa ett konto");
+    expect(text).toContain("Lektionsplanera direkt i webbläsaren.");
+    expect(text).toContain(
+      "Klassrumskartan är en av Skriptotekets appar. Den är öppen för alla.",
+    );
+    expect(text).toContain("Du behöver inget konto för att komma igång.");
+    expect(text).toContain("Öppna Klassrumskartan");
+    expect(text).toContain("eller skapa ett konto för att spara ditt arbete.");
     expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
     expect(wrapper.html()).toContain("https://api.hule.education/auth/register");
   });
 
-  it("renders the featured Klassrumskartan showcase and authenticated preview ledger", () => {
+  it("renders the approved signed-out authenticated app preview and removes the retired landing sections", () => {
     const wrapper = mountPublicHomeView();
+    const text = normalizedText(wrapper);
 
-    // Featured Klassrumskartan showcase
-    expect(wrapper.text()).toContain("Klassrumskartan");
-    expect(wrapper.text()).toContain(
+    expect(text).toContain("När du loggar in");
+    expect(text).toContain("Transkribera tal till text");
+    expect(text).toContain("Skapa PDF:er med hjälp av HTML och CSS");
+    expect(text).toContain("Skapa, redigera och konvertera prov");
+    expect(text).toContain("Logga in");
+    expect(text).toContain("Skapa konto");
+
+    [
       "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
-    );
-    expect(wrapper.text()).toContain(
       "Som inloggad är alla dina klasser, grupperingar och klassrumsplaceringar sparade.",
-    );
-    expect(wrapper.text()).toContain("Öppna appen");
-    expect(wrapper.text()).toContain("Skapa salen");
-    expect(wrapper.text()).toContain("Placera eleverna");
-    expect(wrapper.text()).toContain("Exportera");
-
-    // Roman-numeral step markers (I, II, III) replace the former 01/02/03.
-    const showcaseIndices = wrapper.findAll(
-      'section[class*="border-b"] p.font-mono',
-    );
-    const showcaseIndexLabels = showcaseIndices
-      .slice(0, 3)
-      .map((node) => node.text());
-    expect(showcaseIndexLabels).toEqual(["I", "II", "III"]);
-    expect(wrapper.text()).not.toContain("01");
-    expect(wrapper.text()).not.toContain("02");
-    expect(wrapper.text()).not.toContain("03");
-
-    // Authenticated-only preview — Alternative B: leads with access to more
-    // apps and work tools, surfaces that teacher suggestions can become new
-    // apps, and keeps saved work as the persistence guarantee. The code
-    // editor is no longer a ledger row on the landing page.
-    expect(wrapper.text()).toContain("Mer när du loggar in");
-    expect(wrapper.text()).toContain(
+      "Öppna appen",
+      "Skapa salen",
+      "Placera eleverna",
+      "Exportera",
+      "Mer när du loggar in",
       "Få tillgång till fler appar och arbetsverktyg.",
-    );
-    expect(wrapper.text()).toContain("Fler färdiga lärarverktyg");
-    expect(wrapper.text()).toContain(
+      "Fler färdiga lärarverktyg",
       "Använd alla Skriptotekets appar och verktyg som finns tillgängliga.",
-    );
-    expect(wrapper.text()).toContain("Dina förslag kan bli nya appar");
-    expect(wrapper.text()).toContain(
+      "Dina förslag kan bli nya appar",
       "Berätta vilka arbetsmoment du vill slippa göra för hand.",
-    );
-    expect(wrapper.text()).toContain("Spara arbetet över tid");
-    expect(wrapper.text()).toContain(
+      "Spara arbetet över tid",
       "Kom tillbaka till dina klasser, filer, inställningar och placeringar.",
-    );
-    expect(wrapper.text()).toContain("Kräver konto");
-    expect(wrapper.text()).not.toContain("Kräver ansökan");
-    expect(wrapper.text()).not.toContain("kodredigeraren");
-    expect(wrapper.text()).toContain("Skapa konto");
+      "Kräver konto",
+      "Direkt i appen",
+      "01",
+      "02",
+      "03",
+    ].forEach((copy) => {
+      expect(text).not.toContain(copy);
+    });
+    expect(text).not.toMatch(/\bI\b/);
+    expect(text).not.toMatch(/\bII\b/);
+    expect(text).not.toMatch(/\bIII\b/);
 
     const heroPreview = wrapper.get('img[alt="Klassrum med tavla, dörr och placerade elever"]');
     expect(heroPreview.attributes("src")).toContain("hero-preview");
 
     const showcaseImages = wrapper.findAll('img[alt=""]');
     expect(showcaseImages).toHaveLength(3);
-    expect(showcaseImages[0]?.attributes("src")).toContain("step-01-skapa-salen");
-    expect(showcaseImages[1]?.attributes("src")).toContain("step-02-placera-eleverna");
-    expect(showcaseImages[2]?.attributes("src")).toContain("step-03-exportera");
+    expect(showcaseImages[0]?.attributes("src")).toContain("ljudtranskribering");
+    expect(showcaseImages[1]?.attributes("src")).toContain("dokumentkonverteraren");
+    expect(showcaseImages[2]?.attributes("src")).toContain("provkonverteraren");
+    expect(showcaseImages.map((image) => image.attributes("loading"))).toEqual([
+      "eager",
+      "eager",
+      "eager",
+    ]);
+    expect(showcaseImages.map((image) => image.attributes("decoding"))).toEqual([
+      "sync",
+      "sync",
+      "sync",
+    ]);
+    expect(showcaseImages.map((image) => image.attributes("fetchpriority"))).toEqual([
+      "high",
+      "high",
+      "high",
+    ]);
+    expect(
+      wrapper.find('section[aria-labelledby="landing-authenticated-preview-heading"] svg').exists(),
+    ).toBe(false);
 
     const loginLink = wrapper.find(
       'a[href^="https://api.hule.education/auth/login?app=skriptoteket"]',

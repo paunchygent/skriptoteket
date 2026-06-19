@@ -2,7 +2,7 @@
 type: pr
 id: PR-0370
 title: "ST-37-04 public landing authenticated-app preview mockup approval"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-19
 updated: 2026-06-19
@@ -88,6 +88,12 @@ The required design sequence is:
    implementation handoff notes.
 7. Create or attach the follow-up implementation slice with red-first landing
    tests and live browser proof requirements.
+
+## Outcome
+
+The product owner approved the image direction, Swedish copy, and HTML/CSS
+mockup on 2026-06-19. Production implementation now belongs to
+`PR-0371`; this mockup slice remains docs/mockup-only.
 
 ## Test Plan
 

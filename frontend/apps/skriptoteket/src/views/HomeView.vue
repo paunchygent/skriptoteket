@@ -18,7 +18,6 @@ import {
 } from "../components/home/homeWorkApps";
 import LandingAuthenticatedPreview from "../components/home/LandingAuthenticatedPreview.vue";
 import LandingClassroomPreview from "../components/home/LandingClassroomPreview.vue";
-import LandingFeaturedClassroom from "../components/home/LandingFeaturedClassroom.vue";
 import { IconArrow } from "../components/icons";
 import { useHomeDashboard } from "../composables/home/useHomeDashboard";
 import { useAuthStore } from "../stores/auth";
@@ -190,7 +189,6 @@ onMounted(async () => {
         </div>
       </section>
 
-      <LandingFeaturedClassroom />
       <LandingAuthenticatedPreview />
     </template>
 

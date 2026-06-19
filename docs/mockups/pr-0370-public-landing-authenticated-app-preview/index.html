@@ -3,7 +3,8 @@ Domain purpose:
 Static PR-0370 public landing mockup for the minimal Vue landing change:
 preserve the current signed-out shell and hero, remove the repeated
 Klassrumskartan showcase, and replace the authenticated preview ledger with
-the approved account-backed workflow preview.
+the approved account-backed workflow preview using the same app symbols as the
+authenticated home surface.
 -->
 <!doctype html>
 <html lang="sv">
@@ -291,28 +292,9 @@ the approved account-backed workflow preview.
         padding: 1rem;
       }
 
-      .workflow-graphic svg {
-        width: min(100%, 13rem);
+      .workflow-graphic img {
+        width: min(100%, 7.25rem);
         height: auto;
-        overflow: visible;
-      }
-
-      .workflow-graphic .stroke {
-        fill: none;
-        stroke: var(--navy);
-        stroke-linecap: square;
-        stroke-linejoin: miter;
-        stroke-width: 4;
-      }
-
-      .workflow-graphic .thin {
-        stroke-width: 2.25;
-      }
-
-      .workflow-graphic .fill {
-        fill: var(--canvas);
-        stroke: var(--navy);
-        stroke-width: 3;
       }
 
       .workflow-title {
@@ -445,47 +427,36 @@ the approved account-backed workflow preview.
           <div class="workflow-grid">
             <article class="workflow-panel">
               <div class="workflow-graphic" aria-hidden="true">
-                <svg viewBox="0 0 220 120" role="img">
-                  <path class="stroke" d="M28 30v32a22 22 0 0 0 44 0V30a22 22 0 0 0-44 0Z" />
-                  <path class="stroke thin" d="M50 84v24M30 108h40" />
-                  <path class="stroke thin" d="M91 62h14l8-28 12 58 11-42 9 24h15" />
-                  <path class="stroke thin" d="M166 62h26" />
-                  <path class="stroke thin" d="M184 52l10 10-10 10" />
-                  <path class="fill" d="M198 28h38l18 18v60h-56Z" />
-                  <path class="stroke thin" d="M236 28v18h18M211 66h28M211 80h34M211 94h22" />
-                </svg>
+                <img
+                  src="../../../frontend/apps/skriptoteket/src/assets/home/work-apps/ljudtranskribering.png"
+                  alt=""
+                  width="116"
+                  height="116"
+                />
               </div>
               <h3 class="workflow-title">Transkribera tal till text</h3>
             </article>
 
             <article class="workflow-panel">
               <div class="workflow-graphic" aria-hidden="true">
-                <svg viewBox="0 0 220 120" role="img">
-                  <path class="fill" d="M18 25h92v66H18Z" />
-                  <path class="stroke thin" d="M18 43h92M30 35h1M44 35h1M58 35h1" />
-                  <path class="stroke thin" d="M54 61 39 76l15 15M74 58l-16 36M80 61l15 15-15 15" />
-                  <path class="stroke thin" d="M123 62h26" />
-                  <path class="stroke thin" d="M141 52l10 10-10 10" />
-                  <path class="fill" d="M160 22h38l18 18v64h-56Z" />
-                  <path class="stroke thin" d="M198 22v18h18M173 61h27M173 76h31M173 91h21" />
-                </svg>
+                <img
+                  src="../../../frontend/apps/skriptoteket/src/assets/home/work-apps/dokumentkonverteraren.png"
+                  alt=""
+                  width="116"
+                  height="116"
+                />
               </div>
               <h3 class="workflow-title">Skapa PDF:er med hjälp av HTML och CSS</h3>
             </article>
 
             <article class="workflow-panel">
               <div class="workflow-graphic" aria-hidden="true">
-                <svg viewBox="0 0 220 120" role="img">
-                  <path class="fill" d="M26 20h78v82H26Z" />
-                  <circle class="stroke thin" cx="45" cy="43" r="7" />
-                  <circle class="stroke thin" cx="45" cy="62" r="7" />
-                  <circle class="stroke thin" cx="45" cy="81" r="7" />
-                  <path class="stroke thin" d="M62 43h24M62 62h28M62 81h20" />
-                  <path class="stroke thin" d="M120 62h28" />
-                  <path class="stroke thin" d="M140 52l10 10-10 10" />
-                  <path class="fill" d="M164 32h48v48h-48Z" />
-                  <path class="stroke thin" d="M178 66 200 44M185 44h15v15" />
-                </svg>
+                <img
+                  src="../../../frontend/apps/skriptoteket/src/assets/home/work-apps/provkonverteraren.png"
+                  alt=""
+                  width="116"
+                  height="116"
+                />
               </div>
               <h3 class="workflow-title">Skapa, redigera och konvertera prov</h3>
             </article>

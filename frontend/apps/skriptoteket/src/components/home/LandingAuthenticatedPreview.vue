@@ -1,12 +1,11 @@
 <script setup lang="ts">
 /**
- * Authenticated-only value preview section (ST-32-08, Alternative B).
+ * Signed-out landing preview of authenticated Skriptoteket app lanes.
  *
- * Placed below the featured public-app showcase. Leads with access to more
- * apps and work tools as the primary signed-in value, surfaces that teacher
- * suggestions can become new apps, and keeps saved work (classes, files,
- * settings, classroom placements) as the persistence guarantee. The trailing
- * "Logga in" / "Skapa konto" actions open shared HuleEdu ceremonies directly.
+ * This section replaces the retired generic value ledger and repeated
+ * Klassrumskartan showcase with the approved three-panel workflow preview
+ * while reusing the authenticated-home app symbols and keeping shared HuleEdu
+ * auth continuation links for login and registration.
  */
 
 import { computed } from "vue";
@@ -14,6 +13,7 @@ import { useRoute } from "vue-router";
 
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
+import { HOME_PRIMARY_WORK_APPS } from "./homeWorkApps";
 
 const route = useRoute();
 
@@ -32,67 +32,74 @@ const registerUrl = computed(() => {
     origin: window.location.origin,
   });
 });
+function getWorkAppSymbol(appId: string): string {
+  const app = HOME_PRIMARY_WORK_APPS.find((candidate) => candidate.id === appId);
 
-const rows = [
+  if (!app) {
+    throw new Error(`Missing work-app symbol for landing preview: ${appId}`);
+  }
+
+  return app.imageSrc;
+}
+
+const panels = [
   {
-    index: "I",
-    term: "Fler färdiga lärarverktyg",
-    description:
-      "Använd alla Skriptotekets appar och verktyg som finns tillgängliga.",
-    tag: "Kräver konto",
+    title: "Transkribera tal till text",
+    imageSrc: getWorkAppSymbol("audio-transcription"),
   },
   {
-    index: "II",
-    term: "Dina förslag kan bli nya appar",
-    description: "Berätta vilka arbetsmoment du vill slippa göra för hand.",
-    tag: "Kräver konto",
+    title: "Skapa PDF:er med hjälp av HTML och CSS",
+    imageSrc: getWorkAppSymbol("document-converter"),
   },
   {
-    index: "III",
-    term: "Spara arbetet över tid",
-    description:
-      "Kom tillbaka till dina klasser, filer, inställningar och placeringar.",
-    tag: "Kräver konto",
+    title: "Skapa, redigera och konvertera prov",
+    imageSrc: getWorkAppSymbol("exam-converter"),
   },
 ] as const;
 </script>
 
 <template>
-  <section class="py-16 md:py-20">
+  <section
+    aria-labelledby="landing-authenticated-preview-heading"
+    class="py-16 md:py-20"
+  >
     <div class="max-w-[42ch]">
-      <h2 class="font-serif text-3xl font-semibold tracking-[-0.02em] text-navy md:text-4xl">
-        Mer när du loggar in
+      <h2
+        id="landing-authenticated-preview-heading"
+        class="font-serif text-3xl font-semibold tracking-[-0.02em] text-navy md:text-4xl"
+      >
+        När du loggar in
       </h2>
       <div
         class="mt-6 h-[2px] w-16 bg-navy"
         aria-hidden="true"
       />
-      <p class="mt-6 text-base leading-7 text-navy">
-        Få tillgång till fler appar och arbetsverktyg. Du kan också ge förslag på nya appar som du
-        anser skulle underlätta ditt arbete.
-      </p>
     </div>
 
-    <ul class="mt-10 divide-y divide-navy/20 border-y-2 border-navy">
-      <li
-        v-for="row in rows"
-        :key="row.index"
-        class="grid grid-cols-[3rem_1fr_auto] items-start gap-6 py-6 md:grid-cols-[4rem_1fr_12rem] md:gap-8"
+    <div class="mt-10 grid divide-y-2 divide-navy border-2 border-navy bg-panel lg:grid-cols-3 lg:divide-x-2 lg:divide-y-0">
+      <article
+        v-for="panel in panels"
+        :key="panel.title"
+        class="min-h-[15rem] p-6"
       >
-        <span class="font-mono text-xs font-semibold tracking-wider text-navy/60">
-          {{ row.index }}
-        </span>
-        <div>
-          <h3 class="text-base font-semibold text-navy">{{ row.term }}</h3>
-          <p class="mt-2 text-sm leading-6 text-navy/70">{{ row.description }}</p>
-        </div>
-        <span
-          class="justify-self-end border border-navy px-3 py-1 font-mono text-[11px] tracking-wider text-navy uppercase"
+        <div
+          aria-hidden="true"
+          class="flex min-h-[8.25rem] items-center justify-center border border-navy/40 bg-canvas p-4"
         >
-          {{ row.tag }}
-        </span>
-      </li>
-    </ul>
+          <img
+            :src="panel.imageSrc"
+            alt=""
+            class="h-auto w-full max-w-[7.25rem] object-contain"
+            loading="eager"
+            decoding="sync"
+            fetchpriority="high"
+          >
+        </div>
+        <h3 class="mt-5 text-base font-semibold leading-[1.35] text-navy">
+          {{ panel.title }}
+        </h3>
+      </article>
+    </div>
 
     <p class="mt-8 text-sm leading-6 text-navy/70">
       <a

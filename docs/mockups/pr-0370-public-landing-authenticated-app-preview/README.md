@@ -2,7 +2,7 @@
 type: mockup
 id: MOCK-pr-0370-public-landing-authenticated-app-preview
 title: "PR-0370 public landing authenticated-app preview"
-status: proposed
+status: approved
 owners: "agents"
 created: 2026-06-19
 updated: 2026-06-19
@@ -75,7 +75,7 @@ not final production assets:
   names carry the meaning.
 - Roman numerals, numeric list markers, and index markers are forbidden in the
   authenticated-app preview. The three workflows should be separated by layout,
-  dividers, and diagrams instead of `I`, `II`, `III`, `01`, `02`, or similar
+  dividers, and shared app symbols instead of `I`, `II`, `III`, `01`, `02`, or similar
   numbering.
 - Do not use final production phrasing for planned capabilities unless the
   follow-up implementation slice verifies that the capability is live.
@@ -100,12 +100,21 @@ not final production assets:
   the implementation slice.
 - 2026-06-19: Product owner corrected workflow heading to `När du skapar ett
   konto`; HTML/CSS mockup updated accordingly.
+- 2026-06-19: Product owner corrected workflow heading to `När du loggar in`;
+  HTML/CSS mockup updated accordingly.
+- 2026-06-19: Product owner required the public landing authenticated-app
+  preview to reuse the same app symbols shown on authenticated home. The
+  HTML/CSS mockup and production implementation must use those assets instead
+  of custom SVG diagrams or alternate icon compositions.
+- 2026-06-19: Product owner approved the HTML/CSS mockup for production
+  implementation. Follow-up production work belongs to `PR-0371`.
 
 ## Assets
 
 - HTML/CSS mockup:
   - `index.html`: current HTML/CSS approval candidate built from the approved
-    image direction and approved copy.
+    image direction, approved copy, and the same app symbols used by the
+    authenticated home surface.
   - Verified screenshots:
     `.artifacts/pr-0370-public-landing-authenticated-app-preview/html-mockup-desktop.png`
     and

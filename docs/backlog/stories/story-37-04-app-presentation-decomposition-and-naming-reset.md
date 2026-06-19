@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-18
+updated: 2026-06-19
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -36,7 +36,8 @@ dashboard direction are settled.
 ## Planned PR Slices
 
 - [x] [PR-0362: ST-37-04 app presentation decomposition and naming package](../prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md)
-- [ ] [PR-0370: ST-37-04 public landing authenticated-app preview mockup approval](../prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md)
+- [x] [PR-0370: ST-37-04 public landing authenticated-app preview mockup approval](../prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md)
+- [x] [PR-0371: ST-37-04 public landing authenticated-app preview implementation](../prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md)
 - [ ] [PR-0366: ST-37-04 copy-only app lane naming and description alignment](../prs/pr-0366-st-37-04-copy-only-app-lane-naming-and-description-alignment.md)
 - [ ] [PR-0367: ST-37-04 curated app registry presentation alignment](../prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md)
 - [ ] [PR-0368: ST-37-04 route-visible app entrypoint and presentation alignment](../prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md)
@@ -58,6 +59,15 @@ dashboard direction are settled.
   must finish image direction approval before any HTML/CSS mockup work, and
   must finish HTML/CSS plus Swedish copy approval before any production landing
   implementation slice begins.
+- `PR-0371` implements the approved `PR-0370` public landing direction in
+  production Vue, updates the public landing copy lock, and requires focused
+  tests plus live public landing browser proof.
+- `PR-0371` production runtime now removes the repeated signed-out
+  `LandingFeaturedClassroom` showcase and replaces the retired generic
+  authenticated ledger with the approved three-panel preview in
+  `LandingAuthenticatedPreview.vue`; verification and retained review evidence
+  are recorded in the PR slice, `.codex/handoff.md`, and approved
+  `REV-PR-0371`.
 - `PR-0361` closed the service-shell planning package through
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through

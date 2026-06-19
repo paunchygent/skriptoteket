@@ -90,6 +90,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`
 - Public landing authenticated-app preview mockup slice:
   `docs/backlog/prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md`
+- Public landing authenticated-app preview implementation slice:
+  `docs/backlog/prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md`
 - Public landing authenticated-app preview mockup bundle:
   `docs/mockups/pr-0370-public-landing-authenticated-app-preview/README.md`
 - Mockup bundle index: `docs/mockups/INDEX.md`
