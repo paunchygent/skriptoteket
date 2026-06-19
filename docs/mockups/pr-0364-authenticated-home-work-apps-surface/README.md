@@ -32,10 +32,12 @@ first impression with an app-first authenticated work surface.
   `Document Converter`, and `Kodredigerare` are presented as app shelves.
 - `Kodredigerare` is an app, not a form, suggestion card, or secondary
   contribute action.
+- `Document Converter` is retained as a visible product lane only; do not add a
+  runtime link until a truthful reviewed route exists.
 - `Mina körningar`, run-history summaries, latest-used apps, and recent-used
   vanity rows are not part of the approved home surface.
-- App shelves are whole-card links. Do not add separate `Öppna` links inside
-  the app cards.
+- Runtime-ready app shelves are whole-card links. Do not add separate `Öppna`
+  links inside the app cards.
 - App shelves need identifying graphics, stable equal-height geometry, and
   borders rather than hard per-card drop shadows.
 - The lower secondary area is a flat ledger surface for files, catalog, and
@@ -53,4 +55,5 @@ first impression with an app-first authenticated work surface.
 - No latest-used app row.
 - No nested card layout for `Kodredigerare` or `Föreslå verktyg`.
 - No separate `Öppna` action when the app card itself is the link.
+- No fake `Document Converter` runtime link.
 - No fixed heavy shadow treatment on individual app cards.

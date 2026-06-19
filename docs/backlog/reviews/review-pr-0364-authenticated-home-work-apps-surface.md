@@ -2,7 +2,7 @@
 type: review
 id: REV-PR-0364
 title: "Review: PR-0364 authenticated home work-apps surface"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-06-19
 updated: 2026-06-19
@@ -26,12 +26,11 @@ links:
 
 ## TL;DR
 
-Pending review after user approval of the C2 mockup. This review should decide
-whether `PR-0364` is sufficiently bounded and implementation-ready as the next
-`ST-37-03` route-visible slice: make authenticated `/` app-first, promote
-`Kodredigerare` to the primary app shelf, remove run/latest/recent vanity
-chrome, avoid nested cards, and stop rather than fake the Document Converter
-route.
+Approved. The scoped mockup patch stays inside the retained design lane, aligns
+with the HuleEdu/Skriptoteket token and composition rules, keeps
+`Kodredigerare` first-class, shows `Document Converter` without faking a
+runtime route, and the supplied desktop/mobile renders remain coherent without
+overlap or clipping.
 
 ## Problem Statement
 
@@ -43,93 +42,143 @@ target hierarchy.
 
 ## Proposed Solution
 
-Review the amended `PR-0364` contract against the approved C2 mockup. The
-deleted PR-0364 card-grid and service-foyer mockups must not be treated as
-evidence. The proposal should keep runtime work bounded to authenticated home
-composition unless `PR-0365` is explicitly absorbed, add direct entries for
-`Klassrumskartan`, `Exam Converter`, `Audio Transcription`, and
-`Kodredigerare`, include `Document Converter` only with a truthful reviewed
-route target, remove `Mina körningar`/latest/recent home chrome, preserve flat
-secondary file/catalog/contribution affordances, and require focused Vitest
-plus Docker-backed HuleEdu browser-session proof.
+Review the amended `PR-0364` contract against the approved C2 mockup and the
+actual mockup patch only. The deleted PR-0364 card-grid and service-foyer
+mockups are not evidence. Approval requires that the HTML/CSS preview remains a
+truthful design mockup, keeps runtime work bounded to authenticated home
+composition unless `PR-0365` is explicitly absorbed, adds direct entries only
+for the already-truthful lanes, keeps `Document Converter` non-clickable until a
+reviewed route exists, removes `Mina körningar`/latest/recent home chrome, and
+preserves flat secondary file/catalog/contribution affordances.
 
 ## Artifacts To Review
 
 | File | Focus | Time |
 |------|-------|------|
-| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md` | Approved C2 design direction, accepted/rejected patterns | 8 min |
-| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html` | Concrete HTML/CSS mockup hierarchy and forbidden nested-card/open-link patterns | 10 min |
+| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md` | Approved C2 design direction, accepted/rejected patterns, Document Converter truth boundary | 8 min |
+| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html` | Concrete HTML/CSS mockup hierarchy, token usage, truthful links, and forbidden nested-card/open-link patterns | 10 min |
 | `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md` | Scope, decisions, options, red/green plan, and proof gates | 20 min |
-| `docs/backlog/stories/story-37-03-service-shell-and-dashboard-ux-realignment.md` | Parent story expectations and sequencing | 5 min |
-| `docs/reference/ref-service-shell-ux-realignment-plan-v1.md` | Home-before-navigation sequence authority | 8 min |
-| `docs/reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md` | Current product lane and Document Converter truth boundary | 8 min |
-| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md` | App presentation and route/registry stop conditions | 8 min |
-| `frontend/apps/skriptoteket/src/views/HomeView.vue` | Current signed-in dashboard ordering and preservation surface | 10 min |
-| `frontend/apps/skriptoteket/src/views/HomeView.spec.ts` | Existing signed-out coverage and expected red test seam | 5 min |
+| `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-desktop.png` | Desktop geometry, equal-height shelves, and absence of clipping/overlap | 5 min |
+| `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-mobile.png` | Compact-width geometry, stacking coherence, and absence of clipping/overlap | 5 min |
 
-**Total estimated time:** ~70 minutes.
+**Total estimated time:** ~56 minutes.
 
 ## Key Decisions
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Put work-app lanes before old dashboard/platform sections on authenticated `/`. | This is the smallest route-visible step that centers the current product proposition without changing sidebar navigation yet. | [ ] |
-| Use current truthful route targets for the three runnable lanes. | `PR-0363` made Exam and Transcript directly linkable while preserving app-id compatibility. | [ ] |
-| Promote `Kodredigerare` into the app shelf. | The user explicitly rejected treating the editor as a form or nested secondary action. | [ ] |
-| Include `Document Converter` only with a truthful route stop condition. | The approved mockup includes the lane, but linking it to Exam/Transcript or catalog would be false. | [ ] |
-| Remove `Mina körningar`/latest/recent home chrome. | The user explicitly retired this dashboard path from the active home direction. | [ ] |
-| Preserve useful secondary surfaces without nested cards. | Files/catalog/contribution remain useful but must be flat ledger affordances below the app shelf. | [ ] |
-| Require Docker-backed HuleEdu browser-session proof. | Authenticated route-visible proof must use Gateway with Docker `skriptoteket_web`, not host Uvicorn. | [ ] |
-| Treat the approved C2 mockup as the design authority. | The user approved the latest C2 suggestion and requested a real HTML/CSS mockup before code. | [ ] |
+| Put work-app lanes before old dashboard/platform sections on authenticated `/`. | This is the smallest route-visible step that centers the current product proposition without changing sidebar navigation yet. | [x] |
+| Use current truthful route targets for the three runnable lanes. | `PR-0363` made Exam and Transcript directly linkable while preserving app-id compatibility. | [x] |
+| Promote `Kodredigerare` into the app shelf. | The user explicitly rejected treating the editor as a form or nested secondary action. | [x] |
+| Include `Document Converter` only with a truthful route stop condition. | The approved mockup includes the lane, but linking it to Exam/Transcript or catalog would be false. | [x] |
+| Remove `Mina körningar`/latest/recent home chrome. | The user explicitly retired this dashboard path from the active home direction. | [x] |
+| Preserve useful secondary surfaces without nested cards. | Files/catalog/contribution remain useful but must be flat ledger affordances below the app shelf. | [x] |
+| Require Docker-backed HuleEdu browser-session proof. | Authenticated route-visible proof belongs to the implementation slice, not this static mockup review; the PR still keeps that gate. | [x] |
+| Treat the approved C2 mockup as the design authority. | The user approved the latest C2 suggestion and requested a real HTML/CSS mockup before code. | [x] |
 
 ## Review Checklist
 
-- [ ] Scope is limited to authenticated home composition unless `PR-0365` is
+- [x] Scope is limited to authenticated home composition unless `PR-0365` is
   explicitly absorbed for sidebar/mobile navigation.
-- [ ] Route targets are exact and do not require route-table or app-id changes.
-- [ ] Document Converter handling cannot mislead teachers into Exam/Transcript,
+- [x] Route targets are exact and do not require route-table or app-id changes.
+- [x] Document Converter handling cannot mislead teachers into Exam/Transcript,
   catalog, or the current compatibility host.
-- [ ] `Kodredigerare` is treated as an app shelf entry.
-- [ ] `Mina körningar`, latest-used apps, and recent-used vanity rows are
+- [x] `Kodredigerare` is treated as an app shelf entry.
+- [x] `Mina körningar`, latest-used apps, and recent-used vanity rows are
   absent from authenticated home.
-- [ ] Secondary surfaces are flat ledgers or equivalent un-nested structures.
-- [ ] Existing useful files/catalog/contribution/admin capabilities remain
+- [x] Secondary surfaces are flat ledgers or equivalent un-nested structures.
+- [x] Existing useful files/catalog/contribution/admin capabilities remain
   available below or outside the app shelf.
-- [ ] Red-first test and live proof plan would catch the real product failure:
-  signed-in home still being generic-dashboard-first.
-- [ ] Stop conditions cover route/registry/backend/Sir Convert/HuleEdu/QTI/DOCX
+- [x] The implementation plan still requires red-first tests and live proof for
+  the eventual runtime slice.
+- [x] Stop conditions cover route/registry/backend/Sir Convert/HuleEdu/QTI/DOCX
   drift and the Docker service proof lane.
-- [ ] The approved C2 HTML/CSS mockup is the only mockup target; the deleted
+- [x] The approved C2 HTML/CSS mockup is the only mockup target; the deleted
   card-grid and service-foyer attempts are not treated as targets.
 
 ## Review Feedback
 
 **Reviewer:** `codex-independent-reviewer`
 **Date:** `2026-06-19`
-**Verdict:** `pending`
+**Verdict:** `approved`
+
+### Current Review Pass - 2026-06-19
+
+Decision: `approved`.
+
+#### Scope Reviewed
+
+- Governing docs: `AGENTS.md`, `.codex/rules/045-huleedu-design-system.md`,
+  `PR-0364`, `REV-PR-0364`, the required design-skill references, and the
+  scoped mockup README/HTML.
+- Scoped worker patch only:
+  `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md` and
+  `docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html`.
+- Render evidence only:
+  `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-desktop.png`
+  and
+  `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-mobile.png`.
+
+#### Findings
+
+No findings.
+
+The approved state is grounded in the reviewed files and renders:
+
+- `docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html:8`
+  imports the canonical HuleEdu design tokens, and
+  `index.html:10-26` maps local variables from those tokens rather than from a
+  raw local palette.
+- `index.html:80-85`, `index.html:160-164`, `index.html:317-327`, and
+  `index.html:346-352` remove the all-caps/eyebrow treatment in favor of
+  structure-first headings and sentence-case hierarchy.
+- `index.html:166-181` and `index.html:297-327` define stable equal-height app
+  shelves with border-led surfaces and no hard per-card shadows.
+- `index.html:427-431` and `index.html:452-503` keep truthful runtime links for
+  `Klassrumskartan`, `Exam Converter`, `Audio Transcription`, and
+  `Kodredigerare`, while `Document Converter` remains visible but
+  non-clickable.
+- `index.html:505-519` keeps the lower continuation area as flat ledgers rather
+  than nested cards.
+- `README.md:30-48` and `README.md:52-59` now explicitly encode the approved
+  direction, including the no-fake-Document-Converter-link rule and the banned
+  `Mina körningar`/latest-used/nested-card patterns.
+- The retained desktop and mobile renders show coherent layout, no overlap, no
+  clipping, and the expected shelf/ledger hierarchy at both breakpoints.
+
+Residual risk, not a blocker: this review covers only the static mockup lane.
+The later runtime implementation still owes the governed red-first tests and
+Docker-backed HuleEdu browser-session proof already specified in `PR-0364`.
+
+#### Validation Commands And Outcomes
+
+Reviewer-ran checks:
+
+```bash
+pdm run docs-validate
+git diff --check
+```
+
+Results:
+
+- `docs-validate`: passed.
+- `git diff --check`: passed.
+
+Worker evidence inspected without rerunning the render:
+
+- `pdm run docs-validate`: reported passed before review-doc edits.
+- `git diff --check`: reported passed before review-doc edits.
+- Desktop render:
+  `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-desktop.png`.
+- Mobile render:
+  `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-mobile.png`.
 
 ### Required Changes
 
-Pending review.
-
-### Suggestions (Optional)
-
-Pending review.
-
-### Decision Approvals
-
-- [ ] Approved C2 authenticated home work-app hierarchy
-- [ ] Exact current lane route targets
-- [ ] `Kodredigerare` as primary app
-- [ ] Document Converter truthful-route stop condition
-- [ ] `Mina körningar`/latest/recent home chrome removed
-- [ ] Flat secondary ledgers instead of nested cards
-- [ ] Docker-backed authenticated browser proof lane
-- [ ] Approved mockup retained under `docs/mockups/`
+None.
 
 ## Changes Made
 
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | `REV-PR-0364` | Added the retained planning review packet for the authenticated home work-app surface |
-| 2 | `MOCK-pr-0364-authenticated-home-work-apps-surface` | Added the approved C2 HTML/CSS mockup as review evidence |
+| 1 | `REV-PR-0364` | Retained the independent mockup review verdict as `approved` with scoped evidence, no findings, and validator results |

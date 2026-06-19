@@ -5,18 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PR-0364 authenticated home work-apps surface</title>
     <style>
+      @import url("../../../src/skriptoteket/web/static/css/huleedu-design-tokens.css");
+
       :root {
-        --canvas: #fafaf6;
-        --panel: rgba(255, 254, 248, 0.92);
-        --navy: #0f2b4c;
-        --navy-70: rgba(15, 43, 76, 0.7);
-        --navy-55: rgba(15, 43, 76, 0.55);
-        --line: rgba(15, 43, 76, 0.28);
-        --action: #3f7f78;
-        --critical: #4d1521;
-        --serif: Georgia, "Times New Roman", serif;
-        --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --canvas: var(--huleedu-canvas);
+        --paper: var(--huleedu-paper);
+        --panel: var(--huleedu-panel);
+        --navy: var(--huleedu-navy);
+        --navy-70: var(--huleedu-navy-70);
+        --navy-muted: var(--huleedu-navy-50);
+        --line: var(--huleedu-navy-30);
+        --line-soft: var(--huleedu-navy-20);
+        --action: var(--huleedu-action);
+        --critical: var(--huleedu-critical);
+        --serif: var(--huleedu-font-serif);
+        --sans: var(--huleedu-font-sans);
+        --mono: var(--huleedu-font-mono);
+        --sidebar-width: 248px;
+        --app-shelf-graphic-height: 96px;
+        --app-shelf-height: 260px;
       }
 
       * {
@@ -34,7 +41,7 @@
           linear-gradient(var(--line) 1px, transparent 1px),
           linear-gradient(90deg, var(--line) 1px, transparent 1px),
           var(--canvas);
-        background-size: 24px 24px;
+        background-size: var(--huleedu-grid-size) var(--huleedu-grid-size);
         color: var(--navy);
         font-family: var(--sans);
       }
@@ -46,9 +53,9 @@
 
       .shell {
         display: grid;
-        grid-template-columns: 248px minmax(0, 1fr);
-        min-height: 900px;
-        background: rgba(250, 250, 246, 0.96);
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+        min-height: 100vh;
+        background: var(--canvas);
       }
 
       .sidebar {
@@ -62,7 +69,7 @@
         margin-bottom: 28px;
         font-family: var(--serif);
         font-size: 26px;
-        font-weight: 700;
+        font-weight: var(--huleedu-font-bold);
       }
 
       .nav {
@@ -72,24 +79,24 @@
 
       .nav-heading {
         margin: 18px 8px 4px;
-        color: var(--navy-55);
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 900;
-        letter-spacing: 0.13em;
-        text-transform: uppercase;
+        color: var(--navy);
+        font-size: 13px;
+        font-weight: var(--huleedu-font-extrabold);
       }
 
       .nav a,
-      .nav button {
+      .nav button,
+      .nav-static {
         border: 0;
         background: transparent;
         color: var(--navy-70);
+        display: block;
         font: inherit;
         font-size: 13px;
-        font-weight: 650;
+        font-weight: var(--huleedu-font-semibold);
         padding: 8px 10px;
         text-align: left;
+        width: 100%;
       }
 
       .nav .active {
@@ -130,7 +137,7 @@
         gap: 10px;
         color: var(--navy-70);
         font-size: 12px;
-        font-weight: 700;
+        font-weight: var(--huleedu-font-bold);
       }
 
       .account-mark {
@@ -143,7 +150,7 @@
         color: var(--navy);
         font-family: var(--mono);
         font-size: 11px;
-        font-weight: 900;
+        font-weight: var(--huleedu-font-extrabold);
       }
 
       .section-title {
@@ -152,28 +159,33 @@
 
       .section-title h2 {
         margin: 0;
-        font-size: 14px;
-        font-weight: 850;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
+        font-size: 20px;
+        font-weight: var(--huleedu-font-extrabold);
       }
 
       .app-shelf-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-auto-rows: var(--app-shelf-height);
+        align-items: stretch;
         gap: 12px;
       }
 
       .app-shelf {
         display: grid;
-        grid-template-rows: 96px minmax(128px, 1fr);
-        min-height: 252px;
+        grid-template-rows: var(--app-shelf-graphic-height) minmax(0, 1fr);
+        height: 100%;
+        min-height: var(--app-shelf-height);
         border: 2px solid var(--navy);
         background: var(--panel);
       }
 
-      .app-shelf:hover {
-        background: #fffef8;
+      a.app-shelf:hover {
+        background: var(--paper);
+      }
+
+      .app-shelf-visual {
+        cursor: default;
       }
 
       .app-graphic {
@@ -187,13 +199,13 @@
         content: "";
         position: absolute;
         inset: 12px;
-        border: 1px solid rgba(15, 43, 76, 0.28);
+        border: 1px solid var(--line);
       }
 
       .graphic-classroom {
         background:
-          linear-gradient(90deg, transparent 0 18%, rgba(15, 43, 76, 0.22) 18% 19%, transparent 19% 40%, rgba(15, 43, 76, 0.22) 40% 41%, transparent 41% 62%, rgba(15, 43, 76, 0.22) 62% 63%, transparent 63%),
-          linear-gradient(transparent 0 34%, rgba(15, 43, 76, 0.2) 34% 35%, transparent 35% 67%, rgba(15, 43, 76, 0.2) 67% 68%, transparent 68%),
+          linear-gradient(90deg, transparent 0 18%, var(--line-soft) 18% 19%, transparent 19% 40%, var(--line-soft) 40% 41%, transparent 41% 62%, var(--line-soft) 62% 63%, transparent 63%),
+          linear-gradient(transparent 0 34%, var(--line-soft) 34% 35%, transparent 35% 67%, var(--line-soft) 67% 68%, transparent 68%),
           var(--canvas);
       }
 
@@ -205,7 +217,7 @@
       .graphic-code .cursor {
         position: absolute;
         border: 2px solid var(--navy);
-        background: #fffef8;
+        background: var(--paper);
       }
 
       .graphic-classroom .seat:nth-child(1) { left: 22px; top: 22px; width: 34px; height: 22px; }
@@ -266,8 +278,8 @@
 
       .graphic-code {
         background:
-          linear-gradient(90deg, rgba(15, 43, 76, 0.18) 0 34px, transparent 34px),
-          #fffef8;
+          linear-gradient(90deg, var(--line-soft) 0 34px, transparent 34px),
+          var(--paper);
       }
 
       .graphic-code .line {
@@ -309,12 +321,9 @@
         gap: 12px;
         border-top: 1px solid var(--line);
         padding-top: 9px;
-        color: var(--navy-55);
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 900;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        color: var(--navy-muted);
+        font-size: 12px;
+        font-weight: var(--huleedu-font-bold);
       }
 
       .shelf-arrow {
@@ -335,12 +344,11 @@
       }
 
       .panel-head {
+        margin: 0;
         border-bottom: 1px solid var(--navy);
         padding: 12px 14px;
-        font-size: 12px;
-        font-weight: 850;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
+        font-size: 14px;
+        font-weight: var(--huleedu-font-extrabold);
       }
 
       .ledger {
@@ -375,7 +383,7 @@
         height: 30px;
         place-items: center;
         border: 1px solid var(--navy);
-        font-weight: 900;
+        font-weight: var(--huleedu-font-extrabold);
       }
 
       @media (max-width: 1180px) {
@@ -412,21 +420,21 @@
   <body>
     <section class="shell">
       <aside class="sidebar">
-        <a class="brand" href="#">Skriptoteket</a>
+        <a class="brand" href="/">Skriptoteket</a>
         <nav class="nav" aria-label="Huvudnavigation">
           <button type="button">Hjälp</button>
           <div class="nav-heading">Arbetsappar</div>
-          <a href="#">Klassrumskartan</a>
-          <a href="#">Exam Converter</a>
-          <a href="#">Audio Transcription</a>
-          <a href="#">Document Converter</a>
-          <a href="#">Kodredigerare</a>
+          <a href="/apps/classroom.group-seating-studio">Klassrumskartan</a>
+          <a href="/apps/documents.conversion_hub?mode=exam">Exam Converter</a>
+          <a href="/apps/documents.conversion_hub?mode=transcript">Audio Transcription</a>
+          <span class="nav-static">Document Converter</span>
+          <a href="/editor">Kodredigerare</a>
           <div class="nav-heading">Plattform</div>
-          <a class="active" href="#">Hem</a>
-          <a href="#">Profil</a>
-          <a href="#">Mina filer</a>
-          <a href="#">Katalog</a>
-          <a href="#">Föreslå verktyg</a>
+          <a class="active" href="/">Hem</a>
+          <a href="/profile">Profil</a>
+          <a href="/vault">Mina filer</a>
+          <a href="/browse">Katalog</a>
+          <a href="/suggestions/new">Föreslå verktyg</a>
         </nav>
       </aside>
       <main class="main">
@@ -442,7 +450,7 @@
           <h2>Arbetsappar</h2>
         </div>
         <section class="app-shelf-grid" aria-label="Arbetsappar">
-          <a class="app-shelf" href="#">
+          <a class="app-shelf" href="/apps/classroom.group-seating-studio">
             <div class="app-graphic graphic-classroom">
               <span class="seat"></span><span class="seat"></span><span class="seat"></span><span class="seat"></span><span class="seat"></span>
             </div>
@@ -452,7 +460,7 @@
               <div class="shelf-meta"><span>Planering</span><span class="shelf-arrow">→</span></div>
             </div>
           </a>
-          <a class="app-shelf" href="#">
+          <a class="app-shelf" href="/apps/documents.conversion_hub?mode=exam">
             <div class="app-graphic graphic-exam">
               <span class="paper"></span><span class="item"></span><span class="item"></span><span class="item"></span>
             </div>
@@ -462,7 +470,7 @@
               <div class="shelf-meta"><span>Prov</span><span class="shelf-arrow">→</span></div>
             </div>
           </a>
-          <a class="app-shelf" href="#">
+          <a class="app-shelf" href="/apps/documents.conversion_hub?mode=transcript">
             <div class="app-graphic graphic-audio">
               <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
             </div>
@@ -472,17 +480,17 @@
               <div class="shelf-meta"><span>Transkript</span><span class="shelf-arrow">→</span></div>
             </div>
           </a>
-          <a class="app-shelf" href="#">
+          <article class="app-shelf app-shelf-visual">
             <div class="app-graphic graphic-docs">
               <span class="doc"></span><span class="doc"></span><span class="doc"></span>
             </div>
             <div class="app-shelf-body">
               <h3>Document Converter</h3>
               <p>Konvertera dokument mellan PDF, DOCX, HTML och presentationsformat.</p>
-              <div class="shelf-meta"><span>Dokument</span><span class="shelf-arrow">→</span></div>
+              <div class="shelf-meta"><span>Dokument</span></div>
             </div>
-          </a>
-          <a class="app-shelf" href="#">
+          </article>
+          <a class="app-shelf" href="/editor">
             <div class="app-graphic graphic-code">
               <span class="line"></span><span class="line"></span><span class="line"></span><span class="cursor"></span>
             </div>
@@ -496,17 +504,17 @@
 
         <div class="support-grid">
           <section class="panel">
-            <div class="panel-head">Filer och material</div>
+            <h2 class="panel-head">Filer och material</h2>
             <div class="ledger">
-              <a class="ledger-row" href="#"><div><strong>Mina filer</strong><p>Hämta sparade filer, export och underlag.</p></div><span class="arrow">→</span></a>
-              <a class="ledger-row" href="#"><div><strong>Katalog</strong><p>Hitta fler tillgängliga arbetsytor när apphyllan inte räcker.</p></div><span class="arrow">→</span></a>
+              <a class="ledger-row" href="/vault"><div><strong>Mina filer</strong><p>Hämta sparade filer, export och underlag.</p></div><span class="arrow">→</span></a>
+              <a class="ledger-row" href="/browse"><div><strong>Katalog</strong><p>Hitta fler tillgängliga arbetsytor när apphyllan inte räcker.</p></div><span class="arrow">→</span></a>
             </div>
           </section>
           <section class="panel">
-            <div class="panel-head">Bidra</div>
+            <h2 class="panel-head">Bidra</h2>
             <div class="ledger">
-              <a class="ledger-row" href="#"><div><strong>Föreslå verktyg</strong><p>Skicka in ett arbetsmoment som bör bli en ny app.</p></div><span class="arrow">→</span></a>
-              <a class="ledger-row" href="#"><div><strong>Mina verktyg</strong><p>Se och förvalta egna publicerade verktyg.</p></div><span class="arrow">→</span></a>
+              <a class="ledger-row" href="/suggestions/new"><div><strong>Föreslå verktyg</strong><p>Skicka in ett arbetsmoment som bör bli en ny app.</p></div><span class="arrow">→</span></a>
+              <a class="ledger-row" href="/my-tools"><div><strong>Mina verktyg</strong><p>Se och förvalta egna publicerade verktyg.</p></div><span class="arrow">→</span></a>
             </div>
           </section>
         </div>

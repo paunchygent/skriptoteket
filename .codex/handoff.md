@@ -27,8 +27,8 @@ Keep this file updated so the next session can pick up work quickly.
   focused specs under `frontend/apps/skriptoteket/src/views/apps/`.
 - `ST-37-03` remains open for `PR-0364` authenticated home work-apps surface
   and `PR-0365` authenticated shell navigation realignment.
-- `PR-0364` is ready for `REV-PR-0364` after user approval of the C2
-  authenticated home mockup:
+- `PR-0364` is approved by `REV-PR-0364` after user approval and overseer
+  design-rule alignment of the C2 authenticated home mockup:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`.
   It should make authenticated `/` app-first with primary shelves for
   Klassrumskartan, Exam Converter `?mode=exam`, Audio Transcription
@@ -39,8 +39,8 @@ Keep this file updated so the next session can pick up work quickly.
   user request on 2026-06-19; do not implement either layout. Approved C2 also
   removes `Mina körningar`, latest-used/recent-used home chrome, separate
   `Öppna` links, and nested card layouts.
-- `PR-0364` mockup/docs alignment validation passed: `pdm run docs-validate`,
-  `pdm run handoff-validate`, and `git diff --check`.
+- `PR-0364` mockup/docs alignment and independent review validation passed:
+  `pdm run docs-validate`, `pdm run handoff-validate`, and `git diff --check`.
 - Docker-service breadcrumb is now encoded in
   `.codex/skills/skriptoteket-testing/references/browser-automation.md`,
   `.codex/skills/skriptoteket-testing/references/backend-pytest.md`,
@@ -114,6 +114,7 @@ git -C /Users/olofs_mba/Documents/Repos/skill-repository diff --check
 - `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
   `PR-0364` and `PR-0365`.
 ## Next Steps
-- Send `REV-PR-0364` to an independent reviewer before implementation, then
-  run the approved C2 contract through red-first frontend implementation.
+- Run the approved `PR-0364` C2 contract through red-first frontend
+  implementation with overseer review, then retain Docker-backed
+  HuleEdu-browser proof.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.
