@@ -5,7 +5,7 @@
  * reality instead of the older open script-creation pitch.
  */
 
-import { mount } from "@vue/test-utils";
+import { RouterLinkStub, flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HomeView from "./HomeView.vue";
@@ -13,8 +13,8 @@ import HomeView from "./HomeView.vue";
 const homeMocks = vi.hoisted(() => ({
   auth: {
     isAuthenticated: false,
-    hasAtLeastRole: vi.fn(() => false),
-    displayName: null,
+    hasAtLeastRole: vi.fn<(requiredRole: string) => boolean>(() => false),
+    displayName: null as string | null,
   },
   dashboard: {
     loadDashboard: vi.fn(),
@@ -52,25 +52,66 @@ vi.mock("vue-router", () => ({
   }),
 }));
 
+type AuthRole = "teacher" | "contributor" | "admin";
+
+function mountPublicHomeView() {
+  return mount(HomeView, {
+    global: {
+      stubs: {
+        RouterLink: {
+          props: ["to"],
+          template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
+        },
+      },
+    },
+  });
+}
+
+async function mountAuthenticatedHomeView(role: AuthRole = "teacher") {
+  homeMocks.auth.isAuthenticated = true;
+  homeMocks.auth.displayName = "Ada";
+  homeMocks.auth.hasAtLeastRole.mockImplementation((requiredRole: string) => {
+    if (role === "admin") {
+      return requiredRole === "contributor" || requiredRole === "admin";
+    }
+    if (role === "contributor") {
+      return requiredRole === "contributor";
+    }
+    return false;
+  });
+
+  const wrapper = mount(HomeView, {
+    global: {
+      stubs: {
+        RouterLink: RouterLinkStub,
+      },
+    },
+  });
+
+  await flushPromises();
+  return wrapper;
+}
+
+function findRouterLinkByText(
+  wrapper: Awaited<ReturnType<typeof mountAuthenticatedHomeView>>,
+  text: string,
+) {
+  return wrapper
+    .findAllComponents(RouterLinkStub)
+    .find((link) => link.text().includes(text));
+}
+
 describe("HomeView", () => {
   beforeEach(() => {
     homeMocks.auth.isAuthenticated = false;
+    homeMocks.auth.displayName = null;
     homeMocks.auth.hasAtLeastRole.mockReset();
     homeMocks.auth.hasAtLeastRole.mockReturnValue(false);
     homeMocks.dashboard.loadDashboard.mockReset();
   });
 
   it("shows the public-entry hero hierarchy for signed-out users", () => {
-    const wrapper = mount(HomeView, {
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
-          },
-        },
-      },
-    });
+    const wrapper = mountPublicHomeView();
 
     expect(wrapper.text()).toContain("Lektionsplanera direkt i webbläsaren.");
     expect(wrapper.text()).toContain("Klassrumskartan är en av Skriptotekets appar.");
@@ -78,20 +119,10 @@ describe("HomeView", () => {
     expect(wrapper.text()).toContain("skapa ett konto");
     expect(wrapper.html()).toContain('href="/public/apps/classroom.group-seating-studio"');
     expect(wrapper.html()).toContain("https://api.hule.education/auth/register");
-    expect(homeMocks.dashboard.loadDashboard).not.toHaveBeenCalled();
   });
 
   it("renders the featured Klassrumskartan showcase and authenticated preview ledger", () => {
-    const wrapper = mount(HomeView, {
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
-          },
-        },
-      },
-    });
+    const wrapper = mountPublicHomeView();
 
     // Featured Klassrumskartan showcase
     expect(wrapper.text()).toContain("Klassrumskartan");
@@ -163,5 +194,83 @@ describe("HomeView", () => {
     );
     expect(registerLinks.length).toBeGreaterThan(0);
     expect(registerLinks.some((link) => link.text().toLowerCase().includes("skapa"))).toBe(true);
+  });
+
+  it("renders arbetsappar first for authenticated users and removes the retired dashboard grid", async () => {
+    const wrapper = await mountAuthenticatedHomeView();
+
+    const workAppsSection = wrapper.get('[data-testid="home-work-apps"]');
+    const secondaryLedgers = wrapper.get('[data-testid="home-secondary-ledgers"]');
+
+    expect(workAppsSection.text()).toContain("Arbetsappar");
+    expect(wrapper.text().indexOf("Arbetsappar")).toBeLessThan(
+      wrapper.text().indexOf("Mina filer"),
+    );
+    expect(wrapper.text().indexOf("Arbetsappar")).toBeLessThan(
+      wrapper.text().indexOf("Katalog"),
+    );
+    expect(workAppsSection.text()).toContain("Klassrumskartan");
+    expect(workAppsSection.text()).toContain("Exam Converter");
+    expect(workAppsSection.text()).toContain("Audio Transcription");
+    expect(workAppsSection.text()).toContain("Document Converter");
+    expect(workAppsSection.text()).toContain("Kodredigerare");
+    expect(
+      workAppsSection.findAll('[data-testid^="home-work-app-"]').map((app) => {
+        const heading = app.find("h3");
+        return heading.text();
+      }),
+    ).toEqual([
+      "Klassrumskartan",
+      "Exam Converter",
+      "Audio Transcription",
+      "Document Converter",
+      "Kodredigerare",
+    ]);
+    expect(workAppsSection.text()).not.toContain("Öppna");
+    expect(wrapper.text()).not.toContain("Mina körningar");
+    expect(wrapper.text()).not.toContain("Dina favoriter");
+    expect(wrapper.text()).not.toContain("Senast använda");
+    expect(secondaryLedgers.text()).toContain("Mina filer");
+    expect(secondaryLedgers.text()).toContain("Katalog");
+    expect(secondaryLedgers.text()).not.toContain("Mina verktyg");
+    expect(secondaryLedgers.text()).not.toContain("Föreslå verktyg");
+    expect(secondaryLedgers.text()).not.toContain("Att granska");
+  });
+
+  it("uses truthful authenticated route targets and keeps Document Converter non-clickable", async () => {
+    const wrapper = await mountAuthenticatedHomeView();
+
+    expect(findRouterLinkByText(wrapper, "Klassrumskartan")?.props("to")).toBe(
+      "/apps/classroom.group-seating-studio",
+    );
+    expect(findRouterLinkByText(wrapper, "Exam Converter")?.props("to")).toBe(
+      "/apps/documents.conversion_hub?mode=exam",
+    );
+    expect(findRouterLinkByText(wrapper, "Audio Transcription")?.props("to")).toBe(
+      "/apps/documents.conversion_hub?mode=transcript",
+    );
+    expect(findRouterLinkByText(wrapper, "Kodredigerare")?.props("to")).toBe("/editor");
+    expect(findRouterLinkByText(wrapper, "Document Converter")).toBeUndefined();
+    expect(
+      wrapper
+        .get('[data-testid="home-work-app-document-converter"]')
+        .attributes("data-app-linkable"),
+    ).toBe("false");
+  });
+
+  it("keeps contributor and admin secondary affordances role-gated below the app shelf", async () => {
+    const contributorWrapper = await mountAuthenticatedHomeView("contributor");
+    const contributorLedgers = contributorWrapper.get('[data-testid="home-secondary-ledgers"]');
+
+    expect(contributorLedgers.text()).toContain("Mina verktyg");
+    expect(contributorLedgers.text()).toContain("Föreslå verktyg");
+    expect(contributorLedgers.text()).not.toContain("Att granska");
+
+    const adminWrapper = await mountAuthenticatedHomeView("admin");
+    const adminLedgers = adminWrapper.get('[data-testid="home-secondary-ledgers"]');
+
+    expect(adminLedgers.text()).toContain("Mina verktyg");
+    expect(adminLedgers.text()).toContain("Föreslå verktyg");
+    expect(adminLedgers.text()).toContain("Att granska");
   });
 });

@@ -2,49 +2,33 @@
 /**
  * Auth-adaptive home surface.
  *
- * This view keeps the signed-out landing hero focused on the public
- * Klassrumskartan entry while authenticated users continue into the existing
- * role-aware dashboard.
+ * Relationships:
+ * - keeps the signed-out landing hero focused on the public Klassrumskartan entry
+ * - composes the approved authenticated app-first home surface with
+ *   `HomeWorkAppsSection` and role-gated continuation ledgers
  */
 
 import { computed, onMounted } from "vue";
 
 import { sharedAuthCeremonyUrl } from "../api/sharedAuth";
-import FavoritesSection from "../components/home/FavoritesSection.vue";
-import HomeCreateDraftTool from "../components/home/HomeCreateDraftTool.vue";
+import HomeWorkAppsSection from "../components/home/HomeWorkAppsSection.vue";
+import { HOME_PRIMARY_WORK_APPS } from "../components/home/homeWorkApps";
 import LandingAuthenticatedPreview from "../components/home/LandingAuthenticatedPreview.vue";
 import LandingClassroomPreview from "../components/home/LandingClassroomPreview.vue";
 import LandingFeaturedClassroom from "../components/home/LandingFeaturedClassroom.vue";
-import RecentToolsSection from "../components/home/RecentToolsSection.vue";
 import { IconArrow } from "../components/icons";
 import { useHomeDashboard } from "../composables/home/useHomeDashboard";
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
 const publicClassroomPlannerPath = "/public/apps/classroom.group-seating-studio";
-const {
-  loadDashboard,
-  dashboardError,
-  favorites,
-  recentNonFavorites,
-  isToggling,
-  handleFavoriteToggled,
-  runsLoading,
-  runsCount,
-  currentMonth,
-  runsInList,
-  formatCount,
-  toolsLoading,
-  toolsTotal,
-  toolsPublished,
-  adminPendingReview,
-  adminLoading,
-} = useHomeDashboard();
+const { loadDashboard, dashboardError, adminPendingReview } = useHomeDashboard();
 
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
 const userName = computed(() => auth.displayName);
+const workApps = HOME_PRIMARY_WORK_APPS;
 const registerUrl = computed(() =>
   sharedAuthCeremonyUrl({
     kind: "register",
@@ -52,6 +36,77 @@ const registerUrl = computed(() =>
     origin: window.location.origin,
   }),
 );
+const contributorLedgerEntries = computed(() =>
+  canSeeContributor.value
+    ? [
+        {
+          title: "Mina verktyg",
+          to: "/my-tools",
+          description: "Hantera verktyg du ansvarar för och följ deras fortsättning.",
+        },
+        {
+          title: "Föreslå verktyg",
+          to: "/suggestions/new",
+          description: "Lämna ett nytt arbetsmoment som du vill göra till en app.",
+        },
+      ]
+    : [],
+);
+const adminLedgerEntries = computed(() =>
+  canSeeAdmin.value
+    ? [
+        {
+          title: "Att granska",
+          to: "/admin/tools",
+          description:
+            adminPendingReview.value > 0
+              ? `${adminPendingReview.value} verktyg väntar på granskning just nu.`
+              : "Granska och publicera inkomna verktyg.",
+        },
+      ]
+    : [],
+);
+const secondaryLedgerSections = computed(() => {
+  const sections = [
+    {
+      id: "materials",
+      title: "Fortsätt",
+      description: "Gå vidare till sparade filer, material och fler publicerade verktyg.",
+      entries: [
+        {
+          title: "Mina filer",
+          to: "/vault",
+          description: "Öppna sparade filer, exporter och material du vill jobba vidare med.",
+        },
+        {
+          title: "Katalog",
+          to: "/browse",
+          description: "Hitta fler publicerade appar och verktyg i Skriptoteket.",
+        },
+      ],
+    },
+  ];
+
+  if (contributorLedgerEntries.value.length > 0) {
+    sections.push({
+      id: "contribution",
+      title: "Bidra",
+      description: "Fortsätt bygga, underhålla och föreslå verktyg för nästa arbetsflöde.",
+      entries: contributorLedgerEntries.value,
+    });
+  }
+
+  if (adminLedgerEntries.value.length > 0) {
+    sections.push({
+      id: "review",
+      title: "Granskning",
+      description: "Håll publiceringsflödet igång utan att lämna den app-första startsidan.",
+      entries: adminLedgerEntries.value,
+    });
+  }
+
+  return sections;
+});
 
 onMounted(async () => {
   if (!isAuthenticated.value) return;
@@ -125,290 +180,68 @@ onMounted(async () => {
          ═══════════════════════════════════════════════════════════════════════ -->
     <template v-else>
       <div class="space-y-10">
-        <!-- Error message -->
         <div
           v-if="dashboardError"
-          class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
+          class="border border-error bg-panel px-4 py-3 text-sm text-error"
         >
           {{ dashboardError }}
         </div>
 
-        <!-- Greeting -->
-        <section class="space-y-1 max-w-[40rem]">
-          <h1 class="font-serif text-3xl font-bold text-navy">
+        <section class="max-w-[40rem] space-y-2">
+          <h1 class="font-serif text-3xl font-semibold text-navy md:text-[2.75rem]">
             Välkommen<template v-if="userName">, {{ userName }}</template>
           </h1>
-          <p class="text-sm text-navy/70">Vad vill du göra?</p>
+          <p class="text-sm leading-6 text-navy/70 md:text-base">
+            Fortsätt i den app som passar nästa arbetsmoment.
+          </p>
         </section>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             PERSONALIZED SECTIONS: Favorites and Recent Tools
-             ═══════════════════════════════════════════════════════════════════ -->
-        <FavoritesSection
-          :items="favorites"
-          :is-toggling="isToggling"
-          @favorite-toggled="handleFavoriteToggled"
-        />
+        <HomeWorkAppsSection :apps="workApps" />
 
-        <RecentToolsSection
-          :items="recentNonFavorites"
-          :is-toggling="isToggling"
-          @favorite-toggled="handleFavoriteToggled"
-        />
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             UNIFIED ACTION CARDS GRID
-             All cards flow together in one grid. Section markers span full row.
-             ═══════════════════════════════════════════════════════════════════ -->
-        <section class="expand-left-64">
-          <div class="action-cards-grid">
-            <!-- USER CARDS: All authenticated users -->
-            <RouterLink
-              to="/my-runs"
-              class="dashboard-card group"
-            >
-              <div class="card-header">
-                <span class="card-label">Senaste körningar</span>
-                <IconArrow
-                  :size="18"
-                  class="card-arrow"
-                />
-              </div>
-              <div class="card-stats">
-                <span
-                  v-if="runsLoading"
-                  class="text-navy/40"
-                >...</span>
-                <span
-                  v-else
-                  class="stat-number"
-                >{{ formatCount(runsCount) }}</span>
-                <span class="stat-label">körningar i {{ currentMonth }}</span>
-              </div>
-              <p class="card-description">
-                Se de senaste {{ runsInList }} körningarna.
+        <section
+          data-testid="home-secondary-ledgers"
+          class="grid gap-4 xl:grid-cols-2"
+        >
+          <section
+            v-for="section in secondaryLedgerSections"
+            :key="section.id"
+            class="border border-navy bg-panel"
+          >
+            <header class="border-b border-navy/15 px-5 py-4">
+              <h2 class="text-lg font-semibold text-navy">
+                {{ section.title }}
+              </h2>
+              <p class="mt-1 text-sm leading-6 text-navy/70">
+                {{ section.description }}
               </p>
-            </RouterLink>
+            </header>
 
-            <RouterLink
-              to="/browse"
-              class="dashboard-card group"
-            >
-              <div class="card-header">
-                <span class="card-label">Hitta verktyg</span>
-                <IconArrow
-                  :size="18"
-                  class="card-arrow"
-                />
-              </div>
-              <p class="card-description mt-4">
-                Sök och filtrera bland tillgängliga verktyg.
-              </p>
-            </RouterLink>
-
-            <!-- CONTRIBUTOR CARDS -->
-            <template v-if="canSeeContributor">
-              <RouterLink
-                to="/my-tools"
-                class="dashboard-card group"
+            <ul class="divide-y divide-navy/15">
+              <li
+                v-for="entry in section.entries"
+                :key="entry.title"
               >
-                <div class="card-header">
-                  <span class="card-label">Mina verktyg</span>
-                  <IconArrow
-                    :size="18"
-                    class="card-arrow"
-                  />
-                </div>
-                <div class="card-stats">
-                  <span
-                    v-if="toolsLoading"
-                    class="text-navy/40"
-                  >...</span>
-                  <template v-else>
-                    <span class="stat-number">{{ toolsTotal }}</span>
-                    <span class="stat-label">
-                      verktyg
-                      <span
-                        v-if="toolsPublished > 0"
-                        class="text-success"
-                      >
-                        ({{ toolsPublished }} publicerade)
-                      </span>
-                    </span>
-                  </template>
-                </div>
-                <p class="card-description">
-                  Hantera verktyg du ansvarar för.
-                </p>
-              </RouterLink>
-
-              <RouterLink
-                to="/editor"
-                class="dashboard-card group"
-              >
-                <div class="card-header">
-                  <span class="card-label">Kodredigerare</span>
-                  <IconArrow
-                    :size="18"
-                    class="card-arrow"
-                  />
-                </div>
-                <p class="card-description mt-4">
-                  Fortsätt där du slutade eller välj ett verktyg att redigera.
-                </p>
-              </RouterLink>
-
-              <RouterLink
-                to="/suggestions/new"
-                class="dashboard-card group"
-              >
-                <div class="card-header">
-                  <span class="card-label">Föreslå verktyg</span>
-                  <IconArrow
-                    :size="18"
-                    class="card-arrow"
-                  />
-                </div>
-                <p class="card-description mt-4">
-                  Har du en idé? Skicka in ett förslag.
-                </p>
-              </RouterLink>
-            </template>
-
-            <!-- ADMIN CARDS -->
-            <template v-if="canSeeAdmin">
-              <RouterLink
-                to="/admin/tools"
-                class="dashboard-card group"
-                :class="{ 'border-warning': adminPendingReview > 0 }"
-              >
-                <div class="card-header">
-                  <span class="card-label">Att granska</span>
-                  <IconArrow
-                    :size="18"
-                    class="card-arrow"
-                  />
-                </div>
-                <div class="card-stats">
-                  <span
-                    v-if="adminLoading"
-                    class="text-navy/40"
-                  >...</span>
-                  <template v-else>
-                    <span
-                      class="stat-number"
-                      :class="{ 'text-warning': adminPendingReview > 0 }"
-                    >
-                      {{ adminPendingReview }}
-                    </span>
-                    <span class="stat-label">väntar på granskning</span>
-                  </template>
-                </div>
-                <p class="card-description">
-                  Granska och publicera verktyg.
-                </p>
-              </RouterLink>
-
-              <HomeCreateDraftTool />
-            </template>
-          </div>
+                <RouterLink
+                  :to="entry.to"
+                  class="flex items-start justify-between gap-4 px-5 py-4 no-underline transition-colors hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-[-2px]"
+                >
+                  <div class="min-w-0">
+                    <p class="text-base font-semibold text-navy">
+                      {{ entry.title }}
+                    </p>
+                    <p class="mt-1 text-sm leading-6 text-navy/70">
+                      {{ entry.description }}
+                    </p>
+                  </div>
+                  <span class="shrink-0 pt-1 text-xs font-semibold text-navy/55">
+                    Fortsätt
+                  </span>
+                </RouterLink>
+              </li>
+            </ul>
+          </section>
         </section>
       </div>
     </template>
   </div>
 </template>
-
-<style scoped>
-/* Unified action cards grid - all cards flow together */
-.action-cards-grid {
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-}
-
-/* Dashboard card */
-:deep(.dashboard-card) {
-  display: block;
-  padding: 1.25rem;
-  border: 1px solid var(--color-navy);
-  background-color: var(--huleedu-panel);
-  box-shadow: 4px 4px 0 0 var(--color-navy);
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-:deep(.dashboard-card:hover) {
-  box-shadow: 6px 6px 0 0 var(--color-navy);
-  transform: translate(-2px, -2px);
-}
-
-:deep(.card-header) {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-:deep(.card-label) {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-navy);
-  transition: color 0.15s ease;
-}
-
-:deep(.dashboard-card:hover .card-label) {
-  color: var(--color-action);
-}
-
-:deep(.card-arrow) {
-  color: var(--color-navy);
-  flex-shrink: 0;
-  transition: transform 0.15s ease, color 0.15s ease;
-}
-
-:deep(.dashboard-card:hover .card-arrow) {
-  transform: translateX(4px);
-  color: var(--color-action);
-}
-
-:deep(.card-stats) {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-:deep(.stat-number) {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-navy);
-  line-height: 1;
-}
-
-:deep(.stat-label) {
-  font-size: 0.75rem;
-  color: var(--color-navy);
-  opacity: 0.6;
-}
-
-:deep(.card-description) {
-  margin-top: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--color-navy);
-  opacity: 0.6;
-  line-height: 1.4;
-}
-
-/* Success color for published counts */
-:deep(.text-success) {
-  color: var(--huleedu-success);
-}
-
-/* Warning color for pending review */
-:deep(.text-warning) {
-  color: var(--huleedu-warning);
-}
-
-:deep(.border-warning) {
-  border-color: var(--huleedu-warning);
-}
-</style>

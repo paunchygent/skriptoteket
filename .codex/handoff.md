@@ -10,8 +10,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-19.
 - Branch: `main`.
-- Latest closed slice: `PR-0363` under `ST-37-03`; current planned slice:
-  `PR-0364` authenticated home work-apps surface.
+- Latest closed slice: `PR-0364` under `ST-37-03`; current planned slice:
+  `PR-0365` authenticated shell navigation realignment.
 - Older PR-0355/PR-0356 proof and Hemma deploy detail was compacted to
   `.codex/long-term-memory/entries/session-2026-06-19-pr-0355-pr-0356-and-pr-0363-runtime-compaction.md`.
 - Prior PR-0310 through PR-0354 history lives in existing entries under
@@ -25,9 +25,9 @@ Keep this file updated so the next session can pick up work quickly.
   `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`,
   `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue`, and
   focused specs under `frontend/apps/skriptoteket/src/views/apps/`.
-- `ST-37-03` remains open for `PR-0364` authenticated home work-apps surface
-  and `PR-0365` authenticated shell navigation realignment.
-- `PR-0364` is approved by `REV-PR-0364` after user approval and overseer
+- `ST-37-03` remains open for `PR-0365` authenticated shell navigation
+  realignment.
+- `PR-0364` is done and approved by `REV-PR-0364` after user approval and overseer
   design-rule alignment of the C2 authenticated home mockup:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`.
   It should make authenticated `/` app-first with primary shelves for
@@ -35,6 +35,24 @@ Keep this file updated so the next session can pick up work quickly.
   `?mode=transcript`, Document Converter, and Kodredigerare. Do not fake the
   Document Converter route; stop/attach a route-visible slice if no truthful
   target exists.
+- `PR-0364` runtime frontend implementation is now in
+  `frontend/apps/skriptoteket/src/views/HomeView.vue`,
+  `frontend/apps/skriptoteket/src/components/home/HomeWorkAppsSection.vue`,
+  `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`, and
+  `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`. Follow-up review
+  fixes are now in `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`
+  and `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.spec.ts`.
+  Authenticated `/` is app-first, `Kodredigerare` is primary, Document
+  Converter is visible but non-linkable, the default home loader no longer
+  hits retired runs/favorites/recent endpoints, and the old home
+  `dashboard-card` grid plus `Mina körningar`/latest/recent chrome are
+  removed.
+- `REV-PR-0364` is now `approved`. Final proof closeout confirmed the
+  loader-boundary and HomeView-spec findings stayed fixed and that the
+  Docker-backed authenticated browser proof passed when using the HuleEdu
+  auth-integration `local-shared-verify-export.json` that matches the running
+  Identity service DB. See
+  `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md`.
 - The PR-0364 rejected card-grid and service-foyer attempts were deleted at
   user request on 2026-06-19; do not implement either layout. Approved C2 also
   removes `Mina körningar`, latest-used/recent-used home chrome, separate
@@ -66,6 +84,23 @@ Keep this file updated so the next session can pick up work quickly.
 - Proof covered `/apps/documents.conversion_hub?mode=exam` and
   `/apps/documents.conversion_hub?mode=transcript` at viewport `1512x900`.
 - Focused verification passed:
+  - Red-first loader proof:
+    `pdm run fe-test -- --run src/composables/home/useHomeDashboard.spec.ts`
+    failed because the default authenticated-home loader still called
+    `/api/v1/my-runs`, `/api/v1/favorites?limit=5`, and
+    `/api/v1/me/recent-tools?limit=5`.
+  - `pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts`
+    passed with 7 tests for the authenticated home shelf behavior plus the
+    new loader-boundary contract.
+  - `pdm run fe-test -- --run src/views/HomeView.spec.ts` passed with 5 tests
+    for the authenticated home app shelf, truthful route targets, retired-home
+    chrome removal, secondary-ledger structure, and signed-out unchanged
+    behavior.
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
+  - `pdm run docs-validate`
+  - `pdm run handoff-validate`
+  - `git diff --check`
   - `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts`
     passed with 4 files / 44 tests.
   - `pdm run fe-type-check`
@@ -80,6 +115,22 @@ Keep this file updated so the next session can pick up work quickly.
   - Shared skill repo `pdm run skills-validate` and `pdm run docs-validate`
     passed after the `local-devops` breadcrumb update; shared skill repo
     `git diff --check` also passed.
+- PR-0364 live browser proof passed:
+  - Docker/Gateway lane is healthy and `skriptoteket_web` resolves from
+    `huleedu_api_gateway_service`.
+  - Started missing HuleEdu login UI lane with
+    `pdm run run-local-pdm auth-integration fe-dev` in the HuleEdu repo.
+  - Correct preflight:
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-local-shared.json`
+    passed with all checks `ok`.
+  - Retained proof:
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173`
+    passed.
+  - Retained artifact:
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface/20260619T102703Z/manifest.redacted.json`.
+  - Captures:
+    `authenticated-home-desktop.png` at `1512x900` and
+    `authenticated-home-compact.png` at `390x844`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -88,10 +139,25 @@ DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f compose.yaml -f c
 # Start/reuse Skriptoteket Vite with protected API traffic proxied to HuleEdu Gateway.
 VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080 VITE_HULEEDU_AUTH_ENTRY_URL=http://localhost:8080/auth/login VITE_DEV_PROXY_TARGET=http://localhost:8080 pdm run fe-dev
 
+# If the HuleEdu login UI is not already serving on :5174, start it from the HuleEdu repo.
+(cd /Users/olofs_mba/Documents/Repos/huleedu && pdm run run-local-pdm auth-integration fe-dev)
+
 # Verify Gateway can resolve the product backend by Docker alias.
 docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz
 
-# Focused PR-0363 checks.
+# Focused PR-0364 checks.
+pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts
+pdm run fe-type-check
+pdm run fe-lint
+pdm run docs-validate
+pdm run handoff-validate
+git diff --check
+
+# Browser-proof preflight and retained proof for PR-0364.
+pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-local-shared.json
+pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173
+
+# Focused PR-0363 checks retained below.
 pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/apps/ExamConverterAuthenticatedUiInspectionFixtures.spec.ts
 pdm run fe-type-check
 pdm run fe-lint
@@ -108,13 +174,17 @@ git -C /Users/olofs_mba/Documents/Repos/skill-repository diff --check
 - Do not start host `pdm run dev`/Uvicorn for Gateway-authenticated backend dev
   tests or browser proof. Gateway app continuation uses Docker DNS
   `skriptoteket-web:8000`, so host Uvicorn reproduces a false failure.
+- If PR-0364/PR-0365 preflight fails with `missing_identity_projection`, first
+  verify the export path. The running HuleEdu auth-integration lane currently
+  matches
+  `/Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json`;
+  `local-verify-export.json` targets a different Identity DB generation and
+  reproduces a false `identity_linking_required` failure.
 - If Gateway `:8080` appears occupied by Docker while no container publishes
   it, suspect stale Docker Desktop port-proxy state; restart Docker Desktop and
   recreate the affected HuleEdu services before blaming app code.
 - `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
   `PR-0364` and `PR-0365`.
 ## Next Steps
-- Run the approved `PR-0364` C2 contract through red-first frontend
-  implementation with overseer review, then retain Docker-backed
-  HuleEdu-browser proof.
+- Continue with `PR-0365` authenticated shell navigation realignment.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

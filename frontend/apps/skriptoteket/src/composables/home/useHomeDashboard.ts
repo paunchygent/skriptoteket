@@ -1,3 +1,13 @@
+/**
+ * Authenticated home dashboard data orchestration.
+ *
+ * Domain purpose:
+ * - loads only the home-surface data that the current authenticated route renders
+ * - keeps legacy favorites/recent/runs loading behind an explicit opt-in so
+ *   retired dashboard endpoints stay available without remaining on the default
+ *   authenticated `/` load path
+ */
+
 import { computed, ref } from "vue";
 
 import { apiGet, isApiError } from "../../api/client";
@@ -14,6 +24,10 @@ type ListRecentToolsResponse = components["schemas"]["ListRecentToolsResponse"];
 type DashboardRoles = {
   isContributor: boolean;
   isAdmin: boolean;
+};
+
+type DashboardLoadOptions = {
+  includeRetiredHomeSections?: boolean;
 };
 
 const FAVORITES_LIMIT = 5;
@@ -127,14 +141,25 @@ export function useHomeDashboard() {
     }
   }
 
-  async function loadDashboard(roles: DashboardRoles): Promise<void> {
-    await Promise.all([
-      loadUserDashboard(),
-      loadFavorites(),
-      loadRecentTools(),
-      roles.isContributor ? loadContributorDashboard() : Promise.resolve(),
-      roles.isAdmin ? loadAdminDashboard() : Promise.resolve(),
-    ]);
+  async function loadDashboard(
+    roles: DashboardRoles,
+    options: DashboardLoadOptions = {},
+  ): Promise<void> {
+    const requests: Array<Promise<void>> = [];
+
+    if (options.includeRetiredHomeSections) {
+      requests.push(loadUserDashboard(), loadFavorites(), loadRecentTools());
+    }
+
+    if (roles.isContributor) {
+      requests.push(loadContributorDashboard());
+    }
+
+    if (roles.isAdmin) {
+      requests.push(loadAdminDashboard());
+    }
+
+    await Promise.all(requests);
   }
 
   async function handleFavoriteToggled(payload: {

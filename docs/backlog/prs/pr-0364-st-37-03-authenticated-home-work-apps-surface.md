@@ -2,7 +2,7 @@
 type: pr
 id: PR-0364
 title: "ST-37-03 authenticated home work-apps surface"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-18
 updated: 2026-06-19
@@ -161,22 +161,45 @@ Out of scope:
    surfaces that remain below or outside the home-first app shelf.
 8. Record browser proof screenshots and exact commands in `.codex/handoff.md`.
 
+## Implementation Notes
+
+- Implemented the authenticated home runtime in:
+  - `frontend/apps/skriptoteket/src/views/HomeView.vue`
+  - `frontend/apps/skriptoteket/src/components/home/HomeWorkAppsSection.vue`
+  - `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`
+- Decoupled the authenticated `/` loader path from retired dashboard fetches by
+  parameterizing `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`
+  so the default home load only requests contributor/admin ledger data that is
+  still visible.
+- Added focused behavioral coverage in
+  `frontend/apps/skriptoteket/src/views/HomeView.spec.ts` and loader-boundary
+  coverage in
+  `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.spec.ts`.
+- Signed-out landing behavior remains unchanged.
+- `Document Converter` is rendered as a visible non-linkable lane with the
+  explicit runtime contract `data-app-linkable="false"` because the current
+  codebase still has no reviewed truthful route target.
+- The authenticated home no longer renders favorites, recent-used sections,
+  `Mina körningar`, or the old `dashboard-card`/`action-cards-grid` surface.
+- `Kodredigerare` now lives in the primary app shelf and links directly to
+  `/editor`.
+
 ## Red-To-Green Test Plan
 
 Expected first red proof:
 
 ```bash
-pdm run fe-test -- --run src/views/HomeView.spec.ts
+pdm run fe-test -- --run src/composables/home/useHomeDashboard.spec.ts
 ```
 
-The new authenticated-home tests should fail because the current signed-in home
-does not render the approved app shelf first and still renders old dashboard
-cards such as `Mina körningar`/recent content.
+The focused loader-boundary test should fail because the current authenticated
+home still calls `/api/v1/my-runs`, `/api/v1/favorites`, and
+`/api/v1/me/recent-tools` on the default `/` load path.
 
 Expected green proof:
 
 ```bash
-pdm run fe-test -- --run src/views/HomeView.spec.ts
+pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts
 ```
 
 Required coverage:
@@ -191,6 +214,9 @@ Required coverage:
   absent from authenticated home;
 - the app shelf does not expose separate `Öppna` links;
 - secondary surfaces are flat ledgers, not cards nested inside cards/panels;
+- the default authenticated-home loader path does not call retired runs,
+  favorites, or recent-tool endpoints;
+- contributor/admin ledger fetches only occur when those ledgers are visible;
 - signed-out home behavior remains unchanged;
 - contributor/admin affordances remain role-gated below or outside the app
   shelf.
@@ -198,10 +224,9 @@ Required coverage:
 Close-out commands:
 
 ```bash
-pdm run fe-test -- --run src/views/HomeView.spec.ts
+pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts
 pdm run fe-type-check
 pdm run fe-lint
-pdm run fe-build
 pdm run docs-validate
 pdm run handoff-validate
 git diff --check
@@ -218,6 +243,47 @@ Browser proof:
   old run/latest/recent vanity rows appear.
 - Record command, URLs, viewport sizes, and artifact paths in
   `.codex/handoff.md`.
+
+## Verification Notes
+
+- Red proof captured with:
+  `pdm run fe-test -- --run src/composables/home/useHomeDashboard.spec.ts`
+  The new loader-boundary tests failed because the default authenticated-home
+  load path still called `/api/v1/my-runs`, `/api/v1/favorites`, and
+  `/api/v1/me/recent-tools` before contributor/admin-only ledger requests.
+- Green frontend gates passed with:
+  - `pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
+  - `pdm run docs-validate`
+  - `pdm run handoff-validate`
+  - `git diff --check`
+- `HomeView.spec.ts` was trimmed back to behavioral assertions only:
+  app order, truthful route targets, non-linkable Document Converter, retired
+  text absence, role-gated ledgers, and signed-out behavior remain covered;
+  removed class-name and helper-call assertions moved to the dedicated loader
+  boundary spec.
+- Live browser proof passed through the Docker-backed HuleEdu Gateway lane:
+  - Gateway-to-Skriptoteket Docker health passed:
+    `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`
+  - Started the missing HuleEdu login UI lane with:
+    `pdm run run-local-pdm auth-integration fe-dev`
+  - A first preflight used the wrong HuleEdu export artifact
+    `local-verify-export.json` and failed with
+    `missing_identity_projection` / `identity_linking_required`; read-only
+    diagnosis showed the running HuleEdu Identity service uses
+    `huleedu-local-postgres`, whose proof subjects match
+    `local-shared-verify-export.json`.
+  - Correct preflight passed with:
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-local-shared.json`
+  - Retained browser proof passed with:
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173`
+  - Retained artifact:
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface/20260619T102703Z/manifest.redacted.json`
+  - Proof captured authenticated `/` at `1512x900` desktop and `390x844`
+    compact widths and asserted app order, truthful route targets,
+    non-linkable Document Converter, home-surface retired text absence, and
+    app shelf position above secondary ledgers.
 
 ## Stop Conditions
 

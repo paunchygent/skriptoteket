@@ -42,6 +42,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0349_transcript_parity_live.py",
     "playwright_pr_0356_source_only_fixture_proof.py",
     "playwright_pr_0363_conversion_mode_deeplink.py",
+    "playwright_pr_0364_authenticated_home_work_apps.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (
