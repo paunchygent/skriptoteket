@@ -20,12 +20,6 @@ defineProps<{
     data-testid="home-work-apps"
     class="space-y-4"
   >
-    <div class="max-w-[40rem]">
-      <h2 class="font-serif text-3xl font-semibold text-navy md:text-[2.35rem]">
-        Arbetsappar
-      </h2>
-    </div>
-
     <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
       <component
         :is="app.to ? 'RouterLink' : 'article'"
@@ -61,6 +55,7 @@ defineProps<{
           </div>
 
           <p
+            v-if="app.availabilityLabel"
             class="text-xs font-semibold"
             :class="app.to ? 'text-action' : 'text-navy/55'"
           >

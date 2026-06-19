@@ -196,24 +196,24 @@ describe("HomeView", () => {
     expect(registerLinks.some((link) => link.text().toLowerCase().includes("skapa"))).toBe(true);
   });
 
-  it("renders arbetsappar first for authenticated users and removes the retired dashboard grid", async () => {
+  it("renders work app cards first for authenticated users and removes the retired dashboard grid", async () => {
     const wrapper = await mountAuthenticatedHomeView();
 
     const workAppsSection = wrapper.get('[data-testid="home-work-apps"]');
     const secondaryLedgers = wrapper.get('[data-testid="home-secondary-ledgers"]');
 
-    expect(workAppsSection.text()).toContain("Arbetsappar");
-    expect(wrapper.text().indexOf("Arbetsappar")).toBeLessThan(
+    expect(workAppsSection.text()).not.toContain("Arbetsappar");
+    expect(wrapper.text().indexOf("Klassrumskartan")).toBeLessThan(
       wrapper.text().indexOf("Mina filer"),
     );
-    expect(wrapper.text().indexOf("Arbetsappar")).toBeLessThan(
+    expect(wrapper.text().indexOf("Klassrumskartan")).toBeLessThan(
       wrapper.text().indexOf("Katalog"),
     );
     expect(workAppsSection.text()).toContain("Klassrumskartan");
     expect(workAppsSection.text()).toContain("Provkonverteraren");
     expect(workAppsSection.text()).toContain("Ljudtranskribering");
     expect(workAppsSection.text()).toContain("Dokumentkonverteraren");
-    expect(workAppsSection.text()).toContain("Kodredigerare");
+    expect(workAppsSection.text()).not.toContain("Kodredigerare");
     expect(wrapper.text()).toContain("Vad vill du göra?");
     expect(workAppsSection.text()).toContain(
       "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
@@ -224,9 +224,8 @@ describe("HomeView", () => {
     expect(workAppsSection.text()).toContain(
       "Transkribera ljudfiler och spara texten bland dina filer.",
     );
-    expect(workAppsSection.text()).toContain("PDF, DOCX, HTML och andra dokumentformat.");
     expect(workAppsSection.text()).toContain(
-      "Fortsätt där du slutade eller välj ett verktyg att redigera.",
+      "Konvertera mellan PDF, DOCX, HTML och andra dokumentformat.",
     );
     expect(workAppsSection.text()).toContain("Kommer senare");
     expect(
@@ -239,13 +238,13 @@ describe("HomeView", () => {
       "Provkonverteraren",
       "Ljudtranskribering",
       "Dokumentkonverteraren",
-      "Kodredigerare",
     ]);
-    expect(workAppsSection.findAll('[data-testid^="home-work-app-"] img')).toHaveLength(5);
+    expect(workAppsSection.findAll('[data-testid^="home-work-app-"] img')).toHaveLength(4);
     expect(workAppsSection.text()).not.toContain("Exam Converter");
     expect(workAppsSection.text()).not.toContain("Audio Transcription");
     expect(workAppsSection.text()).not.toContain("Document Converter");
     expect(workAppsSection.text()).not.toContain("Öppna");
+    expect(workAppsSection.text()).not.toContain("Direkt i appen");
     [
       "nästa arbetsmoment",
       "nästa steg i ditt arbete",
@@ -286,7 +285,7 @@ describe("HomeView", () => {
     expect(findRouterLinkByText(wrapper, "Ljudtranskribering")?.props("to")).toBe(
       "/apps/documents.conversion_hub?mode=transcript",
     );
-    expect(findRouterLinkByText(wrapper, "Kodredigerare")?.props("to")).toBe("/editor");
+    expect(findRouterLinkByText(wrapper, "Kodredigerare")).toBeUndefined();
     expect(findRouterLinkByText(wrapper, "Dokumentkonverteraren")).toBeUndefined();
     expect(
       wrapper
@@ -295,10 +294,16 @@ describe("HomeView", () => {
     ).toBe("false");
   });
 
-  it("keeps contributor and admin secondary affordances role-gated below the app shelf", async () => {
+  it("keeps Kodredigerare and secondary affordances role-gated for contributors", async () => {
     const contributorWrapper = await mountAuthenticatedHomeView("contributor");
+    const contributorWorkApps = contributorWrapper.get('[data-testid="home-work-apps"]');
     const contributorLedgers = contributorWrapper.get('[data-testid="home-secondary-ledgers"]');
 
+    expect(contributorWorkApps.text()).toContain("Kodredigerare");
+    expect(contributorWorkApps.text()).toContain("Fortsätt där du slutade.");
+    expect(findRouterLinkByText(contributorWrapper, "Kodredigerare")?.props("to")).toBe(
+      "/editor",
+    );
     expect(contributorLedgers.text()).toContain("Mina verktyg");
     expect(contributorLedgers.text()).toContain("Hantera verktyg du ansvarar för.");
     expect(contributorLedgers.text()).toContain("Föreslå verktyg");
@@ -306,8 +311,10 @@ describe("HomeView", () => {
     expect(contributorLedgers.text()).not.toContain("Att granska");
 
     const adminWrapper = await mountAuthenticatedHomeView("admin");
+    const adminWorkApps = adminWrapper.get('[data-testid="home-work-apps"]');
     const adminLedgers = adminWrapper.get('[data-testid="home-secondary-ledgers"]');
 
+    expect(adminWorkApps.text()).toContain("Kodredigerare");
     expect(adminLedgers.text()).toContain("Mina verktyg");
     expect(adminLedgers.text()).toContain("Föreslå verktyg");
     expect(adminLedgers.text()).toContain("Att granska");

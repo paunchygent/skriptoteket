@@ -51,6 +51,8 @@ REJECTED_COPY = (
     "app-första startsidan",
     "nästa arbetsflöde",
     "Visas här när arbetsytan är redo",
+    "Arbetsappar",
+    "Direkt i appen",
 )
 VIEWPORTS = (
     {"label": "desktop", "width": 1512, "height": 900},
@@ -91,7 +93,6 @@ def _assert_home_contract(page: Page) -> None:
     )
     expect(work_apps).to_be_visible()
     expect(secondary_ledgers).to_be_visible()
-    expect(work_apps.get_by_role("heading", name="Arbetsappar")).to_be_visible()
     expect(work_apps.locator("h3")).to_have_text(APP_ORDER)
     expect(work_apps.locator("img")).to_have_count(5)
     expect(secondary_ledgers.get_by_text("Mina filer", exact=True)).to_be_visible()
@@ -121,7 +122,7 @@ def _assert_home_contract(page: Page) -> None:
     if work_box is None or ledger_box is None:
         raise AssertionError("Could not resolve authenticated home section geometry.")
     if work_box["y"] >= ledger_box["y"]:
-        raise AssertionError("Arbetsappar is not above the secondary ledgers.")
+        raise AssertionError("Work app cards are not above the secondary ledgers.")
 
 
 def _capture_home(
@@ -140,7 +141,7 @@ def _capture_home(
         email=email,
         password=password,
         next_path="/",
-        success_heading_pattern=r"Arbetsappar",
+        success_heading_pattern=r"Klassrumskartan",
         failure_artifacts_dir=artifact_dir,
         failure_screenshot_name=f"login-failure-{viewport['label']}.png",
         success_timeout_ms=45_000,

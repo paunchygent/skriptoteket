@@ -259,7 +259,7 @@ watch(
       <div class="space-y-[var(--huleedu-space-2)] max-w-[40rem]">
         <h1 class="page-title">Kodredigeraren</h1>
         <p class="page-description">
-          Fortsätt där du slutade eller välj ett verktyg att redigera.
+          Fortsätt där du slutade.
         </p>
         <p class="text-xs text-navy/60">
           <RouterLink

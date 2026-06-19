@@ -13,13 +13,16 @@ import codeEditorSymbolUrl from "../../assets/home/work-apps/kodredigerare.png";
 import audioTranscriptionSymbolUrl from "../../assets/home/work-apps/ljudtranskribering.png";
 import examConverterSymbolUrl from "../../assets/home/work-apps/provkonverteraren.png";
 
+export type HomeWorkAppMinRole = "user" | "contributor" | "admin" | "superuser";
+
 export type HomeWorkApp = {
   id: string;
   title: string;
   description: string;
   imageSrc: string;
   to?: string;
-  availabilityLabel: string;
+  availabilityLabel?: string;
+  minRole?: HomeWorkAppMinRole;
 };
 
 export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
@@ -29,7 +32,6 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     description: "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
     imageSrc: classroomMapSymbolUrl,
     to: "/apps/classroom.group-seating-studio",
-    availabilityLabel: "Direkt i appen",
   },
   {
     id: "exam-converter",
@@ -37,7 +39,6 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     description: "Importera prov, kontrollera frågor och facit, exportera vidare.",
     imageSrc: examConverterSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=exam",
-    availabilityLabel: "Direkt i appen",
   },
   {
     id: "audio-transcription",
@@ -45,21 +46,20 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     description: "Transkribera ljudfiler och spara texten bland dina filer.",
     imageSrc: audioTranscriptionSymbolUrl,
     to: "/apps/documents.conversion_hub?mode=transcript",
-    availabilityLabel: "Direkt i appen",
   },
   {
     id: "document-converter",
     title: "Dokumentkonverteraren",
-    description: "PDF, DOCX, HTML och andra dokumentformat.",
+    description: "Konvertera mellan PDF, DOCX, HTML och andra dokumentformat.",
     imageSrc: documentConverterSymbolUrl,
     availabilityLabel: "Kommer senare",
   },
   {
     id: "editor",
     title: "Kodredigerare",
-    description: "Fortsätt där du slutade eller välj ett verktyg att redigera.",
+    description: "Fortsätt där du slutade.",
     imageSrc: codeEditorSymbolUrl,
     to: "/editor",
-    availabilityLabel: "Direkt i appen",
+    minRole: "contributor",
   },
 ] as const;

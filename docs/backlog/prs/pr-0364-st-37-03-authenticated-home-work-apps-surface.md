@@ -22,9 +22,9 @@ dependencies:
   - "REF-current-product-lanes-and-sir-convert-boundary-v1"
   - "REF-app-presentation-decomposition-and-naming-plan-v1"
 acceptance_criteria:
-  - "Given a teacher signs in, when `/` renders, then the first actionable signed-in work surface after any alert/greeting is the approved `Arbetsappar` shelf rather than favorites, recent tools, latest-used apps, run history, catalog, contributor/admin cards, or vanity highlight copy."
-  - "Given the approved C2 mockup is the product direction, when the app shelf renders, then it presents `Klassrumskartan`, `Provkonverteraren`, `Ljudtranskribering`, `Dokumentkonverteraren`, and `Kodredigerare` as equal first-class app entries with identifying image identities and whole-card click targets."
-  - "Given `Kodredigerare` is an app surface, when the authenticated home renders, then it is not demoted into a secondary create/develop form, suggestion card, or nested card."
+  - "Given a teacher signs in, when `/` renders, then the first actionable signed-in work surface after any alert/greeting is the approved work-app card shelf rather than favorites, recent tools, latest-used apps, run history, catalog, contributor/admin cards, or vanity highlight copy."
+  - "Given the approved C2 mockup is the product direction, when the app shelf renders, then it presents `Klassrumskartan`, `Provkonverteraren`, `Ljudtranskribering`, and `Dokumentkonverteraren` as first-class app entries with identifying image identities and whole-card click targets."
+  - "Given `Kodredigerare` is an app surface restricted to contributors and above, when an eligible user opens authenticated home, then it appears in the primary app shelf and is not demoted into a secondary create/develop form, suggestion card, or nested card."
   - "Given `Mina körningar` and latest-used rows are no longer part of the active home direction, when the authenticated home renders, then it does not present `Mina körningar`, run-count summaries, latest-used apps, or recent-used vanity rows on the home surface."
   - "Given `PR-0363` added direct conversion-lane mode links, when the signed-in home presents Provkonverteraren and Ljudtranskribering, then those entries link to `/apps/documents.conversion_hub?mode=exam` and `/apps/documents.conversion_hub?mode=transcript` respectively."
   - "Given Dokumentkonverteraren is approved as a visible product lane but still lacks a proven current route, when implementation reaches that card, then it must use a truthful reviewed route or stop and create/attach the required route-visible slice; it must not point teachers to Provkonverteraren, Ljudtranskribering, the current compatibility host under a false label, or a generic catalog dead end."
@@ -49,9 +49,10 @@ impression with an approved app-first authenticated home.
 Make authenticated `/` app-first by implementing the approved C2 work-app
 surface:
 
-- `Arbetsappar` is the first actionable signed-in surface.
+- The work-app card shelf is the first actionable signed-in surface.
 - `Klassrumskartan`, `Provkonverteraren`, `Ljudtranskribering`,
-  `Dokumentkonverteraren`, and `Kodredigerare` are presented as app shelves.
+  `Dokumentkonverteraren`, and eligible `Kodredigerare` are presented as app
+  shelves.
 - `Mina filer`, catalog, suggestions, and owned-tool management remain
   secondary flat ledger affordances below the app shelf.
 - `Mina körningar`, latest-used app rows, recent-used vanity rows, and run
@@ -80,7 +81,8 @@ In scope:
   files small;
 - removal of home-surface `Mina körningar`, latest-used, and recent-used
   vanity chrome;
-- `Kodredigerare` promoted into the primary app shelf;
+- `Kodredigerare` promoted into the primary app shelf when the user's role
+  already permits `/editor`;
 - flat secondary ledgers for files/catalog/contribution affordances;
 - tests proving app-first ordering, route targets, and forbidden home content.
 
@@ -118,7 +120,7 @@ Out of scope:
 |----------|--------|--------|
 | `PR-0364` may proceed to review/implementation planning. | User approval on 2026-06-19 and approved C2 mockup. | Prior design block is resolved. |
 | Authenticated home becomes app-first. | `EPIC-37`, `ST-37-03`, approved C2 mockup. | App shelf appears before files/catalog/contribution surfaces. |
-| `Kodredigerare` is an app. | User approval notes on 2026-06-19. | Place it in the primary app shelf, not in a nested create/develop panel. |
+| `Kodredigerare` is an app. | User approval notes on 2026-06-19. | Place it in the primary app shelf for contributors and above, not in a nested create/develop panel. |
 | `Mina körningar` is no longer part of the home direction. | User approval notes on 2026-06-19. | Remove run-history/run-count cards from the authenticated home surface. |
 | Latest-used/recent-used vanity rows are removed. | User approval notes on 2026-06-19. | Do not show latest-used apps or recent-used rows on the home surface. |
 | App cards are whole-card click targets. | Approved C2 mockup. | Do not add separate `Öppna` links inside app cards. |
@@ -145,7 +147,7 @@ Out of scope:
    - `Klassrumskartan` -> `/apps/classroom.group-seating-studio`
    - `Provkonverteraren` -> `/apps/documents.conversion_hub?mode=exam`
    - `Ljudtranskribering` -> `/apps/documents.conversion_hub?mode=transcript`
-   - `Kodredigerare` -> `/editor`
+   - `Kodredigerare` -> `/editor`, with `minRole: "contributor"`
    - `Dokumentkonverteraren` -> only a truthful reviewed route; otherwise stop.
 3. Add a focused `HomeWorkAppsSection.vue` component that renders equal-height
    app shelves with identifying graphics, whole-card links, no separate
@@ -185,13 +187,15 @@ Out of scope:
   `Dokumentkonverteraren`, and `Kodredigerare` use generated companion PNGs
   under `frontend/apps/skriptoteket/src/assets/home/work-apps/`.
 - Post-deploy copy correction removed generic/meta Swedish introduced on the
-  authenticated home surface, restored prior direct ledger copy where it still
-  matched the product, and kept `PR-0366` as the later lane-wide copy alignment
-  slice.
+  authenticated home surface, removed the redundant `Arbetsappar` and
+  `Direkt i appen` labels, restored prior direct ledger copy where it still
+  matched the product, and kept `PR-0366` as the later lane-wide copy
+  alignment slice.
 - The authenticated home no longer renders favorites, recent-used sections,
   `Mina körningar`, or the old `dashboard-card`/`action-cards-grid` surface.
-- `Kodredigerare` now lives in the primary app shelf and links directly to
-  `/editor`.
+- `Kodredigerare` now lives in the primary app shelf for contributors and
+  above, links directly to `/editor`, and reuses the route's existing
+  contributor gate through a reusable `minRole` app-card field.
 
 ## Red-To-Green Test Plan
 
@@ -213,15 +217,17 @@ pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHome
 
 Required coverage:
 
-- authenticated home renders `Arbetsappar` before files/catalog/contribution
-  surfaces;
+- authenticated home renders the work-app cards before files/catalog/
+  contribution surfaces;
 - `Klassrumskartan` links to `/apps/classroom.group-seating-studio`;
 - Exam entry links to `/apps/documents.conversion_hub?mode=exam`;
 - transcript entry links to `/apps/documents.conversion_hub?mode=transcript`;
-- `Kodredigerare` appears as a primary app entry and links to `/editor`;
+- `Kodredigerare` appears as a primary app entry for contributors and above
+  and links to `/editor`;
 - `Mina körningar`, latest-used app rows, and recent-used vanity rows are
   absent from authenticated home;
-- the app shelf does not expose separate `Öppna` links;
+- the app shelf does not expose separate `Öppna`, `Direkt i appen`, or
+  `Arbetsappar` labels;
 - secondary surfaces are flat ledgers, not cards nested inside cards/panels;
 - the default authenticated-home loader path does not call retired runs,
   favorites, or recent-tool endpoints;
@@ -305,10 +311,11 @@ Browser proof:
   - `pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts`
   - `pdm run fe-type-check`
   - `pdm run fe-lint`
-  - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-copy-correction.json`
-  - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction`
+  - `pdm run fe-build`
+  - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-role-copy-final.json`
+  - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final`
   Retained artifact:
-  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction/20260619T150422Z/manifest.redacted.json`.
+  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final/20260619T170928Z/manifest.redacted.json`.
   The first local proof attempt found exited HuleEdu and Skriptoteket Vite dev
   lanes; both were restarted with the documented Gateway-proxy setup before the
   retained proof passed.

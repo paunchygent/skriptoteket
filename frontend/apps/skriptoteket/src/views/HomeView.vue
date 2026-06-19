@@ -12,7 +12,10 @@ import { computed, onMounted } from "vue";
 
 import { sharedAuthCeremonyUrl } from "../api/sharedAuth";
 import HomeWorkAppsSection from "../components/home/HomeWorkAppsSection.vue";
-import { HOME_PRIMARY_WORK_APPS } from "../components/home/homeWorkApps";
+import {
+  type HomeWorkApp,
+  HOME_PRIMARY_WORK_APPS,
+} from "../components/home/homeWorkApps";
 import LandingAuthenticatedPreview from "../components/home/LandingAuthenticatedPreview.vue";
 import LandingClassroomPreview from "../components/home/LandingClassroomPreview.vue";
 import LandingFeaturedClassroom from "../components/home/LandingFeaturedClassroom.vue";
@@ -28,7 +31,7 @@ const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
 const userName = computed(() => auth.displayName);
-const workApps = HOME_PRIMARY_WORK_APPS;
+const workApps = computed(() => HOME_PRIMARY_WORK_APPS.filter((app) => canSeeWorkApp(app)));
 
 type SecondaryLedgerEntry = {
   title: string;
@@ -42,6 +45,11 @@ type SecondaryLedgerSection = {
   description?: string;
   entries: SecondaryLedgerEntry[];
 };
+
+function canSeeWorkApp(app: HomeWorkApp): boolean {
+  if (!app.minRole) return true;
+  return auth.hasAtLeastRole(app.minRole);
+}
 
 const registerUrl = computed(() =>
   sharedAuthCeremonyUrl({

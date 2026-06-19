@@ -42,8 +42,8 @@ Keep this file updated so the next session can pick up work quickly.
   `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`. Follow-up review
   fixes are now in `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`
   and `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.spec.ts`.
-  Authenticated `/` is app-first, `Kodredigerare` is primary,
-  Dokumentkonverteraren is visible but non-linkable, the default home loader no longer
+  Authenticated `/` is app-first, `Kodredigerare` is primary for contributors
+  and above, Dokumentkonverteraren is visible but non-linkable, the default home loader no longer
   hits retired runs/favorites/recent endpoints, and the old home
   `dashboard-card` grid plus `Mina körningar`/latest/recent chrome are
   removed.
@@ -60,8 +60,9 @@ Keep this file updated so the next session can pick up work quickly.
   `Kodredigerare`.
 - Post-deploy copy correction: authenticated home copy now removes generic
   helper phrases such as `nästa arbetsmoment`, `filspår`,
-  `transkriptarbetsyta`, and `publiceringsflödet`; prior direct ledger copy was
-  restored where it still matched the product.
+  `transkriptarbetsyta`, and `publiceringsflödet`; the redundant
+  `Arbetsappar` and `Direkt i appen` labels are gone; prior direct ledger copy
+  was restored where it still matched the product.
 - The PR-0364 rejected card-grid and service-foyer attempts were deleted at
   user request on 2026-06-19; do not implement either layout. Approved C2 also
   removes `Mina körningar`, latest-used/recent-used home chrome, separate
@@ -139,12 +140,12 @@ Keep this file updated so the next session can pick up work quickly.
     Vite `:5173` lanes had exited; both were restarted with the documented
     Gateway-proxy setup.
   - Correct preflight:
-    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-copy-correction.json`
+    `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-role-copy-final.json`
     passed with all checks `ok`.
   - Retained proof:
-    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction`
+    `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final`
     passed; artifact:
-    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-copy-correction/20260619T150422Z/manifest.redacted.json`.
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-role-copy-final/20260619T170928Z/manifest.redacted.json`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
