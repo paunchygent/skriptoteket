@@ -5,7 +5,7 @@ title: "Backlog product-direction inventory and app surface realignment"
 status: active
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-19
+updated: 2026-06-20
 outcome: "Skriptoteket has a truthful active backlog that preserves still-valuable script/editor work, closes completed or superseded legacy tasks, and sequences the next UI shell and app-presentation work around current teacher-facing product lanes."
 dependencies:
   - "REF-current-product-direction-and-backlog-inventory-2026-06-17"
@@ -154,3 +154,15 @@ onward plus the ST-37-04 follow-up slices.
   the header keeps only the brand, `Logga in`, and `Hjälp` as same-style
   single-row actions on small screens, with retained in-app-browser desktop
   and mobile proof from `http://localhost:5173/`.
+- `PR-0366` is done as of 2026-06-20. It aligned copy-only app-lane
+  descriptions and labels across authenticated home, the authenticated
+  prov/transcript mode switch, the authenticated compatibility host frame, and
+  the public Exam Converter eyebrow without changing routes, app ids, registry
+  metadata, or backend/API contracts.
+- `PR-0373` is done as of 2026-06-20. It hardened the local public-app proof
+  lane after `PR-0366` exposed a host Vite setup where public
+  `/api/v1/public/...` traffic had no running Skriptoteket backend target:
+  Docker web-only startup, host shared-auth Vite env, and Docker frontend
+  public API proxy ownership are now explicit and covered by a focused contract
+  test. The remaining app-presentation implementation slices are `PR-0367`
+  through `PR-0369`.

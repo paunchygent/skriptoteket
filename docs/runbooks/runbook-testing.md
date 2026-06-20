@@ -103,6 +103,19 @@ service (`skriptoteket_web`, alias `skriptoteket-web`) so HuleEdu Gateway can
 reach app continuation through `hule-network`. Host Uvicorn is not a valid
 backend for Gateway-authenticated browser proof.
 
+For host Vite shared-auth proof, use the split local lane:
+
+```bash
+pdm run dev-stack web-start
+pdm run fe-dev-shared-auth
+```
+
+This keeps protected `/api/...` calls on the local HuleEdu Gateway while public
+`/api/v1/public/...` calls continue to use the Docker-backed Skriptoteket web
+service. If public app routes return a Vite-level `500 Internal Server Error`,
+first verify that the Docker `web` service is running and reachable on
+`http://localhost:8000`.
+
 Commands:
 
 ```bash

@@ -11,9 +11,12 @@ Relationships:
       Docker dev stack.
 """
 
+import tomllib
 from pathlib import Path
 
 import yaml
+
+from scripts import dev_stack
 
 ROOT = Path(__file__).resolve().parents[2]
 HULEEDU_PUBLIC_KEY_VOLUME = (
@@ -71,6 +74,10 @@ def test_frontend_docker_dev_uses_local_huleedu_gateway_for_shared_auth() -> Non
         == "${VITE_DEV_BACKEND_PROXY_TARGET:-http://skriptoteket_web:8000}"
     )
     assert (
+        frontend_environment["VITE_DEV_PUBLIC_API_PROXY_TARGET"]
+        == "${VITE_DEV_PUBLIC_API_PROXY_TARGET:-http://skriptoteket_web:8000}"
+    )
+    assert (
         frontend_environment["VITE_DEV_PROXY_TARGET"]
         == "${VITE_DEV_PROXY_TARGET:-http://huleedu_api_gateway_service:8080}"
     )
@@ -109,6 +116,38 @@ def test_vite_dev_proxy_keeps_public_api_off_huleedu_gateway() -> None:
     assert vite_config.index('"/share/classroom"') < vite_config.index('"^/static/(?!spa)"')
     assert "target: devPublicApiProxyTarget" in vite_config
     assert "target: devBackendProxyTarget" in vite_config
+
+
+def test_host_vite_shared_auth_command_pins_public_api_to_local_skriptoteket_web() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    scripts = pyproject["tool"]["pdm"]["scripts"]
+    script = scripts["fe-dev-shared-auth"]
+
+    assert script["working_dir"] == "frontend"
+    command = script["cmd"]
+    assert "VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://localhost:8080}" in command
+    assert (
+        "VITE_DEV_BACKEND_PROXY_TARGET=${VITE_DEV_BACKEND_PROXY_TARGET:-http://localhost:8000}"
+        in command
+    )
+    assert (
+        "VITE_DEV_PUBLIC_API_PROXY_TARGET=${VITE_DEV_PUBLIC_API_PROXY_TARGET:-http://localhost:8000}"
+        in command
+    )
+    assert (
+        "VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login}"
+        in command
+    )
+
+
+def test_dev_stack_has_web_start_lane_for_host_vite_public_app_proof() -> None:
+    command = dev_stack.COMMANDS["web-start"]
+
+    assert command.summary == "Start Docker db/web for host Vite proof and apply migrations."
+    assert command.commands == (
+        (*dev_stack.COMPOSE, "up", "-d", "db", "web"),
+        dev_stack.DB_UPGRADE,
+    )
 
 
 def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api() -> None:

@@ -314,6 +314,8 @@ fe-install.working_dir = "frontend"
 
 fe-dev.cmd = "pnpm --filter @skriptoteket/spa dev"
 fe-dev.working_dir = "frontend"
+fe-dev-shared-auth.cmd = "sh -c 'VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://localhost:8080} VITE_DEV_BACKEND_PROXY_TARGET=${VITE_DEV_BACKEND_PROXY_TARGET:-http://localhost:8000} VITE_DEV_PUBLIC_API_PROXY_TARGET=${VITE_DEV_PUBLIC_API_PROXY_TARGET:-http://localhost:8000} VITE_HULEEDU_AUTH_BASE_URL=${VITE_HULEEDU_AUTH_BASE_URL:-http://localhost:8080} VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login} pnpm --filter @skriptoteket/spa dev'"
+fe-dev-shared-auth.working_dir = "frontend"
 fe-dev-logs.cmd = "sh -c 'mkdir -p ../.artifacts && pnpm --filter @skriptoteket/spa dev 2>&1 | tee ../.artifacts/dev-frontend.log'"
 fe-dev-logs.working_dir = "frontend"
 

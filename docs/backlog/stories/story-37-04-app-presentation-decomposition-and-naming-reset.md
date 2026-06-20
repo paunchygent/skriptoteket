@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-19
+updated: 2026-06-20
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -39,7 +39,8 @@ dashboard direction are settled.
 - [x] [PR-0370: ST-37-04 public landing authenticated-app preview mockup approval](../prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md)
 - [x] [PR-0371: ST-37-04 public landing authenticated-app preview implementation](../prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md)
 - [x] [PR-0372: ST-37-04 public landing header simplification](../prs/pr-0372-st-37-04-public-landing-header-simplification.md)
-- [ ] [PR-0366: ST-37-04 copy-only app lane naming and description alignment](../prs/pr-0366-st-37-04-copy-only-app-lane-naming-and-description-alignment.md)
+- [x] [PR-0366: ST-37-04 copy-only app lane naming and description alignment](../prs/pr-0366-st-37-04-copy-only-app-lane-naming-and-description-alignment.md)
+- [x] [PR-0373: ST-37-04 public app local proof runtime contract](../prs/pr-0373-st-37-04-public-app-local-proof-runtime-contract.md)
 - [ ] [PR-0367: ST-37-04 curated app registry presentation alignment](../prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md)
 - [ ] [PR-0368: ST-37-04 route-visible app entrypoint and presentation alignment](../prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md)
 - [ ] [PR-0369: ST-37-04 backend and API app presentation contract alignment](../prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md)
@@ -78,9 +79,19 @@ dashboard direction are settled.
   focused header coverage in
   `frontend/apps/skriptoteket/src/components/layout/LandingLayout.spec.ts`
   and retained in-app-browser desktop/mobile proof from `http://localhost:5173/`.
+- `PR-0366` is done as of 2026-06-20. It aligned copy-only route-visible
+  app-lane wording across authenticated home cards, the authenticated
+  prov/transcript mode switch, the authenticated host frame label, and the
+  public Exam Converter eyebrow without changing routes, app ids, registry
+  metadata, or backend/API contracts.
+- `PR-0373` is done as of 2026-06-20. It hardened the local proof lane from
+  `PR-0366`: host Vite public-app proof now has explicit `dev-stack web-start`
+  and `fe-dev-shared-auth` commands, while Docker frontend explicitly keeps
+  public `/api/v1/public/...` proxy traffic on the Skriptoteket backend and
+  protected `/api` on the HuleEdu Gateway.
 - `PR-0361` closed the service-shell planning package through
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-  `ST-37-04` remains open because the copy, registry, route-visible, and
+  `ST-37-04` remains open because the registry, route-visible, and
   backend/API-visible implementation slices have not run.

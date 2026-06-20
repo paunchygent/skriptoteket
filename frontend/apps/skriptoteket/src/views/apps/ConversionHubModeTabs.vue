@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Conversion Hub mode tabs.
+ * Exam and transcript mode tabs.
  *
  * Domain purpose:
- *   Let signed-in teachers switch between bespoke Conversion Hub lanes without
- *   exposing generic tool-run mechanics.
+ *   Let signed-in teachers switch between the provhantering and
+ *   ljudtranskribering lanes without exposing generic compatibility-shell
+ *   mechanics.
  *
  * Relationships:
  *   - Rendered by `ExamConverterAuthenticatedView`.
@@ -25,7 +26,7 @@ const emit = defineEmits<{
 <template>
   <nav
     class="mx-auto mb-3 flex w-full max-w-[90rem] flex-wrap gap-2"
-    aria-label="Conversion Hub"
+    aria-label="Prov och transkribering"
   >
     <button
       type="button"
@@ -35,7 +36,7 @@ const emit = defineEmits<{
       :aria-pressed="activeMode === 'exam'"
       @click="emit('modeSelected', 'exam')"
     >
-      Prov
+      Provhantering
     </button>
     <button
       type="button"
@@ -45,7 +46,7 @@ const emit = defineEmits<{
       :aria-pressed="activeMode === 'transcript'"
       @click="emit('modeSelected', 'transcript')"
     >
-      Transkript
+      Ljudtranskribering
     </button>
   </nav>
 </template>

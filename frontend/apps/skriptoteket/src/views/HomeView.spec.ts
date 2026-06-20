@@ -227,16 +227,14 @@ describe("HomeView", () => {
     expect(workAppsSection.text()).not.toContain("Kodredigerare");
     expect(wrapper.text()).toContain("Vad vill du göra?");
     expect(workAppsSection.text()).toContain(
-      "Skapa salen, placera eleverna, spara som PDF eller för Excel.",
+      "Skapa klassrum, placera elever och exportera till PDF eller Excel.",
+    );
+    expect(workAppsSection.text()).toContain("Skapa, redigera och konvertera prov.");
+    expect(workAppsSection.text()).toContain(
+      "Transkribera tal till text och spara resultatet bland dina filer.",
     );
     expect(workAppsSection.text()).toContain(
-      "Importera prov, kontrollera frågor och facit, exportera vidare.",
-    );
-    expect(workAppsSection.text()).toContain(
-      "Transkribera ljudfiler och spara texten bland dina filer.",
-    );
-    expect(workAppsSection.text()).toContain(
-      "Konvertera mellan PDF, DOCX, HTML och andra dokumentformat.",
+      "Skapa PDF:er med hjälp av HTML och CSS.",
     );
     expect(workAppsSection.text()).toContain("Kommer senare");
     expect(

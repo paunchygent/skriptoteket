@@ -79,6 +79,16 @@ describe("ExamConverterAuthenticatedView host frame", () => {
   it("renders the approved two-zone authenticated host frame", () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
+    expect(wrapper.get("nav").attributes("aria-label")).toBe("Prov och transkribering");
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').text()).toBe(
+      "Provhantering",
+    );
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').text()).toBe(
+      "Ljudtranskribering",
+    );
+    expect(wrapper.find('[data-test="exam-converter-host-frame"]').attributes("aria-label")).toBe(
+      "Provhantering och ljudtranskribering",
+    );
     expect(wrapper.find('[data-test="exam-converter-host-frame"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-converter-workflow-rail-shell"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-converter-workspace-shell"]').exists()).toBe(true);

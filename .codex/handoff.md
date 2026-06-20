@@ -8,11 +8,11 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-19.
+- Date: 2026-06-20.
 - Branch: `main`.
-- Latest closed slice: `PR-0365` under `ST-37-03`.
-- Active slice: none; the current repo session closed `PR-0365`.
-- Next planned slice remains `PR-0366` copy-only app-lane alignment under
+- Latest closed slice: `PR-0373` under `ST-37-04`.
+- Active slice: none; the current repo session closed `PR-0373`.
+- Next planned slice is `PR-0367` curated app registry presentation alignment under
   `ST-37-04`.
 - Older PR-0355/PR-0356 proof and Hemma deploy detail was compacted to
   `.codex/long-term-memory/entries/session-2026-06-19-pr-0355-pr-0356-and-pr-0363-runtime-compaction.md`.
@@ -63,11 +63,21 @@ Keep this file updated so the next session can pick up work quickly.
   keep the signed-out header to brand + `Logga in` + `Hjälp`, remove the
   duplicate public `Klassrumskartan` link, and keep the small-screen header on
   one row.
-- Docker-service breadcrumb is now encoded in
-  `.codex/skills/skriptoteket-testing/references/browser-automation.md`,
-  `.codex/skills/skriptoteket-testing/references/backend-pytest.md`,
-  `docs/runbooks/runbook-testing.md`, and the shared
-  `local-devops/references/skriptoteket.md`.
+- `PR-0366` is done:
+  `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`,
+  `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue`,
+  `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`,
+  and `frontend/apps/skriptoteket/src/views/apps/ExamConverterPublicView.vue`
+  now align copy-only app-lane labels/descriptions without changing routes,
+  app ids, registry metadata, or backend/API contracts.
+- `PR-0373` is done:
+  `scripts/dev_stack.py`, `pyproject.toml`, `compose.yaml`, `.env.example`,
+  `README.md`, `docs/runbooks/runbook-testing.md`, and
+  `tests/unit/test_docker_dev_shared_auth_contract.py` now define and guard the
+  host Vite shared-auth proof lane: `pdm run dev-stack web-start` starts
+  Docker `db`/`web` plus migrations without taking port `5173`, and
+  `pdm run fe-dev-shared-auth` keeps protected `/api` on HuleEdu Gateway while
+  public `/api/v1/public` stays on local Skriptoteket web.
 - Protected HuleEdu Gateway/browser-session proof must use Docker
   `skriptoteket_web` on `hule-network` with alias `skriptoteket-web`; do not
   use host Uvicorn for this lane.
@@ -81,47 +91,52 @@ Keep this file updated so the next session can pick up work quickly.
     `VITE_DEV_PROXY_TARGET=http://localhost:8080`.
 - Gateway-to-Skriptoteket Docker check passed:
   `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`.
-- PR-0365 / PR-0372 current focused evidence:
-  - Red-first: `pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts`
-    failed because the sidebar still rendered duplicate `Hjälp` after `Profil`
-    instead of leaving help solely in the top auth bar.
-  - Red-first: `pdm run fe-test -- --run src/components/layout/LandingLayout.spec.ts`
-    failed because the old public header still rendered `Klassrumskartan`.
-  - Focused green: `pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts`
-    passed with 10 tests.
-  - Script-surface green:
-    `pdm run test tests/unit/scripts/test_playwright_script_surface.py`
-    passed with 3 tests.
-  - Frontend static gates:
-    `pdm run fe-type-check`
-    and
-    `pdm run fe-lint`
-    both passed.
-  - Focused green: `pdm run fe-test -- --run src/components/layout/LandingLayout.spec.ts`
-    passed with 2 tests.
-  - Combined green: `pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts src/components/layout/LandingLayout.spec.ts src/views/HomeView.spec.ts`
-    passed with 17 tests.
-  - `pdm run run-local-pdm auth-integration check` passed from the HuleEdu
-    repo, confirming Gateway/login UI/proxy readiness for shared-auth proof.
-  - In-app browser public proof on `http://localhost:5173/` confirmed:
-    - desktop header contains only brand, `Logga in`, and `Hjälp`
-    - mobile header keeps brand, `Logga in`, and `Hjälp` on one row
-    - the public header no longer renders `Klassrumskartan`
-    - retained screenshots:
-      `.artifacts/pr-0372-public-landing-header-simplification/public-landing-desktop.png`
-      and
-      `.artifacts/pr-0372-public-landing-header-simplification/public-landing-mobile.png`
-  - Protected authenticated sidebar/mobile-drawer proof now passed with:
-    `pdm run python -m scripts.playwright_pr_0365_authenticated_shell_navigation --base-url http://localhost:5173`
-    retaining artifacts at
-    `.artifacts/playwright-pr-0365-authenticated-shell-navigation/20260619T212625Z/`.
+- PR-0365 / PR-0372 retained browser proof and screenshots are recorded in
+  their PR/review docs and artifact directories; keep the Docker-service proof
+  lane intact for authenticated surfaces.
+  - Current frontend static gates:
+    `pdm run fe-type-check` and `pdm run fe-lint` both passed.
+  - PR-0366 red-first:
+    `pdm run fe-test -- --run src/views/HomeView.spec.ts src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterPublicView.spec.ts`
+    failed against the old copy with three expected copy failures.
+  - PR-0366 focused green:
+    `pdm run fe-test -- --run src/views/HomeView.spec.ts src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterPublicView.spec.ts`
+    passed with 28 tests.
+  - PR-0366 live public landing proof used Node REPL Playwright with installed
+    Chrome against `http://localhost:5173/` and confirmed the rendered page
+    contains `Lektionsplanera direkt i webbläsaren.`, `När du loggar in`,
+    `Skapa PDF:er med hjälp av HTML och CSS`, and
+    `Skapa, redigera och konvertera prov`.
+  - PR-0373 red-first:
+    `pdm run test tests/unit/test_docker_dev_shared_auth_contract.py`
+    failed with three expected contract failures: missing Docker frontend
+    `VITE_DEV_PUBLIC_API_PROXY_TARGET`, missing `fe-dev-shared-auth`, and
+    missing `dev-stack web-start`.
+  - PR-0373 focused green:
+    `pdm run test tests/unit/test_docker_dev_shared_auth_contract.py`
+    passed with 6 tests.
+  - PR-0373 runtime proof:
+    `pdm run dev-stack web-start` started Docker `db` and `web`, applied
+    migrations, and `pdm run dev-stack ps` showed `skriptoteket_web` healthy
+    on `0.0.0.0:8000`.
+  - PR-0373 public route proof:
+    `curl -sS -i http://localhost:5173/api/v1/public/apps/documents.conversion_hub/exam-converter`
+    returned `200 OK` through Vite, and Node REPL Playwright with installed
+    Chrome confirmed
+    `http://localhost:5173/public/apps/documents.conversion_hub/exam-converter`
+    rendered `PROVHANTERING`, `Exam Converter`, and no
+    `Internal Server Error`.
+  - PR-0373 close-out gates:
+    `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
+    `pdm run fe-lint`, `pdm run docs-validate`, `pdm run handoff-validate`,
+    and `git diff --check` passed.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
-DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f compose.yaml -f compose.dev.yaml up -d web
+pdm run dev-stack web-start
 
 # Start/reuse Skriptoteket Vite with protected API traffic proxied to HuleEdu Gateway.
-VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080 VITE_HULEEDU_AUTH_ENTRY_URL=http://localhost:8080/auth/login VITE_DEV_PROXY_TARGET=http://localhost:8080 pdm run fe-dev
+pdm run fe-dev-shared-auth
 
 # If the HuleEdu login UI is not already serving on :5174, start it from the HuleEdu repo.
 (cd /Users/olofs_mba/Documents/Repos/huleedu && pdm run run-local-pdm auth-integration fe-dev)
@@ -129,8 +144,10 @@ VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080 VITE_HULEEDU_AUTH_ENTRY_URL=htt
 # Verify Gateway can resolve the product backend by Docker alias.
 docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz
 
-# Focused PR-0365 / PR-0372 checks.
+# Focused PR-0365 / PR-0372 / PR-0366 checks.
 pdm run fe-test -- --run src/components/layout/AuthSidebar.spec.ts src/components/layout/AuthLayout.spec.ts src/App.spec.ts src/components/layout/LandingLayout.spec.ts src/views/HomeView.spec.ts
+pdm run fe-test -- --run src/views/HomeView.spec.ts src/views/apps/ExamConverterAuthenticatedView.spec.ts src/views/apps/ExamConverterPublicView.spec.ts
+pdm run test tests/unit/test_docker_dev_shared_auth_contract.py
 pdm run fe-type-check
 pdm run fe-lint
 pdm run docs-validate
@@ -154,7 +171,6 @@ git diff --check
 - `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
   `PR-0364` and `PR-0365`.
 ## Next Steps
-- After `PR-0365`, continue with `PR-0366` copy-only app-lane naming
-  alignment without reintroducing `Mina körningar`; route retirement remains a
-  later slice.
+- After `PR-0373`, continue with `PR-0367` curated app registry presentation
+  alignment without changing routes or app ids.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

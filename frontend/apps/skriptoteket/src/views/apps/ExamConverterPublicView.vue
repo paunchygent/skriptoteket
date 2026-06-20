@@ -46,7 +46,7 @@ const {
     <header class="mx-auto mb-5 flex max-w-6xl flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div>
         <p class="mb-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          Conversion Hub
+          Provhantering
         </p>
         <h1 class="text-3xl font-semibold leading-tight text-navy">Exam Converter</h1>
       </div>

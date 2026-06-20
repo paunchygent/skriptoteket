@@ -98,6 +98,10 @@ For the realm-aware shared-auth proof lane, do not point local callbacks at publ
 HuleEdu `TASK-0325`: Skriptoteket stays on `http://localhost:5173`, HuleEdu login UI uses
 `http://localhost:5174`, Gateway runs on `http://localhost:8080`, and protected Skriptoteket API
 traffic routes through Gateway at `/api/...` with `VITE_DEV_PROXY_TARGET=http://localhost:8080`.
+When using host Vite for this lane, first start the Docker-backed Skriptoteket web service with
+`pdm run dev-stack web-start`, then run `pdm run fe-dev-shared-auth`; this keeps public
+`/api/v1/public/...` traffic on the local Skriptoteket backend while protected `/api/...` remains
+on the HuleEdu Gateway.
 The separate 127 proof uses `http://127.0.0.1:5173`, `http://127.0.0.1:5174`, and
 `http://127.0.0.1:8080` consistently. The backend verifier consumes only the local Gateway public
 signing key mounted or exported from HuleEdu.
@@ -212,7 +216,7 @@ Common adaptations and where they live in the codebase:
 ## Key commands
 
 - Run (backend): `pdm run dev` / `pdm run serve`
-- Run (SPA): `pdm run fe-dev` / `pdm run fe-build`
+- Run (SPA): `pdm run fe-dev` / `pdm run fe-dev-shared-auth` / `pdm run fe-build`
 - Generate SPA API types from OpenAPI: `pdm run fe-gen-api-types`
 - DB migrate: `pdm run db-upgrade`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`

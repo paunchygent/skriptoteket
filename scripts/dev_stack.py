@@ -31,6 +31,13 @@ COMMANDS: dict[str, CommandSpec] = {
             DB_UPGRADE,
         ),
     ),
+    "web-start": CommandSpec(
+        summary="Start Docker db/web for host Vite proof and apply migrations.",
+        commands=(
+            (*COMPOSE, "up", "-d", "db", "web"),
+            DB_UPGRADE,
+        ),
+    ),
     "stop": CommandSpec(
         summary="Stop the Docker dev stack.",
         commands=((*COMPOSE, "down"),),

@@ -58,6 +58,13 @@ describe("ExamConverterPublicView", () => {
     });
   });
 
+  it("uses the public Provhantering lane label instead of the compatibility-shell name", () => {
+    const wrapper = mount(ExamConverterPublicView);
+
+    expect(wrapper.text()).toContain("Provhantering");
+    expect(wrapper.get("h1").text()).toBe("Exam Converter");
+  });
+
   it("submits a public multipart job and renders available artifacts", async () => {
     clientMocks.publicApiPost.mockResolvedValue({
       public_job_id: "public-job-1",
