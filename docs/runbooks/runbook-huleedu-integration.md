@@ -305,9 +305,14 @@ ssh hemma "cd ~/apps/huleedu && docker compose -f docker-compose.yml -f docker-c
 ### Database Backup
 
 ```bash
-# Backup all HuleEdu databases
-ssh hemma "docker exec shared-postgres pg_dump -U postgres huleedu_content > ~/backups/huleedu_content_$(date +%Y%m%d).sql"
+# Run the governed all-DB shared-postgres backup from Hemma.
+ssh hemma "cd /home/paunchygent/apps/huleedu && pdm run run-local-pdm shared-postgres-backup run --execute"
 ```
+
+Production backup payloads belong under
+`/srv/storage/hemma/shared-postgres/backups/`, not `~/backups`. Use the HuleEdu
+`shared-postgres-backup verify --latest` and `restore-test --latest` commands
+for manifest and restore proof before cross-product database work.
 
 ## References
 

@@ -852,14 +852,21 @@ ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -d skriptoteket
 ### Backup Database
 
 ```bash
-ssh hemma "sudo docker exec shared-postgres pg_dump -U postgres skriptoteket > ~/backups/skriptoteket-\$(date +%Y%m%d).sql"
+ssh hemma "cd /home/paunchygent/apps/huleedu && pdm run run-local-pdm shared-postgres-backup run --execute"
 ```
+
+Production backup payloads for `shared-postgres` belong under
+`/srv/storage/hemma/shared-postgres/backups/`, not under `~/backups`. Use the
+HuleEdu governed `shared-postgres-backup verify --latest` and
+`shared-postgres-backup restore-test --latest` commands for manifest and
+disposable restore proof.
 
 ### Restore Database
 
-```bash
-ssh hemma "sudo docker exec -i shared-postgres psql -U postgres -d skriptoteket < ~/backups/skriptoteket-YYYYMMDD.sql"
-```
+Production restores are incident operations. Do not pipe ad hoc SQL from
+home-directory backups into `shared-postgres`; open an incident task, select a
+verified manifest under `/srv/storage/hemma/shared-postgres/backups/`, and
+record the restore plan before touching production data.
 
 ### Run Migrations
 
