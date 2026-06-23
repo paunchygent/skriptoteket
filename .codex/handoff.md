@@ -133,10 +133,15 @@ Keep this file updated so the next session can pick up work quickly.
     passed green; review-fix JSON-log secret redaction also failed red, then
     passed green with 2 selected tests. `pdm run test tests/unit/scripts/test_dev_stack.py tests/unit/scripts/test_transcript_parity_proof_launcher.py`
     passed with 24 tests, and the adjacent proof-script suite passed with
-    36 tests. `pdm run transcript-parity-proof remote-proof` passed on
-    2026-06-23 with launch artifact
-    `.artifacts/transcript-parity-proof-lane/20260623T064940Z/` and proof
-    artifact `.artifacts/audio-transcription-parity-live/20260623T065005Z/`.
+    36 tests. The first close-out rerun of
+    `pdm run transcript-parity-proof remote-proof` on 2026-06-23 failed early
+    with `huleedu_auth_integration_check_failed` after the launcher recreated
+    the Gateway; immediate
+    `pdm run run-local-pdm auth-integration check --timeout-seconds 15` from
+    the HuleEdu repo then passed. A second
+    `pdm run transcript-parity-proof remote-proof` passed with launch artifact
+    `.artifacts/transcript-parity-proof-lane/20260623T070624Z/` and proof
+    artifact `.artifacts/audio-transcription-parity-live/20260623T070653Z/`.
     The proof recorded `status=passed`, `service_profile=remote-proof`,
     matching Gateway/trusted fingerprints, transcript success, formatter
     exports, downloads, and Mina filer save. Cleanup restored Gateway to
