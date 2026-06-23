@@ -41,6 +41,27 @@ const TRANSCRIPT_UI_INSPECTION_ROUTES: RouteRecordRaw[] =
       ]
     : [];
 
+const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
+  {
+    path: "/apps/exam-converter",
+    name: "exam-converter-authenticated",
+    component: () => import("../views/apps/ExamConverterAuthenticatedView.vue"),
+    props: () => ({
+      presentationMode: "exam",
+    }),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/apps/audio-transcription",
+    name: "audio-transcription-authenticated",
+    component: () => import("../views/apps/ExamConverterAuthenticatedView.vue"),
+    props: () => ({
+      presentationMode: "transcript",
+    }),
+    meta: { requiresAuth: true },
+  },
+];
+
 export const routes: RouteRecordRaw[] = [
   {
     path: "/auth/login",
@@ -119,6 +140,7 @@ export const routes: RouteRecordRaw[] = [
   },
   ...EXAM_CONVERTER_UI_INSPECTION_ROUTES,
   ...TRANSCRIPT_UI_INSPECTION_ROUTES,
+  ...CANONICAL_CONVERSION_APP_ROUTES,
   {
     path: "/apps/:appId",
     name: "app-detail",

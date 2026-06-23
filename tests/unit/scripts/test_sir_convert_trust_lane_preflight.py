@@ -5,8 +5,8 @@ Domain purpose:
     Sir Convert trust lanes before media upload or producer job creation.
 
 Relationships:
-    Exercises the PR-0352 proof preflight helper and the PR-0349 transcript
-    live proof entrypoint without launching a browser or contacting Sir Convert.
+    Exercises the proof preflight helper and the Audio Transcription parity live
+    proof entrypoint without launching a browser or contacting Sir Convert.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from scripts._sir_convert_trust_lane_preflight import (
     preflight_failure_summary,
     run_trust_lane_preflight,
 )
-from scripts.playwright_pr_0349_transcript_parity_live import run
+from scripts.audio_transcription_parity_live import run
 
 LOCAL_SIGNER_FINGERPRINT = "46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992"
 HEMMA_VERIFIER_FINGERPRINT = "c84080a7b068dba5c42d3d06b5109d3696e8ba960c2db0abc4d1d71b3e9f3b08"
@@ -462,7 +462,7 @@ def test_transcript_live_proof_blocks_running_producer_mismatch_before_copying_m
         raise AssertionError("media must not be copied when the running producer lane is split")
 
     monkeypatch.setattr(
-        "scripts.playwright_pr_0349_transcript_parity_live._copy_audio_for_submission",
+        "scripts.audio_transcription_parity_live._copy_audio_for_submission",
         fail_on_copy,
     )
     dotenv_path = tmp_path / ".env"

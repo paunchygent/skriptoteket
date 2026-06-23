@@ -291,10 +291,10 @@ describe("HomeView", () => {
       "/apps/classroom.group-seating-studio",
     );
     expect(findRouterLinkByText(wrapper, "Provhantering")?.props("to")).toBe(
-      "/apps/documents.conversion_hub?mode=exam",
+      "/apps/exam-converter",
     );
     expect(findRouterLinkByText(wrapper, "Ljudtranskribering")?.props("to")).toBe(
-      "/apps/documents.conversion_hub?mode=transcript",
+      "/apps/audio-transcription",
     );
     expect(findRouterLinkByText(wrapper, "Kodredigerare")).toBeUndefined();
     expect(findRouterLinkByText(wrapper, "Dokumentkonvertering")).toBeUndefined();

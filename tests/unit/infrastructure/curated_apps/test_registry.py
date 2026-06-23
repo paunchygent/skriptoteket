@@ -97,3 +97,29 @@ def test_registry_keeps_conversion_hub_general_access_authenticated_only() -> No
     assert capability.scope == "exam_converter"
     assert capability.profile is CuratedAppPublicAccessProfile.PUBLIC_BROWSER_RUNTIME
     assert capability.runtime_status is CuratedAppPublicRuntimeStatus.ACTIVE
+
+
+def test_registry_presents_conversion_hub_as_exam_and_transcript_compatibility_app() -> None:
+    registry = InMemoryCuratedAppRegistry(
+        settings=Settings(
+            APP_VERSION="9.9.9",
+            ENVIRONMENT="development",
+            DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/test",
+        )
+    )
+
+    app = registry.get_by_app_id(app_id="documents.conversion_hub")
+
+    assert app is not None
+    assert app.app_id == "documents.conversion_hub"
+    assert app.title == "Provhantering och ljudtranskribering"
+    assert app.summary == (
+        "Skapa, redigera och konvertera prov eller transkribera tal till text "
+        "och spara resultatet bland dina filer."
+    )
+    metadata_text = f"{app.title} {app.summary}".casefold()
+    assert "konvertera dokument" not in metadata_text
+    assert "pdf/html/markdown/docx" not in metadata_text
+    assert app.public_access_profile is CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY
+    assert app.supports_public_capability(scope="exam_converter") is True
+    assert app.supports_public_capability(scope="general_conversion") is False

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0367
 title: "ST-37-04 curated app registry presentation alignment"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-06-18
 updated: 2026-06-18
@@ -48,15 +48,41 @@ route structure.
 
 ## Implementation plan
 
-1. Add a focused red test for the registry/bootstrap consumer that still
+1. [x] Add a focused red test for the registry/bootstrap consumer that still
    exposes stale generic document-conversion naming.
-2. Align `src/skriptoteket/infrastructure/curated_apps/registry.py` and any
+2. [x] Align `src/skriptoteket/infrastructure/curated_apps/registry.py` and any
    directly affected bootstrap/detail consumers to
    [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-3. Keep `documents.conversion_hub` as a technical compatibility app id unless a
+3. [x] Keep `documents.conversion_hub` as a technical compatibility app id unless a
    later reviewed route-visible slice proves a stronger change is needed.
-4. Stop and return to planning if truthful metadata cannot be expressed without
+4. [x] Stop and return to planning if truthful metadata cannot be expressed without
    a new backend/API contract.
+
+## Implementation evidence
+
+- `src/skriptoteket/infrastructure/curated_apps/registry.py` now presents
+  `documents.conversion_hub` as `Provhantering och ljudtranskribering` with a
+  summary for exam creation/conversion plus speech-to-text transcript saving.
+- The registry keeps `documents.conversion_hub` as the technical app id,
+  general access as authenticated-only, and the active public capability scope
+  as `exam_converter`.
+- No route files, frontend host registry, API schema, generated OpenAPI, Sir
+  Convert, HuleEdu, QTI, DOCX, Document Converter backend, or auth-edge
+  contracts changed.
+
+## Verification
+
+- Red first:
+  `pdm run test tests/unit/infrastructure/curated_apps/test_registry.py`
+  failed against the old registry title because `documents.conversion_hub`
+  still returned `Konvertera dokument`.
+- Green:
+  `pdm run test tests/unit/infrastructure/curated_apps/test_registry.py`
+  passed with 5 tests.
+- `pdm run lint` passed.
+- `pdm run typecheck` passed.
+- `pdm run docs-validate` passed.
+- `git diff --check` passed.
 
 ## Test plan
 

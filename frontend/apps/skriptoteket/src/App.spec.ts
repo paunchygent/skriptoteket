@@ -239,6 +239,38 @@ describe("App", () => {
     });
   });
 
+  it("keeps canonical Audio Transcription as the protected destination when auth drops", async () => {
+    if (!routerMocks.route || !routerMocks.auth) {
+      throw new Error("Expected route and auth mocks to be initialized.");
+    }
+    routerMocks.route.name = "audio-transcription-authenticated";
+    routerMocks.route.fullPath = "/apps/audio-transcription";
+    routerMocks.route.path = "/apps/audio-transcription";
+    routerMocks.route.params = { appId: "" };
+    routerMocks.route.matched = [{ meta: { requiresAuth: true } }];
+
+    mount(App, {
+      global: {
+        stubs: {
+          LandingLayout: { template: "<div><slot /></div>" },
+          AuthLayout: { template: "<div><slot /></div>" },
+          ToastHost: { template: "<div />" },
+          RouterView: { template: "<div />" },
+        },
+      },
+    });
+
+    routerMocks.auth.isAuthenticated = false;
+    await nextTick();
+    await nextTick();
+
+    expect(routerMocks.pageTransition?.suppressNext).toHaveBeenCalled();
+    expect(routerMocks.router.push).toHaveBeenCalledWith({
+      name: "auth-login",
+      query: { next: "/apps/audio-transcription" },
+    });
+  });
+
   it("shows the network logout failure as a toast instead of a layout panel", async () => {
     if (!routerMocks.auth) {
       throw new Error("Expected auth mocks to be initialized.");

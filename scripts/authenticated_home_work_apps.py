@@ -1,14 +1,13 @@
-"""PR-0364 authenticated home work-apps browser proof.
+"""Authenticated home work-apps browser proof.
 
 Domain purpose:
     Prove authenticated `/` opens the approved app-first work surface through
     the HuleEdu browser-session ceremony and Docker-backed Skriptoteket lane.
 
 Relationships:
-    - Targets `PR-0364` route-visible close-out evidence.
     - Uses the shared HuleEdu login helper instead of app-local auth shortcuts.
     - Writes desktop and compact screenshots plus a redacted manifest under
-      `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface/`.
+      `.artifacts/authenticated-home-work-apps/`.
 """
 
 from __future__ import annotations
@@ -19,7 +18,6 @@ import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from urllib.parse import urlparse
 
 from playwright.sync_api import Page, expect, sync_playwright
@@ -28,7 +26,7 @@ from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
 
-ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0364-authenticated-home-work-apps-surface")
+ARTIFACT_ROOT = Path(".artifacts/authenticated-home-work-apps")
 APP_ORDER = [
     "Klassrumskartan",
     "Provhantering",
@@ -38,8 +36,8 @@ APP_ORDER = [
 ]
 APP_LINK_TARGETS = {
     "home-work-app-classroom": "/apps/classroom.group-seating-studio",
-    "home-work-app-exam-converter": "/apps/documents.conversion_hub?mode=exam",
-    "home-work-app-audio-transcription": "/apps/documents.conversion_hub?mode=transcript",
+    "home-work-app-exam-converter": "/apps/exam-converter",
+    "home-work-app-audio-transcription": "/apps/audio-transcription",
     "home-work-app-editor": "/editor",
 }
 REJECTED_COPY = (
@@ -60,12 +58,11 @@ VIEWPORTS = (
     {"label": "desktop", "width": 1512, "height": 900},
     {"label": "compact", "width": 390, "height": 844},
 )
+JsonObject = dict[str, object]
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="PR-0364 authenticated home work-apps browser proof"
-    )
+    parser = argparse.ArgumentParser(description="Authenticated home work-apps browser proof")
     parser.add_argument("--base-url", default="http://localhost:5173")
     parser.add_argument("--dotenv", default=".env")
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
@@ -79,7 +76,7 @@ def _run_dir(root: Path) -> Path:
     return path
 
 
-def _write_manifest(manifest: dict[str, Any], artifact_dir: Path) -> None:
+def _write_manifest(manifest: JsonObject, artifact_dir: Path) -> None:
     (artifact_dir / "manifest.redacted.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
@@ -137,7 +134,7 @@ def _capture_home(
     email: str,
     password: str,
     viewport: dict[str, int | str],
-) -> dict[str, Any]:
+) -> JsonObject:
     page.set_viewport_size({"width": int(viewport["width"]), "height": int(viewport["height"])})
     login_via_auth_entry(
         page,
@@ -167,11 +164,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
     artifact_dir = _run_dir(Path(args.artifact_root))
-    manifest: dict[str, Any] = {
+    manifest: JsonObject = {
         "app": "skriptoteket",
         "artifact_dir": str(artifact_dir),
         "base_url": config.base_url,
-        "command": "pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps",
+        "command": "pdm run python -m scripts.authenticated_home_work_apps",
         "product_identity_realm": "skriptoteket_standalone",
         "status": "running",
         "timestamp_utc": datetime.now(tz=UTC).isoformat(),
@@ -181,7 +178,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
-        captures: list[dict[str, Any]] = []
+        captures: list[JsonObject] = []
         try:
             for viewport in VIEWPORTS:
                 context = browser.new_context(
@@ -214,7 +211,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         finally:
             browser.close()
 
-    print(f"playwright-pr-0364-authenticated-home-work-apps: ok artifact_dir={artifact_dir}")
+    print(f"authenticated-home-work-apps: ok artifact_dir={artifact_dir}")
     return 0
 
 

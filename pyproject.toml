@@ -302,6 +302,7 @@ pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
 pr-0258-auth-projection = "python -m scripts.playwright_pr_0258_auth_projection"
 pr-0261-auth-action-matrix = "python -m scripts.playwright_pr_0261_auth_action_matrix --start-backend --start-vite"
 pr-0262-real-lifecycle = "python -m scripts.playwright_pr_0262_real_lifecycle --start-backend --start-vite"
+transcript-parity-proof = "python -m scripts.transcript_parity_proof_launcher"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",
@@ -314,8 +315,9 @@ fe-install.working_dir = "frontend"
 
 fe-dev.cmd = "pnpm --filter @skriptoteket/spa dev"
 fe-dev.working_dir = "frontend"
-fe-dev-shared-auth.cmd = "sh -c 'VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://localhost:8080} VITE_DEV_BACKEND_PROXY_TARGET=${VITE_DEV_BACKEND_PROXY_TARGET:-http://localhost:8000} VITE_DEV_PUBLIC_API_PROXY_TARGET=${VITE_DEV_PUBLIC_API_PROXY_TARGET:-http://localhost:8000} VITE_HULEEDU_AUTH_BASE_URL=${VITE_HULEEDU_AUTH_BASE_URL:-http://localhost:8080} VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login} pnpm --filter @skriptoteket/spa dev'"
+fe-dev-shared-auth.cmd = "pnpm --filter @skriptoteket/spa dev"
 fe-dev-shared-auth.working_dir = "frontend"
+fe-dev-shared-auth.env = { VITE_DEV_PROXY_TARGET = "http://localhost:8080", VITE_DEV_BACKEND_PROXY_TARGET = "http://localhost:8000", VITE_DEV_PUBLIC_API_PROXY_TARGET = "http://localhost:8000", VITE_DEV_SIR_CONVERT_GATEWAY_PROXY_TARGET = "http://localhost:8080", VITE_HULEEDU_AUTH_BASE_URL = "http://localhost:8080", VITE_HULEEDU_AUTH_ENTRY_URL = "http://localhost:8080/auth/login" }
 fe-dev-logs.cmd = "sh -c 'mkdir -p ../.artifacts && pnpm --filter @skriptoteket/spa dev 2>&1 | tee ../.artifacts/dev-frontend.log'"
 fe-dev-logs.working_dir = "frontend"
 

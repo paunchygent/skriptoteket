@@ -21,7 +21,6 @@ import type {
 import type { TranscriptFormatterArtifactKey } from "../../../api/conversionHubTranscriptFormatterArtifactActions";
 import type { ConversionHubTranscriptSpeakerOverlayEntry } from "../../../api/conversionHubTranscriptSaves";
 import type { TranscriptJson } from "../../../api/sirConvertGateway";
-import ConversionHubModeTabs from "../ConversionHubModeTabs.vue";
 import TranscriptWorkflowRailShell from "./TranscriptWorkflowRailShell.vue";
 import TranscriptWorkspaceShell from "./TranscriptWorkspaceShell.vue";
 import {
@@ -160,13 +159,9 @@ function markArtifactAction(
     >
       Transcript UI inspection
     </h1>
-    <ConversionHubModeTabs
-      active-mode="transcript"
-      @mode-selected="() => undefined"
-    />
     <section
       class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm min-[821px]:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] min-[1181px]:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
-      aria-label="Conversion Hub"
+      aria-label="Ljudtranskribering"
       :data-inspection-fixture-id="fixtureId ?? undefined"
       data-test="transcript-ui-inspection-host-frame"
     >

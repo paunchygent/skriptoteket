@@ -5,6 +5,7 @@ title: "Current product lanes and Sir Convert boundary"
 status: active
 owners: "agents"
 created: 2026-06-18
+updated: 2026-06-22
 topic: "product-direction"
 ---
 
@@ -23,7 +24,7 @@ Those implementation choices belong to later reviewed slices.
 |------|-------------|----------------------|---------------------|
 | Klassrumskartan | Plan classrooms, groups, seating, rules, exports, and sharing. | Bespoke curated app `classroom.group-seating-studio`. | `EPIC-26`, `EPIC-27`, `EPIC-29`, `EPIC-36`, and `ST-37-03` shell work. |
 | Audio Transcription | Convert speech or media to saved transcript, review speakers, and export transcript formats. | Authenticated transcript workflow currently lives under `documents.conversion_hub` technical surfaces. | `EPIC-21` transcript stories and later app-presentation decomposition. |
-| Exam Converter | Import exams, review/correct answer-key state, export files, and grow toward source-neutral QTI/edit/share workflows. | Public and authenticated Exam Converter currently live under `documents.conversion_hub` technical surfaces. | `ST-21-10`, `PR-0357`, `ST-21-04`, and later exam-state/editor slices. |
+| Exam Converter | Create exams, import exams, edit structure, items, points, answer keys, and metadata, review/correct answer-key state, export files, and grow toward source-neutral QTI/share workflows. | Public and authenticated Exam Converter currently live under `documents.conversion_hub` technical surfaces. | `ST-21-10`, `PR-0357`, `ST-21-04`, and later exam-state/editor slices. |
 | Document Converter | Convert and prepare presentation/document formats such as PDF, DOCX, HTML/CSS, Markdown, and template-shaped outputs. | Approved as a visible shell lane by the C2 home mockup, but the active code still has no proven truthful route; the registry title says `Konvertera dokument` while the bespoke host currently presents Exam Converter. | `ST-37-04` app-presentation decomposition and a reviewed route-visible slice before runtime links or registry implementation. |
 
 `documents.conversion_hub` remains a technical compatibility shell until later
@@ -58,8 +59,10 @@ produced an accepted source representation:
 
 - saved transcripts, speaker overlays, selected export actions, and Mina filer
   handoff
-- Exam Converter correction sessions, teacher-reviewed answer-key state,
-  candidate suppression, file actions, and later source-neutral exam state
+- Exam Converter correction sessions, source-bound authoring state,
+  teacher-reviewed answer-key decisions, exam creation, structure, item, point,
+  answer-key, and metadata editing, file actions, and later source-neutral exam
+  state
 - sharing, editing, assembly, QTI/editor workflows, future question pools, and
   document-facing file actions once native state exists
 - route structure, app presentation, dashboards, help, copy, and UI workflow
@@ -104,7 +107,8 @@ they truly need producer conversion evidence.
 Sir Convert owns heavy source import, LLM answer-key enrichment, OCR/PDF or
 DigiExam parsing, source bindings, and replay/export artifacts. Skriptoteket
 owns durable teacher correction sessions, source-bound authoring state,
-teacher-reviewed answer-key decisions, future source-neutral exam state, QTI
+teacher-reviewed answer-key decisions, exam creation, structure, item, point,
+answer-key, and metadata editing, future source-neutral exam state, QTI
 editing, sharing, and question-pool workflows.
 
 `ST-21-10` is the active direction: intake is source-only, optional marked or

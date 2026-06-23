@@ -5,7 +5,7 @@ Domain purpose:
     proof failures can be tied to the product backend that handled the request.
 
 Relationships:
-    Used by `scripts.playwright_pr_0349_transcript_parity_live` to retain the
+    Used by `scripts.audio_transcription_parity_live` to retain the
     Skriptoteket Docker dev web logs for local transcript proof runs.
 """
 

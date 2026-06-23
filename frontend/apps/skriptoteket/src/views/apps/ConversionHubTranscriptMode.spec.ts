@@ -1,13 +1,14 @@
 /**
- * Conversion Hub transcript mode behavior.
+ * Audio Transcription authenticated identity behavior.
  *
  * Domain purpose:
- *   Prove the authenticated Conversion Hub renders a bespoke transcript lane
- *   with speaker controls and Gateway-backed lifecycle actions.
+ *   Prove the canonical protected Audio Transcription identity renders a
+ *   bespoke transcript lane with speaker controls and Gateway-backed lifecycle
+ *   actions.
  *
  * Relationships:
- *   - Mounts `ExamConverterAuthenticatedView` as the existing Conversion Hub
- *     authenticated host.
+ *   - Mounts `ExamConverterAuthenticatedView` with transcript presentation
+ *     identity while reusing the shared authenticated runtime host.
  *   - Uses mocked Sir Convert Gateway methods only at the product edge.
  */
 
@@ -52,6 +53,10 @@ vi.mock("../../api/sirConvertGateway", () => ({
   submitTranscriptJob: gatewayMocks.submitTranscriptJob,
 }));
 
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ query: {} }),
+}));
+
 async function chooseTranscriptFile(wrapper: ReturnType<typeof mount>, file: File) {
   const input = wrapper.find<HTMLInputElement>('[data-test="transcript-source-file-input"]');
   Object.defineProperty(input.element, "files", {
@@ -61,7 +66,7 @@ async function chooseTranscriptFile(wrapper: ReturnType<typeof mount>, file: Fil
   await input.trigger("change");
 }
 
-describe("Conversion Hub transcript mode", () => {
+describe("Audio Transcription authenticated presentation", () => {
   beforeEach(() => {
     for (const mock of Object.values(gatewayMocks)) {
       mock.mockReset();
@@ -184,9 +189,12 @@ describe("Conversion Hub transcript mode", () => {
   });
 
   it("submits selected audio with exact speaker controls through the transcript Gateway lane", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { presentationMode: "transcript" },
+    });
 
-    await wrapper.find('[data-test="conversion-hub-mode-transcript"]').trigger("click");
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
     await chooseTranscriptFile(
       wrapper,
       new File(["audio"], "lektion.m4a", { type: "audio/mp4" }),

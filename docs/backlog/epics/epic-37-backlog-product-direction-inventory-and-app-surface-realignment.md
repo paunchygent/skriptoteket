@@ -5,7 +5,7 @@ title: "Backlog product-direction inventory and app surface realignment"
 status: active
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-20
+updated: 2026-06-22
 outcome: "Skriptoteket has a truthful active backlog that preserves still-valuable script/editor work, closes completed or superseded legacy tasks, and sequences the next UI shell and app-presentation work around current teacher-facing product lanes."
 dependencies:
   - "REF-current-product-direction-and-backlog-inventory-2026-06-17"
@@ -122,10 +122,12 @@ onward plus the ST-37-04 follow-up slices.
   `Audio Transcription`, `Exam Converter`, and future `Document Converter`.
   `ST-37-04` remains open for implementation through public-landing follow-up
   slices `PR-0370` through `PR-0372` and the remaining app-presentation slices
-  `PR-0366` through `PR-0369`, while `PR-0363` through `PR-0365` are now
-  unblocked by planning and remain governed by their own review docs.
-- `PR-0363` is done as of 2026-06-19. It added the authenticated
-  `/apps/documents.conversion_hub?mode=exam|transcript` compatibility bridge,
+  `PR-0366` through `PR-0369`, the post-cutover cleanup slice `PR-0374`, and
+  the separate Document Converter planning slice `PR-0375`,
+  while `PR-0363` through `PR-0365` are now unblocked by planning and remain
+  governed by their own review docs.
+- `PR-0363` is done as of 2026-06-19. It added the now-retired authenticated
+  `/apps/documents.conversion_hub?mode=exam|transcript` cutover bridge,
   kept app-id/route/registry/public/backend/Sir Convert/HuleEdu/QTI/DOCX
   surfaces unchanged, retained HuleEdu browser-session proof, and encoded the
   Docker-service breadcrumb for Gateway-backed proof.
@@ -164,5 +166,8 @@ onward plus the ST-37-04 follow-up slices.
   `/api/v1/public/...` traffic had no running Skriptoteket backend target:
   Docker web-only startup, host shared-auth Vite env, and Docker frontend
   public API proxy ownership are now explicit and covered by a focused contract
-  test. The remaining app-presentation implementation slices are `PR-0367`
-  through `PR-0369`.
+  test. `PR-0367`, `PR-0368`, and `PR-0374` have since closed the registry,
+  route-visible identity split, and post-cutover compatibility cleanup.
+  `PR-0375` is now the separate planning owner for a real backend-backed
+  Document Converter MVP and Sir Convert contract review. The remaining
+  reserved backend/API alignment slice is `PR-0369`.

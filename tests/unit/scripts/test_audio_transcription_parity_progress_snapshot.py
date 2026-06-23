@@ -1,11 +1,11 @@
-"""PR-0349 progress snapshot contract tests.
+"""Audio Transcription parity progress snapshot contract tests.
 
 Domain purpose:
     Protect the native transcript live proof from requiring removed raw progress
     counters while still demanding honest progress evidence before export proof.
 
 Relationships:
-    Exercises the PR-0349 Playwright proof entrypoint's progress snapshot
+    Exercises the Audio Transcription parity proof entrypoint's progress snapshot
     predicate without launching a browser or contacting HuleEdu/Sir Convert.
 """
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.playwright_pr_0349_transcript_parity_live import (
+from scripts.audio_transcription_parity_live import (
     _capture_progress_snapshot,
     _progress_snapshot_has_evidence,
 )

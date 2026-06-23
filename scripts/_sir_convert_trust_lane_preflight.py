@@ -7,10 +7,9 @@ Domain purpose:
     signer and verifier trust profile must agree.
 
 Relationships:
-    Used by `scripts.playwright_pr_0349_transcript_parity_live` for PR-0352
-    transcript proof hardening. The module is intentionally browser-free so
-    tests can prove trust-lane failure before Playwright or source media
-    handling starts.
+    Used by `scripts.audio_transcription_parity_live` for transcript proof
+    hardening. The module is intentionally browser-free so tests can prove
+    trust-lane failure before Playwright or source media handling starts.
 """
 
 from __future__ import annotations
@@ -67,6 +66,7 @@ TRUST_LANE_ENV_KEYS = {
     ),
     "proof_lane": ("SIR_CONVERT_REMOTE_INFERENCE_PROOF_LANE",),
 }
+PROOF_KIND = "audio_transcription_parity_live"
 
 
 @dataclass(frozen=True)
@@ -255,7 +255,7 @@ def preflight_failure_summary(
     """Create the redacted retained summary shape for a preflight blocker."""
 
     return {
-        "proof_kind": "pr_0349_transcript_parity_live",
+        "proof_kind": PROOF_KIND,
         "observed_at": _utc_now(),
         "base_url": _redacted_url_origin(base_url),
         "app_path": app_path,

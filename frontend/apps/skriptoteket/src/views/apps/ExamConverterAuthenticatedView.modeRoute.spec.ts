@@ -1,14 +1,14 @@
 /**
- * Exam Converter authenticated route-mode behavior.
+ * Exam Converter authenticated presentation identity behavior.
  *
  * Slice purpose:
- *   Prove the authenticated `documents.conversion_hub` host can deep-link to
- *   Exam Converter or transcript mode through route query state while keeping
- *   UI-inspection fixtures exam-only.
+ *   Prove canonical protected Exam Converter and Audio Transcription entries
+ *   render as separate teacher-facing identities while legacy query residue is
+ *   ignored by the generic backend app host.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
-import { nextTick, reactive } from "vue";
+import { reactive } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
@@ -43,22 +43,49 @@ function setRouteQuery(query: TestRouteQuery): void {
 }
 
 describe("ExamConverterAuthenticatedView route mode", () => {
-  it("opens transcript mode from the authenticated route query without rewriting the URL", () => {
-    setRouteQuery({ mode: "transcript" });
-
-    const wrapper = mount(ExamConverterAuthenticatedView);
+  it("renders canonical Audio Transcription identity without shared mode tabs", () => {
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { presentationMode: "transcript" },
+    });
 
     expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-converter-workflow-rail-shell"]').exists()).toBe(
       false,
     );
-    expect(
-      wrapper.get('[data-test="conversion-hub-mode-transcript"]').attributes("aria-pressed"),
-    ).toBe("true");
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
     expect(routeMocks.router.replace).not.toHaveBeenCalled();
   });
 
-  it("opens exam mode from the authenticated route query without rewriting the URL", () => {
+  it("renders canonical Exam Converter identity without shared mode tabs", () => {
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { presentationMode: "exam" },
+    });
+
+    expect(wrapper.find('[data-test="exam-converter-workflow-rail-shell"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
+    expect(routeMocks.router.replace).not.toHaveBeenCalled();
+  });
+
+  it("ignores transcript mode query residue and renders the default Exam Converter host", () => {
+    setRouteQuery({ mode: "transcript" });
+
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    expect(wrapper.find('[data-test="exam-converter-workflow-rail-shell"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
+    expect(routeMocks.router.replace).not.toHaveBeenCalled();
+  });
+
+  it("ignores exam mode query residue and renders the default Exam Converter host", () => {
     setRouteQuery({ mode: "exam", source: "dashboard" });
 
     const wrapper = mount(ExamConverterAuthenticatedView);
@@ -67,9 +94,8 @@ describe("ExamConverterAuthenticatedView route mode", () => {
       true,
     );
     expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(false);
-    expect(
-      wrapper.get('[data-test="conversion-hub-mode-exam"]').attributes("aria-pressed"),
-    ).toBe("true");
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
     expect(routeMocks.router.replace).not.toHaveBeenCalled();
   });
 
@@ -80,7 +106,7 @@ describe("ExamConverterAuthenticatedView route mode", () => {
     ["repeated", { mode: ["exam", "transcript"] }],
     ["array-valued", { mode: ["transcript"] }],
   ])(
-    "defaults %s mode query state to exam without canonicalizing the URL",
+    "defaults %s query residue to exam without canonicalizing the URL",
     (_, query) => {
       setRouteQuery(query);
 
@@ -90,43 +116,11 @@ describe("ExamConverterAuthenticatedView route mode", () => {
         true,
       );
       expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(false);
+      expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+      expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
       expect(routeMocks.router.replace).not.toHaveBeenCalled();
     },
   );
-
-  it("writes selected tab mode into the query while preserving unrelated keys", async () => {
-    setRouteQuery({
-      debug: "1",
-      mode: "exam",
-      preview: null,
-      source: ["dashboard", "favorites"],
-    });
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await wrapper.get('[data-test="conversion-hub-mode-transcript"]').trigger("click");
-    await nextTick();
-
-    expect(routeMocks.router.replace).toHaveBeenCalledWith({
-      query: {
-        debug: "1",
-        mode: "transcript",
-        preview: null,
-        source: ["dashboard", "favorites"],
-      },
-    });
-    expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(true);
-
-    await wrapper.get('[data-test="conversion-hub-mode-exam"]').trigger("click");
-
-    expect(routeMocks.router.replace).toHaveBeenLastCalledWith({
-      query: {
-        debug: "1",
-        mode: "exam",
-        preview: null,
-        source: ["dashboard", "favorites"],
-      },
-    });
-  });
 
   it("keeps exam UI-inspection fixtures exam-only and skips mode query writes", async () => {
     setRouteQuery({ mode: "transcript", source: "inspection" });
@@ -140,8 +134,8 @@ describe("ExamConverterAuthenticatedView route mode", () => {
       true,
     );
     expect(wrapper.find('[data-test="transcript-host-layout"]').exists()).toBe(false);
-
-    await wrapper.get('[data-test="conversion-hub-mode-transcript"]').trigger("click");
+    expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
 
     expect(routeMocks.router.replace).not.toHaveBeenCalled();
   });

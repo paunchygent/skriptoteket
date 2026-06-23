@@ -48,11 +48,15 @@ COMMANDS: dict[str, CommandSpec] = {
         accepts_extra_args=True,
     ),
     "recreate": CommandSpec(
-        summary="Force-recreate the Docker dev stack and apply migrations.",
+        summary=(
+            "Force-recreate the Docker dev stack and apply migrations, "
+            "or selected services when names are provided."
+        ),
         commands=(
             (*COMPOSE, "up", "-d", "--force-recreate"),
             DB_UPGRADE,
         ),
+        accepts_extra_args=True,
     ),
     "build-start": CommandSpec(
         summary="Build, start, and apply migrations.",

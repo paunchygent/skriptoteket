@@ -87,8 +87,8 @@ describe("AuthSidebar", () => {
     expect(wrapper.text()).not.toContain("Nytta");
     expect(wrapper.text()).not.toContain("Mina körningar");
     expect(linkTargets).not.toContain("/apps/classroom.group-seating-studio");
-    expect(linkTargets).not.toContain("/apps/documents.conversion_hub?mode=exam");
-    expect(linkTargets).not.toContain("/apps/documents.conversion_hub?mode=transcript");
+    expect(linkTargets).not.toContain("/apps/exam-converter");
+    expect(linkTargets).not.toContain("/apps/audio-transcription");
     expect(linkTargets).not.toContain("/editor");
     expect(linkTargets).not.toContain("/my-runs");
   });

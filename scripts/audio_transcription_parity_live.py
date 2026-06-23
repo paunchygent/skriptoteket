@@ -1,11 +1,11 @@
-"""PR-0349/PR-0351 live transcript parity proof.
+"""Audio Transcription live parity proof.
 
 Domain purpose:
     Prove authenticated transcript progress, autosave, export, download, and file-save lanes.
 
 Relationships:
-    Uses HuleEdu browser-session helpers and writes sanitized PR-0349 evidence
-    under `.artifacts/playwright-pr-0349-transcript-parity-live/`.
+    Uses HuleEdu browser-session helpers, Sir Convert trust-lane preflight, and
+    sanitized artifact capture for the retained Audio Transcription proof lane.
 """
 
 from __future__ import annotations
@@ -30,6 +30,7 @@ from scripts._proof_live_monitoring import (
     start_local_backend_log_monitor,
 )
 from scripts._sir_convert_trust_lane_preflight import (
+    PROOF_KIND,
     SirConvertTrustLanePreflightError,
     build_trust_lane_input,
     preflight_failure_summary,
@@ -51,15 +52,15 @@ from scripts._transcript_parity_evidence import (
     write_json,
 )
 
-APP_PATH = "/apps/documents.conversion_hub"
-ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0349-transcript-parity-live")
+APP_PATH = "/apps/audio-transcription"
+ARTIFACT_ROOT = Path(".artifacts/audio-transcription-parity-live")
 DEFAULT_AUDIO_FILE = Path(
     "/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/"
     "build/verification/stt-sidecar-live-fixtures/source-media/"
     "english-dialogue-two-speakers.mp3"
 )
 ARTIFACT_KEYS = ("transcript_txt", "transcript_md", "transcript_vtt", "transcript_srt")
-OVERLAY_LABELS = ("PR0349 Speaker A", "PR0349 Speaker B")
+OVERLAY_LABELS = ("Audio Speaker A", "Audio Speaker B")
 
 
 class _ProgressSnapshotLocator(Protocol):
@@ -82,7 +83,7 @@ class _ProgressSnapshotPage(Protocol):
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="PR-0349 transcript parity live proof")
+    parser = argparse.ArgumentParser(description="Audio Transcription parity live proof")
     parser.add_argument("--audio-file", default=str(DEFAULT_AUDIO_FILE))
     parser.add_argument("--base-url", default="http://127.0.0.1:5173")
     parser.add_argument("--dotenv", default=".env")
@@ -138,7 +139,6 @@ def _open_transcript_lane(
         failure_artifacts_dir=artifact_dir,
         success_timeout_ms=45_000,
     )
-    page.locator('[data-test="conversion-hub-mode-transcript"]').click()
     expect(page.locator('[data-test="transcript-workflow-rail-shell"]')).to_be_visible()
 
 
@@ -294,7 +294,9 @@ def _wait_for_transcript_autosave(
 
 def _save_speaker_overlays(page: Page, labels: list[str]) -> dict[str, object]:
     if len(labels) < 2:
-        raise AssertionError("PR-0349 proof requires at least two canonical speaker labels.")
+        raise AssertionError(
+            "Audio Transcription parity proof requires at least two canonical speaker labels."
+        )
     with page.expect_response(
         lambda r: r.url.endswith("/speaker-overlays") and r.request.method == "PUT",
         timeout=60_000,
@@ -467,7 +469,7 @@ def run(argv: Sequence[str] | None = None) -> None:
     captured: list[CapturedResponse] = []
     console_records: list[dict[str, str]] = []
     summary: dict[str, object] = {
-        "proof_kind": "pr_0349_transcript_parity_live",
+        "proof_kind": PROOF_KIND,
         "observed_at": utc_now(),
         "base_url": trust_lane_summary["base_url"],
         "app_path": APP_PATH,

@@ -1,14 +1,14 @@
-"""PR-0363 authenticated Conversion Hub mode deep-link proof.
+"""Authenticated app identity split proof.
 
 Domain purpose:
-    Prove the authenticated Conversion Hub compatibility route opens the
-    teacher-facing Exam Converter and transcript lanes from `mode` query state.
+    Prove the authenticated Exam Converter and Audio Transcription app
+    identities open as distinct teacher-facing routes while sharing the
+    existing HuleEdu auth and Sir Convert runtime machinery.
 
 Relationships:
-    - Targets `PR-0363` route-visible close-out evidence.
     - Uses the shared HuleEdu browser-session login helper.
     - Writes screenshots and a redacted manifest under
-      `.artifacts/playwright-pr-0363-conversion-mode-deeplink/`.
+      `.artifacts/authenticated-app-identity-split/`.
 """
 
 from __future__ import annotations
@@ -19,7 +19,6 @@ import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from urllib.parse import urlparse
 
 from playwright.sync_api import Page, expect, sync_playwright
@@ -28,20 +27,19 @@ from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
 
-ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0363-conversion-mode-deeplink")
-APP_PATH = "/apps/documents.conversion_hub"
-MODE_PATHS = {
-    "exam": f"{APP_PATH}?mode=exam",
-    "transcript": f"{APP_PATH}?mode=transcript",
+ARTIFACT_ROOT = Path(".artifacts/authenticated-app-identity-split")
+IDENTITY_PATHS = {
+    "exam": "/apps/exam-converter",
+    "transcript": "/apps/audio-transcription",
 }
 SUCCESS_HEADING_PATTERN = r"Konvertera prov|Transkribera samtal|Välj inspelning"
 VIEWPORT = {"label": "desktop", "width": 1512, "height": 900}
+JsonValue = str | int | float | bool | None | dict[str, "JsonValue"] | list["JsonValue"]
+JsonObject = dict[str, JsonValue]
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="PR-0363 authenticated Conversion Hub mode deep-link proof"
-    )
+    parser = argparse.ArgumentParser(description="Authenticated app identity split proof")
     parser.add_argument("--base-url", default="http://127.0.0.1:5173")
     parser.add_argument("--dotenv", default=".env")
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
@@ -55,7 +53,7 @@ def _run_dir(root: Path) -> Path:
     return path
 
 
-def _write_manifest(manifest: dict[str, Any], artifact_dir: Path) -> None:
+def _write_manifest(manifest: JsonObject, artifact_dir: Path) -> None:
     (artifact_dir / "manifest.redacted.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
@@ -81,32 +79,20 @@ def _capture_auth_failure(page: Page, *, artifact_dir: Path, mode: str) -> None:
 
 
 def _assert_url_mode(page: Page, *, mode: str) -> None:
-    expect(page).to_have_url(re.compile(rf"/apps/documents\.conversion_hub\?mode={mode}$"))
+    expect(page).to_have_url(re.compile(rf"{IDENTITY_PATHS[mode]}$"))
 
 
 def _assert_exam_mode(page: Page) -> None:
-    expect(page.locator('[data-test="conversion-hub-mode-exam"]')).to_have_attribute(
-        "aria-pressed",
-        "true",
-    )
-    expect(page.locator('[data-test="conversion-hub-mode-transcript"]')).to_have_attribute(
-        "aria-pressed",
-        "false",
-    )
+    expect(page.locator('[data-test="conversion-hub-mode-exam"]')).to_have_count(0)
+    expect(page.locator('[data-test="conversion-hub-mode-transcript"]')).to_have_count(0)
     expect(page.locator('[data-test="exam-converter-workflow-rail-shell"]')).to_be_visible()
     expect(page.locator('[data-test="exam-converter-workspace-shell"]')).to_be_visible()
     expect(page.locator('[data-test="transcript-host-layout"]')).to_have_count(0)
 
 
 def _assert_transcript_mode(page: Page) -> None:
-    expect(page.locator('[data-test="conversion-hub-mode-exam"]')).to_have_attribute(
-        "aria-pressed",
-        "false",
-    )
-    expect(page.locator('[data-test="conversion-hub-mode-transcript"]')).to_have_attribute(
-        "aria-pressed",
-        "true",
-    )
+    expect(page.locator('[data-test="conversion-hub-mode-exam"]')).to_have_count(0)
+    expect(page.locator('[data-test="conversion-hub-mode-transcript"]')).to_have_count(0)
     expect(page.locator('[data-test="transcript-host-layout"]')).to_be_visible()
     expect(page.locator('[data-test="transcript-workflow-rail-shell"]')).to_be_visible()
     expect(page.locator('[data-test="transcript-workspace-shell"]')).to_be_visible()
@@ -129,8 +115,8 @@ def _open_authenticated_mode(
     email: str,
     mode: str,
     password: str,
-) -> dict[str, Any]:
-    next_path = MODE_PATHS[mode]
+) -> JsonObject:
+    next_path = IDENTITY_PATHS[mode]
     try:
         login_via_auth_entry(
             page,
@@ -163,12 +149,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
     artifact_dir = _run_dir(Path(args.artifact_root))
-    manifest: dict[str, Any] = {
+    manifest: JsonObject = {
         "app": "skriptoteket",
         "artifact_dir": str(artifact_dir),
         "base_url": config.base_url,
-        "command": "pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink",
-        "mode_paths": MODE_PATHS,
+        "command": "pdm run python -m scripts.authenticated_app_identity_split",
+        "identity_paths": IDENTITY_PATHS,
         "product_identity_realm": "skriptoteket_standalone",
         "status": "running",
         "timestamp_utc": datetime.now(tz=UTC).isoformat(),
@@ -178,7 +164,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
-        captures: list[dict[str, Any]] = []
+        captures: list[JsonObject] = []
         try:
             for mode in ("exam", "transcript"):
                 context = browser.new_context(
@@ -211,7 +197,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         finally:
             browser.close()
 
-    print(f"playwright-pr-0363-conversion-mode-deeplink: ok artifact_dir={artifact_dir}")
+    print(f"authenticated-app-identity-split: ok artifact_dir={artifact_dir}")
     return 0
 
 

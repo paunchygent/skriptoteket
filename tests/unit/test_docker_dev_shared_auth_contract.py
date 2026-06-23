@@ -124,20 +124,15 @@ def test_host_vite_shared_auth_command_pins_public_api_to_local_skriptoteket_web
     script = scripts["fe-dev-shared-auth"]
 
     assert script["working_dir"] == "frontend"
-    command = script["cmd"]
-    assert "VITE_DEV_PROXY_TARGET=${VITE_DEV_PROXY_TARGET:-http://localhost:8080}" in command
-    assert (
-        "VITE_DEV_BACKEND_PROXY_TARGET=${VITE_DEV_BACKEND_PROXY_TARGET:-http://localhost:8000}"
-        in command
-    )
-    assert (
-        "VITE_DEV_PUBLIC_API_PROXY_TARGET=${VITE_DEV_PUBLIC_API_PROXY_TARGET:-http://localhost:8000}"
-        in command
-    )
-    assert (
-        "VITE_HULEEDU_AUTH_ENTRY_URL=${VITE_HULEEDU_AUTH_ENTRY_URL:-http://localhost:8080/auth/login}"
-        in command
-    )
+    assert script["cmd"] == "pnpm --filter @skriptoteket/spa dev"
+    assert script["env"] == {
+        "VITE_DEV_BACKEND_PROXY_TARGET": "http://localhost:8000",
+        "VITE_DEV_PROXY_TARGET": "http://localhost:8080",
+        "VITE_DEV_PUBLIC_API_PROXY_TARGET": "http://localhost:8000",
+        "VITE_DEV_SIR_CONVERT_GATEWAY_PROXY_TARGET": "http://localhost:8080",
+        "VITE_HULEEDU_AUTH_BASE_URL": "http://localhost:8080",
+        "VITE_HULEEDU_AUTH_ENTRY_URL": "http://localhost:8080/auth/login",
+    }
 
 
 def test_dev_stack_has_web_start_lane_for_host_vite_public_app_proof() -> None:

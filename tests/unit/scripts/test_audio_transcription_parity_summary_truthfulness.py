@@ -1,18 +1,22 @@
-"""PR-0349 proof summary truthfulness tests.
+"""Audio Transcription parity proof summary truthfulness tests.
 
 Domain purpose:
     Protect the retained transcript parity proof summary from overstating
     blocked-run evidence or hiding typed Sir Convert trust blockers.
 
 Relationships:
-    Exercises the PR-0349 Playwright proof finalizer at the script/helper
-    boundary without launching a browser.
+    Exercises the Audio Transcription parity proof finalizer at the
+    script/helper boundary without launching a browser.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
+from scripts._sir_convert_trust_lane_preflight import (
+    SirConvertTrustLanePreflightError,
+    preflight_failure_summary,
+)
 from scripts._transcript_parity_cancel import classify_cancel_path
 from scripts._transcript_parity_evidence import (
     NetworkRecord,
@@ -20,6 +24,14 @@ from scripts._transcript_parity_evidence import (
     finalize_proof_summary,
     scrub_payload,
 )
+from scripts.audio_transcription_parity_live import PROOF_KIND
+
+
+def _assert_domain_proof_kind(value: object) -> None:
+    assert value == "audio_transcription_parity_live"
+    assert isinstance(value, str)
+    assert not value.startswith("pr_")
+    assert not value.startswith("playwright_pr_")
 
 
 def _internal_identity_record() -> NetworkRecord:
@@ -55,8 +67,26 @@ def _network_record(
     }
 
 
+def test_active_proof_metadata_uses_domain_kind() -> None:
+    _assert_domain_proof_kind(PROOF_KIND)
+
+    error = SirConvertTrustLanePreflightError(
+        blocker_kind="sir_convert_trust_lane_unresolved",
+        message="blocked",
+        metadata={"base_url_kind": "local"},
+    )
+    summary = preflight_failure_summary(
+        error,
+        base_url="http://127.0.0.1:5173",
+        app_path="/apps/audio-transcription",
+        artifact_dir=".artifacts/audio-transcription-parity-live/test",
+    )
+
+    _assert_domain_proof_kind(summary["proof_kind"])
+
+
 def test_blocked_summary_uses_typed_blocker_as_primary_failure(tmp_path: Path) -> None:
-    artifact_dir = tmp_path / "pr-0349"
+    artifact_dir = tmp_path / "audio-transcription-parity"
     artifact_dir.mkdir()
     (artifact_dir / "downloads").mkdir()
     (artifact_dir / "failure.png").write_bytes(b"png")
@@ -92,7 +122,7 @@ def test_blocked_summary_uses_typed_blocker_as_primary_failure(tmp_path: Path) -
 
 
 def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) -> None:
-    artifact_dir = tmp_path / "pr-0349"
+    artifact_dir = tmp_path / "audio-transcription-parity"
     artifact_dir.mkdir()
     (artifact_dir / "downloads").mkdir()
     (artifact_dir / "failure.png").write_bytes(b"png")
@@ -120,7 +150,7 @@ def test_captured_artifact_summary_lists_only_existing_evidence(tmp_path: Path) 
 
 
 def test_captured_artifact_summary_lists_native_service_monitoring(tmp_path: Path) -> None:
-    artifact_dir = tmp_path / "pr-0349"
+    artifact_dir = tmp_path / "audio-transcription-parity"
     service_logs_dir = artifact_dir / "service-logs"
     service_logs_dir.mkdir(parents=True)
     (artifact_dir / "downloads").mkdir()

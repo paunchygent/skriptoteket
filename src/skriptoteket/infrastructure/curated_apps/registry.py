@@ -70,10 +70,10 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 tool_id=curated_app_tool_id(app_id="documents.conversion_hub"),
                 app_version=app_version,
                 ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED,
-                title="Konvertera dokument",
+                title="Provhantering och ljudtranskribering",
                 summary=(
-                    "Konvertera PDF/HTML/Markdown/DOCX via Sir Convert-a-Lot v2 "
-                    "(batch + forhandsvisning)."
+                    "Skapa, redigera och konvertera prov eller transkribera tal till text "
+                    "och spara resultatet bland dina filer."
                 ),
                 min_role=Role.USER,
                 public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,

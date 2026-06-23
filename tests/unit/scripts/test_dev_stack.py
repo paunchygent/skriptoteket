@@ -42,6 +42,17 @@ def test_build_start_clean_keeps_no_cache_build_as_explicit_subcommand() -> None
     ]
 
 
+def test_recreate_can_target_specific_services_without_db_upgrade() -> None:
+    runner = RecordingRunner()
+
+    result = dev_stack.main(["recreate", "web", "worker"], runner=runner)
+
+    assert result == 0
+    assert runner.commands == [
+        (*dev_stack.COMPOSE, "up", "-d", "--force-recreate", "web", "worker"),
+    ]
+
+
 def test_logs_can_target_specific_services() -> None:
     runner = RecordingRunner()
 

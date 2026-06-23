@@ -39,11 +39,21 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0331_reviewed_ai_facit_live.py",
     "playwright_pr_0332_teacher_corrections_live.py",
     "playwright_pr_0337_correction_session_live.py",
-    "playwright_pr_0349_transcript_parity_live.py",
     "playwright_pr_0356_source_only_fixture_proof.py",
-    "playwright_pr_0363_conversion_mode_deeplink.py",
-    "playwright_pr_0364_authenticated_home_work_apps.py",
-    "playwright_pr_0365_authenticated_shell_navigation.py",
+}
+
+ACTIVE_REUSABLE_PROOF_SCRIPTS = {
+    "audio_transcription_parity_live.py",
+    "authenticated_app_identity_split.py",
+    "authenticated_home_work_apps.py",
+    "authenticated_shell_navigation.py",
+}
+
+META_NAMED_ACTIVE_PROOF_SCRIPTS = {
+    "playwright_pr_0349_transcript_parity_live.py": "audio_transcription_parity_live.py",
+    "playwright_pr_0363_conversion_mode_deeplink.py": "authenticated_app_identity_split.py",
+    "playwright_pr_0364_authenticated_home_work_apps.py": "authenticated_home_work_apps.py",
+    "playwright_pr_0365_authenticated_shell_navigation.py": "authenticated_shell_navigation.py",
 }
 
 ACTIVE_SCRIPT_SCAN_ROOTS = (
@@ -78,6 +88,16 @@ def test_only_allowed_retained_pr_playwright_scripts_are_runnable() -> None:
     scripts = {path.name for path in SCRIPTS_DIR.glob("playwright_pr_*.py")}
 
     assert scripts == ALLOWED_PR_PLAYWRIGHT_SCRIPTS
+
+
+def test_active_reusable_proof_scripts_use_domain_names() -> None:
+    scripts = {path.name for path in SCRIPTS_DIR.glob("*.py")}
+
+    offenders = sorted(name for name in META_NAMED_ACTIVE_PROOF_SCRIPTS if name in scripts)
+    missing = sorted(name for name in ACTIVE_REUSABLE_PROOF_SCRIPTS if name not in scripts)
+
+    assert offenders == []
+    assert missing == []
 
 
 def test_active_scripts_and_skills_do_not_advertise_retired_local_auth_login() -> None:

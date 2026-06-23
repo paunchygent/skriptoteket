@@ -7,22 +7,15 @@
  *   authenticated submit/readback bridge.
  *
  * Relationships:
- *   - Mounted by `curatedAppHostRegistry` for authenticated Conversion Hub.
+ *   - Mounted by canonical Exam Converter and Audio Transcription routes.
+ *   - Retained by `curatedAppHostRegistry` for cutover-only compatibility.
  *   - Composes shell components and delegates transport to runtime composables.
  */
 
 import { computed, onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
 
 import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
 import { DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED } from "../../api/sirConvertGateway/contractValues";
-import ConversionHubModeTabs from "./ConversionHubModeTabs.vue";
-import {
-  CONVERSION_HUB_DEFAULT_MODE,
-  resolveConversionHubModeQueryValue,
-  type ConversionHubMode,
-  withConversionHubModeQuery,
-} from "./conversionHubModeRoute";
 import ConversionHubTranscriptHost from "./conversion-hub-transcript/ConversionHubTranscriptHost.vue";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
@@ -41,19 +34,27 @@ import { useExamConverterReviewArtifacts } from "./exam-converter-authenticated/
 import { useExamConverterSourceFile } from "./exam-converter-authenticated/useExamConverterSourceFile";
 import { useExamConverterUnifiedCorrections } from "./exam-converter-authenticated/useExamConverterUnifiedCorrections";
 import type { ExamConverterRuntimeOutcome } from "./exam-converter-authenticated/useExamConverterConversionState";
+
+type ConversionPresentationMode = "exam" | "transcript";
+
 const props = defineProps<{
   inspectionFixtureId?: string | null;
+  presentationMode?: ConversionPresentationMode | null;
 }>();
 
-const route = useRoute();
-const router = useRouter();
 const isExamInspectionFixtureRoute = computed(() => Boolean(props.inspectionFixtureId));
-const activeHubMode = computed<ConversionHubMode>(() => {
+const activeHubMode = computed<ConversionPresentationMode>(() => {
   if (isExamInspectionFixtureRoute.value) {
-    return CONVERSION_HUB_DEFAULT_MODE;
+    return "exam";
   }
-  return resolveConversionHubModeQueryValue(route.query.mode);
+  if (props.presentationMode) {
+    return props.presentationMode;
+  }
+  return "exam";
 });
+const hostAriaLabel = computed(() =>
+  activeHubMode.value === "transcript" ? "Ljudtranskribering" : "Provhantering",
+);
 
 const {
   clearSourceFile,
@@ -301,15 +302,6 @@ function selectInspectionMode(mode: ExamConverterInspectionMode): void {
   activeInspectionMode.value = mode;
 }
 
-function selectHubMode(mode: ConversionHubMode): void {
-  if (isExamInspectionFixtureRoute.value) {
-    return;
-  }
-  void router.replace({
-    query: withConversionHubModeQuery(route.query, mode),
-  });
-}
-
 function handleOpenQuestions(): void {
   activeInspectionMode.value = "questions";
   aiSuggestionFocusKey.value += 1;
@@ -404,13 +396,9 @@ onMounted(async () => {
     class="min-h-[calc(100vh-72px)] overflow-x-hidden bg-canvas px-3 py-4 text-navy md:px-5 lg:px-6"
     aria-labelledby="exam-converter-auth-title"
   >
-    <ConversionHubModeTabs
-      :active-mode="activeHubMode"
-      @mode-selected="selectHubMode"
-    />
     <section
       class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
-      aria-label="Provhantering och ljudtranskribering"
+      :aria-label="hostAriaLabel"
       :data-inspection-fixture-id="inspectionFixtureId ?? undefined"
       data-test="exam-converter-host-frame"
     >

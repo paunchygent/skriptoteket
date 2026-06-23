@@ -70,6 +70,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-service-shell-ux-realignment-plan-v1.md`
 - App presentation decomposition + naming plan:
   `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`
+- PR-0368 auth-edge inventory and proof plan:
+  `docs/reference/ref-pr-0368-auth-edge-inventory-and-proof-plan.md`
 - Backlog product-direction inventory and app-surface realignment epic:
   `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md`
 - Backlog inventory first PR slice:
@@ -90,6 +92,22 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0365-st-37-03-authenticated-shell-navigation-realignment.md`
 - Authenticated shell navigation realignment review:
   `docs/backlog/reviews/review-pr-0365-authenticated-shell-navigation-realignment.md`
+- Curated app registry presentation alignment slice:
+  `docs/backlog/prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md`
+- Route-visible app entrypoint and presentation alignment slice:
+  `docs/backlog/prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md`
+- Backend and API app presentation contract alignment slice:
+  `docs/backlog/prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md`
+- Post-cutover Conversion Hub compatibility cleanup slice:
+  `docs/backlog/prs/pr-0374-st-37-04-post-cutover-conversion-hub-compatibility-cleanup.md`
+- Document Converter backend-backed MVP planning slice:
+  `docs/backlog/prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md`
+- Transcript proof lane orchestration slice:
+  `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
+- Domain-named proof script surface cleanup slice:
+  `docs/backlog/prs/pr-0377-st-37-04-domain-named-proof-script-surface-cleanup.md`
+- Transcript proof failure evidence capture slice:
+  `docs/backlog/prs/pr-0378-st-37-04-transcript-proof-failure-evidence-capture.md`
 - Authenticated home work-apps approved mockup:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`
 - Public landing authenticated-app preview mockup slice:

@@ -1,4 +1,4 @@
-"""PR-0365 authenticated shell navigation browser proof.
+"""Authenticated shell navigation browser proof.
 
 Domain purpose:
     Prove authenticated sidebar and mobile drawer navigation stay utility-first
@@ -6,11 +6,10 @@ Domain purpose:
     bar retained sole ownership of help access.
 
 Relationships:
-    - Targets `PR-0365` route-visible close-out evidence.
     - Uses the shared HuleEdu browser-session login helper rather than
       app-local cookies or protected API shortcuts.
     - Writes desktop/mobile screenshots plus a redacted manifest under
-      `.artifacts/playwright-pr-0365-authenticated-shell-navigation/`.
+      `.artifacts/authenticated-shell-navigation/`.
 """
 
 from __future__ import annotations
@@ -21,7 +20,6 @@ import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from urllib.parse import urlparse
 
 from playwright.sync_api import Locator, Page, expect, sync_playwright
@@ -30,7 +28,7 @@ from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
 
-ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0365-authenticated-shell-navigation")
+ARTIFACT_ROOT = Path(".artifacts/authenticated-shell-navigation")
 STANDARD_LINKS = [
     ("Hem", "/"),
     ("Mina filer", "/vault"),
@@ -59,8 +57,8 @@ REJECTED_NAV_COPY = [
 ]
 REJECTED_NAV_TARGETS = [
     "/apps/classroom.group-seating-studio",
-    "/apps/documents.conversion_hub?mode=exam",
-    "/apps/documents.conversion_hub?mode=transcript",
+    "/apps/exam-converter",
+    "/apps/audio-transcription",
     "/editor",
     "/my-runs",
 ]
@@ -68,12 +66,11 @@ VIEWPORTS = (
     {"label": "desktop", "width": 1512, "height": 900},
     {"label": "mobile", "width": 390, "height": 844},
 )
+JsonObject = dict[str, object]
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="PR-0365 authenticated shell navigation browser proof"
-    )
+    parser = argparse.ArgumentParser(description="Authenticated shell navigation browser proof")
     parser.add_argument("--base-url", default="http://localhost:5173")
     parser.add_argument("--dotenv", default=".env")
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
@@ -87,7 +84,7 @@ def _run_dir(root: Path) -> Path:
     return path
 
 
-def _write_manifest(manifest: dict[str, Any], artifact_dir: Path) -> None:
+def _write_manifest(manifest: JsonObject, artifact_dir: Path) -> None:
     (artifact_dir / "manifest.redacted.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
@@ -119,7 +116,7 @@ def _normalize_nav_label(text: str) -> str:
     return " ".join(text.split()).casefold()
 
 
-def _assert_navigation_contract(page: Page, *, expect_open_drawer: bool) -> dict[str, Any]:
+def _assert_navigation_contract(page: Page, *, expect_open_drawer: bool) -> JsonObject:
     sidebar = _visible_sidebar(page)
     if expect_open_drawer:
         class_name = sidebar.get_attribute("class") or ""
@@ -181,7 +178,7 @@ def _capture_shell(
     email: str,
     password: str,
     viewport: dict[str, int | str],
-) -> dict[str, Any]:
+) -> JsonObject:
     label = str(viewport["label"])
     page.set_viewport_size({"width": int(viewport["width"]), "height": int(viewport["height"])})
     login_via_auth_entry(
@@ -224,11 +221,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
     artifact_dir = _run_dir(Path(args.artifact_root))
-    manifest: dict[str, Any] = {
+    manifest: JsonObject = {
         "app": "skriptoteket",
         "artifact_dir": str(artifact_dir),
         "base_url": config.base_url,
-        "command": "pdm run python -m scripts.playwright_pr_0365_authenticated_shell_navigation",
+        "command": "pdm run python -m scripts.authenticated_shell_navigation",
         "product_identity_realm": "skriptoteket_standalone",
         "status": "running",
         "timestamp_utc": datetime.now(tz=UTC).isoformat(),
@@ -238,7 +235,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
-        captures: list[dict[str, Any]] = []
+        captures: list[JsonObject] = []
         try:
             for viewport in VIEWPORTS:
                 context = browser.new_context(
@@ -271,7 +268,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         finally:
             browser.close()
 
-    print(f"playwright-pr-0365-authenticated-shell-navigation: ok artifact_dir={artifact_dir}")
+    print(f"authenticated-shell-navigation: ok artifact_dir={artifact_dir}")
     return 0
 
 

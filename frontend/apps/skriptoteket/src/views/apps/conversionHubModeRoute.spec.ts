@@ -1,55 +1,41 @@
 /**
- * Conversion Hub authenticated mode route contract tests.
+ * Legacy Conversion Hub route residue tests.
  *
  * Slice purpose:
- *   Prove the authenticated compatibility host accepts only the governed
- *   `mode=exam|transcript` query values and preserves route context when tabs
- *   write mode state.
+ *   Prove stale `mode` query residue stays on the generic backend app route
+ *   instead of selecting a canonical teacher-facing product identity.
  */
 
+import { createMemoryHistory, createRouter } from "vue-router";
 import { describe, expect, it } from "vitest";
 
-import {
-  CONVERSION_HUB_DEFAULT_MODE,
-  resolveConversionHubModeQueryValue,
-  withConversionHubModeQuery,
-} from "./conversionHubModeRoute";
+import { routes } from "../../router/routes";
 
-describe("conversionHubModeRoute", () => {
-  it.each([
-    ["exam", "exam"],
-    ["transcript", "transcript"],
-  ] as const)("accepts %s as a Conversion Hub mode", (value, expectedMode) => {
-    expect(resolveConversionHubModeQueryValue(value)).toBe(expectedMode);
+function createTestRouter() {
+  return createRouter({
+    history: createMemoryHistory(),
+    routes,
+  });
+}
+
+describe("legacy Conversion Hub route residue", () => {
+  it("keeps transcript query residue on the generic backend app route", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/apps/documents.conversion_hub?mode=transcript");
+
+    expect(resolved.name).toBe("app-detail");
+    expect(resolved.params.appId).toBe("documents.conversion_hub");
+    expect(resolved.query).toEqual({ mode: "transcript" });
   });
 
-  it.each<[string, string | null | string[] | undefined]>([
-    ["absent", undefined],
-    ["invalid", "audio"],
-    ["empty", ""],
-    ["null", null],
-    ["repeated", ["exam", "transcript"]],
-    ["array-valued transcript", ["transcript"]],
-  ])("defaults %s mode query state to exam", (_, value) => {
-    expect(resolveConversionHubModeQueryValue(value)).toBe(CONVERSION_HUB_DEFAULT_MODE);
-  });
+  it("keeps canonical Audio Transcription independent of legacy query residue", () => {
+    const router = createTestRouter();
 
-  it("writes explicit selected mode while preserving unrelated query keys", () => {
-    expect(
-      withConversionHubModeQuery(
-        {
-          debug: "1",
-          mode: ["audio", "transcript"],
-          preview: null,
-          source: ["dashboard", "favorites"],
-        },
-        "transcript",
-      ),
-    ).toEqual({
-      debug: "1",
-      mode: "transcript",
-      preview: null,
-      source: ["dashboard", "favorites"],
-    });
+    const resolved = router.resolve("/apps/audio-transcription");
+
+    expect(resolved.name).toBe("audio-transcription-authenticated");
+    expect(resolved.params).toEqual({});
+    expect(resolved.query).toEqual({});
   });
 });

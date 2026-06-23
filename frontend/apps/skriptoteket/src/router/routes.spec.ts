@@ -50,6 +50,30 @@ describe("routes", () => {
     expect(resolved.params.publicCapabilitySlug).toBe("exam-converter");
   });
 
+  it("adds a canonical protected Exam Converter app identity route", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/apps/exam-converter");
+
+    expect(resolved.name).toBe("exam-converter-authenticated");
+    expect(resolved.meta.requiresAuth).toBe(true);
+    expect(resolveMatchedProps("/apps/exam-converter")).toEqual({
+      presentationMode: "exam",
+    });
+  });
+
+  it("adds a canonical protected Audio Transcription app identity route", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/apps/audio-transcription");
+
+    expect(resolved.name).toBe("audio-transcription-authenticated");
+    expect(resolved.meta.requiresAuth).toBe(true);
+    expect(resolveMatchedProps("/apps/audio-transcription")).toEqual({
+      presentationMode: "transcript",
+    });
+  });
+
   it("adds the authenticated Exam Converter UI-inspection fixture route for test/dev", () => {
     const router = createTestRouter();
 

@@ -38,14 +38,14 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     title: "Provhantering",
     description: "Skapa, redigera och konvertera prov.",
     imageSrc: examConverterSymbolUrl,
-    to: "/apps/documents.conversion_hub?mode=exam",
+    to: "/apps/exam-converter",
   },
   {
     id: "audio-transcription",
     title: "Ljudtranskribering",
     description: "Transkribera tal till text och spara resultatet bland dina filer.",
     imageSrc: audioTranscriptionSymbolUrl,
-    to: "/apps/documents.conversion_hub?mode=transcript",
+    to: "/apps/audio-transcription",
   },
   {
     id: "document-converter",
