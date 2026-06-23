@@ -5,7 +5,7 @@ title: "ST-37-04 backend and API app presentation contract alignment"
 status: blocked
 owners: "agents"
 created: 2026-06-18
-updated: 2026-06-18
+updated: 2026-06-23
 stories:
   - "ST-37-04"
 tags:
@@ -15,6 +15,7 @@ tags:
 dependencies:
   - "PR-0362"
   - "PR-0368"
+  - "PR-0375"
   - "REF-app-presentation-decomposition-and-naming-plan-v1"
 acceptance_criteria:
   - "Given a reviewed route-visible slice has proven the compatibility shell can no longer express the teacher-facing app model truthfully, when this slice runs, then backend/bootstrap or API contracts explicitly represent the required app-presentation split without breaking current authorized consumers."
@@ -26,10 +27,12 @@ acceptance_criteria:
 
 ## Problem
 
-The current planning package does not assume a backend or API split is needed.
-If later route-visible work proves that assumption false, the contract change
-must happen in its own explicit slice rather than being smuggled into frontend
-work.
+The current planning package does not assume a backend or API app-presentation
+split is needed. `PR-0375` also keeps the first Document Converter backend/API
+follow-up under the existing `documents.conversion_hub` technical app id. If
+later route-visible or Document Converter work proves that assumption false,
+the contract change must happen in this explicit slice rather than being
+smuggled into frontend work.
 
 ## Goal
 
@@ -38,7 +41,8 @@ app-presentation decomposition.
 
 ## Non-goals
 
-- No contract change unless `PR-0368` documents a concrete incompatibility.
+- No contract change unless `PR-0368`, `PR-0375`, or later reviewed
+  route-visible/backend work documents a concrete incompatibility.
 - No Sir Convert, HuleEdu, QTI, or DOCX contract change.
 - No fake Document Converter route or host.
 
@@ -48,8 +52,9 @@ app-presentation decomposition.
 
 ## Implementation plan
 
-1. Start only if `PR-0368` closes with written evidence that route-visible
-   truth cannot be maintained on the current compatibility bootstrap shape.
+1. Start only if a reviewed route-visible or Document Converter follow-up closes
+   with written evidence that truthful app presentation cannot be maintained on
+   the current compatibility bootstrap/API shape.
 2. Define the smallest possible backend/bootstrap or API contract adjustment:
    metadata split, capability split, or app-detail decomposition.
 3. Update generated frontend consumers and keep app-state ownership doctrine

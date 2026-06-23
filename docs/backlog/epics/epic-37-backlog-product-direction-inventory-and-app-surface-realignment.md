@@ -168,6 +168,10 @@ onward plus the ST-37-04 follow-up slices.
   public API proxy ownership are now explicit and covered by a focused contract
   test. `PR-0367`, `PR-0368`, and `PR-0374` have since closed the registry,
   route-visible identity split, and post-cutover compatibility cleanup.
-  `PR-0375` is now the separate planning owner for a real backend-backed
-  Document Converter MVP and Sir Convert contract review. The remaining
-  reserved backend/API alignment slice is `PR-0369`.
+- `PR-0375` is done and approved by `REV-PR-0375` as of 2026-06-23. It defines
+  a real backend-backed Document Converter MVP under the scoped
+  `documents.conversion_hub/document-converter` backend contract with a
+  single-result artifact, server-authoritative download/save, retry/replay as
+  new submission by default, and split backend/API versus route-visible proof
+  obligations. The reserved backend/API alignment slice `PR-0369` remains
+  blocked unless later route-visible work proves a concrete contract need.

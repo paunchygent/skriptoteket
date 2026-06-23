@@ -47,7 +47,7 @@ dashboard direction are settled.
 - [x] [PR-0368: ST-37-04 route-visible app entrypoint and presentation alignment](../prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md)
 - [ ] [PR-0369: ST-37-04 backend and API app presentation contract alignment](../prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md)
 - [x] [PR-0374: ST-37-04 post-cutover conversion hub compatibility cleanup](../prs/pr-0374-st-37-04-post-cutover-conversion-hub-compatibility-cleanup.md)
-- [ ] [PR-0375: ST-37-04 Document Converter backend-backed MVP planning](../prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md)
+- [x] [PR-0375: ST-37-04 Document Converter backend-backed MVP planning](../prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md)
 - [x] [PR-0376: ST-37-04 transcript proof lane orchestration](../prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md)
 - [x] [PR-0377: ST-37-04 domain-named proof script surface cleanup](../prs/pr-0377-st-37-04-domain-named-proof-script-surface-cleanup.md)
 - [x] [PR-0378: ST-37-04 transcript proof failure evidence capture](../prs/pr-0378-st-37-04-transcript-proof-failure-evidence-capture.md)
@@ -75,10 +75,12 @@ dashboard direction are settled.
   browser-direct Sir Convert calls.
 - The Document Converter lane is separate and should speak to format and
   presentation output, not test/exam workflows.
-- `PR-0375` owns the next Document Converter planning step. It must define a
-  real backend-backed MVP and Sir Convert contract before any Document
-  Converter route, host, registry capability, runtime link, or proof target is
-  implemented.
+- `PR-0375` is done and approved by `REV-PR-0375`. It defines the
+  authenticated-only Document Converter MVP as a scoped
+  `documents.conversion_hub/document-converter` backend contract with
+  single-result artifact, server-authoritative download/save, and retry/replay
+  semantics before any route, host, registry capability, runtime link, or proof
+  target is implemented.
 - `PR-0376` is done and approved by `REV-PR-0376`. It owns the durable Audio
   Transcription live-proof lane launcher so
   local/downstream STT parity proof uses the fenced Sir Convert `remote-proof`

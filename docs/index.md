@@ -102,6 +102,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0374-st-37-04-post-cutover-conversion-hub-compatibility-cleanup.md`
 - Document Converter backend-backed MVP planning slice:
   `docs/backlog/prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md`
+- Document Converter backend-backed MVP planning review:
+  `docs/backlog/reviews/review-pr-0375-document-converter-backend-backed-mvp-planning.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

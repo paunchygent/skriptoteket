@@ -10,9 +10,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-23.
 - Branch: `main`.
-- Latest closed slice: `PR-0378` under `ST-37-04`.
-- Active slice: `PR-0375` remains the separate Document Converter
-  backend-backed MVP planning owner.
+- Latest closed work: `PR-0375`; latest proof slice remains `PR-0378`.
+- Active slice: none; `PR-0369` stays blocked unless a concrete API need appears.
 - Prior PR-0310 through PR-0356 history lives in `.codex/long-term-memory/entries/`.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the
@@ -59,11 +58,12 @@ Keep this file updated so the next session can pick up work quickly.
   `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue` are
   removed; `frontend/apps/skriptoteket/src/views/apps/conversionHubModeRoute.spec.ts`
   now covers route behavior instead of the retired helper.
-- `PR-0375` is created:
+- `PR-0375` is done and approved by `REV-PR-0375`:
   `docs/backlog/prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md`
-  keeps Document Converter inert until a real backend-backed MVP, Sir Convert
-  contract, artifact/download/save/replay semantics, and shared-auth proof plan
-  are reviewed.
+  defines the Document Converter MVP as an authenticated-only scoped
+  `documents.conversion_hub/document-converter` backend contract with one result
+  artifact, server-authoritative download/save, retry/replay semantics, and no
+  route/registry/runtime activation.
 - `PR-0376` and `PR-0377` are done and approved by `REV-PR-0376` and
   `REV-PR-0377`: the transcript proof launcher removes operator port guessing
   for the fenced `remote-proof` lane, and active reusable proof scripts now use
@@ -167,7 +167,6 @@ pdm run test tests/unit/test_docker_dev_shared_auth_contract.py
 pdm run test tests/unit/scripts/test_playwright_script_surface.py
 pdm run test tests/unit/scripts/test_audio_transcription_parity_progress_snapshot.py tests/unit/scripts/test_audio_transcription_parity_summary_truthfulness.py tests/unit/scripts/test_sir_convert_trust_lane_preflight.py
 pdm run test tests/unit/scripts/test_transcript_parity_proof_launcher.py
-pdm run transcript-parity-proof remote-proof
 pdm run fe-type-check
 pdm run fe-lint
 pdm run docs-validate
@@ -188,12 +187,12 @@ git diff --check
 - If Gateway `:8080` appears occupied by Docker while no container publishes
   it, suspect stale Docker Desktop port-proxy state; restart Docker Desktop and
   recreate the affected HuleEdu services before blaming app code.
-- `REV-PR-0363` is approved. Keep the Docker-service proof lane intact for
-  `PR-0364` and `PR-0365`.
+- Hemma/server activity is paused by user instruction. Do not run Hemma deploy,
+  monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
+- Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Start `PR-0375` when ready to plan the real Document Converter MVP; do not
-  create a Document Converter route, host, registry capability, runtime link,
-  or proof target before that planning package is approved.
-- Continue with `PR-0369` backend/API contract review only if a concrete
-  route-visible or Document Converter planning finding proves it is needed.
+- Next product slice is the backend/API document-converter contract under
+  `documents.conversion_hub/document-converter`; keep frontend route inactive.
+- Keep `PR-0369` blocked unless later route-visible work proves a concrete
+  backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.
