@@ -1057,6 +1057,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/document-converter/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Document Converter Job */
+        post: operations["submit_document_converter_job_api_v1_apps_documents_conversion_hub_document_converter_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Converter Job Status */
+        get: operations["get_document_converter_job_status_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/jobs/{job_id}/artifact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Document Converter Artifact */
+        get: operations["download_document_converter_artifact_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__artifact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/jobs/{job_id}/artifact/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Document Converter Artifact */
+        post: operations["save_document_converter_artifact_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__artifact_save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Document Converter Routes */
+        get: operations["list_document_converter_routes_api_v1_apps_documents_conversion_hub_document_converter_routes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save": {
         parameters: {
             query?: never;
@@ -2870,6 +2955,18 @@ export interface components {
             /** Session Files Mode */
             session_files_mode?: string | null;
         };
+        /** Body_submit_document_converter_job_api_v1_apps_documents_conversion_hub_document_converter_jobs_post */
+        Body_submit_document_converter_job_api_v1_apps_documents_conversion_hub_document_converter_jobs_post: {
+            /** Files */
+            files: string[];
+            /** Job Spec Json */
+            job_spec_json: string;
+            /**
+             * Wait Seconds
+             * @default 0
+             */
+            wait_seconds: number;
+        };
         /** Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post */
         Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post: {
             /** Files */
@@ -3296,13 +3393,13 @@ export interface components {
         };
         /**
          * ConversionHubTranscriptFormatterArtifactFormat
-         * @description Closed artifact format values accepted by Sir Convert replay.
+         * @description Closed artifact format values accepted by Sir Convert formatter exports.
          * @enum {string}
          */
         ConversionHubTranscriptFormatterArtifactFormat: "txt" | "md" | "vtt" | "srt";
         /**
          * ConversionHubTranscriptFormatterArtifactKey
-         * @description Closed named replay artifact keys returned by Sir Convert.
+         * @description Closed named formatter artifact keys returned by Sir Convert.
          * @enum {string}
          */
         ConversionHubTranscriptFormatterArtifactKey: "transcript_txt" | "transcript_md" | "transcript_vtt" | "transcript_srt";
@@ -3642,6 +3739,70 @@ export interface components {
         /** DepublishToolResponse */
         DepublishToolResponse: {
             tool: components["schemas"]["AdminToolItem"];
+        };
+        /**
+         * DocumentConverterJobStatusResult
+         * @description Return local status plus the default result artifact once it exists.
+         */
+        DocumentConverterJobStatusResult: {
+            /** Error */
+            error?: string | null;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            result_artifact?: components["schemas"]["DocumentConverterResultArtifact"] | null;
+            status: components["schemas"]["ConversionHubJobStatus"];
+        };
+        /**
+         * DocumentConverterProducerKind
+         * @description Identify the backend producer selected for one Document Converter item.
+         * @enum {string}
+         */
+        DocumentConverterProducerKind: "local" | "sir_convert";
+        /**
+         * DocumentConverterResultArtifact
+         * @description Describe the single converted artifact after a successful MVP job.
+         */
+        DocumentConverterResultArtifact: {
+            /** Content Type */
+            content_type?: string | null;
+            /** Filename */
+            filename?: string | null;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Size Bytes */
+            size_bytes?: number | null;
+            /** Source Artifact Id */
+            source_artifact_id: string;
+        };
+        /**
+         * DocumentConverterSubmitResult
+         * @description Return all local jobs created from one Document Converter batch request.
+         */
+        DocumentConverterSubmitResult: {
+            /** Jobs */
+            jobs: components["schemas"]["DocumentConverterSubmittedJob"][];
+        };
+        /**
+         * DocumentConverterSubmittedJob
+         * @description Return one local job plus the automatic producer decision.
+         */
+        DocumentConverterSubmittedJob: {
+            /** Error */
+            error?: string | null;
+            /** Input Filename */
+            input_filename: string;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            producer: components["schemas"]["DocumentConverterProducerKind"];
+            /** Producer Reason */
+            producer_reason: string;
+            status: components["schemas"]["ConversionHubJobStatus"];
         };
         /**
          * DraftGroup
@@ -6614,6 +6775,15 @@ export interface components {
             };
             /** Transcript Schema Version */
             transcript_schema_version: string;
+        };
+        /**
+         * SaveDocumentConverterArtifactResult
+         * @description Return the Mina filer record created from the converted document.
+         */
+        SaveDocumentConverterArtifactResult: {
+            /** Source Artifact Id */
+            source_artifact_id: string;
+            vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
         };
         /** SaveDraftVersionRequest */
         SaveDraftVersionRequest: {
@@ -10085,6 +10255,152 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_document_converter_job_api_v1_apps_documents_conversion_hub_document_converter_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_submit_document_converter_job_api_v1_apps_documents_conversion_hub_document_converter_jobs_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentConverterSubmitResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_converter_job_status_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentConverterJobStatusResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_document_converter_artifact_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__artifact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_document_converter_artifact_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__artifact_save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveDocumentConverterArtifactResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_document_converter_routes_api_v1_apps_documents_conversion_hub_document_converter_routes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubListRoutesResult"];
                 };
             };
         };

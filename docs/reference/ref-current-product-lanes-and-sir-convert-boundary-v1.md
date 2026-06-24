@@ -5,7 +5,7 @@ title: "Current product lanes and Sir Convert boundary"
 status: active
 owners: "agents"
 created: 2026-06-18
-updated: 2026-06-22
+updated: 2026-06-24
 topic: "product-direction"
 ---
 
@@ -25,7 +25,7 @@ Those implementation choices belong to later reviewed slices.
 | Klassrumskartan | Plan classrooms, groups, seating, rules, exports, and sharing. | Bespoke curated app `classroom.group-seating-studio`. | `EPIC-26`, `EPIC-27`, `EPIC-29`, `EPIC-36`, and `ST-37-03` shell work. |
 | Audio Transcription | Convert speech or media to saved transcript, review speakers, and export transcript formats. | Authenticated transcript workflow currently lives under `documents.conversion_hub` technical surfaces. | `EPIC-21` transcript stories and later app-presentation decomposition. |
 | Exam Converter | Create exams, import exams, edit structure, items, points, answer keys, and metadata, review/correct answer-key state, export files, and grow toward source-neutral QTI/share workflows. | Public and authenticated Exam Converter currently live under `documents.conversion_hub` technical surfaces. | `ST-21-10`, `PR-0357`, `ST-21-04`, and later exam-state/editor slices. |
-| Document Converter | Convert and prepare presentation/document formats such as PDF, DOCX, HTML/CSS, Markdown, and template-shaped outputs. | Approved as a visible shell lane by the C2 home mockup, but the active code still has no proven truthful route; the registry title says `Konvertera dokument` while the bespoke host currently presents Exam Converter. | `ST-37-04` app-presentation decomposition and a reviewed route-visible slice before runtime links or registry implementation. |
+| Document Converter | Convert and prepare presentation/document formats such as PDF, DOCX, HTML/CSS, Markdown, and template-shaped outputs. | Approved as a visible shell lane. `PR-0379` adds a route-inactive scoped backend foundation, and `PR-0380` corrects follow-up planning toward app-boundary simple conversion, batch input, and HTML/CSS preview before route-visible UI. | `ST-37-04`, `PR-0381`, and a reviewed route-visible slice after mockup/copy approval. |
 
 `documents.conversion_hub` remains a technical compatibility shell until later
 work decomposes app presentation. New product planning should not use the broad
@@ -35,11 +35,13 @@ historical or technical compatibility.
 ## Sir Convert Owns Heavy Conversion
 
 Sir Convert-a-Lot remains the producer/runtime authority when the workflow
-depends on conversion, model, or artifact evidence that Skriptoteket should not
-own locally:
+depends on heavy conversion, model, or artifact evidence that Skriptoteket
+should not own inside the app boundary:
 
-- parsing and packaging source imports such as PDF, DOCX, HTML, Markdown,
-  DigiExam, and other conversion sources
+- OCR-heavy PDFs, formula-heavy PDFs, complex tables/layout, and PDF to
+  Markdown, DOCX, or HTML when quality depends on Docling/GPU/model-backed
+  extraction
+- DigiExam and other heavy exam source imports
 - OCR, layout extraction, LLM enrichment, STT, diarization, and other hosted
   model/runtime work
 - producer-owned artifacts, manifests, source bindings, hashes, signatures, and
@@ -119,15 +121,33 @@ belongs to post-conversion file actions.
 
 Document Converter is the approved teacher-facing lane for format and
 presentation output work: PDF, DOCX, HTML/CSS, Markdown, template-shaped output,
-and platform-ready presentation artifacts. The lane may appear in approved
-shell design, but runtime links must wait for a truthful reviewed route target.
-It should not be conflated with Exam Converter or Audio Transcription merely
-because all three historically lived under broad Conversion Hub language.
+and platform-ready presentation artifacts. `PR-0380` corrects the follow-up
+contract: simple conversions should run inside the Skriptoteket app boundary,
+not through Sir Convert by default, while heavy/OCR/complex PDF paths remain
+Sir Convert producer work.
+
+The first useful product direction is batch-oriented. General Document
+Converter input targets up to 10 source documents or project entries. HTML/CSS
+source counting is based on HTML entries, with CSS capped separately at 10
+support files. HTML/CSS to PDF must support multi-file project input, PDF
+controls, render progress, separate or combined PDF output, and final PDF
+preview before save/download. Preview PDFs are temporary server artifacts with
+an initial 24-hour TTL and are saved to `Mina filer` only after explicit teacher
+action. User-facing UI should not talk about "result artifacts"; that remains
+internal observability language. Routing to Sir Convert is automatic product
+logic, not a teacher-facing choice.
+
+The lane may appear in approved shell design, but runtime links must wait for a
+truthful reviewed route target, approved image mockups, approved HTML/CSS
+mockups, and a user-reviewed copy lock. It should not be conflated with Exam
+Converter or Audio Transcription merely because all three historically lived
+under broad Conversion Hub language.
 
 `ST-37-04` owns app-presentation decomposition before implementation changes
-app registry titles, descriptions, or route surfaces. `PR-0364` may use the
-approved C2 mockup as home design direction, but must stop rather than fake a
-Document Converter route.
+app registry titles, descriptions, or route surfaces. `PR-0381` is the next
+actionable backend/product-contract slice and must research local converter
+libraries before code. `PR-0364` may use the approved C2 mockup as home design
+direction, but must stop rather than fake a Document Converter route.
 
 ## Script, Editor, And Runner Preservation
 

@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-23
+updated: 2026-06-25
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -51,6 +51,13 @@ dashboard direction are settled.
 - [x] [PR-0376: ST-37-04 transcript proof lane orchestration](../prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md)
 - [x] [PR-0377: ST-37-04 domain-named proof script surface cleanup](../prs/pr-0377-st-37-04-domain-named-proof-script-surface-cleanup.md)
 - [x] [PR-0378: ST-37-04 transcript proof failure evidence capture](../prs/pr-0378-st-37-04-transcript-proof-failure-evidence-capture.md)
+- [x] [PR-0379: ST-37-04 Document Converter backend API contract](../prs/pr-0379-st-37-04-document-converter-backend-api-contract.md)
+- [x] [PR-0380: ST-37-04 Document Converter product contract correction](../prs/pr-0380-st-37-04-document-converter-product-contract-correction.md)
+- [x] [PR-0381: ST-37-04 Document Converter local-heavy producer and batch contract](../prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md)
+- [ ] [PR-0382: ST-37-04 Document Converter HTML/CSS project preview contract](../prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md)
+- [ ] [PR-0383: ST-37-04 Document Converter mockup and copy approval package](../prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md)
+- [ ] [PR-0384: ST-37-04 Document Converter route-visible MVP implementation](../prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md)
+- [ ] [PR-0385: ST-37-04 Document Converter files and history follow-up](../prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md)
 
 ## Notes
 
@@ -93,6 +100,25 @@ dashboard direction are settled.
   for `pdm run transcript-parity-proof remote-proof`. The earlier UI polling
   retry idea is deferred until retained evidence identifies an actual transient
   failure class.
+- `PR-0379` is done and approved by `REV-PR-0379`. It adds the
+  backend/API-only Document Converter contract under
+  `documents.conversion_hub/document-converter`, keeps the frontend route
+  inactive, and keeps `PR-0369` blocked.
+- `PR-0380` is done. It corrects the next Document Converter product contract:
+  simple lanes run inside the Skriptoteket app boundary, Sir Convert is
+  reserved for automatically detected heavy/OCR/complex PDF paths, general
+  batch input targets up to 10 source documents or project entries, HTML/CSS to
+  PDF needs project input plus separate/combined output and 24-hour temporary
+  PDF preview, and production UI remains blocked behind approved image mockups,
+  HTML/CSS mockups, and copy lock.
+- `PR-0381` is done and approved by `REV-PR-0381`. It records current local
+  library evidence, centralizes existing PDF/rendering/extraction surfaces,
+  expands the scoped backend contract to batch input and automatic local/heavy
+  producer routing, and keeps the frontend route inactive.
+- `PR-0382` is ready as the next route-inactive Document Converter contract
+  slice. It must close the HTML/CSS project manifest, safe linked-asset model,
+  preview artifact lifecycle, output-mode response shape, PDF controls, and
+  first template identifiers before any production UI or copy work begins.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use
@@ -135,7 +161,6 @@ dashboard direction are settled.
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-  `ST-37-04` remains open for `PR-0369` backend/API contract review and the
-  separate `PR-0375` Document Converter backend-backed MVP planning slice; the
-  registry, route-visible, post-cutover compatibility cleanup, proof-lane
-  orchestration, and proof-surface naming slices have run.
+  `ST-37-04` remains open for the `PR-0382` through `PR-0385` Document
+  Converter sequence and any later concrete backend/API app-presentation need;
+  keep `PR-0369` blocked until such a need is proven.

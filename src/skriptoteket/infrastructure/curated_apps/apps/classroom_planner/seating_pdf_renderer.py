@@ -19,6 +19,7 @@ from tempfile import TemporaryDirectory
 from skriptoteket.application.curated_apps.classroom_planner.exports.rendering import (
     RenderedSeatingPosterBundle,
 )
+from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
 from skriptoteket.protocols.classroom_planner_exports import SeatingPdfRendererProtocol
 
 
@@ -26,17 +27,10 @@ class WeasyPrintSeatingPdfRenderer(SeatingPdfRendererProtocol):
     """Render one seating poster bundle into final PDF bytes locally."""
 
     def render(self, *, bundle: RenderedSeatingPosterBundle) -> bytes:
-        from weasyprint import HTML
-
         with TemporaryDirectory(prefix="skriptoteket-seating-pdf-") as temp_dir_name:
             temp_dir = Path(temp_dir_name)
             _write_bundle_files(temp_dir=temp_dir, bundle=bundle)
-            pdf_bytes = HTML(string=bundle.html_content, base_url=str(temp_dir)).write_pdf()
-            if isinstance(pdf_bytes, bytes):
-                return pdf_bytes
-            if isinstance(pdf_bytes, bytearray):
-                return bytes(pdf_bytes)
-            raise TypeError("WeasyPrint returned a non-bytes PDF payload.")
+            return render_html_to_pdf_bytes(html=bundle.html_content, base_url=temp_dir)
 
 
 def _write_bundle_files(*, temp_dir: Path, bundle: RenderedSeatingPosterBundle) -> None:

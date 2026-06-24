@@ -1,4 +1,15 @@
-"""Curated apps provider: app-specific handlers and services."""
+"""Curated app dependency provider graph.
+
+Purpose:
+    Wire Skriptoteket curated-app handlers, application services, repositories,
+    and infrastructure adapters into the Dishka container for authenticated app
+    workflows.
+
+Relationships:
+    Connects web/API routes to application-layer protocols while keeping
+    concrete database, filesystem, rendering, and producer clients behind the
+    provider boundary.
+"""
 
 from __future__ import annotations
 
@@ -71,6 +82,10 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.checkpoint
 from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
     CreateClassListImportPreviewHandler,
 )
+from skriptoteket.application.curated_apps.document_converter_producers import (
+    DocumentConverterProducerPolicy,
+    LocalDocumentConverterProducer,
+)
 from skriptoteket.application.curated_apps.flunk_out_frenzy import (
     GetFlunkOutFrenzyBootstrapHandler,
 )
@@ -82,6 +97,11 @@ from skriptoteket.application.curated_apps.handlers import (
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
     SaveConversionHubSirConvertArtifactHandler,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_document_converter import (
+    DownloadDocumentConverterArtifactHandler,
+    GetDocumentConverterJobHandler,
+    SaveDocumentConverterArtifactHandler,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     CreateConversionHubJobsHandler,
@@ -95,6 +115,9 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_sa
     ListConversionHubTranscriptSpeakerOverlaysHandler,
     SaveConversionHubTranscriptHandler,
     UpdateConversionHubTranscriptSpeakerOverlaysHandler,
+)
+from skriptoteket.application.curated_apps.handlers.document_converter_jobs import (
+    CreateDocumentConverterJobsHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
@@ -201,6 +224,12 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.risk_templa
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store import (
     FileSystemReagentPrepChefSdsStore,
 )
+from skriptoteket.infrastructure.documents.document_converter_artifacts import (
+    FilesystemDocumentConverterArtifactStore,
+)
+from skriptoteket.infrastructure.documents.markdown_rendering import PythonMarkdownToHtmlRenderer
+from skriptoteket.infrastructure.documents.pdf_rendering import WeasyPrintHtmlToPdfRenderer
+from skriptoteket.infrastructure.documents.pdf_text_extraction import PdfPlumberTextExtractor
 from skriptoteket.infrastructure.repositories import (
     conversion_hub_transcript_formatter_export_states as export_state_repositories,
 )
@@ -285,6 +314,15 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
 )
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.document_converter import (
+    DocumentConverterArtifactStoreProtocol,
+    LocalDocumentConverterProducerProtocol,
+)
+from skriptoteket.protocols.documents import (
+    HtmlToPdfRendererProtocol,
+    MarkdownToHtmlRendererProtocol,
+    PdfTextExtractorProtocol,
+)
 from skriptoteket.protocols.exam_converter_correction_sessions import (
     ExamConverterCorrectionSessionRepositoryProtocol,
 )
@@ -1595,6 +1633,45 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
+    def document_html_to_pdf_renderer(self) -> HtmlToPdfRendererProtocol:
+        return WeasyPrintHtmlToPdfRenderer()
+
+    @provide(scope=Scope.APP)
+    def document_markdown_to_html_renderer(self) -> MarkdownToHtmlRendererProtocol:
+        return PythonMarkdownToHtmlRenderer()
+
+    @provide(scope=Scope.APP)
+    def document_pdf_text_extractor(self) -> PdfTextExtractorProtocol:
+        return PdfPlumberTextExtractor()
+
+    @provide(scope=Scope.APP)
+    def document_converter_artifact_store(
+        self,
+        settings: Settings,
+    ) -> DocumentConverterArtifactStoreProtocol:
+        return FilesystemDocumentConverterArtifactStore(artifacts_root=settings.ARTIFACTS_ROOT)
+
+    @provide(scope=Scope.REQUEST)
+    def document_converter_producer_policy(
+        self,
+        pdf_text_extractor: PdfTextExtractorProtocol,
+    ) -> DocumentConverterProducerPolicy:
+        return DocumentConverterProducerPolicy(pdf_text_extractor=pdf_text_extractor)
+
+    @provide(scope=Scope.REQUEST)
+    def local_document_converter_producer(
+        self,
+        html_to_pdf: HtmlToPdfRendererProtocol,
+        markdown_to_html: MarkdownToHtmlRendererProtocol,
+        pdf_text_extractor: PdfTextExtractorProtocol,
+    ) -> LocalDocumentConverterProducerProtocol:
+        return LocalDocumentConverterProducer(
+            html_to_pdf=html_to_pdf,
+            markdown_to_html=markdown_to_html,
+            pdf_text_extractor=pdf_text_extractor,
+        )
+
+    @provide(scope=Scope.APP)
     def class_list_heuristic_parser(self) -> ClassListHeuristicParserProtocol:
         return ClassListHeuristicParser()
 
@@ -1618,6 +1695,29 @@ class CuratedAppsProvider(Provider):
         return CreateConversionHubJobsHandler(
             jobs=jobs,
             client=client,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_document_converter_jobs_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        policy: DocumentConverterProducerPolicy,
+        local_producer: LocalDocumentConverterProducerProtocol,
+        local_artifacts: DocumentConverterArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateDocumentConverterJobsHandler:
+        return CreateDocumentConverterJobsHandler(
+            jobs=jobs,
+            client=client,
+            policy=policy,
+            local_producer=local_producer,
+            local_artifacts=local_artifacts,
             uow=uow,
             clock=clock,
             id_generator=id_generator,
@@ -1681,6 +1781,65 @@ class CuratedAppsProvider(Provider):
             client=client,
             uow=uow,
             clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_document_converter_job_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> GetDocumentConverterJobHandler:
+        return GetDocumentConverterJobHandler(
+            jobs=jobs,
+            client=client,
+            uow=uow,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def download_document_converter_artifact_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        local_artifacts: DocumentConverterArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> DownloadDocumentConverterArtifactHandler:
+        return DownloadDocumentConverterArtifactHandler(
+            jobs=jobs,
+            client=client,
+            local_artifacts=local_artifacts,
+            uow=uow,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_document_converter_artifact_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        local_artifacts: DocumentConverterArtifactStoreProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> SaveDocumentConverterArtifactHandler:
+        return SaveDocumentConverterArtifactHandler(
+            jobs=jobs,
+            client=client,
+            local_artifacts=local_artifacts,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
         )
 
     @provide(scope=Scope.REQUEST)

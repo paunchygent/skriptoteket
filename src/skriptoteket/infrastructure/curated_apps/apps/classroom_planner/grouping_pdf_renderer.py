@@ -29,6 +29,7 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.pdf_brandin
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.print_pdf_primitives import (
     grouping_member_count_text,
 )
+from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
 from skriptoteket.protocols.classroom_planner_exports import GroupingPdfRendererProtocol
 
 _GROUPING_PDF_LOGO_PNG_PATH = HORIZONTAL_LOGO_PNG_PATH
@@ -47,13 +48,8 @@ class GroupingPdfRenderer(GroupingPdfRendererProtocol):
         *,
         view_model: grouping_pdf_view_model.GroupingPdfViewModel,
     ) -> bytes:
-        from weasyprint import HTML
-
         html = _build_html(view_model=view_model, logo_filename=self._logo_filename)
-        rendered_pdf = HTML(string=html, base_url=str(self._asset_base_dir)).write_pdf()
-        if not isinstance(rendered_pdf, bytes):
-            raise TypeError("Grouping PDF renderer must return bytes.")
-        return rendered_pdf
+        return render_html_to_pdf_bytes(html=html, base_url=self._asset_base_dir)
 
 
 def _build_html(

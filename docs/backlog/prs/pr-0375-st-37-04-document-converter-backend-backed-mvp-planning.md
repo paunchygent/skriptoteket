@@ -62,6 +62,15 @@ and save contract before any product route or registry capability is activated.
 `REV-PR-0375` must approve the planning package before any Document Converter
 implementation slice is created.
 
+## Follow-up correction
+
+`PR-0380` supersedes the forward-looking one-file and Sir Convert-first
+assumptions in this planning document for future Document Converter work.
+`PR-0375` remains the accepted foundation for scoped backend ownership,
+server-authoritative download/save, and no route activation before proof. Future
+implementation should follow `PR-0380` for app-boundary simple conversion,
+batch input, HTML/CSS project preview, and UI/copy gating.
+
 ## Current-state inventory
 
 Skriptoteket already has a generic authenticated Sir Convert v2 integration

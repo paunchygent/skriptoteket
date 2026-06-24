@@ -141,6 +141,11 @@ cycle.
   artifact download/save/replay semantics, and auth-edge proof before any
   Document Converter route, host, registry capability, runtime link, or proof
   target is activated.
+- [PR-0380](../backlog/prs/pr-0380-st-37-04-document-converter-product-contract-correction.md):
+  corrects the Document Converter follow-up contract so simple lanes are
+  app-boundary work inside Skriptoteket, Sir Convert is reserved for
+  heavy/OCR/complex PDF paths, batch input is required, and route-visible UI is
+  blocked behind mockup and copy approval.
 
 ## Sequencing Rules
 
@@ -164,10 +169,10 @@ cycle.
 8. Compatibility routes may be retained during cutover only. `PR-0374` removed
    the mode-query presentation selector once the separate app identities were
    proven; do not add a replacement query, alias, or hidden selector.
-9. Document Converter implementation must wait for `PR-0375` planning and its
-   approved follow-up slices. Do not repurpose Exam Converter, Audio
-   Transcription, public Exam Converter, or the generic backend app id as a
-   document-conversion facade.
+9. Document Converter implementation must wait for `PR-0375`, the `PR-0380`
+   correction, and their approved follow-up slices. Do not repurpose Exam
+   Converter, Audio Transcription, public Exam Converter, or the generic
+   backend app id as a document-conversion facade.
 
 ## Stop Conditions
 

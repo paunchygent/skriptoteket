@@ -8,10 +8,11 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-23.
+- Date: 2026-06-25.
 - Branch: `main`.
-- Latest closed work: `PR-0375`; latest proof slice remains `PR-0378`.
-- Active slice: none; `PR-0369` stays blocked unless a concrete API need appears.
+- Latest closed work: `PR-0381`, approved by `REV-PR-0381`.
+- Active slice: `PR-0382` Document Converter HTML/CSS project preview contract.
+  `PR-0369` stays blocked unless a concrete API need appears.
 - Prior PR-0310 through PR-0356 history lives in `.codex/long-term-memory/entries/`.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the
@@ -78,6 +79,30 @@ Keep this file updated so the next session can pick up work quickly.
   and is linked from `failure-summary.json`. Product UI polling retry behavior
   is explicitly deferred until retained proof evidence identifies an actual
   transient failure class.
+- `PR-0379` is done and approved by `REV-PR-0379`: it adds the local
+  authenticated backend/API Document Converter contract under
+  `/api/v1/apps/documents.conversion_hub/document-converter/...`, keeps the
+  frontend route/card inert, keeps `PR-0369` blocked, and now enforces the
+  governed upload boundary on the scoped submit route with filename
+  suffix/content-type checks plus capped upload reads via
+  `src/skriptoteket/web/uploads.py`.
+- `PR-0380` is done as the corrected Document Converter product-contract queue:
+  simple lanes run inside the Skriptoteket app boundary, Sir Convert is
+  reserved for automatically detected heavy/OCR/complex PDF paths, general
+  batch input targets up to 10 source documents or project entries, HTML/CSS to
+  PDF needs project input plus separate/combined output and 24-hour temporary
+  PDF preview, and route-visible UI waits for image mockup, HTML/CSS mockup,
+  and copy-lock approval.
+- `PR-0381` is done and approved by `REV-PR-0381`: the scoped Document
+  Converter submit route accepts up to 10 validated uploads, automatically
+  routes simple local lanes versus explicit Sir Convert producer decisions,
+  stores local outputs server-side by local job id, centralizes reusable
+  document rendering/extraction adapters, refreshes generated API types, and
+  keeps `/apps/document-converter` inactive.
+- `PR-0382` is ready as the next route-inactive contract slice. It should close
+  the HTML/CSS project manifest, safe linked assets, PDF controls, output-mode
+  response shape, preview artifact TTL/cleanup, and template identifiers before
+  `PR-0383` mockups/copy or `PR-0384` route-visible UI.
 ## Verification
 - Current local shared-auth runtime as of PR-0368 implementation:
   - HuleEdu Gateway container `huleedu_api_gateway_service` healthy on
@@ -93,60 +118,21 @@ Keep this file updated so the next session can pick up work quickly.
   lane intact for authenticated surfaces.
   - PR-0368/PR-0374 detailed red/green/live proof history is compacted to
     `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
-  - PR-0376 implementation:
-    `pdm run transcript-parity-proof remote-proof` is the normal launcher for
-    the retained Audio Transcription transcript parity proof. It validates the
-    fenced Sir Convert remote-proof lane on `38085` before invoking the retained
-    `scripts/audio_transcription_parity_live.py` Playwright proof. If
-    `http://127.0.0.1:38085/readyz` is initially unreachable, it opens an owned
-    `ssh -M -S <run-dir>/remote-proof-ssh.sock ... -L 38085:127.0.0.1:38085 hemma`
-    tunnel and later stops only that control-socket tunnel; if the endpoint is
-    already reachable, it does not open or stop a tunnel. Launcher artifacts are
-    written under `.artifacts/transcript-parity-proof-lane/`; new proof artifacts
-    are written under `.artifacts/audio-transcription-parity-live/`. Review-fix
-    pass restores HuleEdu Gateway and Skriptoteket `web`/`worker` without
-    proof-lane overlay env after success or proof failure; HuleEdu restore,
-    Skriptoteket restore when those services were actually sent through
-    proof-lane recreate, and owned tunnel teardown are attempted independently.
-    Skriptoteket web/worker mutation and restore use the supported
-    selected-service wrapper: `pdm run dev-stack recreate web worker`. HuleEdu
-    `run-local-pdm` calls are invoked with a cross-repo sanitized env so they do
-    not inherit Skriptoteket PDM/venv/PYTHONPATH state. After Gateway recreate,
-    the launcher treats `pdm run run-local-pdm auth-integration check --timeout-seconds 15`
-    as a bounded readiness wait with three attempts before Skriptoteket
-    proof-lane mutation or proof upload; persistent auth failure restores
-    HuleEdu and any owned tunnel without running Skriptoteket restore. On launcher failure,
-    inspect `.artifacts/transcript-parity-proof-lane/<timestamp>/failure-summary.json`
-    for bounded/redacted child-command output and cleanup diagnostics.
-  - PR-0377 implementation:
-    Active reusable proof scripts now use domain module names:
-    `scripts/audio_transcription_parity_live.py`,
-    `scripts/authenticated_app_identity_split.py`,
-    `scripts/authenticated_home_work_apps.py`, and
-    `scripts/authenticated_shell_navigation.py`. Historical retained
-    `.artifacts/playwright-pr-*` evidence directories were not deleted.
-    Active proof summary metadata uses
-    `proof_kind=audio_transcription_parity_live`.
-  - PR-0378 red/green:
-    `pdm run test tests/unit/scripts/test_transcript_parity_proof_launcher.py -k "runtime_evidence"`
-    failed red because no container evidence commands ran before cleanup, then
-    passed green; review-fix JSON-log secret redaction also failed red, then
-    passed green with 2 selected tests. `pdm run test tests/unit/scripts/test_dev_stack.py tests/unit/scripts/test_transcript_parity_proof_launcher.py`
-    passed with 24 tests, and the adjacent proof-script suite passed with
-    36 tests. The first close-out rerun of
-    `pdm run transcript-parity-proof remote-proof` on 2026-06-23 failed early
-    with `huleedu_auth_integration_check_failed` after the launcher recreated
-    the Gateway; immediate
-    `pdm run run-local-pdm auth-integration check --timeout-seconds 15` from
-    the HuleEdu repo then passed. A second
-    `pdm run transcript-parity-proof remote-proof` passed with launch artifact
-    `.artifacts/transcript-parity-proof-lane/20260623T070624Z/` and proof
-    artifact `.artifacts/audio-transcription-parity-live/20260623T070653Z/`.
-    The proof recorded `status=passed`, `service_profile=remote-proof`,
-    matching Gateway/trusted fingerprints, transcript success, formatter
-    exports, downloads, and Mina filer save. Cleanup restored Gateway to
-    `http://host.docker.internal:8085`, Skriptoteket web/worker to
-    `http://host.docker.internal:28085`, and closed local `38085`.
+  - PR-0376 through PR-0378 proof-lane details are retained in their PR/review
+    docs and `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
+  - PR-0379 focused backend/API remediation gates passed locally:
+    `pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py`
+    `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py`
+    `pdm run lint`
+    `pdm run typecheck`
+  - PR-0381 focused gates passed locally:
+    `pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/web/conversion_hub/test_apps_document_converter_batch_api.py tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py tests/unit/application/curated_apps/handlers/test_document_converter_local_artifact_actions.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py`
+    `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py`
+    `pdm run lint`
+    `pdm run typecheck`
+    `pdm run fe-gen-api-types`
+    `pdm run fe-type-check`
+  - PR-0382 handoff closeout passed: `pdm run docs-validate`, `pdm run handoff-validate`, `git diff --check`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -161,7 +147,11 @@ pdm run fe-dev-shared-auth
 # Verify Gateway can resolve the product backend by Docker alias.
 docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz
 
-# Focused ST-37-04 checks.
+# Focused ST-37-04 / PR-0381 checks.
+pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/web/conversion_hub/test_apps_document_converter_batch_api.py tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py tests/unit/application/curated_apps/handlers/test_document_converter_local_artifact_actions.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py
+pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py
+pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py
+pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py
 pdm run fe-test -- --run src/router/routes.spec.ts src/App.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/HomeView.spec.ts src/components/layout/AuthSidebar.spec.ts
 pdm run test tests/unit/test_docker_dev_shared_auth_contract.py
 pdm run test tests/unit/scripts/test_playwright_script_surface.py
@@ -191,8 +181,9 @@ git diff --check
   monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next product slice is the backend/API document-converter contract under
-  `documents.conversion_hub/document-converter`; keep frontend route inactive.
+- Hand off/start `PR-0382` through the overseer loop. Do not interrupt
+  delegated agents while they work, and do not start route-visible UI until
+  `PR-0382` and the `PR-0383` mockup/copy approval package are done.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete
   backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

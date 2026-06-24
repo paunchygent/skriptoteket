@@ -5,7 +5,7 @@ title: "Backlog product-direction inventory and app surface realignment"
 status: active
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-22
+updated: 2026-06-25
 outcome: "Skriptoteket has a truthful active backlog that preserves still-valuable script/editor work, closes completed or superseded legacy tasks, and sequences the next UI shell and app-presentation work around current teacher-facing product lanes."
 dependencies:
   - "REF-current-product-direction-and-backlog-inventory-2026-06-17"
@@ -175,3 +175,17 @@ onward plus the ST-37-04 follow-up slices.
   new submission by default, and split backend/API versus route-visible proof
   obligations. The reserved backend/API alignment slice `PR-0369` remains
   blocked unless later route-visible work proves a concrete contract need.
+- `PR-0380` is done as of 2026-06-23. It supersedes the one-file/Sir
+  Convert-first Document Converter assumption for follow-up planning: simple
+  conversion lanes should run inside the Skriptoteket app boundary, Sir Convert
+  remains reserved for heavy/OCR/complex PDF paths, general batch input targets
+  up to 10 items or project entries, and route-visible UI remains blocked
+  behind the approved mockup and copy pipeline.
+- `PR-0381` is done and approved by `REV-PR-0381` as of 2026-06-25. It keeps
+  the Document Converter route inactive, adds the scoped batch contract,
+  automatic local/heavy producer decisions, first local simple lanes, shared
+  document rendering/extraction adapters, and server-owned local artifact
+  authority. The next route-inactive product contract slice is `PR-0382`.
+- `PR-0382` is ready after `PR-0381` and should close the HTML/CSS project
+  preview contract before any mockup, copy, or route-visible implementation
+  slice starts.

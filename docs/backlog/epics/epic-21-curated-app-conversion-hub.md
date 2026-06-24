@@ -5,7 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
-updated: 2026-06-18
+updated: 2026-06-23
 outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -24,9 +24,11 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - Keep live proof compatible with Sir Convert's hosted model/runtime estate by
   enforcing coherent HuleEdu Gateway/Sir Convert internal identity trust lanes
   before upload or producer job creation.
-- Support batch conversions (multiple files) and a single-PDF preview UX that still uses the normal
-  v2 job lifecycle, but through a Skriptoteket-owned local job ledger and download boundary rather
-  than raw upstream job ids.
+- Support batch conversions (multiple files) and a single-PDF preview UX through
+  a Skriptoteket-owned local job ledger and download boundary rather than raw
+  upstream job ids. For the newer teacher-facing Document Converter lane,
+  `PR-0380` narrows this: simple lanes run inside the Skriptoteket app boundary
+  and Sir Convert is reserved for heavy/OCR/complex PDF paths.
 - Surface v2 PDF layout presets (for example A5/A4/A3 and portrait/landscape) in the UI for relevant
   outputs.
 - Migrate tests and remove production reliance on `html-to-pdf-preview`.
@@ -35,8 +37,10 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 
 ## Out of scope
 
-- No new conversion engines inside Skriptoteket (no WeasyPrint/Pandoc pipelines in Skriptoteket
-  beyond what's required for tests unrelated to conversion hub).
+- No new conversion engines inside Skriptoteket for historical generic
+  Conversion Hub work. This is superseded for the teacher-facing Document
+  Converter lane by `PR-0380`, which allows researched in-app simple conversion
+  paths while preserving Sir Convert for heavy/OCR/complex PDF work.
 - No partial/legacy shims for `html-to-pdf-preview` once the curated app exists: callers/tests are
   updated to the new surface.
 - No redirect-based artifact delivery that bypasses Skriptoteket ownership checks for Conversion Hub
@@ -265,3 +269,9 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
   language as technical/historical unless it is explicitly describing the
   compatibility shell. Teacher-facing planning should use the separate Exam
   Converter, Audio Transcription, and Document Converter lanes.
+- `PR-0380` / `ST-37-04` corrected the Document Converter follow-up direction on
+  2026-06-23: simple document conversion is app-boundary work inside
+  Skriptoteket, while Sir Convert remains the heavy/OCR/complex PDF producer
+  path. This correction applies only to the Document Converter lane and does not
+  move STT, diarization, Exam Converter heavy import, or model-backed extraction
+  into Skriptoteket.

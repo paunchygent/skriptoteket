@@ -104,6 +104,24 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md`
 - Document Converter backend-backed MVP planning review:
   `docs/backlog/reviews/review-pr-0375-document-converter-backend-backed-mvp-planning.md`
+- Document Converter backend API contract slice:
+  `docs/backlog/prs/pr-0379-st-37-04-document-converter-backend-api-contract.md`
+- Document Converter backend API contract review:
+  `docs/backlog/reviews/review-pr-0379-document-converter-backend-api-contract.md`
+- Document Converter product contract correction:
+  `docs/backlog/prs/pr-0380-st-37-04-document-converter-product-contract-correction.md`
+- Document Converter local-heavy producer and batch contract:
+  `docs/backlog/prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md`
+- Document Converter local-heavy producer and batch review:
+  `docs/backlog/reviews/review-pr-0381-document-converter-local-heavy-producer-and-batch-contract.md`
+- Document Converter HTML/CSS project preview contract:
+  `docs/backlog/prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md`
+- Document Converter mockup and copy approval package:
+  `docs/backlog/prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md`
+- Document Converter route-visible MVP implementation:
+  `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md`
+- Document Converter files and history follow-up:
+  `docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:
