@@ -2,7 +2,7 @@
 type: pr
 id: PR-0386
 title: "ST-37-04 Audio Transcription button token remediation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-25
 updated: 2026-06-25
@@ -89,6 +89,34 @@ Green/closeout:
   with the governed design-system rule.
 - Stop if live route proof would require changing the HuleEdu shared-auth
   ceremony or bypassing the existing authenticated proof helpers.
+
+## Implementation Summary
+
+- Added a route-local transcript command-button class helper so Audio
+  Transcription operating commands share neutral compact token surfaces.
+- Replaced filled/CTA command styling on start, cancel, reset, selected-format
+  download, and selected-format Mina filer save controls without changing copy,
+  events, backend/API calls, producer behavior, or persistence.
+- Preserved explicit selector/status treatments: speaker mode and export format
+  selected states remain visually selected, and running progress/status markers
+  still use their status fill.
+- Extended the existing authenticated transcript UI-inspection fixture route to
+  honor `intake`, `running`, and `completed-export` fixture ids for visual proof
+  only. The production Audio Transcription route and Document Converter
+  implementation were not changed.
+
+## Verification Log
+
+| Check | Result |
+|---|---|
+| Red-first styling contract | Failed as expected: `pdm run fe-test -- --run src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptFormatterExportPanel.spec.ts` reported 2 failures: start still carried `btn-cta`, and selected-format download still carried `bg-navy`. |
+| Focused green styling contract | Passed: same command, 2 files / 5 tests. |
+| Focused transcript route specs | Passed: `pdm run fe-test -- --run src/router/routes.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptFormatterExportPanel.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.pr0351.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.spec.ts src/views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.pr0351.spec.ts` with 7 files / 38 tests. |
+| `pdm run fe-type-check` | Passed. |
+| `pdm run fe-lint` | Passed. |
+| `pdm run fe-build` | Passed; retained existing Vite dynamic/static import and large-chunk warnings. |
+| HuleEdu shared-auth provider check | Passed: `pdm run run-local-pdm auth-integration check` from `/Users/olofs_mba/Documents/Repos/huleedu`. |
+| Live visual proof | Passed through HuleEdu browser-session ceremony with Vite on `http://127.0.0.1:5173`; retained screenshots and DOM class evidence at `.artifacts/pr-0386-transcript-button-token-proof/20260625T201832Z/` for `intake`, `running`, and `completed-export`. |
 
 ## Rollback Plan
 

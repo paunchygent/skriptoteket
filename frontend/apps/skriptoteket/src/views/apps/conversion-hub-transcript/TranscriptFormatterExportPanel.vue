@@ -22,6 +22,7 @@ import {
   formatterArtifactActionState,
   type FormatterArtifactActionStates,
 } from "./transcriptFormatterArtifactActions";
+import { TRANSCRIPT_COMMAND_BUTTON_CLASS } from "./transcriptCommandButtonClasses";
 
 type TranscriptFormatterRequestedArtifact =
   ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
@@ -131,7 +132,7 @@ function stateMessage(): string {
     <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
       <button
         type="button"
-        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 overflow-hidden border border-navy bg-navy px-3 text-xs font-black uppercase leading-none text-canvas transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 disabled:cursor-not-allowed disabled:border-navy/20 disabled:bg-navy/10 disabled:text-navy/45"
+        :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
         :disabled="!selectedActionEnabled"
         data-test="transcript-download-selected-format"
         @click="emit('downloadFormatterArtifact', selectedFormat)"
@@ -144,7 +145,7 @@ function stateMessage(): string {
       </button>
       <button
         type="button"
-        class="inline-flex h-10 min-w-0 items-center justify-center gap-2 overflow-hidden border border-navy/25 bg-panel px-3 text-xs font-black uppercase leading-none text-navy transition hover:border-action focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 disabled:cursor-not-allowed disabled:text-navy/45"
+        :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
         :disabled="!selectedActionEnabled"
         data-test="transcript-save-selected-format"
         @click="emit('saveFormatterArtifact', selectedFormat)"

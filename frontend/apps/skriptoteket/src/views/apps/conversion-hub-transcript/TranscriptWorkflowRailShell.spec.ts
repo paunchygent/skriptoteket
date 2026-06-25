@@ -51,6 +51,18 @@ function buttonIndex(wrapper: ReturnType<typeof mountRail>, selector: string): n
 }
 
 describe("TranscriptWorkflowRailShell", () => {
+  it("renders the start command as a neutral compact control instead of a filled CTA", () => {
+    const wrapper = mountRail();
+
+    const start = wrapper.get("[data-test='transcript-start']");
+
+    expect(start.classes()).not.toContain("btn-cta");
+    expect(start.classes()).not.toContain("bg-navy");
+    expect(start.classes()).not.toContain("text-canvas");
+    expect(start.classes()).toContain("bg-panel");
+    expect(start.classes()).toContain("text-navy");
+  });
+
   it("reserves an invisible cancel slot above start before transcription runs", () => {
     const wrapper = mountRail();
 

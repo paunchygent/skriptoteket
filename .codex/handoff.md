@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-25.
 - Branch: `main`.
-- Latest closed work: `PR-0384` route-visible Document Converter MVP; `REV-PR-0384` approved.
+- Latest closed work: `PR-0386` Audio Transcription button-token remediation; `REV-PR-0386` approved.
 - Active slice: none. Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the
@@ -103,6 +103,8 @@ Keep this file updated so the next session can pick up work quickly.
   authenticated Vue route before generic `/apps/:appId`, the home card links to
   it, and the dedicated UI consumes scoped project-preview endpoints with
   locked Swedish copy and only `separate_pdfs` / `combined_pdf`.
+- `PR-0386` is done and approved by `REV-PR-0386`: Audio Transcription command
+  buttons now use neutral compact token surfaces while selector state remains explicit.
 ## Verification
 - Current local shared-auth runtime as of PR-0368 implementation:
   - HuleEdu Gateway container `huleedu_api_gateway_service` healthy on
@@ -134,14 +136,12 @@ Keep this file updated so the next session can pick up work quickly.
     `pdm run fe-type-check`
   - PR-0382 repair gates and retained re-review are recorded in
     `docs/backlog/reviews/review-pr-0382-document-converter-html-css-project-preview-contract.md`.
-  - PR-0384 initial red proved missing route/card/API/view; retained-review
-    repair red `DocumentConverterView.spec.ts` failed 6 tests for shell
-    branding, duplicate/cap/type file handling, fake preview controls, and
-    refresh preview loss.
-  - PR-0384 green/repair proof passed and `REV-PR-0384` approved: focused Vitest route/home/API/shared UI,
-    `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run lint`,
-    script-surface test, and shared-auth proof. Latest artifacts:
-    `.artifacts/authenticated-home-work-apps/20260625T192730Z/`.
+  - PR-0384 red/green proof and `REV-PR-0384` approval are retained in
+    `docs/backlog/reviews/review-pr-0384-document-converter-route-visible-mvp-implementation.md`;
+    latest browser artifacts: `.artifacts/authenticated-home-work-apps/20260625T192730Z/`.
+  - PR-0386 green/review proof passed: transcript focused Vitest, `pdm run fe-type-check`,
+    `pdm run fe-lint`, `pdm run fe-build`, docs/handoff validation, and visual
+    proof under `.artifacts/pr-0386-transcript-button-token-proof/20260625T201832Z/`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -191,7 +191,6 @@ git diff --check
   monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next natural ST-37-04 slice: decide whether to take `PR-0386` button-token remediation or a governed Document Converter follow-up.
+- Recommended next governed follow-up: shared artifact-action state consolidation before inline Document Converter PDF rendering.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
-- `PR-0386` is ready for Audio Transcription button-token remediation.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

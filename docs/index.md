@@ -124,6 +124,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md`
 - Audio Transcription button token remediation:
   `docs/backlog/prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md`
+- Audio Transcription button token remediation review:
+  `docs/backlog/reviews/review-pr-0386-audio-transcription-button-token-remediation.md`
 - Document Converter small-screen mockup remediation:
   `docs/backlog/prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md`
 - Document Converter small-screen mockup remediation review:

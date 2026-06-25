@@ -13,6 +13,7 @@
 
 import { Check, FileAudio, Play, Upload, X } from "lucide-vue-next";
 
+import { TRANSCRIPT_COMMAND_BUTTON_CLASS } from "./transcriptCommandButtonClasses";
 import type {
   TranscriptSourceFileSelection,
   TranscriptSpeakerMode,
@@ -256,8 +257,10 @@ function numericInputValue(event: Event): number {
         </h2>
         <button
           type="button"
-          class="btn-secondary justify-center shadow-none"
-          :class="isRunning ? undefined : 'invisible pointer-events-none'"
+          :class="[
+            TRANSCRIPT_COMMAND_BUTTON_CLASS,
+            isRunning ? undefined : 'invisible pointer-events-none',
+          ]"
           data-test="transcript-cancel"
           :aria-hidden="isRunning ? undefined : 'true'"
           :disabled="!isRunning || abortState.status === 'pending'"
@@ -268,7 +271,7 @@ function numericInputValue(event: Event): number {
         </button>
         <button
           type="button"
-          class="btn-cta justify-center gap-2 shadow-none"
+          :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
           data-test="transcript-start"
           :disabled="!canStartTranscript || isRunning"
           @click="emit('startTranscript')"
@@ -281,7 +284,7 @@ function numericInputValue(event: Event): number {
         </button>
         <button
           type="button"
-          class="btn-ghost justify-center shadow-none"
+          :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
           data-test="transcript-reset"
           @click="emit('resetTranscriptChoices')"
         >

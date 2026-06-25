@@ -20,7 +20,7 @@ import type {
 } from "../../../api/conversionHubTranscriptFormatterExports";
 import type { TranscriptFormatterArtifactKey } from "../../../api/conversionHubTranscriptFormatterArtifactActions";
 import type { ConversionHubTranscriptSpeakerOverlayEntry } from "../../../api/conversionHubTranscriptSaves";
-import type { TranscriptJson } from "../../../api/sirConvertGateway";
+import type { SirConvertTranscriptJob, TranscriptJson } from "../../../api/sirConvertGateway";
 import TranscriptWorkflowRailShell from "./TranscriptWorkflowRailShell.vue";
 import TranscriptWorkspaceShell from "./TranscriptWorkspaceShell.vue";
 import {
@@ -29,9 +29,11 @@ import {
 } from "./transcriptFormatterArtifactActions";
 import type { TranscriptSourceFileSelection } from "./useTranscriptSourceFile";
 
-defineProps<{
+const props = defineProps<{
   fixtureId?: string | null;
 }>();
+
+type TranscriptUiInspectionFixtureId = "completed-export" | "intake" | "running";
 
 const selectedTranscriptFile: TranscriptSourceFileSelection = {
   file: new File(["audio fixture"], "Ny inspelning 4333.mp3", { type: "audio/mpeg" }),
@@ -66,6 +68,28 @@ const transcript: TranscriptJson = {
       text: "Jag kan sammanfatta nästa steg och lägga det i materialet.",
     },
   ],
+};
+
+const runningJob: SirConvertTranscriptJob = {
+  jobId: "job_transcript_fixture",
+  progress: {
+    audioPipelineEtaSeconds: null,
+    audioPipelinePercentComplete: null,
+    currentChunkIndex: 1,
+    currentPhaseStartedAt: "2026-06-25T19:30:00Z",
+    lastHeartbeatAt: "2026-06-25T19:31:00Z",
+    percentComplete: 35,
+    phase: "transcribing",
+    phaseTimingsMs: {
+      chunk_total_ms: 32000,
+      conversion_total_ms: 45000,
+    },
+    processedMediaSeconds: 42,
+    status: "running",
+    totalChunks: 3,
+    totalMediaSeconds: 120,
+  },
+  status: "running",
 };
 
 const formatterArtifacts: readonly ConversionHubTranscriptFormatterArtifactRef[] = [
@@ -117,10 +141,28 @@ const speakerOverlayEntries = ref<ConversionHubTranscriptSpeakerOverlayEntry[]>(
 const speakerOverlayStatus = ref<"idle" | "loading" | "saving" | "saved" | "failed">("saved");
 const formatterArtifactActionStates = ref<FormatterArtifactActionStates>({});
 const canExport = computed(() => speakerOverlayStatus.value === "saved");
-const visibleFormatterArtifacts = computed(() => (canExport.value ? formatterArtifacts : []));
-const formatterExportStatus = computed<ConversionHubTranscriptFormatterExportStatus>(() =>
-  canExport.value ? "succeeded" : "not_requested",
+const normalizedFixtureId = computed<TranscriptUiInspectionFixtureId>(() => {
+  if (props.fixtureId === "intake" || props.fixtureId === "running") {
+    return props.fixtureId;
+  }
+  return "completed-export";
+});
+const isCompletedFixture = computed(() => normalizedFixtureId.value === "completed-export");
+const isRunningFixture = computed(() => normalizedFixtureId.value === "running");
+const visibleFormatterArtifacts = computed(() =>
+  isCompletedFixture.value && canExport.value ? formatterArtifacts : [],
 );
+const formatterExportStatus = computed<ConversionHubTranscriptFormatterExportStatus>(() =>
+  isCompletedFixture.value && canExport.value ? "succeeded" : "not_requested",
+);
+const workflowSelectedFile = computed(() =>
+  normalizedFixtureId.value === "intake" ? null : selectedTranscriptFile,
+);
+const workspaceRuntimeStatus = computed(() =>
+  isRunningFixture.value ? "running" : isCompletedFixture.value ? "succeeded" : "idle",
+);
+const workspaceTranscript = computed(() => (isCompletedFixture.value ? transcript : null));
+const workspaceCurrentJob = computed(() => (isRunningFixture.value ? runningJob : null));
 
 function handleSpeakerOverlayChanged(label: string, displayName: string): void {
   speakerOverlayEntries.value = [
@@ -162,16 +204,16 @@ function markArtifactAction(
     <section
       class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm min-[821px]:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] min-[1181px]:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
       aria-label="Ljudtranskribering"
-      :data-inspection-fixture-id="fixtureId ?? undefined"
+      :data-inspection-fixture-id="normalizedFixtureId"
       data-test="transcript-ui-inspection-host-frame"
     >
       <TranscriptWorkflowRailShell
         :abort-state="{ status: 'idle', message: null }"
         :can-start-transcript="false"
-        :is-running="false"
+        :is-running="isRunningFixture"
         :max-speakers="3"
         :min-speakers="1"
-        :selected-transcript-file="selectedTranscriptFile"
+        :selected-transcript-file="workflowSelectedFile"
         :speaker-count="3"
         :speaker-error="null"
         speaker-mode="auto"
@@ -192,23 +234,23 @@ function markArtifactAction(
       >
         <TranscriptWorkspaceShell
           :abort-state="{ status: 'idle', message: null }"
-          :can-edit-speaker-overlays="true"
-          :can-request-formatter-export="canExport"
+          :can-edit-speaker-overlays="isCompletedFixture"
+          :can-request-formatter-export="isCompletedFixture && canExport"
           :can-save-transcript="false"
-          :current-job="null"
+          :current-job="workspaceCurrentJob"
           :error-message="null"
           :formatter-artifact-action-states="formatterArtifactActionStates"
           :formatter-export-artifacts="visibleFormatterArtifacts"
           :formatter-export-error-message="null"
           :formatter-export-status="formatterExportStatus"
-          runtime-status="succeeded"
+          :runtime-status="workspaceRuntimeStatus"
           :save-error-message="null"
-          save-status="saved"
-          :selected-transcript-file="selectedTranscriptFile"
+          :save-status="isCompletedFixture ? 'saved' : 'idle'"
+          :selected-transcript-file="workflowSelectedFile"
           :speaker-overlay-entries="speakerOverlayEntries"
           :speaker-overlay-error-message="null"
           :speaker-overlay-status="speakerOverlayStatus"
-          :transcript="transcript"
+          :transcript="workspaceTranscript"
           :transcript-file-error="null"
           @download-formatter-artifact="markArtifactAction($event, 'download')"
           @files-dropped="() => undefined"
