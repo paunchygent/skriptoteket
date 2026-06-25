@@ -1,0 +1,310 @@
+<!doctype html>
+<!--
+Domain purpose:
+  Static PR-0383 approval mockup for the route-visible Document Converter
+  workspace before production Vue implementation.
+
+Relationships:
+  - Governed by PR-0383 and the approved A3 workspace direction.
+  - Mirrors the PR-0382 HTML/CSS preview contract without activating a route.
+  - Uses the approved Swedish v4 copy handoff for visible app strings.
+-->
+<html lang="sv">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PR-0383 Dokumentkonverterare HTML/CSS Mockup</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="workbench" aria-label="Dokumentkonverterare">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-name">SKRIPTOTEKET</span>
+          <span class="brand-subtitle">DOKUMENTKONVERTERARE</span>
+        </div>
+      </header>
+
+      <section class="mobile-shell" aria-label="Mobilöversikt">
+        <div class="mobile-mode-row" role="group" aria-label="Läge">
+          <button class="rail-choice rail-choice-active mobile-mode-chip" type="button" aria-pressed="true">
+            <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+            HTML/CSS
+          </button>
+          <button class="rail-choice mobile-mode-chip" type="button" aria-pressed="false">
+            <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+            Flera dokument
+          </button>
+        </div>
+
+        <section class="mobile-project-summary" aria-label="Projektöversikt">
+          <div class="mobile-project-heading">
+            <div>
+              <h1>index.html</h1>
+            </div>
+            <button class="neutral-button" type="button">
+              <span class="symbol symbol-plus" data-symbol="IconPlus" aria-hidden="true"></span>
+              Lägg till fil
+            </button>
+          </div>
+          <div class="mobile-project-meta">
+            <span>14 filer</span>
+            <span>6 HTML</span>
+            <span>3 CSS</span>
+            <span>5 bilder</span>
+          </div>
+        </section>
+
+        <div class="mobile-readiness-strip" aria-label="Mobil status">
+          <span>Filer</span>
+          <span>Mall</span>
+          <span>PDF</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="rail" aria-label="Projekt">
+          <section class="rail-section">
+            <button class="rail-choice rail-choice-active" type="button" aria-pressed="true">
+              <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+              HTML/CSS
+            </button>
+            <button class="rail-choice" type="button" aria-pressed="false">
+              <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+              Flera dokument
+            </button>
+          </section>
+
+          <section class="rail-section rail-section-tight">
+            <div class="asset-group">
+              <div class="asset-heading">
+                <h3>HTML (6/10)</h3>
+                <button class="micro-button" type="button">
+                  <span class="symbol symbol-plus" data-symbol="IconPlus" aria-hidden="true"></span>
+                  Lägg till
+                </button>
+              </div>
+              <button class="asset-row asset-row-active" type="button">
+                <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+                index.html
+              </button>
+              <button class="asset-row" type="button">
+                <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+                chapter-01.html
+              </button>
+              <button class="asset-row" type="button">
+                <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+                chapter-02.html
+              </button>
+              <button class="asset-row" type="button">
+                <span class="symbol symbol-file-text" data-symbol="IconFileText" aria-hidden="true"></span>
+                about.html
+              </button>
+            </div>
+
+            <div class="asset-group">
+              <div class="asset-heading">
+                <h3>CSS (3/10)</h3>
+                <button class="micro-button" type="button">
+                  <span class="symbol symbol-plus" data-symbol="IconPlus" aria-hidden="true"></span>
+                  Lägg till
+                </button>
+              </div>
+              <div class="asset-row asset-static">
+                <span class="symbol symbol-code" data-symbol="IconCode" aria-hidden="true"></span>
+                styles.css
+              </div>
+              <div class="asset-row asset-static">
+                <span class="symbol symbol-code" data-symbol="IconCode" aria-hidden="true"></span>
+                print.css
+              </div>
+              <div class="asset-row asset-static">
+                <span class="symbol symbol-code" data-symbol="IconCode" aria-hidden="true"></span>
+                theme.css
+              </div>
+            </div>
+
+            <div class="asset-group">
+              <div class="asset-heading">
+                <h3>Bilder (5/10)</h3>
+                <button class="micro-button" type="button">
+                  <span class="symbol symbol-plus" data-symbol="IconPlus" aria-hidden="true"></span>
+                  Lägg till
+                </button>
+              </div>
+              <div class="asset-row asset-static">
+                <span class="symbol symbol-image" data-symbol="IconImageAsset" aria-hidden="true"></span>
+                cover.png
+              </div>
+              <div class="asset-row asset-static">
+                <span class="symbol symbol-image" data-symbol="IconImageAsset" aria-hidden="true"></span>
+                diagram-01.png
+              </div>
+              <div class="asset-row asset-static">
+                <span class="symbol symbol-image" data-symbol="IconImageAsset" aria-hidden="true"></span>
+                logo.png
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="controls" aria-label="Val för export">
+          <div class="selected-file">
+            <div>
+              <h1>index.html</h1>
+            </div>
+            <button class="neutral-button" type="button">
+              <span class="symbol symbol-plus" data-symbol="IconPlus" aria-hidden="true"></span>
+              Lägg till fil
+            </button>
+          </div>
+
+          <section class="control-section">
+            <label class="field">
+              <span>Mall</span>
+              <select aria-label="Mall">
+                <option>Standard</option>
+                <option>Elevblad</option>
+                <option>Rapport</option>
+              </select>
+            </label>
+
+            <div class="field">
+              <span>Exportera som</span>
+              <div class="segmented" role="group" aria-label="Exportera som">
+                <button class="segment segment-active" type="button" aria-pressed="true">
+                  <span class="symbol symbol-files" data-symbol="IconSeparatePdfs" aria-hidden="true"></span>
+                  Enskilda PDF-filer
+                </button>
+                <button class="segment" type="button" aria-pressed="false">
+                  <span class="symbol symbol-combine" data-symbol="IconCombinePdf" aria-hidden="true"></span>
+                  Kombinerad PDF
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span>Format</span>
+              <div class="compact-options" role="group" aria-label="Format">
+                <button class="compact-option" type="button" aria-pressed="false">A3</button>
+                <button class="compact-option compact-option-active" type="button" aria-pressed="true">A4</button>
+                <button class="compact-option" type="button" aria-pressed="false">A5</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="readiness-panel" aria-label="Status">
+            <div class="readiness-grid">
+              <span>Filer</span>
+              <strong>Klar</strong>
+              <span>Mall</span>
+              <strong>Klar</strong>
+              <span>PDF</span>
+              <strong>Klar</strong>
+            </div>
+          </section>
+
+          <section class="action-dock" aria-label="Förhandsvisningsåtgärder">
+            <button class="neutral-button danger" type="button">
+              <span class="symbol symbol-trash" data-symbol="IconTrash" aria-hidden="true"></span>
+              Ta bort
+            </button>
+            <button class="neutral-button" type="button">
+              <span class="symbol symbol-eye" data-symbol="IconPreview" aria-hidden="true"></span>
+              Förhandsvisa
+            </button>
+            <button class="neutral-button" type="button">
+              <span class="symbol symbol-refresh" data-symbol="IconRefresh" aria-hidden="true"></span>
+              Uppdatera
+            </button>
+          </section>
+        </section>
+
+        <section class="preview" aria-label="Förhandsvisning">
+          <div class="preview-header">
+            <div>
+              <h2>index.html</h2>
+            </div>
+            <div class="preview-tools" aria-label="Verktyg för förhandsvisning">
+              <button class="icon-button" type="button" aria-label="Första sidan">
+                <span class="symbol symbol-chevrons-left" data-symbol="IconFirstPage" aria-hidden="true"></span>
+              </button>
+              <button class="icon-button" type="button" aria-label="Föregående sida">
+                <span class="symbol symbol-chevron-left" data-symbol="IconPreviousPage" aria-hidden="true"></span>
+              </button>
+              <span class="page-indicator">1 / 24</span>
+              <button class="icon-button" type="button" aria-label="Nästa sida">
+                <span class="symbol symbol-chevron-right" data-symbol="IconNextPage" aria-hidden="true"></span>
+              </button>
+              <button class="icon-button" type="button" aria-label="Sista sidan">
+                <span class="symbol symbol-chevrons-right" data-symbol="IconLastPage" aria-hidden="true"></span>
+              </button>
+              <button class="icon-button" type="button" aria-label="Zooma ut">
+                <span class="symbol symbol-zoom-out" data-symbol="IconZoomOut" aria-hidden="true"></span>
+              </button>
+              <span class="zoom-indicator">100%</span>
+              <button class="icon-button" type="button" aria-label="Zooma in">
+                <span class="symbol symbol-zoom-in" data-symbol="IconZoomIn" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="preview-body">
+            <aside class="page-strip" aria-label="Sidor">
+              <button class="page-thumb page-thumb-active" type="button"><span></span><strong>1</strong></button>
+              <button class="page-thumb" type="button"><span></span><strong>2</strong></button>
+              <button class="page-thumb" type="button"><span></span><strong>3</strong></button>
+            </aside>
+            <article class="pdf-page" aria-label="PDF-sida">
+              <header class="pdf-page-header">
+                <span>Chapter 1</span>
+                <i></i>
+              </header>
+              <section class="pdf-hero">
+                <div>
+                  <h2>Introduction</h2>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent libero sed cursus ante.</p>
+                </div>
+                <div class="image-placeholder" aria-hidden="true"></div>
+              </section>
+              <section class="pdf-content-row">
+                <div>
+                  <h3>1.1 Background</h3>
+                  <p>Praesent libero. Sed cursus ante dapibus diam. Nulla quis sem at nibh elementum.</p>
+                  <table>
+                    <thead><tr><th>Item</th><th>Description</th><th>Value</th></tr></thead>
+                    <tbody>
+                      <tr><td>A</td><td>Source document</td><td>123</td></tr>
+                      <tr><td>B</td><td>Support style</td><td>456</td></tr>
+                      <tr><td>C</td><td>Image asset</td><td>789</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="chart-card" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </section>
+            </article>
+          </div>
+
+          <footer class="preview-footer">
+            <div class="preview-state">
+              <span class="state-dot" aria-hidden="true"></span>
+              Tillfällig
+            </div>
+            <div class="footer-actions">
+              <button class="neutral-button" type="button">
+                <span class="symbol symbol-download" data-symbol="IconDownload" aria-hidden="true"></span>
+                Ladda ned
+              </button>
+              <button class="neutral-button" type="button">
+                <span class="symbol symbol-folder-open" data-symbol="IconVaultFiles" aria-hidden="true"></span>
+                Spara i Mina filer
+              </button>
+            </div>
+          </footer>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

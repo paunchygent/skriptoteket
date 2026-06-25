@@ -60,6 +60,12 @@ const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
     }),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/apps/document-converter",
+    name: "document-converter-authenticated",
+    component: () => import("../views/apps/document-converter/DocumentConverterView.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 export const routes: RouteRecordRaw[] = [

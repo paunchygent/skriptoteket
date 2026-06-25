@@ -1,0 +1,456 @@
+/*
+Domain purpose:
+  Token-driven static styling for the PR-0383 Document Converter approval
+  mockup.
+
+Relationships:
+  - Imports canonical HuleEdu/Skriptoteket design tokens from the app source.
+  - Supports the bundle-local index.html without production route activation.
+  - Preserves the outcome-first UI contract for HTML/CSS mockup approval.
+*/
+
+@import "../../../../src/skriptoteket/web/static/css/huleedu-design-tokens.css";
+@import "preview.css";
+@import "icons.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--huleedu-canvas);
+  color: var(--huleedu-navy);
+  font-family: var(--huleedu-font-sans);
+}
+
+.mobile-shell { display: none; }
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.workbench {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 70px minmax(0, 1fr);
+  border: 1px solid var(--huleedu-navy);
+  background:
+    linear-gradient(var(--huleedu-navy-05) 1px, transparent 1px),
+    linear-gradient(90deg, var(--huleedu-navy-05) 1px, transparent 1px),
+    var(--huleedu-canvas);
+  background-size: var(--huleedu-grid-size) var(--huleedu-grid-size);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--huleedu-navy);
+  background: linear-gradient(180deg, var(--huleedu-panel-muted), var(--huleedu-panel));
+}
+
+.brand { display: grid; gap: 3px; }
+
+.brand-name {
+  font-weight: 800;
+  font-size: 23px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.brand-subtitle { letter-spacing: 0.17em; }
+
+.workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) minmax(360px, 440px) minmax(520px, 1fr);
+}
+
+.rail,
+.controls,
+.preview {
+  min-width: 0;
+  min-height: 0;
+  background: var(--huleedu-panel);
+}
+
+.rail,
+.controls {
+  border-right: 1px solid var(--huleedu-navy-30);
+}
+
+.rail {
+  overflow: auto;
+  padding: 18px 14px;
+}
+
+.rail-section + .rail-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--huleedu-navy-20);
+}
+
+.asset-heading h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.asset-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rail-choice,
+.asset-row,
+.neutral-button,
+.micro-button,
+.segment,
+.compact-option,
+.icon-button {
+  border: 1px solid var(--huleedu-navy);
+  border-radius: 4px;
+  background: var(--huleedu-panel);
+  color: var(--huleedu-navy);
+  transition: background-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.rail-choice {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 13px;
+  border-color: transparent;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.rail-choice-active {
+  border-color: var(--huleedu-navy);
+  background: var(--huleedu-navy);
+  color: var(--button-primary-text);
+}
+
+.asset-group { margin-top: 16px; display: grid; gap: 6px; }
+
+.rail-section-tight .asset-group:first-child { margin-top: 0; }
+
+.asset-heading { min-height: 30px; }
+
+.micro-button {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--huleedu-canvas);
+}
+
+.asset-row {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-color: transparent;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+}
+
+.asset-row-active {
+  border-color: var(--huleedu-navy-40);
+  background: var(--huleedu-canvas);
+  box-shadow: inset 4px 0 0 var(--huleedu-action);
+}
+
+.asset-static { cursor: default; }
+
+.controls {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: auto;
+}
+
+.selected-file,
+.control-section,
+.readiness-panel,
+.action-dock {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--huleedu-navy-20);
+}
+
+.selected-file {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.selected-file h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.control-section { display: grid; align-content: start; gap: 24px; }
+
+.field { display: grid; gap: 8px; }
+
+.field > span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--huleedu-navy-50);
+  border-radius: 4px;
+  background: var(--huleedu-canvas);
+  color: var(--huleedu-navy);
+  padding: 0 12px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--huleedu-navy-40);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.segment {
+  min-height: 92px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-right: 1px solid var(--huleedu-navy-30);
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.segment:last-child { border-right: 0; }
+
+.segment-active,
+.compact-option-active {
+  background: var(--huleedu-action-05);
+  box-shadow: inset 0 0 0 2px var(--huleedu-action);
+}
+
+.compact-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+
+.compact-option { min-height: 40px; padding: 0 12px; font-size: 13px; font-weight: 700; }
+
+.readiness-panel { border-top: 1px solid var(--huleedu-navy-20); background: var(--huleedu-panel-muted); }
+
+.readiness-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  font-size: 12px;
+}
+
+.readiness-grid span {
+  color: var(--huleedu-navy-60);
+}
+
+.readiness-grid strong { color: var(--huleedu-action); font-size: 12px; }
+
+.action-dock {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border-bottom: 0;
+}
+
+.neutral-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+  background: var(--huleedu-canvas);
+}
+
+.neutral-button.danger { border-color: var(--huleedu-critical); color: var(--huleedu-critical); }
+
+.action-dock .neutral-button {
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .neutral-button:hover,
+  .micro-button:hover,
+  .asset-row:hover,
+  .segment:hover,
+  .compact-option:hover,
+  .icon-button:hover {
+    background: var(--huleedu-action-05);
+    border-color: var(--huleedu-action);
+  }
+}
+
+@media (max-width: 1180px) {
+  .workspace { grid-template-columns: 280px minmax(0, 1fr); }
+  .preview { grid-column: 1 / -1; border-top: 1px solid var(--huleedu-navy-30); }
+}
+
+@media (max-width: 780px) {
+  .topbar {
+    min-height: 82px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .workbench {
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
+  .mobile-shell {
+    display: grid;
+    gap: 12px;
+    padding: 14px 16px 0;
+    border-bottom: 1px solid var(--huleedu-navy-20);
+  }
+
+  .mobile-mode-row,
+  .mobile-project-heading,
+  .preview-body,
+  .pdf-hero,
+  .pdf-content-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-mode-row,
+  .mobile-project-meta,
+  .mobile-readiness-strip,
+  .action-dock {
+    gap: 10px;
+  }
+
+  .mobile-project-summary,
+  .mobile-readiness-strip {
+    border: 1px solid var(--huleedu-navy-20);
+    background: var(--huleedu-panel);
+    padding: 14px;
+  }
+
+  .mobile-project-heading {
+    gap: 12px;
+    align-items: start;
+  }
+
+  .mobile-project-heading h1,
+  .preview-header h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.05;
+  }
+
+  .mobile-project-meta,
+  .mobile-readiness-strip {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .mobile-project-meta span,
+  .mobile-readiness-strip span {
+    border: 1px solid var(--huleedu-navy-25);
+    background: var(--huleedu-canvas);
+    padding: 5px 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .rail,
+  .page-strip,
+  .selected-file,
+  .readiness-panel {
+    display: none;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .preview {
+    order: 1;
+    padding: 16px;
+  }
+
+  .controls {
+    order: 2;
+    border-right: 0;
+  }
+
+  .control-section,
+  .action-dock {
+    padding: 18px 16px;
+  }
+
+  .action-dock {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-header,
+  .preview-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .preview-tools,
+  .footer-actions {
+    gap: 8px;
+  }
+
+}

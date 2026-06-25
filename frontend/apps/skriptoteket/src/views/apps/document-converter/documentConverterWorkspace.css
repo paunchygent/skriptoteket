@@ -1,0 +1,288 @@
+/**
+ * Document Converter workspace styles.
+ *
+ * Domain purpose:
+ *   Provide the token-driven dense workspace layout, rail, controls, and
+ *   responsive project summary for the route-visible Document Converter app.
+ *
+ * Relationships:
+ *   - Imported by `DocumentConverterView.vue`.
+ *   - Uses only HuleEdu/Skriptoteket design tokens and route-local classes.
+ */
+
+.dc-workbench {
+  min-height: calc(100vh - 4rem);
+  display: grid;
+  grid-template-rows: 4.375rem minmax(0, 1fr);
+  border: 1px solid var(--color-navy);
+  background:
+    linear-gradient(color-mix(in srgb, var(--color-navy) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-navy) 5%, transparent) 1px, transparent 1px),
+    var(--color-canvas);
+  background-size: var(--huleedu-grid-size) var(--huleedu-grid-size);
+  color: var(--color-navy);
+}
+
+.dc-topbar,
+.dc-mobile-summary,
+.dc-rail,
+.dc-controls,
+.dc-preview {
+  background: var(--color-panel);
+}
+
+.dc-topbar {
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--color-navy);
+}
+
+.dc-topbar h1 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dc-field > span,
+.dc-preview-state,
+.dc-asset-heading h2 {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.dc-mobile-summary {
+  display: none;
+}
+
+.dc-workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(15rem, 18rem) minmax(22rem, 27rem) minmax(30rem, 1fr);
+}
+
+.dc-rail,
+.dc-controls {
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid color-mix(in srgb, var(--color-navy) 30%, transparent);
+}
+
+.dc-rail {
+  overflow: auto;
+  padding: 1.1rem 0.9rem;
+}
+
+.dc-rail-section + .dc-rail-section {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
+}
+
+.dc-asset-row,
+.dc-neutral-button {
+  border: 1px solid var(--color-navy);
+  border-radius: 4px;
+  background: var(--color-panel);
+  color: var(--color-navy);
+}
+
+.dc-assets {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.dc-asset-heading {
+  min-height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.dc-asset-heading h2 {
+  margin: 0;
+}
+
+.dc-asset-heading--spaced {
+  margin-top: 1rem;
+}
+
+.dc-neutral-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+  background: var(--color-canvas);
+}
+
+.dc-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dc-asset-row {
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.65rem;
+  border-color: transparent;
+  background: transparent;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.dc-asset-row--active {
+  border-color: color-mix(in srgb, var(--color-navy) 40%, transparent);
+  background: var(--color-canvas);
+  box-shadow: inset 4px 0 0 var(--color-action);
+}
+
+.dc-asset-row--static {
+  cursor: default;
+}
+
+.dc-controls {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto auto;
+  overflow: auto;
+}
+
+.dc-file-toolbar,
+.dc-control-section,
+.dc-readiness,
+.dc-action-dock,
+.dc-error {
+  padding: 1.35rem 1.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
+}
+
+.dc-file-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.dc-preview-header h2 {
+  margin: 0;
+}
+
+.dc-neutral-button {
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+}
+
+.dc-neutral-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dc-neutral-button--danger {
+  border-color: var(--color-critical);
+  color: var(--color-critical);
+}
+
+.dc-control-section {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+}
+
+.dc-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dc-field select {
+  min-height: 2.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-navy) 50%, transparent);
+  border-radius: 4px;
+  background: var(--color-canvas);
+  color: var(--color-navy);
+  padding: 0 0.75rem;
+}
+
+.dc-readiness {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem 1rem;
+  background: var(--color-panel-muted);
+  font-size: 0.78rem;
+}
+
+.dc-readiness span {
+  color: color-mix(in srgb, var(--color-navy) 60%, transparent);
+}
+
+.dc-readiness strong {
+  color: var(--color-action);
+}
+
+.dc-action-dock {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.dc-error {
+  border-bottom: 0;
+  color: var(--color-error);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+@media (max-width: 72rem) {
+  .dc-workbench {
+    min-height: auto;
+    grid-template-rows: auto auto auto;
+  }
+
+  .dc-mobile-summary {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.9rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
+  }
+
+  .dc-mobile-project {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .dc-mobile-project {
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+    align-items: center;
+    font-size: 0.8rem;
+  }
+
+  .dc-mobile-project h1 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .dc-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .dc-rail {
+    display: none;
+  }
+
+  .dc-controls {
+    border-right: 0;
+  }
+}

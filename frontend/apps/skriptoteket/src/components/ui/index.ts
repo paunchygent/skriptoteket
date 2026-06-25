@@ -18,11 +18,14 @@ export { default as UiDenseSpinner } from "./UiDenseSpinner.vue";
 export { default as UiDenseToggle } from "./UiDenseToggle.vue";
 export { default as UiMarkdown } from "./UiMarkdown.vue";
 export { default as UiSearchBar } from "./UiSearchBar.vue";
+export { default as UiSegmentedTileToggle } from "./UiSegmentedTileToggle.vue";
 export { default as UiSegmentedToggle } from "./UiSegmentedToggle.vue";
 export { default as ToastHost } from "./ToastHost.vue";
 export { default as SystemMessage } from "./SystemMessage.vue";
 
 export type { UiDenseSplitButtonItem } from "./UiDenseSplitButton.vue";
+export type { UiSegmentedTileToggleOption } from "./UiSegmentedTileToggle.vue";
+export type { UiSegmentedToggleOption } from "./UiSegmentedToggle.vue";
 export type {
   DenseActionGroupPosition,
   DenseActionSize,

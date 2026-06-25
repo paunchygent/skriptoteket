@@ -236,7 +236,7 @@ describe("HomeView", () => {
     expect(workAppsSection.text()).toContain(
       "Skapa PDF:er med hjälp av HTML och CSS.",
     );
-    expect(workAppsSection.text()).toContain("Kommer senare");
+    expect(workAppsSection.text()).not.toContain("Kommer senare");
     expect(
       workAppsSection.findAll('[data-testid^="home-work-app-"]').map((app) => {
         const heading = app.find("h3");
@@ -284,7 +284,7 @@ describe("HomeView", () => {
     expect(secondaryLedgers.text()).not.toContain("Att granska");
   });
 
-  it("uses truthful authenticated route targets and keeps Dokumentkonvertering non-clickable", async () => {
+  it("uses truthful authenticated route targets and activates Dokumentkonvertering", async () => {
     const wrapper = await mountAuthenticatedHomeView();
 
     expect(findRouterLinkByText(wrapper, "Klassrumskartan")?.props("to")).toBe(
@@ -296,13 +296,18 @@ describe("HomeView", () => {
     expect(findRouterLinkByText(wrapper, "Ljudtranskribering")?.props("to")).toBe(
       "/apps/audio-transcription",
     );
+    expect(findRouterLinkByText(wrapper, "Dokumentkonvertering")?.props("to")).toBe(
+      "/apps/document-converter",
+    );
     expect(findRouterLinkByText(wrapper, "Kodredigerare")).toBeUndefined();
-    expect(findRouterLinkByText(wrapper, "Dokumentkonvertering")).toBeUndefined();
     expect(
       wrapper
         .get('[data-testid="home-work-app-document-converter"]')
         .attributes("data-app-linkable"),
-    ).toBe("false");
+    ).toBe("true");
+    expect(wrapper.get('[data-testid="home-work-app-document-converter"]').text()).not.toContain(
+      "Kommer senare",
+    );
   });
 
   it("keeps Kodredigerare and secondary affordances role-gated for contributors", async () => {

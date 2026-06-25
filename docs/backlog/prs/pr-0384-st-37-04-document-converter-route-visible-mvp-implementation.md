@@ -2,10 +2,10 @@
 type: pr
 id: PR-0384
 title: "ST-37-04 Document Converter route-visible MVP implementation"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-25
 stories:
   - "ST-37-04"
 tags:
@@ -20,7 +20,9 @@ acceptance_criteria:
   - "Given the approved backend contracts and mockups exist, when this slice closes, then `/apps/document-converter` is a truthful authenticated route that consumes Skriptoteket-owned Document Converter APIs."
   - "Given the authenticated home card currently remains inert, when the route ships, then the Document Converter card links to the new route without adding duplicate app links to persistent navigation."
   - "Given teachers need visible conversion state, when a job or preview runs, then the UI shows progress, result readiness, failure recovery, and allowed save/download actions through Skriptoteket endpoints."
-  - "Given copy is locked separately, when implementation lands, then production text matches the approved copy sheet and no unreviewed labels are introduced."
+  - "Given copy is locked separately, when implementation lands, then production text matches the locked copy sheet and no unreviewed labels are introduced."
+  - "Given Swedish copy v4 hides `both` from the visible UI, when export shape is rendered, then the route shows only `Enskilda PDF-filer` and `Kombinerad PDF` while any backend `both` value remains internal."
+  - "Given the approved symbol contract is canonical-wrapper first, when the route implements icons, then it uses existing shared icon wrappers before adding Lucide-backed wrappers for missing Document Converter semantic slots."
 ---
 
 # PR-0384: ST-37-04 Document Converter Route-Visible MVP Implementation
@@ -34,13 +36,15 @@ contract, mockups, and copy lock are approved.
 ## Goal
 
 Implement the first route-visible authenticated Document Converter app using
-the approved mockup, approved copy, and scoped backend contracts.
+the approved mockup, locked copy, and scoped backend contracts.
 
-## Blocked Until
+## Ready Because
 
 - `PR-0381` and `PR-0382` are implemented and reviewed.
-- `PR-0383` has approved image mockups, HTML/CSS mockup, and copy lock.
-- The user confirms that the first route-visible scope is ready for production.
+- `PR-0383` has approved image mockups, HTML/CSS mockup, and locked Swedish
+  copy v4.
+- The product owner supplied the first route-visible frontend handoff on
+  2026-06-25.
 
 ## Non-goals
 
@@ -48,6 +52,10 @@ the approved mockup, approved copy, and scoped backend contracts.
 - No sidebar app-link duplication.
 - No generic Conversion Hub teacher-facing label resurrection.
 - No unapproved copy.
+- No visible or a11y copy changes without reopening `PR-0383` copy approval.
+- No visible `Båda`/`both` output segment.
+- No hand-drawn SVG, CSS geometry, or one-off icon shapes in production
+  controls.
 - No broad registry/API app-presentation split unless `PR-0369` is explicitly
   activated by a concrete contract need.
 
@@ -74,11 +82,35 @@ the approved mockup, approved copy, and scoped backend contracts.
 - `pdm run handoff-validate`
 - `git diff --check`
 
+## Implementation Proof
+
+Implemented locally on 2026-06-25. Red-first focused Vitest failed before the
+route/component/service existed, then passed after implementation. Final focused
+frontend coverage proves route ordering/auth meta, home-card activation,
+locked Swedish copy, output mapping without visible `both`, A3/A4/A5 controls,
+preview success/failure recovery, download/save/discard actions, and the shared
+segmented tile control. The final route keeps a single `Lägg till fil` control,
+allows CSS/images before HTML, and hides the inert secondary document-mode
+placeholder. Live shared-auth proof passed through the HuleEdu browser-session
+ceremony with artifacts under
+`.artifacts/authenticated-home-work-apps/20260625T190452Z/`.
+
+Retained review repairs were applied on 2026-06-25 after `REV-PR-0384`
+returned `changes_requested`. The repair pass removed inert preview
+navigation/zoom controls, preserved stale successful previews on refresh
+failure, validated local project-file intake before submission, and removed
+duplicate inner `SKRIPTOTEKET` branding. Focused repair proof passed with
+refreshed shared-auth screenshots under
+`.artifacts/authenticated-home-work-apps/20260625T192730Z/`.
+
 ## Stop Conditions
 
-- Stop if production UI deviates from approved mockup or copy.
+- Stop if production UI deviates from approved mockup or locked copy.
+- Stop if the UI exposes backend `both` as a visible output-mode choice.
 - Stop if the route would call Sir Convert directly from the browser.
 - Stop if small-screen behavior cannot be proven.
+- Stop if implementation needs an icon semantic not covered by the canonical
+  store and does not add a Lucide-backed wrapper or documented local leaf.
 - Stop if implementation needs app registry/bootstrap contract changes not
   approved by a concrete `PR-0369` activation.
 

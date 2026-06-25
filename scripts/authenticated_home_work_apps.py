@@ -38,6 +38,7 @@ APP_LINK_TARGETS = {
     "home-work-app-classroom": "/apps/classroom.group-seating-studio",
     "home-work-app-exam-converter": "/apps/exam-converter",
     "home-work-app-audio-transcription": "/apps/audio-transcription",
+    "home-work-app-document-converter": "/apps/document-converter",
     "home-work-app-editor": "/editor",
 }
 REJECTED_COPY = (
@@ -99,7 +100,7 @@ def _assert_home_contract(page: Page) -> None:
     expect(work_apps.get_by_text("Exam Converter")).to_have_count(0)
     expect(work_apps.get_by_text("Audio Transcription")).to_have_count(0)
     expect(work_apps.get_by_text("Document Converter")).to_have_count(0)
-    expect(work_apps.get_by_text("Kommer senare")).to_be_visible()
+    expect(work_apps.get_by_text("Kommer senare")).to_have_count(0)
     for copy in REJECTED_COPY:
         expect(home_surface.get_by_text(copy)).to_have_count(0)
     expect(page.get_by_text("Mina körningar")).to_have_count(0)
@@ -114,16 +115,46 @@ def _assert_home_contract(page: Page) -> None:
         expect(card).to_have_attribute("data-app-linkable", "true")
         expect(card).to_have_attribute("href", href)
 
-    document_converter = page.locator('[data-testid="home-work-app-document-converter"]')
-    expect(document_converter).to_have_attribute("data-app-linkable", "false")
-    expect(document_converter).not_to_have_attribute("href", re.compile(r".+"))
-
     work_box = work_apps.bounding_box()
     ledger_box = secondary_ledgers.bounding_box()
     if work_box is None or ledger_box is None:
         raise AssertionError("Could not resolve authenticated home section geometry.")
     if work_box["y"] >= ledger_box["y"]:
         raise AssertionError("Work app cards are not above the secondary ledgers.")
+
+
+def _document_converter_fixture_files(artifact_dir: Path) -> list[str]:
+    fixture_dir = artifact_dir / "document-converter-fixture"
+    fixture_dir.mkdir(exist_ok=True)
+    html_path = fixture_dir / "index.html"
+    css_path = fixture_dir / "styles.css"
+    image_path = fixture_dir / "cover.png"
+    html_path.write_text(
+        "<!doctype html><html><head><link rel='stylesheet' href='styles.css'></head>"
+        "<body><h1>Dokument</h1><img src='cover.png' alt=''></body></html>",
+        encoding="utf-8",
+    )
+    css_path.write_text("body { font-family: sans-serif; }", encoding="utf-8")
+    image_path.write_bytes(b"\x89PNG\r\n\x1a\n")
+    return [str(html_path), str(css_path), str(image_path)]
+
+
+def _assert_document_converter_route(page: Page, *, artifact_dir: Path) -> None:
+    page.locator('[data-testid="home-work-app-document-converter"]').click()
+    expect(page).to_have_url(re.compile(r"/apps/document-converter$"))
+    route = page.locator('main[aria-label="Dokumentkonverterare"]')
+    expect(route).to_be_visible()
+    page.locator('[data-testid="document-converter-file-input"]').set_input_files(
+        _document_converter_fixture_files(artifact_dir)
+    )
+    expect(route.locator(".dc-preview-header h2")).to_have_text("index.html")
+    expect(route.get_by_text("Exportera som", exact=True)).to_be_visible()
+    expect(route.get_by_text("Enskilda PDF-filer", exact=True)).to_be_visible()
+    expect(route.get_by_text("Kombinerad PDF", exact=True)).to_be_visible()
+    expect(route.get_by_text("Tillfällig förhandsvisning", exact=True)).to_be_visible()
+    expect(route.get_by_text("Tillfällig", exact=True)).to_have_count(0)
+    expect(route.get_by_text("Båda")).to_have_count(0)
+    expect(route.get_by_text("both")).to_have_count(0)
 
 
 def _capture_home(
@@ -150,11 +181,15 @@ def _capture_home(
     _assert_home_contract(page)
     screenshot_path = artifact_dir / f"authenticated-home-{viewport['label']}.png"
     page.screenshot(path=str(screenshot_path), full_page=True)
+    _assert_document_converter_route(page, artifact_dir=artifact_dir)
+    route_screenshot_path = artifact_dir / f"document-converter-{viewport['label']}.png"
+    page.screenshot(path=str(route_screenshot_path), full_page=True)
     parsed = urlparse(page.url)
     return {
         "label": viewport["label"],
         "path": parsed.path,
         "query": parsed.query,
+        "route_screenshot": str(route_screenshot_path),
         "screenshot": str(screenshot_path),
         "viewport": viewport,
     }

@@ -1,0 +1,100 @@
+/*
+Domain purpose:
+  Lucide-backed symbol references for the PR-0383 Document Converter approval
+  mockup.
+
+Relationships:
+  - Mirrors existing canonical wrappers from
+    frontend/apps/skriptoteket/src/components/icons where available.
+  - Marks document-converter-only gaps with data-symbol names for PR-0384.
+  - Uses official lucide-static assets, pinned to the repo-installed Lucide
+    version, instead of local SVG or CSS-drawn glyphs.
+*/
+
+.symbol {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  flex: 0 0 auto;
+  background: currentColor;
+  -webkit-mask: var(--symbol-source) center / contain no-repeat;
+  mask: var(--symbol-source) center / contain no-repeat;
+}
+
+.segment .symbol {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-button .symbol {
+  width: 20px;
+  height: 20px;
+}
+
+.symbol-file-text {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/file-text.svg");
+}
+
+.symbol-code {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/code.svg");
+}
+
+.symbol-plus {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/plus.svg");
+}
+
+.symbol-image {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/image.svg");
+}
+
+.symbol-files {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/files.svg");
+}
+
+.symbol-combine {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/combine.svg");
+}
+
+.symbol-trash {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/trash-2.svg");
+}
+
+.symbol-eye {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/eye.svg");
+}
+
+.symbol-refresh {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/refresh-cw.svg");
+}
+
+.symbol-chevrons-left {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/chevrons-left.svg");
+}
+
+.symbol-chevron-left {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/chevron-left.svg");
+}
+
+.symbol-chevron-right {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/chevron-right.svg");
+}
+
+.symbol-chevrons-right {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/chevrons-right.svg");
+}
+
+.symbol-zoom-out {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/zoom-out.svg");
+}
+
+.symbol-zoom-in {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/zoom-in.svg");
+}
+
+.symbol-download {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/download.svg");
+}
+
+.symbol-folder-open {
+  --symbol-source: url("https://cdn.jsdelivr.net/npm/lucide-static@0.563.0/icons/folder-open.svg");
+}

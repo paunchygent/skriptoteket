@@ -52,7 +52,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     title: "Dokumentkonvertering",
     description: "Skapa PDF:er med hjälp av HTML och CSS.",
     imageSrc: documentConverterSymbolUrl,
-    availabilityLabel: "Kommer senare",
+    to: "/apps/document-converter",
   },
   {
     id: "editor",

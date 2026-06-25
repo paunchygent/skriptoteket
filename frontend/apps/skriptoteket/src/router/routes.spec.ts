@@ -74,6 +74,24 @@ describe("routes", () => {
     });
   });
 
+  it("adds the route-visible authenticated Document Converter app before the generic app host", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/apps/document-converter");
+    const documentRouteIndex = routes.findIndex(
+      (route) => route.path === "/apps/document-converter",
+    );
+    const genericAppRouteIndex = routes.findIndex((route) => route.path === "/apps/:appId");
+
+    expect(resolved.name).toBe("document-converter-authenticated");
+    expect(resolved.meta.requiresAuth).toBe(true);
+    expect(documentRouteIndex).toBeGreaterThanOrEqual(0);
+    expect(documentRouteIndex).toBeLessThan(genericAppRouteIndex);
+    expect(String(routes[documentRouteIndex]?.component)).toContain(
+      "DocumentConverterView.vue",
+    );
+  });
+
   it("adds the authenticated Exam Converter UI-inspection fixture route for test/dev", () => {
     const router = createTestRouter();
 

@@ -39,5 +39,7 @@ Bundle rules:
 - [PR-0370 public landing authenticated-app preview](pr-0370-public-landing-authenticated-app-preview/README.md)
   - [Copy requirements review](pr-0370-public-landing-authenticated-app-preview/copy-requirements-review.md)
   - [Approved copy](pr-0370-public-landing-authenticated-app-preview/approved-copy.md)
+- [PR-0383 Document Converter mockup and copy approval](pr-0383-document-converter-mockup-and-copy-approval/README.md)
+  - [HTML/CSS mockup round 1](pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/index.html)
 - [ST-32-07 public landing discoverability](st-32-07-public-landing-discoverability/README.md)
 - [ST-32-08 landing authenticated-value copy alternatives](st-32-08-landing-authenticated-value-copy-alternatives/README.md)

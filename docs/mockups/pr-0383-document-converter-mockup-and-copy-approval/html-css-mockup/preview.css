@@ -1,0 +1,239 @@
+/*
+Domain purpose:
+  PDF preview surface styles for the PR-0383 Document Converter static mockup.
+
+Relationships:
+  - Imported by styles.css beside canonical HuleEdu/Skriptoteket tokens.
+  - Styles only the preview pane and rendered-document placeholder.
+*/
+
+.preview {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 20px 22px 16px;
+}
+
+.preview-header,
+.preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.preview-header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--huleedu-navy-20);
+}
+
+.preview-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.preview-tools,
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+  background: var(--huleedu-canvas);
+  font-weight: 800;
+}
+
+.page-indicator,
+.zoom-indicator {
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--huleedu-navy-30);
+  padding: 0 14px;
+  background: var(--huleedu-canvas);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.preview-body {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 0 12px;
+}
+
+.page-strip {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  overflow: auto;
+  border-right: 1px solid var(--huleedu-navy-20);
+  padding-right: 16px;
+}
+
+.page-thumb {
+  height: 150px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 8px;
+  border: 1px solid var(--huleedu-navy-20);
+  border-radius: 4px;
+  background: var(--huleedu-canvas);
+  padding: 8px;
+}
+
+.page-thumb span {
+  display: block;
+  background:
+    linear-gradient(90deg, transparent 0 8%, var(--huleedu-navy-20) 8% 10%, transparent 10%),
+    repeating-linear-gradient(var(--huleedu-navy-20) 0 2px, transparent 2px 9px);
+}
+
+.page-thumb-active {
+  border-color: var(--huleedu-action);
+  box-shadow: inset 0 0 0 1px var(--huleedu-action);
+}
+
+.page-thumb strong {
+  font-size: 13px;
+  color: var(--huleedu-action);
+}
+
+.pdf-page {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--huleedu-navy-20);
+  background: var(--huleedu-paper);
+  padding: clamp(28px, 4vw, 54px);
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+}
+
+.pdf-page-header,
+.pdf-hero,
+.pdf-content-row {
+  display: grid;
+  gap: 24px;
+}
+
+.pdf-page-header {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  margin-bottom: 28px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.pdf-page-header i {
+  height: 2px;
+  background: var(--huleedu-action);
+}
+
+.pdf-hero,
+.pdf-content-row {
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 260px);
+  align-items: start;
+}
+
+.pdf-hero h2 {
+  margin: 0 0 16px;
+  font-family: var(--huleedu-font-serif);
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1;
+}
+
+.pdf-hero p,
+.pdf-content-row p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.image-placeholder,
+.chart-card {
+  min-height: 150px;
+  border: 1px solid var(--huleedu-navy-20);
+  background:
+    linear-gradient(135deg, transparent 0 38%, var(--huleedu-navy-10) 38% 40%, transparent 40%),
+    var(--huleedu-panel-muted);
+}
+
+.pdf-content-row {
+  margin-top: 36px;
+}
+
+.pdf-content-row h3 {
+  margin: 0 0 12px;
+  color: var(--huleedu-action);
+  font-size: 18px;
+}
+
+table {
+  width: 100%;
+  margin-top: 18px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th,
+td {
+  border: 1px solid var(--huleedu-navy-20);
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background: var(--huleedu-action);
+  color: var(--button-primary-text);
+}
+
+.chart-card {
+  position: relative;
+  min-height: 130px;
+  background: var(--huleedu-canvas);
+}
+
+.chart-card span {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--huleedu-action);
+  border-radius: 999px;
+  background: var(--huleedu-canvas);
+}
+
+.chart-card span:nth-child(1) { left: 18%; top: 58%; }
+.chart-card span:nth-child(2) { left: 34%; top: 36%; }
+.chart-card span:nth-child(3) { left: 50%; top: 70%; }
+.chart-card span:nth-child(4) { left: 66%; top: 28%; }
+.chart-card span:nth-child(5) { left: 82%; top: 62%; }
+
+.preview-footer {
+  min-height: 58px;
+  border: 1px solid var(--huleedu-navy-20);
+  padding: 10px 12px;
+  background: var(--huleedu-panel-muted);
+}
+
+.preview-state {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+}
+
+.state-dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--huleedu-action);
+  border-radius: 999px;
+}

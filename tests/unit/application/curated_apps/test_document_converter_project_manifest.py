@@ -64,6 +64,18 @@ def test_project_manifest_closes_first_html_css_preview_shape() -> None:
     assert manifest.font_files == []
 
 
+@pytest.mark.parametrize("paper_size", ["a3", "a4", "a5"])
+def test_project_manifest_accepts_real_pdf_paper_sizes(paper_size: str) -> None:
+    payload = _manifest_payload()
+    pdf_controls = payload["pdf_controls"]
+    assert isinstance(pdf_controls, dict)
+    pdf_controls["paper_size"] = paper_size
+
+    manifest = DocumentConverterProjectManifest.model_validate(payload)
+
+    assert manifest.pdf_controls.paper_size.value == paper_size
+
+
 @pytest.mark.parametrize(
     ("field", "values", "max_count"),
     [

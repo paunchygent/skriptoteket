@@ -1,12 +1,12 @@
 /**
- * Browser artifact download helper for Exam Converter results.
+ * Browser artifact download helper for conversion app results.
  *
  * Domain purpose:
- *   Convert backend or Gateway served artifact blobs into local browser
+ *   Convert backend or Gateway served result blobs into local browser
  *   downloads while keeping upstream storage and authority out of view code.
  *
  * Relationships:
- *   - Used by both public and authenticated Exam Converter runtime composables.
+ *   - Used by Exam Converter, transcript, and Document Converter runtimes.
  */
 
 export function triggerBrowserDownload(blob: Blob, filename: string): void {

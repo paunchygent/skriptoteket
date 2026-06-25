@@ -122,6 +122,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md`
 - Document Converter files and history follow-up:
   `docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md`
+- Audio Transcription button token remediation:
+  `docs/backlog/prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md`
+- Document Converter small-screen mockup remediation:
+  `docs/backlog/prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md`
+- Document Converter small-screen mockup remediation review:
+  `docs/backlog/reviews/review-pr-0387-document-converter-small-screen-mockup-remediation.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

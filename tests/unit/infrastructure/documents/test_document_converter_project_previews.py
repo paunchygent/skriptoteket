@@ -124,6 +124,38 @@ def test_project_renderer_selects_requested_output_mode(
     assert all(artifact.content_type == "application/pdf" for artifact in artifacts)
 
 
+@pytest.mark.parametrize(
+    ("paper_size", "expected_size"),
+    [
+        ("a3", "A3"),
+        ("a4", "A4"),
+        ("a5", "A5"),
+    ],
+)
+def test_project_renderer_applies_real_paper_sizes_to_page_css(
+    monkeypatch: pytest.MonkeyPatch,
+    paper_size: str,
+    expected_size: str,
+) -> None:
+    rendered_stylesheets: list[str] = []
+
+    def capture_page_css(*, html, css_text, fetcher) -> bytes:
+        del html, fetcher
+        rendered_stylesheets.append(css_text)
+        return b"%PDF-PREVIEW"
+
+    monkeypatch.setattr(preview_module, "_render_weasyprint_pdf", capture_page_css)
+    renderer = WeasyPrintDocumentConverterProjectRenderer()
+
+    artifacts = renderer.render_project(
+        manifest=_manifest(output_mode="separate_pdfs", paper_size=paper_size),
+        files=_project_files(),
+    )
+
+    assert [artifact.filename for artifact in artifacts] == ["one.pdf", "two.pdf"]
+    assert f"size: {expected_size} portrait;" in rendered_stylesheets[0]
+
+
 def test_filesystem_project_preview_store_round_trips_owner_scoped_artifact(tmp_path) -> None:
     owner_id = uuid4()
     preview_id = uuid4()
@@ -325,7 +357,7 @@ def _record(
     )
 
 
-def _manifest(*, output_mode: str) -> DocumentConverterProjectManifest:
+def _manifest(*, output_mode: str, paper_size: str = "a4") -> DocumentConverterProjectManifest:
     return DocumentConverterProjectManifest.model_validate(
         {
             "html_entries": [
@@ -337,7 +369,7 @@ def _manifest(*, output_mode: str) -> DocumentConverterProjectManifest:
             "font_files": [],
             "output_mode": output_mode,
             "pdf_controls": {
-                "paper_size": "a4",
+                "paper_size": paper_size,
                 "orientation": "portrait",
                 "margins": {
                     "top_mm": 12,
