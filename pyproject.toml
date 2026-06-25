@@ -406,6 +406,7 @@ consume-huleedu-subject-export = { cmd = "python -m skriptoteket.cli consume-hul
 auth-edge-bootstrap-preflight = { cmd = "python -m skriptoteket.cli auth-edge-bootstrap-preflight", env = { PYTHONPATH = "src" } }
 send-feedback-emails = { cmd = "python -m skriptoteket.cli send-feedback-emails", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
+cleanup-document-converter-project-previews = { cmd = "python -m skriptoteket.cli cleanup-document-converter-project-previews", env = { PYTHONPATH = "src" } }
 cleanup-session-files = { cmd = "python -m skriptoteket.cli cleanup-session-files", env = { PYTHONPATH = "src" } }
 cleanup-sandbox-snapshots = { cmd = "python -m skriptoteket.cli cleanup-sandbox-snapshots", env = { PYTHONPATH = "src" } }
 clear-all-session-files = { cmd = "python -m skriptoteket.cli clear-all-session-files", env = { PYTHONPATH = "src" } }

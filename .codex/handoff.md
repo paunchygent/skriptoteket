@@ -10,10 +10,9 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-25.
 - Branch: `main`.
-- Latest closed work: `PR-0381`, approved by `REV-PR-0381`.
-- Active slice: `PR-0382` Document Converter HTML/CSS project preview contract.
-  `PR-0369` stays blocked unless a concrete API need appears.
-- Prior PR-0310 through PR-0356 history lives in `.codex/long-term-memory/entries/`.
+- Latest closed work: `PR-0382` repair approved by `REV-PR-0382`.
+- Active slice: `PR-0383` remains next for mockup/copy; keep `PR-0369`
+  blocked unless a concrete API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the
   current product direction, Sir Convert boundary, shell plan, and app
@@ -99,10 +98,12 @@ Keep this file updated so the next session can pick up work quickly.
   stores local outputs server-side by local job id, centralizes reusable
   document rendering/extraction adapters, refreshes generated API types, and
   keeps `/apps/document-converter` inactive.
-- `PR-0382` is ready as the next route-inactive contract slice. It should close
-  the HTML/CSS project manifest, safe linked assets, PDF controls, output-mode
-  response shape, preview artifact TTL/cleanup, and template identifiers before
-  `PR-0383` mockups/copy or `PR-0384` route-visible UI.
+- `PR-0382` is done and approved by `REV-PR-0382`: it keeps the route-inactive
+  HTML/CSS project preview contract, adds
+  `pdm run cleanup-document-converter-project-previews`, makes preview
+  persistence staged/rollback-safe with malformed/orphan/staging cleanup, and
+  publishes binary `application/pdf` OpenAPI/types for preview downloads.
+  `/apps/document-converter` remains inactive.
 ## Verification
 - Current local shared-auth runtime as of PR-0368 implementation:
   - HuleEdu Gateway container `huleedu_api_gateway_service` healthy on
@@ -132,7 +133,17 @@ Keep this file updated so the next session can pick up work quickly.
     `pdm run typecheck`
     `pdm run fe-gen-api-types`
     `pdm run fe-type-check`
-  - PR-0382 handoff closeout passed: `pdm run docs-validate`, `pdm run handoff-validate`, `git diff --check`.
+  - PR-0382 repair focused gates passed locally and the retained re-review was
+    approved:
+    `pdm run test tests/unit/cli/test_cleanup_document_converter_project_previews.py`
+    `pdm run test tests/unit/infrastructure/documents/test_document_converter_project_previews.py`
+    `pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py::test_project_preview_download_openapi_contract_is_pdf_binary`
+    `pdm run test tests/unit/application/curated_apps/test_document_converter_project_manifest.py tests/unit/application/curated_apps/handlers/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py tests/unit/cli/test_cleanup_document_converter_project_previews.py`
+    `pdm run cleanup-document-converter-project-previews --artifacts-root .artifacts/pr-0382-cleanup-empty-proof`
+    `pdm run fe-gen-api-types`
+    Closeout passed: existing Document Converter 28 tests, adjacent Conversion
+    Hub 33 tests, `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
+    `pdm run docs-validate`, `pdm run handoff-validate`, `git diff --check`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -147,7 +158,8 @@ pdm run fe-dev-shared-auth
 # Verify Gateway can resolve the product backend by Docker alias.
 docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz
 
-# Focused ST-37-04 / PR-0381 checks.
+# Focused ST-37-04 / PR-0381-0382 checks.
+pdm run test tests/unit/application/curated_apps/test_document_converter_project_manifest.py tests/unit/application/curated_apps/handlers/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py
 pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/web/conversion_hub/test_apps_document_converter_batch_api.py tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py tests/unit/application/curated_apps/handlers/test_document_converter_local_artifact_actions.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py
 pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py
 pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py
@@ -181,9 +193,8 @@ git diff --check
   monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Hand off/start `PR-0382` through the overseer loop. Do not interrupt
-  delegated agents while they work, and do not start route-visible UI until
-  `PR-0382` and the `PR-0383` mockup/copy approval package are done.
+- Start `PR-0383` mockup/copy approval before any route-visible Document
+  Converter UI.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete
   backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

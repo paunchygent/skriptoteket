@@ -31,6 +31,9 @@ from skriptoteket.web.api.v1 import (
     apps_conversion_hub_correction_sessions as api_v1_apps_conversion_hub_correction_sessions,
 )
 from skriptoteket.web.api.v1 import (
+    apps_conversion_hub_document_converter_project_previews as api_v1_doc_converter_previews,
+)
+from skriptoteket.web.api.v1 import (
     apps_conversion_hub_transcript_saves as api_v1_apps_conversion_hub_transcript_saves,
 )
 from skriptoteket.web.api.v1 import apps_flunk_out_frenzy as api_v1_apps_flunk_out_frenzy
@@ -92,6 +95,7 @@ router.include_router(api_v1_apps_classroom_planner_shares.router)
 router.include_router(api_v1_apps_flunk_out_frenzy.router)
 router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
+router.include_router(api_v1_doc_converter_previews.router)
 router.include_router(api_v1_apps_conversion_hub_correction_sessions.router)
 router.include_router(api_v1_apps_conversion_hub_transcript_saves.router)
 router.include_router(api_v1_profile.router)

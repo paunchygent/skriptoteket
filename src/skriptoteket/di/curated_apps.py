@@ -119,6 +119,14 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_sa
 from skriptoteket.application.curated_apps.handlers.document_converter_jobs import (
     CreateDocumentConverterJobsHandler,
 )
+from skriptoteket.application.curated_apps.handlers.document_converter_project_previews import (
+    CleanupDocumentConverterProjectPreviewsHandler,
+    DiscardDocumentConverterProjectPreviewHandler,
+    DownloadDocumentConverterProjectPreviewArtifactHandler,
+    GetDocumentConverterProjectPreviewHandler,
+    RenderDocumentConverterProjectPreviewHandler,
+    SaveDocumentConverterProjectPreviewArtifactHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
     RevertExamConverterCorrectionIntentHandler,
@@ -227,6 +235,10 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store i
 from skriptoteket.infrastructure.documents.document_converter_artifacts import (
     FilesystemDocumentConverterArtifactStore,
 )
+from skriptoteket.infrastructure.documents.document_converter_project_previews import (
+    FilesystemDocumentConverterProjectPreviewStore,
+    WeasyPrintDocumentConverterProjectRenderer,
+)
 from skriptoteket.infrastructure.documents.markdown_rendering import PythonMarkdownToHtmlRenderer
 from skriptoteket.infrastructure.documents.pdf_rendering import WeasyPrintHtmlToPdfRenderer
 from skriptoteket.infrastructure.documents.pdf_text_extraction import PdfPlumberTextExtractor
@@ -316,6 +328,8 @@ from skriptoteket.protocols.conversion_hub import (
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.document_converter import (
     DocumentConverterArtifactStoreProtocol,
+    DocumentConverterProjectPreviewRendererProtocol,
+    DocumentConverterProjectPreviewStoreProtocol,
     LocalDocumentConverterProducerProtocol,
 )
 from skriptoteket.protocols.documents import (
@@ -1651,6 +1665,21 @@ class CuratedAppsProvider(Provider):
     ) -> DocumentConverterArtifactStoreProtocol:
         return FilesystemDocumentConverterArtifactStore(artifacts_root=settings.ARTIFACTS_ROOT)
 
+    @provide(scope=Scope.APP)
+    def document_converter_project_preview_renderer(
+        self,
+    ) -> DocumentConverterProjectPreviewRendererProtocol:
+        return WeasyPrintDocumentConverterProjectRenderer()
+
+    @provide(scope=Scope.APP)
+    def document_converter_project_preview_store(
+        self,
+        settings: Settings,
+    ) -> DocumentConverterProjectPreviewStoreProtocol:
+        return FilesystemDocumentConverterProjectPreviewStore(
+            artifacts_root=settings.ARTIFACTS_ROOT
+        )
+
     @provide(scope=Scope.REQUEST)
     def document_converter_producer_policy(
         self,
@@ -1721,6 +1750,79 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def render_document_converter_project_preview_handler(
+        self,
+        renderer: DocumentConverterProjectPreviewRendererProtocol,
+        previews: DocumentConverterProjectPreviewStoreProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RenderDocumentConverterProjectPreviewHandler:
+        return RenderDocumentConverterProjectPreviewHandler(
+            renderer=renderer,
+            previews=previews,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_document_converter_project_preview_handler(
+        self,
+        previews: DocumentConverterProjectPreviewStoreProtocol,
+        clock: ClockProtocol,
+    ) -> GetDocumentConverterProjectPreviewHandler:
+        return GetDocumentConverterProjectPreviewHandler(previews=previews, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def download_document_converter_project_preview_artifact_handler(
+        self,
+        previews: DocumentConverterProjectPreviewStoreProtocol,
+        clock: ClockProtocol,
+    ) -> DownloadDocumentConverterProjectPreviewArtifactHandler:
+        return DownloadDocumentConverterProjectPreviewArtifactHandler(
+            previews=previews,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def discard_document_converter_project_preview_handler(
+        self,
+        previews: DocumentConverterProjectPreviewStoreProtocol,
+        clock: ClockProtocol,
+    ) -> DiscardDocumentConverterProjectPreviewHandler:
+        return DiscardDocumentConverterProjectPreviewHandler(previews=previews, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def cleanup_document_converter_project_previews_handler(
+        self,
+        previews: DocumentConverterProjectPreviewStoreProtocol,
+        clock: ClockProtocol,
+    ) -> CleanupDocumentConverterProjectPreviewsHandler:
+        return CleanupDocumentConverterProjectPreviewsHandler(previews=previews, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def save_document_converter_project_preview_artifact_handler(
+        self,
+        previews: DocumentConverterProjectPreviewStoreProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> SaveDocumentConverterProjectPreviewArtifactHandler:
+        return SaveDocumentConverterProjectPreviewArtifactHandler(
+            previews=previews,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -1125,6 +1125,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/document-converter/project-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Render Document Converter Project Preview
+         * @description Render one temporary project preview under the scoped app namespace.
+         */
+        post: operations["render_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/{preview_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Document Converter Project Preview
+         * @description Return owner-scoped temporary project preview status.
+         */
+        get: operations["get_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Discard Document Converter Project Preview
+         * @description Discard one temporary project preview and remove artifact authority.
+         */
+        delete: operations["discard_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/{preview_id}/artifacts/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Document Converter Project Preview Artifact
+         * @description Download one server-authorized temporary project preview artifact.
+         */
+        get: operations["download_document_converter_project_preview_artifact_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__artifacts__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/{preview_id}/artifacts/{artifact_id}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Save Document Converter Project Preview Artifact
+         * @description Save one explicit temporary preview artifact into Mina filer.
+         */
+        post: operations["save_document_converter_project_preview_artifact_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__artifacts__artifact_id__save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/document-converter/routes": {
         parameters: {
             query?: never;
@@ -2916,6 +3000,13 @@ export interface components {
             /** File */
             file: string;
         };
+        /** Body_render_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews_post */
+        Body_render_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews_post: {
+            /** Files */
+            files: string[];
+            /** Manifest Json */
+            manifest_json: string;
+        };
         /** Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post */
         Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post: {
             /** File Fields */
@@ -3741,6 +3832,18 @@ export interface components {
             tool: components["schemas"]["AdminToolItem"];
         };
         /**
+         * DiscardDocumentConverterProjectPreviewResult
+         * @description Return the discarded temporary preview status.
+         */
+        DiscardDocumentConverterProjectPreviewResult: {
+            /**
+             * Preview Id
+             * Format: uuid
+             */
+            preview_id: string;
+            status: components["schemas"]["DocumentConverterProjectPreviewStatus"];
+        };
+        /**
          * DocumentConverterJobStatusResult
          * @description Return local status plus the default result artifact once it exists.
          */
@@ -3761,6 +3864,80 @@ export interface components {
          * @enum {string}
          */
         DocumentConverterProducerKind: "local" | "sir_convert";
+        /**
+         * DocumentConverterProjectOutputMode
+         * @description Select which preview PDF artifacts the renderer should create.
+         * @enum {string}
+         */
+        DocumentConverterProjectOutputMode: "separate_pdfs" | "combined_pdf" | "both";
+        /**
+         * DocumentConverterProjectPreviewArtifact
+         * @description Describe one server-owned temporary preview artifact.
+         */
+        DocumentConverterProjectPreviewArtifact: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Content Type */
+            content_type: string;
+            /** Download Url */
+            download_url?: string | null;
+            /** Filename */
+            filename: string;
+            kind: components["schemas"]["DocumentConverterProjectPreviewArtifactKind"];
+            /** Size Bytes */
+            size_bytes: number;
+            /** Source Entry Id */
+            source_entry_id?: string | null;
+        };
+        /**
+         * DocumentConverterProjectPreviewArtifactKind
+         * @description Identify one preview artifact in the output-mode response.
+         * @enum {string}
+         */
+        DocumentConverterProjectPreviewArtifactKind: "separate_pdf" | "combined_pdf";
+        /**
+         * DocumentConverterProjectPreviewResult
+         * @description Return project preview status plus server-owned artifact metadata.
+         */
+        DocumentConverterProjectPreviewResult: {
+            /** Artifacts */
+            artifacts: components["schemas"]["DocumentConverterProjectPreviewArtifact"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error */
+            error?: string | null;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            output_mode: components["schemas"]["DocumentConverterProjectOutputMode"];
+            /**
+             * Preview Id
+             * Format: uuid
+             */
+            preview_id: string;
+            status: components["schemas"]["DocumentConverterProjectPreviewStatus"];
+            template_id: components["schemas"]["DocumentConverterProjectTemplateId"];
+        };
+        /**
+         * DocumentConverterProjectPreviewStatus
+         * @description Represent the temporary project preview lifecycle.
+         * @enum {string}
+         */
+        DocumentConverterProjectPreviewStatus: "succeeded" | "failed" | "discarded" | "expired";
+        /**
+         * DocumentConverterProjectTemplateId
+         * @description Internal first template identifiers for the preview contract.
+         * @enum {string}
+         */
+        DocumentConverterProjectTemplateId: "academic_phd" | "clean_worksheet" | "expressive_handout";
         /**
          * DocumentConverterResultArtifact
          * @description Describe the single converted artifact after a successful MVP job.
@@ -6781,6 +6958,15 @@ export interface components {
          * @description Return the Mina filer record created from the converted document.
          */
         SaveDocumentConverterArtifactResult: {
+            /** Source Artifact Id */
+            source_artifact_id: string;
+            vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
+        };
+        /**
+         * SaveDocumentConverterProjectPreviewArtifactResult
+         * @description Return the Mina filer record created from an explicit preview save.
+         */
+        SaveDocumentConverterProjectPreviewArtifactResult: {
             /** Source Artifact Id */
             source_artifact_id: string;
             vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
@@ -10372,6 +10558,165 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveDocumentConverterArtifactResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    render_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_render_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentConverterProjectPreviewResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentConverterProjectPreviewResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_document_converter_project_preview_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscardDocumentConverterProjectPreviewResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_document_converter_project_preview_artifact_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__artifacts__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preview_id: string;
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Document Converter project preview PDF artifact. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_document_converter_project_preview_artifact_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__artifacts__artifact_id__save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preview_id: string;
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveDocumentConverterProjectPreviewArtifactResult"];
                 };
             };
             /** @description Validation Error */

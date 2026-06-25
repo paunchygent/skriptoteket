@@ -19,9 +19,6 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJob,
     ConversionHubJobStatus,
 )
-from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
-    ConversionHubSavedVaultArtifact,
-)
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterJobStatusResult,
     DocumentConverterStoredArtifact,
@@ -31,11 +28,12 @@ from skriptoteket.application.curated_apps.document_converter import (
     is_document_converter_job,
     is_local_document_converter_job,
 )
+from skriptoteket.application.curated_apps.handlers.document_converter_vault_saves import (
+    DocumentConverterVaultSaveService,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.input_files import sanitize_input_filename
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.document_converter import DocumentConverterArtifactStoreProtocol
@@ -248,13 +246,15 @@ class SaveDocumentConverterArtifactHandler:
         )
         self._client = client
         self._local_artifacts = local_artifacts
-        self._vault_files = vault_files
-        self._vault_usage = vault_usage
-        self._vault_storage = vault_storage
-        self._uow = uow
-        self._clock = clock
-        self._id_generator = id_generator
-        self._settings = settings
+        self._vault_saves = DocumentConverterVaultSaveService(
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
+        )
 
     async def handle(
         self,
@@ -281,90 +281,16 @@ class SaveDocumentConverterArtifactHandler:
                 content_type=producer_artifact.artifact.content_type,
                 content=producer_artifact.artifact.content,
             )
-        return await self._save_artifact(actor=actor, job=job, artifact=artifact)
-
-    async def _save_artifact(
-        self,
-        *,
-        actor: User,
-        job: ConversionHubJob,
-        artifact: DocumentConverterStoredArtifact,
-    ) -> SaveDocumentConverterArtifactResult:
-        filename = sanitize_input_filename(input_filename=artifact.filename)
-        content_type = artifact.content_type.strip()
-        if not content_type:
-            raise validation_error("Konverteringsresultatet saknar filtyp.")
-
-        content = artifact.content
-        actual_bytes = len(content)
-        if actual_bytes <= 0:
-            raise validation_error("Filen saknar innehåll.")
-        if actual_bytes > self._settings.VAULT_MAX_FILE_BYTES:
-            raise validation_error(
-                "Vault file exceeds the max file size.",
-                details={
-                    "bytes": actual_bytes,
-                    "max_bytes": self._settings.VAULT_MAX_FILE_BYTES,
-                },
-            )
-
-        now = self._clock.now()
-        file_id = self._id_generator.new_uuid()
         source_artifact_id = build_document_converter_source_artifact_id(
             upstream_job_id=job.upstream_job_id or ""
         )
-        stored = False
-
-        try:
-            async with self._uow:
-                usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-                if usage.bytes_total + actual_bytes > self._settings.VAULT_MAX_TOTAL_BYTES:
-                    raise validation_error(
-                        "Vault quota exceeded.",
-                        details={
-                            "bytes_total": usage.bytes_total,
-                            "attempted_bytes": actual_bytes,
-                            "max_total_bytes": self._settings.VAULT_MAX_TOTAL_BYTES,
-                        },
-                    )
-                vault_file = await self._vault_files.create(
-                    file=VaultFile(
-                        id=file_id,
-                        user_id=actor.id,
-                        name=filename,
-                        bytes=actual_bytes,
-                        source_kind=VaultFileSourceKind.APP_EXPORT,
-                        source_run_id=None,
-                        source_artifact_id=source_artifact_id,
-                        created_at=now,
-                        deleted_at=None,
-                    )
-                )
-                await self._vault_storage.store_file(
-                    user_id=actor.id,
-                    file_id=vault_file.id,
-                    content=content,
-                )
-                stored = True
-                await self._vault_usage.upsert(
-                    usage=VaultUsage(
-                        user_id=actor.id,
-                        bytes_total=usage.bytes_total + actual_bytes,
-                        updated_at=now,
-                    )
-                )
-        except Exception:
-            if stored:
-                await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
-            raise
-
+        vault_artifact = await self._vault_saves.save(
+            actor=actor,
+            artifact=artifact,
+            source_artifact_id=source_artifact_id,
+        )
         return SaveDocumentConverterArtifactResult(
-            vault_artifact=ConversionHubSavedVaultArtifact(
-                file_id=vault_file.id,
-                name=vault_file.name,
-                bytes=vault_file.bytes,
-                created_at=vault_file.created_at,
-            ),
+            vault_artifact=vault_artifact,
             source_artifact_id=source_artifact_id,
         )
 

@@ -20,6 +20,9 @@ from skriptoteket.cli.commands.backfill_classroom_share_previews import (
     backfill_classroom_share_previews,
 )
 from skriptoteket.cli.commands.bootstrap_superuser import bootstrap_superuser
+from skriptoteket.cli.commands.cleanup_document_converter_project_previews import (
+    cleanup_document_converter_project_previews,
+)
 from skriptoteket.cli.commands.cleanup_login_events import cleanup_login_events
 from skriptoteket.cli.commands.cleanup_sandbox_snapshots import cleanup_sandbox_snapshots
 from skriptoteket.cli.commands.cleanup_session_files import cleanup_session_files
@@ -50,6 +53,7 @@ app.command()(bootstrap_superuser)
 app.command()(provision_user)
 app.command()(consume_huleedu_subject_export)
 app.command()(prune_artifacts)
+app.command()(cleanup_document_converter_project_previews)
 app.command()(cleanup_session_files)
 app.command()(cleanup_vault_files)
 app.command()(cleanup_sandbox_snapshots)
