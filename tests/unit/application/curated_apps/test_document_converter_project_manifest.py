@@ -64,6 +64,20 @@ def test_project_manifest_closes_first_html_css_preview_shape() -> None:
     assert manifest.font_files == []
 
 
+@pytest.mark.parametrize("entry_id", ["agnes-leandersson", "alma_winald"])
+def test_project_manifest_accepts_hyphenated_and_underscored_entry_ids(
+    entry_id: str,
+) -> None:
+    payload = _manifest_payload()
+    html_entries = payload["html_entries"]
+    assert isinstance(html_entries, list)
+    html_entries[0]["entry_id"] = entry_id
+
+    manifest = DocumentConverterProjectManifest.model_validate(payload)
+
+    assert manifest.html_entries[0].entry_id == entry_id
+
+
 @pytest.mark.parametrize("paper_size", ["a3", "a4", "a5"])
 def test_project_manifest_accepts_real_pdf_paper_sizes(paper_size: str) -> None:
     payload = _manifest_payload()

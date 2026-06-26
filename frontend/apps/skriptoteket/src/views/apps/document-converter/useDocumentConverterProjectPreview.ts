@@ -2,8 +2,9 @@
  * Document Converter project-preview route state.
  *
  * Domain purpose:
- *   Orchestrate teacher-selected files, output controls, preview result state,
- *   and explicit download/save/discard actions for the Document Converter app.
+ *   Orchestrate teacher-selected files, governed export controls, automatic
+ *   PDF preview refresh, and current-artifact download/save actions for the
+ *   Document Converter app.
  *
  * Relationships:
  *   - Used by `DocumentConverterView.vue`.
@@ -11,12 +12,12 @@
  *   - Keeps backend identifiers inside action parameters, not visible UI copy.
  */
 
-import { computed, ref } from "vue";
+import { computed, onScopeDispose, ref, watch } from "vue";
 
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 import {
-  discardDocumentConverterProjectPreview,
   downloadDocumentConverterProjectPreviewArtifact,
+  loadDocumentConverterProjectPreviewArtifactBlob,
   renderDocumentConverterProjectPreview,
   saveDocumentConverterProjectPreviewArtifact,
   type DocumentConverterProjectOutputMode,
@@ -29,6 +30,9 @@ import {
   getDocumentConverterProjectFileKind,
   summarizeDocumentConverterProjectFiles,
 } from "./documentConverterProjectFiles";
+
+const AUTO_PREVIEW_DEBOUNCE_MS = 350;
+const PREVIEW_FAILURE_MESSAGE = "Det gick inte att skapa PDF:en.";
 
 const PROJECT_FILE_CAPS = {
   html: 10,
@@ -44,12 +48,19 @@ export function useDocumentConverterProjectPreview() {
   const selectedHtmlFilename = ref<string | null>(null);
   const preview = ref<DocumentConverterProjectPreviewResult | null>(null);
   const selectedArtifactId = ref<string | null>(null);
+  const previewPdfUrl = ref<string | null>(null);
+  const previewPdfArtifactId = ref<string | null>(null);
   const isPreviewRunning = ref(false);
+  const isArtifactPreviewLoading = ref(false);
   const isDownloading = ref(false);
   const isSaving = ref(false);
-  const isDiscarding = ref(false);
-  const isPreviewStale = ref(false);
   const errorMessage = ref<string | null>(null);
+  const canRetryPreview = ref(false);
+  const latestSuccessfulSelectionKey = ref<string | null>(null);
+
+  let autoPreviewTimeout: number | null = null;
+  let previewRequestSequence = 0;
+  let artifactPreviewRequestSequence = 0;
 
   const fileSummary = computed(() => summarizeDocumentConverterProjectFiles(files.value));
   const selectedHtmlFile = computed(() => {
@@ -69,14 +80,53 @@ export function useDocumentConverterProjectPreview() {
       null
     );
   });
-  const previewActionLabel = computed(() => {
-    if (isPreviewRunning.value) {
-      return "Förhandsvisar...";
-    }
-    return preview.value && isPreviewStale.value ? "Uppdatera" : "Förhandsvisa";
-  });
   const totalProjectFiles = computed(() => files.value.length);
-  const canPreview = computed(() => Boolean(selectedHtmlFile.value) && !isPreviewRunning.value);
+  const currentSelectionKey = computed(() => {
+    if (!selectedHtmlFile.value) {
+      return null;
+    }
+    return JSON.stringify({
+      files: files.value.map((file) => ({
+        lastModified: file.lastModified,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })),
+      htmlEntryFilename: selectedHtmlFile.value.name,
+      outputMode: outputMode.value,
+      paperSize: paperSize.value,
+      templateId: templateId.value,
+    });
+  });
+  const isCurrentPreviewReady = computed(() => {
+    return Boolean(
+      selectedArtifact.value &&
+        previewPdfUrl.value &&
+        previewPdfArtifactId.value === selectedArtifact.value.artifact_id &&
+        currentSelectionKey.value &&
+        latestSuccessfulSelectionKey.value === currentSelectionKey.value &&
+        !isPreviewRunning.value &&
+        !isArtifactPreviewLoading.value,
+    );
+  });
+  const statusMessage = computed(() => {
+    if (isPreviewRunning.value) {
+      return "Skapar PDF...";
+    }
+    return null;
+  });
+
+  function setMessage(message: string | null, options?: { retryable?: boolean }): void {
+    errorMessage.value = message;
+    canRetryPreview.value = options?.retryable ?? false;
+  }
+
+  function replacePreviewPdfUrl(nextUrl: string | null): void {
+    if (previewPdfUrl.value && previewPdfUrl.value !== nextUrl) {
+      URL.revokeObjectURL(previewPdfUrl.value);
+    }
+    previewPdfUrl.value = nextUrl;
+  }
 
   function mergeProjectFiles(existingFiles: readonly File[], nextFiles: readonly File[]): File[] {
     const merged = new Map<string, File>();
@@ -104,87 +154,121 @@ export function useDocumentConverterProjectPreview() {
     return null;
   }
 
-  function markPreviewStale(): void {
-    errorMessage.value = null;
-    if (preview.value) {
-      isPreviewStale.value = true;
-    }
-  }
-
-  function onFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const selectedFiles = Array.from(input.files ?? []);
-    const candidateFiles = mergeProjectFiles(files.value, selectedFiles);
-    const validationError = validateProjectFiles(candidateFiles);
-    input.value = "";
-    if (validationError) {
-      errorMessage.value = validationError;
-      return;
-    }
-
-    files.value = candidateFiles;
-    if (!selectedHtmlFilename.value || !selectedHtmlFile.value) {
-      selectedHtmlFilename.value = fileSummary.value.html[0]?.name ?? null;
-    }
-    markPreviewStale();
-  }
-
   function selectOutputMode(nextOutputMode: DocumentConverterProjectOutputMode): void {
     outputMode.value = nextOutputMode;
-    markPreviewStale();
   }
 
   function selectPaperSize(nextPaperSize: DocumentConverterProjectPaperSize): void {
     paperSize.value = nextPaperSize;
-    markPreviewStale();
+  }
+
+  function selectArtifact(nextArtifactId: string): void {
+    selectedArtifactId.value = nextArtifactId;
+    setMessage(null);
   }
 
   function selectedFileLabel(): string {
     return selectedHtmlFile.value?.name ?? "HTML/CSS";
   }
 
-  async function previewProject(): Promise<void> {
-    if (!selectedHtmlFile.value) {
-      errorMessage.value = "Det gick inte att förhandsvisa. Lägg till en HTML-fil.";
+  function acceptProjectFiles(nextFiles: readonly File[]): void {
+    const candidateFiles = mergeProjectFiles(files.value, nextFiles);
+    const validationError = validateProjectFiles(candidateFiles);
+    if (validationError) {
+      setMessage(validationError);
       return;
     }
+
+    files.value = candidateFiles;
+    if (!selectedHtmlFilename.value || !selectedHtmlFile.value) {
+      selectedHtmlFilename.value = summarizeDocumentConverterProjectFiles(candidateFiles).html[0]?.name ?? null;
+    }
+    setMessage(null);
+  }
+
+  function onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    acceptProjectFiles(Array.from(input.files ?? []));
+    input.value = "";
+  }
+
+  function onFilesDropped(event: DragEvent): void {
+    event.preventDefault();
+    acceptProjectFiles(Array.from(event.dataTransfer?.files ?? []));
+  }
+
+  function renderParams() {
+    if (!selectedHtmlFile.value) {
+      return null;
+    }
+    return {
+      files: files.value,
+      htmlEntryFilename: selectedHtmlFile.value.name,
+      outputMode: outputMode.value,
+      paperSize: paperSize.value,
+      templateId: templateId.value,
+    };
+  }
+
+  async function refreshPreview(selectionKey: string): Promise<void> {
+    const params = renderParams();
+    if (!params || currentSelectionKey.value !== selectionKey) {
+      return;
+    }
+
+    const requestId = ++previewRequestSequence;
     isPreviewRunning.value = true;
-    errorMessage.value = null;
-    const previousPreview = preview.value;
+    setMessage(null);
     try {
-      const result = await renderDocumentConverterProjectPreview({
-        files: files.value,
-        htmlEntryFilename: selectedHtmlFile.value.name,
-        outputMode: outputMode.value,
-        paperSize: paperSize.value,
-        templateId: templateId.value,
+      const result = await renderDocumentConverterProjectPreview(params);
+      if (requestId !== previewRequestSequence || currentSelectionKey.value !== selectionKey) {
+        return;
+      }
+
+      const defaultArtifact = result.artifacts[0];
+      if (result.status === "failed" || !defaultArtifact) {
+        throw new Error("Document Converter preview failed");
+      }
+
+      const response = await loadDocumentConverterProjectPreviewArtifactBlob({
+        previewId: result.preview_id,
+        artifact: defaultArtifact,
       });
-      if (result.status === "failed" || result.artifacts.length === 0) {
-        throw new Error("Preview failed");
+      if (requestId !== previewRequestSequence || currentSelectionKey.value !== selectionKey) {
+        return;
       }
+
       preview.value = result;
-      selectedArtifactId.value = result.artifacts[0]?.artifact_id ?? null;
-      isPreviewStale.value = false;
+      selectedArtifactId.value = defaultArtifact.artifact_id;
+      previewPdfArtifactId.value = defaultArtifact.artifact_id;
+      replacePreviewPdfUrl(URL.createObjectURL(response.blob));
+      latestSuccessfulSelectionKey.value = selectionKey;
+      setMessage(null);
     } catch {
-      if (!previousPreview) {
-        preview.value = null;
-        selectedArtifactId.value = null;
-        isPreviewStale.value = false;
-      } else {
-        isPreviewStale.value = true;
+      if (requestId !== previewRequestSequence) {
+        return;
       }
-      errorMessage.value = "Det gick inte att förhandsvisa. Försök igen.";
+      setMessage(PREVIEW_FAILURE_MESSAGE, { retryable: true });
     } finally {
-      isPreviewRunning.value = false;
+      if (requestId === previewRequestSequence) {
+        isPreviewRunning.value = false;
+      }
     }
   }
 
+  async function retryPreview(): Promise<void> {
+    if (!currentSelectionKey.value || isPreviewRunning.value) {
+      return;
+    }
+    await refreshPreview(currentSelectionKey.value);
+  }
+
   async function downloadSelectedArtifact(): Promise<void> {
-    if (!preview.value || !selectedArtifact.value) {
+    if (!preview.value || !selectedArtifact.value || !isCurrentPreviewReady.value) {
       return;
     }
     isDownloading.value = true;
-    errorMessage.value = null;
+    setMessage(null);
     try {
       const response = await downloadDocumentConverterProjectPreviewArtifact({
         previewId: preview.value.preview_id,
@@ -192,67 +276,141 @@ export function useDocumentConverterProjectPreview() {
       });
       triggerBrowserDownload(response.blob, response.filename ?? selectedArtifact.value.filename);
     } catch {
-      errorMessage.value = "Det gick inte att ladda ned. Försök igen.";
+      setMessage("Det gick inte att ladda ned. Försök igen.");
     } finally {
       isDownloading.value = false;
     }
   }
 
   async function saveSelectedArtifact(): Promise<void> {
-    if (!preview.value || !selectedArtifact.value) {
+    if (!preview.value || !selectedArtifact.value || !isCurrentPreviewReady.value) {
       return;
     }
     isSaving.value = true;
-    errorMessage.value = null;
+    setMessage(null);
     try {
       await saveDocumentConverterProjectPreviewArtifact({
         previewId: preview.value.preview_id,
         artifact: selectedArtifact.value,
       });
     } catch {
-      errorMessage.value = "Det gick inte att spara. Försök igen.";
+      setMessage("Det gick inte att spara. Försök igen.");
     } finally {
       isSaving.value = false;
     }
   }
 
-  async function discardPreview(): Promise<void> {
-    if (!preview.value) {
-      return;
+  watch(
+    [files, selectedHtmlFilename, outputMode, paperSize, templateId],
+    (_, __, onCleanup) => {
+      const selectionKey = currentSelectionKey.value;
+      if (!selectionKey) {
+        return;
+      }
+
+      setMessage(null);
+      const timeoutId = window.setTimeout(() => {
+        if (autoPreviewTimeout === timeoutId) {
+          autoPreviewTimeout = null;
+        }
+        void refreshPreview(selectionKey);
+      }, AUTO_PREVIEW_DEBOUNCE_MS);
+      autoPreviewTimeout = timeoutId;
+
+      onCleanup(() => {
+        window.clearTimeout(timeoutId);
+        if (autoPreviewTimeout === timeoutId) {
+          autoPreviewTimeout = null;
+        }
+      });
+    },
+  );
+
+  watch(
+    () => {
+      if (!preview.value || !selectedArtifact.value) {
+        return null;
+      }
+      return {
+        artifactId: selectedArtifact.value.artifact_id,
+        previewId: preview.value.preview_id,
+      };
+    },
+    (next, _, onCleanup) => {
+      if (!next || (previewPdfUrl.value && previewPdfArtifactId.value === next.artifactId)) {
+        return;
+      }
+
+      let isCancelled = false;
+      const requestId = ++artifactPreviewRequestSequence;
+      isArtifactPreviewLoading.value = true;
+      onCleanup(() => {
+        isCancelled = true;
+      });
+
+      void (async () => {
+        try {
+          const currentArtifact = selectedArtifact.value;
+          if (!currentArtifact) {
+            return;
+          }
+
+          const response = await loadDocumentConverterProjectPreviewArtifactBlob({
+            previewId: next.previewId,
+            artifact: currentArtifact,
+          });
+          if (
+            isCancelled ||
+            requestId !== artifactPreviewRequestSequence ||
+            preview.value?.preview_id !== next.previewId ||
+            selectedArtifact.value?.artifact_id !== next.artifactId
+          ) {
+            return;
+          }
+
+          previewPdfArtifactId.value = next.artifactId;
+          replacePreviewPdfUrl(URL.createObjectURL(response.blob));
+        } catch {
+          if (isCancelled || requestId !== artifactPreviewRequestSequence) {
+            return;
+          }
+          setMessage(PREVIEW_FAILURE_MESSAGE, { retryable: true });
+        } finally {
+          if (!isCancelled && requestId === artifactPreviewRequestSequence) {
+            isArtifactPreviewLoading.value = false;
+          }
+        }
+      })();
+    },
+    { flush: "post" },
+  );
+
+  onScopeDispose(() => {
+    if (autoPreviewTimeout !== null) {
+      window.clearTimeout(autoPreviewTimeout);
+      autoPreviewTimeout = null;
     }
-    isDiscarding.value = true;
-    errorMessage.value = null;
-    try {
-      await discardDocumentConverterProjectPreview({ previewId: preview.value.preview_id });
-      preview.value = null;
-      selectedArtifactId.value = null;
-      isPreviewStale.value = false;
-    } catch {
-      errorMessage.value = "Det gick inte att ta bort. Försök igen.";
-    } finally {
-      isDiscarding.value = false;
-    }
-  }
+    replacePreviewPdfUrl(null);
+  });
 
   return {
-    canPreview,
-    discardPreview,
+    canRetryPreview,
     downloadSelectedArtifact,
     errorMessage,
     fileSummary,
-    isDiscarding,
+    isCurrentPreviewReady,
     isDownloading,
     isPreviewRunning,
-    isPreviewStale,
     isSaving,
-    markPreviewStale,
     onFilesSelected,
+    onFilesDropped,
     outputMode,
     paperSize,
     preview,
-    previewActionLabel,
-    previewProject,
+    previewPdfUrl,
+    retryPreview,
     saveSelectedArtifact,
+    selectArtifact,
     selectOutputMode,
     selectPaperSize,
     selectedArtifact,
@@ -260,7 +418,7 @@ export function useDocumentConverterProjectPreview() {
     selectedFileLabel,
     selectedHtmlFile,
     selectedHtmlFilename,
-    templateId,
+    statusMessage,
     totalProjectFiles,
   };
 }

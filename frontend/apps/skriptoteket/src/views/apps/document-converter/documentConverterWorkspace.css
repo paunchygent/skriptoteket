@@ -48,7 +48,6 @@
 }
 
 .dc-field > span,
-.dc-preview-state,
 .dc-asset-heading h2 {
   font-size: 0.75rem;
   font-weight: 800;
@@ -156,22 +155,15 @@
 
 .dc-controls {
   display: grid;
-  grid-template-rows: auto 1fr auto auto auto;
+  grid-template-rows: auto 1fr auto;
   overflow: auto;
 }
 
 .dc-file-toolbar,
 .dc-control-section,
-.dc-readiness,
-.dc-action-dock,
-.dc-error {
+.dc-feedback-row {
   padding: 1.35rem 1.6rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
-}
-
-.dc-file-toolbar {
-  display: flex;
-  align-items: center;
 }
 
 .dc-preview-header h2 {
@@ -182,6 +174,32 @@
   min-height: 2.5rem;
   padding: 0 0.75rem;
   font-size: 0.75rem;
+}
+
+.dc-dropzone {
+  min-height: 4.5rem;
+  display: grid;
+  align-content: center;
+  gap: 0.2rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px dashed color-mix(in srgb, var(--color-navy) 40%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-canvas) 78%, var(--color-panel) 22%);
+  cursor: pointer;
+}
+
+.dc-dropzone strong,
+.dc-dropzone span {
+  display: block;
+}
+
+.dc-dropzone strong {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.dc-dropzone span {
+  font-size: 0.74rem;
 }
 
 .dc-neutral-button:disabled {
@@ -214,33 +232,42 @@
   padding: 0 0.75rem;
 }
 
-.dc-readiness {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem 1rem;
-  background: var(--color-panel-muted);
-  font-size: 0.78rem;
-}
-
-.dc-readiness span {
-  color: color-mix(in srgb, var(--color-navy) 60%, transparent);
-}
-
-.dc-readiness strong {
-  color: var(--color-action);
-}
-
-.dc-action-dock {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
-}
-
-.dc-error {
+.dc-feedback-row {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   border-bottom: 0;
-  color: var(--color-error);
+}
+
+.dc-feedback {
+  margin: 0;
+  color: var(--color-navy);
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+.dc-feedback--error {
+  color: var(--color-error);
+}
+
+.dc-icon-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--color-navy) 35%, transparent);
+  border-radius: 999px;
+  background: var(--color-canvas);
+  color: var(--color-navy);
+}
+
+.dc-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 @media (max-width: 72rem) {
@@ -284,5 +311,9 @@
 
   .dc-controls {
     border-right: 0;
+  }
+
+  .dc-feedback-row {
+    align-items: flex-start;
   }
 }

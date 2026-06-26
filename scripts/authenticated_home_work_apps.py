@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import Page, expect, sync_playwright
 
+from scripts._document_converter_proof import assert_document_converter_route
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
@@ -123,40 +124,6 @@ def _assert_home_contract(page: Page) -> None:
         raise AssertionError("Work app cards are not above the secondary ledgers.")
 
 
-def _document_converter_fixture_files(artifact_dir: Path) -> list[str]:
-    fixture_dir = artifact_dir / "document-converter-fixture"
-    fixture_dir.mkdir(exist_ok=True)
-    html_path = fixture_dir / "index.html"
-    css_path = fixture_dir / "styles.css"
-    image_path = fixture_dir / "cover.png"
-    html_path.write_text(
-        "<!doctype html><html><head><link rel='stylesheet' href='styles.css'></head>"
-        "<body><h1>Dokument</h1><img src='cover.png' alt=''></body></html>",
-        encoding="utf-8",
-    )
-    css_path.write_text("body { font-family: sans-serif; }", encoding="utf-8")
-    image_path.write_bytes(b"\x89PNG\r\n\x1a\n")
-    return [str(html_path), str(css_path), str(image_path)]
-
-
-def _assert_document_converter_route(page: Page, *, artifact_dir: Path) -> None:
-    page.locator('[data-testid="home-work-app-document-converter"]').click()
-    expect(page).to_have_url(re.compile(r"/apps/document-converter$"))
-    route = page.locator('main[aria-label="Dokumentkonverterare"]')
-    expect(route).to_be_visible()
-    page.locator('[data-testid="document-converter-file-input"]').set_input_files(
-        _document_converter_fixture_files(artifact_dir)
-    )
-    expect(route.locator(".dc-preview-header h2")).to_have_text("index.html")
-    expect(route.get_by_text("Exportera som", exact=True)).to_be_visible()
-    expect(route.get_by_text("Enskilda PDF-filer", exact=True)).to_be_visible()
-    expect(route.get_by_text("Kombinerad PDF", exact=True)).to_be_visible()
-    expect(route.get_by_text("Tillfällig förhandsvisning", exact=True)).to_be_visible()
-    expect(route.get_by_text("Tillfällig", exact=True)).to_have_count(0)
-    expect(route.get_by_text("Båda")).to_have_count(0)
-    expect(route.get_by_text("both")).to_have_count(0)
-
-
 def _capture_home(
     page: Page,
     *,
@@ -181,11 +148,16 @@ def _capture_home(
     _assert_home_contract(page)
     screenshot_path = artifact_dir / f"authenticated-home-{viewport['label']}.png"
     page.screenshot(path=str(screenshot_path), full_page=True)
-    _assert_document_converter_route(page, artifact_dir=artifact_dir)
+    document_converter_capture = assert_document_converter_route(
+        page,
+        artifact_dir=artifact_dir,
+        viewport_label=str(viewport["label"]),
+    )
     route_screenshot_path = artifact_dir / f"document-converter-{viewport['label']}.png"
     page.screenshot(path=str(route_screenshot_path), full_page=True)
     parsed = urlparse(page.url)
     return {
+        "document_converter": document_converter_capture,
         "label": viewport["label"],
         "path": parsed.path,
         "query": parsed.query,

@@ -21,7 +21,7 @@ from skriptoteket.application.curated_apps.handlers.document_converter_project_p
 )
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.clock import UTCClock
-from skriptoteket.infrastructure.documents.document_converter_project_previews import (
+from skriptoteket.infrastructure.documents.document_converter_project_preview_store import (
     FilesystemDocumentConverterProjectPreviewStore,
 )
 

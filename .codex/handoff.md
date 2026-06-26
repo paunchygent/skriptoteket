@@ -8,16 +8,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-25.
+- Date: 2026-06-26.
 - Branch: `main`.
-- Latest closed work: `PR-0386` Audio Transcription button-token remediation; `REV-PR-0386` approved.
-- Active slice: none. Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Latest closed work: `PR-0388`; no active slice. Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
-- `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the
-  current product direction, Sir Convert boundary, shell plan, and app
-  presentation sequence.
-- `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was
-  historical cutover scaffolding and has been superseded by `PR-0374`.
+- `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
+- `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
 - `PR-0365` is done. `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`,
   `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.spec.ts`, and
   `scripts/authenticated_shell_navigation.py` now keep the
@@ -27,11 +23,7 @@ Keep this file updated so the next session can pick up work quickly.
   duplicate app links plus `Mina körningar`/`Dokumentkonvertering` out of
   persistent nav. `ST-37-03` is now done with retained shared-auth proof at
   `.artifacts/playwright-pr-0365-authenticated-shell-navigation/20260619T212625Z/`.
-- `PR-0364` is done and approved by `REV-PR-0364`; detailed proof and
-  post-deploy correction history was compacted to
-  `.codex/long-term-memory/entries/session-2026-06-19-pr-0364-auth-home-proof-compaction.md`.
-  Keep the authenticated-home app symbols from
-  `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`.
+- `PR-0364` is done and approved by `REV-PR-0364`; detailed proof and post-deploy correction history was compacted to `.codex/long-term-memory/entries/session-2026-06-19-pr-0364-auth-home-proof-compaction.md`. Keep the authenticated-home app symbols from `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`.
 - `PR-0366` through `PR-0373` app presentation, public landing, registry, and
   dev-stack proof history is compacted to
   `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
@@ -105,16 +97,26 @@ Keep this file updated so the next session can pick up work quickly.
   locked Swedish copy and only `separate_pdfs` / `combined_pdf`.
 - `PR-0386` is done and approved by `REV-PR-0386`: Audio Transcription command
   buttons now use neutral compact token surfaces while selector state remains explicit.
+- `PR-0387` is done and approved by `REV-PR-0387`; `PR-0388` is approved by
+  `REV-PR-0388`. WeasyPrint `69.0` is locked, the `web` image was rebuilt with
+  BuildKit, and the live Grid-heavy proof succeeds through the approved
+  best-effort path: native Grid first, app-owned compatibility retry only
+  after WeasyPrint's internal Grid `AssertionError`.
 ## Verification
-- Current local shared-auth runtime as of PR-0368 implementation:
-  - HuleEdu Gateway container `huleedu_api_gateway_service` healthy on
-    `http://localhost:8080`.
-  - Skriptoteket Docker service `skriptoteket_web` running and reachable from
-    Gateway as `http://skriptoteket-web:8000`.
-  - HuleEdu login UI listens on `:5174`; Skriptoteket Vite listens on `:5173`
-    via the repaired `pdm run fe-dev-shared-auth` PDM env map.
-- Gateway-to-Skriptoteket Docker check passed:
-  `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`.
+- Current retained proof regeneration is green for the scoped best-effort
+  preview contract:
+  - Skriptoteket Vite listens on `:5173` via `pdm run fe-dev-shared-auth`;
+    HuleEdu auth UI listens on `:5174` via
+    `pdm run run-local-pdm auth-integration fe-dev`.
+  - `/opt/homebrew/bin/pdm run python -m scripts.authenticated_home_work_apps`
+    succeeded with `.artifacts/authenticated-home-work-apps/20260626T031626Z/`.
+  - `manifest.redacted.json` records `grid_layout_fixture_rendered=true`,
+    expected visible text, visible CSS/image accents, missing-resource text,
+    nonblank rendered PDF PNGs, and no raw external URL or filesystem path text.
+  - Docker logs for `2026-06-26T03:16:20Z` through `2026-06-26T03:18:30Z`
+    show native WeasyPrint Grid `AssertionError`, app-owned compatibility
+    retry, preview POST/artifact GET `200`, and no final `422` or
+    `FileNotFoundError`.
 - PR-0365 / PR-0372 retained browser proof and screenshots are recorded in
   their PR/review docs and artifact directories; keep the Docker-service proof
   lane intact for authenticated surfaces.
@@ -122,26 +124,27 @@ Keep this file updated so the next session can pick up work quickly.
     `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
   - PR-0376 through PR-0378 proof-lane details are retained in their PR/review
     docs and `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
-  - PR-0379 focused backend/API remediation gates passed locally:
-    `pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py`
-    `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py`
-    `pdm run lint`
-    `pdm run typecheck`
-  - PR-0381 focused gates passed locally:
-    `pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/web/conversion_hub/test_apps_document_converter_batch_api.py tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py tests/unit/application/curated_apps/handlers/test_document_converter_local_artifact_actions.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py`
-    `pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/application/curated_apps/handlers/test_conversion_hub_artifact_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_actions.py`
-    `pdm run lint`
-    `pdm run typecheck`
-    `pdm run fe-gen-api-types`
-    `pdm run fe-type-check`
-  - PR-0382 repair gates and retained re-review are recorded in
-    `docs/backlog/reviews/review-pr-0382-document-converter-html-css-project-preview-contract.md`.
-  - PR-0384 red/green proof and `REV-PR-0384` approval are retained in
-    `docs/backlog/reviews/review-pr-0384-document-converter-route-visible-mvp-implementation.md`;
-    latest browser artifacts: `.artifacts/authenticated-home-work-apps/20260625T192730Z/`.
-  - PR-0386 green/review proof passed: transcript focused Vitest, `pdm run fe-type-check`,
-    `pdm run fe-lint`, `pdm run fe-build`, docs/handoff validation, and visual
-    proof under `.artifacts/pr-0386-transcript-button-token-proof/20260625T201832Z/`.
+  - Older PR-0379 through PR-0386 verification details are compacted to
+    `.codex/long-term-memory/entries/session-2026-06-26-pr-0388-handoff-compaction.md`.
+  - PR-0388 focused backend proof is green locally and was rerun during retained
+    re-review:
+    `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib /opt/homebrew/bin/pdm run test tests/unit/application/curated_apps/test_document_converter_project_manifest.py tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_renderer_best_effort.py`
+    plus `tests/unit/cli/test_cleanup_document_converter_project_previews.py`
+    passed with `43 passed`, including direct grid-heavy renderer fixtures,
+    best-effort missing/blocked assets, traceback-scoped Grid fallback,
+    visible text preservation, and cleanup CLI import coverage.
+    `/opt/homebrew/bin/pdm run test tests/unit/scripts/test_playwright_script_surface.py`
+    `pdm run fe-test -- --run src/views/apps/document-converter/DocumentConverterView.spec.ts`
+    `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`,
+    `pdm run lint`, and `pdm run typecheck` passed.
+    Earlier red live-proof artifacts remain at
+    `.artifacts/authenticated-home-work-apps/20260625T225535Z/`,
+    `.artifacts/authenticated-home-work-apps/20260625T225726Z/`, and
+    `.artifacts/authenticated-home-work-apps/20260625T225910Z/`, where
+    `document-converter-preview-response.json` captured `422 VALIDATION_ERROR`
+    while the grid-heavy fixture still hit a WeasyPrint `AssertionError`.
+    Fresh rerun after the WeasyPrint 69/image rebuild and import repair
+    succeeded at `.artifacts/authenticated-home-work-apps/20260626T031626Z/`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -191,6 +194,6 @@ git diff --check
   monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Recommended next governed follow-up: shared artifact-action state consolidation before inline Document Converter PDF rendering.
+- Next governed step: plan `PR-0385` if durable saved-file/history behavior should come next.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

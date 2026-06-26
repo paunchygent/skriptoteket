@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from urllib.parse import quote, urljoin, urlparse
+from urllib.parse import quote, urlparse
 
 from playwright.sync_api import Locator, Page, expect
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -24,7 +24,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 AUTH_ENTRY_PATH = "/auth/login"
 HULEEDU_LOGIN_API_PATH = "/v1/auth/login"
 AUTH_HANDOFF_ACTION_PATTERN = re.compile(
-    r"(inloggningen|öppna inloggningen|logga in igen)",
+    r"(logga in igen|öppna inloggningen|inloggningen|logga in)",
     re.IGNORECASE,
 )
 
@@ -124,11 +124,7 @@ def _follow_handoff_link(page: Page) -> None:
     """Navigate through the visible HuleEdu ceremony link from the auth handoff."""
 
     handoff_link = _handoff_link(page)
-    href = handoff_link.get_attribute("href")
-    if href:
-        page.goto(urljoin(page.url, href), wait_until="domcontentloaded")
-        return
-    handoff_link.click()
+    handoff_link.click(no_wait_after=True)
 
 
 def login_via_auth_entry(

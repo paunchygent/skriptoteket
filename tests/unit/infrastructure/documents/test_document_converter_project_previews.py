@@ -15,7 +15,6 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
-from weasyprint.urls import FatalURLFetchingError
 
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterStoredArtifact,
@@ -36,9 +35,11 @@ from skriptoteket.infrastructure.documents import (
 from skriptoteket.infrastructure.documents import (
     document_converter_project_previews as preview_module,
 )
+from skriptoteket.infrastructure.documents.document_converter_project_preview_store import (
+    FilesystemDocumentConverterProjectPreviewStore,
+)
 from skriptoteket.infrastructure.documents.document_converter_project_previews import (
     DocumentConverterProjectAssetFetcher,
-    FilesystemDocumentConverterProjectPreviewStore,
     WeasyPrintDocumentConverterProjectRenderer,
 )
 
@@ -68,14 +69,16 @@ def test_project_asset_fetcher_resolves_declared_filenames_only() -> None:
 @pytest.mark.parametrize(
     "url",
     [
-        "file:///etc/passwd",
+        "file:///etc/passwd.png",
         "https://example.test/logo.png",
         "project:///../secret.png",
         "project:///nested/logo.png",
         "project:///missing.png",
     ],
 )
-def test_project_asset_fetcher_rejects_external_or_undeclared_urls(url: str) -> None:
+def test_project_asset_fetcher_returns_placeholder_for_blocked_or_missing_images(
+    url: str,
+) -> None:
     fetcher = DocumentConverterProjectAssetFetcher(
         files=[
             DocumentConverterProjectUploadedFile(
@@ -86,8 +89,32 @@ def test_project_asset_fetcher_rejects_external_or_undeclared_urls(url: str) -> 
         ]
     )
 
-    with pytest.raises(FatalURLFetchingError):
-        fetcher.fetch(url)
+    response = fetcher.fetch(url)
+
+    assert response.geturl().startswith("project:///__missing_asset__")
+    assert response.content_type == "image/png"
+    assert len(response.read()) > 100
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "file:///etc/passwd.css",
+        "https://example.test/blocked.css",
+        "https://example.test/blocked.woff2",
+        "project:///nested/style.css",
+        "project:///missing.css",
+    ],
+)
+def test_project_asset_fetcher_returns_safe_empty_assets_for_blocked_stylesheets_and_fonts(
+    url: str,
+) -> None:
+    fetcher = DocumentConverterProjectAssetFetcher(files=[])
+
+    response = fetcher.fetch(url)
+
+    assert response.read() == b""
+    assert response.content_type in {"font/woff2", "text/css"}
 
 
 @pytest.mark.parametrize(
@@ -154,6 +181,34 @@ def test_project_renderer_applies_real_paper_sizes_to_page_css(
 
     assert [artifact.filename for artifact in artifacts] == ["one.pdf", "two.pdf"]
     assert f"size: {expected_size} portrait;" in rendered_stylesheets[0]
+
+
+def test_project_renderer_does_not_retry_unrelated_assertions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+
+    def raise_unrelated_assertion(*, html, css_text, fetcher) -> bytes:
+        nonlocal calls
+        del html, css_text, fetcher
+        calls += 1
+        raise AssertionError("unrelated renderer assertion")
+
+    monkeypatch.setattr(
+        preview_module,
+        "_write_weasyprint_pdf_bytes",
+        raise_unrelated_assertion,
+    )
+
+    with pytest.raises(DomainError) as excinfo:
+        preview_module._render_weasyprint_pdf(
+            html="<main>Content</main>",
+            css_text="main{color:#18314f}",
+            fetcher=DocumentConverterProjectAssetFetcher(files=[]),
+        )
+
+    assert calls == 1
+    assert excinfo.value.code is ErrorCode.VALIDATION_ERROR
 
 
 def test_filesystem_project_preview_store_round_trips_owner_scoped_artifact(tmp_path) -> None:

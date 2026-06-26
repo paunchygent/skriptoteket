@@ -170,7 +170,7 @@ export async function renderDocumentConverterProjectPreview(
   );
 }
 
-export async function downloadDocumentConverterProjectPreviewArtifact(params: {
+export async function loadDocumentConverterProjectPreviewArtifactBlob(params: {
   previewId: string;
   artifact: DocumentConverterProjectPreviewArtifact;
 }): Promise<ApiBlobResponse> {
@@ -181,6 +181,13 @@ export async function downloadDocumentConverterProjectPreviewArtifact(params: {
     }),
     { method: "GET" },
   );
+}
+
+export async function downloadDocumentConverterProjectPreviewArtifact(params: {
+  previewId: string;
+  artifact: DocumentConverterProjectPreviewArtifact;
+}): Promise<ApiBlobResponse> {
+  return await loadDocumentConverterProjectPreviewArtifactBlob(params);
 }
 
 export async function saveDocumentConverterProjectPreviewArtifact(params: {

@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-25
+updated: 2026-06-26
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -54,10 +54,13 @@ dashboard direction are settled.
 - [x] [PR-0379: ST-37-04 Document Converter backend API contract](../prs/pr-0379-st-37-04-document-converter-backend-api-contract.md)
 - [x] [PR-0380: ST-37-04 Document Converter product contract correction](../prs/pr-0380-st-37-04-document-converter-product-contract-correction.md)
 - [x] [PR-0381: ST-37-04 Document Converter local-heavy producer and batch contract](../prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md)
-- [ ] [PR-0382: ST-37-04 Document Converter HTML/CSS project preview contract](../prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md)
-- [ ] [PR-0383: ST-37-04 Document Converter mockup and copy approval package](../prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md)
-- [ ] [PR-0384: ST-37-04 Document Converter route-visible MVP implementation](../prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md)
+- [x] [PR-0382: ST-37-04 Document Converter HTML/CSS project preview contract](../prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md)
+- [x] [PR-0383: ST-37-04 Document Converter mockup and copy approval package](../prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md)
+- [x] [PR-0384: ST-37-04 Document Converter route-visible MVP implementation](../prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md)
 - [ ] [PR-0385: ST-37-04 Document Converter files and history follow-up](../prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md)
+- [x] [PR-0386: ST-37-04 Audio Transcription button token remediation](../prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md)
+- [x] [PR-0387: ST-37-04 Document Converter small-screen mockup remediation](../prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md)
+- [x] [PR-0388: ST-37-04 Document Converter automatic preview and state-copy remediation](../prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md)
 
 ## Notes
 
@@ -115,10 +118,18 @@ dashboard direction are settled.
   library evidence, centralizes existing PDF/rendering/extraction surfaces,
   expands the scoped backend contract to batch input and automatic local/heavy
   producer routing, and keeps the frontend route inactive.
-- `PR-0382` is ready as the next route-inactive Document Converter contract
-  slice. It must close the HTML/CSS project manifest, safe linked-asset model,
-  preview artifact lifecycle, output-mode response shape, PDF controls, and
-  first template identifiers before any production UI or copy work begins.
+- `PR-0382` through `PR-0384` are done and approved. They established the
+  backend project-preview contract, approved the route-visible mockup/copy
+  package, and activated `/apps/document-converter`.
+- `PR-0386` is done and approved. It repaired Audio Transcription command
+  buttons so normal actions use neutral compact surfaces while selector state
+  remains visually distinct.
+- `PR-0387` is done and approved. It remediated the route-inactive Document
+  Converter small-screen mockup contract before production-route follow-up work.
+- `PR-0388` is done and approved by `REV-PR-0388`. It removes
+  implementation-detail preview copy and forbidden eyebrow/status labels, makes
+  PDF preview automatic with stale-response protection, and keeps ordinary
+  grid-heavy teacher HTML/CSS in scope through best-effort preview rendering.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use
@@ -161,6 +172,6 @@ dashboard direction are settled.
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-  `ST-37-04` remains open for the `PR-0382` through `PR-0385` Document
-  Converter sequence and any later concrete backend/API app-presentation need;
+  `ST-37-04` remains open for the `PR-0385` Document Converter files/history
+  follow-up and any later concrete backend/API app-presentation need;
   keep `PR-0369` blocked until such a need is proven.

@@ -115,7 +115,7 @@ class DocumentConverterProjectHtmlEntry(BaseModel):
     @field_validator("entry_id")
     @classmethod
     def _validate_entry_id(cls, value: str) -> str:
-        if not value.replace("-", "_").isalnum():
+        if not all(character.isalnum() or character in {"-", "_"} for character in value):
             raise ValueError("entry_id must contain only letters, numbers, hyphens, or underscores")
         return value
 

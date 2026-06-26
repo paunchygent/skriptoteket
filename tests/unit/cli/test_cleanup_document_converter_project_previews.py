@@ -30,7 +30,7 @@ from skriptoteket.application.curated_apps.document_converter_projects import (
 )
 from skriptoteket.cli.main import app
 from skriptoteket.domain.errors import DomainError
-from skriptoteket.infrastructure.documents.document_converter_project_previews import (
+from skriptoteket.infrastructure.documents.document_converter_project_preview_store import (
     FilesystemDocumentConverterProjectPreviewStore,
 )
 

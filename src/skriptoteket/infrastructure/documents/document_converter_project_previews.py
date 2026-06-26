@@ -13,6 +13,7 @@ Relationships:
 from __future__ import annotations
 
 import io
+import logging
 from pathlib import PurePosixPath
 from urllib.parse import unquote, urlsplit
 
@@ -31,90 +32,100 @@ from skriptoteket.application.curated_apps.document_converter_projects import (
 )
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
-from skriptoteket.infrastructure.documents.document_converter_project_preview_store import (
-    FilesystemDocumentConverterProjectPreviewStore,
+from skriptoteket.infrastructure.documents.document_converter_project_preview_grid_compat import (
+    is_weasyprint_grid_layout_error,
+    prepare_grid_compatibility_css,
+    prepare_grid_compatibility_css_bytes,
+    prepare_grid_compatibility_html,
 )
 from skriptoteket.protocols.document_converter import (
     DocumentConverterProjectPreviewRendererProtocol,
 )
 
-__all__ = [
-    "DocumentConverterProjectAssetFetcher",
-    "FilesystemDocumentConverterProjectPreviewStore",
-    "WeasyPrintDocumentConverterProjectRenderer",
-]
-
+_LOGGER = logging.getLogger(__name__)
 _PDF_CONTENT_TYPE = "application/pdf"
 _COMBINED_FILENAME = "combined.pdf"
+_CSS_CONTENT_TYPE = "text/css"
+_FONT_CONTENT_TYPES = {
+    ".otf": "font/otf",
+    ".ttf": "font/ttf",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+}
+_IMAGE_SUFFIXES = frozenset({".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"})
 
 _TEMPLATE_CSS = {
-    DocumentConverterProjectTemplateId.ACADEMIC_PHD: """
-body {
-  font-family: "Aptos", "Inter", "Helvetica Neue", Arial, sans-serif;
-  font-size: 11pt;
-  line-height: 1.45;
-}
-h1, h2, h3 { font-family: "Aptos Display", "Georgia", serif; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 0.2mm solid #777; padding: 2.5mm; }
-""",
-    DocumentConverterProjectTemplateId.CLEAN_WORKSHEET: """
-body {
-  font-family: "Inter", "Arial", sans-serif;
-  font-size: 11pt;
-  line-height: 1.5;
-}
-h1, h2, h3 { font-weight: 700; }
-hr { border: 0; border-top: 0.3mm solid #444; }
-""",
-    DocumentConverterProjectTemplateId.EXPRESSIVE_HANDOUT: """
-body {
-  font-family: "Georgia", "Aptos", serif;
-  font-size: 11.5pt;
-  line-height: 1.5;
-}
-h1, h2 { letter-spacing: 0; }
-blockquote { border-left: 1.5mm solid #333; padding-left: 4mm; }
-""",
+    DocumentConverterProjectTemplateId.ACADEMIC_PHD: (
+        'body { font-family: "Aptos", "Inter", "Helvetica Neue", Arial, sans-serif; '
+        "font-size: 11pt; line-height: 1.45; }\n"
+        'h1, h2, h3 { font-family: "Aptos Display", "Georgia", serif; }\n'
+        "table { border-collapse: collapse; width: 100%; }\n"
+        "th, td { border: 0.2mm solid #777; padding: 2.5mm; }"
+    ),
+    DocumentConverterProjectTemplateId.CLEAN_WORKSHEET: (
+        'body { font-family: "Inter", "Arial", sans-serif; '
+        "font-size: 11pt; line-height: 1.5; }\n"
+        "h1, h2, h3 { font-weight: 700; }\n"
+        "hr { border: 0; border-top: 0.3mm solid #444; }"
+    ),
+    DocumentConverterProjectTemplateId.EXPRESSIVE_HANDOUT: (
+        'body { font-family: "Georgia", "Aptos", serif; '
+        "font-size: 11.5pt; line-height: 1.5; }\n"
+        "h1, h2 { letter-spacing: 0; }\n"
+        "blockquote { border-left: 1.5mm solid #333; padding-left: 4mm; }"
+    ),
 }
 
 
 class DocumentConverterProjectAssetFetcher:
     """Resolve WeasyPrint resources from declared in-memory project files only."""
 
-    def __init__(self, *, files: list[DocumentConverterProjectUploadedFile]) -> None:
+    def __init__(
+        self,
+        *,
+        files: list[DocumentConverterProjectUploadedFile],
+        grid_compatibility: bool = False,
+    ) -> None:
         self._files = {project_file.filename: project_file for project_file in files}
+        self._grid_compatibility = grid_compatibility
+
+    def with_grid_compatibility(self) -> DocumentConverterProjectAssetFetcher:
+        return DocumentConverterProjectAssetFetcher(
+            files=list(self._files.values()),
+            grid_compatibility=True,
+        )
 
     def __call__(self, url: str):
-        """Allow WeasyPrint to use this object as ``url_fetcher``."""
         return self.fetch(url)
 
     def fetch(self, url: str, headers=None):
-        """Return one declared project file or stop rendering on unsafe URLs."""
         del headers
-        from weasyprint.urls import FatalURLFetchingError, URLFetcherResponse
+        from weasyprint.urls import URLFetcherResponse
 
         filename = _project_filename_from_url(url=url)
-        project_file = self._files.get(filename)
-        if project_file is None:
-            raise FatalURLFetchingError("Project asset is not declared in the manifest.")
+        if filename is not None and (project_file := self._files.get(filename)) is not None:
+            content = project_file.content
+            if self._grid_compatibility and project_file.content_type == _CSS_CONTENT_TYPE:
+                content = prepare_grid_compatibility_css_bytes(project_file.content)
+            return URLFetcherResponse(
+                url,
+                content,
+                {"Content-Type": project_file.content_type},
+            )
         return URLFetcherResponse(
-            url,
-            project_file.content,
-            {"Content-Type": project_file.content_type},
+            _fallback_response_url(url=url),
+            _fallback_asset_bytes(url=url),
+            {"Content-Type": _fallback_content_type(url=url)},
         )
 
 
 class WeasyPrintDocumentConverterProjectRenderer(DocumentConverterProjectPreviewRendererProtocol):
-    """Render HTML/CSS project uploads into separate and combined preview PDFs."""
-
     def render_project(
         self,
         *,
         manifest: DocumentConverterProjectManifest,
         files: list[DocumentConverterProjectUploadedFile],
     ) -> list[DocumentConverterStoredArtifact]:
-        """Render preview artifacts requested by the manifest output mode."""
         manifest.validate_uploaded_file_set(
             uploaded_filenames={project_file.filename for project_file in files}
         )
@@ -158,27 +169,63 @@ def _render_weasyprint_pdf(
     css_text: str,
     fetcher: DocumentConverterProjectAssetFetcher,
 ) -> bytes:
+    try:
+        return _write_weasyprint_pdf_bytes(html=html, css_text=css_text, fetcher=fetcher)
+    except Exception as exc:
+        if is_weasyprint_grid_layout_error(exc):
+            return _render_weasyprint_pdf_with_grid_compatibility(
+                html=html,
+                css_text=css_text,
+                fetcher=fetcher,
+                initial_error=exc,
+            )
+        _LOGGER.exception("Document Converter project preview render failed.")
+        raise validation_error("Could not render Document Converter project preview PDF.") from exc
+
+
+def _render_weasyprint_pdf_with_grid_compatibility(
+    *,
+    html: str,
+    css_text: str,
+    fetcher: DocumentConverterProjectAssetFetcher,
+    initial_error: BaseException,
+) -> bytes:
+    _LOGGER.warning(
+        "Document Converter project preview retried with grid compatibility fallback.",
+        exc_info=initial_error,
+    )
+    try:
+        return _write_weasyprint_pdf_bytes(
+            html=prepare_grid_compatibility_html(html),
+            css_text=prepare_grid_compatibility_css(css_text),
+            fetcher=fetcher.with_grid_compatibility(),
+        )
+    except Exception as exc:
+        _LOGGER.exception("Document Converter project preview render failed.")
+        raise validation_error("Could not render Document Converter project preview PDF.") from exc
+
+
+def _write_weasyprint_pdf_bytes(
+    *,
+    html: str,
+    css_text: str,
+    fetcher: DocumentConverterProjectAssetFetcher,
+) -> bytes:
     from weasyprint import CSS, HTML
     from weasyprint.text.fonts import FontConfiguration
-    from weasyprint.urls import FatalURLFetchingError
 
     font_config = FontConfiguration()
-    try:
-        stylesheet = CSS(
-            string=css_text,
-            base_url=DOCUMENT_CONVERTER_PROJECT_BASE_URL,
-            url_fetcher=fetcher,
-            font_config=font_config,
-        )
-        rendered = HTML(
-            string=html,
-            base_url=DOCUMENT_CONVERTER_PROJECT_BASE_URL,
-            url_fetcher=fetcher,
-        ).write_pdf(stylesheets=[stylesheet], font_config=font_config)
-    except FatalURLFetchingError as exc:
-        raise validation_error(
-            "Document Converter project asset is outside the uploaded project boundary."
-        ) from exc
+    stylesheet = CSS(
+        string=css_text,
+        base_url=DOCUMENT_CONVERTER_PROJECT_BASE_URL,
+        url_fetcher=fetcher,
+        font_config=font_config,
+    )
+    rendered = HTML(
+        string=html,
+        base_url=DOCUMENT_CONVERTER_PROJECT_BASE_URL,
+        url_fetcher=fetcher,
+    ).write_pdf(stylesheets=[stylesheet], font_config=font_config)
     if isinstance(rendered, bytes):
         return rendered
     if isinstance(rendered, bytearray):
@@ -267,12 +314,10 @@ def _combine_pdf_bytes(artifacts: list[DocumentConverterStoredArtifact]) -> byte
             stream.close()
 
 
-def _project_filename_from_url(*, url: str) -> str:
-    from weasyprint.urls import FatalURLFetchingError
-
+def _project_filename_from_url(*, url: str) -> str | None:
     parsed = urlsplit(url)
     if parsed.scheme != "project" or parsed.netloc or parsed.query or parsed.fragment:
-        raise FatalURLFetchingError("Project assets must use the project scheme.")
+        return None
     filename = unquote(parsed.path.lstrip("/"))
     path = PurePosixPath(filename)
     if (
@@ -282,8 +327,62 @@ def _project_filename_from_url(*, url: str) -> str:
         or "\\" in filename
         or filename in {".", ".."}
     ):
-        raise FatalURLFetchingError("Project assets must resolve by bare filename.")
+        return None
     return filename
+
+
+def _fallback_asset_bytes(*, url: str) -> bytes:
+    kind = _fallback_kind(url=url)
+    if kind == "css" or kind == "font":
+        return b""
+    return _missing_image_placeholder_png()
+
+
+def _fallback_content_type(*, url: str) -> str:
+    kind = _fallback_kind(url=url)
+    if kind == "css":
+        return _CSS_CONTENT_TYPE
+    if kind == "font":
+        return _FONT_CONTENT_TYPES.get(_url_suffix(url=url), "font/woff2")
+    return "image/png"
+
+
+def _fallback_response_url(*, url: str) -> str:
+    suffix = _url_suffix(url=url)
+    if suffix == ".css" or suffix in _FONT_CONTENT_TYPES or suffix in _IMAGE_SUFFIXES:
+        return f"{DOCUMENT_CONVERTER_PROJECT_BASE_URL}__missing_asset__{suffix}"
+    return f"{DOCUMENT_CONVERTER_PROJECT_BASE_URL}__missing_asset__.png"
+
+
+def _fallback_kind(*, url: str) -> str:
+    suffix = _url_suffix(url=url)
+    if suffix == ".css":
+        return "css"
+    if suffix in _FONT_CONTENT_TYPES:
+        return "font"
+    if suffix in _IMAGE_SUFFIXES:
+        return "image"
+    return "image"
+
+
+def _url_suffix(*, url: str) -> str:
+    parsed = urlsplit(url)
+    return PurePosixPath(unquote(parsed.path)).suffix.lower()
+
+
+def _missing_image_placeholder_png() -> bytes:
+    from PIL import Image, ImageDraw
+
+    image = Image.new("RGB", (240, 140), color=(247, 242, 235))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, 239, 139), outline=(24, 49, 79), width=4)
+    draw.line((24, 24, 216, 116), fill=(201, 79, 50), width=6)
+    draw.line((216, 24, 24, 116), fill=(201, 79, 50), width=6)
+    draw.text((58, 46), "Bild saknas", fill=(24, 49, 79))
+    draw.text((48, 80), "Saknad resurs", fill=(24, 49, 79))
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def _decode_text_file(project_file: DocumentConverterProjectUploadedFile) -> str:

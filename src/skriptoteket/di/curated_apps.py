@@ -235,8 +235,10 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store i
 from skriptoteket.infrastructure.documents.document_converter_artifacts import (
     FilesystemDocumentConverterArtifactStore,
 )
-from skriptoteket.infrastructure.documents.document_converter_project_previews import (
+from skriptoteket.infrastructure.documents.document_converter_project_preview_store import (
     FilesystemDocumentConverterProjectPreviewStore,
+)
+from skriptoteket.infrastructure.documents.document_converter_project_previews import (
     WeasyPrintDocumentConverterProjectRenderer,
 )
 from skriptoteket.infrastructure.documents.markdown_rendering import PythonMarkdownToHtmlRenderer

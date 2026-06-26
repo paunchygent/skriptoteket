@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:d7a962b997f6fd608c9256c0ed9588bb39af27c775ac9b3d11063fcb60bb176e"
+content_hash = "sha256:2f67fbf0d6d8219ca2c377cb8fb01cd4de3c3d29b5fb4ff84f00adf8ab24d982"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -4259,6 +4259,17 @@ files = [
 ]
 
 [[package]]
+name = "types-xlrd"
+version = "2.0.0.20260518"
+requires_python = ">=3.10"
+summary = "Typing stubs for xlrd"
+groups = ["monorepo-tools"]
+files = [
+    {file = "types_xlrd-2.0.0.20260518-py3-none-any.whl", hash = "sha256:710c97c0a2dae288504a7c7037397b7a639563681b53890529c2342dd5194b42"},
+    {file = "types_xlrd-2.0.0.20260518.tar.gz", hash = "sha256:238031699230d0bc3dbcf3b67fc440e6c3b56cccae82a512ad1b748e1a2eaf91"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 requires_python = ">=3.9"
@@ -4492,7 +4503,7 @@ files = [
 
 [[package]]
 name = "weasyprint"
-version = "68.1"
+version = "69.0"
 requires_python = ">=3.10"
 summary = "The Awesome Document Factory"
 groups = ["default"]
@@ -4507,8 +4518,8 @@ dependencies = [
     "tinyhtml5>=2.0.0b1",
 ]
 files = [
-    {file = "weasyprint-68.1-py3-none-any.whl", hash = "sha256:4dc3ba63c68bbbce3e9617cb2226251c372f5ee90a8a484503b1c099da9cf5be"},
-    {file = "weasyprint-68.1.tar.gz", hash = "sha256:d3b752049b453a5c95edb27ce78d69e9319af5a34f257fa0f4c738c701b4184e"},
+    {file = "weasyprint-69.0-py3-none-any.whl", hash = "sha256:475951cfd917014de6d4d005caff48c6aa867e7e42b80cd5b16a0484a1609ee6"},
+    {file = "weasyprint-69.0.tar.gz", hash = "sha256:a7a32f39ca16bd82ef11de99c92ea4b5f14951c9033af035e451ce4f4ee0a88c"},
 ]
 
 [[package]]

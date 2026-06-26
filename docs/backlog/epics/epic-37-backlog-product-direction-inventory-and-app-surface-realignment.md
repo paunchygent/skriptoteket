@@ -5,7 +5,7 @@ title: "Backlog product-direction inventory and app surface realignment"
 status: active
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-25
+updated: 2026-06-26
 outcome: "Skriptoteket has a truthful active backlog that preserves still-valuable script/editor work, closes completed or superseded legacy tasks, and sequences the next UI shell and app-presentation work around current teacher-facing product lanes."
 dependencies:
   - "REF-current-product-direction-and-backlog-inventory-2026-06-17"
@@ -186,6 +186,10 @@ onward plus the ST-37-04 follow-up slices.
   automatic local/heavy producer decisions, first local simple lanes, shared
   document rendering/extraction adapters, and server-owned local artifact
   authority. The next route-inactive product contract slice is `PR-0382`.
-- `PR-0382` is ready after `PR-0381` and should close the HTML/CSS project
-  preview contract before any mockup, copy, or route-visible implementation
-  slice starts.
+- `PR-0382` through `PR-0384` are done and approved: the HTML/CSS project
+  preview contract exists, mockup/copy approval closed, and
+  `/apps/document-converter` is route-visible. `PR-0387` closed small-screen
+  mockup remediation, and `PR-0388` is done and approved by `REV-PR-0388`: the
+  route now has automatic PDF preview, no implementation-detail state copy, and
+  best-effort support for ordinary grid-heavy teacher HTML/CSS before
+  files/history work proceeds.

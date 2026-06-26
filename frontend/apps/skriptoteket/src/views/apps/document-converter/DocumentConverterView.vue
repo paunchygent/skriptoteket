@@ -12,17 +12,16 @@
  *   - Uses canonical icon wrappers from `src/components/icons`.
  */
 
+import { ref } from "vue";
+
 import {
   IconCode,
   IconCombinePdf,
   IconDownload,
   IconFileText,
   IconImageAsset,
-  IconPlus,
-  IconPreview,
   IconRefresh,
   IconSeparatePdfs,
-  IconTrash,
   IconVaultFiles,
 } from "../../../components/icons";
 import {
@@ -34,7 +33,6 @@ import {
 import type {
   DocumentConverterProjectOutputMode,
   DocumentConverterProjectPaperSize,
-  DocumentConverterProjectTemplateId,
 } from "./documentConverterProjectPreviewApi";
 import "./documentConverterWorkspace.css";
 import "./documentConverterPreview.css";
@@ -71,43 +69,39 @@ const paperChoices: DocumentConverterPaperChoice[] = [
   { label: "A5", value: "a5", dataTest: "document-converter-paper-a5" },
 ];
 
-const templateChoices: readonly {
-  label: string;
-  value: DocumentConverterProjectTemplateId;
-}[] = [
-  { label: "Standard", value: "academic_phd" },
-  { label: "Elevblad", value: "clean_worksheet" },
-  { label: "Rapport", value: "expressive_handout" },
-];
-
 const {
-  canPreview,
-  discardPreview,
+  canRetryPreview,
   downloadSelectedArtifact,
   errorMessage,
   fileSummary,
-  isDiscarding,
+  isCurrentPreviewReady,
   isDownloading,
-  isPreviewStale,
+  isPreviewRunning,
   isSaving,
-  markPreviewStale,
+  onFilesDropped,
   onFilesSelected,
   outputMode,
   paperSize,
   preview,
-  previewActionLabel,
-  previewProject,
+  previewPdfUrl,
+  retryPreview,
   saveSelectedArtifact,
+  selectArtifact,
   selectOutputMode,
   selectPaperSize,
   selectedArtifact,
-  selectedArtifactId,
   selectedFileLabel,
   selectedHtmlFile,
   selectedHtmlFilename,
-  templateId,
+  statusMessage,
   totalProjectFiles,
 } = useDocumentConverterProjectPreview();
+
+const fileInputElement = ref<HTMLInputElement | null>(null);
+
+function openFilePicker(): void {
+  fileInputElement.value?.click();
+}
 </script>
 
 <template>
@@ -187,38 +181,32 @@ const {
         aria-label="Val för export"
       >
         <div class="dc-file-toolbar">
-          <label class="dc-neutral-button">
-            <IconPlus :size="16" />
-            Lägg till fil
-            <input
-              data-testid="document-converter-file-input"
-              class="dc-file-input"
-              type="file"
-              multiple
-              accept=".html,.htm,.css,.png,.jpg,.jpeg,.webp"
-              @change="onFilesSelected"
-            >
-          </label>
+          <div
+            data-testid="document-converter-dropzone"
+            class="dc-dropzone"
+            role="button"
+            tabindex="0"
+            @click="openFilePicker"
+            @keydown.enter.prevent="openFilePicker"
+            @keydown.space.prevent="openFilePicker"
+            @dragover.prevent
+            @drop="onFilesDropped"
+          >
+            <strong>Dra filer hit eller klicka</strong>
+            <span>HTML, CSS och bilder</span>
+          </div>
+          <input
+            ref="fileInputElement"
+            data-testid="document-converter-file-input"
+            class="dc-file-input"
+            type="file"
+            multiple
+            accept=".html,.htm,.css,.png,.jpg,.jpeg,.webp"
+            @change="onFilesSelected"
+          >
         </div>
 
         <section class="dc-control-section">
-          <label class="dc-field">
-            <span>Mall</span>
-            <select
-              v-model="templateId"
-              aria-label="Mall"
-              @change="markPreviewStale"
-            >
-              <option
-                v-for="choice in templateChoices"
-                :key="choice.value"
-                :value="choice.value"
-              >
-                {{ choice.label }}
-              </option>
-            </select>
-          </label>
-
           <div class="dc-field">
             <span>Exportera som</span>
             <UiSegmentedTileToggle
@@ -243,57 +231,29 @@ const {
           </div>
         </section>
 
-        <section
-          class="dc-readiness"
-          aria-label="Status"
+        <div
+          v-if="statusMessage || errorMessage"
+          class="dc-feedback-row"
         >
-          <span>Filer</span>
-          <strong>Klar</strong>
-          <span>Mall</span>
-          <strong>Klar</strong>
-          <span>PDF</span>
-          <strong>Klar</strong>
-        </section>
-
-        <section
-          class="dc-action-dock"
-          aria-label="Verktyg för förhandsvisning"
-        >
-          <button
-            data-testid="document-converter-discard"
-            class="dc-neutral-button dc-neutral-button--danger"
-            type="button"
-            :disabled="!preview || isDiscarding"
-            @click="discardPreview"
+          <p
+            class="dc-feedback"
+            :class="{ 'dc-feedback--error': errorMessage }"
           >
-            <IconTrash :size="16" />
-            Ta bort
-          </button>
+            {{ statusMessage ?? errorMessage }}
+          </p>
           <button
-            data-testid="document-converter-preview"
-            class="dc-neutral-button"
+            v-if="canRetryPreview"
+            data-testid="document-converter-retry"
+            class="dc-icon-button"
             type="button"
-            :disabled="!canPreview"
-            @click="previewProject"
+            aria-label="Försök igen"
+            title="Försök igen"
+            :disabled="isPreviewRunning"
+            @click="retryPreview"
           >
-            <IconRefresh
-              v-if="preview && isPreviewStale"
-              :size="16"
-            />
-            <IconPreview
-              v-else
-              :size="16"
-            />
-            {{ previewActionLabel }}
+            <IconRefresh :size="16" />
           </button>
-        </section>
-
-        <p
-          v-if="errorMessage"
-          class="dc-error"
-        >
-          {{ errorMessage }}
-        </p>
+        </div>
       </section>
 
       <section
@@ -316,7 +276,7 @@ const {
               class="dc-artifact-list__item"
               :class="{ 'dc-artifact-list__item--active': artifact.artifact_id === selectedArtifact?.artifact_id }"
               type="button"
-              @click="selectedArtifactId = artifact.artifact_id"
+              @click="selectArtifact(artifact.artifact_id)"
             >
               <IconFileText :size="16" />
               {{ artifact.filename }}
@@ -324,30 +284,29 @@ const {
           </aside>
 
           <section
-            v-if="selectedArtifact"
             class="dc-artifact-result"
-            data-testid="document-converter-artifact-result"
             aria-label="PDF"
           >
-            <header>
-              <span>PDF</span>
-              <strong>Klar</strong>
-            </header>
-            <strong>{{ selectedArtifact.filename }}</strong>
-            <span>{{ selectedFileLabel() }}</span>
+            <iframe
+              v-if="previewPdfUrl"
+              data-testid="document-converter-pdf-frame"
+              class="dc-artifact-frame"
+              :src="previewPdfUrl"
+              :title="selectedArtifact?.filename ?? selectedFileLabel()"
+            />
           </section>
         </div>
 
         <footer class="dc-preview-footer">
-          <div class="dc-preview-state">
-            <strong>Tillfällig förhandsvisning</strong>
+          <div class="dc-preview-meta">
+            <h2>{{ selectedArtifact?.filename ?? selectedFileLabel() }}</h2>
           </div>
           <div class="dc-footer-actions">
             <button
               data-testid="document-converter-download"
               class="dc-neutral-button"
               type="button"
-              :disabled="!selectedArtifact || isDownloading"
+              :disabled="!isCurrentPreviewReady || isDownloading"
               @click="downloadSelectedArtifact"
             >
               <IconDownload :size="16" />
@@ -357,7 +316,7 @@ const {
               data-testid="document-converter-save"
               class="dc-neutral-button"
               type="button"
-              :disabled="!selectedArtifact || isSaving"
+              :disabled="!isCurrentPreviewReady || isSaving"
               @click="saveSelectedArtifact"
             >
               <IconVaultFiles :size="16" />
