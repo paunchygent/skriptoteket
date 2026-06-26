@@ -76,9 +76,9 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 
 - Bootstrap superuser: `pdm run bootstrap-superuser`
 - Shared-auth local projection:
-  `pdm run consume-huleedu-subject-export --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json --apply --output-json .artifacts/skriptoteket-auth-bootstrap/local-dev-apply-result.json`
+  `pdm run consume-huleedu-subject-export --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --apply --output-json .artifacts/skriptoteket-auth-bootstrap/local-dev-apply-result.json`
 - Shared-auth preflight:
-  `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json`
+  `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json`
 - Seed script bank:
   - Runbook: `docs/runbooks/runbook-script-bank-seeding.md`
   - Safe default: `pdm run seed-script-bank --dry-run --profile dev`

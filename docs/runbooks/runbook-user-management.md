@@ -128,9 +128,13 @@ Local shared-auth bootstrap preflight:
 
 ```bash
 pdm run auth-edge-bootstrap-preflight \
-  --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json \
+  --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json \
   --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json
 ```
+
+Do not substitute another HuleEdu subject-export artifact here. Older local
+exports from prior Identity DB generations are unsupported Skriptoteket
+shared-auth proof inputs.
 
 For the supported local shared-auth lane, HuleEdu owns the browser credential
 seed and Skriptoteket owns projection/RBAC. The durable local bootstrap

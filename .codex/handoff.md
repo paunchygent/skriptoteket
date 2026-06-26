@@ -10,7 +10,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-26.
 - Branch: `main`.
-- Latest closed work: `PR-0388`; no active slice. Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Latest closed work: `PR-0388`.
+- Active worktree slice: `PR-0389` shared-auth local proof path cleanup. Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
 - `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
@@ -25,8 +26,7 @@ Keep this file updated so the next session can pick up work quickly.
   `.artifacts/playwright-pr-0365-authenticated-shell-navigation/20260619T212625Z/`.
 - `PR-0364` is done and approved by `REV-PR-0364`; detailed proof and post-deploy correction history was compacted to `.codex/long-term-memory/entries/session-2026-06-19-pr-0364-auth-home-proof-compaction.md`. Keep the authenticated-home app symbols from `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`.
 - `PR-0366` through `PR-0373` app presentation, public landing, registry, and
-  dev-stack proof history is compacted to
-  `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
+  dev-stack proof history is compacted to `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
 - Protected HuleEdu Gateway/browser-session proof must use Docker
   `skriptoteket_web` on `hule-network` with alias `skriptoteket-web`; do not
   use host Uvicorn for this lane.
@@ -102,6 +102,9 @@ Keep this file updated so the next session can pick up work quickly.
   BuildKit, and the live Grid-heavy proof succeeds through the approved
   best-effort path: native Grid first, app-owned compatibility retry only
   after WeasyPrint's internal Grid `AssertionError`.
+- `PR-0389` is implemented in the current worktree: active Skriptoteket local
+  shared-auth proof surfaces now use only `local-shared-verify-export.json`;
+  the PR-0254 proof script rejects unsupported HuleEdu subject-export names.
 ## Verification
 - Current retained proof regeneration is green for the scoped best-effort
   preview contract:
@@ -181,12 +184,9 @@ git diff --check
 - Do not start host `pdm run dev`/Uvicorn for Gateway-authenticated backend dev
   tests or browser proof. Gateway app continuation uses Docker DNS
   `skriptoteket-web:8000`, so host Uvicorn reproduces a false failure.
-- If PR-0364/PR-0365 preflight fails with `missing_identity_projection`, first
-  verify the export path. The running HuleEdu auth-integration lane currently
-  matches
-  `/Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json`;
-  `local-verify-export.json` targets a different Identity DB generation and
-  reproduces a false `identity_linking_required` failure.
+- For local shared-auth proof, use only
+  `/Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json`.
+  The active proof script rejects unsupported HuleEdu subject-export names.
 - If Gateway `:8080` appears occupied by Docker while no container publishes
   it, suspect stale Docker Desktop port-proxy state; restart Docker Desktop and
   recreate the affected HuleEdu services before blaming app code.

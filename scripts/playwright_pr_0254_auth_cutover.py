@@ -45,7 +45,7 @@ DEFAULT_127_HULEEDU_LOGIN_ORIGIN = "http://127.0.0.1:5174"
 DEFAULT_127_HULEEDU_AUTH_ORIGIN = "http://127.0.0.1:8080"
 DEFAULT_DOTENV_PATH = ".env"
 DEFAULT_HULEEDU_TASK_0326_ARTIFACT = (
-    "../../huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json"
+    "../../huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json"
 )
 DEFAULT_HULEEDU_TASK_0327_ROOT = "../../huleedu/.artifacts/skriptoteket-lifecycle-proof/dev"
 DEFAULT_PR_0261_ARTIFACT = ".artifacts/playwright-pr-0261-auth-action-matrix/manifest.redacted.json"
@@ -159,6 +159,16 @@ def _resolve_path(value: str | None, *, default: str) -> Path:
     return Path(value or default).expanduser()
 
 
+def _reject_unsupported_shared_export_path(path: Path) -> None:
+    """Fail closed unless the provider artifact uses the current shared-export name."""
+    expected_name = Path(DEFAULT_HULEEDU_TASK_0326_ARTIFACT).name
+    if path.name != expected_name:
+        raise SystemExit(
+            "Unsupported HuleEdu subject export. "
+            f"Use {expected_name} for the current shared-auth local lane."
+        )
+
+
 def _environment_name(value: str) -> EnvironmentName:
     """Narrow argparse environment strings to the manifest environment type."""
     if value == "local-nonprod":
@@ -187,6 +197,7 @@ def _resolve_artifacts(args: argparse.Namespace) -> ArtifactPaths:
         args.huleedu_task_0326_artifact or os.environ.get("HULEEDU_TASK_0326_ARTIFACT"),
         default=DEFAULT_HULEEDU_TASK_0326_ARTIFACT,
     )
+    _reject_unsupported_shared_export_path(huleedu_0326)
     huleedu_0327_value = args.huleedu_task_0327_artifact or os.environ.get(
         "HULEEDU_TASK_0327_ARTIFACT"
     )

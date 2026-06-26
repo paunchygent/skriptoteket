@@ -210,7 +210,7 @@ Decision: `changes_requested`.
    compact widths with the exact command, URL, viewport, and artifact paths
    recorded in `.codex/handoff.md`.
    Proof requirement: a clean rerun of
-   `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364.json`
+   `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364.json`
    followed by the governed retained browser proof for authenticated `/`
    through the HuleEdu ceremony and Docker `skriptoteket_web` lane.
 
@@ -320,7 +320,7 @@ Decision: `changes_requested`.
    retained authenticated `/` proof at desktop and compact widths with exact
    commands, URLs, viewports, and artifact paths recorded in `.codex/handoff.md`.
    Proof requirement: a clean rerun of
-   `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364.json`
+   `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364.json`
    followed by the governed retained browser proof for authenticated `/`
    through the HuleEdu ceremony and Docker `skriptoteket_web` lane.
 

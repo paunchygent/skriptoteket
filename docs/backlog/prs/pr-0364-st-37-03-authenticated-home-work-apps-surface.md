@@ -287,12 +287,11 @@ Browser proof:
     `docker exec huleedu_api_gateway_service curl -sS -i --max-time 10 http://skriptoteket-web:8000/healthz`
   - Started the missing HuleEdu login UI lane with:
     `pdm run run-local-pdm auth-integration fe-dev`
-  - A first preflight used the wrong HuleEdu export artifact
-    `local-verify-export.json` and failed with
-    `missing_identity_projection` / `identity_linking_required`; read-only
-    diagnosis showed the running HuleEdu Identity service uses
-    `huleedu-local-postgres`, whose proof subjects match
-    `local-shared-verify-export.json`.
+  - Historical rejection only: a first preflight used an obsolete HuleEdu
+    export artifact and failed with `missing_identity_projection` /
+    `identity_linking_required`; read-only diagnosis showed the running
+    HuleEdu Identity service uses `huleedu-local-postgres`, whose proof
+    subjects match `local-shared-verify-export.json`.
   - Correct preflight passed with:
     `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-local-shared.json`
   - Retained browser proof passed with:
