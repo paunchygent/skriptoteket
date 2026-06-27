@@ -174,10 +174,20 @@ describe("DocumentConverterView project results", () => {
     await addProjectFiles(wrapper);
     await flushAutoPreview();
 
-    expect(wrapper.findAll(".dc-artifact-list__item")).toHaveLength(2);
+    const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    const previewColumn = wrapper.get('[data-testid="document-converter-preview-column"]');
+    const artifactItems = operationsColumn.findAll(".dc-artifact-selector__item");
+
+    expect(artifactItems).toHaveLength(2);
+    expect(operationsColumn.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(
+      true,
+    );
+    expect(previewColumn.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(
+      false,
+    );
     expect(wrapper.text()).toContain("index.pdf");
 
-    await wrapper.findAll(".dc-artifact-list__item")[1]!.trigger("click");
+    await artifactItems[1]!.trigger("click");
     await flushPromises();
 
     expect(apiMocks.loadDocumentConverterProjectPreviewArtifactBlob).toHaveBeenLastCalledWith({

@@ -104,6 +104,10 @@ Keep this file updated so the next session can pick up work quickly.
   Multi-source `Mina filer` batches and combined general file-conversion output
   remain deferred until backend contracts exist. See
   `docs/backlog/reviews/review-pr-0385-document-converter-files-and-history-follow-up.md`.
+- `PR-0397` is implemented and approved by `REV-PR-0397`: the Document Converter now uses
+  the same left-source / middle-operations / right-preview grammar in both
+  `HTML/CSS-projekt` and `Filkonvertering`, with the shared file-operations
+  section moved out of the preview footer and into the middle column.
 ## Verification
 - Current retained proof regeneration is green for the scoped best-effort
   preview contract:
@@ -124,29 +128,24 @@ Keep this file updated so the next session can pick up work quickly.
   lane intact for authenticated surfaces.
   - PR-0368/PR-0378 detailed proof history is compacted to `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
   - Older PR-0379 through PR-0386 verification details are compacted to `.codex/long-term-memory/entries/session-2026-06-26-pr-0388-handoff-compaction.md`.
-  - `PR-0385` pre-correction focused local proof was green. Correction proof now includes Document Converter Vitest with `DocumentConverterProjectResult.spec.ts`, `DocumentConverterSingleFileView.spec.ts`, and `documentConverterFileApi.spec.ts`; rerun backend/API, build, docs/handoff, and final diff gates before marking complete.
-  - `PR-0385` live authenticated proof is green after A2 title-row mode selector correction; `pdm run run-local-pdm auth-integration check` passed in HuleEdu and `pdm run python -m scripts.authenticated_home_work_apps --timeout-seconds 90` passed with `.artifacts/authenticated-home-work-apps/20260627T014512Z/manifest.redacted.json`.
-  - `PR-0396` is done and approved by `REV-PR-0396`: backend naming/API tests passed with `34 passed`, Document Converter Vitest focused specs passed with `20 passed`, `fe-gen-api-types`, `lint`, `typecheck`, `fe-type-check`, `fe-lint`, `fe-build`, `handoff-validate`, `docs-validate`, and `git diff --check` passed locally. `fe-build` retained the existing large-chunk warnings.
-  - `PR-0396` live authenticated proof passed through the HuleEdu browser-session lane with `pdm run python -m scripts.authenticated_home_work_apps --timeout-seconds 90`; artifact `.artifacts/authenticated-home-work-apps/20260627T041926Z/manifest.redacted.json` records desktop/compact Document Converter route captures, automatic project preview, rendered nonblank PDF page, expected text/CSS/image accents, and no raw external URL or filesystem path text.
-  - PR-0388 focused backend proof is green locally and was rerun during retained
-    re-review:
-    `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib /opt/homebrew/bin/pdm run test tests/unit/application/curated_apps/test_document_converter_project_manifest.py tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_renderer_best_effort.py`
-    plus `tests/unit/cli/test_cleanup_document_converter_project_previews.py`
-    passed with `43 passed`, including direct grid-heavy renderer fixtures,
-    best-effort missing/blocked assets, traceback-scoped Grid fallback,
-    visible text preservation, and cleanup CLI import coverage.
-    `/opt/homebrew/bin/pdm run test tests/unit/scripts/test_playwright_script_surface.py`
-    `pdm run fe-test -- --run src/views/apps/document-converter/DocumentConverterView.spec.ts`
-    `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`,
-    `pdm run lint`, and `pdm run typecheck` passed.
-    Earlier red live-proof artifacts remain at
-    `.artifacts/authenticated-home-work-apps/20260625T225535Z/`,
-    `.artifacts/authenticated-home-work-apps/20260625T225726Z/`, and
-    `.artifacts/authenticated-home-work-apps/20260625T225910Z/`, where
-    `document-converter-preview-response.json` captured `422 VALIDATION_ERROR`
-    while the grid-heavy fixture still hit a WeasyPrint `AssertionError`.
-    Fresh rerun after the WeasyPrint 69/image rebuild and import repair
-    succeeded at `.artifacts/authenticated-home-work-apps/20260626T031626Z/`.
+  - `PR-0385` correction proof is green; live authenticated proof artifact: `.artifacts/authenticated-home-work-apps/20260627T014512Z/manifest.redacted.json`.
+  - `PR-0396` is done and approved by `REV-PR-0396`; backend naming/API tests, focused Document Converter Vitest, frontend/backend gates, live authenticated proof, docs/handoff, and diff hygiene passed. Live artifact: `.artifacts/authenticated-home-work-apps/20260627T041926Z/manifest.redacted.json`.
+  - `PR-0397` focused frontend proof is green: the red-first ownership specs
+    failed before the refactor because
+    `[data-testid="document-converter-source-column"]` was absent and
+    filename/download/save still lived in the preview footer; after the
+    refactor,
+    `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterProjectResult.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterFileApi.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterProjectPreviewApi.spec.ts`
+    passed with `22 passed`, `pdm run fe-type-check`, `pdm run fe-lint`, and
+    `pdm run fe-build` passed locally, and live authenticated proof passed at
+    `.artifacts/authenticated-home-work-apps/20260627T104130Z/manifest.redacted.json`
+    with refreshed desktop/compact Document Converter screenshots and
+    `document_converter_forbidden_surfaces_absent=true`. `REV-PR-0397` later
+    cleared the retained blocker after the strengthened single-file success-path
+    spec proved the same column ownership through the history-backed ready
+    result.
+  - PR-0397 layout screenshots: `.artifacts/pr-0397-layout-screenshots/20260627T104912Z/` covers empty/active `HTML/CSS-projekt` and `Filkonvertering` at desktop, tablet, and compact widths, with generated-output selection asserted in the operations column.
+  - Older retained `PR-0388` proof detail is compacted to `.codex/long-term-memory/entries/session-2026-06-27-pr-0397-handoff-compaction.md`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.

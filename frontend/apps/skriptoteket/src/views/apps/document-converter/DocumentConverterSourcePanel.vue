@@ -43,10 +43,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <aside
-    class="dc-rail"
-    aria-label="Källor"
-  >
+  <div class="dc-source-panel">
     <section
       v-if="workspaceMode === 'project_preview'"
       class="dc-rail-section dc-assets"
@@ -150,5 +147,5 @@ const emit = defineEmits<{
         <span>{{ singleFileModeLabel }}</span>
       </div>
     </section>
-  </aside>
+  </div>
 </template>

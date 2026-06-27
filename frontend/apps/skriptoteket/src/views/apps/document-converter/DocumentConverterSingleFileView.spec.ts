@@ -86,7 +86,10 @@ describe("DocumentConverterView single-file surface", () => {
     expect(text).toContain("Mina filer");
     expect(text).toContain("Källformat");
     expect(text).toContain("Exportformat");
-    expect(text).toContain("HTML till PDF");
+    expect(text).not.toContain("HTML till PDF");
+    expect(text).not.toContain("Filoperationer");
+    expect(text).not.toContain("HTML/CSS-projekt till PDF");
+    expect(text).not.toContain("Automatisk förhandsvisning");
     expect(text).toContain("Välj en fil som du vill konvertera");
     expect(text).not.toContain("HTML -> PDF");
     expect(text).not.toContain("En fil");
@@ -96,6 +99,44 @@ describe("DocumentConverterView single-file surface", () => {
     expect(text).not.toContain("Inget resultat än");
     expect(text).not.toContain("preview-");
     expect(text).not.toContain("artifact-");
+  });
+
+  it("uses the same source operations preview ownership for single-file conversion", async () => {
+    const wrapper = mount(DocumentConverterView);
+    await wrapper.get('[data-test="document-converter-mode-single"]').trigger("click");
+    await flushPromises();
+
+    const sourceColumn = wrapper.get('[data-testid="document-converter-source-column"]');
+    const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    const previewColumn = wrapper.get('[data-testid="document-converter-preview-column"]');
+
+    expect(sourceColumn.find('[data-testid="document-converter-single-file-input"]').exists()).toBe(
+      true,
+    );
+    expect(sourceColumn.find('[data-testid="document-converter-start-single-file"]').exists()).toBe(
+      false,
+    );
+
+    expect(operationsColumn.find('[data-testid="document-converter-start-single-file"]').exists()).toBe(
+      true,
+    );
+    expect(operationsColumn.find('[data-testid="document-converter-filename-stem"]').exists()).toBe(
+      true,
+    );
+    expect(operationsColumn.find('[data-testid="document-converter-download"]').exists()).toBe(true);
+    expect(operationsColumn.find('[data-testid="document-converter-save"]').exists()).toBe(true);
+
+    expect(previewColumn.find('[data-testid="document-converter-single-file-input"]').exists()).toBe(
+      false,
+    );
+    expect(previewColumn.find('[data-testid="document-converter-start-single-file"]').exists()).toBe(
+      false,
+    );
+    expect(previewColumn.find('[data-testid="document-converter-filename-stem"]').exists()).toBe(
+      false,
+    );
+    expect(previewColumn.find('[data-testid="document-converter-download"]').exists()).toBe(false);
+    expect(previewColumn.find('[data-testid="document-converter-save"]').exists()).toBe(false);
   });
 
   it("submits local upload batches in the source-panel order", async () => {
@@ -181,6 +222,17 @@ describe("DocumentConverterView single-file surface", () => {
     });
     expect(wrapper.text()).toContain("andra.pdf");
     expect(wrapper.text()).toContain("forsta.pdf");
+
+    const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    const previewColumn = wrapper.get('[data-testid="document-converter-preview-column"]');
+
+    expect(operationsColumn.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(
+      true,
+    );
+    expect(operationsColumn.findAll(".dc-artifact-selector__item")).toHaveLength(2);
+    expect(previewColumn.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(
+      false,
+    );
   });
 
   it("keeps long-running single-file jobs pending instead of writing a failed history entry", async () => {
@@ -228,7 +280,7 @@ describe("DocumentConverterView single-file surface", () => {
     expect(wrapper.find('[data-testid="document-converter-retry"]').exists()).toBe(false);
   });
 
-  it("records immediately succeeded single-file jobs as ready results instead of failed history", async () => {
+  it("keeps a succeeded single-file result in the same source operations preview columns", async () => {
     fileApiMocks.submitDocumentConverterUploadJob.mockResolvedValue({
       jobs: [
         {
@@ -274,7 +326,44 @@ describe("DocumentConverterView single-file surface", () => {
     await wrapper.get('[data-testid="document-converter-start-single-file"]').trigger("click");
     await flushPromises();
 
+    const sourceColumn = wrapper.get('[data-testid="document-converter-source-column"]');
+    const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    const previewColumn = wrapper.get('[data-testid="document-converter-preview-column"]');
+
     expect(fileApiMocks.getDocumentConverterJobStatus).toHaveBeenCalledWith({ jobId: "job-ready" });
+    expect(sourceColumn.find('[data-testid="document-converter-single-file-input"]').exists()).toBe(
+      true,
+    );
+    expect(sourceColumn.find('[data-testid="document-converter-start-single-file"]').exists()).toBe(
+      false,
+    );
+    expect(sourceColumn.text()).toContain("1. lektion.html");
+
+    expect(operationsColumn.find('[data-testid="document-converter-start-single-file"]').exists()).toBe(
+      true,
+    );
+    expect(
+      operationsColumn.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]')
+        .element.value,
+    ).toBe("lektion");
+    expect(operationsColumn.text()).toContain(".pdf");
+    expect(operationsColumn.find('[data-testid="document-converter-download"]').exists()).toBe(true);
+    expect(operationsColumn.find('[data-testid="document-converter-save"]').exists()).toBe(true);
+    expect(operationsColumn.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(
+      false,
+    );
+
+    expect(previewColumn.find('[data-testid="document-converter-pdf-frame"]').exists()).toBe(true);
+    expect(previewColumn.text()).toContain("lektion.pdf");
+    expect(previewColumn.find('[data-testid="document-converter-filename-stem"]').exists()).toBe(
+      false,
+    );
+    expect(previewColumn.find('[data-testid="document-converter-download"]').exists()).toBe(false);
+    expect(previewColumn.find('[data-testid="document-converter-save"]').exists()).toBe(false);
+    expect(previewColumn.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(
+      false,
+    );
+
     expect(wrapper.text()).toContain("lektion.pdf");
     expect(wrapper.text()).not.toContain("Misslyckades");
     expect(wrapper.text()).not.toContain("Konverteringen kunde inte slutföras.");

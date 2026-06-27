@@ -152,6 +152,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0395-st-37-05-exam-converter-export-naming-adoption.md`
 - Document Converter save/export naming adoption PR slice:
   `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md`
+- Document Converter file operations layout remediation PR slice:
+  `docs/backlog/prs/pr-0397-st-37-05-document-converter-file-operations-layout-remediation.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

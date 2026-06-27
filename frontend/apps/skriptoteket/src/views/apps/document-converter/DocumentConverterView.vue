@@ -16,7 +16,6 @@ import { computed, ref } from "vue";
 
 import {
   IconCombinePdf,
-  IconRefresh,
   IconSeparatePdfs,
 } from "../../../components/icons";
 import {
@@ -25,7 +24,10 @@ import {
   type UiSegmentedToggleOption,
   UiSegmentedTileToggle,
 } from "../../../components/ui";
+import DocumentConverterArtifactSelector from "./DocumentConverterArtifactSelector.vue";
+import DocumentConverterResultActions from "./DocumentConverterResultActions.vue";
 import DocumentConverterResultPanel from "./DocumentConverterResultPanel.vue";
+import DocumentConverterSourceIntake from "./DocumentConverterSourceIntake.vue";
 import DocumentConverterSourcePanel from "./DocumentConverterSourcePanel.vue";
 import DocumentConverterSingleFileControls from "./DocumentConverterSingleFileControls.vue";
 import {
@@ -104,7 +106,6 @@ const outputLabelMap: Record<DocumentConverterSingleFileOutput, string> = {
 };
 
 const workspaceMode = ref<DocumentConverterWorkspaceMode>("project_preview");
-const projectFileInputElement = ref<HTMLInputElement | null>(null);
 const project = useDocumentConverterProjectPreview();
 const singleFile = useDocumentConverterSingleFile();
 const history = useDocumentConverterSessionHistory();
@@ -131,7 +132,6 @@ const singleFileOutputOptions = computed<DocumentConverterSingleFileOutputChoice
     dataTest: `document-converter-output-${value}`,
   }));
 });
-const singleFileFormatSummary = computed(() => `${sourceLabelMap[singleFile.selectedSourceFormat.value]} till ${outputLabelMap[singleFile.selectedOutputFormat.value]}`);
 
 const mobileSummaryTitle = computed(() => {
   if (workspaceMode.value === "project_preview") {
@@ -212,18 +212,6 @@ const resultPreviewUrl = computed(() => {
   }
   return history.activePreviewUrl.value;
 });
-const resultSourceLabel = computed(() => {
-  if (isLiveProjectResultSelected.value) {
-    return "HTML/CSS-projekt";
-  }
-  return history.activeEntry.value?.sourceLabel ?? null;
-});
-const resultTypeLabel = computed(() => {
-  if (isLiveProjectResultSelected.value) {
-    return "PDF";
-  }
-  return history.activeEntry.value?.resultTypeLabel ?? null;
-});
 const resultArtifactOptions = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return (project.preview.value?.artifacts ?? []).map((artifact) => ({
@@ -264,10 +252,6 @@ const isSavingResult = computed(() => {
   }
   return history.isSaving.value;
 });
-
-function openProjectFilePicker(): void {
-  projectFileInputElement.value?.click();
-}
 
 async function startSingleFileConversion(): Promise<void> {
   await singleFile.submitCurrentSelection();
@@ -344,7 +328,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
         class="dc-mobile-project"
         aria-label="Projektöversikt"
       >
-        <h1>{{ mobileSummaryTitle }}</h1>
+        <strong class="dc-mobile-project__title">{{ mobileSummaryTitle }}</strong>
         <span
           v-for="detail in mobileSummaryDetails"
           :key="detail"
@@ -355,51 +339,51 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
     </section>
 
     <section class="dc-workspace">
-      <DocumentConverterSourcePanel
-        :workspace-mode="workspaceMode"
-        :project-css-files="project.fileSummary.value.css"
-        :project-html-files="project.fileSummary.value.html"
-        :project-image-files="project.fileSummary.value.images"
-        :project-selected-html-filename="project.selectedHtmlFile.value?.name ?? null"
-        :single-file-mode-label="singleFile.sourceMode.value === 'upload' ? 'Lokal fil' : 'Mina filer'"
-        :single-file-source-name="singleFile.selectedSourceName.value"
-        :single-file-upload-files="singleFile.selectedUploads.value"
-        @move-single-file-upload="singleFile.moveLocalUpload"
-        @select-project-html="project.selectedHtmlFilename.value = $event"
-      />
+      <section
+        class="dc-rail"
+        aria-label="Källor"
+        data-testid="document-converter-source-column"
+      >
+        <DocumentConverterSourceIntake
+          :workspace-mode="workspaceMode"
+          :selected-saved-file-ref="singleFile.selectedSavedFileRef.value"
+          :selected-source-accept="singleFile.selectedSourceAccept.value"
+          :selected-source-name="singleFile.selectedSourceName.value"
+          :source-mode="singleFile.sourceMode.value"
+          :source-mode-options="singleFileOriginOptions"
+          :saved-files="singleFile.savedFiles.value"
+          @project-files-dropped="project.onFilesDropped"
+          @project-files-selected="project.onFilesSelected"
+          @select-saved-file="singleFile.selectSavedFile"
+          @select-single-files="singleFile.selectLocalUploads"
+          @select-source-mode="singleFile.setSourceMode"
+        />
+
+        <DocumentConverterSourcePanel
+          :workspace-mode="workspaceMode"
+          :project-css-files="project.fileSummary.value.css"
+          :project-html-files="project.fileSummary.value.html"
+          :project-image-files="project.fileSummary.value.images"
+          :project-selected-html-filename="project.selectedHtmlFile.value?.name ?? null"
+          :single-file-mode-label="singleFile.sourceMode.value === 'upload' ? 'Lokal fil' : 'Mina filer'"
+          :single-file-source-name="singleFile.selectedSourceName.value"
+          :single-file-upload-files="singleFile.selectedUploads.value"
+          @move-single-file-upload="singleFile.moveLocalUpload"
+          @select-project-html="project.selectedHtmlFilename.value = $event"
+        />
+      </section>
 
       <section
         class="dc-controls"
         aria-label="Val för export"
+        data-testid="document-converter-operations-column"
       >
         <template v-if="workspaceMode === 'project_preview'">
-          <div class="dc-file-toolbar">
-            <div
-              data-testid="document-converter-dropzone"
-              class="dc-dropzone"
-              role="button"
-              tabindex="0"
-              @click="openProjectFilePicker"
-              @keydown.enter.prevent="openProjectFilePicker"
-              @keydown.space.prevent="openProjectFilePicker"
-              @dragover.prevent
-              @drop="project.onFilesDropped"
-            >
-              <strong>Dra filer hit eller klicka</strong>
-              <span>HTML, CSS och bilder</span>
+          <section class="dc-operations-section">
+            <div class="dc-control-heading">
+              <h2>Utdatainställningar</h2>
             </div>
-            <input
-              ref="projectFileInputElement"
-              data-testid="document-converter-file-input"
-              class="dc-file-input"
-              type="file"
-              multiple
-              accept=".html,.htm,.css,.png,.jpg,.jpeg,.webp"
-              @change="project.onFilesSelected"
-            >
-          </div>
 
-          <section class="dc-control-section">
             <div class="dc-field">
               <span>Exportera som</span>
               <UiSegmentedTileToggle
@@ -428,71 +412,48 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
         <template v-else>
           <DocumentConverterSingleFileControls
             :selected-output-format="singleFile.selectedOutputFormat.value"
-            :selected-saved-file-ref="singleFile.selectedSavedFileRef.value"
-            :selected-source-accept="singleFile.selectedSourceAccept.value"
             :selected-source-format="singleFile.selectedSourceFormat.value"
-            :selected-source-name="singleFile.selectedSourceName.value"
-            :selected-format-summary="singleFileFormatSummary"
-            :source-mode="singleFile.sourceMode.value"
             :is-loading-sources="singleFile.isLoadingSources.value"
             :is-submitting="singleFile.isSubmitting.value"
             :output-options="singleFileOutputOptions"
-            :saved-files="singleFile.savedFiles.value"
             :source-options="singleFileSourceOptions"
-            :source-mode-options="singleFileOriginOptions"
-            @select-files="singleFile.selectLocalUploads"
             @select-output-format="singleFile.setOutputFormat"
-            @select-saved-file="singleFile.selectSavedFile"
             @select-source-format="singleFile.setSourceFormat"
-            @select-source-mode="singleFile.setSourceMode"
             @submit="startSingleFileConversion"
           />
         </template>
 
-        <div
-          v-if="feedbackMessage"
-          class="dc-feedback-row"
-        >
-          <p
-            class="dc-feedback"
-            :class="{ 'dc-feedback--error': feedbackIsError }"
-          >
-            {{ feedbackMessage }}
-          </p>
-          <button
-            v-if="canRetryCurrentMode"
-            data-testid="document-converter-retry"
-            class="dc-icon-button"
-            type="button"
-            aria-label="Försök igen"
-            title="Försök igen"
-            :disabled="project.isPreviewRunning.value || singleFile.isSubmitting.value || history.isRetrying.value"
-            @click="retryCurrentMode"
-          >
-            <IconRefresh :size="16" />
-          </button>
-        </div>
+        <DocumentConverterArtifactSelector
+          :artifact-options="resultArtifactOptions"
+          :active-artifact-id="resultActiveArtifactId"
+          @select-artifact="selectResultArtifact"
+        />
+
+        <DocumentConverterResultActions
+          :action-error-message="history.actionErrorMessage.value"
+          :can-download="canDownloadResult"
+          :can-retry="canRetryCurrentMode"
+          :can-save="canSaveResult"
+          :feedback-is-error="feedbackIsError"
+          :feedback-message="feedbackMessage"
+          :filename-extension="filenameExtensionLabel"
+          :filename-stem="filenameStemIntent"
+          :is-downloading="isDownloadingResult"
+          :is-retry-disabled="project.isPreviewRunning.value || singleFile.isSubmitting.value || history.isRetrying.value"
+          :is-saving="isSavingResult"
+          :result-state-label="resultStateLabel"
+          @download="downloadResult"
+          @retry="retryCurrentMode"
+          @save="saveResult"
+          @update-filename-stem="filenameStemIntent = $event"
+        />
       </section>
 
       <DocumentConverterResultPanel
-        :action-error-message="history.actionErrorMessage.value"
         :active-preview-url="resultPreviewUrl"
-        :artifact-options="resultArtifactOptions"
-        :active-artifact-id="resultActiveArtifactId"
-        :can-download="canDownloadResult"
-        :can-save="canSaveResult"
-        :is-downloading="isDownloadingResult"
-        :is-saving="isSavingResult"
-        :filename-extension="filenameExtensionLabel"
-        :filename-stem="filenameStemIntent"
         :result-title="resultTitle"
         :result-state-label="resultStateLabel"
-        :source-label="resultSourceLabel"
-        :result-type-label="resultTypeLabel"
-        @download="downloadResult"
-        @save="saveResult"
-        @update-filename-stem="filenameStemIntent = $event"
-        @select-artifact="selectResultArtifact"
+        data-testid="document-converter-preview-column"
       />
     </section>
   </main>

@@ -161,37 +161,6 @@ describe("DocumentConverterView", () => {
     vi.restoreAllMocks();
   });
 
-  it("hides the internal template selector, exposes the compact drop zone, and removes legacy preview bookkeeping", async () => {
-    const wrapper = mount(DocumentConverterView);
-    const fileInput = wrapper.get<HTMLInputElement>('[data-testid="document-converter-file-input"]');
-    const clickSpy = vi.spyOn(fileInput.element, "click");
-    const text = wrapper.text();
-
-    expect(text).toContain("DOKUMENTKONVERTERARE");
-    expect(text).toContain("HTML/CSS");
-    expect(text).toContain("Exportera som");
-    expect(text).toContain("Enskilda PDF-filer");
-    expect(text).toContain("Kombinerad PDF");
-    expect(text).toContain("Format");
-    expect(text).toContain("Ladda ned");
-    expect(text).toContain("Spara i Mina filer");
-    expect(text).toContain("Dra filer hit eller klicka");
-    expect(text).not.toContain("Lägg till fil");
-    expect(text).not.toContain("Mall");
-    expect(text).not.toContain("Förhandsvisa");
-    expect(text).not.toContain("Tillfällig förhandsvisning");
-    expect(text).not.toContain("Ingen PDF ännu");
-    expect(wrapper.find('[data-testid="document-converter-preview"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="document-converter-discard"]').exists()).toBe(false);
-    expect(wrapper.find('[aria-label="Status"]').exists()).toBe(false);
-    expect(wrapper.find('select[aria-label="Mall"]').exists()).toBe(false);
-    expect(wrapper.findAll('[data-test^="document-converter-output-"]')).toHaveLength(2);
-
-    await wrapper.get('[data-testid="document-converter-dropzone"]').trigger("click");
-
-    expect(clickSpy).toHaveBeenCalledOnce();
-  });
-
   it("automatically renders a PDF and sends edited filename stems through result actions", async () => {
     const secondRender = deferred<ReturnType<typeof buildPreviewResult>>();
 

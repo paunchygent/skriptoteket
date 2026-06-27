@@ -16,7 +16,7 @@
   --dc-controls-column: minmax(22rem, 27rem);
   --dc-result-column: minmax(30rem, 1fr);
 
-  min-height: calc(100vh - 4rem);
+  min-height: calc(100vh - 6rem);
   display: grid;
   grid-template-rows: 4.375rem minmax(0, 1fr);
   border: 1px solid var(--color-navy);
@@ -48,7 +48,7 @@
 
 .dc-topbar h1 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--huleedu-text-base);
   font-weight: 800;
   letter-spacing: var(--huleedu-tracking-label);
   line-height: 1;
@@ -71,7 +71,7 @@
   background: var(--color-panel);
   color: var(--color-navy);
   font-family: var(--huleedu-font-sans);
-  font-size: 0.78rem;
+  font-size: var(--huleedu-text-xs);
   font-weight: var(--huleedu-font-semibold);
   letter-spacing: 0;
 }
@@ -88,7 +88,7 @@
 
 .dc-field > span,
 .dc-asset-heading h2 {
-  font-size: 0.75rem;
+  font-size: var(--huleedu-text-xs);
   font-weight: 800;
   letter-spacing: var(--huleedu-tracking-label);
   text-transform: uppercase;
@@ -114,6 +114,28 @@
 .dc-rail {
   overflow: auto;
   padding: 1.1rem 0.9rem;
+}
+
+.dc-source-panel {
+  display: grid;
+}
+
+.dc-source-intake {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
+}
+
+.dc-source-picker {
+  display: grid;
+  gap: 1rem;
+}
+
+.dc-source-intake + .dc-source-panel .dc-rail-section:first-child {
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
 }
 
 .dc-rail-section + .dc-rail-section {
@@ -180,7 +202,7 @@
   border-color: transparent;
   background: transparent;
   text-align: left;
-  font-size: 0.85rem;
+  font-size: var(--huleedu-text-sm);
 }
 
 .dc-asset-row--active {
@@ -194,21 +216,60 @@
 }
 
 .dc-controls {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   overflow: auto;
 }
 
-.dc-file-toolbar,
-.dc-control-section,
-.dc-feedback-row {
+.dc-operations-section {
+  display: grid;
+  gap: 1.15rem;
   padding: 1.35rem 1.6rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
 }
 
-.dc-file-toolbar {
+.dc-artifact-selector {
+  max-height: clamp(7.5rem, 18vh, 12rem);
+  min-height: 0;
   display: grid;
-  gap: 1rem;
+  align-content: start;
+  gap: 0.45rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.1rem 1.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
+  background: color-mix(in srgb, var(--color-panel-muted) 70%, var(--color-panel) 30%);
+}
+
+.dc-artifact-selector__item {
+  min-width: 0;
+  min-height: 2.45rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-navy);
+  padding: 0 0.65rem;
+  font-family: var(--huleedu-font-sans);
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-extrabold);
+  text-align: left;
+}
+
+.dc-artifact-selector__item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-artifact-selector__item--active {
+  border-color: color-mix(in srgb, var(--color-navy) 40%, transparent);
+  background: var(--color-canvas);
+  box-shadow: inset 4px 0 0 var(--color-action);
 }
 
 .dc-preview-header h2 {
@@ -218,12 +279,12 @@
 .dc-neutral-button {
   min-height: 2.5rem;
   padding: 0 0.75rem;
-  font-size: 0.75rem;
+  font-size: var(--huleedu-text-xs);
 }
 
 .dc-source-empty {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--huleedu-text-sm);
   color: color-mix(in srgb, var(--color-navy) 72%, transparent);
 }
 
@@ -252,18 +313,15 @@
 .dc-source-row strong,
 .dc-source-summary strong {
   min-width: 0;
+  font-size: var(--huleedu-text-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.9rem;
-}
-
-.dc-source-summary span {
-  font-size: 0.78rem;
 }
 
 .dc-source-summary span {
   grid-column: 2;
+  font-size: var(--huleedu-text-xs);
 }
 
 .dc-source-row__actions {
@@ -306,12 +364,12 @@
 }
 
 .dc-dropzone strong {
-  font-size: 0.82rem;
+  font-size: var(--huleedu-text-sm);
   font-weight: var(--huleedu-font-extrabold);
 }
 
 .dc-dropzone span {
-  font-size: 0.74rem;
+  font-size: var(--huleedu-text-xs);
 }
 
 .dc-neutral-button:disabled {
@@ -324,12 +382,6 @@
   color: var(--color-critical);
 }
 
-.dc-control-section {
-  display: grid;
-  align-content: start;
-  gap: 1.5rem;
-}
-
 .dc-control-heading {
   display: flex;
   align-items: baseline;
@@ -339,7 +391,7 @@
 
 .dc-control-heading h2 {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--huleedu-text-xs);
   font-weight: var(--huleedu-font-extrabold);
   letter-spacing: var(--huleedu-tracking-label);
   line-height: 1.1;
@@ -351,7 +403,7 @@
   overflow: hidden;
   color: color-mix(in srgb, var(--color-navy) 72%, transparent);
   font-family: var(--huleedu-font-sans);
-  font-size: 0.82rem;
+  font-size: var(--huleedu-text-sm);
   font-weight: var(--huleedu-font-semibold);
   line-height: 1.1;
   text-overflow: ellipsis;
@@ -370,49 +422,11 @@
   background: var(--color-canvas);
   color: var(--color-navy);
   font-family: var(--huleedu-font-sans);
-  font-size: 0.95rem;
+  font-size: var(--huleedu-text-base);
   font-weight: var(--huleedu-font-semibold);
   letter-spacing: 0;
   padding: 0 0.75rem;
   width: 100%;
-}
-
-.dc-feedback-row {
-  min-height: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-bottom: 0;
-}
-
-.dc-feedback {
-  margin: 0;
-  color: var(--color-navy);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.dc-feedback--error {
-  color: var(--color-error);
-}
-
-.dc-icon-button {
-  width: 2.25rem;
-  height: 2.25rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--color-navy) 35%, transparent);
-  border-radius: 999px;
-  background: var(--color-canvas);
-  color: var(--color-navy);
-}
-
-.dc-icon-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }
 
 @media (max-width: 72rem) {
@@ -442,35 +456,42 @@
 
   .dc-mobile-project {
     display: grid;
-    gap: 0.6rem;
-  }
-
-  .dc-mobile-project {
     grid-template-columns: repeat(4, auto);
-    justify-content: start;
     align-items: center;
-    font-size: 0.8rem;
+    justify-content: start;
+    gap: 0.6rem;
+    font-family: var(--huleedu-font-sans);
+    font-size: var(--huleedu-text-xs);
+    font-weight: var(--huleedu-font-semibold);
+    line-height: 1.2;
   }
 
-  .dc-mobile-project h1 {
+  .dc-mobile-project__title {
     grid-column: 1 / -1;
     margin: 0;
-    font-size: 1.25rem;
+    overflow: hidden;
+    font-size: var(--huleedu-text-sm);
+    font-weight: var(--huleedu-font-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .dc-workspace {
+    min-height: auto;
     grid-template-columns: 1fr;
   }
 
+  .dc-rail,
+  .dc-controls {
+    min-height: auto;
+  }
+
   .dc-rail {
-    display: none;
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
   }
 
   .dc-controls {
-    border-right: 0;
-  }
-
-  .dc-feedback-row {
-    align-items: flex-start;
+    overflow: visible;
   }
 }
