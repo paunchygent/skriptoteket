@@ -5,7 +5,7 @@ title: "ST-37-05 Mina filer rename and extension contract"
 status: blocked
 owners: "agents"
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-06-27
 stories:
   - "ST-37-05"
 tags:
@@ -19,6 +19,7 @@ dependencies:
 acceptance_criteria:
   - "Given a teacher has a saved file, when they rename it in `Mina filer`, then only the display filename changes and stored bytes/source references remain unchanged."
   - "Given a teacher edits the name, when they omit or duplicate the extension, then the system preserves exactly one safe extension for the stored content type."
+  - "Given the teacher renames a saved file to a filename already used by the same owner, when the collision is detected, then rename is rejected with a named validation error instead of silently overwriting or auto-disambiguating the record."
   - "Given a saved file is not owned by the teacher, deleted, or missing, when rename is attempted, then the backend rejects it as not found/forbidden."
 ---
 
@@ -44,13 +45,15 @@ contract.
 
 1. Add backend command/API for owner-scoped vault file rename.
 2. Reuse shared filename validation and extension policy.
-3. Add UI affordance in `Mina filer` for active saved files.
-4. Prove source reference, size, hash where available, and content bytes remain
+3. Enforce the canonical rename-collision rule in the backend/API contract.
+4. Add UI affordance in `Mina filer` for active saved files.
+5. Prove source reference, size, hash where available, and content bytes remain
    unchanged.
 
 ## Test Plan
 
-- Focused backend/API tests for rename authorization and validation.
+- Focused backend/API tests for rename authorization, validation, and
+  same-owner collision rejection.
 - Focused frontend tests for rename UI and extension handling.
 - `pdm run lint`
 - `pdm run typecheck`

@@ -179,9 +179,9 @@ async def test_render_project_preview_stores_server_owned_artifacts_with_24h_ttl
     )
     assert [artifact.artifact_id for artifact in result.artifacts] == artifact_ids
     assert {artifact.filename for artifact in result.artifacts} == {
-        "one.pdf",
-        "two.pdf",
-        "combined.pdf",
+        "one - Separat PDF - 20260625.pdf",
+        "two - Separat PDF - 20260625.pdf",
+        "one - Sammanslagen PDF - 20260625.pdf",
     }
     assert all(artifact.download_url is None for artifact in result.artifacts)
     assert store.records[(actor.id, preview_id)].owner_user_id == actor.id

@@ -30,6 +30,8 @@ defineProps<{
   activeArtifactId: string | null;
   canDownload: boolean;
   canSave: boolean;
+  filenameExtension: string | null;
+  filenameStem: string;
   isDownloading: boolean;
   isSaving: boolean;
   resultTitle: string;
@@ -42,6 +44,7 @@ const emit = defineEmits<{
   download: [];
   save: [];
   selectArtifact: [artifactId: string];
+  updateFilenameStem: [filenameStem: string];
 }>();
 </script>
 
@@ -109,6 +112,19 @@ const emit = defineEmits<{
       >
         {{ sourceLabel }} • {{ resultTypeLabel }}
       </span>
+      <label class="dc-filename-field">
+        <span>Filnamn</span>
+        <span class="dc-filename-field__control">
+          <input
+            data-testid="document-converter-filename-stem"
+            type="text"
+            :value="filenameStem"
+            :disabled="!canDownload && !canSave"
+            @input="emit('updateFilenameStem', ($event.target as HTMLInputElement).value)"
+          >
+          <strong v-if="filenameExtension">.{{ filenameExtension }}</strong>
+        </span>
+      </label>
       <div class="dc-footer-actions">
         <button
           data-testid="document-converter-download"

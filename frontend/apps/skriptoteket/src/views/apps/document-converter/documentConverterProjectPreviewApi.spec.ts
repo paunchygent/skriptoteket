@@ -151,10 +151,12 @@ describe("documentConverterProjectPreviewApi", () => {
 
     const download = await downloadDocumentConverterProjectPreviewArtifact({
       artifact,
+      filenameStem: "Lärarens projekt.pdf",
       previewId: "preview-1",
     });
     const saved = await saveDocumentConverterProjectPreviewArtifact({
       artifact,
+      filenameStem: "Lärarens projekt.pdf",
       previewId: "preview-1",
     });
     const discarded = await discardDocumentConverterProjectPreview({ previewId: "preview-1" });
@@ -164,12 +166,12 @@ describe("documentConverterProjectPreviewApi", () => {
     expect(discarded.status).toBe("discarded");
     expect(fetch).toHaveBeenNthCalledWith(
       1,
-      "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/preview-1/artifacts/artifact-1",
+      "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/preview-1/artifacts/artifact-1?filename_stem=L%C3%A4rarens+projekt.pdf",
       expect.objectContaining({ credentials: "include", method: "GET" }),
     );
     expect(fetch).toHaveBeenNthCalledWith(
       2,
-      "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/preview-1/artifacts/artifact-1/save",
+      "/api/v1/apps/documents.conversion_hub/document-converter/project-previews/preview-1/artifacts/artifact-1/save?filename_stem=L%C3%A4rarens+projekt.pdf",
       expect.objectContaining({ credentials: "include", method: "POST" }),
     );
     expect(fetch).toHaveBeenNthCalledWith(

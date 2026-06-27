@@ -17,6 +17,7 @@ import type { components } from "../../../api/openapi";
 import {
   downloadDocumentConverterJobArtifact,
   listDocumentConverterSavedFiles,
+  saveDocumentConverterJobArtifact,
   submitDocumentConverterSavedFileJob,
   submitDocumentConverterUploadJob,
 } from "./documentConverterFileApi";
@@ -121,5 +122,41 @@ describe("documentConverterFileApi", () => {
       "/api/v1/apps/documents.conversion_hub/document-converter/jobs/job-1/artifact",
       { method: "GET" },
     );
+  });
+
+  it("sends edited filename stem intent to protected download and save endpoints", async () => {
+    apiMocks.apiFetchBlobResponse.mockResolvedValue({
+      blob: new Blob(["pdf"], { type: "application/pdf" }),
+      contentType: "application/pdf",
+      filename: "Backendens namn.pdf",
+    });
+    apiMocks.apiPost.mockResolvedValue({
+      source_artifact_id: "document-converter:sir-job-1:converted_document",
+      vault_artifact: {
+        bytes: 12,
+        created_at: "2026-06-27T09:00:00Z",
+        file_id: "file-1",
+        name: "Backendens namn.pdf",
+      },
+    });
+
+    const download = await downloadDocumentConverterJobArtifact({
+      filenameStem: "Lärarens förslag.pdf",
+      jobId: "job-1",
+    });
+    const saved = await saveDocumentConverterJobArtifact({
+      filenameStem: "Lärarens förslag.pdf",
+      jobId: "job-1",
+    });
+
+    expect(apiMocks.apiFetchBlobResponse).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/document-converter/jobs/job-1/artifact?filename_stem=L%C3%A4rarens+f%C3%B6rslag.pdf",
+      { method: "GET" },
+    );
+    expect(apiMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/document-converter/jobs/job-1/artifact/save?filename_stem=L%C3%A4rarens+f%C3%B6rslag.pdf",
+    );
+    expect(download.filename).toBe("Backendens namn.pdf");
+    expect(saved.vault_artifact.name).toBe("Backendens namn.pdf");
   });
 });

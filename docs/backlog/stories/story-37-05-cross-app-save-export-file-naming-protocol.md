@@ -60,7 +60,7 @@ where the underlying authority genuinely differs.
 - [ ] [PR-0393: ST-37-05 Mina filer rename and extension contract](../prs/pr-0393-st-37-05-mina-filer-rename-and-extension-contract.md)
 - [ ] [PR-0394: ST-37-05 Audio Transcription export naming adoption](../prs/pr-0394-st-37-05-audio-transcription-export-naming-adoption.md)
 - [ ] [PR-0395: ST-37-05 Exam Converter export naming adoption](../prs/pr-0395-st-37-05-exam-converter-export-naming-adoption.md)
-- [ ] [PR-0396: ST-37-05 Document Converter save/export naming adoption](../prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md)
+- [x] [PR-0396: ST-37-05 Document Converter save/export naming adoption](../prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md)
 
 ## Notes
 

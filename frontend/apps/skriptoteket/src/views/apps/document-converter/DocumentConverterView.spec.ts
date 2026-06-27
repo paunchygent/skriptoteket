@@ -192,7 +192,7 @@ describe("DocumentConverterView", () => {
     expect(clickSpy).toHaveBeenCalledOnce();
   });
 
-  it("automatically renders an embedded PDF after adding a supported HTML project and refreshes on governed changes", async () => {
+  it("automatically renders a PDF and sends edited filename stems through result actions", async () => {
     const secondRender = deferred<ReturnType<typeof buildPreviewResult>>();
 
     apiMocks.renderDocumentConverterProjectPreview
@@ -283,6 +283,41 @@ describe("DocumentConverterView", () => {
       ),
     ).toMatch(/^blob:document-converter-/);
     expect(wrapper.text()).toContain("index-a3.pdf");
+
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    apiMocks.downloadDocumentConverterProjectPreviewArtifact.mockResolvedValue({
+      blob: new Blob(["download"], { type: "application/pdf" }),
+      contentType: "application/pdf",
+      filename: "Backendens projekt.pdf",
+    });
+    apiMocks.saveDocumentConverterProjectPreviewArtifact.mockResolvedValue({});
+
+    await wrapper
+      .get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]')
+      .setValue("Lärarens live-namn");
+    await wrapper.get('[data-testid="document-converter-download"]').trigger("click");
+    await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+    await flushPromises();
+    expect(apiMocks.downloadDocumentConverterProjectPreviewArtifact).toHaveBeenLastCalledWith(
+      expect.objectContaining({ filenameStem: "Lärarens live-namn", previewId: "preview-a3" }),
+    );
+    expect(apiMocks.saveDocumentConverterProjectPreviewArtifact).toHaveBeenLastCalledWith(
+      expect.objectContaining({ filenameStem: "Lärarens live-namn", previewId: "preview-a3" }),
+    );
+
+    await wrapper.get('[data-test="document-converter-mode-single"]').trigger("click");
+    await wrapper
+      .get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]')
+      .setValue("Lärarens historiknamn");
+    await wrapper.get('[data-testid="document-converter-download"]').trigger("click");
+    await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+    await flushPromises();
+    expect(apiMocks.downloadDocumentConverterProjectPreviewArtifact).toHaveBeenLastCalledWith(
+      expect.objectContaining({ filenameStem: "Lärarens historiknamn" }),
+    );
+    expect(apiMocks.saveDocumentConverterProjectPreviewArtifact).toHaveBeenLastCalledWith(
+      expect.objectContaining({ filenameStem: "Lärarens historiknamn" }),
+    );
   });
 
   it("shares validation and merge behavior between drag-drop and picker intake", async () => {

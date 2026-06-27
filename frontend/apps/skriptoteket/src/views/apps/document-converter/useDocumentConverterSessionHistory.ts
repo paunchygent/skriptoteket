@@ -21,8 +21,8 @@ export type DocumentConverterHistoryArtifact = {
   id: string;
   filename: string;
   loadPreview?: (() => Promise<ApiBlobResponse | null>) | null;
-  download?: (() => Promise<void>) | null;
-  save?: (() => Promise<void>) | null;
+  download?: ((filenameStem?: string | null) => Promise<void>) | null;
+  save?: ((filenameStem?: string | null) => Promise<void>) | null;
 };
 
 export type DocumentConverterHistoryEntry = {
@@ -34,8 +34,8 @@ export type DocumentConverterHistoryEntry = {
   errorMessage?: string | null;
   artifacts?: DocumentConverterHistoryArtifact[] | null;
   loadPreview?: (() => Promise<ApiBlobResponse | null>) | null;
-  download?: (() => Promise<void>) | null;
-  save?: (() => Promise<void>) | null;
+  download?: ((filenameStem?: string | null) => Promise<void>) | null;
+  save?: ((filenameStem?: string | null) => Promise<void>) | null;
   retry?: (() => Promise<void>) | null;
 };
 
@@ -154,7 +154,7 @@ export function useDocumentConverterSessionHistory() {
     await loadSelectedPreview();
   }
 
-  async function downloadActiveEntry(): Promise<void> {
+  async function downloadActiveEntry(filenameStem?: string | null): Promise<void> {
     const download = activeArtifact.value?.download ?? activeEntry.value?.download;
     if (!download) {
       return;
@@ -162,7 +162,7 @@ export function useDocumentConverterSessionHistory() {
     isDownloading.value = true;
     actionErrorMessage.value = null;
     try {
-      await download();
+      await download(filenameStem);
     } catch {
       actionErrorMessage.value = "Det gick inte att ladda ned resultatet.";
     } finally {
@@ -170,7 +170,7 @@ export function useDocumentConverterSessionHistory() {
     }
   }
 
-  async function saveActiveEntry(): Promise<void> {
+  async function saveActiveEntry(filenameStem?: string | null): Promise<void> {
     const save = activeArtifact.value?.save ?? activeEntry.value?.save;
     if (!save) {
       return;
@@ -178,7 +178,7 @@ export function useDocumentConverterSessionHistory() {
     isSaving.value = true;
     actionErrorMessage.value = null;
     try {
-      await save();
+      await save(filenameStem);
     } catch {
       actionErrorMessage.value = "Det gick inte att spara resultatet.";
     } finally {

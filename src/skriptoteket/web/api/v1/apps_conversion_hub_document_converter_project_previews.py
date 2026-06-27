@@ -10,9 +10,10 @@ Relationships:
     access checks while keeping production SPA route activation out of scope.
 """
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import Response
 
 from skriptoteket.application.curated_apps.document_converter_projects import (
@@ -108,11 +109,17 @@ async def download_document_converter_project_preview_artifact(
     artifact_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[DownloadDocumentConverterProjectPreviewArtifactHandler],
+    filename_stem: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
     user: User = Depends(require_app_user_api),
 ) -> Response:
     """Download one server-authorized temporary project preview artifact."""
     _require_app_access(registry=registry, user=user)
-    artifact = await handler.handle(actor=user, preview_id=preview_id, artifact_id=artifact_id)
+    artifact = await handler.handle(
+        actor=user,
+        preview_id=preview_id,
+        artifact_id=artifact_id,
+        filename_stem=filename_stem,
+    )
     return Response(
         content=artifact.content,
         media_type=artifact.content_type,
@@ -132,11 +139,17 @@ async def save_document_converter_project_preview_artifact(
     artifact_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[SaveDocumentConverterProjectPreviewArtifactHandler],
+    filename_stem: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
     user: User = Depends(require_app_user_api),
 ) -> SaveDocumentConverterProjectPreviewArtifactResult:
     """Save one explicit temporary preview artifact into Mina filer."""
     _require_app_access(registry=registry, user=user)
-    return await handler.handle(actor=user, preview_id=preview_id, artifact_id=artifact_id)
+    return await handler.handle(
+        actor=user,
+        preview_id=preview_id,
+        artifact_id=artifact_id,
+        filename_stem=filename_stem,
+    )
 
 
 @router.delete("/{preview_id}", response_model=DiscardDocumentConverterProjectPreviewResult)

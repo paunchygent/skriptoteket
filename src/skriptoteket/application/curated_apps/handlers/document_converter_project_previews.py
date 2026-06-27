@@ -18,6 +18,10 @@ from uuid import UUID
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterStoredArtifact,
 )
+from skriptoteket.application.curated_apps.document_converter_file_naming import (
+    apply_project_preview_protocol_filenames,
+    build_project_preview_filename_from_stem,
+)
 from skriptoteket.application.curated_apps.document_converter_projects import (
     DOCUMENT_CONVERTER_PROJECT_PREVIEW_TTL_SECONDS,
     CleanupDocumentConverterProjectPreviewsResult,
@@ -81,6 +85,11 @@ class RenderDocumentConverterProjectPreviewHandler:
         )
         artifacts = self._renderer.render_project(manifest=manifest, files=files)
         now = self._clock.now()
+        artifacts = apply_project_preview_protocol_filenames(
+            manifest=manifest,
+            artifacts=artifacts,
+            created_at=now,
+        )
         record = DocumentConverterProjectPreviewRecord(
             preview_id=self._id_generator.new_uuid(),
             owner_user_id=actor.id,
@@ -145,13 +154,21 @@ class DownloadDocumentConverterProjectPreviewArtifactHandler:
         actor: User,
         preview_id: UUID,
         artifact_id: UUID,
+        filename_stem: str | None = None,
     ) -> DocumentConverterStoredArtifact:
         """Return the server-stored preview artifact for the owner."""
-        return self._previews.read_artifact(
+        artifact = self._previews.read_artifact(
             owner_user_id=actor.id,
             preview_id=preview_id,
             artifact_id=artifact_id,
             now=self._clock.now(),
+        )
+        if filename_stem is None:
+            return artifact
+        return artifact.model_copy(
+            update={
+                "filename": build_project_preview_filename_from_stem(filename_stem=filename_stem)
+            }
         )
 
 
@@ -188,6 +205,7 @@ class SaveDocumentConverterProjectPreviewArtifactHandler:
         actor: User,
         preview_id: UUID,
         artifact_id: UUID,
+        filename_stem: str | None = None,
     ) -> SaveDocumentConverterProjectPreviewArtifactResult:
         """Save the selected preview artifact through server-owned authority."""
         artifact = self._previews.read_artifact(
@@ -196,6 +214,14 @@ class SaveDocumentConverterProjectPreviewArtifactHandler:
             artifact_id=artifact_id,
             now=self._clock.now(),
         )
+        if filename_stem is not None:
+            artifact = artifact.model_copy(
+                update={
+                    "filename": build_project_preview_filename_from_stem(
+                        filename_stem=filename_stem
+                    )
+                }
+            )
         source_artifact_id = build_document_converter_project_preview_source_artifact_id(
             preview_id=preview_id,
             artifact_id=artifact_id,

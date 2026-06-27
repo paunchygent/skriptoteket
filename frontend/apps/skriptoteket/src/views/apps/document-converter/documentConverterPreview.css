@@ -112,7 +112,7 @@
 .dc-preview-footer {
   min-height: 3.6rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 0.8fr) minmax(12rem, 1fr) auto;
   align-items: stretch;
   gap: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
@@ -137,6 +137,47 @@
 
 .dc-result-format {
   color: color-mix(in srgb, var(--color-navy) 72%, transparent);
+}
+
+.dc-filename-field {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--huleedu-font-sans);
+  font-size: 0.78rem;
+  font-weight: var(--huleedu-font-semibold);
+  color: color-mix(in srgb, var(--color-navy) 72%, transparent);
+}
+
+.dc-filename-field__control {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-navy) 22%, transparent);
+  background: var(--color-panel);
+}
+
+.dc-filename-field input {
+  min-width: 0;
+  height: 2.25rem;
+  border: 0;
+  padding: 0 0.55rem;
+  background: transparent;
+  color: var(--color-navy);
+  font: inherit;
+}
+
+.dc-filename-field input:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-action) 40%, transparent);
+  outline-offset: 1px;
+}
+
+.dc-filename-field strong {
+  padding-right: 0.55rem;
+  color: color-mix(in srgb, var(--color-navy) 58%, transparent);
 }
 
 .dc-result-empty {

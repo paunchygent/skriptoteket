@@ -78,17 +78,19 @@ export function useDocumentConverterHistoryBridge(args: {
                   artifact,
                 });
               },
-              download: async () => {
+              download: async (filenameStem?: string | null) => {
                 const response = await downloadDocumentConverterProjectPreviewArtifact({
                   previewId: outcome.preview.preview_id,
                   artifact,
+                  filenameStem,
                 });
                 triggerBrowserDownload(response.blob, response.filename ?? artifact.filename);
               },
-              save: async () => {
+              save: async (filenameStem?: string | null) => {
                 await saveDocumentConverterProjectPreviewArtifact({
                   previewId: outcome.preview.preview_id,
                   artifact,
+                  filenameStem,
                 });
                 await singleFile.loadSources();
               },
@@ -142,14 +144,15 @@ export function useDocumentConverterHistoryBridge(args: {
               loadPreview: artifact.previewable
                 ? async () => await downloadDocumentConverterJobArtifact({ jobId: artifact.jobId })
                 : async () => null,
-              download: async () => {
+              download: async (filenameStem?: string | null) => {
                 const response = await downloadDocumentConverterJobArtifact({
+                  filenameStem,
                   jobId: artifact.jobId,
                 });
                 triggerBrowserDownload(response.blob, response.filename ?? artifact.filename);
               },
-              save: async () => {
-                await saveDocumentConverterJobArtifact({ jobId: artifact.jobId });
+              save: async (filenameStem?: string | null) => {
+                await saveDocumentConverterJobArtifact({ filenameStem, jobId: artifact.jobId });
                 await singleFile.loadSources();
               },
             })),

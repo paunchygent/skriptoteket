@@ -28,6 +28,9 @@ from skriptoteket.application.curated_apps.document_converter import (
     is_document_converter_job,
     is_local_document_converter_job,
 )
+from skriptoteket.application.curated_apps.document_converter_file_naming import (
+    apply_single_file_protocol_filename,
+)
 from skriptoteket.application.curated_apps.handlers.document_converter_vault_saves import (
     DocumentConverterVaultSaveService,
 )
@@ -188,6 +191,7 @@ class DownloadDocumentConverterArtifactHandler:
         actor: User,
         job_id: UUID,
         correlation_id: str | None,
+        filename_stem: str | None = None,
     ) -> tuple[str, str, bytes]:
         job = await self._access.load_refreshed(
             actor=actor,
@@ -195,6 +199,13 @@ class DownloadDocumentConverterArtifactHandler:
             correlation_id=correlation_id,
         )
         artifact = await self._download_ready_artifact(job=job, correlation_id=correlation_id)
+        artifact = apply_single_file_protocol_filename(
+            artifact=artifact,
+            input_filename=job.input_filename,
+            output_format=job.output_format,
+            created_at=job.created_at,
+            filename_stem=filename_stem,
+        )
         return (
             artifact.filename,
             artifact.content_type,
@@ -262,6 +273,7 @@ class SaveDocumentConverterArtifactHandler:
         actor: User,
         job_id: UUID,
         correlation_id: str | None,
+        filename_stem: str | None = None,
     ) -> SaveDocumentConverterArtifactResult:
         job = await self._access.load_refreshed(
             actor=actor,
@@ -281,6 +293,13 @@ class SaveDocumentConverterArtifactHandler:
                 content_type=producer_artifact.artifact.content_type,
                 content=producer_artifact.artifact.content,
             )
+        artifact = apply_single_file_protocol_filename(
+            artifact=artifact,
+            input_filename=job.input_filename,
+            output_format=job.output_format,
+            created_at=job.created_at,
+            filename_stem=filename_stem,
+        )
         source_artifact_id = build_document_converter_source_artifact_id(
             upstream_job_id=job.upstream_job_id or ""
         )

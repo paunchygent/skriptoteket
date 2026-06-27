@@ -135,20 +135,22 @@ class FakeGetPreviewHandler:
 
 
 class FakeDownloadPreviewArtifactHandler:
-    def __init__(self) -> None:
+    def __init__(self, *, filename: str = "preview.pdf") -> None:
+        self.filename = filename
         self.calls: list[dict[str, object]] = []
 
     async def handle(self, **kwargs) -> DocumentConverterStoredArtifact:
         self.calls.append(kwargs)
         return DocumentConverterStoredArtifact(
-            filename="preview.pdf",
+            filename=self.filename,
             content_type="application/pdf",
             content=b"%PDF-PREVIEW",
         )
 
 
 class FakeSavePreviewArtifactHandler:
-    def __init__(self) -> None:
+    def __init__(self, *, filename: str = "preview.pdf") -> None:
+        self.filename = filename
         self.calls: list[dict[str, object]] = []
 
     async def handle(self, **kwargs) -> SaveDocumentConverterProjectPreviewArtifactResult:
@@ -156,7 +158,7 @@ class FakeSavePreviewArtifactHandler:
         return SaveDocumentConverterProjectPreviewArtifactResult(
             vault_artifact=ConversionHubSavedVaultArtifact(
                 file_id=uuid4(),
-                name="preview.pdf",
+                name=self.filename,
                 bytes=12,
                 created_at=datetime(2026, 6, 25, tzinfo=timezone.utc),
             ),
@@ -232,19 +234,24 @@ async def test_render_project_preview_rejects_undeclared_upload_before_handler()
 async def test_download_project_preview_artifact_uses_server_ids_only() -> None:
     preview_id = uuid4()
     artifact_id = uuid4()
-    handler = FakeDownloadPreviewArtifactHandler()
+    handler = FakeDownloadPreviewArtifactHandler(filename="Backendens projekt.pdf")
 
     response = await _unwrap_dishka(api.download_document_converter_project_preview_artifact)(
         preview_id=preview_id,
         artifact_id=artifact_id,
         registry=FakeRegistry(),
         handler=handler,
+        filename_stem="Lärarens projekt.pdf",
         user=make_user(),
     )
 
     assert response.body == b"%PDF-PREVIEW"
+    assert response.headers["Content-Disposition"] == (
+        'attachment; filename="Backendens projekt.pdf"'
+    )
     assert handler.calls[0]["preview_id"] == preview_id
     assert handler.calls[0]["artifact_id"] == artifact_id
+    assert handler.calls[0]["filename_stem"] == "Lärarens projekt.pdf"
 
 
 @pytest.mark.unit
@@ -252,19 +259,21 @@ async def test_download_project_preview_artifact_uses_server_ids_only() -> None:
 async def test_save_project_preview_artifact_requires_explicit_server_owned_artifact() -> None:
     preview_id = uuid4()
     artifact_id = uuid4()
-    handler = FakeSavePreviewArtifactHandler()
+    handler = FakeSavePreviewArtifactHandler(filename="Backendens projekt.pdf")
 
     result = await _unwrap_dishka(api.save_document_converter_project_preview_artifact)(
         preview_id=preview_id,
         artifact_id=artifact_id,
         registry=FakeRegistry(),
         handler=handler,
+        filename_stem="Lärarens projekt.pdf",
         user=make_user(),
     )
 
-    assert result.vault_artifact.name == "preview.pdf"
+    assert result.vault_artifact.name == "Backendens projekt.pdf"
     assert handler.calls[0]["preview_id"] == preview_id
     assert handler.calls[0]["artifact_id"] == artifact_id
+    assert handler.calls[0]["filename_stem"] == "Lärarens projekt.pdf"
 
 
 @pytest.mark.unit

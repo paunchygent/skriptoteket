@@ -9,9 +9,10 @@ Relationships:
   - Upstream conversion engine: Sir Convert-a-Lot v2
 """
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import Response
 
 from skriptoteket.application.curated_apps.conversion_hub import (
@@ -365,6 +366,7 @@ async def download_document_converter_artifact(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[DownloadDocumentConverterArtifactHandler],
+    filename_stem: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
     user: User = Depends(require_app_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
@@ -374,6 +376,7 @@ async def download_document_converter_artifact(
         actor=user,
         job_id=job_id,
         correlation_id=correlation_id,
+        filename_stem=filename_stem,
     )
     return Response(
         content=content,
@@ -394,12 +397,18 @@ async def save_document_converter_artifact(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[SaveDocumentConverterArtifactHandler],
+    filename_stem: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
     user: User = Depends(require_app_user_api),
 ) -> SaveDocumentConverterArtifactResult:
     _require_app_access(registry=registry, user=user)
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
-    return await handler.handle(actor=user, job_id=job_id, correlation_id=correlation_id)
+    return await handler.handle(
+        actor=user,
+        job_id=job_id,
+        correlation_id=correlation_id,
+        filename_stem=filename_stem,
+    )
 
 
 @router.get("/jobs/{job_id}", response_model=ConversionHubJobStatusResult)

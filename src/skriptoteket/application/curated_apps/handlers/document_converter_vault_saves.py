@@ -17,6 +17,9 @@ from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterStoredArtifact,
 )
+from skriptoteket.application.curated_apps.document_converter_file_naming import (
+    disambiguate_filename,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.identity.models import User
@@ -109,11 +112,16 @@ class DocumentConverterVaultSaveService:
                     actual_bytes=actual_bytes,
                     max_total_bytes=self._settings.VAULT_MAX_TOTAL_BYTES,
                 )
+                active_files = await self._vault_files.list_active_for_user(user_id=actor.id)
+                final_filename = disambiguate_filename(
+                    filename=filename,
+                    existing_names={file.name for file in active_files},
+                )
                 vault_file = await self._vault_files.create(
                     file=VaultFile(
                         id=file_id,
                         user_id=actor.id,
-                        name=filename,
+                        name=final_filename,
                         bytes=actual_bytes,
                         source_kind=VaultFileSourceKind.APP_EXPORT,
                         source_run_id=None,

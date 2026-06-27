@@ -118,12 +118,13 @@ class FakeGetDocumentConverterHandler:
 
 
 class FakeDownloadHandler:
-    def __init__(self) -> None:
+    def __init__(self, *, filename: str = "converted.pdf") -> None:
+        self.filename = filename
         self.calls: list[dict[str, object]] = []
 
     async def handle(self, **kwargs):
         self.calls.append(kwargs)
-        return ("converted.pdf", "application/pdf", b"%PDF-1.7")
+        return (self.filename, "application/pdf", b"%PDF-1.7")
 
 
 class FakeSaveHandler:
@@ -423,7 +424,7 @@ async def test_get_document_converter_job_returns_result_artifact_after_success(
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_download_document_converter_artifact_uses_local_job_id_only() -> None:
-    handler = FakeDownloadHandler()
+    handler = FakeDownloadHandler(filename="Backendens fil.pdf")
     local_job_id = uuid4()
 
     response = await _unwrap_dishka(api.download_document_converter_artifact)(
@@ -431,14 +432,16 @@ async def test_download_document_converter_artifact_uses_local_job_id_only() -> 
         request=_request(),
         registry=FakeRegistry(),
         handler=handler,
+        filename_stem="Lärarens förslag.pdf",
         user=make_user(),
     )
 
     assert response.media_type == "application/pdf"
-    assert response.headers["Content-Disposition"] == 'attachment; filename="converted.pdf"'
+    assert response.headers["Content-Disposition"] == 'attachment; filename="Backendens fil.pdf"'
     assert response.headers["Cache-Control"] == "no-store"
     assert response.body == b"%PDF-1.7"
     assert handler.calls[0]["job_id"] == local_job_id
+    assert handler.calls[0]["filename_stem"] == "Lärarens förslag.pdf"
     assert "artifact_key" not in handler.calls[0]
 
 
@@ -451,7 +454,7 @@ async def test_save_document_converter_artifact_uses_local_job_id_only() -> None
         SaveDocumentConverterArtifactResult(
             vault_artifact=ConversionHubSavedVaultArtifact(
                 file_id=file_id,
-                name="source.pdf",
+                name="Backendens fil.pdf",
                 bytes=12,
                 created_at=datetime(2026, 6, 23, tzinfo=timezone.utc),
             ),
@@ -464,11 +467,14 @@ async def test_save_document_converter_artifact_uses_local_job_id_only() -> None
         request=_request(),
         registry=FakeRegistry(),
         handler=handler,
+        filename_stem="Lärarens förslag.pdf",
         user=make_user(),
     )
 
     assert result.vault_artifact.file_id == file_id
+    assert result.vault_artifact.name == "Backendens fil.pdf"
     assert result.source_artifact_id == "document-converter:sir-job-1:converted_document"
     assert handler.calls[0]["job_id"] == local_job_id
+    assert handler.calls[0]["filename_stem"] == "Lärarens förslag.pdf"
     assert "artifact" not in handler.calls[0]
     assert "artifact_key" not in handler.calls[0]

@@ -55,6 +55,15 @@ export type SubmitDocumentConverterSavedFileJobParams = {
 
 const DOCUMENT_CONVERTER_ROOT = "/api/v1/apps/documents.conversion_hub/document-converter";
 
+function withFilenameStem(path: string, filenameStem?: string | null): string {
+  const trimmed = filenameStem?.trim();
+  if (!trimmed) {
+    return path;
+  }
+  const query = new URLSearchParams({ filename_stem: trimmed });
+  return `${path}?${query.toString()}`;
+}
+
 function buildJobSpec(params: {
   outputFormat: ConversionHubOutputFormatV2;
   sourceFormat: ConversionHubSourceFormatV2;
@@ -125,18 +134,26 @@ export async function getDocumentConverterJobStatus(params: {
 }
 
 export async function downloadDocumentConverterJobArtifact(params: {
+  filenameStem?: string | null;
   jobId: string;
 }): Promise<ApiBlobResponse> {
   return await apiFetchBlobResponse(
-    `${DOCUMENT_CONVERTER_ROOT}/jobs/${encodeURIComponent(params.jobId)}/artifact`,
+    withFilenameStem(
+      `${DOCUMENT_CONVERTER_ROOT}/jobs/${encodeURIComponent(params.jobId)}/artifact`,
+      params.filenameStem,
+    ),
     { method: "GET" },
   );
 }
 
 export async function saveDocumentConverterJobArtifact(params: {
+  filenameStem?: string | null;
   jobId: string;
 }): Promise<DocumentConverterSingleFileSaveResult> {
   return await apiPost<DocumentConverterSingleFileSaveResult>(
-    `${DOCUMENT_CONVERTER_ROOT}/jobs/${encodeURIComponent(params.jobId)}/artifact/save`,
+    withFilenameStem(
+      `${DOCUMENT_CONVERTER_ROOT}/jobs/${encodeURIComponent(params.jobId)}/artifact/save`,
+      params.filenameStem,
+    ),
   );
 }

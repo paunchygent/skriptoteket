@@ -10635,7 +10635,9 @@ export interface operations {
     };
     download_document_converter_artifact_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__artifact_get: {
         parameters: {
-            query?: never;
+            query?: {
+                filename_stem?: string | null;
+            };
             header?: never;
             path: {
                 job_id: string;
@@ -10666,7 +10668,9 @@ export interface operations {
     };
     save_document_converter_artifact_api_v1_apps_documents_conversion_hub_document_converter_jobs__job_id__artifact_save_post: {
         parameters: {
-            query?: never;
+            query?: {
+                filename_stem?: string | null;
+            };
             header?: never;
             path: {
                 job_id: string;
@@ -10792,7 +10796,9 @@ export interface operations {
     };
     download_document_converter_project_preview_artifact_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__artifacts__artifact_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                filename_stem?: string | null;
+            };
             header?: never;
             path: {
                 preview_id: string;
@@ -10824,7 +10830,9 @@ export interface operations {
     };
     save_document_converter_project_preview_artifact_api_v1_apps_documents_conversion_hub_document_converter_project_previews__preview_id__artifacts__artifact_id__save_post: {
         parameters: {
-            query?: never;
+            query?: {
+                filename_stem?: string | null;
+            };
             header?: never;
             path: {
                 preview_id: string;

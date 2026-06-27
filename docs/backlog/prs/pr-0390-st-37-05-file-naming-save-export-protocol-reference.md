@@ -5,7 +5,7 @@ title: "ST-37-05 file naming/save/export protocol reference"
 status: ready
 owners: "agents"
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-06-27
 stories:
   - "ST-37-05"
 tags:
@@ -14,9 +14,9 @@ tags:
   - exports
   - mina-filer
 acceptance_criteria:
-  - "Given current file action drift, when this planning slice closes, then a reviewed reference defines generated filename shape, extension ownership, duplicate-save behavior, editable stems, and `Mina filer` rename semantics."
+  - "Given current file action drift, when this planning slice closes, then a reviewed reference defines generated filename shape, canonical Swedish purpose vocabulary, extension ownership, duplicate-save behavior, editable stems, and `Mina filer` rename semantics."
   - "Given app-owned and producer-replay outputs differ, when the reference is reviewed, then it describes both authority shapes without forcing one artifact model."
-  - "Given app implementation slices follow, when this PR closes, then each later PR has a clear app-adapter question set and proof obligations."
+  - "Given app implementation slices follow, when this PR closes, then each later PR has a clear app-adapter question set and proof obligations for duplicate-save disambiguation or reviewed exceptions, rename-collision behavior, and protected API final filename authority."
 ---
 
 # PR-0390: ST-37-05 File Naming/Save/Export Protocol Reference

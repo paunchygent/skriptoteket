@@ -16,7 +16,6 @@ from __future__ import annotations
 import mimetypes
 from datetime import datetime
 from enum import StrEnum
-from pathlib import PurePosixPath
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -32,6 +31,9 @@ from skriptoteket.application.curated_apps.conversion_hub import (
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
     ConversionHubSavedVaultArtifact,
+)
+from skriptoteket.application.curated_apps.document_converter_file_naming import (
+    build_single_file_protocol_filename,
 )
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.file_refs import FileRef
@@ -366,10 +368,10 @@ def build_document_converter_result_artifact(
 
 
 def _default_result_filename(*, job: ConversionHubJob) -> str:
-    safe_input = sanitize_input_filename(input_filename=job.input_filename)
     return build_document_converter_result_filename(
-        input_filename=safe_input,
+        input_filename=job.input_filename,
         output_format=job.output_format,
+        created_at=job.created_at,
     )
 
 
@@ -377,12 +379,20 @@ def build_document_converter_result_filename(
     *,
     input_filename: str,
     output_format: ConversionHubOutputFormatV2,
+    created_at: datetime | None = None,
+    filename_stem: str | None = None,
 ) -> str:
     """Build the default output filename for one converted document."""
-    safe_input = sanitize_input_filename(input_filename=input_filename)
-    extension = _OUTPUT_EXTENSIONS[output_format]
-    stem = PurePosixPath(safe_input).stem or "converted"
-    return f"{stem}.{extension}"
+    if created_at is None:
+        safe_input = sanitize_input_filename(input_filename=input_filename)
+        extension = _OUTPUT_EXTENSIONS[output_format]
+        return f"{safe_input.rsplit('.', 1)[0] or 'converted'}.{extension}"
+    return build_single_file_protocol_filename(
+        input_filename=input_filename,
+        output_format=output_format,
+        created_at=created_at,
+        filename_stem=filename_stem,
+    )
 
 
 def get_document_converter_output_content_type(

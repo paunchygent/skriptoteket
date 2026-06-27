@@ -34,6 +34,7 @@ import {
 } from "./documentConverterProjectPreviewApi";
 import "./documentConverterWorkspace.css";
 import "./documentConverterPreview.css";
+import { useDocumentConverterFilenameIntent } from "./useDocumentConverterFilenameIntent";
 import { useDocumentConverterProjectPreview } from "./useDocumentConverterProjectPreview";
 import { useDocumentConverterHistoryBridge } from "./useDocumentConverterHistoryBridge";
 import { useDocumentConverterSessionHistory } from "./useDocumentConverterSessionHistory";
@@ -44,19 +45,15 @@ import {
 } from "./useDocumentConverterSingleFile";
 
 type DocumentConverterWorkspaceMode = "project_preview" | "single_file";
-
 type DocumentConverterOutputChoice = UiSegmentedTileToggleOption & {
   value: DocumentConverterProjectOutputMode;
 };
-
 type DocumentConverterPaperChoice = UiSegmentedToggleOption & {
   value: DocumentConverterProjectPaperSize;
 };
-
 type DocumentConverterSingleFileChoice = UiSegmentedToggleOption & {
   value: DocumentConverterSingleFileSource;
 };
-
 type DocumentConverterSingleFileOutputChoice = UiSegmentedToggleOption & {
   value: DocumentConverterSingleFileOutput;
 };
@@ -100,7 +97,6 @@ const sourceLabelMap: Record<DocumentConverterSingleFileSource, string> = {
   md: "Markdown",
   pdf: "PDF",
 };
-
 const outputLabelMap: Record<DocumentConverterSingleFileOutput, string> = {
   docx: "DOCX",
   md: "Markdown",
@@ -109,7 +105,6 @@ const outputLabelMap: Record<DocumentConverterSingleFileOutput, string> = {
 
 const workspaceMode = ref<DocumentConverterWorkspaceMode>("project_preview");
 const projectFileInputElement = ref<HTMLInputElement | null>(null);
-
 const project = useDocumentConverterProjectPreview();
 const singleFile = useDocumentConverterSingleFile();
 const history = useDocumentConverterSessionHistory();
@@ -195,6 +190,7 @@ const resultTitle = computed(() => {
   }
   return history.activeArtifactFilename.value ?? history.activeEntry.value?.filename ?? "Resultat";
 });
+const { filenameExtensionLabel, filenameStemIntent } = useDocumentConverterFilenameIntent(resultTitle);
 const resultStateLabel = computed(() => {
   const entry = history.activeEntry.value;
   if (!entry) {
@@ -255,6 +251,7 @@ const canSaveResult = computed(() => {
   }
   return history.canSaveActiveEntry.value;
 });
+
 const isDownloadingResult = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.isDownloading.value;
@@ -278,10 +275,10 @@ async function startSingleFileConversion(): Promise<void> {
 
 async function downloadResult(): Promise<void> {
   if (isLiveProjectResultSelected.value) {
-    await project.downloadSelectedArtifact();
+    await project.downloadSelectedArtifact(filenameStemIntent.value);
     return;
   }
-  await history.downloadActiveEntry();
+  await history.downloadActiveEntry(filenameStemIntent.value);
 }
 
 async function retryCurrentMode(): Promise<void> {
@@ -294,11 +291,11 @@ async function retryCurrentMode(): Promise<void> {
 
 async function saveResult(): Promise<void> {
   if (isLiveProjectResultSelected.value) {
-    await project.saveSelectedArtifact();
+    await project.saveSelectedArtifact(filenameStemIntent.value);
     await singleFile.loadSources();
     return;
   }
-  await history.saveActiveEntry();
+  await history.saveActiveEntry(filenameStemIntent.value);
 }
 
 async function selectResultArtifact(artifactId: string): Promise<void> {
@@ -308,6 +305,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
   }
   await history.selectActiveArtifact(artifactId);
 }
+
 </script>
 
 <template>
@@ -485,12 +483,15 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
         :can-save="canSaveResult"
         :is-downloading="isDownloadingResult"
         :is-saving="isSavingResult"
+        :filename-extension="filenameExtensionLabel"
+        :filename-stem="filenameStemIntent"
         :result-title="resultTitle"
         :result-state-label="resultStateLabel"
         :source-label="resultSourceLabel"
         :result-type-label="resultTypeLabel"
         @download="downloadResult"
         @save="saveResult"
+        @update-filename-stem="filenameStemIntent = $event"
         @select-artifact="selectResultArtifact"
       />
     </section>

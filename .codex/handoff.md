@@ -10,8 +10,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-27.
 - Branch: `main`.
-- Latest closed work: `PR-0385`.
-- Active worktree slice: `ST-37-05` / `PR-0390` cross-app save/export filename-protocol follow-up; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Latest closed work: `PR-0396`.
+- Active worktree slice: `ST-37-05` shared save/export naming follow-ups; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
 - `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
@@ -126,6 +126,8 @@ Keep this file updated so the next session can pick up work quickly.
   - Older PR-0379 through PR-0386 verification details are compacted to `.codex/long-term-memory/entries/session-2026-06-26-pr-0388-handoff-compaction.md`.
   - `PR-0385` pre-correction focused local proof was green. Correction proof now includes Document Converter Vitest with `DocumentConverterProjectResult.spec.ts`, `DocumentConverterSingleFileView.spec.ts`, and `documentConverterFileApi.spec.ts`; rerun backend/API, build, docs/handoff, and final diff gates before marking complete.
   - `PR-0385` live authenticated proof is green after A2 title-row mode selector correction; `pdm run run-local-pdm auth-integration check` passed in HuleEdu and `pdm run python -m scripts.authenticated_home_work_apps --timeout-seconds 90` passed with `.artifacts/authenticated-home-work-apps/20260627T014512Z/manifest.redacted.json`.
+  - `PR-0396` is done and approved by `REV-PR-0396`: backend naming/API tests passed with `34 passed`, Document Converter Vitest focused specs passed with `20 passed`, `fe-gen-api-types`, `lint`, `typecheck`, `fe-type-check`, `fe-lint`, `fe-build`, `handoff-validate`, `docs-validate`, and `git diff --check` passed locally. `fe-build` retained the existing large-chunk warnings.
+  - `PR-0396` live authenticated proof passed through the HuleEdu browser-session lane with `pdm run python -m scripts.authenticated_home_work_apps --timeout-seconds 90`; artifact `.artifacts/authenticated-home-work-apps/20260627T041926Z/manifest.redacted.json` records desktop/compact Document Converter route captures, automatic project preview, rendered nonblank PDF page, expected text/CSS/image accents, and no raw external URL or filesystem path text.
   - PR-0388 focused backend proof is green locally and was rerun during retained
     re-review:
     `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib /opt/homebrew/bin/pdm run test tests/unit/application/curated_apps/test_document_converter_project_manifest.py tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_renderer_best_effort.py`
@@ -191,6 +193,6 @@ git diff --check
   monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next governed step: use `ST-37-05` / `PR-0390` as the cross-app save/export filename-protocol follow-up.
+- Next governed step: keep broader shared extraction in `PR-0391`/`PR-0392`; `PR-0393` through `PR-0395` remain separate app/file adoption slices.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

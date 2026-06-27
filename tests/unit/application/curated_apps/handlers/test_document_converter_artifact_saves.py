@@ -254,7 +254,7 @@ async def test_get_document_converter_job_adds_result_artifact_after_success() -
     assert result.result_artifact.source_artifact_id == (
         "document-converter:sir-job-1:converted_document"
     )
-    assert result.result_artifact.filename == "source.pdf"
+    assert result.result_artifact.filename == "source - Konverterad PDF - 20260623.pdf"
     assert result.result_artifact.content_type == "application/pdf"
 
 
@@ -344,7 +344,7 @@ async def test_save_document_converter_artifact_downloads_and_stores_default_res
 
     saved_file = vault_files.files[file_id]
     assert saved_file.user_id == actor.id
-    assert saved_file.name == "source.pdf"
+    assert saved_file.name == "source - Konverterad PDF - 20260623.pdf"
     assert saved_file.bytes == len(b"%PDF-1.7\n")
     assert saved_file.source_kind is VaultFileSourceKind.APP_EXPORT
     assert saved_file.source_artifact_id == "document-converter:sir-job-1:converted_document"

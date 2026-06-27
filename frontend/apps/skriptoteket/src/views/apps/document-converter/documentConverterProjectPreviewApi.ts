@@ -143,6 +143,7 @@ function previewArtifactUrl(params: {
   previewId: string;
   artifactId?: string;
   action?: "save";
+  filenameStem?: string | null;
 }): string {
   const base = [
     PROJECT_PREVIEWS_ROOT,
@@ -151,7 +152,13 @@ function previewArtifactUrl(params: {
     params.artifactId ? encodeURIComponent(params.artifactId) : null,
     params.action ?? null,
   ].filter(Boolean);
-  return base.join("/");
+  const path = base.join("/");
+  const trimmed = params.filenameStem?.trim();
+  if (!trimmed) {
+    return path;
+  }
+  const query = new URLSearchParams({ filename_stem: trimmed });
+  return `${path}?${query.toString()}`;
 }
 
 export async function renderDocumentConverterProjectPreview(
@@ -186,19 +193,29 @@ export async function loadDocumentConverterProjectPreviewArtifactBlob(params: {
 export async function downloadDocumentConverterProjectPreviewArtifact(params: {
   previewId: string;
   artifact: DocumentConverterProjectPreviewArtifact;
+  filenameStem?: string | null;
 }): Promise<ApiBlobResponse> {
-  return await loadDocumentConverterProjectPreviewArtifactBlob(params);
+  return await apiFetchBlobResponse(
+    previewArtifactUrl({
+      previewId: params.previewId,
+      artifactId: params.artifact.artifact_id,
+      filenameStem: params.filenameStem,
+    }),
+    { method: "GET" },
+  );
 }
 
 export async function saveDocumentConverterProjectPreviewArtifact(params: {
   previewId: string;
   artifact: DocumentConverterProjectPreviewArtifact;
+  filenameStem?: string | null;
 }): Promise<DocumentConverterProjectPreviewArtifactSaveResult> {
   return await apiPost<DocumentConverterProjectPreviewArtifactSaveResult>(
     previewArtifactUrl({
       previewId: params.previewId,
       artifactId: params.artifact.artifact_id,
       action: "save",
+      filenameStem: params.filenameStem,
     }),
   );
 }

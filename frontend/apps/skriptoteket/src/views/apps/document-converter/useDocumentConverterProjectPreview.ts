@@ -329,7 +329,7 @@ export function useDocumentConverterProjectPreview() {
     }
   }
 
-  async function downloadSelectedArtifact(): Promise<void> {
+  async function downloadSelectedArtifact(filenameStem?: string | null): Promise<void> {
     if (!preview.value || !selectedArtifact.value || !canUseSelectedArtifact.value) {
       return;
     }
@@ -339,6 +339,7 @@ export function useDocumentConverterProjectPreview() {
       const response = await downloadDocumentConverterProjectPreviewArtifact({
         previewId: preview.value.preview_id,
         artifact: selectedArtifact.value,
+        filenameStem,
       });
       triggerBrowserDownload(response.blob, response.filename ?? selectedArtifact.value.filename);
     } catch {
@@ -348,7 +349,7 @@ export function useDocumentConverterProjectPreview() {
     }
   }
 
-  async function saveSelectedArtifact(): Promise<void> {
+  async function saveSelectedArtifact(filenameStem?: string | null): Promise<void> {
     if (!preview.value || !selectedArtifact.value || !canUseSelectedArtifact.value) {
       return;
     }
@@ -358,6 +359,7 @@ export function useDocumentConverterProjectPreview() {
       await saveDocumentConverterProjectPreviewArtifact({
         previewId: preview.value.preview_id,
         artifact: selectedArtifact.value,
+        filenameStem,
       });
     } catch {
       setMessage("Det gick inte att spara. Försök igen.");
