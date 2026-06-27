@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-27.
 - Branch: `main`.
-- Latest closed work: `PR-0396`.
+- Latest closed work: `PR-0402`.
 - Active worktree slice: `ST-37-05` shared save/export naming follow-ups; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
@@ -113,7 +113,9 @@ Keep this file updated so the next session can pick up work quickly.
   Convert `running` status being rejected by Skriptoteket polling. `PR-0399`
   owns typed Sir Convert v2 status vocabulary; `PR-0398` owns Document Converter
   consumption, failure-state UX, and preview fit/zoom/pinch.
+- `PR-0402` is done and approved by `REV-PR-0402`: compact `Filkonvertering` now orders source/file picker, operations, then preview after source-format inference.
 ## Verification
+- Current PR-0402 compact source-first proof is green at `.artifacts/authenticated-home-work-apps/20260627T172303Z/`.
 - Current retained scoped best-effort preview proof is green; older detail is
   compacted to `.codex/long-term-memory/entries/session-2026-06-27-pr-0397-handoff-compaction.md`.
 - PR-0365 / PR-0372 retained browser proof and screenshots are recorded in

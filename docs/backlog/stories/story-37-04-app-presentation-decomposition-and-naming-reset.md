@@ -65,6 +65,7 @@ dashboard direction are settled.
 - [ ] [PR-0399: ST-37-04 Sir Convert v2 status vocabulary contract](../prs/pr-0399-st-37-04-sir-convert-v2-status-vocabulary-contract.md)
 - [ ] [PR-0400: ST-37-04 Document Converter artifact content hygiene contract](../prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md)
 - [ ] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
+- [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
 
 ## Notes
 
@@ -134,6 +135,10 @@ dashboard direction are settled.
   implementation-detail preview copy and forbidden eyebrow/status labels, makes
   PDF preview automatic with stale-response protection, and keeps ordinary
   grid-heavy teacher HTML/CSS in scope through best-effort preview rendering.
+- `PR-0402` supersedes the temporary `PR-0398` compact ordering that placed
+  conversion controls before upload. Source-format inference now lets compact
+  `Filkonvertering` return to source/file picker first, then conversion
+  controls, then preview. It is done and approved by `REV-PR-0402`.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use

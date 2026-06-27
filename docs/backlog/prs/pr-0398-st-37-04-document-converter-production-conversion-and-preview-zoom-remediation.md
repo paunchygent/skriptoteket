@@ -25,7 +25,7 @@ acceptance_criteria:
   - "Given a teacher has converted a single-file artifact, when they switch from `Filkonvertering` to `HTML/CSS-projekt`, then preview, export, download, save, and generated-artifact selection state is scoped to the selected mode and no single-file artifact remains visible or actionable in the HTML/CSS project mode."
   - "Given local file conversion accepts multiple source formats, when the teacher chooses files in any layout size, then the app infers the source format from the selected files instead of requiring the teacher to know it before using the picker."
   - "Given a teacher has selected local files for conversion, when they remove a file from the source list or replace the selection with unsupported or mixed source formats, then the submit payload follows the visible list and stale prior files cannot be submitted."
-  - "Given the compact file-conversion layout stacks the workspace vertically, when the teacher opens `Filkonvertering`, then conversion format choices appear before local file upload because upload depends on the conversion route."
+  - "Given the compact file-conversion layout stacks the workspace vertically, when source-format inference is available, then the source/file picker appears before conversion controls so the teacher can start with the file."
   - "Given any previewable PDF output is selected, when the preview loads or the pane resizes, then the preview automatically fits the available pane until the teacher manually zooms."
   - "Given the teacher inspects a PDF preview, when using zoom in, zoom out, fit-to-view, or touch pinch gestures, then the preview scale changes through working controls using shared icon/control semantics and without layout drift across desktop, tablet, and compact widths."
 ---
@@ -99,8 +99,8 @@ PII.
    when replacement selections are unsupported or mixed.
 7. Add a source-list remove action for local uploads so the visible source list
    and submit payload stay aligned.
-8. On compact file-conversion layouts, order conversion controls before source
-   upload because upload depends on the selected conversion route.
+8. On compact file-conversion layouts, keep source upload before conversion
+   controls because local picker selection now infers the source format.
 9. Add a document-preview zoom primitive or component that reuses the existing
    zoom/fit icon semantics and the established fit/manual-zoom/pinch model
    without coupling Document Converter to room-builder domain semantics.

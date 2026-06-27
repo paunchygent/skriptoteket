@@ -495,11 +495,11 @@
     overflow: visible;
   }
 
-  .dc-workbench--single-file .dc-controls {
+  .dc-workbench--single-file .dc-rail {
     order: 1;
   }
 
-  .dc-workbench--single-file .dc-rail {
+  .dc-workbench--single-file .dc-controls {
     order: 2;
   }
 

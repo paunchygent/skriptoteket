@@ -127,7 +127,7 @@ def assert_document_converter_single_file_compact_route(
     expect(preview_column.get_by_test_id("document-converter-pdf-frame")).to_be_visible()
 
     return {
-        "compact_controls_before_source_upload": True,
+        "compact_source_upload_before_controls": True,
         "single_file_accept": accept_value,
         "single_file_html_conversion_previewed": True,
         "single_file_mode_leak_absent_after_project_switch": True,
@@ -141,9 +141,9 @@ def _assert_compact_order(*, source_column: Locator, operations_column: Locator)
     operations_box = operations_column.bounding_box()
     if source_box is None or operations_box is None:
         raise AssertionError("Could not resolve Document Converter compact column geometry.")
-    if operations_box["y"] >= source_box["y"]:
+    if source_box["y"] >= operations_box["y"]:
         raise AssertionError(
-            "Document Converter compact file conversion controls are not before upload."
+            "Document Converter compact file upload is not before conversion controls."
         )
 
 
