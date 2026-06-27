@@ -134,6 +134,24 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md`
 - Shared-auth local proof path cleanup:
   `docs/backlog/prs/pr-0389-st-37-04-shared-auth-local-proof-path-cleanup.md`
+- Cross-app save/export file naming protocol story:
+  `docs/backlog/stories/story-37-05-cross-app-save-export-file-naming-protocol.md`
+- File naming, save, and export protocol reference:
+  `docs/reference/ref-file-naming-save-export-protocol-v1.md`
+- File naming/save/export protocol PR slice:
+  `docs/backlog/prs/pr-0390-st-37-05-file-naming-save-export-protocol-reference.md`
+- Shared save/export naming backend contract PR slice:
+  `docs/backlog/prs/pr-0391-st-37-05-shared-save-export-naming-backend-contract.md`
+- Shared filename editing UI primitives PR slice:
+  `docs/backlog/prs/pr-0392-st-37-05-shared-filename-editing-ui-primitives.md`
+- Mina filer rename and extension contract PR slice:
+  `docs/backlog/prs/pr-0393-st-37-05-mina-filer-rename-and-extension-contract.md`
+- Audio Transcription export naming adoption PR slice:
+  `docs/backlog/prs/pr-0394-st-37-05-audio-transcription-export-naming-adoption.md`
+- Exam Converter export naming adoption PR slice:
+  `docs/backlog/prs/pr-0395-st-37-05-exam-converter-export-naming-adoption.md`
+- Document Converter save/export naming adoption PR slice:
+  `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

@@ -8,10 +8,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-26.
+- Date: 2026-06-27.
 - Branch: `main`.
-- Latest closed work: `PR-0388`.
-- Active worktree slice: `PR-0389` shared-auth local proof path cleanup. Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Latest closed work: `PR-0385`.
+- Active worktree slice: `ST-37-05` / `PR-0390` cross-app save/export filename-protocol follow-up; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
 - `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
@@ -95,16 +95,15 @@ Keep this file updated so the next session can pick up work quickly.
   authenticated Vue route before generic `/apps/:appId`, the home card links to
   it, and the dedicated UI consumes scoped project-preview endpoints with
   locked Swedish copy and only `separate_pdfs` / `combined_pdf`.
-- `PR-0386` is done and approved by `REV-PR-0386`: Audio Transcription command
-  buttons now use neutral compact token surfaces while selector state remains explicit.
-- `PR-0387` is done and approved by `REV-PR-0387`; `PR-0388` is approved by
-  `REV-PR-0388`. WeasyPrint `69.0` is locked, the `web` image was rebuilt with
-  BuildKit, and the live Grid-heavy proof succeeds through the approved
-  best-effort path: native Grid first, app-owned compatibility retry only
-  after WeasyPrint's internal Grid `AssertionError`.
-- `PR-0389` is implemented in the current worktree: active Skriptoteket local
-  shared-auth proof surfaces now use only `local-shared-verify-export.json`;
-  the PR-0254 proof script rejects unsupported HuleEdu subject-export names.
+- `PR-0386` is done and approved by `REV-PR-0386`; `PR-0387` is done and approved by `REV-PR-0387`; `PR-0388` is approved by `REV-PR-0388`. WeasyPrint `69.0` is locked, the `web` image was rebuilt with BuildKit, and the live Grid-heavy proof succeeds through the approved best-effort path: native Grid first, app-owned compatibility retry only after WeasyPrint's internal Grid `AssertionError`.
+- `PR-0385` is in correction after product review: the saved-file backend boundary
+  remains owner-scoped/server-authoritative, but the visible history rail and
+  inner `Arbetssätt` selector are removed; mode selection is now tabs above the
+  workspace, the file lane is `Filkonvertering`, current-result state is private
+  route continuity, and local uploads can be ordered batches up to 10 files.
+  Multi-source `Mina filer` batches and combined general file-conversion output
+  remain deferred until backend contracts exist. See
+  `docs/backlog/reviews/review-pr-0385-document-converter-files-and-history-follow-up.md`.
 ## Verification
 - Current retained proof regeneration is green for the scoped best-effort
   preview contract:
@@ -123,12 +122,10 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0365 / PR-0372 retained browser proof and screenshots are recorded in
   their PR/review docs and artifact directories; keep the Docker-service proof
   lane intact for authenticated surfaces.
-  - PR-0368/PR-0374 detailed red/green/live proof history is compacted to
-    `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
-  - PR-0376 through PR-0378 proof-lane details are retained in their PR/review
-    docs and `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
-  - Older PR-0379 through PR-0386 verification details are compacted to
-    `.codex/long-term-memory/entries/session-2026-06-26-pr-0388-handoff-compaction.md`.
+  - PR-0368/PR-0378 detailed proof history is compacted to `.codex/long-term-memory/entries/session-2026-06-23-st-37-04-handoff-compaction.md`.
+  - Older PR-0379 through PR-0386 verification details are compacted to `.codex/long-term-memory/entries/session-2026-06-26-pr-0388-handoff-compaction.md`.
+  - `PR-0385` pre-correction focused local proof was green. Correction proof now includes Document Converter Vitest with `DocumentConverterProjectResult.spec.ts`, `DocumentConverterSingleFileView.spec.ts`, and `documentConverterFileApi.spec.ts`; rerun backend/API, build, docs/handoff, and final diff gates before marking complete.
+  - `PR-0385` live authenticated proof is green after A2 title-row mode selector correction; `pdm run run-local-pdm auth-integration check` passed in HuleEdu and `pdm run python -m scripts.authenticated_home_work_apps --timeout-seconds 90` passed with `.artifacts/authenticated-home-work-apps/20260627T014512Z/manifest.redacted.json`.
   - PR-0388 focused backend proof is green locally and was rerun during retained
     re-review:
     `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib /opt/homebrew/bin/pdm run test tests/unit/application/curated_apps/test_document_converter_project_manifest.py tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_renderer_best_effort.py`
@@ -194,6 +191,6 @@ git diff --check
   monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next governed step: plan `PR-0385` if durable saved-file/history behavior should come next.
+- Next governed step: use `ST-37-05` / `PR-0390` as the cross-app save/export filename-protocol follow-up.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

@@ -127,6 +127,10 @@ from skriptoteket.application.curated_apps.handlers.document_converter_project_p
     RenderDocumentConverterProjectPreviewHandler,
     SaveDocumentConverterProjectPreviewArtifactHandler,
 )
+from skriptoteket.application.curated_apps.handlers.document_converter_saved_sources import (
+    ListDocumentConverterSavedFilesHandler,
+    SubmitDocumentConverterSavedFileHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
     RevertExamConverterCorrectionIntentHandler,
@@ -1752,6 +1756,34 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_document_converter_saved_files_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ListDocumentConverterSavedFilesHandler:
+        return ListDocumentConverterSavedFilesHandler(
+            vault_files=vault_files,
+            vault_storage=vault_storage,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def submit_document_converter_saved_file_handler(
+        self,
+        create_jobs: CreateDocumentConverterJobsHandler,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> SubmitDocumentConverterSavedFileHandler:
+        return SubmitDocumentConverterSavedFileHandler(
+            create_jobs=create_jobs,
+            vault_files=vault_files,
+            vault_storage=vault_storage,
+            uow=uow,
         )
 
     @provide(scope=Scope.REQUEST)

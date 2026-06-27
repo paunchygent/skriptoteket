@@ -1226,6 +1226,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/document-converter/saved-files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Document Converter Saved Files
+         * @description Return compatible owner-scoped Mina filer sources.
+         */
+        get: operations["list_document_converter_saved_files_api_v1_apps_documents_conversion_hub_document_converter_saved_files_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/document-converter/saved-files/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit Document Converter Saved File Job
+         * @description Start one Document Converter job from an owner-scoped saved file ref.
+         */
+        post: operations["submit_document_converter_saved_file_job_api_v1_apps_documents_conversion_hub_document_converter_saved_files_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save": {
         parameters: {
             query?: never;
@@ -3344,6 +3384,18 @@ export interface components {
          */
         ClassroomSelectionMode: "optional" | "required";
         /**
+         * ConversionHubJobSpecV2
+         * @description Conversion Hub job spec (a constrained mirror of Sir Convert-a-Lot v2 JobSpecV2).
+         *
+         *     This is the payload the SPA submits as JSON (embedded in multipart for file uploads).
+         *     The backend turns it into a v2 JobSpec dict to submit to Sir Convert-a-Lot.
+         */
+        ConversionHubJobSpecV2: {
+            output_format: components["schemas"]["ConversionHubOutputFormatV2"];
+            pdf_layout?: components["schemas"]["ConversionHubPdfLayoutV2"] | null;
+            source_format: components["schemas"]["ConversionHubSourceFormatV2"];
+        };
+        /**
          * ConversionHubJobStatus
          * @description Normalize the locally owned Conversion Hub job lifecycle.
          * @enum {string}
@@ -3371,6 +3423,33 @@ export interface components {
          * @enum {string}
          */
         ConversionHubOutputFormatV2: "md" | "pdf" | "docx" | "examnet_bundle" | "transcript_bundle";
+        /**
+         * ConversionHubPdfLayoutV2
+         * @description Typed PDF layout presets (mirrors Sir Convert-a-Lot v2 `conversion.pdf_layout`).
+         */
+        ConversionHubPdfLayoutV2: {
+            /**
+             * Margins Mm
+             * @default 12
+             */
+            margins_mm: number;
+            /** @default portrait */
+            orientation: components["schemas"]["ConversionHubPdfOrientationV2"];
+            /** @default a4 */
+            paper_size: components["schemas"]["ConversionHubPdfPaperSizeV2"];
+        };
+        /**
+         * ConversionHubPdfOrientationV2
+         * @description Supported PDF orientations for v2 PDF outputs (mirrored).
+         * @enum {string}
+         */
+        ConversionHubPdfOrientationV2: "portrait" | "landscape";
+        /**
+         * ConversionHubPdfPaperSizeV2
+         * @description Supported PDF paper sizes for v2 PDF outputs (mirrored).
+         * @enum {string}
+         */
+        ConversionHubPdfPaperSizeV2: "a5" | "a4" | "a3";
         /**
          * ConversionHubRouteV2
          * @description One supported conversion route.
@@ -3953,6 +4032,28 @@ export interface components {
             size_bytes?: number | null;
             /** Source Artifact Id */
             source_artifact_id: string;
+        };
+        /**
+         * DocumentConverterSavedFileOption
+         * @description Describe one compatible Mina filer source for Document Converter.
+         */
+        DocumentConverterSavedFileOption: {
+            /** Bytes */
+            bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+            /** Name */
+            name: string;
+            ref: components["schemas"]["skriptoteket__domain__scripting__file_refs__FileRef__1"];
+            source_format: components["schemas"]["ConversionHubSourceFormatV2"];
         };
         /**
          * DocumentConverterSubmitResult
@@ -4632,7 +4733,7 @@ export interface components {
             /** Title */
             title: string;
         };
-        FileRef: string;
+        "FileRef-Input": string;
         /** FileRefInfo */
         FileRefInfo: {
             /** Bytes */
@@ -5143,6 +5244,14 @@ export interface components {
             /** Categories */
             categories: components["schemas"]["CategoryItem"][];
             profession: components["schemas"]["ProfessionItem"];
+        };
+        /**
+         * ListDocumentConverterSavedFilesResult
+         * @description Return owner-scoped compatible Mina filer sources.
+         */
+        ListDocumentConverterSavedFilesResult: {
+            /** Files */
+            files?: components["schemas"]["DocumentConverterSavedFileOption"][];
         };
         /** ListFavoritesResponse */
         ListFavoritesResponse: {
@@ -7357,6 +7466,19 @@ export interface components {
             /** Student Id */
             student_id: string;
         };
+        /**
+         * SubmitDocumentConverterSavedFileRequest
+         * @description Submit one owner-scoped Mina filer source without browser re-upload.
+         */
+        SubmitDocumentConverterSavedFileRequest: {
+            job_spec: components["schemas"]["ConversionHubJobSpecV2"];
+            source_ref: components["schemas"]["FileRef-Input"];
+            /**
+             * Wait Seconds
+             * @default 0
+             */
+            wait_seconds: number;
+        };
         /** SubmitReviewRequest */
         SubmitReviewRequest: {
             /** Review Note */
@@ -8199,7 +8321,7 @@ export interface components {
             is_missing_on_disk: boolean;
             /** Name */
             name: string;
-            ref: components["schemas"]["FileRef"];
+            ref: components["schemas"]["skriptoteket__domain__scripting__file_refs__FileRef__2"];
             /** Source Label */
             source_label?: string | null;
         };
@@ -8242,6 +8364,8 @@ export interface components {
              */
             version_id: string;
         };
+        skriptoteket__domain__scripting__file_refs__FileRef__1: string;
+        skriptoteket__domain__scripting__file_refs__FileRef__2: string;
     };
     responses: never;
     parameters: never;
@@ -10746,6 +10870,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversionHubListRoutesResult"];
+                };
+            };
+        };
+    };
+    list_document_converter_saved_files_api_v1_apps_documents_conversion_hub_document_converter_saved_files_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListDocumentConverterSavedFilesResult"];
+                };
+            };
+        };
+    };
+    submit_document_converter_saved_file_job_api_v1_apps_documents_conversion_hub_document_converter_saved_files_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitDocumentConverterSavedFileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentConverterSubmitResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

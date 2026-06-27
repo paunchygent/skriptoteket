@@ -58,6 +58,7 @@ dependencies:
 - [ST-37-02: Current product lane and Sir Convert boundary reset](../stories/story-37-02-current-product-lane-and-sir-convert-boundary-reset.md)
 - [ST-37-03: Service shell and dashboard UX realignment](../stories/story-37-03-service-shell-and-dashboard-ux-realignment.md)
 - [ST-37-04: App presentation decomposition and naming reset](../stories/story-37-04-app-presentation-decomposition-and-naming-reset.md)
+- [ST-37-05: Cross-app save/export file naming protocol](../stories/story-37-05-cross-app-save-export-file-naming-protocol.md)
 
 ## Risks
 
@@ -193,3 +194,7 @@ onward plus the ST-37-04 follow-up slices.
   route now has automatic PDF preview, no implementation-detail state copy, and
   best-effort support for ordinary grid-heavy teacher HTML/CSS before
   files/history work proceeds.
+- `ST-37-05` is now planned as a separate follow-up from `PR-0385`. It owns the
+  cross-app save/export file naming protocol, editable filename stems,
+  extension ownership, `Mina filer` rename behavior, and app-specific adoption
+  sequence through `PR-0390` through `PR-0396`.

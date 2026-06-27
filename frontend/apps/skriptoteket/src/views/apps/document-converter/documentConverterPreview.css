@@ -33,6 +33,8 @@
   max-width: 100%;
   margin: 0;
   overflow: hidden;
+  font-family: var(--huleedu-font-sans);
+  font-weight: var(--huleedu-font-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -107,14 +109,6 @@
   background: white;
 }
 
-.dc-preview-meta h2 {
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .dc-preview-footer {
   min-height: 3.6rem;
   display: grid;
@@ -126,10 +120,38 @@
   background: var(--color-panel-muted);
 }
 
-.dc-preview-meta {
+.dc-action-error,
+.dc-result-format {
   min-width: 0;
   display: flex;
   align-items: center;
+  margin: 0;
+  font-family: var(--huleedu-font-sans);
+  font-size: 0.82rem;
+  font-weight: var(--huleedu-font-semibold);
+}
+
+.dc-action-error {
+  color: var(--color-error);
+}
+
+.dc-result-format {
+  color: color-mix(in srgb, var(--color-navy) 72%, transparent);
+}
+
+.dc-result-empty {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.dc-result-empty strong {
+  font-family: var(--huleedu-font-sans);
+  font-size: 0.92rem;
+  font-weight: var(--huleedu-font-extrabold);
 }
 
 @media (max-width: 72rem) {

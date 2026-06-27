@@ -12,13 +12,14 @@
  *   - Keeps backend identifiers inside action parameters, not visible UI copy.
  */
 
-import { computed, onScopeDispose, ref, watch } from "vue";
+import { computed, nextTick, onScopeDispose, ref, watch } from "vue";
 
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 import {
   downloadDocumentConverterProjectPreviewArtifact,
   loadDocumentConverterProjectPreviewArtifactBlob,
   renderDocumentConverterProjectPreview,
+  type RenderDocumentConverterProjectPreviewParams,
   saveDocumentConverterProjectPreviewArtifact,
   type DocumentConverterProjectOutputMode,
   type DocumentConverterProjectPaperSize,
@@ -40,6 +41,27 @@ const PROJECT_FILE_CAPS = {
   images: 20,
 } as const;
 
+export type DocumentConverterProjectPreviewRequest = RenderDocumentConverterProjectPreviewParams;
+
+export type DocumentConverterProjectPreviewOutcome =
+  | {
+      type: "ready";
+      entryId: string;
+      filename: string;
+      preview: DocumentConverterProjectPreviewResult;
+      artifact: DocumentConverterProjectPreviewArtifact;
+      previewBlob: Blob;
+      previewContentType: string | null;
+      request: DocumentConverterProjectPreviewRequest;
+    }
+  | {
+      type: "failed";
+      entryId: string;
+      errorMessage: string;
+      filename: string;
+      request: DocumentConverterProjectPreviewRequest;
+    };
+
 export function useDocumentConverterProjectPreview() {
   const files = ref<File[]>([]);
   const outputMode = ref<DocumentConverterProjectOutputMode>("separate_pdfs");
@@ -50,6 +72,7 @@ export function useDocumentConverterProjectPreview() {
   const selectedArtifactId = ref<string | null>(null);
   const previewPdfUrl = ref<string | null>(null);
   const previewPdfArtifactId = ref<string | null>(null);
+  const activePreviewEntryId = ref<string | null>(null);
   const isPreviewRunning = ref(false);
   const isArtifactPreviewLoading = ref(false);
   const isDownloading = ref(false);
@@ -57,6 +80,7 @@ export function useDocumentConverterProjectPreview() {
   const errorMessage = ref<string | null>(null);
   const canRetryPreview = ref(false);
   const latestSuccessfulSelectionKey = ref<string | null>(null);
+  const latestOutcome = ref<DocumentConverterProjectPreviewOutcome | null>(null);
 
   let autoPreviewTimeout: number | null = null;
   let previewRequestSequence = 0;
@@ -106,6 +130,14 @@ export function useDocumentConverterProjectPreview() {
         currentSelectionKey.value &&
         latestSuccessfulSelectionKey.value === currentSelectionKey.value &&
         !isPreviewRunning.value &&
+        !isArtifactPreviewLoading.value,
+    );
+  });
+  const canUseSelectedArtifact = computed(() => {
+    return Boolean(
+      selectedArtifact.value &&
+        previewPdfUrl.value &&
+        previewPdfArtifactId.value === selectedArtifact.value.artifact_id &&
         !isArtifactPreviewLoading.value,
     );
   });
@@ -197,7 +229,7 @@ export function useDocumentConverterProjectPreview() {
     acceptProjectFiles(Array.from(event.dataTransfer?.files ?? []));
   }
 
-  function renderParams() {
+  function renderParams(): DocumentConverterProjectPreviewRequest | null {
     if (!selectedHtmlFile.value) {
       return null;
     }
@@ -243,11 +275,29 @@ export function useDocumentConverterProjectPreview() {
       previewPdfArtifactId.value = defaultArtifact.artifact_id;
       replacePreviewPdfUrl(URL.createObjectURL(response.blob));
       latestSuccessfulSelectionKey.value = selectionKey;
+      latestOutcome.value = {
+        type: "ready",
+        entryId: `project-preview:${result.preview_id}`,
+        filename: defaultArtifact.filename,
+        preview: result,
+        artifact: defaultArtifact,
+        previewBlob: response.blob,
+        previewContentType: response.contentType,
+        request: params,
+      };
+      activePreviewEntryId.value = latestOutcome.value.entryId;
       setMessage(null);
     } catch {
       if (requestId !== previewRequestSequence) {
         return;
       }
+      latestOutcome.value = {
+        type: "failed",
+        entryId: `project-preview:failed:${selectionKey}:${Date.now()}`,
+        errorMessage: PREVIEW_FAILURE_MESSAGE,
+        filename: selectedHtmlFile.value?.name ?? "HTML/CSS",
+        request: params,
+      };
       setMessage(PREVIEW_FAILURE_MESSAGE, { retryable: true });
     } finally {
       if (requestId === previewRequestSequence) {
@@ -263,8 +313,24 @@ export function useDocumentConverterProjectPreview() {
     await refreshPreview(currentSelectionKey.value);
   }
 
+  async function retryRequest(request: DocumentConverterProjectPreviewRequest): Promise<void> {
+    files.value = [...request.files];
+    outputMode.value = request.outputMode;
+    paperSize.value = request.paperSize;
+    templateId.value = request.templateId;
+    selectedHtmlFilename.value = request.htmlEntryFilename;
+    await nextTick();
+    if (autoPreviewTimeout !== null) {
+      window.clearTimeout(autoPreviewTimeout);
+      autoPreviewTimeout = null;
+    }
+    if (currentSelectionKey.value) {
+      await refreshPreview(currentSelectionKey.value);
+    }
+  }
+
   async function downloadSelectedArtifact(): Promise<void> {
-    if (!preview.value || !selectedArtifact.value || !isCurrentPreviewReady.value) {
+    if (!preview.value || !selectedArtifact.value || !canUseSelectedArtifact.value) {
       return;
     }
     isDownloading.value = true;
@@ -283,7 +349,7 @@ export function useDocumentConverterProjectPreview() {
   }
 
   async function saveSelectedArtifact(): Promise<void> {
-    if (!preview.value || !selectedArtifact.value || !isCurrentPreviewReady.value) {
+    if (!preview.value || !selectedArtifact.value || !canUseSelectedArtifact.value) {
       return;
     }
     isSaving.value = true;
@@ -395,9 +461,11 @@ export function useDocumentConverterProjectPreview() {
 
   return {
     canRetryPreview,
+    canUseSelectedArtifact,
     downloadSelectedArtifact,
     errorMessage,
     fileSummary,
+    activePreviewEntryId,
     isCurrentPreviewReady,
     isDownloading,
     isPreviewRunning,
@@ -408,7 +476,9 @@ export function useDocumentConverterProjectPreview() {
     paperSize,
     preview,
     previewPdfUrl,
+    latestOutcome,
     retryPreview,
+    retryRequest,
     saveSelectedArtifact,
     selectArtifact,
     selectOutputMode,

@@ -3,40 +3,47 @@
  * Route-visible Document Converter workspace.
  *
  * Domain purpose:
- *   Let authenticated teachers build a small HTML/CSS project preview and
- *   save or download the resulting PDF through Skriptoteket-owned endpoints.
+ *   Let authenticated teachers switch between HTML/CSS project previews and
+ *   owner-scoped file conversions while keeping the current usable result
+ *   easy to download, save, or retry.
  *
  * Relationships:
  *   - Mounted by the authenticated `/apps/document-converter` route.
- *   - Uses route-local preview state and API modules.
- *   - Uses canonical icon wrappers from `src/components/icons`.
+ *   - Uses route-local project-preview, single-file, and session-history
+ *     composables.
  */
-
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import {
-  IconCode,
   IconCombinePdf,
-  IconDownload,
-  IconFileText,
-  IconImageAsset,
   IconRefresh,
   IconSeparatePdfs,
-  IconVaultFiles,
 } from "../../../components/icons";
 import {
-  UiSegmentedTileToggle,
   UiSegmentedToggle,
   type UiSegmentedTileToggleOption,
   type UiSegmentedToggleOption,
+  UiSegmentedTileToggle,
 } from "../../../components/ui";
-import type {
-  DocumentConverterProjectOutputMode,
-  DocumentConverterProjectPaperSize,
+import DocumentConverterResultPanel from "./DocumentConverterResultPanel.vue";
+import DocumentConverterSourcePanel from "./DocumentConverterSourcePanel.vue";
+import DocumentConverterSingleFileControls from "./DocumentConverterSingleFileControls.vue";
+import {
+  type DocumentConverterProjectOutputMode,
+  type DocumentConverterProjectPaperSize,
 } from "./documentConverterProjectPreviewApi";
 import "./documentConverterWorkspace.css";
 import "./documentConverterPreview.css";
 import { useDocumentConverterProjectPreview } from "./useDocumentConverterProjectPreview";
+import { useDocumentConverterHistoryBridge } from "./useDocumentConverterHistoryBridge";
+import { useDocumentConverterSessionHistory } from "./useDocumentConverterSessionHistory";
+import {
+  useDocumentConverterSingleFile,
+  type DocumentConverterSingleFileOutput,
+  type DocumentConverterSingleFileSource,
+} from "./useDocumentConverterSingleFile";
+
+type DocumentConverterWorkspaceMode = "project_preview" | "single_file";
 
 type DocumentConverterOutputChoice = UiSegmentedTileToggleOption & {
   value: DocumentConverterProjectOutputMode;
@@ -45,6 +52,24 @@ type DocumentConverterOutputChoice = UiSegmentedTileToggleOption & {
 type DocumentConverterPaperChoice = UiSegmentedToggleOption & {
   value: DocumentConverterProjectPaperSize;
 };
+
+type DocumentConverterSingleFileChoice = UiSegmentedToggleOption & {
+  value: DocumentConverterSingleFileSource;
+};
+
+type DocumentConverterSingleFileOutputChoice = UiSegmentedToggleOption & {
+  value: DocumentConverterSingleFileOutput;
+};
+
+const workspaceModeOptions: { label: string; value: DocumentConverterWorkspaceMode; dataTest: string }[] = [
+  { label: "HTML/CSS-projekt", value: "project_preview", dataTest: "document-converter-mode-project" },
+  { label: "Filkonvertering", value: "single_file", dataTest: "document-converter-mode-single" },
+];
+
+const singleFileOriginOptions: UiSegmentedToggleOption[] = [
+  { label: "Lokal fil", value: "upload", dataTest: "document-converter-origin-upload" },
+  { label: "Mina filer", value: "saved_file", dataTest: "document-converter-origin-saved" },
+];
 
 const outputChoices: DocumentConverterOutputChoice[] = [
   {
@@ -69,38 +94,219 @@ const paperChoices: DocumentConverterPaperChoice[] = [
   { label: "A5", value: "a5", dataTest: "document-converter-paper-a5" },
 ];
 
-const {
-  canRetryPreview,
-  downloadSelectedArtifact,
-  errorMessage,
-  fileSummary,
-  isCurrentPreviewReady,
-  isDownloading,
-  isPreviewRunning,
-  isSaving,
-  onFilesDropped,
-  onFilesSelected,
-  outputMode,
-  paperSize,
-  preview,
-  previewPdfUrl,
-  retryPreview,
-  saveSelectedArtifact,
-  selectArtifact,
-  selectOutputMode,
-  selectPaperSize,
-  selectedArtifact,
-  selectedFileLabel,
-  selectedHtmlFile,
-  selectedHtmlFilename,
-  statusMessage,
-  totalProjectFiles,
-} = useDocumentConverterProjectPreview();
+const sourceLabelMap: Record<DocumentConverterSingleFileSource, string> = {
+  docx: "DOCX",
+  html: "HTML",
+  md: "Markdown",
+  pdf: "PDF",
+};
 
-const fileInputElement = ref<HTMLInputElement | null>(null);
+const outputLabelMap: Record<DocumentConverterSingleFileOutput, string> = {
+  docx: "DOCX",
+  md: "Markdown",
+  pdf: "PDF",
+};
 
-function openFilePicker(): void {
-  fileInputElement.value?.click();
+const workspaceMode = ref<DocumentConverterWorkspaceMode>("project_preview");
+const projectFileInputElement = ref<HTMLInputElement | null>(null);
+
+const project = useDocumentConverterProjectPreview();
+const singleFile = useDocumentConverterSingleFile();
+const history = useDocumentConverterSessionHistory();
+
+useDocumentConverterHistoryBridge({
+  workspaceMode,
+  project,
+  singleFile,
+  history,
+});
+
+const singleFileSourceOptions = computed<DocumentConverterSingleFileChoice[]>(() => {
+  return singleFile.availableSourceFormats.value.map((value) => ({
+    label: sourceLabelMap[value],
+    value,
+    dataTest: `document-converter-source-${value}`,
+  }));
+});
+
+const singleFileOutputOptions = computed<DocumentConverterSingleFileOutputChoice[]>(() => {
+  return singleFile.availableOutputFormats.value.map((value) => ({
+    label: outputLabelMap[value],
+    value,
+    dataTest: `document-converter-output-${value}`,
+  }));
+});
+const singleFileFormatSummary = computed(() => `${sourceLabelMap[singleFile.selectedSourceFormat.value]} till ${outputLabelMap[singleFile.selectedOutputFormat.value]}`);
+
+const mobileSummaryTitle = computed(() => {
+  if (workspaceMode.value === "project_preview") {
+    return project.selectedFileLabel();
+  }
+  return singleFile.selectedSourceName.value;
+});
+
+const mobileSummaryDetails = computed(() => {
+  if (workspaceMode.value === "project_preview") {
+    return [
+      `${project.totalProjectFiles.value} filer`,
+      `${project.fileSummary.value.html.length} HTML`,
+      `${project.fileSummary.value.css.length} CSS`,
+      `${project.fileSummary.value.images.length} bilder`,
+    ];
+  }
+  return [
+    singleFile.sourceMode.value === "upload" ? "Lokal fil" : "Mina filer",
+    sourceLabelMap[singleFile.selectedSourceFormat.value],
+    outputLabelMap[singleFile.selectedOutputFormat.value],
+  ];
+});
+
+const feedbackMessage = computed(() => {
+  if (workspaceMode.value === "project_preview") {
+    return project.statusMessage.value ?? project.errorMessage.value;
+  }
+  return singleFile.statusMessage.value ?? singleFile.errorMessage.value;
+});
+
+const feedbackIsError = computed(() => {
+  if (workspaceMode.value === "project_preview") {
+    return Boolean(project.errorMessage.value);
+  }
+  return Boolean(singleFile.errorMessage.value);
+});
+
+const canRetryCurrentMode = computed(() => {
+  if (workspaceMode.value === "project_preview") {
+    return project.canRetryPreview.value;
+  }
+  return history.activeEntry.value?.status === "failed" && history.canRetryActiveEntry.value;
+});
+
+const isLiveProjectResultSelected = computed(() => {
+  return (
+    workspaceMode.value === "project_preview" &&
+    history.activeEntry.value?.id === project.activePreviewEntryId.value &&
+    project.preview.value !== null
+  );
+});
+const resultTitle = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.selectedArtifact.value?.filename ?? project.selectedFileLabel();
+  }
+  return history.activeArtifactFilename.value ?? history.activeEntry.value?.filename ?? "Resultat";
+});
+const resultStateLabel = computed(() => {
+  const entry = history.activeEntry.value;
+  if (!entry) {
+    return workspaceMode.value === "single_file"
+      ? "Välj en fil som du vill konvertera."
+      : "Lägg till HTML, CSS och bilder.";
+  }
+  if (entry.status === "failed") {
+    return entry.errorMessage ?? "Resultatet gick inte att skapa.";
+  }
+  if (isLiveProjectResultSelected.value ? project.previewPdfUrl.value : history.activePreviewUrl.value) {
+    return `${entry.resultTypeLabel} klart för granskning.`;
+  }
+  return `${entry.resultTypeLabel} klart att ladda ned eller spara.`;
+});
+const resultPreviewUrl = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.previewPdfUrl.value;
+  }
+  return history.activePreviewUrl.value;
+});
+const resultSourceLabel = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return "HTML/CSS-projekt";
+  }
+  return history.activeEntry.value?.sourceLabel ?? null;
+});
+const resultTypeLabel = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return "PDF";
+  }
+  return history.activeEntry.value?.resultTypeLabel ?? null;
+});
+const resultArtifactOptions = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return (project.preview.value?.artifacts ?? []).map((artifact) => ({
+      artifactId: artifact.artifact_id,
+      filename: artifact.filename,
+    }));
+  }
+  return history.artifactOptions.value;
+});
+const resultActiveArtifactId = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.selectedArtifact.value?.artifact_id ?? null;
+  }
+  return history.activeArtifactId.value;
+});
+const canDownloadResult = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.canUseSelectedArtifact.value;
+  }
+  return history.canDownloadActiveEntry.value;
+});
+const canSaveResult = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.canUseSelectedArtifact.value;
+  }
+  return history.canSaveActiveEntry.value;
+});
+const isDownloadingResult = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.isDownloading.value;
+  }
+  return history.isDownloading.value;
+});
+const isSavingResult = computed(() => {
+  if (isLiveProjectResultSelected.value) {
+    return project.isSaving.value;
+  }
+  return history.isSaving.value;
+});
+
+function openProjectFilePicker(): void {
+  projectFileInputElement.value?.click();
+}
+
+async function startSingleFileConversion(): Promise<void> {
+  await singleFile.submitCurrentSelection();
+}
+
+async function downloadResult(): Promise<void> {
+  if (isLiveProjectResultSelected.value) {
+    await project.downloadSelectedArtifact();
+    return;
+  }
+  await history.downloadActiveEntry();
+}
+
+async function retryCurrentMode(): Promise<void> {
+  if (workspaceMode.value === "project_preview") {
+    await project.retryPreview();
+    return;
+  }
+  await history.retryActiveEntry();
+}
+
+async function saveResult(): Promise<void> {
+  if (isLiveProjectResultSelected.value) {
+    await project.saveSelectedArtifact();
+    await singleFile.loadSources();
+    return;
+  }
+  await history.saveActiveEntry();
+}
+
+async function selectResultArtifact(artifactId: string): Promise<void> {
+  if (isLiveProjectResultSelected.value) {
+    project.selectArtifact(artifactId);
+    return;
+  }
+  await history.selectActiveArtifact(artifactId);
 }
 </script>
 
@@ -111,6 +317,25 @@ function openFilePicker(): void {
   >
     <header class="dc-topbar">
       <h1>DOKUMENTKONVERTERARE</h1>
+      <nav
+        class="dc-mode-tabs"
+        role="tablist"
+        aria-label="Välj arbetsyta"
+      >
+        <button
+          v-for="option in workspaceModeOptions"
+          :key="option.value"
+          type="button"
+          role="tab"
+          class="dc-mode-tab"
+          :class="{ 'dc-mode-tab--active': workspaceMode === option.value }"
+          :aria-selected="workspaceMode === option.value"
+          :data-test="option.dataTest"
+          @click="workspaceMode = option.value"
+        >
+          {{ option.label }}
+        </button>
+      </nav>
     </header>
 
     <section
@@ -121,210 +346,153 @@ function openFilePicker(): void {
         class="dc-mobile-project"
         aria-label="Projektöversikt"
       >
-        <h1>{{ selectedFileLabel() }}</h1>
-        <span>{{ totalProjectFiles }} filer</span>
-        <span>{{ fileSummary.html.length }} HTML</span>
-        <span>{{ fileSummary.css.length }} CSS</span>
-        <span>{{ fileSummary.images.length }} bilder</span>
+        <h1>{{ mobileSummaryTitle }}</h1>
+        <span
+          v-for="detail in mobileSummaryDetails"
+          :key="detail"
+        >
+          {{ detail }}
+        </span>
       </div>
     </section>
 
     <section class="dc-workspace">
-      <aside
-        class="dc-rail"
-        aria-label="Projekt"
-      >
-        <section class="dc-assets">
-          <div class="dc-asset-heading">
-            <h2>HTML ({{ fileSummary.html.length }}/10)</h2>
-          </div>
-          <button
-            v-for="file in fileSummary.html"
-            :key="file.name"
-            class="dc-asset-row"
-            :class="{ 'dc-asset-row--active': file.name === selectedHtmlFile?.name }"
-            type="button"
-            @click="selectedHtmlFilename = file.name"
-          >
-            <IconFileText :size="16" />
-            {{ file.name }}
-          </button>
-
-          <div class="dc-asset-heading dc-asset-heading--spaced">
-            <h2>CSS ({{ fileSummary.css.length }}/10)</h2>
-          </div>
-          <div
-            v-for="file in fileSummary.css"
-            :key="file.name"
-            class="dc-asset-row dc-asset-row--static"
-          >
-            <IconCode :size="16" />
-            {{ file.name }}
-          </div>
-
-          <div class="dc-asset-heading dc-asset-heading--spaced">
-            <h2>Bilder ({{ fileSummary.images.length }}/20)</h2>
-          </div>
-          <div
-            v-for="file in fileSummary.images"
-            :key="file.name"
-            class="dc-asset-row dc-asset-row--static"
-          >
-            <IconImageAsset :size="16" />
-            {{ file.name }}
-          </div>
-        </section>
-      </aside>
+      <DocumentConverterSourcePanel
+        :workspace-mode="workspaceMode"
+        :project-css-files="project.fileSummary.value.css"
+        :project-html-files="project.fileSummary.value.html"
+        :project-image-files="project.fileSummary.value.images"
+        :project-selected-html-filename="project.selectedHtmlFile.value?.name ?? null"
+        :single-file-mode-label="singleFile.sourceMode.value === 'upload' ? 'Lokal fil' : 'Mina filer'"
+        :single-file-source-name="singleFile.selectedSourceName.value"
+        :single-file-upload-files="singleFile.selectedUploads.value"
+        @move-single-file-upload="singleFile.moveLocalUpload"
+        @select-project-html="project.selectedHtmlFilename.value = $event"
+      />
 
       <section
         class="dc-controls"
         aria-label="Val för export"
       >
-        <div class="dc-file-toolbar">
-          <div
-            data-testid="document-converter-dropzone"
-            class="dc-dropzone"
-            role="button"
-            tabindex="0"
-            @click="openFilePicker"
-            @keydown.enter.prevent="openFilePicker"
-            @keydown.space.prevent="openFilePicker"
-            @dragover.prevent
-            @drop="onFilesDropped"
-          >
-            <strong>Dra filer hit eller klicka</strong>
-            <span>HTML, CSS och bilder</span>
-          </div>
-          <input
-            ref="fileInputElement"
-            data-testid="document-converter-file-input"
-            class="dc-file-input"
-            type="file"
-            multiple
-            accept=".html,.htm,.css,.png,.jpg,.jpeg,.webp"
-            @change="onFilesSelected"
-          >
-        </div>
-
-        <section class="dc-control-section">
-          <div class="dc-field">
-            <span>Exportera som</span>
-            <UiSegmentedTileToggle
-              :model-value="outputMode"
-              :options="outputChoices"
-              aria-label="Exportera som"
-              @update:model-value="(value) => selectOutputMode(value as DocumentConverterProjectOutputMode)"
-            />
+        <template v-if="workspaceMode === 'project_preview'">
+          <div class="dc-file-toolbar">
+            <div
+              data-testid="document-converter-dropzone"
+              class="dc-dropzone"
+              role="button"
+              tabindex="0"
+              @click="openProjectFilePicker"
+              @keydown.enter.prevent="openProjectFilePicker"
+              @keydown.space.prevent="openProjectFilePicker"
+              @dragover.prevent
+              @drop="project.onFilesDropped"
+            >
+              <strong>Dra filer hit eller klicka</strong>
+              <span>HTML, CSS och bilder</span>
+            </div>
+            <input
+              ref="projectFileInputElement"
+              data-testid="document-converter-file-input"
+              class="dc-file-input"
+              type="file"
+              multiple
+              accept=".html,.htm,.css,.png,.jpg,.jpeg,.webp"
+              @change="project.onFilesSelected"
+            >
           </div>
 
-          <div class="dc-field">
-            <span>Format</span>
-            <UiSegmentedToggle
-              :model-value="paperSize"
-              :options="paperChoices"
-              aria-label="Format"
-              variant="subrail"
-              width="full"
-              :columns="3"
-              @update:model-value="(value) => selectPaperSize(value as DocumentConverterProjectPaperSize)"
-            />
-          </div>
-        </section>
+          <section class="dc-control-section">
+            <div class="dc-field">
+              <span>Exportera som</span>
+              <UiSegmentedTileToggle
+                :model-value="project.outputMode.value"
+                :options="outputChoices"
+                aria-label="Exportera som"
+                @update:model-value="(value) => project.selectOutputMode(value as DocumentConverterProjectOutputMode)"
+              />
+            </div>
+
+            <div class="dc-field">
+              <span>Format</span>
+              <UiSegmentedToggle
+                :model-value="project.paperSize.value"
+                :options="paperChoices"
+                aria-label="Format"
+                variant="subrail"
+                width="full"
+                :columns="3"
+                @update:model-value="(value) => project.selectPaperSize(value as DocumentConverterProjectPaperSize)"
+              />
+            </div>
+          </section>
+        </template>
+
+        <template v-else>
+          <DocumentConverterSingleFileControls
+            :selected-output-format="singleFile.selectedOutputFormat.value"
+            :selected-saved-file-ref="singleFile.selectedSavedFileRef.value"
+            :selected-source-accept="singleFile.selectedSourceAccept.value"
+            :selected-source-format="singleFile.selectedSourceFormat.value"
+            :selected-source-name="singleFile.selectedSourceName.value"
+            :selected-format-summary="singleFileFormatSummary"
+            :source-mode="singleFile.sourceMode.value"
+            :is-loading-sources="singleFile.isLoadingSources.value"
+            :is-submitting="singleFile.isSubmitting.value"
+            :output-options="singleFileOutputOptions"
+            :saved-files="singleFile.savedFiles.value"
+            :source-options="singleFileSourceOptions"
+            :source-mode-options="singleFileOriginOptions"
+            @select-files="singleFile.selectLocalUploads"
+            @select-output-format="singleFile.setOutputFormat"
+            @select-saved-file="singleFile.selectSavedFile"
+            @select-source-format="singleFile.setSourceFormat"
+            @select-source-mode="singleFile.setSourceMode"
+            @submit="startSingleFileConversion"
+          />
+        </template>
 
         <div
-          v-if="statusMessage || errorMessage"
+          v-if="feedbackMessage"
           class="dc-feedback-row"
         >
           <p
             class="dc-feedback"
-            :class="{ 'dc-feedback--error': errorMessage }"
+            :class="{ 'dc-feedback--error': feedbackIsError }"
           >
-            {{ statusMessage ?? errorMessage }}
+            {{ feedbackMessage }}
           </p>
           <button
-            v-if="canRetryPreview"
+            v-if="canRetryCurrentMode"
             data-testid="document-converter-retry"
             class="dc-icon-button"
             type="button"
             aria-label="Försök igen"
             title="Försök igen"
-            :disabled="isPreviewRunning"
-            @click="retryPreview"
+            :disabled="project.isPreviewRunning.value || singleFile.isSubmitting.value || history.isRetrying.value"
+            @click="retryCurrentMode"
           >
             <IconRefresh :size="16" />
           </button>
         </div>
       </section>
 
-      <section
-        class="dc-preview"
-        aria-label="Förhandsvisning"
-      >
-        <header class="dc-preview-header">
-          <h2>{{ selectedArtifact?.filename ?? selectedFileLabel() }}</h2>
-        </header>
-
-        <div class="dc-preview-body">
-          <aside
-            v-if="(preview?.artifacts.length ?? 0) > 1"
-            class="dc-artifact-list"
-            aria-label="PDF"
-          >
-            <button
-              v-for="artifact in preview?.artifacts ?? []"
-              :key="artifact.artifact_id"
-              class="dc-artifact-list__item"
-              :class="{ 'dc-artifact-list__item--active': artifact.artifact_id === selectedArtifact?.artifact_id }"
-              type="button"
-              @click="selectArtifact(artifact.artifact_id)"
-            >
-              <IconFileText :size="16" />
-              {{ artifact.filename }}
-            </button>
-          </aside>
-
-          <section
-            class="dc-artifact-result"
-            aria-label="PDF"
-          >
-            <iframe
-              v-if="previewPdfUrl"
-              data-testid="document-converter-pdf-frame"
-              class="dc-artifact-frame"
-              :src="previewPdfUrl"
-              :title="selectedArtifact?.filename ?? selectedFileLabel()"
-            />
-          </section>
-        </div>
-
-        <footer class="dc-preview-footer">
-          <div class="dc-preview-meta">
-            <h2>{{ selectedArtifact?.filename ?? selectedFileLabel() }}</h2>
-          </div>
-          <div class="dc-footer-actions">
-            <button
-              data-testid="document-converter-download"
-              class="dc-neutral-button"
-              type="button"
-              :disabled="!isCurrentPreviewReady || isDownloading"
-              @click="downloadSelectedArtifact"
-            >
-              <IconDownload :size="16" />
-              Ladda ned
-            </button>
-            <button
-              data-testid="document-converter-save"
-              class="dc-neutral-button"
-              type="button"
-              :disabled="!isCurrentPreviewReady || isSaving"
-              @click="saveSelectedArtifact"
-            >
-              <IconVaultFiles :size="16" />
-              Spara i Mina filer
-            </button>
-          </div>
-        </footer>
-      </section>
+      <DocumentConverterResultPanel
+        :action-error-message="history.actionErrorMessage.value"
+        :active-preview-url="resultPreviewUrl"
+        :artifact-options="resultArtifactOptions"
+        :active-artifact-id="resultActiveArtifactId"
+        :can-download="canDownloadResult"
+        :can-save="canSaveResult"
+        :is-downloading="isDownloadingResult"
+        :is-saving="isSavingResult"
+        :result-title="resultTitle"
+        :result-state-label="resultStateLabel"
+        :source-label="resultSourceLabel"
+        :result-type-label="resultTypeLabel"
+        @download="downloadResult"
+        @save="saveResult"
+        @select-artifact="selectResultArtifact"
+      />
     </section>
   </main>
 </template>

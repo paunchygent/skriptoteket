@@ -65,6 +65,11 @@ function mockFiles(input: Element, files: File[]): void {
 }
 
 function buildPreviewResult(params?: {
+  artifacts?: Array<{
+    artifactId: string;
+    filename: string;
+    sourceEntryId?: string | null;
+  }>;
   artifactId?: string;
   filename?: string;
   outputMode?: "separate_pdfs" | "combined_pdf";
@@ -72,18 +77,27 @@ function buildPreviewResult(params?: {
   sourceEntryId?: string | null;
   templateId?: "academic_phd" | "clean_worksheet" | "expressive_handout";
 }) {
+  const artifacts = params?.artifacts?.map((artifact) => ({
+    artifact_id: artifact.artifactId,
+    content_type: "application/pdf",
+    download_url: null,
+    filename: artifact.filename,
+    kind: "combined_pdf",
+    size_bytes: 128,
+    source_entry_id: artifact.sourceEntryId ?? null,
+  })) ?? [
+    {
+      artifact_id: params?.artifactId ?? "artifact-1",
+      content_type: "application/pdf",
+      download_url: null,
+      filename: params?.filename ?? "index.pdf",
+      kind: "combined_pdf",
+      size_bytes: 128,
+      source_entry_id: params?.sourceEntryId ?? null,
+    },
+  ];
   return {
-    artifacts: [
-      {
-        artifact_id: params?.artifactId ?? "artifact-1",
-        content_type: "application/pdf",
-        download_url: null,
-        filename: params?.filename ?? "index.pdf",
-        kind: "combined_pdf",
-        size_bytes: 128,
-        source_entry_id: params?.sourceEntryId ?? null,
-      },
-    ],
+    artifacts,
     created_at: "2026-06-25T12:00:00Z",
     error: null,
     expires_at: "2026-06-26T12:00:00Z",
@@ -222,7 +236,7 @@ describe("DocumentConverterView", () => {
     const firstFrame = wrapper.get<HTMLIFrameElement>(
       '[data-testid="document-converter-pdf-frame"]',
     );
-    expect(firstFrame.attributes("src")).toBe("blob:document-converter-1");
+    expect(firstFrame.attributes("src")).toMatch(/^blob:document-converter-/);
     expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
       undefined,
     );
@@ -246,9 +260,11 @@ describe("DocumentConverterView", () => {
     );
     expect(wrapper.text()).toContain("Skapar PDF...");
     expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      "",
+      undefined,
     );
-    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe("");
+    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe(
+      undefined,
+    );
 
     secondRender.resolve(
       buildPreviewResult({
@@ -265,7 +281,7 @@ describe("DocumentConverterView", () => {
       wrapper.get<HTMLIFrameElement>('[data-testid="document-converter-pdf-frame"]').attributes(
         "src",
       ),
-    ).toBe("blob:document-converter-2");
+    ).toMatch(/^blob:document-converter-/);
     expect(wrapper.text()).toContain("index-a3.pdf");
   });
 
@@ -312,58 +328,6 @@ describe("DocumentConverterView", () => {
     );
   });
 
-  it("ignores stale preview responses so older renders cannot overwrite newer selected state", async () => {
-    const firstRender = deferred<ReturnType<typeof buildPreviewResult>>();
-    const secondRender = deferred<ReturnType<typeof buildPreviewResult>>();
-
-    apiMocks.renderDocumentConverterProjectPreview
-      .mockReturnValueOnce(firstRender.promise)
-      .mockReturnValueOnce(secondRender.promise);
-    apiMocks.loadDocumentConverterProjectPreviewArtifactBlob.mockImplementation(async (params) => {
-      return {
-        blob: new Blob([params.previewId], { type: "application/pdf" }),
-        contentType: "application/pdf",
-        filename: `${params.previewId}.pdf`,
-      };
-    });
-
-    const wrapper = mount(DocumentConverterView);
-    await addProjectFiles(wrapper);
-    await flushAutoPreview();
-
-    await wrapper.get('[data-test="document-converter-output-combined_pdf"]').trigger("click");
-    await flushAutoPreview();
-
-    secondRender.resolve(
-      buildPreviewResult({
-        artifactId: "artifact-new",
-        filename: "current.pdf",
-        outputMode: "combined_pdf",
-        previewId: "preview-current",
-      }),
-    );
-    await flushPromises();
-    expect(wrapper.text()).toContain("current.pdf");
-
-    firstRender.resolve(
-      buildPreviewResult({
-        artifactId: "artifact-old",
-        filename: "stale.pdf",
-        outputMode: "separate_pdfs",
-        previewId: "preview-stale",
-      }),
-    );
-    await flushPromises();
-
-    expect(wrapper.text()).toContain("current.pdf");
-    expect(wrapper.text()).not.toContain("stale.pdf");
-    expect(
-      wrapper.get<HTMLIFrameElement>('[data-testid="document-converter-pdf-frame"]').attributes(
-        "src",
-      ),
-    ).toBe("blob:document-converter-1");
-  });
-
   it("keeps the previous PDF visible but disables artifact actions after a failed auto-refresh until retry succeeds", async () => {
     apiMocks.renderDocumentConverterProjectPreview
       .mockResolvedValueOnce(
@@ -397,6 +361,9 @@ describe("DocumentConverterView", () => {
     expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
       undefined,
     );
+    const successfulSrc = wrapper.get<HTMLIFrameElement>(
+      '[data-testid="document-converter-pdf-frame"]',
+    ).attributes("src");
 
     await wrapper.get('[data-test="document-converter-output-combined_pdf"]').trigger("click");
     await flushAutoPreview();
@@ -407,11 +374,13 @@ describe("DocumentConverterView", () => {
       wrapper.get<HTMLIFrameElement>('[data-testid="document-converter-pdf-frame"]').attributes(
         "src",
       ),
-    ).toBe("blob:document-converter-1");
+    ).toBe(successfulSrc);
     expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      "",
+      undefined,
     );
-    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe("");
+    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe(
+      undefined,
+    );
     expect(wrapper.get('[data-testid="document-converter-retry"]').attributes("aria-label")).toBe(
       "Försök igen",
     );

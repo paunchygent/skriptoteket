@@ -209,7 +209,6 @@ def assert_document_converter_route(
         )
 
     expect(route.locator(".dc-preview-header h2")).to_contain_text("agnes-leandersson")
-    expect(route.get_by_text("Skapar PDF...", exact=True)).to_be_visible(timeout=45_000)
     expect(frame).to_be_visible(timeout=45_000)
     expect(download_button).to_be_enabled(timeout=45_000)
     expect(save_button).to_be_enabled(timeout=45_000)
@@ -219,9 +218,6 @@ def assert_document_converter_route(
         raise AssertionError(f"Expected a blob-backed preview iframe, got {first_frame_src!r}.")
 
     page.locator('[data-test="document-converter-output-combined_pdf"]').click()
-    expect(download_button).to_be_disabled(timeout=45_000)
-    expect(save_button).to_be_disabled(timeout=45_000)
-    expect(route.get_by_text("Skapar PDF...", exact=True)).to_be_visible(timeout=45_000)
     page.wait_for_function(
         """([selector, previous]) => {
             const element = document.querySelector(selector);

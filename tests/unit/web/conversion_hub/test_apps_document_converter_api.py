@@ -36,8 +36,14 @@ from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import
 )
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterJobStatusResult,
+    DocumentConverterProducerKind,
     DocumentConverterResultArtifact,
+    DocumentConverterSavedFileOption,
+    DocumentConverterSubmitResult,
+    DocumentConverterSubmittedJob,
+    ListDocumentConverterSavedFilesResult,
     SaveDocumentConverterArtifactResult,
+    SubmitDocumentConverterSavedFileRequest,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
@@ -45,7 +51,11 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.web.api.v1 import apps_conversion_hub as api
+from skriptoteket.web.api.v1 import (
+    apps_conversion_hub_document_converter_saved_files as api_saved_files,
+)
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -122,6 +132,26 @@ class FakeSaveHandler:
         self.calls: list[dict[str, object]] = []
 
     async def handle(self, **kwargs) -> SaveDocumentConverterArtifactResult:
+        self.calls.append(kwargs)
+        return self.result
+
+
+class FakeListSavedFilesHandler:
+    def __init__(self, result: ListDocumentConverterSavedFilesResult) -> None:
+        self.result = result
+        self.calls: list[dict[str, object]] = []
+
+    async def handle(self, **kwargs) -> ListDocumentConverterSavedFilesResult:
+        self.calls.append(kwargs)
+        return self.result
+
+
+class FakeSubmitSavedFileHandler:
+    def __init__(self, result: DocumentConverterSubmitResult) -> None:
+        self.result = result
+        self.calls: list[dict[str, object]] = []
+
+    async def handle(self, **kwargs) -> DocumentConverterSubmitResult:
         self.calls.append(kwargs)
         return self.result
 
@@ -284,6 +314,78 @@ async def test_submit_document_converter_job_rejects_oversized_upload_before_han
 
     assert excinfo.value.code is ErrorCode.VALIDATION_ERROR
     assert handler.calls == []
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_list_document_converter_saved_files_returns_backend_filtered_sources() -> None:
+    file_id = uuid4()
+    actor = make_user()
+    handler = FakeListSavedFilesHandler(
+        ListDocumentConverterSavedFilesResult(
+            files=[
+                DocumentConverterSavedFileOption(
+                    file_id=file_id,
+                    ref=build_vault_file_ref(file_id=file_id),
+                    name="lektion.html",
+                    bytes=128,
+                    source_format=ConversionHubSourceFormatV2.HTML,
+                    created_at=datetime(2026, 6, 26, tzinfo=timezone.utc),
+                )
+            ]
+        )
+    )
+
+    result = await _unwrap_dishka(api_saved_files.list_document_converter_saved_files)(
+        registry=FakeRegistry(),
+        handler=handler,
+        user=actor,
+    )
+
+    assert [item.name for item in result.files] == ["lektion.html"]
+    assert handler.calls[0]["actor"] == actor
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_submit_saved_file_job_uses_source_ref_without_upload_bytes() -> None:
+    local_job_id = uuid4()
+    source_file_id = uuid4()
+    handler = FakeSubmitSavedFileHandler(
+        DocumentConverterSubmitResult(
+            jobs=[
+                DocumentConverterSubmittedJob(
+                    input_filename="lektion.html",
+                    job_id=local_job_id,
+                    status=ConversionHubJobStatus.SUCCEEDED,
+                    error=None,
+                    producer=DocumentConverterProducerKind.LOCAL,
+                    producer_reason="local_html_to_pdf",
+                )
+            ]
+        )
+    )
+    submit_request = SubmitDocumentConverterSavedFileRequest(
+        job_spec=ConversionHubJobSpecV2(
+            source_format=ConversionHubSourceFormatV2.HTML,
+            output_format=ConversionHubOutputFormatV2.PDF,
+        ),
+        source_ref=build_vault_file_ref(file_id=source_file_id),
+        wait_seconds=0,
+    )
+
+    result = await _unwrap_dishka(api_saved_files.submit_document_converter_saved_file_job)(
+        request=_request(),
+        submit_request=submit_request,
+        registry=FakeRegistry(),
+        handler=handler,
+        user=make_user(),
+    )
+
+    assert result.jobs[0].job_id == local_job_id
+    assert handler.calls[0]["source_ref"] == submit_request.source_ref
+    assert handler.calls[0]["spec"] == submit_request.job_spec
+    assert "files" not in handler.calls[0]
 
 
 @pytest.mark.unit

@@ -18,6 +18,7 @@ import re
 from pathlib import Path
 from urllib.parse import quote, urlparse
 
+from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Locator, Page, expect
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
@@ -35,6 +36,13 @@ def _is_visible(locator: Locator) -> bool:
 
 def _handoff_link(page: Page) -> Locator:
     return page.get_by_role("link", name=AUTH_HANDOFF_ACTION_PATTERN).first
+
+
+def _try_handoff_href(handoff_link: Locator) -> str | None:
+    try:
+        return handoff_link.get_attribute("href", timeout=1_000)
+    except PlaywrightTimeoutError:
+        return None
 
 
 def _wait_for_auth_form_or_success(
@@ -120,11 +128,43 @@ def _submit_auth_surface(
     raise AssertionError(f"Unsupported auth surface: {visible_surface}")
 
 
+def _write_auth_failure_artifacts(
+    *,
+    page: Page,
+    artifact_dir: Path | None,
+    screenshot_name: str,
+    reason: str,
+) -> None:
+    if artifact_dir is None:
+        return
+    state = {
+        "reason": reason,
+        "title": page.title(),
+        "url": page.url,
+    }
+    (artifact_dir / "auth-failure-state.json").write_text(
+        json.dumps(state, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    page.screenshot(path=str(artifact_dir / screenshot_name), full_page=True)
+
+
 def _follow_handoff_link(page: Page) -> None:
     """Navigate through the visible HuleEdu ceremony link from the auth handoff."""
 
     handoff_link = _handoff_link(page)
-    handoff_link.click(no_wait_after=True)
+    href = _try_handoff_href(handoff_link)
+    if href:
+        try:
+            page.goto(href, wait_until="domcontentloaded")
+        except PlaywrightError as exc:
+            if "ERR_ABORTED" not in str(exc):
+                raise
+        return
+    try:
+        handoff_link.click(no_wait_after=True, timeout=1_000)
+    except PlaywrightTimeoutError:
+        return
 
 
 def login_via_auth_entry(
@@ -151,12 +191,21 @@ def login_via_auth_entry(
     for attempt in range(attempts):
         page.goto(auth_entry_url, wait_until="domcontentloaded")
         auth_form = page.locator("form").first
-        visible_surface = _wait_for_auth_form_or_success(
-            page=page,
-            auth_form=auth_form,
-            success_heading=success_heading,
-            timeout_ms=form_timeout_ms,
-        )
+        try:
+            visible_surface = _wait_for_auth_form_or_success(
+                page=page,
+                auth_form=auth_form,
+                success_heading=success_heading,
+                timeout_ms=form_timeout_ms,
+            )
+        except AssertionError:
+            _write_auth_failure_artifacts(
+                page=page,
+                artifact_dir=failure_artifacts_dir,
+                screenshot_name=failure_screenshot_name,
+                reason="auth_surface_timeout",
+            )
+            raise
         if visible_surface == "success":
             return
         if visible_surface == "handoff_link":
@@ -174,7 +223,7 @@ def login_via_auth_entry(
                     handoff_link = _handoff_link(page)
                     state = {
                         "url": page.url,
-                        "handoff_href": handoff_link.get_attribute("href"),
+                        "handoff_href": _try_handoff_href(handoff_link),
                     }
                     (failure_artifacts_dir / "auth-handoff-state.json").write_text(
                         json.dumps(state, indent=2, sort_keys=True),

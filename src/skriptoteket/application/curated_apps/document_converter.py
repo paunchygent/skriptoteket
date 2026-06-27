@@ -13,6 +13,8 @@ Relationships:
 
 from __future__ import annotations
 
+import mimetypes
+from datetime import datetime
 from enum import StrEnum
 from pathlib import PurePosixPath
 from uuid import UUID
@@ -32,6 +34,7 @@ from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import
     ConversionHubSavedVaultArtifact,
 )
 from skriptoteket.domain.errors import validation_error
+from skriptoteket.domain.scripting.file_refs import FileRef
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 
 DOCUMENT_CONVERTER_ARTIFACT_KEY = "converted_document"
@@ -196,6 +199,37 @@ class SaveDocumentConverterArtifactResult(BaseModel):
     source_artifact_id: str
 
 
+class DocumentConverterSavedFileOption(BaseModel):
+    """Describe one compatible Mina filer source for Document Converter."""
+
+    model_config = ConfigDict(frozen=True)
+
+    file_id: UUID
+    ref: FileRef = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255)
+    bytes: int = Field(ge=0)
+    source_format: ConversionHubSourceFormatV2
+    created_at: datetime
+
+
+class ListDocumentConverterSavedFilesResult(BaseModel):
+    """Return owner-scoped compatible Mina filer sources."""
+
+    model_config = ConfigDict(frozen=True)
+
+    files: list[DocumentConverterSavedFileOption] = Field(default_factory=list)
+
+
+class SubmitDocumentConverterSavedFileRequest(BaseModel):
+    """Submit one owner-scoped Mina filer source without browser re-upload."""
+
+    model_config = ConfigDict(frozen=True)
+
+    job_spec: ConversionHubJobSpecV2
+    source_ref: FileRef = Field(min_length=1, max_length=255)
+    wait_seconds: int = Field(default=0, ge=0, le=20)
+
+
 def list_document_converter_routes() -> ConversionHubListRoutesResult:
     """Return the document/presentation route catalog for the MVP."""
     return ConversionHubListRoutesResult(routes=list(_DOCUMENT_ROUTES))
@@ -265,6 +299,34 @@ def validate_document_converter_batch_count(*, files_count: int) -> None:
         )
 
 
+def infer_document_converter_source_format(
+    *,
+    filename: str,
+    content_type: str | None = None,
+) -> tuple[ConversionHubSourceFormatV2, str] | None:
+    """Infer a supported Document Converter source format from file metadata."""
+    normalized_filename = (filename or "").strip()
+    if not normalized_filename:
+        return None
+
+    normalized_content_type = _normalized_source_content_type(
+        filename=normalized_filename,
+        content_type=content_type,
+    )
+    lower_filename = normalized_filename.lower()
+
+    for source_format, allowed_suffixes in _SOURCE_UPLOAD_SUFFIXES.items():
+        if not any(lower_filename.endswith(suffix) for suffix in allowed_suffixes):
+            continue
+        allowed_content_types = _SOURCE_UPLOAD_CONTENT_TYPES[source_format]
+        if (
+            normalized_content_type in allowed_content_types
+            or normalized_content_type in _GENERIC_UPLOAD_CONTENT_TYPES
+        ):
+            return source_format, normalized_content_type
+    return None
+
+
 def is_document_converter_job(job: ConversionHubJob) -> bool:
     """Return true when a local Conversion Hub job belongs to Document Converter."""
     return (job.source_format, job.output_format) in _DOCUMENT_ROUTE_PAIRS
@@ -328,3 +390,11 @@ def get_document_converter_output_content_type(
 ) -> str | None:
     """Return the default content type for one Document Converter output."""
     return _OUTPUT_CONTENT_TYPES.get(output_format)
+
+
+def _normalized_source_content_type(*, filename: str, content_type: str | None) -> str:
+    normalized_content_type = (content_type or "").strip().lower()
+    if normalized_content_type:
+        return normalized_content_type
+    guessed_content_type, _ = mimetypes.guess_type(filename)
+    return (guessed_content_type or "application/octet-stream").lower()
