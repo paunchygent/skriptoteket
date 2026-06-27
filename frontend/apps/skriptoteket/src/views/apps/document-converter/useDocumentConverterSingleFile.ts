@@ -79,11 +79,11 @@ export type DocumentConverterSingleFileArtifact = {
   previewable: boolean;
 };
 
-const SOURCE_ACCEPT: Record<DocumentConverterSingleFileSource, string> = {
-  html: ".html,.htm",
-  docx: ".docx",
-  md: ".md,.markdown",
-  pdf: ".pdf",
+const SOURCE_EXTENSIONS: Record<DocumentConverterSingleFileSource, string[]> = {
+  html: [".html", ".htm"],
+  docx: [".docx"],
+  md: [".md", ".markdown"],
+  pdf: [".pdf"],
 };
 
 const OUTPUT_LABELS: Record<DocumentConverterSingleFileOutput, string> = {
@@ -104,6 +104,31 @@ function isSingleFileSource(value: string): value is DocumentConverterSingleFile
 
 function isSingleFileOutput(value: string): value is DocumentConverterSingleFileOutput {
   return value === "pdf" || value === "docx" || value === "md";
+}
+
+function sourceFormatFromFilename(filename: string): DocumentConverterSingleFileSource | null {
+  const normalized = filename.toLowerCase();
+  for (const [format, extensions] of Object.entries(SOURCE_EXTENSIONS)) {
+    if (extensions.some((extension) => normalized.endsWith(extension))) {
+      return format as DocumentConverterSingleFileSource;
+    }
+  }
+  return null;
+}
+
+function sourceAcceptForFormats(formats: readonly DocumentConverterSingleFileSource[]): string {
+  const extensions = formats.flatMap((format) => SOURCE_EXTENSIONS[format] ?? []);
+  return Array.from(new Set(extensions)).join(",");
+}
+
+function outputFormatsForSource(
+  routes: readonly DocumentConverterSingleFileRoute[],
+  sourceFormat: DocumentConverterSingleFileSource,
+): DocumentConverterSingleFileOutput[] {
+  return routes
+    .filter((route) => route.source_format === sourceFormat)
+    .map((route) => route.output_format)
+    .filter(isSingleFileOutput);
 }
 
 function sleep(ms: number): Promise<void> {
@@ -129,10 +154,7 @@ export function useDocumentConverterSingleFile() {
     return uniqueValues.filter(isSingleFileSource);
   });
   const availableOutputFormats = computed<DocumentConverterSingleFileOutput[]>(() => {
-    return routes.value
-      .filter((route) => route.source_format === selectedSourceFormat.value)
-      .map((route) => route.output_format)
-      .filter(isSingleFileOutput);
+    return outputFormatsForSource(routes.value, selectedSourceFormat.value);
   });
   const selectedSavedFile = computed(() => {
     if (!selectedSavedFileRef.value) {
@@ -152,7 +174,11 @@ export function useDocumentConverterSingleFile() {
     }
     return selectedSavedFile.value?.name ?? "Ingen fil vald";
   });
-  const selectedSourceAccept = computed(() => SOURCE_ACCEPT[selectedSourceFormat.value]);
+  const selectedSourceAccept = computed(() => {
+    return sourceAcceptForFormats(availableSourceFormats.value.length > 0
+      ? availableSourceFormats.value
+      : [selectedSourceFormat.value]);
+  });
 
   async function loadSources(): Promise<void> {
     isLoadingSources.value = true;
@@ -169,9 +195,7 @@ export function useDocumentConverterSingleFile() {
       if (availableSources.length > 0 && !availableSources.includes(selectedSourceFormat.value)) {
         selectedSourceFormat.value = availableSources[0];
       }
-      if (!availableOutputFormats.value.includes(selectedOutputFormat.value)) {
-        selectedOutputFormat.value = availableOutputFormats.value[0] ?? "pdf";
-      }
+      ensureOutputFormatForSource(selectedSourceFormat.value);
       if (
         selectedSavedFileRef.value &&
         !savedFiles.value.some((file) => file.ref === selectedSavedFileRef.value)
@@ -190,11 +214,16 @@ export function useDocumentConverterSingleFile() {
     errorMessage.value = null;
   }
 
+  function ensureOutputFormatForSource(nextSourceFormat: DocumentConverterSingleFileSource): void {
+    const nextOutputFormats = outputFormatsForSource(routes.value, nextSourceFormat);
+    if (!nextOutputFormats.includes(selectedOutputFormat.value)) {
+      selectedOutputFormat.value = nextOutputFormats[0] ?? "pdf";
+    }
+  }
+
   function setSourceFormat(nextFormat: DocumentConverterSingleFileSource): void {
     selectedSourceFormat.value = nextFormat;
-    if (!availableOutputFormats.value.includes(selectedOutputFormat.value)) {
-      selectedOutputFormat.value = availableOutputFormats.value[0] ?? "pdf";
-    }
+    ensureOutputFormatForSource(nextFormat);
     errorMessage.value = null;
   }
 
@@ -204,7 +233,38 @@ export function useDocumentConverterSingleFile() {
   }
 
   function selectLocalUploads(files: File[]): void {
-    selectedUploads.value = files.slice(0, 10);
+    const nextUploads = files.slice(0, 10);
+    const inferredUploadFormats = nextUploads.map((file) => sourceFormatFromFilename(file.name));
+    if (inferredUploadFormats.some((format) => format === null)) {
+      selectedUploads.value = [];
+      errorMessage.value = "Filformatet stöds inte. Välj HTML, DOCX, Markdown eller PDF.";
+      return;
+    }
+    const inferredFormats = new Set(inferredUploadFormats);
+    if (inferredFormats.size > 1) {
+      selectedUploads.value = [];
+      errorMessage.value = "Välj filer med samma källformat.";
+      return;
+    }
+    const inferredFormat = Array.from(inferredFormats)[0] ?? null;
+    if (inferredFormat) {
+      if (!availableSourceFormats.value.includes(inferredFormat)) {
+        selectedUploads.value = [];
+        errorMessage.value = "Filformatet stöds inte för den här konverteringen.";
+        return;
+      }
+      selectedSourceFormat.value = inferredFormat;
+      ensureOutputFormatForSource(inferredFormat);
+    }
+    selectedUploads.value = nextUploads;
+    errorMessage.value = null;
+  }
+
+  function removeLocalUpload(index: number): void {
+    if (index < 0 || index >= selectedUploads.value.length) {
+      return;
+    }
+    selectedUploads.value = selectedUploads.value.filter((_file, fileIndex) => fileIndex !== index);
     errorMessage.value = null;
   }
 
@@ -232,9 +292,7 @@ export function useDocumentConverterSingleFile() {
     const nextSavedFile = savedFiles.value.find((file) => file.ref === refValue);
     if (nextSavedFile && isSingleFileSource(nextSavedFile.source_format)) {
       selectedSourceFormat.value = nextSavedFile.source_format;
-      if (!availableOutputFormats.value.includes(selectedOutputFormat.value)) {
-        selectedOutputFormat.value = availableOutputFormats.value[0] ?? "pdf";
-      }
+      ensureOutputFormatForSource(nextSavedFile.source_format);
     }
     errorMessage.value = null;
   }
@@ -442,6 +500,7 @@ export function useDocumentConverterSingleFile() {
     retryRequest,
     savedFiles,
     moveLocalUpload,
+    removeLocalUpload,
     selectLocalUploads,
     selectSavedFile,
     selectedOutputFormat,

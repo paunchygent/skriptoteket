@@ -494,4 +494,16 @@
   .dc-controls {
     overflow: visible;
   }
+
+  .dc-workbench--single-file .dc-controls {
+    order: 1;
+  }
+
+  .dc-workbench--single-file .dc-rail {
+    order: 2;
+  }
+
+  .dc-workbench--single-file .dc-preview {
+    order: 3;
+  }
 }

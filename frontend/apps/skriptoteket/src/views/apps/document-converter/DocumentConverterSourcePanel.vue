@@ -17,6 +17,7 @@ import {
   IconCode,
   IconFileText,
   IconImageAsset,
+  IconTrash,
 } from "../../../components/icons";
 
 type WorkspaceMode = "project_preview" | "single_file";
@@ -38,6 +39,7 @@ defineProps<{
 
 const emit = defineEmits<{
   moveSingleFileUpload: [fromIndex: number, toIndex: number];
+  removeSingleFileUpload: [index: number];
   selectProjectHtml: [filename: string];
 }>();
 </script>
@@ -133,6 +135,16 @@ const emit = defineEmits<{
                 direction="down"
                 :size="14"
               />
+            </button>
+            <button
+              :data-testid="`document-converter-source-remove-${index}`"
+              class="dc-source-order-button"
+              type="button"
+              aria-label="Ta bort fil"
+              title="Ta bort fil"
+              @click="emit('removeSingleFileUpload', index)"
+            >
+              <IconTrash :size="14" />
             </button>
           </div>
         </div>

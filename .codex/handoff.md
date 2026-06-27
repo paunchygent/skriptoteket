@@ -128,14 +128,13 @@ Keep this file updated so the next session can pick up work quickly.
     and `.artifacts/authenticated-home-work-apps/20260627T104130Z/manifest.redacted.json`.
   - PR-0397 layout screenshots: `.artifacts/pr-0397-layout-screenshots/20260627T104912Z/` covers empty/active `HTML/CSS-projekt` and `Filkonvertering` at desktop, tablet, and compact widths, with generated-output selection asserted in the operations column.
   - Older retained `PR-0388` proof detail is compacted to `.codex/long-term-memory/entries/session-2026-06-27-pr-0397-handoff-compaction.md`.
-  - `PR-0398` / `PR-0399` repair proof is local-only and pending independent
-    reviews: production logs at
-    `2026-06-27T12:27Z` showed Sir Convert accepted/polled jobs while
-    Skriptoteket returned local `SERVICE_UNAVAILABLE` after receiving upstream
-    `running`; the repair now uses typed upstream enum parsing, fail-closed
-    unknown-status tests, explicit `RUNNING -> PROCESSING` mapping, PDF
-    fit/zoom/pinch/pan specs, and retained browser proof at
-    `.artifacts/authenticated-home-work-apps/20260627T132700Z/manifest.redacted.json`.
+  - `PR-0398` / `PR-0399` repair proof is approved by `REV-PR-0398` and
+    retained locally: production logs at `2026-06-27T12:27Z` traced the failure
+    to upstream Sir Convert `running`; the repair covers typed upstream status
+    mapping, fail-closed unknown statuses, PDF fit/zoom/pinch/pan, mode-scoped
+    Document Converter results, source-format inference, local-upload remove,
+    stale-upload clearing, and browser proof at
+    `.artifacts/authenticated-home-work-apps/20260627T162846Z/manifest.redacted.json`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -178,14 +177,13 @@ git diff --check
 - If Gateway `:8080` appears occupied by Docker while no container publishes
   it, suspect stale Docker Desktop port-proxy state; restart Docker Desktop and
   recreate the affected HuleEdu services before blaming app code.
-- Hemma/server activity is paused by user instruction. Do not run Hemma deploy,
-  monitors, SSH, or transcript remote-proof commands until explicitly re-allowed.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
 - Next governed step: keep broader shared extraction in `PR-0391`/`PR-0392`; `PR-0393` through `PR-0395` remain separate app/file adoption slices.
-- Active remediation: send `PR-0398` through retained ruthless review before
-  any commit/push/deploy.
 - Parallel remediation: send `PR-0399` through independent implementation and
   retained review for the cross-service status vocabulary contract.
+- Planning gate: `PR-0400` now tracks Document Converter artifact-content
+  hygiene; implementation waits for user answers to the open policy questions.
+- Follow-up planned: `PR-0401` owns PDF image-recovery planning outside `PR-0400`.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

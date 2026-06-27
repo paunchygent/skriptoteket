@@ -108,13 +108,18 @@ const outputLabelMap: Record<DocumentConverterSingleFileOutput, string> = {
 const workspaceMode = ref<DocumentConverterWorkspaceMode>("project_preview");
 const project = useDocumentConverterProjectPreview();
 const singleFile = useDocumentConverterSingleFile();
-const history = useDocumentConverterSessionHistory();
+const projectHistory = useDocumentConverterSessionHistory();
+const singleFileHistory = useDocumentConverterSessionHistory();
+const activeHistory = computed(() => (
+  workspaceMode.value === "project_preview" ? projectHistory : singleFileHistory
+));
 
 useDocumentConverterHistoryBridge({
   workspaceMode,
   project,
   singleFile,
-  history,
+  projectHistory,
+  singleFileHistory,
 });
 
 const singleFileSourceOptions = computed<DocumentConverterSingleFileChoice[]>(() => {
@@ -160,7 +165,7 @@ const isCurrentProjectPreviewFailure = computed(() => {
   return workspaceMode.value === "project_preview" && project.canRetryPreview.value && Boolean(project.errorMessage.value);
 });
 const isRetainedProjectPreviewVisible = computed(() => {
-  return isCurrentProjectPreviewFailure.value && Boolean(project.previewPdfUrl.value || history.activePreviewUrl.value);
+  return isCurrentProjectPreviewFailure.value && Boolean(project.previewPdfUrl.value || projectHistory.activePreviewUrl.value);
 });
 
 const feedbackMessage = computed(() => {
@@ -184,14 +189,14 @@ const canRetryCurrentMode = computed(() => {
   if (workspaceMode.value === "project_preview") {
     return project.canRetryPreview.value;
   }
-  return history.activeEntry.value?.status === "failed" && history.canRetryActiveEntry.value;
+  return singleFileHistory.activeEntry.value?.status === "failed" && singleFileHistory.canRetryActiveEntry.value;
 });
 
 const isLiveProjectResultSelected = computed(() => {
   return (
     workspaceMode.value === "project_preview" &&
     !isCurrentProjectPreviewFailure.value &&
-    history.activeEntry.value?.id === project.activePreviewEntryId.value &&
+    projectHistory.activeEntry.value?.id === project.activePreviewEntryId.value &&
     project.preview.value !== null
   );
 });
@@ -199,11 +204,11 @@ const resultTitle = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.selectedArtifact.value?.filename ?? project.selectedFileLabel();
   }
-  return history.activeArtifactFilename.value ?? history.activeEntry.value?.filename ?? "Resultat";
+  return activeHistory.value.activeArtifactFilename.value ?? activeHistory.value.activeEntry.value?.filename ?? "Resultat";
 });
 const { filenameExtensionLabel, filenameStemIntent } = useDocumentConverterFilenameIntent(resultTitle);
 const resultStateLabel = computed(() => {
-  const entry = history.activeEntry.value;
+  const entry = activeHistory.value.activeEntry.value;
   if (isRetainedProjectPreviewVisible.value) {
     return "Visar föregående PDF.";
   }
@@ -218,7 +223,7 @@ const resultStateLabel = computed(() => {
   if (entry.status === "failed") {
     return entry.errorMessage ?? "Resultatet gick inte att skapa.";
   }
-  if (isLiveProjectResultSelected.value ? project.previewPdfUrl.value : history.activePreviewUrl.value) {
+  if (isLiveProjectResultSelected.value ? project.previewPdfUrl.value : activeHistory.value.activePreviewUrl.value) {
     return `${entry.resultTypeLabel} klart för granskning.`;
   }
   return `${entry.resultTypeLabel} klart att ladda ned eller spara.`;
@@ -227,7 +232,7 @@ const resultPreviewUrl = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.previewPdfUrl.value;
   }
-  return history.activePreviewUrl.value;
+  return activeHistory.value.activePreviewUrl.value;
 });
 const resultArtifactOptions = computed(() => {
   if (isCurrentProjectPreviewFailure.value) {
@@ -239,7 +244,7 @@ const resultArtifactOptions = computed(() => {
       filename: artifact.filename,
     }));
   }
-  return history.artifactOptions.value;
+  return activeHistory.value.artifactOptions.value;
 });
 const resultActiveArtifactId = computed(() => {
   if (isCurrentProjectPreviewFailure.value) {
@@ -248,7 +253,7 @@ const resultActiveArtifactId = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.selectedArtifact.value?.artifact_id ?? null;
   }
-  return history.activeArtifactId.value;
+  return activeHistory.value.activeArtifactId.value;
 });
 const canDownloadResult = computed(() => {
   if (isCurrentProjectPreviewFailure.value) {
@@ -257,7 +262,7 @@ const canDownloadResult = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.canUseSelectedArtifact.value;
   }
-  return history.canDownloadActiveEntry.value;
+  return activeHistory.value.canDownloadActiveEntry.value;
 });
 const canSaveResult = computed(() => {
   if (isCurrentProjectPreviewFailure.value) {
@@ -266,24 +271,35 @@ const canSaveResult = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.canUseSelectedArtifact.value;
   }
-  return history.canSaveActiveEntry.value;
+  return activeHistory.value.canSaveActiveEntry.value;
 });
 
 const isDownloadingResult = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.isDownloading.value;
   }
-  return history.isDownloading.value;
+  return activeHistory.value.isDownloading.value;
 });
 const isSavingResult = computed(() => {
   if (isLiveProjectResultSelected.value) {
     return project.isSaving.value;
   }
-  return history.isSaving.value;
+  return activeHistory.value.isSaving.value;
 });
+
+const actionErrorMessage = computed(() => activeHistory.value.actionErrorMessage.value);
+const isRetryDisabled = computed(() => (
+  project.isPreviewRunning.value ||
+  singleFile.isSubmitting.value ||
+  activeHistory.value.isRetrying.value
+));
 
 async function startSingleFileConversion(): Promise<void> {
   await singleFile.submitCurrentSelection();
+}
+
+function selectWorkspaceMode(nextMode: DocumentConverterWorkspaceMode): void {
+  workspaceMode.value = nextMode;
 }
 
 async function downloadResult(): Promise<void> {
@@ -294,7 +310,7 @@ async function downloadResult(): Promise<void> {
     await project.downloadSelectedArtifact(filenameStemIntent.value);
     return;
   }
-  await history.downloadActiveEntry(filenameStemIntent.value);
+  await activeHistory.value.downloadActiveEntry(filenameStemIntent.value);
 }
 
 async function retryCurrentMode(): Promise<void> {
@@ -302,7 +318,7 @@ async function retryCurrentMode(): Promise<void> {
     await project.retryPreview();
     return;
   }
-  await history.retryActiveEntry();
+  await activeHistory.value.retryActiveEntry();
 }
 
 async function saveResult(): Promise<void> {
@@ -314,7 +330,7 @@ async function saveResult(): Promise<void> {
     await singleFile.loadSources();
     return;
   }
-  await history.saveActiveEntry(filenameStemIntent.value);
+  await activeHistory.value.saveActiveEntry(filenameStemIntent.value);
 }
 
 async function selectResultArtifact(artifactId: string): Promise<void> {
@@ -325,7 +341,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
     project.selectArtifact(artifactId);
     return;
   }
-  await history.selectActiveArtifact(artifactId);
+  await activeHistory.value.selectActiveArtifact(artifactId);
 }
 
 </script>
@@ -333,6 +349,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
 <template>
   <main
     class="dc-workbench"
+    :class="{ 'dc-workbench--single-file': workspaceMode === 'single_file' }"
     aria-label="Dokumentkonverterare"
   >
     <header class="dc-topbar">
@@ -351,7 +368,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
           :class="{ 'dc-mode-tab--active': workspaceMode === option.value }"
           :aria-selected="workspaceMode === option.value"
           :data-test="option.dataTest"
-          @click="workspaceMode = option.value"
+          @click="selectWorkspaceMode(option.value)"
         >
           {{ option.label }}
         </button>
@@ -407,6 +424,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
           :single-file-source-name="singleFile.selectedSourceName.value"
           :single-file-upload-files="singleFile.selectedUploads.value"
           @move-single-file-upload="singleFile.moveLocalUpload"
+          @remove-single-file-upload="singleFile.removeLocalUpload"
           @select-project-html="project.selectedHtmlFilename.value = $event"
         />
       </section>
@@ -468,7 +486,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
         />
 
         <DocumentConverterResultActions
-          :action-error-message="history.actionErrorMessage.value"
+          :action-error-message="actionErrorMessage"
           :can-download="canDownloadResult"
           :can-retry="canRetryCurrentMode"
           :can-save="canSaveResult"
@@ -477,7 +495,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
           :filename-extension="filenameExtensionLabel"
           :filename-stem="filenameStemIntent"
           :is-downloading="isDownloadingResult"
-          :is-retry-disabled="project.isPreviewRunning.value || singleFile.isSubmitting.value || history.isRetrying.value"
+          :is-retry-disabled="isRetryDisabled"
           :is-saving="isSavingResult"
           :result-state-label="resultStateLabel"
           @download="downloadResult"

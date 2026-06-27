@@ -24,6 +24,9 @@ from urllib.parse import urlparse
 from playwright.sync_api import Page, expect, sync_playwright
 
 from scripts._document_converter_proof import assert_document_converter_route
+from scripts._document_converter_single_file_proof import (
+    assert_document_converter_single_file_compact_route,
+)
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
@@ -164,6 +167,13 @@ def _capture_home(
         artifact_dir=artifact_dir,
         viewport_label=str(viewport["label"]),
     )
+    if viewport["label"] == "compact":
+        document_converter_capture["single_file_compact"] = (
+            assert_document_converter_single_file_compact_route(
+                page,
+                artifact_dir=artifact_dir,
+            )
+        )
     route_screenshot_path = artifact_dir / f"document-converter-{viewport['label']}.png"
     page.screenshot(path=str(route_screenshot_path), full_page=True)
     parsed = urlparse(page.url)

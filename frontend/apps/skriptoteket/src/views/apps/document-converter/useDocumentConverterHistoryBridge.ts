@@ -35,9 +35,10 @@ export function useDocumentConverterHistoryBridge(args: {
   workspaceMode: Ref<WorkspaceMode>;
   project: ReturnType<typeof useDocumentConverterProjectPreview>;
   singleFile: ReturnType<typeof useDocumentConverterSingleFile>;
-  history: ReturnType<typeof useDocumentConverterSessionHistory>;
+  projectHistory: ReturnType<typeof useDocumentConverterSessionHistory>;
+  singleFileHistory: ReturnType<typeof useDocumentConverterSessionHistory>;
 }): void {
-  const { history, project, singleFile, workspaceMode } = args;
+  const { project, projectHistory, singleFile, singleFileHistory, workspaceMode } = args;
 
   watch(
     () => project.latestOutcome.value?.entryId,
@@ -60,7 +61,7 @@ export function useDocumentConverterHistoryBridge(args: {
           contentType: outcome.previewContentType,
           filename: outcome.filename,
         });
-        history.upsertEntry(
+        projectHistory.upsertEntry(
           {
             id: outcome.entryId,
             filename: outcome.filename,
@@ -108,7 +109,7 @@ export function useDocumentConverterHistoryBridge(args: {
         return;
       }
 
-      history.upsertEntry(
+      projectHistory.upsertEntry(
         {
           id: outcome.entryId,
           filename: outcome.filename,
@@ -134,7 +135,7 @@ export function useDocumentConverterHistoryBridge(args: {
       }
       const outcome = singleFile.latestOutcome.value;
       if (outcome.type === "ready") {
-        history.upsertEntry(
+        singleFileHistory.upsertEntry(
           {
             id: outcome.entryId,
             filename: outcome.filename,
@@ -169,7 +170,7 @@ export function useDocumentConverterHistoryBridge(args: {
         return;
       }
 
-      history.upsertEntry(
+      singleFileHistory.upsertEntry(
         {
           id: outcome.entryId,
           filename: outcome.filename,

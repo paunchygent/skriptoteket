@@ -278,18 +278,24 @@ describe("DocumentConverterView", () => {
       expect.objectContaining({ filenameStem: "Lärarens live-namn", previewId: "preview-a3" }),
     );
 
+    const projectDownloadCallCount = apiMocks.downloadDocumentConverterProjectPreviewArtifact.mock.calls.length;
+    const projectSaveCallCount = apiMocks.saveDocumentConverterProjectPreviewArtifact.mock.calls.length;
+
     await wrapper.get('[data-test="document-converter-mode-single"]').trigger("click");
-    await wrapper
-      .get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]')
-      .setValue("Lärarens historiknamn");
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("index-a3.pdf");
+    expect(wrapper.text()).toContain("Välj en fil som du vill konvertera.");
+    expectResultActionsDisabled(wrapper);
     await wrapper.get('[data-testid="document-converter-download"]').trigger("click");
     await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
     await flushPromises();
-    expect(apiMocks.downloadDocumentConverterProjectPreviewArtifact).toHaveBeenLastCalledWith(
-      expect.objectContaining({ filenameStem: "Lärarens historiknamn" }),
+
+    expect(apiMocks.downloadDocumentConverterProjectPreviewArtifact).toHaveBeenCalledTimes(
+      projectDownloadCallCount,
     );
-    expect(apiMocks.saveDocumentConverterProjectPreviewArtifact).toHaveBeenLastCalledWith(
-      expect.objectContaining({ filenameStem: "Lärarens historiknamn" }),
+    expect(apiMocks.saveDocumentConverterProjectPreviewArtifact).toHaveBeenCalledTimes(
+      projectSaveCallCount,
     );
   });
 

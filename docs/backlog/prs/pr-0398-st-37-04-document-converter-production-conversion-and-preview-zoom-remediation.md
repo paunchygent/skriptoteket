@@ -22,6 +22,10 @@ acceptance_criteria:
   - "Given a teacher starts a production Document Converter single-file PDF conversion, when the request fails, then the retained evidence identifies the root cause from bounded production observability or container logs before implementation changes are accepted."
   - "Given `PR-0399` enforces the Sir Convert v2 status vocabulary, when a teacher converts a supported PDF, then Document Converter consumes that contract and completes the conversion or truthfully disables unsupported route choices instead of showing a generic start failure."
   - "Given a conversion attempt fails, when an older preview or result exists, then the UI does not present the failed attempt as ready for review and keeps stale successful state visually distinct."
+  - "Given a teacher has converted a single-file artifact, when they switch from `Filkonvertering` to `HTML/CSS-projekt`, then preview, export, download, save, and generated-artifact selection state is scoped to the selected mode and no single-file artifact remains visible or actionable in the HTML/CSS project mode."
+  - "Given local file conversion accepts multiple source formats, when the teacher chooses files in any layout size, then the app infers the source format from the selected files instead of requiring the teacher to know it before using the picker."
+  - "Given a teacher has selected local files for conversion, when they remove a file from the source list or replace the selection with unsupported or mixed source formats, then the submit payload follows the visible list and stale prior files cannot be submitted."
+  - "Given the compact file-conversion layout stacks the workspace vertically, when the teacher opens `Filkonvertering`, then conversion format choices appear before local file upload because upload depends on the conversion route."
   - "Given any previewable PDF output is selected, when the preview loads or the pane resizes, then the preview automatically fits the available pane until the teacher manually zooms."
   - "Given the teacher inspects a PDF preview, when using zoom in, zoom out, fit-to-view, or touch pinch gestures, then the preview scale changes through working controls using shared icon/control semantics and without layout drift across desktop, tablet, and compact widths."
 ---
@@ -50,6 +54,8 @@ language rather than reintroducing inert preview controls.
   workspace.
 - No broad cross-app preview framework unless a small shared primitive is needed
   to avoid duplication.
+- No shared result state that lets one Document Converter mode present another
+  mode's active artifact as its own preview/download/save target.
 - No cross-service status vocabulary implementation; `PR-0399` owns the
   Sir Convert v2 status contract.
 - No production deploy, commit, or push unless explicitly requested after the
@@ -84,10 +90,21 @@ PII.
 4. Strengthen failure-state handling so a failed current conversion is not
    presented as a ready preview while any older successful preview remains
    clearly stale.
-5. Add a document-preview zoom primitive or component that reuses the existing
+5. Use separate route-session history instances for `HTML/CSS-projekt` and
+   `Filkonvertering`, then select the active history by mode so artifacts,
+   preview URLs, filename fields, download, save, and artifact selectors cannot
+   leak across mode switches.
+6. Make local file selection infer the source format from allowed route
+   extensions in every layout size, and fail closed by clearing stale uploads
+   when replacement selections are unsupported or mixed.
+7. Add a source-list remove action for local uploads so the visible source list
+   and submit payload stay aligned.
+8. On compact file-conversion layouts, order conversion controls before source
+   upload because upload depends on the selected conversion route.
+9. Add a document-preview zoom primitive or component that reuses the existing
    zoom/fit icon semantics and the established fit/manual-zoom/pinch model
    without coupling Document Converter to room-builder domain semantics.
-6. Integrate the preview zoom surface into both HTML/CSS project outputs and
+10. Integrate the preview zoom surface into both HTML/CSS project outputs and
    single-file PDF outputs.
 
 ## Test Plan
@@ -97,6 +114,16 @@ PII.
 - Focused contract-consumption tests for the `PR-0399` status vocabulary in the
   Document Converter path.
 - Focused frontend test for failed conversion state truthfulness.
+- Focused frontend test proving a completed single-file conversion disappears
+  from the HTML/CSS project result/preview/download/save surface when the
+  teacher switches modes.
+- Focused frontend test proving a local picker PDF selection updates the
+  single-file source format and compatible output format before submission in
+  the shared route state, independent of screen size.
+- Focused frontend tests proving unsupported and mixed replacement selections
+  clear stale uploads before submission.
+- Focused frontend test proving removing an uploaded file updates the visible
+  source list and submitted file order.
 - Focused frontend tests for PDF preview fit-to-pane, zoom in, zoom out,
   fit-reset, and touch pinch gesture behavior.
 - Focused Document Converter browser proof at desktop, tablet, and compact
@@ -144,6 +171,11 @@ PII.
   project-preview failures instead of generic project errors, so failed
   download/save actions keep the current preview ready, keep file actions
   available, and show the action error without labeling the PDF as previous.
+- Addendum repair pass: kept `HTML/CSS-projekt` and `Filkonvertering` result
+  histories as separate composable instances, added source-format inference for
+  all local picker sizes, added a local-upload remove action, and made
+  unsupported or mixed replacement selections clear stale uploads before any
+  submit payload can be built.
 
 ## Verification Notes
 
@@ -289,6 +321,42 @@ PII.
   `pdm run test tests/unit/scripts/test_playwright_script_surface.py`,
   `pdm run docs-validate`, `pdm run handoff-validate`, and
   `git diff --check`.
+- Addendum red/green frontend evidence:
+  `pdm run fe-test -- --run src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts`
+  passed with `9 passed` after adding regressions for remove action,
+  unsupported/mixed replacement clearing, picker source inference, and
+  output-route repair when a replacement upload changes source.
+- Reviewer addendum red evidence:
+  the same focused single-file command failed after adding the
+  supported-plus-unsupported replacement regression because `lektion.html` plus
+  `anteckning.txt` still rendered as a two-file valid batch instead of showing
+  `Filformatet stöds inte.`.
+- Reviewer addendum green evidence:
+  `pdm run fe-test -- --run src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts`
+  passed with `9 passed` after unsupported extension detection moved before
+  source-format set construction, so any unsupported file in the replacement
+  batch clears the visible uploads and blocks submission.
+- Addendum focused Document Converter evidence:
+  `pdm run fe-test -- --run src/views/apps/document-converter/DocumentConverterView.spec.ts src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts src/views/apps/document-converter/DocumentConverterProjectResult.spec.ts src/views/apps/document-converter/DocumentConverterResultPanel.spec.ts src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts`
+  passed with `24 passed`.
+- Addendum live authenticated proof:
+  after `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json`
+  and `pdm run run-local-pdm auth-integration check` passed, the command
+  `pdm run python -m scripts.authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/authenticated-home-work-apps --timeout-seconds 120`
+  passed with artifact directory
+  `.artifacts/authenticated-home-work-apps/20260627T162846Z/`. The redacted
+  manifest records desktop/tablet/compact project-preview proof plus
+  `single_file_compact.compact_controls_before_source_upload=true`,
+  `single_file_compact.single_file_accept=".pdf,.docx,.md,.markdown,.html,.htm"`,
+  `single_file_compact.single_file_pdf_source_inferred=true`,
+  `single_file_compact.single_file_remove_cleared_visible_upload=true`,
+  `single_file_compact.single_file_html_conversion_previewed=true`, and
+  `single_file_compact.single_file_mode_leak_absent_after_project_switch=true`.
+- Addendum gates:
+  `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`,
+  `pdm run lint`, `pdm run typecheck`, and `git diff --check` passed.
+  `fe-build` retained the existing dynamic/static import and large-chunk
+  warnings.
 
 ## Rollback Plan
 

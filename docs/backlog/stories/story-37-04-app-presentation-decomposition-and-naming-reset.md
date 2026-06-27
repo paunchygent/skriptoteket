@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-26
+updated: 2026-06-27
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -61,6 +61,10 @@ dashboard direction are settled.
 - [x] [PR-0386: ST-37-04 Audio Transcription button token remediation](../prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md)
 - [x] [PR-0387: ST-37-04 Document Converter small-screen mockup remediation](../prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md)
 - [x] [PR-0388: ST-37-04 Document Converter automatic preview and state-copy remediation](../prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md)
+- [ ] [PR-0398: ST-37-04 Document Converter production conversion and preview zoom remediation](../prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md)
+- [ ] [PR-0399: ST-37-04 Sir Convert v2 status vocabulary contract](../prs/pr-0399-st-37-04-sir-convert-v2-status-vocabulary-contract.md)
+- [ ] [PR-0400: ST-37-04 Document Converter artifact content hygiene contract](../prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md)
+- [ ] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
 
 ## Notes
 
