@@ -80,7 +80,7 @@ async def test_download_document_converter_artifact_reads_local_store_for_local_
         correlation_id="corr-1",
     )
 
-    assert filename == "source.pdf"
+    assert filename == "source - Konverterad PDF - 20260623.pdf"
     assert content_type == "application/pdf"
     assert content == b"%PDF-LOCAL"
     assert client.artifacts_by_upstream_id == {}

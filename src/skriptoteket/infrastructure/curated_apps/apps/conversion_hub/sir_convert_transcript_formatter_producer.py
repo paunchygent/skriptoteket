@@ -37,6 +37,10 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptFormatterProducerRequest,
     ConversionHubTranscriptFormatterProducerResult,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import (
+    SirConvertJobStatusV2,
+    parse_sir_convert_job_status_v2,
+)
 
 _ARTIFACT_KEY_BY_FORMAT = {
     ConversionHubTranscriptFormatterArtifactFormat.TXT: (
@@ -53,8 +57,10 @@ _ARTIFACT_KEY_BY_FORMAT = {
     ),
 }
 _FORMATTER_EXPORT_POLL_INTERVAL_SECONDS = 0.5
-_FORMATTER_EXPORT_TERMINAL_FAILURES = frozenset({"failed", "canceled", "cancelled"})
-_STALE_IDEMPOTENCY_STATUSES = frozenset({"queued", "submitted"})
+_FORMATTER_EXPORT_TERMINAL_FAILURES = frozenset(
+    {SirConvertJobStatusV2.FAILED, SirConvertJobStatusV2.CANCELED}
+)
+_STALE_IDEMPOTENCY_STATUSES = frozenset({SirConvertJobStatusV2.QUEUED})
 _RECOVERY_IDEMPOTENCY_MIN_WINDOW_SECONDS = 60
 
 
@@ -63,7 +69,7 @@ class _ProducerJobStatus:
     """Normalized Sir Convert job status metadata used by the producer."""
 
     job_id: str
-    status: str
+    status: SirConvertJobStatusV2
     error_message: str | None
     updated_at: datetime | None
 
@@ -99,7 +105,7 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
             initial_error_message=job_status.error_message,
             correlation_id=request.correlation_id,
         )
-        if status != "succeeded":
+        if status is not SirConvertJobStatusV2.SUCCEEDED:
             return ConversionHubTranscriptFormatterProducerResult(
                 sir_convert_job_id=job_status.job_id,
                 status=status,
@@ -186,7 +192,7 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
         return _read_job_status(response.json())
 
     def _is_stale_idempotency_job(self, job_status: _ProducerJobStatus) -> bool:
-        if job_status.status.strip().lower() not in _STALE_IDEMPOTENCY_STATUSES:
+        if job_status.status not in _STALE_IDEMPOTENCY_STATUSES:
             return False
         if job_status.updated_at is None:
             return False
@@ -200,16 +206,16 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
         self,
         *,
         job_id: str,
-        initial_status: str,
+        initial_status: SirConvertJobStatusV2,
         initial_error_message: str | None,
         correlation_id: str | None,
-    ) -> tuple[str, str | None]:
-        current_status = initial_status.strip().lower()
+    ) -> tuple[SirConvertJobStatusV2, str | None]:
+        current_status = initial_status
         current_error_message = initial_error_message
         deadline = time.monotonic() + self._settings.timeout_seconds
 
         while True:
-            if current_status == "succeeded":
+            if current_status is SirConvertJobStatusV2.SUCCEEDED:
                 return current_status, current_error_message
             if current_status in _FORMATTER_EXPORT_TERMINAL_FAILURES:
                 return current_status, current_error_message
@@ -217,7 +223,7 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
                 raise DomainError(
                     code=ErrorCode.SERVICE_UNAVAILABLE,
                     message="Sir Convert transcript formatter export timed out.",
-                    details={"job_id": job_id, "upstream_status": current_status},
+                    details={"job_id": job_id, "upstream_status": current_status.value},
                 )
 
             await asyncio.sleep(_FORMATTER_EXPORT_POLL_INTERVAL_SECONDS)
@@ -326,7 +332,7 @@ def _read_job_status(payload: object) -> _ProducerJobStatus:
         error_message = error_obj["message"]
     return _ProducerJobStatus(
         job_id=job_id_obj,
-        status=status_obj,
+        status=parse_sir_convert_job_status_v2(status_obj),
         error_message=error_message,
         updated_at=_read_datetime(job_obj.get("updated_at")),
     )

@@ -108,21 +108,14 @@ Keep this file updated so the next session can pick up work quickly.
   the same left-source / middle-operations / right-preview grammar in both
   `HTML/CSS-projekt` and `Filkonvertering`, with the shared file-operations
   section moved out of the preview footer and into the middle column.
+- `PR-0398` / `PR-0399` are active after review/redirection: bounded
+  Hemma/container evidence traced the production PDF failure to upstream Sir
+  Convert `running` status being rejected by Skriptoteket polling. `PR-0399`
+  owns typed Sir Convert v2 status vocabulary; `PR-0398` owns Document Converter
+  consumption, failure-state UX, and preview fit/zoom/pinch.
 ## Verification
-- Current retained proof regeneration is green for the scoped best-effort
-  preview contract:
-  - Skriptoteket Vite listens on `:5173` via `pdm run fe-dev-shared-auth`;
-    HuleEdu auth UI listens on `:5174` via
-    `pdm run run-local-pdm auth-integration fe-dev`.
-  - `/opt/homebrew/bin/pdm run python -m scripts.authenticated_home_work_apps`
-    succeeded with `.artifacts/authenticated-home-work-apps/20260626T031626Z/`.
-  - `manifest.redacted.json` records `grid_layout_fixture_rendered=true`,
-    expected visible text, visible CSS/image accents, missing-resource text,
-    nonblank rendered PDF PNGs, and no raw external URL or filesystem path text.
-  - Docker logs for `2026-06-26T03:16:20Z` through `2026-06-26T03:18:30Z`
-    show native WeasyPrint Grid `AssertionError`, app-owned compatibility
-    retry, preview POST/artifact GET `200`, and no final `422` or
-    `FileNotFoundError`.
+- Current retained scoped best-effort preview proof is green; older detail is
+  compacted to `.codex/long-term-memory/entries/session-2026-06-27-pr-0397-handoff-compaction.md`.
 - PR-0365 / PR-0372 retained browser proof and screenshots are recorded in
   their PR/review docs and artifact directories; keep the Docker-service proof
   lane intact for authenticated surfaces.
@@ -130,22 +123,19 @@ Keep this file updated so the next session can pick up work quickly.
   - Older PR-0379 through PR-0386 verification details are compacted to `.codex/long-term-memory/entries/session-2026-06-26-pr-0388-handoff-compaction.md`.
   - `PR-0385` correction proof is green; live authenticated proof artifact: `.artifacts/authenticated-home-work-apps/20260627T014512Z/manifest.redacted.json`.
   - `PR-0396` is done and approved by `REV-PR-0396`; backend naming/API tests, focused Document Converter Vitest, frontend/backend gates, live authenticated proof, docs/handoff, and diff hygiene passed. Live artifact: `.artifacts/authenticated-home-work-apps/20260627T041926Z/manifest.redacted.json`.
-  - `PR-0397` focused frontend proof is green: the red-first ownership specs
-    failed before the refactor because
-    `[data-testid="document-converter-source-column"]` was absent and
-    filename/download/save still lived in the preview footer; after the
-    refactor,
-    `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterProjectResult.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterFileApi.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterProjectPreviewApi.spec.ts`
-    passed with `22 passed`, `pdm run fe-type-check`, `pdm run fe-lint`, and
-    `pdm run fe-build` passed locally, and live authenticated proof passed at
-    `.artifacts/authenticated-home-work-apps/20260627T104130Z/manifest.redacted.json`
-    with refreshed desktop/compact Document Converter screenshots and
-    `document_converter_forbidden_surfaces_absent=true`. `REV-PR-0397` later
-    cleared the retained blocker after the strengthened single-file success-path
-    spec proved the same column ownership through the history-backed ready
-    result.
+  - `PR-0397` focused frontend proof and live authenticated proof are green;
+    details are in `docs/backlog/prs/pr-0397-st-37-05-document-converter-file-operations-layout-remediation.md`
+    and `.artifacts/authenticated-home-work-apps/20260627T104130Z/manifest.redacted.json`.
   - PR-0397 layout screenshots: `.artifacts/pr-0397-layout-screenshots/20260627T104912Z/` covers empty/active `HTML/CSS-projekt` and `Filkonvertering` at desktop, tablet, and compact widths, with generated-output selection asserted in the operations column.
   - Older retained `PR-0388` proof detail is compacted to `.codex/long-term-memory/entries/session-2026-06-27-pr-0397-handoff-compaction.md`.
+  - `PR-0398` / `PR-0399` repair proof is local-only and pending independent
+    reviews: production logs at
+    `2026-06-27T12:27Z` showed Sir Convert accepted/polled jobs while
+    Skriptoteket returned local `SERVICE_UNAVAILABLE` after receiving upstream
+    `running`; the repair now uses typed upstream enum parsing, fail-closed
+    unknown-status tests, explicit `RUNNING -> PROCESSING` mapping, PDF
+    fit/zoom/pinch/pan specs, and retained browser proof at
+    `.artifacts/authenticated-home-work-apps/20260627T132700Z/manifest.redacted.json`.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -193,5 +183,9 @@ git diff --check
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
 - Next governed step: keep broader shared extraction in `PR-0391`/`PR-0392`; `PR-0393` through `PR-0395` remain separate app/file adoption slices.
+- Active remediation: send `PR-0398` through retained ruthless review before
+  any commit/push/deploy.
+- Parallel remediation: send `PR-0399` through independent implementation and
+  retained review for the cross-service status vocabulary contract.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

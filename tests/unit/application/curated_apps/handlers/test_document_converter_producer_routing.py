@@ -36,6 +36,7 @@ from skriptoteket.application.curated_apps.handlers.document_converter_jobs impo
 from skriptoteket.protocols.documents import PdfTextExtractionProbe
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
+    SirConvertJobStatusV2,
     SirConvertJobV2,
     SirConvertSubmitRequestV2,
     SirConvertSubmittedJobV2,
@@ -393,7 +394,11 @@ async def test_create_document_converter_jobs_routes_heavy_pdf_to_sir_convert_ex
     repo = InMemoryConversionHubJobRepository()
     client = RecordingSirConvertClient()
     client.submit_results = [
-        SirConvertSubmittedJobV2(job_id="sir-heavy-1", status="queued", idempotent_replay=False)
+        SirConvertSubmittedJobV2(
+            job_id="sir-heavy-1",
+            status=SirConvertJobStatusV2.QUEUED,
+            idempotent_replay=False,
+        )
     ]
     store = InMemoryDocumentConverterArtifactStore()
     producer = FakeLocalProducer(
@@ -444,7 +449,11 @@ async def test_create_document_converter_jobs_routes_extractable_complex_pdf_to_
     repo = InMemoryConversionHubJobRepository()
     client = RecordingSirConvertClient()
     client.submit_results = [
-        SirConvertSubmittedJobV2(job_id="sir-table-1", status="queued", idempotent_replay=False)
+        SirConvertSubmittedJobV2(
+            job_id="sir-table-1",
+            status=SirConvertJobStatusV2.QUEUED,
+            idempotent_replay=False,
+        )
     ]
     store = InMemoryDocumentConverterArtifactStore()
     producer = FakeLocalProducer(

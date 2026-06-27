@@ -16,7 +16,7 @@ import re
 from hashlib import sha256
 from pathlib import Path
 
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Locator, Page, expect
 
 JsonObject = dict[str, object]
 
@@ -212,6 +212,7 @@ def assert_document_converter_route(
     expect(frame).to_be_visible(timeout=45_000)
     expect(download_button).to_be_enabled(timeout=45_000)
     expect(save_button).to_be_enabled(timeout=45_000)
+    zoom_controls = _assert_preview_zoom_controls(route)
 
     first_frame_src = frame.get_attribute("src")
     if not first_frame_src or not first_frame_src.startswith("blob:"):
@@ -278,6 +279,7 @@ def assert_document_converter_route(
         "document_converter_initial_save_disabled": True,
         "document_converter_preview_enabled_after_auto_render": True,
         "document_converter_refresh_replaced_iframe_src": True,
+        "document_converter_zoom_controls_working": True,
         "grid_layout_fixture_rendered": True,
         "document_converter_pdf_viewer_dom_inspection_supported": False,
         "document_converter_pdf_viewer_check_strategy": (
@@ -285,9 +287,106 @@ def assert_document_converter_route(
         ),
         "fixture_html_filename": DOCUMENT_CONVERTER_FIXTURE_HTML,
         "first_frame_src": first_frame_src,
+        "preview_zoom_controls": zoom_controls,
         "second_frame_src": second_frame_src,
         "rendered_preview": rendered_preview,
     }
+
+
+def _assert_preview_zoom_controls(route: Locator) -> JsonObject:
+    viewport = route.get_by_test_id("document-converter-pdf-viewport")
+    zoom_out = route.get_by_test_id("document-converter-preview-zoom-out")
+    zoom_in = route.get_by_test_id("document-converter-preview-zoom-in")
+    fit = route.get_by_test_id("document-converter-preview-fit")
+    label = route.get_by_test_id("document-converter-preview-zoom-label")
+
+    expect(viewport).to_be_visible()
+    expect(zoom_out).to_be_visible()
+    expect(zoom_in).to_be_visible()
+    expect(fit).to_be_visible()
+    expect(label).to_be_visible()
+
+    touch_action = viewport.evaluate("(element) => window.getComputedStyle(element).touchAction")
+    if touch_action == "none":
+        raise AssertionError("Document Converter PDF preview blocks touch panning.")
+
+    initial_label = label.inner_text()
+    zoom_in.click()
+    expect(label).not_to_have_text(initial_label)
+    zoomed_label = label.inner_text()
+    zoom_out.click()
+    expect(label).not_to_have_text(zoomed_label)
+    zoom_out_label = label.inner_text()
+    fit.click()
+    expect(label).to_have_text(initial_label)
+    touch_probe = _assert_preview_touch_ownership(viewport)
+    fit.click()
+    expect(label).to_have_text(initial_label)
+
+    return {
+        "fit_label": initial_label,
+        "touch_action": touch_action,
+        "touch_probe": touch_probe,
+        "zoomed_label": zoomed_label,
+        "zoom_out_label": zoom_out_label,
+    }
+
+
+def _assert_preview_touch_ownership(viewport: Locator) -> JsonObject:
+    probe = viewport.evaluate(
+        """async (element) => {
+            const label = document.querySelector('[data-testid="document-converter-preview-zoom-label"]');
+            if (!label) throw new Error("Missing Document Converter preview zoom label.");
+            const makeTouchList = (points) => {
+                const list = { item: (index) => list[index] ?? null, length: points.length };
+                points.forEach((point, index) => { list[index] = point; });
+                return list;
+            };
+            const makeEvent = (type, points) => {
+                if (typeof TouchEvent === "function" && typeof Touch === "function") {
+                    const touches = points.map((point, index) => new Touch({ ...point, identifier: index, target: element }));
+                    return new TouchEvent(type, { bubbles: true, cancelable: true, changedTouches: touches, targetTouches: touches, touches });
+                }
+                const event = new Event(type, { bubbles: true, cancelable: true });
+                Object.defineProperty(event, "touches", { configurable: true, value: makeTouchList(points) });
+                return event;
+            };
+            const afterFrame = async () => {
+                await new Promise((resolve) => window.requestAnimationFrame(resolve));
+                await new Promise((resolve) => window.requestAnimationFrame(resolve));
+            };
+            const initialLabel = label.textContent.trim();
+            const oneFingerBefore = makeEvent("touchmove", [{ clientX: 40, clientY: 120 }]);
+            element.dispatchEvent(oneFingerBefore);
+            element.dispatchEvent(makeEvent("touchstart", [{ clientX: 10, clientY: 10 }, { clientX: 110, clientY: 10 }]));
+            const pinchMove = makeEvent("touchmove", [{ clientX: 10, clientY: 10 }, { clientX: 260, clientY: 10 }]);
+            element.dispatchEvent(pinchMove);
+            element.dispatchEvent(makeEvent("touchend", []));
+            await afterFrame();
+            element.scrollTop = 0;
+            element.scrollLeft = 0;
+            const scrollHeight = element.scrollHeight;
+            const clientHeight = element.clientHeight;
+            element.scrollTop = 32;
+            element.scrollLeft = 12;
+            const oneFingerAfter = makeEvent("touchmove", [{ clientX: 48, clientY: 128 }]);
+            element.dispatchEvent(oneFingerAfter);
+            return {
+                client_height: clientHeight, initial_label: initialLabel, pinch_label: label.textContent.trim(),
+                one_finger_after_pinch_prevented: oneFingerAfter.defaultPrevented, one_finger_before_pinch_prevented: oneFingerBefore.defaultPrevented, pinch_move_prevented: pinchMove.defaultPrevented,
+                scroll_height: scrollHeight, scroll_left_after_set: element.scrollLeft, scroll_top_after_set: element.scrollTop, supports_touch_constructor: typeof Touch === "function", supports_touch_event: typeof TouchEvent === "function",
+            };
+        }"""
+    )
+    if probe["one_finger_before_pinch_prevented"] or probe["one_finger_after_pinch_prevented"]:
+        raise AssertionError("Document Converter PDF preview intercepts one-finger touch panning.")
+    if not probe["pinch_move_prevented"]:
+        raise AssertionError("Document Converter PDF preview did not claim the two-finger pinch.")
+    if probe["pinch_label"] == probe["initial_label"]:
+        raise AssertionError("Document Converter PDF preview pinch did not change zoom.")
+    if probe["scroll_height"] > probe["client_height"] and probe["scroll_top_after_set"] <= 0:
+        raise AssertionError("Document Converter PDF preview did not remain vertically scrollable.")
+    return probe
 
 
 def _write_fixture_image(path: Path) -> None:

@@ -5,7 +5,7 @@ title: "Runbook: Testing (Pytest + Vitest + Playwright)"
 status: active
 owners: "agents"
 created: 2025-12-29
-updated: 2026-03-26
+updated: 2026-06-27
 system: "skriptoteket-dev"
 ---
 
@@ -49,6 +49,15 @@ pdm run test
 
 ### Local PDF renderer checks
 
+- Use the canonical `pdm run test` surface for WeasyPrint-backed PDF renderer
+  tests. On macOS, that wrapper starts pytest with Homebrew/MacPorts native
+  library directories available to the child process before WeasyPrint imports
+  Pango, Harfbuzz, Fontconfig, and GObject.
+- If native libraries live outside `/opt/homebrew/lib`, `/usr/local/lib`, or
+  `/opt/local/lib`, set `SKRIPTOTEKET_NATIVE_LIBRARY_DIRS` to an
+  `os.pathsep`-separated list before running `pdm run test`.
+- Avoid raw `pytest` for local PDF renderer debugging; it can miss the native
+  library environment that the repo command surface deliberately supplies.
 - For WeasyPrint renderers built from `HTML(string=...)`, treat relative image/logo URLs as invalid
   unless `base_url` is supplied.
 - The repo-safe pattern is to pass the asset directory itself as a filesystem `Path` (or plain

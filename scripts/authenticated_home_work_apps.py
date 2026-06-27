@@ -18,6 +18,7 @@ import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TypedDict
 from urllib.parse import urlparse
 
 from playwright.sync_api import Page, expect, sync_playwright
@@ -56,9 +57,19 @@ REJECTED_COPY = (
     "Provkonverteraren",
     "Dokumentkonverteraren",
 )
-VIEWPORTS = (
-    {"label": "desktop", "width": 1512, "height": 900},
-    {"label": "compact", "width": 390, "height": 844},
+
+
+class ViewportConfig(TypedDict):
+    label: str
+    width: int
+    height: int
+    has_touch: bool
+
+
+VIEWPORTS: tuple[ViewportConfig, ...] = (
+    {"label": "desktop", "width": 1512, "height": 900, "has_touch": False},
+    {"label": "tablet", "width": 820, "height": 1180, "has_touch": True},
+    {"label": "compact", "width": 390, "height": 844, "has_touch": True},
 )
 JsonObject = dict[str, object]
 
@@ -131,9 +142,9 @@ def _capture_home(
     base_url: str,
     email: str,
     password: str,
-    viewport: dict[str, int | str],
+    viewport: ViewportConfig,
 ) -> JsonObject:
-    page.set_viewport_size({"width": int(viewport["width"]), "height": int(viewport["height"])})
+    page.set_viewport_size({"width": viewport["width"], "height": viewport["height"]})
     login_via_auth_entry(
         page,
         base_url=base_url,
@@ -190,7 +201,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             for viewport in VIEWPORTS:
                 context = browser.new_context(
                     base_url=config.base_url,
-                    viewport={"width": int(viewport["width"]), "height": int(viewport["height"])},
+                    has_touch=viewport["has_touch"],
+                    viewport={"width": viewport["width"], "height": viewport["height"]},
                 )
                 page = context.new_page()
                 page.set_default_timeout(args.timeout_seconds * 1_000)

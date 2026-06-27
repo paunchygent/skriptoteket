@@ -42,6 +42,7 @@ from skriptoteket.domain.scripting.vault import (
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
     SirConvertArtifactV2,
+    SirConvertJobStatusV2,
     SirConvertJobV2,
 )
 from tests.fixtures.application_fixtures import FakeUow
@@ -260,6 +261,37 @@ async def test_get_document_converter_job_adds_result_artifact_after_success() -
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_get_document_converter_job_keeps_running_upstream_job_in_progress() -> None:
+    actor = make_user()
+    job_id = uuid4()
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[job_id] = _document_job(
+        job_id=job_id,
+        owner_user_id=actor.id,
+        status=ConversionHubJobStatus.QUEUED,
+    )
+    client = FakeSirConvertClient()
+    client.jobs_by_upstream_id["sir-job-1"] = SirConvertJobV2(
+        job_id="sir-job-1",
+        status=SirConvertJobStatusV2.RUNNING,
+    )
+    handler = GetDocumentConverterJobHandler(
+        jobs=repo,
+        client=client,
+        uow=FakeUow(),
+        clock=SequenceClock(datetime(2026, 6, 23, 0, 0, 1, tzinfo=timezone.utc)),
+    )
+
+    result = await handler.handle(actor=actor, job_id=job_id, correlation_id="corr-running")
+
+    assert result.status is ConversionHubJobStatus.PROCESSING
+    assert result.error is None
+    assert result.result_artifact is None
+    assert repo.jobs[job_id].status is ConversionHubJobStatus.PROCESSING
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_get_document_converter_job_hides_non_document_job() -> None:
     actor = make_user()
     job_id = uuid4()
@@ -292,7 +324,7 @@ async def test_download_document_converter_artifact_rejects_pending_job() -> Non
     client = FakeSirConvertClient()
     client.jobs_by_upstream_id["sir-job-1"] = SirConvertJobV2(
         job_id="sir-job-1",
-        status="processing",
+        status=SirConvertJobStatusV2.RUNNING,
     )
     handler = DownloadDocumentConverterArtifactHandler(
         jobs=repo,

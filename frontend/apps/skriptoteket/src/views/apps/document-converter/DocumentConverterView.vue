@@ -156,8 +156,18 @@ const mobileSummaryDetails = computed(() => {
   ];
 });
 
+const isCurrentProjectPreviewFailure = computed(() => {
+  return workspaceMode.value === "project_preview" && project.canRetryPreview.value && Boolean(project.errorMessage.value);
+});
+const isRetainedProjectPreviewVisible = computed(() => {
+  return isCurrentProjectPreviewFailure.value && Boolean(project.previewPdfUrl.value || history.activePreviewUrl.value);
+});
+
 const feedbackMessage = computed(() => {
   if (workspaceMode.value === "project_preview") {
+    if (isRetainedProjectPreviewVisible.value && project.errorMessage.value) {
+      return `${project.errorMessage.value} Försök igen för att skapa en ny PDF.`;
+    }
     return project.statusMessage.value ?? project.errorMessage.value;
   }
   return singleFile.statusMessage.value ?? singleFile.errorMessage.value;
@@ -180,6 +190,7 @@ const canRetryCurrentMode = computed(() => {
 const isLiveProjectResultSelected = computed(() => {
   return (
     workspaceMode.value === "project_preview" &&
+    !isCurrentProjectPreviewFailure.value &&
     history.activeEntry.value?.id === project.activePreviewEntryId.value &&
     project.preview.value !== null
   );
@@ -193,6 +204,12 @@ const resultTitle = computed(() => {
 const { filenameExtensionLabel, filenameStemIntent } = useDocumentConverterFilenameIntent(resultTitle);
 const resultStateLabel = computed(() => {
   const entry = history.activeEntry.value;
+  if (isRetainedProjectPreviewVisible.value) {
+    return "Visar föregående PDF.";
+  }
+  if (isCurrentProjectPreviewFailure.value) {
+    return project.errorMessage.value ?? "Resultatet gick inte att skapa.";
+  }
   if (!entry) {
     return workspaceMode.value === "single_file"
       ? "Välj en fil som du vill konvertera."
@@ -213,6 +230,9 @@ const resultPreviewUrl = computed(() => {
   return history.activePreviewUrl.value;
 });
 const resultArtifactOptions = computed(() => {
+  if (isCurrentProjectPreviewFailure.value) {
+    return [];
+  }
   if (isLiveProjectResultSelected.value) {
     return (project.preview.value?.artifacts ?? []).map((artifact) => ({
       artifactId: artifact.artifact_id,
@@ -222,18 +242,27 @@ const resultArtifactOptions = computed(() => {
   return history.artifactOptions.value;
 });
 const resultActiveArtifactId = computed(() => {
+  if (isCurrentProjectPreviewFailure.value) {
+    return null;
+  }
   if (isLiveProjectResultSelected.value) {
     return project.selectedArtifact.value?.artifact_id ?? null;
   }
   return history.activeArtifactId.value;
 });
 const canDownloadResult = computed(() => {
+  if (isCurrentProjectPreviewFailure.value) {
+    return false;
+  }
   if (isLiveProjectResultSelected.value) {
     return project.canUseSelectedArtifact.value;
   }
   return history.canDownloadActiveEntry.value;
 });
 const canSaveResult = computed(() => {
+  if (isCurrentProjectPreviewFailure.value) {
+    return false;
+  }
   if (isLiveProjectResultSelected.value) {
     return project.canUseSelectedArtifact.value;
   }
@@ -258,6 +287,9 @@ async function startSingleFileConversion(): Promise<void> {
 }
 
 async function downloadResult(): Promise<void> {
+  if (isCurrentProjectPreviewFailure.value) {
+    return;
+  }
   if (isLiveProjectResultSelected.value) {
     await project.downloadSelectedArtifact(filenameStemIntent.value);
     return;
@@ -274,6 +306,9 @@ async function retryCurrentMode(): Promise<void> {
 }
 
 async function saveResult(): Promise<void> {
+  if (isCurrentProjectPreviewFailure.value) {
+    return;
+  }
   if (isLiveProjectResultSelected.value) {
     await project.saveSelectedArtifact(filenameStemIntent.value);
     await singleFile.loadSources();
@@ -283,6 +318,9 @@ async function saveResult(): Promise<void> {
 }
 
 async function selectResultArtifact(artifactId: string): Promise<void> {
+  if (isCurrentProjectPreviewFailure.value) {
+    return;
+  }
   if (isLiveProjectResultSelected.value) {
     project.selectArtifact(artifactId);
     return;

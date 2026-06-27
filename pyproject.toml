@@ -366,10 +366,10 @@ shellcheck = "shellcheck"
 shellcheck-all = 'find . -type f \( -name "*.sh" -o -name "*.bash" \) -not -path "./.git/*" -not -path "./.venv/*" -not -path "./node_modules/*" -not -path "./frontend/node_modules/*" -exec shellcheck {} +'
 
 # Tests
-test = "pytest"
-test-parallel = "pytest -n auto"
-test-sequential = "pytest -n 0"
-test-simulations = "pytest -m simulation -s -v --durations=10 --log-cli-level=INFO --import-mode=importlib --override-ini addopts=''"
+test = "python -m scripts.run_pytest_with_native_libs"
+test-parallel = "python -m scripts.run_pytest_with_native_libs -n auto"
+test-sequential = "python -m scripts.run_pytest_with_native_libs -n 0"
+test-simulations = "python -m scripts.run_pytest_with_native_libs -m simulation -s -v --durations=10 --log-cli-level=INFO --import-mode=importlib --override-ini addopts=''"
 
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"

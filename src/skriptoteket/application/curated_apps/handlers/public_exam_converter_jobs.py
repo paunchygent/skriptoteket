@@ -134,7 +134,7 @@ class PublicExamConverterRuntimeHandler:
                 ),
             )
         )
-        status = PublicExamConverterJobStatus.from_upstream(upstream.status)
+        status = PublicExamConverterJobStatus.from_sir_convert_status(upstream.status)
         ttl_seconds = min(artifact_ttl_seconds, grant.artifact_ttl_seconds)
         expires_at = min(grant.expires_at, now + timedelta(seconds=ttl_seconds))
         job = await self._store.create(
@@ -305,7 +305,7 @@ class PublicExamConverterRuntimeHandler:
             await self._store.update(job=failed)
             raise _upstream_error(exc) from exc
 
-        status = PublicExamConverterJobStatus.from_upstream(upstream.status)
+        status = PublicExamConverterJobStatus.from_sir_convert_status(upstream.status)
         if status is job.status:
             return job
         updated = replace(

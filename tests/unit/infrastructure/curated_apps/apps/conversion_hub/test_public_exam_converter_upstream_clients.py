@@ -22,6 +22,7 @@ import pytest
 from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterTarget,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     public_exam_converter_grants,
     public_exam_converter_sir_convert_client_v2,
@@ -33,6 +34,7 @@ from skriptoteket.protocols.public_exam_converter import (
     PublicExamConverterGrantRequest,
     PublicExamConverterSirConvertSubmitRequest,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
 @pytest.mark.unit
@@ -193,7 +195,7 @@ async def test_public_sir_convert_client_uses_parent_grant_and_exact_artifact_le
 
     assert submitted.manifest_artifact_read_lease_token == "manifest-lease"
     assert submitted.idempotent_replay is True
-    assert job.status == "succeeded"
+    assert job.status is SirConvertJobStatusV2.SUCCEEDED
     assert result["status"] == "succeeded"
     artifacts = manifest["artifacts"]
     assert isinstance(artifacts, list)
@@ -220,6 +222,38 @@ async def test_public_sir_convert_client_uses_parent_grant_and_exact_artifact_le
     assert "x-public-artifact-read-lease" not in captured[2][2]
     assert captured[3][2]["x-public-artifact-read-lease"] == "manifest-lease"
     assert captured[4][2]["x-public-artifact-read-lease"] == "artifact-lease"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_sir_convert_client_rejects_unknown_upstream_job_status() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v2/convert/jobs/job-unknown":
+            return httpx.Response(200, json={"job": {"job_id": "job-unknown", "status": "paused"}})
+        raise AssertionError(f"Unexpected request: {request.method} {request.url}")
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        svc = public_exam_converter_sir_convert_client_v2.PublicExamConverterSirConvertClientV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="sir-convert-key",
+                timeout_seconds=10.0,
+            ),
+            client=client,
+        )
+        with pytest.raises(DomainError) as excinfo:
+            await svc.get_public_exam_converter_job(
+                "job-unknown",
+                public_conversion_grant="opaque-public-grant",
+                correlation_id="corr-public",
+            )
+
+    assert excinfo.value.code is ErrorCode.SERVICE_UNAVAILABLE
+    assert excinfo.value.details == {
+        "reason_code": "sir_convert_unknown_job_status",
+        "status": "paused",
+    }
 
 
 def _decode_jwt_payload(token: str) -> dict[str, object]:

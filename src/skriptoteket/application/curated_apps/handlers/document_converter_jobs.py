@@ -238,7 +238,7 @@ class CreateDocumentConverterJobsHandler:
 
         return await self._update_job(
             job=job,
-            status=ConversionHubJobStatus.from_upstream(submitted.status),
+            status=ConversionHubJobStatus.from_sir_convert_status(submitted.status),
             upstream_job_id=submitted.job_id,
             error_message=None,
         )

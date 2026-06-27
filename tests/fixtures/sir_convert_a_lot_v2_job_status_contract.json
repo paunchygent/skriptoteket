@@ -1,0 +1,16 @@
+{
+  "components": {
+    "schemas": {
+      "SirConvertJobStatusV2": {
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "failed",
+          "canceled"
+        ],
+        "type": "string"
+      }
+    }
+  }
+}

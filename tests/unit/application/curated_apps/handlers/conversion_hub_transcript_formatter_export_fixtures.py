@@ -46,6 +46,7 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptFormatterProducerRequest,
     ConversionHubTranscriptFormatterProducerResult,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 from tests.fixtures.application_fixtures import FakeUow
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_transcript_saves import (
     FixedClock,
@@ -313,7 +314,7 @@ def producer_success(
     }
     return ConversionHubTranscriptFormatterProducerResult(
         sir_convert_job_id=job_id,
-        status="succeeded",
+        status=SirConvertJobStatusV2.SUCCEEDED,
         result=result_payload(job_id=job_id),
         artifact_manifest=artifact_manifest(job_id=job_id, artifacts=artifact_bytes),
         artifacts={
@@ -330,7 +331,7 @@ def producer_success(
 
 def producer_status(
     *,
-    status: str,
+    status: SirConvertJobStatusV2,
     job_id: str = "sir-export-job-1",
     error_message: str | None = "Replay failed.",
 ) -> ConversionHubTranscriptFormatterProducerResult:

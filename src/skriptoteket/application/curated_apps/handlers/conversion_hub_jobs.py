@@ -133,7 +133,7 @@ class CreateConversionHubJobsHandler:
 
             updated_job = await self._update_job(
                 job=local_job,
-                status=ConversionHubJobStatus.from_upstream(submitted.status),
+                status=ConversionHubJobStatus.from_sir_convert_status(submitted.status),
                 upstream_job_id=submitted.job_id,
                 error_message=None,
             )
@@ -406,7 +406,7 @@ class _BaseConversionHubJobHandler:
             return job
 
         upstream = await self._client.get_job(job.upstream_job_id, correlation_id=correlation_id)
-        refreshed_status = ConversionHubJobStatus.from_upstream(upstream.status)
+        refreshed_status = ConversionHubJobStatus.from_sir_convert_status(upstream.status)
         if refreshed_status is job.status:
             return job
 

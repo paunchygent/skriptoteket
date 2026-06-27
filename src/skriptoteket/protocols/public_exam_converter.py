@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactV2,
+    SirConvertJobStatusV2,
     SirConvertJobV2,
 )
 
@@ -87,7 +88,7 @@ class PublicExamConverterSirConvertSubmitRequest:
 @dataclass(frozen=True, slots=True)
 class PublicExamConverterSirConvertSubmittedJob:
     job_id: str
-    status: str
+    status: SirConvertJobStatusV2
     idempotent_replay: bool
     manifest_artifact_read_lease_token: str
 

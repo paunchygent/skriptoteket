@@ -45,6 +45,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertClientSettingsV2,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.curated_apps.handlers import (
@@ -254,7 +255,10 @@ async def test_product_export_records_failed_terminal_state_without_artifact_row
     jobs = fx.ExportJobRepository()
     artifacts = fx.ExportArtifactRepository()
     producer = fx.FakeFormatterProducer(
-        fx.producer_status(status="failed", error_message="formatter execution failed"),
+        fx.producer_status(
+            status=SirConvertJobStatusV2.FAILED,
+            error_message="formatter execution failed",
+        ),
     )
     await fx.seed_transcript(
         actor_id=actor.id,
@@ -340,7 +344,9 @@ async def test_product_export_records_pending_state_without_fake_artifacts() -> 
     overlays = InMemoryTranscriptSpeakerOverlayRepository()
     jobs = fx.ExportJobRepository()
     artifacts = fx.ExportArtifactRepository()
-    producer = fx.FakeFormatterProducer(fx.producer_status(status="queued", error_message=None))
+    producer = fx.FakeFormatterProducer(
+        fx.producer_status(status=SirConvertJobStatusV2.QUEUED, error_message=None)
+    )
     await fx.seed_transcript(
         actor_id=actor.id,
         transcript_id=transcript_id,
@@ -379,7 +385,9 @@ async def test_pending_export_state_preserves_requested_artifacts_for_post_and_g
     jobs = fx.ExportJobRepository()
     artifacts = fx.ExportArtifactRepository()
     export_states = fx.ExportStateRepository()
-    producer = fx.FakeFormatterProducer(fx.producer_status(status="running", error_message=None))
+    producer = fx.FakeFormatterProducer(
+        fx.producer_status(status=SirConvertJobStatusV2.RUNNING, error_message=None)
+    )
     await fx.seed_transcript(
         actor_id=actor.id,
         transcript_id=transcript_id,
@@ -429,7 +437,10 @@ async def test_failed_export_state_preserves_requested_artifacts_for_post_and_ge
     artifacts = fx.ExportArtifactRepository()
     export_states = fx.ExportStateRepository()
     producer = fx.FakeFormatterProducer(
-        fx.producer_status(status="failed", error_message="formatter execution failed"),
+        fx.producer_status(
+            status=SirConvertJobStatusV2.FAILED,
+            error_message="formatter execution failed",
+        ),
     )
     await fx.seed_transcript(
         actor_id=actor.id,

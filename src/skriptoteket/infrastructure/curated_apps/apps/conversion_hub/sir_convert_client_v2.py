@@ -25,11 +25,13 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
     SirConvertArtifactV2,
+    SirConvertJobStatusV2,
     SirConvertJobV2,
     SirConvertSubmitRequestV2,
     SirConvertSubmittedJobV2,
     SirConvertWebhookSubscriptionSummaryV2,
     SirConvertWebhookSubscriptionV2,
+    parse_sir_convert_job_status_v2,
 )
 
 
@@ -45,7 +47,9 @@ class SirConvertClientSettingsV2:
 
 _PDF_TEXT_EXTRACTION_WAIT_SECONDS = 0
 _PDF_TEXT_EXTRACTION_POLL_INTERVAL_SECONDS = 0.5
-_PDF_TEXT_EXTRACTION_TERMINAL_FAILURES = frozenset({"failed", "canceled", "cancelled"})
+_PDF_TEXT_EXTRACTION_TERMINAL_FAILURES = frozenset(
+    {SirConvertJobStatusV2.FAILED, SirConvertJobStatusV2.CANCELED}
+)
 
 
 def _extract_service_error(
@@ -93,7 +97,7 @@ def _extract_service_error(
     )
 
 
-def _read_job_id_and_status(payload: object) -> tuple[str, str]:
+def _read_job_id_and_status(payload: object) -> tuple[str, SirConvertJobStatusV2]:
     if not isinstance(payload, dict):
         raise DomainError(
             code=ErrorCode.SERVICE_UNAVAILABLE,
@@ -115,7 +119,7 @@ def _read_job_id_and_status(payload: object) -> tuple[str, str]:
             message="Sir Convert-a-Lot v2 response is missing 'job_id' or 'status'.",
             details={},
         )
-    return job_id_obj, status_obj
+    return job_id_obj, parse_sir_convert_job_status_v2(status_obj)
 
 
 def _read_artifact_outcome(*, job_id: str, response: httpx.Response) -> SirConvertArtifactOutcomeV2:
@@ -210,7 +214,7 @@ class SirConvertALotClientV2:
         self,
         *,
         job_id: str,
-        initial_status: str,
+        initial_status: SirConvertJobStatusV2,
         correlation_id: str | None,
     ) -> None:
         """Poll one PDF-to-Markdown job until it succeeds or fails."""
@@ -219,19 +223,19 @@ class SirConvertALotClientV2:
         deadline = time.monotonic() + self._settings.timeout_seconds
 
         while True:
-            if current_status == "succeeded":
+            if current_status is SirConvertJobStatusV2.SUCCEEDED:
                 return
             if current_status in _PDF_TEXT_EXTRACTION_TERMINAL_FAILURES:
                 raise DomainError(
                     code=ErrorCode.SERVICE_UNAVAILABLE,
                     message="Sir Convert-a-Lot v2 PDF extraction job failed.",
-                    details={"job_id": job_id, "upstream_status": current_status},
+                    details={"job_id": job_id, "upstream_status": current_status.value},
                 )
             if time.monotonic() >= deadline:
                 raise DomainError(
                     code=ErrorCode.SERVICE_UNAVAILABLE,
                     message="Sir Convert-a-Lot v2 PDF extraction timed out.",
-                    details={"job_id": job_id, "upstream_status": current_status},
+                    details={"job_id": job_id, "upstream_status": current_status.value},
                 )
 
             await asyncio.sleep(_PDF_TEXT_EXTRACTION_POLL_INTERVAL_SECONDS)

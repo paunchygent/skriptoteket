@@ -265,15 +265,6 @@ def product_status_from_job(
     return ConversionHubTranscriptFormatterExportStatus.PENDING
 
 
-def job_status_from_producer(status: str) -> ConversionHubJobStatus:
-    """Normalize producer statuses into the local job ledger enum."""
-
-    normalized = status.strip().lower()
-    if normalized == "running":
-        normalized = "processing"
-    return ConversionHubJobStatus.from_upstream(normalized)
-
-
 def local_export_input_filename(*, transcript_id: UUID) -> str:
     """Return the product-local export job filename key for one transcript."""
 

@@ -154,6 +154,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md`
 - Document Converter file operations layout remediation PR slice:
   `docs/backlog/prs/pr-0397-st-37-05-document-converter-file-operations-layout-remediation.md`
+- Document Converter production conversion and preview zoom remediation PR slice:
+  `docs/backlog/prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md`
+- Sir Convert v2 status vocabulary contract PR slice:
+  `docs/backlog/prs/pr-0399-st-37-04-sir-convert-v2-status-vocabulary-contract.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

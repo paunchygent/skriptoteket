@@ -20,6 +20,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_formatter_c
     ConversionHubTranscriptFormatterArtifactFormat,
     ConversionHubTranscriptFormatterArtifactKey,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     sir_convert_transcript_formatter_producer as producer_module,
 )
@@ -29,6 +30,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_cl
 from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptFormatterProducerRequest,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
 @pytest.mark.unit
@@ -128,7 +130,7 @@ async def test_formatter_producer_polls_accepted_async_job_to_artifacts(
         )
 
     assert result.sir_convert_job_id == "job-async-1"
-    assert result.status == "succeeded"
+    assert result.status is SirConvertJobStatusV2.SUCCEEDED
     assert result.result == {"artifact_key": "transcript_replay_bundle_manifest"}
     assert result.artifact_manifest == {
         "artifacts": [
@@ -274,7 +276,7 @@ async def test_formatter_producer_recovers_stale_idempotent_queued_job(
         )
 
     assert result.sir_convert_job_id == "job-recovered-1"
-    assert result.status == "succeeded"
+    assert result.status is SirConvertJobStatusV2.SUCCEEDED
     assert (
         result.artifacts[ConversionHubTranscriptFormatterArtifactKey.TRANSCRIPT_TXT].content
         == artifact_payloads["transcript_txt"]
@@ -284,3 +286,59 @@ async def test_formatter_producer_recovers_stale_idempotent_queued_job(
     assert requests_seen[1][2] is not None
     assert requests_seen[1][2].startswith("idem-export-1:recover:job-stale-1:")
     assert all("job-stale-1" not in path for _, path, _ in requests_seen[2:])
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_formatter_producer_rejects_unknown_upstream_status_fail_closed() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/v2/convert/jobs":
+            return httpx.Response(
+                202,
+                json={"job": {"job_id": "job-unknown", "status": "paused"}},
+            )
+        raise AssertionError(f"Unexpected request: {request.method} {request.url}")
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        producer = producer_module.SirConvertTranscriptFormatterProducerV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="test-key",
+                timeout_seconds=10.0,
+            ),
+            client=client,
+        )
+        with pytest.raises(DomainError) as excinfo:
+            await producer.create_transcript_formatter_export(
+                request=ConversionHubTranscriptFormatterProducerRequest(
+                    filename="saved-transcript.json",
+                    content_type="application/json",
+                    file_bytes=b'{"schema_version":"transcript_json_v1"}',
+                    job_spec={
+                        "api_version": "v2",
+                        "source": {
+                            "kind": "upload",
+                            "filename": "saved-transcript.json",
+                            "format": "transcript_json",
+                        },
+                        "conversion": {"output_format": "transcript_bundle"},
+                        "transcript_formatter_options": {
+                            "schema_version": "transcript_formatter_replay_v1",
+                            "requested_artifacts": ["txt"],
+                            "speaker_label_overrides": [],
+                        },
+                        "retention": {"pin": False},
+                    },
+                    requested_artifacts=(ConversionHubTranscriptFormatterArtifactFormat.TXT,),
+                    idempotency_key="idem-export-unknown",
+                    correlation_id="corr-export-unknown",
+                    wait_seconds=0,
+                )
+            )
+
+    assert excinfo.value.code is ErrorCode.SERVICE_UNAVAILABLE
+    assert excinfo.value.details == {
+        "reason_code": "sir_convert_unknown_job_status",
+        "status": "paused",
+    }

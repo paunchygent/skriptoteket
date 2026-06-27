@@ -16,6 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from typing import assert_never
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -23,6 +24,7 @@ from skriptoteket.application.curated_apps.sir_convert_contracts import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     DigiExamMigrationBundleSchemaVersion,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
 class PublicExamConverterTarget(StrEnum):
@@ -44,13 +46,24 @@ class PublicExamConverterJobStatus(StrEnum):
     EXPIRED = "expired"
 
     @classmethod
-    def from_upstream(cls, status: str) -> "PublicExamConverterJobStatus":
-        normalized = status.strip().lower()
-        if normalized in {"running", "processing"}:
-            return cls.PROCESSING
-        if normalized == "cancelled":
-            return cls.CANCELED
-        return cls(normalized)
+    def from_sir_convert_status(
+        cls,
+        status: SirConvertJobStatusV2,
+    ) -> "PublicExamConverterJobStatus":
+        """Translate typed Sir Convert v2 job state into the public job lifecycle."""
+
+        match status:
+            case SirConvertJobStatusV2.QUEUED:
+                return cls.QUEUED
+            case SirConvertJobStatusV2.RUNNING:
+                return cls.PROCESSING
+            case SirConvertJobStatusV2.SUCCEEDED:
+                return cls.SUCCEEDED
+            case SirConvertJobStatusV2.FAILED:
+                return cls.FAILED
+            case SirConvertJobStatusV2.CANCELED:
+                return cls.CANCELED
+        assert_never(status)
 
 
 @dataclass(frozen=True, slots=True)

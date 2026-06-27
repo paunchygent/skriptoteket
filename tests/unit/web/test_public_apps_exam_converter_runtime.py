@@ -51,6 +51,7 @@ from skriptoteket.protocols.public_exam_converter import (
 from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactV2,
+    SirConvertJobStatusV2,
     SirConvertJobV2,
 )
 from skriptoteket.web.api.v1 import public_apps_exam_converter as api
@@ -92,7 +93,7 @@ class FakeSirConvertClient:
     def __init__(self) -> None:
         self.submit_requests: list[PublicExamConverterSirConvertSubmitRequest] = []
         self.download_requests: list[tuple[str, str, str]] = []
-        self.status = "succeeded"
+        self.status = SirConvertJobStatusV2.SUCCEEDED
 
     async def submit_public_exam_converter_job(
         self,

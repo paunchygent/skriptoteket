@@ -11,11 +11,59 @@
  *   - Receives derived state from `useDocumentConverterSessionHistory`.
  *   - Leaves teacher actions to the operations-column controls.
  */
-defineProps<{
+import { onBeforeUnmount, ref, watch } from "vue";
+
+import { IconFitView, IconZoomIn, IconZoomOut } from "../../../components/icons";
+import { useDocumentPreviewZoom } from "./useDocumentPreviewZoom";
+
+const props = defineProps<{
   activePreviewUrl: string | null;
   resultTitle: string;
   resultStateLabel: string;
 }>();
+
+const previewViewport = ref<HTMLElement | null>(null);
+const zoom = useDocumentPreviewZoom({ resetSource: () => props.activePreviewUrl });
+
+let resizeObserver: ResizeObserver | null = null;
+
+function disconnectResizeObserver(): void {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+}
+
+watch(
+  previewViewport,
+  (element, _previousElement, onCleanup) => {
+    disconnectResizeObserver();
+    if (!element || typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) {
+        return;
+      }
+      zoom.setViewportSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      });
+    });
+    observer.observe(element);
+    resizeObserver = observer;
+    onCleanup(() => {
+      observer.disconnect();
+      if (resizeObserver === observer) {
+        resizeObserver = null;
+      }
+    });
+  },
+  { flush: "post", immediate: true },
+);
+
+onBeforeUnmount(() => {
+  disconnectResizeObserver();
+});
 </script>
 
 <template>
@@ -25,6 +73,49 @@ defineProps<{
   >
     <header class="dc-preview-header">
       <h2>{{ resultTitle }}</h2>
+      <div
+        v-if="activePreviewUrl"
+        class="dc-preview-toolbar"
+        aria-label="Förhandsvisningens zoom"
+      >
+        <button
+          type="button"
+          class="dc-icon-button"
+          data-testid="document-converter-preview-zoom-out"
+          aria-label="Zooma ut"
+          title="Zooma ut"
+          @click="zoom.zoomOut"
+        >
+          <IconZoomOut :size="16" />
+        </button>
+        <span
+          class="dc-preview-zoom-label"
+          data-testid="document-converter-preview-zoom-label"
+          aria-live="polite"
+        >
+          {{ zoom.scalePercent.value }}%
+        </span>
+        <button
+          type="button"
+          class="dc-icon-button"
+          data-testid="document-converter-preview-zoom-in"
+          aria-label="Zooma in"
+          title="Zooma in"
+          @click="zoom.zoomIn"
+        >
+          <IconZoomIn :size="16" />
+        </button>
+        <button
+          type="button"
+          class="dc-icon-button"
+          data-testid="document-converter-preview-fit"
+          aria-label="Anpassa till vyn"
+          title="Anpassa till vyn"
+          @click="zoom.fitToView"
+        >
+          <IconFitView :size="16" />
+        </button>
+      </div>
     </header>
 
     <div class="dc-preview-body">
@@ -32,13 +123,29 @@ defineProps<{
         class="dc-artifact-result"
         aria-label="Resultat"
       >
-        <iframe
+        <div
           v-if="activePreviewUrl"
-          data-testid="document-converter-pdf-frame"
-          class="dc-artifact-frame"
-          :src="activePreviewUrl"
-          :title="resultTitle"
-        />
+          ref="previewViewport"
+          class="dc-pdf-viewport"
+          data-testid="document-converter-pdf-viewport"
+          @touchstart="zoom.handleTouchStart"
+          @touchmove="zoom.handleTouchMove"
+          @touchend="zoom.endTouchGesture"
+          @touchcancel="zoom.endTouchGesture"
+        >
+          <div
+            class="dc-pdf-surface"
+            data-testid="document-converter-pdf-surface"
+            :style="zoom.scaledSurfaceStyle.value"
+          >
+            <iframe
+              data-testid="document-converter-pdf-frame"
+              class="dc-artifact-frame"
+              :src="activePreviewUrl"
+              :title="resultTitle"
+            />
+          </div>
+        </div>
         <div
           v-else
           class="dc-result-empty"

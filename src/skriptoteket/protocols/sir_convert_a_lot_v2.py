@@ -11,13 +11,42 @@ Relationships:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Literal, Protocol
+
+from skriptoteket.domain.errors import DomainError, ErrorCode
+
+
+class SirConvertJobStatusV2(StrEnum):
+    """Canonical Sir Convert-a-Lot v2 upstream job lifecycle."""
+
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"
+
+
+def parse_sir_convert_job_status_v2(status: str) -> SirConvertJobStatusV2:
+    """Parse one Sir Convert v2 job status and fail closed on vocabulary drift."""
+
+    try:
+        return SirConvertJobStatusV2(status)
+    except ValueError as exc:
+        raise DomainError(
+            code=ErrorCode.SERVICE_UNAVAILABLE,
+            message="Sir Convert-a-Lot v2 returned an unsupported job status.",
+            details={
+                "reason_code": "sir_convert_unknown_job_status",
+                "status": status,
+            },
+        ) from exc
 
 
 @dataclass(frozen=True, slots=True)
 class SirConvertJobV2:
     job_id: str
-    status: str
+    status: SirConvertJobStatusV2
 
 
 @dataclass(frozen=True, slots=True)

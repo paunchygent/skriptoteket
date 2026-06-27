@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 from pathlib import Path
 from uuid import uuid4
 
@@ -22,7 +23,40 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_cl
     SirConvertClientSettingsV2,
     build_sir_convert_async_http_client,
 )
-from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertSubmitRequestV2
+from skriptoteket.protocols.sir_convert_a_lot_v2 import (
+    SirConvertJobStatusV2,
+    SirConvertSubmitRequestV2,
+    parse_sir_convert_job_status_v2,
+)
+
+CONTRACT_FIXTURE = (
+    Path(__file__).resolve().parents[5]
+    / "fixtures"
+    / "sir_convert_a_lot_v2_job_status_contract.json"
+)
+
+
+def _contract_status_values() -> set[str]:
+    payload = json.loads(CONTRACT_FIXTURE.read_text(encoding="utf-8"))
+    values = payload["components"]["schemas"]["SirConvertJobStatusV2"]["enum"]
+    return set(values)
+
+
+@pytest.mark.unit
+def test_sir_convert_job_status_enum_matches_committed_v2_contract_fixture() -> None:
+    assert {status.value for status in SirConvertJobStatusV2} == _contract_status_values()
+
+
+@pytest.mark.unit
+def test_sir_convert_job_status_parser_rejects_unknown_status_fail_closed() -> None:
+    with pytest.raises(DomainError) as excinfo:
+        parse_sir_convert_job_status_v2("paused")
+
+    assert excinfo.value.code is ErrorCode.SERVICE_UNAVAILABLE
+    assert excinfo.value.details == {
+        "reason_code": "sir_convert_unknown_job_status",
+        "status": "paused",
+    }
 
 
 @pytest.mark.unit
@@ -82,7 +116,7 @@ async def test_submit_job_sends_api_key_and_idempotency_key_and_job_spec_payload
     assert captured_correlation_id == "corr-1"
 
     assert submitted.job_id == "job-1"
-    assert submitted.status == "queued"
+    assert submitted.status is SirConvertJobStatusV2.QUEUED
     assert submitted.idempotent_replay is True
 
     assert captured_body is not None
@@ -359,4 +393,33 @@ async def test_build_sir_convert_async_http_client_supports_unix_socket_transpor
 
     assert seen_request_lines == ["GET /v2/convert/jobs/job-uds HTTP/1.1"]
     assert job.job_id == "job-uds"
-    assert job.status == "queued"
+    assert job.status is SirConvertJobStatusV2.QUEUED
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_job_rejects_unknown_upstream_status_at_client_boundary() -> None:
+    async def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"job": {"job_id": "job-unknown", "status": "paused"}},
+        )
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        svc = SirConvertALotClientV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="test-key",
+                timeout_seconds=10.0,
+            ),
+            client=client,
+        )
+        with pytest.raises(DomainError) as excinfo:
+            await svc.get_job("job-unknown", correlation_id="corr-unknown")
+
+    assert excinfo.value.code is ErrorCode.SERVICE_UNAVAILABLE
+    assert excinfo.value.details == {
+        "reason_code": "sir_convert_unknown_job_status",
+        "status": "paused",
+    }

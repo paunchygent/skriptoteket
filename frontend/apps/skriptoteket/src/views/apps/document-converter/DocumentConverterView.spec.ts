@@ -133,6 +133,20 @@ async function flushAutoPreview(ms = AUTO_PREVIEW_DEBOUNCE_MS): Promise<void> {
   await flushPromises();
 }
 
+function expectResultActionsEnabled(wrapper: VueWrapper): void {
+  expect(resultActionDisabledState(wrapper)).toEqual([undefined, undefined, undefined]);
+}
+function expectResultActionsDisabled(wrapper: VueWrapper): void {
+  expect(resultActionDisabledState(wrapper)).toEqual(["", "", ""]);
+}
+function resultActionDisabledState(wrapper: VueWrapper): Array<string | undefined> {
+  return [
+    wrapper.get('[data-testid="document-converter-download"]').attributes("disabled"),
+    wrapper.get('[data-testid="document-converter-save"]').attributes("disabled"),
+    wrapper.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]').attributes("disabled"),
+  ];
+}
+
 describe("DocumentConverterView", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -206,12 +220,7 @@ describe("DocumentConverterView", () => {
       '[data-testid="document-converter-pdf-frame"]',
     );
     expect(firstFrame.attributes("src")).toMatch(/^blob:document-converter-/);
-    expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      undefined,
-    );
-    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe(
-      undefined,
-    );
+    expectResultActionsEnabled(wrapper);
     expect(wrapper.text()).not.toContain("Skapar PDF...");
     expect(wrapper.text()).not.toContain("Det gick inte att skapa PDF:en.");
 
@@ -228,12 +237,7 @@ describe("DocumentConverterView", () => {
       }),
     );
     expect(wrapper.text()).toContain("Skapar PDF...");
-    expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      undefined,
-    );
-    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe(
-      undefined,
-    );
+    expectResultActionsEnabled(wrapper);
 
     secondRender.resolve(
       buildPreviewResult({
@@ -289,6 +293,43 @@ describe("DocumentConverterView", () => {
     );
   });
 
+  it("keeps the current project preview ready after download and save action failures", async () => {
+    apiMocks.renderDocumentConverterProjectPreview.mockResolvedValue(
+      buildPreviewResult({
+        artifacts: [
+          { artifactId: "artifact-current", filename: "index.pdf" },
+          { artifactId: "artifact-extra", filename: "appendix.pdf" },
+        ],
+        previewId: "preview-actions",
+      }),
+    );
+    apiMocks.loadDocumentConverterProjectPreviewArtifactBlob.mockResolvedValue({
+      blob: new Blob(["pdf"], { type: "application/pdf" }),
+      contentType: "application/pdf",
+      filename: "index.pdf",
+    });
+    apiMocks.downloadDocumentConverterProjectPreviewArtifact.mockRejectedValueOnce(new Error("download failed"));
+    apiMocks.saveDocumentConverterProjectPreviewArtifact.mockRejectedValueOnce(new Error("save failed"));
+    const wrapper = mount(DocumentConverterView);
+    await addProjectFiles(wrapper);
+    await flushAutoPreview();
+    expectResultActionsEnabled(wrapper);
+    await wrapper.get('[data-testid="document-converter-download"]').trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Det gick inte att ladda ned. Försök igen.");
+    expect(wrapper.text()).toContain("PDF klart för granskning.");
+    expect(wrapper.text()).not.toContain("Visar föregående PDF.");
+    expectResultActionsEnabled(wrapper);
+    expect(wrapper.find('[data-testid="document-converter-retry"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="document-converter-artifact-selector"]').exists()).toBe(true);
+    await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Det gick inte att spara. Försök igen.");
+    expect(wrapper.text()).toContain("PDF klart för granskning.");
+    expect(wrapper.text()).not.toContain("Visar föregående PDF.");
+    expectResultActionsEnabled(wrapper);
+  });
+
   it("shares validation and merge behavior between drag-drop and picker intake", async () => {
     apiMocks.renderDocumentConverterProjectPreview.mockResolvedValue(
       buildPreviewResult({
@@ -332,7 +373,7 @@ describe("DocumentConverterView", () => {
     );
   });
 
-  it("keeps the previous PDF visible but disables artifact actions after a failed auto-refresh until retry succeeds", async () => {
+  it("marks the previous PDF as non-current and disables artifact actions after a failed auto-refresh until retry succeeds", async () => {
     apiMocks.renderDocumentConverterProjectPreview
       .mockResolvedValueOnce(
         buildPreviewResult({
@@ -362,29 +403,21 @@ describe("DocumentConverterView", () => {
     await flushAutoPreview();
 
     expect(wrapper.text()).toContain("first.pdf");
-    expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      undefined,
-    );
-    const successfulSrc = wrapper.get<HTMLIFrameElement>(
-      '[data-testid="document-converter-pdf-frame"]',
-    ).attributes("src");
-
+    expectResultActionsEnabled(wrapper);
     await wrapper.get('[data-test="document-converter-output-combined_pdf"]').trigger("click");
     await flushAutoPreview();
 
     expect(wrapper.text()).toContain("Det gick inte att skapa PDF:en.");
+    expect(wrapper.text()).toContain("Visar föregående PDF.");
+    expect(wrapper.text()).toContain("Försök igen för att skapa en ny PDF.");
     expect(wrapper.text()).toContain("first.pdf");
+    expect(wrapper.text()).not.toContain("PDF klart för granskning.");
     expect(
       wrapper.get<HTMLIFrameElement>('[data-testid="document-converter-pdf-frame"]').attributes(
         "src",
       ),
-    ).toBe(successfulSrc);
-    expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      undefined,
-    );
-    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe(
-      undefined,
-    );
+    ).toMatch(/^blob:document-converter-/);
+    expectResultActionsDisabled(wrapper);
     expect(wrapper.get('[data-testid="document-converter-retry"]').attributes("aria-label")).toBe(
       "Försök igen",
     );
@@ -399,12 +432,7 @@ describe("DocumentConverterView", () => {
 
     expect(wrapper.text()).toContain("retry.pdf");
     expect(wrapper.text()).not.toContain("Det gick inte att skapa PDF:en.");
-    expect(wrapper.get('[data-testid="document-converter-download"]').attributes("disabled")).toBe(
-      undefined,
-    );
-    expect(wrapper.get('[data-testid="document-converter-save"]').attributes("disabled")).toBe(
-      undefined,
-    );
+    expectResultActionsEnabled(wrapper);
   });
 
   it("revokes superseded PDF object URLs when the preview changes and when the route unmounts", async () => {

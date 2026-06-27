@@ -58,6 +58,7 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -160,7 +161,7 @@ class RequestConversionHubTranscriptFormatterExportHandler:
         producer_result: ConversionHubTranscriptFormatterProducerResult,
         correlation_id: str | None,
     ) -> ConversionHubTranscriptFormatterExportResponse:
-        if producer_result.status.strip().lower() == "succeeded":
+        if producer_result.status is SirConvertJobStatusV2.SUCCEEDED:
             try:
                 artifact_refs, artifact_content = export_support.verify_successful_export(
                     producer_result=producer_result,
@@ -184,7 +185,7 @@ class RequestConversionHubTranscriptFormatterExportHandler:
                 correlation_id=correlation_id,
                 requested_artifacts=request.requested_artifacts,
             )
-        job_status = export_support.job_status_from_producer(producer_result.status)
+        job_status = ConversionHubJobStatus.from_sir_convert_status(producer_result.status)
         if job_status is ConversionHubJobStatus.SUCCEEDED:
             job_status = ConversionHubJobStatus.FAILED
         return await self._record_observed_export_state(

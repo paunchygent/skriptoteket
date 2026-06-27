@@ -32,6 +32,7 @@ from skriptoteket.application.curated_apps.conversion_hub_transcript_saves impor
     ConversionHubSavedTranscript,
     ConversionHubTranscriptSpeakerOverlay,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
 class ConversionHubJobRepositoryProtocol(Protocol):
@@ -181,7 +182,7 @@ class ConversionHubTranscriptFormatterProducerResult:
     """Terminal or observed producer result returned to the application handler."""
 
     sir_convert_job_id: str | None
-    status: str
+    status: SirConvertJobStatusV2
     result: dict[str, object] | None
     artifact_manifest: dict[str, object] | None
     artifacts: dict[

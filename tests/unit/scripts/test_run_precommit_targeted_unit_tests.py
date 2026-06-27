@@ -73,7 +73,7 @@ def test_main_runs_non_excluded_unit_tests(monkeypatch, tmp_path: Path, capsys) 
     assert result == 0
     assert subprocess_calls == [
         (
-            ["pdm", "run", "pytest", "-q", "tests/unit/domain/test_fast_suite.py"],
+            ["pdm", "run", "test", "-q", "tests/unit/domain/test_fast_suite.py"],
             tmp_path.resolve(),
             False,
         )
@@ -114,7 +114,7 @@ def test_main_filters_out_excluded_inferred_tests_and_runs_fast_targets(
     result = module.main([str(source_file.relative_to(tmp_path))])
 
     assert result == 0
-    assert subprocess_calls == [["pdm", "run", "pytest", "-q", "tests/unit/domain/test_planner.py"]]
+    assert subprocess_calls == [["pdm", "run", "test", "-q", "tests/unit/domain/test_planner.py"]]
 
 
 def test_main_skips_source_files_with_only_excluded_inferred_tests(
@@ -172,4 +172,4 @@ def test_main_falls_back_to_tests_unit_when_no_mirrored_tests_exist(
     result = module.main([str(source_file.relative_to(tmp_path))])
 
     assert result == 0
-    assert subprocess_calls == [["pdm", "run", "pytest", "-q", "tests/unit"]]
+    assert subprocess_calls == [["pdm", "run", "test", "-q", "tests/unit"]]

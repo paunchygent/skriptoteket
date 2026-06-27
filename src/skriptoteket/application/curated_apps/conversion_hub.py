@@ -16,11 +16,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import assert_never
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
 class ConversionHubSourceFormatV2(StrEnum):
@@ -111,19 +112,24 @@ class ConversionHubJobStatus(StrEnum):
     CANCELED = "canceled"
 
     @classmethod
-    def from_upstream(cls, status: str) -> "ConversionHubJobStatus":
-        """Map Sir Convert status strings onto the local Conversion Hub contract."""
-        normalized = status.strip().lower()
-        if normalized == "cancelled":
-            normalized = "canceled"
-        try:
-            return cls(normalized)
-        except ValueError as exc:
-            raise DomainError(
-                code=ErrorCode.SERVICE_UNAVAILABLE,
-                message=f"Unsupported Conversion Hub upstream status: {status}",
-                details={"status": status},
-            ) from exc
+    def from_sir_convert_status(
+        cls,
+        status: SirConvertJobStatusV2,
+    ) -> "ConversionHubJobStatus":
+        """Translate typed Sir Convert v2 job state into the local product lifecycle."""
+
+        match status:
+            case SirConvertJobStatusV2.QUEUED:
+                return cls.QUEUED
+            case SirConvertJobStatusV2.RUNNING:
+                return cls.PROCESSING
+            case SirConvertJobStatusV2.SUCCEEDED:
+                return cls.SUCCEEDED
+            case SirConvertJobStatusV2.FAILED:
+                return cls.FAILED
+            case SirConvertJobStatusV2.CANCELED:
+                return cls.CANCELED
+        assert_never(status)
 
 
 class ConversionHubJob(BaseModel):

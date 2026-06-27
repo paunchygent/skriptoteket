@@ -30,6 +30,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
     SirConvertArtifactV2,
+    SirConvertJobStatusV2,
     SirConvertJobV2,
     SirConvertSubmitRequestV2,
     SirConvertSubmittedJobV2,
@@ -83,7 +84,7 @@ class SequenceIdGenerator:
 class FakeSirConvertClient:
     def __init__(self) -> None:
         self.submit_results: list[SirConvertSubmittedJobV2 | DomainError] = []
-        self.jobs_by_upstream_id: dict[str, SirConvertJobV2] = {}
+        self.jobs_by_upstream_id: dict[str, SirConvertJobV2 | DomainError] = {}
         self.artifacts_by_upstream_id: dict[str, SirConvertArtifactOutcomeV2] = {}
 
     async def extract_text_direct(
@@ -109,7 +110,10 @@ class FakeSirConvertClient:
 
     async def get_job(self, job_id: str, *, correlation_id: str | None) -> SirConvertJobV2:
         del correlation_id
-        return self.jobs_by_upstream_id[job_id]
+        result = self.jobs_by_upstream_id[job_id]
+        if isinstance(result, DomainError):
+            raise result
+        return result
 
     async def download_artifact(
         self,
@@ -345,7 +349,11 @@ async def test_create_jobs_returns_local_ids_and_preserves_partial_batch_progres
     repo = InMemoryConversionHubJobRepository()
     client = FakeSirConvertClient()
     client.submit_results = [
-        SirConvertSubmittedJobV2(job_id="up-1", status="queued", idempotent_replay=False),
+        SirConvertSubmittedJobV2(
+            job_id="up-1",
+            status=SirConvertJobStatusV2.QUEUED,
+            idempotent_replay=False,
+        ),
         DomainError(code=ErrorCode.SERVICE_UNAVAILABLE, message="down"),
     ]
     handler = CreateConversionHubJobsHandler(
@@ -435,7 +443,10 @@ async def test_get_job_refreshes_owned_job_from_upstream() -> None:
         updated_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
     )
     client = FakeSirConvertClient()
-    client.jobs_by_upstream_id["up-1"] = SirConvertJobV2(job_id="up-1", status="succeeded")
+    client.jobs_by_upstream_id["up-1"] = SirConvertJobV2(
+        job_id="up-1",
+        status=SirConvertJobStatusV2.SUCCEEDED,
+    )
     handler = GetConversionHubJobHandler(
         jobs=repo,
         client=client,
@@ -452,7 +463,7 @@ async def test_get_job_refreshes_owned_job_from_upstream() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_job_maps_unknown_upstream_status_to_domain_error() -> None:
+async def test_get_job_maps_running_upstream_status_to_processing() -> None:
     actor = make_user()
     job_id = uuid4()
     repo = InMemoryConversionHubJobRepository()
@@ -473,7 +484,49 @@ async def test_get_job_maps_unknown_upstream_status_to_domain_error() -> None:
     client = FakeSirConvertClient()
     client.jobs_by_upstream_id["up-unknown"] = SirConvertJobV2(
         job_id="up-unknown",
-        status="running",
+        status=SirConvertJobStatusV2.RUNNING,
+    )
+    handler = GetConversionHubJobHandler(
+        jobs=repo,
+        client=client,
+        uow=FakeUow(),
+        clock=SequenceClock(datetime(2026, 3, 27, 0, 0, 1, tzinfo=timezone.utc)),
+    )
+
+    result = await handler.handle(actor=actor, job_id=job_id, correlation_id="corr-unknown")
+
+    assert result.status is ConversionHubJobStatus.PROCESSING
+    assert repo.jobs[job_id].status is ConversionHubJobStatus.PROCESSING
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_job_rejects_unknown_upstream_status_fail_closed() -> None:
+    actor = make_user()
+    job_id = uuid4()
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[job_id] = ConversionHubJob(
+        id=job_id,
+        owner_user_id=actor.id,
+        input_filename="classlist.pdf",
+        source_format=ConversionHubSourceFormatV2.PDF,
+        output_format=ConversionHubOutputFormatV2.MD,
+        pdf_layout=None,
+        upstream_job_id="up-mystery",
+        status=ConversionHubJobStatus.QUEUED,
+        correlation_id="corr-mystery",
+        error_message=None,
+        created_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
+    )
+    client = FakeSirConvertClient()
+    client.jobs_by_upstream_id["up-mystery"] = DomainError(
+        code=ErrorCode.SERVICE_UNAVAILABLE,
+        message="Sir Convert-a-Lot v2 returned an unsupported job status.",
+        details={
+            "reason_code": "sir_convert_unknown_job_status",
+            "status": "mystery",
+        },
     )
     handler = GetConversionHubJobHandler(
         jobs=repo,
@@ -483,7 +536,7 @@ async def test_get_job_maps_unknown_upstream_status_to_domain_error() -> None:
     )
 
     with pytest.raises(DomainError) as excinfo:
-        await handler.handle(actor=actor, job_id=job_id, correlation_id="corr-unknown")
+        await handler.handle(actor=actor, job_id=job_id, correlation_id="corr-mystery")
 
     assert excinfo.value.code is ErrorCode.SERVICE_UNAVAILABLE
     assert repo.jobs[job_id].status is ConversionHubJobStatus.QUEUED
@@ -510,7 +563,10 @@ async def test_download_artifact_proxies_owned_succeeded_job_after_refresh() -> 
         updated_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
     )
     client = FakeSirConvertClient()
-    client.jobs_by_upstream_id["up-2"] = SirConvertJobV2(job_id="up-2", status="succeeded")
+    client.jobs_by_upstream_id["up-2"] = SirConvertJobV2(
+        job_id="up-2",
+        status=SirConvertJobStatusV2.SUCCEEDED,
+    )
     client.artifacts_by_upstream_id["up-2"] = SirConvertArtifactOutcomeV2(
         job_id="up-2",
         status="succeeded",
