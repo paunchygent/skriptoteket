@@ -100,7 +100,7 @@ class DocumentConverterProjectAssetFetcher:
 
     def fetch(self, url: str, headers=None):
         del headers
-        from weasyprint.urls import URLFetcherResponse
+        from weasyprint.urls import FatalURLFetchingError, URLFetcherResponse
 
         filename = _project_filename_from_url(url=url)
         if filename is not None and (project_file := self._files.get(filename)) is not None:
@@ -112,9 +112,11 @@ class DocumentConverterProjectAssetFetcher:
                 content,
                 {"Content-Type": project_file.content_type},
             )
+        if filename is not None and _url_suffix(url=url) in _IMAGE_SUFFIXES:
+            raise FatalURLFetchingError("Document Converter project image is missing from uploads.")
         return URLFetcherResponse(
-            _fallback_response_url(url=url),
-            _fallback_asset_bytes(url=url),
+            url,
+            b"",
             {"Content-Type": _fallback_content_type(url=url)},
         )
 
@@ -169,8 +171,12 @@ def _render_weasyprint_pdf(
     css_text: str,
     fetcher: DocumentConverterProjectAssetFetcher,
 ) -> bytes:
+    from weasyprint.urls import FatalURLFetchingError
+
     try:
         return _write_weasyprint_pdf_bytes(html=html, css_text=css_text, fetcher=fetcher)
+    except FatalURLFetchingError as exc:
+        raise validation_error("Could not render Document Converter project preview PDF.") from exc
     except Exception as exc:
         if is_weasyprint_grid_layout_error(exc):
             return _render_weasyprint_pdf_with_grid_compatibility(
@@ -331,13 +337,6 @@ def _project_filename_from_url(*, url: str) -> str | None:
     return filename
 
 
-def _fallback_asset_bytes(*, url: str) -> bytes:
-    kind = _fallback_kind(url=url)
-    if kind == "css" or kind == "font":
-        return b""
-    return _missing_image_placeholder_png()
-
-
 def _fallback_content_type(*, url: str) -> str:
     kind = _fallback_kind(url=url)
     if kind == "css":
@@ -345,13 +344,6 @@ def _fallback_content_type(*, url: str) -> str:
     if kind == "font":
         return _FONT_CONTENT_TYPES.get(_url_suffix(url=url), "font/woff2")
     return "image/png"
-
-
-def _fallback_response_url(*, url: str) -> str:
-    suffix = _url_suffix(url=url)
-    if suffix == ".css" or suffix in _FONT_CONTENT_TYPES or suffix in _IMAGE_SUFFIXES:
-        return f"{DOCUMENT_CONVERTER_PROJECT_BASE_URL}__missing_asset__{suffix}"
-    return f"{DOCUMENT_CONVERTER_PROJECT_BASE_URL}__missing_asset__.png"
 
 
 def _fallback_kind(*, url: str) -> str:
@@ -368,21 +360,6 @@ def _fallback_kind(*, url: str) -> str:
 def _url_suffix(*, url: str) -> str:
     parsed = urlsplit(url)
     return PurePosixPath(unquote(parsed.path)).suffix.lower()
-
-
-def _missing_image_placeholder_png() -> bytes:
-    from PIL import Image, ImageDraw
-
-    image = Image.new("RGB", (240, 140), color=(247, 242, 235))
-    draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, 239, 139), outline=(24, 49, 79), width=4)
-    draw.line((24, 24, 216, 116), fill=(201, 79, 50), width=6)
-    draw.line((216, 24, 24, 116), fill=(201, 79, 50), width=6)
-    draw.text((58, 46), "Bild saknas", fill=(24, 49, 79))
-    draw.text((48, 80), "Saknad resurs", fill=(24, 49, 79))
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    return buffer.getvalue()
 
 
 def _decode_text_file(project_file: DocumentConverterProjectUploadedFile) -> str:

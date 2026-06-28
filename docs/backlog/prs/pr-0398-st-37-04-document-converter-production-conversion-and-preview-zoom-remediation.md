@@ -2,10 +2,10 @@
 type: pr
 id: PR-0398
 title: "ST-37-04 Document Converter production conversion and preview zoom remediation"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-06-28
 stories:
   - "ST-37-04"
 tags:

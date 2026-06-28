@@ -18,6 +18,9 @@ from uuid import UUID
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterStoredArtifact,
 )
+from skriptoteket.application.curated_apps.document_converter_artifact_hygiene import (
+    validate_document_converter_teacher_artifact,
+)
 from skriptoteket.application.curated_apps.document_converter_file_naming import (
     apply_project_preview_protocol_filenames,
     build_project_preview_filename_from_stem,
@@ -163,6 +166,11 @@ class DownloadDocumentConverterProjectPreviewArtifactHandler:
             artifact_id=artifact_id,
             now=self._clock.now(),
         )
+        _validate_preview_teacher_artifact(
+            artifact=artifact,
+            preview_id=preview_id,
+            artifact_id=artifact_id,
+        )
         if filename_stem is None:
             return artifact
         return artifact.model_copy(
@@ -213,6 +221,11 @@ class SaveDocumentConverterProjectPreviewArtifactHandler:
             preview_id=preview_id,
             artifact_id=artifact_id,
             now=self._clock.now(),
+        )
+        _validate_preview_teacher_artifact(
+            artifact=artifact,
+            preview_id=preview_id,
+            artifact_id=artifact_id,
         )
         if filename_stem is not None:
             artifact = artifact.model_copy(
@@ -324,6 +337,23 @@ def _artifact_kinds(
     }:
         kinds.append((DocumentConverterProjectPreviewArtifactKind.COMBINED_PDF, None))
     return kinds
+
+
+def _validate_preview_teacher_artifact(
+    *,
+    artifact: DocumentConverterStoredArtifact,
+    preview_id: UUID,
+    artifact_id: UUID,
+) -> None:
+    source_artifact_id = build_document_converter_project_preview_source_artifact_id(
+        preview_id=preview_id,
+        artifact_id=artifact_id,
+    )
+    validate_document_converter_teacher_artifact(
+        artifact=artifact,
+        source_artifact_id=source_artifact_id,
+        additional_internal_markers=(str(preview_id), str(artifact_id)),
+    )
 
 
 def _to_preview_result(

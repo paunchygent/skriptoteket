@@ -2,10 +2,10 @@
 type: pr
 id: PR-0399
 title: "ST-37-04 Sir Convert v2 status vocabulary contract"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-06-28
 stories:
   - "ST-37-04"
 tags:

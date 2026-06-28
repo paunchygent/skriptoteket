@@ -11,7 +11,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2026-06-28.
 - Branch: `main`.
 - Latest closed work: `PR-0403`.
-- Active worktree slice: none; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Active worktree slice: `PR-0400` approved locally; pending production proof, commit, push, and deploy.
+  Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
 - `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
@@ -96,23 +97,22 @@ Keep this file updated so the next session can pick up work quickly.
   it, and the dedicated UI consumes scoped project-preview endpoints with
   locked Swedish copy and only `separate_pdfs` / `combined_pdf`.
 - `PR-0386` is done and approved by `REV-PR-0386`; `PR-0387` is done and approved by `REV-PR-0387`; `PR-0388` is approved by `REV-PR-0388`. WeasyPrint `69.0` is locked, the `web` image was rebuilt with BuildKit, and the live Grid-heavy proof succeeds through the approved best-effort path: native Grid first, app-owned compatibility retry only after WeasyPrint's internal Grid `AssertionError`.
-- `PR-0385` is in correction after product review: the saved-file backend boundary
-  remains owner-scoped/server-authoritative, but the visible history rail and
-  inner `Arbetssätt` selector are removed; mode selection is now tabs above the
-  workspace, the file lane is `Filkonvertering`, current-result state is private
-  route continuity, and local uploads can be ordered batches up to 10 files.
-  Multi-source `Mina filer` batches and combined general file-conversion output
-  remain deferred until backend contracts exist. See
-  `docs/backlog/reviews/review-pr-0385-document-converter-files-and-history-follow-up.md`.
+- `PR-0385` is done and approved by `REV-PR-0385`: saved-file source selection
+  is owner-scoped/server-authoritative, visible history rails and `Arbetssätt`
+  are removed, `Filkonvertering` uses private route-continuity state, and local
+  uploads can be ordered batches up to 10 files. Multi-source `Mina filer`
+  batches and combined general file-conversion output remain deferred until
+  backend contracts exist.
 - `PR-0397` is implemented and approved by `REV-PR-0397`: the Document Converter now uses
   the same left-source / middle-operations / right-preview grammar in both
   `HTML/CSS-projekt` and `Filkonvertering`, with the shared file-operations
   section moved out of the preview footer and into the middle column.
-- `PR-0398` / `PR-0399` are active after review/redirection: bounded
-  Hemma/container evidence traced the production PDF failure to upstream Sir
-  Convert `running` status being rejected by Skriptoteket polling. `PR-0399`
-  owns typed Sir Convert v2 status vocabulary; `PR-0398` owns Document Converter
-  consumption, failure-state UX, and preview fit/zoom/pinch.
+- `PR-0398` / `PR-0399` are done and approved by `REV-PR-0398` and
+  `REV-PR-0399`: bounded Hemma/container evidence traced the production PDF
+  failure to upstream Sir Convert `running`; the repair enforces typed Sir
+  Convert v2 status vocabulary and the Document Converter consumption,
+  failure-state, mode-scoping, preview zoom, source-inference, and upload-remove
+  behavior.
 - `PR-0402` is done and approved by `REV-PR-0402`: compact `Filkonvertering` now orders source/file picker, operations, then preview after source-format inference.
 - `PR-0403` is done and approved by `REV-PR-0403`: `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.vue`, `useDocumentPreviewTouchGestures.ts`, `useAnchoredDocumentPreviewZoom.ts`, `useDocumentPreviewZoom.ts`, and `documentConverterPreview.css` now bind native non-passive `touch*`/`gesture*` listeners on the preview viewport, anchor zoom around the pinch midpoint, make the PDF iframe display-only so the viewport owns real touch hit-testing, restore a centered contained fit stage for underfilled previews, and remove the duplicated compact project summary from `HTML/CSS-projekt` mode while keeping the dropzone plus categorized lists.
 - `REV-PR-0403` is approved after rereview: `frontend/pnpm-workspace.yaml` now uses the valid PNPM v11 `allowBuilds.esbuild: true` config, the focused Document Converter frontend tests passed with `29 passed`, and `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build` are green for the current worktree.
@@ -142,6 +142,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0403` focused frontend proof is green after the fit/centering correction: `pnpm --filter @skriptoteket/spa test -- --run src/views/apps/document-converter/DocumentConverterResultPanel.spec.ts src/views/apps/document-converter/DocumentConverterView.spec.ts src/views/apps/document-converter/DocumentConverterProjectResult.spec.ts src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts` passed with `29 passed`.
   - `PR-0403` live shared-auth reruns now include three retained checkpoints: `RATE_LIMIT` miss at `.artifacts/authenticated-home-work-apps/20260627T175912Z/`, Gateway `502 EXTERNAL_SERVICE_ERROR` on the heavier proof fixture at `.artifacts/authenticated-home-work-apps/20260627T231319Z/document-converter-preview-response.json`, and the repaired green proof after trimming unrelated blocked-resource probes at `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`.
   - Fresh `PR-0403` live proof facts from `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`: native non-passive `touch*` + `gesture*` listeners verified through Chromium CDP, tablet native pinch changed `59% -> 119%`, platform gestures changed `55% -> 63%` (desktop), `119% -> 137%` (tablet), and `37% -> 43%` (compact), one-finger panning stayed available (`one_finger_move_prevented: false`), and fit geometry stayed centered on the underfilled axis (`desktop left/right inset 2.06px/2.06px`, `tablet 0.17px/0.19px`, `compact 0.52px/0.53px`).
+  - `PR-0400` is approved by `REV-PR-0400`; focused backend/application/infrastructure gates passed in the retained review. Production Hemma proof is still pending.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -186,11 +187,6 @@ git diff --check
   recreate the affected HuleEdu services before blaming app code.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next governed step: keep broader shared extraction in `PR-0391`/`PR-0392`; `PR-0393` through `PR-0395` remain separate app/file adoption slices.
-- Parallel remediation: send `PR-0399` through independent implementation and
-  retained review for the cross-service status vocabulary contract.
-- Planning gate: `PR-0400` now tracks Document Converter artifact-content
-  hygiene; implementation waits for user answers to the open policy questions.
-- Follow-up planned: `PR-0401` owns PDF image-recovery planning outside `PR-0400`.
+- Next governed step: run PR-0400 production Hemma proof, then complete `PR-0401` PDF image-recovery planning.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

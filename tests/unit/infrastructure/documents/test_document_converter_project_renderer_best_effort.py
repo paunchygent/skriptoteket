@@ -2,7 +2,7 @@
 
 Purpose:
     Prove the HTML/CSS project renderer produces readable temporary PDFs for
-    ordinary teacher-authored HTML, including missing linked assets and CSS
+    ordinary teacher-authored HTML, including blocked external assets and CSS
     grid layouts rendered by the supported WeasyPrint engine.
 
 Relationships:
@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.document_converter_projects import (
     DocumentConverterProjectManifest,
     DocumentConverterProjectUploadedFile,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.documents import (
     document_converter_project_previews as preview_module,
 )
@@ -30,7 +31,7 @@ from skriptoteket.infrastructure.documents.document_converter_project_previews i
 )
 
 
-def test_project_renderer_renders_best_effort_pdf_for_missing_and_blocked_assets(
+def test_project_renderer_renders_best_effort_pdf_for_blocked_external_assets(
     tmp_path,
 ) -> None:
     renderer = WeasyPrintDocumentConverterProjectRenderer()
@@ -51,8 +52,8 @@ def test_project_renderer_renders_best_effort_pdf_for_missing_and_blocked_assets
                     b"<p class='callout'>Uppladdad CSS fungerar</p>"
                     b"<section><img src='project:///cover.png' alt='bild inom projektgransen'>"
                     b"<p>Bild inom projektgransen</p></section>"
-                    b"<section><img src='project:///missing.png' alt='saknas'>"
-                    b"<h2>Saknad resurs</h2><p>Best effort fortsatter.</p></section>"
+                    b"<section><img src='https://example.test/missing.png' alt='extern bild'>"
+                    b"<h2>Extern bild blockerad</h2><p>Best effort fortsatter.</p></section>"
                 ),
             ),
             DocumentConverterProjectUploadedFile(
@@ -78,7 +79,10 @@ def test_project_renderer_renders_best_effort_pdf_for_missing_and_blocked_assets
 
     assert "Inline CSS fungerar" in extracted_text
     assert "Uppladdad CSS fungerar" in extracted_text
-    assert "Saknad resurs" in extracted_text
+    assert "Extern bild blockerad" in extracted_text
+    assert "Bild saknas" not in extracted_text
+    assert "Saknad resurs" not in extracted_text
+    assert "__missing_asset__" not in extracted_text
     assert "https://example.test" not in extracted_text
     assert "file:///etc/passwd" not in extracted_text
     assert "nested/cover.png" not in extracted_text
@@ -125,7 +129,10 @@ def test_project_renderer_renders_grid_heavy_html_on_native_path(
     assert "Grid tung forhandsvisning" in compact_text
     assert "Grid-layout med uppladdad CSS fungerar" in compact_text
     assert "Bild inom projektgransen" in compact_text
-    assert "Saknad resurs" in compact_text
+    assert "Representativt projekt" in compact_text
+    assert "Bild saknas" not in compact_text
+    assert "Saknad resurs" not in compact_text
+    assert "__missing_asset__" not in compact_text
     assert "https://example.test" not in compact_text
     assert "file:///etc/passwd" not in compact_text
 
@@ -134,6 +141,37 @@ def test_project_renderer_renders_grid_heavy_html_on_native_path(
     assert ratios["orange"] > 0.003
     assert ratios["emerald"] > 0.003
     assert ratios["gold"] > 0.003
+
+
+def test_project_renderer_fails_closed_for_missing_local_project_image() -> None:
+    renderer = WeasyPrintDocumentConverterProjectRenderer()
+
+    with pytest.raises(DomainError) as excinfo:
+        renderer.render_project(
+            manifest=_manifest(
+                html_filename="missing-image.html",
+                css_filename="styles.css",
+                image_files=[],
+            ),
+            files=[
+                DocumentConverterProjectUploadedFile(
+                    filename="missing-image.html",
+                    content_type="text/html",
+                    content=(
+                        b"<link rel='stylesheet' href='project:///styles.css'>"
+                        b"<h1>Missing local image</h1>"
+                        b"<img src='project:///cover.png' alt='Local image'>"
+                    ),
+                ),
+                DocumentConverterProjectUploadedFile(
+                    filename="styles.css",
+                    content_type="text/css",
+                    content=b"img{width:40mm;height:25mm}",
+                ),
+            ],
+        )
+
+    assert excinfo.value.code is ErrorCode.VALIDATION_ERROR
 
 
 def test_project_renderer_renders_teacher_css_grid_layout(tmp_path) -> None:
@@ -298,10 +336,6 @@ def _grid_heavy_html() -> bytes:
         b"<p class='caption'>Bild inom projektgransen</p>"
         b"<ul><li>Inline CSS rubrik</li><li>Uppladdad CSS accentpanel</li>"
         b"<li>Grid-kort med bild</li></ul></div></section>"
-        b"<section class='missing-card'>"
-        b"<img class='card-image' src='project:///saknas.png' alt='Saknad resurs'>"
-        b"<div class='card-copy'><h2>Saknad resurs</h2>"
-        b"<p>Best effort fortsatter trots saknad bild.</p></div></section>"
         b"<img class='blocked-probe' src='https://example.test/blocked.png' alt='Blockerad resurs'>"
         b"<img class='blocked-probe' src='file:///etc/passwd.png' alt='Filsystemresurs'>"
         b"</main></body></html>"

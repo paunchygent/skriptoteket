@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
+from weasyprint.urls import FatalURLFetchingError
 
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterStoredArtifact,
@@ -69,14 +70,36 @@ def test_project_asset_fetcher_resolves_declared_filenames_only() -> None:
 @pytest.mark.parametrize(
     "url",
     [
+        "project:///missing.png",
+    ],
+)
+def test_project_asset_fetcher_fails_closed_for_missing_local_images(
+    url: str,
+) -> None:
+    fetcher = DocumentConverterProjectAssetFetcher(
+        files=[
+            DocumentConverterProjectUploadedFile(
+                filename="logo.png",
+                content_type="image/png",
+                content=b"png",
+            )
+        ]
+    )
+
+    with pytest.raises(FatalURLFetchingError):
+        fetcher.fetch(url)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
         "file:///etc/passwd.png",
         "https://example.test/logo.png",
         "project:///../secret.png",
         "project:///nested/logo.png",
-        "project:///missing.png",
     ],
 )
-def test_project_asset_fetcher_returns_placeholder_for_blocked_or_missing_images(
+def test_project_asset_fetcher_omits_blocked_images_without_placeholder_content(
     url: str,
 ) -> None:
     fetcher = DocumentConverterProjectAssetFetcher(
@@ -91,9 +114,9 @@ def test_project_asset_fetcher_returns_placeholder_for_blocked_or_missing_images
 
     response = fetcher.fetch(url)
 
-    assert response.geturl().startswith("project:///__missing_asset__")
+    assert response.geturl() == url
     assert response.content_type == "image/png"
-    assert len(response.read()) > 100
+    assert response.read() == b""
 
 
 @pytest.mark.parametrize(

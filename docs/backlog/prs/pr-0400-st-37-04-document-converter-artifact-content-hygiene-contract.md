@@ -2,10 +2,10 @@
 type: pr
 id: PR-0400
 title: "ST-37-04 Document Converter artifact content hygiene contract"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-06-28
 stories:
   - "ST-37-04"
 tags:
@@ -100,17 +100,21 @@ Read-only research identified these initial offenders and boundaries:
 
 ## Decision Gate
 
-Implementation must not begin until these questions are answered or explicitly
-accepted as assumptions:
+Implementation began after the following policy decisions were accepted on
+2026-06-28:
 
 1. Missing HTML/CSS project images: should a declared local image with no
    uploaded bytes fail the preview, or should the missing visual be omitted?
-   Recommendation: fail closed for declared local images; block external or
-   invalid resource references without fabricating a placeholder.
+   Decision: fail closed for declared local images with no uploaded bytes.
+   External, invalid, or missing resource references must not emit visible
+   `Bild saknas`, `Saknad resurs`, `__missing_asset__`, or equivalent
+   placeholder content into teacher-facing artifacts.
 2. Bundle truth: if image bytes exist in the uploaded bundle but are not
    manifest-declared, should Document Converter use them? Recommendation:
    keep the `PR-0382` contract for bare manifest-declared filenames unless a
    separate bundle-discovery extension is approved.
+   Decision: preserve the `PR-0382` manifest-declared contract. Do not use
+   undeclared image bytes even if they exist in the upload bundle.
 3. Fallback document title: when Sir Convert has no YAML title or H1, should it
    use the source filename stem, blank metadata, or a neutral product title?
    User decision: if the document has no YAML title or H1, the converted
@@ -124,6 +128,12 @@ accepted as assumptions:
    artifact/recovery task.
    User decision: out of scope for this PR, but it must be planned as its own
    governed task.
+
+Boundary note: Skriptoteket owns local HTML/CSS project preview hygiene and
+fail-closed consumption of dirty terminal artifacts before preview, download, or
+save. Sir Convert still owns upstream terminal artifact cleanliness, including
+source-derived or blank title/core-properties behavior and removal of temporary
+checkpoint stems from final artifact bytes.
 
 ### Missing Image Scenario
 
@@ -163,6 +173,27 @@ placeholder content to the artifact.
 6. Ensure any operational checkpoint data lives in sidecar/operator metadata,
    not teacher-facing artifact content.
 
+## Implementation Notes
+
+Implemented locally on 2026-06-28:
+
+- `DocumentConverterProjectAssetFetcher` no longer generates fallback image
+  bytes or `project:///__missing_asset__...` URLs. Real uploaded project image
+  bytes still render. Missing local project image URLs fail closed with
+  WeasyPrint `FatalURLFetchingError`, wrapped as a `DomainError` at the
+  renderer boundary; blocked external/invalid image URLs fetch as empty image
+  responses and do not emit placeholder content.
+- Added `document_converter_artifact_hygiene.py` as a narrow application-layer
+  guard for teacher-facing terminal artifacts. It rejects known forbidden
+  markers in filenames, content types, decoded bytes, and text-like ZIP members
+  before Document Converter download/save or project-preview download/save can
+  expose bytes to teachers.
+- The guard rejects `pdf_checkpointed_output`, `sir-convert-a-lot:partial`,
+  `__missing_asset__`, `Bild saknas`, `Saknad resurs`, local/private path
+  markers, and the current job/preview/artifact provenance ids where available.
+- No broad scrubber was added. Dirty terminal artifacts fail closed so upstream
+  Sir Convert cleanliness remains visible as a separate ownership issue.
+
 ## Test Plan
 
 - Focused Skriptoteket unit tests proving missing-image placeholders are no
@@ -181,6 +212,30 @@ placeholder content to the artifact.
 - `pdm run docs-validate`
 - `pdm run handoff-validate`
 - `git diff --check`
+
+## Verification Notes
+
+Red evidence captured before production fixes:
+
+- `pdm run test tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_renderer_best_effort.py`
+  failed with 5 project-fetcher failures: missing local project images did not
+  fail closed, and blocked/missing images returned
+  `project:///__missing_asset__.png` placeholder responses.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py`
+  failed with 6 artifact-consumption failures: download/save accepted
+  `pdf_checkpointed_output`, `sir-convert-a-lot:partial`,
+  `__missing_asset__`, `Bild saknas`, and `Saknad resurs`.
+
+Green evidence after implementation:
+
+- `pdm run test tests/unit/infrastructure/documents/test_document_converter_project_previews.py tests/unit/infrastructure/documents/test_document_converter_project_renderer_best_effort.py`
+  passed: 28 tests.
+- `pdm run test tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_hygiene.py tests/unit/application/curated_apps/handlers/test_document_converter_project_previews.py tests/unit/application/curated_apps/handlers/test_document_converter_project_preview_hygiene.py`
+  passed: 20 tests.
+- `pdm run test tests/unit/web/conversion_hub/test_apps_document_converter_api.py tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py tests/unit/application/curated_apps/handlers/test_document_converter_project_previews.py tests/unit/application/curated_apps/handlers/test_document_converter_project_preview_hygiene.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py tests/unit/application/curated_apps/handlers/test_document_converter_artifact_hygiene.py`
+  passed: 39 tests.
+- `pdm run lint` passed.
+- `pdm run typecheck` passed.
 
 ## Rollback Plan
 

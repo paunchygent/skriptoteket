@@ -2,10 +2,10 @@
 type: pr
 id: PR-0385
 title: "ST-37-04 Document Converter files and result-state follow-up"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-23
-updated: 2026-06-26
+updated: 2026-06-28
 stories:
   - "ST-37-04"
 tags:

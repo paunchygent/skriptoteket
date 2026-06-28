@@ -28,6 +28,9 @@ from skriptoteket.application.curated_apps.document_converter import (
     is_document_converter_job,
     is_local_document_converter_job,
 )
+from skriptoteket.application.curated_apps.document_converter_artifact_hygiene import (
+    validate_document_converter_teacher_artifact,
+)
 from skriptoteket.application.curated_apps.document_converter_file_naming import (
     apply_single_file_protocol_filename,
 )
@@ -199,6 +202,7 @@ class DownloadDocumentConverterArtifactHandler:
             correlation_id=correlation_id,
         )
         artifact = await self._download_ready_artifact(job=job, correlation_id=correlation_id)
+        _validate_teacher_artifact(artifact=artifact, job=job)
         artifact = apply_single_file_protocol_filename(
             artifact=artifact,
             input_filename=job.input_filename,
@@ -293,6 +297,7 @@ class SaveDocumentConverterArtifactHandler:
                 content_type=producer_artifact.artifact.content_type,
                 content=producer_artifact.artifact.content,
             )
+        _validate_teacher_artifact(artifact=artifact, job=job)
         artifact = apply_single_file_protocol_filename(
             artifact=artifact,
             input_filename=job.input_filename,
@@ -323,3 +328,18 @@ def _assert_ready_for_artifact(*, job: ConversionHubJob) -> None:
         raise validation_error("Konverteringen är inte klar ännu.")
     if job.upstream_job_id is None:
         raise validation_error("Konverteringen saknar nedladdningsbar artefakt.")
+
+
+def _validate_teacher_artifact(
+    *,
+    artifact: DocumentConverterStoredArtifact,
+    job: ConversionHubJob,
+) -> None:
+    validate_document_converter_teacher_artifact(
+        artifact=artifact,
+        job_id=job.id,
+        upstream_job_id=job.upstream_job_id,
+        source_artifact_id=build_document_converter_source_artifact_id(
+            upstream_job_id=job.upstream_job_id or ""
+        ),
+    )

@@ -57,13 +57,13 @@ dashboard direction are settled.
 - [x] [PR-0382: ST-37-04 Document Converter HTML/CSS project preview contract](../prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md)
 - [x] [PR-0383: ST-37-04 Document Converter mockup and copy approval package](../prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md)
 - [x] [PR-0384: ST-37-04 Document Converter route-visible MVP implementation](../prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md)
-- [ ] [PR-0385: ST-37-04 Document Converter files and history follow-up](../prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md)
+- [x] [PR-0385: ST-37-04 Document Converter files and history follow-up](../prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md)
 - [x] [PR-0386: ST-37-04 Audio Transcription button token remediation](../prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md)
 - [x] [PR-0387: ST-37-04 Document Converter small-screen mockup remediation](../prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md)
 - [x] [PR-0388: ST-37-04 Document Converter automatic preview and state-copy remediation](../prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md)
-- [ ] [PR-0398: ST-37-04 Document Converter production conversion and preview zoom remediation](../prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md)
-- [ ] [PR-0399: ST-37-04 Sir Convert v2 status vocabulary contract](../prs/pr-0399-st-37-04-sir-convert-v2-status-vocabulary-contract.md)
-- [ ] [PR-0400: ST-37-04 Document Converter artifact content hygiene contract](../prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md)
+- [x] [PR-0398: ST-37-04 Document Converter production conversion and preview zoom remediation](../prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md)
+- [x] [PR-0399: ST-37-04 Sir Convert v2 status vocabulary contract](../prs/pr-0399-st-37-04-sir-convert-v2-status-vocabulary-contract.md)
+- [x] [PR-0400: ST-37-04 Document Converter artifact content hygiene contract](../prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md)
 - [ ] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
 - [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
 - [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
@@ -136,6 +136,14 @@ dashboard direction are settled.
   implementation-detail preview copy and forbidden eyebrow/status labels, makes
   PDF preview automatic with stale-response protection, and keeps ordinary
   grid-heavy teacher HTML/CSS in scope through best-effort preview rendering.
+- `PR-0385` is done and approved by `REV-PR-0385`. It adds owner-scoped
+  `Mina filer` source selection and current route-session result continuity
+  without promising durable job history or project-workspace restore.
+- `PR-0398` and `PR-0399` are done and approved by `REV-PR-0398` and
+  `REV-PR-0399`. Together they fixed the production conversion status defect,
+  enforce typed Sir Convert v2 status vocabulary, keep Document Converter
+  result state mode-scoped, and added the preview zoom/source-format inference
+  remediation later tightened by `PR-0402` and `PR-0403`.
 - `PR-0402` supersedes the temporary `PR-0398` compact ordering that placed
   conversion controls before upload. Source-format inference now lets compact
   `Filkonvertering` return to source/file picker first, then conversion
@@ -145,6 +153,10 @@ dashboard direction are settled.
   native non-passive target binding, platform gesture events, anchored local
   zoom proof, centered fit geometry, and removal of the duplicated compact
   project summary panel.
+- `PR-0400` is done and approved by `REV-PR-0400`. It removes generated
+  missing-image placeholders from local HTML/CSS project previews and rejects
+  known dirty terminal artifact markers before Document Converter download/save
+  exposure instead of silently scrubbing upstream artifacts.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use
@@ -187,6 +199,6 @@ dashboard direction are settled.
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-  `ST-37-04` remains open for the `PR-0385` Document Converter files/history
-  follow-up and any later concrete backend/API app-presentation need;
-  keep `PR-0369` blocked until such a need is proven.
+  `ST-37-04` remains open for `PR-0401` PDF image-recovery planning and any
+  later concrete backend/API app-presentation need; keep `PR-0369` blocked
+  until such a need is proven.
