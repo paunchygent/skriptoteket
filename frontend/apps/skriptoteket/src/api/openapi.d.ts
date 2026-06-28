@@ -1257,7 +1257,7 @@ export interface paths {
         put?: never;
         /**
          * Submit Document Converter Saved File Job
-         * @description Start one Document Converter job from an owner-scoped saved file ref.
+         * @description Start Document Converter jobs from owner-scoped saved file refs.
          */
         post: operations["submit_document_converter_saved_file_job_api_v1_apps_documents_conversion_hub_document_converter_saved_files_jobs_post"];
         delete?: never;
@@ -4052,7 +4052,7 @@ export interface components {
             file_id: string;
             /** Name */
             name: string;
-            ref: components["schemas"]["skriptoteket__domain__scripting__file_refs__FileRef__1"];
+            ref: components["schemas"]["skriptoteket__domain__scripting__file_refs__FileRef__2"];
             source_format: components["schemas"]["ConversionHubSourceFormatV2"];
         };
         /**
@@ -7468,11 +7468,12 @@ export interface components {
         };
         /**
          * SubmitDocumentConverterSavedFileRequest
-         * @description Submit one owner-scoped Mina filer source without browser re-upload.
+         * @description Submit owner-scoped Mina filer sources without browser re-upload.
          */
         SubmitDocumentConverterSavedFileRequest: {
             job_spec: components["schemas"]["ConversionHubJobSpecV2"];
-            source_ref: components["schemas"]["FileRef-Input"];
+            /** Source Refs */
+            source_refs: components["schemas"]["FileRef-Input"][];
             /**
              * Wait Seconds
              * @default 0
@@ -8321,7 +8322,7 @@ export interface components {
             is_missing_on_disk: boolean;
             /** Name */
             name: string;
-            ref: components["schemas"]["skriptoteket__domain__scripting__file_refs__FileRef__2"];
+            ref: components["schemas"]["skriptoteket__domain__scripting__file_refs__FileRef__1"];
             /** Source Label */
             source_label?: string | null;
         };

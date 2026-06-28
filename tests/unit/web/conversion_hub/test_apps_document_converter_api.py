@@ -349,9 +349,10 @@ async def test_list_document_converter_saved_files_returns_backend_filtered_sour
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_submit_saved_file_job_uses_source_ref_without_upload_bytes() -> None:
+async def test_submit_saved_file_job_uses_ordered_source_refs_without_upload_bytes() -> None:
     local_job_id = uuid4()
-    source_file_id = uuid4()
+    first_source_file_id = uuid4()
+    second_source_file_id = uuid4()
     handler = FakeSubmitSavedFileHandler(
         DocumentConverterSubmitResult(
             jobs=[
@@ -371,7 +372,10 @@ async def test_submit_saved_file_job_uses_source_ref_without_upload_bytes() -> N
             source_format=ConversionHubSourceFormatV2.HTML,
             output_format=ConversionHubOutputFormatV2.PDF,
         ),
-        source_ref=build_vault_file_ref(file_id=source_file_id),
+        source_refs=[
+            build_vault_file_ref(file_id=second_source_file_id),
+            build_vault_file_ref(file_id=first_source_file_id),
+        ],
         wait_seconds=0,
     )
 
@@ -384,7 +388,7 @@ async def test_submit_saved_file_job_uses_source_ref_without_upload_bytes() -> N
     )
 
     assert result.jobs[0].job_id == local_job_id
-    assert handler.calls[0]["source_ref"] == submit_request.source_ref
+    assert handler.calls[0]["source_refs"] == submit_request.source_refs
     assert handler.calls[0]["spec"] == submit_request.job_spec
     assert "files" not in handler.calls[0]
 

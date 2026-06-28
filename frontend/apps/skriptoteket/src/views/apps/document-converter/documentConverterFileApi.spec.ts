@@ -68,7 +68,7 @@ describe("documentConverterFileApi", () => {
     expect(result.files?.[0]?.name).toBe("lektion.html");
   });
 
-  it("submits a saved-file job with a source ref instead of upload bytes", async () => {
+  it("submits a saved-file job with ordered source refs instead of upload bytes", async () => {
     apiMocks.apiPost.mockResolvedValue({
       jobs: [
         {
@@ -85,13 +85,19 @@ describe("documentConverterFileApi", () => {
     await submitDocumentConverterSavedFileJob({
       outputFormat: "pdf",
       sourceFormat: "html",
-      sourceRef: "vault:11111111-1111-1111-1111-111111111111",
+      sourceRefs: [
+        "vault:22222222-2222-2222-2222-222222222222",
+        "vault:11111111-1111-1111-1111-111111111111",
+      ],
     });
 
     expect(apiMocks.apiPost).toHaveBeenCalledWith(
       "/api/v1/apps/documents.conversion_hub/document-converter/saved-files/jobs",
       expect.objectContaining({
-        source_ref: "vault:11111111-1111-1111-1111-111111111111",
+        source_refs: [
+          "vault:22222222-2222-2222-2222-222222222222",
+          "vault:11111111-1111-1111-1111-111111111111",
+        ],
       }),
     );
   });

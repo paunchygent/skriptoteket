@@ -223,12 +223,12 @@ class ListDocumentConverterSavedFilesResult(BaseModel):
 
 
 class SubmitDocumentConverterSavedFileRequest(BaseModel):
-    """Submit one owner-scoped Mina filer source without browser re-upload."""
+    """Submit owner-scoped Mina filer sources without browser re-upload."""
 
     model_config = ConfigDict(frozen=True)
 
     job_spec: ConversionHubJobSpecV2
-    source_ref: FileRef = Field(min_length=1, max_length=255)
+    source_refs: list[FileRef] = Field(min_length=1, max_length=DOCUMENT_CONVERTER_MAX_BATCH_ITEMS)
     wait_seconds: int = Field(default=0, ge=0, le=20)
 
 

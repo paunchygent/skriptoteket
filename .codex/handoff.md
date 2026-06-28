@@ -10,8 +10,9 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-28.
 - Branch: `main`.
-- Latest closed work: `PR-0401`.
-- Active worktree slice: post-`PR-0400`/`PR-0401` Document Converter product-completion selection.
+- Latest closed work: `PR-0404`.
+- Active worktree slice: none. `PR-0404` is implemented locally and approved by
+  independent GPT-5.5 XHigh `REV-PR-0404`.
   Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
@@ -144,6 +145,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0403` live shared-auth reruns now include three retained checkpoints: `RATE_LIMIT` miss at `.artifacts/authenticated-home-work-apps/20260627T175912Z/`, Gateway `502 EXTERNAL_SERVICE_ERROR` on the heavier proof fixture at `.artifacts/authenticated-home-work-apps/20260627T231319Z/document-converter-preview-response.json`, and the repaired green proof after trimming unrelated blocked-resource probes at `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`.
   - Fresh `PR-0403` live proof facts from `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`: native non-passive `touch*` + `gesture*` listeners verified through Chromium CDP, tablet native pinch changed `59% -> 119%`, platform gestures changed `55% -> 63%` (desktop), `119% -> 137%` (tablet), and `37% -> 43%` (compact), one-finger panning stayed available (`one_finger_move_prevented: false`), and fit geometry stayed centered on the underfilled axis (`desktop left/right inset 2.06px/2.06px`, `tablet 0.17px/0.19px`, `compact 0.52px/0.53px`).
   - `PR-0400` is done and approved by `REV-PR-0400`; commit `325553d5` was pushed and deployed on Hemma. Production proof bundle `.artifacts/pr-0400-production-proof/20260628T144818Z/manifest.redacted.json` has `status=ok`, project-preview `Separat PDF` + `Sammanslagen PDF` artifacts, and a Sir Convert-backed `Word-dokument` DOCX with no forbidden marker hits in PDF text/metadata/raw bytes or DOCX ZIP text/raw bytes.
+  - `PR-0404` is done and approved by independent GPT-5.5 XHigh `REV-PR-0404`: public `source_ref` compatibility was removed, focused backend/API and frontend tests are green, OpenAPI types were regenerated, the single-file route state was decomposed into selection/request state plus submission/polling/outcome modules, succeeded artifacts with null/missing filenames fail closed instead of exposing raw job ids, and compact retained shared-auth proof is green at `.artifacts/authenticated-home-work-apps/20260628T173523Z/manifest.redacted.json` with two compatible `Mina filer` PDFs, refs-only ordered batch submission, two separate Markdown outputs, download/save, and no forbidden marker hits.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
@@ -188,6 +190,6 @@ git diff --check
   recreate the affected HuleEdu services before blaming app code.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next governed step: choose the next Document Converter product-completion slice, likely `PR-0385`-class saved-source/history/Mina filer follow-up, now that artifact hygiene and image-recovery planning are settled.
+- Next governed step: choose the next governed slice; keep `PR-0404` as the approved local closeout baseline.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

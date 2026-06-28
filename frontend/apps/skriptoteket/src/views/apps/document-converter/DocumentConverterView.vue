@@ -45,6 +45,10 @@ import {
   type DocumentConverterSingleFileOutput,
   type DocumentConverterSingleFileSource,
 } from "./useDocumentConverterSingleFile";
+import {
+  OUTPUT_LABELS,
+  SOURCE_LABELS,
+} from "./documentConverterSingleFileSelection";
 
 type DocumentConverterWorkspaceMode = "project_preview" | "single_file";
 type DocumentConverterOutputChoice = UiSegmentedTileToggleOption & {
@@ -93,18 +97,6 @@ const paperChoices: DocumentConverterPaperChoice[] = [
   { label: "A5", value: "a5", dataTest: "document-converter-paper-a5" },
 ];
 
-const sourceLabelMap: Record<DocumentConverterSingleFileSource, string> = {
-  docx: "DOCX",
-  html: "HTML",
-  md: "Markdown",
-  pdf: "PDF",
-};
-const outputLabelMap: Record<DocumentConverterSingleFileOutput, string> = {
-  docx: "DOCX",
-  md: "Markdown",
-  pdf: "PDF",
-};
-
 const workspaceMode = ref<DocumentConverterWorkspaceMode>("project_preview");
 const project = useDocumentConverterProjectPreview();
 const singleFile = useDocumentConverterSingleFile();
@@ -124,7 +116,7 @@ useDocumentConverterHistoryBridge({
 
 const singleFileSourceOptions = computed<DocumentConverterSingleFileChoice[]>(() => {
   return singleFile.availableSourceFormats.value.map((value) => ({
-    label: sourceLabelMap[value],
+    label: SOURCE_LABELS[value],
     value,
     dataTest: `document-converter-source-${value}`,
   }));
@@ -132,7 +124,7 @@ const singleFileSourceOptions = computed<DocumentConverterSingleFileChoice[]>(()
 
 const singleFileOutputOptions = computed<DocumentConverterSingleFileOutputChoice[]>(() => {
   return singleFile.availableOutputFormats.value.map((value) => ({
-    label: outputLabelMap[value],
+    label: OUTPUT_LABELS[value],
     value,
     dataTest: `document-converter-output-${value}`,
   }));
@@ -142,8 +134,8 @@ const mobileSummaryTitle = computed(() => singleFile.selectedSourceName.value);
 
 const mobileSummaryDetails = computed(() => [
   singleFile.sourceMode.value === "upload" ? "Lokal fil" : "Mina filer",
-  sourceLabelMap[singleFile.selectedSourceFormat.value],
-  outputLabelMap[singleFile.selectedOutputFormat.value],
+  SOURCE_LABELS[singleFile.selectedSourceFormat.value],
+  OUTPUT_LABELS[singleFile.selectedOutputFormat.value],
 ]);
 
 const isCurrentProjectPreviewFailure = computed(() => {
@@ -387,7 +379,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
       >
         <DocumentConverterSourceIntake
           :workspace-mode="workspaceMode"
-          :selected-saved-file-ref="singleFile.selectedSavedFileRef.value"
+          :selected-saved-file-ref="null"
           :selected-source-accept="singleFile.selectedSourceAccept.value"
           :selected-source-name="singleFile.selectedSourceName.value"
           :source-mode="singleFile.sourceMode.value"
@@ -406,10 +398,13 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
           :project-html-files="project.fileSummary.value.html"
           :project-image-files="project.fileSummary.value.images"
           :project-selected-html-filename="project.selectedHtmlFile.value?.name ?? null"
+          :single-file-saved-files="singleFile.selectedSavedFiles.value"
           :single-file-mode-label="singleFile.sourceMode.value === 'upload' ? 'Lokal fil' : 'Mina filer'"
           :single-file-source-name="singleFile.selectedSourceName.value"
           :single-file-upload-files="singleFile.selectedUploads.value"
+          @move-single-file-saved-file="singleFile.moveSavedFile"
           @move-single-file-upload="singleFile.moveLocalUpload"
+          @remove-single-file-saved-file="singleFile.removeSavedFile"
           @remove-single-file-upload="singleFile.removeLocalUpload"
           @select-project-html="project.selectedHtmlFilename.value = $event"
         />

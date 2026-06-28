@@ -83,6 +83,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dotenv", default=".env")
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
     parser.add_argument("--timeout-seconds", default=90, type=int)
+    parser.add_argument(
+        "--viewport",
+        action="append",
+        choices=[viewport["label"] for viewport in VIEWPORTS],
+        help="Run only the named viewport; repeat to select multiple viewports.",
+    )
     return parser.parse_args(argv)
 
 
@@ -192,6 +198,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
     artifact_dir = _run_dir(Path(args.artifact_root))
+    selected_viewports = [
+        viewport
+        for viewport in VIEWPORTS
+        if args.viewport is None or viewport["label"] in args.viewport
+    ]
     manifest: JsonObject = {
         "app": "skriptoteket",
         "artifact_dir": str(artifact_dir),
@@ -200,7 +211,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "product_identity_realm": "skriptoteket_standalone",
         "status": "running",
         "timestamp_utc": datetime.now(tz=UTC).isoformat(),
-        "viewports": VIEWPORTS,
+        "viewports": selected_viewports,
     }
     _write_manifest(manifest, artifact_dir)
 
@@ -208,7 +219,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         browser = launch_chromium(playwright)
         captures: list[JsonObject] = []
         try:
-            for viewport in VIEWPORTS:
+            for viewport in selected_viewports:
                 context = browser.new_context(
                     base_url=config.base_url,
                     has_touch=viewport["has_touch"],

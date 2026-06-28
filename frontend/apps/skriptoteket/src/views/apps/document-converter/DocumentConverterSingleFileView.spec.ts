@@ -575,6 +575,69 @@ describe("DocumentConverterView single-file surface", () => {
     expect(wrapper.find('[data-testid="document-converter-retry"]').exists()).toBe(false);
   });
 
+  it.each([
+    {
+      artifact: {
+        artifact_id: "artifact-null-filename",
+        content_type: "application/pdf",
+        download_url: null,
+        filename: null,
+        kind: "converted_document",
+        size_bytes: 128,
+        source_entry_id: null,
+      },
+      label: "null",
+    },
+    {
+      artifact: {
+        artifact_id: "artifact-missing-filename",
+        content_type: "application/pdf",
+        download_url: null,
+        kind: "converted_document",
+        size_bytes: 128,
+        source_entry_id: null,
+      },
+      label: "missing",
+    },
+  ])("fails closed without showing job ids when a succeeded result has $label filename", async ({ artifact, label }) => {
+    const jobId = `job-${label}-filename`;
+    fileApiMocks.submitDocumentConverterUploadJob.mockResolvedValue({
+      jobs: [
+        {
+          error: null,
+          input_filename: "lektion.html",
+          job_id: jobId,
+          producer: "local",
+          producer_reason: "local_html_to_pdf",
+          status: "succeeded",
+        },
+      ],
+    });
+    fileApiMocks.getDocumentConverterJobStatus.mockResolvedValue({
+      error: null,
+      job_id: jobId,
+      result_artifact: artifact,
+      status: "succeeded",
+    });
+
+    const wrapper = mount(DocumentConverterView);
+    await wrapper.get('[data-test="document-converter-mode-single"]').trigger("click");
+    await flushPromises();
+
+    const input = wrapper.get<HTMLInputElement>('[data-testid="document-converter-single-file-input"]');
+    Object.defineProperty(input.element, "files", {
+      configurable: true,
+      value: [new File(["<h1>Hej</h1>"], "lektion.html", { type: "text/html" })],
+    });
+    await input.trigger("change");
+    await wrapper.get('[data-testid="document-converter-start-single-file"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Konverteringen kunde inte slutföras.");
+    expect(wrapper.text()).not.toContain(jobId);
+    expect(wrapper.text()).not.toContain(artifact.artifact_id);
+  });
+
   it("keeps a succeeded single-file result in the same source operations preview columns without leaking into project mode", async () => {
     fileApiMocks.submitDocumentConverterUploadJob.mockResolvedValue({
       jobs: [

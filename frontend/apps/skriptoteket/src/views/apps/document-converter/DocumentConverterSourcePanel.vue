@@ -33,12 +33,15 @@ defineProps<{
   projectImageFiles: AssetFile[];
   projectSelectedHtmlFilename: string | null;
   singleFileModeLabel: string;
+  singleFileSavedFiles: AssetFile[];
   singleFileSourceName: string;
   singleFileUploadFiles: AssetFile[];
 }>();
 
 const emit = defineEmits<{
+  moveSingleFileSavedFile: [fromIndex: number, toIndex: number];
   moveSingleFileUpload: [fromIndex: number, toIndex: number];
+  removeSingleFileSavedFile: [index: number];
   removeSingleFileUpload: [index: number];
   selectProjectHtml: [filename: string];
 }>();
@@ -143,6 +146,55 @@ const emit = defineEmits<{
               aria-label="Ta bort fil"
               title="Ta bort fil"
               @click="emit('removeSingleFileUpload', index)"
+            >
+              <IconTrash :size="14" />
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <template v-else-if="singleFileModeLabel === 'Mina filer' && singleFileSavedFiles.length > 0">
+        <div
+          v-for="(file, index) in singleFileSavedFiles"
+          :key="file.name"
+          class="dc-source-row"
+        >
+          <IconFileText :size="16" />
+          <strong>{{ index + 1 }}. {{ file.name }}</strong>
+          <div class="dc-source-row__actions">
+            <button
+              :data-testid="`document-converter-source-move-up-${index}`"
+              class="dc-source-order-button"
+              type="button"
+              aria-label="Flytta upp"
+              :disabled="index === 0"
+              @click="emit('moveSingleFileSavedFile', index, index - 1)"
+            >
+              <IconArrow
+                direction="up"
+                :size="14"
+              />
+            </button>
+            <button
+              :data-testid="`document-converter-source-move-down-${index}`"
+              class="dc-source-order-button"
+              type="button"
+              aria-label="Flytta ned"
+              :disabled="index === singleFileSavedFiles.length - 1"
+              @click="emit('moveSingleFileSavedFile', index, index + 1)"
+            >
+              <IconArrow
+                direction="down"
+                :size="14"
+              />
+            </button>
+            <button
+              :data-testid="`document-converter-source-remove-${index}`"
+              class="dc-source-order-button"
+              type="button"
+              aria-label="Ta bort fil"
+              title="Ta bort fil"
+              @click="emit('removeSingleFileSavedFile', index)"
             >
               <IconTrash :size="14" />
             </button>

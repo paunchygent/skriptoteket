@@ -260,14 +260,21 @@ async def test_submit_saved_file_reads_vault_bytes_and_reuses_document_converter
     None
 ):
     actor = make_user()
-    vault_file = _vault_file(user_id=actor.id, name="lektion.html")
+    first_file = _vault_file(user_id=actor.id, name="forsta.html")
+    second_file = _vault_file(user_id=actor.id, name="andra.html")
     vault_files = InMemoryVaultFileRepository()
-    vault_files.files[vault_file.id] = vault_file
+    vault_files.files[first_file.id] = first_file
+    vault_files.files[second_file.id] = second_file
     vault_storage = InMemoryVaultStorage()
     await vault_storage.store_file(
         user_id=actor.id,
-        file_id=vault_file.id,
-        content=b"<h1>Hej</h1>",
+        file_id=first_file.id,
+        content=b"<h1>Forsta</h1>",
+    )
+    await vault_storage.store_file(
+        user_id=actor.id,
+        file_id=second_file.id,
+        content=b"<h1>Andra</h1>",
     )
 
     jobs = InMemoryConversionHubJobRepository()
@@ -284,7 +291,7 @@ async def test_submit_saved_file_reads_vault_bytes_and_reuses_document_converter
         local_artifacts=local_artifacts,
         uow=FakeUow(),
         clock=SequenceClock(datetime(2026, 6, 26, tzinfo=timezone.utc)),
-        id_generator=SequenceIdGenerator([uuid4()]),
+        id_generator=SequenceIdGenerator([uuid4(), uuid4()]),
     )
     submit_handler = SubmitDocumentConverterSavedFileHandler(
         create_jobs=create_handler,
@@ -299,17 +306,22 @@ async def test_submit_saved_file_reads_vault_bytes_and_reuses_document_converter
             source=ConversionHubSourceFormatV2.HTML,
             output=ConversionHubOutputFormatV2.PDF,
         ),
-        source_ref=build_vault_file_ref(file_id=vault_file.id),
+        source_refs=[
+            build_vault_file_ref(file_id=second_file.id),
+            build_vault_file_ref(file_id=first_file.id),
+        ],
         wait_seconds=0,
         correlation_id="corr-1",
         build_job_spec=_build_job_spec,
     )
 
-    assert len(result.jobs) == 1
-    assert result.jobs[0].input_filename == "lektion.html"
-    assert result.jobs[0].status is ConversionHubJobStatus.SUCCEEDED
-    assert result.jobs[0].producer is DocumentConverterProducerKind.LOCAL
-    assert next(iter(local_artifacts.artifacts.values())) == b"pdf:<h1>Hej</h1>"
+    assert [job.input_filename for job in result.jobs] == ["andra.html", "forsta.html"]
+    assert all(job.status is ConversionHubJobStatus.SUCCEEDED for job in result.jobs)
+    assert all(job.producer is DocumentConverterProducerKind.LOCAL for job in result.jobs)
+    assert list(local_artifacts.artifacts.values()) == [
+        b"pdf:<h1>Andra</h1>",
+        b"pdf:<h1>Forsta</h1>",
+    ]
 
 
 @pytest.mark.unit
@@ -364,7 +376,7 @@ async def test_submit_saved_file_rejects_cross_owner_deleted_and_unsupported_ref
                 source=ConversionHubSourceFormatV2.HTML,
                 output=ConversionHubOutputFormatV2.PDF,
             ),
-            source_ref=build_vault_file_ref(file_id=other_owner_file.id),
+            source_refs=[build_vault_file_ref(file_id=other_owner_file.id)],
             wait_seconds=0,
             correlation_id=None,
             build_job_spec=_build_job_spec,
@@ -378,7 +390,7 @@ async def test_submit_saved_file_rejects_cross_owner_deleted_and_unsupported_ref
                 source=ConversionHubSourceFormatV2.PDF,
                 output=ConversionHubOutputFormatV2.MD,
             ),
-            source_ref=build_vault_file_ref(file_id=deleted_file.id),
+            source_refs=[build_vault_file_ref(file_id=deleted_file.id)],
             wait_seconds=0,
             correlation_id=None,
             build_job_spec=_build_job_spec,
@@ -392,9 +404,69 @@ async def test_submit_saved_file_rejects_cross_owner_deleted_and_unsupported_ref
                 source=ConversionHubSourceFormatV2.MD,
                 output=ConversionHubOutputFormatV2.PDF,
             ),
-            source_ref=build_vault_file_ref(file_id=unsupported_file.id),
+            source_refs=[build_vault_file_ref(file_id=unsupported_file.id)],
             wait_seconds=0,
             correlation_id=None,
             build_job_spec=_build_job_spec,
         )
     assert unsupported_exc.value.code is ErrorCode.VALIDATION_ERROR
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_submit_saved_file_batch_rejects_invalid_batch_before_job_creation() -> None:
+    actor = make_user()
+    html_file = _vault_file(user_id=actor.id, name="lektion.html")
+    pdf_file = _vault_file(user_id=actor.id, name="underlag.pdf")
+    missing_file = _vault_file(user_id=actor.id, name="saknas.html")
+    vault_files = InMemoryVaultFileRepository()
+    for item in [html_file, pdf_file, missing_file]:
+        vault_files.files[item.id] = item
+    vault_storage = InMemoryVaultStorage()
+    await vault_storage.store_file(user_id=actor.id, file_id=html_file.id, content=b"<h1>Hej</h1>")
+    await vault_storage.store_file(user_id=actor.id, file_id=pdf_file.id, content=b"%PDF")
+    jobs = InMemoryConversionHubJobRepository()
+    handler = SubmitDocumentConverterSavedFileHandler(
+        create_jobs=CreateDocumentConverterJobsHandler(
+            jobs=jobs,
+            client=FakeSirConvertClient(),
+            policy=DocumentConverterProducerPolicy(pdf_text_extractor=StubPdfTextExtractor()),
+            local_producer=LocalDocumentConverterProducer(
+                html_to_pdf=StubHtmlToPdfRenderer(),
+                markdown_to_html=StubMarkdownToHtmlRenderer(),
+                pdf_text_extractor=StubPdfTextExtractor(),
+            ),
+            local_artifacts=InMemoryDocumentConverterArtifactStore(),
+            uow=FakeUow(),
+            clock=SequenceClock(datetime(2026, 6, 26, tzinfo=timezone.utc)),
+            id_generator=SequenceIdGenerator([uuid4(), uuid4()]),
+        ),
+        vault_files=vault_files,
+        vault_storage=vault_storage,
+        uow=FakeUow(),
+    )
+
+    invalid_batches = [
+        [],
+        [build_vault_file_ref(file_id=html_file.id), build_vault_file_ref(file_id=html_file.id)],
+        [build_vault_file_ref(file_id=html_file.id), build_vault_file_ref(file_id=pdf_file.id)],
+        [build_vault_file_ref(file_id=missing_file.id)],
+        [build_vault_file_ref(file_id=html_file.id)] * 11,
+        ["session:lektion.html"],
+    ]
+
+    for refs in invalid_batches:
+        with pytest.raises(DomainError):
+            await handler.handle(
+                actor=actor,
+                spec=_spec(
+                    source=ConversionHubSourceFormatV2.HTML,
+                    output=ConversionHubOutputFormatV2.PDF,
+                ),
+                source_refs=refs,
+                wait_seconds=0,
+                correlation_id=None,
+                build_job_spec=_build_job_spec,
+            )
+
+    assert jobs.jobs == {}

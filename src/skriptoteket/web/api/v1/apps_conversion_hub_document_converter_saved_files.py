@@ -64,7 +64,7 @@ async def submit_document_converter_saved_file_job(
     handler: FromDishka[SubmitDocumentConverterSavedFileHandler],
     user: User = Depends(require_app_user_api),
 ) -> DocumentConverterSubmitResult:
-    """Start one Document Converter job from an owner-scoped saved file ref."""
+    """Start Document Converter jobs from owner-scoped saved file refs."""
     _require_app_access(registry=registry, user=user)
     validate_document_converter_route(submit_request.job_spec)
     correlation_id_uuid = get_correlation_id(request)
@@ -72,7 +72,7 @@ async def submit_document_converter_saved_file_job(
     return await handler.handle(
         actor=user,
         spec=submit_request.job_spec,
-        source_ref=submit_request.source_ref,
+        source_refs=submit_request.source_refs,
         wait_seconds=submit_request.wait_seconds,
         correlation_id=correlation_id,
         build_job_spec=build_conversion_hub_v2_job_spec,

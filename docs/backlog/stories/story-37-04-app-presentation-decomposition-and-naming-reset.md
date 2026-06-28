@@ -67,6 +67,7 @@ dashboard direction are settled.
 - [x] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
 - [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
 - [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
+- [x] [PR-0404: ST-37-04 Document Converter multi-source saved-file batches](../prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md)
 
 ## Notes
 
@@ -162,6 +163,12 @@ dashboard direction are settled.
   links Sir Convert Task 272 as the prerequisite for recovered image artifacts,
   and keeps Skriptoteket fail-closed until a concrete recovery manifest and
   bytes exist.
+- `PR-0404` is done and approved by `REV-PR-0404`. It deepens `PR-0385` by
+  adding ordered multi-source `Mina filer` saved-file batches while keeping
+  core `Mina filer`, combined output, and saved project/package restoration
+  out of scope; retained shared-auth browser proof is present, the public
+  saved-file contract exposes only ordered `source_refs`, and missing output
+  filenames fail closed instead of exposing raw job ids.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use
@@ -204,5 +211,5 @@ dashboard direction are settled.
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-  `ST-37-04` remains open only for a later concrete backend/API
-  app-presentation need; keep `PR-0369` blocked until such a need is proven.
+  `ST-37-04` remains open for `PR-0404` and only later concrete backend/API
+  app-presentation needs; keep `PR-0369` blocked until such a need is proven.

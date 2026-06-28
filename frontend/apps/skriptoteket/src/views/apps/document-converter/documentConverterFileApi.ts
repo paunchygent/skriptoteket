@@ -50,7 +50,7 @@ export type SubmitDocumentConverterUploadJobParams = {
 export type SubmitDocumentConverterSavedFileJobParams = {
   outputFormat: ConversionHubOutputFormatV2;
   sourceFormat: ConversionHubSourceFormatV2;
-  sourceRef: string;
+  sourceRefs: string[];
 };
 
 const DOCUMENT_CONVERTER_ROOT = "/api/v1/apps/documents.conversion_hub/document-converter";
@@ -119,7 +119,7 @@ export async function submitDocumentConverterSavedFileJob(
     `${DOCUMENT_CONVERTER_ROOT}/saved-files/jobs`,
     {
       job_spec: buildJobSpec(params),
-      source_ref: params.sourceRef,
+      source_refs: params.sourceRefs,
       wait_seconds: 0,
     },
   );
