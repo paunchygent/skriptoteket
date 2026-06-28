@@ -10,8 +10,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-28.
 - Branch: `main`.
-- Latest closed work: `PR-0400` production proof.
-- Active worktree slice: `PR-0401` PDF image-recovery planning.
+- Latest closed work: `PR-0401`.
+- Active worktree slice: post-`PR-0400`/`PR-0401` Document Converter product-completion selection.
   Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
@@ -116,6 +116,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0402` is done and approved by `REV-PR-0402`: compact `Filkonvertering` now orders source/file picker, operations, then preview after source-format inference.
 - `PR-0403` is done and approved by `REV-PR-0403`: `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.vue`, `useDocumentPreviewTouchGestures.ts`, `useAnchoredDocumentPreviewZoom.ts`, `useDocumentPreviewZoom.ts`, and `documentConverterPreview.css` now bind native non-passive `touch*`/`gesture*` listeners on the preview viewport, anchor zoom around the pinch midpoint, make the PDF iframe display-only so the viewport owns real touch hit-testing, restore a centered contained fit stage for underfilled previews, and remove the duplicated compact project summary from `HTML/CSS-projekt` mode while keeping the dropzone plus categorized lists.
 - `REV-PR-0403` is approved after rereview: `frontend/pnpm-workspace.yaml` now uses the valid PNPM v11 `allowBuilds.esbuild: true` config, the focused Document Converter frontend tests passed with `29 passed`, and `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build` are green for the current worktree.
+- `PR-0401` is done and approved by `REV-PR-0401`: PDF image recovery stays upstream-owned by Sir Convert, linked to Sir Convert Task 272 or a successor manifest/real-byte contract; Skriptoteket remains fail-closed until recovered image bytes and a concrete recovery manifest exist.
 ## Verification
 - Current PR-0402 compact source-first proof is green at `.artifacts/authenticated-home-work-apps/20260627T172303Z/`.
 - Current retained scoped best-effort preview proof is green; older detail is
@@ -187,6 +188,6 @@ git diff --check
   recreate the affected HuleEdu services before blaming app code.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next governed step: complete `PR-0401` PDF image-recovery planning with fresh research and review subagents.
+- Next governed step: choose the next Document Converter product-completion slice, likely `PR-0385`-class saved-source/history/Mina filer follow-up, now that artifact hygiene and image-recovery planning are settled.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

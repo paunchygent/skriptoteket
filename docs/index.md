@@ -164,6 +164,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0400-document-converter-artifact-content-hygiene-contract.md`
 - Document Converter PDF image recovery planning PR slice:
   `docs/backlog/prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md`
+- Document Converter PDF image recovery planning review:
+  `docs/backlog/reviews/review-pr-0401-document-converter-pdf-image-recovery-planning.md`
 - Document Converter compact source-first layout PR slice:
   `docs/backlog/prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md`
 - Document Converter preview touch-pinch ownership PR slice:

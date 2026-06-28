@@ -64,7 +64,7 @@ dashboard direction are settled.
 - [x] [PR-0398: ST-37-04 Document Converter production conversion and preview zoom remediation](../prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md)
 - [x] [PR-0399: ST-37-04 Sir Convert v2 status vocabulary contract](../prs/pr-0399-st-37-04-sir-convert-v2-status-vocabulary-contract.md)
 - [x] [PR-0400: ST-37-04 Document Converter artifact content hygiene contract](../prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md)
-- [ ] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
+- [x] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
 - [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
 - [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
 
@@ -157,6 +157,11 @@ dashboard direction are settled.
   missing-image placeholders from local HTML/CSS project previews and rejects
   known dirty terminal artifact markers before Document Converter download/save
   exposure instead of silently scrubbing upstream artifacts.
+- `PR-0401` is done and approved by `REV-PR-0401`. It keeps PDF image
+  recovery as an upstream Sir Convert manifest/real-byte recovery problem,
+  links Sir Convert Task 272 as the prerequisite for recovered image artifacts,
+  and keeps Skriptoteket fail-closed until a concrete recovery manifest and
+  bytes exist.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use
@@ -199,6 +204,5 @@ dashboard direction are settled.
   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md),
   and `PR-0362` closed the naming/decomposition planning package through
   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
-  `ST-37-04` remains open for `PR-0401` PDF image-recovery planning and any
-  later concrete backend/API app-presentation need; keep `PR-0369` blocked
-  until such a need is proven.
+  `ST-37-04` remains open only for a later concrete backend/API
+  app-presentation need; keep `PR-0369` blocked until such a need is proven.
