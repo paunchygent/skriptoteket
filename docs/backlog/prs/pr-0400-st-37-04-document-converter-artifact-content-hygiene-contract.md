@@ -237,6 +237,45 @@ Green evidence after implementation:
 - `pdm run lint` passed.
 - `pdm run typecheck` passed.
 
+Production Hemma proof after commit, push, and redeploy:
+
+- Committed and pushed proof surface as
+  `325553d5 Add Document Converter artifact hygiene production proof`, then
+  deployed Hemma with `pdm run hemma-deploy`; the deployed checkout reported
+  `325553d5`, `skriptoteket-web` and `skriptoteket-worker` were healthy, and
+  public `https://skriptoteket.hule.education/healthz` plus
+  `https://api.hule.education/healthz` returned `200`.
+- Proof runner:
+  `scripts/document_converter_artifact_hygiene_production_proof.py`. Because
+  the production image does not include the repo `scripts/` directory, the
+  committed script from the Hemma checkout at `325553d5` was copied into `/tmp`
+  inside `skriptoteket-web` for the proof run, then executed with
+  `PYTHONPATH=/app/src`.
+- Retained proof bundle:
+  `.artifacts/pr-0400-production-proof/20260628T144818Z/manifest.redacted.json`
+  with companion artifacts
+  `project-preview-0-separate_pdf.pdf`,
+  `project-preview-1-combined_pdf.pdf`, and
+  `single-file-sir-convert.docx`.
+- Manifest facts: `status=ok`, `environment=production`, Sir Convert base URL
+  `http://sir_convert_a_lot_prod:8085`.
+- HTML/CSS project preview facts: `status=succeeded`, `output_mode=both`,
+  `artifact_count=2`; generated filenames were
+  `hemma-project - Separat PDF - 20260628.pdf` and
+  `hemma-project - Sammanslagen PDF - 20260628.pdf`; both PDFs had
+  `forbidden_marker_hits=[]`, `raw_marker_hits=[]`,
+  `metadata_marker_hits=[]`, and `text_marker_hits=[]`.
+- Sir Convert-backed single-file facts: `producer=sir_convert`,
+  `producer_reason=docx_output_requires_producer`, `status=succeeded`;
+  generated filename was
+  `pr-0400-sir-convert-proof - Word-dokument - 20260628.docx`; the DOCX had
+  `forbidden_marker_hits=[]`, `raw_marker_hits=[]`, and
+  `zip_text_marker_hits={}` across 16 ZIP members.
+- Local proof-surface closeout after adding the production runner:
+  `/opt/homebrew/bin/pdm run test tests/unit/web/conversion_hub/test_apps_conversion_hub_job_spec.py tests/unit/scripts/test_playwright_script_surface.py`
+  passed: 10 tests; `/opt/homebrew/bin/pdm run lint` passed;
+  `/opt/homebrew/bin/pdm run typecheck` passed; `git diff --check` passed.
+
 ## Rollback Plan
 
 Revert the artifact hygiene contract and code changes in Skriptoteket, then
