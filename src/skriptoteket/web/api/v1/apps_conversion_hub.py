@@ -25,6 +25,7 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSubmitResult,
     RegisterExamConverterConversionHubJobRequest,
     RegisterExamConverterConversionHubJobResult,
+    build_conversion_hub_v2_job_spec,
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
     ConversionHubSirConvertArtifactSaveMetadata,
@@ -141,45 +142,6 @@ def _validate_route_supported(spec: ConversionHubJobSpecV2) -> None:
         raise validation_error(f"Unsupported v2 conversion route: {route_str}")
 
 
-def _build_v2_job_spec(*, spec: ConversionHubJobSpecV2, filename: str) -> dict[str, object]:
-    if spec.output_format.value != "pdf" and spec.pdf_layout is not None:
-        raise validation_error("pdf_layout is only supported for PDF outputs.")
-    job_spec: dict[str, object] = {
-        "api_version": "v2",
-        "source": {
-            "kind": "upload",
-            "filename": filename,
-            "format": spec.source_format.value,
-        },
-        "conversion": {
-            "output_format": spec.output_format.value,
-            "css_filenames": [],
-            "pdf_layout": spec.pdf_layout.model_dump(mode="json")
-            if spec.pdf_layout is not None
-            else None,
-            "template": None,
-            "reference_docx_filename": None,
-        },
-        "pdf_options": None,
-        "execution": None,
-        "retention": {"pin": False},
-    }
-    if spec.source_format.value == "pdf":
-        # Provide safe defaults required by Sir Convert-a-Lot v2 for PDF sources.
-        job_spec["pdf_options"] = {
-            "backend_strategy": "auto",
-            "ocr_mode": "auto",
-            "table_mode": "accurate",
-            "normalize": "standard",
-        }
-        job_spec["execution"] = {
-            "acceleration_policy": "gpu_required",
-            "priority": "normal",
-            "document_timeout_seconds": 1800,
-        }
-    return job_spec
-
-
 @router.get("/routes", response_model=ConversionHubListRoutesResult)
 async def list_routes(
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -224,7 +186,7 @@ async def submit_jobs(
     for upload in files:
         if upload.filename is None or not upload.filename:
             raise validation_error("Uploaded file is missing a filename.")
-        _build_v2_job_spec(spec=spec, filename=upload.filename)
+        build_conversion_hub_v2_job_spec(spec=spec, filename=upload.filename)
         await upload.seek(0)
         uploads.append(
             ConversionHubUpload(
@@ -239,7 +201,7 @@ async def submit_jobs(
         uploads=uploads,
         wait_seconds=wait_seconds,
         correlation_id=correlation_id,
-        build_job_spec=_build_v2_job_spec,
+        build_job_spec=build_conversion_hub_v2_job_spec,
     )
 
 
@@ -271,7 +233,7 @@ async def submit_document_converter_job(
             filename=upload.filename,
             content_type=upload.content_type,
         )
-        _build_v2_job_spec(spec=spec, filename=filename)
+        build_conversion_hub_v2_job_spec(spec=spec, filename=filename)
         validated_uploads.append((filename, content_type))
 
     input_files = await read_upload_files(
@@ -296,7 +258,7 @@ async def submit_document_converter_job(
         ],
         wait_seconds=wait_seconds,
         correlation_id=correlation_id,
-        build_job_spec=_build_v2_job_spec,
+        build_job_spec=build_conversion_hub_v2_job_spec,
     )
 
 

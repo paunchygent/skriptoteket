@@ -1,8 +1,9 @@
-"""Playwright script-surface hygiene tests.
+"""Script-surface hygiene tests.
 
-Purpose:
+Domain purpose:
     Keep the repo's runnable browser automation surface small and current so
-    developers are not misled by superseded PR proof scripts.
+    developers are not misled by superseded PR proof scripts or stale retained
+    production proof fixtures.
 
 Relationships:
     - Enforces the browser-automation policy in `.codex/rules/075-browser-automation.md`.
@@ -13,6 +14,15 @@ Relationships:
 from __future__ import annotations
 
 from pathlib import Path
+
+from scripts._document_converter_proof import (
+    FORBIDDEN_ARTIFACT_MARKERS,
+    build_document_converter_fixture_files,
+)
+from scripts.document_converter_artifact_hygiene_production_proof import (
+    build_project_fixture,
+    inspect_artifact,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_DIR = ROOT / "scripts"
@@ -121,3 +131,61 @@ def test_active_scripts_do_not_use_local_session_cookie_except_cutover_absence_p
             offenders.append(str(path.relative_to(ROOT)))
 
     assert offenders == []
+
+
+def test_document_converter_proof_fixture_matches_artifact_hygiene_contract(
+    tmp_path: Path,
+) -> None:
+    """Keep the live proof fixture aligned with PR-0400 artifact hygiene."""
+    fixture_paths = [Path(path) for path in build_document_converter_fixture_files(tmp_path)]
+    text_payload = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in fixture_paths
+        if path.suffix.lower() in {".css", ".html"}
+    )
+
+    assert "project:///cover.png" in text_payload
+    assert "project:///saknas.png" not in text_payload
+    assert [path.name for path in fixture_paths] == [
+        "agnes-leandersson.html",
+        "styles.css",
+        "cover.png",
+    ]
+    assert [marker for marker in FORBIDDEN_ARTIFACT_MARKERS if marker in text_payload] == []
+
+
+def test_document_converter_native_proof_uses_real_declared_project_assets() -> None:
+    """Keep the Hemma-native production proof aligned with PR-0400."""
+    manifest, files = build_project_fixture()
+    text_payload = "\n".join(
+        project_file.content.decode("utf-8")
+        for project_file in files
+        if project_file.content_type in {"text/css", "text/html"}
+    )
+
+    assert manifest.image_files == ["cover.png"]
+    assert "project:///cover.png" in text_payload
+    assert "project:///saknas.png" not in text_payload
+    assert [marker for marker in FORBIDDEN_ARTIFACT_MARKERS if marker in text_payload] == []
+
+
+def test_document_converter_native_proof_reports_dirty_docx_markers(tmp_path: Path) -> None:
+    """Prove retained proof inspection catches forbidden text inside DOCX XML."""
+    docx_path = tmp_path / "dirty.docx"
+    import zipfile
+
+    with zipfile.ZipFile(docx_path, "w") as archive:
+        archive.writestr(
+            "word/document.xml",
+            "<w:document>pdf_checkpointed_output</w:document>",
+        )
+
+    result = inspect_artifact(
+        output_dir=tmp_path,
+        label="dirty-proof",
+        filename="dirty.docx",
+        content_type=("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        content=docx_path.read_bytes(),
+    )
+
+    assert result["forbidden_marker_hits"] == ["pdf_checkpointed_output"]

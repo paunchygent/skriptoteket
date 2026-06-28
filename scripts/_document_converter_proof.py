@@ -26,8 +26,14 @@ DOCUMENT_CONVERTER_FIXTURE_HTML = "agnes-leandersson.html"
 DOCUMENT_CONVERTER_FIXTURE_HEADING = "PR-0388 synlig PDF-förhandsvisning"
 DOCUMENT_CONVERTER_FIXTURE_CALLOUT = "CSS-länk aktiv i projektpaketet"
 DOCUMENT_CONVERTER_FIXTURE_CAPTION = "Bild inom projektgränsen"
-DOCUMENT_CONVERTER_FIXTURE_MISSING = "Saknad resurs"
 PREVIEW_VIEWPORT_SELECTOR = '[data-testid="document-converter-pdf-viewport"]'
+FORBIDDEN_ARTIFACT_MARKERS = (
+    "pdf_checkpointed_output",
+    "sir-convert-a-lot:partial",
+    "__missing_asset__",
+    "Bild saknas",
+    "Saknad resurs",
+)
 
 
 def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
@@ -68,13 +74,6 @@ def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
         "</ul>"
         "</div>"
         "</section>"
-        "<section class='missing-card'>"
-        "<img class='card-image' src='project:///saknas.png' alt='Saknad resurs'>"
-        "<div class='card-copy'>"
-        f"<h2>{DOCUMENT_CONVERTER_FIXTURE_MISSING}</h2>"
-        "<p>Best-effort-förhandsvisning fortsätter när en bild saknas.</p>"
-        "</div>"
-        "</section>"
         "</main>"
         "</body>"
         "</html>",
@@ -104,8 +103,7 @@ def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
         "  font-size: 14pt;\n"
         "  font-weight: 700;\n"
         "}\n"
-        ".figure-card,\n"
-        ".missing-card {\n"
+        ".figure-card {\n"
         "  display: grid;\n"
         "  grid-template-columns: 50mm 1fr;\n"
         "  gap: 8mm;\n"
@@ -113,8 +111,7 @@ def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
         "  border: 1.2mm solid #f47b52;\n"
         "  padding: 6mm;\n"
         "}\n"
-        ".figure-card h2,\n"
-        ".missing-card h2 {\n"
+        ".figure-card h2 {\n"
         "  margin: 0 0 3mm;\n"
         "  color: #18314f;\n"
         "}\n"
@@ -261,10 +258,6 @@ def assert_document_converter_route(
         raise AssertionError(
             "Downloaded preview PDF did not contain the expected image caption text."
         )
-    if not rendered_preview["contains_missing_resource_text"]:
-        raise AssertionError(
-            "Downloaded preview PDF did not contain the expected missing-resource text."
-        )
     if not rendered_preview["visually_nonblank"]:
         raise AssertionError("Rendered preview PNG was blank or near-blank.")
     if not rendered_preview["css_accents_visible"]:
@@ -274,6 +267,11 @@ def assert_document_converter_route(
     if not rendered_preview["image_accents_visible"]:
         raise AssertionError(
             "Rendered preview PNG did not preserve the linked image accent colors."
+        )
+    if rendered_preview["forbidden_artifact_marker_hits"]:
+        raise AssertionError(
+            "Downloaded preview PDF contained forbidden artifact hygiene markers: "
+            f"{rendered_preview['forbidden_artifact_marker_hits']!r}."
         )
 
     return {
@@ -594,6 +592,14 @@ def _inspect_rendered_preview(*, pdf_path: Path, png_path: Path) -> JsonObject:
     reader = PdfReader(str(pdf_path))
     extracted_text = "\n".join(page.extract_text() or "" for page in reader.pages)
     compact_text = re.sub(r"\s+", " ", extracted_text).strip()
+    metadata = reader.metadata or {}
+    metadata_text = "\n".join(str(value) for value in metadata.values() if value is not None)
+    pdf_bytes = pdf_path.read_bytes()
+    forbidden_hits = sorted(
+        marker
+        for marker in FORBIDDEN_ARTIFACT_MARKERS
+        if marker in compact_text or marker in metadata_text or marker.encode("utf-8") in pdf_bytes
+    )
     image = Image.open(png_path).convert("RGB")
     width, height = image.size
     total_pixels = width * height
@@ -634,11 +640,9 @@ def _inspect_rendered_preview(*, pdf_path: Path, png_path: Path) -> JsonObject:
         ),
         "contains_expected_callout_text": DOCUMENT_CONVERTER_FIXTURE_CALLOUT in compact_text,
         "contains_expected_caption_text": DOCUMENT_CONVERTER_FIXTURE_CAPTION in compact_text,
-        "contains_missing_resource_text": (
-            "Bild saknas" in compact_text or DOCUMENT_CONVERTER_FIXTURE_MISSING in compact_text
-        ),
         "contains_raw_external_url_text": "https://example.test" in compact_text,
         "contains_raw_file_path_text": "file:///etc/passwd" in compact_text,
+        "forbidden_artifact_marker_hits": forbidden_hits,
         "visual_non_white_ratio": round(non_white_ratio, 4),
         "navy_pixel_ratio": round(navy_ratio, 4),
         "orange_pixel_ratio": round(orange_ratio, 4),

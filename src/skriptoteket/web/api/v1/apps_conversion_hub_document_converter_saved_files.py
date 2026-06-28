@@ -12,6 +12,9 @@ Relationships:
 
 from fastapi import APIRouter, Depends, Request
 
+from skriptoteket.application.curated_apps.conversion_hub import (
+    build_conversion_hub_v2_job_spec,
+)
 from skriptoteket.application.curated_apps.document_converter import (
     DocumentConverterSubmitResult,
     ListDocumentConverterSavedFilesResult,
@@ -24,7 +27,6 @@ from skriptoteket.application.curated_apps.handlers.document_converter_saved_sou
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.web.api.v1.apps_conversion_hub import _build_v2_job_spec
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
@@ -73,5 +75,5 @@ async def submit_document_converter_saved_file_job(
         source_ref=submit_request.source_ref,
         wait_seconds=submit_request.wait_seconds,
         correlation_id=correlation_id,
-        build_job_spec=_build_v2_job_spec,
+        build_job_spec=build_conversion_hub_v2_job_spec,
     )

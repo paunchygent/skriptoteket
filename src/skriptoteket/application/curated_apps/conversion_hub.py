@@ -21,6 +21,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.domain.errors import validation_error
 from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
@@ -99,6 +100,50 @@ class ConversionHubJobSpecV2(BaseModel):
     source_format: ConversionHubSourceFormatV2
     output_format: ConversionHubOutputFormatV2
     pdf_layout: ConversionHubPdfLayoutV2 | None = None
+
+
+def build_conversion_hub_v2_job_spec(
+    *,
+    spec: ConversionHubJobSpecV2,
+    filename: str,
+) -> dict[str, object]:
+    """Build the Sir Convert-a-Lot v2 job spec payload for one upload."""
+    if spec.output_format.value != "pdf" and spec.pdf_layout is not None:
+        raise validation_error("pdf_layout is only supported for PDF outputs.")
+    job_spec: dict[str, object] = {
+        "api_version": "v2",
+        "source": {
+            "kind": "upload",
+            "filename": filename,
+            "format": spec.source_format.value,
+        },
+        "conversion": {
+            "output_format": spec.output_format.value,
+            "css_filenames": [],
+            "pdf_layout": spec.pdf_layout.model_dump(mode="json")
+            if spec.pdf_layout is not None
+            else None,
+            "template": None,
+            "reference_docx_filename": None,
+        },
+        "pdf_options": None,
+        "execution": None,
+        "retention": {"pin": False},
+    }
+    if spec.source_format.value == "pdf":
+        # Safe defaults required by Sir Convert-a-Lot v2 for PDF sources.
+        job_spec["pdf_options"] = {
+            "backend_strategy": "auto",
+            "ocr_mode": "auto",
+            "table_mode": "accurate",
+            "normalize": "standard",
+        }
+        job_spec["execution"] = {
+            "acceleration_policy": "gpu_required",
+            "priority": "normal",
+            "document_timeout_seconds": 1800,
+        }
+    return job_spec
 
 
 class ConversionHubJobStatus(StrEnum):

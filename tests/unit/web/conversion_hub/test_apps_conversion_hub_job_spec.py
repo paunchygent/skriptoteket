@@ -11,9 +11,9 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubPdfOrientationV2,
     ConversionHubPdfPaperSizeV2,
     ConversionHubSourceFormatV2,
+    build_conversion_hub_v2_job_spec,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.web.api.v1.apps_conversion_hub import _build_v2_job_spec
 
 
 @pytest.mark.unit
@@ -27,7 +27,7 @@ def test_build_v2_job_spec_includes_pdf_layout_only_for_pdf_outputs() -> None:
             margins_mm=10,
         ),
     )
-    payload = _build_v2_job_spec(spec=spec, filename="in.html")
+    payload = build_conversion_hub_v2_job_spec(spec=spec, filename="in.html")
     assert payload["api_version"] == "v2"
     assert isinstance(payload["conversion"], dict)
     conversion = payload["conversion"]
@@ -47,7 +47,7 @@ def test_build_v2_job_spec_rejects_pdf_layout_for_non_pdf_outputs() -> None:
         pdf_layout=ConversionHubPdfLayoutV2(),
     )
     with pytest.raises(DomainError) as excinfo:
-        _build_v2_job_spec(spec=spec, filename="in.html")
+        build_conversion_hub_v2_job_spec(spec=spec, filename="in.html")
     assert excinfo.value.code == ErrorCode.VALIDATION_ERROR
 
 
@@ -58,6 +58,6 @@ def test_build_v2_job_spec_adds_required_defaults_for_pdf_sources() -> None:
         output_format=ConversionHubOutputFormatV2.MD,
         pdf_layout=None,
     )
-    payload = _build_v2_job_spec(spec=spec, filename="in.pdf")
+    payload = build_conversion_hub_v2_job_spec(spec=spec, filename="in.pdf")
     assert isinstance(payload.get("pdf_options"), dict)
     assert isinstance(payload.get("execution"), dict)
