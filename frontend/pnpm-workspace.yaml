@@ -2,5 +2,8 @@ packages:
   - "apps/*"
   - "packages/*"
 
+allowBuilds:
+  esbuild: true
+
 patchedDependencies:
   '@tailwindcss/node@4.3.0': patches/@tailwindcss__node@4.3.0.patch

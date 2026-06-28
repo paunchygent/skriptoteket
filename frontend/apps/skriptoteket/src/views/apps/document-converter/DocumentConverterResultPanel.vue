@@ -14,7 +14,8 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 
 import { IconFitView, IconZoomIn, IconZoomOut } from "../../../components/icons";
-import { useDocumentPreviewZoom } from "./useDocumentPreviewZoom";
+import { useAnchoredDocumentPreviewZoom } from "./useAnchoredDocumentPreviewZoom";
+import { useDocumentPreviewTouchGestures } from "./useDocumentPreviewTouchGestures";
 
 const props = defineProps<{
   activePreviewUrl: string | null;
@@ -23,7 +24,16 @@ const props = defineProps<{
 }>();
 
 const previewViewport = ref<HTMLElement | null>(null);
-const zoom = useDocumentPreviewZoom({ resetSource: () => props.activePreviewUrl });
+const zoom = useAnchoredDocumentPreviewZoom(previewViewport, {
+  resetSource: () => props.activePreviewUrl,
+});
+
+useDocumentPreviewTouchGestures({
+  target: previewViewport,
+  onZoomByFactor: zoom.zoomByFactor,
+  onGestureStart: zoom.beginGestureCamera,
+  onGestureEnd: zoom.endGestureCamera,
+});
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -128,22 +138,24 @@ onBeforeUnmount(() => {
           ref="previewViewport"
           class="dc-pdf-viewport"
           data-testid="document-converter-pdf-viewport"
-          @touchstart="zoom.handleTouchStart"
-          @touchmove="zoom.handleTouchMove"
-          @touchend="zoom.endTouchGesture"
-          @touchcancel="zoom.endTouchGesture"
         >
           <div
-            class="dc-pdf-surface"
-            data-testid="document-converter-pdf-surface"
-            :style="zoom.scaledSurfaceStyle.value"
+            class="dc-pdf-stage"
+            data-testid="document-converter-pdf-stage"
+            :class="{ 'dc-pdf-stage--contained': zoom.fitsViewport.value }"
           >
-            <iframe
-              data-testid="document-converter-pdf-frame"
-              class="dc-artifact-frame"
-              :src="activePreviewUrl"
-              :title="resultTitle"
-            />
+            <div
+              class="dc-pdf-surface"
+              data-testid="document-converter-pdf-surface"
+              :style="zoom.scaledSurfaceStyle.value"
+            >
+              <iframe
+                data-testid="document-converter-pdf-frame"
+                class="dc-artifact-frame"
+                :src="activePreviewUrl"
+                :title="resultTitle"
+              />
+            </div>
           </div>
         </div>
         <div

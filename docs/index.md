@@ -164,6 +164,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md`
 - Document Converter compact source-first layout PR slice:
   `docs/backlog/prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md`
+- Document Converter preview touch-pinch ownership PR slice:
+  `docs/backlog/prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

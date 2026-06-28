@@ -138,28 +138,13 @@ const singleFileOutputOptions = computed<DocumentConverterSingleFileOutputChoice
   }));
 });
 
-const mobileSummaryTitle = computed(() => {
-  if (workspaceMode.value === "project_preview") {
-    return project.selectedFileLabel();
-  }
-  return singleFile.selectedSourceName.value;
-});
+const mobileSummaryTitle = computed(() => singleFile.selectedSourceName.value);
 
-const mobileSummaryDetails = computed(() => {
-  if (workspaceMode.value === "project_preview") {
-    return [
-      `${project.totalProjectFiles.value} filer`,
-      `${project.fileSummary.value.html.length} HTML`,
-      `${project.fileSummary.value.css.length} CSS`,
-      `${project.fileSummary.value.images.length} bilder`,
-    ];
-  }
-  return [
-    singleFile.sourceMode.value === "upload" ? "Lokal fil" : "Mina filer",
-    sourceLabelMap[singleFile.selectedSourceFormat.value],
-    outputLabelMap[singleFile.selectedOutputFormat.value],
-  ];
-});
+const mobileSummaryDetails = computed(() => [
+  singleFile.sourceMode.value === "upload" ? "Lokal fil" : "Mina filer",
+  sourceLabelMap[singleFile.selectedSourceFormat.value],
+  outputLabelMap[singleFile.selectedOutputFormat.value],
+]);
 
 const isCurrentProjectPreviewFailure = computed(() => {
   return workspaceMode.value === "project_preview" && project.canRetryPreview.value && Boolean(project.errorMessage.value);
@@ -376,6 +361,7 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
     </header>
 
     <section
+      v-if="workspaceMode === 'single_file'"
       class="dc-mobile-summary"
       aria-label="Mobilöversikt"
     >

@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-27
+updated: 2026-06-28
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -66,6 +66,7 @@ dashboard direction are settled.
 - [ ] [PR-0400: ST-37-04 Document Converter artifact content hygiene contract](../prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md)
 - [ ] [PR-0401: ST-37-04 Document Converter PDF image recovery planning](../prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md)
 - [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
+- [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
 
 ## Notes
 
@@ -139,6 +140,11 @@ dashboard direction are settled.
   conversion controls before upload. Source-format inference now lets compact
   `Filkonvertering` return to source/file picker first, then conversion
   controls, then preview. It is done and approved by `REV-PR-0402`.
+- `PR-0403` is done and approved by `REV-PR-0403`. It remediates the Document
+  Converter preview touch-pinch path using the `PR-0313` real-device lesson:
+  native non-passive target binding, platform gesture events, anchored local
+  zoom proof, centered fit geometry, and removal of the duplicated compact
+  project summary panel.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use

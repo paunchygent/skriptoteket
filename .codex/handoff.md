@@ -8,10 +8,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-27.
+- Date: 2026-06-28.
 - Branch: `main`.
-- Latest closed work: `PR-0402`.
-- Active worktree slice: `ST-37-05` shared save/export naming follow-ups; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Latest closed work: `PR-0403`.
+- Active worktree slice: none; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
 - `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
@@ -114,6 +114,8 @@ Keep this file updated so the next session can pick up work quickly.
   owns typed Sir Convert v2 status vocabulary; `PR-0398` owns Document Converter
   consumption, failure-state UX, and preview fit/zoom/pinch.
 - `PR-0402` is done and approved by `REV-PR-0402`: compact `Filkonvertering` now orders source/file picker, operations, then preview after source-format inference.
+- `PR-0403` is done and approved by `REV-PR-0403`: `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.vue`, `useDocumentPreviewTouchGestures.ts`, `useAnchoredDocumentPreviewZoom.ts`, `useDocumentPreviewZoom.ts`, and `documentConverterPreview.css` now bind native non-passive `touch*`/`gesture*` listeners on the preview viewport, anchor zoom around the pinch midpoint, make the PDF iframe display-only so the viewport owns real touch hit-testing, restore a centered contained fit stage for underfilled previews, and remove the duplicated compact project summary from `HTML/CSS-projekt` mode while keeping the dropzone plus categorized lists.
+- `REV-PR-0403` is approved after rereview: `frontend/pnpm-workspace.yaml` now uses the valid PNPM v11 `allowBuilds.esbuild: true` config, the focused Document Converter frontend tests passed with `29 passed`, and `pdm run fe-type-check`, `pdm run fe-lint`, and `pdm run fe-build` are green for the current worktree.
 ## Verification
 - Current PR-0402 compact source-first proof is green at `.artifacts/authenticated-home-work-apps/20260627T172303Z/`.
 - Current retained scoped best-effort preview proof is green; older detail is
@@ -137,6 +139,9 @@ Keep this file updated so the next session can pick up work quickly.
     Document Converter results, source-format inference, local-upload remove,
     stale-upload clearing, and browser proof at
     `.artifacts/authenticated-home-work-apps/20260627T162846Z/manifest.redacted.json`.
+  - `PR-0403` focused frontend proof is green after the fit/centering correction: `pnpm --filter @skriptoteket/spa test -- --run src/views/apps/document-converter/DocumentConverterResultPanel.spec.ts src/views/apps/document-converter/DocumentConverterView.spec.ts src/views/apps/document-converter/DocumentConverterProjectResult.spec.ts src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts` passed with `29 passed`.
+  - `PR-0403` live shared-auth reruns now include three retained checkpoints: `RATE_LIMIT` miss at `.artifacts/authenticated-home-work-apps/20260627T175912Z/`, Gateway `502 EXTERNAL_SERVICE_ERROR` on the heavier proof fixture at `.artifacts/authenticated-home-work-apps/20260627T231319Z/document-converter-preview-response.json`, and the repaired green proof after trimming unrelated blocked-resource probes at `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`.
+  - Fresh `PR-0403` live proof facts from `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`: native non-passive `touch*` + `gesture*` listeners verified through Chromium CDP, tablet native pinch changed `59% -> 119%`, platform gestures changed `55% -> 63%` (desktop), `119% -> 137%` (tablet), and `37% -> 43%` (compact), one-finger panning stayed available (`one_finger_move_prevented: false`), and fit geometry stayed centered on the underfilled axis (`desktop left/right inset 2.06px/2.06px`, `tablet 0.17px/0.19px`, `compact 0.52px/0.53px`).
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.

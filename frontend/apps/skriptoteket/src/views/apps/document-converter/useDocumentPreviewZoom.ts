@@ -27,13 +27,13 @@ export type UseDocumentPreviewZoomOptions = {
   resetSource?: WatchSource<unknown> | WatchSource<unknown>[];
 };
 
-const DOCUMENT_PREVIEW_WIDTH = 794;
-const DOCUMENT_PREVIEW_HEIGHT = 1124;
+export const DOCUMENT_PREVIEW_WIDTH = 794;
+export const DOCUMENT_PREVIEW_HEIGHT = 1124;
 const DOCUMENT_PREVIEW_MIN_SCALE = 0.35;
 const DOCUMENT_PREVIEW_MAX_SCALE = 2.5;
 const DOCUMENT_PREVIEW_SCALE_STEP = 0.1;
 
-function clampDocumentPreviewScale(scale: number): number {
+export function clampDocumentPreviewScale(scale: number): number {
   return Math.min(
     Math.max(scale, DOCUMENT_PREVIEW_MIN_SCALE),
     DOCUMENT_PREVIEW_MAX_SCALE,
@@ -79,6 +79,7 @@ export function useDocumentPreviewZoom(options: UseDocumentPreviewZoomOptions = 
 
   const fitScale = computed(() => roundScale(computeFitScale(viewportSize.value)));
   const scale = computed(() => roundScale(manualZoomScale.value ?? fitScale.value));
+  const fitsViewport = computed(() => scale.value <= fitScale.value);
   const scalePercent = computed(() => Math.round(scale.value * 100));
   const scaledSurfaceStyle = computed(() => ({
     "--dc-preview-scale": String(scale.value),
@@ -148,10 +149,12 @@ export function useDocumentPreviewZoom(options: UseDocumentPreviewZoomOptions = 
 
   return {
     fitScale,
+    fitsViewport,
     scale,
     scalePercent,
     scaledSurfaceStyle,
     setViewportSize,
+    setManualZoomScale,
     zoomOut,
     zoomIn,
     zoomByFactor,

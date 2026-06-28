@@ -190,4 +190,23 @@ describe("DocumentConverterView layout ownership", () => {
     );
     expect(previewColumn.find('[data-testid="document-converter-pdf-frame"]').exists()).toBe(true);
   });
+
+  it("removes the compact project summary while keeping the dropzone and categorized source lists", async () => {
+    const wrapper = mount(DocumentConverterView);
+
+    await addProjectFiles(wrapper);
+    await flushPromises();
+
+    const sourceColumn = wrapper.get('[data-testid="document-converter-source-column"]');
+
+    expect(wrapper.find('[aria-label="Mobilöversikt"]').exists()).toBe(false);
+    expect(sourceColumn.find('[data-testid="document-converter-dropzone"]').exists()).toBe(true);
+    expect(sourceColumn.text()).toContain("HTML (1/10)");
+    expect(sourceColumn.text()).toContain("index.html");
+    expect(sourceColumn.text()).toContain("CSS (1/10)");
+    expect(sourceColumn.text()).toContain("styles.css");
+    expect(sourceColumn.text()).toContain("Bilder (1/20)");
+    expect(sourceColumn.text()).toContain("cover.png");
+    expect(sourceColumn.text()).not.toContain("3 filer");
+  });
 });

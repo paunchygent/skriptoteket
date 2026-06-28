@@ -18,6 +18,8 @@ from pathlib import Path
 
 from playwright.sync_api import Locator, Page, expect
 
+from scripts._playwright_touch import pinch_zoom
+
 JsonObject = dict[str, object]
 
 DOCUMENT_CONVERTER_FIXTURE_HTML = "agnes-leandersson.html"
@@ -25,6 +27,7 @@ DOCUMENT_CONVERTER_FIXTURE_HEADING = "PR-0388 synlig PDF-förhandsvisning"
 DOCUMENT_CONVERTER_FIXTURE_CALLOUT = "CSS-länk aktiv i projektpaketet"
 DOCUMENT_CONVERTER_FIXTURE_CAPTION = "Bild inom projektgränsen"
 DOCUMENT_CONVERTER_FIXTURE_MISSING = "Saknad resurs"
+PREVIEW_VIEWPORT_SELECTOR = '[data-testid="document-converter-pdf-viewport"]'
 
 
 def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
@@ -72,8 +75,6 @@ def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
         "<p>Best-effort-förhandsvisning fortsätter när en bild saknas.</p>"
         "</div>"
         "</section>"
-        "<img class='blocked-probe' src='https://example.test/blocked.png' alt='Blockerad resurs'>"
-        "<img class='blocked-probe' src='file:///etc/passwd.png' alt='Filsystemresurs'>"
         "</main>"
         "</body>"
         "</html>",
@@ -129,9 +130,6 @@ def build_document_converter_fixture_files(artifact_dir: Path) -> list[str]:
         "  height: 38mm;\n"
         "  object-fit: cover;\n"
         "  border: 1mm solid #18314f;\n"
-        "}\n"
-        ".blocked-probe {\n"
-        "  display: none;\n"
         "}\n"
         "ul {\n"
         "  margin: 0;\n"
@@ -189,10 +187,15 @@ def assert_document_converter_route(
     preview_response = preview_response_info.value
     if preview_response.status != 200:
         response_path = artifact_dir / "document-converter-preview-response.json"
+        response_body: str
+        try:
+            response_body = preview_response.text()
+        except Exception as exc:  # pragma: no cover - live-proof fallback
+            response_body = f"<unavailable: {type(exc).__name__}: {exc}>"
         response_path.write_text(
             json.dumps(
                 {
-                    "body": preview_response.text(),
+                    "body": response_body,
                     "headers": dict(preview_response.headers),
                     "status": preview_response.status,
                     "url": preview_response.url,
@@ -212,7 +215,7 @@ def assert_document_converter_route(
     expect(frame).to_be_visible(timeout=45_000)
     expect(download_button).to_be_enabled(timeout=45_000)
     expect(save_button).to_be_enabled(timeout=45_000)
-    zoom_controls = _assert_preview_zoom_controls(route)
+    zoom_controls = _assert_preview_zoom_controls(page, route)
 
     first_frame_src = frame.get_attribute("src")
     if not first_frame_src or not first_frame_src.startswith("blob:"):
@@ -293,7 +296,7 @@ def assert_document_converter_route(
     }
 
 
-def _assert_preview_zoom_controls(route: Locator) -> JsonObject:
+def _assert_preview_zoom_controls(page: Page, route: Locator) -> JsonObject:
     viewport = route.get_by_test_id("document-converter-pdf-viewport")
     zoom_out = route.get_by_test_id("document-converter-preview-zoom-out")
     zoom_in = route.get_by_test_id("document-converter-preview-zoom-in")
@@ -309,6 +312,7 @@ def _assert_preview_zoom_controls(route: Locator) -> JsonObject:
     touch_action = viewport.evaluate("(element) => window.getComputedStyle(element).touchAction")
     if touch_action == "none":
         raise AssertionError("Document Converter PDF preview blocks touch panning.")
+    native_listener_contract = _inspect_preview_native_gesture_listeners(page)
 
     initial_label = label.inner_text()
     zoom_in.click()
@@ -319,12 +323,15 @@ def _assert_preview_zoom_controls(route: Locator) -> JsonObject:
     zoom_out_label = label.inner_text()
     fit.click()
     expect(label).to_have_text(initial_label)
-    touch_probe = _assert_preview_touch_ownership(viewport)
+    fit_layout = _inspect_preview_fit_layout(viewport)
+    touch_probe = _assert_preview_touch_ownership(page, viewport)
     fit.click()
     expect(label).to_have_text(initial_label)
 
     return {
         "fit_label": initial_label,
+        "fit_layout": fit_layout,
+        "native_listener_contract": native_listener_contract,
         "touch_action": touch_action,
         "touch_probe": touch_probe,
         "zoomed_label": zoomed_label,
@@ -332,36 +339,174 @@ def _assert_preview_zoom_controls(route: Locator) -> JsonObject:
     }
 
 
-def _assert_preview_touch_ownership(viewport: Locator) -> JsonObject:
-    probe = viewport.evaluate(
+def _inspect_preview_native_gesture_listeners(page: Page) -> JsonObject:
+    client = page.context.new_cdp_session(page)
+    try:
+        evaluation = client.send(
+            "Runtime.evaluate",
+            {
+                "expression": f"document.querySelector({json.dumps(PREVIEW_VIEWPORT_SELECTOR)})",
+                "returnByValue": False,
+            },
+        )
+        object_id = evaluation.get("result", {}).get("objectId")
+        if not object_id:
+            raise AssertionError(
+                "Document Converter preview viewport did not resolve for CDP inspection."
+            )
+        listeners = client.send(
+            "DOMDebugger.getEventListeners",
+            {"objectId": object_id},
+        ).get("listeners", [])
+    finally:
+        client.detach()
+
+    expected_types = {
+        "gesturechange",
+        "gestureend",
+        "gesturestart",
+        "touchcancel",
+        "touchend",
+        "touchmove",
+        "touchstart",
+    }
+    relevant_listeners = [
+        {
+            "passive": listener.get("passive"),
+            "type": listener.get("type"),
+            "useCapture": listener.get("useCapture"),
+        }
+        for listener in listeners
+        if listener.get("type") in expected_types
+    ]
+    actual_types = {str(listener["type"]) for listener in relevant_listeners}
+    if actual_types != expected_types:
+        raise AssertionError(
+            "Document Converter preview native gesture listeners were incomplete: "
+            f"{sorted(actual_types)!r}."
+        )
+    passive_false_types = {
+        str(listener["type"]) for listener in relevant_listeners if listener.get("passive") is False
+    }
+    if passive_false_types != expected_types:
+        raise AssertionError(
+            "Document Converter preview native gesture listeners were not all non-passive: "
+            f"{sorted(passive_false_types)!r}."
+        )
+
+    return {
+        "passive_false_types": sorted(passive_false_types),
+        "types": sorted(actual_types),
+    }
+
+
+def _inspect_preview_fit_layout(viewport: Locator) -> JsonObject:
+    layout = viewport.evaluate(
+        """(element) => {
+            const surface = element.querySelector('[data-testid="document-converter-pdf-surface"]');
+            const stage = element.querySelector('[data-testid="document-converter-pdf-stage"]');
+            if (!(surface instanceof HTMLElement) || !(stage instanceof HTMLElement)) {
+                throw new Error("Missing Document Converter fit layout nodes.");
+            }
+            const viewportRect = element.getBoundingClientRect();
+            const surfaceRect = surface.getBoundingClientRect();
+            const leftInset = surfaceRect.left - viewportRect.left;
+            const rightInset = viewportRect.right - surfaceRect.right;
+            const topInset = surfaceRect.top - viewportRect.top;
+            const bottomInset = viewportRect.bottom - surfaceRect.bottom;
+            return {
+                bottom_inset: bottomInset,
+                height_ratio: viewportRect.height > 0 ? surfaceRect.height / viewportRect.height : 0,
+                left_inset: leftInset,
+                right_inset: rightInset,
+                stage_contained: stage.classList.contains("dc-pdf-stage--contained"),
+                top_inset: topInset,
+                viewport_height: viewportRect.height,
+                viewport_width: viewportRect.width,
+                width_ratio: viewportRect.width > 0 ? surfaceRect.width / viewportRect.width : 0,
+            };
+        }"""
+    )
+    if not layout["stage_contained"]:
+        raise AssertionError(
+            "Document Converter fit mode did not mark the preview stage as contained."
+        )
+
+    width_ratio = float(layout["width_ratio"])
+    height_ratio = float(layout["height_ratio"])
+    if max(width_ratio, height_ratio) < 0.98:
+        raise AssertionError(
+            "Document Converter fit mode left the preview underfilled on both axes."
+        )
+
+    left_inset = float(layout["left_inset"])
+    right_inset = float(layout["right_inset"])
+    top_inset = float(layout["top_inset"])
+    bottom_inset = float(layout["bottom_inset"])
+    width_underfills = width_ratio < 0.98
+    height_underfills = height_ratio < 0.98
+
+    if width_underfills and abs(left_inset - right_inset) > 2:
+        raise AssertionError(
+            "Document Converter fit mode left the preview horizontally biased instead of centered."
+        )
+    if height_underfills and abs(top_inset - bottom_inset) > 2:
+        raise AssertionError(
+            "Document Converter fit mode left the preview vertically biased instead of centered."
+        )
+
+    return layout
+
+
+def _assert_preview_touch_ownership(page: Page, viewport: Locator) -> JsonObject:
+    label = page.get_by_test_id("document-converter-preview-zoom-label")
+    initial_label = label.inner_text()
+    max_touch_points = int(page.evaluate("navigator.maxTouchPoints || 0"))
+    native_pinch_result: JsonObject = {
+        "attempted": max_touch_points > 0,
+        "max_touch_points": max_touch_points,
+    }
+    if max_touch_points > 0:
+        pinch_zoom(page, PREVIEW_VIEWPORT_SELECTOR, start_distance=100, end_distance=200)
+        expect(label).not_to_have_text(initial_label)
+        native_pinch_result["zoomed_label"] = label.inner_text()
+    else:
+        native_pinch_result["skipped_reason"] = "touch-input-not-enabled-for-this-viewport"
+
+    platform_probe = viewport.evaluate(
         """async (element) => {
             const label = document.querySelector('[data-testid="document-converter-preview-zoom-label"]');
             if (!label) throw new Error("Missing Document Converter preview zoom label.");
+            const afterFrame = async () => {
+                await new Promise((resolve) => window.requestAnimationFrame(resolve));
+                await new Promise((resolve) => window.requestAnimationFrame(resolve));
+            };
+            const makeGestureEvent = (type, scale) => {
+                const event = new Event(type, { bubbles: true, cancelable: true });
+                Object.defineProperty(event, "scale", { configurable: true, value: scale });
+                Object.defineProperty(event, "clientX", { configurable: true, value: 110 });
+                Object.defineProperty(event, "clientY", { configurable: true, value: 150 });
+                return event;
+            };
             const makeTouchList = (points) => {
                 const list = { item: (index) => list[index] ?? null, length: points.length };
                 points.forEach((point, index) => { list[index] = point; });
                 return list;
             };
-            const makeEvent = (type, points) => {
-                if (typeof TouchEvent === "function" && typeof Touch === "function") {
-                    const touches = points.map((point, index) => new Touch({ ...point, identifier: index, target: element }));
-                    return new TouchEvent(type, { bubbles: true, cancelable: true, changedTouches: touches, targetTouches: touches, touches });
-                }
-                const event = new Event(type, { bubbles: true, cancelable: true });
+            const makeTouchMove = (points) => {
+                const event = new Event("touchmove", { bubbles: true, cancelable: true });
                 Object.defineProperty(event, "touches", { configurable: true, value: makeTouchList(points) });
                 return event;
             };
-            const afterFrame = async () => {
-                await new Promise((resolve) => window.requestAnimationFrame(resolve));
-                await new Promise((resolve) => window.requestAnimationFrame(resolve));
-            };
             const initialLabel = label.textContent.trim();
-            const oneFingerBefore = makeEvent("touchmove", [{ clientX: 40, clientY: 120 }]);
-            element.dispatchEvent(oneFingerBefore);
-            element.dispatchEvent(makeEvent("touchstart", [{ clientX: 10, clientY: 10 }, { clientX: 110, clientY: 10 }]));
-            const pinchMove = makeEvent("touchmove", [{ clientX: 10, clientY: 10 }, { clientX: 260, clientY: 10 }]);
-            element.dispatchEvent(pinchMove);
-            element.dispatchEvent(makeEvent("touchend", []));
+            const oneFingerMove = makeTouchMove([{ clientX: 48, clientY: 128 }]);
+            element.dispatchEvent(oneFingerMove);
+            const gestureStart = makeGestureEvent("gesturestart", 1);
+            const gestureChange = makeGestureEvent("gesturechange", 1.15);
+            const gestureEnd = makeGestureEvent("gestureend", 1.15);
+            element.dispatchEvent(gestureStart);
+            element.dispatchEvent(gestureChange);
+            element.dispatchEvent(gestureEnd);
             await afterFrame();
             element.scrollTop = 0;
             element.scrollLeft = 0;
@@ -369,24 +514,33 @@ def _assert_preview_touch_ownership(viewport: Locator) -> JsonObject:
             const clientHeight = element.clientHeight;
             element.scrollTop = 32;
             element.scrollLeft = 12;
-            const oneFingerAfter = makeEvent("touchmove", [{ clientX: 48, clientY: 128 }]);
-            element.dispatchEvent(oneFingerAfter);
             return {
-                client_height: clientHeight, initial_label: initialLabel, pinch_label: label.textContent.trim(),
-                one_finger_after_pinch_prevented: oneFingerAfter.defaultPrevented, one_finger_before_pinch_prevented: oneFingerBefore.defaultPrevented, pinch_move_prevented: pinchMove.defaultPrevented,
-                scroll_height: scrollHeight, scroll_left_after_set: element.scrollLeft, scroll_top_after_set: element.scrollTop, supports_touch_constructor: typeof Touch === "function", supports_touch_event: typeof TouchEvent === "function",
+                client_height: clientHeight, gesture_change_prevented: gestureChange.defaultPrevented, gesture_end_prevented: gestureEnd.defaultPrevented,
+                gesture_label: label.textContent.trim(), gesture_start_prevented: gestureStart.defaultPrevented, initial_label: initialLabel,
+                one_finger_move_prevented: oneFingerMove.defaultPrevented, scroll_height: scrollHeight, scroll_left_after_set: element.scrollLeft, scroll_top_after_set: element.scrollTop,
             };
         }"""
     )
-    if probe["one_finger_before_pinch_prevented"] or probe["one_finger_after_pinch_prevented"]:
+    if platform_probe["one_finger_move_prevented"]:
         raise AssertionError("Document Converter PDF preview intercepts one-finger touch panning.")
-    if not probe["pinch_move_prevented"]:
-        raise AssertionError("Document Converter PDF preview did not claim the two-finger pinch.")
-    if probe["pinch_label"] == probe["initial_label"]:
-        raise AssertionError("Document Converter PDF preview pinch did not change zoom.")
-    if probe["scroll_height"] > probe["client_height"] and probe["scroll_top_after_set"] <= 0:
+    if (
+        not platform_probe["gesture_start_prevented"]
+        or not platform_probe["gesture_change_prevented"]
+    ):
+        raise AssertionError(
+            "Document Converter PDF preview did not claim Safari-style platform gestures."
+        )
+    if platform_probe["gesture_label"] == platform_probe["initial_label"]:
+        raise AssertionError("Document Converter PDF preview platform gesture did not change zoom.")
+    if (
+        platform_probe["scroll_height"] > platform_probe["client_height"]
+        and platform_probe["scroll_top_after_set"] <= 0
+    ):
         raise AssertionError("Document Converter PDF preview did not remain vertically scrollable.")
-    return probe
+    return {
+        "native_pinch": native_pinch_result,
+        "platform_probe": platform_probe,
+    }
 
 
 def _write_fixture_image(path: Path) -> None:

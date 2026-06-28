@@ -83,6 +83,19 @@
   touch-action: pan-x pan-y;
 }
 
+.dc-pdf-stage {
+  min-width: 100%;
+  min-height: 100%;
+  display: grid;
+  justify-items: start;
+  align-items: start;
+}
+
+.dc-pdf-stage--contained {
+  justify-items: center;
+  align-items: center;
+}
+
 .dc-pdf-surface {
   --dc-preview-scale: 1;
   width: calc(794px * var(--dc-preview-scale));
@@ -97,6 +110,7 @@
   display: block;
   border: 0;
   background: white;
+  pointer-events: none;
   transform: scale(var(--dc-preview-scale));
   transform-origin: top left;
 }
