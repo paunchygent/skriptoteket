@@ -21,10 +21,11 @@ links:
 
 ## TL;DR
 
-No blocking findings remain after the Task 374 remediation rereview. Sir Convert
-now preserves keyed sibling advisory candidates without gating free-text/open-
-writing rows, and Skriptoteket proves both preserved-pending and producer-
-validation replay states without local review-state inference.
+No blocking findings remain after the Task 374 remediation rereview and final
+production proof. Sir Convert now preserves keyed sibling advisory candidates
+without gating free-text/open-writing rows, and Skriptoteket proves both
+preserved-pending and producer-validation replay states without local review-
+state inference.
 
 ## Problem Statement
 
@@ -107,17 +108,15 @@ implementation no longer uses `btn-primary`/`btn-cta` for the advisory
   exercises the production repro sequence locally and proves that after
   accepting `item-001`, untouched sibling `item-002` remains `Granska` with
   advisory detail visible.
-- Still required for product closeout: production deploy and fresh production
-  proof must exercise the same tracked-DXE sequence: upload, accept one
-  advisory key, verify untouched keyed advisory candidates still keep their
-  suggestion state, navigate, reload, and verify replay/readback remains
-  producer-driven.
+- Completed for production: `.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`
+  exercises the same tracked-DXE sequence after deploy and proves that after
+  accepting `item-001`, untouched sibling `item-002` remains `Granska` with
+  advisory detail visible.
 
 ### Decision
 
-Approved for the reviewed Task 374 / PR-0408 remediation. Automated evidence is
-sufficient to proceed to dev end-to-end proof; it does not replace the required
-dev/prod browser proof for PR-0408 product closeout.
+Approved for the reviewed Task 374 / PR-0408 remediation. The required dev and
+production browser proofs both passed for PR-0408 product closeout.
 
 ### Verification Evidence
 
@@ -207,6 +206,9 @@ stays `Kontrollera` without local suggestion revival.
 - `/opt/homebrew/bin/pdm run python -m scripts.playwright_pr_0337_correction_session_live --source-dxe /Users/olofs_mba/Documents/Repos/sir-convert-a-lot/inputs/examples/digiexam-dxe-fixtures/2026-05-12-onedrive-pure-dxe/1776888013-ak7-lag-och-ratt.dxe --base-url http://127.0.0.1:5173 --timeout-seconds 600`
   passed locally with manifest
   `.artifacts/playwright-pr-0337-correction-session-live/20260629T193503Z/manifest.redacted.json`.
+- `/opt/homebrew/bin/pdm run python -m scripts.playwright_pr_0337_correction_session_live --dotenv .artifacts/proof-env/pr-0406-production.env --source-dxe /Users/olofs_mba/Documents/Repos/sir-convert-a-lot/inputs/examples/digiexam-dxe-fixtures/2026-05-12-onedrive-pure-dxe/1776888013-ak7-lag-och-ratt.dxe --base-url https://skriptoteket.hule.education --timeout-seconds 900`
+  passed in production with manifest
+  `.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`.
 
 Parent-reported supporting evidence:
 

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0408
 title: "ST-21-04 Exam Converter frontend design implementation alignment"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-06-29
 updated: 2026-06-29
@@ -163,7 +163,16 @@ The proof uploads the tracked DXE through local shared-auth, accepts one
 advisory key, verifies untouched sibling `item-002` remains `Granska` with the
 advisory panel visible, completes replay-scoped PDF/QTI download and save,
 reloads, and checks phone list/detail/files/report surfaces. Production deploy
-and production proof remain required before this PR closes.
+and production proof then passed before this PR closed.
+
+Production proof on 2026-06-29 passed at
+`.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`.
+The proof runs against deployed Sir Convert
+`92c77bd43909b1d01407e650164836039a105ca1` and Skriptoteket
+`5cfab283b741fb9076ec5213834e26576874458c`, accepts `item-001`, verifies
+untouched sibling `item-002` remains `Granska` with the advisory panel visible,
+completes replay-scoped PDF/QTI download and save, reloads, and checks phone
+list/detail/files/report surfaces.
 
 The consumer test contract is deliberately two-sided: if producer replay returns
 an untouched sibling as `review_required` / `advisory_candidate_pending`, the UI

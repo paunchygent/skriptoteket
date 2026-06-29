@@ -136,7 +136,7 @@ PR-sized slices:
    mirror Sir Convert Story 57 as the overseer tracking surface for Task 373,
    PR-0406, and the final production browser proof with the tracked DXE
    fixture.
-12. Frontend design implementation alignment (`PR-0408`, in progress):
+12. Frontend design implementation alignment (`PR-0408`, done):
    align the live desktop and small-screen Exam Converter UI with the governed
    PR-0406 answer-key review design authorities, and reprove the post-accept
    advisory replay workflow after Sir Convert Task 374. The earlier
@@ -199,4 +199,5 @@ PR-sized slices:
   advisory key while untouched keyed advisory candidates remain pending
   suggestions after replay. Dev proof is green at
   `.artifacts/playwright-pr-0337-correction-session-live/20260629T193503Z/manifest.redacted.json`;
-  production deploy and production proof remain required.
+  production proof is green at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`.
