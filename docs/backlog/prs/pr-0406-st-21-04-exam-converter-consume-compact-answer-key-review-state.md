@@ -109,25 +109,42 @@ target readiness, and replay artifact authority.
    Convert target readiness and replay artifact references, not question-list
    review state.
 
-## Open Questions Before Implementation
+## Closed Consumer Decisions
 
 1. Projection transport.
-   - Open: will Task 373 expose the projection as a named artifact, a top-level
-     correction-apply response field, or both?
-   - Recommendation: support both if Sir Convert does; use the response field
-     for immediate replay UI and named artifact for first-pass bundle review.
+   - Decision: consume both producer surfaces from Task 373. Use the named
+     `answer_key_review_state_report` artifact for first-pass bundle review and
+     the top-level correction-apply `answer_key_review_state` field for
+     immediate replay UI.
+   - Constraint: do not add a second local inference path when either producer
+     surface is missing or invalid; fail closed instead.
 1. Exact semantic enum names.
-   - Open: what exact producer codes will map to `Granska`, `Klart`,
-     `Ändrat`, and `Kontrollera`?
-   - Recommendation: wait for Task 373 to define semantic codes; do not encode
-     assumptions from the mockup in TypeScript before the producer contract is
-     fixed.
+   - Decision: map producer `review_state` codes
+     `review_required`, `review_complete`, `teacher_modified`, and
+     `validation_required` to Skriptoteket presentation state.
+   - Decision: consume producer `current_key_origin` codes `none`,
+     `source_provided`, `reviewed_advisory`, `teacher_authored`,
+     `teacher_edited_advisory`, and `mixed`.
+   - Decision: consume producer reason codes including
+     `source_answer_key_present`, `advisory_candidate_pending`,
+     `reviewed_advisory_accepted`, `teacher_answer_key_present`,
+     `teacher_edited_advisory_candidate`, `manual_answer_key_required`,
+     `no_correct_choice_selected`, `required_gap_accepted_values_missing`,
+     `unsupported_item_type`, `unsupported_target_shape`,
+     `target_validation_failed`, `provider_unavailable`,
+     `correction_rejected`, `stale_source_state`,
+     `replay_artifact_unavailable`, and `matching_source_state_unavailable`.
+   - Constraint: generated TypeScript type names and exact schema component
+     names are implementation details to bind after Task 373 exports OpenAPI;
+     the semantic codes above are already closed.
 1. `Ändrat` versus `Klart` in the list.
-   - Open: should teacher-owned edited keys show `Ändrat` persistently in the
-     list, or collapse to `Klart` once saved/replayed?
-   - Recommendation: use `Ändrat` while it helps orient the teacher during the
-     current review session, but allow report/export completion to treat it as
-     complete once Sir Convert returns a valid teacher-owned key.
+   - Decision: `teacher_modified` with `current_key_origin =
+     teacher_edited_advisory` maps to a teacher-owned modified state. The list
+     may show `Ändrat` for orientation, but report/export completion treats the
+     item as complete once Sir Convert returns a valid teacher-owned key.
+   - Constraint: no AI current-key marker appears after teacher-owned edits.
+     If the UI cannot safely distinguish the orientation state, it must render
+     plain complete state rather than invent AI provenance.
 1. Provenance detail.
    - Decision: consume only Task 373's bounded `provenance_detail` object for
      any `Tidigare förslag` style disclosure. Do not consume or model a generic
@@ -136,19 +153,24 @@ target readiness, and replay artifact authority.
      create a second review state machine, explain current truth through legacy
      lineage, or affect list labels, report completion, or file readiness.
 1. Public lane behavior.
-   - Open: should the public anonymous Exam Converter consume the compact
-     report if present, or should PR-0406 be authenticated-only?
-   - Recommendation: keep PR-0406 authenticated-only unless Task 373 and the
-     public grant contract explicitly expose the report for public jobs.
+   - Decision: PR-0406 is authenticated-only. Public anonymous compact-report
+     consumption is out of scope even if Task 373 can emit a public-safe report.
+   - Constraint: any public consumption needs a later governed public-grant
+     consumer task.
 1. Saved local intent versus producer projection conflict.
-   - Open: how should the UI prioritize a saved correction intent when Sir
-     Convert replay is stale/unavailable?
-   - Recommendation: show the saved intent as local saved input but do not show
-     fresh `Klart`/file-ready state until replay projection succeeds.
+   - Decision: show saved correction intent as local saved/readback input only
+     when Sir Convert replay is stale or unavailable.
+   - Constraint: do not show fresh `Klart`, report completion, file readiness,
+     or export/save enablement until replay projection and target readiness
+     succeed.
 
-These questions must be answered by Task 373 output, an explicit product
-decision, or a docs update before implementation starts. They are not left for
-the implementation agent to infer.
+## Implementation Dependencies
+
+PR-0406 remains `blocked` until Sir Convert Task 373 is implemented,
+independently reviewed, and has exported the concrete schema/OpenAPI surface.
+The implementation agent may bind generated TypeScript type names, schema
+component names, parser fixture shapes, and exact artifact download plumbing to
+the finished Task 373 output. It must not reopen the semantic decisions above.
 
 ## Assumptions
 
@@ -203,8 +225,8 @@ conservative if the projection is unavailable.
 
 ## Stop Conditions
 
-- Stop if Sir Convert Task 373 has not closed its open questions or has not
-  emitted a stable versioned projection contract.
+- Stop if Sir Convert Task 373 is not implemented, independently approved, or
+  has not emitted a stable versioned projection contract/OpenAPI surface.
 - Stop if implementing this PR would require Skriptoteket to define producer
   answer-key semantics locally.
 - Stop if file readiness becomes coupled to question-list labels instead of
