@@ -39,10 +39,15 @@ remains inert and unlinked.
 
 ## Runtime Client Inventory
 
+Current note: this PR-0368 inventory is historical for the auth-edge/app-name
+cutover. PR-0406 later changed the Exam Converter answer-key review-state
+contract by consuming Sir Convert's compact producer projection through the
+dedicated adapter; use ST-21-11, PR-0406, and `REV-PR-0406` for that surface.
+
 | Flow | Current frontend boundary | Preserved behavior |
 |------|---------------------------|--------------------|
 | Exam conversion submit/poll/result | `useExamConverterAuthenticatedRuntime` delegates to `api/sirConvertGateway/client.ts` methods `submitDigiExamMigration`, `getDigiExamMigrationJob`, and `getDigiExamMigrationResult`. | Canonical Exam Converter route reuses the same runtime composable and client. |
-| Exam correction replay | Exam correction UI uses `issueExamAuthoringCorrectionSourceState` and `applyExamAuthoringCorrections` through the same Sir Convert Gateway client. | No correction-session, replay, source-state, or answer-key contract changes. |
+| Exam correction replay | Exam correction UI uses `issueExamAuthoringCorrectionSourceState` and `applyExamAuthoringCorrections` through the same Sir Convert Gateway client. | PR-0368 did not change correction-session, replay, source-state, or answer-key contracts; use PR-0406 for the later compact answer-key review-state contract. |
 | Exam artifact download/save | Exam file actions use `downloadDigiExamMigrationArtifact` plus the existing Skriptoteket artifact save route for user files. | Artifact references, correlation IDs, job IDs, and owner scope are unchanged. |
 | Transcript submission/polling/artifact readback | `ConversionHubTranscriptHost.vue` uses `useTranscriptGatewayRuntime.ts`, which delegates to `submitTranscriptJob`, `getTranscriptJob`, `getTranscriptResult`, `listTranscriptArtifacts`, `downloadTranscriptJson`, and `cancelTranscriptJob`. | Canonical Audio Transcription route reuses this transcript host and runtime. |
 | Transcript persistence and speaker overlays | `api/conversionHubTranscriptSaves.ts` persists canonical transcript JSON and speaker overlays under `/api/v1/apps/documents.conversion_hub/transcripts`. | Saved transcript owner scope, local job registration, and overlay update routes are unchanged. |

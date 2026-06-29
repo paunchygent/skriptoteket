@@ -180,6 +180,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md`
 - Exam Converter compact answer-key review-state consumer PR slice:
   `docs/backlog/prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md`
+- Exam Converter compact answer-key review-state retained review:
+  `docs/backlog/reviews/review-pr-0406-exam-converter-compact-answer-key-review-state.md`
 - Exam Converter PR-0406 answer-key review small-screen decision mockup:
   `docs/mockups/pr-0406-answer-key-review-small-screen/README.md`
 - Exam Converter PR-0406 answer-key review desktop alignment mockup:

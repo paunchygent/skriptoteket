@@ -237,10 +237,15 @@ The question list belongs inside the active `Frågor` inspection mode. The table
 is a scanning surface; detailed correction happens in one selected row, one
 side drawer, or one focused detail pane at a time.
 
-For the current authenticated DigiExam lane, `Frågor` is populated from Sir
-Convert's read-only `digiexam-ir.json` and `migration-manifest.json` artifacts.
-Skriptoteket parses those artifacts into a teacher-facing projection and must
-not mutate the IR, create local reviewed state, or invent review outcomes.
+For the current authenticated DigiExam lane, structural question content in
+`Frågor` is populated from Sir Convert's read-only `digiexam-ir.json` and
+`migration-manifest.json` artifacts. Answer-key review labels, detail state,
+and review-related file actions come from Sir Convert's compact
+`answer_key_review_state_report` and replay/apply `answer_key_review_state`
+through `answerKeyReviewStateAdapter.ts`. Skriptoteket must not mutate the IR,
+create local durable reviewed state, or invent review outcomes from readiness,
+effective IR, reports, local sessions, or browser state. Target readiness
+remains the PDF/QTI export authority.
 
 If contract-backed missing data (`Facit` or `Poäng`) or warnings exist,
 `Frågor` is the default active inspection mode. `Filer` becomes the default
