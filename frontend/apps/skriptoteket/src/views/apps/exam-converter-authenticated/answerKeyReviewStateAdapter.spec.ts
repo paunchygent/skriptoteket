@@ -199,6 +199,14 @@ describe("answerKeyReviewStateAdapter", () => {
           reasons: ["unsupported_item_type"],
           sequence: 3,
         }),
+        reviewItem({
+          item_id: "item-004",
+          item_type: "open_ended",
+          review_state: "review_complete",
+          current_key_origin: "none",
+          reasons: ["answer_key_not_applicable"],
+          sequence: 4,
+        }),
       ],
     });
 
@@ -221,6 +229,14 @@ describe("answerKeyReviewStateAdapter", () => {
           sequence: 3,
           typeLabel: "Fritext",
         }),
+        question({
+          gaps: [],
+          itemId: "item-004",
+          itemType: "open_ended",
+          llmCandidate: null,
+          sequence: 4,
+          typeLabel: "Fritext",
+        }),
       ],
       reviewState: parsed,
     });
@@ -230,19 +246,28 @@ describe("answerKeyReviewStateAdapter", () => {
       "Granska",
       "Klart",
       "Klart",
+      "Klart",
     ]);
     expect(rows.map((row) => row.statusSymbol)).toEqual([
       "ai_suggestion",
       "complete",
       "complete",
+      "complete",
     ]);
-    expect(rows.map((row) => row.status)).toEqual(["attention", "complete", "complete"]);
+    expect(rows.map((row) => row.status)).toEqual([
+      "attention",
+      "complete",
+      "complete",
+      "complete",
+    ]);
     expect(rows[0]?.missingFields).not.toContain("Facit");
     expect(rows[1]?.missingFields).not.toContain("Facit");
     expect(rows[2]?.missingFields).not.toContain("Facit");
+    expect(rows[3]?.missingFields).not.toContain("Facit");
     expect(rows[0]?.llmCandidate).not.toBeNull();
     expect(rows[0]?.answerKeyReviewStateReasonLabel).toBeNull();
     expect(rows[1]?.answerKeyReviewStateReasonLabel).toBeNull();
     expect(rows[2]?.answerKeyReviewStateReasonLabel).toBeNull();
+    expect(rows[3]?.answerKeyReviewStateReasonLabel).toBeNull();
   });
 });

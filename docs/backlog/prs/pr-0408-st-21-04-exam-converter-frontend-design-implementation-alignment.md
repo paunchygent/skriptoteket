@@ -2,7 +2,7 @@
 type: pr
 id: PR-0408
 title: "ST-21-04 Exam Converter frontend design implementation alignment"
-status: done
+status: in_progress
 owners: "agents"
 created: 2026-06-29
 updated: 2026-06-29
@@ -28,6 +28,7 @@ links:
   - "docs/backlog/stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md"
   - "docs/backlog/prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md"
   - "docs/backlog/reviews/review-pr-0406-exam-converter-compact-answer-key-review-state.md"
+  - "/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-374-preserve-advisory-candidates-during-correction-apply-replay.md"
 acceptance_criteria:
   - "Given the teacher has not converted a source file yet, when the authenticated Exam Converter workflow rail renders, then it accepts the source file only and does not expose pre-conversion PDF/QTI target-file or source-format controls."
   - "Given compact answer-key review state exists on desktop, when the question review mode renders, then the screen keeps the left workflow rail, central question table, and one selected-question detail pane for `Frågor`."
@@ -36,6 +37,7 @@ acceptance_criteria:
   - "Given generated PDF/QTI artifacts are available, when file actions render, then download/save controls live in `Filer` only and remain gated by Sir Convert target readiness plus replay artifact references."
   - "Given the teacher reviews a desktop question detail, when previous/next controls render, then they are sticky symbolic controls with accessible labels and no visible `Föregående` or `Nästa` text."
   - "Given a pending advisory answer-key item is selected, when the teacher chooses `Ändra`, then the normal answer-key editor opens with `Spara facit` and bounded `Tidigare förslag` detail rather than a separate AI-specific workflow."
+  - "Given multiple advisory answer-key candidates exist, when the teacher accepts or edits one candidate and correction replay returns, then untouched keyed candidates keep their pending suggestion state and bounded candidate payload instead of becoming generic missing-facit warnings."
   - "Given answer-key review state is computed and rendered, when items are classified, then keyed closed-response items including MCQ/choice and Lucktext/gap-fill/open-cloze participate in answer-key review, while free-text/open-writing items are not counted as missing facit, do not ask for a key, do not show warning status such as `Kontrollera` / `Frågetypen behöver kontrolleras`, and do not block `Kontrollera facit`."
   - "Given the screen is phone-sized, when the teacher moves between review list, detail, files, and report, then those are separate task surfaces and the UI does not squeeze or stack the desktop workbench."
   - "Given phone-sized review, file, and report surfaces render, when labels and actions appear, then Swedish copy, status labels, and action controls do not clip or create horizontal document overflow."
@@ -54,9 +56,10 @@ frontend-only implementation slice is needed before further code work so the
 live Exam Converter UI can be audited and, where needed, aligned with the
 governed PR-0406 desktop and small-screen design authorities.
 
-This PR does not reopen the closed Sir Convert Task 373, `PR-0406`, or
-`ST-21-11` remediation/proof work. It uses those artifacts as authority for the
-frontend design implementation only.
+This PR does not move Sir Convert producer semantics into Skriptoteket. The
+post-close production regression is tracked in Sir Convert Task 374, and this
+PR cannot close until the frontend proves it renders the repaired producer
+replay state without local review-state inference.
 
 ## Goal
 
@@ -67,7 +70,10 @@ report, copy, symbols, and layout.
 The implementation must preserve the PR-0406 ownership split: Sir Convert owns
 compact answer-key review-state truth and target readiness; Skriptoteket
 renders that truth, collects teacher interaction, persists local correction
-intents, and renders replay-returned projection/readiness.
+intents, and renders replay-returned projection/readiness. When correction
+replay returns `validation_required`, Skriptoteket must show that current
+producer state; it must not revive a pending suggestion from first-pass browser
+state.
 
 Product clarification for this slice: answer-key review belongs to keyed
 closed-response items, including MCQ/choice and
@@ -79,7 +85,8 @@ counts or block answer-key review completion.
 ## Non-goals
 
 - No Sir Convert schema, runtime, replay, fingerprint, owner-matching, export
-  root-cause, or producer remediation changes.
+  root-cause, or producer remediation changes inside this PR; Sir Convert Task
+  374 owns the producer correction.
 - No backend contract changes in Skriptoteket unless a separate governed slice
   proves they are required.
 - No local answer-key review-state inference fallback.
@@ -143,20 +150,33 @@ Use the overseer implementation/review loop:
 
 ## Test Plan
 
-Closeout state on 2026-06-29: frontend code is approved by `REV-PR-0408`;
-focused Vitest, proof-helper unit tests, frontend typecheck, lint, build, docs
-validation, handoff validation, and `git diff --check` are green for the latest
-free-text/open-ended and advisory-button remediation. Fresh retained browser
-proof passed at
-`.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`,
-with desktop `Frågor`/`Filer`/`Rapport` screenshots, phone
-list/detail/files/report screenshots, and no horizontal overflow at the
-captured desktop or phone widths.
+Reopened state on 2026-06-29: production upload testing showed that accepting
+one AI-suggested key could make untouched keyed candidates lose their suggestion
+payloads and render as generic missing-facit warnings. The slice is not closed
+until a regression proves post-accept replay preserves untouched advisory
+candidates while still using replay truth for the changed item and file
+readiness.
+
+Dev proof on 2026-06-29 passed at
+`.artifacts/playwright-pr-0337-correction-session-live/20260629T193503Z/manifest.redacted.json`.
+The proof uploads the tracked DXE through local shared-auth, accepts one
+advisory key, verifies untouched sibling `item-002` remains `Granska` with the
+advisory panel visible, completes replay-scoped PDF/QTI download and save,
+reloads, and checks phone list/detail/files/report surfaces. Production deploy
+and production proof remain required before this PR closes.
+
+The consumer test contract is deliberately two-sided: if producer replay returns
+an untouched sibling as `review_required` / `advisory_candidate_pending`, the UI
+must keep `Granska` and the bounded suggestion detail; if producer replay
+returns `validation_required`, the UI must render `Kontrollera` rather than
+reconstructing a suggestion locally.
 
 - Focused component tests for the desktop result band,
   `Kontrollera facit` copy, review count, and non-partial conversion framing.
 - Focused component tests for `Ändra` entering the normal answer-key editor with
   `Spara facit` and bounded `Tidigare förslag`.
+- Focused component tests proving accepting one advisory candidate preserves
+  other untouched advisory candidates after correction replay.
 - Focused component tests proving Lucktext/gap-fill/open-cloze items remain
   keyed closed-response answer-key review rows, including missing-facit and
   `Spara facit` repair where the compact review state requires it.
@@ -196,9 +216,10 @@ governed decision slice instead of widening this PR.
 
 ## Stop Conditions
 
-- Stop if the implementation requires changing closed Sir Convert Task 373,
-  `PR-0406`, backend producer contracts, replay semantics, fingerprinting,
-  owner matching, or export-runtime root cause work.
+- Stop if PR-0408 implementation starts changing Sir Convert producer
+  contracts, replay semantics, fingerprinting, owner matching, or export-
+  runtime root cause work locally. Those changes belong to Sir Convert Task
+  374.
 - Stop if any UI path starts deriving producer truth locally from IR, readiness,
   correction sessions, visual labels, browser state, or local drafts.
 - Stop if any UI path treats free-text or open-writing responses as missing

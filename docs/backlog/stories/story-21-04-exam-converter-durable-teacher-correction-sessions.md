@@ -33,6 +33,12 @@ data_impact: "Yes (new owner-scoped correction-session persistence for authentic
 
 # ST-21-04: Exam Converter Durable Teacher Correction Sessions
 
+Status note, 2026-06-29: `PR-0408` is reopened because production testing showed
+post-accept replay can drop untouched advisory answer-key candidates into
+generic missing-facit warnings. Sir Convert Task 374 owns producer replay
+candidate preservation; PR-0408 owns consumer proof that Skriptoteket renders
+that returned producer state without local review-state inference.
+
 ## Context
 
 `ST-21-03` delivered the public/authenticated Exam Converter artifact lanes and
@@ -130,12 +136,14 @@ PR-sized slices:
    mirror Sir Convert Story 57 as the overseer tracking surface for Task 373,
    PR-0406, and the final production browser proof with the tracked DXE
    fixture.
-12. Frontend design implementation alignment (`PR-0408`, done):
+12. Frontend design implementation alignment (`PR-0408`, in progress):
    align the live desktop and small-screen Exam Converter UI with the governed
-   PR-0406 answer-key review design authorities, without reopening closed
-   backend/Sir Convert remediation or producer-proof work. Frontend code is
-   approved by `REV-PR-0408`; fresh browser/PNG proof passed at
-   `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`.
+   PR-0406 answer-key review design authorities, and reprove the post-accept
+   advisory replay workflow after Sir Convert Task 374. The earlier
+   free-text/button-treatment proof at
+   `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`
+   is superseded for closeout because it did not cover the production
+   sibling-candidate replay failure.
 
 ## Notes
 
@@ -185,7 +193,10 @@ PR-sized slices:
   `Klart` for reviewed complete state, no AI marker after accepted/reviewed
   keys in the list, no AI marker after teacher-owned edits, and `Kontrollera`
   only for current validation problems such as a missing selected key.
-- `PR-0408` is done as a frontend-only design implementation alignment slice.
-  Frontend code is approved by `REV-PR-0408`; browser/PNG proof against the
-  PR-0406 desktop and small-screen mockups passed at
-  `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`.
+- `PR-0408` is reopened. The free-text/open-writing and mockup button-treatment
+  fixes remain useful evidence, but closeout now requires the Sir Convert Task
+  374 producer fix plus fresh dev and production proof for accepting one
+  advisory key while untouched keyed advisory candidates remain pending
+  suggestions after replay. Dev proof is green at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260629T193503Z/manifest.redacted.json`;
+  production deploy and production proof remain required.

@@ -781,13 +781,19 @@ def _find_compact_status_manual_answer_key_question(
     )
 
 
-def _find_review_required_advisory_question(page: Page) -> str:
+def _find_review_required_advisory_question(
+    page: Page, *, excluded_item_ids: set[str] | None = None
+) -> str:
+    excluded_item_ids = excluded_item_ids or set()
     page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
     rows = page.locator('[data-test^="exam-converter-question-row-"]')
     for index in range(rows.count()):
         row = rows.nth(index)
         row_test_id = row.get_attribute("data-test")
         if not row_test_id:
+            continue
+        item_id = row_test_id.removeprefix("exam-converter-question-row-")
+        if item_id in excluded_item_ids:
             continue
         if not _row_has_compact_status(row, COMPACT_REVIEW_REQUIRED_LABEL):
             continue
@@ -798,8 +804,30 @@ def _find_review_required_advisory_question(page: Page) -> str:
             expect(_advisory_answer_key_edit_button(page)).to_be_enabled(timeout=5_000)
         except AssertionError:
             continue
-        return row_test_id.removeprefix("exam-converter-question-row-")
+        return item_id
     raise AssertionError("No visible advisory review panel was found for compact 'Granska' state.")
+
+
+def _assert_untouched_advisory_sibling_preserved(
+    page: Page, *, accepted_item_id: str
+) -> dict[str, Any]:
+    sibling_item_id = _find_review_required_advisory_question(
+        page,
+        excluded_item_ids={accepted_item_id},
+    )
+    row = page.locator(f'[data-test="exam-converter-question-row-{sibling_item_id}"]')
+    expect(row.locator(_compact_status_selector(COMPACT_REVIEW_REQUIRED_LABEL))).to_be_visible(
+        timeout=10_000
+    )
+    expect(_advisory_answer_key_panel(page)).to_be_visible(timeout=10_000)
+    expect(_advisory_answer_key_accept_button(page)).to_be_enabled(timeout=10_000)
+    expect(_advisory_answer_key_edit_button(page)).to_be_enabled(timeout=10_000)
+    return {
+        "accepted_item_id": accepted_item_id,
+        "sibling_item_id": sibling_item_id,
+        "sibling_status": COMPACT_REVIEW_REQUIRED_LABEL,
+        "sibling_advisory_panel_visible": True,
+    }
 
 
 def _selected_question_id(page: Page) -> str:
@@ -1116,6 +1144,12 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             )
             summary["accept_unchanged_advisory_status"] = COMPACT_COMPLETE_LABEL
             summary["compact_status_counts_after_accept_probe"] = _compact_status_counts(page)
+            summary["post_accept_untouched_advisory_sibling"] = (
+                _assert_untouched_advisory_sibling_preserved(
+                    page,
+                    accepted_item_id=summary["accept_unchanged_advisory_saved_item_id"],
+                )
+            )
             page.screenshot(path=str(artifact_dir / "02a-accept-advisory.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "02a-accept-advisory.png"))
             _mark_progress(summary, artifact_dir, "accept_unchanged_advisory_saved")
