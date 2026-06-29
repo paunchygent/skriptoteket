@@ -360,7 +360,12 @@ describe("DocumentConverterView single-file surface", () => {
       outputFormat: "md",
       sourceFormat: "pdf",
     });
-    expect(wrapper.text()).toContain("tom.md");
+    const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    expect(
+      operationsColumn.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]')
+        .element.value,
+    ).toBe("tom");
+    expect(operationsColumn.text()).toContain(".md");
   });
 
   it("updates the output format when a replacement upload infers another source route", async () => {
@@ -712,7 +717,7 @@ describe("DocumentConverterView single-file surface", () => {
     );
 
     expect(previewColumn.find('[data-testid="document-converter-pdf-frame"]').exists()).toBe(true);
-    expect(previewColumn.text()).toContain("lektion.pdf");
+    expect(previewColumn.text()).not.toContain("lektion.pdf");
     expect(previewColumn.find('[data-testid="document-converter-filename-stem"]').exists()).toBe(
       false,
     );
@@ -722,7 +727,11 @@ describe("DocumentConverterView single-file surface", () => {
       false,
     );
 
-    expect(wrapper.text()).toContain("lektion.pdf");
+    expect(
+      operationsColumn.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]')
+        .element.value,
+    ).toBe("lektion");
+    expect(operationsColumn.text()).toContain(".pdf");
     expect(wrapper.text()).not.toContain("Misslyckades");
     expect(wrapper.text()).not.toContain("Konverteringen kunde inte slutföras.");
     expect(wrapper.text()).not.toContain("Historik");
@@ -745,6 +754,7 @@ describe("DocumentConverterView single-file surface", () => {
       "",
     );
     expect(projectPreviewColumn.find('[data-testid="document-converter-pdf-frame"]').exists()).toBe(false);
-    expect(projectPreviewColumn.text()).toContain("Lägg till HTML, CSS och bilder.");
+    expect(projectPreviewColumn.text()).toContain("Förhandsvisning");
+    expect(projectPreviewColumn.text()).not.toContain("Lägg till HTML, CSS och bilder.");
   });
 });

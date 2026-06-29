@@ -147,6 +147,14 @@ function resultActionDisabledState(wrapper: VueWrapper): Array<string | undefine
   ];
 }
 
+function expectFilenameIntent(wrapper: VueWrapper, stem: string, extension: string): void {
+  const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+  expect(
+    operationsColumn.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]').element.value,
+  ).toBe(stem);
+  expect(operationsColumn.text()).toContain(`.${extension}`);
+}
+
 describe("DocumentConverterView", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -255,7 +263,7 @@ describe("DocumentConverterView", () => {
         "src",
       ),
     ).toMatch(/^blob:document-converter-/);
-    expect(wrapper.text()).toContain("index-a3.pdf");
+    expectFilenameIntent(wrapper, "index-a3", "pdf");
 
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     apiMocks.downloadDocumentConverterProjectPreviewArtifact.mockResolvedValue({
@@ -408,7 +416,7 @@ describe("DocumentConverterView", () => {
     await addProjectFiles(wrapper);
     await flushAutoPreview();
 
-    expect(wrapper.text()).toContain("first.pdf");
+    expectFilenameIntent(wrapper, "first", "pdf");
     expectResultActionsEnabled(wrapper);
     await wrapper.get('[data-test="document-converter-output-combined_pdf"]').trigger("click");
     await flushAutoPreview();
@@ -416,7 +424,7 @@ describe("DocumentConverterView", () => {
     expect(wrapper.text()).toContain("Det gick inte att skapa PDF:en.");
     expect(wrapper.text()).toContain("Visar föregående PDF.");
     expect(wrapper.text()).toContain("Försök igen för att skapa en ny PDF.");
-    expect(wrapper.text()).toContain("first.pdf");
+    expectFilenameIntent(wrapper, "first", "pdf");
     expect(wrapper.text()).not.toContain("PDF klart för granskning.");
     expect(
       wrapper.get<HTMLIFrameElement>('[data-testid="document-converter-pdf-frame"]').attributes(
@@ -436,7 +444,7 @@ describe("DocumentConverterView", () => {
     await wrapper.get('[data-testid="document-converter-retry"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).toContain("retry.pdf");
+    expectFilenameIntent(wrapper, "retry", "pdf");
     expect(wrapper.text()).not.toContain("Det gick inte att skapa PDF:en.");
     expectResultActionsEnabled(wrapper);
   });

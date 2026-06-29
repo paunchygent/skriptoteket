@@ -84,6 +84,7 @@ const emit = defineEmits<{
           data-testid="document-converter-filename-stem"
           type="text"
           :value="filenameStem"
+          placeholder="filnamn"
           :disabled="!canDownload && !canSave"
           @input="emit('updateFilenameStem', ($event.target as HTMLInputElement).value)"
         >

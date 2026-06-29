@@ -122,7 +122,9 @@ def assert_document_converter_single_file_compact_route(
         timeout=45_000
     )
     expect(operations_column.get_by_text("PDF klart för granskning.")).to_be_visible(timeout=45_000)
-    expect(preview_column.get_by_text("single-file-proof", exact=False).first).to_be_visible()
+    expect(route.get_by_test_id("document-converter-filename-stem")).to_have_value(
+        re.compile("single-file-proof")
+    )
 
     route.locator('[data-test="document-converter-mode-project"]').click()
     expect(route.get_by_text("single-file-proof", exact=False)).to_have_count(0)
@@ -320,9 +322,12 @@ def _seed_saved_pdf_source(
         )
         raise AssertionError(f"Seed conversion {slug} failed with {submit_response.status}.")
 
-    preview_heading = route.locator(".dc-preview-header h2")
-    expect(preview_heading).to_contain_text(slug, timeout=60_000)
-    expect(preview_heading).to_contain_text(".pdf", timeout=60_000)
+    expect(route.get_by_test_id("document-converter-preview-column-title")).to_have_text("Resultat")
+    expect(route.get_by_test_id("document-converter-filename-stem")).to_have_value(
+        re.compile(slug),
+        timeout=60_000,
+    )
+    expect(route.get_by_test_id("document-converter-operations-column")).to_contain_text(".pdf")
     route.get_by_test_id("document-converter-filename-stem").fill(slug)
     with page.expect_response(
         lambda response: (

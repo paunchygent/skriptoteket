@@ -177,13 +177,14 @@ const isLiveProjectResultSelected = computed(() => {
     project.preview.value !== null
   );
 });
-const resultTitle = computed(() => {
+const resultFilename = computed<string | null>(() => {
   if (isLiveProjectResultSelected.value) {
     return project.selectedArtifact.value?.filename ?? project.selectedFileLabel();
   }
-  return activeHistory.value.activeArtifactFilename.value ?? activeHistory.value.activeEntry.value?.filename ?? "Resultat";
+  return activeHistory.value.activeArtifactFilename.value ?? activeHistory.value.activeEntry.value?.filename ?? null;
 });
-const { filenameExtensionLabel, filenameStemIntent } = useDocumentConverterFilenameIntent(resultTitle);
+const resultTitle = computed(() => resultFilename.value ?? "Resultat");
+const { filenameExtensionLabel, filenameStemIntent } = useDocumentConverterFilenameIntent(resultFilename);
 const resultStateLabel = computed(() => {
   const entry = activeHistory.value.activeEntry.value;
   if (isRetainedProjectPreviewVisible.value) {
@@ -377,6 +378,12 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
         aria-label="Källor"
         data-testid="document-converter-source-column"
       >
+        <header class="dc-column-header">
+          <h2 data-testid="document-converter-source-column-title">
+            Källa
+          </h2>
+        </header>
+
         <DocumentConverterSourceIntake
           :workspace-mode="workspaceMode"
           :selected-saved-file-ref="null"
@@ -415,12 +422,14 @@ async function selectResultArtifact(artifactId: string): Promise<void> {
         aria-label="Val för export"
         data-testid="document-converter-operations-column"
       >
+        <header class="dc-column-header">
+          <h2 data-testid="document-converter-operations-column-title">
+            Konvertering
+          </h2>
+        </header>
+
         <template v-if="workspaceMode === 'project_preview'">
           <section class="dc-operations-section">
-            <div class="dc-control-heading">
-              <h2>Utdatainställningar</h2>
-            </div>
-
             <div class="dc-field">
               <span>Exportera som</span>
               <UiSegmentedTileToggle

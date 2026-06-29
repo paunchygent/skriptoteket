@@ -119,6 +119,14 @@ async function flushAutoPreview(ms = AUTO_PREVIEW_DEBOUNCE_MS): Promise<void> {
   await flushPromises();
 }
 
+function expectFilenameIntent(wrapper: VueWrapper, stem: string, extension: string): void {
+  const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+  expect(
+    operationsColumn.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]').element.value,
+  ).toBe(stem);
+  expect(operationsColumn.text()).toContain(`.${extension}`);
+}
+
 describe("DocumentConverterView project results", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -233,7 +241,7 @@ describe("DocumentConverterView project results", () => {
       }),
     );
     await flushPromises();
-    expect(wrapper.text()).toContain("current.pdf");
+    expectFilenameIntent(wrapper, "current", "pdf");
     const currentSrc = wrapper.get<HTMLIFrameElement>(
       '[data-testid="document-converter-pdf-frame"]',
     ).attributes("src");
@@ -248,8 +256,10 @@ describe("DocumentConverterView project results", () => {
     );
     await flushPromises();
 
-    expect(wrapper.text()).toContain("current.pdf");
-    expect(wrapper.text()).not.toContain("stale.pdf");
+    expectFilenameIntent(wrapper, "current", "pdf");
+    expect(
+      wrapper.get<HTMLInputElement>('[data-testid="document-converter-filename-stem"]').element.value,
+    ).not.toBe("stale");
     expect(
       wrapper.get<HTMLIFrameElement>('[data-testid="document-converter-pdf-frame"]').attributes(
         "src",

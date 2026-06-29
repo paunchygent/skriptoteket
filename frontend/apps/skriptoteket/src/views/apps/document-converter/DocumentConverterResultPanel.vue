@@ -81,8 +81,10 @@ onBeforeUnmount(() => {
     class="dc-preview"
     aria-label="Resultat"
   >
-    <header class="dc-preview-header">
-      <h2>{{ resultTitle }}</h2>
+    <header class="dc-column-header dc-column-header--preview">
+      <h2 data-testid="document-converter-preview-column-title">
+        Resultat
+      </h2>
       <div
         v-if="activePreviewUrl"
         class="dc-preview-toolbar"
@@ -161,8 +163,19 @@ onBeforeUnmount(() => {
         <div
           v-else
           class="dc-result-empty"
+          data-testid="document-converter-preview-empty"
+          aria-label="Förhandsvisning"
         >
-          <strong>{{ resultStateLabel }}</strong>
+          <div
+            class="dc-result-empty__sheet"
+            aria-hidden="true"
+          >
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <strong>Förhandsvisning</strong>
         </div>
       </section>
     </div>

@@ -94,6 +94,26 @@ describe("DocumentConverterResultPanel", () => {
     vi.unstubAllGlobals();
   });
 
+  it("renders an empty preview surface without repeating source instructions", () => {
+    const wrapper = mount(DocumentConverterResultPanel, {
+      props: {
+        activePreviewUrl: null,
+        resultStateLabel: "Välj en fil som du vill konvertera.",
+        resultTitle: "Resultat",
+      },
+    });
+
+    expect(wrapper.get('[data-testid="document-converter-preview-column-title"]').text()).toBe(
+      "Resultat",
+    );
+    expect(wrapper.get('[data-testid="document-converter-preview-empty"]').text()).toContain(
+      "Förhandsvisning",
+    );
+    expect(wrapper.get('[data-testid="document-converter-preview-empty"]').text()).not.toContain(
+      "Välj en fil som du vill konvertera.",
+    );
+  });
+
   it("fits a PDF preview until manual zoom changes the scale", async () => {
     const wrapper = mount(DocumentConverterResultPanel, {
       props: {

@@ -68,6 +68,7 @@ dashboard direction are settled.
 - [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
 - [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
 - [x] [PR-0404: ST-37-04 Document Converter multi-source saved-file batches](../prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md)
+- [ ] [PR-0405: ST-37-04 Document Converter column hierarchy and preview empty state](../prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md)
 
 ## Notes
 
@@ -169,6 +170,10 @@ dashboard direction are settled.
   out of scope; retained shared-auth browser proof is present, the public
   saved-file contract exposes only ordered `source_refs`, and missing output
   filenames fail closed instead of exposing raw job ids.
+- `PR-0405` owns the approved route-visible polish for Document Converter
+  column hierarchy and preview empty state: stable `Källa` / `Konvertering` /
+  `Resultat` headers across both modes, empty filename placeholder `filnamn`,
+  and preview-shaped empty state labeled `Förhandsvisning`.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use

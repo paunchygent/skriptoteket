@@ -91,10 +91,6 @@ function onSingleFileSelected(event: Event): void {
       v-else
       class="dc-source-picker"
     >
-      <div class="dc-control-heading">
-        <h2>Källa</h2>
-      </div>
-
       <div class="dc-field">
         <UiSegmentedToggle
           :model-value="sourceMode"

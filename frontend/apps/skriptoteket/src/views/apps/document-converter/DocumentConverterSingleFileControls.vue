@@ -44,9 +44,6 @@ const emit = defineEmits<{
 
 <template>
   <section class="dc-operations-section">
-    <div class="dc-control-heading">
-      <h2>Konvertering</h2>
-    </div>
     <div class="dc-field">
       <span>Källformat</span>
       <UiSegmentedToggle

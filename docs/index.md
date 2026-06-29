@@ -172,6 +172,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md`
 - Document Converter multi-source saved-file batches PR slice:
   `docs/backlog/prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md`
+- Document Converter column hierarchy and preview empty state PR slice:
+  `docs/backlog/prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

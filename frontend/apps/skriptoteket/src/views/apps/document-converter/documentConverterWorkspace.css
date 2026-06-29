@@ -113,7 +113,7 @@
 
 .dc-rail {
   overflow: auto;
-  padding: 1.1rem 0.9rem;
+  padding: 0 0.9rem 1.1rem;
 }
 
 .dc-source-panel {
@@ -272,10 +272,6 @@
   box-shadow: inset 4px 0 0 var(--color-action);
 }
 
-.dc-preview-header h2 {
-  margin: 0;
-}
-
 .dc-neutral-button {
   min-height: 2.5rem;
   padding: 0 0.75rem;
@@ -408,6 +404,39 @@
   line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.dc-column-header {
+  min-width: 0;
+  min-height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-navy) 24%, transparent);
+}
+
+.dc-column-header h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-navy);
+  font-family: var(--huleedu-font-sans);
+  font-size: var(--huleedu-text-lg);
+  font-weight: var(--huleedu-font-extrabold);
+  letter-spacing: 0;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-rail > .dc-column-header {
+  margin-bottom: 1rem;
+}
+
+.dc-controls > .dc-column-header {
+  flex: 0 0 auto;
+  padding: 0 1.6rem;
 }
 
 .dc-field {

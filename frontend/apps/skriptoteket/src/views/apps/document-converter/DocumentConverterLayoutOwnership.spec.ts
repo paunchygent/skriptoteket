@@ -118,6 +118,57 @@ describe("DocumentConverterView layout ownership", () => {
     vi.restoreAllMocks();
   });
 
+  it("uses distinct shared column headers and quiet empty preview states in both modes", async () => {
+    const wrapper = mount(DocumentConverterView);
+    const sourceColumn = wrapper.get('[data-testid="document-converter-source-column"]');
+    const operationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    const previewColumn = wrapper.get('[data-testid="document-converter-preview-column"]');
+
+    expect(sourceColumn.get('[data-testid="document-converter-source-column-title"]').text()).toBe("Källa");
+    expect(operationsColumn.get('[data-testid="document-converter-operations-column-title"]').text()).toBe(
+      "Konvertering",
+    );
+    expect(previewColumn.get('[data-testid="document-converter-preview-column-title"]').text()).toBe(
+      "Resultat",
+    );
+    expect(operationsColumn.text()).not.toContain("Utdatainställningar");
+    expect(previewColumn.text()).toContain("Förhandsvisning");
+    expect(previewColumn.text()).not.toContain("Lägg till HTML, CSS och bilder.");
+
+    const projectFilenameInput = operationsColumn.get<HTMLInputElement>(
+      '[data-testid="document-converter-filename-stem"]',
+    );
+    expect(projectFilenameInput.element.disabled).toBe(true);
+    expect(projectFilenameInput.element.value).toBe("");
+    expect(projectFilenameInput.attributes("placeholder")).toBe("filnamn");
+
+    await wrapper.get('[data-test="document-converter-mode-single"]').trigger("click");
+    await flushPromises();
+
+    const singleSourceColumn = wrapper.get('[data-testid="document-converter-source-column"]');
+    const singleOperationsColumn = wrapper.get('[data-testid="document-converter-operations-column"]');
+    const singlePreviewColumn = wrapper.get('[data-testid="document-converter-preview-column"]');
+
+    expect(singleSourceColumn.get('[data-testid="document-converter-source-column-title"]').text()).toBe(
+      "Källa",
+    );
+    expect(singleOperationsColumn.get('[data-testid="document-converter-operations-column-title"]').text()).toBe(
+      "Konvertering",
+    );
+    expect(singlePreviewColumn.get('[data-testid="document-converter-preview-column-title"]').text()).toBe(
+      "Resultat",
+    );
+    expect(singlePreviewColumn.text()).toContain("Förhandsvisning");
+    expect(singlePreviewColumn.text()).not.toContain("Välj en fil som du vill konvertera.");
+
+    const singleFilenameInput = singleOperationsColumn.get<HTMLInputElement>(
+      '[data-testid="document-converter-filename-stem"]',
+    );
+    expect(singleFilenameInput.element.disabled).toBe(true);
+    expect(singleFilenameInput.element.value).toBe("");
+    expect(singleFilenameInput.attributes("placeholder")).toBe("filnamn");
+  });
+
   it("keeps the compact project intake surface out of the preview column", async () => {
     const wrapper = mount(DocumentConverterView);
     const fileInput = wrapper.get<HTMLInputElement>('[data-testid="document-converter-file-input"]');

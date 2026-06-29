@@ -30,15 +30,20 @@ function splitFilename(filename: string): FilenameParts {
   };
 }
 
-export function useDocumentConverterFilenameIntent(resultTitle: Readonly<Ref<string>>) {
+export function useDocumentConverterFilenameIntent(resultFilename: Readonly<Ref<string | null>>) {
   const filenameStemIntent = ref("");
-  const resultFilenameParts = computed(() => splitFilename(resultTitle.value));
+  const resultFilenameParts = computed<FilenameParts>(() => {
+    if (!resultFilename.value) {
+      return { stem: "", extension: null };
+    }
+    return splitFilename(resultFilename.value);
+  });
   const filenameExtensionLabel = computed(() => resultFilenameParts.value.extension);
 
   watch(
-    resultTitle,
-    (nextTitle) => {
-      filenameStemIntent.value = splitFilename(nextTitle).stem;
+    resultFilename,
+    (nextFilename) => {
+      filenameStemIntent.value = nextFilename ? splitFilename(nextFilename).stem : "";
     },
     { immediate: true },
   );

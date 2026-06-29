@@ -208,7 +208,10 @@ def assert_document_converter_route(
             f"{preview_response.status}. See {response_path}."
         )
 
-    expect(route.locator(".dc-preview-header h2")).to_contain_text("agnes-leandersson")
+    expect(route.get_by_test_id("document-converter-preview-column-title")).to_have_text("Resultat")
+    expect(route.get_by_test_id("document-converter-filename-stem")).to_have_value(
+        re.compile(r"agnes-leandersson")
+    )
     expect(frame).to_be_visible(timeout=45_000)
     expect(download_button).to_be_enabled(timeout=45_000)
     expect(save_button).to_be_enabled(timeout=45_000)
