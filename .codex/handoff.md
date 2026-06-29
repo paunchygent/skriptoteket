@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-29.
 - Branch: `main`.
-- Latest closed work: `PR-0404`.
+- Latest closed work: `PR-0405`.
 - Active worktree slice: none. `PR-0405` is committed, pushed, deployed, and
   approved by retained review `REV-PR-0405`. `PR-0404` is approved by GPT-5.5
   XHigh `REV-PR-0404`.
@@ -148,7 +148,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0400` is done and approved by `REV-PR-0400`; commit `325553d5` was pushed and deployed on Hemma. Production proof bundle `.artifacts/pr-0400-production-proof/20260628T144818Z/manifest.redacted.json` has `status=ok`, project-preview `Separat PDF` + `Sammanslagen PDF` artifacts, and a Sir Convert-backed `Word-dokument` DOCX with no forbidden marker hits in PDF text/metadata/raw bytes or DOCX ZIP text/raw bytes.
   - `PR-0404` is done and approved by independent GPT-5.5 XHigh `REV-PR-0404`: public `source_ref` compatibility was removed, focused backend/API and frontend tests are green, OpenAPI types were regenerated, the single-file route state was decomposed into selection/request state plus submission/polling/outcome modules, succeeded artifacts with null/missing filenames fail closed instead of exposing raw job ids, and compact retained shared-auth proof is green at `.artifacts/authenticated-home-work-apps/20260628T173523Z/manifest.redacted.json` with two compatible `Mina filer` PDFs, refs-only ordered batch submission, two separate Markdown outputs, download/save, and no forbidden marker hits.
   - `PR-0405` is done and approved by `REV-PR-0405`: it implemented the approved Document Converter column hierarchy and empty-preview polish, then applied the final CSS-only shared-header adjustment from `text-lg`/`extrabold`/`4.5rem` to `text-base`/`bold`/`3.75rem`. Focused frontend specs passed with 33 tests, shared-auth proof passed at `.artifacts/authenticated-home-work-apps/20260629T005352Z/manifest.redacted.json`, and the final presentation-only tweak intentionally did not rerun auth-heavy Playwright because earlier proof reruns hit real HuleEdu `RATE_LIMIT` before cooldown.
-  - `PR-0405` was committed as `5cf76513` and deployed on Hemma by operator request; log `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log` includes `Seating export deploy/readiness gate passed.`, Hemma checkout was `5cf765133325f8275fea15dcf883a128854b805d`, and public `/healthz` returned healthy JSON.
+  - `PR-0405` review follow-up was committed as `5603b8cc` and deployed on Hemma by operator request; log `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-014917.log` includes `Seating export deploy/readiness gate passed.`, Hemma checkout was `5603b8ccb2d9f60d37f50536203f54f8c96d5f70`, and public `/healthz` returned healthy JSON.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.

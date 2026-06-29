@@ -160,11 +160,12 @@ the conversion flow:
   proof-infrastructure follow-up; this slice does not weaken or bypass the
   HuleEdu browser-session ceremony.
 - Publish/deploy proof: `git push origin main` advanced `origin/main` to
-  `5cf76513`; `pdm run hemma-deploy` launched remote PID `1780343` with log
-  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log`;
-  `pdm run hemma-deploy-monitor -- /home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log`
+  review follow-up `5603b8cc`; `pdm run hemma-deploy` launched remote PID
+  `1934005` with log
+  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-014917.log`;
+  `pdm run hemma-deploy-monitor -- /home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-014917.log`
   showed `Seating export deploy/readiness gate passed.`; Hemma checkout was
-  `5cf765133325f8275fea15dcf883a128854b805d`; public
+  `5603b8ccb2d9f60d37f50536203f54f8c96d5f70`; public
   `https://skriptoteket.hule.education/healthz` returned healthy JSON.
 - Retained review: `REV-PR-0405` approved the current worktree, including the
   final `text-base` / `bold` / `3.75rem` shared column-header tweak, without a
