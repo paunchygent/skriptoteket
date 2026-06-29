@@ -63,7 +63,7 @@ outcome: "Skriptoteket provides first-class conversion hub and exam-converter UI
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 - [x] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
 - [ ] 10. [ST-21-10: Exam Converter source-only intake and export-owned formats](../stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md)
-- [ ] 11. [ST-21-11: Cross-repo compact answer-key review state production proof](../stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md)
+- [x] 11. [ST-21-11: Cross-repo compact answer-key review state production proof](../stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md)
 
 ## Risks
 

@@ -10,10 +10,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 - Date: 2026-06-29.
 - Branch: `main`.
-- Latest closed work: `PR-0405`.
-- Active worktree slice: none. `PR-0405` is committed, pushed, deployed, and
-  approved by retained review `REV-PR-0405`. `PR-0404` is approved by GPT-5.5
-  XHigh `REV-PR-0404`.
+- Latest closed work: `PR-0407`; `PR-0406` / `ST-21-11` is production-proved
+  with retained review `REV-PR-0406`.
+- Active worktree slice: none. `PR-0406` is committed, pushed, deployed,
+  approved, and production-proved at `.artifacts/playwright-pr-0337-correction-session-live/20260629T152928Z/`; `PR-0407` is also closed.
   Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
