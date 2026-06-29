@@ -69,6 +69,7 @@ dashboard direction are settled.
 - [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
 - [x] [PR-0404: ST-37-04 Document Converter multi-source saved-file batches](../prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md)
 - [x] [PR-0405: ST-37-04 Document Converter column hierarchy and preview empty state](../prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md)
+- [x] [PR-0407: ST-37-04 Audio Transcription retryable reattempt browser proof ownership](../prs/pr-0407-st-37-04-audio-transcription-reattempt-browser-proof-ownership.md)
 
 ## Notes
 
@@ -111,6 +112,10 @@ dashboard direction are settled.
   for `pdm run transcript-parity-proof remote-proof`. The earlier UI polling
   retry idea is deferred until retained evidence identifies an actual transient
   failure class.
+- `PR-0407` is done and approved by `REV-PR-0407`. Sir Convert Task 371
+  remains historical retained evidence; Skriptoteket now owns the domain-named
+  browser, Gateway, and auth-helper proof mechanics for Audio Transcription
+  retryable-failed reattempt proof.
 - `PR-0379` is done and approved by `REV-PR-0379`. It adds the
   backend/API-only Document Converter contract under
   `documents.conversion_hub/document-converter`, keeps the frontend route

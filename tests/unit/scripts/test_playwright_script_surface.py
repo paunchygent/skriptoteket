@@ -54,6 +54,7 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
 
 ACTIVE_REUSABLE_PROOF_SCRIPTS = {
     "audio_transcription_parity_live.py",
+    "audio_transcription_retryable_reattempt_public_proof.py",
     "authenticated_app_identity_split.py",
     "authenticated_home_work_apps.py",
     "authenticated_shell_navigation.py",

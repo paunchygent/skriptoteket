@@ -176,6 +176,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md`
 - Document Converter column hierarchy and preview empty state review:
   `docs/backlog/reviews/review-pr-0405-document-converter-column-hierarchy-and-preview-empty-state.md`
+- Exam Converter compact answer-key review-state production proof story:
+  `docs/backlog/stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md`
+- Exam Converter compact answer-key review-state consumer PR slice:
+  `docs/backlog/prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md`
+- Audio Transcription retryable reattempt browser proof ownership PR slice:
+  `docs/backlog/prs/pr-0407-st-37-04-audio-transcription-reattempt-browser-proof-ownership.md`
+- Audio Transcription retryable reattempt browser proof ownership review:
+  `docs/backlog/reviews/review-pr-0407-audio-transcription-reattempt-browser-proof-ownership.md`
 - Transcript proof lane orchestration slice:
   `docs/backlog/prs/pr-0376-st-37-04-transcript-proof-lane-orchestration.md`
 - Domain-named proof script surface cleanup slice:

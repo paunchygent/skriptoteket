@@ -50,6 +50,7 @@ def _wait_for_auth_form_or_success(
     page: Page,
     auth_form: Locator,
     success_heading: Locator,
+    success_selector: Locator | None,
     timeout_ms: int,
 ) -> str:
     """Wait until either the auth form or the post-login heading becomes visible."""
@@ -57,7 +58,10 @@ def _wait_for_auth_form_or_success(
     elapsed_ms = 0
     interval_ms = 250
     while elapsed_ms <= timeout_ms:
-        if _is_visible(success_heading):
+        if _success_destination_visible(
+            success_heading=success_heading,
+            success_selector=success_selector,
+        ):
             return "success"
         if _is_visible(page.locator("#email")) and _is_visible(page.locator("#password")):
             return "huleedu_form"
@@ -70,6 +74,18 @@ def _wait_for_auth_form_or_success(
 
     raise AssertionError(
         "Neither the auth-entry form nor the expected post-login destination became visible."
+    )
+
+
+def _success_destination_visible(
+    *,
+    success_heading: Locator,
+    success_selector: Locator | None,
+) -> bool:
+    """Return whether either configured authenticated destination marker is visible."""
+
+    return _is_visible(success_heading) or (
+        success_selector is not None and _is_visible(success_selector)
     )
 
 
@@ -167,6 +183,58 @@ def _follow_handoff_link(page: Page) -> None:
         return
 
 
+def _target_url(*, base_url: str, next_path: str) -> str:
+    return f"{base_url.rstrip('/')}{next_path}"
+
+
+def _try_recover_to_next_path(
+    *,
+    page: Page,
+    base_url: str,
+    next_path: str,
+    success_heading: Locator,
+    success_selector: Locator | None,
+    success_timeout_ms: int,
+) -> bool:
+    """Open the requested app route after a valid session landed elsewhere."""
+
+    try:
+        page.goto(
+            _target_url(base_url=base_url, next_path=next_path), wait_until="domcontentloaded"
+        )
+    except PlaywrightError as exc:
+        if "ERR_ABORTED" not in str(exc):
+            raise
+    return _wait_for_success_destination(
+        page=page,
+        success_heading=success_heading,
+        success_selector=success_selector,
+        timeout_ms=success_timeout_ms,
+    )
+
+
+def _wait_for_success_destination(
+    *,
+    page: Page,
+    success_heading: Locator,
+    success_selector: Locator | None,
+    timeout_ms: int,
+) -> bool:
+    """Poll until the authenticated destination marker becomes visible."""
+
+    elapsed_ms = 0
+    interval_ms = 250
+    while elapsed_ms <= timeout_ms:
+        if _success_destination_visible(
+            success_heading=success_heading,
+            success_selector=success_selector,
+        ):
+            return True
+        page.wait_for_timeout(interval_ms)
+        elapsed_ms += interval_ms
+    return False
+
+
 def login_via_auth_entry(
     page: Page,
     *,
@@ -175,6 +243,8 @@ def login_via_auth_entry(
     password: str,
     next_path: str,
     success_heading_pattern: str,
+    success_selector: str | None = None,
+    recover_to_next_path: bool = False,
     attempts: int = 3,
     failure_artifacts_dir: Path | None = None,
     failure_screenshot_name: str = "login-failure.png",
@@ -187,6 +257,7 @@ def login_via_auth_entry(
     success_heading = page.get_by_role(
         "heading", name=re.compile(success_heading_pattern, re.IGNORECASE)
     )
+    success_selector_locator = page.locator(success_selector) if success_selector else None
 
     for attempt in range(attempts):
         page.goto(auth_entry_url, wait_until="domcontentloaded")
@@ -196,9 +267,19 @@ def login_via_auth_entry(
                 page=page,
                 auth_form=auth_form,
                 success_heading=success_heading,
+                success_selector=success_selector_locator,
                 timeout_ms=form_timeout_ms,
             )
         except AssertionError:
+            if recover_to_next_path and _try_recover_to_next_path(
+                page=page,
+                base_url=base_url,
+                next_path=next_path,
+                success_heading=success_heading,
+                success_selector=success_selector_locator,
+                success_timeout_ms=success_timeout_ms,
+            ):
+                return
             _write_auth_failure_artifacts(
                 page=page,
                 artifact_dir=failure_artifacts_dir,
@@ -214,11 +295,21 @@ def login_via_auth_entry(
                 page=page,
                 auth_form=auth_form,
                 success_heading=success_heading,
+                success_selector=success_selector_locator,
                 timeout_ms=form_timeout_ms,
             )
             if visible_surface == "success":
                 return
             if visible_surface == "handoff_link":
+                if recover_to_next_path and _try_recover_to_next_path(
+                    page=page,
+                    base_url=base_url,
+                    next_path=next_path,
+                    success_heading=success_heading,
+                    success_selector=success_selector_locator,
+                    success_timeout_ms=success_timeout_ms,
+                ):
+                    return
                 if failure_artifacts_dir is not None:
                     handoff_link = _handoff_link(page)
                     state = {
@@ -244,9 +335,23 @@ def login_via_auth_entry(
         )
 
         try:
-            expect(success_heading).to_be_visible(timeout=success_timeout_ms)
+            if success_selector_locator is not None:
+                expect(success_selector_locator).or_(success_heading).to_be_visible(
+                    timeout=success_timeout_ms
+                )
+            else:
+                expect(success_heading).to_be_visible(timeout=success_timeout_ms)
             return
         except AssertionError:
+            if recover_to_next_path and _try_recover_to_next_path(
+                page=page,
+                base_url=base_url,
+                next_path=next_path,
+                success_heading=success_heading,
+                success_selector=success_selector_locator,
+                success_timeout_ms=success_timeout_ms,
+            ):
+                return
             if attempt == attempts - 1 and failure_artifacts_dir is not None:
                 page.screenshot(
                     path=str(failure_artifacts_dir / failure_screenshot_name),

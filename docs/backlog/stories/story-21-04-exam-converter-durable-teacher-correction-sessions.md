@@ -123,6 +123,15 @@ PR-sized slices:
    navigation/reload, that projection/export state is driven by backend
    readback plus Sir Convert replay, and that corrected file actions use only
    replay-supplied artifact references.
+10. Compact answer-key review-state consumer (`PR-0406`, blocked):
+   consume the Sir Convert Task 373 compact review-state projection so the
+   question list, detail pane, report, and file-action gates no longer derive
+   answer-key review semantics from multiple producer artifacts and local UI
+   state. This slice must wait for Task 373's open questions to close.
+11. Cross-repo production proof (`ST-21-11`, blocked):
+   mirror Sir Convert Story 57 as the overseer tracking surface for Task 373,
+   PR-0406, and the final production browser proof with the tracked DXE
+   fixture.
 
 ## Notes
 
@@ -165,3 +174,11 @@ PR-sized slices:
 - If replay is unavailable, the product may show saved correction intents, but
   it must not show a fresh effective-state projection or unlock artifacts from
   stale derived evidence.
+- `PR-0406` is blocked on Sir Convert Task 373. It records the current compact
+  UI-state agreement: `Granska` for pending review, plain `Klart` for reviewed
+  complete state, no AI marker after accepted/reviewed keys in the list, no AI
+  marker after teacher-owned edits, and `Kontrollera` only for current
+  validation problems such as a missing selected key.
+- `ST-21-11` is the cross-repo closeout surface. It does not widen PR-0406; it
+  records the production proof gate that must pass after Task 373 and PR-0406
+  are independently reviewed and deployed.
