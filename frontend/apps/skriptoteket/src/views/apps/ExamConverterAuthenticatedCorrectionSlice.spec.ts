@@ -17,6 +17,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../../api/client";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import {
+  answerKeyReviewItem,
+  answerKeyReviewStateReport,
   finishConversion,
   mockReviewArtifacts,
   submittedJob,
@@ -197,6 +199,7 @@ function correctionSourceState() {
 
 function correctionApplyResult(overrides: Partial<Record<string, unknown>> = {}) {
   return {
+    answer_key_review_state: correctionAnswerKeyReviewState(),
     schema_version: "exam_authoring_corrections_apply_result_v1",
     request_id: "correction-request",
     source_binding: correctionSourceState().source_binding,
@@ -217,6 +220,68 @@ function correctionApplyResult(overrides: Partial<Record<string, unknown>> = {})
     artifact_availability: [],
     ...overrides,
   };
+}
+
+function correctionAnswerKeyReviewState() {
+  return answerKeyReviewStateReport([
+    answerKeyReviewItem(),
+    answerKeyReviewItem({
+      choice_ids: ["choice-002"],
+      choice_interaction_ids: ["choice-item-004"],
+      current_key_origin: "teacher_authored",
+      item_id: "item-004",
+      item_type: "single_choice",
+      message_key: "exam_converter.answer_key.teacher_answer_key_present",
+      reasons: ["teacher_answer_key_present"],
+      review_state: "teacher_modified",
+      sequence: 4,
+      source_item_fingerprint: "sha256:item-004",
+    }),
+    answerKeyReviewItem({
+      choice_ids: ["choice-1", "choice-2"],
+      choice_interaction_ids: ["choice-item-005"],
+      current_key_origin: "reviewed_advisory",
+      item_id: "item-005",
+      item_type: "multiple_response",
+      message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+      reasons: ["reviewed_advisory_accepted"],
+      review_state: "review_complete",
+      sequence: 5,
+      source_item_fingerprint: "sha256:item-005",
+    }),
+    answerKeyReviewItem({
+      current_key_origin: "none",
+      item_id: "item-006",
+      item_type: "open_ended",
+      message_key: "exam_converter.answer_key.source_present",
+      reasons: ["source_answer_key_present"],
+      review_state: "review_complete",
+      sequence: 6,
+      source_item_fingerprint: "sha256:item-006",
+    }),
+    answerKeyReviewItem({
+      current_key_origin: "teacher_edited_advisory",
+      item_id: "item-012",
+      item_type: "open_ended",
+      message_key: "exam_converter.answer_key.teacher_modified",
+      reasons: ["teacher_edited_advisory_candidate"],
+      review_state: "teacher_modified",
+      sequence: 12,
+      source_item_fingerprint: "sha256:item-012",
+    }),
+    answerKeyReviewItem({
+      current_key_origin: "teacher_authored",
+      gap_ids: ["gap-001", "gap-002"],
+      gap_interaction_ids: ["gap-item-013"],
+      item_id: "item-013",
+      item_type: "gap_fill",
+      message_key: "exam_converter.answer_key.teacher_answer_key_present",
+      reasons: ["teacher_answer_key_present"],
+      review_state: "teacher_modified",
+      sequence: 13,
+      source_item_fingerprint: "sha256:item-013",
+    }),
+  ]);
 }
 
 function emptyCorrectionSession() {
@@ -641,7 +706,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
 
     await finishConversion(wrapper);
     expect(wrapper.find('[data-test="exam-converter-inspection-attention-count"]').text()).toContain(
-      "2 frågor",
+      "1 fråga",
     );
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
     await wrapper.find('[data-test="exam-converter-manual-choice-2"]').trigger("click");

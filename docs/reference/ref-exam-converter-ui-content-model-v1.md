@@ -164,11 +164,12 @@ The current PR-0325 runtime may still label the required source upload as
 rail pattern with source-specific upload labels rather than creating a separate
 application surface.
 
-The workflow rail must not expose PDF/QTI target toggles before conversion.
-Skriptoteket may still request the currently supported target artifacts by
-default in the producer job spec. The teacher-facing choice belongs later:
-download/save PDF, QTI, and future DOCX from the `Filer` inspection mode after
-conversion, review, and replay have produced artifact readiness evidence.
+The workflow rail must not expose PDF/QTI target toggles or source-format
+choices before conversion. Skriptoteket may still request the currently
+supported target artifacts by default in the producer job spec. The
+teacher-facing choice belongs later: download/save PDF, QTI, and future DOCX
+from the `Filer` inspection mode after conversion, review, and replay have
+produced artifact readiness evidence.
 
 If a help or question-mark icon is visible anywhere in this flow, it must open
 an accessible tooltip/popover on hover, focus, or activation. Otherwise the icon
@@ -419,6 +420,33 @@ The selected mockup direction is retained in
 Its bottom stretched `Visa filer` reminder panel is explicitly rejected and
 must not be implemented; file availability should instead live in the `Filer`
 inspection mode or as compact header/mode metadata.
+
+The PR-0406 small-screen answer-key review decision is retained separately in
+`docs/mockups/pr-0406-answer-key-review-small-screen/README.md`. That bundle is
+exact decision material for the represented phone layout and copy: pending
+AI suggestions use `Granska`/`Acceptera`, completed reviewed keys use `Klart`
+without an AI badge, teacher-owned changes may use `Ändrat`, validation issues
+use concrete missing-key language, and manual repair uses disabled/enabled
+`Spara facit` semantics. Its represented symbols must follow the approved
+symbol contract: `IconAi`/`Sparkles` for AI, `IconCheck`/`Check` for
+reviewed/selected state, `IconEdit`/`PencilLine` for teacher-owned changed
+state, and `IconWarning`/`AlertTriangle` for validation problems.
+
+The PR-0406 desktop answer-key review alignment is retained in
+`docs/mockups/pr-0406-answer-key-review-desktop/README.md`. The desktop
+workbench keeps the left workflow rail, central question table, and one
+selected-question detail pane for `Frågor`, while `Filer` and `Rapport` remain
+exclusive inspection modes without selected-question detail. When compact
+review state exists, the desktop result band uses actionable review copy:
+`Kontrollera facit`, a compact count such as `6 att granska`, and
+`Granska frågorna som saknar rätt svar eller facitsvar.` Export-ready copy must
+remain gated by Sir Convert target readiness and replay artifact authority.
+Desktop detail navigation uses symbolic Lucide previous/next controls with
+accessible labels, no visible `Föregående` / `Nästa` text, and auto-advance
+only after backend-confirmed persistence plus fresh Sir Convert replay
+projection. `Ändra` opens the normal answer-key editor inside the selected
+detail pane, with `Spara facit` for teacher-owned edits and bounded
+`Tidigare förslag` detail when the edit began from an advisory suggestion.
 
 ## UI Slice Approval Protocol
 

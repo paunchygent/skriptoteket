@@ -16,6 +16,7 @@ import type {
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
+  ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
@@ -109,6 +110,31 @@ export function targetReadinessReportPayload() {
         retryable: false,
         message_key: "exam_converter.target.needs_teacher_answer_key",
         item_id: "item-001",
+        sequence: 1,
+        source_item_fingerprint: "sha256:item-001",
+      },
+    ],
+  };
+}
+
+export function answerKeyReviewStateReportPayload() {
+  return {
+    schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+    items: [
+      {
+        choice_ids: [],
+        choice_interaction_ids: ["choice-item-001"],
+        correction_affordances: ["manual_choice_answer_key"],
+        current_key_origin: "none",
+        gap_ids: [],
+        gap_interaction_ids: [],
+        item_id: "item-001",
+        item_type: "multiple_choice",
+        message_key: "exam_converter.answer_key.manual_required",
+        provenance_detail: null,
+        reasons: ["manual_answer_key_required"],
+        replay_artifact_references: [],
+        review_state: "validation_required",
         sequence: 1,
         source_item_fingerprint: "sha256:item-001",
       },

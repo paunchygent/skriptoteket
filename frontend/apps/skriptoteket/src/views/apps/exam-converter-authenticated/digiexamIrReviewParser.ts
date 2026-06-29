@@ -15,6 +15,7 @@ import type {
   DigiExamItemType,
   DigiExamTargetReadinessReport,
   DigiExamTargetReadinessRow,
+  DigiExamAnswerKeyReviewState,
   SirConvertArtifactAvailability,
   SirConvertArtifactEntry,
   SirConvertArtifactManifest,
@@ -34,6 +35,11 @@ import {
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
 } from "../../../api/sirConvertGateway/schemaVersions";
 import { digiExamTargetFileLabel, isDigiExamTargetFile } from "./digiexamTargetArtifacts";
+import {
+  applyAnswerKeyReviewStateToQuestions,
+  countActionableAnswerKeyRows,
+  parseAnswerKeyReviewState,
+} from "./answerKeyReviewStateAdapter";
 import {
   projectQuestionReviewRow,
   type DigiExamIrAlternative,
@@ -125,6 +131,7 @@ export type ExamConverterReviewProjection = {
   questions: ExamConverterQuestionReviewRow[];
   files: ExamConverterReviewFile[];
   report: ExamConverterReportProjection;
+  answerKeyReviewState: DigiExamAnswerKeyReviewState;
   defaultMode: ExamConverterInspectionMode;
   answerKeyCompletionReport: ExamConverterAnswerKeyCompletionReport | null;
   effectiveAnswerKeysByItem: ExamConverterEffectiveAnswerKeyByItem;
@@ -530,6 +537,7 @@ function followUpsByItemId(
 
 export function parseExamConverterReviewProjection(params: {
   answerKeyCompletionReport?: ExamConverterAnswerKeyCompletionReport | null;
+  answerKeyReviewStateReport: unknown;
   artifactManifest: SirConvertArtifactManifest;
   effectiveAnswerKeysByItem?: ExamConverterEffectiveAnswerKeyByItem | null;
   effectivePointCorrectionsByItem?: ExamConverterEffectivePointCorrectionByItem | null;
@@ -542,7 +550,8 @@ export function parseExamConverterReviewProjection(params: {
   const followUps = followUpsByItemId(exam.manualFollowUps);
   const candidates = params.answerKeyCompletionReport?.itemsByItemId ?? new Map();
 
-  const questions = exam.items.map((item): ExamConverterQuestionReviewRow => {
+  const producerReviewState = parseAnswerKeyReviewState(params.answerKeyReviewStateReport);
+  const projectedQuestions = exam.items.map((item): ExamConverterQuestionReviewRow => {
     const itemFollowUps = followUps.get(item.itemId) ?? [];
     const itemSummary = manifest.itemSummaries.get(item.itemId);
     return projectQuestionReviewRow(
@@ -554,22 +563,28 @@ export function parseExamConverterReviewProjection(params: {
       params.effectivePointCorrectionsByItem?.get(item.itemId) ?? null,
     );
   });
+  const questions = applyAnswerKeyReviewStateToQuestions({
+    questions: projectedQuestions,
+    reviewState: producerReviewState,
+  });
 
   const missingDataQuestionCount = questions.filter(
     (question) => question.missingFields.length > 0,
   ).length;
   const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
-  const hasQuestionReview = missingDataQuestionCount > 0;
+  const compactActionableCount = countActionableAnswerKeyRows(producerReviewState);
+  const hasQuestionReview = compactActionableCount > 0 || missingDataQuestionCount > 0;
   const files = projectFiles(params.artifactManifest, params.targetReadinessReport);
 
   return {
     sourceFilename: exam.sourceFilename,
     sourceFileSha256: params.artifactManifest.source.sha256,
     artifactSourceBinding: params.artifactManifest.source_binding,
+    answerKeyReviewState: producerReviewState,
     questions,
     files,
     report: {
-      attentionQuestionCount: missingDataQuestionCount,
+      attentionQuestionCount: compactActionableCount,
       aiSuggestionOutcomes: buildAiSuggestionReport({ questions }),
       aiSuggestionCount: validAiSuggestionCount,
       blockedTargetFileCount: files.filter(isTeacherDecisionBlockedFile).length,

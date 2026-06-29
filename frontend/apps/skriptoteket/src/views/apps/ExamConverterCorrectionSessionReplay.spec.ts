@@ -126,6 +126,26 @@ function replayResult(
   request: ExamAuthoringCorrectionsApplyRequest,
 ): ExamAuthoringCorrectionsApplyResult {
   return {
+    answer_key_review_state: {
+      items: issuedSourceState().source_authoring_state.items.map((item) => ({
+        choice_ids: [],
+        choice_interaction_ids: [],
+        correction_affordances: [],
+        current_key_origin: "teacher_authored",
+        gap_ids: [],
+        gap_interaction_ids: [],
+        item_id: item.item_id,
+        item_type: item.item_type,
+        message_key: "exam_converter.answer_key.teacher_answer_key_present",
+        provenance_detail: null,
+        reasons: ["teacher_answer_key_present"],
+        replay_artifact_references: [],
+        review_state: "teacher_modified",
+        sequence: item.sequence,
+        source_item_fingerprint: item.source_item_fingerprint ?? null,
+      })),
+      schema_version: "digiexam_answer_key_review_state_v1",
+    },
     artifact_availability: [
       {
         artifact_key: "examnet_pdf",

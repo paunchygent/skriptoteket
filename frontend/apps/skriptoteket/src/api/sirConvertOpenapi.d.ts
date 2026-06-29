@@ -442,6 +442,58 @@ export interface components {
             size_bytes: number;
         };
         /**
+         * AudioDiarizationMode
+         * @description Public diarization speaker-hint modes accepted by the audio route policy.
+         * @enum {string}
+         */
+        AudioDiarizationMode: "auto" | "known_speaker_count" | "speaker_range";
+        /**
+         * AudioDiarizationOptionsV2
+         * @description Public speaker-hint options for audio transcription route admission.
+         */
+        AudioDiarizationOptionsV2: {
+            /**
+             * Max Speakers
+             * @default null
+             */
+            max_speakers: number | null;
+            /**
+             * Min Speakers
+             * @default null
+             */
+            min_speakers: number | null;
+            mode: components["schemas"]["AudioDiarizationMode"];
+            /**
+             * Num Speakers
+             * @default null
+             */
+            num_speakers: number | null;
+        };
+        /**
+         * AudioTranscriptionOptionsV2
+         * @description Public audio transcription options admitted through Service API v2.
+         */
+        AudioTranscriptionOptionsV2: {
+            diarization: components["schemas"]["AudioDiarizationOptionsV2"];
+            /**
+             * Language
+             * @default auto
+             */
+            language: string;
+            /**
+             * Max Duration Seconds
+             * @default 7200
+             */
+            max_duration_seconds: number;
+            /**
+             * Output Artifacts
+             * @default [
+             *       "json"
+             *     ]
+             */
+            output_artifacts: string[];
+        };
+        /**
          * BackendStrategy
          * @description Backend strategy values supported by v1.
          * @enum {string}
@@ -479,6 +531,10 @@ export interface components {
             chunk_size_pages?: number | null;
             /** Effective Gpu Stage Limit */
             effective_gpu_stage_limit?: number | null;
+            /** Formula Authority */
+            formula_authority?: {
+                [key: string]: unknown;
+            };
             /** Gpu Busy Percent */
             gpu_busy_percent?: number | null;
             /** Gpu Device Count */
@@ -673,6 +729,122 @@ export interface components {
             schema_version: "answer_key_completion_report_v1";
         };
         /**
+         * DigiExamAnswerKeyReviewProvenanceDetailV1
+         * @description Bounded detail-only advisory lineage without raw provider data.
+         */
+        DigiExamAnswerKeyReviewProvenanceDetailV1: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Candidate Payload Digest */
+            candidate_payload_digest: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+            /** Schema Name */
+            schema_name: string;
+            /** Schema Version */
+            schema_version: string;
+            /**
+             * Validation State
+             * @constant
+             */
+            validation_state: "valid";
+        };
+        /**
+         * DigiExamAnswerKeyReviewReplayArtifactReferenceV1
+         * @description Replay-scoped target artifact reference returned after correction rendering.
+         */
+        DigiExamAnswerKeyReviewReplayArtifactReferenceV1: {
+            /**
+             * Artifact Key
+             * @enum {string}
+             */
+            artifact_key: "correction_replay_examnet_pdf" | "correction_replay_qti_package";
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "examnet_pdf" | "qti_package";
+        };
+        /**
+         * DigiExamAnswerKeyReviewStateItemV1
+         * @description One item-addressable answer-key review-state row.
+         */
+        DigiExamAnswerKeyReviewStateItemV1: {
+            /**
+             * Choice Ids
+             * @default []
+             */
+            choice_ids: string[];
+            /**
+             * Choice Interaction Ids
+             * @default []
+             */
+            choice_interaction_ids: string[];
+            /**
+             * Correction Affordances
+             * @default []
+             */
+            correction_affordances: ("item_text_patch" | "point_correction" | "manual_choice_answer_key" | "manual_gap_open_cloze_answer_key" | "manual_matching_answer_key")[];
+            /**
+             * Current Key Origin
+             * @enum {string}
+             */
+            current_key_origin: "none" | "source_provided" | "reviewed_advisory" | "teacher_authored" | "teacher_edited_advisory" | "mixed";
+            /**
+             * Gap Ids
+             * @default []
+             */
+            gap_ids: string[];
+            /**
+             * Gap Interaction Ids
+             * @default []
+             */
+            gap_interaction_ids: string[];
+            /** Item Id */
+            item_id: string;
+            /** Item Type */
+            item_type: string;
+            /** Message Key */
+            message_key: string;
+            /** @default null */
+            provenance_detail: components["schemas"]["DigiExamAnswerKeyReviewProvenanceDetailV1"] | null;
+            /** Reasons */
+            reasons: ("source_answer_key_present" | "advisory_candidate_pending" | "reviewed_advisory_accepted" | "teacher_answer_key_present" | "teacher_edited_advisory_candidate" | "manual_answer_key_required" | "no_correct_choice_selected" | "required_gap_accepted_values_missing" | "unsupported_item_type" | "unsupported_target_shape" | "target_validation_failed" | "provider_unavailable" | "correction_rejected" | "stale_source_state" | "replay_artifact_unavailable" | "matching_source_state_unavailable")[];
+            /**
+             * Replay Artifact References
+             * @default []
+             */
+            replay_artifact_references: components["schemas"]["DigiExamAnswerKeyReviewReplayArtifactReferenceV1"][];
+            /**
+             * Review State
+             * @enum {string}
+             */
+            review_state: "review_required" | "review_complete" | "teacher_modified" | "validation_required";
+            /** Sequence */
+            sequence: number;
+            /**
+             * Source Item Fingerprint
+             * @default null
+             */
+            source_item_fingerprint: string | null;
+        };
+        /**
+         * DigiExamAnswerKeyReviewStateV1
+         * @description Top-level compact review-state report for DigiExam answer keys.
+         */
+        DigiExamAnswerKeyReviewStateV1: {
+            /** Items */
+            items: components["schemas"]["DigiExamAnswerKeyReviewStateItemV1"][];
+            /**
+             * Schema Version
+             * @default digiexam_answer_key_review_state_v1
+             * @constant
+             */
+            schema_version: "digiexam_answer_key_review_state_v1";
+        };
+        /**
          * DigiExamEffectiveAnswerKeyLineageV1
          * @description Bounded reviewed-completion lineage in effective exam artifacts.
          */
@@ -781,8 +953,6 @@ export interface components {
             item_id: string;
             /** Item Type */
             item_type: string;
-            /** Review Decisions */
-            review_decisions?: components["schemas"]["DigiExamEffectiveReviewDecisionV1"][];
             /** Sequence */
             sequence: number;
             /** Source Item Fingerprint */
@@ -807,23 +977,6 @@ export interface components {
              * @default null
              */
             source_max_score: number | null;
-        };
-        /**
-         * DigiExamEffectiveReviewDecisionV1
-         * @description Applied review decision surfaced in effective exam artifacts.
-         */
-        DigiExamEffectiveReviewDecisionV1: {
-            /** Accepted Targets */
-            accepted_targets: string[];
-            /** Decision Id */
-            decision_id: string;
-            /** Kind */
-            kind: string;
-            /**
-             * Note
-             * @default null
-             */
-            note: string | null;
         };
         /**
          * DigiExamIngestionOverlay
@@ -871,8 +1024,6 @@ export interface components {
             manual_answer_key: (components["schemas"]["DigiExamOverlayChoiceManualAnswerKey"] | components["schemas"]["DigiExamOverlayGapFillManualAnswerKey"]) | null;
             /** @default null */
             point_correction: components["schemas"]["DigiExamOverlayPointCorrection"] | null;
-            /** @default null */
-            review_decision: components["schemas"]["DigiExamOverlayReviewDecision"] | null;
             /** @default null */
             reviewed_completion_answer_key: components["schemas"]["DigiExamOverlayReviewedCompletionAnswerKey"] | null;
             /** Sequence */
@@ -942,7 +1093,7 @@ export interface components {
          * @description Required artifact keys for DigiExam migration terminal bundles.
          * @enum {string}
          */
-        DigiExamMigrationArtifactKey: "bundle_manifest" | "examnet_pdf" | "qti_package" | "qti_validation_report" | "ir_json" | "effective_ir_json" | "migration_manifest" | "target_readiness_report" | "ingestion_overlay_report" | "answer_key_completion_report" | "manual_follow_up_report" | "warnings_report" | "asset_summary";
+        DigiExamMigrationArtifactKey: "bundle_manifest" | "examnet_pdf" | "qti_package" | "qti_validation_report" | "ir_json" | "effective_ir_json" | "migration_manifest" | "target_readiness_report" | "answer_key_review_state_report" | "ingestion_overlay_report" | "answer_key_completion_report" | "manual_follow_up_report" | "warnings_report" | "asset_summary";
         /**
          * DigiExamMigrationBundleArtifactEntryV2
          * @description One named artifact entry in a DigiExam migration bundle manifest.
@@ -985,6 +1136,7 @@ export interface components {
          * @description Terminal artifact bundle manifest for DigiExam migration jobs.
          */
         DigiExamMigrationBundleManifestV2: {
+            answer_key_review_state: components["schemas"]["DigiExamMigrationBundleReviewStateSummaryV2"];
             /** Artifacts */
             artifacts: components["schemas"]["DigiExamMigrationBundleArtifactEntryV2"][];
             /**
@@ -1048,6 +1200,17 @@ export interface components {
             expires_at: string | null;
             /** Pin */
             pin: boolean;
+        };
+        /**
+         * DigiExamMigrationBundleReviewStateSummaryV2
+         * @description Review-state summary pointing consumers to the compact report.
+         */
+        DigiExamMigrationBundleReviewStateSummaryV2: {
+            /**
+             * Artifact Key
+             * @constant
+             */
+            artifact_key: "answer_key_review_state_report";
         };
         /**
          * DigiExamMigrationBundleSourceBindingV2
@@ -1124,6 +1287,10 @@ export interface components {
             chunk_size_pages?: number | null;
             /** Effective Gpu Stage Limit */
             effective_gpu_stage_limit?: number | null;
+            /** Formula Authority */
+            formula_authority?: {
+                [key: string]: unknown;
+            };
             /** Gpu Busy Percent */
             gpu_busy_percent?: number | null;
             /** Gpu Device Count */
@@ -1319,28 +1486,8 @@ export interface components {
             max_score: number;
         };
         /**
-         * DigiExamOverlayReviewDecision
-         * @description Teacher review decision that never creates answer-key evidence.
-         */
-        DigiExamOverlayReviewDecision: {
-            /** Accepted Targets */
-            accepted_targets: components["schemas"]["ExamMigrationTargetV2"][];
-            /** Decision Id */
-            decision_id: string;
-            /**
-             * Kind
-             * @constant
-             */
-            kind: "accept_current_state_for_export";
-            /**
-             * Note
-             * @default null
-             */
-            note: string | null;
-        };
-        /**
          * DigiExamOverlayReviewedChoiceAnswerPayload
-         * @description Reviewed choice answer payload using Task 297 candidate semantics.
+         * @description Reviewed choice answer payload using reviewed choice candidate candidate semantics.
          */
         DigiExamOverlayReviewedChoiceAnswerPayload: {
             /** Correct Alternative Ids */
@@ -1401,7 +1548,7 @@ export interface components {
         DigiExamOverlayReviewedCompletionOutcome: "accepted_unchanged" | "teacher_edited";
         /**
          * DigiExamOverlayReviewedGapFillAnswerPayload
-         * @description Reviewed gap-fill answer payload using Task 305 candidate semantics.
+         * @description Reviewed gap-fill answer payload using gap-fill candidate candidate semantics.
          */
         DigiExamOverlayReviewedGapFillAnswerPayload: {
             /** Gap Answers */
@@ -1444,7 +1591,7 @@ export interface components {
          * @description Consumer-facing readiness classes for export targets.
          * @enum {string}
          */
-        DigiExamTargetReadiness: "ready" | "ready_after_accepted_current_state" | "needs_teacher_answer_key" | "needs_teacher_review_decision" | "unsupported_target_shape" | "target_validation_failed" | "provider_unavailable" | "not_requested" | "not_implemented";
+        DigiExamTargetReadiness: "ready" | "needs_teacher_answer_key" | "unsupported_target_shape" | "target_validation_failed" | "provider_unavailable" | "not_requested" | "not_implemented";
         /**
          * DigiExamTargetReadinessReportV1
          * @description Authoritative target-readiness report for migration bundle consumers.
@@ -1848,7 +1995,7 @@ export interface components {
          */
         ExamAuthoringCorrectionsApplyRequestV1: {
             /** Corrections */
-            corrections: (components["schemas"]["ExamAuthoringItemTextPatchCorrectionV1"] | components["schemas"]["ExamAuthoringPointCorrectionV1"] | components["schemas"]["ExamAuthoringManualChoiceAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringManualGapOpenClozeAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringManualMatchingAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringReviewDecisionCorrectionV1"] | components["schemas"]["ExamAuthoringCandidateSuppressionCorrectionV1"])[];
+            corrections: (components["schemas"]["ExamAuthoringItemTextPatchCorrectionV1"] | components["schemas"]["ExamAuthoringPointCorrectionV1"] | components["schemas"]["ExamAuthoringManualChoiceAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringManualGapOpenClozeAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringManualMatchingAnswerKeyCorrectionV1"] | components["schemas"]["ExamAuthoringCandidateSuppressionCorrectionV1"])[];
             /** Request Id */
             request_id: string;
             /**
@@ -1873,6 +2020,7 @@ export interface components {
          * @description Producer-owned result returned after correction application.
          */
         ExamAuthoringCorrectionsApplyResultV1: {
+            answer_key_review_state: components["schemas"]["DigiExamAnswerKeyReviewStateV1"];
             /** Artifact Availability */
             artifact_availability: components["schemas"]["ExamAuthoringCorrectionArtifactAvailabilityRowV1"][];
             correction_report: components["schemas"]["ExamAuthoringCorrectionReportV1"];
@@ -2109,7 +2257,7 @@ export interface components {
         };
         /**
          * ExamAuthoringManualMatchingAnswerKeyCorrectionV1
-         * @description Manual matching answer-key correction implemented by Task 330.
+         * @description Manual matching answer-key correction for teacher-authored answer keys.
          */
         ExamAuthoringManualMatchingAnswerKeyCorrectionV1: {
             candidate_lineage?: components["schemas"]["ExamAuthoringCandidateLineageV1"] | null;
@@ -2237,38 +2385,6 @@ export interface components {
             source_item_fingerprint?: string | null;
         };
         /**
-         * ExamAuthoringReviewDecisionCorrectionV1
-         * @description Review decision entry reserved for unified runtime migration.
-         */
-        ExamAuthoringReviewDecisionCorrectionV1: {
-            /** Accepted Targets */
-            accepted_targets: ("examnet_pdf" | "qti_package")[];
-            /**
-             * Decision
-             * @constant
-             */
-            decision: "accept_current_state_for_export";
-            /** Decision Id */
-            decision_id: string;
-            /** Entry Id */
-            entry_id: string;
-            /** Item Id */
-            item_id: string;
-            /** Item Type */
-            item_type: string;
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            kind: "review_decision";
-            /** Note */
-            note?: string | null;
-            /** Sequence */
-            sequence: number;
-            /** Source Item Fingerprint */
-            source_item_fingerprint?: string | null;
-        };
-        /**
          * ExamAuthoringSourceEvidenceV1
          * @description Source-neutral evidence reference for an authoring interaction.
          */
@@ -2306,6 +2422,41 @@ export interface components {
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
+         * IdempotencyAttemptMetadataV2
+         * @description Sanitized create-job idempotency attempt metadata.
+         */
+        IdempotencyAttemptMetadataV2: {
+            /** Failure Retryable */
+            failure_retryable?: boolean | null;
+            /** Job Id */
+            job_id: string;
+            status: components["schemas"]["JobStatus"];
+        };
+        /**
+         * IdempotencyMetadataV2
+         * @description Create-job idempotency decision metadata for callers and operators.
+         */
+        IdempotencyMetadataV2: {
+            /** Active Job Id */
+            active_job_id: string;
+            /** Attempt Count */
+            attempt_count: number;
+            current_attempt: components["schemas"]["IdempotencyAttemptMetadataV2"];
+            /** Idempotent Replay */
+            idempotent_replay: boolean;
+            /** Previous Attempts */
+            previous_attempts?: components["schemas"]["IdempotencyAttemptMetadataV2"][];
+            /** Reattempt Of Job Id */
+            reattempt_of_job_id?: string | null;
+            /** Replayed Job Id */
+            replayed_job_id?: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "fresh_admission" | "strict_replay" | "service_reattempt";
+        };
+        /**
          * JobCreateResponseV2
          * @description Response payload for v2 job creation endpoints.
          */
@@ -2316,6 +2467,7 @@ export interface components {
              * @constant
              */
             api_version: "v2";
+            idempotency?: components["schemas"]["IdempotencyMetadataV2"] | null;
             job: components["schemas"]["JobRecordDataV2"];
             public_artifact_read_lease?: components["schemas"]["PublicArtifactReadLeaseResponseV2"] | null;
         };
@@ -2353,6 +2505,20 @@ export interface components {
          * @description Progress metadata for running v2 jobs.
          */
         JobProgressV2: {
+            /** Audio Current Chunk Index */
+            audio_current_chunk_index?: number | null;
+            /** Audio Percent Complete */
+            audio_percent_complete?: number | null;
+            /** Audio Pipeline Eta Seconds */
+            audio_pipeline_eta_seconds?: number | null;
+            /** Audio Pipeline Percent Complete */
+            audio_pipeline_percent_complete?: number | null;
+            /** Audio Processed Media Seconds */
+            audio_processed_media_seconds?: number | null;
+            /** Audio Total Chunks */
+            audio_total_chunks?: number | null;
+            /** Audio Total Media Seconds */
+            audio_total_media_seconds?: number | null;
             /** Current Phase Started At */
             current_phase_started_at?: string | null;
             /** Eta Seconds */
@@ -2391,6 +2557,10 @@ export interface components {
             created_at: string;
             /** Expires At */
             expires_at?: string | null;
+            /** Formula Authority */
+            formula_authority?: {
+                [key: string]: unknown;
+            };
             /** Job Id */
             job_id: string;
             links: components["schemas"]["JobLinksV2"];
@@ -2450,6 +2620,8 @@ export interface components {
              * @constant
              */
             api_version: "v2";
+            /** @default null */
+            audio_transcription_options: components["schemas"]["AudioTranscriptionOptionsV2"] | null;
             conversion: components["schemas"]["ConversionSpecV2"];
             /** @default null */
             digiexam_migration_options: components["schemas"]["DigiExamMigrationOptionsV2"] | null;
@@ -2459,6 +2631,8 @@ export interface components {
             pdf_options: components["schemas"]["PdfOptionsV2"] | null;
             retention?: components["schemas"]["RetentionSpecV2"];
             source: components["schemas"]["SourceSpecV2"];
+            /** @default null */
+            transcript_formatter_options: components["schemas"]["TranscriptFormatterReplayOptionsV2"] | null;
         };
         /**
          * JobStatus
@@ -2489,7 +2663,7 @@ export interface components {
          * @description Supported output formats for v2.
          * @enum {string}
          */
-        OutputFormatV2: "md" | "pdf" | "docx" | "examnet_migration_bundle";
+        OutputFormatV2: "md" | "pdf" | "docx" | "transcript_bundle" | "examnet_migration_bundle";
         /**
          * PdfCheckpointV2
          * @description Durable checkpoint state for chunked PDF-to-markdown execution.
@@ -2533,6 +2707,10 @@ export interface components {
             completed_at?: string | null;
             /** End Page */
             end_page: number;
+            /** Formula Authority */
+            formula_authority?: {
+                [key: string]: unknown;
+            };
             /** Ocr Enabled */
             ocr_enabled: boolean;
             /** Ocr Engine Used */
@@ -2679,7 +2857,7 @@ export interface components {
          * @description Supported uploaded source formats for v2.
          * @enum {string}
          */
-        SourceFormatV2: "pdf" | "md" | "html" | "docx" | "digiexam_dxe";
+        SourceFormatV2: "audio" | "transcript_json" | "pdf" | "md" | "html" | "docx" | "digiexam_dxe";
         /**
          * SourceKindV2
          * @description Supported source kinds for v2 conversion requests.
@@ -2695,6 +2873,16 @@ export interface components {
             filename: string;
             format: components["schemas"]["SourceFormatV2"];
             kind: components["schemas"]["SourceKindV2"];
+        };
+        /**
+         * SpeakerLabelOverrideV2
+         * @description Display-name override for one canonical transcript speaker label.
+         */
+        SpeakerLabelOverrideV2: {
+            /** Canonical Speaker Label */
+            canonical_speaker_label: string;
+            /** Display Name */
+            display_name: string;
         };
         /**
          * StructuredLLMInternalRouteClass
@@ -2836,6 +3024,27 @@ export interface components {
              */
             version: string | null;
         };
+        /**
+         * TranscriptFormatterReplayOptionsV2
+         * @description Typed formatter replay options for canonical transcript JSON uploads.
+         */
+        TranscriptFormatterReplayOptionsV2: {
+            /** Requested Artifacts */
+            requested_artifacts: components["schemas"]["TranscriptFormatterRequestedArtifactV2"][];
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "transcript_formatter_replay_v1";
+            /** Speaker Label Overrides */
+            speaker_label_overrides: components["schemas"]["SpeakerLabelOverrideV2"][];
+        };
+        /**
+         * TranscriptFormatterRequestedArtifactV2
+         * @description Closed replay formatter artifact aliases accepted by Service API v2.
+         * @enum {string}
+         */
+        TranscriptFormatterRequestedArtifactV2: "txt" | "md" | "vtt" | "srt";
         /** ValidationError */
         ValidationError: {
             /** Context */

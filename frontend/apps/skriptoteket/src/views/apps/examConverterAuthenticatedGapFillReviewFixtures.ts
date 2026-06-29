@@ -12,11 +12,13 @@
  */
 
 import {
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_QTI_PACKAGE,
 } from "../../api/sirConvertGateway/contractValues";
 import {
+  ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -59,6 +61,14 @@ function artifactManifestPayload(jobId: string) {
         sha256: isApplyJob ? "sha256:qti" : null,
         size_bytes: isApplyJob ? 1_258_291 : null,
         unavailable_code: isApplyJob ? undefined : "manual_answer_key_required",
+      },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+        availability: "available",
+        content_type: "application/json",
+        filename: "answer-key-review-state.json",
+        sha256: "sha256:answer-key-review-state-gap",
+        size_bytes: 1_024,
       },
       {
         artifact_key: "answer_key_completion_report",
@@ -249,6 +259,72 @@ function answerKeyCompletionReportPayload(candidateAvailable: boolean) {
   };
 }
 
+function answerKeyReviewStatePayload(jobId: string, candidateAvailable: boolean) {
+  const isManualCorrection = jobId === MANUAL_GAP_FILL_APPLY_JOB_ID;
+  const isReviewedCorrection = jobId === REVIEWED_GAP_FILL_APPLY_JOB_ID;
+  const isPendingAdvisory = candidateAvailable && !isManualCorrection && !isReviewedCorrection;
+  return {
+    schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+    items: [
+      {
+        choice_ids: [],
+        choice_interaction_ids: [],
+        correction_affordances:
+          isManualCorrection || isReviewedCorrection ? [] : ["manual_gap_answer_key"],
+        current_key_origin: isManualCorrection
+          ? "teacher_authored"
+          : isReviewedCorrection
+            ? "reviewed_advisory"
+            : "none",
+        gap_ids: ["gap-001", "gap-002"],
+        gap_interaction_ids: ["gap-item-013"],
+        item_id: "item-013",
+        item_type: "gap_fill",
+        message_key: isManualCorrection
+          ? "exam_converter.answer_key.teacher_answer_key_present"
+          : isReviewedCorrection
+            ? "exam_converter.answer_key.reviewed_advisory_accepted"
+            : isPendingAdvisory
+              ? "exam_converter.answer_key.advisory_candidate_pending"
+              : "exam_converter.answer_key.manual_required",
+        provenance_detail: isManualCorrection || !isPendingAdvisory
+          ? null
+          : {
+              candidate_id: "candidate-item-013",
+              candidate_payload_digest: "sha256:candidate-item-013",
+              prompt_template_version: "digiexam-gap-fill-answer-key-v1",
+              provider_profile_id: "task309-llama-cpp",
+              schema_name: "digiexam_gap_fill_answer_key_decision_v1",
+              schema_version: "digiexam_gap_fill_answer_key_decision_v1",
+              validation_state: "valid",
+            },
+        reasons: isManualCorrection
+          ? ["teacher_answer_key_present"]
+          : isReviewedCorrection
+            ? ["reviewed_advisory_accepted"]
+            : isPendingAdvisory
+              ? ["advisory_candidate_pending"]
+              : ["manual_answer_key_required"],
+        replay_artifact_references:
+          isManualCorrection || isReviewedCorrection
+            ? [
+                { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+                { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+              ]
+            : [],
+        review_state:
+          isManualCorrection || isReviewedCorrection
+            ? "review_complete"
+            : isPendingAdvisory
+              ? "review_required"
+              : "validation_required",
+        sequence: 13,
+        source_item_fingerprint: "sha256:item-013",
+      },
+    ],
+  };
+}
+
 function effectiveIrPayload(jobId: string) {
   const isManualCorrection = jobId === MANUAL_GAP_FILL_APPLY_JOB_ID;
   return {
@@ -326,6 +402,14 @@ export function mockVisionBackedGapFillReviewArtifacts(
           artifactJsonBlob("answer_key_completion_report", answerKeyCompletionReportPayload(true)),
         );
       }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(
+            DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+            answerKeyReviewStatePayload(jobId, true),
+          ),
+        );
+      }
       if (artifactKey === "effective_ir_json") {
         return Promise.resolve(artifactJsonBlob("effective_ir_json", effectiveIrPayload(jobId)));
       }
@@ -370,6 +454,14 @@ export function mockManualGapFillCorrectionArtifacts(
       if (artifactKey === "answer_key_completion_report") {
         return Promise.resolve(
           artifactJsonBlob("answer_key_completion_report", answerKeyCompletionReportPayload(false)),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(
+            DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+            answerKeyReviewStatePayload(jobId, false),
+          ),
         );
       }
       if (artifactKey === "effective_ir_json") {

@@ -159,7 +159,6 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
             sequence: 1,
             item_type: "multiple_choice",
             source_item_fingerprint: "sha256:item",
-            review_decision: null,
             reviewed_completion_answer_key: null,
           },
         ],
@@ -198,7 +197,6 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
       item_type: "multiple_choice",
       manual_answer_key: null,
       point_correction: null,
-      review_decision: null,
       reviewed_completion_answer_key: {
         answer_payload: {
           correct_alternative_ids: [1],
@@ -261,7 +259,6 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
       item_type: "single_choice",
       manual_answer_key: null,
       point_correction: pointCorrection,
-      review_decision: null,
       reviewed_completion_answer_key: null,
       sequence: 1,
       source_item_fingerprint: "sha256:item",
@@ -277,7 +274,6 @@ describe("Sir Convert Gateway reviewed-completion contract", () => {
           effective_point_correction: effectivePointCorrection,
           item_id: "item-001",
           item_type: "single_choice",
-          review_decisions: [],
           sequence: 1,
           source_item_fingerprint: "sha256:item",
         },

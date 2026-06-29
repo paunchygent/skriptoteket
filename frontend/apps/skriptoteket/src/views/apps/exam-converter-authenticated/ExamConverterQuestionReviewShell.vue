@@ -6,7 +6,8 @@
  *   Render question rows and the selected-question correction editor.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, ref, toRef, watch } from "vue";
+import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,
@@ -17,12 +18,14 @@ import {
 import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
 import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterItemTextPatchCorrection } from "./digiexamTeacherCorrectionOverlay";
+import ExamConverterAdvisoryAnswerKeyPanel from "./ExamConverterAdvisoryAnswerKeyPanel.vue";
 import ExamConverterEffectiveAnswerKeySummary from "./ExamConverterEffectiveAnswerKeySummary.vue";
 import ExamConverterItemTextPatchEditor from "./ExamConverterItemTextPatchEditor.vue";
 import ExamConverterManualAnswerKeyEditor from "./ExamConverterManualAnswerKeyEditor.vue";
 import ExamConverterPointCorrectionEditor from "./ExamConverterPointCorrectionEditor.vue";
 import ExamConverterQuestionNavigator from "./ExamConverterQuestionNavigator.vue";
 import ExamConverterQuestionTable from "./ExamConverterQuestionTable.vue";
+import { useExamConverterAdvisoryAnswerKeyMode } from "./useExamConverterAdvisoryAnswerKeyMode";
 
 const props = defineProps<{
   aiSuggestionFocusKey: number;
@@ -44,7 +47,13 @@ const emit = defineEmits<{
 }>();
 
 const selectedItemId = ref<string | null>(null);
+const compactDetailOpen = ref(false);
 const pendingAiAdvanceFromItemId = ref<string | null>(null);
+const {
+  canShowAnswerKeyEditor,
+  editAdvisoryAnswerKey,
+  showAdvisoryAnswerKeyPanel,
+} = useExamConverterAdvisoryAnswerKeyMode(toRef(props, "projection"));
 
 const selectedQuestion = computed(() => {
   return (
@@ -54,15 +63,26 @@ const selectedQuestion = computed(() => {
   );
 });
 
-const showsAnswerKeyEditor = computed(() => {
+const showsAnswerKeyEditor = computed(() =>
+  selectedQuestion.value ? canShowAnswerKeyEditor(selectedQuestion.value) : false,
+);
+
+const selectedQuestionIndex = computed(() => {
   const question = selectedQuestion.value;
-  if (!question) return false;
-  const editableQuestionType = question.alternatives.length > 0 || question.gaps.length > 0;
-  return editableQuestionType && (
-    question.missingFields.includes("Facit") ||
-    question.effectiveAnswerKey !== null ||
-    hasUsableCompletionCandidate(question)
-  );
+  if (!question) return -1;
+  return props.projection.questions.findIndex((entry) => entry.itemId === question.itemId);
+});
+
+const previousQuestion = computed(() => {
+  const index = selectedQuestionIndex.value;
+  if (index <= 0) return null;
+  return props.projection.questions[index - 1] ?? null;
+});
+
+const nextQuestion = computed(() => {
+  const index = selectedQuestionIndex.value;
+  if (index < 0) return null;
+  return props.projection.questions[index + 1] ?? null;
 });
 
 function firstAiSuggestedQuestion(questions: ExamConverterQuestionReviewRow[]): ExamConverterQuestionReviewRow | null {
@@ -93,7 +113,32 @@ function nextAiSuggestedQuestionId(
 
 function selectQuestion(question: ExamConverterQuestionReviewRow): void {
   selectedItemId.value = question.itemId;
+  compactDetailOpen.value = true;
   emit("aiPrefillFocused", hasUsableCompletionCandidate(question) ? "candidate" : "questions");
+}
+
+function closeCompactDetail(): void {
+  compactDetailOpen.value = false;
+}
+
+function selectPreviousQuestion(): void {
+  if (previousQuestion.value) {
+    selectQuestion(previousQuestion.value);
+  }
+}
+
+function selectNextQuestion(): void {
+  if (nextQuestion.value) {
+    selectQuestion(nextQuestion.value);
+  }
+}
+
+function acceptAdvisoryAnswerKey(
+  question: ExamConverterQuestionReviewRow,
+  answerKey: ExamConverterManualAnswerKeyCorrection,
+): void {
+  pendingAiAdvanceFromItemId.value = question.itemId;
+  emit("applyManualAnswerKey", question, answerKey);
 }
 
 function applyManualAnswerKey(
@@ -156,9 +201,13 @@ watch(
 <template>
   <section
     class="exam-converter-question-review-shell grid min-h-0 min-w-0 flex-1 gap-5 py-5"
+    :class="{ 'is-compact-detail-open': compactDetailOpen }"
     data-test="exam-converter-question-review-shell"
   >
-    <div class="min-w-0 overflow-hidden">
+    <div
+      class="exam-converter-question-list-surface min-w-0 overflow-hidden"
+      data-test="exam-converter-question-list-surface"
+    >
       <h3 class="text-base font-semibold leading-tight text-navy">
         Frågor att kontrollera
       </h3>
@@ -192,6 +241,61 @@ watch(
       data-test="exam-converter-selected-question-detail"
     >
       <template v-if="selectedQuestion">
+        <div class="exam-converter-compact-detail-nav mb-4 hidden items-center justify-between gap-3 border-b border-navy/25 pb-3">
+          <button
+            type="button"
+            class="btn-ghost inline-flex min-w-0 items-center gap-2 shadow-none"
+            data-test="exam-converter-compact-back-to-questions"
+            @click="closeCompactDetail"
+          >
+            <ChevronLeft
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+            Frågor
+          </button>
+          <div class="flex min-w-0 items-center gap-2">
+            <strong class="truncate text-sm leading-tight text-navy">
+              Fråga {{ selectedQuestion.sequence }}
+            </strong>
+            <span class="shrink-0 border border-navy/20 bg-panel px-2 py-1 text-xs font-medium leading-none text-navy/75">
+              {{ selectedQuestion.typeLabel }}
+            </span>
+          </div>
+        </div>
+        <nav
+          class="exam-converter-detail-step-nav sticky top-0 z-10 mb-4 hidden justify-end gap-2 bg-panel py-2"
+          aria-label="Frågenavigering"
+        >
+          <button
+            type="button"
+            class="btn-ghost grid h-9 w-9 place-items-center p-0 shadow-none"
+            aria-label="Föregående fråga"
+            :disabled="!previousQuestion"
+            data-test="exam-converter-detail-previous-question"
+            title="Föregående fråga"
+            @click="selectPreviousQuestion"
+          >
+            <ChevronLeft
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+          </button>
+          <button
+            type="button"
+            class="btn-ghost grid h-9 w-9 place-items-center p-0 shadow-none"
+            aria-label="Nästa fråga"
+            :disabled="!nextQuestion"
+            data-test="exam-converter-detail-next-question"
+            title="Nästa fråga"
+            @click="selectNextQuestion"
+          >
+            <ChevronRight
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
+          </button>
+        </nav>
         <ExamConverterItemTextPatchEditor
           :disabled="isCorrectionApplying"
           :question="selectedQuestion"
@@ -205,7 +309,15 @@ watch(
             :question="selectedQuestion"
             @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
           />
+          <ExamConverterAdvisoryAnswerKeyPanel
+            v-if="showAdvisoryAnswerKeyPanel(selectedQuestion)"
+            :disabled="isCorrectionApplying"
+            :question="selectedQuestion"
+            @accept-advisory-answer-key="acceptAdvisoryAnswerKey"
+            @edit-advisory-answer-key="editAdvisoryAnswerKey"
+          />
           <ExamConverterManualAnswerKeyEditor
+            v-if="showsAnswerKeyEditor"
             :disabled="isCorrectionApplying"
             :question="selectedQuestion"
             @apply-manual-answer-key="applyManualAnswerKey"
@@ -319,6 +431,45 @@ watch(
 
   .exam-converter-question-detail {
     padding-left: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .exam-converter-question-review-shell {
+    display: block;
+    overflow-x: hidden;
+  }
+
+  .exam-converter-question-table {
+    display: none;
+  }
+
+  .exam-converter-question-navigator {
+    display: grid;
+  }
+
+  .exam-converter-question-detail {
+    border-left: 0;
+    display: none;
+    padding-left: 0;
+  }
+
+  .exam-converter-question-review-shell.is-compact-detail-open .exam-converter-question-list-surface {
+    display: none;
+  }
+
+  .exam-converter-question-review-shell.is-compact-detail-open .exam-converter-question-detail {
+    display: block;
+  }
+
+  .exam-converter-question-review-shell.is-compact-detail-open .exam-converter-compact-detail-nav {
+    display: flex;
+  }
+}
+
+@media (min-width: 1200px) {
+  .exam-converter-detail-step-nav {
+    display: flex;
   }
 }
 </style>

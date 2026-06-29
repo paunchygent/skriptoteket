@@ -38,6 +38,7 @@ import {
   SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
 } from "../../../api/sirConvertGateway/contractValues";
 import {
+  ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -277,9 +278,72 @@ function unresolvedAnswerKeyQuestionCount(options: FixtureOptions): number {
   ).length;
 }
 
+function buildAnswerKeyReviewStateReport(options: FixtureOptions) {
+  return {
+    schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+    items: options.questions.map((question) => {
+      const hasEffectiveAnswerKey = options.effectiveAnswerKeysByItem?.has(question.itemId) ?? false;
+      const candidate = options.answerCompletionReport?.itemsByItemId.get(question.itemId) ?? null;
+      const isMissingMachineMarked =
+        question.answerKeyProvenance === "absent" &&
+        question.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED &&
+        !hasEffectiveAnswerKey;
+      const reviewState = hasEffectiveAnswerKey
+        ? "teacher_modified"
+        : candidate?.validationState === "valid"
+          ? "review_required"
+          : isMissingMachineMarked
+            ? "validation_required"
+            : "review_complete";
+      const reason = hasEffectiveAnswerKey
+        ? "teacher_answer_key_present"
+        : candidate?.validationState === "valid"
+          ? "advisory_candidate_pending"
+          : isMissingMachineMarked
+            ? "manual_answer_key_required"
+            : "source_answer_key_present";
+      return {
+        choice_ids: [],
+        choice_interaction_ids:
+          question.itemType === DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE ? [`choice-${question.itemId}`] : [],
+        correction_affordances: isMissingMachineMarked ? ["manual_choice_answer_key"] : [],
+        current_key_origin: hasEffectiveAnswerKey
+          ? "teacher_authored"
+          : question.answerKeyProvenance === "absent"
+            ? "none"
+            : "source_provided",
+        gap_ids: question.gaps ?? [],
+        gap_interaction_ids:
+          question.itemType === DIGIEXAM_ITEM_TYPE_GAP_FILL ? [`gap-${question.itemId}`] : [],
+        item_id: question.itemId,
+        item_type: question.itemType,
+        message_key: `exam_converter.answer_key.${reason}`,
+        provenance_detail: candidate?.validationState === "valid"
+          ? {
+              candidate_id: candidate.candidateId ?? `candidate-${question.itemId}`,
+              candidate_payload_digest:
+                candidate.candidatePayloadDigest ?? `sha256:candidate-${question.itemId}`,
+              prompt_template_version: candidate.promptTemplateVersion ?? "digiexam-fixture-v1",
+              provider_profile_id: candidate.providerProfileId ?? "fixture-provider",
+              schema_name: candidate.schemaName ?? "digiexam_fixture_answer_key_decision_v1",
+              schema_version: candidate.schemaVersion ?? "digiexam_fixture_answer_key_decision_v1",
+              validation_state: "valid",
+            }
+          : null,
+        reasons: [reason],
+        replay_artifact_references: [],
+        review_state: reviewState,
+        sequence: question.sequence,
+        source_item_fingerprint: `sha256:${question.itemId}`,
+      };
+    }),
+  };
+}
+
 function buildFixture(options: FixtureOptions): ExamConverterUiInspectionFixture {
   const projection = parseExamConverterReviewProjection({
     answerKeyCompletionReport: options.answerCompletionReport ?? null,
+    answerKeyReviewStateReport: buildAnswerKeyReviewStateReport(options),
     artifactManifest: buildArtifactManifest(options),
     effectiveAnswerKeysByItem: options.effectiveAnswerKeysByItem ?? null,
     effectivePointCorrectionsByItem: options.effectivePointCorrectionsByItem ?? null,

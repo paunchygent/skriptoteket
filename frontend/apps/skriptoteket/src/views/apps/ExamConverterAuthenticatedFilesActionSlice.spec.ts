@@ -26,6 +26,7 @@ import {
   createCorrectionSessionRecorder,
 } from "./examConverterAuthenticatedCorrectionSessionFixtures";
 import {
+  answerKeyReviewStateReportPayload,
   artifactJsonBlob,
   fileArtifactBlob,
   filesTerminalResult,
@@ -33,7 +34,10 @@ import {
   submittedFilesJob,
   targetReadinessReportPayload,
 } from "./examConverterAuthenticatedFilesActionPayloads";
-import { DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT } from "../../api/sirConvertGateway/contractValues";
+import {
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+} from "../../api/sirConvertGateway/contractValues";
 import {
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
@@ -101,6 +105,14 @@ function mockReviewArtifacts(): void {
         unavailable_code: "manual_answer_key_required",
         sha256: null,
         size_bytes: null,
+      },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+        availability: "available",
+        content_type: "application/json",
+        filename: "answer-key-review-state.json",
+        sha256: "sha256:answer-key-review-state-files",
+        size_bytes: 512,
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
@@ -218,6 +230,14 @@ function mockReviewArtifacts(): void {
               },
             ],
           }),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(
+            DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+            answerKeyReviewStateReportPayload(),
+          ),
         );
       }
       return Promise.resolve(

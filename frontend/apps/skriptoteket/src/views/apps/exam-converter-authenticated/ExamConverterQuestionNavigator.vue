@@ -11,7 +11,7 @@
  *   - Uses the review projection rows produced by `digiexamIrReviewParser`.
  */
 
-import { Bot, CheckCircle2, XCircle } from "lucide-vue-next";
+import { IconAi, IconCheck, IconEdit, IconWarning } from "../../../components/icons";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
 import { visibleMissingFieldsForQuestion } from "./digiexamIrReviewParser";
@@ -26,10 +26,7 @@ const emit = defineEmits<{
 }>();
 
 function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
-  if (question.statusSymbol === "ai_answer_key") return "AI-facit";
-  if (question.statusSymbol === "ai_suggestion") return "AI-förslag";
-  if (question.statusSymbol === "complete") return "Klar";
-  return "Saknar facit";
+  return question.answerKeyReviewStateLabel;
 }
 
 </script>
@@ -68,25 +65,43 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
         </span>
       </span>
       <span
-        class="inline-grid h-6 w-6 place-items-center"
+        class="inline-grid min-w-[5rem] place-items-center gap-1"
         :aria-label="statusSymbolLabel(question)"
         role="img"
       >
-        <Bot
-          v-if="question.statusSymbol === 'ai_suggestion' || question.statusSymbol === 'ai_answer_key'"
+        <IconAi
+          v-if="question.statusSymbol === 'ai_suggestion'"
+          :size="18"
           class="h-4 w-4 text-success"
           aria-hidden="true"
         />
-        <CheckCircle2
+        <IconCheck
           v-else-if="question.statusSymbol === 'complete'"
+          :size="18"
           class="h-4 w-4 text-success"
           aria-hidden="true"
         />
-        <XCircle
+        <IconEdit
+          v-else-if="question.statusSymbol === 'teacher_modified'"
+          :size="18"
+          class="h-4 w-4 text-navy"
+          aria-hidden="true"
+        />
+        <IconWarning
           v-else
+          :size="18"
           class="h-4 w-4 text-error"
           aria-hidden="true"
         />
+        <span class="text-xs font-semibold leading-tight">
+          {{ question.answerKeyReviewStateLabel }}
+        </span>
+        <span
+          v-if="question.answerKeyReviewStateReasonLabel"
+          class="text-[0.6875rem] font-medium leading-tight text-navy/65"
+        >
+          {{ question.answerKeyReviewStateReasonLabel }}
+        </span>
       </span>
     </button>
   </div>

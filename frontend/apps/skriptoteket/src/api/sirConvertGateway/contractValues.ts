@@ -45,6 +45,8 @@ export const DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT =
   "target_readiness_report" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT =
   "answer_key_completion_report" as const satisfies DigiExamMigrationArtifactKey;
+export const DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT =
+  "answer_key_review_state_report" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT =
   "manual_follow_up_report" as const satisfies DigiExamMigrationArtifactKey;
 export const DIGIEXAM_ARTIFACT_WARNINGS_REPORT =
@@ -150,3 +152,38 @@ export const DIGIEXAM_TARGET_READINESS_VALUES = [
   DIGIEXAM_TARGET_NOT_REQUESTED,
   DIGIEXAM_TARGET_NOT_IMPLEMENTED,
 ] as const satisfies readonly DigiExamTargetReadiness[];
+
+export const DIGIEXAM_ANSWER_KEY_REVIEW_STATES = [
+  "review_required",
+  "review_complete",
+  "teacher_modified",
+  "validation_required",
+] as const;
+
+export const DIGIEXAM_ANSWER_KEY_ORIGINS = [
+  "none",
+  "source_provided",
+  "reviewed_advisory",
+  "teacher_authored",
+  "teacher_edited_advisory",
+  "mixed",
+] as const;
+
+export const DIGIEXAM_ANSWER_KEY_REVIEW_REASONS = [
+  "source_answer_key_present",
+  "advisory_candidate_pending",
+  "reviewed_advisory_accepted",
+  "teacher_answer_key_present",
+  "teacher_edited_advisory_candidate",
+  "manual_answer_key_required",
+  "no_correct_choice_selected",
+  "required_gap_accepted_values_missing",
+  "unsupported_item_type",
+  "unsupported_target_shape",
+  "target_validation_failed",
+  "provider_unavailable",
+  "correction_rejected",
+  "stale_source_state",
+  "replay_artifact_unavailable",
+  "matching_source_state_unavailable",
+] as const;

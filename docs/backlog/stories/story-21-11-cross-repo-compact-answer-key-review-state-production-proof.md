@@ -14,9 +14,15 @@ dependencies:
   - "ADR-0087"
   - "Sir Convert story-57-cross-repo-compact-answer-key-review-state-production-proof"
   - "Sir Convert task-373-project-compact-digiexam-answer-key-review-state-for-skriptoteket"
+links:
+  - "docs/mockups/pr-0406-answer-key-review-small-screen/README.md"
+  - "docs/mockups/pr-0406-answer-key-review-desktop/README.md"
 acceptance_criteria:
   - "Given Sir Convert Task 373 is approved, when PR-0406 consumes the compact projection, then Skriptoteket renders answer-key review state from one producer-backed adapter instead of local joins over IR, effective IR, completion reports, correction sessions, and readiness reports."
   - "Given the production proof uses a tracked real DXE fixture, when the teacher reviews the conversion, then pending advisory, reviewed complete, teacher modified, and validation-required states render with the agreed compact labels and no stale-AI or accepted-current-state wording."
+  - "Given the production proof runs at a phone-sized viewport, when the teacher moves through review, files, and report, then the UI uses a bespoke small-screen task flow with separate list, detail, files, and report surfaces instead of a squeezed desktop workbench."
+  - "Given the production proof runs at a desktop viewport, when compact review state exists, then the result band uses actionable `Kontrollera facit` framing and the detail pane exposes symbolic sticky previous/next navigation without visible word labels."
+  - "Given the Files view is active at a phone-sized viewport, when generated artifacts render, then no selected-question editor or singular question detail is shown above the files."
   - "Given teacher intents are saved locally, when replay is stale or unavailable, then Skriptoteket shows saved input only as local/readback state and keeps report/file/export readiness blocked until Sir Convert returns fresh projection and target readiness."
   - "Given corrected files are available, when the teacher downloads or saves PDF/QTI, then the actions use replay-scoped Sir Convert artifact references and never original stale job artifacts."
   - "Given final closeout is requested, when production evidence is retained, then the proof bundle shows authenticated browser upload, Sir Convert job/advisory projection, teacher review interactions, correction replay, report/files views, PDF/QTI download/save, reload persistence, desktop/mobile viewport checks, and forbidden browser-authority checks."
@@ -46,6 +52,33 @@ a real production browser proof with a tracked `.dxe` fixture.
   `Granska`, `Klart`, `Ändrat`, and `Kontrollera`.
 - Keep `provenance_detail` optional and detail-only. Do not model a generic
   `history` stream or any `review_decision` compatibility surface.
+- Render small-screen Exam Converter as a bespoke task flow. Question list,
+  selected item detail, files, and report are separate narrow-viewport surfaces;
+  the files surface contains file rows/actions only.
+- Use the approved exact small-screen answer-key review mockup at
+  `docs/mockups/pr-0406-answer-key-review-small-screen/README.md` as the
+  visual and copy authority for the represented review states.
+- Use the desktop alignment mockup at
+  `docs/mockups/pr-0406-answer-key-review-desktop/README.md` as the proposed
+  desktop visual and copy authority once product approval is recorded.
+- Render the desktop result band from compact review-state aggregates with
+  `Kontrollera facit`, compact review counts, and
+  `Granska frågorna som saknar rätt svar eller facitsvar.` instead of
+  projection-backed partial-conversion copy.
+- Do not expose pre-conversion PDF/QTI target-file or source-format choices in
+  the workflow rail. Supported generated files are requested automatically for
+  the DXE converter path, then downloaded or saved from `Filer` once review
+  persistence and artifact readiness permit.
+- Keep desktop detail navigation symbolic: Lucide previous/next controls with
+  accessible labels, no persistent visible `Föregående` / `Nästa` text, and
+  auto-advance only after backend-confirmed persistence plus fresh Sir Convert
+  replay projection.
+- Treat `Ändra` as entry into the normal answer-key editor inside the selected
+  detail surface, with `Spara facit` for teacher-owned edits and bounded
+  `Tidigare förslag` detail when the edit began from an advisory suggestion.
+- Keep PR-0406 review-state symbols bound to the approved symbol contract:
+  `IconAi`/`Sparkles`, `IconCheck`/`Check`, `IconEdit`/`PencilLine`, and
+  `IconWarning`/`AlertTriangle`.
 - Keep file readiness driven by Sir Convert `target_readiness_report_v1` and
   replay artifact references, not question-list state.
 - Use the same final production proof fixture as the Sir Convert mirror:
@@ -88,6 +121,20 @@ deploys are healthy.
    readiness permits.
 1. Verify desktop and mobile question list/detail states render from the compact
    projection.
+1. Verify the desktop result band uses `Kontrollera facit` review framing when
+   compact review state exists and does not show partial-conversion copy for the
+   projection-backed review state.
+1. Verify the pre-conversion workflow rail does not ask the teacher to select
+   PDF/QTI target files or source formats.
+1. Verify desktop detail navigation uses symbolic previous/next controls with
+   accessible labels and no visible word labels.
+1. Verify `Ändra` opens the represented answer-key edit surface, `Spara facit`
+   persists teacher-owned edits, and bounded advisory provenance remains
+   detail-only.
+1. At a phone-sized viewport, verify the small-screen flow keeps the question
+   list, item detail, files, and report as separate task surfaces with no
+   horizontal overflow, clipped action labels, hidden desktop columns, or
+   selected-question editor/detail inside the Files view.
 1. Exercise all supported teacher interactions available in the fixture:
    accept an unchanged advisory key, edit a suggested key or keyed content,
    create/fix a missing choice or gap/open-cloze key, save facit, navigate
@@ -117,8 +164,24 @@ deploys are healthy.
   `review_decision` compatibility payloads.
 - [ ] Projection tests prove exhaustive mapping from producer state to Swedish
   labels/icons.
+- [ ] Component tests prove PR-0406 review states use the approved symbol
+  wrappers rather than feature-local `Bot`, `CheckCircle2`, or `XCircle`
+  imports.
 - [ ] Component tests prove desktop table and mobile navigator render the same
   compact states.
+- [ ] Component tests prove the desktop result band uses the approved
+  projection-backed copy and keeps export-ready copy behind target readiness
+  plus replay artifact authority.
+- [ ] Component tests prove the workflow rail has no pre-conversion PDF/QTI
+  target-file/source-format selection controls.
+- [ ] Component tests prove desktop detail navigation is symbolic, sticky, and
+  does not use visible previous/next word labels.
+- [ ] Component tests prove `Ändra` switches the selected detail pane into the
+  normal answer-key editor with `Spara facit` and bounded `Tidigare förslag`
+  detail for advisory-seeded edits.
+- [ ] Small-screen layout tests prove list, detail, files, and report are
+  separate task surfaces and that the files surface has no selected-question
+  editor/detail content.
 - [ ] Replay tests prove local saved input does not unlock file actions before
   fresh Sir Convert projection/readiness.
 - [ ] Report/files tests prove `Kontrollera` is a current validation problem

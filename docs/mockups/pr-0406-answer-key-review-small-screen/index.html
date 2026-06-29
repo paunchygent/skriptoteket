@@ -1,0 +1,346 @@
+<!doctype html>
+<!--
+Domain purpose:
+    Static decision mockup for PR-0406 small-screen Exam Converter answer-key
+    review. The source exists so the approved Swedish copy and state labels can
+    be rendered exactly instead of approximated from an image prompt.
+-->
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PR-0406 answer-key review small-screen mockup</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="mockup-canvas" aria-label="Approved PR-0406 small-screen answer-key review mockup">
+      <section class="phone" aria-label="Frågelista">
+        <div class="status-bar">
+          <span>09:41</span>
+          <span class="island" aria-hidden="true"></span>
+          <span class="system-icons" aria-hidden="true">▮▮▮  ◒</span>
+        </div>
+        <header class="app-header">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>Skriptoteket</span>
+          </div>
+          <svg
+            class="lucide-icon menu-icon"
+            data-lucide="Menu"
+            data-symbol-scope="small-screen app navigation menu"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+          >
+            <path d="M4 6h16" />
+            <path d="M4 12h16" />
+            <path d="M4 18h16" />
+          </svg>
+        </header>
+        <div class="screen-content">
+          <h1>Kontrollera facit</h1>
+          <div class="progress-row">
+            <strong>6 att granska</strong>
+            <span class="progress-track" aria-hidden="true"><span></span></span>
+            <span>6/11</span>
+          </div>
+          <nav class="tabs" aria-label="Läge">
+            <span class="tab is-active">Frågor</span>
+            <span class="tab">Filer</span>
+            <span class="tab">Rapport</span>
+          </nav>
+          <div class="question-list">
+            <article class="question-row row-review is-selected">
+              <div class="question-text">
+                <strong>1.</strong>
+                <span>Fyll i vilka<br />aktörer som...</span>
+                <em>Lucktext</em>
+              </div>
+              <div class="row-state">
+                <svg
+                  class="lucide-icon icon-ai"
+                  data-symbol-wrapper="IconAi"
+                  data-lucide="Sparkles"
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
+                  <path d="M20 3v4" />
+                  <path d="M22 5h-4" />
+                  <path d="M4 17v2" />
+                  <path d="M5 18H3" />
+                </svg>
+                <strong>Granska</strong>
+              </div>
+            </article>
+            <article class="question-row row-complete">
+              <div class="question-text">
+                <strong>2.</strong>
+                <span>Vilka påföljder kan<br />domstol...</span>
+                <em>Flerval</em>
+              </div>
+              <div class="row-state">
+                <span class="icon-badge success">
+                  <svg
+                    class="lucide-icon icon-check"
+                    data-symbol-wrapper="IconCheck"
+                    data-lucide="Check"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </span>
+                <strong>Klart</strong>
+              </div>
+            </article>
+            <article class="question-row row-edited">
+              <div class="question-text">
+                <strong>3.</strong>
+                <span>rättegång åtalad<br />dom...</span>
+                <em>Lucktext</em>
+              </div>
+              <div class="row-state">
+                <svg
+                  class="lucide-icon icon-edit"
+                  data-symbol-wrapper="IconEdit"
+                  data-lucide="PencilLine"
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  <path d="m15 5 3 3" />
+                </svg>
+                <strong>Ändrat</strong>
+              </div>
+            </article>
+            <article class="question-row row-warning">
+              <div class="question-text">
+                <strong>4.</strong>
+                <span>Fyll i vilka brott som...</span>
+                <em>Lucktext</em>
+                <small>Saknar facitsvar</small>
+              </div>
+              <div class="row-state">
+                <svg
+                  class="lucide-icon icon-warning"
+                  data-symbol-wrapper="IconWarning"
+                  data-lucide="AlertTriangle"
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+                  <path d="M12 9v4" />
+                  <path d="M12 17h.01" />
+                </svg>
+                <strong>Kontrollera</strong>
+              </div>
+            </article>
+          </div>
+          <button class="primary sticky-action">Granska nästa</button>
+        </div>
+        <div class="home-indicator" aria-hidden="true"></div>
+      </section>
+
+      <section class="phone" aria-label="Pending AI suggestion">
+        <div class="status-bar">
+          <span>09:41</span>
+          <span class="island" aria-hidden="true"></span>
+          <span class="system-icons" aria-hidden="true">▮▮▮  ◒</span>
+        </div>
+        <header class="detail-header">
+          <svg
+            class="lucide-icon back-icon"
+            data-lucide="ChevronLeft"
+            data-symbol-scope="return to question list"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          <strong>Fråga 1</strong>
+          <span class="type-badge">Lucktext</span>
+        </header>
+        <div class="screen-content detail">
+          <h2>Frågetext</h2>
+          <p>Fyll i luckan: Personen som utreder brott på uppdrag av staten är _________.</p>
+
+          <h2>Svar</h2>
+          <div class="field">Polisen</div>
+
+          <h2>Facit</h2>
+          <section class="answer-card ai-card" aria-label="AI-förslag">
+            <div class="ai-heading">
+              <svg
+                class="lucide-icon icon-ai"
+                data-symbol-wrapper="IconAi"
+                data-lucide="Sparkles"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+              >
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
+                <path d="M20 3v4" />
+                <path d="M22 5h-4" />
+                <path d="M4 17v2" />
+                <path d="M5 18H3" />
+              </svg>
+              <strong>AI-förslag</strong>
+            </div>
+            <p>Föreslaget svar:</p>
+            <h3>Polisen</h3>
+          </section>
+
+          <div class="actions">
+            <button class="primary">Acceptera</button>
+            <button class="secondary">Ändra</button>
+          </div>
+        </div>
+        <div class="home-indicator" aria-hidden="true"></div>
+      </section>
+
+      <section class="phone" aria-label="Completed answer key">
+        <div class="status-bar">
+          <span>09:41</span>
+          <span class="island" aria-hidden="true"></span>
+          <span class="system-icons" aria-hidden="true">▮▮▮  ◒</span>
+        </div>
+        <header class="detail-header">
+          <svg
+            class="lucide-icon back-icon"
+            data-lucide="ChevronLeft"
+            data-symbol-scope="return to question list"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          <strong>Fråga 2</strong>
+          <span class="type-badge">Flerval</span>
+        </header>
+        <div class="screen-content detail">
+          <h2>Frågetext</h2>
+          <p>Vilka påföljder kan domstol döma ut för ringa narkotikabrott?</p>
+
+          <h2>Alternativ</h2>
+          <div class="option-list">
+            <div class="option"><strong>A</strong><span>Böter</span><i></i></div>
+            <div class="option"><strong>B</strong><span>Fängelse i minst två år</span><i></i></div>
+            <div class="option is-correct">
+              <strong>C</strong>
+              <span>Skyddstillsyn</span>
+              <i>
+                <svg
+                  class="lucide-icon icon-check"
+                  data-symbol-wrapper="IconCheck"
+                  data-lucide="Check"
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </i>
+            </div>
+            <div class="option"><strong>D</strong><span>Livstids fängelse</span><i></i></div>
+          </div>
+
+          <h2>Facit</h2>
+          <section class="answer-card complete-card">
+            <span class="icon-badge success">
+              <svg
+                class="lucide-icon icon-check"
+                data-symbol-wrapper="IconCheck"
+                data-lucide="Check"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </span>
+            <div>
+              <h3>Klart</h3>
+              <p>Valt svar: <strong>C</strong></p>
+            </div>
+          </section>
+
+          <button class="disclosure">
+            <svg
+              class="lucide-icon disclosure-icon"
+              data-lucide="ChevronDown"
+              data-symbol-scope="detail disclosure"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+            Tidigare förslag
+          </button>
+
+          <div class="actions">
+            <button class="primary">Fortsätt</button>
+            <button class="secondary">Redigera</button>
+          </div>
+        </div>
+        <div class="home-indicator" aria-hidden="true"></div>
+      </section>
+
+      <section class="phone" aria-label="Validation issue">
+        <div class="status-bar">
+          <span>09:41</span>
+          <span class="island" aria-hidden="true"></span>
+          <span class="system-icons" aria-hidden="true">▮▮▮  ◒</span>
+        </div>
+        <header class="detail-header">
+          <svg
+            class="lucide-icon back-icon"
+            data-lucide="ChevronLeft"
+            data-symbol-scope="return to question list"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          <strong>Fråga 4</strong>
+          <span class="type-badge">Lucktext</span>
+        </header>
+        <div class="screen-content detail">
+          <h2>Frågetext</h2>
+          <p>Fyll i luckan: Ett exempel på brott mot person är _________.</p>
+
+          <h2>Facit</h2>
+          <section class="answer-card validation-card">
+            <svg
+              class="lucide-icon icon-warning"
+              data-symbol-wrapper="IconWarning"
+              data-lucide="AlertTriangle"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+            >
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>
+            <div>
+              <h3>Kontrollera</h3>
+              <p>Saknar facitsvar</p>
+            </div>
+          </section>
+
+          <h2>Svar</h2>
+          <div class="field is-placeholder">Ange korrekt svar</div>
+
+          <h2>Alternativa godkända svar <span>(valfritt)</span></h2>
+          <div class="field multiline is-placeholder">
+            Separera med semikolon (;)<br />eller radbrytning
+          </div>
+
+          <div class="actions">
+            <button class="primary is-disabled" disabled>Spara facit</button>
+            <button class="secondary">Redigera</button>
+          </div>
+        </div>
+        <div class="home-indicator" aria-hidden="true"></div>
+      </section>
+    </main>
+  </body>
+</html>

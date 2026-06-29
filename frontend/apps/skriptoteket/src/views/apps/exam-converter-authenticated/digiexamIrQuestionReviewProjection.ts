@@ -32,10 +32,10 @@ import type { ExamConverterLlmAnswerKeyCandidate } from "./digiexamAnswerKeyComp
 export type ExamConverterMissingFieldLabel = "Facit" | "Poäng";
 export type ExamConverterQuestionReviewStatus = "complete" | "attention";
 export type ExamConverterQuestionStatusSymbol =
-  | "ai_answer_key"
   | "ai_suggestion"
   | "complete"
-  | "missing";
+  | "teacher_modified"
+  | "validation_required";
 
 export type ExamConverterQuestionAlternative = {
   id: string;
@@ -73,6 +73,11 @@ export type ExamConverterQuestionReviewRow = {
   missingFields: ExamConverterMissingFieldLabel[];
   status: ExamConverterQuestionReviewStatus;
   statusSymbol: ExamConverterQuestionStatusSymbol;
+  answerKeyReviewOrigin: string | null;
+  answerKeyReviewReasons: string[];
+  answerKeyReviewState: string | null;
+  answerKeyReviewStateLabel: string;
+  answerKeyReviewStateReasonLabel: string | null;
   currentAnswerKeyProvenance: string;
   effectiveAnswerKey: DigiExamEffectiveAnswerKey | null;
   effectivePointCorrection: DigiExamEffectivePointCorrection | null;
@@ -345,14 +350,11 @@ function statusSymbolForItem(params: {
   if (hasUsableCandidate(params.candidate)) {
     return "ai_suggestion";
   }
-  if (isAiAnswerKeyProvenance(params.effectiveAnswerKey?.provenance)) {
-    return "ai_answer_key";
-  }
   if (
     params.missingFields.includes("Facit") &&
     params.item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
   ) {
-    return "missing";
+    return "validation_required";
   }
   return "complete";
 }
@@ -397,6 +399,23 @@ export function projectQuestionReviewRow(
       item,
       missingFields,
     }),
+    answerKeyReviewOrigin: null,
+    answerKeyReviewReasons: [],
+    answerKeyReviewState: null,
+    answerKeyReviewStateLabel: statusSymbolForItem({
+      candidate: resolvedCandidate,
+      effectiveAnswerKey,
+      item,
+      missingFields,
+    }) === "ai_suggestion"
+      ? "Granska"
+      : missingFields.includes("Facit") && item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
+        ? "Kontrollera"
+        : "Klart",
+    answerKeyReviewStateReasonLabel:
+      missingFields.includes("Facit") && item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
+        ? "Saknar facitsvar"
+        : null,
     currentAnswerKeyProvenance: hasEffectiveAnswerKey(effectiveAnswerKey)
       ? effectiveAnswerKey.provenance
       : item.answerKey.provenance,

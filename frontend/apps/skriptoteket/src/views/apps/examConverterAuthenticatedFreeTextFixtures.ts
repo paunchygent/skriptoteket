@@ -17,6 +17,7 @@ import {
 } from "./examConverterAuthenticatedReviewFixtures";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
@@ -32,6 +33,7 @@ import {
   SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
 } from "../../api/sirConvertGateway/contractValues";
 import {
+  ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -60,6 +62,14 @@ export function mockFreeTextOnlyReviewArtifacts(
         filename: "Metaller_QTI.zip",
         sha256: null,
         size_bytes: 1_258_291,
+      },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        content_type: "application/json",
+        filename: "answer-key-review-state.json",
+        sha256: "sha256:answer-key-review-state-free-text",
+        size_bytes: 512,
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
@@ -196,6 +206,32 @@ export function mockFreeTextOnlyReviewArtifacts(
                 schema_name: null,
                 schema_version: null,
                 answer_payload: null,
+              },
+            ],
+          }),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT, {
+            schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+            items: [
+              {
+                choice_ids: [],
+                choice_interaction_ids: [],
+                correction_affordances: [],
+                current_key_origin: "none",
+                gap_ids: [],
+                gap_interaction_ids: [],
+                item_id: "item-001",
+                item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+                message_key: "exam_converter.answer_key.source_present",
+                provenance_detail: null,
+                reasons: ["source_answer_key_present"],
+                replay_artifact_references: [],
+                review_state: "review_complete",
+                sequence: 1,
+                source_item_fingerprint: "sha256:item-001",
               },
             ],
           }),

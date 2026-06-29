@@ -1,0 +1,356 @@
+<!doctype html>
+<!--
+Domain purpose:
+    Static decision mockup for PR-0406 desktop Exam Converter answer-key review.
+    The source keeps Swedish copy and state labels exact for product approval.
+-->
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PR-0406 answer-key review desktop mockup</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="mockup-canvas" aria-label="PR-0406 desktop answer-key review mockups">
+      <section id="questions" class="desktop-frame" data-shot aria-label="Frågor desktop">
+        <aside class="global-sidebar">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>Skriptoteket</span>
+          </div>
+          <nav class="global-nav" aria-label="Huvudnavigation">
+            <span>Hem</span>
+            <span>Profil</span>
+            <span>Katalog</span>
+            <span>Mina filer</span>
+            <span class="is-active">Granska förslag</span>
+          </nav>
+        </aside>
+        <header class="topbar">
+          <button class="focus-button">Aktivera fokusläge</button>
+          <span>Hjälp</span>
+          <span>Logga ut</span>
+        </header>
+        <main class="app-grid">
+          <aside class="workflow-rail">
+            <h2>Konvertera prov</h2>
+            <section class="rail-group">
+              <h3>Provfil</h3>
+              <div class="file-chip">
+                <span class="file-icon" aria-hidden="true"></span>
+                <span>1776888013-ak7...</span>
+                <small>9 kB</small>
+              </div>
+              <p class="success-line">Filen är uppladdad</p>
+            </section>
+            <section class="rail-group">
+              <h3>Konvertera</h3>
+              <button class="primary rail-action">Starta konvertering</button>
+              <button class="secondary rail-action">Rensa val</button>
+            </section>
+          </aside>
+
+          <section class="workspace">
+            <section class="review-band" aria-label="Resultat">
+              <div class="band-icon">
+                <svg class="lucide icon-ai" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
+                  <path d="M20 3v4" />
+                  <path d="M22 5h-4" />
+                  <path d="M4 17v2" />
+                  <path d="M5 18H3" />
+                </svg>
+              </div>
+              <div>
+                <h1>Kontrollera facit</h1>
+                <p><strong>6 att granska</strong></p>
+                <p>Granska frågorna som saknar rätt svar eller facitsvar.</p>
+              </div>
+              <button class="primary compact-action">Granska nästa</button>
+            </section>
+
+            <nav class="tabs" aria-label="Inspektionsläge">
+              <span class="tab is-active">Frågor (11)</span>
+              <span class="tab">Filer (2)</span>
+              <span class="tab">Rapport</span>
+            </nav>
+
+            <div class="question-workbench">
+              <section class="question-list-panel">
+                <h2>Frågor att kontrollera</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fråga</th>
+                      <th>Typ</th>
+                      <th>Saknas</th>
+                      <th>Poäng</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="selected">
+                      <td><strong>1.</strong> Fyll i vilka aktörer som gör vad...</td>
+                      <td>Lucktext</td>
+                      <td>—</td>
+                      <td>2 p</td>
+                      <td><span class="state state-review"><svg class="lucide" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>Granska</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>2.</strong> Vilka påföljder kan domstol...</td>
+                      <td>Flerval</td>
+                      <td>—</td>
+                      <td>1 p</td>
+                      <td><span class="state state-complete"><span class="circle"><svg class="lucide" data-symbol-wrapper="IconCheck" data-lucide="Check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>Klart</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>3.</strong> rättegång åtalad dom...</td>
+                      <td>Lucktext</td>
+                      <td>—</td>
+                      <td>1 p</td>
+                      <td><span class="state state-edited"><svg class="lucide" data-symbol-wrapper="IconEdit" data-lucide="PencilLine" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /><path d="m15 5 3 3" /></svg>Ändrat</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>4.</strong> Fyll i vilka brott som h...</td>
+                      <td>Lucktext</td>
+                      <td><span class="missing">Facit</span></td>
+                      <td>1 p</td>
+                      <td><span class="state state-warning"><svg class="lucide" data-symbol-wrapper="IconWarning" data-lucide="AlertTriangle" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>Kontrollera<small>Saknar facitsvar</small></span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>5.</strong> Vad är en röd blodkropp...</td>
+                      <td>Fritext</td>
+                      <td>—</td>
+                      <td>2 p</td>
+                      <td><span class="state state-complete"><span class="circle"><svg class="lucide" data-symbol-wrapper="IconCheck" data-lucide="Check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>Klart</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <aside class="detail-pane">
+                <div class="detail-scroll">
+                  <div class="detail-heading">
+                    <div>
+                      <h2>Fråga 1</h2>
+                      <span class="type-badge">Lucktext</span>
+                    </div>
+                    <span class="state state-review"><svg class="lucide" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" /></svg>Granska</span>
+                  </div>
+
+                  <section class="detail-section">
+                    <h3>Frågetext</h3>
+                    <p>Fyll i luckan: Personen som utreder brott på uppdrag av staten är _________.</p>
+                  </section>
+
+                  <section class="detail-section">
+                    <h3>Svar</h3>
+                    <div class="field">Polisen</div>
+                  </section>
+
+                  <section class="detail-section answer-box">
+                    <div class="ai-heading">
+                      <svg class="lucide icon-ai" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
+                        <path d="M20 3v4" />
+                        <path d="M22 5h-4" />
+                      </svg>
+                      <strong>AI-förslag</strong>
+                    </div>
+                    <p>Föreslaget svar:</p>
+                    <h3>Polisen</h3>
+                  </section>
+
+                  <div class="detail-actions">
+                    <button class="primary">Acceptera</button>
+                    <button class="secondary">Ändra</button>
+                  </div>
+                </div>
+                <div class="sticky-nav" aria-label="Frågenavigation">
+                  <button class="icon-button" aria-label="Föregående fråga" title="Föregående fråga">
+                    <svg class="lucide" data-lucide="ChevronLeft" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                  </button>
+                  <span>Fråga 1 av 11</span>
+                  <button class="icon-button" aria-label="Nästa fråga" title="Nästa fråga">
+                    <svg class="lucide" data-lucide="ChevronRight" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                  </button>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </main>
+      </section>
+
+      <section id="edit" class="desktop-frame" data-shot aria-label="Redigera facit desktop">
+        <aside class="global-sidebar">
+          <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Skriptoteket</span></div>
+          <nav class="global-nav" aria-label="Huvudnavigation"><span>Hem</span><span>Profil</span><span>Katalog</span><span>Mina filer</span><span class="is-active">Granska förslag</span></nav>
+        </aside>
+        <header class="topbar"><button class="focus-button">Aktivera fokusläge</button><span>Hjälp</span><span>Logga ut</span></header>
+        <main class="app-grid">
+          <aside class="workflow-rail">
+            <h2>Konvertera prov</h2>
+            <section class="rail-group"><h3>Provfil</h3><div class="file-chip"><span class="file-icon" aria-hidden="true"></span><span>1776888013-ak7...</span><small>9 kB</small></div><p class="success-line">Filen är uppladdad</p></section>
+            <section class="rail-group"><h3>Konvertera</h3><button class="primary rail-action">Starta konvertering</button><button class="secondary rail-action">Rensa val</button></section>
+          </aside>
+          <section class="workspace">
+            <section class="review-band" aria-label="Resultat">
+              <div class="band-icon">
+                <svg class="lucide icon-ai" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
+                  <path d="M20 3v4" />
+                  <path d="M22 5h-4" />
+                </svg>
+              </div>
+              <div>
+                <h1>Kontrollera facit</h1>
+                <p><strong>6 att granska</strong></p>
+                <p>Granska frågorna som saknar rätt svar eller facitsvar.</p>
+              </div>
+              <button class="primary compact-action">Granska nästa</button>
+            </section>
+
+            <nav class="tabs" aria-label="Inspektionsläge">
+              <span class="tab is-active">Frågor (11)</span>
+              <span class="tab">Filer (2)</span>
+              <span class="tab">Rapport</span>
+            </nav>
+
+            <div class="question-workbench">
+              <section class="question-list-panel">
+                <h2>Frågor att kontrollera</h2>
+                <table>
+                  <thead><tr><th>Fråga</th><th>Typ</th><th>Saknas</th><th>Poäng</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr class="selected"><td><strong>1.</strong> Fyll i vilka aktörer som gör vad...</td><td>Lucktext</td><td>—</td><td>2 p</td><td><span class="state state-review"><svg class="lucide" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>Granska</span></td></tr>
+                    <tr><td><strong>2.</strong> Vilka påföljder kan domstol...</td><td>Flerval</td><td>—</td><td>1 p</td><td><span class="state state-complete"><span class="circle"><svg class="lucide" data-symbol-wrapper="IconCheck" data-lucide="Check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>Klart</span></td></tr>
+                    <tr><td><strong>3.</strong> rättegång åtalad dom...</td><td>Lucktext</td><td>—</td><td>1 p</td><td><span class="state state-edited"><svg class="lucide" data-symbol-wrapper="IconEdit" data-lucide="PencilLine" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /><path d="m15 5 3 3" /></svg>Ändrat</span></td></tr>
+                    <tr><td><strong>4.</strong> Fyll i vilka brott som h...</td><td>Lucktext</td><td><span class="missing">Facit</span></td><td>1 p</td><td><span class="state state-warning"><svg class="lucide" data-symbol-wrapper="IconWarning" data-lucide="AlertTriangle" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>Kontrollera<small>Saknar facitsvar</small></span></td></tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <aside class="detail-pane edit-detail-pane">
+                <div class="detail-scroll">
+                  <div class="detail-heading">
+                    <div>
+                      <h2>Fråga 1</h2>
+                      <span class="type-badge">Lucktext</span>
+                    </div>
+                    <span class="state state-review"><svg class="lucide" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" /></svg>Granska</span>
+                  </div>
+
+                  <section class="detail-section">
+                    <h3>Frågetext</h3>
+                    <p>Fyll i luckan: Personen som utreder brott på uppdrag av staten är _________.</p>
+                  </section>
+
+                  <section class="detail-section editor-box">
+                    <h3>Facit</h3>
+                    <label class="field-label" for="desktop-edit-answer">Svar</label>
+                    <div id="desktop-edit-answer" class="field field-edit">Polisen</div>
+                    <label class="field-label" for="desktop-edit-alternatives">Alternativa godkända svar (valfritt)</label>
+                    <div id="desktop-edit-alternatives" class="field field-edit muted-field">polis</div>
+                  </section>
+
+                  <section class="detail-section provenance-box">
+                    <div class="ai-heading">
+                      <svg class="lucide icon-ai" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
+                        <path d="M20 3v4" />
+                        <path d="M22 5h-4" />
+                      </svg>
+                      <strong>Tidigare förslag</strong>
+                    </div>
+                    <p>Polisen</p>
+                  </section>
+
+                  <div class="detail-actions">
+                    <button class="primary">Spara facit</button>
+                    <button class="secondary">Avbryt</button>
+                  </div>
+                </div>
+                <div class="sticky-nav" aria-label="Frågenavigation">
+                  <button class="icon-button" aria-label="Föregående fråga" title="Föregående fråga">
+                    <svg class="lucide" data-lucide="ChevronLeft" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                  </button>
+                  <span>Fråga 1 av 11</span>
+                  <button class="icon-button" aria-label="Nästa fråga" title="Nästa fråga">
+                    <svg class="lucide" data-lucide="ChevronRight" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                  </button>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </main>
+      </section>
+
+      <section id="files" class="desktop-frame" data-shot aria-label="Filer desktop">
+        <aside class="global-sidebar">
+          <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Skriptoteket</span></div>
+          <nav class="global-nav" aria-label="Huvudnavigation"><span>Hem</span><span>Profil</span><span>Katalog</span><span>Mina filer</span><span class="is-active">Granska förslag</span></nav>
+        </aside>
+        <header class="topbar"><button class="focus-button">Aktivera fokusläge</button><span>Hjälp</span><span>Logga ut</span></header>
+        <main class="app-grid">
+          <aside class="workflow-rail">
+            <h2>Konvertera prov</h2>
+            <section class="rail-group"><h3>Provfil</h3><div class="file-chip"><span class="file-icon" aria-hidden="true"></span><span>1776888013-ak7...</span><small>9 kB</small></div><p class="success-line">Filen är uppladdad</p></section>
+            <section class="rail-group"><h3>Konvertera</h3><button class="primary rail-action">Starta konvertering</button><button class="secondary rail-action">Rensa val</button></section>
+          </aside>
+          <section class="workspace">
+            <section class="review-band"><div class="band-icon"><svg class="lucide icon-ai" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" /></svg></div><div><h1>Kontrollera facit</h1><p><strong>6 att granska</strong></p><p>Granska frågorna som saknar rätt svar eller facitsvar.</p></div><button class="primary compact-action">Granska nästa</button></section>
+            <nav class="tabs"><span class="tab">Frågor (11)</span><span class="tab is-active">Filer (2)</span><span class="tab">Rapport</span></nav>
+            <section class="mode-panel">
+              <h2>Filer</h2>
+              <p class="mode-intro">PDF och QTI-format skapas automatiskt. Hämta eller spara varje fil här när granskningen är sparad och filerna är färdiga.</p>
+              <table class="file-table">
+                <thead><tr><th>Fil</th><th>Format</th><th>Status</th><th>Hämta</th><th>Spara</th></tr></thead>
+                <tbody>
+                  <tr><td>ak7_lag_och_ratt_with_image.pdf</td><td>PDF</td><td><strong>Väntar på granskning</strong><small>6 frågor saknar rätt svar eller facitsvar.</small></td><td><button class="ghost disabled">Hämta</button></td><td><button class="ghost disabled">Spara</button></td></tr>
+                  <tr><td>ak7_lag_och_ratt_with_image.zip</td><td>QTI-format</td><td><strong>Väntar på granskning</strong><small>Export kräver färdigt facit.</small></td><td><button class="ghost disabled">Hämta</button></td><td><button class="ghost disabled">Spara</button></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </section>
+        </main>
+      </section>
+
+      <section id="report" class="desktop-frame" data-shot aria-label="Rapport desktop">
+        <aside class="global-sidebar">
+          <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Skriptoteket</span></div>
+          <nav class="global-nav" aria-label="Huvudnavigation"><span>Hem</span><span>Profil</span><span>Katalog</span><span>Mina filer</span><span class="is-active">Granska förslag</span></nav>
+        </aside>
+        <header class="topbar"><button class="focus-button">Aktivera fokusläge</button><span>Hjälp</span><span>Logga ut</span></header>
+        <main class="app-grid">
+          <aside class="workflow-rail">
+            <h2>Konvertera prov</h2>
+            <section class="rail-group"><h3>Provfil</h3><div class="file-chip"><span class="file-icon" aria-hidden="true"></span><span>1776888013-ak7...</span><small>9 kB</small></div><p class="success-line">Filen är uppladdad</p></section>
+            <section class="rail-group"><h3>Konvertera</h3><button class="primary rail-action">Starta konvertering</button><button class="secondary rail-action">Rensa val</button></section>
+          </aside>
+          <section class="workspace">
+            <section class="review-band"><div class="band-icon"><svg class="lucide icon-ai" data-symbol-wrapper="IconAi" data-lucide="Sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.064 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" /></svg></div><div><h1>Kontrollera facit</h1><p><strong>6 att granska</strong></p><p>Granska frågorna som saknar rätt svar eller facitsvar.</p></div><button class="primary compact-action">Granska nästa</button></section>
+            <nav class="tabs"><span class="tab">Frågor (11)</span><span class="tab">Filer (2)</span><span class="tab is-active">Rapport</span></nav>
+            <section class="mode-panel report-grid">
+              <div>
+                <h2>Rapport</h2>
+                <p class="mode-intro">Rapporten sammanfattar facitgranskning och filberedskap.</p>
+                <dl class="summary-list">
+                  <div><dt>Granska</dt><dd>2</dd></div>
+                  <div><dt>Kontrollera</dt><dd>1</dd></div>
+                  <div><dt>Klart</dt><dd>6</dd></div>
+                  <div><dt>Ändrat</dt><dd>2</dd></div>
+                </dl>
+              </div>
+              <div class="report-note">
+                <h3>Nästa steg</h3>
+                <p>Granska frågorna som saknar rätt svar eller facitsvar. När granskningen är sparad och filerna är färdiga kan de sparas eller hämtas.</p>
+                <button class="primary compact-action">Visa frågor</button>
+              </div>
+            </section>
+          </section>
+        </main>
+      </section>
+    </main>
+  </body>
+</html>

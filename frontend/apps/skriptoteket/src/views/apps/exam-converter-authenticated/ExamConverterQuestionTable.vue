@@ -11,7 +11,7 @@
  *   - Shares review row contracts with `ExamConverterQuestionNavigator`.
  */
 
-import { Bot, CheckCircle2, XCircle } from "lucide-vue-next";
+import { IconAi, IconCheck, IconEdit, IconWarning } from "../../../components/icons";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
 import { visibleMissingFieldsForQuestion } from "./digiexamIrReviewParser";
@@ -26,10 +26,7 @@ const emit = defineEmits<{
 }>();
 
 function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
-  if (question.statusSymbol === "ai_answer_key") return "AI-facit";
-  if (question.statusSymbol === "ai_suggestion") return "AI-förslag";
-  if (question.statusSymbol === "complete") return "Klar";
-  return "Saknar facit";
+  return question.answerKeyReviewStateLabel;
 }
 
 </script>
@@ -50,7 +47,7 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
         <th class="w-20 px-2 py-3 font-semibold">
           Poäng
         </th>
-        <th class="w-16 px-2 py-3 text-center font-semibold">
+        <th class="w-24 px-2 py-3 text-center font-semibold">
           Status
         </th>
       </tr>
@@ -96,25 +93,43 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
         </td>
         <td class="px-2 py-4 text-center align-top">
           <span
-            class="inline-grid h-6 w-6 place-items-center"
+            class="inline-grid place-items-center gap-1"
             :aria-label="statusSymbolLabel(question)"
             role="img"
           >
-            <Bot
-              v-if="question.statusSymbol === 'ai_suggestion' || question.statusSymbol === 'ai_answer_key'"
+            <IconAi
+              v-if="question.statusSymbol === 'ai_suggestion'"
+              :size="20"
               class="h-5 w-5 text-success"
               aria-hidden="true"
             />
-            <CheckCircle2
+            <IconCheck
               v-else-if="question.statusSymbol === 'complete'"
+              :size="20"
               class="h-5 w-5 text-success"
               aria-hidden="true"
             />
-            <XCircle
+            <IconEdit
+              v-else-if="question.statusSymbol === 'teacher_modified'"
+              :size="20"
+              class="h-5 w-5 text-navy"
+              aria-hidden="true"
+            />
+            <IconWarning
               v-else
+              :size="20"
               class="h-5 w-5 text-error"
               aria-hidden="true"
             />
+            <span class="text-xs font-semibold leading-tight text-navy">
+              {{ question.answerKeyReviewStateLabel }}
+            </span>
+            <span
+              v-if="question.answerKeyReviewStateReasonLabel"
+              class="text-[0.6875rem] font-medium leading-tight text-navy/65"
+            >
+              {{ question.answerKeyReviewStateReasonLabel }}
+            </span>
           </span>
         </td>
       </tr>

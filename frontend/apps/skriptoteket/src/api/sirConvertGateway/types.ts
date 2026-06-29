@@ -35,6 +35,10 @@ export type DigiExamAnswerKeyCompletionReport =
   SirConvertOpenApiSchemas["DigiExamAnswerKeyCompletionReportV1"];
 export type DigiExamAnswerKeyCompletionReportItem =
   SirConvertOpenApiSchemas["DigiExamAnswerKeyCompletionReportItemV1"];
+export type DigiExamAnswerKeyReviewState =
+  SirConvertOpenApiSchemas["DigiExamAnswerKeyReviewStateV1"];
+export type DigiExamAnswerKeyReviewStateItem =
+  SirConvertOpenApiSchemas["DigiExamAnswerKeyReviewStateItemV1"];
 export type DigiExamMigrationArtifactKey =
   SirConvertOpenApiSchemas["DigiExamMigrationArtifactKey"];
 export type DigiExamIngestionOverlay = SirConvertOpenApiSchemas["DigiExamIngestionOverlay"];

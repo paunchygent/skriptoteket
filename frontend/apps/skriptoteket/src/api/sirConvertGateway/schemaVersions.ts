@@ -22,6 +22,8 @@ export const DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION =
 export const TARGET_READINESS_REPORT_SCHEMA_VERSION = "target_readiness_report_v1" as const;
 export const ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION =
   "answer_key_completion_report_v1" as const;
+export const ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION =
+  "digiexam_answer_key_review_state_v1" as const;
 
 export type DigiExamMigrationBundleSchemaVersion =
   typeof DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION;

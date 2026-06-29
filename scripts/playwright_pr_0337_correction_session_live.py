@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import signal
 from collections.abc import Sequence
@@ -25,7 +26,15 @@ from typing import Any
 from urllib.parse import urlparse
 from zipfile import ZipFile
 
-from playwright.sync_api import Page, Response, expect, sync_playwright
+from playwright.sync_api import (
+    Page,
+    Response,
+    expect,
+    sync_playwright,
+)
+from playwright.sync_api import (
+    TimeoutError as PlaywrightTimeoutError,
+)
 from pypdf import PdfReader
 
 from scripts._playwright_auth import login_via_auth_entry
@@ -50,6 +59,11 @@ TARGET_ITEM_ID = "item-001"
 UPDATED_ITEM_POINTS = "3"
 UPDATED_ITEM_PROMPT = "Vilken process frigör energi ur socker med hjälp av syre?"
 DEFAULT_PROOF_TIMEOUT_SECONDS = 60
+COMPACT_REVIEW_REQUIRED_LABEL = "Granska"
+COMPACT_COMPLETE_LABEL = "Klart"
+COMPACT_TEACHER_MODIFIED_LABEL = "Ändrat"
+COMPACT_VALIDATION_REQUIRED_LABEL = "Kontrollera"
+MANUAL_GAP_FILL_VALUE_PREFIX = "live-proof-facit"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -139,6 +153,7 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         target_readiness.get("targets", []) if isinstance(target_readiness, dict) else []
     )
     effective_state = payload.get("effective_state")
+    active_intents = payload.get("active_intents")
     target_rows = [
         {
             "artifact_key": row.get("artifact_key"),
@@ -157,6 +172,7 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "accepted_correction_count": len(accepted_entries)
         if isinstance(accepted_entries, list)
         else 0,
+        "active_intent_count": len(active_intents) if isinstance(active_intents, list) else None,
         "accepted_kinds": [
             entry.get("kind") for entry in accepted_entries if isinstance(entry, dict)
         ],
@@ -183,6 +199,7 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         ],
         "request_id": payload.get("request_id"),
         "schema_version": payload.get("schema_version"),
+        "session_version": payload.get("session_version"),
     }
 
 
@@ -322,6 +339,111 @@ def _retry_after_seconds(response_body: str) -> int | None:
     return retry_after if isinstance(retry_after, int) and retry_after >= 0 else None
 
 
+def _latest_correction_session_path(summary: dict[str, Any]) -> str:
+    pattern = re.compile(
+        r"^/api/v1/apps/documents\.conversion_hub/exam-converter/jobs/"
+        r"[^/]+/correction-session$"
+    )
+    for entry in reversed(summary.get("correction_session_responses", [])):
+        if not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        if isinstance(path, str) and pattern.match(path):
+            return path
+    raise AssertionError("No correction-session readback path was observed.")
+
+
+def _load_shared_csrf_token(page: Page, *, base_url: str) -> dict[str, str]:
+    parsed = urlparse(base_url)
+    host = parsed.hostname or "127.0.0.1"
+    scheme = parsed.scheme or "http"
+    cookie_urls = [
+        base_url.rstrip("/"),
+        f"{scheme}://{host}:8080",
+        f"{scheme}://{host}:9000",
+    ]
+    for cookie in page.context.cookies(cookie_urls):
+        cookie_name = cookie.get("name")
+        cookie_value = cookie.get("value")
+        if (
+            isinstance(cookie_name, str)
+            and "csrf" in cookie_name.lower()
+            and isinstance(cookie_value, str)
+            and cookie_value
+        ):
+            return {"source": "csrf-cookie", "token": cookie_value}
+    candidates = [
+        f"{scheme}://{host}:8080/v1/auth/csrf",
+        f"{base_url.rstrip('/')}/v1/auth/csrf",
+        f"{scheme}://{host}:9000/v1/auth/csrf",
+    ]
+    errors: list[str] = []
+    for candidate in candidates:
+        response = page.request.get(candidate, timeout=10_000)
+        if response.status != 200:
+            errors.append(f"{_safe_url(candidate)}:{response.status}")
+            continue
+        payload = response.json()
+        token = payload.get("csrf_token") if isinstance(payload, dict) else None
+        if isinstance(token, str) and token:
+            return {"source": _safe_url(candidate), "token": token}
+        errors.append(f"{_safe_url(candidate)}:missing-token")
+    raise AssertionError(f"Could not load shared CSRF token: {errors!r}")
+
+
+def _revert_active_correction_intents(
+    page: Page, *, base_url: str, summary: dict[str, Any]
+) -> dict[str, Any]:
+    session_path = _latest_correction_session_path(summary)
+    session_url = f"{base_url.rstrip('/')}{session_path}"
+    session_response = page.request.get(session_url, timeout=30_000)
+    if session_response.status >= 400:
+        raise AssertionError(
+            f"Correction-session readback failed with HTTP {session_response.status}."
+        )
+    session = session_response.json()
+    active_intents = session.get("active_intents") if isinstance(session, dict) else None
+    if not isinstance(active_intents, list):
+        raise AssertionError("Correction-session readback did not return active intents.")
+    csrf = _load_shared_csrf_token(page, base_url=base_url)
+    reverted_target_keys: list[str] = []
+    for intent in list(active_intents):
+        if not isinstance(intent, dict):
+            continue
+        target_key = intent.get("target_key")
+        if not isinstance(target_key, str):
+            continue
+        session_version = session.get("session_version") if isinstance(session, dict) else None
+        delete_response = page.request.delete(
+            f"{session_url}/intents",
+            data={
+                "expected_session_version": session_version
+                if isinstance(session_version, int)
+                else None,
+                "target_key": target_key,
+            },
+            headers={"X-CSRF-Token": csrf["token"]},
+            timeout=30_000,
+        )
+        if delete_response.status >= 400:
+            raise AssertionError(
+                "Correction-session revert failed with "
+                f"HTTP {delete_response.status}: {delete_response.text()}"
+            )
+        session = delete_response.json()
+        reverted_target_keys.append(target_key)
+    return {
+        "active_intent_count_before": len(active_intents),
+        "path": session_path,
+        "reverted_target_keys": reverted_target_keys,
+        "shared_csrf_source": csrf["source"],
+        "shared_csrf_value_retained": False,
+        "session_version_after": session.get("session_version")
+        if isinstance(session, dict)
+        else None,
+    }
+
+
 def _reload_and_wait_for_replay(page: Page) -> None:
     last_error = ""
     for _ in range(3):
@@ -350,37 +472,93 @@ def _visible_indexes(locator: Any) -> list[int]:
     return [index for index in range(locator.count()) if locator.nth(index).is_visible()]
 
 
-def _row_has_ai_suggestion(row: Any) -> bool:
-    status = row.locator('[aria-label="AI-förslag"]')
+def _compact_status_selector(label: str) -> str:
+    return f'[aria-label="{label}"]'
+
+
+def _row_has_compact_status(row: Any, label: str) -> bool:
+    status = row.locator(_compact_status_selector(label))
     return status.count() > 0 and status.first.is_visible()
 
 
-def _click_and_wait_for_apply(page: Page, selector: str) -> None:
-    with page.expect_response(
-        lambda response: (
-            CORRECTION_SESSION_MARKER in response.url
-            and response.request.method in {"PUT", "DELETE"}
-        ),
-        timeout=30_000,
-    ) as session_response_info:
-        page.locator(selector).click()
-    session_response = session_response_info.value
-    if session_response.status >= 400:
-        raise AssertionError(
-            f"Correction-session write failed with HTTP {session_response.status}."
-        )
-    apply_response = page.wait_for_event(
+def _compact_status_counts(page: Page) -> dict[str, int]:
+    page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
+    rows = page.locator('[data-test^="exam-converter-question-row-"]')
+    labels = (
+        COMPACT_REVIEW_REQUIRED_LABEL,
+        COMPACT_COMPLETE_LABEL,
+        COMPACT_TEACHER_MODIFIED_LABEL,
+        COMPACT_VALIDATION_REQUIRED_LABEL,
+    )
+    counts = {label: 0 for label in labels}
+    for index in range(rows.count()):
+        row = rows.nth(index)
+        for label in labels:
+            if _row_has_compact_status(row, label):
+                counts[label] += 1
+    return counts
+
+
+def _is_correction_session_write(response: Response) -> bool:
+    return CORRECTION_SESSION_MARKER in response.url and response.request.method in {
+        "PUT",
+        "DELETE",
+    }
+
+
+def _is_correction_apply_response(response: Response) -> bool:
+    return CORRECTION_APPLY_MARKER in response.url and response.request.method == "POST"
+
+
+def _is_source_state_failure(response: Response) -> bool:
+    return (
+        CORRECTION_SOURCE_STATE_MARKER in response.url
+        and response.request.method == "POST"
+        and response.status >= 400
+    )
+
+
+def _wait_for_apply_or_source_state_failure(page: Page) -> Response:
+    return page.wait_for_event(
         "response",
         predicate=lambda response: (
-            CORRECTION_APPLY_MARKER in response.url and response.request.method == "POST"
+            _is_correction_apply_response(response) or _is_source_state_failure(response)
         ),
-        timeout=30_000,
+        timeout=45_000,
     )
-    if apply_response.status >= 400:
-        raise AssertionError(
-            f"Correction replay failed with HTTP {apply_response.status}: {apply_response.text()}"
-        )
-    page.wait_for_timeout(1_000)
+
+
+def _click_and_wait_for_apply(page: Page, selector: str) -> None:
+    last_error = ""
+    for _attempt in range(4):
+        with page.expect_response(_is_correction_session_write, timeout=30_000) as session_info:
+            page.locator(selector).click()
+        session_response = session_info.value
+        if session_response.status >= 400:
+            raise AssertionError(
+                f"Correction-session write failed with HTTP {session_response.status}."
+            )
+        try:
+            replay_response = _wait_for_apply_or_source_state_failure(page)
+        except PlaywrightTimeoutError as error:
+            raise AssertionError("Correction replay did not produce an apply response.") from error
+        if _is_correction_apply_response(replay_response):
+            if replay_response.status >= 400:
+                raise AssertionError(
+                    "Correction replay failed with "
+                    f"HTTP {replay_response.status}: {replay_response.text()}"
+                )
+            page.wait_for_timeout(1_000)
+            return
+        response_body = replay_response.text()
+        last_error = f"HTTP {replay_response.status}: {response_body}"
+        if replay_response.status == 429:
+            retry_after = _retry_after_seconds(response_body)
+            retry_after = retry_after if retry_after is not None else 8
+            page.wait_for_timeout((retry_after + 3) * 1_000)
+            continue
+        raise AssertionError(f"Correction source-state issue failed with {last_error}")
+    raise AssertionError(f"Correction source-state issue stayed rate-limited with {last_error}")
 
 
 def _select_question(page: Page, item_id: str) -> None:
@@ -393,7 +571,87 @@ def _select_question(page: Page, item_id: str) -> None:
     )
 
 
-def _find_ai_suggestion_question(page: Page) -> str:
+def _manual_answer_key_editor(page: Page) -> Any:
+    return page.locator('[data-test="exam-converter-manual-answer-key-editor"]')
+
+
+def _manual_answer_key_save_button(page: Page) -> Any:
+    return page.locator('[data-test="exam-converter-apply-manual-answer-key-action"]')
+
+
+def _advisory_answer_key_panel(page: Page) -> Any:
+    return page.locator('[data-test="exam-converter-selected-question-ai-suggestion"]')
+
+
+def _advisory_answer_key_accept_button(page: Page) -> Any:
+    return page.locator('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+
+
+def _advisory_answer_key_edit_button(page: Page) -> Any:
+    return page.locator('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+
+
+def _manual_answer_key_save_is_enabled(page: Page) -> bool:
+    save_button = _manual_answer_key_save_button(page)
+    return save_button.count() > 0 and save_button.first.is_enabled()
+
+
+def _fill_visible_gap_answers(page: Page) -> int:
+    gap_inputs = page.locator('[data-test^="exam-converter-manual-gap-"]')
+    filled_count = 0
+    for index in _visible_indexes(gap_inputs):
+        gap_input = gap_inputs.nth(index)
+        if not gap_input.is_enabled():
+            continue
+        gap_input.fill(f"{MANUAL_GAP_FILL_VALUE_PREFIX}-{filled_count + 1}")
+        filled_count += 1
+    return filled_count
+
+
+def _prepare_visible_answer_key_editor(page: Page) -> str | None:
+    if _manual_answer_key_save_is_enabled(page):
+        return "unchanged"
+    choices = page.locator('[data-test^="exam-converter-manual-choice-"]')
+    if _visible_indexes(choices):
+        choice_id = _choose_manual_choice(page)
+        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        return f"choice:{choice_id}"
+    filled_gap_count = _fill_visible_gap_answers(page)
+    if filled_gap_count > 0:
+        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        return f"gap_fill:{filled_gap_count}"
+    return None
+
+
+def _prepare_visible_answer_key_editor_for_edit(page: Page) -> str:
+    choices = page.locator('[data-test^="exam-converter-manual-choice-"]')
+    visible_choice_indexes = _visible_indexes(choices)
+    unselected_choices = [
+        index
+        for index in visible_choice_indexes
+        if choices.nth(index).get_attribute("aria-pressed") != "true"
+    ]
+    if unselected_choices:
+        choice = choices.nth(unselected_choices[-1])
+        choice_test_id = choice.get_attribute("data-test")
+        if not choice_test_id:
+            raise AssertionError("Manual choice did not expose a data-test id.")
+        choice.click()
+        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        return f"changed_choice:{choice_test_id.removeprefix('exam-converter-manual-choice-')}"
+    filled_gap_count = _fill_visible_gap_answers(page)
+    if filled_gap_count > 0:
+        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        return f"changed_gap_fill:{filled_gap_count}"
+    preparation = _prepare_visible_answer_key_editor(page)
+    if preparation is None:
+        raise AssertionError("Advisory edit path did not expose an answer-key editor.")
+    return preparation
+
+
+def _find_compact_status_manual_answer_key_question(
+    page: Page, *, status_label: str
+) -> tuple[str, str]:
     page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
     rows = page.locator('[data-test^="exam-converter-question-row-"]')
     for index in range(rows.count()):
@@ -401,14 +659,41 @@ def _find_ai_suggestion_question(page: Page) -> str:
         row_test_id = row.get_attribute("data-test")
         if not row_test_id:
             continue
-        if not _row_has_ai_suggestion(row):
+        if not _row_has_compact_status(row, status_label):
             continue
         row.click()
-        editor = page.locator('[data-test="exam-converter-manual-answer-key-editor"]')
-        save_button = page.locator('[data-test="exam-converter-apply-manual-answer-key-action"]')
-        if editor.count() > 0 and editor.first.is_visible() and save_button.is_enabled():
-            return row_test_id.removeprefix("exam-converter-question-row-")
-    raise AssertionError("No visible AI-suggested answer-key editor was found.")
+        editor = _manual_answer_key_editor(page)
+        try:
+            expect(editor).to_be_visible(timeout=5_000)
+        except AssertionError:
+            continue
+        preparation = _prepare_visible_answer_key_editor(page)
+        if preparation is not None:
+            return row_test_id.removeprefix("exam-converter-question-row-"), preparation
+    raise AssertionError(
+        f"No visible answer-key editor was found for compact '{status_label}' state."
+    )
+
+
+def _find_review_required_advisory_question(page: Page) -> str:
+    page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
+    rows = page.locator('[data-test^="exam-converter-question-row-"]')
+    for index in range(rows.count()):
+        row = rows.nth(index)
+        row_test_id = row.get_attribute("data-test")
+        if not row_test_id:
+            continue
+        if not _row_has_compact_status(row, COMPACT_REVIEW_REQUIRED_LABEL):
+            continue
+        row.click()
+        try:
+            expect(_advisory_answer_key_panel(page)).to_be_visible(timeout=5_000)
+            expect(_advisory_answer_key_accept_button(page)).to_be_enabled(timeout=5_000)
+            expect(_advisory_answer_key_edit_button(page)).to_be_enabled(timeout=5_000)
+        except AssertionError:
+            continue
+        return row_test_id.removeprefix("exam-converter-question-row-")
+    raise AssertionError("No visible advisory review panel was found for compact 'Granska' state.")
 
 
 def _selected_question_id(page: Page) -> str:
@@ -422,30 +707,97 @@ def _selected_question_id(page: Page) -> str:
     raise AssertionError("No selected question row was visible.")
 
 
-def _save_visible_answer_key(page: Page) -> str:
+def _assert_row_status_is_one_of(page: Page, item_id: str, labels: Sequence[str]) -> str:
+    row = page.locator(f'[data-test="exam-converter-question-row-{item_id}"]')
+    for label in labels:
+        status = row.locator(_compact_status_selector(label))
+        try:
+            expect(status).to_be_visible(timeout=10_000)
+        except AssertionError:
+            continue
+        return label
+    expected_labels = ", ".join(labels)
+    raise AssertionError(f"Question {item_id} did not move to one of: {expected_labels}.")
+
+
+def _save_visible_answer_key(page: Page, *, expected_statuses: Sequence[str]) -> str:
     item_id = _selected_question_id(page)
     _click_and_wait_for_apply(
         page,
         '[data-test="exam-converter-apply-manual-answer-key-action"]',
     )
+    _assert_row_status_is_one_of(page, item_id, expected_statuses)
     return item_id
 
 
-def _save_all_ai_suggestion_answer_keys(page: Page) -> list[str]:
+def _save_review_required_answer_key(page: Page) -> str:
+    item_id = _selected_question_id(page)
+    _click_and_wait_for_apply(
+        page,
+        '[data-test="exam-converter-accept-advisory-answer-key-action"]',
+    )
+    _assert_row_status_is_one_of(page, item_id, (COMPACT_COMPLETE_LABEL,))
+    return item_id
+
+
+def _save_review_required_answer_key_edit(page: Page) -> tuple[str, str]:
+    item_id = _find_review_required_advisory_question(page)
+    _advisory_answer_key_edit_button(page).click()
+    expect(_manual_answer_key_editor(page)).to_be_visible(timeout=5_000)
+    preparation = _prepare_visible_answer_key_editor_for_edit(page)
+    saved_item_id = _save_visible_answer_key(
+        page,
+        expected_statuses=(COMPACT_TEACHER_MODIFIED_LABEL, COMPACT_COMPLETE_LABEL),
+    )
+    if saved_item_id != item_id:
+        raise AssertionError("Advisory edit save changed the selected question unexpectedly.")
+    return item_id, preparation
+
+
+def _save_validation_required_answer_key(page: Page) -> str:
+    return _save_visible_answer_key(
+        page,
+        expected_statuses=(COMPACT_TEACHER_MODIFIED_LABEL, COMPACT_COMPLETE_LABEL),
+    )
+
+
+def _save_all_review_required_answer_keys(page: Page) -> list[str]:
     saved_item_ids: list[str] = []
     for _ in range(12):
         try:
-            item_id = _find_ai_suggestion_question(page)
+            item_id = _find_review_required_advisory_question(page)
         except AssertionError:
             return saved_item_ids
         if item_id in saved_item_ids:
-            raise AssertionError(f"AI suggestion review did not advance past {item_id}.")
-        saved_item_ids.append(_save_visible_answer_key(page))
+            raise AssertionError(f"Review-required answer-key flow did not advance past {item_id}.")
+        saved_item_ids.append(_save_review_required_answer_key(page))
         page.wait_for_timeout(250)
-    raise AssertionError("AI suggestion review exceeded the expected item count.")
+    raise AssertionError("Review-required answer-key flow exceeded the expected item count.")
 
 
-def _assert_selected_moved_to_next_suggestion(page: Page, previous_item_id: str) -> str:
+def _save_all_validation_required_answer_keys(page: Page) -> list[dict[str, str]]:
+    saved_items: list[dict[str, str]] = []
+    for _ in range(12):
+        try:
+            item_id, preparation = _find_compact_status_manual_answer_key_question(
+                page,
+                status_label=COMPACT_VALIDATION_REQUIRED_LABEL,
+            )
+        except AssertionError:
+            return saved_items
+        if any(entry["item_id"] == item_id for entry in saved_items):
+            raise AssertionError(f"Validation-required answer-key flow repeated {item_id}.")
+        saved_items.append(
+            {
+                "item_id": _save_validation_required_answer_key(page),
+                "preparation": preparation,
+            }
+        )
+        page.wait_for_timeout(250)
+    raise AssertionError("Validation-required answer-key flow exceeded the expected item count.")
+
+
+def _assert_selected_moved_to_next_review_required(page: Page, previous_item_id: str) -> str:
     next_item_id = _selected_question_id(page)
     if next_item_id == previous_item_id:
         rows = page.locator('[data-test^="exam-converter-question-row-"]')
@@ -454,15 +806,17 @@ def _assert_selected_moved_to_next_suggestion(page: Page, previous_item_id: str)
             row_test_id = row.get_attribute("data-test")
             if row_test_id == f"exam-converter-question-row-{previous_item_id}":
                 continue
-            if not _row_has_ai_suggestion(row):
+            if not _row_has_compact_status(row, COMPACT_REVIEW_REQUIRED_LABEL):
                 continue
             row.click()
-            editor = page.locator('[data-test="exam-converter-manual-answer-key-editor"]')
-            save_button = page.locator(
-                '[data-test="exam-converter-apply-manual-answer-key-action"]'
+            editor = _manual_answer_key_editor(page)
+            has_review_required_editor = (
+                editor.count() > 0
+                and editor.first.is_visible()
+                and _manual_answer_key_save_is_enabled(page)
             )
-            if editor.count() > 0 and editor.first.is_visible() and save_button.is_enabled():
-                raise AssertionError("Saving an AI-suggested answer key did not advance review.")
+            if has_review_required_editor:
+                raise AssertionError("Saving a review-required answer key did not advance review.")
         _select_question(page, previous_item_id)
     return next_item_id
 
@@ -645,6 +999,46 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             _mark_progress(summary, artifact_dir, "inspection_surface_visible")
             page.screenshot(path=str(artifact_dir / "02-review-surface.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "02-review-surface.png"))
+            summary["compact_status_counts_before_review"] = _compact_status_counts(page)
+            _write_summary(summary, artifact_dir)
+
+            accept_probe_item_id = _find_review_required_advisory_question(page)
+            summary["accept_unchanged_advisory_item_id"] = accept_probe_item_id
+            summary["accept_unchanged_advisory_action"] = "Acceptera"
+            summary["accept_unchanged_advisory_saved_item_id"] = _save_review_required_answer_key(
+                page
+            )
+            summary["accept_unchanged_advisory_status"] = COMPACT_COMPLETE_LABEL
+            summary["compact_status_counts_after_accept_probe"] = _compact_status_counts(page)
+            page.screenshot(path=str(artifact_dir / "02a-accept-advisory.png"), full_page=True)
+            summary["screenshots"].append(str(artifact_dir / "02a-accept-advisory.png"))
+            _mark_progress(summary, artifact_dir, "accept_unchanged_advisory_saved")
+            summary["accept_probe_correction_session_revert"] = _revert_active_correction_intents(
+                page,
+                base_url=config.base_url,
+                summary=summary,
+            )
+            _mark_progress(summary, artifact_dir, "accept_probe_correction_session_reverted")
+
+            page.locator('[data-test="exam-converter-reset-local-choices"]').click()
+            _mark_progress(summary, artifact_dir, "local_choices_reset_after_accept_probe")
+            page.set_input_files(
+                '[data-test="exam-converter-rail-source-file-input"]', str(fresh_source_dxe)
+            )
+            expect(page.locator('[data-test="exam-converter-start-conversion"]')).to_be_enabled(
+                timeout=10_000
+            )
+            page.locator('[data-test="exam-converter-start-conversion"]').click()
+            _mark_progress(summary, artifact_dir, "second_conversion_started")
+            expect(page.locator('[data-test="exam-converter-inspection-surface"]')).to_be_visible(
+                timeout=45_000
+            )
+            _mark_progress(summary, artifact_dir, "second_inspection_surface_visible")
+            page.screenshot(
+                path=str(artifact_dir / "02b-review-surface-edit-proof.png"), full_page=True
+            )
+            summary["screenshots"].append(str(artifact_dir / "02b-review-surface-edit-proof.png"))
+            summary["compact_status_counts_before_full_correction"] = _compact_status_counts(page)
             _write_summary(summary, artifact_dir)
 
             _select_question(page, TARGET_ITEM_ID)
@@ -652,15 +1046,18 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             _mark_progress(summary, artifact_dir, "draft_negative_proof_complete")
             _select_question(page, TARGET_ITEM_ID)
 
-            ai_item_id = _find_ai_suggestion_question(page)
-            summary["first_ai_suggestion_item_id"] = ai_item_id
-            saved_ai_item_id = _save_visible_answer_key(page)
-            summary["first_saved_ai_suggestion_item_id"] = saved_ai_item_id
-            summary["next_ai_suggestion_item_id"] = _assert_selected_moved_to_next_suggestion(
-                page,
-                saved_ai_item_id,
+            review_required_edit_item_id, review_required_edit_preparation = (
+                _save_review_required_answer_key_edit(page)
             )
-            _mark_progress(summary, artifact_dir, "first_ai_suggestion_saved")
+            summary["review_required_edit_item_id"] = review_required_edit_item_id
+            summary["review_required_edit_action"] = "Ändra"
+            summary["review_required_edit_preparation"] = review_required_edit_preparation
+            summary["review_required_edit_status"] = _assert_row_status_is_one_of(
+                page,
+                review_required_edit_item_id,
+                (COMPACT_TEACHER_MODIFIED_LABEL, COMPACT_COMPLETE_LABEL),
+            )
+            _mark_progress(summary, artifact_dir, "review_required_answer_key_edited")
 
             _select_question(page, TARGET_ITEM_ID)
             page.locator('[data-test="exam-converter-point-correction-input"]').fill(
@@ -681,9 +1078,19 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             )
             _mark_progress(summary, artifact_dir, "prompt_correction_saved")
 
-            remaining_saved_ai_item_ids = _save_all_ai_suggestion_answer_keys(page)
-            summary["remaining_saved_ai_suggestion_item_ids"] = remaining_saved_ai_item_ids
-            _mark_progress(summary, artifact_dir, "remaining_ai_suggestions_saved")
+            remaining_saved_review_required_item_ids = _save_all_review_required_answer_keys(page)
+            summary["remaining_saved_review_required_item_ids"] = (
+                remaining_saved_review_required_item_ids
+            )
+            summary["compact_status_counts_after_review_required"] = _compact_status_counts(page)
+            _mark_progress(summary, artifact_dir, "remaining_review_required_answer_keys_saved")
+
+            saved_validation_required_items = _save_all_validation_required_answer_keys(page)
+            summary["saved_validation_required_answer_key_items"] = saved_validation_required_items
+            summary["compact_status_counts_after_validation_required"] = _compact_status_counts(
+                page
+            )
+            _mark_progress(summary, artifact_dir, "validation_required_answer_keys_saved")
             page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
             expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
                 timeout=30_000,

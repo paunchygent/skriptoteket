@@ -48,6 +48,7 @@ export type CorrectionSessionReplayDependencies = {
 
 export type CorrectionSessionReplayFreshResult = {
   artifactAvailability: ExamAuthoringCorrectionsApplyResult["artifact_availability"];
+  answerKeyReviewState: ExamAuthoringCorrectionsApplyResult["answer_key_review_state"];
   correctionReport: ExamAuthoringCorrectionsApplyResult["correction_report"];
   correctionSession: ExamConverterCorrectionSessionResponse;
   effectiveState: ExamAuthoringCorrectionsApplyResult["effective_state"];
@@ -159,6 +160,7 @@ export async function replayPersistedCorrectionSession(params: {
 
   return {
     artifactAvailability: replay.artifact_availability,
+    answerKeyReviewState: replay.answer_key_review_state,
     correctionReport: replay.correction_report,
     correctionSession,
     effectiveState: replay.effective_state,
@@ -176,6 +178,10 @@ function emptyFreshReplayResult(params: {
 }): CorrectionSessionReplayFreshResult {
   return {
     artifactAvailability: [],
+    answerKeyReviewState: {
+      items: [],
+      schema_version: "digiexam_answer_key_review_state_v1",
+    },
     correctionReport: {
       accepted_entries: [],
       rejected_entries: [],

@@ -28,8 +28,8 @@ import type {
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
 import { buildAiSuggestionReport, hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
-import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
 import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/sirConvertGateway/contractValues";
+import { applyAnswerKeyReviewStateToQuestions } from "./answerKeyReviewStateAdapter";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -422,7 +422,7 @@ export function projectUnifiedCorrectionResult(params: {
   const sourceItemsById = new Map(
     params.sourceState.source_authoring_state.items.map((item) => [item.item_id, item]),
   );
-  const questions = params.projection.questions.map((question): ExamConverterQuestionReviewRow => {
+  const locallyProjectedQuestions = params.projection.questions.map((question): ExamConverterQuestionReviewRow => {
     const effectiveItem = effectiveItemsById.get(question.itemId);
     if (!effectiveItem) return question;
     const sourceItem = sourceItemsById.get(question.itemId) ?? null;
@@ -470,18 +470,18 @@ export function projectUnifiedCorrectionResult(params: {
         savedTextValue({ field: "prompt_lines", intents: savedTextByItem.get(question.itemId) }) ??
         (promptTextForSourceItem(effectiveItem) || question.promptText),
       status: missingFields.length > 0 ? question.status : "complete",
-      statusSymbol: hasUsableCompletionCandidate({ llmCandidate })
-        ? "ai_suggestion"
-        : isAiAnswerKeyProvenance(effectiveAnswerKey?.provenance)
-          ? "ai_answer_key"
-          : missingFields.includes("Facit") && question.itemType !== "open_ended"
-            ? "missing"
-            : "complete",
+      statusSymbol: missingFields.includes("Facit") && question.itemType !== "open_ended"
+        ? "validation_required"
+        : "complete",
       title:
         savedTextValue({ field: "item_title", intents: savedTextByItem.get(question.itemId) }) ??
         effectiveItem.title ??
         question.title,
     };
+  });
+  const questions = applyAnswerKeyReviewStateToQuestions({
+    questions: locallyProjectedQuestions,
+    reviewState: params.result.answer_key_review_state,
   });
   const files = projectCorrectedFiles(params.projection, params.result);
   return {

@@ -10,6 +10,8 @@
  *   - Mirrors the minimum source-bound fields required by Sir Convert replay.
  */
 
+import { ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
+
 type CorrectionSessionFixtureIntent = Record<string, unknown> & {
   target_key: string;
 };
@@ -162,6 +164,131 @@ function sourceGapItem() {
 
 export function correctionApplyResult() {
   return {
+    answer_key_review_state: {
+      schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+      items: [
+        {
+          choice_ids: [],
+          choice_interaction_ids: [],
+          correction_affordances: [],
+          current_key_origin: "source_provided",
+          gap_ids: [],
+          gap_interaction_ids: [],
+          item_id: "item-001",
+          item_type: "gap_fill",
+          message_key: "exam_converter.answer_key.source_present",
+          provenance_detail: null,
+          reasons: ["source_answer_key_present"],
+          replay_artifact_references: [
+            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+          ],
+          review_state: "review_complete",
+          sequence: 1,
+          source_item_fingerprint: "sha256:item-001",
+        },
+        {
+          choice_ids: ["choice-3"],
+          choice_interaction_ids: ["choice-item-004"],
+          correction_affordances: [],
+          current_key_origin: "teacher_authored",
+          gap_ids: [],
+          gap_interaction_ids: [],
+          item_id: "item-004",
+          item_type: "single_choice",
+          message_key: "exam_converter.answer_key.teacher_answer_key_present",
+          provenance_detail: null,
+          reasons: ["teacher_answer_key_present"],
+          replay_artifact_references: [
+            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+          ],
+          review_state: "teacher_modified",
+          sequence: 4,
+          source_item_fingerprint: "sha256:item-004",
+        },
+        {
+          choice_ids: ["choice-1", "choice-2"],
+          choice_interaction_ids: ["choice-item-005"],
+          correction_affordances: [],
+          current_key_origin: "reviewed_advisory",
+          gap_ids: [],
+          gap_interaction_ids: [],
+          item_id: "item-005",
+          item_type: "multiple_response",
+          message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+          provenance_detail: null,
+          reasons: ["reviewed_advisory_accepted"],
+          replay_artifact_references: [
+            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+          ],
+          review_state: "review_complete",
+          sequence: 5,
+          source_item_fingerprint: "sha256:item-005",
+        },
+        {
+          choice_ids: [],
+          choice_interaction_ids: [],
+          correction_affordances: [],
+          current_key_origin: "none",
+          gap_ids: [],
+          gap_interaction_ids: [],
+          item_id: "item-006",
+          item_type: "open_ended",
+          message_key: "exam_converter.answer_key.source_present",
+          provenance_detail: null,
+          reasons: ["source_answer_key_present"],
+          replay_artifact_references: [
+            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+          ],
+          review_state: "review_complete",
+          sequence: 6,
+          source_item_fingerprint: "sha256:item-006",
+        },
+        {
+          choice_ids: [],
+          choice_interaction_ids: [],
+          correction_affordances: [],
+          current_key_origin: "teacher_edited_advisory",
+          gap_ids: [],
+          gap_interaction_ids: [],
+          item_id: "item-012",
+          item_type: "open_ended",
+          message_key: "exam_converter.answer_key.teacher_modified",
+          provenance_detail: null,
+          reasons: ["teacher_edited_advisory_candidate"],
+          replay_artifact_references: [
+            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+          ],
+          review_state: "teacher_modified",
+          sequence: 12,
+          source_item_fingerprint: "sha256:item-012",
+        },
+        {
+          choice_ids: [],
+          choice_interaction_ids: [],
+          correction_affordances: [],
+          current_key_origin: "teacher_authored",
+          gap_ids: ["gap-001", "gap-002"],
+          gap_interaction_ids: ["gap-item-013"],
+          item_id: "item-013",
+          item_type: "gap_fill",
+          message_key: "exam_converter.answer_key.teacher_answer_key_present",
+          provenance_detail: null,
+          reasons: ["teacher_answer_key_present"],
+          replay_artifact_references: [
+            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
+          ],
+          review_state: "teacher_modified",
+          sequence: 13,
+          source_item_fingerprint: "sha256:item-013",
+        },
+      ],
+    },
     artifact_availability: [
       { artifact_key: "examnet_pdf", availability: "available", unavailable_code: null },
       { artifact_key: "qti_package", availability: "available", unavailable_code: null },

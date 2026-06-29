@@ -20,6 +20,8 @@ import {
 } from "./examConverterAuthenticatedCorrectionSessionFixtures";
 import { mockVisionBackedGapFillReviewArtifacts } from "./examConverterAuthenticatedGapFillReviewFixtures";
 import {
+  answerKeyReviewItem,
+  answerKeyReviewStateReport,
   finishConversion,
   mockReviewArtifacts,
   submittedJob,
@@ -124,8 +126,11 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         .element.value,
     ).toBe("Fråga 4");
     expect(
-      wrapper.find('[data-test="exam-converter-manual-choice-3"]').attributes("aria-pressed"),
-    ).toBe("true");
+      wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists(),
+    ).toBe(true);
+    expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
+      false,
+    );
   });
 
   it("keeps teacher edits to accepted suggestions instead of returning to the original AI choice", async () => {
@@ -134,6 +139,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
 
+    await wrapper
+      .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
     expect(
       wrapper.find('[data-test="exam-converter-manual-choice-3"]').attributes("aria-pressed"),
     ).toBe("true");
@@ -196,10 +204,13 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
     expect(
       wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists(),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists(),
-    ).toBe(true);
+    ).toBe(false);
+    await wrapper
+      .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
     await wrapper.find('[data-test="exam-converter-manual-choice-2"]').trigger("click");
     await wrapper
       .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
@@ -234,6 +245,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
 
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
     await wrapper.find('[data-test="exam-converter-manual-choice-2"]').trigger("click");
     await wrapper
       .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
@@ -253,7 +267,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
 
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-apply-manual-answer-key-action"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+      .trigger("click");
     await flushPromises();
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
 
@@ -266,12 +282,72 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
   });
 
   it("persists unchanged AI-prefilled choice facit with advisory candidate provenance", async () => {
+    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValueOnce({
+      ...correctionApplyResult(),
+      answer_key_review_state: answerKeyReviewStateReport([
+        answerKeyReviewItem(),
+        answerKeyReviewItem({
+          choice_ids: ["choice-3"],
+          choice_interaction_ids: ["choice-item-004"],
+          current_key_origin: "reviewed_advisory",
+          item_id: "item-004",
+          item_type: "single_choice",
+          message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+          reasons: ["reviewed_advisory_accepted"],
+          review_state: "review_complete",
+          sequence: 4,
+          source_item_fingerprint: "sha256:item-004",
+        }),
+        answerKeyReviewItem({
+          choice_ids: ["choice-1", "choice-2"],
+          choice_interaction_ids: ["choice-item-005"],
+          current_key_origin: "reviewed_advisory",
+          item_id: "item-005",
+          item_type: "multiple_response",
+          message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+          reasons: ["reviewed_advisory_accepted"],
+          review_state: "review_complete",
+          sequence: 5,
+          source_item_fingerprint: "sha256:item-005",
+        }),
+        answerKeyReviewItem({
+          current_key_origin: "none",
+          item_id: "item-006",
+          item_type: "open_ended",
+          message_key: "exam_converter.answer_key.source_present",
+          reasons: ["source_answer_key_present"],
+          review_state: "review_complete",
+          sequence: 6,
+          source_item_fingerprint: "sha256:item-006",
+        }),
+        answerKeyReviewItem({
+          current_key_origin: "teacher_edited_advisory",
+          item_id: "item-012",
+          item_type: "open_ended",
+          message_key: "exam_converter.answer_key.teacher_modified",
+          reasons: ["teacher_edited_advisory_candidate"],
+          review_state: "teacher_modified",
+          sequence: 12,
+          source_item_fingerprint: "sha256:item-012",
+        }),
+        answerKeyReviewItem({
+          current_key_origin: "none",
+          item_id: "item-013",
+          item_type: "open_ended",
+          message_key: "exam_converter.answer_key.source_present",
+          reasons: ["source_answer_key_present"],
+          review_state: "review_complete",
+          sequence: 13,
+          source_item_fingerprint: "sha256:item-013",
+        }),
+      ]),
+    });
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
     await wrapper
-      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
 
@@ -303,20 +379,20 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     ).toContain("3");
     expect(
       wrapper.find('[data-test="exam-converter-effective-answer-key-ai-symbol"]').exists(),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       wrapper
         .find('[data-test="exam-converter-effective-answer-key-teacher-symbol"]')
         .exists(),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       wrapper
-        .find('[data-test="exam-converter-question-row-item-004"] [aria-label="AI-facit"]')
+        .find('[data-test="exam-converter-question-row-item-004"] [aria-label="Klart"]')
         .exists(),
     ).toBe(true);
     expect(
       wrapper.findAll('[data-test="exam-converter-manual-choice-ai-symbol"]'),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
     const report = wrapper.find('[data-test="exam-converter-report-summary"]');
     expect(report.text()).toContain("AI-förslag");
@@ -345,12 +421,11 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-013"]').trigger("click");
     expect(
-      wrapper.find<HTMLInputElement>('[data-test="exam-converter-manual-gap-gap-001"]').element
-        .value,
-    ).toBe("kretslopp");
+      wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').text(),
+    ).toContain("kretslopp");
 
     await wrapper
-      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
 
@@ -374,6 +449,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
                 { accepted_values: ["kretslopp"], gap_id: "gap-001" },
                 { accepted_values: ["näringsväv"], gap_id: "gap-002" },
               ],
+              submission_origin: "accepted_advisory_candidate",
             }),
           }),
         }),
@@ -399,6 +475,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
 
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-013"]').trigger("click");
+    await wrapper
+      .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
     await wrapper
       .find<HTMLInputElement>('[data-test="exam-converter-manual-gap-gap-001"]')
       .setValue("kolets kretslopp");
@@ -436,14 +515,31 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     );
   });
 
-  it("shows AI-seeded facit editing without a separate inspector acceptance panel", async () => {
+  it("shows pending advisory acceptance before the normal answer-key editor", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
     expect(
       wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists(),
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').text(),
+    ).toContain("Tidigare förslag");
+    expect(
+      wrapper.find('[data-test="exam-converter-accept-advisory-answer-key-action"]').text(),
+    ).toContain("Acceptera");
+    expect(
+      wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').text(),
+    ).toContain("Ändra");
+    expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
+      false,
+    );
+
+    await wrapper
+      .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
+
     expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
       true,
     );

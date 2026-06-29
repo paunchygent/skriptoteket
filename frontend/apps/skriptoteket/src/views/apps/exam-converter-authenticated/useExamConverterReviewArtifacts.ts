@@ -20,6 +20,7 @@ import {
 } from "../../../api/sirConvertGateway";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
   DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
@@ -151,6 +152,7 @@ export function useExamConverterReviewArtifacts(
         irJson,
         migrationManifest,
         targetReadinessReport,
+        answerKeyReviewStateArtifact,
         completionReportArtifact,
         effectiveIrArtifact,
       ] = await Promise.all([
@@ -176,6 +178,14 @@ export function useExamConverterReviewArtifacts(
           })
           .then(readArtifactJson)
           .then(parseTargetReadinessReport),
+        loadOptionalArtifactJson({
+          artifactKey: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+          artifactManifest,
+          client,
+          correlationId: params.correlationId,
+          jobId: params.jobId,
+          required: true,
+        }),
         loadOptionalArtifactJson({
           artifactKey: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
           artifactManifest,
@@ -207,6 +217,7 @@ export function useExamConverterReviewArtifacts(
         : null;
       const parsedProjection = parseExamConverterReviewProjection({
         answerKeyCompletionReport,
+        answerKeyReviewStateReport: answerKeyReviewStateArtifact?.payload,
         artifactManifest,
         effectiveAnswerKeysByItem: effectiveItemState?.answerKeysByItem ?? null,
         effectivePointCorrectionsByItem: effectiveItemState?.pointCorrectionsByItem ?? null,

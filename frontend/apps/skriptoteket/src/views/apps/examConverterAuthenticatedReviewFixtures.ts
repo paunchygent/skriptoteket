@@ -19,6 +19,7 @@ import type {
 } from "../../api/sirConvertGateway";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
   DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
@@ -153,6 +154,103 @@ export function reviewItem(overrides: Record<string, unknown> = {}) {
   };
 }
 
+export function answerKeyReviewItem(overrides: Record<string, unknown> = {}) {
+  return {
+    choice_ids: [],
+    choice_interaction_ids: [],
+    correction_affordances: [],
+    current_key_origin: "source_provided",
+    gap_ids: [],
+    gap_interaction_ids: [],
+    item_id: "item-001",
+    item_type: DIGIEXAM_ITEM_TYPE_GAP_FILL,
+    message_key: "exam_converter.answer_key.source_present",
+    provenance_detail: null,
+    reasons: ["source_answer_key_present"],
+    replay_artifact_references: [],
+    review_state: "review_complete",
+    sequence: 1,
+    source_item_fingerprint: "sha256:item-001",
+    ...overrides,
+  };
+}
+
+export function answerKeyReviewStateReport(items: Record<string, unknown>[] = []) {
+  return {
+    items:
+      items.length > 0
+        ? items
+        : [
+            answerKeyReviewItem(),
+            answerKeyReviewItem({
+              choice_ids: ["choice-3"],
+              choice_interaction_ids: ["choice-item-004"],
+              correction_affordances: ["manual_choice_answer_key"],
+              current_key_origin: "none",
+              item_id: "item-004",
+              item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+              message_key: "exam_converter.answer_key.advisory_candidate_pending",
+              provenance_detail: {
+                candidate_id: "candidate-item-004",
+                candidate_payload_digest: "sha256:candidate-item-004",
+                prompt_template_version: "digiexam-choice-answer-key-v1",
+                provider_profile_id: "task309-llama-cpp",
+                schema_name: "digiexam_choice_answer_key_decision_v1",
+                schema_version: "digiexam_choice_answer_key_decision_v1",
+                validation_state: "valid",
+              },
+              reasons: ["advisory_candidate_pending"],
+              review_state: "review_required",
+              sequence: 4,
+              source_item_fingerprint: "sha256:item-004",
+            }),
+            answerKeyReviewItem({
+              choice_ids: ["choice-1", "choice-2"],
+              choice_interaction_ids: ["choice-item-005"],
+              current_key_origin: "reviewed_advisory",
+              item_id: "item-005",
+              item_type: DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
+              message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+              reasons: ["reviewed_advisory_accepted"],
+              review_state: "review_complete",
+              sequence: 5,
+              source_item_fingerprint: "sha256:item-005",
+            }),
+            answerKeyReviewItem({
+              current_key_origin: "none",
+              item_id: "item-006",
+              item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+              message_key: "exam_converter.answer_key.source_present",
+              reasons: ["source_answer_key_present"],
+              review_state: "review_complete",
+              sequence: 6,
+              source_item_fingerprint: "sha256:item-006",
+            }),
+            answerKeyReviewItem({
+              current_key_origin: "teacher_edited_advisory",
+              item_id: "item-012",
+              item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+              message_key: "exam_converter.answer_key.teacher_modified",
+              reasons: ["teacher_edited_advisory_candidate"],
+              review_state: "teacher_modified",
+              sequence: 12,
+              source_item_fingerprint: "sha256:item-012",
+            }),
+            answerKeyReviewItem({
+              current_key_origin: "none",
+              item_id: "item-013",
+              item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+              message_key: "exam_converter.answer_key.source_present",
+              reasons: ["source_answer_key_present"],
+              review_state: "review_complete",
+              sequence: 13,
+              source_item_fingerprint: "sha256:item-013",
+            }),
+          ],
+    schema_version: "digiexam_answer_key_review_state_v1",
+  };
+}
+
 export type ExamConverterReviewArtifactOptions = {
   choiceCandidateAvailable?: boolean;
   manualAnswerKeyApplied?: boolean;
@@ -188,6 +286,14 @@ export function mockReviewArtifacts(
         filename: "rapport.json",
         sha256: null,
         size_bytes: 2_048,
+      },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        content_type: "application/json",
+        filename: "answer-key-review-state.json",
+        sha256: "sha256:answer-key-review-state",
+        size_bytes: 1_024,
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
@@ -470,6 +576,75 @@ export function mockReviewArtifacts(
                     },
                   ],
           }),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(
+            DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+            answerKeyReviewStateReport(
+              options.choiceCandidateAvailable === false
+                ? [
+                    answerKeyReviewItem(),
+                    answerKeyReviewItem({
+                      choice_ids: [],
+                      choice_interaction_ids: ["choice-item-004"],
+                      correction_affordances: ["manual_choice_answer_key"],
+                      current_key_origin: "none",
+                      item_id: "item-004",
+                      item_type: DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
+                      message_key: "exam_converter.answer_key.manual_required",
+                      reasons: ["manual_answer_key_required"],
+                      review_state: "validation_required",
+                      sequence: 4,
+                      source_item_fingerprint: "sha256:item-004",
+                    }),
+                    answerKeyReviewItem({
+                      choice_ids: ["choice-1", "choice-2"],
+                      choice_interaction_ids: ["choice-item-005"],
+                      current_key_origin: "reviewed_advisory",
+                      item_id: "item-005",
+                      item_type: DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
+                      message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+                      reasons: ["reviewed_advisory_accepted"],
+                      review_state: "review_complete",
+                      sequence: 5,
+                      source_item_fingerprint: "sha256:item-005",
+                    }),
+                    answerKeyReviewItem({
+                      current_key_origin: "none",
+                      item_id: "item-006",
+                      item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+                      message_key: "exam_converter.answer_key.source_present",
+                      reasons: ["source_answer_key_present"],
+                      review_state: "review_complete",
+                      sequence: 6,
+                      source_item_fingerprint: "sha256:item-006",
+                    }),
+                    answerKeyReviewItem({
+                      current_key_origin: "teacher_edited_advisory",
+                      item_id: "item-012",
+                      item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+                      message_key: "exam_converter.answer_key.teacher_modified",
+                      reasons: ["teacher_edited_advisory_candidate"],
+                      review_state: "teacher_modified",
+                      sequence: 12,
+                      source_item_fingerprint: "sha256:item-012",
+                    }),
+                    answerKeyReviewItem({
+                      current_key_origin: "none",
+                      item_id: "item-013",
+                      item_type: DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
+                      message_key: "exam_converter.answer_key.source_present",
+                      reasons: ["source_answer_key_present"],
+                      review_state: "review_complete",
+                      sequence: 13,
+                      source_item_fingerprint: "sha256:item-013",
+                    }),
+                  ]
+                : [],
+            ),
+          ),
         );
       }
       if (artifactKey === DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON) {

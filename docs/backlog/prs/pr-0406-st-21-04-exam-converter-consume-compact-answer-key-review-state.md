@@ -28,12 +28,20 @@ links:
   - "Sir Convert docs/backlog/stories/story-57-cross-repo-compact-answer-key-review-state-production-proof.md"
   - "docs/reference/ref-exam-converter-ui-content-model-v1.md"
   - "docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md"
+  - "docs/mockups/pr-0406-answer-key-review-small-screen/README.md"
+  - "docs/mockups/pr-0406-answer-key-review-desktop/README.md"
 acceptance_criteria:
   - "Given Sir Convert exposes a compact answer-key review-state projection, when Skriptoteket renders the question list, then list state comes from that projection instead of being re-derived from multiple producer artifacts and local UI state."
-  - "Given a pending advisory answer-key suggestion exists, when the list renders, then the item uses the compact review-needed state with a robot affordance and does not imply an error."
+  - "Given a pending advisory answer-key suggestion exists, when the list renders, then the item uses the compact review-needed state with the approved `IconAi`/`Sparkles` affordance and does not imply an error."
   - "Given a teacher has reviewed an AI-suggested key unchanged, when the list renders, then the item shows only the normal completed state, such as `Klart` with a checkmark, and no extra AI badge."
   - "Given a teacher has edited the suggested key, keyed option text, gap value, stem, or other keyed content, when the list renders, then the current key is treated as teacher-owned and no AI provenance marker is shown for the current key."
   - "Given a multiple-choice or gap/open-cloze item lacks a valid selected key or accepted value, when the list and detail render, then the UI shows a compact current validation problem such as `Kontrollera` with a reason like `Inget rätt svar valt`, not stale-AI wording."
+  - "Given the Exam Converter runs on a small screen, when the teacher switches between questions, files, and report, then Skriptoteket renders a bespoke task flow rather than a squeezed or stacked desktop two-column workbench."
+  - "Given the Files tab is active on a small screen, when files render, then the screen contains file rows/actions only and does not show a selected-question editor or singular question detail above the file list."
+  - "Given compact review state exists on desktop, when the result band renders, then it uses actionable review framing such as `Kontrollera facit`, `6 att granska`, and `Granska frågorna som saknar rätt svar eller facitsvar.` instead of coarse partial-conversion copy."
+  - "Given a teacher reviews desktop item details, when the detail pane scrolls, then symbolic Lucide previous/next controls remain available as sticky navigation without visible word labels."
+  - "Given a teacher uploads a DXE file, when the pre-conversion workflow rail renders, then it does not ask the teacher to choose PDF/QTI target files or source formats; supported PDF and QTI outputs are requested automatically and acted on later in `Filer`."
+  - "Given a teacher chooses to change an advisory key instead of accepting it, when the desktop detail pane enters edit mode, then it shows the normal answer-key editor with `Spara facit` semantics and bounded `Tidigare förslag` provenance detail."
   - "Given file actions are evaluated, when Sir Convert has not returned target readiness or replay artifact references, then Skriptoteket keeps downloads/save actions disabled and does not infer readiness from local drafts."
   - "Given local correction-session readback exists, when Skriptoteket claims saved/reviewed/exportable state, then that claim is backed by Sir Convert returned projection/effective state rather than component-local state."
 ---
@@ -52,7 +60,7 @@ from Sir Convert's source/effective state and artifact readiness contracts.
 The current UX direction is deliberately compact:
 
 - `Granska` means a teacher action is needed, including a pending AI suggestion
-  where a robot affordance may be shown.
+  where the approved `IconAi`/`Sparkles` affordance may be shown.
 - `Klart` means the item is reviewed/valid for the current projection and needs
   no extra AI badge in the list.
 - `Ändrat` may be used for a teacher-owned modified key, but AI provenance must
@@ -73,6 +81,16 @@ Skriptoteket still owns teacher interaction, local authenticated
 correction-session persistence, and presentation. Sir Convert owns source and
 effective state, answer-key provenance semantics, candidate lineage/audit data,
 target readiness, and replay artifact authority.
+
+The approved small-screen visual and copy direction is retained in
+`docs/mockups/pr-0406-answer-key-review-small-screen/README.md`. That mockup
+bundle is the authority for the approved phone-flow hierarchy and the final
+language corrections from the product discussion.
+
+The desktop alignment mockup is retained in
+`docs/mockups/pr-0406-answer-key-review-desktop/README.md`. It applies the same
+state, copy, and symbol decisions to the desktop workbench while preserving the
+desktop scan-and-detail layout.
 
 ## Non-goals
 
@@ -99,15 +117,44 @@ target readiness, and replay artifact authority.
 1. Keep correction-session persistence and replay orchestration intact:
    teacher input still becomes source-bound correction intents, and saved state
    becomes authoritative only after readback plus Sir Convert replay/projection.
+1. Build the small-screen Exam Converter as a dedicated task flow, not as a
+   squeezed or stacked copy of the desktop two-column workspace:
+   - the question list, selected item editor, files view, and report view are
+     mutually exclusive surfaces on narrow viewports;
+   - selected item detail opens as a full-width detail surface or sheet from
+     the question list;
+   - the files view renders file rows/actions only, never a selected-question
+     editor or singular question summary above the files;
+   - the report view renders report content only, with navigation back to the
+     review flow;
+   - the top review/action band and tabs fit the viewport without horizontal
+     overflow.
 1. Update the mobile/small-screen question list and detail copy to use compact
-   labels:
-   - pending advisory: `Granska` with robot affordance;
+   labels with fixed, non-clipping row/card geometry:
+   - pending advisory: `Granska` with the approved `IconAi` / `Sparkles`
+     affordance;
    - reviewed/complete: `Klart` with checkmark only;
    - teacher-owned modified: `Ändrat` or `Klart`, no AI marker;
    - current validation problem: `Kontrollera` plus a short reason.
 1. Update report and files views so file readiness remains driven by Sir
    Convert target readiness and replay artifact references, not question-list
    review state.
+1. Remove pre-conversion target-file/source-format choice from the authenticated
+   Exam Converter workflow rail. For the current DXE converter path, request the
+   supported PDF and QTI outputs automatically and expose teacher download/save
+   choice only in `Filer` after review persistence and artifact readiness.
+1. Update the desktop result band and review-detail controls:
+   - projection-backed review uses `Kontrollera facit`, a compact review count,
+     and `Granska frågorna som saknar rätt svar eller facitsvar.`;
+   - `Konverteringen av provet lyckades delvis` is not the primary
+     projection-backed review message;
+   - `Ändra` opens the normal answer-key editing surface in the selected detail
+     pane, with `Spara facit` for teacher-owned edits and bounded
+     `Tidigare förslag` provenance detail where an advisory seed exists;
+   - symbolic Lucide previous/next controls remain available in the detail
+     pane without visible word labels;
+   - accepting or saving a key waits for backend-confirmed readback/replay
+     projection before auto-advancing to the next actionable item.
 
 ## Closed Consumer Decisions
 
@@ -163,6 +210,88 @@ target readiness, and replay artifact authority.
    - Constraint: do not show fresh `Klart`, report completion, file readiness,
      or export/save enablement until replay projection and target readiness
      succeed.
+1. Small-screen layout contract.
+   - Decision: mobile/small-screen Exam Converter uses a bespoke
+     task-oriented flow, not responsive stacking of the desktop workbench.
+     Question list, item detail, report, and files are separate narrow-viewport
+     surfaces.
+   - Decision: the files surface must not carry question-detail context. It
+     shows generated files and file actions only, with filenames wrapping or
+     truncating safely and format/action affordances kept visible.
+   - Constraint: no small-screen implementation may rely on horizontal
+     clipping, hidden right panes, squeezed tables, or off-canvas desktop
+     columns as the primary user path.
+1. Small-screen mockup and copy approval.
+   - Decision: use
+     `docs/mockups/pr-0406-answer-key-review-small-screen/README.md` as the
+     approved exact mockup and language authority for PR-0406 small-screen
+     answer-key review.
+   - Decision: the canonical generated preview and `index.html` source encode
+     the final approved small-screen layout and copy. Treat them as decision
+     material, not inspiration.
+   - Decision: validation issues use concrete missing-key language such as
+     `Inget rätt svar valt`, `Välj minst ett rätt svar`, or `Saknar facitsvar`.
+   - Decision: manual validation repair uses `Spara facit`; keep it disabled
+     until a valid key/value exists.
+   - Decision: `Acceptera` is reserved for accepting a pending AI suggestion
+     unchanged. A second click must not convert unchanged AI provenance into a
+     teacher-authored key.
+1. Symbol contract.
+   - Decision: PR-0406 small-screen review symbols must follow
+     `docs/reference/ref-symbol-semantics-inventory-and-decision-contract-2026-05-04.md`
+     and the symbol table in
+     `docs/mockups/pr-0406-answer-key-review-small-screen/README.md`.
+   - Decision: pending AI suggestions and AI detail use `IconAi` /
+     `Sparkles`, reviewed/selected state uses `IconCheck` / `Check`,
+     teacher-owned changed state uses `IconEdit` / `PencilLine`, and current
+     validation problems use `IconWarning` / `AlertTriangle`.
+   - Constraint: do not introduce feature-local direct `Bot`, `CheckCircle2`,
+     or `XCircle` imports for the PR-0406 state projection. Existing Exam
+     Converter drift must be corrected as part of the consumer implementation
+     where these states are touched.
+1. Desktop layout and result-band contract.
+   - Decision: desktop keeps the workbench advantage: left workflow rail,
+     central question table, and one selected-question detail pane for the
+     active `Frågor` mode.
+   - Decision: the pre-conversion workflow rail does not expose PDF/QTI target
+     checkboxes or source-format choices. The source upload determines source
+     handling, and supported PDF/QTI outputs are requested automatically for the
+     current DXE converter path.
+   - Decision: `Filer` and `Rapport` remain exclusive inspection modes on
+     desktop as well. They must not carry a selected-question detail pane or a
+     singular question summary above their mode content.
+   - Decision: teacher choice over generated outputs happens in `Filer` after
+     review persistence and target readiness, by downloading or saving each
+     generated file.
+   - Decision: when compact review state exists, the desktop result band uses
+     actionable review framing instead of coarse conversion-result language:
+     `Kontrollera facit`, a compact count such as `6 att granska`, and
+     `Granska frågorna som saknar rätt svar eller facitsvar.`
+   - Constraint: export-ready copy such as `Filerna kan sparas eller hämtas`
+     may appear only when Sir Convert target readiness and replay artifact
+     references authorize the file actions. The answer-key review projection
+     alone must not unlock downloads or saves.
+   - Constraint: if the compact projection is expected but missing or invalid,
+     fail closed with review unavailable/blocked copy rather than falling back
+     to local `Klart` inference or the old partial-conversion framing.
+1. Desktop detail navigation and persistence behavior.
+   - Decision: desktop detail panes get sticky symbolic previous/next
+     navigation controls using Lucide `ChevronLeft` and `ChevronRight` or
+     approved wrappers for those local navigation controls.
+   - Decision: previous/next controls use accessible labels and optional
+     tooltips, but no persistent visible `Föregående` / `Nästa` text.
+   - Decision: `Acceptera` and `Spara facit` are persistence actions, not
+     navigation actions. `Acceptera` is only for accepting a pending advisory
+     suggestion unchanged; `Spara facit` is for manual selection, manual
+     editing, and validation repair.
+   - Decision: `Ändra` opens the normal selected-question answer-key editor in
+     the detail pane. The editor may show bounded `Tidigare förslag` provenance
+     detail, but it does not create a second AI-specific editing workflow.
+   - Decision: after `Acceptera` or valid `Spara facit`, the UI must wait for
+     backend-confirmed persistence/readback and Sir Convert replay projection
+     before automatically advancing to the next actionable item.
+   - Constraint: do not advance optimistically on click, and do not auto-advance
+     to a non-actionable next row merely because it is numerically next.
 
 ## Implementation Dependencies
 
@@ -207,8 +336,26 @@ guessing `Klart`.
   original job artifacts are not used for corrected downloads.
 - Report/files tests proving `Kontrollera` represents a current validation
   problem, not stale AI provenance.
-- Small-screen/component tests for the mobile question list and detail layout
-  once the visual slice is implemented.
+- Desktop component tests proving the result band uses
+  `Kontrollera facit` and
+  `Granska frågorna som saknar rätt svar eller facitsvar.` when compact review
+  state exists.
+- Desktop component tests proving symbolic sticky previous/next navigation
+  uses accessible labels without visible `Föregående` / `Nästa` text.
+- Desktop component tests proving the pre-conversion rail has no PDF/QTI target
+  checkboxes and the files view remains the only teacher-facing generated-file
+  action surface.
+- Desktop component tests proving `Ändra` opens the normal answer-key editor
+  with `Spara facit` and bounded `Tidigare förslag` detail for advisory-seeded
+  edits.
+- Replay/navigation tests proving `Acceptera` and valid `Spara facit` wait for
+  backend-confirmed readback/replay projection before auto-advancing to the
+  next actionable item.
+- Small-screen/component tests at phone-sized viewports proving the question
+  list, selected item detail, report, and files surfaces are separate task
+  views with no horizontal overflow or clipped action labels.
+- Small-screen files-view tests proving files render without a selected-question
+  editor/detail surface above them.
 - `pdm run fe-test -- --run <focused Exam Converter specs>`
 - `pdm run fe-type-check`
 - `pdm run fe-lint`

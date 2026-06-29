@@ -143,7 +143,8 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     const questions = wrapper.find('[data-test="exam-converter-question-review-shell"]');
 
     expect(questions.text()).toContain("Saknas");
-    expect(questions.text()).toContain("Facit");
+    expect(questions.text()).toContain("Granska facit");
+    expect(questions.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists()).toBe(true);
     expect(questions.text()).toContain("Poäng");
     expect(questions.text()).not.toContain("Facit saknas");
     expect(questions.text()).not.toContain("Poäng saknas");
@@ -151,8 +152,9 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(questions.text()).not.toContain("Svarsalternativ");
     expect(questions.text()).not.toContain("Komplettering");
     expect(questions.text()).not.toContain("Behöver ses över");
-    expect(questions.findAll(".lucide-circle-check").length).toBeGreaterThan(0);
-    expect(questions.findAll(".lucide-bot").length).toBeGreaterThan(0);
+    expect(questions.findAll(".lucide-check").length).toBeGreaterThan(0);
+    expect(questions.findAll(".lucide-sparkles").length).toBeGreaterThan(0);
+    expect(questions.findAll(".lucide-circle-check")).toHaveLength(0);
     expect(questions.find('[data-test="exam-converter-question-row-item-004"]').text()).not.toContain(
       "Giltigt",
     );
@@ -180,7 +182,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(manualMarkedFreeTextRow.text()).toContain("1 p");
     expect(manualMarkedFreeTextRow.text()).not.toContain("Facit");
     expect(manualMarkedFreeTextRow.text()).not.toContain("Poäng");
-    expect(manualMarkedFreeTextRow.find(".lucide-circle-check").exists()).toBe(true);
+    expect(manualMarkedFreeTextRow.find(".lucide-check").exists()).toBe(true);
     expect(manualMarkedFreeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
   });
 
@@ -231,7 +233,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(freeTextRow.text()).toContain("Fritext");
     expect(freeTextRow.text()).toContain("—");
     expect(freeTextRow.text()).toContain("1 p");
-    expect(freeTextRow.find(".lucide-circle-check").exists()).toBe(true);
+    expect(freeTextRow.find(".lucide-check").exists()).toBe(true);
     expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
   });
 

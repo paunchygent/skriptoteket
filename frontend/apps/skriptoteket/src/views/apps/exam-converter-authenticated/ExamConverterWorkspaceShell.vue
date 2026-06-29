@@ -13,6 +13,7 @@
  *     result strip, inspection modes, and focused review surfaces.
  */
 
+import { computed } from "vue";
 import { FileText, Upload } from "lucide-vue-next";
 
 import ExamConverterAdvisoryRetryPanel from "./ExamConverterAdvisoryRetryPanel.vue";
@@ -37,7 +38,7 @@ import type { ExamConverterResultStripState } from "./useExamConverterConversion
 import type { ExamConverterReviewArtifactsStatus } from "./useExamConverterReviewArtifacts";
 import type { ExamConverterSourceFileSelection } from "./useExamConverterSourceFile";
 
-defineProps<{
+const props = defineProps<{
   activeInspectionMode: ExamConverterInspectionMode;
   aiSuggestionFocusKey: number;
   canRetryAdvisoryFacitSuggestion: boolean;
@@ -97,6 +98,26 @@ function handleDrop(event: DragEvent): void {
     emit("filesDropped", files);
   }
 }
+
+const projectionBackedResultStrip = computed<ExamConverterResultStripState | null>(() => {
+  if (!props.resultStrip) return null;
+  if (props.resultStrip.status === "running" || !props.reviewProjection) {
+    return props.resultStrip;
+  }
+  const count = props.reviewProjection.report.attentionQuestionCount;
+  if (count <= 0) {
+    return props.resultStrip;
+  }
+  return {
+    ...props.resultStrip,
+    actionLabel: "Granska",
+    detail: `${count.toLocaleString("sv-SE")} att granska`,
+    nextAction: "Granska frågorna som saknar rätt svar eller facitsvar.",
+    status: "partial",
+    title: "Kontrollera facit",
+    tone: "warning",
+  };
+});
 </script>
 
 <template>
@@ -107,16 +128,16 @@ function handleDrop(event: DragEvent): void {
     data-test="exam-converter-workspace-shell"
   >
     <header class="px-4 py-4">
-      <template v-if="resultStrip">
+      <template v-if="projectionBackedResultStrip">
         <ExamConverterAiPrefillPanel
-          v-if="showAiPrefillPanel && reviewProjection && resultStrip.status !== 'running'"
+          v-if="showAiPrefillPanel && reviewProjection && projectionBackedResultStrip.status !== 'running'"
           :focus="focusedAiPrefill"
           :suggestion-count="reviewProjection.report.aiSuggestionCount"
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterResultStrip
           v-else
-          :result="resultStrip"
+          :result="projectionBackedResultStrip"
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterAdvisoryRetryPanel

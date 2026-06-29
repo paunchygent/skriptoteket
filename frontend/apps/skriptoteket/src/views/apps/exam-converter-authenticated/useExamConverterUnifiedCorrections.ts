@@ -78,6 +78,7 @@ function replayApplyResult(
   replay: Extract<CorrectionSessionReplayResult, { projectionFreshness: "fresh" }>,
 ): ExamAuthoringCorrectionsApplyResult {
   return {
+    answer_key_review_state: replay.answerKeyReviewState,
     artifact_availability: replay.artifactAvailability,
     correction_report: replay.correctionReport,
     effective_state: replay.effectiveState,
@@ -110,6 +111,7 @@ export function useExamConverterUnifiedCorrections(
   }): ExamAuthoringCorrectionsApplyResult {
     return {
       artifact_availability: [],
+      answer_key_review_state: params.projection.answerKeyReviewState,
       correction_report: {
         accepted_entries: [],
         rejected_entries: [],

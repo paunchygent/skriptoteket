@@ -193,7 +193,7 @@ git diff --check
   recreate the affected HuleEdu services before blaming app code.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- `ST-21-11` now tracks Sir Convert Story 57 + Task 373 + `PR-0406`; use it for the overseer loop and final production DXE browser proof gate.
+- `PR-0406` is implemented locally for authenticated Exam Converter compact answer-key review state; retained-review remediation added the required `Acceptera` / `Ändra` advisory path. Governed DXE proof passes at `.artifacts/playwright-pr-0337-correction-session-live/20260629T125825Z/manifest.redacted.json`: `Acceptera -> Klart`, `Ändra -> Ändrat`, validation rows saved through visible choice/gap editors, replay-scoped PDF/QTI download+save, reload persistence, and clean PDF/QTI inspection.
 - `PR-0407` is done and approved by `REV-PR-0407`: reusable Audio Transcription retryable-reattempt browser proof helpers now live in Skriptoteket; keep Sir Convert Task 371 evidence untouched and sidecar precondition setup external.
 - Next governed step: consider a separate shared-auth proof rate-limit resilience slice if the proof lane keeps hitting HuleEdu `RATE_LIMIT`.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
