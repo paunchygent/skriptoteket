@@ -13,8 +13,7 @@
  *   - Emits intent only; question navigation is introduced by a later slice.
  */
 
-import { AlertCircle, CheckCircle2, XCircle } from "lucide-vue-next";
-
+import { IconCheck, IconInfo, IconWarning, IconX } from "../../../components/icons";
 import ExamConverterConversionProgress from "./ExamConverterConversionProgress.vue";
 import type { ExamConverterResultStripState } from "./useExamConverterConversionState";
 
@@ -58,16 +57,24 @@ const iconClassByTone: Record<ExamConverterResultStripState["tone"], string> = {
         :class="iconClassByTone[result.tone]"
         aria-hidden="true"
       >
-        <CheckCircle2
+        <IconCheck
           v-if="result.status === 'success'"
+          :size="20"
           class="h-5 w-5"
         />
-        <AlertCircle
+        <IconWarning
           v-else-if="result.status === 'partial'"
+          :size="20"
           class="h-5 w-5"
         />
-        <XCircle
+        <IconX
+          v-else-if="result.status === 'failed'"
+          :size="20"
+          class="h-5 w-5"
+        />
+        <IconInfo
           v-else
+          :size="20"
           class="h-5 w-5"
         />
       </span>

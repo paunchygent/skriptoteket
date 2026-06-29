@@ -247,14 +247,19 @@ create local durable reviewed state, or invent review outcomes from readiness,
 effective IR, reports, local sessions, or browser state. Target readiness
 remains the PDF/QTI export authority.
 
-If contract-backed missing data (`Facit` or `Poäng`) or warnings exist,
+If contract-backed missing data (`Facit` for keyed closed-response items,
+`Poäng`, or warnings) exists,
 `Frågor` is the default active inspection mode. `Filer` becomes the default
 only when no question review is required. A free-text item with
 `manual_marking_required` is normal in this read-only slice and must not be
 counted as `saknar facit eller poäng`; it can surface later through
-teacher-marking or item-editing affordances. A generic upstream `partial`
-bundle state caused only by free-text manual marking must not make the
-teacher-facing result strip say that the conversion only partly succeeded.
+teacher-marking or item-editing affordances. Keyed closed-response items,
+including MCQ/choice and Lucktext/gap-fill/open-cloze, participate in
+answer-key review. Free-text, open-writing, and other truly open response items
+do not have generated answer keys in this UI slice and must not ask the teacher
+to create one. A generic upstream `partial` bundle state
+caused only by open-response manual marking must not make the teacher-facing
+result strip say that the conversion only partly succeeded.
 
 Collapsed rows may show:
 
@@ -308,9 +313,10 @@ label. Let the status symbol mark the row for attention and put the specific
 contract-backed explanation in the selected-question detail pane if the source
 data supports it.
 
-For this slice, `manual_answer_key_required` maps to `Facit`, missing
-`maxScore` maps to `Poäng`, and `manual_marking_required` for `Fritext` does
-not map to a missing field.
+For this slice, `manual_answer_key_required` maps to `Facit` only for keyed
+closed-response items, including MCQ/choice and Lucktext/gap-fill/open-cloze.
+Missing `maxScore` maps to `Poäng`, and open-response manual follow-up does not
+map to a missing field or an answer-key repair task.
 
 Expanded row or drawer may show:
 
@@ -359,7 +365,8 @@ Future mutation-backed review may allow the teacher to:
 
 - mark or change the correct answer when alternatives are present;
 - add or adjust points;
-- confirm that a free-text answer has no machine-readable facit;
+- mark, grade, or route free-text/open-writing answers through a teacher-marking
+  workflow without creating an answer key;
 - mark a question as checked;
 - keep a question excluded from a target file when the target cannot represent
   it.

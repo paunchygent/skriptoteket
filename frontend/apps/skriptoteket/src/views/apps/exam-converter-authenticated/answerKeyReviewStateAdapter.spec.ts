@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   applyAnswerKeyReviewStateToQuestions,
+  countActionableAnswerKeyRows,
   parseAnswerKeyReviewState,
 } from "./answerKeyReviewStateAdapter";
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
@@ -169,5 +170,79 @@ describe("answerKeyReviewStateAdapter", () => {
     expect(rows[1]?.llmCandidate).toBeNull();
     expect(rows[2]?.llmCandidate).toBeNull();
     expect(rows[3]?.answerKeyReviewStateReasonLabel).toBe("Inget rätt svar valt");
+  });
+
+  it("keeps Lucktext keyed review actionable while excluding open-ended rows", () => {
+    const parsed = parseAnswerKeyReviewState({
+      schema_version: "digiexam_answer_key_review_state_v1",
+      items: [
+        reviewItem({
+          item_id: "item-001",
+          item_type: "gap_fill",
+          review_state: "review_required",
+          current_key_origin: "none",
+          reasons: ["advisory_candidate_pending"],
+        }),
+        reviewItem({
+          item_id: "item-002",
+          item_type: "open_ended",
+          review_state: "validation_required",
+          current_key_origin: "none",
+          reasons: ["manual_answer_key_required"],
+          sequence: 2,
+        }),
+        reviewItem({
+          item_id: "item-003",
+          item_type: "open_ended",
+          review_state: "validation_required",
+          current_key_origin: "none",
+          reasons: ["unsupported_item_type"],
+          sequence: 3,
+        }),
+      ],
+    });
+
+    const rows = applyAnswerKeyReviewStateToQuestions({
+      questions: [
+        question({ itemId: "item-001", itemType: "gap_fill", sequence: 1 }),
+        question({
+          gaps: [],
+          itemId: "item-002",
+          itemType: "open_ended",
+          llmCandidate: null,
+          sequence: 2,
+          typeLabel: "Fritext",
+        }),
+        question({
+          gaps: [],
+          itemId: "item-003",
+          itemType: "open_ended",
+          llmCandidate: null,
+          sequence: 3,
+          typeLabel: "Fritext",
+        }),
+      ],
+      reviewState: parsed,
+    });
+
+    expect(countActionableAnswerKeyRows(parsed)).toBe(1);
+    expect(rows.map((row) => row.answerKeyReviewStateLabel)).toEqual([
+      "Granska",
+      "Klart",
+      "Klart",
+    ]);
+    expect(rows.map((row) => row.statusSymbol)).toEqual([
+      "ai_suggestion",
+      "complete",
+      "complete",
+    ]);
+    expect(rows.map((row) => row.status)).toEqual(["attention", "complete", "complete"]);
+    expect(rows[0]?.missingFields).not.toContain("Facit");
+    expect(rows[1]?.missingFields).not.toContain("Facit");
+    expect(rows[2]?.missingFields).not.toContain("Facit");
+    expect(rows[0]?.llmCandidate).not.toBeNull();
+    expect(rows[0]?.answerKeyReviewStateReasonLabel).toBeNull();
+    expect(rows[1]?.answerKeyReviewStateReasonLabel).toBeNull();
+    expect(rows[2]?.answerKeyReviewStateReasonLabel).toBeNull();
   });
 });

@@ -170,6 +170,19 @@ function typeLabelForItemType(itemType: string): string {
   }
 }
 
+export function isAnswerKeyReviewableItemType(itemType: string): boolean {
+  return (
+    itemType === DIGIEXAM_ITEM_TYPE_GAP_FILL ||
+    itemType === DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE ||
+    itemType === DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE ||
+    itemType === DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE
+  );
+}
+
+export function isOpenResponseItemType(itemType: string): boolean {
+  return itemType === DIGIEXAM_ITEM_TYPE_OPEN_ENDED;
+}
+
 function alternativeText(alternative: DigiExamIrAlternative): string {
   return stripHtml([alternative.title, alternative.about].filter(Boolean).join(" ")).trim();
 }
@@ -282,6 +295,7 @@ function missingFieldsForItem(
     labels.push("Poäng");
   }
   if (
+    isAnswerKeyReviewableItemType(item.itemType) &&
     followUps.some(
       (followUp) => followUp.reason === DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
     )
@@ -291,9 +305,17 @@ function missingFieldsForItem(
   return uniqueLabels(labels);
 }
 
-function isActionableFollowUp(followUp: DigiExamIrManualFollowUp): boolean {
+function isActionableFollowUp(
+  followUp: DigiExamIrManualFollowUp,
+  item: DigiExamIrItem,
+): boolean {
+  if (isOpenResponseItemType(item.itemType)) {
+    return false;
+  }
+  if (followUp.reason === DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED) {
+    return isAnswerKeyReviewableItemType(item.itemType);
+  }
   return (
-    followUp.reason === DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED ||
     followUp.reason === DIGIEXAM_MANUAL_FOLLOW_UP_UNSUPPORTED_ITEM_TYPE ||
     followUp.reason === DIGIEXAM_MANUAL_FOLLOW_UP_PARSER_WARNING_BLOCKS_RENDERING
   );
@@ -328,7 +350,7 @@ function isAttentionRow(params: {
 }): boolean {
   return (
     params.missingFields.length > 0 ||
-    params.followUps.some(isActionableFollowUp) ||
+    params.followUps.some((followUp) => isActionableFollowUp(followUp, params.item)) ||
     params.item.warnings.length > 0
   );
 }
@@ -352,7 +374,7 @@ function statusSymbolForItem(params: {
   }
   if (
     params.missingFields.includes("Facit") &&
-    params.item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
+    isAnswerKeyReviewableItemType(params.item.itemType)
   ) {
     return "validation_required";
   }
@@ -409,11 +431,11 @@ export function projectQuestionReviewRow(
       missingFields,
     }) === "ai_suggestion"
       ? "Granska"
-      : missingFields.includes("Facit") && item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
+      : missingFields.includes("Facit") && isAnswerKeyReviewableItemType(item.itemType)
         ? "Kontrollera"
         : "Klart",
     answerKeyReviewStateReasonLabel:
-      missingFields.includes("Facit") && item.itemType !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED
+      missingFields.includes("Facit") && isAnswerKeyReviewableItemType(item.itemType)
         ? "Saknar facitsvar"
         : null,
     currentAnswerKeyProvenance: hasEffectiveAnswerKey(effectiveAnswerKey)

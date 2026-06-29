@@ -14,8 +14,8 @@
  */
 
 import { computed, ref, watch } from "vue";
-import { Bot, Check, CheckCircle2 } from "lucide-vue-next";
 
+import { IconAi, IconCheck } from "../../../components/icons";
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
@@ -241,20 +241,22 @@ watch(
           <span class="leading-relaxed">
             {{ alternative.text }}
           </span>
-          <CheckCircle2
+          <IconCheck
             v-if="
               selectedChoiceIds.includes(Number.parseInt(alternative.id, 10)) &&
                 !selectedChoiceIdsRepresentAiAnswerKey
             "
+            :size="20"
             class="mt-1 h-5 w-5 text-success"
             data-test="exam-converter-manual-choice-teacher-symbol"
             aria-hidden="true"
           />
-          <Bot
+          <IconAi
             v-if="
               selectedChoiceIds.includes(Number.parseInt(alternative.id, 10)) &&
                 selectedChoiceIdsRepresentAiAnswerKey
             "
+            :size="20"
             class="mt-1 h-5 w-5 text-success"
             data-test="exam-converter-manual-choice-ai-symbol"
             aria-hidden="true"
@@ -290,7 +292,8 @@ watch(
       data-test="exam-converter-apply-manual-answer-key-action"
       @click="applyManualAnswerKey"
     >
-      <Check
+      <IconCheck
+        :size="16"
         class="h-4 w-4"
         aria-hidden="true"
       />

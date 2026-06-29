@@ -132,7 +132,7 @@ const projectionBackedResultStrip = computed<ExamConverterResultStripState | nul
         <ExamConverterAiPrefillPanel
           v-if="showAiPrefillPanel && reviewProjection && projectionBackedResultStrip.status !== 'running'"
           :focus="focusedAiPrefill"
-          :suggestion-count="reviewProjection.report.aiSuggestionCount"
+          :review-count="reviewProjection.report.attentionQuestionCount"
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterResultStrip

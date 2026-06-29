@@ -26,6 +26,7 @@ import {
   terminalResult,
 } from "./examConverterAuthenticatedReviewFixtures";
 import {
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_QTI_PACKAGE,
@@ -33,6 +34,7 @@ import {
   SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
 } from "../../api/sirConvertGateway/contractValues";
 import {
+  ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
 } from "../../api/sirConvertGateway/schemaVersions";
 
@@ -237,6 +239,118 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
   });
 
+  it("ignores impossible free-text manual answer-key repair from compact review state", async () => {
+    mockFreeTextOnlyReviewArtifacts(gatewayMocks);
+    const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
+    gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
+      (params: { artifactKey: string }) => {
+        if (params.artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+          return Promise.resolve(
+            artifactJsonBlob(DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT, {
+              schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+              items: [
+                {
+                  choice_ids: [],
+                  choice_interaction_ids: [],
+                  correction_affordances: [],
+                  current_key_origin: "none",
+                  gap_ids: [],
+                  gap_interaction_ids: [],
+                  item_id: "item-001",
+                  item_type: "open_ended",
+                  message_key: "exam_converter.answer_key.manual_required",
+                  provenance_detail: null,
+                  reasons: ["manual_answer_key_required"],
+                  replay_artifact_references: [],
+                  review_state: "validation_required",
+                  sequence: 1,
+                  source_item_fingerprint: "sha256:item-001",
+                },
+              ],
+            }),
+          );
+        }
+        return baseDownload?.(params);
+      },
+    );
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+
+    expect(wrapper.text()).toContain("Provet är konverterat");
+    expect(wrapper.text()).not.toContain("Kontrollera facit");
+    expect(wrapper.text()).not.toContain("saknar rätt svar eller facitsvar");
+    expect(wrapper.text()).not.toContain("Saknar facitsvar");
+    expect(wrapper.text()).not.toContain("Inget rätt svar valt");
+    expect(wrapper.text()).not.toContain("Spara facit");
+
+    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
+    const freeTextRow = wrapper.find('[data-test="exam-converter-question-row-item-001"]');
+    expect(freeTextRow.text()).toContain(
+      "1. Varför är stål hårdare och starkare än järn?",
+    );
+    expect(freeTextRow.text()).toContain("Fritext");
+    expect(freeTextRow.text()).toContain("Klart");
+    expect(freeTextRow.text()).not.toContain("Kontrollera");
+    expect(freeTextRow.text()).not.toContain("Facit");
+    expect(freeTextRow.find(".lucide-check").exists()).toBe(true);
+    expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
+
+    await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
+    const reportRows = wrapper.findAll(".exam-converter-report-row");
+    expect(reportRows.find((row) => row.text().includes("Frågor"))?.text()).toContain("0");
+    expect(reportRows.find((row) => row.text().includes("Facit saknas"))?.text()).toContain("0");
+  });
+
+  it("renders free-text unsupported-type follow-up as non-gated review state", async () => {
+    mockFreeTextOnlyReviewArtifacts(gatewayMocks);
+    const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
+    gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
+      (params: { artifactKey: string }) => {
+        if (params.artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+          return Promise.resolve(
+            artifactJsonBlob(DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT, {
+              schema_version: ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+              items: [
+                {
+                  choice_ids: [],
+                  choice_interaction_ids: [],
+                  correction_affordances: [],
+                  current_key_origin: "none",
+                  gap_ids: [],
+                  gap_interaction_ids: [],
+                  item_id: "item-001",
+                  item_type: "open_ended",
+                  message_key: "exam_converter.answer_key.unsupported_item_type",
+                  provenance_detail: null,
+                  reasons: ["unsupported_item_type"],
+                  replay_artifact_references: [],
+                  review_state: "validation_required",
+                  sequence: 1,
+                  source_item_fingerprint: "sha256:item-001",
+                },
+              ],
+            }),
+          );
+        }
+        return baseDownload?.(params);
+      },
+    );
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
+
+    const freeTextRow = wrapper.find('[data-test="exam-converter-question-row-item-001"]');
+    expect(wrapper.text()).not.toContain("Kontrollera facit");
+    expect(freeTextRow.text()).toContain("Fritext");
+    expect(freeTextRow.text()).toContain("Klart");
+    expect(freeTextRow.text()).not.toContain("Kontrollera");
+    expect(freeTextRow.text()).not.toContain("Frågetypen behöver kontrolleras");
+    expect(freeTextRow.find(".lucide-check").exists()).toBe(true);
+    expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
+  });
+
   it("keeps the success banner when all question rows and target files are ready despite warnings", async () => {
     mockFreeTextOnlyReviewArtifacts(gatewayMocks);
     const resultWithNonBlockingWarning = terminalResult();
@@ -255,7 +369,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
 
     expect(wrapper.text()).toContain("Provet är konverterat");
     expect(wrapper.text()).not.toContain("Konverteringen av provet lyckades delvis");
-    expect(wrapper.findAll(".lucide-circle-check").length).toBeGreaterThan(0);
+    expect(wrapper.find('[data-test="exam-converter-result-strip"]').findComponent({ name: "IconCheck" }).exists()).toBe(true);
   });
 
   it("keeps target-level export blockers out of teacher authoring state", async () => {

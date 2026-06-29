@@ -17,7 +17,7 @@
 
 import { computed } from "vue";
 
-import { IconAi, IconEdit } from "../../../components/icons";
+import { IconAi } from "../../../components/icons";
 import type {
   ExamConverterManualAnswerKeyCorrection,
 } from "./digiexamTeacherCorrectionOverlay";
@@ -151,7 +151,7 @@ function acceptAdvisoryAnswerKey(): void {
     <div class="flex flex-wrap items-center gap-2">
       <button
         type="button"
-        class="btn-primary inline-flex items-center gap-2"
+        class="inline-flex items-center justify-center border border-action bg-action px-4 py-2 text-xs font-bold uppercase tracking-widest text-panel transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         :disabled="disabled || question.sourceItemFingerprint === null"
         data-test="exam-converter-accept-advisory-answer-key-action"
         @click="acceptAdvisoryAnswerKey"
@@ -160,16 +160,11 @@ function acceptAdvisoryAnswerKey(): void {
       </button>
       <button
         type="button"
-        class="btn-ghost inline-flex items-center gap-2 shadow-none"
+        class="inline-flex items-center justify-center border border-navy bg-panel px-4 py-2 text-xs font-bold uppercase tracking-widest text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         :disabled="disabled"
         data-test="exam-converter-edit-advisory-answer-key-action"
         @click="emit('editAdvisoryAnswerKey', question)"
       >
-        <IconEdit
-          :size="16"
-          class="h-4 w-4"
-          aria-hidden="true"
-        />
         Ändra
       </button>
     </div>

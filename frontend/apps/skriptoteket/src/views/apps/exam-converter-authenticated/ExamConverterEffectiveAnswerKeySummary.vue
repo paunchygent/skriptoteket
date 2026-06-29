@@ -13,10 +13,9 @@
  */
 
 import { computed } from "vue";
-import { Bot, CheckCircle2 } from "lucide-vue-next";
 
+import { IconCheck } from "../../../components/icons";
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
-import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
 import { effectiveGapAnswerDisplayEntries } from "./examConverterPersistedCorrectionDisplay";
 
 const props = defineProps<{
@@ -53,9 +52,6 @@ const hasAnswerKeySummary = computed(
   () => choiceAnswerEntries.value.length > 0 || gapAnswerSummary.value !== null,
 );
 
-const isAiAnswerKey = computed(() =>
-  isAiAnswerKeyProvenance(props.question.currentAnswerKeyProvenance),
-);
 </script>
 
 <template>
@@ -65,14 +61,8 @@ const isAiAnswerKey = computed(() =>
     data-test="exam-converter-effective-answer-key-summary"
   >
     <h5 class="inline-flex items-center gap-1.5 font-semibold leading-tight">
-      <Bot
-        v-if="isAiAnswerKey"
-        class="h-4 w-4 text-success"
-        data-test="exam-converter-effective-answer-key-ai-symbol"
-        aria-hidden="true"
-      />
-      <CheckCircle2
-        v-else
+      <IconCheck
+        :size="16"
         class="h-4 w-4 text-success"
         data-test="exam-converter-effective-answer-key-teacher-symbol"
         aria-hidden="true"

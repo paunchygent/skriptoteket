@@ -182,6 +182,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md`
 - Exam Converter compact answer-key review-state retained review:
   `docs/backlog/reviews/review-pr-0406-exam-converter-compact-answer-key-review-state.md`
+- Exam Converter frontend design implementation alignment PR slice:
+  `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md`
+- Exam Converter frontend design implementation retained review:
+  `docs/backlog/reviews/review-pr-0408-exam-converter-frontend-design-implementation-alignment.md`
+- Exam Converter frontend design proof helper remediation review:
+  `docs/backlog/reviews/review-pr-0408-exam-converter-design-proof-helper-remediation.md`
 - Exam Converter PR-0406 answer-key review small-screen decision mockup:
   `docs/mockups/pr-0406-answer-key-review-small-screen/README.md`
 - Exam Converter PR-0406 answer-key review desktop alignment mockup:
@@ -211,6 +217,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0265-docs-mockup-bundle-contract-and-existing-preview-indexes.md`
 - Dev tooling script surface consolidation:
   `docs/backlog/prs/pr-0266-dev-tooling-script-surface-consolidation.md`
+- Dev tooling command-surface alignment mediation:
+  `docs/backlog/prs/pr-0409-dev-tooling-command-surface-alignment-mediation.md`
+- Dev tooling command-surface alignment mediation review:
+  `docs/backlog/reviews/review-pr-0409-dev-tooling-command-surface-alignment-mediation.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
 - Runner Contract V3 (Structured Results, State & Promotions): `docs/reference/ref-runner-contract-v3.md`
@@ -386,6 +396,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0341-st-21-04-authoring-export-boundary-separation.md`
 - ST-21-04 correction-session browser and artifact proof:
   `docs/backlog/prs/pr-0337-st-21-04-correction-session-browser-and-artifact-proof.md`
+- ST-21-04 Exam Converter frontend design implementation alignment:
+  `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md`
 - ST-21-09 Conversion Hub remote inference proof trust lane:
   `docs/backlog/stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md`
 - ST-21-09 remote inference live-proof trust-lane preflight:

@@ -12,9 +12,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main`.
 - Latest closed work: `PR-0407`; `PR-0406` / `ST-21-11` is production-proved
   with retained review `REV-PR-0406`.
-- Active worktree slice: none. `PR-0406` is committed, pushed, deployed,
-  approved, and production-proved at `.artifacts/playwright-pr-0337-correction-session-live/20260629T152928Z/`; `PR-0407` is also closed.
-  Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
+- Active worktree slice: `PR-0408` Exam Converter frontend design implementation alignment is done and approved by `REV-PR-0408`; browser/PNG proof passed at `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`.
+  Dev-tooling command-surface mediation is preserved as approved `PR-0409` / `REV-PR-0409`; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
 - `PR-0363` is done and approved by `REV-PR-0363`. Its mode-query bridge was historical cutover scaffolding and has been superseded by `PR-0374`.
@@ -194,6 +193,7 @@ git diff --check
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
 - `PR-0406` / `ST-21-11` are done, approved by `REV-PR-0406`, deployed at `63e27ad4`, and production-proved at `.artifacts/playwright-pr-0337-correction-session-live/20260629T152928Z/manifest.redacted.json`: HuleEdu login, DXE upload, first-pass `digiexam_answer_key_review_state_v1`, `Acceptera -> Klart`, `Ändra -> Ändrat`, validation key repair, report/files views, replay-scoped PDF/QTI download+save, reload persistence, and mobile detail/list/files/report checks.
+- `PR-0408` is done and approved by `REV-PR-0408`: Exam Converter live desktop/phone UI aligns to PR-0406 mockups; Lucktext/gap-fill/open-cloze remain keyed closed-response answer-key review items, free-text/open-writing stays non-gated/no-key, and `Acceptera`/`Ändra` use mockup-approved button treatments. Fresh proof: `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`.
 - `PR-0407` is done and approved by `REV-PR-0407`: reusable Audio Transcription retryable-reattempt browser proof helpers now live in Skriptoteket; keep Sir Convert Task 371 evidence untouched and sidecar precondition setup external.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

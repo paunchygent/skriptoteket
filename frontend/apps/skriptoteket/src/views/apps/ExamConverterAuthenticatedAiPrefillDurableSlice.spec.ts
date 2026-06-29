@@ -419,7 +419,12 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-question-row-item-013"]').trigger("click");
+    const gapFillRow = wrapper.find('[data-test="exam-converter-question-row-item-013"]');
+    expect(gapFillRow.text()).toContain("Lucktext");
+    expect(gapFillRow.text()).toContain("Granska");
+    expect(gapFillRow.text()).not.toContain("Frågetypen behöver kontrolleras");
+    expect(gapFillRow.find(".lucide-sparkles").exists()).toBe(true);
+    await gapFillRow.trigger("click");
     expect(
       wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').text(),
     ).toContain("kretslopp");
@@ -530,8 +535,21 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       wrapper.find('[data-test="exam-converter-accept-advisory-answer-key-action"]').text(),
     ).toContain("Acceptera");
     expect(
+      wrapper
+        .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+        .classes(),
+    ).toEqual(expect.arrayContaining(["border-action", "bg-action", "text-panel"]));
+    expect(
+      wrapper
+        .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+        .classes(),
+    ).not.toContain("btn-primary");
+    expect(
       wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').text(),
     ).toContain("Ändra");
+    expect(
+      wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"] svg').exists(),
+    ).toBe(false);
     expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
       false,
     );

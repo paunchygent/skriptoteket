@@ -110,6 +110,11 @@ describe("ExamConverterAuthenticatedView compact review state", () => {
     });
     expect(wrapper.text()).toContain("Kontrollera facit");
     expect(wrapper.text()).toContain("Granska facit");
+    expect(wrapper.text()).toContain("1 att granska");
+    expect(wrapper.text()).toContain("Granska frågorna som saknar rätt svar eller facitsvar.");
+    const reviewBand = wrapper.find('[data-test="exam-converter-ai-prefill-panel"]');
+    expect(reviewBand.findComponent({ name: "IconAi" }).exists()).toBe(true);
+    expect(reviewBand.findAll(".lucide-bot")).toHaveLength(0);
     const questionRows = wrapper.find('[data-test="exam-converter-question-review-shell"]');
     expect(questionRows.text()).toContain("Granska");
     expect(questionRows.text()).toContain("Klart");

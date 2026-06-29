@@ -22,6 +22,14 @@ from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Locator, Page, expect
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
+from scripts._playwright_auth_rate_limit import (
+    RATE_LIMIT_DEFAULT_MAX_BACKOFF_MS,
+    HuleEduRateLimitError,
+    parse_huleedu_rate_limit_response,
+    read_login_response_json,
+    read_login_response_text,
+)
+
 AUTH_ENTRY_PATH = "/auth/login"
 HULEEDU_LOGIN_API_PATH = "/v1/auth/login"
 AUTH_HANDOFF_ACTION_PATTERN = re.compile(
@@ -89,7 +97,13 @@ def _success_destination_visible(
     )
 
 
-def _submit_huleedu_form(page: Page, *, email: str, password: str) -> None:
+def _submit_huleedu_form(
+    page: Page,
+    *,
+    email: str,
+    password: str,
+    rate_limit_max_backoff_ms: int,
+) -> None:
     """Submit the HuleEdu browser login form and assert the login API accepted it."""
 
     email_input = page.locator("#email")
@@ -117,7 +131,16 @@ def _submit_huleedu_form(page: Page, *, email: str, password: str) -> None:
     response = response_info.value
     if response.status == 200:
         return
-    response_text = response.text()[:500].replace(email, "<email>").replace(password, "<password>")
+    response_json = read_login_response_json(response)
+    response_text = read_login_response_text(response, email=email, password=password)
+    rate_limit_error = parse_huleedu_rate_limit_response(
+        response=response,
+        response_json=response_json,
+        response_text=response_text,
+        max_backoff_ms=rate_limit_max_backoff_ms,
+    )
+    if rate_limit_error is not None:
+        raise rate_limit_error
     raise AssertionError(f"HuleEdu login API returned {response.status}: {response_text}")
 
 
@@ -128,11 +151,17 @@ def _submit_auth_surface(
     visible_surface: str,
     email: str,
     password: str,
+    rate_limit_max_backoff_ms: int,
 ) -> None:
     """Submit whichever supported browser-auth surface is currently visible."""
 
     if visible_surface == "huleedu_form":
-        _submit_huleedu_form(page, email=email, password=password)
+        _submit_huleedu_form(
+            page,
+            email=email,
+            password=password,
+            rate_limit_max_backoff_ms=rate_limit_max_backoff_ms,
+        )
         return
 
     if visible_surface == "form":
@@ -250,6 +279,8 @@ def login_via_auth_entry(
     failure_screenshot_name: str = "login-failure.png",
     form_timeout_ms: int = 15_000,
     success_timeout_ms: int = 30_000,
+    rate_limit_backoff: bool = False,
+    rate_limit_backoff_max_ms: int = RATE_LIMIT_DEFAULT_MAX_BACKOFF_MS,
 ) -> None:
     """Log in through `/auth/login` and wait for one authenticated destination."""
 
@@ -326,22 +357,30 @@ def login_via_auth_entry(
                     )
                 raise AssertionError("HuleEdu auth handoff link did not open a login form.")
 
-        _submit_auth_surface(
-            page,
-            auth_form=auth_form,
-            visible_surface=visible_surface,
-            email=email,
-            password=password,
-        )
+        try:
+            _submit_auth_surface(
+                page,
+                auth_form=auth_form,
+                visible_surface=visible_surface,
+                email=email,
+                password=password,
+                rate_limit_max_backoff_ms=rate_limit_backoff_max_ms,
+            )
+        except HuleEduRateLimitError as exc:
+            if rate_limit_backoff and attempt < attempts - 1:
+                page.wait_for_timeout(exc.backoff_ms(max_backoff_ms=rate_limit_backoff_max_ms))
+                continue
+            raise
 
         try:
-            if success_selector_locator is not None:
-                expect(success_selector_locator).or_(success_heading).to_be_visible(
-                    timeout=success_timeout_ms
-                )
-            else:
-                expect(success_heading).to_be_visible(timeout=success_timeout_ms)
-            return
+            if _wait_for_success_destination(
+                page=page,
+                success_heading=success_heading,
+                success_selector=success_selector_locator,
+                timeout_ms=success_timeout_ms,
+            ):
+                return
+            raise AssertionError("Auth-entry login did not reach the expected destination.")
         except AssertionError:
             if recover_to_next_path and _try_recover_to_next_path(
                 page=page,

@@ -52,15 +52,15 @@ function aiSuggestionOutcomeLabel(
           Det här behöver kontrolleras
         </h4>
         <dl class="mt-4 grid gap-3 text-sm text-navy">
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Frågor</dt>
             <dd>{{ report.attentionQuestionCount.toLocaleString("sv-SE") }}</dd>
           </div>
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Facit saknas</dt>
             <dd>{{ report.missingAnswerKeyCount.toLocaleString("sv-SE") }}</dd>
           </div>
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Poäng saknas</dt>
             <dd>{{ report.missingPointsCount.toLocaleString("sv-SE") }}</dd>
           </div>
@@ -72,25 +72,25 @@ function aiSuggestionOutcomeLabel(
           AI-förslag
         </h4>
         <dl class="mt-4 grid gap-3 text-sm text-navy">
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Förslag</dt>
             <dd>{{ report.aiSuggestionOutcomes.totalCount.toLocaleString("sv-SE") }}</dd>
           </div>
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Accepterade</dt>
             <dd>
               {{ report.aiSuggestionOutcomes.acceptedUnchangedCount.toLocaleString("sv-SE") }}
             </dd>
           </div>
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Ändrade</dt>
             <dd>{{ report.aiSuggestionOutcomes.teacherEditedCount.toLocaleString("sv-SE") }}</dd>
           </div>
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Avvisade</dt>
             <dd>{{ report.aiSuggestionOutcomes.suppressedCount.toLocaleString("sv-SE") }}</dd>
           </div>
-          <div class="grid grid-cols-[12rem_minmax(0,1fr)] gap-3">
+          <div class="exam-converter-report-row">
             <dt>Kvar att granska</dt>
             <dd>{{ report.aiSuggestionOutcomes.unresolvedCount.toLocaleString("sv-SE") }}</dd>
           </div>
@@ -116,7 +116,7 @@ function aiSuggestionOutcomeLabel(
           <li
             v-for="item in report.aiSuggestionOutcomes.items"
             :key="item.itemId"
-            class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-t border-navy/15 pt-2"
+            class="exam-converter-report-outcome-row border-t border-navy/15 pt-2"
           >
             <span class="min-w-0">
               {{ item.sequence }}. {{ item.title }}
@@ -128,7 +128,7 @@ function aiSuggestionOutcomeLabel(
         </ol>
       </section>
 
-      <div class="flex items-center justify-between gap-4 border border-navy/20 bg-canvas px-4 py-3">
+      <div class="exam-converter-report-action-row border border-navy/20 bg-canvas px-4 py-3">
         <p class="text-sm leading-snug text-navy/70">
           När frågor, facit och poäng är klara kan filerna användas.
         </p>
@@ -144,3 +144,32 @@ function aiSuggestionOutcomeLabel(
     </div>
   </section>
 </template>
+
+<style scoped>
+.exam-converter-report-row,
+.exam-converter-report-outcome-row {
+  display: grid;
+  gap: 0.25rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.exam-converter-report-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+@media (min-width: 520px) {
+  .exam-converter-report-row {
+    gap: 0.75rem;
+    grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
+  }
+
+  .exam-converter-report-outcome-row {
+    align-items: start;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+</style>

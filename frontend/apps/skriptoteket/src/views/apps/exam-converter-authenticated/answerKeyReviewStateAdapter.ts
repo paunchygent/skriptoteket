@@ -21,13 +21,16 @@ import {
   DIGIEXAM_ANSWER_KEY_REVIEW_REASONS,
   DIGIEXAM_ANSWER_KEY_REVIEW_STATES,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
-  DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
 } from "../../../api/sirConvertGateway/contractValues";
 import { ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION } from "../../../api/sirConvertGateway/schemaVersions";
 import type {
   ExamConverterMissingFieldLabel,
   ExamConverterQuestionReviewRow,
   ExamConverterQuestionStatusSymbol,
+} from "./digiexamIrQuestionReviewProjection";
+import {
+  isAnswerKeyReviewableItemType,
+  isOpenResponseItemType,
 } from "./digiexamIrQuestionReviewProjection";
 
 type JsonRecord = Record<string, unknown>;
@@ -229,6 +232,12 @@ export function parseAnswerKeyReviewState(payload: unknown): DigiExamAnswerKeyRe
 }
 
 function reasonLabel(item: DigiExamAnswerKeyReviewStateItem): string | null {
+  if (isOpenResponseItemType(item.item_type)) {
+    return null;
+  }
+  if (!isAnswerKeyReviewableItemType(item.item_type) && hasAnswerKeyRepairReason(item)) {
+    return null;
+  }
   if (item.reasons.includes("no_correct_choice_selected")) {
     return item.item_type === DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE
       ? "Välj minst ett rätt svar"
@@ -251,7 +260,29 @@ function reasonLabel(item: DigiExamAnswerKeyReviewStateItem): string | null {
   return null;
 }
 
+function hasAnswerKeyRepairReason(item: DigiExamAnswerKeyReviewStateItem): boolean {
+  return (
+    item.reasons.includes("advisory_candidate_pending") ||
+    item.reasons.includes("manual_answer_key_required") ||
+    item.reasons.includes("no_correct_choice_selected") ||
+    item.reasons.includes("required_gap_accepted_values_missing")
+  );
+}
+
+function isActionableAnswerKeyItem(item: DigiExamAnswerKeyReviewStateItem): boolean {
+  return (
+    isAnswerKeyReviewableItemType(item.item_type) &&
+    (item.review_state === "review_required" || item.review_state === "validation_required")
+  );
+}
+
 function symbolForItem(item: DigiExamAnswerKeyReviewStateItem): ExamConverterQuestionStatusSymbol {
+  if (isOpenResponseItemType(item.item_type)) {
+    return "complete";
+  }
+  if (!isAnswerKeyReviewableItemType(item.item_type) && hasAnswerKeyRepairReason(item)) {
+    return "complete";
+  }
   if (item.review_state === "review_complete") return "complete";
   if (item.review_state === "teacher_modified") return "teacher_modified";
   if (item.review_state === "validation_required") return "validation_required";
@@ -263,6 +294,16 @@ function labelForState(reviewState: ReviewState): string {
   if (reviewState === "teacher_modified") return "Ändrat";
   if (reviewState === "validation_required") return "Kontrollera";
   return "Granska";
+}
+
+function labelForItem(item: DigiExamAnswerKeyReviewStateItem): string {
+  if (isOpenResponseItemType(item.item_type)) {
+    return "Klart";
+  }
+  if (!isAnswerKeyReviewableItemType(item.item_type) && hasAnswerKeyRepairReason(item)) {
+    return "Klart";
+  }
+  return labelForState(item.review_state);
 }
 
 function missingFieldsForItem(
@@ -277,7 +318,7 @@ function missingFieldsForItem(
     item.reasons.includes("manual_answer_key_required") ||
     item.reasons.includes("no_correct_choice_selected") ||
     item.reasons.includes("required_gap_accepted_values_missing");
-  if (needsAnswerKey && item.item_type !== DIGIEXAM_ITEM_TYPE_OPEN_ENDED) {
+  if (needsAnswerKey && isAnswerKeyReviewableItemType(item.item_type)) {
     fields.add("Facit");
   }
   return [...fields];
@@ -299,27 +340,22 @@ export function applyAnswerKeyReviewStateToQuestions(params: {
       answerKeyReviewOrigin: item.current_key_origin,
       answerKeyReviewReasons: item.reasons,
       answerKeyReviewState: item.review_state,
-      answerKeyReviewStateLabel: labelForState(item.review_state),
+      answerKeyReviewStateLabel: labelForItem(item),
       answerKeyReviewStateReasonLabel: reasonLabel(item),
       currentAnswerKeyProvenance:
         item.current_key_origin === "reviewed_advisory"
           ? "reviewed_advisory"
           : question.currentAnswerKeyProvenance,
-      llmCandidate: item.reasons.includes("advisory_candidate_pending")
+      llmCandidate: isAnswerKeyReviewableItemType(item.item_type) && item.reasons.includes("advisory_candidate_pending")
         ? question.llmCandidate
         : null,
       missingFields,
-      status:
-        item.review_state === "review_required" || item.review_state === "validation_required"
-          ? "attention"
-          : "complete",
+      status: isActionableAnswerKeyItem(item) ? "attention" : "complete",
       statusSymbol: symbolForItem(item),
     };
   });
 }
 
 export function countActionableAnswerKeyRows(reviewState: DigiExamAnswerKeyReviewState): number {
-  return reviewState.items.filter(
-    (item) => item.review_state === "review_required" || item.review_state === "validation_required",
-  ).length;
+  return reviewState.items.filter(isActionableAnswerKeyItem).length;
 }

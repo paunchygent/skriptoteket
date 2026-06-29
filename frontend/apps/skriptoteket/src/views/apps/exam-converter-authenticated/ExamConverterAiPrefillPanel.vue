@@ -13,13 +13,14 @@
  *   - Emits navigation intent only; answer-key writes stay in the item editor.
  */
 
-import { Bot, ListChecks } from "lucide-vue-next";
+import { ListChecks } from "lucide-vue-next";
 
+import { IconAi } from "../../../components/icons";
 import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
 
 const props = defineProps<{
   focus: ExamConverterAiPrefillFocus;
-  suggestionCount: number;
+  reviewCount: number;
 }>();
 
 const emit = defineEmits<{
@@ -42,25 +43,28 @@ const copyByFocus: Record<ExamConverterAiPrefillFocus, ActionCopy> = {
 
 <template>
   <section
-    class="border border-success bg-success/10 px-4 py-3"
+    class="border border-warning bg-warning/10 px-4 py-3"
     aria-live="polite"
     data-test="exam-converter-ai-prefill-panel"
   >
     <div class="flex items-start gap-3">
       <span
-        class="grid h-10 w-10 shrink-0 place-items-center border border-success bg-panel text-success"
+        class="grid h-10 w-10 shrink-0 place-items-center border border-warning bg-panel text-warning"
         aria-hidden="true"
       >
-        <Bot class="h-6 w-6" />
+        <IconAi
+          :size="24"
+          class="h-6 w-6"
+        />
       </span>
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-          <h2 class="text-base font-semibold leading-tight text-success">
+          <h2 class="text-base font-semibold leading-tight text-navy">
             {{ copyByFocus[props.focus].title }}
           </h2>
-          <div class="flex shrink-0 items-center gap-2">
-            <span class="text-sm font-semibold leading-tight text-success">
-              {{ props.suggestionCount.toLocaleString("sv-SE") }} att granska
+          <div class="flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <span class="text-sm font-semibold leading-tight text-navy">
+              {{ props.reviewCount.toLocaleString("sv-SE") }} att granska
             </span>
             <button
               type="button"
@@ -72,10 +76,13 @@ const copyByFocus: Record<ExamConverterAiPrefillFocus, ActionCopy> = {
                 class="h-4 w-4 text-action"
                 aria-hidden="true"
               />
-              Granska facit
+              Granska
             </button>
           </div>
         </div>
+        <p class="mt-2 text-sm leading-snug text-navy/75">
+          Granska frågorna som saknar rätt svar eller facitsvar.
+        </p>
       </div>
     </div>
   </section>

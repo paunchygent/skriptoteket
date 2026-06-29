@@ -74,8 +74,7 @@ session. This story owns that product capability. It is not owned by `PR-0332`.
 - No browser-local persistence or local replay ledger as product truth.
 - No parser/source IR mutation in Skriptoteket.
 - No matching correction persistence before Task 332.
-- No implementation outside the ordered `PR-0333` through `PR-0341` plus
-  proof-closeout task chain.
+- No implementation outside governed `ST-21-04` PR slices listed below.
 
 ## Implementation PR Chain
 
@@ -131,6 +130,12 @@ PR-sized slices:
    mirror Sir Convert Story 57 as the overseer tracking surface for Task 373,
    PR-0406, and the final production browser proof with the tracked DXE
    fixture.
+12. Frontend design implementation alignment (`PR-0408`, done):
+   align the live desktop and small-screen Exam Converter UI with the governed
+   PR-0406 answer-key review design authorities, without reopening closed
+   backend/Sir Convert remediation or producer-proof work. Frontend code is
+   approved by `REV-PR-0408`; fresh browser/PNG proof passed at
+   `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`.
 
 ## Notes
 
@@ -180,3 +185,7 @@ PR-sized slices:
   `Klart` for reviewed complete state, no AI marker after accepted/reviewed
   keys in the list, no AI marker after teacher-owned edits, and `Kontrollera`
   only for current validation problems such as a missing selected key.
+- `PR-0408` is done as a frontend-only design implementation alignment slice.
+  Frontend code is approved by `REV-PR-0408`; browser/PNG proof against the
+  PR-0406 desktop and small-screen mockups passed at
+  `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`.

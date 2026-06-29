@@ -146,94 +146,92 @@ function isSaveDisabled(file: ExamConverterReviewFile): boolean {
       Inga filer att visa.
     </div>
 
-    <table
+    <div
       v-else
-      class="mt-6 w-full border-collapse text-left text-sm text-navy"
+      class="mt-6 grid gap-3 text-sm text-navy"
+      data-test="exam-converter-file-rows"
     >
-      <thead>
-        <tr class="border-b border-navy/45">
-          <th class="px-3 py-3 font-semibold">
-            Fil
-          </th>
-          <th class="w-36 px-3 py-3 font-semibold">
-            Format
-          </th>
-          <th class="w-24 px-3 py-3 font-semibold">
-            Storlek
-          </th>
-          <th class="w-72 px-3 py-3 font-semibold">
-            Status
-          </th>
-          <th class="w-28 px-3 py-3 text-center font-semibold">
-            Hämta
-          </th>
-          <th class="w-36 px-3 py-3 text-center font-semibold">
-            Spara
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="file in files"
-          :key="file.artifactKey"
-          class="border-b border-navy/15"
-          :data-test="`exam-converter-file-row-${file.artifactKey}`"
-        >
-          <td class="px-3 py-4">
+      <article
+        v-for="file in files"
+        :key="file.artifactKey"
+        class="exam-converter-file-row min-w-0 border border-navy/15 bg-panel px-3 py-3"
+        :data-test="`exam-converter-file-row-${file.artifactKey}`"
+      >
+        <div class="min-w-0">
+          <p class="break-words font-semibold leading-snug text-navy">
             {{ file.filename }}
-          </td>
-          <td class="px-3 py-4">
-            {{ file.kindLabel }}
-          </td>
-          <td class="px-3 py-4">
-            {{ file.sizeLabel ?? "—" }}
-          </td>
-          <td class="px-3 py-4">
-            <span class="block">
-              {{ statusLabelForFile(file) }}
+          </p>
+          <p class="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium leading-tight text-navy/70">
+            <span class="border border-navy/20 bg-panel-muted px-1.5 py-0.5 text-navy">
+              {{ file.kindLabel }}
             </span>
-            <span
-              v-if="reasonLabelForFile(file)"
-              class="mt-1 block text-xs leading-snug text-navy/65"
-              :data-test="`exam-converter-file-reason-${file.artifactKey}`"
-            >
-              {{ reasonLabelForFile(file) }}
-            </span>
-          </td>
-          <td class="px-3 py-4 text-center">
-            <button
-              type="button"
-              class="btn-ghost inline-flex items-center justify-center gap-2 shadow-none disabled:cursor-not-allowed disabled:opacity-45"
-              :aria-label="`Hämta ${file.filename}`"
-              :disabled="isDownloadDisabled(file)"
-              :data-test="`exam-converter-download-file-${file.artifactKey}`"
-              @click="emit('downloadFile', file)"
-            >
-              <Download
-                class="h-4 w-4 text-action"
-                aria-hidden="true"
-              />
-              {{ downloadLabel(file) }}
-            </button>
-          </td>
-          <td class="px-3 py-4 text-center">
-            <button
-              type="button"
-              class="btn-ghost inline-flex items-center justify-center gap-2 shadow-none disabled:cursor-not-allowed disabled:opacity-45"
-              :aria-label="`Spara ${file.filename} i mina filer`"
-              :disabled="isSaveDisabled(file)"
-              :data-test="`exam-converter-save-file-${file.artifactKey}`"
-              @click="emit('saveFile', file)"
-            >
-              <Save
-                class="h-4 w-4 text-action"
-                aria-hidden="true"
-              />
-              {{ saveLabel(file) }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <span>{{ file.sizeLabel ?? "—" }}</span>
+          </p>
+        </div>
+
+        <div class="min-w-0">
+          <span class="block font-medium leading-snug">
+            {{ statusLabelForFile(file) }}
+          </span>
+          <span
+            v-if="reasonLabelForFile(file)"
+            class="mt-1 block text-xs leading-snug text-navy/65"
+            :data-test="`exam-converter-file-reason-${file.artifactKey}`"
+          >
+            {{ reasonLabelForFile(file) }}
+          </span>
+        </div>
+
+        <div class="exam-converter-file-actions flex min-w-0 flex-wrap items-center justify-start gap-2">
+          <button
+            type="button"
+            class="btn-ghost inline-flex min-w-[6.5rem] items-center justify-center gap-2 shadow-none disabled:cursor-not-allowed disabled:opacity-45"
+            :aria-label="`Hämta ${file.filename}`"
+            :disabled="isDownloadDisabled(file)"
+            :data-test="`exam-converter-download-file-${file.artifactKey}`"
+            @click="emit('downloadFile', file)"
+          >
+            <Download
+              class="h-4 w-4 text-action"
+              aria-hidden="true"
+            />
+            {{ downloadLabel(file) }}
+          </button>
+          <button
+            type="button"
+            class="btn-ghost inline-flex min-w-[6.5rem] items-center justify-center gap-2 shadow-none disabled:cursor-not-allowed disabled:opacity-45"
+            :aria-label="`Spara ${file.filename} i mina filer`"
+            :disabled="isSaveDisabled(file)"
+            :data-test="`exam-converter-save-file-${file.artifactKey}`"
+            @click="emit('saveFile', file)"
+          >
+            <Save
+              class="h-4 w-4 text-action"
+              aria-hidden="true"
+            />
+            {{ saveLabel(file) }}
+          </button>
+        </div>
+      </article>
+    </div>
   </section>
 </template>
+
+<style scoped>
+.exam-converter-file-row {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .exam-converter-file-row {
+    align-items: center;
+    grid-template-columns: minmax(0, 1.2fr) minmax(12rem, 0.9fr) auto;
+  }
+
+  .exam-converter-file-actions {
+    justify-content: end;
+  }
+}
+</style>
