@@ -113,6 +113,9 @@ the conversion flow:
 - Corrected the final header-band CSS so the `Resultat` heading and its
   divider align with `Källa` and `Konvertering` even when the preview zoom
   toolbar is visible.
+- By operator request, committed and pushed the ready implementation to
+  `main` as `5cf76513`, then deployed it on Hemma before the independent
+  review loop. `REV-PR-0405` remains pending.
 
 ## Verification notes
 
@@ -147,6 +150,13 @@ the conversion flow:
   run. The rate-limit resilience concern is real but remains a separate
   proof-infrastructure follow-up; this slice does not weaken or bypass the
   HuleEdu browser-session ceremony.
+- Publish/deploy proof: `git push origin main` advanced `origin/main` to
+  `5cf76513`; `pdm run hemma-deploy` launched remote PID `1780343` with log
+  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log`;
+  `pdm run hemma-deploy-monitor -- /home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log`
+  showed `Seating export deploy/readiness gate passed.`; Hemma checkout was
+  `5cf765133325f8275fea15dcf883a128854b805d`; public
+  `https://skriptoteket.hule.education/healthz` returned healthy JSON.
 
 ## Rollback plan
 

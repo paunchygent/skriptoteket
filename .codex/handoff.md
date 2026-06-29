@@ -8,11 +8,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-28.
+- Date: 2026-06-29.
 - Branch: `main`.
 - Latest closed work: `PR-0404`.
-- Active worktree slice: `PR-0405` is implemented locally and awaiting
-  independent review. `PR-0404` is approved by GPT-5.5 XHigh `REV-PR-0404`.
+- Active worktree slice: none. `PR-0405` is committed, pushed, and deployed by
+  operator request; independent review remains pending. `PR-0404` is approved by
+  GPT-5.5 XHigh `REV-PR-0404`.
   Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
@@ -147,6 +148,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0400` is done and approved by `REV-PR-0400`; commit `325553d5` was pushed and deployed on Hemma. Production proof bundle `.artifacts/pr-0400-production-proof/20260628T144818Z/manifest.redacted.json` has `status=ok`, project-preview `Separat PDF` + `Sammanslagen PDF` artifacts, and a Sir Convert-backed `Word-dokument` DOCX with no forbidden marker hits in PDF text/metadata/raw bytes or DOCX ZIP text/raw bytes.
   - `PR-0404` is done and approved by independent GPT-5.5 XHigh `REV-PR-0404`: public `source_ref` compatibility was removed, focused backend/API and frontend tests are green, OpenAPI types were regenerated, the single-file route state was decomposed into selection/request state plus submission/polling/outcome modules, succeeded artifacts with null/missing filenames fail closed instead of exposing raw job ids, and compact retained shared-auth proof is green at `.artifacts/authenticated-home-work-apps/20260628T173523Z/manifest.redacted.json` with two compatible `Mina filer` PDFs, refs-only ordered batch submission, two separate Markdown outputs, download/save, and no forbidden marker hits.
   - `PR-0405` implemented the approved Document Converter column hierarchy and empty-preview polish: focused frontend specs passed with 33 tests, shared-auth proof passed at `.artifacts/authenticated-home-work-apps/20260629T005352Z/manifest.redacted.json`, and earlier proof reruns hit real HuleEdu `RATE_LIMIT` before cooldown.
+  - `PR-0405` was committed as `5cf76513` and deployed on Hemma by operator request; log `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log` includes `Seating export deploy/readiness gate passed.`, Hemma checkout was `5cf765133325f8275fea15dcf883a128854b805d`, and public `/healthz` returned healthy JSON.
 ## How to Run
 ```bash
 # Reuse or start HuleEdu auth integration first, then ensure Skriptoteket uses Docker web.
