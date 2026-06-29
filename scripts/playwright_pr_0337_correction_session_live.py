@@ -27,6 +27,7 @@ from urllib.parse import urlparse
 from zipfile import ZipFile
 
 from playwright.sync_api import (
+    Locator,
     Page,
     Response,
     expect,
@@ -270,6 +271,93 @@ def _save_replayed_file(page: Page, *, artifact_key: str, expected_filename: str
     raise AssertionError(f"Artifact save failed with {last_error}.")
 
 
+def _visible(locator: Locator) -> bool:
+    return locator.count() > 0 and locator.first.is_visible()
+
+
+def _assert_no_visible_selected_detail(page: Page) -> None:
+    detail = page.locator('[data-test="exam-converter-selected-question-detail"]')
+    if _visible(detail):
+        raise AssertionError("Files/report mobile surfaces must not show selected-question detail.")
+
+
+def _mobile_overflow_geometry(page: Page) -> dict[str, int | bool]:
+    geometry = page.evaluate(
+        """() => ({
+            bodyScrollWidth: document.body.scrollWidth,
+            bodyClientWidth: document.body.clientWidth,
+            documentScrollWidth: document.documentElement.scrollWidth,
+            documentClientWidth: document.documentElement.clientWidth,
+        })"""
+    )
+    body_scroll_width = int(geometry["bodyScrollWidth"])
+    body_client_width = int(geometry["bodyClientWidth"])
+    document_scroll_width = int(geometry["documentScrollWidth"])
+    document_client_width = int(geometry["documentClientWidth"])
+    return {
+        "body_client_width": body_client_width,
+        "body_scroll_width": body_scroll_width,
+        "document_client_width": document_client_width,
+        "document_scroll_width": document_scroll_width,
+        "has_horizontal_overflow": (
+            body_scroll_width > body_client_width + 1
+            or document_scroll_width > document_client_width + 1
+        ),
+    }
+
+
+def _capture_mobile_surface_checks(page: Page, *, artifact_dir: Path) -> dict[str, Any]:
+    page.set_viewport_size({"height": 844, "width": 390})
+    page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
+    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_be_visible(
+        timeout=30_000,
+    )
+    mobile_detail = artifact_dir / "05-mobile-detail.png"
+    page.screenshot(path=str(mobile_detail), full_page=True)
+
+    back_to_questions = page.locator('[data-test="exam-converter-compact-back-to-questions"]')
+    if _visible(back_to_questions):
+        back_to_questions.first.click()
+    expect(page.locator('[data-test="exam-converter-question-list-surface"]')).to_be_visible(
+        timeout=30_000,
+    )
+    mobile_questions = artifact_dir / "06-mobile-questions.png"
+    page.screenshot(path=str(mobile_questions), full_page=True)
+
+    page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
+    expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
+        timeout=30_000,
+    )
+    _assert_no_visible_selected_detail(page)
+    mobile_files = artifact_dir / "07-mobile-files.png"
+    page.screenshot(path=str(mobile_files), full_page=True)
+
+    page.locator('[data-test="exam-converter-inspection-tab-report"]').click()
+    expect(page.locator('[data-test="exam-converter-report-summary"]')).to_be_visible(
+        timeout=30_000,
+    )
+    _assert_no_visible_selected_detail(page)
+    mobile_report = artifact_dir / "08-mobile-report.png"
+    page.screenshot(path=str(mobile_report), full_page=True)
+
+    geometry = _mobile_overflow_geometry(page)
+    if geometry["has_horizontal_overflow"]:
+        raise AssertionError(f"Mobile surface has horizontal overflow: {geometry!r}")
+    page.set_viewport_size({"height": 1117, "width": 1728})
+    return {
+        "files_omits_selected_detail": True,
+        "geometry": geometry,
+        "report_omits_selected_detail": True,
+        "screenshots": [
+            str(mobile_questions),
+            str(mobile_detail),
+            str(mobile_files),
+            str(mobile_report),
+        ],
+        "viewport": {"height": 844, "width": 390},
+    }
+
+
 def _save_replayed_file_once(page: Page, *, artifact_key: str) -> dict[str, Any]:
     button = page.locator(f'[data-test="exam-converter-save-file-{artifact_key}"]').first
     expect(button).to_be_enabled(timeout=30_000)
@@ -391,11 +479,21 @@ def _load_shared_csrf_token(page: Page, *, base_url: str) -> dict[str, str]:
     raise AssertionError(f"Could not load shared CSRF token: {errors!r}")
 
 
+def _protected_api_base_url(base_url: str) -> str:
+    """Return the protected API origin for browser-session API proof calls."""
+
+    parsed = urlparse(base_url)
+    if parsed.hostname == "skriptoteket.hule.education":
+        return "https://api.hule.education"
+    return base_url.rstrip("/")
+
+
 def _revert_active_correction_intents(
     page: Page, *, base_url: str, summary: dict[str, Any]
 ) -> dict[str, Any]:
     session_path = _latest_correction_session_path(summary)
-    session_url = f"{base_url.rstrip('/')}{session_path}"
+    api_base_url = _protected_api_base_url(base_url)
+    session_url = f"{api_base_url}{session_path}"
     session_response = page.request.get(session_url, timeout=30_000)
     if session_response.status >= 400:
         raise AssertionError(
@@ -405,7 +503,7 @@ def _revert_active_correction_intents(
     active_intents = session.get("active_intents") if isinstance(session, dict) else None
     if not isinstance(active_intents, list):
         raise AssertionError("Correction-session readback did not return active intents.")
-    csrf = _load_shared_csrf_token(page, base_url=base_url)
+    csrf = _load_shared_csrf_token(page, base_url=api_base_url)
     reverted_target_keys: list[str] = []
     for intent in list(active_intents):
         if not isinstance(intent, dict):
@@ -436,6 +534,7 @@ def _revert_active_correction_intents(
         "active_intent_count_before": len(active_intents),
         "path": session_path,
         "reverted_target_keys": reverted_target_keys,
+        "session_request_origin": urlparse(api_base_url).netloc,
         "shared_csrf_source": csrf["source"],
         "shared_csrf_value_retained": False,
         "session_version_after": session.get("session_version")
@@ -535,6 +634,13 @@ def _click_and_wait_for_apply(page: Page, selector: str) -> None:
             page.locator(selector).click()
         session_response = session_info.value
         if session_response.status >= 400:
+            response_body = session_response.text()
+            last_error = f"HTTP {session_response.status}: {response_body}"
+            if session_response.status == 429:
+                retry_after = _retry_after_seconds(response_body)
+                retry_after = retry_after if retry_after is not None else 8
+                page.wait_for_timeout((retry_after + 3) * 1_000)
+                continue
             raise AssertionError(
                 f"Correction-session write failed with HTTP {session_response.status}."
             )
@@ -1125,6 +1231,13 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             page.screenshot(path=str(artifact_dir / "04-after-reload.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "04-after-reload.png"))
             _write_summary(summary, artifact_dir)
+
+            summary["mobile_surface_checks"] = _capture_mobile_surface_checks(
+                page,
+                artifact_dir=artifact_dir,
+            )
+            summary["screenshots"].extend(summary["mobile_surface_checks"]["screenshots"])
+            _mark_progress(summary, artifact_dir, "mobile_surface_checks_complete")
 
             page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
             expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(

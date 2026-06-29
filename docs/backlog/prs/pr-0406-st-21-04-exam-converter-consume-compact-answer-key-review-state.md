@@ -2,7 +2,7 @@
 type: pr
 id: PR-0406
 title: "ST-21-04 Exam Converter consume compact answer-key review state"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-06-29
 updated: 2026-06-29
@@ -295,11 +295,9 @@ desktop scan-and-detail layout.
 
 ## Implementation Dependencies
 
-PR-0406 remains `blocked` until Sir Convert Task 373 is implemented,
-independently reviewed, and has exported the concrete schema/OpenAPI surface.
-The implementation agent may bind generated TypeScript type names, schema
-component names, parser fixture shapes, and exact artifact download plumbing to
-the finished Task 373 output. It must not reopen the semantic decisions above.
+PR-0406 was implemented after Sir Convert Task 373 exported the concrete compact
+projection schema/OpenAPI surface and was approved by retained Review 58. The
+semantic decisions above remain closed.
 
 ## Assumptions
 
@@ -363,6 +361,30 @@ guessing `Klart`.
 - `pdm run docs-validate`
 - `pdm run handoff-validate`
 - `git diff --check`
+
+## Implementation Closeout
+
+Closed on 2026-06-29. `REV-PR-0406` approved the consumer implementation on
+pass 2. Production closeout then added proof-harness resilience for the real
+protected production route:
+
+- cleanup of the accept-probe correction session uses the protected
+  `api.hule.education` origin when the browser runs against
+  `https://skriptoteket.hule.education`;
+- correction-session writes and replay/save paths tolerate production `429`
+  retry-after responses without treating a successful backoff as a failed
+  proof;
+- the retained production proof now captures phone-sized detail, question-list,
+  files, and report screenshots and asserts no horizontal overflow or selected
+  question detail on files/report surfaces.
+
+Final production proof:
+`.artifacts/playwright-pr-0337-correction-session-live/20260629T152928Z/manifest.redacted.json`.
+It proves HuleEdu login, DXE upload, first-pass
+`digiexam_answer_key_review_state_v1`, `Acceptera -> Klart`, `Ändra -> Ändrat`,
+validation key repair, report/files navigation, disabled draft file actions,
+replay-scoped PDF/QTI download and save, reload persistence, mobile checks, no
+page errors, and clean PDF/QTI inspection.
 
 ## Rollback Plan
 

@@ -2,7 +2,7 @@
 type: story
 id: ST-21-11
 title: "Cross-repo compact answer-key review state production proof"
-status: blocked
+status: done
 owners: "agents"
 created: 2026-06-29
 updated: 2026-06-29
@@ -155,36 +155,36 @@ deploys are healthy.
 
 ## Planned PR Slice
 
-- [ ] [PR-0406: ST-21-04 Exam Converter consume compact answer-key review state](../prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md)
+- [x] [PR-0406: ST-21-04 Exam Converter consume compact answer-key review state](../prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md)
 
 ## Test Requirements
 
-- [ ] Parser/contract tests reject unknown schema versions, unknown state/origin
+- [x] Parser/contract tests reject unknown schema versions, unknown state/origin
   codes, unknown reason codes, missing projection, `history`, and
   `review_decision` compatibility payloads.
-- [ ] Projection tests prove exhaustive mapping from producer state to Swedish
+- [x] Projection tests prove exhaustive mapping from producer state to Swedish
   labels/icons.
-- [ ] Component tests prove PR-0406 review states use the approved symbol
+- [x] Component tests prove PR-0406 review states use the approved symbol
   wrappers rather than feature-local `Bot`, `CheckCircle2`, or `XCircle`
   imports.
-- [ ] Component tests prove desktop table and mobile navigator render the same
+- [x] Component tests prove desktop table and mobile navigator render the same
   compact states.
-- [ ] Component tests prove the desktop result band uses the approved
+- [x] Component tests prove the desktop result band uses the approved
   projection-backed copy and keeps export-ready copy behind target readiness
   plus replay artifact authority.
-- [ ] Component tests prove the workflow rail has no pre-conversion PDF/QTI
+- [x] Component tests prove the workflow rail has no pre-conversion PDF/QTI
   target-file/source-format selection controls.
-- [ ] Component tests prove desktop detail navigation is symbolic, sticky, and
+- [x] Component tests prove desktop detail navigation is symbolic, sticky, and
   does not use visible previous/next word labels.
-- [ ] Component tests prove `Ändra` switches the selected detail pane into the
+- [x] Component tests prove `Ändra` switches the selected detail pane into the
   normal answer-key editor with `Spara facit` and bounded `Tidigare förslag`
   detail for advisory-seeded edits.
-- [ ] Small-screen layout tests prove list, detail, files, and report are
+- [x] Small-screen layout tests prove list, detail, files, and report are
   separate task surfaces and that the files surface has no selected-question
   editor/detail content.
-- [ ] Replay tests prove local saved input does not unlock file actions before
+- [x] Replay tests prove local saved input does not unlock file actions before
   fresh Sir Convert projection/readiness.
-- [ ] Report/files tests prove `Kontrollera` is a current validation problem
+- [x] Report/files tests prove `Kontrollera` is a current validation problem
   and corrected PDF/QTI actions use replay artifact references.
 
 ## Done Definition
@@ -193,8 +193,31 @@ This story is done only when Sir Convert Task 373 and Skriptoteket PR-0406 are
 approved, production deployments are healthy, and the final live browser proof
 passes with retained redacted evidence linked from both repos.
 
+## Production Closeout
+
+Closed on 2026-06-29 after Sir Convert Task 373 approval, PR-0406 approval,
+production deploys, HuleEdu Gateway recovery, and the retained production DXE
+proof.
+
+- Sir Convert production revision:
+  `95937ea6e9a892a2825521149ecbcc29262d6252`; deploy verifier:
+  `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/build/verification/hemma-deploy-verify/report.md`.
+- Skriptoteket production revision:
+  `63e27ad4e65bc0cb5f3abceb8f8498dc12d6303e`; deploy log:
+  `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-150551.log`.
+- HuleEdu Gateway/browser-session recovery log:
+  `/home/paunchygent/apps/huleedu/.artifacts/hemma-deploy-20260629T151038Z.log`.
+- Final production proof bundle:
+  `.artifacts/playwright-pr-0337-correction-session-live/20260629T152928Z/manifest.redacted.json`.
+  The proof covers HuleEdu login, production DXE upload, first-pass
+  `digiexam_answer_key_review_state_v1`, `Acceptera -> Klart`,
+  `Ändra -> Ändrat`, validation key repair, report/files views, disabled draft
+  downloads/saves, replay-scoped PDF/QTI download and save, reload persistence,
+  mobile detail/list/files/report screenshots with no horizontal overflow, no
+  page errors, and clean PDF/QTI inspection.
+
 ## Notes
 
-- Keep this story blocked until Task 373 is approved.
+- Task 373 and PR-0406 are approved and deployed.
 - Keep public anonymous compact-report consumption out of PR-0406 unless a
   later governed story explicitly adds public grant semantics.
