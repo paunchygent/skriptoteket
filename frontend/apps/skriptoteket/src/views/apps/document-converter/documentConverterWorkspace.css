@@ -408,7 +408,7 @@
 
 .dc-column-header {
   min-width: 0;
-  min-height: 4.5rem;
+  min-height: 3.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -422,8 +422,8 @@
   overflow: hidden;
   color: var(--color-navy);
   font-family: var(--huleedu-font-sans);
-  font-size: var(--huleedu-text-lg);
-  font-weight: var(--huleedu-font-extrabold);
+  font-size: var(--huleedu-text-base);
+  font-weight: var(--huleedu-font-bold);
   letter-spacing: 0;
   line-height: 1.1;
   text-overflow: ellipsis;

@@ -23,7 +23,7 @@
 
 .dc-column-header--preview {
   min-width: 0;
-  min-height: 4.5rem;
+  min-height: 3.75rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -37,8 +37,8 @@
   margin: 0;
   overflow: hidden;
   font-family: var(--huleedu-font-sans);
-  font-size: var(--huleedu-text-lg);
-  font-weight: var(--huleedu-font-extrabold);
+  font-size: var(--huleedu-text-base);
+  font-weight: var(--huleedu-font-bold);
   letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;

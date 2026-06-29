@@ -11,9 +11,9 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2026-06-29.
 - Branch: `main`.
 - Latest closed work: `PR-0404`.
-- Active worktree slice: none. `PR-0405` is committed, pushed, and deployed by
-  operator request; independent review remains pending. `PR-0404` is approved by
-  GPT-5.5 XHigh `REV-PR-0404`.
+- Active worktree slice: none. `PR-0405` is committed, pushed, deployed, and
+  approved by retained review `REV-PR-0405`. `PR-0404` is approved by GPT-5.5
+  XHigh `REV-PR-0404`.
   Keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
@@ -147,7 +147,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Fresh `PR-0403` live proof facts from `.artifacts/authenticated-home-work-apps/20260627T232025Z/manifest.redacted.json`: native non-passive `touch*` + `gesture*` listeners verified through Chromium CDP, tablet native pinch changed `59% -> 119%`, platform gestures changed `55% -> 63%` (desktop), `119% -> 137%` (tablet), and `37% -> 43%` (compact), one-finger panning stayed available (`one_finger_move_prevented: false`), and fit geometry stayed centered on the underfilled axis (`desktop left/right inset 2.06px/2.06px`, `tablet 0.17px/0.19px`, `compact 0.52px/0.53px`).
   - `PR-0400` is done and approved by `REV-PR-0400`; commit `325553d5` was pushed and deployed on Hemma. Production proof bundle `.artifacts/pr-0400-production-proof/20260628T144818Z/manifest.redacted.json` has `status=ok`, project-preview `Separat PDF` + `Sammanslagen PDF` artifacts, and a Sir Convert-backed `Word-dokument` DOCX with no forbidden marker hits in PDF text/metadata/raw bytes or DOCX ZIP text/raw bytes.
   - `PR-0404` is done and approved by independent GPT-5.5 XHigh `REV-PR-0404`: public `source_ref` compatibility was removed, focused backend/API and frontend tests are green, OpenAPI types were regenerated, the single-file route state was decomposed into selection/request state plus submission/polling/outcome modules, succeeded artifacts with null/missing filenames fail closed instead of exposing raw job ids, and compact retained shared-auth proof is green at `.artifacts/authenticated-home-work-apps/20260628T173523Z/manifest.redacted.json` with two compatible `Mina filer` PDFs, refs-only ordered batch submission, two separate Markdown outputs, download/save, and no forbidden marker hits.
-  - `PR-0405` implemented the approved Document Converter column hierarchy and empty-preview polish: focused frontend specs passed with 33 tests, shared-auth proof passed at `.artifacts/authenticated-home-work-apps/20260629T005352Z/manifest.redacted.json`, and earlier proof reruns hit real HuleEdu `RATE_LIMIT` before cooldown.
+  - `PR-0405` is done and approved by `REV-PR-0405`: it implemented the approved Document Converter column hierarchy and empty-preview polish, then applied the final CSS-only shared-header adjustment from `text-lg`/`extrabold`/`4.5rem` to `text-base`/`bold`/`3.75rem`. Focused frontend specs passed with 33 tests, shared-auth proof passed at `.artifacts/authenticated-home-work-apps/20260629T005352Z/manifest.redacted.json`, and the final presentation-only tweak intentionally did not rerun auth-heavy Playwright because earlier proof reruns hit real HuleEdu `RATE_LIMIT` before cooldown.
   - `PR-0405` was committed as `5cf76513` and deployed on Hemma by operator request; log `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260629-010615.log` includes `Seating export deploy/readiness gate passed.`, Hemma checkout was `5cf765133325f8275fea15dcf883a128854b805d`, and public `/healthz` returned healthy JSON.
 ## How to Run
 ```bash
@@ -193,6 +193,6 @@ git diff --check
   recreate the affected HuleEdu services before blaming app code.
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
-- Next governed step: complete `REV-PR-0405`; then consider a separate shared-auth proof rate-limit resilience slice.
+- Next governed step: consider a separate shared-auth proof rate-limit resilience slice if the proof lane keeps hitting HuleEdu `RATE_LIMIT`.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

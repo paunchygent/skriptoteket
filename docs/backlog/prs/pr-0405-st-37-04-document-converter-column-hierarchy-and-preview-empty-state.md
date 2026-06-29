@@ -2,7 +2,7 @@
 type: pr
 id: PR-0405
 title: "ST-37-04 Document Converter column hierarchy and preview empty state"
-status: ready
+status: done
 owners: "agents"
 created: 2026-06-29
 updated: 2026-06-29
@@ -75,8 +75,8 @@ the conversion flow:
    silhouette labeled `Förhandsvisning`.
 5. Done: preserve existing result-ready actions, artifact selector, PDF viewport,
    zoom controls, and source/operations/preview ownership.
-6. Pending: send the implementation through the independent `ruthless_review_agent`
-   review loop and iterate until accepted.
+6. Done: send the implementation through independent retained review and
+   record approval in `REV-PR-0405`.
 
 ## Test plan
 
@@ -113,9 +113,14 @@ the conversion flow:
 - Corrected the final header-band CSS so the `Resultat` heading and its
   divider align with `Källa` and `Konvertering` even when the preview zoom
   toolbar is visible.
+- Toned down the shared column headers from the app-title-like `text-lg` /
+  `extrabold` treatment to approved `text-base` / `bold` tokens and reduced
+  the aligned header band height from `4.5rem` to `3.75rem` in both modes.
 - By operator request, committed and pushed the ready implementation to
   `main` as `5cf76513`, then deployed it on Hemma before the independent
-  review loop. `REV-PR-0405` remains pending.
+  review loop.
+- Approved by retained review `REV-PR-0405` after the final CSS-only
+  typography/height adjustment was recorded and reviewed.
 
 ## Verification notes
 
@@ -145,6 +150,10 @@ the conversion flow:
   passed with 13 tests. The final CSS-only alignment edit did not rerun the
   shared-auth browser proof because it changes presentation geometry only and
   the proof lane is currently susceptible to HuleEdu login rate limiting.
+- Final header typography correction verification:
+  `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.spec.ts`
+  passed with 13 tests. This CSS-only token/height edit also did not rerun the
+  shared-auth browser proof for the same rate-limit reason.
 - Live proof note: two earlier proof reruns hit the HuleEdu auth
   `RATE_LIMIT` guard (`limit=5`, `window_seconds=60`) before the final green
   run. The rate-limit resilience concern is real but remains a separate
@@ -157,6 +166,11 @@ the conversion flow:
   showed `Seating export deploy/readiness gate passed.`; Hemma checkout was
   `5cf765133325f8275fea15dcf883a128854b805d`; public
   `https://skriptoteket.hule.education/healthz` returned healthy JSON.
+- Retained review: `REV-PR-0405` approved the current worktree, including the
+  final `text-base` / `bold` / `3.75rem` shared column-header tweak, without a
+  shared-auth Playwright rerun because the operator explicitly requested no
+  auth-heavy rerun for the CSS-only presentation change after HuleEdu
+  `RATE_LIMIT` pressure.
 
 ## Rollback plan
 

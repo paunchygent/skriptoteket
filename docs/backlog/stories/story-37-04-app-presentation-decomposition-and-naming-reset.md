@@ -5,7 +5,7 @@ title: "App presentation decomposition and naming reset"
 status: ready
 owners: "agents"
 created: 2026-06-17
-updated: 2026-06-28
+updated: 2026-06-29
 epic: "EPIC-37"
 dependencies:
   - "ST-37-01"
@@ -68,7 +68,7 @@ dashboard direction are settled.
 - [x] [PR-0402: ST-37-04 Document Converter compact source-first layout](../prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md)
 - [x] [PR-0403: ST-37-04 Document Converter preview touch-pinch ownership](../prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md)
 - [x] [PR-0404: ST-37-04 Document Converter multi-source saved-file batches](../prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md)
-- [ ] [PR-0405: ST-37-04 Document Converter column hierarchy and preview empty state](../prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md)
+- [x] [PR-0405: ST-37-04 Document Converter column hierarchy and preview empty state](../prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md)
 
 ## Notes
 
