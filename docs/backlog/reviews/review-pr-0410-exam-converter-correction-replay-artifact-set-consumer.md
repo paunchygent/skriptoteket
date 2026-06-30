@@ -152,3 +152,75 @@ approved
 | Change | Artifact | Description |
 |--------|----------|-------------|
 | 1 | `REV-PR-0410` | Added this retained independent review artifact with decision `approved`. |
+| 2 | `REV-PR-0410` | Added follow-up retained review for the Story 58 proof-harness extension with decision `approved`. |
+
+## Follow-Up Review: Story 58 Proof Harness Evidence Extension
+
+**Reviewer:** Codex retained reviewer
+**Date:** 2026-06-30
+**Verdict:** approved
+
+### Scope
+
+- `scripts/_story58_private_request_capture.py`
+- `scripts/_story58_mismatched_artifact_probe.py`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+
+This follow-up review covers only the opt-in proof-harness extension for Sir
+Convert Story 58 closeout. It does not approve product behavior changes,
+producer behavior, deployment, or the final live Story 58 proof result.
+
+### Findings
+
+No blocking findings.
+
+### Review Notes
+
+- The new `--story58-private-request-capture-dir` flag is opt-in and preserves
+  the existing PR-0337 request summary path when absent.
+- Raw POST bodies for the source-state issue and correction apply routes are
+  written only to the operator-provided private directory.
+- The public manifest summary retains route/method, counts, safe identifiers,
+  and SHA-256 digests, but does not retain raw request bodies, private paths,
+  source-state signatures, identity/grant envelopes, idempotency keys, uploaded
+  bytes, source text, provider prompts, or fixture secret markers covered by
+  the focused tests.
+- The helper rejects a private capture directory nested inside the retained
+  artifact directory, preventing accidental promotion of raw bodies into the
+  public proof bundle.
+- Existing `correction_apply_requests` summary behavior remains wired before
+  the private capture hook.
+- The mismatched artifact probe reuses the real nested replay artifact download
+  evidence, corrupts only the `content_sha256` query value, and requires a
+  fail-closed `404` or `409 correction_replay_artifact_reference_mismatch`
+  result.
+- The canonical PR-0337 proof script remains the active proof entrypoint; the
+  new behavior is helper-backed and opt-in/inline rather than a parallel proof
+  script or browser-local fallback.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Code review of `Story58PrivateRequestCapture` | Private raw-body writes and public summary boundaries match the Story 58 evidence contract. |
+| Code review of `scripts/_story58_mismatched_artifact_probe.py` | Mismatch proof mutates only `content_sha256`, summarizes only approved request/error metadata, and asserts fail-closed `404`/`409` outcomes. |
+| Code review of `scripts/playwright_pr_0337_correction_session_live.py` | Existing PR-0337 proof behavior is preserved unless the opt-in private directory flag is supplied. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 9 tests. |
+| Parent-reported `pdm run lint` | Passed. |
+| Parent-reported `pdm run typecheck` | Passed. |
+| Reviewer-run `git diff --check -- scripts/playwright_pr_0337_correction_session_live.py scripts/_story58_private_request_capture.py scripts/_story58_mismatched_artifact_probe.py tests/unit/scripts/test_story58_private_request_capture.py docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md` | Passed before this retained-review artifact update. |
+| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T143803Z/manifest.redacted.json` | Real `ak7_lag_och_ratt_with_image.dxe` proof retained nested PDF/QTI replay downloads `200`, Save to My Files `200`, mismatch probe `409 correction_replay_artifact_reference_mismatch`, service logs, and public private-capture summary counts `30` total requests: `8` correction apply and `22` source-state issue. |
+| Reviewer redaction scan of `.artifacts/playwright-pr-0337-correction-session-live/20260630T143803Z/manifest.redacted.json` | No raw request bodies, private capture paths, source-state signatures, identity/grant envelope, provider prompt, or source text terms were present in the Story 58 private-capture public summary. |
+
+### Residual Risks
+
+- The live run still needs operator-supplied private storage with appropriate
+  local permissions and retention handling; this review only verifies the
+  harness does not copy raw request bodies into retained public artifacts.
+- The public manifest intentionally includes request/job identifiers and
+  digest metadata as proof metadata. Treat the manifest as retained proof
+  evidence, not as a broadly publishable public report.
+- Final Story 58 closeout still depends on the broader Sir Convert Story 58
+  closeout packet; this review approves only the downstream/product
+  proof-harness tranche and its production evidence.

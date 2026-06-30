@@ -49,6 +49,11 @@ from scripts._pr_0331_reviewed_ai_facit_artifacts import (
     inspect_qti,
 )
 from scripts._proof_manifest import write_proof_manifest
+from scripts._story58_mismatched_artifact_probe import (
+    probe_mismatched_replay_artifact_download,
+    safe_correction_replay_artifact_references,
+)
+from scripts._story58_private_request_capture import Story58PrivateRequestCapture
 
 ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0337-correction-session-live")
 DEFAULT_SOURCE_DXE = Path(
@@ -108,6 +113,15 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=True,
     )
     parser.add_argument("--hemma-ssh-host", default="hemma")
+    parser.add_argument(
+        "--story58-private-request-capture-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Private out-of-band directory for raw Story 58 correction request "
+            "bodies. Public manifests retain only approved digests/counts."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -205,7 +219,7 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         for row in readiness_rows
         if isinstance(row, dict)
     ]
-    return {
+    summary: dict[str, Any] = {
         "accepted_correction_count": len(accepted_entries)
         if isinstance(accepted_entries, list)
         else 0,
@@ -238,6 +252,10 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "schema_version": payload.get("schema_version"),
         "session_version": payload.get("session_version"),
     }
+    replay_references = safe_correction_replay_artifact_references(payload)
+    if replay_references:
+        summary["correction_replay_artifact_references"] = replay_references
+    return summary
 
 
 def _summarize_create_job_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -1126,6 +1144,7 @@ def _prove_replayed_file_actions(
     page: Page,
     *,
     artifact_dir: Path,
+    base_url: str,
     summary: dict[str, Any],
     expected_pdf_filename: str,
     expected_qti_filename: str,
@@ -1168,6 +1187,12 @@ def _prove_replayed_file_actions(
             expected_filename=expected_qti_filename,
         )
     )
+    summary["mismatched_artifact_download_probe"] = probe_mismatched_replay_artifact_download(
+        page.request,
+        api_base_url=_protected_api_base_url(base_url),
+        artifact_download=pdf_download,
+    )
+    _write_summary(summary, artifact_dir)
     summary["pdf_inspection"] = _inspect_pdf(
         pdf_path,
         expected_texts=(f"Poängvärde: {UPDATED_ITEM_POINTS}",),
@@ -1213,6 +1238,18 @@ def _write_failure_text(page: Page, artifact_dir: Path) -> None:
     (artifact_dir / "failure-main-text.txt").write_text(text, encoding="utf-8")
 
 
+def _handle_request(
+    request: Any,
+    *,
+    summary: dict[str, Any],
+    story58_capture: Story58PrivateRequestCapture | None,
+) -> None:
+    if CORRECTION_APPLY_MARKER in request.url and request.method == "POST":
+        summary["correction_apply_requests"].append(_summarize_apply_request(request))
+    if story58_capture is not None:
+        story58_capture.handle_request(request)
+
+
 def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
     args = _parse_args(argv)
     if args.timeout_seconds <= 0:
@@ -1231,6 +1268,14 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         raise FileNotFoundError(source_dxe)
 
     artifact_dir = _run_dir(Path(args.artifact_root))
+    story58_capture = (
+        Story58PrivateRequestCapture(
+            private_dir=args.story58_private_request_capture_dir,
+            retained_artifact_dir=artifact_dir,
+        )
+        if args.story58_private_request_capture_dir is not None
+        else None
+    )
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
     uploaded_source_dxe = (
         source_dxe
@@ -1287,10 +1332,10 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         page.on("pageerror", lambda error: summary["browser_page_errors"].append(str(error)))
         page.on(
             "request",
-            lambda request: (
-                summary["correction_apply_requests"].append(_summarize_apply_request(request))
-                if CORRECTION_APPLY_MARKER in request.url and request.method == "POST"
-                else None
+            lambda request: _handle_request(
+                request,
+                summary=summary,
+                story58_capture=story58_capture,
             ),
         )
         page.on(
@@ -1364,6 +1409,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                     _prove_replayed_file_actions(
                         page,
                         artifact_dir=artifact_dir,
+                        base_url=config.base_url,
                         summary=summary,
                         expected_pdf_filename=expected_pdf_filename,
                         expected_qti_filename=expected_qti_filename,
@@ -1518,6 +1564,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             _prove_replayed_file_actions(
                 page,
                 artifact_dir=artifact_dir,
+                base_url=config.base_url,
                 summary=summary,
                 expected_pdf_filename=expected_pdf_filename,
                 expected_qti_filename=expected_qti_filename,
@@ -1536,6 +1583,8 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         finally:
             runtime_evidence.stop()
             runtime_evidence.attach_to_summary(summary, artifact_dir)
+            if story58_capture is not None:
+                story58_capture.attach_to_summary(summary)
             _write_summary(summary, artifact_dir)
             signal.alarm(0)
             browser.close()
