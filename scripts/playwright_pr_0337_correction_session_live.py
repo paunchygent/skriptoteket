@@ -15,6 +15,7 @@ Relationships:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -49,6 +50,10 @@ from scripts._pr_0331_reviewed_ai_facit_artifacts import (
     inspect_qti,
 )
 from scripts._proof_manifest import write_proof_manifest
+from scripts._story58_artifact_set_invariants import (
+    record_story58_artifact_set_snapshot,
+    refresh_story58_artifact_set_invariants,
+)
 from scripts._story58_mismatched_artifact_probe import (
     probe_mismatched_replay_artifact_download,
     safe_correction_replay_artifact_references,
@@ -171,28 +176,56 @@ def _json_request_payload(request: Any) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _request_body_sha256(request: Any) -> str | None:
+    post_data = request.post_data
+    if post_data is None:
+        return None
+    if isinstance(post_data, bytes):
+        body = post_data
+    elif isinstance(post_data, str):
+        body = post_data.encode("utf-8")
+    else:
+        return None
+    return hashlib.sha256(body).hexdigest()
+
+
 def _summarize_apply_request(request: Any) -> dict[str, Any]:
     payload = _json_request_payload(request) or {}
     corrections = payload.get("corrections")
     correction_rows = corrections if isinstance(corrections, list) else []
-    return {
+    summary: dict[str, Any] = {
         "correction_count": len(correction_rows),
-        "corrections": [
-            {
-                "entry_id": entry.get("entry_id"),
-                "item_id": entry.get("item_id"),
-                "kind": entry.get("kind"),
-                "sequence": entry.get("sequence"),
-            }
-            for entry in correction_rows
-            if isinstance(entry, dict)
-        ],
-        "has_source_binding": isinstance(payload.get("source_binding"), dict),
         "method": request.method,
         "path": _safe_url(request.url),
         "requested_targets": payload.get("requested_targets"),
         "schema_version": payload.get("schema_version"),
     }
+    body_sha256 = _request_body_sha256(request)
+    if body_sha256:
+        summary["body_sha256"] = body_sha256
+    if correction_rows:
+        summary["corrections_sha256"] = hashlib.sha256(
+            json.dumps(correction_rows, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+    _copy_safe_string(summary, "request_id", payload.get("request_id"))
+    _copy_safe_string(summary, "request_digest", payload.get("request_digest"))
+    _copy_safe_string(summary, "request_digest", payload.get("request_sha256"))
+    _copy_safe_string(summary, "request_digest", payload.get("correction_request_sha256"))
+    source_binding = payload.get("source_binding")
+    source_payload = source_binding if isinstance(source_binding, dict) else payload
+    _copy_safe_string(summary, "job_id", payload.get("job_id"))
+    _copy_safe_string(summary, "job_id", payload.get("source_job_id"))
+    _copy_safe_string(summary, "source_bundle_id", source_payload.get("source_bundle_id"))
+    _copy_safe_string(summary, "source_file_sha256", source_payload.get("source_file_sha256"))
+    _copy_safe_string(summary, "source_state_sha256", source_payload.get("source_state_sha256"))
+    return summary
+
+
+def _copy_safe_string(target: dict[str, Any], key: str, value: object) -> None:
+    if key in target:
+        return
+    if isinstance(value, str) and value:
+        target[key] = value
 
 
 def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -498,6 +531,7 @@ def _save_replayed_file_once(page: Page, *, artifact_key: str) -> dict[str, Any]
     )
     return {
         "content_sha256": replay_evidence["content_sha256"],
+        "download_status": artifact_response.status,
         "download_path": _safe_url_with_query(artifact_response.url),
         "replay_artifact_key": replay_artifact_key,
         "replay_artifact_set_id": replay_evidence["artifact_set_id"],
@@ -1166,6 +1200,7 @@ def _prove_replayed_file_actions(
         expected_filename=expected_pdf_filename,
     )
     summary["artifact_downloads"].append(pdf_download)
+    record_story58_artifact_set_snapshot(summary, pdf_download, observed_via="download")
     qti_path, qti_download = _download_replayed_file(
         page,
         artifact_key="qti_package",
@@ -1173,20 +1208,21 @@ def _prove_replayed_file_actions(
         expected_filename=expected_qti_filename,
     )
     summary["artifact_downloads"].append(qti_download)
-    summary["file_saves"].append(
-        _save_replayed_file(
-            page,
-            artifact_key="examnet_pdf",
-            expected_filename=expected_pdf_filename,
-        )
+    record_story58_artifact_set_snapshot(summary, qti_download, observed_via="download")
+    pdf_save = _save_replayed_file(
+        page,
+        artifact_key="examnet_pdf",
+        expected_filename=expected_pdf_filename,
     )
-    summary["file_saves"].append(
-        _save_replayed_file(
-            page,
-            artifact_key="qti_package",
-            expected_filename=expected_qti_filename,
-        )
+    summary["file_saves"].append(pdf_save)
+    record_story58_artifact_set_snapshot(summary, pdf_save, observed_via="save")
+    qti_save = _save_replayed_file(
+        page,
+        artifact_key="qti_package",
+        expected_filename=expected_qti_filename,
     )
+    summary["file_saves"].append(qti_save)
+    record_story58_artifact_set_snapshot(summary, qti_save, observed_via="save")
     summary["mismatched_artifact_download_probe"] = probe_mismatched_replay_artifact_download(
         page.request,
         api_base_url=_protected_api_base_url(base_url),
@@ -1299,10 +1335,12 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         "sir_convert_submit_responses": [],
         "source_dxe": str(source_dxe),
         "source_filename_mode": "preserved" if args.preserve_source_filename else "run_scoped_copy",
+        "story58_artifact_set_snapshots": [],
         "submit_idempotency_reason_expectation": args.expect_submit_idempotency_reason,
         "uploaded_source_dxe": str(uploaded_source_dxe),
         "started_at": datetime.now(UTC).isoformat(),
     }
+    refresh_story58_artifact_set_invariants(summary)
     _mark_progress(summary, artifact_dir, "artifact_dir_created")
     runtime_evidence = start_correction_session_runtime_evidence(
         artifact_dir=artifact_dir,

@@ -226,7 +226,17 @@ def test_pr_0337_request_handler_preserves_apply_summary_and_capture(
 ) -> None:
     payload: dict[str, object] = {
         "schema_version": "exam_authoring_correction_apply_request_v1",
-        "corrections": [{"entry_id": "entry-1", "item_id": "item-1"}],
+        "corrections": [
+            {
+                "entry_id": "entry-1",
+                "item_id": "item-1",
+                "kind": "answer_key",
+                "sequence": 7,
+                "source_text": "must-not-retain-source-text",
+                "teacher_answer": "must-not-retain-answer-text",
+            }
+        ],
+        "request_id": "req-apply",
         "requested_targets": ["pdf"],
         "source_binding": {"source_state_sha256": "state-digest"},
     }
@@ -246,6 +256,13 @@ def test_pr_0337_request_handler_preserves_apply_summary_and_capture(
 
     assert correction_apply_requests[0]["correction_count"] == 1
     assert correction_apply_requests[0]["requested_targets"] == ["pdf"]
+    rendered_apply_summary = json.dumps(correction_apply_requests, ensure_ascii=False)
+    assert "corrections" not in correction_apply_requests[0]
+    assert "entry_id" not in rendered_apply_summary
+    assert "item_id" not in rendered_apply_summary
+    assert "kind" not in rendered_apply_summary
+    assert "sequence" not in rendered_apply_summary
+    assert "must-not-retain" not in rendered_apply_summary
     assert capture.public_summary()["request_count"] == 1
 
 

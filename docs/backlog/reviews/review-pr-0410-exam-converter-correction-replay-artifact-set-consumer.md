@@ -153,6 +153,8 @@ approved
 |--------|----------|-------------|
 | 1 | `REV-PR-0410` | Added this retained independent review artifact with decision `approved`. |
 | 2 | `REV-PR-0410` | Added follow-up retained review for the Story 58 proof-harness extension with decision `approved`. |
+| 3 | `REV-PR-0410` | Added follow-up retained review for the Story 58 artifact-set invariant extension with decision `changes_requested`. |
+| 4 | `REV-PR-0410` | Added rereview for the Story 58 artifact-set invariant extension with decision `approved`. |
 
 ## Follow-Up Review: Story 58 Proof Harness Evidence Extension
 
@@ -195,6 +197,12 @@ No blocking findings.
   evidence, corrupts only the `content_sha256` query value, and requires a
   fail-closed `404` or `409 correction_replay_artifact_reference_mismatch`
   result.
+- The Story 58 artifact-set invariant extension adds public manifest fields
+  `story58_artifact_set_snapshots` and `story58_artifact_set_invariants`.
+  Snapshots retain only request/artifact digest metadata from real product-route
+  replay downloads or saves, and invariant rows must report `pass`, `fail`, or
+  `unproven` instead of inferring duplicate/distinct replay proof from final
+  downloads alone.
 - The canonical PR-0337 proof script remains the active proof entrypoint; the
   new behavior is helper-backed and opt-in/inline rather than a parallel proof
   script or browser-local fallback.
@@ -224,3 +232,128 @@ No blocking findings.
 - Final Story 58 closeout still depends on the broader Sir Convert Story 58
   closeout packet; this review approves only the downstream/product
   proof-harness tranche and its production evidence.
+
+## Follow-Up Review: Story 58 Artifact-Set Invariant Extension
+
+**Reviewer:** ruthless_review_agent
+**Date:** 2026-06-30
+**Verdict:** changes_requested
+
+### Scope
+
+- `scripts/_story58_artifact_set_invariants.py`
+- `tests/unit/scripts/test_story58_artifact_set_invariants.py`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
+
+### Findings
+
+#### High: Canonical manifest still retains correction-row metadata outside the approved digest-only evidence contract
+
+`scripts/playwright_pr_0337_correction_session_live.py:192` builds the public
+`correction_apply_requests` manifest summary, and lines `197-207` still retain a
+`corrections` array with per-correction fields copied from the request body.
+That summary is appended to the retained proof manifest at
+`scripts/playwright_pr_0337_correction_session_live.py:1294-1295`. For this
+Story 58 proof-harness extension, retained public evidence is limited to
+request/body/correction digests, request id, job/source digests when already
+retained, artifact-set id/key/content hash, and path/status metadata. Keeping
+request-derived correction rows in the canonical public manifest violates that
+boundary even though the new private-capture helper is stricter.
+
+Fix: remove the `corrections` row list from `_summarize_apply_request`; retain
+`correction_count`, `body_sha256`, `corrections_sha256`, safe request id, and
+approved job/source digest metadata only. Add/adjust a boundary test for
+`_handle_request` or `_summarize_apply_request` using correction rows that
+contain `source_text`, identity/grant/idempotency/provider fields, and private
+paths, then assert the rendered `correction_apply_requests` summary contains no
+raw or structured correction body material.
+
+Proof required:
+`pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py`
+
+### Live-Proof Gap
+
+The invariant helper correctly supports `pass`, `fail`, and `unproven`, and the
+current Playwright wiring records real product-route artifact snapshots only
+after final replay download/save actions. That means the next live manifest may
+truthfully remain `unproven` for the missing Story 58 production
+duplicate/distinct artifact-set rows unless the live run captures comparable
+product-route snapshots for each relevant correction-apply response, not only
+the final artifact set.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 17 tests. |
+| Reviewer-run `pdm run lint` | Passed. |
+| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
+| Reviewer-run `pdm run docs-validate` | Passed. |
+| Reviewer-run `git diff --check` | Passed. |
+
+### Decision
+
+changes_requested
+
+## Rereview: Story 58 Artifact-Set Invariant Extension Redaction Fix
+
+**Reviewer:** ruthless_review_agent
+**Date:** 2026-06-30
+**Verdict:** approved
+
+### Scope
+
+- `scripts/_story58_artifact_set_invariants.py`
+- `tests/unit/scripts/test_story58_artifact_set_invariants.py`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+- `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
+
+### Prior Finding Resolution
+
+Approved. `_summarize_apply_request` now removes the public
+`correction_apply_requests[*].corrections` row list and retains only summary
+metadata needed by the proof harness: count, request/body/correction digests,
+request id, selected job/source digest metadata, method/path, schema version,
+and target metadata. The code no longer copies per-correction `entry_id`,
+`item_id`, `kind`, `sequence`, source text, teacher answer text, identity/grant,
+idempotency, provider prompt, private path, or raw body material into the public
+apply-request summary.
+
+The regression test now exercises the canonical PR-0337 request-handler path
+with correction rows containing `entry_id`, `item_id`, `kind`, `sequence`,
+`source_text`, and answer text, then asserts those values do not appear in the
+rendered public summary. The private-capture tests continue to prove raw bodies
+stay in the operator-provided private directory while the public summary remains
+digest/count based.
+
+### Findings
+
+No blocking findings.
+
+### Live-Proof Gap
+
+The extension is approved as a proof-harness evidence/redaction slice. It still
+does not itself close the broader Sir Convert Story 58 production
+duplicate/distinct artifact-set matrix. The current Playwright script records
+product-route artifact snapshots after final replay download/save actions, so a
+future live run may still truthfully report `unproven` unless it captures
+comparable product-route snapshots for each relevant correction-apply response.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py` | `_summarize_apply_request` no longer retains structured correction rows in public `correction_apply_requests`. |
+| Reviewer code review of `tests/unit/scripts/test_story58_private_request_capture.py` | Canonical request-handler boundary test now fails if correction row ids/types/sequence/source text/answer text leak into the public apply-request summary. |
+| Reviewer code review of `scripts/_story58_artifact_set_invariants.py` and `tests/unit/scripts/test_story58_artifact_set_invariants.py` | Invariant helper still redacts non-approved observation keys and preserves `unproven` for insufficient product-route evidence. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 17 tests. |
+| Reviewer-run `pdm run lint` | Passed. |
+| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
+| Reviewer-run `pdm run docs-validate` | Passed before and after this retained-review update. |
+| Reviewer-run `git diff --check` | Passed before and after this retained-review update. |
+
+### Decision
+
+approved
