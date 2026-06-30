@@ -8,7 +8,7 @@ Domain purpose:
 Relationships:
     - Targets `PR-0337` / `ST-21-04` durable teacher correction proof.
     - Uses the shared HuleEdu browser-session login helper.
-    - Retains redacted UI, network, replay, and artifact evidence under
+    - Retains UI, network, replay, artifact, and service-log evidence under
       `.artifacts/playwright-pr-0337-correction-session-live/`.
 """
 
@@ -48,6 +48,7 @@ from scripts._pr_0331_reviewed_ai_facit_artifacts import (
     FORBIDDEN_ARTIFACT_TEXT,
     inspect_qti,
 )
+from scripts._proof_manifest import write_proof_manifest
 
 ARTIFACT_ROOT = Path(".artifacts/playwright-pr-0337-correction-session-live")
 DEFAULT_SOURCE_DXE = Path(
@@ -86,7 +87,15 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--expect-submit-idempotency-reason",
         default=None,
-        help="Require at least one create-job response with this redacted idempotency reason.",
+        help="Require at least one create-job response with this idempotency reason.",
+    )
+    parser.add_argument(
+        "--allow-existing-ready-session",
+        action="store_true",
+        help=(
+            "When the uploaded file already has a ready persisted correction session, "
+            "prove replay download/save actions without creating more correction intents."
+        ),
     )
     parser.add_argument(
         "--capture-local-backend-logs",
@@ -110,10 +119,7 @@ def _run_dir(root: Path) -> Path:
 
 
 def _write_summary(summary: dict[str, Any], artifact_dir: Path) -> None:
-    (artifact_dir / "manifest.redacted.json").write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    write_proof_manifest(artifact_dir, summary)
 
 
 def _mark_progress(summary: dict[str, Any], artifact_dir: Path, step: str) -> None:
@@ -1116,11 +1122,95 @@ def _qti_contains_text(path: Path, expected_text: str) -> bool:
     return False
 
 
+def _prove_replayed_file_actions(
+    page: Page,
+    *,
+    artifact_dir: Path,
+    summary: dict[str, Any],
+    expected_pdf_filename: str,
+    expected_qti_filename: str,
+) -> None:
+    page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
+    expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
+        timeout=30_000,
+    )
+    page.screenshot(path=str(artifact_dir / "03-replayed-files.png"), full_page=True)
+    summary["screenshots"].append(str(artifact_dir / "03-replayed-files.png"))
+    _write_summary(summary, artifact_dir)
+    enabled_downloads = page.locator('[data-test^="exam-converter-download-file-"]:enabled')
+    if enabled_downloads.count() < 2:
+        raise AssertionError("Replay did not expose both file downloads after reload.")
+    pdf_path, pdf_download = _download_replayed_file(
+        page,
+        artifact_key="examnet_pdf",
+        artifact_dir=artifact_dir,
+        expected_filename=expected_pdf_filename,
+    )
+    summary["artifact_downloads"].append(pdf_download)
+    qti_path, qti_download = _download_replayed_file(
+        page,
+        artifact_key="qti_package",
+        artifact_dir=artifact_dir,
+        expected_filename=expected_qti_filename,
+    )
+    summary["artifact_downloads"].append(qti_download)
+    summary["file_saves"].append(
+        _save_replayed_file(
+            page,
+            artifact_key="examnet_pdf",
+            expected_filename=expected_pdf_filename,
+        )
+    )
+    summary["file_saves"].append(
+        _save_replayed_file(
+            page,
+            artifact_key="qti_package",
+            expected_filename=expected_qti_filename,
+        )
+    )
+    summary["pdf_inspection"] = _inspect_pdf(
+        pdf_path,
+        expected_texts=(f"Poängvärde: {UPDATED_ITEM_POINTS}",),
+    )
+    summary["qti_inspection"] = inspect_qti(qti_path)
+    summary["qti_inspection"]["expected_prompt_present"] = _qti_contains_text(
+        qti_path,
+        UPDATED_ITEM_PROMPT,
+    )
+    if summary["pdf_inspection"]["forbidden_text_hits"]:
+        raise AssertionError("PDF exposes forbidden internal diagnostics.")
+    if summary["qti_inspection"]["forbidden_text_hits"]:
+        raise AssertionError("QTI exposes forbidden internal diagnostics.")
+    if summary["qti_inspection"]["correct_response_count"] == 0:
+        raise AssertionError("QTI contains no correctResponse entries.")
+    if summary["pdf_inspection"]["missing_expected_texts"]:
+        raise AssertionError("PDF did not include the replayed point correction.")
+    if not summary["qti_inspection"]["expected_prompt_present"]:
+        raise AssertionError("QTI did not include the replayed prompt correction.")
+
+
 def _write_failure_text(page: Page, artifact_dir: Path) -> None:
-    (artifact_dir / "failure-main-text.txt").write_text(
-        _exam_converter_main(page).inner_text(timeout=10_000),
+    state: dict[str, Any] = {
+        "title": page.title(),
+        "url": page.url,
+    }
+    try:
+        text = _exam_converter_main(page).inner_text(timeout=2_000)
+        state["text_source"] = "exam_converter_main"
+    except Exception as exc:  # pragma: no cover - diagnostic evidence only.
+        state["main_text_error"] = type(exc).__name__
+        try:
+            text = page.locator("body").inner_text(timeout=2_000)
+            state["text_source"] = "body"
+        except Exception as body_exc:  # pragma: no cover - diagnostic evidence only.
+            text = ""
+            state["body_text_error"] = type(body_exc).__name__
+            state["text_source"] = "unavailable"
+    (artifact_dir / "failure-page-state.json").write_text(
+        json.dumps(state, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    (artifact_dir / "failure-main-text.txt").write_text(text, encoding="utf-8")
 
 
 def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
@@ -1229,11 +1319,13 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 password=config.password,
                 next_path=APP_PATH,
                 success_heading_pattern=r"^Konvertera prov$",
-                attempts=1,
+                recover_to_next_path=True,
+                attempts=3,
                 failure_artifacts_dir=artifact_dir,
                 failure_screenshot_name="login-failure.png",
-                form_timeout_ms=8_000,
-                success_timeout_ms=10_000,
+                rate_limit_backoff=True,
+                form_timeout_ms=15_000,
+                success_timeout_ms=60_000,
             )
             _mark_progress(summary, artifact_dir, "login_complete")
             page.screenshot(path=str(artifact_dir / "01-authenticated.png"), full_page=True)
@@ -1258,6 +1350,33 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             summary["screenshots"].append(str(artifact_dir / "02-review-surface.png"))
             summary["compact_status_counts_before_review"] = _compact_status_counts(page)
             _write_summary(summary, artifact_dir)
+            if args.allow_existing_ready_session:
+                page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
+                expect(
+                    page.locator('[data-test="exam-converter-files-readiness-list"]')
+                ).to_be_visible(timeout=30_000)
+                enabled_downloads = page.locator(
+                    '[data-test^="exam-converter-download-file-"]:enabled'
+                )
+                if enabled_downloads.count() >= 2:
+                    summary["existing_ready_session_file_actions_only"] = True
+                    _mark_progress(summary, artifact_dir, "existing_ready_session_detected")
+                    _prove_replayed_file_actions(
+                        page,
+                        artifact_dir=artifact_dir,
+                        summary=summary,
+                        expected_pdf_filename=expected_pdf_filename,
+                        expected_qti_filename=expected_qti_filename,
+                    )
+                    if args.expect_submit_idempotency_reason:
+                        _assert_submit_idempotency_reason(
+                            summary,
+                            args.expect_submit_idempotency_reason,
+                        )
+                    summary["completed_at"] = datetime.now(UTC).isoformat()
+                    _mark_progress(summary, artifact_dir, "proof_complete")
+                    return summary
+                page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
 
             accept_probe_item_id = _find_review_required_advisory_question(page)
             summary["accept_unchanged_advisory_item_id"] = accept_probe_item_id
@@ -1396,60 +1515,13 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             summary["screenshots"].extend(summary["mobile_surface_checks"]["screenshots"])
             _mark_progress(summary, artifact_dir, "mobile_surface_checks_complete")
 
-            page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
-            expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
-                timeout=30_000,
-            )
-            enabled_downloads = page.locator('[data-test^="exam-converter-download-file-"]:enabled')
-            if enabled_downloads.count() < 2:
-                raise AssertionError("Replay did not expose both file downloads after reload.")
-            pdf_path, pdf_download = _download_replayed_file(
+            _prove_replayed_file_actions(
                 page,
-                artifact_key="examnet_pdf",
                 artifact_dir=artifact_dir,
-                expected_filename=expected_pdf_filename,
+                summary=summary,
+                expected_pdf_filename=expected_pdf_filename,
+                expected_qti_filename=expected_qti_filename,
             )
-            summary["artifact_downloads"].append(pdf_download)
-            qti_path, qti_download = _download_replayed_file(
-                page,
-                artifact_key="qti_package",
-                artifact_dir=artifact_dir,
-                expected_filename=expected_qti_filename,
-            )
-            summary["artifact_downloads"].append(qti_download)
-            summary["file_saves"].append(
-                _save_replayed_file(
-                    page,
-                    artifact_key="examnet_pdf",
-                    expected_filename=expected_pdf_filename,
-                )
-            )
-            summary["file_saves"].append(
-                _save_replayed_file(
-                    page,
-                    artifact_key="qti_package",
-                    expected_filename=expected_qti_filename,
-                )
-            )
-            summary["pdf_inspection"] = _inspect_pdf(
-                pdf_path,
-                expected_texts=(f"Poängvärde: {UPDATED_ITEM_POINTS}",),
-            )
-            summary["qti_inspection"] = inspect_qti(qti_path)
-            summary["qti_inspection"]["expected_prompt_present"] = _qti_contains_text(
-                qti_path,
-                UPDATED_ITEM_PROMPT,
-            )
-            if summary["pdf_inspection"]["forbidden_text_hits"]:
-                raise AssertionError("PDF exposes forbidden internal diagnostics.")
-            if summary["qti_inspection"]["forbidden_text_hits"]:
-                raise AssertionError("QTI exposes forbidden internal diagnostics.")
-            if summary["qti_inspection"]["correct_response_count"] == 0:
-                raise AssertionError("QTI contains no correctResponse entries.")
-            if summary["pdf_inspection"]["missing_expected_texts"]:
-                raise AssertionError("PDF did not include the replayed point correction.")
-            if not summary["qti_inspection"]["expected_prompt_present"]:
-                raise AssertionError("QTI did not include the replayed prompt correction.")
             if args.expect_submit_idempotency_reason:
                 _assert_submit_idempotency_reason(summary, args.expect_submit_idempotency_reason)
             summary["completed_at"] = datetime.now(UTC).isoformat()

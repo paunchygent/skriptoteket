@@ -114,12 +114,29 @@ None.
 | Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T014512Z/manifest.redacted.json` | Exact `ak7_lag_och_ratt_with_image.dxe` filename proof passed after HuleEdu `TASK-0831`; PDF/QTI replay downloads and Save to My Files returned `200`. |
 | Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T015236Z/manifest.redacted.json` | Same DXE bytes with run-scoped filename passed and retained `service-monitoring.json` plus `service-logs/*.log` from Skriptoteket, HuleEdu Gateway/File Service, and Sir Convert containers. |
 | Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T020711Z/manifest.redacted.json` | Same DXE bytes passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; PDF/QTI replay downloads and Save to My Files returned `200` with retained local Docker service logs. |
+| Current production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T110339Z/manifest.json` | Real `ak7_lag_och_ratt_with_image.dxe` run-scoped copy passed through production shared auth and Gateway; Sir Convert returned fresh admission followed by in-run strict replay, nested replay PDF/ZIP downloads returned `200`, Save to My Files returned `200`, PDF inspection passed with 6 pages, QTI inspection passed with 9 XML files and 37 correct responses, and retained Hemma Gateway/File/Sir Convert/Skriptoteket service logs show the handled requests. |
+| Current Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T111643Z/manifest.json` | Same real DXE bytes with a run-scoped filename passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; fresh admission followed by in-run strict replay, nested replay PDF/ZIP downloads returned `200`, Save to My Files returned `200`, PDF/QTI inspection passed, and retained local Docker service logs show the handled requests. |
 
 ### Non-Blocking Risks
 
 - The 2026-06-30 production failure was a HuleEdu Gateway route gap, not a
-  Skriptoteket consumer regression. The Story 58 gate is now satisfied by the
-  Dev/Prod proofs above.
+  Skriptoteket consumer regression. The Dev/Prod proofs above satisfy the
+  PR-0410 consumer-route incident proof only; they do not close Sir Convert
+  Story 58's broader stale-replay and correction-replay live proof gate.
+- Preserve-source reruns against an already processed DXE can replay an existing
+  ready job and hit a persisted correction-session version conflict before file
+  actions, as captured at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260630T110042Z/manifest.json`;
+  that is not the original download/save failure.
+- The first local Dev rerun after service startup hit a Gateway connect timeout
+  to local Sir Convert before file actions, as captured at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260630T111335Z/manifest.json`;
+  Gateway-to-Sir-Convert readiness then returned `200` and the subsequent Dev
+  proof passed.
+- Local proof setup needs both Skriptoteket shared-auth Vite on `:5173` and the
+  HuleEdu auth frontend on `:5174`; a missing auth frontend produced
+  `chrome-error://chromewebdata/` before upload in
+  `.artifacts/playwright-pr-0337-correction-session-live/20260630T083201Z/failure-page-state.json`.
 - Several touched legacy modules remain above the repo's preferred 400-500 line
   size guideline. This review does not block PR-0410 on that pre-existing
   shape because the bounded slice is contract-hardening and the changed behavior
