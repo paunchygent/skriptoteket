@@ -58,6 +58,18 @@ class FakeResponse:
         return self._payload
 
 
+class FakeFailureArtifactPage:
+    """Page double whose failure-artifact captures fail after an original error."""
+
+    url = "chrome-error://chromewebdata/"
+
+    def screenshot(self, **_kwargs: object) -> None:
+        raise TimeoutError("screenshot timed out")
+
+    def title(self) -> str:
+        raise RuntimeError("title capture failed")
+
+
 def test_capture_writes_raw_body_privately_and_public_summary_is_redacted(
     tmp_path: Path,
 ) -> None:
@@ -300,6 +312,7 @@ def test_pr_0337_response_summary_retains_safe_correction_replay_references() ->
     assert summary["json"]["correction_replay_artifact_references"] == [
         {
             "schema_version": "correction_replay_artifact_reference_v1",
+            "job_id": "must-not-retain-job",
             "artifact_set_id": "crset-real",
             "artifact_key": "correction_replay_examnet_pdf",
             "content_sha256": "sha256:original",
@@ -311,8 +324,77 @@ def test_pr_0337_response_summary_retains_safe_correction_replay_references() ->
         }
     ]
     rendered = json.dumps(summary, ensure_ascii=False)
-    assert "must-not-retain" not in rendered
+    assert "must-not-retain-created-at" not in rendered
+    assert "must-not-retain-profile" not in rendered
+    assert "must-not-retain-source-text" not in rendered
     assert "source_text" not in rendered
+
+
+def test_pr_0337_failure_artifacts_do_not_mask_original_exception_metadata(
+    tmp_path: Path,
+) -> None:
+    summary: dict[str, object] = {"screenshots": []}
+    original = AssertionError("login failed before upload")
+
+    correction_live._record_failure_artifacts(
+        FakeFailureArtifactPage(),
+        artifact_dir=tmp_path,
+        original_exception=original,
+        summary=summary,
+    )
+
+    assert summary["failure"] == {
+        "exception_type": "AssertionError",
+        "message": "login failed before upload",
+    }
+    assert summary["screenshots"] == []
+    assert summary["failure_artifact_errors"] == [
+        {
+            "artifact": "screenshot",
+            "exception_type": "TimeoutError",
+            "message": "screenshot timed out",
+        },
+        {
+            "artifact": "failure_text",
+            "exception_type": "RuntimeError",
+            "message": "title capture failed",
+        },
+    ]
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["failure"]["exception_type"] == "AssertionError"
+
+
+def test_pr_0337_final_summary_write_failure_does_not_mask_active_exception(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    summary: dict[str, object] = {}
+    original = AssertionError("conversion failed before replay")
+
+    def fail_summary(_summary: dict[str, object], _artifact_dir: Path) -> None:
+        raise OSError("manifest writer unavailable")
+
+    monkeypatch.setattr(correction_live, "_write_summary", fail_summary)
+
+    with pytest.raises(AssertionError, match="conversion failed before replay") as raised:
+        try:
+            raise original
+        except AssertionError as exc:
+            correction_live._write_final_summary(
+                summary,
+                tmp_path,
+                active_exception=exc,
+            )
+            raise
+
+    assert raised.value is original
+    assert summary.get("failure_artifact_errors") == [
+        {
+            "artifact": "final_summary",
+            "exception_type": "OSError",
+            "message": "manifest writer unavailable",
+        }
+    ]
 
 
 def test_pr_0337_mismatched_artifact_probe_corrupts_only_content_hash() -> None:

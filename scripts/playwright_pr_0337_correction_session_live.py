@@ -50,6 +50,11 @@ from scripts._pr_0331_reviewed_ai_facit_artifacts import (
     inspect_qti,
 )
 from scripts._proof_manifest import write_proof_manifest
+from scripts._story58_artifact_route_probe import (
+    probe_safe_correction_replay_artifacts,
+    story58_latest_correction_request_context,
+    story58_snapshot_evidence_with_request_context,
+)
 from scripts._story58_artifact_set_invariants import (
     record_story58_artifact_set_snapshot,
     refresh_story58_artifact_set_invariants,
@@ -139,6 +144,24 @@ def _run_dir(root: Path) -> Path:
 
 def _write_summary(summary: dict[str, Any], artifact_dir: Path) -> None:
     write_proof_manifest(artifact_dir, summary)
+
+
+def _write_final_summary(
+    summary: dict[str, Any],
+    artifact_dir: Path,
+    *,
+    active_exception: BaseException | None,
+) -> None:
+    try:
+        _write_summary(summary, artifact_dir)
+    except Exception as summary_exc:
+        if active_exception is None:
+            raise
+        _record_failure_artifact_error(
+            summary,
+            artifact="final_summary",
+            exc=summary_exc,
+        )
 
 
 def _mark_progress(summary: dict[str, Any], artifact_dir: Path, step: str) -> None:
@@ -389,6 +412,50 @@ def _download_replayed_file(
         "suggested_filename": output_path.name,
         "ui_artifact_key": artifact_key,
     }
+
+
+def _record_story58_product_route_snapshot(
+    summary: dict[str, Any],
+    evidence: dict[str, Any],
+    *,
+    observed_via: str,
+) -> None:
+    request_context = story58_latest_correction_request_context(summary)
+    record_story58_artifact_set_snapshot(
+        summary,
+        story58_snapshot_evidence_with_request_context(evidence, request_context),
+        observed_via=observed_via,
+    )
+
+
+def _observe_replayed_pdf_artifact_set(
+    page: Page,
+    *,
+    artifact_dir: Path,
+    expected_pdf_filename: str,
+    observed_via: str,
+    summary: dict[str, Any],
+) -> None:
+    page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
+    expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
+        timeout=30_000,
+    )
+    enabled_downloads = page.locator('[data-test^="exam-converter-download-file-"]:enabled')
+    if enabled_downloads.count() < 2:
+        raise AssertionError("Replay did not expose exportable file downloads.")
+    _pdf_path, pdf_download = _download_replayed_file(
+        page,
+        artifact_key="examnet_pdf",
+        artifact_dir=artifact_dir,
+        expected_filename=expected_pdf_filename,
+    )
+    summary["artifact_downloads"].append(pdf_download)
+    _record_story58_product_route_snapshot(
+        summary,
+        pdf_download,
+        observed_via=observed_via,
+    )
+    _write_summary(summary, artifact_dir)
 
 
 def _save_replayed_file(page: Page, *, artifact_key: str, expected_filename: str) -> dict[str, Any]:
@@ -1193,6 +1260,11 @@ def _prove_replayed_file_actions(
     enabled_downloads = page.locator('[data-test^="exam-converter-download-file-"]:enabled')
     if enabled_downloads.count() < 2:
         raise AssertionError("Replay did not expose both file downloads after reload.")
+    summary["story58_apply_response_reference_probe"] = probe_safe_correction_replay_artifacts(
+        page.request,
+        api_base_url=_protected_api_base_url(base_url),
+        summary=summary,
+    )
     pdf_path, pdf_download = _download_replayed_file(
         page,
         artifact_key="examnet_pdf",
@@ -1200,7 +1272,7 @@ def _prove_replayed_file_actions(
         expected_filename=expected_pdf_filename,
     )
     summary["artifact_downloads"].append(pdf_download)
-    record_story58_artifact_set_snapshot(summary, pdf_download, observed_via="download")
+    _record_story58_product_route_snapshot(summary, pdf_download, observed_via="download")
     qti_path, qti_download = _download_replayed_file(
         page,
         artifact_key="qti_package",
@@ -1208,21 +1280,21 @@ def _prove_replayed_file_actions(
         expected_filename=expected_qti_filename,
     )
     summary["artifact_downloads"].append(qti_download)
-    record_story58_artifact_set_snapshot(summary, qti_download, observed_via="download")
+    _record_story58_product_route_snapshot(summary, qti_download, observed_via="download")
     pdf_save = _save_replayed_file(
         page,
         artifact_key="examnet_pdf",
         expected_filename=expected_pdf_filename,
     )
     summary["file_saves"].append(pdf_save)
-    record_story58_artifact_set_snapshot(summary, pdf_save, observed_via="save")
+    _record_story58_product_route_snapshot(summary, pdf_save, observed_via="save")
     qti_save = _save_replayed_file(
         page,
         artifact_key="qti_package",
         expected_filename=expected_qti_filename,
     )
     summary["file_saves"].append(qti_save)
-    record_story58_artifact_set_snapshot(summary, qti_save, observed_via="save")
+    _record_story58_product_route_snapshot(summary, qti_save, observed_via="save")
     summary["mismatched_artifact_download_probe"] = probe_mismatched_replay_artifact_download(
         page.request,
         api_base_url=_protected_api_base_url(base_url),
@@ -1272,6 +1344,65 @@ def _write_failure_text(page: Page, artifact_dir: Path) -> None:
         encoding="utf-8",
     )
     (artifact_dir / "failure-main-text.txt").write_text(text, encoding="utf-8")
+
+
+def _exception_metadata(exc: BaseException) -> dict[str, str]:
+    return {
+        "exception_type": type(exc).__name__,
+        "message": str(exc),
+    }
+
+
+def _record_failure_artifact_error(
+    summary: dict[str, Any],
+    *,
+    artifact: str,
+    exc: BaseException,
+) -> None:
+    summary.setdefault("failure_artifact_errors", []).append(
+        {
+            "artifact": artifact,
+            **_exception_metadata(exc),
+        }
+    )
+
+
+def _record_failure_artifacts(
+    page: Page,
+    *,
+    artifact_dir: Path,
+    original_exception: BaseException,
+    summary: dict[str, Any],
+) -> None:
+    summary["failed_at"] = datetime.now(UTC).isoformat()
+    summary["failure"] = _exception_metadata(original_exception)
+    failure_screenshot = artifact_dir / "failure.png"
+    try:
+        page.screenshot(path=str(failure_screenshot), full_page=True)
+    except Exception as screenshot_exc:  # pragma: no cover - covered via unit double.
+        _record_failure_artifact_error(
+            summary,
+            artifact="screenshot",
+            exc=screenshot_exc,
+        )
+    else:
+        summary["screenshots"].append(str(failure_screenshot))
+    try:
+        _write_failure_text(page, artifact_dir)
+    except Exception as failure_text_exc:  # pragma: no cover - covered via unit double.
+        _record_failure_artifact_error(
+            summary,
+            artifact="failure_text",
+            exc=failure_text_exc,
+        )
+    try:
+        _write_summary(summary, artifact_dir)
+    except Exception as summary_exc:  # pragma: no cover - diagnostic best effort.
+        _record_failure_artifact_error(
+            summary,
+            artifact="summary",
+            exc=summary_exc,
+        )
 
 
 def _handle_request(
@@ -1393,6 +1524,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             ),
         )
 
+        active_exception: BaseException | None = None
         try:
             _mark_progress(summary, artifact_dir, "login_start")
             login_via_auth_entry(
@@ -1525,6 +1657,29 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             )
             _mark_progress(summary, artifact_dir, "review_required_answer_key_edited")
 
+            remaining_saved_review_required_item_ids = _save_all_review_required_answer_keys(page)
+            summary["remaining_saved_review_required_item_ids"] = (
+                remaining_saved_review_required_item_ids
+            )
+            summary["compact_status_counts_after_review_required"] = _compact_status_counts(page)
+            _mark_progress(summary, artifact_dir, "remaining_review_required_answer_keys_saved")
+
+            saved_validation_required_items = _save_all_validation_required_answer_keys(page)
+            summary["saved_validation_required_answer_key_items"] = saved_validation_required_items
+            summary["compact_status_counts_after_validation_required"] = _compact_status_counts(
+                page
+            )
+            _mark_progress(summary, artifact_dir, "validation_required_answer_keys_saved")
+
+            _observe_replayed_pdf_artifact_set(
+                page,
+                artifact_dir=artifact_dir,
+                expected_pdf_filename=expected_pdf_filename,
+                observed_via="exportable-baseline-download",
+                summary=summary,
+            )
+            _mark_progress(summary, artifact_dir, "story58_exportable_baseline_observed")
+
             _select_question(page, TARGET_ITEM_ID)
             page.locator('[data-test="exam-converter-point-correction-input"]').fill(
                 UPDATED_ITEM_POINTS
@@ -1544,19 +1699,15 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             )
             _mark_progress(summary, artifact_dir, "prompt_correction_saved")
 
-            remaining_saved_review_required_item_ids = _save_all_review_required_answer_keys(page)
-            summary["remaining_saved_review_required_item_ids"] = (
-                remaining_saved_review_required_item_ids
+            _observe_replayed_pdf_artifact_set(
+                page,
+                artifact_dir=artifact_dir,
+                expected_pdf_filename=expected_pdf_filename,
+                observed_via="post-distinct-correction-download",
+                summary=summary,
             )
-            summary["compact_status_counts_after_review_required"] = _compact_status_counts(page)
-            _mark_progress(summary, artifact_dir, "remaining_review_required_answer_keys_saved")
+            _mark_progress(summary, artifact_dir, "story58_distinct_correction_observed")
 
-            saved_validation_required_items = _save_all_validation_required_answer_keys(page)
-            summary["saved_validation_required_answer_key_items"] = saved_validation_required_items
-            summary["compact_status_counts_after_validation_required"] = _compact_status_counts(
-                page
-            )
-            _mark_progress(summary, artifact_dir, "validation_required_answer_keys_saved")
             page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
             expect(page.locator('[data-test="exam-converter-files-readiness-list"]')).to_be_visible(
                 timeout=30_000,
@@ -1611,19 +1762,25 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 _assert_submit_idempotency_reason(summary, args.expect_submit_idempotency_reason)
             summary["completed_at"] = datetime.now(UTC).isoformat()
             _mark_progress(summary, artifact_dir, "proof_complete")
-        except Exception:
-            summary["failed_at"] = datetime.now(UTC).isoformat()
-            page.screenshot(path=str(artifact_dir / "failure.png"), full_page=True)
-            summary["screenshots"].append(str(artifact_dir / "failure.png"))
-            _write_failure_text(page, artifact_dir)
-            _write_summary(summary, artifact_dir)
+        except Exception as exc:
+            active_exception = exc
+            _record_failure_artifacts(
+                page,
+                artifact_dir=artifact_dir,
+                original_exception=exc,
+                summary=summary,
+            )
             raise
         finally:
             runtime_evidence.stop()
             runtime_evidence.attach_to_summary(summary, artifact_dir)
             if story58_capture is not None:
                 story58_capture.attach_to_summary(summary)
-            _write_summary(summary, artifact_dir)
+            _write_final_summary(
+                summary,
+                artifact_dir,
+                active_exception=active_exception,
+            )
             signal.alarm(0)
             browser.close()
 

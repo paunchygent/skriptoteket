@@ -156,6 +156,120 @@ def test_final_download_only_leaves_duplicate_and_distinct_rows_unproven() -> No
     assert "unproven" in summary["rows"][1]["reason"]
 
 
+def test_final_snapshot_without_apply_response_references_stays_unproven() -> None:
+    summary = summarize_manifest_artifact_set_invariants(
+        artifact_snapshots=[
+            {
+                "artifact_key": "correction_replay_examnet_pdf",
+                "artifact_set_id": "crset-final",
+                "content_sha256": "sha256:content-final",
+                "observed_via": "final-download",
+                "path": (
+                    "/sir-convert/v2/convert/jobs/job-1/correction-replays/crset-final/"
+                    "artifacts/correction_replay_examnet_pdf"
+                    "?content_sha256=sha256%3Acontent-final"
+                ),
+                "product_route_observed": True,
+                "request_digest": "sha256:final-request",
+                "request_occurrence": 3,
+                "status": 200,
+            }
+        ],
+        correction_apply_requests=[
+            {"body_sha256": "sha256:baseline-request", "request_id": "req-baseline"},
+            {"body_sha256": "sha256:final-request", "request_id": "req-final"},
+            {"body_sha256": "sha256:final-request", "request_id": "req-final-reload"},
+        ],
+        correction_apply_responses=[
+            {"json": {"request_id": "req-baseline"}},
+            {"json": {"request_id": "req-final"}},
+            {"json": {"request_id": "req-final-reload"}},
+        ],
+    )
+
+    assert summary["status"] == "unproven"
+    assert [row["status"] for row in summary["rows"]] == ["unproven", "unproven"]
+
+
+def test_product_route_snapshots_with_request_context_prove_duplicate_and_distinct_rows() -> None:
+    summary = summarize_manifest_artifact_set_invariants(
+        artifact_snapshots=[
+            {
+                "artifact_key": "correction_replay_examnet_pdf",
+                "artifact_set_id": "crset-baseline",
+                "content_sha256": "sha256:content-baseline",
+                "observed_via": "exportable-baseline-download",
+                "path": (
+                    "/sir-convert/v2/convert/jobs/job-1/correction-replays/crset-baseline/"
+                    "artifacts/correction_replay_examnet_pdf"
+                    "?content_sha256=sha256%3Acontent-baseline"
+                ),
+                "product_route_observed": True,
+                "request_digest": "sha256:baseline-request",
+                "request_id": "req-baseline",
+                "request_occurrence": 1,
+                "status": 200,
+            },
+            {
+                "artifact_key": "correction_replay_examnet_pdf",
+                "artifact_set_id": "crset-final",
+                "content_sha256": "sha256:content-final",
+                "observed_via": "post-distinct-correction-download",
+                "path": (
+                    "/sir-convert/v2/convert/jobs/job-1/correction-replays/crset-final/"
+                    "artifacts/correction_replay_examnet_pdf"
+                    "?content_sha256=sha256%3Acontent-final"
+                ),
+                "product_route_observed": True,
+                "request_digest": "sha256:final-request",
+                "request_id": "req-final",
+                "request_occurrence": 2,
+                "status": 200,
+            },
+            {
+                "artifact_key": "correction_replay_examnet_pdf",
+                "artifact_set_id": "crset-final",
+                "content_sha256": "sha256:content-final",
+                "observed_via": "reload-final-download",
+                "path": (
+                    "/sir-convert/v2/convert/jobs/job-1/correction-replays/crset-final/"
+                    "artifacts/correction_replay_examnet_pdf"
+                    "?content_sha256=sha256%3Acontent-final"
+                ),
+                "product_route_observed": True,
+                "request_digest": "sha256:final-request",
+                "request_id": "req-final-reload",
+                "request_occurrence": 3,
+                "status": 200,
+            },
+        ],
+        correction_apply_requests=[
+            {"body_sha256": "sha256:baseline-request", "request_id": "req-baseline"},
+            {"body_sha256": "sha256:final-request", "request_id": "req-final"},
+            {"body_sha256": "sha256:final-request", "request_id": "req-final-reload"},
+        ],
+        correction_apply_responses=[
+            {"json": {"request_id": "req-baseline"}},
+            {"json": {"request_id": "req-final"}},
+            {"json": {"request_id": "req-final-reload"}},
+        ],
+    )
+
+    assert summary["status"] == "pass"
+    assert summary["paired_observation_count"] == 3
+    duplicate_row = summary["rows"][0]
+    distinct_row = summary["rows"][1]
+    assert duplicate_row["status"] == "pass"
+    assert duplicate_row["request_digest"] == "sha256:final-request"
+    assert duplicate_row["artifact_set_ids"] == ["crset-final"]
+    assert distinct_row["status"] == "pass"
+    assert distinct_row["request_digests"] == [
+        "sha256:baseline-request",
+        "sha256:final-request",
+    ]
+    assert distinct_row["artifact_set_ids"] == ["crset-baseline", "crset-final"]
+
+
 def test_summary_retains_only_approved_public_metadata() -> None:
     summary = summarize_artifact_set_invariants(
         [

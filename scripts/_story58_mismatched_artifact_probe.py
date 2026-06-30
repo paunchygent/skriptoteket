@@ -20,6 +20,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA = "correction_replay_artifact_reference_v1"
 CORRECTION_REPLAY_REFERENCE_SAFE_KEYS = (
     "schema_version",
+    "job_id",
     "artifact_set_id",
     "artifact_key",
     "content_sha256",

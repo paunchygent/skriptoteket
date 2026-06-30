@@ -16,6 +16,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
 
+from scripts._story58_artifact_observations import (
+    deduped_observations,
+    observed_artifacts_from_snapshots,
+    snapshot_manifest_observations,
+)
+
 APPROVED_OBSERVATION_KEYS = (
     "artifact_key",
     "artifact_set_id",
@@ -164,6 +170,17 @@ def story58_artifact_set_snapshot(
     ui_artifact_key = evidence.get("ui_artifact_key")
     if isinstance(ui_artifact_key, str) and ui_artifact_key:
         snapshot["ui_artifact_key"] = ui_artifact_key
+    for key in (
+        "corrections_sha256",
+        "job_id",
+        "request_digest",
+        "request_id",
+        "request_occurrence",
+        "source_bundle_id",
+        "source_file_sha256",
+        "source_state_sha256",
+    ):
+        _copy_optional(snapshot, evidence, key)
     return snapshot
 
 
@@ -192,7 +209,7 @@ def _manifest_observations(
     correction_apply_requests: Sequence[Mapping[str, object]],
     correction_apply_responses: Sequence[Mapping[str, object]],
 ) -> list[dict[str, object]]:
-    observed_artifacts = _observed_artifacts(artifact_snapshots)
+    observed_artifacts = observed_artifacts_from_snapshots(artifact_snapshots)
     requests_by_id = _requests_by_id(correction_apply_requests)
     observations: list[dict[str, object]] = []
     for index, response in enumerate(correction_apply_responses, start=1):
@@ -220,30 +237,8 @@ def _manifest_observations(
                     request_occurrence=index,
                 )
             )
-    return observations
-
-
-def _observed_artifacts(
-    artifact_snapshots: Sequence[Mapping[str, object]],
-) -> list[dict[str, object]]:
-    artifacts: list[dict[str, object]] = []
-    for snapshot in artifact_snapshots:
-        artifact_set_id = _first_string(snapshot, ("artifact_set_id", "replay_artifact_set_id"))
-        artifact_key = _first_string(snapshot, ("artifact_key", "replay_artifact_key"))
-        content_sha256 = _first_string(snapshot, ("content_sha256",))
-        if not artifact_set_id or not artifact_key or not content_sha256:
-            continue
-        artifacts.append(
-            {
-                "artifact_key": artifact_key,
-                "artifact_set_id": artifact_set_id,
-                "content_sha256": content_sha256,
-                "path": _first_string(snapshot, ("path", "download_path")),
-                "status": _first_int(snapshot, ("status", "save_status")),
-                "ui_artifact_key": _first_string(snapshot, ("ui_artifact_key",)),
-            }
-        )
-    return artifacts
+    observations.extend(snapshot_manifest_observations(observed_artifacts))
+    return deduped_observations(observations)
 
 
 def _requests_by_id(
@@ -297,6 +292,7 @@ def _manifest_observation(
     _copy_optional(observation, artifact, "status")
     _copy_optional(observation, artifact, "ui_artifact_key")
     _copy_optional(observation, reference, "request_id")
+    _copy_optional(observation, reference, "job_id")
     _copy_optional(observation, reference, "source_binding_digest")
     _copy_optional(observation, reference, "source_state_sha256")
     _copy_optional(observation, reference, "correction_payload_digest", to_key="corrections_sha256")

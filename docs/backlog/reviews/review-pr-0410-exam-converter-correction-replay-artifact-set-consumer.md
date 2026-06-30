@@ -147,6 +147,325 @@ None.
 
 approved
 
+## Follow-Up Implementation Evidence: Final Summary Write Masking Fix
+
+**Implementer:** implementation_agent
+**Date:** 2026-06-30
+**Status:** implemented; not final Story 58 closeout
+
+### Scope
+
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+
+### Prior Finding Resolution
+
+The PR-0337 Playwright proof harness now tracks the active exception from the
+main live-run body and passes it into the outer `finally` summary write. The
+final manifest write remains strict on successful runs, but when an original
+login/conversion exception is already propagating, a secondary
+`_write_summary` failure is recorded in `failure_artifact_errors` as
+`final_summary` and cannot replace the original exception observed by the
+caller.
+
+This fixes the rereview finding without changing Story 58 closeout status or
+claiming the broader Dev/Prod stale replay matrix is complete.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Red-first `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception` | Failed before implementation with `AttributeError: module 'scripts.playwright_pr_0337_correction_session_live' has no attribute '_write_final_summary'`. |
+| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception` | Passed: 1 selected test. |
+
+## Follow-Up Implementation Evidence: PR-0337 Failure Artifact Preservation
+
+**Implementer:** implementation_agent
+**Date:** 2026-06-30
+**Status:** implemented; not final Story 58 closeout
+
+### Scope
+
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+
+### Evidence Note
+
+The PR-0337 Playwright proof harness now records the original failure
+exception type and message in the retained summary before attempting failure
+diagnostics. Failure screenshot and failure page-text capture are best-effort:
+if either secondary artifact capture fails, the harness records that secondary
+error in `failure_artifact_errors` and still re-raises the original exception.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Red-first `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Failed before implementation with `AttributeError: module 'scripts.playwright_pr_0337_correction_session_live' has no attribute '_record_failure_artifacts'`. |
+| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Passed: 1 test selected. |
+| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 10 tests. |
+
+## Independent Follow-Up Review: PR-0337 Failure Artifact Preservation
+
+**Reviewer:** ruthless_review_agent
+**Date:** 2026-06-30
+**Verdict:** changes_requested
+
+### Scope
+
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+- `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
+
+This review covers only the failure-artifact preservation follow-up. It does
+not approve final Sir Convert Story 58 closeout, deployment, stale-replay
+proof, or producer behavior.
+
+### Findings
+
+#### High: final manifest write can still mask the original live-run exception
+
+`scripts/playwright_pr_0337_correction_session_live.py:1380` catches a
+diagnostic `_write_summary` failure and records it as a secondary
+`failure_artifact_errors` entry, but
+`scripts/playwright_pr_0337_correction_session_live.py:1759` then calls
+`_write_summary(summary, artifact_dir)` unguarded from `finally`. If manifest
+writing is the failing secondary artifact operation, that final write raises
+after the `except` block has re-raised the original login or conversion
+exception, so Python replaces the original exception with the cleanup/write
+exception. That means the follow-up still does not satisfy the required
+behavior for summary-write failures.
+
+Fix: make the final failure-path summary write best-effort as well, or gate the
+`finally` manifest write so that once an original exception is being propagated
+no later diagnostic write can replace it. Preserve the original exception
+metadata in the in-memory summary before any diagnostic capture, record
+secondary write errors when possible, and re-raise the original exception.
+
+Proof required:
+`pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata`
+
+Add coverage that simulates `_write_summary` raising during failure cleanup and
+asserts the caller still observes the original exception, not the manifest
+writer exception. The existing focused test only covers screenshot/title-text
+capture failures.
+
+### Review Notes
+
+- Screenshot capture and failure text capture are now best-effort and no longer
+  mask the original exception in the helper itself.
+- Retained exception metadata is acceptable for this proof harness as bounded
+  diagnostics: the reviewed code stores exception type and message, while the
+  existing raise sites mostly use operator-facing assertion messages and
+  sanitized paths/statuses. Do not add response bodies, credentials, private
+  request paths, raw source text, provider prompts, or identity/grant material
+  to exception messages.
+- The focused regression is meaningful for screenshot/text failures, but it is
+  not sufficient for the stated summary-write masking requirement.
+- The documentation correctly says this is implemented evidence only and does
+  not claim final Story 58 closeout.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py` | The helper catches screenshot/text/first summary failures, but the outer `finally` still performs an unguarded summary write. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Passed: 1 selected test; coverage is too narrow for summary-write masking. |
+| Context7 Playwright Python docs lookup for sync screenshot/title/locator APIs | Confirmed the reviewed diagnostic calls are current Playwright Python API surfaces. |
+
+### Decision
+
+changes_requested
+
+## Independent Rereview: Final Summary Write Masking Fix
+
+**Reviewer:** ruthless_review_agent
+**Date:** 2026-06-30
+**Verdict:** approved
+
+### Scope
+
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+- `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
+
+This rereview covers only the PR-0337 failure-preservation fix for final
+summary writes. It does not approve final Sir Convert Story 58 closeout,
+deployment, stale-replay proof, producer behavior, or the full Dev/Prod
+duplicate/distinct/stale replay matrix.
+
+### Findings
+
+No blocking findings.
+
+### Review Notes
+
+- The prior finding is resolved. The final `finally` path now calls
+  `_write_final_summary(...)` with the tracked `active_exception`; if an
+  original login/conversion/live-run exception is already propagating, a
+  secondary `_write_summary` failure is recorded as `final_summary` and is not
+  allowed to replace the original exception observed by the caller.
+- The success path remains strict enough: `_write_final_summary(...)` re-raises
+  manifest writer failures when `active_exception is None`, so a successful run
+  cannot silently skip its retained summary.
+- The regression is meaningful for the prior bug class. It simulates the final
+  manifest writer failing while an original exception is active and asserts the
+  exact original exception object is still raised, with the secondary writer
+  failure retained in `failure_artifact_errors`.
+- The retained review wording correctly keeps this as proof-harness follow-up
+  evidence only and avoids claiming final Story 58 closeout.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py` | `_write_final_summary(...)` is strict on success and non-masking only when an active exception is present. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception` | Passed: 1 selected test. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_story58_artifact_route_probe.py` | Passed: 24 tests. |
+| Parent-run `pdm run lint` | Passed. |
+| Parent-run `pdm run typecheck` | Passed with the existing `docx.*` note. |
+| Parent-run `pdm run docs-validate` | Passed before this retained-rereview update. |
+| Parent-run `git diff --check` | Passed before this retained-rereview update. |
+
+### Decision
+
+approved
+
+## Follow-Up Implementation Evidence: Story 58 Comparable Product-Route Snapshots
+
+**Implementer:** implementation_agent
+**Date:** 2026-06-30
+**Status:** implemented; not final Story 58 closeout
+
+### Scope
+
+- `scripts/_story58_artifact_route_probe.py`
+- `scripts/_story58_artifact_observations.py`
+- `scripts/_story58_artifact_set_invariants.py`
+- `scripts/_story58_mismatched_artifact_probe.py`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_artifact_set_invariants.py`
+- `tests/unit/scripts/test_story58_artifact_route_probe.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+
+### Evidence Note
+
+The canonical PR-0337 Playwright proof harness now supports comparable Story 58
+artifact-set observations before the final download/save assertions. It first
+attempts safe apply-response reference probes through the authenticated
+`page.request` context and nested correction replay route, failing on any
+attempted non-2xx route response. Because the current retained production
+manifest shape may omit `correction_replay_artifact_references` from apply
+responses, the harness also records product-route PDF artifact-set snapshots
+from the canonical browser flow after an exportable answer-key baseline and
+again after a later distinct point/prompt correction while file actions remain
+exportable. The existing reload/final file-action proof then provides the
+duplicate replay observation.
+
+Snapshots retain only approved artifact/request digest metadata:
+`artifact_set_id`, `artifact_key`, `content_sha256`, nested route path/status,
+`observed_via`, UI artifact key, request id/occurrence, request digest, and
+already-redacted source/correction digest fields. They do not retain raw
+response bytes, raw correction bodies, private paths, source text,
+identity/grants, idempotency keys, or provider material.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Red-first `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Failed before implementation with `ModuleNotFoundError: No module named 'scripts._story58_artifact_route_probe'`. |
+| Green `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 22 tests. |
+| `pdm run lint` | Passed. |
+| `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
+| `pdm run docs-validate` | Passed. |
+| `git diff --check` | Passed. |
+
+### Residual Live-Proof Gap
+
+This implementation extends the proof surface only. It does not claim final
+Sir Convert Story 58 closeout. Stale replay still requires the operator/private
+inputs and governed live setup needed to produce the final Dev/Prod
+duplicate/distinct/stale replay matrix.
+
+## Independent Review: Story 58 Comparable Product-Route Snapshots
+
+**Reviewer:** ruthless_review_agent
+**Date:** 2026-06-30
+**Verdict:** approved
+
+### Scope
+
+- `scripts/_story58_artifact_observations.py`
+- `scripts/_story58_artifact_route_probe.py`
+- `scripts/_story58_artifact_set_invariants.py`
+- `scripts/_story58_mismatched_artifact_probe.py`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_artifact_set_invariants.py`
+- `tests/unit/scripts/test_story58_artifact_route_probe.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+- `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
+
+This review covers only the bounded proof-harness extension for comparable
+Story 58 product-route artifact-set observations. It does not approve final
+Sir Convert Story 58 closeout, deployment, stale-replay proof, or producer
+behavior.
+
+### Findings
+
+No blocking findings.
+
+### Review Notes
+
+- The change extends the canonical PR-0337 Playwright proof harness instead of
+  adding a parallel proof script or using API-key-only proof.
+- Product-route observations use the authenticated Playwright request/browser
+  context and the nested Sir Convert correction replay artifact route.
+- The harness now records an exportable baseline PDF route snapshot, a
+  post-distinct-correction PDF route snapshot, and final replay download/save
+  route snapshots so duplicate and distinct rows are not inferred from a final
+  download alone.
+- Apply-response reference probing is fail-closed for attempted non-2xx nested
+  artifact routes, while missing apply-response references remain explicit
+  skipped/unproven evidence rather than fabricated proof.
+- Public retained Story 58 metadata remains bounded to approved request/artifact
+  identifiers, digests, route path/status, source/correction digests already
+  allowed by the proof lane, and occurrence context. The reviewed paths do not
+  retain raw response bytes, correction bodies, private paths, source text,
+  identity/grant envelopes, idempotency keys, provider prompts, or uploaded
+  bytes in the new Story 58 observation summaries.
+- Tests are behavioral enough for this harness slice: final-only evidence stays
+  `unproven`, comparable product-route snapshots can prove duplicate/distinct
+  rows, non-2xx route probes fail, and redaction boundaries are asserted.
+- The helper split improves SRP around route probing, observation assembly, and
+  invariant classification. Existing large proof-harness size remains a
+  pre-existing retained-script concern, not a new blocker for this narrow
+  extension.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 22 tests. |
+| Reviewer-run `pdm run lint` | Passed. |
+| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` docx section note. |
+| Reviewer-run `git diff --check` | Passed before this retained-review update. |
+| Reviewer-run `pdm run docs-validate` | Passed after this retained-review update. |
+| Reviewer-run `git diff --check` | Passed after this retained-review update. |
+
+### Residual Risks
+
+- This approval is for proof-harness capability only. Final Story 58 closeout
+  still requires governed live Dev/Prod evidence for the full
+  duplicate/distinct/stale replay matrix with the required private/operator
+  inputs.
+- The PR-0337 proof entrypoint remains intentionally large and should be split
+  only under a separate governed refactor slice so the canonical retained proof
+  behavior is not changed opportunistically.
+
+### Decision
+
+approved
+
 ## Changes Made
 
 | Change | Artifact | Description |
@@ -155,6 +474,10 @@ approved
 | 2 | `REV-PR-0410` | Added follow-up retained review for the Story 58 proof-harness extension with decision `approved`. |
 | 3 | `REV-PR-0410` | Added follow-up retained review for the Story 58 artifact-set invariant extension with decision `changes_requested`. |
 | 4 | `REV-PR-0410` | Added rereview for the Story 58 artifact-set invariant extension with decision `approved`. |
+| 5 | `REV-PR-0410` | Added independent follow-up review for comparable Story 58 product-route snapshots with decision `approved`. |
+| 6 | `REV-PR-0410` | Added independent follow-up review for PR-0337 failure artifact preservation with decision `changes_requested`. |
+| 7 | `REV-PR-0410` | Added implementation evidence for the final summary write masking fix; Story 58 closeout remains open. |
+| 8 | `REV-PR-0410` | Added independent rereview for the final summary write masking fix with decision `approved`; Story 58 closeout remains open. |
 
 ## Follow-Up Review: Story 58 Proof Harness Evidence Extension
 
