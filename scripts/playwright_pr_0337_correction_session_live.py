@@ -20,7 +20,7 @@ import json
 import re
 import shutil
 import signal
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -85,6 +85,16 @@ COMPACT_COMPLETE_LABEL = "Klart"
 COMPACT_TEACHER_MODIFIED_LABEL = "Ändrat"
 COMPACT_VALIDATION_REQUIRED_LABEL = "Kontrollera"
 MANUAL_GAP_FILL_VALUE_PREFIX = "live-proof-facit"
+START_CONVERSION_SELECTOR = '[data-test="exam-converter-start-conversion"]'
+SELECTED_QUESTION_DETAIL_SELECTOR = '[data-test="exam-converter-selected-question-detail"]'
+MANUAL_ANSWER_KEY_EDITOR_SELECTOR = '[data-test="exam-converter-manual-answer-key-editor"]'
+MANUAL_ANSWER_KEY_SAVE_SELECTOR = '[data-test="exam-converter-apply-manual-answer-key-action"]'
+ADVISORY_ANSWER_KEY_PANEL_SELECTOR = '[data-test="exam-converter-selected-question-ai-suggestion"]'
+ADVISORY_ANSWER_KEY_ACCEPT_SELECTOR = (
+    '[data-test="exam-converter-accept-advisory-answer-key-action"]'
+)
+ADVISORY_ANSWER_KEY_EDIT_SELECTOR = '[data-test="exam-converter-edit-advisory-answer-key-action"]'
+LocatorRoot = Page | Locator
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -485,7 +495,7 @@ def _visible(locator: Locator) -> bool:
 
 
 def _assert_no_visible_selected_detail(page: Page) -> None:
-    detail = page.locator('[data-test="exam-converter-selected-question-detail"]')
+    detail = page.locator(SELECTED_QUESTION_DETAIL_SELECTOR)
     if _visible(detail):
         raise AssertionError("Files/report mobile surfaces must not show selected-question detail.")
 
@@ -518,7 +528,7 @@ def _mobile_overflow_geometry(page: Page) -> dict[str, int | bool]:
 def _capture_mobile_surface_checks(page: Page, *, artifact_dir: Path) -> dict[str, Any]:
     page.set_viewport_size({"height": 844, "width": 390})
     page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
-    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_be_visible(
+    expect(page.locator(SELECTED_QUESTION_DETAIL_SELECTOR)).to_be_visible(
         timeout=30_000,
     )
     mobile_detail = artifact_dir / "05-mobile-detail.png"
@@ -862,11 +872,28 @@ def _wait_for_apply_or_source_state_failure(page: Page) -> Response:
     )
 
 
-def _click_and_wait_for_apply(page: Page, selector: str) -> None:
+def _wait_for_correction_idle(page: Page) -> None:
+    expect(page.locator(START_CONVERSION_SELECTOR)).to_be_enabled(timeout=90_000)
+    page.wait_for_timeout(300)
+
+
+def _click_and_wait_for_apply(
+    page: Page,
+    action: str | Locator,
+    *,
+    action_timeout_ms: int = 30_000,
+    before_click: Callable[[], Any] | None = None,
+) -> Any:
     last_error = ""
     for _attempt in range(4):
         with page.expect_response(_is_correction_session_write, timeout=30_000) as session_info:
-            page.locator(selector).click()
+            target = page.locator(action) if isinstance(action, str) else action
+            expect(target).to_have_count(1, timeout=action_timeout_ms)
+            expect(target).to_be_visible(timeout=action_timeout_ms)
+            expect(target).to_be_enabled(timeout=action_timeout_ms)
+            target.scroll_into_view_if_needed(timeout=action_timeout_ms)
+            click_context = before_click() if before_click is not None else None
+            target.click(timeout=action_timeout_ms)
         session_response = session_info.value
         if session_response.status >= 400:
             response_body = session_response.text()
@@ -889,8 +916,8 @@ def _click_and_wait_for_apply(page: Page, selector: str) -> None:
                     "Correction replay failed with "
                     f"HTTP {replay_response.status}: {replay_response.text()}"
                 )
-            page.wait_for_timeout(1_000)
-            return
+            _wait_for_correction_idle(page)
+            return click_context
         response_body = replay_response.text()
         last_error = f"HTTP {replay_response.status}: {response_body}"
         if replay_response.status == 429:
@@ -902,6 +929,29 @@ def _click_and_wait_for_apply(page: Page, selector: str) -> None:
     raise AssertionError(f"Correction source-state issue stayed rate-limited with {last_error}")
 
 
+def _selected_question_detail_selector(item_id: str | None = None) -> str:
+    if item_id is None:
+        return SELECTED_QUESTION_DETAIL_SELECTOR
+    return f"{SELECTED_QUESTION_DETAIL_SELECTOR}[data-selected-item-id={json.dumps(item_id)}]"
+
+
+def _selected_question_detail(page: Page, item_id: str | None = None) -> Locator:
+    return page.locator(_selected_question_detail_selector(item_id))
+
+
+def _current_selected_detail_item_id(page: Page) -> str:
+    item_id = _selected_question_detail(page).get_attribute("data-selected-item-id")
+    if not item_id:
+        raise AssertionError("Selected question detail did not expose an item id.")
+    return item_id
+
+
+def _wait_for_selected_question_detail(page: Page, item_id: str) -> Locator:
+    detail = _selected_question_detail(page)
+    expect(detail).to_have_attribute("data-selected-item-id", item_id, timeout=10_000)
+    return _selected_question_detail(page, item_id)
+
+
 def _select_question(page: Page, item_id: str) -> None:
     page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
     page.locator(f'[data-test="exam-converter-question-row-{item_id}"]').click()
@@ -910,35 +960,45 @@ def _select_question(page: Page, item_id: str) -> None:
         "true",
         timeout=10_000,
     )
+    _wait_for_selected_question_detail(page, item_id)
 
 
-def _manual_answer_key_editor(page: Page) -> Any:
-    return page.locator('[data-test="exam-converter-manual-answer-key-editor"]')
+def _manual_answer_key_editor(container: LocatorRoot) -> Locator:
+    return container.locator(MANUAL_ANSWER_KEY_EDITOR_SELECTOR)
 
 
-def _manual_answer_key_save_button(page: Page) -> Any:
-    return page.locator('[data-test="exam-converter-apply-manual-answer-key-action"]')
+def _manual_answer_key_save_button(container: LocatorRoot) -> Locator:
+    return container.locator(MANUAL_ANSWER_KEY_SAVE_SELECTOR)
 
 
-def _advisory_answer_key_panel(page: Page) -> Any:
-    return page.locator('[data-test="exam-converter-selected-question-ai-suggestion"]')
+def _advisory_answer_key_panel(container: LocatorRoot) -> Locator:
+    return container.locator(ADVISORY_ANSWER_KEY_PANEL_SELECTOR)
 
 
-def _advisory_answer_key_accept_button(page: Page) -> Any:
-    return page.locator('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+def _advisory_answer_key_accept_button(container: LocatorRoot) -> Locator:
+    return container.locator(ADVISORY_ANSWER_KEY_ACCEPT_SELECTOR)
 
 
-def _advisory_answer_key_edit_button(page: Page) -> Any:
-    return page.locator('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+def _advisory_answer_key_edit_button(container: LocatorRoot) -> Locator:
+    return container.locator(ADVISORY_ANSWER_KEY_EDIT_SELECTOR)
 
 
-def _manual_answer_key_save_is_enabled(page: Page) -> bool:
-    save_button = _manual_answer_key_save_button(page)
+def _selected_advisory_accept_button_is_ready(page: Page) -> bool:
+    accept_button = _advisory_answer_key_accept_button(_selected_question_detail(page))
+    return (
+        accept_button.count() == 1
+        and accept_button.first.is_visible()
+        and accept_button.first.is_enabled()
+    )
+
+
+def _manual_answer_key_save_is_enabled(container: LocatorRoot) -> bool:
+    save_button = _manual_answer_key_save_button(container)
     return save_button.count() > 0 and save_button.first.is_enabled()
 
 
-def _fill_visible_gap_answers(page: Page) -> int:
-    gap_inputs = page.locator('[data-test^="exam-converter-manual-gap-"]')
+def _fill_visible_gap_answers(container: LocatorRoot) -> int:
+    gap_inputs = container.locator('[data-test^="exam-converter-manual-gap-"]')
     filled_count = 0
     for index in _visible_indexes(gap_inputs):
         gap_input = gap_inputs.nth(index)
@@ -949,23 +1009,23 @@ def _fill_visible_gap_answers(page: Page) -> int:
     return filled_count
 
 
-def _prepare_visible_answer_key_editor(page: Page) -> str | None:
-    if _manual_answer_key_save_is_enabled(page):
+def _prepare_visible_answer_key_editor(container: LocatorRoot) -> str | None:
+    if _manual_answer_key_save_is_enabled(container):
         return "unchanged"
-    choices = page.locator('[data-test^="exam-converter-manual-choice-"]')
+    choices = container.locator('[data-test^="exam-converter-manual-choice-"]')
     if _visible_indexes(choices):
-        choice_id = _choose_manual_choice(page)
-        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        choice_id = _choose_manual_choice(container)
+        expect(_manual_answer_key_save_button(container)).to_be_enabled(timeout=5_000)
         return f"choice:{choice_id}"
-    filled_gap_count = _fill_visible_gap_answers(page)
+    filled_gap_count = _fill_visible_gap_answers(container)
     if filled_gap_count > 0:
-        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        expect(_manual_answer_key_save_button(container)).to_be_enabled(timeout=5_000)
         return f"gap_fill:{filled_gap_count}"
     return None
 
 
-def _prepare_visible_answer_key_editor_for_edit(page: Page) -> str:
-    choices = page.locator('[data-test^="exam-converter-manual-choice-"]')
+def _prepare_visible_answer_key_editor_for_edit(container: LocatorRoot) -> str:
+    choices = container.locator('[data-test^="exam-converter-manual-choice-"]')
     visible_choice_indexes = _visible_indexes(choices)
     unselected_choices = [
         index
@@ -978,21 +1038,25 @@ def _prepare_visible_answer_key_editor_for_edit(page: Page) -> str:
         if not choice_test_id:
             raise AssertionError("Manual choice did not expose a data-test id.")
         choice.click()
-        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        expect(_manual_answer_key_save_button(container)).to_be_enabled(timeout=5_000)
         return f"changed_choice:{choice_test_id.removeprefix('exam-converter-manual-choice-')}"
-    filled_gap_count = _fill_visible_gap_answers(page)
+    filled_gap_count = _fill_visible_gap_answers(container)
     if filled_gap_count > 0:
-        expect(_manual_answer_key_save_button(page)).to_be_enabled(timeout=5_000)
+        expect(_manual_answer_key_save_button(container)).to_be_enabled(timeout=5_000)
         return f"changed_gap_fill:{filled_gap_count}"
-    preparation = _prepare_visible_answer_key_editor(page)
+    preparation = _prepare_visible_answer_key_editor(container)
     if preparation is None:
         raise AssertionError("Advisory edit path did not expose an answer-key editor.")
     return preparation
 
 
 def _find_compact_status_manual_answer_key_question(
-    page: Page, *, status_label: str
+    page: Page,
+    *,
+    excluded_item_ids: set[str] | None = None,
+    status_label: str,
 ) -> tuple[str, str]:
+    excluded_item_ids = excluded_item_ids or set()
     page.locator('[data-test="exam-converter-inspection-tab-questions"]').click()
     rows = page.locator('[data-test^="exam-converter-question-row-"]')
     for index in range(rows.count()):
@@ -1000,17 +1064,20 @@ def _find_compact_status_manual_answer_key_question(
         row_test_id = row.get_attribute("data-test")
         if not row_test_id:
             continue
+        item_id = row_test_id.removeprefix("exam-converter-question-row-")
+        if item_id in excluded_item_ids:
+            continue
         if not _row_has_compact_status(row, status_label):
             continue
         row.click()
-        editor = _manual_answer_key_editor(page)
+        detail = _wait_for_selected_question_detail(page, item_id)
         try:
-            expect(editor).to_be_visible(timeout=5_000)
+            expect(_manual_answer_key_editor(detail)).to_be_visible(timeout=5_000)
         except AssertionError:
             continue
-        preparation = _prepare_visible_answer_key_editor(page)
+        preparation = _prepare_visible_answer_key_editor(detail)
         if preparation is not None:
-            return row_test_id.removeprefix("exam-converter-question-row-"), preparation
+            return item_id, preparation
     raise AssertionError(
         f"No visible answer-key editor was found for compact '{status_label}' state."
     )
@@ -1033,10 +1100,11 @@ def _find_review_required_advisory_question(
         if not _row_has_compact_status(row, COMPACT_REVIEW_REQUIRED_LABEL):
             continue
         row.click()
+        detail = _wait_for_selected_question_detail(page, item_id)
         try:
-            expect(_advisory_answer_key_panel(page)).to_be_visible(timeout=5_000)
-            expect(_advisory_answer_key_accept_button(page)).to_be_enabled(timeout=5_000)
-            expect(_advisory_answer_key_edit_button(page)).to_be_enabled(timeout=5_000)
+            expect(_advisory_answer_key_panel(detail)).to_be_visible(timeout=5_000)
+            expect(_advisory_answer_key_accept_button(detail)).to_be_enabled(timeout=5_000)
+            expect(_advisory_answer_key_edit_button(detail)).to_be_enabled(timeout=5_000)
         except AssertionError:
             continue
         return item_id
@@ -1054,9 +1122,10 @@ def _assert_untouched_advisory_sibling_preserved(
     expect(row.locator(_compact_status_selector(COMPACT_REVIEW_REQUIRED_LABEL))).to_be_visible(
         timeout=10_000
     )
-    expect(_advisory_answer_key_panel(page)).to_be_visible(timeout=10_000)
-    expect(_advisory_answer_key_accept_button(page)).to_be_enabled(timeout=10_000)
-    expect(_advisory_answer_key_edit_button(page)).to_be_enabled(timeout=10_000)
+    detail = _wait_for_selected_question_detail(page, sibling_item_id)
+    expect(_advisory_answer_key_panel(detail)).to_be_visible(timeout=10_000)
+    expect(_advisory_answer_key_accept_button(detail)).to_be_enabled(timeout=10_000)
+    expect(_advisory_answer_key_edit_button(detail)).to_be_enabled(timeout=10_000)
     return {
         "accepted_item_id": accepted_item_id,
         "sibling_item_id": sibling_item_id,
@@ -1091,29 +1160,64 @@ def _assert_row_status_is_one_of(page: Page, item_id: str, labels: Sequence[str]
 
 def _save_visible_answer_key(page: Page, *, expected_statuses: Sequence[str]) -> str:
     item_id = _selected_question_id(page)
+    detail = _wait_for_selected_question_detail(page, item_id)
     _click_and_wait_for_apply(
         page,
-        '[data-test="exam-converter-apply-manual-answer-key-action"]',
+        _manual_answer_key_save_button(detail),
     )
     _assert_row_status_is_one_of(page, item_id, expected_statuses)
     return item_id
 
 
-def _save_review_required_answer_key(page: Page) -> str:
-    item_id = _selected_question_id(page)
-    _click_and_wait_for_apply(
-        page,
-        '[data-test="exam-converter-accept-advisory-answer-key-action"]',
-    )
-    _assert_row_status_is_one_of(page, item_id, (COMPACT_COMPLETE_LABEL,))
-    return item_id
+def _save_review_required_answer_key(
+    page: Page,
+    *,
+    excluded_item_ids: set[str] | None = None,
+    expected_item_id: str | None = None,
+) -> str:
+    excluded_item_ids = excluded_item_ids or set()
+    last_error: AssertionError | None = None
+    if expected_item_id is not None:
+        _select_question(page, expected_item_id)
+    for _attempt in range(8):
+        item_id = _selected_question_id(page)
+        if expected_item_id is not None and item_id != expected_item_id:
+            raise AssertionError(
+                "Advisory answer-key save selected a different question: "
+                f"expected {expected_item_id}, got {item_id}."
+            )
+        _wait_for_selected_question_detail(page, item_id)
+        if not _selected_advisory_accept_button_is_ready(page):
+            if expected_item_id is not None:
+                raise AssertionError(f"Selected question {expected_item_id} has no advisory save.")
+            _find_review_required_advisory_question(page, excluded_item_ids=excluded_item_ids)
+            continue
+        try:
+            saved_item_id = _click_and_wait_for_apply(
+                page,
+                _advisory_answer_key_accept_button(_selected_question_detail(page)),
+                action_timeout_ms=5_000,
+                before_click=lambda: _current_selected_detail_item_id(page),
+            )
+        except AssertionError as exc:
+            last_error = exc
+            page.wait_for_timeout(500)
+            continue
+        if not isinstance(saved_item_id, str):
+            raise AssertionError("Advisory answer-key click did not capture the selected item id.")
+        _assert_row_status_is_one_of(page, saved_item_id, (COMPACT_COMPLETE_LABEL,))
+        return saved_item_id
+    if last_error is not None:
+        raise AssertionError("Advisory answer-key save did not settle.") from last_error
+    raise AssertionError("Advisory answer-key save did not find a saveable question.")
 
 
 def _save_review_required_answer_key_edit(page: Page) -> tuple[str, str]:
     item_id = _find_review_required_advisory_question(page)
-    _advisory_answer_key_edit_button(page).click()
-    expect(_manual_answer_key_editor(page)).to_be_visible(timeout=5_000)
-    preparation = _prepare_visible_answer_key_editor_for_edit(page)
+    detail = _wait_for_selected_question_detail(page, item_id)
+    _advisory_answer_key_edit_button(detail).click()
+    expect(_manual_answer_key_editor(detail)).to_be_visible(timeout=5_000)
+    preparation = _prepare_visible_answer_key_editor_for_edit(detail)
     saved_item_id = _save_visible_answer_key(
         page,
         expected_statuses=(COMPACT_TEACHER_MODIFIED_LABEL, COMPACT_COMPLETE_LABEL),
@@ -1130,6 +1234,17 @@ def _save_validation_required_answer_key(page: Page) -> str:
     )
 
 
+def _save_review_required_manual_answer_key(page: Page) -> str:
+    return _save_visible_answer_key(
+        page,
+        expected_statuses=(
+            COMPACT_TEACHER_MODIFIED_LABEL,
+            COMPACT_COMPLETE_LABEL,
+            COMPACT_REVIEW_REQUIRED_LABEL,
+        ),
+    )
+
+
 def _save_all_review_required_answer_keys(page: Page) -> list[str]:
     saved_item_ids: list[str] = []
     for _ in range(12):
@@ -1139,9 +1254,51 @@ def _save_all_review_required_answer_keys(page: Page) -> list[str]:
             return saved_item_ids
         if item_id in saved_item_ids:
             raise AssertionError(f"Review-required answer-key flow did not advance past {item_id}.")
-        saved_item_ids.append(_save_review_required_answer_key(page))
+        try:
+            saved_item_id = _save_review_required_answer_key(
+                page,
+                excluded_item_ids=set(saved_item_ids),
+            )
+        except AssertionError as exc:
+            if "No visible advisory review panel" in str(exc):
+                return saved_item_ids
+            raise
+        if saved_item_id in saved_item_ids:
+            raise AssertionError(
+                f"Review-required answer-key flow repeated saved item {saved_item_id}."
+            )
+        saved_item_ids.append(saved_item_id)
         page.wait_for_timeout(250)
     raise AssertionError("Review-required answer-key flow exceeded the expected item count.")
+
+
+def _save_all_review_required_manual_answer_keys(
+    page: Page, *, excluded_item_ids: set[str]
+) -> list[dict[str, str]]:
+    saved_items: list[dict[str, str]] = []
+    for _ in range(12):
+        excluded = excluded_item_ids | {entry["item_id"] for entry in saved_items}
+        try:
+            item_id, preparation = _find_compact_status_manual_answer_key_question(
+                page,
+                excluded_item_ids=excluded,
+                status_label=COMPACT_REVIEW_REQUIRED_LABEL,
+            )
+        except AssertionError:
+            return saved_items
+        saved_item_id = _save_review_required_manual_answer_key(page)
+        if saved_item_id in excluded:
+            raise AssertionError(
+                f"Review-required manual answer-key flow repeated {saved_item_id}."
+            )
+        saved_items.append(
+            {
+                "item_id": saved_item_id,
+                "preparation": preparation,
+            }
+        )
+        page.wait_for_timeout(250)
+    raise AssertionError("Review-required manual answer-key flow exceeded the expected item count.")
 
 
 def _save_all_validation_required_answer_keys(page: Page) -> list[dict[str, str]]:
@@ -1178,11 +1335,13 @@ def _assert_selected_moved_to_next_review_required(page: Page, previous_item_id:
             if not _row_has_compact_status(row, COMPACT_REVIEW_REQUIRED_LABEL):
                 continue
             row.click()
-            editor = _manual_answer_key_editor(page)
+            item_id = row_test_id.removeprefix("exam-converter-question-row-")
+            detail = _wait_for_selected_question_detail(page, item_id)
+            editor = _manual_answer_key_editor(detail)
             has_review_required_editor = (
                 editor.count() > 0
                 and editor.first.is_visible()
-                and _manual_answer_key_save_is_enabled(page)
+                and _manual_answer_key_save_is_enabled(detail)
             )
             if has_review_required_editor:
                 raise AssertionError("Saving a review-required answer key did not advance review.")
@@ -1206,8 +1365,8 @@ def _assert_local_draft_does_not_unlock_files(page: Page) -> dict[str, Any]:
     }
 
 
-def _choose_manual_choice(page: Page) -> str:
-    choices = page.locator('[data-test^="exam-converter-manual-choice-"]')
+def _choose_manual_choice(container: LocatorRoot) -> str:
+    choices = container.locator('[data-test^="exam-converter-manual-choice-"]')
     visible_indexes = _visible_indexes(choices)
     if not visible_indexes:
         raise AssertionError("Manual choice editor has no visible choices after suppression.")
@@ -1346,6 +1505,58 @@ def _write_failure_text(page: Page, artifact_dir: Path) -> None:
     (artifact_dir / "failure-main-text.txt").write_text(text, encoding="utf-8")
 
 
+def _enabled_count(locator: Locator) -> int:
+    return sum(1 for index in range(locator.count()) if locator.nth(index).is_enabled())
+
+
+def _selected_detail_dom_diagnostics(page: Page) -> dict[str, Any]:
+    details = page.locator(SELECTED_QUESTION_DETAIL_SELECTOR)
+    rows = page.locator('[data-test^="exam-converter-question-row-"]')
+    accept_buttons = page.locator(ADVISORY_ANSWER_KEY_ACCEPT_SELECTOR)
+    detail_entries: list[dict[str, Any]] = []
+    for index in range(details.count()):
+        detail = details.nth(index)
+        scoped_accept_buttons = _advisory_answer_key_accept_button(detail)
+        detail_entries.append(
+            {
+                "accept_button_count": scoped_accept_buttons.count(),
+                "accept_button_enabled_count": _enabled_count(scoped_accept_buttons),
+                "accept_button_visible_count": len(_visible_indexes(scoped_accept_buttons)),
+                "advisory_panel_count": _advisory_answer_key_panel(detail).count(),
+                "data_selected_item_id": detail.get_attribute("data-selected-item-id"),
+                "index": index,
+                "visible": detail.is_visible(),
+            }
+        )
+    selected_row_ids: list[str] = []
+    review_required_row_ids: list[str] = []
+    for index in range(rows.count()):
+        row = rows.nth(index)
+        row_test_id = row.get_attribute("data-test")
+        if not row_test_id:
+            continue
+        item_id = row_test_id.removeprefix("exam-converter-question-row-")
+        if row.get_attribute("aria-selected") == "true":
+            selected_row_ids.append(item_id)
+        if _row_has_compact_status(row, COMPACT_REVIEW_REQUIRED_LABEL):
+            review_required_row_ids.append(item_id)
+    return {
+        "advisory_accept_button_count": accept_buttons.count(),
+        "advisory_accept_button_enabled_count": _enabled_count(accept_buttons),
+        "advisory_accept_button_visible_count": len(_visible_indexes(accept_buttons)),
+        "details": detail_entries,
+        "review_required_row_ids": review_required_row_ids,
+        "selected_row_ids": selected_row_ids,
+    }
+
+
+def _write_failure_dom_diagnostics(page: Page, artifact_dir: Path) -> dict[str, Any]:
+    diagnostics = _selected_detail_dom_diagnostics(page)
+    path = artifact_dir / "failure-dom-diagnostics.json"
+    path.write_text(json.dumps(diagnostics, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"path": str(path), **diagnostics}
+
+
 def _exception_metadata(exc: BaseException) -> dict[str, str]:
     return {
         "exception_type": type(exc).__name__,
@@ -1394,6 +1605,17 @@ def _record_failure_artifacts(
             summary,
             artifact="failure_text",
             exc=failure_text_exc,
+        )
+    try:
+        summary["failure_dom_diagnostics"] = _write_failure_dom_diagnostics(
+            page,
+            artifact_dir,
+        )
+    except Exception as diagnostics_exc:  # pragma: no cover - diagnostic best effort.
+        _record_failure_artifact_error(
+            summary,
+            artifact="failure_dom_diagnostics",
+            exc=diagnostics_exc,
         )
     try:
         _write_summary(summary, artifact_dir)
@@ -1552,10 +1774,8 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             page.set_input_files(
                 '[data-test="exam-converter-rail-source-file-input"]', str(uploaded_source_dxe)
             )
-            expect(page.locator('[data-test="exam-converter-start-conversion"]')).to_be_enabled(
-                timeout=10_000
-            )
-            page.locator('[data-test="exam-converter-start-conversion"]').click()
+            expect(page.locator(START_CONVERSION_SELECTOR)).to_be_enabled(timeout=10_000)
+            page.locator(START_CONVERSION_SELECTOR).click()
             _mark_progress(summary, artifact_dir, "conversion_started")
             expect(page.locator('[data-test="exam-converter-inspection-surface"]')).to_be_visible(
                 timeout=45_000
@@ -1598,7 +1818,8 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             summary["accept_unchanged_advisory_item_id"] = accept_probe_item_id
             summary["accept_unchanged_advisory_action"] = "Acceptera"
             summary["accept_unchanged_advisory_saved_item_id"] = _save_review_required_answer_key(
-                page
+                page,
+                expected_item_id=accept_probe_item_id,
             )
             summary["accept_unchanged_advisory_status"] = COMPACT_COMPLETE_LABEL
             summary["compact_status_counts_after_accept_probe"] = _compact_status_counts(page)
@@ -1623,10 +1844,8 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             page.set_input_files(
                 '[data-test="exam-converter-rail-source-file-input"]', str(uploaded_source_dxe)
             )
-            expect(page.locator('[data-test="exam-converter-start-conversion"]')).to_be_enabled(
-                timeout=10_000
-            )
-            page.locator('[data-test="exam-converter-start-conversion"]').click()
+            expect(page.locator(START_CONVERSION_SELECTOR)).to_be_enabled(timeout=10_000)
+            page.locator(START_CONVERSION_SELECTOR).click()
             _mark_progress(summary, artifact_dir, "second_conversion_started")
             expect(page.locator('[data-test="exam-converter-inspection-surface"]')).to_be_visible(
                 timeout=45_000
@@ -1660,6 +1879,17 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             remaining_saved_review_required_item_ids = _save_all_review_required_answer_keys(page)
             summary["remaining_saved_review_required_item_ids"] = (
                 remaining_saved_review_required_item_ids
+            )
+            review_required_excluded_item_ids = {
+                review_required_edit_item_id,
+                *remaining_saved_review_required_item_ids,
+            }
+            remaining_manual_review_required_items = _save_all_review_required_manual_answer_keys(
+                page,
+                excluded_item_ids=review_required_excluded_item_ids,
+            )
+            summary["remaining_manual_review_required_answer_key_items"] = (
+                remaining_manual_review_required_items
             )
             summary["compact_status_counts_after_review_required"] = _compact_status_counts(page)
             _mark_progress(summary, artifact_dir, "remaining_review_required_answer_keys_saved")
@@ -1735,9 +1965,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 UPDATED_ITEM_POINTS,
                 timeout=30_000,
             )
-            detail_text = page.locator(
-                '[data-test="exam-converter-selected-question-detail"]'
-            ).inner_text(timeout=10_000)
+            detail_text = page.locator(SELECTED_QUESTION_DETAIL_SELECTOR).inner_text(timeout=10_000)
             summary["reload_detail_text"] = detail_text
             page.screenshot(path=str(artifact_dir / "04-after-reload.png"), full_page=True)
             summary["screenshots"].append(str(artifact_dir / "04-after-reload.png"))

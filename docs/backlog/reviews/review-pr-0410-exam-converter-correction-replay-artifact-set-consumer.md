@@ -478,6 +478,8 @@ approved
 | 6 | `REV-PR-0410` | Added independent follow-up review for PR-0337 failure artifact preservation with decision `changes_requested`. |
 | 7 | `REV-PR-0410` | Added implementation evidence for the final summary write masking fix; Story 58 closeout remains open. |
 | 8 | `REV-PR-0410` | Added independent rereview for the final summary write masking fix with decision `approved`; Story 58 closeout remains open. |
+| 9 | `REV-PR-0410` | Added independent review for Story 58 selected-detail proof-harness stabilization with decision `changes_requested`. |
+| 10 | `REV-PR-0410` | Added independent rereview for Story 58 selected-detail proof-harness stabilization with decision `approved`; Story 58 closeout remains open. |
 
 ## Follow-Up Review: Story 58 Proof Harness Evidence Extension
 
@@ -676,6 +678,140 @@ comparable product-route snapshots for each relevant correction-apply response.
 | Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
 | Reviewer-run `pdm run docs-validate` | Passed before and after this retained-review update. |
 | Reviewer-run `git diff --check` | Passed before and after this retained-review update. |
+
+### Decision
+
+approved
+
+## Independent Review: Story 58 Selected-Detail Proof-Harness Stabilization
+
+**Reviewer:** Codex retained reviewer
+**Date:** 2026-06-30
+**Verdict:** changes_requested
+
+### Scope
+
+- `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue`
+- `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+
+This review covers only the current uncommitted selected-detail proof-harness
+stabilization patch. It does not approve final Sir Convert Story 58 closeout,
+deployment, stale-replay proof, producer behavior, or raw private request
+capture contents.
+
+### Findings
+
+#### Low: current proof script formatting fails the repo lint gate
+
+`scripts/playwright_pr_0337_correction_session_live.py:91` and
+`scripts/playwright_pr_0337_correction_session_live.py:1780` are formatted
+differently from the repo formatter's expected output, so `pdm run lint` fails
+on the current uncommitted diff. The selected-detail behavior itself looks
+sound, but this patch cannot be approved while a required closeout gate fails
+for a touched proof script.
+
+Fix: run the repo formatter or apply the formatter's exact changes for the
+changed proof script only; do not alter the proof flow, selectors, or
+`_click_and_wait_for_apply` behavior.
+
+Proof required:
+`pdm run lint`
+
+### Review Notes
+
+- The added `data-selected-item-id` on
+  `exam-converter-selected-question-detail` is a real route-visible DOM signal,
+  not a facade around the Playwright script.
+- `_click_and_wait_for_apply` remains semantically intact: it still waits for
+  the correction-session write, then the Sir Convert apply/source-state
+  response, and it still retries source-state rate limiting.
+- The answer-key proof selectors are now scoped through the detail container
+  whose `data-selected-item-id` matches the selected row, which addresses the
+  stale `Granska` row/detail mismatch without broadening selectors.
+- `LocatorRoot = Page | Locator` and the changed helper return types pass the
+  repo Python typecheck.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer code review of scoped diff | No behavior blocker found in selected-detail scoping or apply-wait semantics. |
+| Reviewer-run `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | Passed: 13 tests. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py` | Passed: 24 tests. |
+| Reviewer-run `pdm run fe-type-check` | Passed. |
+| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` docx section note. |
+| Reviewer-run `git diff --check -- frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts scripts/playwright_pr_0337_correction_session_live.py` | Passed. |
+| Reviewer-run `pdm run lint` | Failed: `scripts/playwright_pr_0337_correction_session_live.py` would be reformatted. |
+
+### Decision
+
+changes_requested
+
+## Rereview: Story 58 Selected-Detail Proof-Harness Stabilization
+
+**Reviewer:** Codex retained reviewer
+**Date:** 2026-06-30
+**Verdict:** approved
+
+### Scope
+
+- `.codex/handoff.md`
+- `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
+- `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue`
+- `scripts/playwright_pr_0337_correction_session_live.py`
+- `tests/unit/scripts/test_story58_private_request_capture.py`
+
+This rereview approves only the bounded Skriptoteket follow-up diff for
+proof-harness stabilization and the selected-detail `data-selected-item-id`
+hook. It does not approve final Sir Convert Story 58 closeout, production
+rerun/deploy status, stale-replay private-input proof, producer behavior, or
+raw private request bodies.
+
+### Findings
+
+No blocking findings remain.
+
+### Review Notes
+
+- The selected-detail hook is a real DOM state signal on the existing question
+  detail surface, with a focused component assertion. It is not a compatibility
+  facade, local replay shim, or product fallback.
+- The proof harness now scopes answer-key actions through the selected detail
+  whose `data-selected-item-id` matches the selected row. This addresses the
+  auto-next/stale-detail race without loosening selectors or hiding failed
+  correction-session/apply responses.
+- The harness still waits for the correction-session write and Sir Convert
+  apply/source-state response before advancing. Download/save proof continues
+  to require the nested correction-replay route with `artifact_set_id`,
+  `artifact_key`, and `content_sha256`, and mismatched replay artifacts fail
+  closed.
+- The current Dev manifest
+  `.artifacts/playwright-pr-0337-correction-session-live/20260630T201858Z/manifest.redacted.json`
+  records `proof_complete`, replay PDF/QTI download `200`, Save to My Files
+  `200`, distinct artifact-set invariants `pass`, manual review-required
+  cleanup with `Granska: 0`, and mismatched replay artifact `409`.
+- Public retained evidence remains bounded to redacted manifest facts. The
+  manifest marks private request capture as private-dir only with no raw bodies
+  or private paths retained; reviewer redaction scan found no raw request body,
+  source-state signature, identity/grant envelope, provider prompt, or source
+  text terms in the retained public summary.
+- The proof script remains a large targeted Playwright entrypoint, but the
+  current follow-up keeps the added logic inside the existing disposable
+  proof-harness lane and does not introduce a reusable shim/facade surface.
+
+### Verification Evidence
+
+| Command or evidence | Result |
+|---|---|
+| Reviewer code review of scoped diff | No behavior, boundary, redaction, or selected-detail blocker found. |
+| Reviewer-run `pdm run lint` | Passed. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_playwright_script_surface.py` | Passed: 19 tests. |
+| Reviewer-run `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | Passed: 13 tests. |
+| Reviewer-run `pdm run python -m py_compile scripts/playwright_pr_0337_correction_session_live.py` | Passed. |
+| Reviewer-run `git diff --check` | Passed before this retained-review artifact update. |
+| Reviewer manifest spot-check of `.artifacts/playwright-pr-0337-correction-session-live/20260630T201858Z/manifest.redacted.json` | Confirmed proof completion, replay-scoped download/save, manual review-required cleanup, artifact-set invariants, mismatched-artifact 409, and redacted private request capture summary. |
 
 ### Decision
 

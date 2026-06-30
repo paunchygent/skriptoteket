@@ -359,6 +359,11 @@ def test_pr_0337_failure_artifacts_do_not_mask_original_exception_metadata(
             "exception_type": "RuntimeError",
             "message": "title capture failed",
         },
+        {
+            "artifact": "failure_dom_diagnostics",
+            "exception_type": "AttributeError",
+            "message": "'FakeFailureArtifactPage' object has no attribute 'locator'",
+        },
     ]
     manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["failure"]["exception_type"] == "AssertionError"

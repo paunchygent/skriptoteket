@@ -453,6 +453,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
 
     const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
     const lucktext = wrapper.find('[data-test="exam-converter-selected-question-lucktext"]');
+    expect(detail.attributes("data-selected-item-id")).toBe("item-001");
     expect(
       detail.find<HTMLInputElement>('[data-test="exam-converter-item-title-patch-input"]')
         .element.value,

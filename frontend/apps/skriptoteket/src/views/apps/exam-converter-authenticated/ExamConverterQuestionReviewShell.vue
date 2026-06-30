@@ -239,6 +239,7 @@ watch(
     <aside
       class="exam-converter-question-detail min-w-0 border-l border-navy/35 pl-5"
       data-test="exam-converter-selected-question-detail"
+      :data-selected-item-id="selectedQuestion?.itemId ?? ''"
     >
       <template v-if="selectedQuestion">
         <div class="exam-converter-compact-detail-nav mb-4 hidden items-center justify-between gap-3 border-b border-navy/25 pb-3">
