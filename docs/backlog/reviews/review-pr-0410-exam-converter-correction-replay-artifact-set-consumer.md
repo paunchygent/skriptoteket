@@ -111,11 +111,15 @@ None.
 | Parent-reported `pdm run fe-build` | Passed with existing Vite chunk/dynamic-import warnings. |
 | Parent-reported `pdm run docs-validate` | Passed. |
 | Parent-reported `git diff --check` | Passed. |
+| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T014512Z/manifest.redacted.json` | Exact `ak7_lag_och_ratt_with_image.dxe` filename proof passed after HuleEdu `TASK-0831`; PDF/QTI replay downloads and Save to My Files returned `200`. |
+| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T015236Z/manifest.redacted.json` | Same DXE bytes with run-scoped filename passed and retained `service-monitoring.json` plus `service-logs/*.log` from Skriptoteket, HuleEdu Gateway/File Service, and Sir Convert containers. |
+| Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T020711Z/manifest.redacted.json` | Same DXE bytes passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; PDF/QTI replay downloads and Save to My Files returned `200` with retained local Docker service logs. |
 
 ### Non-Blocking Risks
 
-- Live dev/prod browser proof for the nested replay route is still a Story 58
-  closeout gate and is not approved by this PR-0410 retained review.
+- The 2026-06-30 production failure was a HuleEdu Gateway route gap, not a
+  Skriptoteket consumer regression. The Story 58 gate is now satisfied by the
+  Dev/Prod proofs above.
 - Several touched legacy modules remain above the repo's preferred 400-500 line
   size guideline. This review does not block PR-0410 on that pre-existing
   shape because the bounded slice is contract-hardening and the changed behavior

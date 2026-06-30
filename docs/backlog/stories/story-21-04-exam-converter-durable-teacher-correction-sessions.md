@@ -193,11 +193,13 @@ PR-sized slices:
   `Klart` for reviewed complete state, no AI marker after accepted/reviewed
   keys in the list, no AI marker after teacher-owned edits, and `Kontrollera`
   only for current validation problems such as a missing selected key.
-- `PR-0408` is reopened. The free-text/open-writing and mockup button-treatment
-  fixes remain useful evidence, but closeout now requires the Sir Convert Task
-  374 producer fix plus fresh dev and production proof for accepting one
-  advisory key while untouched keyed advisory candidates remain pending
-  suggestions after replay. Dev proof is green at
-  `.artifacts/playwright-pr-0337-correction-session-live/20260629T193503Z/manifest.redacted.json`;
-  production proof is green at
-  `.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`.
+- Story 58 correction replay download/save closeout is done after the
+  2026-06-30 production failure diagnosis. Root cause was a HuleEdu Gateway
+  route gap for nested correction replay artifact downloads, not Sir Convert
+  replay/idempotency or File Service failure. HuleEdu `TASK-0831` deployed the
+  explicit route in commit `f72e7c6cdb1a`; exact-file production proof passed
+  at `.artifacts/playwright-pr-0337-correction-session-live/20260630T014512Z/manifest.redacted.json`;
+  monitored production proof with SSH-backed Docker service logs passed at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260630T015236Z/manifest.redacted.json`;
+  monitored Dev proof with local Docker service logs passed at
+  `.artifacts/playwright-pr-0337-correction-session-live/20260630T020711Z/manifest.redacted.json`.

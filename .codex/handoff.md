@@ -8,10 +8,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-29.
+- Date: 2026-06-30.
 - Branch: `main`.
-- Latest closed work: `PR-0408`; `PR-0406` / `ST-21-11` and the reopened post-accept replay regression are production-proved. `REV-PR-0408` is approved; final proof is `.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`.
-- Active worktree slice: none for Exam Converter replay; Sir Convert Task 374 and Skriptoteket PR-0408 are closed.
+- Latest closed work: Story 58 correction replay download/save production failure is fixed through HuleEdu TASK-0831 plus retained Dev/Prod Skriptoteket proof. Exact-file production proof passed at `.artifacts/playwright-pr-0337-correction-session-live/20260630T014512Z/manifest.redacted.json`; monitored production proof with service logs passed at `.artifacts/playwright-pr-0337-correction-session-live/20260630T015236Z/manifest.redacted.json`; monitored Dev proof with local Docker service logs passed at `.artifacts/playwright-pr-0337-correction-session-live/20260630T020711Z/manifest.redacted.json`.
+- Active worktree slice: proof-harness evidence capture for Story 58 closeout; no runtime Skriptoteket product code changes.
 - Dev-tooling command-surface mediation is preserved as approved `PR-0409` / `REV-PR-0409`; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
@@ -192,7 +192,7 @@ git diff --check
 - Keep the Docker-service proof lane intact for `PR-0364` and `PR-0365`.
 ## Next Steps
 - `PR-0406` / `PR-0408` are done, approved, deployed, and production-proved for compact answer-key review-state and post-accept advisory preservation; latest proof is `.artifacts/playwright-pr-0337-correction-session-live/20260629T194902Z/manifest.redacted.json`.
-- `PR-0410` is implemented and approved by `REV-PR-0410`: Skriptoteket now consumes Sir Convert Task 378 request-scoped correction replay artifact references and routes corrected PDF/QTI file actions through the nested replay route; Story 58 dev/prod live proof is still pending.
+- `PR-0410` is implemented and approved by `REV-PR-0410`: Skriptoteket now consumes Sir Convert Task 378 request-scoped correction replay artifact references and routes corrected PDF/QTI file actions through the nested replay route; Story 58 Dev/Prod live proof passed after the HuleEdu Gateway route fix.
 - `PR-0407` is done and approved by `REV-PR-0407`: reusable Audio Transcription retryable-reattempt browser proof helpers now live in Skriptoteket; keep Sir Convert Task 371 evidence untouched and sidecar precondition setup external.
 - Keep `PR-0369` blocked unless later route-visible work proves a concrete backend/API app-presentation contract need.
 - `PR-0277` remains open for `REV-PR-0277` plus fresh Teams unfurl proof.

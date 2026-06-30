@@ -1,12 +1,7 @@
 """Live proof monitoring helpers.
 
-Domain purpose:
-    Capture bounded operational logs alongside browser proof artifacts so live
-    proof failures can be tied to the product backend that handled the request.
-
-Relationships:
-    Used by `scripts.audio_transcription_parity_live` to retain the
-    Skriptoteket Docker dev web logs for local transcript proof runs.
+Domain purpose: Capture bounded operational logs alongside browser proof artifacts.
+Relationships: Used by retained live proof scripts to tie UI evidence to service logs.
 """
 
 from __future__ import annotations
@@ -37,6 +32,12 @@ HEMMA_NATIVE_CONTAINERS: tuple[str, ...] = (
     "sir_convert_a_lot_gpu_worker",
     "sir_convert_a_lot_stt_sidecar",
 )
+DOCKER_INSPECT_STATE_NETWORKS_SEPARATOR = "__SKRIPTOTEKET_NETWORKS__"
+DOCKER_INSPECT_STATE_NETWORKS_FORMAT = (
+    "{{json .State}}"
+    f"{DOCKER_INSPECT_STATE_NETWORKS_SEPARATOR}"
+    "{{json .NetworkSettings.Networks}}"
+)
 
 
 @dataclass
@@ -52,7 +53,6 @@ class ProofLogMonitor:
 
     def stop(self) -> None:
         """Stop log capture and persist process metadata."""
-
         stopped_at = _utc_now()
         status = "stopped"
         returncode: int | None = None
@@ -80,14 +80,7 @@ class ProofLogMonitor:
 
 def start_local_backend_log_monitor(*, artifact_dir: Path) -> ProofLogMonitor:
     """Start Skriptoteket Docker dev web log capture for one local proof run."""
-
-    command = (
-        *COMPOSE_DEV,
-        "logs",
-        "-f",
-        "--since=0s",
-        "web",
-    )
+    command = (*COMPOSE_DEV, "logs", "-f", "--since=0s", "web")
     log_path = artifact_dir / "backend-live.log"
     metadata_path = artifact_dir / "backend-monitor.json"
     log_file = log_path.open("w", encoding="utf-8")
@@ -130,12 +123,47 @@ def start_local_backend_log_monitor(*, artifact_dir: Path) -> ProofLogMonitor:
     )
 
 
-def start_hemma_native_service_monitors(*, artifact_dir: Path) -> list[ProofLogMonitor]:
+def start_hemma_native_service_monitors(
+    *,
+    artifact_dir: Path,
+    containers: Sequence[str] = HEMMA_NATIVE_CONTAINERS,
+) -> list[ProofLogMonitor]:
     """Capture bounded Hemma service logs for a native production proof interval."""
+    return _start_hemma_service_monitors(
+        artifact_dir=artifact_dir,
+        containers=containers,
+        command_prefix=(),
+        transport="native",
+    )
 
+
+def start_hemma_ssh_service_monitors(
+    *,
+    artifact_dir: Path,
+    containers: Sequence[str],
+    ssh_host: str = "hemma",
+) -> list[ProofLogMonitor]:
+    """Capture bounded Hemma service logs from a local proof via SSH."""
+    return _start_hemma_service_monitors(
+        artifact_dir=artifact_dir,
+        containers=containers,
+        command_prefix=("ssh", ssh_host),
+        transport="ssh",
+    )
+
+
+def _start_hemma_service_monitors(
+    *,
+    artifact_dir: Path,
+    containers: Sequence[str],
+    command_prefix: Sequence[str],
+    transport: str,
+) -> list[ProofLogMonitor]:
     snapshot = capture_hemma_native_service_snapshot(
         artifact_dir=artifact_dir,
-        containers=HEMMA_NATIVE_CONTAINERS,
+        containers=containers,
+        command_prefix=command_prefix,
+        transport=transport,
     )
     services = snapshot.get("services")
     if not isinstance(services, list):
@@ -153,6 +181,8 @@ def start_hemma_native_service_monitors(*, artifact_dir: Path) -> list[ProofLogM
             artifact_dir=artifact_dir,
             logs_dir=logs_dir,
             container_name=name,
+            command_prefix=command_prefix,
+            transport=transport,
         )
         if monitor is not None:
             monitors.append(monitor)
@@ -163,15 +193,20 @@ def capture_hemma_native_service_snapshot(
     *,
     artifact_dir: Path,
     containers: Sequence[str],
+    command_prefix: Sequence[str] = (),
+    transport: str = "native",
 ) -> dict[str, object]:
     """Capture safe Docker state for services involved in native transcript proof."""
-
     snapshot: dict[str, object] = {
         "status": "captured",
         "captured_at": _utc_now(),
         "containers": list(containers),
+        "transport": transport,
         "services": [
-            _capture_docker_service_state(container_name=container_name)
+            _capture_docker_service_state(
+                container_name=container_name,
+                command_prefix=command_prefix,
+            )
             for container_name in containers
         ],
     }
@@ -181,7 +216,6 @@ def capture_hemma_native_service_snapshot(
 
 def capture_local_backend_container_snapshot(*, artifact_dir: Path) -> dict[str, object]:
     """Capture safe runtime settings from the running Docker dev web container."""
-
     command = (*COMPOSE_DEV, "exec", "-T", "web", "printenv")
     metadata_path = artifact_dir / "backend-container.json"
     started_at = _utc_now()
@@ -222,9 +256,11 @@ def _start_docker_log_monitor(
     artifact_dir: Path,
     logs_dir: Path,
     container_name: str,
+    command_prefix: Sequence[str] = (),
+    transport: str = "native",
 ) -> ProofLogMonitor | None:
     safe_name = _safe_filename(container_name)
-    command = ("sudo", "docker", "logs", "-f", "--since=0s", container_name)
+    command = (*command_prefix, "sudo", "docker", "logs", "-f", "--since=0s", container_name)
     log_path = logs_dir / f"{safe_name}.log"
     metadata_path = logs_dir / f"{safe_name}.monitor.json"
     log_file = log_path.open("w", encoding="utf-8")
@@ -244,6 +280,7 @@ def _start_docker_log_monitor(
                 "status": "failed_to_start",
                 "started_at": started_at,
                 "container": container_name,
+                "transport": transport,
                 "command": list(command),
                 "log_path": str(log_path),
                 "error_type": type(exc).__name__,
@@ -256,6 +293,7 @@ def _start_docker_log_monitor(
             "status": "running",
             "started_at": started_at,
             "container": container_name,
+            "transport": transport,
             "command": list(command),
             "log_path": str(log_path),
         },
@@ -270,8 +308,15 @@ def _start_docker_log_monitor(
     )
 
 
-def _capture_docker_service_state(*, container_name: str) -> dict[str, object]:
-    inspect_result = _run_docker_inspect_json(container_name=container_name)
+def _capture_docker_service_state(
+    *,
+    container_name: str,
+    command_prefix: Sequence[str] = (),
+) -> dict[str, object]:
+    inspect_result = _run_docker_inspect_json(
+        container_name=container_name,
+        command_prefix=command_prefix,
+    )
     if inspect_result["status"] != "captured":
         return inspect_result
     state = inspect_result.get("state")
@@ -284,15 +329,24 @@ def _capture_docker_service_state(*, container_name: str) -> dict[str, object]:
     }
 
 
-def _run_docker_inspect_json(*, container_name: str) -> dict[str, object]:
+def _run_docker_inspect_json(
+    *,
+    container_name: str,
+    command_prefix: Sequence[str] = (),
+) -> dict[str, object]:
     command = (
-        "sudo",
-        "docker",
-        "inspect",
-        "--format",
-        "{{json .State}} {{json .NetworkSettings.Networks}}",
-        container_name,
+        *command_prefix,
+        f"sudo docker inspect --format '{DOCKER_INSPECT_STATE_NETWORKS_FORMAT}' {container_name}",
     )
+    if not command_prefix:
+        command = (
+            "sudo",
+            "docker",
+            "inspect",
+            "--format",
+            DOCKER_INSPECT_STATE_NETWORKS_FORMAT,
+            container_name,
+        )
     try:
         result = subprocess.run(
             command,
@@ -317,7 +371,10 @@ def _run_docker_inspect_json(*, container_name: str) -> dict[str, object]:
             "stderr": _bounded_text(result.stderr),
         }
     try:
-        state_raw, networks_raw = result.stdout.strip().split(" ", 1)
+        state_raw, networks_raw = result.stdout.strip().split(
+            DOCKER_INSPECT_STATE_NETWORKS_SEPARATOR,
+            1,
+        )
         return {
             "name": container_name,
             "status": "captured",
@@ -387,7 +444,6 @@ def block_if_running_backend_target_differs(
     trust_lane_summary: dict[str, object],
 ) -> None:
     """Fail local proof if the running Docker producer lane differs from preflight."""
-
     snapshot = capture_local_backend_container_snapshot(artifact_dir=artifact_dir)
     environment = snapshot.get("environment")
     actual = environment.get("sir_convert_base_url") if isinstance(environment, dict) else None

@@ -38,6 +38,9 @@ from playwright.sync_api import (
 )
 from pypdf import PdfReader
 
+from scripts._correction_session_runtime_evidence import (
+    start_correction_session_runtime_evidence,
+)
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
@@ -75,6 +78,27 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dotenv", default=".env")
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
     parser.add_argument("--timeout-seconds", default=DEFAULT_PROOF_TIMEOUT_SECONDS, type=int)
+    parser.add_argument(
+        "--preserve-source-filename",
+        action="store_true",
+        help="Upload the provided source path directly instead of copying it to a run-scoped name.",
+    )
+    parser.add_argument(
+        "--expect-submit-idempotency-reason",
+        default=None,
+        help="Require at least one create-job response with this redacted idempotency reason.",
+    )
+    parser.add_argument(
+        "--capture-local-backend-logs",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+    parser.add_argument(
+        "--capture-hemma-service-logs",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+    parser.add_argument("--hemma-ssh-host", default="hemma")
     return parser.parse_args(argv)
 
 
@@ -207,6 +231,42 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "request_id": payload.get("request_id"),
         "schema_version": payload.get("schema_version"),
         "session_version": payload.get("session_version"),
+    }
+
+
+def _summarize_create_job_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    job = payload.get("job")
+    idempotency = payload.get("idempotency")
+    job_payload = job if isinstance(job, dict) else {}
+    idempotency_payload = idempotency if isinstance(idempotency, dict) else {}
+    previous_attempts = idempotency_payload.get("previous_attempts")
+    previous_attempt_rows = previous_attempts if isinstance(previous_attempts, list) else []
+    return {
+        "idempotency": {
+            "active_job_id": idempotency_payload.get("active_job_id"),
+            "attempt_count": idempotency_payload.get("attempt_count"),
+            "current_attempt": idempotency_payload.get("current_attempt"),
+            "idempotent_replay": idempotency_payload.get("idempotent_replay"),
+            "previous_attempts": [
+                {
+                    "failure_retryable": row.get("failure_retryable"),
+                    "job_id": row.get("job_id"),
+                    "status": row.get("status"),
+                }
+                for row in previous_attempt_rows
+                if isinstance(row, dict)
+            ],
+            "reason": idempotency_payload.get("reason"),
+            "reattempt_of_job_id": idempotency_payload.get("reattempt_of_job_id"),
+            "replayed_job_id": idempotency_payload.get("replayed_job_id"),
+            "state": idempotency_payload.get("state"),
+        },
+        "job": {
+            "job_id": job_payload.get("job_id"),
+            "output_format": job_payload.get("output_format"),
+            "source_format": job_payload.get("source_format"),
+            "status": job_payload.get("status"),
+        },
     }
 
 
@@ -442,8 +502,30 @@ def _summarize_response(response: Response) -> dict[str, Any]:
     if isinstance(payload, dict) and "error" in payload:
         entry["error"] = payload["error"]
     if isinstance(payload, dict):
+        if "job" in payload and "idempotency" in payload:
+            entry["job_create"] = _summarize_create_job_payload(payload)
         entry["json"] = _summarize_json_payload(payload)
     return entry
+
+
+def _assert_submit_idempotency_reason(summary: dict[str, Any], expected_reason: str) -> None:
+    matches: list[dict[str, Any]] = []
+    for response in summary.get("sir_convert_submit_responses", []):
+        if not isinstance(response, dict):
+            continue
+        job_create = response.get("job_create")
+        if not isinstance(job_create, dict):
+            continue
+        idempotency = job_create.get("idempotency")
+        if not isinstance(idempotency, dict):
+            continue
+        if idempotency.get("reason") == expected_reason:
+            matches.append(response)
+    if not matches:
+        raise AssertionError(
+            f"No Sir Convert submit response had idempotency.reason={expected_reason!r}."
+        )
+    summary["submit_idempotency_reason_match_count"] = len(matches)
 
 
 def _retry_after_seconds(response_body: str) -> int | None:
@@ -1060,9 +1142,13 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
 
     artifact_dir = _run_dir(Path(args.artifact_root))
     config = get_config(["--base-url", args.base_url, "--dotenv", args.dotenv])
-    fresh_source_dxe = _fresh_source_copy(source_dxe, artifact_dir)
-    expected_pdf_filename = f"{fresh_source_dxe.stem}.pdf"
-    expected_qti_filename = f"{fresh_source_dxe.stem}.zip"
+    uploaded_source_dxe = (
+        source_dxe
+        if args.preserve_source_filename
+        else _fresh_source_copy(source_dxe, artifact_dir)
+    )
+    expected_pdf_filename = f"{uploaded_source_dxe.stem}.pdf"
+    expected_qti_filename = f"{uploaded_source_dxe.stem}.zip"
     summary: dict[str, Any] = {
         "artifact_dir": str(artifact_dir),
         "base_url": config.base_url,
@@ -1077,10 +1163,19 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
         "screenshots": [],
         "sir_convert_submit_responses": [],
         "source_dxe": str(source_dxe),
-        "uploaded_source_dxe": str(fresh_source_dxe),
+        "source_filename_mode": "preserved" if args.preserve_source_filename else "run_scoped_copy",
+        "submit_idempotency_reason_expectation": args.expect_submit_idempotency_reason,
+        "uploaded_source_dxe": str(uploaded_source_dxe),
         "started_at": datetime.now(UTC).isoformat(),
     }
     _mark_progress(summary, artifact_dir, "artifact_dir_created")
+    runtime_evidence = start_correction_session_runtime_evidence(
+        artifact_dir=artifact_dir,
+        base_url=config.base_url,
+        capture_local_backend_logs=args.capture_local_backend_logs,
+        capture_hemma_service_logs=args.capture_hemma_service_logs,
+        hemma_ssh_host=args.hemma_ssh_host,
+    )
 
     with sync_playwright() as playwright:
         _mark_progress(summary, artifact_dir, "playwright_started")
@@ -1148,7 +1243,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             page.locator('[data-test="exam-converter-reset-local-choices"]').click()
             _mark_progress(summary, artifact_dir, "local_choices_reset")
             page.set_input_files(
-                '[data-test="exam-converter-rail-source-file-input"]', str(fresh_source_dxe)
+                '[data-test="exam-converter-rail-source-file-input"]', str(uploaded_source_dxe)
             )
             expect(page.locator('[data-test="exam-converter-start-conversion"]')).to_be_enabled(
                 timeout=10_000
@@ -1191,7 +1286,7 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             page.locator('[data-test="exam-converter-reset-local-choices"]').click()
             _mark_progress(summary, artifact_dir, "local_choices_reset_after_accept_probe")
             page.set_input_files(
-                '[data-test="exam-converter-rail-source-file-input"]', str(fresh_source_dxe)
+                '[data-test="exam-converter-rail-source-file-input"]', str(uploaded_source_dxe)
             )
             expect(page.locator('[data-test="exam-converter-start-conversion"]')).to_be_enabled(
                 timeout=10_000
@@ -1355,6 +1450,8 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
                 raise AssertionError("PDF did not include the replayed point correction.")
             if not summary["qti_inspection"]["expected_prompt_present"]:
                 raise AssertionError("QTI did not include the replayed prompt correction.")
+            if args.expect_submit_idempotency_reason:
+                _assert_submit_idempotency_reason(summary, args.expect_submit_idempotency_reason)
             summary["completed_at"] = datetime.now(UTC).isoformat()
             _mark_progress(summary, artifact_dir, "proof_complete")
         except Exception:
@@ -1365,6 +1462,8 @@ def run(argv: Sequence[str] | None = None) -> dict[str, Any]:
             _write_summary(summary, artifact_dir)
             raise
         finally:
+            runtime_evidence.stop()
+            runtime_evidence.attach_to_summary(summary, artifact_dir)
             _write_summary(summary, artifact_dir)
             signal.alarm(0)
             browser.close()
