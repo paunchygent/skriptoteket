@@ -52,6 +52,25 @@ function reviewState(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function replayReference(overrides: Record<string, unknown> = {}) {
+  return {
+    artifact_key: "correction_replay_examnet_pdf",
+    artifact_set_id: "artifact-set-001",
+    content_sha256: "sha256:replay-pdf",
+    correction_payload_digest: "sha256:correction-payload",
+    created_at: "2026-06-29T12:00:00Z",
+    job_id: "sir-job-001",
+    replay_profile_version: "correction-replay-v1",
+    request_id: "correction-session-replay-session-001-v2",
+    schema_version: "correction_replay_artifact_reference_v1",
+    source_binding_digest: "sha256:source-binding",
+    source_state_sha256: "sha256:source-state",
+    target: "examnet_pdf",
+    target_set_digest: "sha256:target-set",
+    ...overrides,
+  };
+}
+
 function question(overrides: Partial<ExamConverterQuestionReviewRow> = {}): ExamConverterQuestionReviewRow {
   return {
     alternatives: [],
@@ -112,8 +131,75 @@ describe("answerKeyReviewStateAdapter", () => {
     ["missing projection", { schema_version: "digiexam_answer_key_review_state_v1" }],
     ["history", reviewState({ history: [] })],
     ["review_decision", reviewState({ items: [reviewItem({ review_decision: "accepted" })] })],
+    [
+      "stale replay reference",
+      reviewState({
+        items: [
+          reviewItem({
+            replay_artifact_references: [
+              { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
+            ],
+          }),
+        ],
+      }),
+    ],
+    [
+      "unknown replay reference field",
+      reviewState({
+        items: [reviewItem({ replay_artifact_references: [replayReference({ legacy: true })] })],
+      }),
+    ],
+    [
+      "missing replay content digest",
+      reviewState({
+        items: [
+          reviewItem({
+            replay_artifact_references: [
+              replayReference({ content_sha256: undefined }),
+            ],
+          }),
+        ],
+      }),
+    ],
   ])("fails closed for invalid compact projection payloads: %s", (_caseName, payload) => {
     expect(() => parseAnswerKeyReviewState(payload)).toThrow();
+  });
+
+  it("accepts Task 378 request-scoped replay artifact references", () => {
+    const parsed = parseAnswerKeyReviewState(
+      reviewState({
+        items: [
+          reviewItem({
+            replay_artifact_references: [
+              replayReference(),
+              replayReference({
+                artifact_key: "correction_replay_qti_package",
+                artifact_set_id: "artifact-set-002",
+                content_sha256: "sha256:replay-qti",
+                target: "qti_package",
+              }),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    expect(parsed.items[0]?.replay_artifact_references).toEqual([
+      expect.objectContaining({
+        artifact_key: "correction_replay_examnet_pdf",
+        artifact_set_id: "artifact-set-001",
+        content_sha256: "sha256:replay-pdf",
+        job_id: "sir-job-001",
+        schema_version: "correction_replay_artifact_reference_v1",
+        target: "examnet_pdf",
+      }),
+      expect.objectContaining({
+        artifact_key: "correction_replay_qti_package",
+        artifact_set_id: "artifact-set-002",
+        content_sha256: "sha256:replay-qti",
+        target: "qti_package",
+      }),
+    ]);
   });
 
   it("maps every producer state to approved Swedish label and symbol semantics", () => {

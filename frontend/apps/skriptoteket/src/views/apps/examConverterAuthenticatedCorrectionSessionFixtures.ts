@@ -12,6 +12,41 @@
 
 import { ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
 
+function replayArtifactReferences(jobId: string = "job_correction_replay") {
+  return [
+    {
+      artifact_key: "correction_replay_examnet_pdf",
+      artifact_set_id: `${jobId}-artifact-set-pdf`,
+      content_sha256: `sha256:${jobId}-pdf`,
+      correction_payload_digest: `sha256:${jobId}-correction-payload`,
+      created_at: "2026-06-29T12:00:00Z",
+      job_id: jobId,
+      replay_profile_version: "correction-replay-v1",
+      request_id: `${jobId}-request`,
+      schema_version: "correction_replay_artifact_reference_v1",
+      source_binding_digest: `sha256:${jobId}-source-binding`,
+      source_state_sha256: `sha256:${jobId}-source-state`,
+      target: "examnet_pdf",
+      target_set_digest: `sha256:${jobId}-target-set`,
+    },
+    {
+      artifact_key: "correction_replay_qti_package",
+      artifact_set_id: `${jobId}-artifact-set-qti`,
+      content_sha256: `sha256:${jobId}-qti`,
+      correction_payload_digest: `sha256:${jobId}-correction-payload`,
+      created_at: "2026-06-29T12:00:00Z",
+      job_id: jobId,
+      replay_profile_version: "correction-replay-v1",
+      request_id: `${jobId}-request`,
+      schema_version: "correction_replay_artifact_reference_v1",
+      source_binding_digest: `sha256:${jobId}-source-binding`,
+      source_state_sha256: `sha256:${jobId}-source-state`,
+      target: "qti_package",
+      target_set_digest: `sha256:${jobId}-target-set`,
+    },
+  ];
+}
+
 type CorrectionSessionFixtureIntent = Record<string, unknown> & {
   target_key: string;
 };
@@ -179,10 +214,7 @@ export function correctionApplyResult() {
           message_key: "exam_converter.answer_key.source_present",
           provenance_detail: null,
           reasons: ["source_answer_key_present"],
-          replay_artifact_references: [
-            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-          ],
+          replay_artifact_references: replayArtifactReferences(),
           review_state: "review_complete",
           sequence: 1,
           source_item_fingerprint: "sha256:item-001",
@@ -199,10 +231,7 @@ export function correctionApplyResult() {
           message_key: "exam_converter.answer_key.teacher_answer_key_present",
           provenance_detail: null,
           reasons: ["teacher_answer_key_present"],
-          replay_artifact_references: [
-            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-          ],
+          replay_artifact_references: replayArtifactReferences(),
           review_state: "teacher_modified",
           sequence: 4,
           source_item_fingerprint: "sha256:item-004",
@@ -219,10 +248,7 @@ export function correctionApplyResult() {
           message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
           provenance_detail: null,
           reasons: ["reviewed_advisory_accepted"],
-          replay_artifact_references: [
-            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-          ],
+          replay_artifact_references: replayArtifactReferences(),
           review_state: "review_complete",
           sequence: 5,
           source_item_fingerprint: "sha256:item-005",
@@ -239,10 +265,7 @@ export function correctionApplyResult() {
           message_key: "exam_converter.answer_key.source_present",
           provenance_detail: null,
           reasons: ["source_answer_key_present"],
-          replay_artifact_references: [
-            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-          ],
+          replay_artifact_references: replayArtifactReferences(),
           review_state: "review_complete",
           sequence: 6,
           source_item_fingerprint: "sha256:item-006",
@@ -259,10 +282,7 @@ export function correctionApplyResult() {
           message_key: "exam_converter.answer_key.teacher_modified",
           provenance_detail: null,
           reasons: ["teacher_edited_advisory_candidate"],
-          replay_artifact_references: [
-            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-          ],
+          replay_artifact_references: replayArtifactReferences(),
           review_state: "teacher_modified",
           sequence: 12,
           source_item_fingerprint: "sha256:item-012",
@@ -279,10 +299,7 @@ export function correctionApplyResult() {
           message_key: "exam_converter.answer_key.teacher_answer_key_present",
           provenance_detail: null,
           reasons: ["teacher_answer_key_present"],
-          replay_artifact_references: [
-            { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-            { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-          ],
+          replay_artifact_references: replayArtifactReferences(),
           review_state: "teacher_modified",
           sequence: 13,
           source_item_fingerprint: "sha256:item-013",

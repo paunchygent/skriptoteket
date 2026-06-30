@@ -30,7 +30,7 @@ describe("ExamConverterFilesReadinessList", () => {
           {
             artifactActionReference: {
               artifactKey: "examnet_pdf",
-              authority: "replay_result",
+              authority: "original_job",
             },
             artifactKey: "examnet_pdf",
             availability: "available",

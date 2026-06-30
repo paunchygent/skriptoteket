@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v2/convert/jobs/{job_id}/correction-replays/{artifact_set_id}/artifacts/{artifact_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Correction Replay Artifact */
+        get: operations["get_correction_replay_artifact_v2_convert_jobs__job_id__correction_replays__artifact_set_id__artifacts__artifact_key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v2/convert/jobs/{job_id}/cancel": {
         parameters: {
             query?: never;
@@ -757,6 +774,15 @@ export interface components {
          */
         DigiExamAnswerKeyReviewReplayArtifactReferenceV1: {
             /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "correction_replay_artifact_reference_v1";
+            /** Job Id */
+            job_id: string;
+            /** Artifact Set Id */
+            artifact_set_id: string;
+            /**
              * Artifact Key
              * @enum {string}
              */
@@ -766,6 +792,22 @@ export interface components {
              * @enum {string}
              */
             target: "examnet_pdf" | "qti_package";
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Request Id */
+            request_id: string;
+            /** Source Binding Digest */
+            source_binding_digest: string;
+            /** Source State Sha256 */
+            source_state_sha256: string;
+            /** Correction Payload Digest */
+            correction_payload_digest: string;
+            /** Target Set Digest */
+            target_set_digest: string;
+            /** Replay Profile Version */
+            replay_profile_version: string;
+            /** Created At */
+            created_at: string;
         };
         /**
          * DigiExamAnswerKeyReviewStateItemV1
@@ -3393,6 +3435,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobPendingResultResponseV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_correction_replay_artifact_v2_convert_jobs__job_id__correction_replays__artifact_set_id__artifacts__artifact_key__get: {
+        parameters: {
+            query: {
+                content_sha256: string;
+            };
+            header?: never;
+            path: {
+                job_id: string;
+                artifact_set_id: string;
+                artifact_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

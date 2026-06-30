@@ -23,7 +23,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 from zipfile import ZipFile
 
 from playwright.sync_api import (
@@ -56,6 +56,7 @@ CORRECTION_SESSION_MARKER = "/api/v1/apps/documents.conversion_hub/exam-converte
 CORRECTION_SOURCE_STATE_MARKER = "/sir-convert/v2/exam-authoring/corrections/source-state/issue"
 SIR_CONVERT_SUBMIT_MARKER = "/sir-convert/v2/convert/jobs"
 USER_FILE_SAVE_MARKER = "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save"
+CORRECTION_REPLAY_ROUTE_MARKER = "/correction-replays/"
 TARGET_ITEM_ID = "item-001"
 UPDATED_ITEM_POINTS = "3"
 UPDATED_ITEM_PROMPT = "Vilken process frigör energi ur socker med hjälp av syre?"
@@ -98,6 +99,11 @@ def _mark_progress(summary: dict[str, Any], artifact_dir: Path, step: str) -> No
 
 def _safe_url(url: str) -> str:
     return urlparse(url).path
+
+
+def _safe_url_with_query(url: str) -> str:
+    parsed = urlparse(url)
+    return f"{parsed.path}?{parsed.query}" if parsed.query else parsed.path
 
 
 def _fresh_source_copy(source_dxe: Path, artifact_dir: Path) -> Path:
@@ -205,17 +211,33 @@ def _summarize_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _download_response_predicate(response: Response) -> bool:
-    path = _safe_url(response.url)
+    parsed = urlparse(response.url)
+    query = parse_qs(parsed.query)
     return (
-        "/sir-convert/v2/convert/jobs/" in path
-        and "/artifacts/" in path
+        "/sir-convert/v2/convert/jobs/" in parsed.path
+        and CORRECTION_REPLAY_ROUTE_MARKER in parsed.path
+        and "/artifacts/" in parsed.path
+        and bool(query.get("content_sha256"))
         and response.request.method == "GET"
         and "application/json" not in (response.headers.get("content-type") or "")
     )
 
 
-def _artifact_key_from_download_response(response: Response) -> str:
-    return _safe_url(response.url).rsplit("/", 1)[-1]
+def _correction_replay_artifact_evidence(response: Response) -> dict[str, str]:
+    parsed = urlparse(response.url)
+    route_tail = parsed.path.split(CORRECTION_REPLAY_ROUTE_MARKER, 1)[1]
+    route_parts = route_tail.split("/")
+    query = parse_qs(parsed.query)
+    content_sha256 = query.get("content_sha256", [""])[0]
+    artifact_set_id = route_parts[0] if len(route_parts) >= 3 else ""
+    artifact_key = route_parts[-1] if route_parts else ""
+    if not artifact_set_id or not artifact_key or not content_sha256:
+        raise AssertionError("Corrected artifact response did not include replay route authority.")
+    return {
+        "artifact_key": artifact_key,
+        "artifact_set_id": artifact_set_id,
+        "content_sha256": content_sha256,
+    }
 
 
 def _download_replayed_file(
@@ -229,7 +251,8 @@ def _download_replayed_file(
     response = response_info.value
     if response.status >= 400:
         raise AssertionError(f"Artifact download failed with HTTP {response.status}.")
-    replay_artifact_key = _artifact_key_from_download_response(response)
+    replay_evidence = _correction_replay_artifact_evidence(response)
+    replay_artifact_key = replay_evidence["artifact_key"]
     if not replay_artifact_key.startswith("correction_replay_"):
         raise AssertionError("Corrected download did not use a replay-scoped artifact key.")
     download = download_info.value
@@ -241,8 +264,10 @@ def _download_replayed_file(
     download.save_as(str(output_path))
     return output_path, {
         "content_type": response.headers.get("content-type"),
-        "path": _safe_url(response.url),
+        "content_sha256": replay_evidence["content_sha256"],
+        "path": _safe_url_with_query(response.url),
         "replay_artifact_key": replay_artifact_key,
+        "replay_artifact_set_id": replay_evidence["artifact_set_id"],
         "status": response.status,
         "suggested_filename": output_path.name,
         "ui_artifact_key": artifact_key,
@@ -375,7 +400,8 @@ def _save_replayed_file_once(page: Page, *, artifact_key: str) -> dict[str, Any]
     save_response = save_response_info.value
     if artifact_response.status >= 400:
         raise AssertionError(f"Artifact save download failed with HTTP {artifact_response.status}.")
-    replay_artifact_key = _artifact_key_from_download_response(artifact_response)
+    replay_evidence = _correction_replay_artifact_evidence(artifact_response)
+    replay_artifact_key = replay_evidence["artifact_key"]
     if not replay_artifact_key.startswith("correction_replay_"):
         raise AssertionError("Corrected save did not use a replay-scoped artifact key.")
     if save_response.status < 400:
@@ -387,8 +413,10 @@ def _save_replayed_file_once(page: Page, *, artifact_key: str) -> dict[str, Any]
         else None
     )
     return {
-        "download_path": _safe_url(artifact_response.url),
+        "content_sha256": replay_evidence["content_sha256"],
+        "download_path": _safe_url_with_query(artifact_response.url),
         "replay_artifact_key": replay_artifact_key,
+        "replay_artifact_set_id": replay_evidence["artifact_set_id"],
         "save_body": save_response.text() if save_response.status >= 400 else "",
         "saved_filename": saved_filename,
         "save_path": _safe_url(save_response.url),

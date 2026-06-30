@@ -39,6 +39,8 @@ export type DigiExamAnswerKeyReviewState =
   SirConvertOpenApiSchemas["DigiExamAnswerKeyReviewStateV1"];
 export type DigiExamAnswerKeyReviewStateItem =
   SirConvertOpenApiSchemas["DigiExamAnswerKeyReviewStateItemV1"];
+export type DigiExamAnswerKeyReviewReplayArtifactReference =
+  SirConvertOpenApiSchemas["DigiExamAnswerKeyReviewReplayArtifactReferenceV1"];
 export type DigiExamMigrationArtifactKey =
   SirConvertOpenApiSchemas["DigiExamMigrationArtifactKey"];
 export type DigiExamIngestionOverlay = SirConvertOpenApiSchemas["DigiExamIngestionOverlay"];

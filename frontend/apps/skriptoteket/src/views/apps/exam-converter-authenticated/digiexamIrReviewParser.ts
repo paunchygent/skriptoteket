@@ -12,6 +12,7 @@
  */
 
 import type {
+  DigiExamAnswerKeyReviewReplayArtifactReference,
   DigiExamItemType,
   DigiExamTargetReadinessReport,
   DigiExamTargetReadinessRow,
@@ -87,10 +88,23 @@ export type ExamConverterReviewFile = {
   unavailableCode: string | null;
 };
 
-export type ExamConverterReviewFileActionReference = {
+type OriginalJobFileActionReference = {
   artifactKey: string;
-  authority: "original_job" | "replay_result";
+  authority: "original_job";
 };
+
+type ReplayResultFileActionReference = {
+  artifactKey: string;
+  artifactSetId: string;
+  authority: "replay_result";
+  contentSha256: string;
+  jobId: string;
+  replayArtifactReference: DigiExamAnswerKeyReviewReplayArtifactReference;
+};
+
+export type ExamConverterReviewFileActionReference =
+  | OriginalJobFileActionReference
+  | ReplayResultFileActionReference;
 
 export type ExamConverterAiSuggestionOutcome =
   | "accepted_unchanged"
@@ -417,18 +431,21 @@ function statusLabelForFile(params: {
 function projectFiles(
   artifactManifest: SirConvertArtifactManifest,
   targetReadinessReport: DigiExamTargetReadinessReport,
+  answerKeyReviewState: DigiExamAnswerKeyReviewState,
 ): ExamConverterReviewFile[] {
+  const replayReferences = replayReferencesByTarget(answerKeyReviewState);
+  const hasReplayAuthority = replayReferences.size > 0;
   return artifactManifest.artifacts.filter(isDigiExamTargetFile).map((entry) => {
     const rows = readinessRowsForTarget(targetReadinessReport, entry.artifact_key);
     const readinessRow = primaryReadinessRow(rows);
     const exportEnabled = exportEnabledForFile(entry, rows);
-    const artifactActionReference =
-      exportEnabled && entry.availability === SIR_CONVERT_ARTIFACT_AVAILABLE
-        ? {
-            artifactKey: entry.artifact_key,
-            authority: "original_job" as const,
-          }
-        : null;
+    const replayReference = replayReferences.get(entry.artifact_key);
+    const artifactActionReference = fileActionReferenceForEntry({
+      entry,
+      exportEnabled,
+      hasReplayAuthority,
+      replayReference,
+    });
     return {
       artifactActionReference,
       artifactKey: entry.artifact_key,
@@ -452,6 +469,46 @@ function projectFiles(
       unavailableCode: entry.unavailable_code ?? null,
     };
   });
+}
+
+function replayReferencesByTarget(
+  reviewState: DigiExamAnswerKeyReviewState,
+): Map<string, DigiExamAnswerKeyReviewReplayArtifactReference> {
+  const references = new Map<string, DigiExamAnswerKeyReviewReplayArtifactReference>();
+  for (const item of reviewState.items) {
+    for (const reference of item.replay_artifact_references) {
+      references.set(reference.target, reference);
+    }
+  }
+  return references;
+}
+
+function fileActionReferenceForEntry(params: {
+  entry: SirConvertArtifactEntry;
+  exportEnabled: boolean;
+  hasReplayAuthority: boolean;
+  replayReference: DigiExamAnswerKeyReviewReplayArtifactReference | undefined;
+}): ExamConverterReviewFileActionReference | null {
+  if (!params.exportEnabled || params.entry.availability !== SIR_CONVERT_ARTIFACT_AVAILABLE) {
+    return null;
+  }
+  if (params.replayReference) {
+    return {
+      artifactKey: params.replayReference.artifact_key,
+      artifactSetId: params.replayReference.artifact_set_id,
+      authority: "replay_result",
+      contentSha256: params.replayReference.content_sha256,
+      jobId: params.replayReference.job_id,
+      replayArtifactReference: params.replayReference,
+    };
+  }
+  if (params.hasReplayAuthority) {
+    return null;
+  }
+  return {
+    artifactKey: params.entry.artifact_key,
+    authority: "original_job",
+  };
 }
 
 function isTeacherDecisionBlockedFile(file: ExamConverterReviewFile): boolean {
@@ -574,7 +631,11 @@ export function parseExamConverterReviewProjection(params: {
   const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
   const compactActionableCount = countActionableAnswerKeyRows(producerReviewState);
   const hasQuestionReview = compactActionableCount > 0 || missingDataQuestionCount > 0;
-  const files = projectFiles(params.artifactManifest, params.targetReadinessReport);
+  const files = projectFiles(
+    params.artifactManifest,
+    params.targetReadinessReport,
+    producerReviewState,
+  );
 
   return {
     sourceFilename: exam.sourceFilename,

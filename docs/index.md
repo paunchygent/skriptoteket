@@ -188,6 +188,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-pr-0408-exam-converter-frontend-design-implementation-alignment.md`
 - Exam Converter frontend design proof helper remediation review:
   `docs/backlog/reviews/review-pr-0408-exam-converter-design-proof-helper-remediation.md`
+- Exam Converter correction replay artifact-set consumer PR slice:
+  `docs/backlog/prs/pr-0410-st-21-11-correction-replay-artifact-set-consumer.md`
+- Exam Converter correction replay artifact-set consumer retained review:
+  `docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md`
 - Exam Converter PR-0406 answer-key review small-screen decision mockup:
   `docs/mockups/pr-0406-answer-key-review-small-screen/README.md`
 - Exam Converter PR-0406 answer-key review desktop alignment mockup:

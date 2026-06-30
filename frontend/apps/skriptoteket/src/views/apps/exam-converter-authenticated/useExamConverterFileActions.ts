@@ -16,6 +16,7 @@ import { ref } from "vue";
 
 import {
   downloadDigiExamMigrationArtifact,
+  downloadDigiExamMigrationCorrectionReplayArtifact,
   saveDigiExamMigrationArtifactToUserFiles,
 } from "../../../api/sirConvertGateway";
 import type {
@@ -37,6 +38,8 @@ export type ExamConverterFileActionStates = Record<string, ExamConverterFileActi
 
 type FileActionClient = {
   downloadDigiExamMigrationArtifact: typeof downloadDigiExamMigrationArtifact;
+  downloadDigiExamMigrationCorrectionReplayArtifact:
+    typeof downloadDigiExamMigrationCorrectionReplayArtifact;
   saveDigiExamMigrationArtifactToUserFiles: typeof saveDigiExamMigrationArtifactToUserFiles;
 };
 
@@ -49,6 +52,7 @@ export type ExamConverterFileActionOptions = {
 
 const DEFAULT_CLIENT: FileActionClient = {
   downloadDigiExamMigrationArtifact,
+  downloadDigiExamMigrationCorrectionReplayArtifact,
   saveDigiExamMigrationArtifactToUserFiles,
 };
 
@@ -131,12 +135,21 @@ export function useExamConverterFileActions(
     file: ExamConverterReviewFile;
     jobId: string;
   }): Promise<SirConvertArtifactBlob> {
-    const artifactKey = params.file.artifactActionReference?.artifactKey;
-    if (!artifactKey) {
+    const actionReference = params.file.artifactActionReference;
+    if (!actionReference) {
       throw new Error("Exam Converter file action requires an authorized artifact reference.");
     }
+    if (actionReference.authority === "replay_result") {
+      return await client.downloadDigiExamMigrationCorrectionReplayArtifact({
+        artifactKey: actionReference.artifactKey,
+        artifactSetId: actionReference.artifactSetId,
+        contentSha256: actionReference.contentSha256,
+        correlationId: params.correlationId,
+        jobId: actionReference.jobId,
+      });
+    }
     return await client.downloadDigiExamMigrationArtifact({
-      artifactKey,
+      artifactKey: actionReference.artifactKey,
       correlationId: params.correlationId,
       jobId: params.jobId,
     });

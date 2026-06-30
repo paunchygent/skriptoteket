@@ -13,6 +13,7 @@
  */
 
 import type {
+  DigiExamAnswerKeyReviewReplayArtifactReference,
   DigiExamAnswerKeyReviewState,
   DigiExamAnswerKeyReviewStateItem,
 } from "../../../api/sirConvertGateway";
@@ -22,7 +23,10 @@ import {
   DIGIEXAM_ANSWER_KEY_REVIEW_STATES,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
 } from "../../../api/sirConvertGateway/contractValues";
-import { ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION } from "../../../api/sirConvertGateway/schemaVersions";
+import {
+  ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
+  CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA_VERSION,
+} from "../../../api/sirConvertGateway/schemaVersions";
 import type {
   ExamConverterMissingFieldLabel,
   ExamConverterQuestionReviewRow,
@@ -66,7 +70,21 @@ const PROVENANCE_KEYS = new Set([
   "schema_version",
   "validation_state",
 ]);
-const REPLAY_REFERENCE_KEYS = new Set(["artifact_key", "target"]);
+const REPLAY_REFERENCE_KEYS = new Set([
+  "artifact_key",
+  "artifact_set_id",
+  "content_sha256",
+  "correction_payload_digest",
+  "created_at",
+  "job_id",
+  "replay_profile_version",
+  "request_id",
+  "schema_version",
+  "source_binding_digest",
+  "source_state_sha256",
+  "target",
+  "target_set_digest",
+]);
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -173,13 +191,51 @@ function parseReplayReferences(
   return value.map((entry, index) => {
     const reference = readRecord(entry, `replay_artifact_references[${index}]`);
     assertKnownKeys(reference, REPLAY_REFERENCE_KEYS, `replay_artifact_references[${index}]`);
+    if (reference.schema_version !== CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA_VERSION) {
+      throw new Error("Answer-key review-state replay artifact reference has unknown schema version.");
+    }
     const artifactKey = readString(reference.artifact_key, "replay_artifact_references.artifact_key");
     const target = readString(reference.target, "replay_artifact_references.target");
     if (
       (artifactKey === "correction_replay_examnet_pdf" && target === "examnet_pdf") ||
       (artifactKey === "correction_replay_qti_package" && target === "qti_package")
     ) {
-      return { artifact_key: artifactKey, target };
+      return {
+        artifact_key: artifactKey,
+        artifact_set_id: readString(
+          reference.artifact_set_id,
+          "replay_artifact_references.artifact_set_id",
+        ),
+        content_sha256: readString(
+          reference.content_sha256,
+          "replay_artifact_references.content_sha256",
+        ),
+        correction_payload_digest: readString(
+          reference.correction_payload_digest,
+          "replay_artifact_references.correction_payload_digest",
+        ),
+        created_at: readString(reference.created_at, "replay_artifact_references.created_at"),
+        job_id: readString(reference.job_id, "replay_artifact_references.job_id"),
+        replay_profile_version: readString(
+          reference.replay_profile_version,
+          "replay_artifact_references.replay_profile_version",
+        ),
+        request_id: readString(reference.request_id, "replay_artifact_references.request_id"),
+        schema_version: CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA_VERSION,
+        source_binding_digest: readString(
+          reference.source_binding_digest,
+          "replay_artifact_references.source_binding_digest",
+        ),
+        source_state_sha256: readString(
+          reference.source_state_sha256,
+          "replay_artifact_references.source_state_sha256",
+        ),
+        target,
+        target_set_digest: readString(
+          reference.target_set_digest,
+          "replay_artifact_references.target_set_digest",
+        ),
+      } satisfies DigiExamAnswerKeyReviewReplayArtifactReference;
     }
     throw new Error("Answer-key review-state replay artifact reference is unknown.");
   });

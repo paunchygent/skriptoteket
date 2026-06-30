@@ -15,15 +15,39 @@ import { describe, expect, it, vi } from "vitest";
 import { useExamConverterFileActions } from "./useExamConverterFileActions";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
 import type {
+  DigiExamAnswerKeyReviewReplayArtifactReference,
   SirConvertArtifactBlob,
   SirConvertSavedUserFile,
 } from "../../../api/sirConvertGateway";
 
+function replayReference(): DigiExamAnswerKeyReviewReplayArtifactReference {
+  return {
+    artifact_key: "correction_replay_qti_package",
+    artifact_set_id: "artifact-set-qti",
+    content_sha256: "sha256:replay-qti",
+    correction_payload_digest: "sha256:correction-payload",
+    created_at: "2026-06-29T12:00:00Z",
+    job_id: "sir-replay-job",
+    replay_profile_version: "correction-replay-v1",
+    request_id: "correction-session-replay-session-001-v2",
+    schema_version: "correction_replay_artifact_reference_v1",
+    source_binding_digest: "sha256:source-binding",
+    source_state_sha256: "sha256:source-state",
+    target: "qti_package",
+    target_set_digest: "sha256:target-set",
+  };
+}
+
 function replayFile(): ExamConverterReviewFile {
+  const reference = replayReference();
   return {
     artifactActionReference: {
-      artifactKey: "correction_replay_qti_package",
+      artifactKey: reference.artifact_key,
+      artifactSetId: reference.artifact_set_id,
       authority: "replay_result",
+      contentSha256: reference.content_sha256,
+      jobId: reference.job_id,
+      replayArtifactReference: reference,
     },
     artifactKey: "qti_package",
     availability: "available",
@@ -41,6 +65,19 @@ function replayFile(): ExamConverterReviewFile {
   };
 }
 
+function originalFile(): ExamConverterReviewFile {
+  return {
+    ...replayFile(),
+    artifactActionReference: {
+      artifactKey: "qti_package",
+      authority: "original_job",
+    },
+    artifactKey: "qti_package",
+    filename: "First-pass_QTI.zip",
+    sha256: "sha256:first-pass-qti",
+  };
+}
+
 function replayBlob(): SirConvertArtifactBlob {
   return {
     artifactKey: "correction_replay_qti_package",
@@ -51,12 +88,14 @@ function replayBlob(): SirConvertArtifactBlob {
 }
 
 describe("useExamConverterFileActions", () => {
-  it("downloads replay bytes with the teacher-facing target filename", async () => {
+  it("downloads replay bytes from the request-scoped nested route with the teacher-facing target filename", async () => {
     const triggerDownload = vi.fn();
     const downloadDigiExamMigrationArtifact = vi.fn().mockResolvedValue(replayBlob());
+    const downloadDigiExamMigrationCorrectionReplayArtifact = vi.fn().mockResolvedValue(replayBlob());
     const { downloadFile } = useExamConverterFileActions({
       client: {
         downloadDigiExamMigrationArtifact,
+        downloadDigiExamMigrationCorrectionReplayArtifact,
         saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
       },
       triggerDownload,
@@ -68,10 +107,13 @@ describe("useExamConverterFileActions", () => {
       jobId: "job-filename",
     });
 
-    expect(downloadDigiExamMigrationArtifact).toHaveBeenCalledWith({
+    expect(downloadDigiExamMigrationArtifact).not.toHaveBeenCalled();
+    expect(downloadDigiExamMigrationCorrectionReplayArtifact).toHaveBeenCalledWith({
       artifactKey: "correction_replay_qti_package",
+      artifactSetId: "artifact-set-qti",
+      contentSha256: "sha256:replay-qti",
       correlationId: "corr-filename",
-      jobId: "job-filename",
+      jobId: "sir-replay-job",
     });
     expect(triggerDownload).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -80,6 +122,35 @@ describe("useExamConverterFileActions", () => {
       }),
       "Ekologiprov_QTI.zip",
     );
+  });
+
+  it("keeps first-pass original artifacts on the named-artifact route", async () => {
+    const downloadDigiExamMigrationArtifact = vi.fn().mockResolvedValue({
+      ...replayBlob(),
+      artifactKey: "qti_package",
+    });
+    const downloadDigiExamMigrationCorrectionReplayArtifact = vi.fn();
+    const { downloadFile } = useExamConverterFileActions({
+      client: {
+        downloadDigiExamMigrationArtifact,
+        downloadDigiExamMigrationCorrectionReplayArtifact,
+        saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
+      },
+      triggerDownload: vi.fn(),
+    });
+
+    await downloadFile({
+      correlationId: "corr-first-pass",
+      file: originalFile(),
+      jobId: "job-first-pass",
+    });
+
+    expect(downloadDigiExamMigrationArtifact).toHaveBeenCalledWith({
+      artifactKey: "qti_package",
+      correlationId: "corr-first-pass",
+      jobId: "job-first-pass",
+    });
+    expect(downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
   });
 
   it("saves replay bytes with the teacher-facing target filename", async () => {
@@ -93,9 +164,11 @@ describe("useExamConverterFileActions", () => {
       },
     };
     const saveDigiExamMigrationArtifactToUserFiles = vi.fn().mockResolvedValue(saved);
+    const downloadDigiExamMigrationCorrectionReplayArtifact = vi.fn().mockResolvedValue(replayBlob());
     const { saveFile } = useExamConverterFileActions({
       client: {
-        downloadDigiExamMigrationArtifact: vi.fn().mockResolvedValue(replayBlob()),
+        downloadDigiExamMigrationArtifact: vi.fn(),
+        downloadDigiExamMigrationCorrectionReplayArtifact,
         saveDigiExamMigrationArtifactToUserFiles,
       },
     });
@@ -106,6 +179,13 @@ describe("useExamConverterFileActions", () => {
       jobId: "job-filename",
     });
 
+    expect(downloadDigiExamMigrationCorrectionReplayArtifact).toHaveBeenCalledWith({
+      artifactKey: "correction_replay_qti_package",
+      artifactSetId: "artifact-set-qti",
+      contentSha256: "sha256:replay-qti",
+      correlationId: "corr-filename",
+      jobId: "sir-replay-job",
+    });
     expect(saveDigiExamMigrationArtifactToUserFiles).toHaveBeenCalledWith(
       expect.objectContaining({
         artifact: expect.objectContaining({

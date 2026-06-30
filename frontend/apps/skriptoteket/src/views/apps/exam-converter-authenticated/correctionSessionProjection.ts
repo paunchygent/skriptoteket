@@ -16,6 +16,7 @@ import type {
   ExamConverterCorrectionSessionResponse,
 } from "../../../api/examConverterCorrectionSessions";
 import type {
+  DigiExamAnswerKeyReviewReplayArtifactReference,
   DigiExamEffectiveAnswerKey,
   ExamAuthoringCorrectionSourceItem,
   ExamAuthoringCorrectionSourceStateIssueResult,
@@ -29,7 +30,10 @@ import type {
 } from "./digiexamIrReviewParser";
 import { buildAiSuggestionReport, hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
 import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/sirConvertGateway/contractValues";
-import { applyAnswerKeyReviewStateToQuestions } from "./answerKeyReviewStateAdapter";
+import {
+  applyAnswerKeyReviewStateToQuestions,
+  parseAnswerKeyReviewState,
+} from "./answerKeyReviewStateAdapter";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -299,22 +303,39 @@ function correctedFileStatusLabel(params: {
 
 function replayArtifactActionReference(params: {
   availability: ExamAuthoringCorrectionsApplyResult["artifact_availability"][number] | undefined;
+  replayReference: DigiExamAnswerKeyReviewReplayArtifactReference | undefined;
   readinessRows: CorrectionTargetReadinessRow[];
 }): ExamConverterReviewFileActionReference | null {
   const readinessRow = params.readinessRows.find((row) => row.export_enabled) ?? null;
   if (!readinessRow || params.availability?.availability !== "available") return null;
-  const artifactKey = readinessRow.artifact_key;
-  if (typeof artifactKey !== "string" || artifactKey.length === 0) return null;
+  if (!params.replayReference) return null;
   return {
-    artifactKey,
+    artifactKey: params.replayReference.artifact_key,
+    artifactSetId: params.replayReference.artifact_set_id,
     authority: "replay_result",
+    contentSha256: params.replayReference.content_sha256,
+    jobId: params.replayReference.job_id,
+    replayArtifactReference: params.replayReference,
   };
+}
+
+function replayReferencesByTarget(
+  result: ExamAuthoringCorrectionsApplyResult,
+): Map<string, DigiExamAnswerKeyReviewReplayArtifactReference> {
+  const references = new Map<string, DigiExamAnswerKeyReviewReplayArtifactReference>();
+  for (const item of result.answer_key_review_state.items) {
+    for (const reference of item.replay_artifact_references) {
+      references.set(reference.target, reference);
+    }
+  }
+  return references;
 }
 
 function projectCorrectedFiles(
   projection: ExamConverterReviewProjection,
   result: ExamAuthoringCorrectionsApplyResult,
 ): ExamConverterReviewFile[] {
+  const replayReferences = replayReferencesByTarget(result);
   return projection.files.map((file) => {
     const availabilityRow = result.artifact_availability.find(
       (entry) => entry.artifact_key === file.artifactKey,
@@ -328,6 +349,7 @@ function projectCorrectedFiles(
       availability === "available" && readinessRows.some((row) => row.export_enabled);
     const artifactActionReference = replayArtifactActionReference({
       availability: availabilityRow,
+      replayReference: replayReferences.get(file.artifactKey),
       readinessRows,
     });
     const exportEnabled = replayExportEnabled && artifactActionReference !== null;
@@ -479,11 +501,15 @@ export function projectUnifiedCorrectionResult(params: {
         question.title,
     };
   });
+  const replayReviewState = parseAnswerKeyReviewState(params.result.answer_key_review_state);
   const questions = applyAnswerKeyReviewStateToQuestions({
     questions: locallyProjectedQuestions,
-    reviewState: params.result.answer_key_review_state,
+    reviewState: replayReviewState,
   });
-  const files = projectCorrectedFiles(params.projection, params.result);
+  const files = projectCorrectedFiles(params.projection, {
+    ...params.result,
+    answer_key_review_state: replayReviewState,
+  });
   return {
     ...params.projection,
     files,

@@ -24,6 +24,8 @@ export const ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION =
   "answer_key_completion_report_v1" as const;
 export const ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION =
   "digiexam_answer_key_review_state_v1" as const;
+export const CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA_VERSION =
+  "correction_replay_artifact_reference_v1" as const;
 
 export type DigiExamMigrationBundleSchemaVersion =
   typeof DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION;
@@ -36,3 +38,5 @@ export type DigiExamIngestionOverlaySchemaVersion =
 export type TargetReadinessReportSchemaVersion = typeof TARGET_READINESS_REPORT_SCHEMA_VERSION;
 export type AnswerKeyCompletionReportSchemaVersion =
   typeof ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION;
+export type CorrectionReplayArtifactReferenceSchemaVersion =
+  typeof CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA_VERSION;

@@ -36,6 +36,41 @@ import {
 export const REVIEWED_GAP_FILL_APPLY_JOB_ID = "job_reviewed_apply";
 export const MANUAL_GAP_FILL_APPLY_JOB_ID = "job_manual_gap_fill_apply";
 
+function replayArtifactReferences(jobId: string) {
+  return [
+    {
+      artifact_key: "correction_replay_examnet_pdf",
+      artifact_set_id: `${jobId}-artifact-set-pdf`,
+      content_sha256: `sha256:${jobId}-pdf`,
+      correction_payload_digest: `sha256:${jobId}-correction-payload`,
+      created_at: "2026-06-29T12:00:00Z",
+      job_id: jobId,
+      replay_profile_version: "correction-replay-v1",
+      request_id: `${jobId}-request`,
+      schema_version: "correction_replay_artifact_reference_v1",
+      source_binding_digest: `sha256:${jobId}-source-binding`,
+      source_state_sha256: `sha256:${jobId}-source-state`,
+      target: "examnet_pdf",
+      target_set_digest: `sha256:${jobId}-target-set`,
+    },
+    {
+      artifact_key: "correction_replay_qti_package",
+      artifact_set_id: `${jobId}-artifact-set-qti`,
+      content_sha256: `sha256:${jobId}-qti`,
+      correction_payload_digest: `sha256:${jobId}-correction-payload`,
+      created_at: "2026-06-29T12:00:00Z",
+      job_id: jobId,
+      replay_profile_version: "correction-replay-v1",
+      request_id: `${jobId}-request`,
+      schema_version: "correction_replay_artifact_reference_v1",
+      source_binding_digest: `sha256:${jobId}-source-binding`,
+      source_state_sha256: `sha256:${jobId}-source-state`,
+      target: "qti_package",
+      target_set_digest: `sha256:${jobId}-target-set`,
+    },
+  ];
+}
+
 function isCorrectedApplyJob(jobId: string): boolean {
   return jobId === REVIEWED_GAP_FILL_APPLY_JOB_ID || jobId === MANUAL_GAP_FILL_APPLY_JOB_ID;
 }
@@ -307,10 +342,9 @@ function answerKeyReviewStatePayload(jobId: string, candidateAvailable: boolean)
               : ["manual_answer_key_required"],
         replay_artifact_references:
           isManualCorrection || isReviewedCorrection
-            ? [
-                { artifact_key: "correction_replay_examnet_pdf", target: "examnet_pdf" },
-                { artifact_key: "correction_replay_qti_package", target: "qti_package" },
-              ]
+            ? replayArtifactReferences(
+                isManualCorrection ? MANUAL_GAP_FILL_APPLY_JOB_ID : REVIEWED_GAP_FILL_APPLY_JOB_ID,
+              )
             : [],
         review_state:
           isManualCorrection || isReviewedCorrection

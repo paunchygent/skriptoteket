@@ -48,6 +48,7 @@ import {
 const gatewayMocks = vi.hoisted(() => ({
   applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
+  downloadDigiExamMigrationCorrectionReplayArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
@@ -68,6 +69,8 @@ vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
     ...actual,
     applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
     downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+    downloadDigiExamMigrationCorrectionReplayArtifact:
+      gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact,
     getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
     getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
     issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
@@ -286,6 +289,7 @@ beforeEach(() => {
   for (const mock of Object.values(correctionSessionApiMocks)) mock.mockReset();
   gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
+  gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
@@ -311,6 +315,10 @@ beforeEach(() => {
   );
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
   gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
+  gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockImplementation(
+    ({ artifactKey }: { artifactKey: string }) =>
+      Promise.resolve(fileArtifactBlob(artifactKey, `${artifactKey}.bin`, "application/octet-stream")),
+  );
   mockReviewArtifacts();
 });
 
@@ -332,6 +340,19 @@ function seedManualChoiceCorrection(): void {
       interaction_id: "choice-item-004",
     },
   });
+}
+
+function withoutReplayArtifactReferences(result: ReturnType<typeof correctionApplyResult>) {
+  return {
+    ...result,
+    answer_key_review_state: {
+      ...result.answer_key_review_state,
+      items: result.answer_key_review_state.items.map((item) => ({
+        ...item,
+        replay_artifact_references: [],
+      })),
+    },
+  };
 }
 
 describe("ExamConverterAuthenticatedView corrected file actions", () => {
@@ -382,16 +403,9 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
 
   it("keeps replayed file actions disabled when replay gives no artifact reference", async () => {
     const replayResult = correctionApplyResult();
-    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue({
-      ...replayResult,
-      target_readiness: {
-        ...replayResult.target_readiness,
-        targets: replayResult.target_readiness.targets.map((target) => ({
-          ...target,
-          artifact_key: null,
-        })),
-      },
-    });
+    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(
+      withoutReplayArtifactReferences(replayResult),
+    );
     seedManualChoiceCorrection();
     const wrapper = mount(ExamConverterAuthenticatedView);
 
@@ -423,16 +437,9 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
 
   it("does not save a replayed generated file without a replay artifact reference", async () => {
     const replayResult = correctionApplyResult();
-    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue({
-      ...replayResult,
-      target_readiness: {
-        ...replayResult.target_readiness,
-        targets: replayResult.target_readiness.targets.map((target) => ({
-          ...target,
-          artifact_key: null,
-        })),
-      },
-    });
+    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(
+      withoutReplayArtifactReferences(replayResult),
+    );
     seedManualChoiceCorrection();
     const wrapper = mount(ExamConverterAuthenticatedView);
 
@@ -450,6 +457,7 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
         jobId: "job_exam_converter_files",
       }),
     );
+    expect(gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
   });
 
   it("uses a replay artifact reference when the correction replay result provides one", async () => {
@@ -474,17 +482,21 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
     await flushPromises();
     await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
     gatewayMocks.downloadDigiExamMigrationArtifact.mockClear();
+    gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockClear();
 
     const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
     expect(saveAction.attributes("disabled")).toBeUndefined();
     await saveAction.trigger("click");
     await flushPromises();
 
-    expect(gatewayMocks.downloadDigiExamMigrationArtifact).toHaveBeenCalledWith(
+    expect(gatewayMocks.downloadDigiExamMigrationArtifact).not.toHaveBeenCalled();
+    expect(gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact).toHaveBeenCalledWith(
       expect.objectContaining({
         artifactKey: "correction_replay_qti_package",
+        artifactSetId: "job_correction_replay-artifact-set-qti",
+        contentSha256: "sha256:job_correction_replay-qti",
         correlationId: "corr_exam_converter_files",
-        jobId: "job_exam_converter_files",
+        jobId: "job_correction_replay",
       }),
     );
     expect(gatewayMocks.saveDigiExamMigrationArtifactToUserFiles).toHaveBeenCalledWith(
@@ -507,7 +519,7 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
       wrapper.find('[data-test="exam-converter-download-file-qti_package"]').attributes(
         "disabled",
       ),
-    ).toBeDefined();
+    ).toBeUndefined();
 
     await wrapper.find('[data-test="exam-converter-reset-local-choices"]').trigger("click");
 

@@ -19,6 +19,7 @@ import {
   applyExamAuthoringCorrections,
   buildSirConvertUserFileSaveMetadata,
   downloadDigiExamMigrationArtifact,
+  downloadDigiExamMigrationCorrectionReplayArtifact,
   getDigiExamMigrationJob,
   getDigiExamMigrationResult,
   issueExamAuthoringCorrectionSourceState,
@@ -229,6 +230,35 @@ describe("Sir Convert Gateway browser client", () => {
       "https://api.example.test/sir-convert/v2/convert/jobs/job_2",
       expect.objectContaining({ method: "GET" }),
     );
+  });
+
+  it("downloads correction replay artifacts through the request-scoped nested route", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(new Blob(["pdf"]), {
+        status: 200,
+        headers: {
+          "content-type": "application/pdf",
+          "content-disposition": 'attachment; filename="corrected.pdf"',
+        },
+      }),
+    );
+
+    const artifact = await downloadDigiExamMigrationCorrectionReplayArtifact({
+      artifactKey: "correction_replay_examnet_pdf",
+      artifactSetId: "artifact-set-001",
+      contentSha256: "sha256:corrected/pdf+digest",
+      correlationId: "corr-replay",
+      jobId: "job-replay",
+    });
+
+    expect(artifact.filename).toBe("corrected.pdf");
+    expect(artifact.artifactKey).toBe("correction_replay_examnet_pdf");
+    expect(fetch).toHaveBeenCalledWith(
+      "/sir-convert/v2/convert/jobs/job-replay/correction-replays/artifact-set-001/artifacts/correction_replay_examnet_pdf?content_sha256=sha256%3Acorrected%2Fpdf%2Bdigest",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(requestHeaders(0).get("X-Correlation-ID")).toBe("corr-replay");
+    expect(requestHeaders(0).get("X-API-Key")).toBeNull();
   });
 
   it("allows the local HuleEdu Gateway base for explicit browser proof", async () => {

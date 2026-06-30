@@ -89,6 +89,13 @@ export type SirConvertGatewayClient = {
     artifactKey: string;
     correlationId: string;
   }): Promise<SirConvertArtifactBlob>;
+  downloadDigiExamMigrationCorrectionReplayArtifact(params: {
+    jobId: string;
+    artifactSetId: string;
+    artifactKey: string;
+    contentSha256: string;
+    correlationId: string;
+  }): Promise<SirConvertArtifactBlob>;
   submitTranscriptJob(params: TranscriptSubmitParams): Promise<SirConvertTranscriptSubmittedJob>;
   getTranscriptJob(params: {
     jobId: string;
@@ -211,6 +218,29 @@ export function createSirConvertGatewayClient(
     async downloadDigiExamMigrationArtifact(params) {
       const response = await dependencies.fetcher(
         toSirConvertGatewayUrl(`/jobs/${params.jobId}/artifacts/${params.artifactKey}`),
+        {
+          method: "GET",
+          headers: buildJsonHeaders(params.correlationId),
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        throw await toGatewayError(response);
+      }
+      return {
+        blob: await response.blob(),
+        contentType: response.headers.get("content-type"),
+        filename: parseContentDispositionFilename(response.headers.get("content-disposition")),
+        artifactKey: params.artifactKey,
+      };
+    },
+
+    async downloadDigiExamMigrationCorrectionReplayArtifact(params) {
+      const query = new URLSearchParams({ content_sha256: params.contentSha256 });
+      const response = await dependencies.fetcher(
+        toSirConvertGatewayUrl(
+          `/jobs/${params.jobId}/correction-replays/${params.artifactSetId}/artifacts/${params.artifactKey}?${query.toString()}`,
+        ),
         {
           method: "GET",
           headers: buildJsonHeaders(params.correlationId),
@@ -409,6 +439,16 @@ export async function downloadDigiExamMigrationArtifact(params: {
   correlationId: string;
 }): Promise<SirConvertArtifactBlob> {
   return await createBrowserSirConvertGatewayClient().downloadDigiExamMigrationArtifact(params);
+}
+
+export async function downloadDigiExamMigrationCorrectionReplayArtifact(params: {
+  jobId: string;
+  artifactSetId: string;
+  artifactKey: string;
+  contentSha256: string;
+  correlationId: string;
+}): Promise<SirConvertArtifactBlob> {
+  return await createBrowserSirConvertGatewayClient().downloadDigiExamMigrationCorrectionReplayArtifact(params);
 }
 
 export async function submitTranscriptJob(
