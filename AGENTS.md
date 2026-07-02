@@ -67,7 +67,7 @@ Shared skills migrated to
 first. Repo facts belong in shared-skill references or leaves, not in copied
 repo-local skills.
 
-- For any skill creation or update, use the system `skill-creator` skill first.
+- For any skill creation or update, use the global `skill-creator` skill first.
   Keep `SKILL.md` concise; route examples, patterns, rationale, and behavior
   detail into the reference/resource structure recommended there.
 

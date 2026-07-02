@@ -8,10 +8,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Keep this file under 200 lines.
 - When compacting this file, move non-session-vital history to `.codex/long-term-memory/entries/` first.
 ## Snapshot
-- Date: 2026-06-30.
+- Date: 2026-07-02.
 - Branch: `main`.
 - Latest active work: Story 58 Skriptoteket Dev proof now passes at `.artifacts/playwright-pr-0337-correction-session-live/20260630T201858Z/manifest.redacted.json` with real ak7 DXE, service logs/monitoring, replay PDF/QTI download `200`, Save to My Files `200`, distinct artifact sets, and stale/mismatched artifact download `409`. Production rerun is still pending because public/Tailnet Hemma access timed out during this slice.
-- Active worktree slice: proof-harness stabilization plus selected-detail `data-selected-item-id` test hook for Story 58 closeout; no backend runtime code changes.
+- Active worktree slice: R2 `Mina filer` storage migration docs scaffold (`ADR-0088`, `ST-14-39`, `PR-0411`, `REV-PR-0411`, linked reference); no runtime code, prod env sync, or object copy authorized.
 - Dev-tooling command-surface mediation is preserved as approved `PR-0409` / `REV-PR-0409`; keep `PR-0369` blocked unless a concrete app-presentation API need appears.
 ## Status
 - `EPIC-37` is active. `PR-0358` through `PR-0362` are done and govern the current product direction, Sir Convert boundary, shell plan, and app presentation sequence.
