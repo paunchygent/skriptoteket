@@ -13,6 +13,10 @@ links:
   - "EPIC-14"
   - "ST-14-39"
   - "PR-0411"
+  - "PR-0412"
+  - "PR-0413"
+  - "PR-0414"
+  - "PR-0415"
   - "REV-PR-0411"
   - "REF-cloudflare-r2-skriptoteket-file-storage-migration-pre-runbook"
 ---
@@ -136,6 +140,12 @@ producer-owned until saved.
 
 These questions are part of the decision contract. None may be left to
 implementation without a named follow-up decision.
+
+Routing note, 2026-07-04: `PR-0412` keeps these questions non-terminal and
+routes local Skriptoteket work into `PR-0413` for metadata/schema, `PR-0414` for
+the File Service client adapter and protected proof, and `PR-0415` for
+migration/cutover safety. The product-neutral HuleEdu File Service object-file
+API remains an external producer prerequisite before runtime consumer closeout.
 
 1. What exact File Service endpoints and request/response fields does the
    Skriptoteket client consume for init, finalize, metadata/head, download,

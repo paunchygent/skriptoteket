@@ -5,7 +5,7 @@ title: "Cloudflare R2-backed Mina filer storage migration"
 status: ready
 owners: "agents"
 created: 2026-07-02
-updated: 2026-07-02
+updated: 2026-07-04
 epic: "EPIC-14"
 dependencies: ["ADR-0059", "ADR-0064", "ADR-0088"]
 acceptance_criteria:
@@ -34,12 +34,15 @@ therefore consumes HuleEdu File Service for object lifecycle while keeping
 1. Approve or revise `ADR-0088`.
 2. Keep `REF-cloudflare-r2-skriptoteket-file-storage-migration-pre-runbook` as
    the migration fact base.
-3. Implement `PR-0411` only after the review closes every open question or moves
-   a question into a named follow-up decision.
-4. Require red-first tests for owner scoping, missing-object behavior, checksum
+3. Use `PR-0412` to keep the retained blockers from `PR-0411` and
+   `REV-PR-0411` in named follow-up PR tasks before runtime work begins.
+4. Implement local follow-up work in order: metadata/schema (`PR-0413`), File
+   Service client adapter plus protected proof (`PR-0414`), then
+   migration/cutover safety (`PR-0415`).
+5. Require red-first tests for owner scoping, missing-object behavior, checksum
    mismatch, delete/restore, retained soft-deleted records, and Document
    Converter saved-source batches.
-5. Require live shared-auth browser proof before production cutover.
+6. Require live shared-auth browser proof before production cutover.
 
 ## Non-Goals
 
@@ -66,3 +69,7 @@ implementation".
   architecture, config, Docker, and migration pre-runbook facts.
 - `PR-0411`: first implementation-planning slice.
 - `REV-PR-0411`: retained review gate.
+- `PR-0412`: File Service consumer task split and blocker routing.
+- `PR-0413`: `Mina filer` File Service metadata/schema task.
+- `PR-0414`: File Service client adapter and protected proof task.
+- `PR-0415`: migration and cutover safety task.

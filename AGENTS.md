@@ -100,6 +100,13 @@ backlog doc and `.codex/handoff.md`. When a story is marked `done`, also update
 its epic with the current implementation summary. Proposed EPICs and ADRs need
 review before implementation.
 
+## Authority Transition Guard
+
+Terminal docs authority changes must cite the applicable shared protocol:
+`agent-planning:user-closure-gate` or
+`overseer-implementation-review-loop:approved-review-closeout`. Review verdict
+approval is reviewer-owned. Details live in `agent-docs-governance`.
+
 ## Command Policy
 
 Run commands from the repository root and prefer named `pdm run ...` scripts.

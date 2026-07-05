@@ -13,6 +13,7 @@ Relationships:
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from datetime import date
@@ -22,7 +23,15 @@ import yaml
 
 type YamlMapping = dict[str, object]
 
+ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = Path("docs/_meta/docs-contract.yaml")
+AUTHORITY_GUARD_PATH = (
+    ROOT.parent.parent
+    / "skill-repository"
+    / "scripts"
+    / "docs_as_code"
+    / "authority_transition_guard.py"
+)
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 EPIC_ID_RE = re.compile(r"^EPIC-\d{2}$")
 STORY_ID_RE = re.compile(r"^ST-\d{2}-\d{2}$")
@@ -592,6 +601,27 @@ def validate_unique_frontmatter_ids(
     return violations
 
 
+def validate_authority_transitions(paths: list[Path], *, scoped: bool) -> list[Violation]:
+    """Run the shared terminal-authority transition guard."""
+    if scoped and not paths:
+        return []
+    command = ["/usr/bin/python3", str(AUTHORITY_GUARD_PATH)]
+    command.extend(normalize_path(path) for path in paths)
+    result = subprocess.run(
+        command,
+        cwd=ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode == 0:
+        return []
+    message = (result.stdout or result.stderr).strip()
+    if not message:
+        message = f"authority transition guard exited with status {result.returncode}"
+    return [Violation("docs", message)]
+
+
 def iter_docs(files: list[str]) -> list[Path]:
     if files:
         paths: list[Path] = []
@@ -624,6 +654,8 @@ def main(argv: list[str]) -> int:
 
     violations.extend(validate_unique_frontmatter_ids(known_docs))
     violations.extend(validate_review_targets(paths, known_docs))
+    authority_paths = paths if argv[1:] else []
+    violations.extend(validate_authority_transitions(authority_paths, scoped=bool(argv[1:])))
 
     if violations:
         print("\n[docs-validate] Contract violations found:\n")
