@@ -4,17 +4,167 @@ on:
   pull_request:
   push:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  docs-validate:
+  docs-validate-admission:
+    name: docs-validate-admission
     runs-on: ubuntu-latest
+    outputs:
+      trusted: ${{ steps.admission.outputs.trusted }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Admit trusted repository state
+        id: admission
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          fail_fork() {
+            echo "fork_requires_trusted_mirror" >&2
+            exit 1
+          }
+
+          # Trusted pull requests require github.event.pull_request.head.repo.full_name == github.repository.
+          # Trusted mirror approval uses the exact `/trust-docs-validate <full-head-sha>` comment.
+          if [ "$EVENT_NAME" = "push" ]; then
+            if [ "$REPOSITORY" != "paunchygent/skriptoteket" ]; then
+              echo "push_requires_base_repository" >&2
+              exit 1
+            fi
+            printf 'trusted=true\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "unsupported_docs_validate_event" >&2
+            exit 1
+          fi
+
+          if [ "$HEAD_REPOSITORY" != "$REPOSITORY" ]; then
+            fail_fork
+          fi
+
+          case "$HEAD_REF" in
+            trusted/fork-pr-*)
+              mirror_suffix="${HEAD_REF#trusted/fork-pr-}"
+              original_pr_number="${mirror_suffix%%-*}"
+              mirror_sha="${mirror_suffix#*-}"
+              if [ -z "$original_pr_number" ] || [ "$mirror_sha" = "$mirror_suffix" ]; then
+                echo "trusted_mirror_branch_shape_invalid" >&2
+                exit 1
+              fi
+              if [ "${#mirror_sha}" -ne 40 ] || [ "$mirror_sha" != "$HEAD_SHA" ]; then
+                echo "trusted_mirror_sha_mismatch" >&2
+                exit 1
+              fi
+
+              original_sha="$(gh api "repos/$REPOSITORY/pulls/$original_pr_number" --jq '.head.sha')"
+              original_head_repository="$(gh api "repos/$REPOSITORY/pulls/$original_pr_number" --jq '.head.repo.full_name')"
+              original_is_fork="$(gh api "repos/$REPOSITORY/pulls/$original_pr_number" --jq '.head.repo.fork')"
+              if [ "$original_sha" != "$mirror_sha" ] || [ "$original_head_repository" = "$REPOSITORY" ] || [ "$original_is_fork" != "true" ]; then
+                echo "trusted_mirror_original_head_mismatch" >&2
+                exit 1
+              fi
+
+              export MIRROR_SHA="$mirror_sha"
+              trust_comment="$(gh api --paginate "repos/$REPOSITORY/issues/$original_pr_number/comments" --jq '.[] | select(.body == ("/trust-docs-validate " + env.MIRROR_SHA)) | [.user.login, .user.id] | @tsv' | awk 'NF {line=$0} END {print line}')"
+              if [ -z "$trust_comment" ]; then
+                echo "trusted_mirror_approval_missing" >&2
+                exit 1
+              fi
+              commenter_login="${trust_comment%%$'\t'*}"
+              commenter_permission="$(gh api "repos/$REPOSITORY/collaborators/$commenter_login/permission" --jq '.permission')"
+              case "$commenter_permission" in
+                admin|maintain|write) ;;
+                *)
+                  echo "trusted_mirror_approval_unauthorized" >&2
+                  exit 1
+                  ;;
+              esac
+              ;;
+            *)
+              if [[ "$HEAD_REF" == trusted/* ]]; then
+                echo "trusted_mirror_branch_shape_invalid" >&2
+                exit 1
+              fi
+              ;;
+          esac
+
+          printf 'trusted=true\n' >> "$GITHUB_OUTPUT"
+
+  docs-validate-shared:
+    name: docs-validate-shared
+    needs: docs-validate-admission
+    if: needs.docs-validate-admission.outputs.trusted == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: skill-repository-read
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check out Skriptoteket
+        uses: actions/checkout@v4
         with:
-          python-version: "3.13"
+          persist-credentials: false
+
+      - name: Create read-only skill-repository App token
+        id: skill-repository-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.SKILL_REPOSITORY_APP_ID }}
+          private-key: ${{ secrets.SKILL_REPOSITORY_APP_PRIVATE_KEY }}
+          owner: paunchygent
+          repositories: skill-repository
+          permission-contents: read
+
+      - name: Check out private skill-repository owner
+        uses: actions/checkout@v4
+        with:
+          repository: paunchygent/skill-repository
+          ref: main
+          token: ${{ steps.skill-repository-token.outputs.token }}
+          path: .shared/skill-repository
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up owner-declared Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .shared/skill-repository/.python-version
+
       - name: Install PDM
         run: python -m pip install --upgrade pip pdm
-      - name: Install dependencies
-        run: pdm install --frozen-lockfile -G monorepo-tools
-      - name: Validate docs contract
-        run: pdm run docs-validate
+
+      - name: Verify canonical owner alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Canonical managed-host alias: ~/.codex/skill-repository
+          mkdir -p "$HOME/.codex"
+          ln -s "$GITHUB_WORKSPACE/.shared/skill-repository" "$HOME/.codex/skill-repository"
+          test "$(realpath "$HOME/.codex/skill-repository")" = "$GITHUB_WORKSPACE/.shared/skill-repository"
+          test -f "$HOME/.codex/skill-repository/pyproject.toml"
+
+      - name: Install consumer tooling
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          pdm install -G monorepo-tools --frozen-lockfile
+
+      - name: Install owner tooling
+        run: |
+          cd "$GITHUB_WORKSPACE/.shared/skill-repository"
+          pdm install -G monorepo-tools --frozen-lockfile
+
+      - name: Validate docs contract through shared owner
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          pdm run docs-validate

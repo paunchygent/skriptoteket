@@ -25,12 +25,13 @@ type YamlMapping = dict[str, object]
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = Path("docs/_meta/docs-contract.yaml")
-AUTHORITY_GUARD_PATH = (
-    ROOT.parent.parent
+AUTHORITY_LAUNCHER = (
+    Path.home()
+    / ".codex"
     / "skill-repository"
     / "scripts"
     / "docs_as_code"
-    / "authority_transition_guard.py"
+    / "run_authority_transition_guard.sh"
 )
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 EPIC_ID_RE = re.compile(r"^EPIC-\d{2}$")
@@ -605,7 +606,7 @@ def validate_authority_transitions(paths: list[Path], *, scoped: bool) -> list[V
     """Run the shared terminal-authority transition guard."""
     if scoped and not paths:
         return []
-    command = ["/usr/bin/python3", str(AUTHORITY_GUARD_PATH)]
+    command = [str(AUTHORITY_LAUNCHER), "--repo-root", str(ROOT)]
     command.extend(normalize_path(path) for path in paths)
     result = subprocess.run(
         command,
