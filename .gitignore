@@ -67,3 +67,6 @@ data/reagent_prep_chef/sds/files/
 
 # Sensitive operational docs (credentials, server details)
 .codex/rules/080-home-server-deployment.md
+
+# Retained agent context runtime
+.orchestration/context/
