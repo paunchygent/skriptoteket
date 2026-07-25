@@ -1,10 +1,12 @@
 # Skriptoteket Claude Design And Copy Memory
 
+@AGENTS.md
+
 Claude is used in this repo as a frontend layout/design and Swedish-copy
 specialist, not as a backend, DevOps, observability, security, data, or
 full-stack implementation agent.
 
-Keep context small. Do not import or duplicate `AGENTS.md` here.
+Keep context small. Do not duplicate `AGENTS.md` here.
 
 ## Use Claude For
 
