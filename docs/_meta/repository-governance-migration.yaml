@@ -1,0 +1,139 @@
+version: 1
+legacy_lanes:
+  - source_type: epic
+    target_type: epic
+    identifier: {operation: allocate_current_id}
+    fields:
+      outcome: [{operation: copy, source: outcome}]
+      retired_ids: [{operation: append_source_id, source: id}]
+      status: [{operation: copy, source: status}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: story
+    target_type: story
+    identifier: {operation: allocate_current_id}
+    fields:
+      acceptance_criteria: [{operation: copy, source: acceptance_criteria}]
+      retired_ids: [{operation: append_source_id, source: id}]
+      status: [{operation: require_disposition, source: status}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: pr
+    target_type: task
+    identifier: {operation: allocate_current_id}
+    fields:
+      acceptance_criteria: [{operation: copy, source: acceptance_criteria}]
+      retired_ids:
+        - operation: omit_with_authority
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      status: [{operation: copy, source: status}]
+      task_kind: [{operation: require_disposition, source: id}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: review
+    target_type: review
+    identifier: {operation: allocate_current_id}
+    fields:
+      decided_at:
+        - operation: copy_first_nonblank
+          sources: [decided_at, created]
+      retired_ids:
+        - operation: omit_with_authority
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      reviewer: [{operation: copy, source: reviewer}]
+      status: [{operation: copy, source: status}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: adr
+    target_type: adr
+    identifier: {operation: allocate_current_id}
+    fields:
+      deciders: [{operation: require_disposition, source: id}]
+      retired_ids: [{operation: append_source_id, source: id}]
+      status: [{operation: copy, source: status}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: adr_duplicate
+    target_type: adr
+    identifier: {operation: allocate_current_id}
+    fields:
+      deciders: [{operation: require_disposition, source: id}]
+      retired_ids:
+        - operation: omit_with_authority
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      status: [{operation: copy, source: status}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: reference
+    target_type: reference
+    identifier: {operation: allocate_current_id}
+    fields:
+      reference_kind: [{operation: require_disposition, source: id}]
+      retired_ids: [{operation: append_source_id, source: id}]
+      status: [{operation: require_disposition, source: status}]
+      summary: [{operation: copy, source: title}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: codemap
+    target_type: reference
+    identifier: {operation: allocate_current_id}
+    fields:
+      reference_kind: [{operation: require_disposition, source: id}]
+      retired_ids:
+        - operation: omit_with_authority
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      status: [{operation: require_disposition, source: status}]
+      summary: [{operation: copy, source: title}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: prd
+    target_type: reference
+    identifier: {operation: allocate_current_id}
+    fields:
+      reference_kind:
+        - operation: constant_with_authority
+          value: prd
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      retired_ids:
+        - operation: omit_with_authority
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      status: [{operation: require_disposition, source: status}]
+      summary: [{operation: copy, source: title}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: mockup
+    target_type: reference
+    identifier: {operation: allocate_current_id}
+    fields:
+      reference_kind:
+        - operation: constant_with_authority
+          value: mockup
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      retired_ids:
+        - operation: omit_with_authority
+          authority: [ST-SKILL-08-06, TASK-SKRIPT-REP-0003]
+      status: [{operation: require_disposition, source: status}]
+      summary: [{operation: copy, source: title}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]
+  - source_type: runbook
+    target_type: runbook
+    identifier: {operation: allocate_current_id}
+    fields:
+      retired_ids: [{operation: append_source_id, source: id}]
+      status: [{operation: copy, source: status}]
+      summary: [{operation: copy, source: title}]
+      system: [{operation: copy, source: system}]
+      title: [{operation: copy, source: title}]
+    relationships:
+      repository: [{operation: current_repository}]

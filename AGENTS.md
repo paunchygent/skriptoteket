@@ -8,7 +8,8 @@ with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
 ## Repo Invariants
 
 - Use docs-as-code for planning and structural changes. Start at `docs/index.md`,
-  use `docs/templates/`, and close doc changes with `pdm run docs-validate`.
+  use the package-owned `pdm run new-*` scaffolders, and close doc changes with
+  `pdm run docs-validate`.
 - Follow `.codex/rules/000-rule-index.md` for targeted repo rules.
 - Unit of Work owns commit/rollback; repositories never commit; map
   `DomainError` to HTTP only at the web boundary.
@@ -43,10 +44,9 @@ product workflow, or command-wrapper context.
 | Flunk-Out Frenzy pinball playfield geometry, donor table semantics, board underlays, physics-wall carriers | `.codex/skills/pinball-board-authoring/SKILL.md` |
 | Logs, metrics, traces, dashboards, public-edge logging policy | `observability-stack` plus its Skriptoteket reference |
 
-Shared skills migrated to
-`/Users/olofs_mba/Documents/Repos/skill-repository/skills/` are authored there
-first. Repo facts belong in shared-skill references or leaves, not copied
-repo-local skills.
+Shared skills are authored in the canonical skill repository reached through
+the harness alias. Repo facts belong in shared-skill references or leaves, not
+copied repo-local skills.
 
 ## Agent Surface
 
@@ -63,12 +63,11 @@ When compacting `.codex/handoff.md`, move durable session history to
 
 ## Durable Docs
 
-- Contract: `docs/_meta/docs-contract.yaml`
+- Current contract and scaffolds: package-owned `repository-governance`
 - Start-here index: `docs/index.md`
-- Templates: `docs/templates/`
-- Review workflow: `docs/reference/ref-review-workflow.md`
+- Historical-only legacy contract: `docs/_meta/docs-contract.yaml`
 - Runbooks: `docs/runbooks/`
-- Backlog hierarchy: `EPIC -> STORY -> PR backlog slice`
+- Backlog hierarchy: `EPIC -> STORY -> TASK`
 
 When a story, epic, PR, or review status/scope changes, update the relevant
 backlog doc and `.codex/handoff.md`. When a story is marked `done`, also update
@@ -78,7 +77,7 @@ review before implementation.
 ## Authority Transition Guard
 
 Terminal docs authority changes must cite `agent-planning:user-closure-gate` or
-`overseer-implementation-review-loop:approved-review-closeout`. Review verdict
+`agent-overseer:approved-review-closeout`. Review verdict
 approval is reviewer-owned. Details live in `agent-docs-governance`.
 
 ## Command Policy

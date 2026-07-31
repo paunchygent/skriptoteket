@@ -1,0 +1,269 @@
+---
+type: reference
+id: REF-SKRIPT-DECISIONS-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25
+title: Klassrumskartan smart assignment v1 decision memo (2026-03-25)
+repository: skriptoteket
+owners:
+- kind: service
+  id: skriptoteket
+created: '2026-07-31'
+status: active
+reference_kind: decisions
+retired_ids:
+- REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25
+summary: Klassrumskartan smart assignment v1 decision memo (2026-03-25)
+---
+
+## Outcome And Purpose
+
+Source: `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`. Klassrumskartan smart assignment v1 decision memo (2026-03-25).
+
+This memo locks the first approved product shape for Klassrumskartan smart assignment work after the fundamentals and export lanes. The goal is to reintroduce smart behavior through a deliberately small teacher-facing model while keeping the authoritative solver hidden, export-backed history explicit, and the current class-first workflow intact. - Keep one main `Slumpa` action per mode and add a small persisted `Smart` toggle beside it. - Persist the `Smart` toggle state per draft, with `off` as the default for new drafts. - Remove the old visible planner metadata semantics (`notes`, teacher proximity, stability) from the planner surface entirely. - Delete the old smart-adjacent visible sema
+
+## Decision Boundary
+
+The source memo's accepted boundary and alternatives remain evidence; no new authority is introduced.
+
+## Open Questions And Assumptions
+
+Open questions remain explicitly non-authorizing until an accepted backlog or ADR closes them.
+
+## Closure State
+
+The candidate preserves the source decision state under the migrated identity.
+
+### Source evidence
+
+### Summary
+
+This memo locks the first approved product shape for Klassrumskartan smart assignment work after
+the fundamentals and export lanes. The goal is to reintroduce smart behavior through a deliberately
+small teacher-facing model while keeping the authoritative solver hidden, export-backed history
+explicit, and the current class-first workflow intact.
+
+### Locked decisions
+
+- Keep one main `Slumpa` action per mode and add a small persisted `Smart` toggle beside it.
+- Persist the `Smart` toggle state per draft, with `off` as the default for new drafts.
+- Remove the old visible planner metadata semantics (`notes`, teacher proximity, stability) from
+  the planner surface entirely.
+- Delete the old smart-adjacent visible semantics and related persistence without migration or
+  compatibility work because there are no real users yet.
+- Mirror the backend ownership split in the frontend session shape:
+  - one session controller owns the active session token plus active draft/roster identity
+  - one draft lane owns draft-local persistence and history preparation
+  - one smart-rule lane owns roster-global smart-rule hydration/persistence
+  - one separate UI bucket owns active tool, temporary selection, and local smart-rule feedback
+- Keep one debounce timer per persistence lane; do not keep one planner-wide timer, flush
+  contract, or persistence-truth status.
+- Keep the primary smart authoring flow class-wide and visual rather than per-student:
+  - `Keep apart`
+  - `Keep near`
+  - `Use history`
+- Make `Regler` the dedicated smart-rule authoring workspace in the planner shell.
+- Keep `Sittplatser` and `Grupper` calm:
+  - they may show compact smart summaries and mode-local smart toggles
+  - rule creation/editing routes through a small settings affordance near `Smart` that opens
+    `Regler`
+  - task-pane drawers or overflow menus must not become full rule editors
+- Give `Regler` two map views over the same authoring session:
+  - as refined by `ST-27-09`, the classroom-faithful view is the default when a classroom exists
+  - `Planeringskarta` remains available as a deliberate abstract planning view and always uses one
+    clean alphabetical planning layout that does not inherit classroom geometry or the current
+    seating draft
+  - `Sittschema` mirrors the current seating draft when it exists; future teacher-facing copy
+    should call that destination `Klassrumsvyn` / `klassrumsvyn`
+- Add one seating-only rule:
+  - `Närmare läraren`
+- Add one hard classroom-template-scoped seating rule:
+  - `Fast plats`
+  - it binds one roster student to one physical seat
+  - it can be authored only from the classroom-faithful view
+  - from `Planeringskarta`, clicking the tool prompts:
+    `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?`
+  - `Ja` switches to the classroom view and activates the tool; `Nej` or close keeps the teacher on
+    `Planeringskarta`
+- Lock the first interaction model:
+  - one active smart tool at a time
+  - `Närmare läraren` is a unary click-to-toggle rule
+  - `Keep apart` / `Keep near` are 2+ student cluster rules authored through multi-select plus an
+    explicit commit action
+  - incomplete selections are cleared by `Esc`, `Rensa markering`, or tool changes
+  - completed rule creation clears the temporary selection but keeps the tool active
+- Block overlapping relationship clusters in V1:
+  - one student may belong to at most one `Keep apart` or `Keep near` cluster at a time
+  - `Närmare läraren` may coexist because it is not a relationship cluster
+- Allow one grouping-only mode-specific toggle for seat-distance input, such as
+  `Ska hur nära de sitter räknas?`; it is not a fifth shared control.
+- Use export-backed checkpoints only. Autosave, undo/redo, abandoned drafts, and raw draft
+  history never count as algorithmic history input.
+- When `Use history` is enabled for seating, smart seating should also try to balance
+  teacher-distance more fairly over time for students who do not have an explicit
+  `Närmare läraren` rule.
+- Deduplicate checkpoint creation by assignment hash so repeated identical exports do not create
+  extra checkpoint records.
+- Ship smart behavior in both `Sittplatser` and `Grupper` from day one, but keep the mode toggles
+  independent so the teacher can opt into one and keep the other random.
+- Let smart grouping use seating distance only through an explicit teacher-facing toggle such as
+  `Ska hur nära de sitter räknas?`, which is easier to reason about than a generic
+  "classroom-aware" label.
+- Keep `Närmare läraren` as a seating-only rule; grouping must not pretend teacher-distance is a
+  shared cross-mode input.
+- Keep smart reruns on the same `Slumpa` action; do not introduce a separate alternate-result
+  button for rerunning the smart path.
+- When several strong rule-respecting candidates exist, repeated smart runs should prefer a
+  materially different valid result rather than collapsing onto the current assignment hash.
+- The backend may achieve that through randomized tie-breaking, multi-start search, or an internal
+  diversity penalty against the current assignment hash or another equivalent mechanism.
+- Treat relation rules as strong best-effort objectives rather than brittle hard requirements:
+  - `Keep apart` in seating means no immediate orthogonal or diagonal adjacency when possible,
+    while same-row or same-column placements with one full seat buffer remain acceptable
+  - `Keep near` in seating means one local vicinity overall, but a 2-student pair should prefer
+    direct left/right or above/below adjacency over diagonal placement
+  - `Keep apart` in grouping should spread cluster members across different groups whenever possible
+- Treat `Fast plats` as a hard seating invariant rather than a scored preference:
+  - fixed placements must be validated before solving
+  - fixed students and fixed seats are removed from the remaining search problem
+  - all candidate scoring must see the merged fixed + candidate mapping
+  - an impossible or conflicting fixed placement fails the smart seating run without saving a
+    partial result
+- Compute teacher-distance from room-owned teaching cues:
+  - recommend that the teacher places `Whiteboard` or `Kateder`
+  - if no stronger cue exists, assume the teaching position is the top-middle of the room
+  - if those cues are on another wall, that wall becomes the teaching/front edge
+- Keep explanations short, teacher-facing, and trust-building. Do not expose score panels, weight
+  tuning, or solver jargon.
+- Make workspace loading draft-first and fail-safe:
+  - clear old smart rules immediately on session change
+  - keep the draft usable if smart-rule hydration fails
+  - disable smart-rule authoring and offer retry until the current roster rules are ready
+- Make `undo` / `redo` draft-lane-only transitions; dirty/conflicted smart rules must neither
+  persist nor block those history actions.
+- Make `abandonDraft` flush the smart-rule lane first, discard pending draft-local edits
+  explicitly, and use explicit teacher wording if continuing would also discard unsaved class-wide
+  smart-rule edits.
+- Make exit/teardown semantics explicit:
+  - `exitPlanner` timeout returns confirm-discard
+  - `confirmExitWithoutWaiting` discards both lanes and ignores late responses
+  - `clearWorkspace` remains teardown-only and ignores late responses
+- Reset smart-rule UI state when the planner screen is left successfully; save/load
+  acknowledgements must not decide tool/selection resets.
+- Land the frontend split as dedicated session-controller, lane, UI-state, and transition-policy
+  modules with `useClassroomState.ts` reduced to a thin composition surface rather than another
+  monolithic-store rewrite.
+
+### Checkpoint policy
+
+- A successful seating export with changed assignments creates a seating checkpoint.
+- A repeated seating export with the same canonical seating assignment hash does not create a
+  second checkpoint.
+- The canonical seating assignment hash should be based on normalized placed student-to-seat
+  assignments plus unplaced students, excluding export presentation details.
+- Those same seating checkpoints are also the only eligible source for teacher-distance fairness
+  over time.
+- Grouping remains mode-specific when grouping exports exist later, and grouping checkpoints then
+  become the primary grouping-history source. Smart grouping may also consume seating checkpoints
+  as a secondary source for:
+  - relation carry-over
+  - optional seating-distance signals
+- Raw drafts, draft history, and reopened drafts are never treated as checkpoints.
+- If `Use history` is enabled but no eligible checkpoints exist, the smart run applies without
+  history, reports `used_history=false`, and does not show a no-history warning or blocked run.
+  This soft-degrade must not treat raw drafts, draft history, undo/redo, reopened drafts, or public
+  guest local state as checkpoint substitutes.
+
+### Resolved conflicts with current repo state
+
+- The current `ST-24-06` contract says seating `Slumpa` is fully random. Smart behavior therefore
+  needs a new approved story package rather than an informal behavior change.
+- The current planner metadata drawer may remain for advanced notes/history, but it should not be
+  extended into the primary smart-rule editing surface.
+- The current seating-embedded smart-rule surface is transitional and should not be extended into
+  grouping or a drawer-first editing model; the dedicated `Regler` workspace is the approved
+  end-state.
+- `PR-0084` correctly removed the old solver-first contract; smart assignment now needs a clean
+  re-entry through a new ADR, epic, and stories rather than reusing superseded concepts.
+
+### Backlog translation
+
+The approved planning package for this memo is:
+
+- `ADR-0074`: controls, checkpoints, persistence, and solver boundaries
+- `EPIC-27`: smart assignment v1
+- `ST-27-01`: contract reset and control model
+- `ST-27-02`: export checkpoints for smart history
+- `ST-27-03`: smart seating v1
+- `ST-27-07`: dedicated rules workspace and dual-map authoring
+- `ST-27-04`: smart grouping v1
+- `ST-27-05`: smart explanations and rerun messaging
+- `ST-27-06`: planner session lanes and transition matrix remediation
+- `ST-27-09`: fixed-seat rules and classroom-view-first rule authoring
+- `REV-EPIC-27`: required review package before implementation begins
+- `PR-0152`: implementation design task for the frontend session-lane remediation
+- `PR-0155`: implementation design task for the dedicated rules workspace and task-pane summary
+  cut-over
+- `PR-0297`: backend fixed-seat persistence and score-aware solver seeding
+- `PR-0298`: frontend fixed-seat tool and classroom-view-first rules UX
+
+### 2026-05-05 refinement
+
+The original V1 memo made `Planeringskarta` the default rules view. `ST-27-09` refines that default
+after the fixed-seat design discussion:
+
+- when a classroom exists, the classroom-faithful view is the default rules surface
+- `Planeringskarta` remains available and must stay a stable abstract alphabetical planning map
+- geometry-evaluated student rules can still be authored from either view, but the UI should nudge
+  teachers toward classroom geometry
+- `Fast plats` is geometry-targeted and therefore must be authored from the classroom view
+
+### 2026-05-10 solver diagnostics refinement
+
+Map marker colors for soft rules are solver-owned. The frontend may show
+neutral participation markers while diagnostics are missing, but it must not
+derive success, degraded, or failed states from duplicated geometry logic.
+
+The accepted diagnostic vocabulary is captured in
+[`REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10`](ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md).
+The key refinement is that `Håll nära` needs both relation mode and seating
+context: across-table can be a successful close placement at a shared table,
+while row/bench layouts should prefer adjacent same-row pair placement and
+must prove any degraded or failed state in backend tests before frontend marker
+colors are restored.
+
+### 2026-05-11 Smart history first-run refinement
+
+`PR-0305` and `PR-0308` make authenticated `Smart placering` and `Historik`
+default-on unless the teacher opts out. Under that product shape, a missing
+checkpoint is the normal first Smart run for a new classroom/class, not an error.
+
+Resolved behavior:
+
+- no eligible checkpoints + `Historik` on -> run without history, `used_history=false`, normal
+  smart-run feedback
+- eligible export/share checkpoints + `Historik` on -> load checkpoint history, `used_history=true`
+- raw drafts, autosave, undo/redo, history-drawer drafts, abandoned drafts, reopened drafts, and
+  public guest local state remain ineligible as Smart-history sources
+- public guest Smart runs keep account-backed `Historik` omitted/off unless a separate public
+  contract explicitly adds a browser-owned history model
+
+### 2026-05-12 Smart seating diversity refinement
+
+Production testing with `SA24D` / `G20` showed that share/export checkpoint loading alone was not a
+strong enough fairness guarantee. When `Smart` and `Historik` are enabled, accepted seating
+checkpoints must now be converted into solver diversity terms for:
+
+- exact non-fixed layout repetition
+- per-student seat, block, local-zone, and front-rank reuse
+- `Håll nära` pair seat and relation reuse
+- `Håll isär` unordered pair seat reuse plus cluster block and zone spread-pattern reuse
+
+The no-history path remains honest: without eligible checkpoints, same-draft reruns may still vary
+against the current active assignment, but new raw drafts, autosave, undo/redo, abandoned drafts,
+history-drawer drafts, reopened drafts, and public guest local state are still not Smart history.
+`Fast plats` is the explicit exception to variation because it is a hard classroom-template
+invariant.
+
+Variation proofs must count teacher-visible rule patterns, not student swaps within the same two
+seats. The G104 normal-rule proof uses a 10-run window with one fixed seat, two near-teacher
+students, one `Håll isär` pair, and one `Håll nära` pair, and requires 10/10 distinct unordered
+rule-block patterns in both exported-history and same-draft/no-history modes.

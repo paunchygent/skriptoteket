@@ -1,0 +1,88 @@
+---
+type: story
+id: ST-SKRIPT-14-22
+title: 'Tool run UX: conventions for progress + input file references'
+repository: skriptoteket
+owners:
+- kind: service
+  id: skriptoteket
+created: '2026-07-31'
+status: ready
+readiness_review:
+  record: inline
+  status: not_started
+closeout_review:
+  record: inline
+  status: not_started
+epic: EPIC-SKRIPT-14
+acceptance_criteria:
+- Given a tool sets progress metadata in state using a documented convention, when
+  the UI renders the run, then it shows a compact progress indicator (e.g. step X
+  of Y, optional label).
+- Given progress metadata is absent or invalid, when the UI renders the run, then
+  it does not show a progress UI and does not error.
+- Given a run has uploaded input files, when the UI renders actions, then it exposes
+  a 'Files available' view (names + copyable references) so authors/users can reference
+  them in subsequent steps.
+- Given the 'Files available' view is shown, then it must not expose filesystem paths;
+  only file names/references are shown.
+- Given the conventions are implemented, then they are documented for tool authors
+  (including how to store file selections in state and how the runner/toolkit resolves
+  references to paths).
+retired_ids:
+- ST-14-22
+---
+
+## Context
+
+### Source: Context
+
+Multi-step tools need basic “flow UX” (where am I, what’s next, what files do I have) but the current UI contract focuses
+on a single run response and next actions only.
+
+We can close a large part of this gap with a small set of conventions that are rendered by the UI, without requiring a
+contract breaking change.
+
+## Epic Contract Slice
+
+### Source: Goal
+
+Support multi-step tools with a progress indicator and a clear way to reference previously uploaded files.
+
+## ADR Coverage
+
+No separate ADR coverage was recorded in the source snapshot.
+
+## Contract Inputs
+
+No separate contract inputs were recorded in the source snapshot.
+
+## Live Verification Plan
+
+Verification follows the acceptance and verification material recorded above.
+
+## Non-Goals
+
+No separate non-goals were recorded in the source snapshot.
+
+## Notes
+
+### Source: Notes
+
+Do not show or copy internal runner filesystem paths. Keeping “files available” as names/references keeps the UX
+compatible with future “user file library” concepts (personal reusable files per account) without leaking implementation
+details.
+
+Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
+
+## Decision And Assumption Ledger
+
+The source snapshot is the governing record for the decisions and assumptions stated above.
+
+## Plan Document Review
+
+No separate plan document review was recorded in the source snapshot.
+
+## Story Closeout Review
+
+No separate closeout review was recorded in the source snapshot.

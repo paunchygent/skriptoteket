@@ -1,0 +1,125 @@
+---
+type: epic
+id: EPIC-SKRIPT-16
+title: Catalog discovery and personalization
+repository: skriptoteket
+owners:
+- kind: service
+  id: skriptoteket
+created: '2026-07-31'
+status: active
+readiness_review:
+  record: inline
+  status: not_started
+closeout_review:
+  record: inline
+  status: not_started
+outcome: Teachers can discover tools via flat browsing with filters, search, and access
+  personalized favorites/recently-used lists
+retired_ids:
+- EPIC-16
+---
+
+## Scope
+
+### Source: Scope
+
+
+
+### Source: Out of scope
+
+- Full-text search with ranking (tsvector/tsquery)
+- Tag suggestions or auto-complete in search
+- Tool recommendations based on usage patterns
+- Hierarchical browse redesign (retained as-is for users who prefer it)
+- Pagination (monitor and add if tool count grows)
+- Server-side “favorites only” filtering in `/api/v1/catalog/tools` (frontend may filter locally for now)
+
+## Epic Contract
+
+### Source: Success criteria
+
+1. Teachers can see all tools on `/browse` without clicking through professions/categories
+2. Teachers can filter by multiple labels and search by tool name
+3. Teachers can favorite tools and access them quickly from home page
+4. Teachers can see their recently used tools on home page
+5. Filter state is reflected in URL (shareable, bookmarkable)
+6. Profession-first browse remains easily reachable (no curated-app discoverability regression)
+
+## ADR Coverage
+
+The source does not provide a separate adr coverage section; no additional adr coverage is recorded.
+
+## Contract Inputs
+
+### Source: Dependencies
+
+- **ADR-0041**: User favorites and tool bookmarking (domain model, API contract)
+- **ADR-0042**: Flat catalog with label filtering (filter logic, search approach)
+
+## Stories
+
+### Source: Stories
+
+| ID | Title | Status |
+|----|-------|--------|
+| ST-16-01 | Favorites domain model and database migration | done |
+| ST-16-02 | Favorites API endpoints (add/remove/list) | done |
+| ST-16-03 | Flat catalog API with label filtering and search | done |
+| ST-16-04 | Recently used tools API endpoint | done |
+| ST-16-05 | Flat catalog Vue view with filter sidebar | done |
+| ST-16-06 | Tool card favorites toggle (star icon) | done |
+| ST-16-07 | Home view favorites and recently used sections | done |
+| ST-16-08 | Catalog cleanup: curated-apps-only filter + final EPIC-16 review | ready |
+| ST-16-09 | Default Klassrumskartan bookmark | done |
+
+## Epic Verification Plan
+
+The source does not provide a separate epic verification plan section; no additional epic verification plan is recorded.
+
+## Exceptions And Follow-Ups
+
+The source does not provide a separate exceptions and follow-ups section; no additional exceptions and follow-ups is recorded.
+
+## Risks
+
+### Source: Risks
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Performance degradation with many tools | Low | Medium | Monitor query times; add pagination if needed |
+| Filter UI complexity confuses users | Medium | Low | Follow existing brutalist design patterns; user testing |
+| OR-within-facet returns too many results | Low | Low | Clear filter state in URL; combine facets + search |
+| Curated apps become less discoverable after `/browse` swap | Medium | Medium | Keep hierarchical browse entrypoint visible (`/browse/professions`) and link to it from flat browse |
+| Breadcrumb confusion/regression in hierarchical browse | Medium | Medium | Update hierarchical breadcrumbs to link to `/browse/professions` instead of `/browse` |
+
+## Notes
+
+The source does not provide a separate notes section; no additional notes is recorded.
+
+### Source: In scope
+
+- **Flat catalog view** as primary `/browse` experience showing all published tools
+- **Label filtering** with profession and category checkboxes (OR within facet; AND across facets)
+- **Text search** on tool title and summary (ILIKE, case-insensitive)
+- **User favorites** (add/remove/list bookmarked tools)
+- **Recently used tools** derived from existing `tool_runs` history
+- **Home page sections** for favorites and recent tools
+- Preserve hierarchical browse via an explicit entrypoint route (for drill-down navigation and curated apps placement)
+
+### Source: Implementation Summary (as of 2026-03-31)
+
+- `ST-16-09` shipped through `PR-0173`:
+  - `classroom.group-seating-studio` is now backfilled as a default favorite for existing users and created as a removable default favorite for new registrations
+
+## Decision And Assumption Ledger
+
+The source does not provide a separate decision and assumption ledger section; no additional decision and assumption ledger is recorded.
+
+## Plan Document Review
+
+The source does not provide a separate plan document review section; no additional plan document review is recorded.
+
+## Epic Closeout Review
+
+The source does not provide a separate epic closeout review section; no additional epic closeout review is recorded.
