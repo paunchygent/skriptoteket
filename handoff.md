@@ -1,5 +1,8 @@
 ## Current
 
+- [ST-SKRIPT-38-01](docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md)
+  and `EPIC-SKRIPT-38` are verified and done. The shared governed-development
+  cutover is complete.
 - [TASK-SKRIPT-REP-0006](docs/backlog/tasks/task-skript-rep-0006-st-38-01-cut-over-governed-development-operations.md)
   is independently approved and done. Its topology-derived typed checks cover
   governance, scripts, web, and frontend without an unscoped aggregate.

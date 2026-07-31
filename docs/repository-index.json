@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "44875dc0c9832f84c4f07099d851f1cef6add989f85d75a3c97eb7cdf0628d53",
+  "source_set_digest": "26e39387d3214a4695ceb211c4dae30919ea4882b80a5725db00fc790257402b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -455,7 +455,7 @@
       "type": "epic",
       "title": "Shared governed development system cutover",
       "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md",
-      "status": "active",
+      "status": "done",
       "owners": [
         {
           "kind": "service",
@@ -1823,7 +1823,7 @@
       "type": "story",
       "title": "Adopt the shared governed development system",
       "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-38",
       "owners": [
         {
@@ -9027,7 +9027,7 @@
         "id": "EPIC-SKRIPT-38",
         "type": "epic",
         "title": "Shared governed development system cutover",
-        "status": "active",
+        "status": "done",
         "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md"
       },
       {
@@ -9384,7 +9384,7 @@
         "id": "ST-SKRIPT-38-01",
         "type": "story",
         "title": "Adopt the shared governed development system",
-        "status": "active",
+        "status": "done",
         "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md"
       }
     ]
