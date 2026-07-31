@@ -28,6 +28,7 @@ import type { ExamConverterResultStripState } from "./exam-converter-authenticat
 const gatewayMocks = vi.hoisted(() => ({
   applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
+  downloadDigiExamMigrationCorrectionReplayArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
@@ -39,6 +40,8 @@ const gatewayMocks = vi.hoisted(() => ({
 vi.mock("../../api/sirConvertGateway", () => ({
   applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
   downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  downloadDigiExamMigrationCorrectionReplayArtifact:
+    gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact,
   getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
   getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
   issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
@@ -70,6 +73,7 @@ function startButton(wrapper: ReturnType<typeof mount>) {
 beforeEach(() => {
   gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
+  gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();

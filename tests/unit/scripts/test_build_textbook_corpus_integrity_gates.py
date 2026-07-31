@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import pytest
 
@@ -20,6 +20,25 @@ from scripts.build_textbook_corpus_integrity_gates import (
     run_integrity_validation,
     write_validation_artifacts,
 )
+
+
+class _GateFinding(TypedDict):
+    code: str
+    severity: str
+    line_no: int | None
+
+
+class _Gate(TypedDict):
+    gate: str
+    passed: bool
+    critical_count: int
+    warning_count: int
+    metrics: dict[str, int]
+    findings: list[_GateFinding]
+
+
+class _GateReport(TypedDict):
+    gates: list[_Gate]
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -34,8 +53,8 @@ def _write_markdown(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _gate(report: dict[str, Any], gate_name: str) -> dict[str, Any]:
-    for gate in report.get("gates", []):
+def _gate(report: _GateReport, gate_name: str) -> _Gate:
+    for gate in report["gates"]:
         if gate.get("gate") == gate_name:
             return gate
     raise AssertionError(f"Gate not found: {gate_name}")

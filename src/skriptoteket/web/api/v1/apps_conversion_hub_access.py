@@ -9,8 +9,6 @@ Relationships:
   - Used by Exam Converter correction-session routes under the same app.
 """
 
-from __future__ import annotations
-
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role

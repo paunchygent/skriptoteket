@@ -35,6 +35,8 @@ describe("help topic catalog", () => {
     expect(resolveHelpTopic("auth-login")).toBe("login");
     expect(resolveHelpTopic("verify-email")).toBe("auth_lifecycle");
     expect(resolveHelpTopic("auth-provisioning-required")).toBe("provisioning_required");
+    expect(resolveHelpTopic("my-runs")).toBe("my_runs");
+    expect(resolveHelpTopic("exam-converter-authenticated")).toBe("apps_detail");
   });
 
   it("lets planner context override the generic app route", () => {

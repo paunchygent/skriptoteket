@@ -14,6 +14,7 @@ from __future__ import annotations
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
+from typing import TypedDict
 
 from scripts import _correction_session_runtime_evidence as evidence_module
 
@@ -26,11 +27,19 @@ class _StoppedMonitor:
         self.stopped = True
 
 
+class _CapturedHemmaServiceMonitorCall(TypedDict):
+    containers: tuple[str, ...]
+    ssh_host: str
+
+
 def test_production_correction_session_evidence_captures_service_logs(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    captured: dict[str, object] = {}
+    captured: _CapturedHemmaServiceMonitorCall = {
+        "containers": (),
+        "ssh_host": "",
+    }
     monitor = _StoppedMonitor()
 
     def fake_start_hemma_ssh_service_monitors(

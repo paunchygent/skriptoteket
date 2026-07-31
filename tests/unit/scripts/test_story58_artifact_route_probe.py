@@ -14,6 +14,7 @@ Relationships:
 from __future__ import annotations
 
 import json
+from typing import TypedDict
 
 from scripts._story58_artifact_route_probe import (
     probe_safe_correction_replay_artifacts,
@@ -21,6 +22,24 @@ from scripts._story58_artifact_route_probe import (
     story58_snapshot_evidence_with_request_context,
 )
 from scripts._story58_artifact_set_invariants import record_story58_artifact_set_snapshot
+
+
+class Story58ArtifactSnapshot(TypedDict, total=False):
+    """Typed approved metadata retained for one route-observed artifact."""
+
+    artifact_key: str
+    artifact_set_id: str
+    content_sha256: str
+    corrections_sha256: str
+    job_id: str
+    observed_via: str
+    path: str
+    product_route_observed: bool
+    request_digest: str
+    request_id: str
+    request_occurrence: int
+    status: int
+    ui_artifact_key: str
 
 
 class FakeRouteResponse:
@@ -43,6 +62,7 @@ class FakeRouteRequestContext:
 
 
 def test_latest_request_context_marks_product_route_snapshot_without_raw_request_data() -> None:
+    snapshots: list[Story58ArtifactSnapshot] = []
     summary: dict[str, object] = {
         "correction_apply_requests": [
             {
@@ -53,7 +73,8 @@ def test_latest_request_context_marks_product_route_snapshot_without_raw_request
                 "request_id": "req-baseline",
                 "source_text": "must-not-retain",
             }
-        ]
+        ],
+        "story58_artifact_set_snapshots": snapshots,
     }
 
     context = story58_latest_correction_request_context(summary)
@@ -79,17 +100,16 @@ def test_latest_request_context_marks_product_route_snapshot_without_raw_request
         observed_via="exportable-baseline-download",
     )
 
-    rendered = json.dumps(summary["story58_artifact_set_snapshots"], ensure_ascii=False)
+    rendered = json.dumps(snapshots, ensure_ascii=False)
     assert "must-not-retain" not in rendered
-    assert summary["story58_artifact_set_snapshots"][0]["request_digest"] == (
-        "sha256:body-baseline"
-    )
-    assert summary["story58_artifact_set_snapshots"][0]["request_id"] == "req-baseline"
-    assert summary["story58_artifact_set_snapshots"][0]["request_occurrence"] == 1
+    assert snapshots[0]["request_digest"] == ("sha256:body-baseline")
+    assert snapshots[0]["request_id"] == "req-baseline"
+    assert snapshots[0]["request_occurrence"] == 1
 
 
 def test_reference_probe_uses_nested_route_and_retains_only_approved_metadata() -> None:
     request_context = FakeRouteRequestContext()
+    snapshots: list[Story58ArtifactSnapshot] = []
     summary: dict[str, object] = {
         "correction_apply_requests": [
             {
@@ -115,7 +135,7 @@ def test_reference_probe_uses_nested_route_and_retains_only_approved_metadata() 
                 }
             }
         ],
-        "story58_artifact_set_snapshots": [],
+        "story58_artifact_set_snapshots": snapshots,
     }
 
     result = probe_safe_correction_replay_artifacts(
@@ -138,7 +158,7 @@ def test_reference_probe_uses_nested_route_and_retains_only_approved_metadata() 
             ),
         }
     ]
-    snapshot = summary["story58_artifact_set_snapshots"][0]
+    snapshot = snapshots[0]
     assert snapshot == {
         "artifact_key": "correction_replay_examnet_pdf",
         "artifact_set_id": "crset-final",
@@ -164,6 +184,7 @@ def test_reference_probe_uses_nested_route_and_retains_only_approved_metadata() 
 
 def test_reference_probe_fails_when_attempted_nested_route_is_not_2xx() -> None:
     request_context = FakeRouteRequestContext(status=409)
+    snapshots: list[Story58ArtifactSnapshot] = []
     summary: dict[str, object] = {
         "correction_apply_requests": [{"body_sha256": "sha256:body", "request_id": "req"}],
         "correction_apply_responses": [
@@ -182,7 +203,7 @@ def test_reference_probe_fails_when_attempted_nested_route_is_not_2xx() -> None:
                 }
             }
         ],
-        "story58_artifact_set_snapshots": [],
+        "story58_artifact_set_snapshots": snapshots,
     }
 
     try:

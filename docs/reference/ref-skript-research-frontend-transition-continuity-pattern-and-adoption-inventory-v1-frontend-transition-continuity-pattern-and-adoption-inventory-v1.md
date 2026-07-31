@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inve
 title: Frontend transition continuity pattern and adoption inventory v1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-frontend-transition-continuity-v1
+  - REF-frontend-transition-continuity-v1
 summary: Frontend transition continuity pattern and adoption inventory v1
 ---
 
@@ -86,13 +86,13 @@ and uses an overlap crossfade instead of an `out-in` swap.
 
 ### Adoption inventory
 
-| Surface | Selector / switch | Current files | Current status | Priority | Notes |
-|--------|-------------------|---------------|----------------|----------|-------|
-| Klassrumskartan workspace shell | `Översikt` / `Grupper` / `Sittplatser` / `Regler` | `ClassroomPlannerView.vue`, `PlannerWorkspaceShell.vue`, `classroomPlannerRouteShellWorkspace.ts` | Baseline shipped locally | Reference | This is the canonical implementation to copy. |
-| Script editor workspace shell | `Kod` / `Metadata` / `Test` / `Diff` | `EditorWorkspacePanel.vue`, `ScriptEditorPageShell.vue`, `useScriptEditorPageState.ts` | Not yet adopted | P1 | Strongest next target: one stable shell already exists, but the main panel swap still lacks the continuity contract. |
-| Rules local map surface | `Planeringskarta` / `Sittschema` | `PlannerRulesMapCanvas.vue` | Candidate | P2 | Same toolbar and zoom shell persist while the map projection swaps. |
-| Tool-run file picker field surface | `Ladda upp` / `Välj sparade` | `ToolFileFieldPicker.vue` | Candidate | P2 | A smaller same-card shell; transition should preserve the field frame and avoid abrupt body swaps. |
-| Vault panel list surface | `Aktiva` / `Papperskorg`, plus sort subrail | `VaultPanel.vue` | Candidate | P3 | Lower risk than editor/planner, but still a selector-driven persistent shell. |
+| Surface                            | Selector / switch                                 | Current files                                                                                     | Current status           | Priority  | Notes                                                                                                                |
+| ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------ | --------- | -------------------------------------------------------------------------------------------------------------------- |
+| Klassrumskartan workspace shell    | `Översikt` / `Grupper` / `Sittplatser` / `Regler` | `ClassroomPlannerView.vue`, `PlannerWorkspaceShell.vue`, `classroomPlannerRouteShellWorkspace.ts` | Baseline shipped locally | Reference | This is the canonical implementation to copy.                                                                        |
+| Script editor workspace shell      | `Kod` / `Metadata` / `Test` / `Diff`              | `EditorWorkspacePanel.vue`, `ScriptEditorPageShell.vue`, `useScriptEditorPageState.ts`            | Not yet adopted          | P1        | Strongest next target: one stable shell already exists, but the main panel swap still lacks the continuity contract. |
+| Rules local map surface            | `Planeringskarta` / `Sittschema`                  | `PlannerRulesMapCanvas.vue`                                                                       | Candidate                | P2        | Same toolbar and zoom shell persist while the map projection swaps.                                                  |
+| Tool-run file picker field surface | `Ladda upp` / `Välj sparade`                      | `ToolFileFieldPicker.vue`                                                                         | Candidate                | P2        | A smaller same-card shell; transition should preserve the field frame and avoid abrupt body swaps.                   |
+| Vault panel list surface           | `Aktiva` / `Papperskorg`, plus sort subrail       | `VaultPanel.vue`                                                                                  | Candidate                | P3        | Lower risk than editor/planner, but still a selector-driven persistent shell.                                        |
 
 ### Adjacent `out-in` audit queue
 
@@ -119,4 +119,4 @@ For any implementation slice under this pattern:
 - verify there is no blank frame between outgoing and incoming surfaces
 - verify shell labels/status do not flash to fallback copy
 - run a live browser proof on `http://127.0.0.1:5173` when UI behavior changes
-- record the proof in `.codex/handoff.md`
+- record the proof in `handoff.md`

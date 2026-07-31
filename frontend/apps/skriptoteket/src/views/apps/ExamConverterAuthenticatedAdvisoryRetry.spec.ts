@@ -17,6 +17,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
+import { correctionSourceState } from "./examConverterAuthenticatedCorrectionSessionFixtures";
 import {
   artifactJsonBlob,
   finishConversion,
@@ -31,25 +32,43 @@ import {
 import { ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
 
 const gatewayMocks = vi.hoisted(() => ({
+  applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
+  issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
+}));
+const correctionSessionApiMocks = vi.hoisted(() => ({
+  getExamConverterCorrectionSession: vi.fn(),
+  registerExamConverterConversionHubJob: vi.fn(),
 }));
 
 vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
   return {
     ...actual,
+    applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
     downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
     getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
     getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
+    issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
     listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
     saveDigiExamMigrationArtifactToUserFiles:
       gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
     submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
+  };
+});
+
+vi.mock("../../api/examConverterCorrectionSessions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../api/examConverterCorrectionSessions")>();
+  return {
+    ...actual,
+    getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
+    registerExamConverterConversionHubJob:
+      correctionSessionApiMocks.registerExamConverterConversionHubJob,
   };
 });
 
@@ -81,7 +100,7 @@ function providerOnlyFailureReport() {
 }
 
 function mockProviderOnlyAdvisoryFailureArtifacts(): void {
-  mockReviewArtifacts(gatewayMocks);
+  mockReviewArtifacts(gatewayMocks, { choiceCandidateAvailable: false });
   const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockImplementation(
     (params: { artifactKey: string }) => {
@@ -99,14 +118,32 @@ function mockProviderOnlyAdvisoryFailureArtifacts(): void {
 }
 
 beforeEach(() => {
+  gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockReset();
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockReset();
   gatewayMocks.submitDigiExamMigration.mockResolvedValue(submittedJob("succeeded"));
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(terminalResult());
+  correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
+    job_id: "local-conversion-hub-job-1",
+    status: "succeeded",
+    upstream_job_id: "job_exam_converter_review",
+  });
+  correctionSessionApiMocks.getExamConverterCorrectionSession.mockResolvedValue({
+    active_intents: [],
+    conversion_hub_job_id: "local-conversion-hub-job-1",
+    owner_user_id: "11111111-1111-4111-8111-111111111111",
+    session_id: null,
+    session_version: 0,
+    source_binding: null,
+  });
+  gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
   mockProviderOnlyAdvisoryFailureArtifacts();
 });
 
@@ -138,7 +175,7 @@ describe("ExamConverterAuthenticatedView advisory retry", () => {
     expect(wrapper.find('[data-test="exam-converter-advisory-retry-panel"]').exists()).toBe(
       false,
     );
-    expect(wrapper.text()).toContain("Granska AI-facit");
+    expect(wrapper.text()).toContain("Kontrollera facit");
   });
 
   it("increments only after a completed retry returns the same failure class", async () => {

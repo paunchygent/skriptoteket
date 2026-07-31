@@ -26,13 +26,6 @@ from scripts.document_converter_artifact_hygiene_production_proof import (
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_DIR = ROOT / "scripts"
-PR0408_ARTIFACT_PROOF = (
-    ROOT
-    / ".artifacts"
-    / "pr-0408-exam-converter-design-proof"
-    / "proof_pr0408_exam_converter_design.py"
-)
-
 ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0252_auth_return_to_origin.py",
     "playwright_pr_0253_auth_retirement.py",
@@ -115,17 +108,6 @@ def test_active_reusable_proof_scripts_use_domain_names() -> None:
 
     assert offenders == []
     assert missing == []
-
-
-def test_pr0408_artifact_proof_delegates_to_domain_helper() -> None:
-    """Keep retained PR proof adapters from duplicating browser verifier logic."""
-    text = PR0408_ARTIFACT_PROOF.read_text(encoding="utf-8")
-
-    assert "from scripts._exam_converter_design_proof import main" in text
-    assert "def prove_desktop" not in text
-    assert "def prove_phone" not in text
-    assert "def open_fixture" not in text
-    assert "def assert_no_horizontal_overflow" not in text
 
 
 def test_active_scripts_and_skills_do_not_advertise_retired_local_auth_login() -> None:

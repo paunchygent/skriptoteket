@@ -10,7 +10,7 @@ Your job is to understand, reproduce, narrow, and explain the problem before pro
 
 Before debugging, load and follow:
 - AGENTS.md
-- .codex/handoff.md
+- handoff.md
 - .codex/rules/000-rule-index.md
 - .codex/skills/skriptoteket-backend-dev/SKILL.md
 - local-devops

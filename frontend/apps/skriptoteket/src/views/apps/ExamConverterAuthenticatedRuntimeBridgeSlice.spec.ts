@@ -27,7 +27,10 @@ import type {
   SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
-import { DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT } from "../../api/sirConvertGateway/contractValues";
+import {
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
+  DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+} from "../../api/sirConvertGateway/contractValues";
 import {
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
@@ -36,6 +39,10 @@ import {
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
 } from "../../api/sirConvertGateway/schemaVersions";
+import {
+  answerKeyReviewItem,
+  answerKeyReviewStateReport,
+} from "./examConverterAuthenticatedReviewFixtures";
 
 const gatewayMocks = vi.hoisted(() => ({
   applyExamAuthoringCorrections: vi.fn(),
@@ -173,6 +180,14 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
         sha256: "sha256:completion-report-runtime",
         size_bytes: 512,
       },
+      {
+        artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+        availability: "available",
+        content_type: "application/json",
+        filename: "answer-key-review-state.json",
+        sha256: "sha256:review-state-runtime",
+        size_bytes: 1_024,
+      },
     ],
     bundle_status: "partial",
     job_id: "job_exam_converter_1",
@@ -306,6 +321,35 @@ function mockReviewArtifacts(options: { requiresReview?: boolean } = {}): void {
               },
             ],
           }),
+        );
+      }
+      if (artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        return Promise.resolve(
+          artifactJsonBlob(
+            DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
+            answerKeyReviewStateReport([
+              answerKeyReviewItem({
+                item_type: "multiple_choice",
+              }),
+              answerKeyReviewItem({
+                choice_ids: [],
+                choice_interaction_ids: [],
+                correction_affordances: requiresReview ? ["manual_choice_answer_key"] : [],
+                current_key_origin: requiresReview ? "none" : "source_provided",
+                item_id: "item-002",
+                item_type: "multiple_choice",
+                message_key: requiresReview
+                  ? "exam_converter.answer_key.manual_required"
+                  : "exam_converter.answer_key.source_present",
+                reasons: requiresReview
+                  ? ["manual_answer_key_required"]
+                  : ["source_answer_key_present"],
+                review_state: requiresReview ? "validation_required" : "review_complete",
+                sequence: 2,
+                source_item_fingerprint: "sha256:item-002",
+              }),
+            ]),
+          ),
         );
       }
       return Promise.resolve(
@@ -536,8 +580,8 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
     await startButton(wrapper).trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Konverteringen av provet lyckades delvis");
-    expect(wrapper.text()).toContain("1 fråga saknar facit eller poäng.");
+    expect(wrapper.text()).toContain("Kontrollera facit");
+    expect(wrapper.text()).toContain("1 fråga saknar facit eller poäng");
     expect(wrapper.text()).not.toContain("Sir Convert");
   });
 

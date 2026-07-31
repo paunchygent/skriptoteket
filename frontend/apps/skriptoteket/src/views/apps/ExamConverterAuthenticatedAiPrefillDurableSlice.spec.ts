@@ -414,7 +414,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     );
   });
 
-  it("replays a saved vision-backed Lucktext AI-facit before files are available", async () => {
+  it("replays a saved vision-backed Lucktext AI-facit with replay-authorized files", async () => {
     mockVisionBackedGapFillReviewArtifacts(gatewayMocks);
     const wrapper = mount(ExamConverterAuthenticatedView);
 
@@ -462,12 +462,15 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     );
     expect(wrapper.text()).toContain("Filer (2)");
     await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    expect(wrapper.text()).toContain("Filer kunde inte skapas");
+    expect(wrapper.text()).toContain("Kan hämtas");
     expect(
       wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes(
         "disabled",
       ),
-    ).toBeDefined();
+    ).toBeUndefined();
+    expect(
+      wrapper.find('[data-test="exam-converter-save-file-examnet_pdf"]').attributes("disabled"),
+    ).toBeUndefined();
     await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
     expect(wrapper.find('[data-test="exam-converter-question-row-item-013"]').text()).not.toContain(
       "Facit",

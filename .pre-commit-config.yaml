@@ -24,20 +24,6 @@ repos:
         types: [python]
         pass_filenames: true
 
-      - id: mypy
-        name: Mypy typecheck (src + tests)
-        entry: pdm run typecheck
-        language: system
-        types: [python]
-        pass_filenames: false
-
-      - id: pytest
-        name: Pytest (targeted unit suite)
-        entry: pdm run python -m scripts.run_precommit_targeted_unit_tests
-        language: system
-        types: [python]
-        pass_filenames: true
-
       - id: shellcheck
         name: ShellCheck (staged shell scripts)
         entry: pdm run shellcheck
@@ -56,21 +42,33 @@ repos:
         name: Migration test coverage
         entry: pdm run check-migration-test-coverage
         language: system
-        files: ^(migrations/versions/.*\.py|tests/integration/test_migration_.*\.py|tests/integration/migration_schema_assertions\.py|scripts/check_migration_test_coverage\.py)$
+        files: >-
+          (?x)^(migrations/versions/.*\.py|
+          tests/integration/test_migration_.*\.py|
+          tests/integration/migration_schema_assertions\.py|
+          scripts/check_migration_test_coverage\.py)$
         pass_filenames: false
 
       - id: reagent-hazard-shortcard-guard
         name: Reagent hazard↔shortcard guard
         entry: pdm run sds-check-hazard-alignment
         language: system
-        files: ^(src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/hazards\.json|data/reagent_prep_chef/sds/shortcards\.json|scripts/(align_reagent_prep_chef_hazard_codes_from_shortcards|check_reagent_prep_chef_hazard_shortcard_alignment)\.py|tests/unit/(scripts/test_(align|check)_reagent_prep_chef_hazard.*|infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store\.py))
+        files: >-
+          (?x)^(src/skriptoteket/infrastructure/curated_apps/apps/
+          reagent_prep_chef/hazards\.json|
+          data/reagent_prep_chef/sds/shortcards\.json|
+          scripts/(align_reagent_prep_chef_hazard_codes_from_shortcards|
+          check_reagent_prep_chef_hazard_shortcard_alignment)\.py|
+          tests/unit/(scripts/test_(align|check)_reagent_prep_chef_hazard.*|
+          infrastructure/curated_apps/apps/
+          test_reagent_prep_chef_hazards_store\.py))
         pass_filenames: false
 
       - id: agent-doc-budgets
-        name: Agent docs line budgets (.codex handoff -> long-term memory)
+        name: Agent docs line budgets (root handoff -> long-term memory)
         entry: pdm run python -m scripts.check_agent_doc_budgets
         language: system
-        files: ^\.codex/handoff\.md$
+        files: ^handoff\.md$
         pass_filenames: false
 
       - id: eslint

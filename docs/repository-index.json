@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4d125f81a0468810f14fe040f99a2ce9b249fc0c9296e5c31455e4ab04bba339",
+  "source_set_digest": "3534f248d81004aeeeb32af3a5ad989fdf28efad0d30b654fb37587bb5120903",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -3935,7 +3935,7 @@
       "type": "task",
       "title": "ST-38-01 Cut over governed development operations",
       "path": "docs/backlog/tasks/task-skript-rep-0006-st-38-01-cut-over-governed-development-operations.md",
-      "status": "blocked",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
@@ -3945,7 +3945,9 @@
       ],
       "readiness_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved immediate completion of the cutover on 2026-07-31"
       },
       "closeout_review": {
         "record": "inline",

@@ -4,24 +4,25 @@ id: REF-SKRIPT-PLAN-service-shell-ux-realignment-plan
 title: Service shell UX realignment plan
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: plan
 retired_ids:
-- REF-service-shell-ux-realignment-plan-v1
+  - REF-service-shell-ux-realignment-plan-v1
 summary: Service shell UX realignment plan
 ---
 
 ## Outcome And Purpose
+
 ### Governing Inputs
+
 - `EPIC-37` is active and `REV-EPIC-37` is approved.
 - `ST-37-01` repaired stale backlog state through `PR-0358` and `PR-0359`.
 - `ST-37-02` created
   [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-current-product-lanes-and-sir-convert-boundary-v1.md).
-- The current teacher-facing lanes are `Klassrumskartan`, `Audio
-  Transcription`, `Exam Converter`, and `Document Converter` as the approved
+- The current teacher-facing lanes are `Klassrumskartan`, `Audio Transcription`, `Exam Converter`, and `Document Converter` as the approved
   document-conversion product lane. `Document Converter` still needs a
   truthful route target before runtime implementation can link it.
 - `Kodredigerare` is a first-class app surface in the authenticated shell, not
@@ -29,22 +30,26 @@ summary: Service shell UX realignment plan
 - Vault/files, catalog, suggestions, and owned-tool management remain valuable
   secondary surfaces. `Mina körningar`, latest-used rows, and recent-used
   vanity chrome are no longer part of the authenticated home direction.
+
 ### Current Code Reality
-| Surface | Current state | Planning implication |
-|---------|---------------|----------------------|
-| `frontend/apps/skriptoteket/src/views/HomeView.vue` | Signed-out users see a Klassrumskartan-focused landing surface. Signed-in users see greeting, favorites, recent tools, run history, catalog, contributor, editor, suggestion, and admin cards. | The signed-in home needs the approved app shelf first and should remove run/latest/recent vanity chrome from the home surface. |
-| `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts` | Loads runs, favorites, recent tools, contributor tools, and admin review counts. | The data may remain for other routes or future work, but `PR-0364` should not render runs/latest/recent as authenticated home chrome. |
-| `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue` | Navigation leads with `Hem`, `Profil`, `Katalog`, `Mina körningar`, `Mina filer`, and role-gated tool/admin links. | The navigation should gain app-first structure after the home surface establishes the lane model. |
-| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts` | `classroom.group-seating-studio` has a bespoke host. `documents.conversion_hub` opens the authenticated Exam Converter view and public Exam Converter view. | Do not split app ids here. Use current app ids until `ST-37-04` decides app presentation decomposition. |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue` | Owns a local `activeHubMode` between `exam` and `transcript`; the URL does not currently deep-link to transcript mode. | Add a small mode-deep-link contract before the home can truthfully link to Audio Transcription. |
-| `src/skriptoteket/infrastructure/curated_apps/registry.py` | Registry title for `documents.conversion_hub` is still `Konvertera dokument`, but the active bespoke host currently presents Exam Converter plus transcript mode. | Registry naming belongs to `ST-37-04`; the shell must not route the approved Document Converter lane to Exam/Transcript under a false label. |
+
+| Surface                                                                        | Current state                                                                                                                                                                                  | Planning implication                                                                                                                         |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frontend/apps/skriptoteket/src/views/HomeView.vue`                            | Signed-out users see a Klassrumskartan-focused landing surface. Signed-in users see greeting, favorites, recent tools, run history, catalog, contributor, editor, suggestion, and admin cards. | The signed-in home needs the approved app shelf first and should remove run/latest/recent vanity chrome from the home surface.               |
+| `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`          | Loads runs, favorites, recent tools, contributor tools, and admin review counts.                                                                                                               | The data may remain for other routes or future work, but `PR-0364` should not render runs/latest/recent as authenticated home chrome.        |
+| `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`             | Navigation leads with `Hem`, `Profil`, `Katalog`, `Mina körningar`, `Mina filer`, and role-gated tool/admin links.                                                                             | The navigation should gain app-first structure after the home surface establishes the lane model.                                            |
+| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts`               | `classroom.group-seating-studio` has a bespoke host. `documents.conversion_hub` opens the authenticated Exam Converter view and public Exam Converter view.                                    | Do not split app ids here. Use current app ids until `ST-37-04` decides app presentation decomposition.                                      |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue` | Owns a local `activeHubMode` between `exam` and `transcript`; the URL does not currently deep-link to transcript mode.                                                                         | Add a small mode-deep-link contract before the home can truthfully link to Audio Transcription.                                              |
+| `src/skriptoteket/infrastructure/curated_apps/registry.py`                     | Registry title for `documents.conversion_hub` is still `Konvertera dokument`, but the active bespoke host currently presents Exam Converter plus transcript mode.                              | Registry naming belongs to `ST-37-04`; the shell must not route the approved Document Converter lane to Exam/Transcript under a false label. |
+
 ### Assumptions And Recommendations
-| Question | Options | Recommendation |
-|----------|---------|----------------|
-| How should the shell expose Exam Converter and Audio Transcription before app-id decomposition? | A: add `?mode=exam/transcript` deep links on the existing `documents.conversion_hub` route. B: split routes/app ids now. C: keep one generic entry until `ST-37-04`. | Choose A. It gives truthful direct shell entrypoints without doing the naming/decomposition work early. |
-| How should Document Converter appear before a real implementation lane exists? | A: show it in the approved app shelf only if a truthful reviewed route target exists. B: stop and create/attach the required route-visible slice. C: link it to current `documents.conversion_hub` or catalog. | Choose A only when route truth is available; otherwise B. Reject C. |
-| Should favorites/recent/runs remain above app lanes? | A: keep current order. B: move app lanes first and preserve favorites/recent/runs below. C: remove run/latest/recent vanity chrome from home. | Choose C for `PR-0364`; `Mina filer` remains the important continuation path. |
-| Should shell navigation be changed before home content? | A: change sidebar first. B: change home first, then sidebar. C: wait for all app decomposition. | Choose B unless the user explicitly merges `PR-0364` and `PR-0365`. The approved C2 mockup is the shared target. |
+
+| Question                                                                                        | Options                                                                                                                                                                                                        | Recommendation                                                                                                   |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| How should the shell expose Exam Converter and Audio Transcription before app-id decomposition? | A: add `?mode=exam/transcript` deep links on the existing `documents.conversion_hub` route. B: split routes/app ids now. C: keep one generic entry until `ST-37-04`.                                           | Choose A. It gives truthful direct shell entrypoints without doing the naming/decomposition work early.          |
+| How should Document Converter appear before a real implementation lane exists?                  | A: show it in the approved app shelf only if a truthful reviewed route target exists. B: stop and create/attach the required route-visible slice. C: link it to current `documents.conversion_hub` or catalog. | Choose A only when route truth is available; otherwise B. Reject C.                                              |
+| Should favorites/recent/runs remain above app lanes?                                            | A: keep current order. B: move app lanes first and preserve favorites/recent/runs below. C: remove run/latest/recent vanity chrome from home.                                                                  | Choose C for `PR-0364`; `Mina filer` remains the important continuation path.                                    |
+| Should shell navigation be changed before home content?                                         | A: change sidebar first. B: change home first, then sidebar. C: wait for all app decomposition.                                                                                                                | Choose B unless the user explicitly merges `PR-0364` and `PR-0365`. The approved C2 mockup is the shared target. |
 
 No remaining product decision blocks the planning package. The future
 implementation blockers are review approval for each implementation PR and the
@@ -53,7 +58,9 @@ changed.
 
 The implementation PRs below are therefore documented now but remain blocked
 until `PR-0362` closes.
+
 ### Implementation Sequence
+
 ### 1. `PR-0363`: Conversion Lane Mode Deep-Link Contract
 
 Add a route-query contract for the current `documents.conversion_hub`
@@ -114,27 +121,33 @@ Required green proof:
 - `pdm run fe-type-check`.
 - Browser proof covers desktop sidebar and mobile drawer through the HuleEdu
   browser-session path with no overlap or text clipping.
+
 ### Close-Out Gates For Future Route-Visible PRs
+
 - Focused Vitest for changed component/route behavior.
 - `pdm run fe-type-check`.
 - `pdm run docs-validate`.
-- `pdm run handoff-validate` when `.codex/handoff.md` is updated.
+- `pdm run handoff-validate` when `handoff.md` is updated.
 - `git diff --check`.
 - Live browser proof through the sanctioned HuleEdu browser-session ceremony,
-  with retained artifacts named in `.codex/handoff.md`.
+  with retained artifacts named in `handoff.md`.
 
 ## Planning Boundary
+
 ### Closed Scope Decisions
-| Decision | Source | Result |
-|----------|--------|--------|
-| Front-door focus shifts from script-first/tool-first to teacher app lanes. | `EPIC-37`, `REF-current-product-lanes-and-sir-convert-boundary-v1` | Authenticated home should lead with productivity apps. |
-| Script/editor capability remains valuable. | `EPIC-37`, `REF-current-product-direction-and-backlog-inventory-2026-06-17`, approved C2 mockup | Present `Kodredigerare` as a first-class app shelf. Do not use `Mina körningar` as home chrome. |
-| Sir Convert owns heavy conversion; Skriptoteket owns native app state and presentation. | `REF-current-product-lanes-and-sir-convert-boundary-v1` | Shell work must not route native app state back through Sir Convert replay/fingerprint workflows. |
-| No route/app-id rename in `PR-0361`. | `PR-0361` non-goals | Follow-up code may add query state or entry links, but app-id decomposition waits for `ST-37-04`. |
-| Protected route proof must use HuleEdu browser-session ceremony. | `AGENTS.md`, integrated frontend stack, `.codex/rules/075-browser-automation.md` | Every route-visible implementation slice needs focused Vitest/typecheck plus live authenticated browser proof. |
+
+| Decision                                                                                | Source                                                                                          | Result                                                                                                         |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Front-door focus shifts from script-first/tool-first to teacher app lanes.              | `EPIC-37`, `REF-current-product-lanes-and-sir-convert-boundary-v1`                              | Authenticated home should lead with productivity apps.                                                         |
+| Script/editor capability remains valuable.                                              | `EPIC-37`, `REF-current-product-direction-and-backlog-inventory-2026-06-17`, approved C2 mockup | Present `Kodredigerare` as a first-class app shelf. Do not use `Mina körningar` as home chrome.                |
+| Sir Convert owns heavy conversion; Skriptoteket owns native app state and presentation. | `REF-current-product-lanes-and-sir-convert-boundary-v1`                                         | Shell work must not route native app state back through Sir Convert replay/fingerprint workflows.              |
+| No route/app-id rename in `PR-0361`.                                                    | `PR-0361` non-goals                                                                             | Follow-up code may add query state or entry links, but app-id decomposition waits for `ST-37-04`.              |
+| Protected route proof must use HuleEdu browser-session ceremony.                        | `AGENTS.md`, integrated frontend stack, `.codex/rules/075-browser-automation.md`                | Every route-visible implementation slice needs focused Vitest/typecheck plus live authenticated browser proof. |
 
 ## Evidence Basis
+
 ### Source record
+
 This reference is the durable output of `PR-0361` / `ST-37-03`. It turns the
 approved `EPIC-37` direction into a PR-sized implementation sequence for the
 authenticated service shell and dashboard.
@@ -145,13 +158,17 @@ follow-up PR slices listed below and must pass the review gate before code
 changes begin.
 
 ## Confirmed Contract
+
 The source record did not define a separate section for this package heading.
 
 ## Backlog Derivation
+
 The source record did not define a separate section for this package heading.
 
 ## Planning Stop Conditions
+
 ### Stop Conditions
+
 - Stop and return to planning if implementation needs route/app-id renames,
   registry decomposition, or new public app contracts before `ST-37-04` closes.
 - Stop if a proposed Document Converter entry would send teachers to Exam

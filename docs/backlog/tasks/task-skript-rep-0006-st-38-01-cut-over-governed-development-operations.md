@@ -4,112 +4,141 @@ id: TASK-SKRIPT-REP-0006
 title: ST-38-01 Cut over governed development operations
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: blocked
+status: in_progress
 readiness_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User approved immediate completion of the cutover on 2026-07-31
 closeout_review:
   record: inline
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Installed-package routine commands, named scopes, current corpus, frontend cohort,
-  read-only Hemma transport, deterministic staleness, and current handoff routing
-  pass together.
-- Only exact parity-proven shared-workflow overlaps retire; product, native-library,
-  deployment, observability, database, migration, worker, auth/Gateway, and lower-level
-  producer behavior remains.
+  - Installed public commands, topology-derived domain/frontend scopes, focused local-producer regressions, current and historical documents, frontend catalog, read-only Hemma transport, deterministic staleness, and root handoff routing pass together.
+  - Product, native-library, Docker, deployment, observability, database, migration, worker, runner, auth/Gateway, and lower-level producer behavior remains repository-owned.
+  - Only parity-proven shared-workflow overlaps retire; historical evidence stays historical.
 dependencies:
-- TASK-SKRIPT-REP-0005
-- ST-SKRIPT-38-01
+  - TASK-SKRIPT-REP-0005
+  - TASK-SKILL-08-06-02
 ---
 
 ## Context
 
-### Source: Problem
-
-Final operational truth and retirements must wait until every producer and
-consumer prerequisite is integrated and reviewed.
+Tasks 0003 through 0005 delivered the common current-document contract,
+topology-derived quality routing, and shared frontend catalog. This final slice
+aligns the installed environment, proves the existing operational surfaces,
+corrects active handoff routes, and closes the repository cutover without
+redefining product architecture.
 
 ## Impact And Escalation
 
-This is a repository-governance task; no product behavior is authorized by this task.
+The tracked write set is limited to repository-governance and Hemma facts,
+active handoff routes and their preserved budget checker, current cutover
+records, root handoff, generated indexes, and any focused regression repair
+required to make already-accepted named scopes truthful. Product behavior,
+deployment, live services, databases, containers, and historical records remain
+unchanged.
 
 ## Decision And Assumption Ledger
 
-### Source: TASK-SKRIPT-REP-0006 admission ledger
-
-This PR remains blocked until the parent closes every row with
-authority-backed evidence. No implementation may infer a missing value, widen
-the write set, or retire a surface while a row is open.
-
-| ID | Closure gate | Required closure evidence |
-| --- | --- | --- |
-| SKR-REP-0005-01 | Exact retirement and preservation manifest | One authority-approved, file- and surface-level manifest names every shared-workflow overlap to retire, every product/native-library/deployment/observability/database/migration/worker/auth-Gateway/lower-level-producer surface to preserve, the bounded tracked-file write set, and positive parity/regression proof for each retirement. No alias, wrapper, shim, fallback, or absence-pinning test is admitted. |
-| SKR-REP-0005-02 | Installed parity identities | The immutable repository-governance package release and revision, consumer facts/bindings identity, installed entrypoint paths, and disposable governed-worktree identity are recorded together. Proof runs through installed public commands and a disposable real checkout, never a package source checkout. |
-| SKR-REP-0005-03 | Named final proof scopes | `check --plan` is retained before execution; the complete plan is reconciled, and the final backend/frontend/product/native regression commands are listed by accepted scope name and exact argv. Only those names run; no unscoped aggregate is permitted. |
-| SKR-REP-0005-04 | Read-only Hemma facts | The approved Hemma root, remote/revision/branch, clean-state result, transport invocation, and read-only result are captured as facts. The proof performs no deploy, restart, mutation, or live-stack operation. |
-| SKR-REP-0005-05 | Deterministic staleness protocol | The staleness profile, immutable source Git revision, command identity, disposition inputs, and report paths are recorded; two consecutive read-only reports are byte-identical and leave the repository diff unchanged. Historical validation remains read-only and historical-only. |
-| SKR-REP-0005-06 | Root handoff and active-route criteria | Root `handoff.md` is the active handoff authority, its current route and next action are reconciled, and an audit proves every active docs/runbook/skill route reaches the root handoff. Remaining deprecated or historical pointers are classified and excluded from active routing. |
-| SKR-REP-0005-07 | Dependencies reviewed and terminal | Every declared dependency (`TASK-SKRIPT-REP-0005` and `TASK-SKILL-08-06-02`) is terminal with an approved closeout review and evidence available to this slice. Missing, nonterminal, changes-requested, or stale prerequisite evidence stops admission. |
+| ID     | Status | Decision                                                                                                                                                                                                                                                                                                                                                           | Evidence                                     |
+| ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| GO-001 | closed | No local product or lower-level producer is parity-proven for retirement. The shared routine routes existing producers; it does not replace them.                                                                                                                                                                                                                  | Retirement/preservation Explorer             |
+| GO-002 | closed | Preserve the local handoff budget and long-term-memory filename checks, but point their active route and hook at root `handoff.md`. Correct only active route/config/reference pointers; retain historical mentions.                                                                                                                                               | Operations and retirement Explorers          |
+| GO-003 | closed | Consumer dependency, lock, installed package, generated bindings, public entrypoints, and the managed Task 0006 worktree must agree at execution time. Exact identity lives in retained evidence, not this backlog prose.                                                                                                                                          | Managed creator and installed identity proof |
+| GO-004 | closed | Add Hemma facts for SSH alias `hemma`, checkout `/home/paunchygent/apps/skriptoteket`, and no forwarded environment. Transport proof is read-only Git inspection only.                                                                                                                                                                                             | Shared Hemma Skriptoteket reference          |
+| GO-005 | closed | Use HuleEdu's accepted schema-v3 design: declare a unit-test component root and derive its domain scopes from Git topology. Inspect complete, domain, integration, and frontend plans, then execute only the task-relevant domain and frontend names plus focused native-wrapper and stack-dispatcher tests. No explicit domain matrix or unscoped aggregate runs. | HUL-007; user correction on 2026-07-31       |
+| GO-006 | closed | Run staleness twice against the immutable task-start revision and fixed date; reports must be byte-identical and leave no repository diff.                                                                                                                                                                                                                         | Operations Explorer                          |
+| GO-007 | closed | Shared validation owns current documents; the local historical validator remains manual, read-only, and historical-only.                                                                                                                                                                                                                                           | Task 0003 and validator discovery            |
+| GO-008 | closed | Task 0005 and central checkout-path Task 08-06-02 are done with accepted closeout evidence.                                                                                                                                                                                                                                                                        | Current task records                         |
 
 ## Plan
 
-### Source: Implementation plan
-
-Freeze the exact retirement/preservation list, prove package parity, configure
-read-only Hemma facts and staleness, move the active handoff to root with every
-active route aligned, retire exact overlaps, and run the unchanged story proof.
+Align facts and setup, correct active root-handoff routes while preserving their
+budget semantics, inspect installed plans, run only the accepted named/focused
+proof, execute read-only Hemma and deterministic staleness proof, validate both
+document authorities, and reconcile the task, story, epic, handoff, and derived
+indexes.
 
 ## Implementation Steps
 
-The source does not provide separate implementation steps.
+1. Add exact Hemma facts and include the repository development group in managed setup.
+2. Correct active handoff routes and the existing budget hook to root `handoff.md`.
+3. Run package-owned setup and prove installed identity, bindings, and managed-worktree admission.
+4. Inspect complete, derived domain, integration, and frontend plans before named execution.
+5. Run task-relevant domain/frontend scopes and focused native/stack dispatcher regressions.
+6. Run read-only Hemma Git inspection and two deterministic staleness reports.
+7. Validate current documents, historical documents, frontend catalog/resources, root handoff, active routes, and diff hygiene.
+8. Reconcile local cutover lifecycle records and generated indexes.
 
 ## Proof
 
-### Source: Test plan
-
-Installed-package disposable-worktree proof, `check --plan`, only approved named
-scopes, frontend proof, product/native regression proof, real read-only Hemma,
-two deterministic staleness reports, current/historical docs validation,
-handoff validation, route audit, and diff check. No unscoped aggregate.
+- Package-owned setup, binding validation, and public entrypoint identity pass in the managed worktree.
+- Complete topology and the derived governance, scripts, web, and frontend plans are retained before only those task-relevant scopes execute.
+- Focused native-library wrapper and `dev-stack`/`obs-stack` dispatcher tests pass.
+- `run-hemma` returns only remote root, branch, revision, and clean-state facts.
+- Two fixed-basis staleness reports are byte-identical and the repository remains unchanged.
+- Current docs validation, historical validation, frontend catalog validation, root handoff validation, active-route audit, and `git diff --check` pass.
 
 ## Validation
 
-### Source: Test plan
-
-Installed-package disposable-worktree proof, `check --plan`, only approved named
-scopes, frontend proof, product/native regression proof, real read-only Hemma,
-two deterministic staleness reports, current/historical docs validation,
-handoff validation, route audit, and diff check. No unscoped aggregate.
+No unscoped `check`, deploy, restart, container, database, migration, live-stack,
+or product browser operation is part of this task.
 
 ## Stop Conditions
 
-### Source: Stop conditions
-
-- Any prerequisite is nonterminal or lacks approved review.
-- A retirement lacks parity or affects a product-owned surface.
-- Proof assumes a package source checkout, mutating Hemma, or an unscoped
-  repository suite.
+- A proposed retirement lacks positive semantic parity.
+- A named-scope repair would change product behavior or require a compatibility surface.
+- Hemma transport would execute anything beyond read-only Git inspection.
+- An active-route edit would rewrite historical evidence.
+- Installed package, dependency, lock, bindings, or immutable runtime identities disagree after setup.
 
 ## Lessons Learned
 
-The source does not record separate lessons learned.
+The final manifest is a small operational checklist and quality-control map.
+It preserves repository architecture and names proof; it does not recreate the
+repository as governance metadata.
 
 ## Notes
 
-### Source: Rollback plan
-
-Restore retired local surfaces and handoff routing only if parity fails before
-integration; after integration use a governed forward repair.
+Task discovery is retained under the Task 0006 origin session. Shared-package
+versions are not pinned in this backlog record.
 
 ## Readiness
 
-The source does not include a separate readiness record.
+GO-001 through GO-008 are closed from current repository and central authority.
+The user directed the final cutover to proceed without additional ceremony.
 
 ## Closeout
 
-The source does not include a separate closeout record.
+Implementation is complete. The consumer uses the approved immutable shared
+runtime selected at execution, and the package-generated quality plan derives
+the `governance`, `scripts`, and `web` unit scopes from tracked Git topology.
+The existing frontend producer remains its own named scope. No explicit domain
+matrix or unscoped aggregate was introduced or executed.
+
+Focused proof passed:
+
+- package setup, installed identity, binding validation, and plan inspection;
+- typed `governance` (2 tests), `scripts` (176 tests), and `web` (424 tests)
+  checks;
+- frontend typecheck and 1,300 frontend tests across 229 files;
+- 16 native-wrapper and stack-dispatcher tests, 16 linter tests, and 23 focused
+  Exam Converter tests;
+- read-only Hemma Git transport and two byte-identical fixed-basis staleness
+  reports;
+- shared current-doc validation, manual historical-only validation, root
+  handoff validation, active-route audit, lock consistency, and diff hygiene.
+
+The commit hook retains staged formatting, linting, document, handoff, and
+frontend lint gates. Typed tests run through the topology-derived named scopes;
+the hook does not invoke an unscoped repository typecheck or test aggregate.
+
+Product runtime behavior, deployment, databases, containers, migrations,
+workers, authentication, and lower-level producers remain repository-owned.
+No overlap was retired because no local producer had positive parity proof.
+Terminal backlog and historical references remain historical.

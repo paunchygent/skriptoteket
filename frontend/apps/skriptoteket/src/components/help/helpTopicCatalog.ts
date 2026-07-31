@@ -15,6 +15,7 @@ export type HelpTopicId =
   | "browse_categories"
   | "browse_tools"
   | "tools_run"
+  | "my_runs"
   | "tools_result"
   | "vault"
   | "profile"
@@ -99,6 +100,12 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     indexSection: "starter",
   },
   {
+    topic: "my_runs",
+    title: "Mina körningar",
+    description: "Tidigare körningar och deras status.",
+    routes: ["my-runs"],
+  },
+  {
     topic: "tools_result",
     title: "Körningsresultat",
     routes: ["my-runs-detail"],
@@ -142,7 +149,16 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     topic: "apps_detail",
     title: "App",
     description: "Större arbetsytor med flera steg.",
-    routes: ["app-detail", "public-app-detail", "public-app-capability-detail"],
+    routes: [
+      "app-detail",
+      "public-app-detail",
+      "public-app-capability-detail",
+      "exam-converter-authenticated",
+      "audio-transcription-authenticated",
+      "document-converter-authenticated",
+      "exam-converter-ui-inspection-fixture",
+      "transcript-ui-inspection-fixture",
+    ],
   },
   {
     topic: "admin_suggestions",

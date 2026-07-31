@@ -15,12 +15,26 @@ Relationships:
 from __future__ import annotations
 
 import json
+from typing import TypedDict, TypeGuard
 
 from scripts._story58_artifact_set_invariants import (
     record_story58_artifact_set_snapshot,
     summarize_artifact_set_invariants,
     summarize_manifest_artifact_set_invariants,
 )
+
+
+class _InvariantSummary(TypedDict):
+    status: str
+    paired_observation_count: int
+
+
+def _is_invariant_summary(value: object) -> TypeGuard[_InvariantSummary]:
+    return (
+        isinstance(value, dict)
+        and isinstance(value.get("status"), str)
+        and isinstance(value.get("paired_observation_count"), int)
+    )
 
 
 def _observation(
@@ -467,6 +481,7 @@ def test_snapshot_recorder_refreshes_manifest_invariant_summary() -> None:
     )
 
     invariant_summary = summary["story58_artifact_set_invariants"]
+    assert _is_invariant_summary(invariant_summary)
     assert invariant_summary["status"] == "pass"
     assert invariant_summary["paired_observation_count"] == 2
     assert summary["story58_artifact_set_snapshots"] == [

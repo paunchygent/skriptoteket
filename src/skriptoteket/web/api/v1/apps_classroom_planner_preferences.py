@@ -10,8 +10,6 @@ Relationships:
     - Delegates profile ownership to identity application handlers.
 """
 
-from __future__ import annotations
-
 from skriptoteket.application.curated_apps.classroom_planner.draft_smart_preferences import (
     DraftSmartPreferenceSeed,
 )

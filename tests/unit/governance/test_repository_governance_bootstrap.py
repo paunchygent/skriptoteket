@@ -11,7 +11,7 @@ from repository_governance.routine.bindings import (
     validate_reserved_bindings,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 DEPENDENCY_PATTERN = re.compile(
     r"repository-governance @ "
     r"git\+https://github\.com/paunchygent/skill-repository\.git"
@@ -51,7 +51,14 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
     assert facts["schema-version"] == 3
     assert facts["repository"] == "skriptoteket"
     assert facts["owners"] == {"service": ["skriptoteket"]}
-    assert facts["setup"] == {"projects": [{"path": ".", "groups": ["default", "monorepo-tools"]}]}
+    assert facts["hemma"] == {
+        "host": "hemma",
+        "repository-root": "/home/paunchygent/apps/skriptoteket",
+        "forward-environment": [],
+    }
+    assert facts["setup"] == {
+        "projects": [{"path": ".", "groups": ["default", "monorepo-tools", "dev"]}],
+    }
     assert facts["frontend"] == {
         "workspace-yaml": "frontend/pnpm-workspace.yaml",
         "package-manager-manifest": "frontend/package.json",
@@ -59,15 +66,45 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
             "frontend/package.json",
             "frontend/apps/skriptoteket/package.json",
         ],
+        "resource-manifest": (
+            "frontend/apps/skriptoteket/src/design-system/huleedu-integrated/manifest.json"
+        ),
+        "resource-package": (
+            "frontend/apps/skriptoteket/src/design-system/huleedu-integrated/package.json"
+        ),
         "justified-exceptions": [],
     }
     quality = facts["quality"]
-    assert quality["aggregates"] == {
-        "backend": [
-            "backend-source",
-            "backend-tests",
-        ]
-    }
+    assert quality["cohorts"] == [
+        {
+            "name": "backend-source",
+            "kind": "path",
+            "path": "src",
+            "typecheck": "backend-typecheck",
+        },
+        {
+            "name": "unit-domain",
+            "kind": "component-root",
+            "root": "tests/unit",
+            "test-target": "component",
+            "typecheck": "backend-typecheck",
+            "test": "backend-test",
+        },
+        {
+            "name": "integration",
+            "kind": "path",
+            "path": "tests/integration",
+            "typecheck": "backend-typecheck",
+            "test": "backend-test",
+        },
+        {
+            "name": "frontend",
+            "kind": "path",
+            "path": "frontend",
+            "typecheck": "frontend-typecheck",
+            "test": "frontend-test",
+        },
+    ]
     assert [row["name"] for row in quality["producers"]] == [
         "backend-typecheck",
         "backend-test",
