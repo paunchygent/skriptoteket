@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "package": "huleedu-integrated-frontend-design-system",
+  "version": "0.1.7",
+  "compatibility": {
+    "tailwind": ">=4.0.0",
+    "vue": ">=3.5.0",
+    "vite": ">=6.0.0"
+  },
+  "source": {
+    "seed": "Skriptoteket frontend design-system codemap retained by HuleEdu on 2026-04-13",
+    "reference": "REF-frontend-design-system-resource-package-contract"
+  },
+  "exports": [
+    {
+      "id": "tokens",
+      "kind": "css.tokens",
+      "path": "src/css/huleedu-design-tokens.css",
+      "sha256": "25b0aec8bce7d6fb4e8695ec4a607d0cc64fdcb139b0144ca7b7301f51ffdee8"
+    },
+    {
+      "id": "tailwind-theme",
+      "kind": "css.tailwind-theme",
+      "path": "src/css/tailwind-theme.css",
+      "sha256": "40d64d6a1c03770266fc58fe008ba69eaa266ae30ec1dec22052865e2c589059"
+    },
+    {
+      "id": "brand",
+      "kind": "css.component",
+      "path": "src/css/brand.css",
+      "sha256": "b6b57c8d4c92e8b131fcd9475aadb21ee4aeb1c2953c452215ae66ee5344c46d"
+    },
+    {
+      "id": "action-buttons",
+      "kind": "css.component",
+      "path": "src/css/action-buttons.css",
+      "sha256": "e5e6289146ca2327aec231df9141bf1ba437e252d2308e62277423050eb20c9b"
+    },
+    {
+      "id": "auth-lifecycle",
+      "kind": "css.component",
+      "path": "src/css/auth-lifecycle.css",
+      "sha256": "afde1f5cbc47110e6be5c3d7dc5fe3026ec4c718b530b1adc8a009d9e144b9e4"
+    },
+    {
+      "id": "skriptoteket-logo-horizontal",
+      "kind": "asset",
+      "path": "src/assets/brands/skriptoteket-logo-horizontal.svg",
+      "sha256": "58bbea8b854f85fe7e990b3b0282b041b52f03c5d965c64bd3470cbe1a960d35"
+    },
+    {
+      "id": "dense-tool-primitives",
+      "kind": "typescript.primitive",
+      "path": "src/vue/denseToolPrimitives.ts",
+      "sha256": "3215208419cf1f44983ed44c73ff2fa61c1cf057e1ec33ca11b245e281d1680b"
+    },
+    {
+      "id": "ui-dense-action-button",
+      "kind": "vue.component",
+      "path": "src/vue/components/UiDenseActionButton.vue",
+      "sha256": "290050cfd2e58184af21ac6252722f19fa04774b006028f647cf936e98f59fa4"
+    },
+    {
+      "id": "ui-dense-icon-button",
+      "kind": "vue.component",
+      "path": "src/vue/components/UiDenseIconButton.vue",
+      "sha256": "f976527c85807f1c6711383e819b27191015fc6bde52cf858017bbd7546304d2"
+    },
+    {
+      "id": "ui-dense-status-pill",
+      "kind": "vue.component",
+      "path": "src/vue/components/UiDenseStatusPill.vue",
+      "sha256": "872db33ffcf36eed9a67d109b4197274cb4749ce421a70af2c5082c81d2cbcf6"
+    },
+    {
+      "id": "ui-segmented-toggle",
+      "kind": "vue.component",
+      "path": "src/vue/components/UiSegmentedToggle.vue",
+      "sha256": "9adf073c50b956f48be493ba1a63cb22e80512f12789e737173dde2598459d5c"
+    },
+    {
+      "id": "system-message",
+      "kind": "vue.component",
+      "path": "src/vue/components/SystemMessage.vue",
+      "sha256": "cbd839f12a654e6ba379f33b012032d269953e0f8749ec2b13e1c6db451c42d6"
+    },
+    {
+      "id": "toast-host",
+      "kind": "vue.component",
+      "path": "src/vue/components/ToastHost.vue",
+      "sha256": "666a0b3f8d5ff105e4a5da50c9ceb5e0ef881b8e1bf19d28b125f7a07662a1b2"
+    },
+    {
+      "id": "vue-barrel",
+      "kind": "typescript.barrel",
+      "path": "src/vue/index.ts",
+      "sha256": "21b376e280067bd4ed24093c468f2686c5eb05ab0501737de2c39ed9d911f0aa"
+    }
+  ],
+  "frozen_primitives": {
+    "dense_action_radius_class": "rounded-[4px]",
+    "dense_icon_size_class": "h-9 w-9",
+    "dense_text_height_class": "h-[28px]",
+    "dense_compact_segment_height_class": "h-6",
+    "dense_press_translation": "translate(1px, 1px)",
+    "dense_hover_lift": "translate(-2px, -2px)",
+    "action_button_radius": "var(--huleedu-radius-md)",
+    "action_button_press_translation": "translate(4px, 4px)",
+    "action_button_shadow": "var(--huleedu-shadow-brutal)",
+    "action_button_cta_background": "var(--button-primary-bg)",
+    "action_button_primary_background": "var(--button-primary-bg)",
+    "action_button_tap_highlight": "-webkit-tap-highlight-color: transparent",
+    "action_button_text_case": "letter-spacing: 0",
+    "huleedu_wordmark_font": "var(--huleedu-font-serif)",
+    "huleedu_wordmark_size": "var(--huleedu-text-2xl)",
+    "huleedu_wordmark_weight": "var(--huleedu-font-bold)",
+    "huleedu_wordmark_letter_spacing": "letter-spacing: 0"
+  },
+  "consumer_validation": [
+    "Validate manifest schema and exported file SHA-256 digests before sync.",
+    "Import Tailwind first, then token CSS, then tailwind-theme.css, then brand.css, then action-buttons.css.",
+    "Import auth-lifecycle.css only for product-context auth lifecycle pages.",
+    "Validate reusable HuleEdu wordmark typography and CTA/action-button radius, press, shadow, typography, token roles, and transparent tap-highlight behavior against frozen_primitives.",
+    "Use @reference to access shared theme utilities inside scoped Vue style blocks.",
+    "Reject broad runtime adoption when copied files drift from manifest digests.",
+    "Keep app-specific store and API orchestration outside this resource package."
+  ]
+}
