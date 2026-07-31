@@ -29,6 +29,15 @@ without redefining its accepted cross-repository decisions.
 ## Notes
 
 The current EPIC/ST/PR records are bootstrap authority. PR-0418 migrates their
-nonterminal meaning to `TASK-SKR-REP-0001` through `0005` under the common
+nonterminal meaning to `TASK-SKRIPT-REP-0002` through `0006` under the common
 contract. Only PR-0417 may use the approved serialized direct-`main` exception;
 later slices require governed worktrees.
+
+`TASK-SKRIPT-REP-0001` is the independently approved product-context task and
+is outside this cutover. The former `TASK-SKR-REP-*` strings and
+`codex/task-skr-rep-0002` proof branch remain historical planning/proof
+identities only. The current PR-0418 worktree must merge current `main` before
+plan review, preserve its planning changes until integration, and then be
+retired without rename or reuse. After the repaired plan is approved and
+integrated, the public allocator must create a new governed worktree for
+`TASK-SKRIPT-REP-0003` from then-current `main`.

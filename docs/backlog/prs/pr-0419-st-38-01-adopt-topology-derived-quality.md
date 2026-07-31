@@ -19,7 +19,7 @@ acceptance_criteria:
 Skriptoteket has local quality commands but no common facts, complete routine
 aggregate, or topology-derived named scopes.
 
-## TASK-SKR-REP-0003 admission ledger
+## TASK-SKRIPT-REP-0004 admission ledger
 
 This PR is a non-authorizing planning envelope and remains `blocked` until the
 parent closes every gate below with authority-backed evidence. Implementers may

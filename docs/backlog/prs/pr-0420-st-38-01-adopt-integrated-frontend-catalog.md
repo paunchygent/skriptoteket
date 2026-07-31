@@ -21,7 +21,7 @@ catalog/resource cohort.
 
 ## Admission gate
 
-This PR remains `blocked` until `TASK-SKR-REP-0004` closes every row below from
+This PR remains `blocked` until `TASK-SKRIPT-REP-0005` closes every row below from
 the post-PR-0419 checkout. A value that is not present in an accepted central
 or consumer authority remains open; implementation must not choose it.
 
