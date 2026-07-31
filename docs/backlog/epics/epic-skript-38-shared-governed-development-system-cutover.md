@@ -10,10 +10,16 @@ created: '2026-07-31'
 status: proposed
 readiness_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User approved the complete cutover contract and execution
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: spec-verifier
+  decided_at: '2026-08-01T01:02:48+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: .orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md
 outcome: Skriptoteket uses the central repository-governance package and common Docs-as-Code
   contract while terminal backlog remains historical and product behavior remains
   locally owned.
@@ -59,11 +65,13 @@ No separate ADR coverage was recorded in the source snapshot.
 
 ### Source: Story Stack
 
-- [ST-SKRIPT-38-01](../stories/story-38-01-shared-governed-development-system-cutover.md)
+- [ST-SKRIPT-38-01](../stories/st-skript-38-01-adopt-the-shared-governed-development-system.md)
 
 ## Epic Verification Plan
 
-Verification follows the implementation and story material recorded above.
+| Gate | Verification Result | Evidence | Owner | Follow-up / Exception |
+| --- | --- | --- | --- | --- |
+| Complete Skriptoteket governed-development consumer cutover | verified | `.orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md` | ST-SKRIPT-38-01 | None |
 
 ## Exceptions And Follow-Ups
 
@@ -95,4 +103,10 @@ The source snapshot is the governing record for the decisions and assumptions st
 
 ## Epic Closeout Review
 
-No separate closeout review was recorded in the source snapshot.
+- Review artifact: `.orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md`
+- Review decision: verified
+- Reviewed checkpoint: combined `ST-SKRIPT-38-01` and `EPIC-SKRIPT-38`
+  cutover at `eecad01972a719ca8d61e73f39d853f779988eb2`
+- Permitted next step: parent-owned lifecycle transition and reconciliation
+- Residual risk: the verifier review retains the non-authorizing root-level
+  unit-test coverage risk; no mandatory evidence is unavailable
