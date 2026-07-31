@@ -24,7 +24,7 @@ _RESPONSE_TYPE_NAMES = frozenset(
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[3]
 
 
 def _iter_route_module_paths(*, root: Path) -> list[Path]:

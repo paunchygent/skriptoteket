@@ -15,12 +15,14 @@ export type HelpTopicId =
   | "browse_categories"
   | "browse_tools"
   | "tools_run"
+  | "my_runs"
   | "tools_result"
   | "vault"
   | "profile"
   | "my_tools"
   | "editor_hub"
   | "apps_detail"
+  | "conversion_tools"
   | "suggestions_new"
   | "admin_suggestions"
   | "admin_tools"
@@ -99,6 +101,12 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     indexSection: "starter",
   },
   {
+    topic: "my_runs",
+    title: "Mina körningar",
+    description: "Tidigare körningar och deras status.",
+    routes: ["my-runs"],
+  },
+  {
     topic: "tools_result",
     title: "Körningsresultat",
     routes: ["my-runs-detail"],
@@ -143,6 +151,16 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     title: "App",
     description: "Större arbetsytor med flera steg.",
     routes: ["app-detail", "public-app-detail", "public-app-capability-detail"],
+  },
+  {
+    topic: "conversion_tools",
+    title: "Konvertera material",
+    description: "Omvandla prov, ljud och dokument.",
+    routes: [
+      "exam-converter-authenticated",
+      "audio-transcription-authenticated",
+      "document-converter-authenticated",
+    ],
   },
   {
     topic: "admin_suggestions",

@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=38 | story=318 | task=0 | review=135
-- open | epic=17 | story=57 | task=0
+- total | epic=38 | story=318 | task=0 | review=136
+- open | epic=17 | story=56 | task=0
 
 ## Lookup
 
@@ -486,6 +486,7 @@
 - review | REV-PR-0411 | [Review: PR-0411 Mina filer R2 storage migration planning](reviews/review-pr-0411-mina-filer-r2-storage-migration-planning.md) | target=none
 - review | REV-PR-0412 | [Review: PR-0412 Mina filer File Service consumer task split](reviews/review-pr-0412-mina-filer-file-service-consumer-task-split.md) | target=none
 - review | REV-SKRIPT-ST-08-27-CLOSEOUT | [Review: ST-SKRIPT-08-27 editor chat virtual file context retention + tokenizers](reviews/rev-skript-st-08-27-closeout-review-st-08-27-editor-chat-virtual-file-context-retention-tokenizers.md) | target=[ST-SKRIPT-08-27](stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md)
+- review | REV-SKRIPT-TASK-REP-0006-CLOSEOUT | [Review: TASK-SKRIPT-REP-0006 implementation closeout](reviews/review-task-skript-rep-0006-implementation-closeout.md) | target=TASK-SKRIPT-REP-0006
 - review | REV-SKRIPT-TASK-REP-0024-CLOSEOUT | [Review: PR-0314 solver-owned rule marker semantics](reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md) | target=TASK-SKRIPT-REP-0024
 - review | REV-ST-08-24 | [Review: ST-08-24 AI edit ops anchor/patch v2](reviews/review-st-08-24-ai-edit-ops-anchor-patch-v2.md) | target=[ST-08-24](stories/story-08-24-ai-edit-ops-anchor-patch-v2.md), ADR-0051
 - review | REV-ST-08-28 | [Review: ST-08-28 AI chat ops response capture on error](reviews/review-st-08-28-ai-chat-ops-response-capture-on-error.md) | target=[ST-08-28](stories/story-08-28-ai-chat-ops-response-capture-on-error.md), ADR-0051
@@ -584,7 +585,6 @@
 
 - ST-SKRIPT-15-02 | [Avatar upload](stories/st-skript-15-02-avatar-upload.md) | epic=[EPIC-SKRIPT-15](epics/epic-skript-15-user-profile-settings.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-35-04 | [Search Console, Bing, and launch-day SEO operations](stories/st-skript-35-04-search-console-bing-and-launch-day-seo-operations.md) | epic=[EPIC-SKRIPT-35](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-38-01 | [Adopt the shared governed development system](stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | epic=[EPIC-SKRIPT-38](epics/epic-skript-38-shared-governed-development-system-cutover.md) | tasks=none | depends_on=0 | dependents=0
 
 ## Dependency Graph
 

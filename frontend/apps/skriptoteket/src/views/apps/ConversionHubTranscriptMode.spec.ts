@@ -21,6 +21,7 @@ const gatewayMocks = vi.hoisted(() => ({
   applyExamAuthoringCorrections: vi.fn(),
   cancelTranscriptJob: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
+  downloadDigiExamMigrationCorrectionReplayArtifact: vi.fn(),
   downloadTranscriptJson: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
@@ -39,6 +40,8 @@ vi.mock("../../api/sirConvertGateway", () => ({
   applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
   cancelTranscriptJob: gatewayMocks.cancelTranscriptJob,
   downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  downloadDigiExamMigrationCorrectionReplayArtifact:
+    gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact,
   downloadTranscriptJson: gatewayMocks.downloadTranscriptJson,
   getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
   getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,

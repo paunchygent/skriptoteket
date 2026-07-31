@@ -82,7 +82,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@56d5c865f4ebf4c67e0be87bbbb28a642e3386d7#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@0cfe838f0f0a7e620c8f40a9f8828dc8c358a30a#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -193,9 +193,13 @@ plugins = ["pydantic.mypy"]
 # Typical src-layout
 mypy_path = "src:stubs"
 exclude = [
-    "scripts/",
+    "^scripts/",
     "docs/",
 ]
+
+[[tool.mypy.overrides]]
+module = ["scripts", "scripts.*"]
+follow_imports = "skip"
 
 # External libraries without type stubs (or incomplete stubs)
 [[tool.mypy.overrides]]
@@ -291,9 +295,14 @@ repository = "skriptoteket"
 [tool.repository-governance.owners]
 service = ["skriptoteket"]
 
+[tool.repository-governance.hemma]
+host = "hemma"
+repository-root = "/home/paunchygent/apps/skriptoteket"
+forward-environment = []
+
 [tool.repository-governance.setup]
 projects = [
-    { path = ".", groups = ["default", "monorepo-tools"] },
+    { path = ".", groups = ["default", "monorepo-tools", "dev"] },
 ]
 
 [tool.repository-governance.frontend]
@@ -316,9 +325,6 @@ lint = ["."]
 typecheck-diagnostic-producer = "backend-typecheck"
 test-diagnostic-producer = "backend-test"
 
-[tool.repository-governance.quality.aggregates]
-backend = ["backend-source", "backend-tests"]
-
 [[tool.repository-governance.quality.cohorts]]
 name = "backend-source"
 kind = "path"
@@ -326,9 +332,17 @@ path = "src"
 typecheck = "backend-typecheck"
 
 [[tool.repository-governance.quality.cohorts]]
-name = "backend-tests"
+name = "unit-domain"
+kind = "component-root"
+root = "tests/unit"
+test-target = "component"
+typecheck = "backend-typecheck"
+test = "backend-test"
+
+[[tool.repository-governance.quality.cohorts]]
+name = "integration"
 kind = "path"
-path = "tests"
+path = "tests/integration"
 typecheck = "backend-typecheck"
 test = "backend-test"
 

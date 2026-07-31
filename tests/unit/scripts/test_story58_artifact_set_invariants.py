@@ -467,8 +467,13 @@ def test_snapshot_recorder_refreshes_manifest_invariant_summary() -> None:
     )
 
     invariant_summary = summary["story58_artifact_set_invariants"]
-    assert invariant_summary["status"] == "pass"
-    assert invariant_summary["paired_observation_count"] == 2
+    assert isinstance(invariant_summary, dict)
+    invariant_status = invariant_summary.get("status")
+    paired_observation_count = invariant_summary.get("paired_observation_count")
+    assert isinstance(invariant_status, str)
+    assert isinstance(paired_observation_count, int)
+    assert invariant_status == "pass"
+    assert paired_observation_count == 2
     assert summary["story58_artifact_set_snapshots"] == [
         {
             "artifact_key": "correction_replay_examnet_pdf",

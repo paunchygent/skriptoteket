@@ -1,5 +1,11 @@
 ## Current
 
+- [ST-SKRIPT-38-01](docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md)
+  and `EPIC-SKRIPT-38` are verified and done. The shared governed-development
+  cutover is complete.
+- [TASK-SKRIPT-REP-0006](docs/backlog/tasks/task-skript-rep-0006-st-38-01-cut-over-governed-development-operations.md)
+  is independently approved and done. Its topology-derived typed checks cover
+  governance, scripts, web, and frontend without an unscoped aggregate.
 - [TASK-SKRIPT-REP-0003](docs/backlog/tasks/task-skript-rep-0003-migrate-current-governed-corpus.md)
   is done. Current governed documents use the shared contract, while 764
   terminal records remain historical and byte-identical.
@@ -12,6 +18,10 @@
 
 ## Recent
 
+- Task 0006 adopted the approved immutable shared runtime, preserved local
+  producers, corrected active routing to root `handoff.md`, and passed current
+  and historical document validation, read-only Hemma transport, and
+  deterministic staleness proof.
 - Task 0005 synchronized only the reserved catalog block, adopted all 17 shared
   dependency references, and produced a bounded PNPM lock closure.
 - Frozen PNPM installation, frontend typecheck, five focused UI primitive

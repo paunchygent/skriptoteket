@@ -1,7 +1,7 @@
 """Validate small agent-facing document budgets.
 
 This module backs the repo-local docs validation gate for volatile agent
-handoff files. It keeps `.codex/handoff.md` short by directing durable session
+handoff files. It keeps `handoff.md` short by directing durable session
 history to `.codex/long-term-memory/` and durable policy/procedure to governed
 docs.
 """
@@ -28,7 +28,7 @@ def _count_lines(*, path: Path) -> int:
 
 def main() -> int:
     budgets = [
-        Budget(path=Path(".codex/handoff.md"), max_lines=200),
+        Budget(path=Path("handoff.md"), max_lines=200),
     ]
 
     failures: list[str] = []
@@ -62,7 +62,7 @@ def main() -> int:
     for failure in failures:
         print(f"- {failure}")
     print(
-        "\nHint: `.codex/handoff.md` is the live session handoff only. "
+        "\nHint: `handoff.md` is the live session handoff only. "
         "Dump non-session-vital history to repo long-term memory in "
         "`.codex/long-term-memory/entries/` before trimming the handoff back under budget.",
     )

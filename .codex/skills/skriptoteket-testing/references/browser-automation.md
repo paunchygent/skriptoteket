@@ -42,4 +42,4 @@ requested proof.
 ## Proof Output
 
 Retained scripts write artifacts under `.artifacts/<script-name>/`. For UI or
-route changes, record the exact live proof in `.codex/handoff.md`.
+route changes, record the exact live proof in `handoff.md`.

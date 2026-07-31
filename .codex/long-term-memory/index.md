@@ -11,20 +11,20 @@ last_updated: '2026-06-19'
 ## Purpose
 
 Index retained session-history entries for Skriptoteket. Keep volatile current
-state in `.codex/handoff.md`; keep durable policy, procedure, acceptance
+state in `handoff.md`; keep durable policy, procedure, acceptance
 criteria, and implementation doctrine in governed docs.
 
 ## Entries
 
-| Session Date | Entry File | Scope |
-| --- | --- | --- |
-| 2026-06-19 | `entries/session-2026-06-19-pr-0364-auth-home-proof-compaction.md` | Compacted PR-0364 authenticated home proof and post-deploy correction history |
-| 2026-06-12 | `entries/session-2026-06-12-pr-0332-through-pr-0342-correction-transcript-history.md` | Compacted PR-0332 through PR-0342 correction and transcript lane history |
-| 2026-05-02 | `entries/session-2026-05-02-share-and-help-handoff-compaction.md` | Compacted ST-32-08, ST-08-35, ST-26-06, PR-0278, and EPIC-36 handoff history |
-| 2026-05-09 | `entries/session-2026-05-09-pr-0308-smart-settings-preference-continuity.md` | Compacted PR-0308 Smart settings preference-continuity implementation and verification |
-| 2026-05-11 | `entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md` | Compacted PR-0310 through PR-0314 Klassrumskartan phone seating/rules history |
-| 2026-05-13 | `entries/session-2026-05-13-pr-0316-pr-0317-smart-seating-history.md` | Compacted PR-0316/PR-0317 smart seating history-diversity implementation and verification |
-| 2026-05-17 | `entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md` | Compacted PR-0325 live authenticated Exam Converter proof and PR-0326 LLM-enrichment task setup |
-| 2026-04-16 | `entries/session-2026-04-16-task-0042.md` | TASK-0042 long-term memory cutover and template-lane retirement |
-| 2026-04-16 | `entries/session-2026-04-16-st08-10-script-editor-intelligence-review.md` | Retained ST-08-10 script editor intelligence review prompt content |
-| 2026-04-16 | `entries/session-2026-04-16-epic-05-huleedu-design-harmonization.md` | Retained EPIC-05 HuleEdu design harmonization prompt content |
+| Session Date | Entry File                                                                            | Scope                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 2026-06-19   | `entries/session-2026-06-19-pr-0364-auth-home-proof-compaction.md`                    | Compacted PR-0364 authenticated home proof and post-deploy correction history                   |
+| 2026-06-12   | `entries/session-2026-06-12-pr-0332-through-pr-0342-correction-transcript-history.md` | Compacted PR-0332 through PR-0342 correction and transcript lane history                        |
+| 2026-05-02   | `entries/session-2026-05-02-share-and-help-handoff-compaction.md`                     | Compacted ST-32-08, ST-08-35, ST-26-06, PR-0278, and EPIC-36 handoff history                    |
+| 2026-05-09   | `entries/session-2026-05-09-pr-0308-smart-settings-preference-continuity.md`          | Compacted PR-0308 Smart settings preference-continuity implementation and verification          |
+| 2026-05-11   | `entries/session-2026-05-11-pr-0310-through-pr-0314-phone-rules-history.md`           | Compacted PR-0310 through PR-0314 Klassrumskartan phone seating/rules history                   |
+| 2026-05-13   | `entries/session-2026-05-13-pr-0316-pr-0317-smart-seating-history.md`                 | Compacted PR-0316/PR-0317 smart seating history-diversity implementation and verification       |
+| 2026-05-17   | `entries/session-2026-05-17-pr-0325-pr-0326-exam-converter-history.md`                | Compacted PR-0325 live authenticated Exam Converter proof and PR-0326 LLM-enrichment task setup |
+| 2026-04-16   | `entries/session-2026-04-16-task-0042.md`                                             | TASK-0042 long-term memory cutover and template-lane retirement                                 |
+| 2026-04-16   | `entries/session-2026-04-16-st08-10-script-editor-intelligence-review.md`             | Retained ST-08-10 script editor intelligence review prompt content                              |
+| 2026-04-16   | `entries/session-2026-04-16-epic-05-huleedu-design-harmonization.md`                  | Retained EPIC-05 HuleEdu design harmonization prompt content                                    |

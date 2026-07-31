@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4d125f81a0468810f14fe040f99a2ce9b249fc0c9296e5c31455e4ab04bba339",
+  "source_set_digest": "26e39387d3214a4695ceb211c4dae30919ea4882b80a5725db00fc790257402b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -455,7 +455,7 @@
       "type": "epic",
       "title": "Shared governed development system cutover",
       "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md",
-      "status": "proposed",
+      "status": "done",
       "owners": [
         {
           "kind": "service",
@@ -464,11 +464,17 @@
       ],
       "readiness_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved the complete cutover contract and execution"
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "spec-verifier",
+        "decided_at": "2026-08-01T01:02:48+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": ".orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md"
       }
     },
     {
@@ -521,6 +527,21 @@
       "path": "docs/backlog/reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md",
       "status": "changes_requested",
       "target": "TASK-SKRIPT-REP-0024",
+      "gate": "closeout",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REV-SKRIPT-TASK-REP-0006-CLOSEOUT",
+      "type": "review",
+      "title": "Review: TASK-SKRIPT-REP-0006 implementation closeout",
+      "path": "docs/backlog/reviews/review-task-skript-rep-0006-implementation-closeout.md",
+      "status": "approved",
+      "target": "TASK-SKRIPT-REP-0006",
       "gate": "closeout",
       "owners": [
         {
@@ -1802,7 +1823,7 @@
       "type": "story",
       "title": "Adopt the shared governed development system",
       "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md",
-      "status": "blocked",
+      "status": "done",
       "epic": "EPIC-SKRIPT-38",
       "owners": [
         {
@@ -1816,7 +1837,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "spec-verifier",
+        "decided_at": "2026-08-01T01:02:48+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": ".orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md"
       }
     },
     {
@@ -3935,7 +3960,7 @@
       "type": "task",
       "title": "ST-38-01 Cut over governed development operations",
       "path": "docs/backlog/tasks/task-skript-rep-0006-st-38-01-cut-over-governed-development-operations.md",
-      "status": "blocked",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -3945,11 +3970,17 @@
       ],
       "readiness_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved immediate completion of the cutover on 2026-07-31"
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-08-01T00:55:09+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "REV-SKRIPT-TASK-REP-0006-CLOSEOUT approved corrected head 67dfccd9837790b150d2c66fb3df2529208302b1"
       }
     },
     {
@@ -8993,6 +9024,13 @@
         "path": "docs/backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md"
       },
       {
+        "id": "EPIC-SKRIPT-38",
+        "type": "epic",
+        "title": "Shared governed development system cutover",
+        "status": "done",
+        "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md"
+      },
+      {
         "id": "ST-SKRIPT-02-02",
         "type": "story",
         "title": "Admin nomination and superuser approval",
@@ -9341,6 +9379,13 @@
         "title": "Cross-app save/export file naming protocol",
         "status": "ready",
         "path": "docs/backlog/stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md"
+      },
+      {
+        "id": "ST-SKRIPT-38-01",
+        "type": "story",
+        "title": "Adopt the shared governed development system",
+        "status": "done",
+        "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md"
       }
     ]
   }

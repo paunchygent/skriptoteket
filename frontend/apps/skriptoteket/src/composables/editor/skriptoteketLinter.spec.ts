@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EditorState } from "@codemirror/state";
+import { forceParsing } from "@codemirror/language";
 import { EditorView } from "@codemirror/view";
 import { python } from "@codemirror/lang-python";
 import { forceLinting, forEachDiagnostic, type Diagnostic } from "@codemirror/lint";
@@ -10,7 +11,19 @@ async function flushMicrotasks(): Promise<void> {
   await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
 }
 
+async function waitForSyntaxTree(view: EditorView): Promise<void> {
+  const documentEnd = view.state.doc.length;
+
+  await vi.waitFor(
+    () => {
+      expect(forceParsing(view, documentEnd, 200)).toBe(true);
+    },
+    { timeout: 1000, interval: 20 },
+  );
+}
+
 async function collectDiagnostics(view: EditorView): Promise<Diagnostic[]> {
+  await waitForSyntaxTree(view);
   forceLinting(view);
   await flushMicrotasks();
   await flushMicrotasks();

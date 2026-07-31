@@ -4,13 +4,13 @@ id: REF-SKRIPT-DECISIONS-review-workflow-for-backlog-items-and-retained-decision
 title: Review workflow for backlog items and retained decision records
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: decisions
 retired_ids:
-- REF-review-workflow
+  - REF-review-workflow
 summary: Review workflow for backlog items and retained decision records
 ---
 
@@ -34,11 +34,11 @@ The source does not provide a separate closure state section; no additional clos
 
 All proposed implementation packages still require review before implementation begins:
 
-| Artifact | Trigger | Reviewer |
-|----------|---------|----------|
-| ADR | Status = `proposed` | Lead developer or architect |
-| EPIC | Status = `proposed` | Lead developer |
-| Stories in a proposed epic package | Reviewed with the epic package | Lead developer |
+| Artifact                                               | Trigger                                                    | Reviewer                             |
+| ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------ |
+| ADR                                                    | Status = `proposed`                                        | Lead developer or architect          |
+| EPIC                                                   | Status = `proposed`                                        | Lead developer                       |
+| Stories in a proposed epic package                     | Reviewed with the epic package                             | Lead developer                       |
 | Story or PR follow-up slice with its own decision gate | When the backlog item explicitly calls for retained review | Lead developer or delegated reviewer |
 
 ADRs still require review, but they are recorded inside the governing epic, story, or PR review
@@ -47,8 +47,6 @@ proposed ADR has no governing backlog item yet, create the smallest backlog item
 implementation gate first.
 
 ### Source: Canonical review shape
-
-
 
 ### Source: Location
 
@@ -130,8 +128,6 @@ status: pending | approved | changes_requested | rejected
 
 ### Source: Reviewer responsibilities
 
-
-
 ### Source: Before starting
 
 1. Read the target backlog item and its frozen decisions first.
@@ -143,13 +139,13 @@ status: pending | approved | changes_requested | rejected
 
 For each review, evaluate:
 
-| Criterion | Question |
-|-----------|----------|
-| Alignment | Does the target solve the stated problem without reopening settled scope? |
+| Criterion        | Question                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| Alignment        | Does the target solve the stated problem without reopening settled scope?          |
 | Contract clarity | Are acceptance criteria, review widths, decisions, or verification rules explicit? |
-| Structural risk | Are the real fault lines named, or is the task relying on vague symptoms? |
-| Proof strength | Do tests and live checks actually exercise the claimed contract? |
-| Closure honesty | Does the doc distinguish between an improved baseline and true close-out? |
+| Structural risk  | Are the real fault lines named, or is the task relying on vague symptoms?          |
+| Proof strength   | Do tests and live checks actually exercise the claimed contract?                   |
+| Closure honesty  | Does the doc distinguish between an improved baseline and true close-out?          |
 
 ### Source: Recording feedback
 
@@ -163,15 +159,13 @@ If the reviewer finds structural issues:
 
 ### Source: Post-review actions
 
-
-
 ### Source: If approved
 
 1. Update the review doc status to `approved`.
 2. Update the governed backlog item status if approval unblocks it.
 3. Update linked story/epic notes or implementation summaries if the approved review changes the
    canonical direction.
-4. Update `.codex/handoff.md`.
+4. Update `handoff.md`.
 5. Run `pdm run docs-validate`.
 
 ### Source: If changes are requested

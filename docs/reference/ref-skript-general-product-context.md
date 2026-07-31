@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-product-context
 title: Product context
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: draft
 reference_kind: general
@@ -16,9 +16,7 @@ links:
     - REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08
     - REF-current-product-lanes-and-sir-convert-boundary-v1
     - REF-public-landing-copy-lock
-summary: 'Durable product context for Skriptoteket: mission, identity, current aim,
-  non-goals, load-bearing decisions, constraints, and glossary for external architect
-  agents.'
+summary: 'Durable product context for Skriptoteket: mission, identity, current aim, non-goals, load-bearing decisions, constraints, and glossary for external architect agents.'
 ---
 
 ## Overview
@@ -37,7 +35,7 @@ canonical path
 `docs/reference/ref-skill-general-portfolio-context-manifest.md` there — then
 this reference, then the routed PRDs, ADRs, and backlog items linked below.
 
-Last reconciled: 2026-07-31, against `.codex/handoff.md` (2026-07-31), the
+Last reconciled: 2026-07-31, against `handoff.md` (2026-07-31), the
 EPIC-37/EPIC-38 backlog state, and
 `docs/reference/ref-current-product-direction-and-backlog-inventory-2026-06-17.md`.
 If ADR acceptances, PRD version changes, or epic transitions postdate that
@@ -156,7 +154,7 @@ and the
   [product lanes and Sir Convert boundary](ref-current-product-lanes-and-sir-convert-boundary-v1.md),
   [service-shell UX realignment plan](ref-service-shell-ux-realignment-plan-v1.md).
 - Backlog: `docs/backlog/{epics,stories,prs,reviews}/`, hierarchy
-  `EPIC -> STORY -> PR slice`; volatile state in `.codex/handoff.md`.
+  `EPIC -> STORY -> PR slice`; volatile state in `handoff.md`.
 - Docs contract and validation: `docs/_meta/docs-contract.yaml`,
   `pdm run docs-validate`.
 

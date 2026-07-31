@@ -14,14 +14,14 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
 1. Classify the changed surface before choosing commands: domain/application,
    web API, infrastructure, migration, worker/runtime, frontend Vitest,
    browser proof, or app-specific smoke.
-1. Load only the relevant reference below, then follow the docs-as-code sources
+2. Load only the relevant reference below, then follow the docs-as-code sources
    it points to.
-1. Prefer the smallest focused test that exercises the behavior, then run the
+3. Prefer the smallest focused test that exercises the behavior, then run the
    required close-out gate for the touched layer.
-1. Use named `pdm run ...` surfaces from the repo root. Do not invent raw
+4. Use named `pdm run ...` surfaces from the repo root. Do not invent raw
    commands when a repo wrapper exists.
-1. If a UI route, auth path, or browser-visible behavior changes, run a live
-   functional check and record the exact proof in `.codex/handoff.md`.
+5. If a UI route, auth path, or browser-visible behavior changes, run a live
+   functional check and record the exact proof in `handoff.md`.
 
 ## Invariants
 
@@ -41,12 +41,12 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
 
 ## Reference Router
 
-| Test area | Load |
-|---|---|
-| Backend pytest, domain/application/API tests | `references/backend-pytest.md` |
-| Frontend Vitest/component tests | `references/frontend-vitest.md` |
-| Browser automation, screenshots, authenticated UI proof | `references/browser-automation.md` |
-| Alembic migrations and schema drift | `references/migrations.md` |
+| Test area                                                          | Load                                |
+| ------------------------------------------------------------------ | ----------------------------------- |
+| Backend pytest, domain/application/API tests                       | `references/backend-pytest.md`      |
+| Frontend Vitest/component tests                                    | `references/frontend-vitest.md`     |
+| Browser automation, screenshots, authenticated UI proof            | `references/browser-automation.md`  |
+| Alembic migrations and schema drift                                | `references/migrations.md`          |
 | Worker/runtime, observability, PDF/export, curated-app specialties | `references/specialized-domains.md` |
 
 ## Close-Out Defaults

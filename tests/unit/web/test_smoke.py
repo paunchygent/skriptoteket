@@ -1,3 +1,5 @@
+"""Application construction smoke proof."""
+
 from skriptoteket.web.app import create_app
 
 

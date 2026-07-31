@@ -7,13 +7,17 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-07-31'
-status: blocked
+status: done
 readiness_review:
   record: inline
   status: not_started
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: spec-verifier
+  decided_at: '2026-08-01T01:02:48+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: .orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md
 epic: EPIC-SKRIPT-38
 acceptance_criteria:
 - Given clean remote main, when the bootstrap selects the currently approved immutable
@@ -91,4 +95,11 @@ The source material below remains authoritative for this section.
 
 ## Story Closeout Review
 
-The source material below remains authoritative for this section.
+- Review artifact: `.orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md`
+- Review decision: verified
+- Reviewed checkpoint: combined `ST-SKRIPT-38-01` and sole-parent
+  `EPIC-SKRIPT-38` cutover at `eecad01972a719ca8d61e73f39d853f779988eb2`
+- Permitted next step: parent-owned story lifecycle transition and epic
+  reconciliation
+- Residual risk: the verifier review retains the non-authorizing root-level
+  unit-test coverage risk; no mandatory evidence is unavailable
