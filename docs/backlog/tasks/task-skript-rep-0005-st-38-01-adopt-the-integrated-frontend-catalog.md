@@ -4,94 +4,116 @@ id: TASK-SKRIPT-REP-0005
 title: ST-38-01 Adopt the integrated frontend catalog
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: blocked
+status: done
 readiness_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User approved immediate implementation on 2026-07-31
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User directed completion without further ceremony on 2026-07-31
 task_kind: repository
 acceptance_criteria:
-- The root facts declare the accepted frontend workspace and the central PNPM, catalog,
-  and design-resource cohort.
-- Product dependencies and the consumer lockfile remain repository-owned, with a bounded
-  accepted lockfile diff and frontend typecheck, Vitest, and build proof.
+  - The root facts declare the accepted frontend workspace and central design-resource contract, and the central tool owns only its reserved catalog block.
+  - The app consumes all 17 shared dependencies through the catalog while its manifest, lockfile, source, styles, and components remain repository-owned.
+  - The three shared resource metadata files match central authority without replacing Skriptoteket product resources.
 dependencies:
-- TASK-SKRIPT-REP-0004
+  - TASK-SKRIPT-REP-0004
 ---
 
 ## Context
-### Problem
-The frontend already pins PNPM 10.26.1 but remains outside the central
-catalog/resource cohort.
-### Admission gate
-This PR remains `blocked` until `TASK-SKRIPT-REP-0005` closes every row below from
-the post-PR-0419 checkout. A value that is not present in an accepted central
-or consumer authority remains open; implementation must not choose it.
 
-| ID | Required closure before readiness | Stop condition |
-| --- | --- | --- |
-| F420-01 | Freeze the exact frontend workspace root and manifest set, including the workspace YAML, package-manager manifest, every dependency manifest, the consumer resource destination manifest/package, and their pre-adoption byte hashes. The current checkout observes `frontend/pnpm-workspace.yaml`, `frontend/package.json`, and `frontend/apps/skriptoteket/package.json`; the task ledger must seal or correct that set after PR-0419. | Any unlisted manifest, resource destination, or workspace path is discovered, or the sealed paths/hashes are absent. |
-| F420-02 | Verify the central producer identity and cohort: select the currently approved immutable `repository-governance` release at this slice's execution start and record its exact consumer dependency, lock, and installed identity in retained execution evidence; PNPM `10.26.1`; the exact 17-entry catalog from the central IFC-001..006 authority and its source identity/digest; and `resources/frontend-design-system/huleedu-integrated/` package/manifest version `0.1.7`, schema, package identity, complete export set, and every manifest-owned SHA-256 digest. | The selected shared-package identity is not approved or its consumer dependency, lock, installed identity, and retained evidence disagree; a catalog/resource version, source identity, or digest is supplied only by local inference; or the catalog and resource authorities disagree. |
-| F420-03 | Record ownership and the permitted tracked-file write set. Skriptoteket owns product dependency manifests and `frontend/pnpm-lock.yaml`; central tooling may publish only its reserved catalog block and may not rewrite consumer-owned bytes. The task ledger must name each consumer manifest/resource file and the exact owned regions. | A central operation edits product dependencies or the consumer lockfile outside the sealed task write set, or a file/region has no owner. |
-| F420-04 | Seal a bounded consumer-lock diff before readiness: baseline and post-adoption hashes for `frontend/pnpm-lock.yaml`, every changed importer/package snapshot, each old/new resolution, and the accepted catalog/resource reason. Only the sealed dependency-closure diff may land; unrelated product dependency or transitive churn is out of scope. | The lock diff is not enumerated and bounded, or any hunk falls outside the accepted dependency closure. |
-| F420-05 | Freeze the required frontend proof and its exact selectors/artifact locations: central catalog synchronization plus read-only catalog validation, resource-manifest/digest validation, `npm exec --yes --package=pnpm@10.26.1 -- pnpm install --frozen-lockfile` at the sealed workspace, `pdm run fe-type-check`, focused Vitest, and `pdm run fe-build`, followed by docs validation and diff hygiene. | A proof command, focused selector, workspace, manifest, digest, or result artifact is missing, broad, or not tied to the sealed ledger. |
-| F420-06 | Freeze rollback ownership and bytes: restore the pre-adoption workspace catalog block, consumer manifests, resource files/manifests, and lockfile atomically from the sealed hashes; leave central package/resource authorities unchanged; and report any non-rollbackable PNPM store/cache state separately. | Rollback would touch an unowned product file, leave a partial tracked-file state, or require an alias, compatibility surface, or fail-open path. |
-
-These rows are admission facts, not implementation authority. Until they are
-closed and independently reviewed, this envelope authorizes no consumer
-manifest, resource, or lockfile mutation.
+The frontend already uses the shared PNPM version and declares the complete
+17-package integrated frontend cohort, but it still repeats local version ranges
+and has no declared central resource contract. This task adopts the central
+catalog as dependency coordination and quality control. It does not redesign or
+replace Skriptoteket's frontend.
 
 ## Impact And Escalation
-The source record did not define a separate section for this package heading.
+
+The write set is limited to frontend governance facts, the reserved workspace
+catalog block, the app dependency specifiers, its lockfile closure, three new
+resource metadata files, and this task's docs. Product source, CSS, components,
+Docker, backend, deployment, auth, and observability remain unchanged.
 
 ## Decision And Assumption Ledger
-The source record did not define a separate section for this package heading.
+
+| ID     | Status | Decision | Evidence |
+| ------ | ------ | -------- | -------- |
+| FC-001 | closed | The workspace is `frontend/pnpm-workspace.yaml`; dependency manifests are `frontend/package.json` and `frontend/apps/skriptoteket/package.json`; the consumer lock is `frontend/pnpm-lock.yaml`. | Consumer Explorer |
+| FC-002 | closed | All 17 app dependency names already match the central catalog and will use `catalog:`. The central synchronizer owns only its reserved workspace block. | Central and consumer Explorers |
+| FC-003 | closed | Store the shared resource metadata contract at `frontend/apps/skriptoteket/src/design-system/huleedu-integrated/` and copy only `manifest.json`, `manifest.schema.json`, and `package.json`. | HuleEdu consumer pattern and user direction |
+| FC-004 | closed | Skriptoteket continues to own its app manifest, lockfile, product source, styles, and components. Divergent product resource files are not overwritten. | Consumer digest comparison |
+| FC-005 | closed | No catalog exceptions are required. | Exact dependency-name comparison |
+| FC-006 | closed | The accepted lock change is only catalog adoption closure; the expected material resolution change is the Vue Vite plugin aligning with central authority. | Lockfile comparison |
+| FC-007 | closed | Proof uses central sync/read-only validation, metadata equality, frozen PNPM install, frontend typecheck, focused resource-component Vitest, build, docs validation, and diff hygiene. | User-approved bounded proof |
 
 ## Plan
-### Implementation plan
-After the admission ledger is sealed, adopt the accepted shared catalog and
-resource manifest without changing product dependency ownership. Synchronize
-only the reserved workspace block, apply the explicitly owned consumer
-manifest/resource changes, and record the bounded lock diff. Prove frozen
-synchronization, exact resource digests, typecheck, focused Vitest, and shipped
-build.
-### Test plan
-Run the sealed catalog/resource validators and frozen PNPM synchronization,
-then `pdm run fe-type-check`, the task-ledger focused `pdm run fe-test` selector,
-and `pdm run fe-build`. Confirm the bounded lock diff and owned-file hashes,
-then run `pdm run docs-validate` and `git diff --check`.
-### Rollback plan
-Restore only the sealed task-owned workspace catalog block, consumer manifests,
-resource files/manifests, and lock bytes atomically. Preserve product-owned
-bytes outside the write set and leave central package/resource authorities
-unchanged; if PNPM validation or frontend proof fails, stop and use governed
-forward repair rather than adding a compatibility or fallback surface.
+
+Synchronize the reserved catalog block, replace the app's 17 repeated version
+ranges with catalog references, add the three shared resource metadata files,
+and regenerate only the resulting lockfile closure.
 
 ## Implementation Steps
-The source record did not define a separate section for this package heading.
+
+1. Declare the resource manifest and package in root frontend facts.
+2. Synchronize the central reserved catalog block.
+3. Adopt `catalog:` for the exact 17 app dependencies.
+4. Add the three shared resource metadata files and regenerate the bounded lock closure.
+5. Run the focused contract and frontend proof.
 
 ## Proof
-The source record did not define a separate section for this package heading.
+
+- Central catalog synchronization is idempotent and read-only validation passes.
+- Consumer resource metadata matches the central files exactly.
+- Frozen PNPM install, frontend typecheck, focused Vitest, and build pass.
+- Docs validation and `git diff --check` pass.
 
 ## Validation
-The source record did not define a separate section for this package heading.
+
+No broad frontend suite, unscoped repository check, product behavior change, or
+full central resource-tree copy is authorized.
 
 ## Stop Conditions
-The source record did not define a separate section for this package heading.
+
+- Synchronization changes anything outside its reserved workspace block.
+- Lockfile churn exceeds the 17 catalog dependencies and their required closure.
+- Adoption requires replacing Skriptoteket CSS, components, or runtime source.
+- The immutable central runtime and central resource authority disagree.
 
 ## Lessons Learned
-The source record did not define a separate section for this package heading.
+
+The catalog manifest organizes dependency work and provides quality control. It
+must stay smaller than the frontend it describes and must not become a second
+architecture model.
 
 ## Notes
-The source record did not define a separate section for this package heading.
+
+Discovery is retained under the Task 0005 task root and its origin planning
+session. No shared-package version is pinned in this backlog record.
 
 ## Readiness
-The source record did not define a separate section for this package heading.
+
+FC-001 through FC-007 are closed. The user approved implementation and directed
+this step to proceed without additional ceremony.
 
 ## Closeout
-The source record did not define a separate section for this package heading.
+
+The immutable synchronizer added only its reserved 17-entry catalog block, and
+all 17 matching app dependencies now use `catalog:`. The lockfile changed only
+for catalog metadata, importer specifiers, and the required Vue Vite plugin
+upgrade with its plugin utility dependency. A second synchronization was
+unchanged, catalog validation passed, and frozen PNPM installation succeeded.
+
+The three consumer resource metadata files are byte-identical to central
+authority. No product source, CSS, components, or other resource exports were
+copied or changed. Frontend typecheck, five focused tests across three UI
+primitive files, and the production build pass. Docs validation and diff
+hygiene cover the governed closeout surfaces. The broad frontend suite was not
+rerun; Task 0004's six unrelated product/test failures remain explicit debt.

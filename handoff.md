@@ -7,10 +7,17 @@
   is done. Schema-v3 facts now route existing backend and frontend
   producers through named scopes and complete current validators.
 - [TASK-SKRIPT-REP-0005](docs/backlog/tasks/task-skript-rep-0005-st-38-01-adopt-the-integrated-frontend-catalog.md)
-  owns shared frontend catalog and resource adoption after Task 0004.
+  is done. The app now consumes the shared 17-entry catalog and three central
+  resource metadata files without replacing product resources.
 
 ## Recent
 
+- Task 0005 synchronized only the reserved catalog block, adopted all 17 shared
+  dependency references, and produced a bounded PNPM lock closure.
+- Frozen PNPM installation, frontend typecheck, five focused UI primitive
+  tests, and the production build pass.
+- The shared resource manifest, schema, and package metadata match central
+  authority byte-for-byte; Skriptoteket CSS and components remain unchanged.
 - Task 0004 inspected the complete, backend, and frontend plans before running
   only the two approved named checks.
 - Backend typecheck is clean for `src` and `tests`; frontend typecheck is clean.
@@ -30,3 +37,5 @@
   does not model product architecture or replace local producers.
 - Product, Docker, deployment, database, auth, worker, and observability
   commands remain outside Task 0004.
+- The frontend catalog is dependency coordination and quality control, not a
+  second product architecture model.

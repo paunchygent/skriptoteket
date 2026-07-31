@@ -303,6 +303,8 @@ dependency-manifests = [
     "frontend/package.json",
     "frontend/apps/skriptoteket/package.json",
 ]
+resource-manifest = "frontend/apps/skriptoteket/src/design-system/huleedu-integrated/manifest.json"
+resource-package = "frontend/apps/skriptoteket/src/design-system/huleedu-integrated/package.json"
 justified-exceptions = []
 
 [tool.repository-governance.quality]

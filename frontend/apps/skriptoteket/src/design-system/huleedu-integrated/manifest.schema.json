@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hule.education/schemas/frontend-design-system-resource-manifest.schema.json",
+  "title": "Frontend design-system resource manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package",
+    "version",
+    "compatibility",
+    "source",
+    "exports",
+    "frozen_primitives",
+    "consumer_validation"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "package": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tailwind",
+        "vue",
+        "vite"
+      ],
+      "properties": {
+        "tailwind": {
+          "type": "string"
+        },
+        "vue": {
+          "type": "string"
+        },
+        "vite": {
+          "type": "string"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seed",
+        "reference"
+      ],
+      "properties": {
+        "seed": {
+          "type": "string"
+        },
+        "reference": {
+          "type": "string"
+        }
+      }
+    },
+    "exports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "css.tokens",
+              "css.tailwind-theme",
+              "css.component",
+              "typescript.primitive",
+              "vue.component",
+              "typescript.barrel",
+              "asset"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_./-]+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "frozen_primitives": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "minProperties": 1
+    },
+    "consumer_validation": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

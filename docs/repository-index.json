@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "54820dcd4ffa05dc02ff440ae6227e64a41ec7939caed5570817cda1837ff7f5",
+  "source_set_digest": "4d125f81a0468810f14fe040f99a2ce9b249fc0c9296e5c31455e4ab04bba339",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -3909,7 +3909,7 @@
       "type": "task",
       "title": "ST-38-01 Adopt the integrated frontend catalog",
       "path": "docs/backlog/tasks/task-skript-rep-0005-st-38-01-adopt-the-integrated-frontend-catalog.md",
-      "status": "blocked",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -3919,11 +3919,15 @@
       ],
       "readiness_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved immediate implementation on 2026-07-31"
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User directed completion without further ceremony on 2026-07-31"
       }
     },
     {

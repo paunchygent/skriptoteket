@@ -1,0 +1,26 @@
+{
+  "name": "@huleedu/integrated-frontend-design-system",
+  "version": "0.1.7",
+  "private": true,
+  "type": "module",
+  "description": "Shared HuleEdu and Skriptoteket frontend design-system runtime resources.",
+  "files": [
+    "manifest.json",
+    "manifest.schema.json",
+    "src"
+  ],
+  "peerDependencies": {
+    "@vitejs/plugin-vue": ">=6.0.0",
+    "tailwindcss": ">=4.0.0",
+    "vue": ">=3.5.0"
+  },
+  "exports": {
+    "./tokens.css": "./src/css/huleedu-design-tokens.css",
+    "./tailwind-theme.css": "./src/css/tailwind-theme.css",
+    "./brand.css": "./src/css/brand.css",
+    "./action-buttons.css": "./src/css/action-buttons.css",
+    "./auth-lifecycle.css": "./src/css/auth-lifecycle.css",
+    "./skriptoteket-logo-horizontal.svg": "./src/assets/brands/skriptoteket-logo-horizontal.svg",
+    "./vue": "./src/vue/index.ts"
+  }
+}
