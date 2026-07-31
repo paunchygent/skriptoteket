@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=38 | story=318 | task=0 | review=136
-- open | epic=17 | story=57 | task=0
+- open | epic=18 | story=57 | task=0
 
 ## Lookup
 
@@ -536,6 +536,7 @@
 
 ### ready
 
+- EPIC-SKRIPT-38 | [Shared governed development system cutover](epics/epic-skript-38-shared-governed-development-system-cutover.md) | stories=blocked=1 | tasks=none
 - ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0

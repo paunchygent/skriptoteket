@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f0bf9d98c34e963c38a9924ecdd1f6048ae8c449b998afd963e2fa8f10e9b415",
+  "source_set_digest": "930069c3c28b2e9dac05e6b7d0cc4ac73b0753b0db5fe0aab55f67777988bbfa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -455,7 +455,7 @@
       "type": "epic",
       "title": "Shared governed development system cutover",
       "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md",
-      "status": "proposed",
+      "status": "ready",
       "owners": [
         {
           "kind": "service",
@@ -9022,6 +9022,13 @@
         "title": "Backlog product-direction inventory and app surface realignment",
         "status": "active",
         "path": "docs/backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md"
+      },
+      {
+        "id": "EPIC-SKRIPT-38",
+        "type": "epic",
+        "title": "Shared governed development system cutover",
+        "status": "ready",
+        "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md"
       },
       {
         "id": "ST-SKRIPT-02-02",

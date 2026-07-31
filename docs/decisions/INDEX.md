@@ -109,6 +109,7 @@
 - `EPIC-SKRIPT-33` | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](../backlog/epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | epic | active
 - `EPIC-SKRIPT-35` | [Launch SEO and search indexing readiness](../backlog/epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | epic | active
 - `EPIC-SKRIPT-37` | [Backlog product-direction inventory and app surface realignment](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | epic | active
+- `EPIC-SKRIPT-38` | [Shared governed development system cutover](../backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md) | epic | ready
 - `ST-SKRIPT-02-02` | [Admin nomination and superuser approval](../backlog/stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | story | ready
 - `ST-SKRIPT-02-06` | [Swedish school domain allowlist for registration](../backlog/stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | story | ready
 - `ST-SKRIPT-06-16` | [Backend SRP refactor of god modules](../backlog/stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | story | ready

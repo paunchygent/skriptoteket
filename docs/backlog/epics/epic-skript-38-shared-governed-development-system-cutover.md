@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-07-31'
-status: proposed
+status: ready
 readiness_review:
   record: inline
   status: not_required
