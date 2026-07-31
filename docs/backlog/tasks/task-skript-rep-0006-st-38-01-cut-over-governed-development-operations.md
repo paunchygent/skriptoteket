@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-07-31'
-status: in_progress
+status: done
 readiness_review:
   record: inline
   status: not_required
@@ -15,7 +15,11 @@ readiness_review:
   approval_evidence: User approved immediate completion of the cutover on 2026-07-31
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-code-review
+  decided_at: '2026-08-01T00:55:09+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: REV-SKRIPT-TASK-REP-0006-CLOSEOUT approved corrected head 67dfccd9837790b150d2c66fb3df2529208302b1
 task_kind: repository
 acceptance_criteria:
   - Installed public commands, topology-derived domain/frontend scopes, focused local-producer regressions, current and historical documents, frontend catalog, read-only Hemma transport, deterministic staleness, and root handoff routing pass together.

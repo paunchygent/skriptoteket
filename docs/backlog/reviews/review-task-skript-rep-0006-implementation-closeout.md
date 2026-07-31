@@ -7,11 +7,11 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-01'
-status: changes_requested
+status: approved
 target: TASK-SKRIPT-REP-0006
 gate: closeout
 reviewer: ruthless-code-review
-decided_at: '2026-08-01T00:43:44+02:00'
+decided_at: '2026-08-01T00:55:09+02:00'
 ---
 
 ## Governing Authority
@@ -114,3 +114,46 @@ outside the component-root child domains, as retained discovery records. The
 closed ledger authorizes topology-derived named domain checks rather than a
 separate root-file cohort or unscoped aggregate, so this is a non-authorizing
 residual coverage risk rather than a required Task 0006 change.
+
+## Rereview — 2026-08-01
+
+### Scope And Authority
+
+Rereview was limited to the files changed from candidate `474679f5` to corrected
+head `67dfccd9837790b150d2c66fb3df2529208302b1`. Closed GO-009 records the
+user's explicit authority for the runs-list topic, dedicated production
+conversion help, and exclusion of the two DEV/test inspection routes.
+
+### Finding Resolution
+
+- Resolved: `tests/unit/scripts/test_story58_artifact_set_invariants.py` removes
+  the forbidden `object`/`TypeGuard` declaration and narrows the two values at
+  their concrete runtime use. Supplied proof reports 32 scripts source files
+  typechecked, 176 scripts tests passed, and 10 focused invariant tests passed.
+- Resolved under GO-009: `helpTopicCatalog.ts` preserves `my_runs`, assigns the
+  three production converter routes to `conversion_tools`, and omits the two
+  inspection routes. `helpTopicCatalog.spec.ts` proves production route coverage,
+  dedicated converter ownership, and null resolution for both inspection routes.
+  `HelpTopicConversionTools.vue` provides the dedicated topic. Supplied proof
+  reports Vue typecheck, four focused catalog tests, and focused frontend lint
+  passed.
+- Current docs sync/validation, focused Markdown validation, diff check, and
+  commit hooks were supplied green. Routine successful gates were not rerun.
+
+### Findings
+
+None.
+
+### Decision
+
+`approved`
+
+### Permitted Next Step
+
+Implementation closeout and integration of corrected head
+`67dfccd9837790b150d2c66fb3df2529208302b1` to local `main` are permitted.
+
+### Residual Risk
+
+The non-authorizing root-level unit-test coverage risk recorded above remains
+unchanged. No additional rereview risk was found.

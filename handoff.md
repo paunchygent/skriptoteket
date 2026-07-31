@@ -1,9 +1,8 @@
 ## Current
 
 - [TASK-SKRIPT-REP-0006](docs/backlog/tasks/task-skript-rep-0006-st-38-01-cut-over-governed-development-operations.md)
-  has completed implementation and focused proof. Its topology-derived typed
-  checks cover governance, scripts, web, and frontend without an unscoped
-  aggregate; independent closeout review is next.
+  is independently approved and done. Its topology-derived typed checks cover
+  governance, scripts, web, and frontend without an unscoped aggregate.
 - [TASK-SKRIPT-REP-0003](docs/backlog/tasks/task-skript-rep-0003-migrate-current-governed-corpus.md)
   is done. Current governed documents use the shared contract, while 764
   terminal records remain historical and byte-identical.

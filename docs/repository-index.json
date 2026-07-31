@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2c804e1a498db3a71dc5e555ccd91857859be88cc193d36064909ae6c7dca4b7",
+  "source_set_digest": "3f7c62c62dd79303f4bdac5171da5e133e57191879e7cf5db32c2d76cc9e8eff",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -534,7 +534,7 @@
       "type": "review",
       "title": "Review: TASK-SKRIPT-REP-0006 implementation closeout",
       "path": "docs/backlog/reviews/review-task-skript-rep-0006-implementation-closeout.md",
-      "status": "changes_requested",
+      "status": "approved",
       "target": "TASK-SKRIPT-REP-0006",
       "gate": "closeout",
       "owners": [
@@ -3950,7 +3950,7 @@
       "type": "task",
       "title": "ST-38-01 Cut over governed development operations",
       "path": "docs/backlog/tasks/task-skript-rep-0006-st-38-01-cut-over-governed-development-operations.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -3966,7 +3966,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-08-01T00:55:09+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "REV-SKRIPT-TASK-REP-0006-CLOSEOUT approved corrected head 67dfccd9837790b150d2c66fb3df2529208302b1"
       }
     },
     {
