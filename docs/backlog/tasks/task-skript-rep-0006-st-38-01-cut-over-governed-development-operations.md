@@ -55,6 +55,7 @@ unchanged.
 | GO-006 | closed | Run staleness twice against the immutable task-start revision and fixed date; reports must be byte-identical and leave no repository diff.                                                                                                                                                                                                                         | Operations Explorer                          |
 | GO-007 | closed | Shared validation owns current documents; the local historical validator remains manual, read-only, and historical-only.                                                                                                                                                                                                                                           | Task 0003 and validator discovery            |
 | GO-008 | closed | Task 0005 and central checkout-path Task 08-06-02 are done with accepted closeout evidence.                                                                                                                                                                                                                                                                        | Current task records                         |
+| GO-009 | closed | Complete the existing help catalog contract: retain the separately approved runs-list topic, give the three production converter routes one dedicated conversion-help topic, and exclude the two DEV/test inspection routes from production help coverage.                                                                                                         | User approval on 2026-08-01                  |
 
 ## Plan
 
@@ -142,3 +143,8 @@ Product runtime behavior, deployment, databases, containers, migrations,
 workers, authentication, and lower-level producers remain repository-owned.
 No overlap was retired because no local producer had positive parity proof.
 Terminal backlog and historical references remain historical.
+
+The focused frontend repair also closes the catalog contradiction authorized
+in GO-009. Production converter routes resolve to dedicated conversion help,
+the runs list retains its approved topic, and internal inspection routes are
+outside the production coverage assertion.

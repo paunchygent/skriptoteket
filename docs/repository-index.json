@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3534f248d81004aeeeb32af3a5ad989fdf28efad0d30b654fb37587bb5120903",
+  "source_set_digest": "2c804e1a498db3a71dc5e555ccd91857859be88cc193d36064909ae6c7dca4b7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -521,6 +521,21 @@
       "path": "docs/backlog/reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md",
       "status": "changes_requested",
       "target": "TASK-SKRIPT-REP-0024",
+      "gate": "closeout",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REV-SKRIPT-TASK-REP-0006-CLOSEOUT",
+      "type": "review",
+      "title": "Review: TASK-SKRIPT-REP-0006 implementation closeout",
+      "path": "docs/backlog/reviews/review-task-skript-rep-0006-implementation-closeout.md",
+      "status": "changes_requested",
+      "target": "TASK-SKRIPT-REP-0006",
       "gate": "closeout",
       "owners": [
         {

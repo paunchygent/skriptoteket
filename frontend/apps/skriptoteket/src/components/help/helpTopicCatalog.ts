@@ -22,6 +22,7 @@ export type HelpTopicId =
   | "my_tools"
   | "editor_hub"
   | "apps_detail"
+  | "conversion_tools"
   | "suggestions_new"
   | "admin_suggestions"
   | "admin_tools"
@@ -149,15 +150,16 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     topic: "apps_detail",
     title: "App",
     description: "Större arbetsytor med flera steg.",
+    routes: ["app-detail", "public-app-detail", "public-app-capability-detail"],
+  },
+  {
+    topic: "conversion_tools",
+    title: "Konvertera material",
+    description: "Omvandla prov, ljud och dokument.",
     routes: [
-      "app-detail",
-      "public-app-detail",
-      "public-app-capability-detail",
       "exam-converter-authenticated",
       "audio-transcription-authenticated",
       "document-converter-authenticated",
-      "exam-converter-ui-inspection-fixture",
-      "transcript-ui-inspection-fixture",
     ],
   },
   {
