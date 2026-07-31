@@ -19,7 +19,7 @@ acceptance_criteria:
 Final operational truth and retirements must wait until every producer and
 consumer prerequisite is integrated and reviewed.
 
-## TASK-SKR-REP-0005 admission ledger
+## TASK-SKRIPT-REP-0006 admission ledger
 
 This PR remains blocked until the parent closes every row with
 authority-backed evidence. No implementation may infer a missing value, widen
