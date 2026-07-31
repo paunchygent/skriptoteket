@@ -109,7 +109,7 @@
 - `EPIC-SKRIPT-33` | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](../backlog/epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | epic | active
 - `EPIC-SKRIPT-35` | [Launch SEO and search indexing readiness](../backlog/epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | epic | active
 - `EPIC-SKRIPT-37` | [Backlog product-direction inventory and app surface realignment](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | epic | active
-- `EPIC-SKRIPT-38` | [Shared governed development system cutover](../backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md) | epic | ready
+- `EPIC-SKRIPT-38` | [Shared governed development system cutover](../backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md) | epic | active
 - `ST-SKRIPT-02-02` | [Admin nomination and superuser approval](../backlog/stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | story | ready
 - `ST-SKRIPT-02-06` | [Swedish school domain allowlist for registration](../backlog/stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | story | ready
 - `ST-SKRIPT-06-16` | [Backend SRP refactor of god modules](../backlog/stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | story | ready
@@ -160,3 +160,4 @@
 - `ST-SKRIPT-33-01` | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](../backlog/stories/st-skript-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | story | ready
 - `ST-SKRIPT-37-04` | [App presentation decomposition and naming reset](../backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md) | story | ready
 - `ST-SKRIPT-37-05` | [Cross-app save/export file naming protocol](../backlog/stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | story | ready
+- `ST-SKRIPT-38-01` | [Adopt the shared governed development system](../backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | story | active

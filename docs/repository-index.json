@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "930069c3c28b2e9dac05e6b7d0cc4ac73b0753b0db5fe0aab55f67777988bbfa",
+  "source_set_digest": "44875dc0c9832f84c4f07099d851f1cef6add989f85d75a3c97eb7cdf0628d53",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -455,7 +455,7 @@
       "type": "epic",
       "title": "Shared governed development system cutover",
       "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md",
-      "status": "ready",
+      "status": "active",
       "owners": [
         {
           "kind": "service",
@@ -1823,7 +1823,7 @@
       "type": "story",
       "title": "Adopt the shared governed development system",
       "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md",
-      "status": "blocked",
+      "status": "active",
       "epic": "EPIC-SKRIPT-38",
       "owners": [
         {
@@ -9027,7 +9027,7 @@
         "id": "EPIC-SKRIPT-38",
         "type": "epic",
         "title": "Shared governed development system cutover",
-        "status": "ready",
+        "status": "active",
         "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md"
       },
       {
@@ -9379,6 +9379,13 @@
         "title": "Cross-app save/export file naming protocol",
         "status": "ready",
         "path": "docs/backlog/stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md"
+      },
+      {
+        "id": "ST-SKRIPT-38-01",
+        "type": "story",
+        "title": "Adopt the shared governed development system",
+        "status": "active",
+        "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md"
       }
     ]
   }

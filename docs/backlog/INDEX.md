@@ -523,6 +523,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
+- EPIC-SKRIPT-38 | [Shared governed development system cutover](epics/epic-skript-38-shared-governed-development-system-cutover.md) | stories=active=1 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
@@ -533,10 +534,10 @@
 - ST-SKRIPT-25-06 | [Flunk-Out Frenzy VPW donor topology and table-spec rebuild](stories/st-skript-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-26-07 | [Klassrumskartan share-link Teams preview thumbnails](stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) | epic=[EPIC-SKRIPT-26](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-27-04 | [Klassrumskartan — Smart grouping v1](stories/st-skript-27-04-klassrumskartan-smart-grouping-v1.md) | epic=[EPIC-SKRIPT-27](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | tasks=none | depends_on=0 | dependents=1
+- ST-SKRIPT-38-01 | [Adopt the shared governed development system](stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | epic=[EPIC-SKRIPT-38](epics/epic-skript-38-shared-governed-development-system-cutover.md) | tasks=none | depends_on=0 | dependents=0
 
 ### ready
 
-- EPIC-SKRIPT-38 | [Shared governed development system cutover](epics/epic-skript-38-shared-governed-development-system-cutover.md) | stories=blocked=1 | tasks=none
 - ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
@@ -586,7 +587,6 @@
 
 - ST-SKRIPT-15-02 | [Avatar upload](stories/st-skript-15-02-avatar-upload.md) | epic=[EPIC-SKRIPT-15](epics/epic-skript-15-user-profile-settings.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-35-04 | [Search Console, Bing, and launch-day SEO operations](stories/st-skript-35-04-search-console-bing-and-launch-day-seo-operations.md) | epic=[EPIC-SKRIPT-35](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-38-01 | [Adopt the shared governed development system](stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | epic=[EPIC-SKRIPT-38](epics/epic-skript-38-shared-governed-development-system-cutover.md) | tasks=none | depends_on=0 | dependents=0
 
 ## Dependency Graph
 
