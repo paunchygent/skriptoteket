@@ -296,6 +296,99 @@ projects = [
     { path = ".", groups = ["default", "monorepo-tools"] },
 ]
 
+[tool.repository-governance.frontend]
+workspace-yaml = "frontend/pnpm-workspace.yaml"
+package-manager-manifest = "frontend/package.json"
+dependency-manifests = [
+    "frontend/package.json",
+    "frontend/apps/skriptoteket/package.json",
+]
+justified-exceptions = []
+
+[tool.repository-governance.quality]
+
+[[tool.repository-governance.quality.projects]]
+path = "."
+format = ["."]
+lint = ["."]
+typecheck-diagnostic-producer = "backend-typecheck"
+test-diagnostic-producer = "backend-test"
+
+[tool.repository-governance.quality.aggregates]
+backend = ["backend-source", "backend-tests"]
+
+[[tool.repository-governance.quality.cohorts]]
+name = "backend-source"
+kind = "path"
+path = "src"
+typecheck = "backend-typecheck"
+
+[[tool.repository-governance.quality.cohorts]]
+name = "backend-tests"
+kind = "path"
+path = "tests"
+typecheck = "backend-typecheck"
+test = "backend-test"
+
+[[tool.repository-governance.quality.cohorts]]
+name = "frontend"
+kind = "path"
+path = "frontend"
+typecheck = "frontend-typecheck"
+test = "frontend-test"
+
+[[tool.repository-governance.quality.producers]]
+name = "backend-typecheck"
+intent = "typecheck"
+project = "."
+command = "mypy"
+arguments = ["--config-file", "pyproject.toml"]
+
+[[tool.repository-governance.quality.producers]]
+name = "backend-test"
+intent = "test"
+project = "."
+command = "test-parallel"
+arguments = []
+
+[[tool.repository-governance.quality.producers]]
+name = "frontend-typecheck"
+intent = "typecheck"
+project = "."
+command = "fe-type-check"
+arguments = []
+
+[[tool.repository-governance.quality.producers]]
+name = "frontend-test"
+intent = "test"
+project = "."
+command = "fe-test"
+arguments = []
+
+[[tool.repository-governance.quality.validators]]
+name = "docs-validate"
+project = "."
+command = "docs-validate"
+arguments = []
+
+[[tool.repository-governance.quality.validators]]
+name = "skills-validate"
+project = "."
+command = "repository-governance-skills-validate"
+arguments = []
+
+[[tool.repository-governance.quality.validators]]
+name = "handoff-validate"
+project = "."
+command = "repository-governance-handoff-validate"
+arguments = []
+
+[[tool.repository-governance.quality.validators]]
+name = "bindings"
+project = "."
+command = "repository-governance-bindings"
+arguments = ["check", "--project-file", "pyproject.toml"]
+
 [tool.pdm]
 distribution = false
 
@@ -323,6 +416,8 @@ check-md-all = "check-md-all"
 # repository-governance:auxiliary-bindings:start
 run-hemma = "repository-governance-run-hemma --repo-root ${PDM_PROJECT_ROOT}"
 staleness-audit = "repository-governance-staleness-audit --repo-root ${PDM_PROJECT_ROOT}"
+publish-main = "repository-governance-publish-main --repository-root ${PDM_PROJECT_ROOT}"
+verify-main-publication = "repository-governance-verify-main-publication --repository-root ${PDM_PROJECT_ROOT}"
 # repository-governance:auxiliary-bindings:end
 # App runtime
 dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8000"

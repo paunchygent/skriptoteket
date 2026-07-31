@@ -1,4 +1,24 @@
+---
 version: 1
+
+markdown:
+  include:
+    - "**/*.md"
+    - "**/*.mdc"
+  exclude:
+    - docs/index.md
+    - docs/backlog/INDEX.md
+    - docs/decisions/INDEX.md
+    - docs/reference/INDEX.md
+    - docs/runbooks/INDEX.md
+    - .orchestration/**
+    - .codex/repomix_packages/**
+    - .artifacts/**
+    - evidence/**
+    - build/**
+    - dist/**
+    - "**/.cache/**"
+    - "**/__pycache__/**"
 
 # Only these top-level folders may exist under docs/
 allowed_top_level:
@@ -60,7 +80,12 @@ types:
     id_regex: "^ADR-\\d{4}$"
     status_allowed: ["proposed", "accepted", "superseded", "deprecated"]
     required: ["deciders"]
-    optional: ["context", "decision", "consequences", "supersedes", "superseded_by"]
+    optional:
+      - "context"
+      - "decision"
+      - "consequences"
+      - "supersedes"
+      - "superseded_by"
 
   prd:
     folder: docs/prd
@@ -152,8 +177,12 @@ types:
 
 mockup_resources:
   folder: docs/mockups
-  policy: "Non-Markdown files under docs/mockups are design/proofing resources, not docs frontmatter records."
-  enforcement: "Markdown files are contract-validated; non-Markdown resource files are intentionally permissive."
+  policy: >-
+    Non-Markdown files under docs/mockups are design/proofing resources, not
+    docs frontmatter records.
+  enforcement: >-
+    Markdown files are contract-validated; non-Markdown resource files are
+    intentionally permissive.
   allowed_resource_examples:
     - ".html"
     - ".css"
@@ -175,4 +204,6 @@ mockup_resources:
     - ".otf"
     - ".txt"
     - ".md"
-  note: "The examples are intentionally broad and not a closed allowlist; the folder is a creative test, contest, and proofing ground."
+  note: >-
+    The examples are intentionally broad and not a closed allowlist; the folder
+    is a creative test, contest, and proofing ground.
