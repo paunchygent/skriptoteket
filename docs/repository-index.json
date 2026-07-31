@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a6b421294cb26c51225a84396ebd3d1e6c4fc33eb61c9b156af329ab4c913ae9",
+  "source_set_digest": "54820dcd4ffa05dc02ff440ae6227e64a41ec7939caed5570817cda1837ff7f5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -3883,7 +3883,7 @@
       "type": "task",
       "title": "ST-38-01 Adopt topology-derived quality",
       "path": "docs/backlog/tasks/task-skript-rep-0004-st-38-01-adopt-topology-derived-quality.md",
-      "status": "blocked",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -3893,11 +3893,15 @@
       ],
       "readiness_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved immediate implementation on 2026-07-31"
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User directed completion without further ceremony on 2026-07-31"
       }
     },
     {

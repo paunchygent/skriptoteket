@@ -4,121 +4,120 @@ id: TASK-SKRIPT-REP-0004
 title: ST-38-01 Adopt topology-derived quality
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: blocked
+status: done
 readiness_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User approved immediate implementation on 2026-07-31
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User directed completion without further ceremony on 2026-07-31
 task_kind: repository
 acceptance_criteria:
-- Schema-v3 facts and complete generated bindings preserve repository-owned producers
-  while deriving truthful complete and named backend/frontend scopes.
-- Check planning is inspected before only approved named scopes execute; no unscoped
-  aggregate runs.
+  - Schema-v3 facts and complete generated bindings preserve repository-owned producers while deriving truthful complete and named backend/frontend scopes.
+  - Check planning is inspected before only approved named scopes execute; no unscoped aggregate runs.
 ---
 
 ## Context
 
-
-Skriptoteket has local quality commands but no common facts, complete routine
-aggregate, or topology-derived named scopes.
+Skriptoteket has one Python backend, one PNPM frontend workspace, current shared
+Docs-as-Code, and a separate historical-only terminal backlog validator. This
+task gives the shared routine enough facts to organize those existing quality
+commands without redefining repository architecture or product behavior.
 
 ## Impact And Escalation
 
-No separate impact and escalation is stated in the source.
+The task changes only repository-governance facts, generated bindings, the
+Markdown selection policy required by the routine, a broken pre-commit pytest
+argv, its focused tests, and this record. Shared frontend resources remain in
+Task 0005. Product, Docker, deployment, database, auth, worker, and observability
+surfaces remain unchanged.
 
 ## Decision And Assumption Ledger
 
-| source | semantic | carried_forward | Source material is retained in the sections above. | source |
+| ID     | Status | Decision                                                                                                                                                                                                    | Evidence                                  |
+| ------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| TQ-001 | closed | Model one root PDM project, one backend aggregate, and one frontend path cohort.                                                                                                                            | Retained topology discovery               |
+| TQ-002 | closed | Backend typecheck covers `src` and `tests`; runtime plan proof excluded `runner` and `migrations` because they are not clean under the existing mypy contract, while `scripts` remains explicitly excluded. | Backend Explorer and inspected named run  |
+| TQ-003 | closed | Backend tests use the existing native-library-aware `test-parallel` producer.                                                                                                                               | Backend Explorer and focused helper test  |
+| TQ-004 | closed | Frontend facts name the workspace, root manifest, app manifest, lock derived by the package, and no exceptions.                                                                                             | Frontend parity Explorer                  |
+| TQ-005 | closed | Frontend typecheck and tests use `fe-type-check` and `fe-test`; Task 0005 owns absent catalog/resource files and adoption proof.                                                                            | Frontend parity Explorer                  |
+| TQ-006 | closed | Complete validators are current docs, shared skills, shared handoff, and binding drift; `git diff --check` is built in.                                                                                     | Validator Explorer                        |
+| TQ-007 | closed | The historical validator remains manual and read-only; conditional migration, hazard, shell, product, and operations checks remain outside the complete routine.                                            | Validator Explorer and Task 0003 contract |
+| TQ-008 | closed | Execute only the inspected named `backend` and `frontend` scopes.                                                                                                                                           | User approval, 2026-07-31                 |
 
 ## Plan
 
-
-After all admission rows close, inventory tracked backend, frontend, tests,
-producers, marker exclusions, and diagnostic ownership. Freeze the exact
-schema-v3 facts, producer/cohort/aggregate inventories, and named-scope ledger;
-preserve local producers and product behavior; verify the complete generated
-binding set; inspect `check --plan`; and prove only the accepted named scopes.
-This PR remains blocked until that exact ledger and its prerequisite review
-evidence close.
+Declare the small routing manifest, regenerate package-owned bindings, align the
+installed immutable runtime with the existing dependency and lock, inspect the
+complete and named plans, then run only `check backend` and `check frontend`.
 
 ## Implementation Steps
 
-No separate implementation steps is stated in the source.
+1. Add frontend workspace and dependency-manifest facts.
+2. Add backend/frontend cohorts, existing producers, the backend aggregate, and complete validators.
+3. Restore the required Markdown selection mapping and generated auxiliary bindings.
+4. Route targeted pre-commit pytest through `test-parallel` so `-q` reaches pytest.
+5. Inspect complete, backend, and frontend plans before execution.
+6. Execute only the two approved named checks and focused contract tests.
 
 ## Proof
 
-
-Focused binding/facts/schema-v3 drift tests; producer/cohort/aggregate inventory
-and topology derivation tests; complete-plan inspection; positive local-producer
-and product-command preservation checks; approved named backend/frontend
-commands; docs validation; and diff check. No unscoped aggregate execution.
+- `pdm run check --plan`, `pdm run check backend --plan`, and
+  `pdm run check frontend --plan` must match TQ-001 through TQ-007.
+- `pdm run check backend` and `pdm run check frontend` are the only quality
+  aggregates authorized here.
+- Focused bootstrap/binding and targeted-pytest tests prove facts and argv.
+- Docs validation and diff hygiene cover the changed governed surfaces.
 
 ## Validation
 
-No separate validation is stated in the source.
+No unscoped `check`, broad repository suite, product proof, Docker operation, or
+historical-validator execution is part of this task.
 
 ## Stop Conditions
 
-
-- Any binding, package/lock identity, facts-home, producer, cohort, aggregate,
-  validator, diagnostic, or named-scope row is missing, ambiguous, or differs
-  from its authority-backed ledger.
-- Topology derivation reads untracked filesystem state, accepts schema-v2
-  serialized selections, or silently drops absent/empty tracked components.
-- A producer, product command, bootstrap/database/migration/native-library,
-  observability, Docker/deploy, auth/Gateway, worker, environment, or lower-level
-  local surface would be replaced or changed by this slice.
-- `check --plan` is unavailable or not reconciled before execution, or any
-  unscoped aggregate execution, broad suite, inferred scope, alias, wrapper,
-  fallback, or compatibility branch is requested.
-- A prerequisite review or parent-owned closure is missing; this PR remains a
-  blocked non-authorizing envelope and cannot transition itself to `ready`.
+- A plan replaces a local producer, includes a nonexistent frontend resource,
+  routes the historical validator into current gates, or expands beyond the two
+  named scopes.
+- Facts or generated bindings differ from the installed immutable package.
+- Product or operational code would need to change.
 
 ## Lessons Learned
 
-No separate lessons learned is stated in the source.
+The manifest is a workload organizer and quality-control routing table. The
+repository topology and existing commands remain authoritative; the manifest
+must stay smaller than the system it describes.
 
 ## Notes
 
-No separate notes is stated in the source.
-
-### Source: TASK-SKRIPT-REP-0004 admission ledger
-
-
-This PR is a non-authorizing planning envelope and remains `blocked` until the
-parent closes every gate below with authority-backed evidence. Implementers may
-not infer a missing value, widen the tracked write set, replace a local producer,
-or treat this record as permission to run quality commands.
-
-| ID | Closure gate | Required closure evidence |
-| --- | --- | --- |
-| SKR-REP-0003-01 | Complete generated binding set | At this slice's execution start, the currently approved immutable `repository-governance` release is selected; its consumer dependency, lock version, lock `ref`, lock `revision`, and installed version match exactly and are recorded in retained execution evidence with one generated binding block containing exactly `setup`, `new-worktree`, `format`, `lint`, `typecheck`, `test`, `check`, `new-doc`, `new-epic`, `new-story`, `new-task`, `new-review`, `docs-sync`, `docs-validate`, `format-md`, `check-md`, `format-md-all`, `check-md-all`, plus auxiliary `run-hemma` and `staleness-audit`. Generation is package-owned and atomic; no hand-authored partial block, alias, wrapper, fallback, second facts home, or cutover-wide package freeze is admitted. |
-| SKR-REP-0003-02 | Schema-v3 facts home | One root TOML facts home is present with schema `3`, repository `"skriptoteket"`, typed owner `service = ["skriptoteket"]`, and root setup groups exactly `["default", "monorepo-tools"]`. Its quality declaration uses schema-v3 `cohorts`, `producers`, `aggregates`, complete `validators`, and diagnostic producer references; no serialized schema-v2 component/scope matrix or compatibility parser is admitted. |
-| SKR-REP-0003-03 | Producer inventory | A frozen inventory names every repository-owned producer by exact intent, project, command/arguments, and diagnostic ownership, including backend, frontend, Markdown, format/lint, typecheck, test, and complete-validator producers that exist in the local checkout. Each producer is mapped to its declared project and intent; missing, duplicate, mismatched, or package-invented producers fail admission. |
-| SKR-REP-0003-04 | Cohort and aggregate inventories | A topology ledger names every schema-v3 cohort (kind, root/path, producer mapping, and exclusions) and every aggregate (name and exact member set), derived from Git-tracked paths rather than the raw filesystem. It records active, absent, and tracked-but-empty component behavior and rejects missing roots, untracked/empty declarations, invalid membership, and scope-name collisions. |
-| SKR-REP-0003-05 | Named scope ledger | The parent freezes the accepted named backend/frontend (and any other explicitly approved) scopes with exact names, topology-derived paths, typecheck/test narrowing, producer/project assignments, and exact argv. Complete defaults remain the ordered union of all derived selections; named scopes narrow only typecheck/test, while changed-set lint, complete validators, and `git diff --check` remain complete. |
-| SKR-REP-0003-06 | Local behavior preservation | A file- and surface-level preservation list covers bootstrap, database/migrations, native libraries, observability, Docker/deploy, auth/Gateway, workers, product commands, environment loading, and lower-level local producers. Positive focused proof shows those producers and product commands remain unchanged; no central replacement or retirement is admitted in this slice. |
-| SKR-REP-0003-07 | Plan visibility and execution boundary | A retained `pdm run check --plan` result is reconciled against the frozen facts, producer/cohort/aggregate inventories, and named-scope ledger before execution. Only the accepted named commands and exact argv may run after review; no unscoped aggregate execution, broad repository suite, or inferred scope is permitted. |
-
-The parent owns all ledger closure, authority decisions, generated surfaces,
-shared writes, and integration. Any missing or conflicting fact returns to
-planning or the user; it is not selected during implementation.
-
-### Source: Rollback plan
-
-
-Restore the prior facts/binding bytes and producer routing; do not add aliases.
+Discovery is retained under the Task 0004 task root and its origin planning
+session. No shared-package version is pinned in this backlog record.
 
 ## Readiness
 
-No separate readiness is stated in the source.
+TQ-001 through TQ-008 are closed. The user approved implementation and asked
+that this step proceed without additional ceremony.
 
 ## Closeout
 
-No separate closeout is stated in the source.
+The package-owned setup aligned the installed runtime and generated the complete
+binding block. Complete, backend, and frontend plans were inspected before only
+the two named checks ran. Backend mypy is green for `src` and `tests`; frontend
+typecheck is green; focused facts, binding, and targeted-pytest tests pass; and
+docs, skills, handoff, Markdown/YAML, and diff validation pass.
+
+The named runs also made existing repository debt visible: backend tests report
+16 failures and one collection error, while frontend tests report six failures.
+Focused Explorer classification proves none is caused by this task. The backend
+clusters are an absent generated SPA shell, three pre-existing route annotation
+violations, an ignored artifact-coupled test, and a dev-only dependency omitted
+from governed setup. The frontend clusters are stale runtime/advisory fixtures,
+one stale artifact expectation, and missing help topics. These remain explicit
+readiness debt; the manifest is not widened or weakened to conceal them.

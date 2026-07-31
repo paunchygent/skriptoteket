@@ -42,18 +42,44 @@ def test_selected_package_identity_is_exact() -> None:
     assert importlib.metadata.version("repository-governance") == package["version"]
 
 
-def test_minimal_setup_facts_and_generated_bindings_are_complete() -> None:
+def test_repository_facts_and_generated_bindings_are_complete() -> None:
     project_path = ROOT / "pyproject.toml"
     project_text = project_path.read_text(encoding="utf-8")
     project = tomllib.loads(project_text)
 
     facts = project["tool"]["repository-governance"]
-    assert facts == {
-        "schema-version": 3,
-        "repository": "skriptoteket",
-        "owners": {"service": ["skriptoteket"]},
-        "setup": {"projects": [{"path": ".", "groups": ["default", "monorepo-tools"]}]},
+    assert facts["schema-version"] == 3
+    assert facts["repository"] == "skriptoteket"
+    assert facts["owners"] == {"service": ["skriptoteket"]}
+    assert facts["setup"] == {"projects": [{"path": ".", "groups": ["default", "monorepo-tools"]}]}
+    assert facts["frontend"] == {
+        "workspace-yaml": "frontend/pnpm-workspace.yaml",
+        "package-manager-manifest": "frontend/package.json",
+        "dependency-manifests": [
+            "frontend/package.json",
+            "frontend/apps/skriptoteket/package.json",
+        ],
+        "justified-exceptions": [],
     }
+    quality = facts["quality"]
+    assert quality["aggregates"] == {
+        "backend": [
+            "backend-source",
+            "backend-tests",
+        ]
+    }
+    assert [row["name"] for row in quality["producers"]] == [
+        "backend-typecheck",
+        "backend-test",
+        "frontend-typecheck",
+        "frontend-test",
+    ]
+    assert [row["name"] for row in quality["validators"]] == [
+        "docs-validate",
+        "skills-validate",
+        "handoff-validate",
+        "bindings",
+    ]
     scripts = project["tool"]["pdm"]["scripts"]
     assert validate_reserved_bindings(project_path) == ()
     for name, command in {**ROUTINE_BINDINGS, **AUXILIARY_BINDINGS}.items():

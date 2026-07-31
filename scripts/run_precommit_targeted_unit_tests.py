@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS_ROOT = ROOT / "tests" / "unit"
-PYTEST_COMMAND = ["pdm", "run", "test", "-q"]
+PYTEST_COMMAND = ["pdm", "run", "test-parallel", "-q"]
 EXCLUDED_COMMIT_TIME_MARKERS = frozenset({"docker", "financial", "simulation", "slow"})
 
 
