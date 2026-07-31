@@ -8,7 +8,7 @@ created: 2026-07-31
 updated: 2026-07-31
 epic: "EPIC-38"
 acceptance_criteria:
-  - "Given clean remote main, when the bootstrap completes, then immutable 0.9.2 setup and governed worktree admission pass from the relocated checkout."
+  - "Given clean remote main, when the bootstrap selects the currently approved immutable shared-package release at execution start, then setup and governed worktree admission pass from the relocated checkout with exact consumer and installed identity retained as execution evidence."
   - "Given the approved corpus manifest, when migration completes, then every current authoritative governed document uses the common contract and every terminal backlog record remains historical."
   - "Given routine and frontend adoption, when final cutover runs, then named scopes, product preservation, read-only Hemma transport, staleness, handoff, and exact retirement pass without an unscoped aggregate."
 ---

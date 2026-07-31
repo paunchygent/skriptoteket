@@ -36,8 +36,10 @@ This PR remains a non-authorizing planning envelope and remains blocked until
 the parent attaches all of the following accepted inputs; specialists cannot
 supply or infer them:
 
-- the immutable `repository-governance` 0.9.3 producer identity (version and
-  peeled revision) and its explicit positive specialist-count contract,
+- the per-executable-slice rule requiring the currently approved immutable
+  `repository-governance` release to be selected at execution start, with its
+  exact consumer dependency, lock, and installed identity recorded in retained
+  execution evidence, and its explicit positive specialist-count contract,
   including proof that the count is supplied by the parent and that no fixed
   five-specialist fallback remains;
 - the complete post-PR-0417 source cohort with source hashes and one exact

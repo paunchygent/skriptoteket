@@ -11,7 +11,7 @@ stories:
 tags: ["repository-governance", "bootstrap", "relocation"]
 acceptance_criteria:
   - "The clean checkout moves to /Users/olofs_mba/Documents/Repos/Skriptoteket without changing Git history or remote-main equality."
-  - "The relocated consumer pins repository-governance 0.9.2 through the immutable dependency URL ending in @1a8d997477dd06449b00af757ac9df8577f8e16b#subdirectory=packages/repository_governance; its lock entry records version 0.9.2 with ref and revision both equal to 1a8d997477dd06449b00af757ac9df8577f8e16b, and the installed semantic-identity probe passes."
+  - "At execution start, the relocated consumer selects the currently approved immutable repository-governance release; its dependency, lock version, lock ref, lock revision, and installed version match that selected release exactly, and retained execution evidence records the identity."
   - "The sole facts home is root pyproject.toml with schema-version = 3, repository = \"skriptoteket\", owners.service = [\"skriptoteket\"], and one root setup project whose groups are exactly [\"default\", \"monorepo-tools\"]."
   - "The package synchronizer generates its complete reserved routine block (setup, new-worktree, format, lint, typecheck, test, check, new-doc, new-epic, new-story, new-task, new-review, docs-sync, docs-validate, format-md, check-md, format-md-all, check-md-all) plus auxiliary run-hemma and staleness-audit bindings; no hand-written alias or second facts home is introduced."
   - "Public setup and new-worktree prove a clean usable TASK-SKR-REP-0002 worktree from the relocated checkout, after which normal worktree admission resumes and the one-time direct-main exception expires."
@@ -36,9 +36,8 @@ The implementation write set at the relocated consumer root is exactly:
 
 - `pyproject.toml`: the immutable `monorepo-tools` dependency, the sole
   schema-v3 facts tables, and the package-owned marked binding block.
-- `pdm.lock`: the generated package entry and dependency closure for version
-  `0.9.2`, with `ref` and `revision` equal to the immutable 40-character
-  revision.
+- `pdm.lock`: the generated package entry and dependency closure for the
+  selected immutable release, with exact version, `ref`, and `revision`.
 - `tests/test_repository_governance_bootstrap.py`: focused consumer contract
   assertions for dependency/lock identity, facts, generated bindings, and the
   red/green admission boundary.
@@ -54,10 +53,10 @@ all other product-owned declarations remain byte-for-byte unchanged.
 
 | ID | Type | Status | Question/Assumption | Other plausible options | Motivation | Recommendation/Decision | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| P417-01 | baseline | closed | Which Git state is the admission basis? | Start from a local divergent or dirty checkout. | The central story names clean remote `main` as the only reproducible baseline. | Freeze remote `main` `721f45396b1eb7db90911b16c5ec78656919121d`, prove equality and cleanliness, and stop on any drift. | ST-SKILL-08-06 SKR-001; reviewer-approved baseline |
+| P417-01 | baseline | closed | Which Git state is the admission basis? | Start from a local divergent or dirty checkout, use Hemma state, or require a fixed historical SHA. | The central story names clean live remote `main` as the only reproducible baseline without making an observed execution SHA a durable contract term. | Immediately before relocation, fetch live `origin/main`; require a clean checkout, exactly one worktree, an absent destination, and equality of `HEAD`, local `main`, configured upstream, and live remote `main`; record the observed SHA as retained execution evidence, prove the same Git identity after relocation, and stop on subsequent drift. | ST-SKILL-08-06 SKR-001; user correction of baseline closure, 2026-07-31 |
 | P417-02 | relocation | closed | Where must the sole clean checkout live before tracked edits? | Keep the CascadeProjects path or edit before relocation. | Central paths and later worktree siblings must resolve from the approved consumer root. | Move the checkout to `/Users/olofs_mba/Documents/Repos/Skriptoteket` before editing tracked files; prove Git root, branch, upstream, HEAD, and no linked worktrees. | ST-SKILL-08-06 SKR-004G/H; user closure |
-| P417-03 | dependency | closed | Which producer identity unlocks the walking skeleton? | Use a tag-only dependency, mutable branch, source checkout, or intermediate release. | Package 0.9.2 is the reviewed immutable producer; tag-shaped or mutable references can pass synchronization while failing semantic identity. | Pin `repository-governance @ git+https://github.com/paunchygent/skill-repository.git@1a8d997477dd06449b00af757ac9df8577f8e16b#subdirectory=packages/repository_governance`; require installed version `0.9.2`, lock `ref` equal to that revision, lock `revision` equal to that revision, and a green semantic-identity probe. | ST-SKILL-08-06 SKR-004I; ST-SKILL-08-05 closeout; reviewer finding |
-| P417-04 | facts | closed | What is the smallest package-valid facts home? | Keep a YAML home, use schema v1, add quality/frontend tables, or create a second TOML home. | Package 0.9.2 requires schema v3 while setup admission needs only identity, typed ownership, and root synchronization. | In root `pyproject.toml`, add exactly schema-version `3`, repository `skriptoteket`, owners service `skriptoteket`, and one setup project `{ path = ".", groups = ["default", "monorepo-tools"] }`; add no quality, frontend, Hemma, or YAML facts. | ST-SKILL-08-06 SKR-004I; package `load_setup_facts`; reviewer finding |
+| P417-03 | dependency | closed | Which producer identity unlocks the walking skeleton? | Use a tag-only dependency, mutable branch, package source checkout, or one package release frozen across the cutover. | Selecting an approved immutable release per executable slice prevents stale planning pins while exact consumer and installed identities prevent mutable or tag-shaped references from passing synchronization. | At execution start, select the currently approved immutable repository-governance release; require the consumer dependency, lock version, lock `ref`, lock `revision`, and installed version to match that selected release exactly; record the identity in retained execution evidence. A consumer-discovered package gap returns to package-owned repair and reviewed immutable release; only a later unexecuted slice may select that release, while completed-slice evidence remains historical. | ST-SKILL-08-06 SKR-004I; user package-selection closure, 2026-07-31 |
+| P417-04 | facts | closed | What is the smallest package-valid facts home? | Keep a YAML home, use schema v1, add quality/frontend tables, or create a second TOML home. | The approved package contract requires schema v3 while setup admission needs only identity, typed ownership, and root synchronization. | In root `pyproject.toml`, add exactly schema-version `3`, repository `skriptoteket`, owners service `skriptoteket`, and one setup project `{ path = ".", groups = ["default", "monorepo-tools"] }`; add no quality, frontend, Hemma, or YAML facts. | ST-SKILL-08-06 SKR-004I; package `load_setup_facts`; reviewer finding |
 | P417-05 | bindings | closed | Which generated bindings belong in this slice? | Add only setup/new-worktree manually, keep consumer aliases, or defer the package block. | The package synchronizer owns one complete marked block; partial or bypassed bindings drift and prevent deterministic proof. | Generate the complete routine set `setup`, `new-worktree`, `format`, `lint`, `typecheck`, `test`, `check`, `new-doc`, `new-epic`, `new-story`, `new-task`, `new-review`, `docs-sync`, `docs-validate`, `format-md`, `check-md`, `format-md-all`, `check-md-all`, plus auxiliary `run-hemma` and `staleness-audit`; reserved-name declarations are replaced only inside that block, nonreserved product commands remain unchanged, and this slice proves only setup/new-worktree. | Central `ROUTINE_BINDINGS`/`AUXILIARY_BINDINGS`; ST-SKILL-08-06 SKR-004I |
 | P417-06 | write-set | closed | Which tracked consumer files may the bootstrap mutate? | Touch current docs, product commands, lock-adjacent files, or migration inputs. | A bounded write set prevents the admission repair from becoming corpus or product work. | Permit only root `pyproject.toml`, root `pdm.lock`, and the focused `tests/test_repository_governance_bootstrap.py`; generated bindings remain inside `pyproject.toml`. | Reviewer finding 2; ST-SKILL-08-06 decomposition |
 | P417-07 | lifecycle | closed | Which existing lifecycle fields and records remain outside this slice? | Normalize PR/story statuses or migrate legacy records while bootstrapping. | PR-0418 owns current-corpus migration and historical lifecycle disposition. | Leave all legacy lifecycle fields and governed-corpus records unchanged until PR-0418; this PR only records the bootstrap contract and its proof boundary. | ST-SKILL-08-06 SKR-004P; PR-0418 dependency |
@@ -76,12 +75,19 @@ later slice governable through normal worktrees.
 
 ## Implementation plan
 
-1. Reconfirm clean remote-main equality and the single-worktree inventory.
+1. Immediately before relocation, fetch live `origin/main`; require source
+   cleanliness, exactly one worktree, an absent destination, and equality of
+   `HEAD`, local `main`, configured upstream, and live remote `main`. Record the
+   observed SHA as retained execution evidence and stop on subsequent drift.
 2. Move the checkout directory and prove Git root, branch, upstream, remote,
-   HEAD, and cleanliness at the destination.
-3. In the destination root, pin the exact 0.9.2 dependency and regenerate only
-   the matching `pdm.lock` package entry; prove version, `ref`, `revision`, and
-   installed semantic identity all match `1a8d997477dd06449b00af757ac9df8577f8e16b`.
+   HEAD, cleanliness, and the same Git identity observed in step 1 at the
+   destination.
+3. At execution start, select the currently approved immutable
+   repository-governance release. In the destination root, pin that exact
+   release and regenerate only the matching `pdm.lock` package entry; prove
+   dependency, lock version, `ref`, `revision`, and installed semantic identity
+   all match the selected release, and record the identity in retained
+   execution evidence.
 4. Add the sole schema-v3 facts home and exact root setup project in
    `pyproject.toml`; do not add quality, frontend, Hemma, YAML, or another
    facts home.
@@ -126,11 +132,15 @@ merge-only forward repair; do not reset or create compatibility surfaces.
 
 ## Stop conditions
 
-- Source or destination is dirty, divergent, already occupied, or has linked
-  worktrees.
-- The exact 0.9.2 producer is unavailable.
-- The dependency or lock does not prove version `0.9.2` and both `ref` and
-  `revision` equal to `1a8d997477dd06449b00af757ac9df8577f8e16b`.
+- The source is dirty, the worktree inventory is not exactly one, the
+  destination is occupied, or—after fetching live `origin/main`—`HEAD`, local
+  `main`, configured upstream, and live remote `main` do not resolve to one
+  observed SHA.
+- The recorded Git identity drifts before or after relocation.
+- No approved immutable repository-governance release is available at
+  execution start.
+- The dependency, lock version, lock `ref`, lock `revision`, installed version,
+  or retained execution evidence does not prove the exact selected release.
 - Schema version, repository, typed service owner, root setup groups, or the
   complete generated binding set differs from this record.
 - The focused contract test, semantic-identity probe, or either public

@@ -15,8 +15,8 @@ dependencies:
 
 - Relocate the clean checkout to
   `/Users/olofs_mba/Documents/Repos/Skriptoteket`.
-- Pin immutable `repository-governance` 0.9.2 and prove the public
-  setup/worktree/check foundation.
+- Select the currently approved immutable `repository-governance` release per
+  executable slice and prove the public setup/worktree/check foundation.
 - Migrate every current authoritative governed document to the common contract
   through one exact disposition manifest.
 - Keep terminal backlog and terminal reviews historical.
@@ -42,8 +42,8 @@ dependencies:
 
 - Skill Repository `ST-SKILL-08-06` and its accepted SKR-001 through SKR-004P
   ledger.
-- Immutable package 0.9.2 at
-  `1a8d997477dd06449b00af757ac9df8577f8e16b`.
+- An approved immutable `repository-governance` release selected per
+  executable slice, with exact identity retained as execution evidence.
 
 ## Review Gate
 
