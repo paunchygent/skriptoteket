@@ -82,6 +82,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@c374461e0a797da27340aaa4a615f52b6045fbe6#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -283,10 +284,46 @@ filterwarnings = [
     "ignore::DeprecationWarning:testcontainers.*",
 ]
 
+[tool.repository-governance]
+schema-version = 3
+repository = "skriptoteket"
+
+[tool.repository-governance.owners]
+service = ["skriptoteket"]
+
+[tool.repository-governance.setup]
+projects = [
+    { path = ".", groups = ["default", "monorepo-tools"] },
+]
+
 [tool.pdm]
 distribution = false
 
 [tool.pdm.scripts]
+# repository-governance:bindings:start
+setup = "pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-bootstrap --repo-root ${PDM_PROJECT_ROOT}"
+new-worktree = "pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-create --repo-root ${PDM_PROJECT_ROOT}"
+format = "repository-governance-routine format --repo-root ${PDM_PROJECT_ROOT}"
+lint = "repository-governance-routine lint --repo-root ${PDM_PROJECT_ROOT}"
+typecheck = "repository-governance-routine typecheck --repo-root ${PDM_PROJECT_ROOT}"
+test = "repository-governance-routine test --repo-root ${PDM_PROJECT_ROOT}"
+check = "repository-governance-routine check --repo-root ${PDM_PROJECT_ROOT}"
+new-doc = "repository-governance-new-doc"
+new-epic = "new-epic"
+new-story = "new-story"
+new-task = "new-task"
+new-review = "new-review"
+docs-sync = "repository-governance-docs-sync"
+docs-validate = "repository-governance-docs-validate"
+format-md = "format-md"
+check-md = "check-md"
+format-md-all = "format-md-all"
+check-md-all = "check-md-all"
+# repository-governance:bindings:end
+# repository-governance:auxiliary-bindings:start
+run-hemma = "repository-governance-run-hemma --repo-root ${PDM_PROJECT_ROOT}"
+staleness-audit = "repository-governance-staleness-audit --repo-root ${PDM_PROJECT_ROOT}"
+# repository-governance:auxiliary-bindings:end
 # App runtime
 dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8000"
 dev-logs = "sh -c 'mkdir -p .artifacts && WATCHFILES_FORCE_POLLING=true WATCHFILES_POLL_DELAY_MS=300 pdm run dev 2>&1 | tee .artifacts/dev-backend.log'"
@@ -351,29 +388,16 @@ fe-test-coverage.cmd = "pnpm --filter @skriptoteket/spa test:coverage"
 fe-test-coverage.working_dir = "frontend"
 
 # Code quality
-format = "ruff format --force-exclude ."
-lint = { composite = [
-    "ruff format --check --diff --force-exclude .",
-    "ruff check --force-exclude .",
-    "pdm run shellcheck-all",
-    "python -m scripts.check_migration_test_coverage",
-    "python -m scripts.check_agent_doc_budgets",
-    "python -m scripts.validate_docs",
-    "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment",
-] }
 lint-fix = "ruff check --fix --force-exclude ."
-typecheck = "mypy --config-file pyproject.toml src tests"
 shellcheck = "shellcheck"
 shellcheck-all = 'find . -type f \( -name "*.sh" -o -name "*.bash" \) -not -path "./.git/*" -not -path "./.venv/*" -not -path "./node_modules/*" -not -path "./frontend/node_modules/*" -exec shellcheck {} +'
 
 # Tests
-test = "python -m scripts.run_pytest_with_native_libs"
 test-parallel = "python -m scripts.run_pytest_with_native_libs -n auto"
 test-sequential = "python -m scripts.run_pytest_with_native_libs -n 0"
 test-simulations = "python -m scripts.run_pytest_with_native_libs -m simulation -s -v --durations=10 --log-cli-level=INFO --import-mode=importlib --override-ini addopts=''"
 
 # Docs-as-code governance
-docs-validate = "python -m scripts.validate_docs"
 handoff-validate = "python -m scripts.check_agent_doc_budgets"
 
 # Hemma production operator commands
