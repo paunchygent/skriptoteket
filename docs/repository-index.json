@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "26e39387d3214a4695ceb211c4dae30919ea4882b80a5725db00fc790257402b",
+  "source_set_digest": "46fc6b7b5fc132195ac4662436e48deab470e5d3236a3907cf278352acf2a7cc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4469,6 +4469,28 @@
       "title": "ST-28-04 Make Hemma cleanup units idle-safe",
       "path": "docs/backlog/tasks/task-skript-rep-0026-st-28-04-make-hemma-cleanup-units-idle-safe.md",
       "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "readiness_review": {
+        "record": "inline",
+        "status": "not_started"
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0027",
+      "type": "task",
+      "title": "Advance repository-governance consumer pin to 0.9.7",
+      "path": "docs/backlog/tasks/task-skript-rep-0027-advance-repository-governance-consumer-pin-to-0-9-7.md",
+      "status": "proposed",
       "task_kind": "repository",
       "owners": [
         {
