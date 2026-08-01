@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-08-01'
-status: ready
+status: done
 readiness_review:
   record: inline
   status: approved
@@ -15,7 +15,11 @@ readiness_review:
   decided_at: '2026-08-01T01:54:29+02:00'
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-code-review
+  decided_at: '2026-08-01T02:02:49+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Inline review approved candidate 0c80b3aa6f974106aaf724b69cd61fbffea6dc9e
 task_kind: repository
 acceptance_criteria:
 - Given the user-approved immutable repository-governance release, when Skriptoteket
@@ -156,4 +160,51 @@ instruction authorizes this bounded task plan.
 
 ## Closeout
 
-Not started.
+Implementation evidence prepared for independent review:
+
+- The central runtime validated the user-approved immutable package identity.
+- The PDM update changed only the repository-governance lock record and the
+  lock content hash; no unrelated dependency moved.
+- The package-owned binding synchronizer produced no tracked binding delta,
+  and its read-only drift check passed.
+- Frozen setup completed for the declared Python groups and frontend workspace.
+- `pdm lock --check`, installed package version, installed VCS metadata,
+  `pdm run repository-governance-bindings check --project-file pyproject.toml`,
+  `pdm run docs-validate`, and `git diff --check` passed.
+- The implementation write set is limited to `pyproject.toml`, `pdm.lock`, this
+  task record, and the generated repository index.
+- No product, backend, frontend, broad repository, deployment, database, Hemma,
+  or browser check ran because none is applicable to this metadata-only pin
+  advance.
+
+Independent implementation review:
+
+- Recorded: `2026-08-01T02:02:49+02:00` (`CEST`).
+- Reviewer: `ruthless-code-review`.
+- Decision: `approved`.
+- Reviewed scope: exact candidate
+  `0c80b3aa6f974106aaf724b69cd61fbffea6dc9e` against base
+  `9ef1087096cee9a136ed0ca6c8185167477668e0`, limited to this task
+  record, `docs/repository-index.json`, `pyproject.toml`, and `pdm.lock`.
+- Governing authority: acceptance criteria and closed ledger decisions PIN-001
+  through PIN-004, including the exact user-approved immutable release and
+  peeled revision, the bounded dependency/lock and synchronizer-owned write
+  surface, and contract/validator proof without product tests.
+- Findings: none. The source dependency and lock package record agree on the
+  approved peeled revision; the package record advances coherently; the only
+  other lock change is the required content hash. No binding or product delta
+  exists. At the candidate head, the generated index truthfully reflects the
+  implementation-owned source lifecycle, and the backlog prose does not
+  hardcode the shared package version or revision. The parent-owned projection
+  refresh must incorporate this reviewer-owned approval.
+- Permitted next step: the owning parent may preserve this approval, apply the
+  authorized closeout lifecycle transition, refresh generated projections,
+  validate, integrate the exact reviewed candidate into current `main`, and
+  publish through the governed merge-only workflow.
+- Residual risk: the review relies on the supplied successful immutable-runtime,
+  frozen-bootstrap, lock, installed-identity, VCS-revision, binding-drift,
+  docs-validation, changed-file, and whitespace evidence. No product behavior
+  changed, so no product-runtime risk was introduced by this slice.
+- Validation not run by reviewer: supplied routine gates were not duplicated;
+  backend, frontend, browser, deployment, database, Hemma, and broad repository
+  checks remain outside this task's accepted proof scope.
