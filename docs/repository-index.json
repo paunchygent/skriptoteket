@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5073a4b5838346bc53918e25192f0c973dbcb1ee138e1b4261b50f9159e6e586",
+  "source_set_digest": "00c3656625fbdb88f5e4d4a77517ad652be1561536f727ff5a2d1056b2b7903d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4490,7 +4490,7 @@
       "type": "task",
       "title": "Advance repository-governance consumer pin",
       "path": "docs/backlog/tasks/task-skript-rep-0027-advance-repository-governance-consumer-pin.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -4506,7 +4506,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-08-01T02:02:49+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Inline review approved candidate 0c80b3aa6f974106aaf724b69cd61fbffea6dc9e"
       }
     },
     {

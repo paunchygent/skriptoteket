@@ -1,5 +1,11 @@
 ## Current
 
+- [TASK-SKRIPT-REP-0027](docs/backlog/tasks/task-skript-rep-0027-advance-repository-governance-consumer-pin.md)
+  is independently approved and done. Skriptoteket now pins immutable
+  `repository-governance` 0.9.7 at peeled revision
+  `9d42109fe260858208698a98dd6f1dc0a60a748e`; the package-owned binding sync
+  produced no binding delta, and focused lock, installed-identity, VCS,
+  binding-drift, docs, and whitespace checks passed.
 - [ST-SKRIPT-38-01](docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md)
   and `EPIC-SKRIPT-38` are verified and done. The shared governed-development
   cutover is complete.
