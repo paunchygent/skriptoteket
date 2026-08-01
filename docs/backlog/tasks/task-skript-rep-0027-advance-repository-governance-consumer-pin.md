@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-08-01'
-status: ready
+status: in_progress
 readiness_review:
   record: inline
   status: approved
@@ -156,4 +156,21 @@ instruction authorizes this bounded task plan.
 
 ## Closeout
 
-Not started.
+Implementation evidence prepared for independent review:
+
+- The central runtime validated the user-approved immutable package identity.
+- The PDM update changed only the repository-governance lock record and the
+  lock content hash; no unrelated dependency moved.
+- The package-owned binding synchronizer produced no tracked binding delta,
+  and its read-only drift check passed.
+- Frozen setup completed for the declared Python groups and frontend workspace.
+- `pdm lock --check`, installed package version, installed VCS metadata,
+  `pdm run repository-governance-bindings check --project-file pyproject.toml`,
+  `pdm run docs-validate`, and `git diff --check` passed.
+- The implementation write set is limited to `pyproject.toml`, `pdm.lock`, this
+  task record, and the generated repository index.
+- No product, backend, frontend, broad repository, deployment, database, Hemma,
+  or browser check ran because none is applicable to this metadata-only pin
+  advance.
+
+Independent implementation review remains outstanding.

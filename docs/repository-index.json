@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "48fe008979f01d44973b84a26e624b1f667a7e2871700bff5419a12e474f4782",
+  "source_set_digest": "5073a4b5838346bc53918e25192f0c973dbcb1ee138e1b4261b50f9159e6e586",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4490,7 +4490,7 @@
       "type": "task",
       "title": "Advance repository-governance consumer pin",
       "path": "docs/backlog/tasks/task-skript-rep-0027-advance-repository-governance-consumer-pin.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
