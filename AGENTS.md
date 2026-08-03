@@ -33,6 +33,7 @@ product workflow, or command-wrapper context.
 
 | Context                                                                                                    | Repo-Specific Route                                                                                                   |
 | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Repository topology, layer boundaries, where a concern lives                                               | `.codex/skills/repo-code-map/SKILL.md`                                                                                |
 | Docs-as-code, backlog contracts, scaffolding, governed docs                                                | `agent-docs-governance` plus its Skriptoteket reference                                                               |
 | Planning, decomposition, tranche sequencing                                                                | `agent-planning` plus its Skriptoteket reference                                                                      |
 | Next-session or developer handoff messages                                                                 | `agent-session-handoff` plus its Skriptoteket reference                                                               |
