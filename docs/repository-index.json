@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "00c3656625fbdb88f5e4d4a77517ad652be1561536f727ff5a2d1056b2b7903d",
+  "source_set_digest": "c191f73eb0d52d85bfef0cac7b2d873930f1c42871daeb9685ad33e6091d38f8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4511,6 +4511,36 @@
         "decided_at": "2026-08-01T02:02:49+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Inline review approved candidate 0c80b3aa6f974106aaf724b69cd61fbffea6dc9e"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0028",
+      "type": "task",
+      "title": "Expose local codex skills to the Claude harness via claude skills symlink",
+      "path": "docs/backlog/tasks/task-skript-rep-0028-expose-local-codex-skills-to-the-claude-harness-via-claude-skills-symlink.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "readiness_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "plan-document-reviewer",
+        "decided_at": "2026-08-03T01:00:23+02:00",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User opened the symlink lane on 2026-08-03 and the ledger closes on that directive plus policy and discovery evidence; independent plan-document-reviewer subagent approved round 1 with no blocking findings."
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-08-03T01:58:29+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent closeout subagent (not the implementer) verified the symlink resolution, all three SKILL.md reads, gate exits, and scope; approved with zero blocking findings."
       }
     },
     {
