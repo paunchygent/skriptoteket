@@ -24,7 +24,7 @@ Top-level layout:
 | `src/`           | The `skriptoteket` application package (all backend layers)    |
 | `frontend/`      | pnpm workspace holding the SPA                                 |
 | `runner/`        | Helper modules injected into the sandboxed script runtime      |
-| `migrations/`    | Alembic environment and 85 versioned migrations                |
+| `migrations/`    | Alembic environment and 84 versioned migrations                |
 | `tests/`         | Backend unit, integration, and fixture suites                  |
 | `scripts/`       | Repository-local proof and browser-automation entry points     |
 | `observability/` | Grafana, Loki, Prometheus, and Promtail stack configuration    |
@@ -120,11 +120,18 @@ and its Skriptoteket reference.
 `decisions/`, `prd/`, `reference/` (140 documents), `runbooks/`, `guides/`,
 `mockups/`, `releases/`, `research/`, `templates/`, and `_meta/`.
 
-Domain-scoped codemaps already live in `docs/reference/` and stay there — the
-frontend design-system codemaps, the tool-editor framework codemap, the runner
-tool modularization map, and the exam-converter contract map. This overview
-links to them; it does not replace them. `docs/templates/template-codemap.md`
-remains the authoring template for that family.
+Domain-scoped depth maps already live in `docs/reference/` and stay there:
+
+- [Frontend design-system codemap — `docs/reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md`](../../../../docs/reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md)
+- [Tool editor framework codemap — `docs/reference/ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md`](../../../../docs/reference/ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md)
+- [Runner/tool code modularization map — `docs/reference/ref-skript-general-runner-tool-code-modularization-map-shared-libs-multi-file-bundles-runner-tool-code-modularization-map-shared-libs-multi-file-bundles.md`](../../../../docs/reference/ref-skript-general-runner-tool-code-modularization-map-shared-libs-multi-file-bundles-runner-tool-code-modularization-map-shared-libs-multi-file-bundles.md)
+- [Exam Converter reviewed AI-facit contract map — `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md`](../../../../docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md)
+
+The Exam Converter map is retained historical evidence and is marked
+deprecated in its own frontmatter. This overview links these maps at their
+exact repository-relative paths; it does not replace them.
+`docs/templates/template-codemap.md` remains the authoring template for that
+family.
 
 Generated indexes are refreshed by `pdm run docs-sync` and enforced by
 `pdm run docs-validate`; both scan `docs/` only, so `AGENTS.md` and `.codex/`
