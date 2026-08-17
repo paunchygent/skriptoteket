@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a89ed742d5cd72732c66b9da48f509a85d5b64a8f8774a1dc8d11e9204c837b1",
+  "source_set_digest": "5507b6982f9593291ad35efbb058fb5256f6a7d31f0975de1999aade0a108a5f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4815,7 +4815,7 @@
       "type": "task",
       "title": "Adopt the repository-governance binding durability repair",
       "path": "docs/backlog/tasks/task-skript-rep-0030-adopt-the-repository-governance-binding-durability-repair.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
