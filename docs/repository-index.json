@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3bb8a5212cfd90d2e20b43004e57092d9fa8443e42de9f8b5aec9987a5c1f76e",
+  "source_set_digest": "a89ed742d5cd72732c66b9da48f509a85d5b64a8f8774a1dc8d11e9204c837b1",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4808,6 +4808,24 @@
         "decided_at": "2026-08-06T19:57:01+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "/Users/olofs_mba/Documents/Repos/skill-repository/.orchestration/context/sessions/019fd7fc-7a82-7ba2-919a-9685e613c1f7/evidence/reviews/TASK-SKRIPT-REP-0029/ruthless-code-review.md"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0030",
+      "type": "task",
+      "title": "Adopt the repository-governance binding durability repair",
+      "path": "docs/backlog/tasks/task-skript-rep-0030-adopt-the-repository-governance-binding-durability-repair.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
