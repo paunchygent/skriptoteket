@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8b85c90611ac0553d10daec5768747e61815a2d587f2336d5e36971aa809f971",
+  "source_set_digest": "c9c14c1a15cc4d894e24f2731528886abb197ea768dc9522757a93c1e4ef9ae0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4833,7 +4833,7 @@
       "type": "task",
       "title": "Adopt the repository-governance live authority resolution repair",
       "path": "docs/backlog/tasks/task-skript-rep-0031-adopt-the-repository-governance-live-authority-resolution-repair.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
