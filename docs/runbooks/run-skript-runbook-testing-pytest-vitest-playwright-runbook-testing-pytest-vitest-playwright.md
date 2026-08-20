@@ -33,6 +33,14 @@ pdm run fe-test
 pdm run pr-0253-auth-retirement --start-backend --start-vite
 pdm run pr-0255-auth-bootstrap --start-backend --start-vite
 ```
+### Changed-component quality
+
+For normal repository changes, use the package-owned changed-component gate:
+
+```bash
+pdm run check
+```
+
 ### Backend (Pytest)
 ### When to use
 
