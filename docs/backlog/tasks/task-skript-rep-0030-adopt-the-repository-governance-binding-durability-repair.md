@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-17'
-status: ready
+status: canceled
 closeout_review:
   record: inline
   status: not_started
@@ -17,6 +17,16 @@ acceptance_criteria:
   - A worktree whose governing authority is archived keeps resolving that authority and its declared setup groups
 backlog_document_profile: contract-derived
 ---
+
+## Status
+
+This task is canceled and superseded by the direct Skriptoteket consumer
+cutover to `repository-governance` 0.11.10 at revision
+`3f9aaffe1363f02f16888290da3c08a59bc555dd`, published under
+`TASK-SKILL-REP-0123` at main commit
+`75fa100d3f5a7141530f4dca1095f338db387b3f`. The 0.11.4 contract below is
+retained as the historical task record; no implementation remains for this
+task.
 
 ## Implementation Contract
 

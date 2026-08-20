@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c9c14c1a15cc4d894e24f2731528886abb197ea768dc9522757a93c1e4ef9ae0",
+  "source_set_digest": "a12be575a0b31af4a8ea58d8ee9651a2f31036f71ef1ba701339c1f4684af247",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4815,7 +4815,7 @@
       "type": "task",
       "title": "Adopt the repository-governance binding durability repair",
       "path": "docs/backlog/tasks/task-skript-rep-0030-adopt-the-repository-governance-binding-durability-repair.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {
@@ -4833,7 +4833,7 @@
       "type": "task",
       "title": "Adopt the repository-governance live authority resolution repair",
       "path": "docs/backlog/tasks/task-skript-rep-0031-adopt-the-repository-governance-live-authority-resolution-repair.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {

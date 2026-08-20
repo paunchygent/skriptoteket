@@ -1,11 +1,13 @@
 ## Current
 
-- [TASK-SKRIPT-REP-0027](docs/backlog/tasks/task-skript-rep-0027-advance-repository-governance-consumer-pin.md)
-  is independently approved and done. Skriptoteket now pins immutable
-  `repository-governance` 0.9.7 at peeled revision
-  `9d42109fe260858208698a98dd6f1dc0a60a748e`; the package-owned binding sync
-  produced no binding delta, and focused lock, installed-identity, VCS,
-  binding-drift, docs, and whitespace checks passed.
+- Skriptoteket consumes immutable `repository-governance` 0.11.10 at revision
+  `3f9aaffe1363f02f16888290da3c08a59bc555dd` in published main commit
+  `75fa100d3f5a7141530f4dca1095f338db387b3f`. The direct consumer cutover is
+  tracked under `TASK-SKILL-REP-0123`.
+- [TASK-SKRIPT-REP-0030](docs/backlog/tasks/task-skript-rep-0030-adopt-the-repository-governance-binding-durability-repair.md)
+  and [TASK-SKRIPT-REP-0031](docs/backlog/tasks/task-skript-rep-0031-adopt-the-repository-governance-live-authority-resolution-repair.md)
+  are canceled and superseded by that cutover; their earlier release facts
+  remain in the task records.
 - [ST-SKRIPT-38-01](docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md)
   and `EPIC-SKRIPT-38` are verified and done. The shared governed-development
   cutover is complete.
@@ -44,8 +46,8 @@
 
 ## Facts
 
-- Session Date: 2026-07-31
-- Last Refreshed: 2026-07-31
+- Session Date: 2026-08-20
+- Last Refreshed: 2026-08-20
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with
   `pdm run python -m scripts.historical_docs.validate_historical_docs`.
