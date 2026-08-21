@@ -1,9 +1,8 @@
-# Docs Contract
+# Docs Metadata
 
-Documentation in `docs/` is governed by a strict contract:
-
-- **Allowed folders**: only the allowlist in `docs/_meta/docs-contract.yaml`
-- **Naming + placement**: enforced by regex per document type
-- **Frontmatter**: required for all docs except explicitly exempt files
+Current governed documentation is validated by the installed
+`repository-governance` package. The retained historical corpus opts into its
+legacy read-only rules through
+`docs/_meta/historical-docs-contract.yaml`.
 
 Run `pdm run docs-validate` before opening a PR that changes documentation.

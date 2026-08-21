@@ -66,7 +66,7 @@ When compacting `handoff.md`, move durable session history to
 
 - Current contract and scaffolds: package-owned `repository-governance`
 - Start-here index: `docs/index.md`
-- Historical-only legacy contract: `docs/_meta/docs-contract.yaml`
+- Historical-only legacy contract: `docs/_meta/historical-docs-contract.yaml`
 - Runbooks: `docs/runbooks/`
 - Backlog hierarchy: `EPIC -> STORY -> TASK`
 

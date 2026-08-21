@@ -137,8 +137,8 @@ Generated indexes are refreshed by `pdm run docs-sync` and enforced by
 `pdm run docs-validate`; both scan `docs/` only, so `AGENTS.md` and `.codex/`
 sit outside them. Scaffold governed documents with the package-owned
 `pdm run new-task`, `new-story`, `new-epic`, `new-review`, `new-doc`; never
-author frontmatter by hand. `docs/_meta/docs-contract.yaml` is the historical
-legacy contract — the package-owned contract is the current authority. Local
+author frontmatter by hand. `docs/_meta/historical-docs-contract.yaml` is the
+historical legacy contract — the package-owned contract is the current authority. Local
 paths and governance facts are in the shared `agent-docs-governance`
 Skriptoteket reference.
 

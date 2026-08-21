@@ -8,4 +8,4 @@
 ## Authoritative Surfaces
 
 - [Docs Meta README](_meta/README.md)
-- [Docs Contract](_meta/docs-contract.yaml)
+- [Historical Docs Contract](_meta/historical-docs-contract.yaml)
