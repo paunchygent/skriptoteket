@@ -1,5 +1,11 @@
 ## Current
 
+- [TASK-SKRIPT-REP-0026](docs/backlog/tasks/task-skript-rep-0026-st-28-04-make-hemma-cleanup-units-idle-safe.md)
+  is independently verified and done. Its tracked wrapper, two hourly cleanup
+  pairs, and bounded installer are published and installed on Hemma. Both
+  timers remain enabled and active; stopped-app runs report explicit idle
+  success, running-app runs complete successfully, and invalid selectors remain
+  visible systemd failures. The task unblocks Task 0032 without changing it.
 - Skriptoteket consumes immutable `repository-governance` 0.11.10 at revision
   `3f9aaffe1363f02f16888290da3c08a59bc555dd` in published main commit
   `75fa100d3f5a7141530f4dca1095f338db387b3f`. The direct consumer cutover is
@@ -26,6 +32,9 @@
 
 ## Recent
 
+- Task 0026 replaced direct timer `docker exec` calls with one exact-container
+  wrapper, retained the two existing schedules, proved all five installed bytes,
+  and passed stopped, running, controlled-failure, and HuleEdu hostwide checks.
 - Task 0006 adopted the approved immutable shared runtime, preserved local
   producers, corrected active routing to root `handoff.md`, and passed current
   and historical document validation, read-only Hemma transport, and
@@ -46,8 +55,8 @@
 
 ## Facts
 
-- Session Date: 2026-08-20
-- Last Refreshed: 2026-08-20
+- Session Date: 2026-08-28
+- Last Refreshed: 2026-08-28
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with
   `pdm run python -m scripts.historical_docs.validate_historical_docs`.

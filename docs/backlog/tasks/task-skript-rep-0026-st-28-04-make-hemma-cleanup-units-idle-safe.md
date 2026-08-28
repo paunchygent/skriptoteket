@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-07-31'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: spec-verifier
+  decided_at: '2026-08-28T12:06:12+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: .orchestration/context/sessions/01a04769-58d6-74a7-901f-7665a1d7ea44/evidence/reviews/TASK-SKRIPT-REP-0026/terminal-spec-verification.md verifies published main 32cb6af37a7252c842aeb0ff097c68cde77da336
 task_kind: repository
 acceptance_criteria:
   - Given skriptoteket-web is intentionally absent or stopped, when either installed cleanup service runs, then systemd records success and the journal records an explicit skipped/idle outcome.
