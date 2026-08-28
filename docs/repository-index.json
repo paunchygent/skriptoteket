@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a12be575a0b31af4a8ea58d8ee9651a2f31036f71ef1ba701339c1f4684af247",
+  "source_set_digest": "266bfeb64ece4ed3587ae262fdb88c6b34f35b17d9354213523fbab10b244a60",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4834,6 +4834,24 @@
       "title": "Adopt the repository-governance live authority resolution repair",
       "path": "docs/backlog/tasks/task-skript-rep-0031-adopt-the-repository-governance-live-authority-resolution-repair.md",
       "status": "canceled",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0032",
+      "type": "task",
+      "title": "Adopt shared Hemma workload switching for Skriptoteket production services",
+      "path": "docs/backlog/tasks/task-skript-rep-0032-adopt-shared-hemma-workload-switching-for-skriptoteket-production-services.md",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
