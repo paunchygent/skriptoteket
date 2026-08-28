@@ -1,0 +1,8 @@
+[Unit]
+Description=Skriptoteket: cleanup expired session files
+Requires=snap.docker.dockerd.service
+After=snap.docker.dockerd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/skriptoteket-cleanup-if-running cleanup-session-files

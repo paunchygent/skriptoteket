@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "266bfeb64ece4ed3587ae262fdb88c6b34f35b17d9354213523fbab10b244a60",
+  "source_set_digest": "9b991cb162554a877aa3dd0b3f718b2106c23301500061da784b43fd1729753d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4705,7 +4705,7 @@
       "type": "task",
       "title": "ST-28-04 Make Hemma cleanup units idle-safe",
       "path": "docs/backlog/tasks/task-skript-rep-0026-st-28-04-make-hemma-cleanup-units-idle-safe.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
@@ -4713,10 +4713,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"

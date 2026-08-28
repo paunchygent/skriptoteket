@@ -1,0 +1,8 @@
+[Unit]
+Description=Skriptoteket sandbox snapshot cleanup
+Requires=snap.docker.dockerd.service
+After=snap.docker.dockerd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/skriptoteket-cleanup-if-running cleanup-sandbox-snapshots
