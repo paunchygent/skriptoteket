@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0032
 title: Adopt shared Hemma workload switching for Skriptoteket production services
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-28'
 status: in_progress
 closeout_review:
@@ -13,16 +13,12 @@ closeout_review:
   status: not_started
 task_kind: repository
 dependencies:
-- Skill Repository TASK-SKILL-05-10-01
+  - Skill Repository TASK-SKILL-05-10-01
 acceptance_criteria:
-- Skriptoteket exports importable web and worker WorkloadDeclaration objects and
-  typed owner adapters for exact start, stop, status, and readiness outcomes.
-- A separate Skriptoteket-owned cleanup gate reports exact cleanup outcomes, and
-  only succeeded advances the required gate.
-- The declarations enable Hule TASK-HULE-09-02-26 to prove that recorded running
-  services are restored while initially stopped services remain stopped.
-- Skriptoteket does not duplicate hostwide ordering, state storage, transaction locking,
-  registry composition, target/conflict selection, or Hule-owned orchestration.
+  - Skriptoteket exports importable web and worker WorkloadDeclaration objects and typed owner adapters for exact start, stop, status, and readiness outcomes.
+  - A separate Skriptoteket-owned cleanup gate reports exact cleanup outcomes, and only succeeded advances the required gate.
+  - The declarations enable Hule TASK-HULE-09-02-26 to prove that recorded running services are restored while initially stopped services remain stopped.
+  - Skriptoteket does not duplicate hostwide ordering, state storage, transaction locking, registry composition, target/conflict selection, or Hule-owned orchestration.
 backlog_document_profile: contract-derived
 ---
 
@@ -93,10 +89,28 @@ continuous polling, rebuild, database lifecycle, or cleanup scan.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D01 | Skriptoteket owns exact web/worker declaration exports, commands, and readiness outcomes; the shared package owns switching state and restoration. |
-| D02 | Hule TASK-HULE-09-02-26 owns the closed cross-product registry, controller, target/conflict selection, and exact-subset restoration proof. |
-| D03 | Cleanup is a separate required gate; succeeded advances it, while intentionally_idle remains observable and does not satisfy it. |
-| D04 | The adapter never duplicates hostwide order, registry composition, or Hule-owned auth-edge orchestration. |
-| D05 | Adoption uses one corrected exact released provider pin; 0.11.24 is inadmissible because its required live inventory path is defective. |
+| D02 | Hule TASK-HULE-09-02-26 owns the closed cross-product registry, controller, target/conflict selection, and exact-subset restoration proof.         |
+| D03 | Cleanup is a separate required gate; succeeded advances it, while intentionally_idle remains observable and does not satisfy it.                   |
+| D04 | The adapter never duplicates hostwide order, registry composition, or Hule-owned auth-edge orchestration.                                          |
+| D05 | Adoption uses one corrected exact released provider pin; 0.11.24 is inadmissible because its required live inventory path is defective.            |
+
+## Implementation Review
+
+- Timestamp: `2026-08-28T13:22:10+02:00`
+- Reviewer: exact independent `ruthless-reviewer`
+- Decision: `approved`
+- Reviewed scope and authority: the concrete implementation checkpoint over
+  `pyproject.toml`, `pdm.lock`, `scripts/hemma_workload.py`, and
+  `tests/unit/scripts/test_hemma_workload.py` on contract checkpoint
+  `48e2841f7ced1ef78031e30b628c1c402922085e`, including the privilege-boundary
+  remediation, under this task's accepted option-A contract and D01-D05.
+- Findings: none after remediation.
+- Permitted next step: independent `spec-verifier` checkpoint.
+- Residual risk and validation not run: no Hemma mutation or engine-level
+  transaction/restoration proof was run. Cross-product registry composition,
+  target/conflict selection, and exact-subset restoration remain owned by Hule
+  `TASK-HULE-09-02-26`. The parent supplied 54 passing affected tests, passing
+  scoped Ruff/format, passing targeted mypy, and passing `git diff --check`.
