@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "94f015acb34e7b786cb780688822009172d3e6ea2cf72ce38a36f576f3d46a2b",
+  "source_set_digest": "f945cb4517469e4d02d6354cbf2bb9a882517617084e66eac47e4ff83b7ff700",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4851,7 +4851,7 @@
       "type": "task",
       "title": "Adopt shared Hemma workload switching for Skriptoteket production services",
       "path": "docs/backlog/tasks/task-skript-rep-0032-adopt-shared-hemma-workload-switching-for-skriptoteket-production-services.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {

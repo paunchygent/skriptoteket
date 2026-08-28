@@ -1,15 +1,21 @@
 ## Current
 
+- [TASK-SKRIPT-REP-0032](docs/backlog/tasks/task-skript-rep-0032-adopt-shared-hemma-workload-switching-for-skriptoteket-production-services.md)
+  has a verified option-A implementation for importable production web/worker
+  workload declarations and adapters plus the separate required cleanup gate.
+  Hule `TASK-HULE-09-02-26` retains the closed host registry, controller,
+  target/conflict selection, and exact-subset restoration proof. The task stays
+  `in_progress` with closeout not started until a real overseer owns that
+  authority transition.
 - [TASK-SKRIPT-REP-0026](docs/backlog/tasks/task-skript-rep-0026-st-28-04-make-hemma-cleanup-units-idle-safe.md)
   is independently verified and done. Its tracked wrapper, two hourly cleanup
   pairs, and bounded installer are published and installed on Hemma. Both
   timers remain enabled and active; stopped-app runs report explicit idle
   success, running-app runs complete successfully, and invalid selectors remain
   visible systemd failures. The task unblocks Task 0032 without changing it.
-- Skriptoteket consumes immutable `repository-governance` 0.11.10 at revision
-  `3f9aaffe1363f02f16888290da3c08a59bc555dd` in published main commit
-  `75fa100d3f5a7141530f4dca1095f338db387b3f`. The direct consumer cutover is
-  tracked under `TASK-SKILL-REP-0123`.
+- Skriptoteket consumes immutable `repository-governance` 0.11.25 at revision
+  `1548765abc4f81e54cbe13f6112163da96fa8842` for the shared Hemma workload
+  declaration and terminal-outcome contract.
 - [TASK-SKRIPT-REP-0030](docs/backlog/tasks/task-skript-rep-0030-adopt-the-repository-governance-binding-durability-repair.md)
   and [TASK-SKRIPT-REP-0031](docs/backlog/tasks/task-skript-rep-0031-adopt-the-repository-governance-live-authority-resolution-repair.md)
   are canceled and superseded by that cutover; their earlier release facts
@@ -32,6 +38,11 @@
 
 ## Recent
 
+- Task 0032 pinned the corrected provider release, exported exact
+  `skriptoteket-web` and `skriptoteket-worker` declarations with bounded
+  `sudo -n` Docker adapters, and kept cleanup outside `WorkloadAdapter` so only
+  literal `succeeded` advances the required product gate. No Hemma mutation or
+  Hule-owned transaction proof was performed.
 - Task 0026 replaced direct timer `docker exec` calls with one exact-container
   wrapper, retained the two existing schedules, proved all five installed bytes,
   and passed stopped, running, controlled-failure, and HuleEdu hostwide checks.
